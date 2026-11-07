@@ -1,0 +1,8 @@
+{
+  "dataset_manifest_sha256": "3f424cac026e098fb2cff98c03137e74e61cf48b7e4a219c503312a60b1a6a14",
+  "files": {
+    "translations.json": "cd73991f22c9376142e07f085e97c8347746799d345e4fc16ca34f713a612834",
+    "query_terms.json": "23fc85c4028229e45ef5382b48720eaa5266660f06efa79b270a4b0695c64c7e"
+  },
+  "translation_failures": 0
+}

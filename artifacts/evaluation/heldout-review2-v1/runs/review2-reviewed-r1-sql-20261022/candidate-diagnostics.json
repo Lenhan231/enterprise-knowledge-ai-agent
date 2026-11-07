@@ -1,0 +1,246 @@
+{
+  "diagnostic_only": true,
+  "model_inference": false,
+  "external_api_calls": false,
+  "method": "Production SQL on temporary frozen tables; cached translations/saved query vectors. Per-case parity checks against original candidate lists. No model inference or persistent data writes.",
+  "cases": [
+    {
+      "case_id": "H04-vi-to-en",
+      "sql_top30_matches_actual_run": true,
+      "gold_branch_ranks": {
+        "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::16": {
+          "dense_rank_300": 19,
+          "lexical_rank_300": null,
+          "fused_rank": 33
+        }
+      },
+      "methods_full_evidence_at10": {
+        "dense": 0.0,
+        "dense_bge": 1.0,
+        "translated_hybrid_raw": 0.0,
+        "translated_hybrid_bge": 0.0
+      },
+      "lexical_query": "What mandatory file categories and storage requirements does the Manual specify for maintaining which groups of files?"
+    },
+    {
+      "case_id": "H08-vi-to-vi",
+      "sql_top30_matches_actual_run": true,
+      "gold_branch_ranks": {
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::15": {
+          "dense_rank_300": null,
+          "lexical_rank_300": 46,
+          "fused_rank": 84
+        }
+      },
+      "methods_full_evidence_at10": {
+        "dense": 0.0,
+        "dense_bge": 0.0,
+        "translated_hybrid_raw": 0.0,
+        "translated_hybrid_bge": 0.0
+      },
+      "lexical_query": "Trong Inventory Control, Product ID 19 có Units Sold (Latest) và Avg Monthly Demand (3 snapshots) bao nhiêu?"
+    },
+    {
+      "case_id": "H08-en-to-vi",
+      "sql_top30_matches_actual_run": true,
+      "gold_branch_ranks": {
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::15": {
+          "dense_rank_300": 192,
+          "lexical_rank_300": 68,
+          "fused_rank": 72
+        }
+      },
+      "methods_full_evidence_at10": {
+        "dense": 0.0,
+        "dense_bge": 0.0,
+        "translated_hybrid_raw": 0.0,
+        "translated_hybrid_bge": 0.0
+      },
+      "lexical_query": "Trong Kiểm soát Hàng tồn kho, các Đơn vị Bán (Mới nhất) và Nhu cầu Tháng Trung bình (3 khoảnh khắc) nào được ghi lại cho Mã Sản phẩm 19?"
+    },
+    {
+      "case_id": "H11-vi-to-vi",
+      "sql_top30_matches_actual_run": true,
+      "gold_branch_ranks": {
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::10": {
+          "dense_rank_300": null,
+          "lexical_rank_300": 298,
+          "fused_rank": 331
+        },
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::9": {
+          "dense_rank_300": null,
+          "lexical_rank_300": 56,
+          "fused_rank": 109
+        }
+      },
+      "methods_full_evidence_at10": {
+        "dense": 0.0,
+        "dense_bge": 0.0,
+        "translated_hybrid_raw": 0.0,
+        "translated_hybrid_bge": 0.0
+      },
+      "lexical_query": "So sánh hai dòng Inventory Control của Product ID 1 và Product ID 3: mỗi sản phẩm có size, màu và On-hand Units nào?"
+    },
+    {
+      "case_id": "H11-vi-to-en",
+      "sql_top30_matches_actual_run": true,
+      "gold_branch_ranks": {
+        "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::10": {
+          "dense_rank_300": 280,
+          "lexical_rank_300": 264,
+          "fused_rank": 257
+        },
+        "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::9": {
+          "dense_rank_300": 287,
+          "lexical_rank_300": 21,
+          "fused_rank": 28
+        }
+      },
+      "methods_full_evidence_at10": {
+        "dense": 0.0,
+        "dense_bge": 0.0,
+        "translated_hybrid_raw": 0.0,
+        "translated_hybrid_bge": 0.0
+      },
+      "lexical_query": "Compare the two Inventory Control lines for Product ID 1 and Product ID 3: what size, color, and On-hand Units does each product have?"
+    },
+    {
+      "case_id": "H11-en-to-vi",
+      "sql_top30_matches_actual_run": true,
+      "gold_branch_ranks": {
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::10": {
+          "dense_rank_300": 127,
+          "lexical_rank_300": null,
+          "fused_rank": 354
+        },
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::9": {
+          "dense_rank_300": 71,
+          "lexical_rank_300": 59,
+          "fused_rank": 26
+        }
+      },
+      "methods_full_evidence_at10": {
+        "dense": 0.0,
+        "dense_bge": 0.0,
+        "translated_hybrid_raw": 0.0,
+        "translated_hybrid_bge": 0.0
+      },
+      "lexical_query": "So sánh các dòng Kiểm soát Hàng tồn kho cho Mã Sản phẩm 1 và Mã Sản phẩm 3: mỗi sản phẩm có kích thước, màu sắc và Đơn vị Tồn kho nào?"
+    },
+    {
+      "case_id": "H11-en-to-en",
+      "sql_top30_matches_actual_run": true,
+      "gold_branch_ranks": {
+        "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::10": {
+          "dense_rank_300": 139,
+          "lexical_rank_300": 262,
+          "fused_rank": 211
+        },
+        "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::9": {
+          "dense_rank_300": 81,
+          "lexical_rank_300": 20,
+          "fused_rank": 10
+        }
+      },
+      "methods_full_evidence_at10": {
+        "dense": 0.0,
+        "dense_bge": 0.0,
+        "translated_hybrid_raw": 0.0,
+        "translated_hybrid_bge": 0.0
+      },
+      "lexical_query": "Compare the Inventory Control rows for Product ID 1 and Product ID 3: what size, color, and On-hand Units does each product have?"
+    },
+    {
+      "case_id": "H14-vi-to-vi",
+      "sql_top30_matches_actual_run": true,
+      "gold_branch_ranks": {
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::11": {
+          "dense_rank_300": 273,
+          "lexical_rank_300": 77,
+          "fused_rank": 88
+        },
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::12": {
+          "dense_rank_300": null,
+          "lexical_rank_300": 117,
+          "fused_rank": 200
+        }
+      },
+      "methods_full_evidence_at10": {
+        "dense": 0.0,
+        "dense_bge": 0.0,
+        "translated_hybrid_raw": 0.0,
+        "translated_hybrid_bge": 0.0
+      },
+      "lexical_query": "Đối chiếu Product ID 8 và 9 trong Inventory Control: On-hand Units và Units Sold (Latest) của từng sản phẩm là bao nhiêu?"
+    },
+    {
+      "case_id": "H14-vi-to-en",
+      "sql_top30_matches_actual_run": true,
+      "gold_branch_ranks": {
+        "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::11": {
+          "dense_rank_300": 243,
+          "lexical_rank_300": 44,
+          "fused_rank": 43
+        },
+        "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::12": {
+          "dense_rank_300": 277,
+          "lexical_rank_300": 74,
+          "fused_rank": 90
+        }
+      },
+      "methods_full_evidence_at10": {
+        "dense": 0.0,
+        "dense_bge": 0.0,
+        "translated_hybrid_raw": 0.0,
+        "translated_hybrid_bge": 0.0
+      },
+      "lexical_query": "What are the On-hand Units and Units Sold (Latest) for Product ID 8 and 9 in Inventory Control?"
+    },
+    {
+      "case_id": "H14-en-to-vi",
+      "sql_top30_matches_actual_run": true,
+      "gold_branch_ranks": {
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::11": {
+          "dense_rank_300": 25,
+          "lexical_rank_300": 99,
+          "fused_rank": 28
+        },
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::12": {
+          "dense_rank_300": 32,
+          "lexical_rank_300": 128,
+          "fused_rank": 49
+        }
+      },
+      "methods_full_evidence_at10": {
+        "dense": 0.0,
+        "dense_bge": 0.0,
+        "translated_hybrid_raw": 0.0,
+        "translated_hybrid_bge": 0.0
+      },
+      "lexical_query": "So sánh ID sản phẩm 8 và 9 trong Kiểm soát Tồn kho: số lượng Đang có và số lượng Bán (Mới nhất) của mỗi sản phẩm là bao nhiêu?"
+    },
+    {
+      "case_id": "H14-en-to-en",
+      "sql_top30_matches_actual_run": true,
+      "gold_branch_ranks": {
+        "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::11": {
+          "dense_rank_300": 26,
+          "lexical_rank_300": 47,
+          "fused_rank": 19
+        },
+        "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::12": {
+          "dense_rank_300": 33,
+          "lexical_rank_300": 83,
+          "fused_rank": 42
+        }
+      },
+      "methods_full_evidence_at10": {
+        "dense": 0.0,
+        "dense_bge": 0.0,
+        "translated_hybrid_raw": 0.0,
+        "translated_hybrid_bge": 0.0
+      },
+      "lexical_query": "Compare Product IDs 8 and 9 in Inventory Control: what are the On-hand Units and Units Sold (Latest) for each product?"
+    }
+  ]
+}

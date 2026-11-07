@@ -1,0 +1,7 @@
+{
+  "status": "passed",
+  "cases": 80,
+  "reranked_score_entries": 4800,
+  "metric_rank_evidence_replay": true,
+  "limits": "Checks stored artifacts, not a fresh model inference or generated-answer accuracy"
+}

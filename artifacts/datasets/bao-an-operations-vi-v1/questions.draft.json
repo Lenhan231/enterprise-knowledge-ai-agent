@@ -1,0 +1,1603 @@
+{
+  "schema_version": 1,
+  "status": "assistant-authored draft, not independent labels; no benchmark run",
+  "offset_basis": "Unicode indexes within source.json segments, not PDF bytes or retrieval chunks",
+  "scoring": "AND over requirements; OR over alternatives; AND over all_of spans; unanswerable separately",
+  "questions": [
+    {
+      "id": "N01",
+      "category": "narrative",
+      "question_vi": "Đợt nghỉ phép 4 ngày công cần báo trước bao lâu và ai xác nhận?",
+      "question_en": "For four working days of planned leave, how much notice is required and who confirms it?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "Báo trước 7 ngày làm việc; trưởng bộ phận duyệt và Nhân sự xác nhận số dư.",
+      "requirements": [
+        {
+          "id": "N01.R1",
+          "alternatives": [
+            {
+              "page": 7,
+              "policy_code": "BA-HR-003",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P07-B2",
+                  "start_char": 0,
+                  "end_char": 208,
+                  "quote": "Nghỉ từ 1 đến 2 ngày công phải gửi trước ít nhất 3 ngày làm việc và do quản lý trực tiếp phê duyệt. Nghỉ từ 3 đến 5 ngày công phải gửi trước 7 ngày làm việc, do trưởng bộ phận duyệt và Nhân sự xác nhận số dư."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N02",
+      "category": "narrative",
+      "question_vi": "Nghỉ bù cho 6 giờ làm thêm đã xác nhận được bao nhiêu ngày và phải dùng trong bao lâu?",
+      "question_en": "How much compensatory leave follows six confirmed overtime hours, and when must it be used?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "0,5 ngày; dùng trong 30 ngày lịch từ xác nhận Nhân sự.",
+      "requirements": [
+        {
+          "id": "N02.R1",
+          "alternatives": [
+            {
+              "page": 9,
+              "policy_code": "BA-HR-005",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P09-B2",
+                  "start_char": 0,
+                  "end_char": 200,
+                  "quote": "Một đợt làm thêm đã xác nhận từ 4 giờ đến dưới 8 giờ được ghi nhận 0,5 ngày nghỉ bù; từ 8 giờ trở lên được ghi nhận 1 ngày nghỉ bù. Đây là quy tắc mô phỏng, không phải bảng lương hay chế độ pháp định."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N02.R2",
+          "alternatives": [
+            {
+              "page": 9,
+              "policy_code": "BA-HR-005",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P09-B3",
+                  "start_char": 0,
+                  "end_char": 178,
+                  "quote": "Nghỉ bù phải sử dụng trong 30 ngày lịch kể từ ngày Nhân sự xác nhận. Người xin nghỉ bù gửi trước 2 ngày làm việc để quản lý sắp lịch; không trừ vào số dư nghỉ phép theo kế hoạch."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N03",
+      "category": "table",
+      "question_vi": "Hạn khách sạn tại TP.HCM và ăn uống mỗi người là bao nhiêu, tính theo đơn vị nào?",
+      "question_en": "What are the per-person hotel and meal limits in Ho Chi Minh City, and what time units apply?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "Khách sạn 900.000 VND/người/đêm; ăn uống 200.000 VND/người/ngày.",
+      "requirements": [
+        {
+          "id": "N03.R1",
+          "alternatives": [
+            {
+              "page": 11,
+              "policy_code": "BA-HR-007",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P11-T0",
+                  "start_char": 0,
+                  "end_char": 29,
+                  "quote": "Khoản chi | Giới hạn | Đơn vị"
+                },
+                {
+                  "segment_id": "P11-T1",
+                  "start_char": 0,
+                  "end_char": 49,
+                  "quote": "Khách sạn Hà Nội/TP.HCM | 900.000 VND | người/đêm"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N03.R2",
+          "alternatives": [
+            {
+              "page": 11,
+              "policy_code": "BA-HR-007",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P11-T0",
+                  "start_char": 0,
+                  "end_char": 29,
+                  "quote": "Khoản chi | Giới hạn | Đơn vị"
+                },
+                {
+                  "segment_id": "P11-T3",
+                  "start_char": 0,
+                  "end_char": 34,
+                  "quote": "Ăn uống | 200.000 VND | người/ngày"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N04",
+      "category": "calculation",
+      "question_vi": "Dự toán công tác 5.000.000 VND được tạm ứng tối đa bao nhiêu và quyết toán trong hạn nào?",
+      "question_en": "For an approved VND 5,000,000 trip estimate, what is the maximum advance and settlement deadline?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "Tối đa 4.000.000 VND; quyết toán trong 5 ngày làm việc từ kết thúc chuyến đi.",
+      "requirements": [
+        {
+          "id": "N04.R1",
+          "alternatives": [
+            {
+              "page": 12,
+              "policy_code": "BA-HR-008",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P12-B1",
+                  "start_char": 0,
+                  "end_char": 169,
+                  "quote": "Tạm ứng tối đa 80% dự toán công tác đã duyệt. Hồ sơ tạm ứng phải được Tài chính tiếp nhận trước ngày đi ít nhất 2 ngày làm việc; không dùng khoản tạm ứng cho người khác."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N04.R2",
+          "alternatives": [
+            {
+              "page": 12,
+              "policy_code": "BA-HR-008",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P12-B2",
+                  "start_char": 0,
+                  "end_char": 167,
+                  "quote": "Nộp quyết toán trong 5 ngày làm việc kể từ ngày kết thúc chuyến đi, gồm phiếu công tác, dự toán duyệt, hóa đơn hợp lệ, bằng chứng thanh toán và bảng đối chiếu tạm ứng."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N05",
+      "category": "boundary",
+      "question_vi": "Hàng hóa đúng 20.000.000 VND cần ai duyệt và tối thiểu mấy báo giá?",
+      "question_en": "For goods costing exactly VND 20,000,000, who approves and how many quotations are required?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "Trưởng bộ phận; ít nhất 1 báo giá.",
+      "requirements": [
+        {
+          "id": "N05.R1",
+          "alternatives": [
+            {
+              "page": 16,
+              "policy_code": "BA-PR-002",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P16-T0",
+                  "start_char": 0,
+                  "end_char": 45,
+                  "quote": "Mức | Tổng giá trị VND | Người duyệt bắt buộc"
+                },
+                {
+                  "segment_id": "P16-T1",
+                  "start_char": 0,
+                  "end_char": 34,
+                  "quote": "G1 | ≤ 20.000.000 | Trưởng bộ phận"
+                }
+              ]
+            },
+            {
+              "page": 47,
+              "policy_code": "BA-MTX-001",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P47-T0",
+                  "start_char": 0,
+                  "end_char": 53,
+                  "quote": "Mã hàng bảng | Quyết định / giá trị VND | Người duyệt"
+                },
+                {
+                  "segment_id": "P47-T1",
+                  "start_char": 0,
+                  "end_char": 49,
+                  "quote": "MA-01-G1 | Hàng hóa ≤ 20.000.000 | Trưởng bộ phận"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N05.R2",
+          "alternatives": [
+            {
+              "page": 17,
+              "policy_code": "BA-PR-003",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P17-B1",
+                  "start_char": 0,
+                  "end_char": 174,
+                  "quote": "Mua hàng hóa có tổng giá trị trên 20.000.000 VND cần ít nhất 3 báo giá độc lập còn hiệu lực. Dưới hoặc bằng ngưỡng này cần ít nhất 1 báo giá; vẫn phải kiểm tra hợp lý về giá."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N06",
+      "category": "boundary",
+      "question_vi": "Hàng hóa 20.000.001 VND cần ai duyệt và tối thiểu mấy báo giá?",
+      "question_en": "For goods costing VND 20,000,001, who approves and how many quotations are required?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "Trưởng bộ phận và Tài chính; ít nhất 3 báo giá độc lập.",
+      "requirements": [
+        {
+          "id": "N06.R1",
+          "alternatives": [
+            {
+              "page": 16,
+              "policy_code": "BA-PR-002",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P16-T0",
+                  "start_char": 0,
+                  "end_char": 45,
+                  "quote": "Mức | Tổng giá trị VND | Người duyệt bắt buộc"
+                },
+                {
+                  "segment_id": "P16-T2",
+                  "start_char": 0,
+                  "end_char": 64,
+                  "quote": "G2 | > 20.000.000 đến ≤ 100.000.000 | Trưởng bộ phận + Tài chính"
+                }
+              ]
+            },
+            {
+              "page": 47,
+              "policy_code": "BA-MTX-001",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P47-T0",
+                  "start_char": 0,
+                  "end_char": 53,
+                  "quote": "Mã hàng bảng | Quyết định / giá trị VND | Người duyệt"
+                },
+                {
+                  "segment_id": "P47-T2",
+                  "start_char": 0,
+                  "end_char": 77,
+                  "quote": "MA-01-G2 | Hàng hóa >20.000.000 đến ≤100.000.000 | Trưởng bộ phận + Tài chính"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N06.R2",
+          "alternatives": [
+            {
+              "page": 17,
+              "policy_code": "BA-PR-003",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P17-B1",
+                  "start_char": 0,
+                  "end_char": 174,
+                  "quote": "Mua hàng hóa có tổng giá trị trên 20.000.000 VND cần ít nhất 3 báo giá độc lập còn hiệu lực. Dưới hoặc bằng ngưỡng này cần ít nhất 1 báo giá; vẫn phải kiểm tra hợp lý về giá."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N07",
+      "category": "multi_page_table",
+      "question_vi": "So sánh người duyệt hàng hóa 25 triệu với dịch vụ 25 triệu trong ma trận MA-01.",
+      "question_en": "In matrix MA-01, compare approvers for VND 25 million in goods versus VND 25 million in services.",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "Hàng hóa: trưởng bộ phận + Tài chính; dịch vụ: trưởng bộ phận + Mua sắm.",
+      "requirements": [
+        {
+          "id": "N07.R1",
+          "alternatives": [
+            {
+              "page": 47,
+              "policy_code": "BA-MTX-001",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P47-T0",
+                  "start_char": 0,
+                  "end_char": 53,
+                  "quote": "Mã hàng bảng | Quyết định / giá trị VND | Người duyệt"
+                },
+                {
+                  "segment_id": "P47-T2",
+                  "start_char": 0,
+                  "end_char": 77,
+                  "quote": "MA-01-G2 | Hàng hóa >20.000.000 đến ≤100.000.000 | Trưởng bộ phận + Tài chính"
+                }
+              ]
+            },
+            {
+              "page": 16,
+              "policy_code": "BA-PR-002",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P16-T0",
+                  "start_char": 0,
+                  "end_char": 45,
+                  "quote": "Mức | Tổng giá trị VND | Người duyệt bắt buộc"
+                },
+                {
+                  "segment_id": "P16-T2",
+                  "start_char": 0,
+                  "end_char": 64,
+                  "quote": "G2 | > 20.000.000 đến ≤ 100.000.000 | Trưởng bộ phận + Tài chính"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N07.R2",
+          "alternatives": [
+            {
+              "page": 48,
+              "policy_code": "BA-MTX-001",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P48-T0",
+                  "start_char": 0,
+                  "end_char": 53,
+                  "quote": "Mã hàng bảng | Quyết định / giá trị VND | Người duyệt"
+                },
+                {
+                  "segment_id": "P48-T1",
+                  "start_char": 0,
+                  "end_char": 57,
+                  "quote": "MA-01-S1 | Dịch vụ ≤30.000.000 | Trưởng bộ phận + Mua sắm"
+                }
+              ]
+            },
+            {
+              "page": 19,
+              "policy_code": "BA-PR-005",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P19-B2",
+                  "start_char": 0,
+                  "end_char": 188,
+                  "quote": "Dịch vụ có tổng giá trị đến 30.000.000 VND cần trưởng bộ phận và Mua sắm duyệt. Trên 30.000.000 đến 100.000.000 VND cần Giám đốc Vận hành; trên 100.000.000 VND cần thêm Giám đốc Tài chính."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N08",
+      "category": "exception",
+      "question_vi": "Thiết bị CNTT 60 triệu mua khẩn có được miễn thẩm định không và cần các cấp duyệt bổ sung nào?",
+      "question_en": "Can an urgent VND 60 million IT equipment purchase skip assessment, and which additional approvals apply?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "Không miễn; thẩm định CNTT, thêm Giám đốc CNTT, cấp G2 trưởng bộ phận + Tài chính, và GĐ Vận hành trước cam kết mua khẩn.",
+      "requirements": [
+        {
+          "id": "N08.R1",
+          "alternatives": [
+            {
+              "page": 24,
+              "policy_code": "BA-PR-010",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P24-B1",
+                  "start_char": 0,
+                  "end_char": 173,
+                  "quote": "Thiết bị CNTT, phần mềm và dịch vụ có quyền truy cập hệ thống phải được CNTT thẩm định tương thích, bảo mật, quyền quản trị và hỗ trợ trước khi phát hành PO, bất kể giá trị."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N08.R2",
+          "alternatives": [
+            {
+              "page": 24,
+              "policy_code": "BA-PR-010",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P24-B3",
+                  "start_char": 0,
+                  "end_char": 187,
+                  "quote": "Thiết bị CNTT có giá trị trên 50.000.000 VND cần thêm Giám đốc CNTT duyệt, bên cạnh cấp duyệt hàng hóa. Đúng 50.000.000 VND không thuộc điều kiện bổ sung này nhưng vẫn cần thẩm định CNTT."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N08.R3",
+          "alternatives": [
+            {
+              "page": 16,
+              "policy_code": "BA-PR-002",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P16-T0",
+                  "start_char": 0,
+                  "end_char": 45,
+                  "quote": "Mức | Tổng giá trị VND | Người duyệt bắt buộc"
+                },
+                {
+                  "segment_id": "P16-T2",
+                  "start_char": 0,
+                  "end_char": 64,
+                  "quote": "G2 | > 20.000.000 đến ≤ 100.000.000 | Trưởng bộ phận + Tài chính"
+                }
+              ]
+            },
+            {
+              "page": 47,
+              "policy_code": "BA-MTX-001",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P47-T0",
+                  "start_char": 0,
+                  "end_char": 53,
+                  "quote": "Mã hàng bảng | Quyết định / giá trị VND | Người duyệt"
+                },
+                {
+                  "segment_id": "P47-T2",
+                  "start_char": 0,
+                  "end_char": 77,
+                  "quote": "MA-01-G2 | Hàng hóa >20.000.000 đến ≤100.000.000 | Trưởng bộ phận + Tài chính"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N08.R4",
+          "alternatives": [
+            {
+              "page": 21,
+              "policy_code": "BA-PR-007",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P21-B2",
+                  "start_char": 0,
+                  "end_char": 178,
+                  "quote": "Giám đốc Vận hành phải chấp thuận trước khi cam kết mua. Mua sắm hoàn thiện PR và báo giá trong 2 ngày làm việc sau chấp thuận; cấp duyệt theo tổng giá trị vẫn phải được đáp ứng."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N09",
+      "category": "exception",
+      "question_vi": "Chỉ định nguồn được miễn yêu cầu nào và có miễn duyệt ngân sách hoặc bảo mật không?",
+      "question_en": "What does sole-source approval waive, and does it waive budget approval or security review?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "Chỉ miễn đủ số báo giá; không miễn ngân sách, cấp giá trị, bảo mật hoặc nghiệm thu.",
+      "requirements": [
+        {
+          "id": "N09.R1",
+          "alternatives": [
+            {
+              "page": 18,
+              "policy_code": "BA-PR-004",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P18-B2",
+                  "start_char": 0,
+                  "end_char": 138,
+                  "quote": "Chấp thuận chỉ định nguồn chỉ miễn yêu cầu đủ số lượng báo giá, không miễn kiểm tra ngân sách, cấp duyệt giá trị, bảo mật hoặc nghiệm thu."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N10",
+      "category": "narrative",
+      "question_vi": "PO tăng tổng cam kết từ 90 triệu lên 110 triệu được duyệt theo phần tăng hay toàn bộ, và ai duyệt?",
+      "question_en": "If a PO commitment rises from VND 90 million to 110 million, is approval based on the increase or the total, and by whom?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "Theo tổng 110 triệu; GĐ Vận hành và GĐ Tài chính.",
+      "requirements": [
+        {
+          "id": "N10.R1",
+          "alternatives": [
+            {
+              "page": 20,
+              "policy_code": "BA-PR-006",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P20-B2",
+                  "start_char": 0,
+                  "end_char": 182,
+                  "quote": "Nếu thay đổi làm tăng tổng giá trị hoặc đổi phạm vi, phải xin duyệt lại theo tổng cam kết mới trước khi thông báo nhà cung cấp. Không xin duyệt riêng phần chênh lệch để giữ cấp thấp."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N10.R2",
+          "alternatives": [
+            {
+              "page": 16,
+              "policy_code": "BA-PR-002",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P16-T0",
+                  "start_char": 0,
+                  "end_char": 45,
+                  "quote": "Mức | Tổng giá trị VND | Người duyệt bắt buộc"
+                },
+                {
+                  "segment_id": "P16-T3",
+                  "start_char": 0,
+                  "end_char": 59,
+                  "quote": "G3 | > 100.000.000 | Giám đốc Vận hành + Giám đốc Tài chính"
+                }
+              ]
+            },
+            {
+              "page": 47,
+              "policy_code": "BA-MTX-001",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P47-T0",
+                  "start_char": 0,
+                  "end_char": 53,
+                  "quote": "Mã hàng bảng | Quyết định / giá trị VND | Người duyệt"
+                },
+                {
+                  "segment_id": "P47-T3",
+                  "start_char": 0,
+                  "end_char": 61,
+                  "quote": "MA-01-G3 | Hàng hóa >100.000.000 | GĐ Vận hành + GĐ Tài chính"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N11",
+      "category": "table",
+      "question_vi": "ROP tham khảo và đơn vị của BA-014 khác BA-041 như thế nào?",
+      "question_en": "How do the reference reorder points and units differ for BA-014 and BA-041?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "BA-014: 40 chiếc; BA-041: 18 chiếc. Không phải tồn hiện tại.",
+      "requirements": [
+        {
+          "id": "N11.R1",
+          "alternatives": [
+            {
+              "page": 36,
+              "policy_code": "BA-WH-012",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P36-T0",
+                  "start_char": 0,
+                  "end_char": 40,
+                  "quote": "Mã | Tên vật tư | Đơn vị | ROP tham khảo"
+                },
+                {
+                  "segment_id": "P36-T1",
+                  "start_char": 0,
+                  "end_char": 38,
+                  "quote": "BA-014 | Hộp lưu hồ sơ A4 | chiếc | 40"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N11.R2",
+          "alternatives": [
+            {
+              "page": 36,
+              "policy_code": "BA-WH-012",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P36-T0",
+                  "start_char": 0,
+                  "end_char": 40,
+                  "quote": "Mã | Tên vật tư | Đơn vị | ROP tham khảo"
+                },
+                {
+                  "segment_id": "P36-T2",
+                  "start_char": 0,
+                  "end_char": 38,
+                  "quote": "BA-041 | Hộp lưu hồ sơ A3 | chiếc | 18"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N12",
+      "category": "table",
+      "question_vi": "Tra đúng mã BA-107 và BA-170: tên vật tư, đơn vị và ROP là gì?",
+      "question_en": "For exact codes BA-107 and BA-170, what are their item names, units, and reference reorder points?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "BA-107 nhãn kho chống ẩm: 12 cuộn; BA-170 nhãn văn phòng thường: 8 cuộn.",
+      "requirements": [
+        {
+          "id": "N12.R1",
+          "alternatives": [
+            {
+              "page": 36,
+              "policy_code": "BA-WH-012",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P36-T0",
+                  "start_char": 0,
+                  "end_char": 40,
+                  "quote": "Mã | Tên vật tư | Đơn vị | ROP tham khảo"
+                },
+                {
+                  "segment_id": "P36-T3",
+                  "start_char": 0,
+                  "end_char": 38,
+                  "quote": "BA-107 | Nhãn kho chống ẩm | cuộn | 12"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N12.R2",
+          "alternatives": [
+            {
+              "page": 36,
+              "policy_code": "BA-WH-012",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P36-T0",
+                  "start_char": 0,
+                  "end_char": 40,
+                  "quote": "Mã | Tên vật tư | Đơn vị | ROP tham khảo"
+                },
+                {
+                  "segment_id": "P36-T4",
+                  "start_char": 0,
+                  "end_char": 41,
+                  "quote": "BA-170 | Nhãn văn phòng thường | cuộn | 8"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N13",
+      "category": "multi_section",
+      "question_vi": "Hàng trả về đang QUARANTINE có được cấp phát khẩn không và ai giải phóng?",
+      "question_en": "Can returned goods in QUARANTINE be issued urgently, and who can release them?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "Không dùng hàng QUARANTINE bù phiếu khẩn; QA ký giải phóng sau kiểm tra đạt.",
+      "requirements": [
+        {
+          "id": "N13.R1",
+          "alternatives": [
+            {
+              "page": 28,
+              "policy_code": "BA-WH-004",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P28-B4",
+                  "start_char": 0,
+                  "end_char": 181,
+                  "quote": "Nếu tồn không đủ, chỉ cấp phần đã được người đề nghị chấp nhận và ghi phần còn thiếu. Không dùng hàng QUARANTINE để bù cho phiếu khẩn hoặc sửa số lượng tồn để tạo đủ điều kiện xuất."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N13.R2",
+          "alternatives": [
+            {
+              "page": 33,
+              "policy_code": "BA-WH-009",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P33-B3",
+                  "start_char": 0,
+                  "end_char": 162,
+                  "quote": "Chỉ QA được ký giải phóng sau kiểm tra hoặc sửa chữa đạt yêu cầu. Kho thực hiện chuyển trạng thái dựa trên phiếu có chữ ký; Mua sắm không thay QA giải phóng hàng."
+                }
+              ]
+            },
+            {
+              "page": 48,
+              "policy_code": "BA-MTX-001",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P48-T0",
+                  "start_char": 0,
+                  "end_char": 53,
+                  "quote": "Mã hàng bảng | Quyết định / giá trị VND | Người duyệt"
+                },
+                {
+                  "segment_id": "P48-T6",
+                  "start_char": 0,
+                  "end_char": 38,
+                  "quote": "MA-01-QA | Giải phóng hàng trả về | QA"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N14",
+      "category": "boundary",
+      "question_vi": "Sai lệch không lặp 2 đơn vị, trị giá 1 triệu, không nghi gian lận thuộc mức nào và ai duyệt?",
+      "question_en": "Which level applies to a non-recurring two-unit variance worth VND 1 million with no fraud suspicion, and who approves?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "W1; Quản lý Kho, đồng thời tuân thủ độc lập người duyệt.",
+      "requirements": [
+        {
+          "id": "N14.R1",
+          "alternatives": [
+            {
+              "page": 30,
+              "policy_code": "BA-WH-006",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P30-B2",
+                  "start_char": 0,
+                  "end_char": 171,
+                  "quote": "Mức W1 chỉ áp dụng khi sai khác không quá 2 đơn vị VÀ giá trị không quá 1.000.000 VND, không lặp lại và không nghi gian lận. Chỉ cần một điều kiện không đạt thì chuyển W2."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N14.R2",
+          "alternatives": [
+            {
+              "page": 30,
+              "policy_code": "BA-WH-006",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P30-T0",
+                  "start_char": 0,
+                  "end_char": 27,
+                  "quote": "Mức | Điều kiện | Phê duyệt"
+                },
+                {
+                  "segment_id": "P30-T1",
+                  "start_char": 0,
+                  "end_char": 54,
+                  "quote": "W1 | Đủ toàn bộ điều kiện nhỏ, không lặp | Quản lý Kho"
+                }
+              ]
+            },
+            {
+              "page": 48,
+              "policy_code": "BA-MTX-001",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P48-T0",
+                  "start_char": 0,
+                  "end_char": 53,
+                  "quote": "Mã hàng bảng | Quyết định / giá trị VND | Người duyệt"
+                },
+                {
+                  "segment_id": "P48-T4",
+                  "start_char": 0,
+                  "end_char": 60,
+                  "quote": "MA-01-W1 | Điều chỉnh đủ toàn bộ điều kiện nhỏ | Quản lý Kho"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N15",
+      "category": "exception",
+      "question_vi": "Sai lệch 1 đơn vị trị giá 100.000 VND nhưng lặp trong 30 ngày có còn W1 không?",
+      "question_en": "Does a one-unit VND 100,000 variance recurring within 30 days remain W1?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "Không; W2 bất kể giá trị, Kiểm soát Tồn kho và Tài chính duyệt.",
+      "requirements": [
+        {
+          "id": "N15.R1",
+          "alternatives": [
+            {
+              "page": 30,
+              "policy_code": "BA-WH-006",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P30-B3",
+                  "start_char": 0,
+                  "end_char": 151,
+                  "quote": "Sai khác lặp lại trong 30 ngày lịch hoặc có nghi gian lận chuyển W2 bất kể giá trị. Người đã đếm hoặc nhập đề nghị không được duyệt chính giao dịch đó."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N15.R2",
+          "alternatives": [
+            {
+              "page": 30,
+              "policy_code": "BA-WH-006",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P30-T0",
+                  "start_char": 0,
+                  "end_char": 27,
+                  "quote": "Mức | Điều kiện | Phê duyệt"
+                },
+                {
+                  "segment_id": "P30-T2",
+                  "start_char": 0,
+                  "end_char": 72,
+                  "quote": "W2 | Vượt W1, lặp lại hoặc nghi gian lận | Kiểm soát Tồn kho + Tài chính"
+                }
+              ]
+            },
+            {
+              "page": 48,
+              "policy_code": "BA-MTX-001",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P48-T0",
+                  "start_char": 0,
+                  "end_char": 53,
+                  "quote": "Mã hàng bảng | Quyết định / giá trị VND | Người duyệt"
+                },
+                {
+                  "segment_id": "P48-T5",
+                  "start_char": 0,
+                  "end_char": 61,
+                  "quote": "MA-01-W2 | Điều chỉnh khác W1 | Kiểm soát Tồn kho + Tài chính"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N16",
+      "category": "calculation",
+      "question_vi": "Nhu cầu 10 đơn vị/ngày với tham số mặc định: ROP và target stock là bao nhiêu?",
+      "question_en": "At demand of 10 units per day with default parameters, what are the reorder point and target stock?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "ROP 150 đơn vị; target stock 220 đơn vị. Số 10 là giả định đầu vào câu hỏi.",
+      "requirements": [
+        {
+          "id": "N16.R1",
+          "alternatives": [
+            {
+              "page": 31,
+              "policy_code": "BA-WH-007",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P31-B1",
+                  "start_char": 0,
+                  "end_char": 203,
+                  "quote": "Nhu cầu/ngày được tính từ lịch sử hợp lệ đã loại trừ bản ghi trùng; không coi ngày thiếu dữ liệu là nhu cầu bằng 0. Tham số mô phỏng mặc định: lead time 10 ngày, safety days 5 ngày, review period 7 ngày."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N16.R2",
+          "alternatives": [
+            {
+              "page": 31,
+              "policy_code": "BA-WH-007",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P31-B2",
+                  "start_char": 0,
+                  "end_char": 174,
+                  "quote": "Inventory position = AVAILABLE + Open PO − Backorder. ROP = nhu cầu/ngày × (lead time + safety days). Target stock = nhu cầu/ngày × (lead time + safety days + review period)."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N17",
+      "category": "calculation",
+      "question_vi": "AVAILABLE 80, Open PO 50, Backorder 20: inventory position bao nhiêu và có tự phát hành PO không?",
+      "question_en": "With AVAILABLE 80, Open PO 50, and Backorder 20, what is inventory position, and may a PO be issued automatically?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "110 đơn vị; không tự phát hành PO. Chưa đủ nhu cầu/ngày để so với ROP.",
+      "requirements": [
+        {
+          "id": "N17.R1",
+          "alternatives": [
+            {
+              "page": 31,
+              "policy_code": "BA-WH-007",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P31-B2",
+                  "start_char": 0,
+                  "end_char": 174,
+                  "quote": "Inventory position = AVAILABLE + Open PO − Backorder. ROP = nhu cầu/ngày × (lead time + safety days). Target stock = nhu cầu/ngày × (lead time + safety days + review period)."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N17.R2",
+          "alternatives": [
+            {
+              "page": 31,
+              "policy_code": "BA-WH-007",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P31-B4",
+                  "start_char": 0,
+                  "end_char": 186,
+                  "quote": "Nếu inventory position không lớn hơn ROP, Kế hoạch Vật tư lập đề xuất để kiểm tra; không tự phát hành PO. Xử lý tín hiệu mâu thuẫn theo trang 32 và áp dụng thẩm quyền mua sắm ở trang 16."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N18",
+      "category": "multi_section",
+      "question_vi": "Có yêu cầu chưa đáp ứng trong khi báo 95 ngày cung ứng: trạng thái gì và cần xác minh gì?",
+      "question_en": "When an unmet request coexists with reported 95 days of supply, what status and checks are required?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "DATA CONFLICT, dừng mua tự động; kiểm tồn/trạng thái/PO/backorder/đơn vị/snapshot/công thức; Kế hoạch và Kho xác nhận.",
+      "requirements": [
+        {
+          "id": "N18.R1",
+          "alternatives": [
+            {
+              "page": 32,
+              "policy_code": "BA-WH-008",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P32-B1",
+                  "start_char": 0,
+                  "end_char": 184,
+                  "quote": "Khi có yêu cầu chưa đáp ứng nhưng dữ liệu báo hơn 90 ngày cung ứng, đặt DATA CONFLICT. Tạm dừng đề xuất mua tự động cho SKU đó, không kết luận ngay là phải mua thêm hoặc phải thanh lý."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N18.R2",
+          "alternatives": [
+            {
+              "page": 32,
+              "policy_code": "BA-WH-008",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P32-B2",
+                  "start_char": 0,
+                  "end_char": 184,
+                  "quote": "Đối chiếu tồn AVAILABLE, RESERVED, QUARANTINE, PO mở, backorder, đơn vị tính, snapshot và công thức nhu cầu. Kiểm soát Tồn kho xác minh vật lý nếu không giải thích được bằng giao dịch."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N18.R3",
+          "alternatives": [
+            {
+              "page": 32,
+              "policy_code": "BA-WH-008",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P32-B3",
+                  "start_char": 0,
+                  "end_char": 143,
+                  "quote": "Kế hoạch Vật tư ghi kết luận cùng bằng chứng; Quản lý Kho xác nhận số khả dụng. Chỉ mở lại đề xuất khi hai bên đã xác nhận và có dấu vết xử lý."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N19",
+      "category": "multi_section",
+      "question_vi": "Hồ sơ kiểm kê đang điều tra đã quá 36 tháng có được xóa không?",
+      "question_en": "May inventory-count records under investigation be deleted after 36 months?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "Không; giữ đến giải tỏa yêu cầu bảo toàn. Thời hạn thông thường không đủ để xóa.",
+      "requirements": [
+        {
+          "id": "N19.R1",
+          "alternatives": [
+            {
+              "page": 35,
+              "policy_code": "BA-WH-011",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P35-B2",
+                  "start_char": 0,
+                  "end_char": 211,
+                  "quote": "Biên bản nhận hàng, ảnh ngoại lệ và phiếu QA lưu 24 tháng. Phiếu kiểm kê, kết quả đếm lại và duyệt điều chỉnh lưu 36 tháng. Hồ sơ đang điều tra phải giữ đến khi có quyết định kết thúc dù đã qua hạn thông thường."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N19.R2",
+          "alternatives": [
+            {
+              "page": 46,
+              "policy_code": "BA-EX-002",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P46-B2",
+                  "start_char": 0,
+                  "end_char": 174,
+                  "quote": "Hồ sơ có điều tra, tranh chấp hoặc yêu cầu bảo toàn phải giữ đến khi được giải tỏa, kể cả khi đã hết thời hạn trong bảng. Nếu một tài liệu thuộc nhiều loại, chọn hạn dài hơn."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N20",
+      "category": "narrative",
+      "question_vi": "Mất thiết bị phải báo trong bao lâu, và hạn CNTT khóa tài khoản khẩn tính từ lúc nào?",
+      "question_en": "How soon must a lost device be reported, and when does the urgent account-lock deadline start?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "Báo trong 15 phút từ phát hiện; khóa trong 30 phút từ xác minh nguồn yêu cầu.",
+      "requirements": [
+        {
+          "id": "N20.R1",
+          "alternatives": [
+            {
+              "page": 41,
+              "policy_code": "BA-IT-005",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P41-B1",
+                  "start_char": 0,
+                  "end_char": 192,
+                  "quote": "Mất thiết bị, nghi lộ tài khoản, mã độc hoặc gửi nhầm dữ liệu Hạn chế phải được báo trong 15 phút từ khi phát hiện. Dùng phiếu sự cố hoặc liên hệ bộ phận trực; không chờ đủ bằng chứng mới báo."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N20.R2",
+          "alternatives": [
+            {
+              "page": 38,
+              "policy_code": "BA-IT-002",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P38-B3",
+                  "start_char": 0,
+                  "end_char": 167,
+                  "quote": "Yêu cầu khóa tài khoản khẩn được thực hiện trong 30 phút kể từ lúc CNTT xác minh nguồn yêu cầu. Khóa phiên truy cập và thu hồi token liên quan, không chỉ đổi mật khẩu."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N21",
+      "category": "table",
+      "question_vi": "P1 và P2 có mục tiêu bắt đầu phản hồi và chu kỳ cập nhật khác nhau thế nào?",
+      "question_en": "How do P1 and P2 differ in response-start targets and update intervals?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "P1 ≤15 phút, cập nhật 30 phút; P2 ≤2 giờ, cập nhật 4 giờ. Không phải hạn giải quyết xong.",
+      "requirements": [
+        {
+          "id": "N21.R1",
+          "alternatives": [
+            {
+              "page": 42,
+              "policy_code": "BA-IT-006",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P42-T0",
+                  "start_char": 0,
+                  "end_char": 33,
+                  "quote": "Cấp | Bắt đầu phản hồi | Cập nhật"
+                },
+                {
+                  "segment_id": "P42-T1",
+                  "start_char": 0,
+                  "end_char": 41,
+                  "quote": "P1 | ≤ 15 phút từ tiếp nhận | mỗi 30 phút"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N21.R2",
+          "alternatives": [
+            {
+              "page": 42,
+              "policy_code": "BA-IT-006",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P42-T0",
+                  "start_char": 0,
+                  "end_char": 33,
+                  "quote": "Cấp | Bắt đầu phản hồi | Cập nhật"
+                },
+                {
+                  "segment_id": "P42-T2",
+                  "start_char": 0,
+                  "end_char": 37,
+                  "quote": "P2 | ≤ 2 giờ từ tiếp nhận | mỗi 4 giờ"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N22",
+      "category": "narrative",
+      "question_vi": "RPO và RTO mô phỏng là bao nhiêu, có đồng nghĩa nhau không?",
+      "question_en": "What are the simulated RPO and RTO, and do they mean the same thing?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "RPO 24 giờ mất dữ liệu theo thời gian; RTO 8 giờ khôi phục dịch vụ; không đồng nghĩa.",
+      "requirements": [
+        {
+          "id": "N22.R1",
+          "alternatives": [
+            {
+              "page": 40,
+              "policy_code": "BA-IT-004",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P40-B3",
+                  "start_char": 0,
+                  "end_char": 180,
+                  "quote": "Mục tiêu mô phỏng: RPO 24 giờ, RTO 8 giờ cho hệ thống nghiệp vụ chuẩn. RPO là lượng mất dữ liệu tối đa theo thời gian; RTO là thời gian khôi phục dịch vụ, không phải hạn lưu hồ sơ."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N23",
+      "category": "ocr",
+      "question_vi": "Trên phiếu BG-026, mã tài sản, sê-ri và hạn hoàn trả là gì?",
+      "question_en": "On form BG-026, what are the asset code, serial number, and return deadline?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "LT-026, SIM-LT026; 17/12/2026 trước 17:00. Cần OCR trang 43.",
+      "requirements": [
+        {
+          "id": "N23.R1",
+          "alternatives": [
+            {
+              "page": 43,
+              "policy_code": "BA-IT-F01",
+              "requires_ocr": true,
+              "all_of": [
+                {
+                  "segment_id": "P43-B2",
+                  "start_char": 0,
+                  "end_char": 198,
+                  "quote": "Thiết bị LT-026 có số sê-ri SIM-LT026 và bộ sạc đi kèm. Tình trạng: hoạt động bình thường, vỏ có vết xước nhỏ bên trái. Người nhận phải báo tình trạng khác biệt trong 1 ngày làm việc kể từ bàn giao."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N23.R2",
+          "alternatives": [
+            {
+              "page": 43,
+              "policy_code": "BA-IT-F01",
+              "requires_ocr": true,
+              "all_of": [
+                {
+                  "segment_id": "P43-B3",
+                  "start_char": 0,
+                  "end_char": 169,
+                  "quote": "Ngày dự kiến hoàn trả: 17/12/2026 trước 17:00. Nếu cần gia hạn, người nhận gửi quản lý và CNTT trước ít nhất 2 ngày làm việc; chưa duyệt thì ngày trả cũ vẫn có hiệu lực."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N24",
+      "category": "ocr_calculation",
+      "question_vi": "Trong SIM-INC-004, mất bao lâu từ phát hiện đến thông báo và từ tiếp nhận đến phản hồi?",
+      "question_en": "In SIM-INC-004, how long elapsed from detection to notification and from receipt to response?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "8 phút và 7 phút; phân biệt hai mốc. Cần OCR trang 44.",
+      "requirements": [
+        {
+          "id": "N24.R1",
+          "alternatives": [
+            {
+              "page": 44,
+              "policy_code": "BA-IT-F02",
+              "requires_ocr": true,
+              "all_of": [
+                {
+                  "segment_id": "P44-B2",
+                  "start_char": 0,
+                  "end_char": 155,
+                  "quote": "Phát hiện lúc 09:10; gửi thông báo lúc 09:18; CNTT bắt đầu phản hồi lúc 09:25. Liên kết bị thu hồi lúc 09:32; chủ sở hữu xác nhận kiểm tra quyền lúc 09:40."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N24.R2",
+          "alternatives": [
+            {
+              "page": 44,
+              "policy_code": "BA-IT-F02",
+              "requires_ocr": true,
+              "all_of": [
+                {
+                  "segment_id": "P44-B4",
+                  "start_char": 0,
+                  "end_char": 200,
+                  "quote": "Đóng phiếu lúc 10:05 do chỉ huy diễn tập xác nhận. Khi tính hạn báo dùng khoảng phát hiện đến thông báo; khi tính hạn phản hồi dùng tiếp nhận thông báo đến bắt đầu phản hồi. Không nhầm hai khoảng này."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N25",
+      "category": "exception",
+      "question_vi": "Ngoại lệ tối đa bao lâu và có thể cho phép dùng chung tài khoản không?",
+      "question_en": "How long can an exception last, and can it authorize shared accounts?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "Tối đa 30 ngày lịch; không được miễn quy tắc không dùng chung tài khoản.",
+      "requirements": [
+        {
+          "id": "N25.R1",
+          "alternatives": [
+            {
+              "page": 45,
+              "policy_code": "BA-EX-001",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P45-B2",
+                  "start_char": 0,
+                  "end_char": 193,
+                  "quote": "Một ngoại lệ có thời hạn tối đa 30 ngày lịch. Không có ngày hết hạn thì hồ sơ chưa hợp lệ. Gia hạn phải đánh giá lại và được duyệt trước ngày kết thúc, không tự tiếp tục khi chưa nhận phản hồi."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "N25.R2",
+          "alternatives": [
+            {
+              "page": 45,
+              "policy_code": "BA-EX-001",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P45-B3",
+                  "start_char": 0,
+                  "end_char": 168,
+                  "quote": "Không ngoại lệ nào được phép xóa dấu vết, dùng chung tài khoản hoặc tự duyệt giao dịch của chính mình. Các quy tắc này là giới hạn không được miễn trong phạm vi sổ tay."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N26",
+      "category": "narrative",
+      "question_vi": "Tài khoản tạm được giữ tối đa bao lâu và có tự thành vĩnh viễn khi chưa thu hồi không?",
+      "question_en": "How long can temporary access last, and does it become permanent if not revoked?",
+      "target_document_language": "vi",
+      "answerable": true,
+      "expected_answer_draft_vi": "14 ngày lịch; không tự thành vĩnh viễn, gia hạn phải có đề nghị mới.",
+      "requirements": [
+        {
+          "id": "N26.R1",
+          "alternatives": [
+            {
+              "page": 38,
+              "policy_code": "BA-IT-002",
+              "requires_ocr": false,
+              "all_of": [
+                {
+                  "segment_id": "P38-B2",
+                  "start_char": 0,
+                  "end_char": 166,
+                  "quote": "Quyền tạm tối đa 14 ngày lịch, phải tự hết hạn hoặc được rà để thu hồi; gia hạn cần đề nghị mới. Không biến quyền tạm thành quyền vĩnh viễn chỉ vì chưa có người nhắc."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N27",
+      "category": "unanswerable",
+      "question_vi": "Lương tháng hiện tại của nhân viên Kế hoạch B là bao nhiêu?",
+      "question_en": "What is Planning Employee B's current monthly salary?",
+      "target_document_language": "vi",
+      "answerable": false,
+      "expected_answer_draft_vi": "Không được cung cấp; không suy ra từ vai trò hoặc biên bản bàn giao.",
+      "requirements": [],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N28",
+      "category": "unanswerable",
+      "question_vi": "Tồn AVAILABLE hiện tại của BA-014 là bao nhiêu chiếc?",
+      "question_en": "How many BA-014 units are currently AVAILABLE?",
+      "target_document_language": "vi",
+      "answerable": false,
+      "expected_answer_draft_vi": "Không có snapshot tồn thực tế; ROP 40 không phải tồn khả dụng.",
+      "requirements": [],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N29",
+      "category": "unanswerable",
+      "question_vi": "Mật khẩu tài khoản quản trị CNTT là gì?",
+      "question_en": "What is the IT administrator account password?",
+      "target_document_language": "vi",
+      "answerable": false,
+      "expected_answer_draft_vi": "Không có mật khẩu trong tài liệu; không tạo hoặc suy đoán bí mật.",
+      "requirements": [],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    },
+    {
+      "id": "N30",
+      "category": "unanswerable",
+      "question_vi": "Một thùng BA-107 chứa bao nhiêu cuộn?",
+      "question_en": "How many BA-107 rolls are in one carton?",
+      "target_document_language": "vi",
+      "answerable": false,
+      "expected_answer_draft_vi": "Chưa cung cấp hệ số thùng; không nội suy từ SKU khác.",
+      "requirements": [],
+      "review_status": "draft_pending_independent_review",
+      "reviewer": "",
+      "equivalent_sources_exhaustive": false
+    }
+  ]
+}

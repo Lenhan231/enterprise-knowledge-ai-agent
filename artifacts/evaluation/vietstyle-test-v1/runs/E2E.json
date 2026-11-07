@@ -1,0 +1,53 @@
+{
+ "dataset_id": "vietstyle-test-v1",
+ "dataset_status": "reviewed-r2",
+ "dataset_sha256": "94bcc0c9579c9de4c18a806e8ccbcb3ba77025e4328e956eb8c57c24681f1974",
+ "arm": "E2E",
+ "configuration": {
+  "kind": "http",
+  "mode": "auto",
+  "groq_model_env": "qwen/qwen3.8-27b",
+  "role": "employee",
+  "note": "TEST SET; junk docs off; VN PDF active; fix f88613d",
+  "rbac_role": "finance_analyst",
+  "old_prompt_sha256": null
+ },
+ "created_at_utc": "2026-11-06T11:56:27.108967+00:00",
+ "results": [
+  {
+   "id": "Q01",
+   "type": "lookup",
+   "error_type": "RuntimeError",
+   "error": "router_failed: None",
+   "elapsed_ms": 75316.5
+  },
+  {
+   "id": "Q02",
+   "type": "lookup",
+   "error_type": "RuntimeError",
+   "error": "router_failed: ValueError",
+   "elapsed_ms": 60054.8
+  },
+  {
+   "id": "Q03",
+   "type": "lookup",
+   "error_type": "RuntimeError",
+   "error": "router_failed: ValueError",
+   "elapsed_ms": 60337.5
+  },
+  {
+   "id": "Q04",
+   "type": "lookup",
+   "error_type": "RuntimeError",
+   "error": "router_failed: ValueError",
+   "elapsed_ms": 60059.9
+  },
+  {
+   "id": "Q05",
+   "type": "lookup",
+   "error_type": "RuntimeError",
+   "error": "router_failed: ValueError",
+   "elapsed_ms": 60361.0
+  }
+ ]
+}

@@ -1,0 +1,19 @@
+{
+  "status": "passed_targeted",
+  "upstream_main": "7c2162624c161a97c4a5d97b432089cf2ba2f489",
+  "head": "279be53005b61b692e2cbcf08208fb21fd177b9b",
+  "git_history_merged": false,
+  "committed": false,
+  "pushed": false,
+  "parser_files_differing_from_main": [
+    "src/core/document_processing/document_processor.py",
+    "src/core/document_processing/chunking/processor.py",
+    "src/core/document_processing/pipelines/built_in/scanned/pdf_ocr.py"
+  ],
+  "targeted_tests": 21,
+  "new_integration_tests": 8,
+  "prior_files_preserved_before_handoff_update": 682,
+  "frozen_evidence_manifest_sha256": "c8f9dae06fd70e9e897912aa4a0a7488e98993c88af2b182a1406db72c51f6f3",
+  "database_changed": false,
+  "vectors_changed": false
+}

@@ -1,0 +1,13 @@
+{
+  "source_docx_sha256": "23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc",
+  "files": {
+    "README.md": "b1b6b52e0c765a41b439c2858d6e1120a7e96689dc08287452ca5ac52660fe48",
+    "translation-alignment.json": "03719a3c8b123a0e0d103bff018a1678e93e90bb4a70169ebbdb4dd7fcf9bf32",
+    "translation.tsv": "8df98ee62775b11634d479fb7a77852e4bcb12a198cb017d31b49f664745284e",
+    "verification.json": "42baefc8e8d5c243160fdd6d77bd6005ca698db610cf5b095d3d7ec990e39841",
+    "VietStyle_Enterprise_Operating_Policy_v1.0_VN.docx": "d09a2b4b81509e69e1a07aa2d43123f8df3d34962116091752ab47fe718974a9",
+    "VietStyle_Enterprise_Operating_Policy_v1.0_VN.md": "bf55be948913d0f54ea873cf59d305081939f3391c8530d973c0b943f8bc1a0d",
+    "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf": "74cc1519b108bf1b056a1fc8344f3d114ae2f751f595c8f92fee36d8b1fbbf66"
+  },
+  "builder_sha256": "c1138cc0a3e180856d3fe0d14822191fe80b6cffa2269b20471fbf3e0fe4d916"
+}

@@ -1,0 +1,882 @@
+{
+ "run": "artifacts/local/vietstyle-test-runs/B2.json",
+ "arm": "B2",
+ "configuration": {
+  "method": "translated_hybrid_rerank",
+  "verify": true,
+  "reranker": "mmarco-mMiniLM",
+  "groq_model_env": "qwen/qwen3.8-27b",
+  "role": "employee",
+  "note": "TEST SET; junk docs off; VN PDF active; fix f88613d",
+  "rbac_role": "finance_analyst",
+  "old_prompt_sha256": null
+ },
+ "summary": {
+  "cases": 30,
+  "scored": 29,
+  "errors": 0,
+  "skipped": 1,
+  "recall@5": {
+   "n": 24,
+   "mean": 0.785
+  },
+  "full@5": {
+   "n": 24,
+   "mean": 0.708
+  },
+  "mrr": {
+   "n": 24,
+   "mean": 0.806
+  },
+  "ndcg@10": {
+   "n": 24,
+   "mean": 0.757
+  },
+  "citation_precision": {
+   "n": 19,
+   "mean": 0.916
+  },
+  "citation_any_correct": {
+   "n": 19,
+   "mean": 0.947
+  },
+  "strict_key_points": {
+   "n": 23,
+   "mean": 0.659
+  },
+  "false_abstention": {
+   "n": 24,
+   "mean": 0.208
+  },
+  "correct_abstention": {
+   "n": 5,
+   "mean": 0.8
+  },
+  "verifier_blocks": 2,
+  "rbac_leaks": 0,
+  "rbac_cases": 1,
+  "no_citation_ok": [],
+  "elapsed_ms_median": 6814.5,
+  "judge": {
+   "n": 28,
+   "correct": {
+    "n": 28,
+    "mean": 0.679
+   },
+   "correct_or_partial": {
+    "n": 28,
+    "mean": 0.786
+   },
+   "key_point_coverage": {
+    "n": 23,
+    "mean": 0.717
+   },
+   "faithful": {
+    "n": 26,
+    "mean": 0.846
+   },
+   "by_type": {
+    "ambiguous": {
+     "n": 1,
+     "mean": 0.0
+    },
+    "calculation": {
+     "n": 4,
+     "mean": 0.5
+    },
+    "cannot_conclude": {
+     "n": 2,
+     "mean": 0.5
+    },
+    "english": {
+     "n": 2,
+     "mean": 0.5
+    },
+    "long_paste": {
+     "n": 1,
+     "mean": 0.0
+    },
+    "lookup": {
+     "n": 5,
+     "mean": 0.8
+    },
+    "mixed": {
+     "n": 2,
+     "mean": 1.0
+    },
+    "multi_part": {
+     "n": 2,
+     "mean": 1.0
+    },
+    "no_diacritics": {
+     "n": 1,
+     "mean": 0.0
+    },
+    "out_of_scope": {
+     "n": 3,
+     "mean": 1.0
+    },
+    "threshold": {
+     "n": 3,
+     "mean": 0.667
+    },
+    "trap": {
+     "n": 1,
+     "mean": 1.0
+    },
+    "typo": {
+     "n": 1,
+     "mean": 1.0
+    }
+   }
+  }
+ },
+ "rows": [
+  {
+   "id": "Q01",
+   "type": "lookup",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 11857.3,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 0.8772153153380493,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": true,
+    "reason": "Answer matches policy stating old versions are retained for audit but removed from active retrieval."
+   },
+   "answer_sha256": "d28d9162f55f3bab2f794ac6e26a0a957fc938cd5792fa707a607231fc602752",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q02",
+   "type": "lookup",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 4354.0,
+   "strict_key_points": 0.5,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "partial",
+    "key_points_covered": [
+     true,
+     true,
+     false,
+     false
+    ],
+    "abstained": false,
+    "faithful": true,
+    "reason": "Answer includes payment terms and unit price but omits warranty and cancellation conditions."
+   },
+   "answer_sha256": "7221869781b36110aab9dedb72d7df9cdb8f464861e0addfd208a82f76fe87dc",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q03",
+   "type": "lookup",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 4594.0,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": true,
+    "reason": "The answer lists exactly the allowed viewers: requester, authorized manager, and finance reviewer, matching the policy."
+   },
+   "answer_sha256": "d30ab787a7cf5f541d6c05801c2004e9b55e2b5f6831bb35fab2c644b4e0b2fa",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q04",
+   "type": "lookup",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 6528.3,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": true,
+    "reason": "The answer correctly states to report to Purchasing and the supplier, matching the policy."
+   },
+   "answer_sha256": "920a71c7526186ea04200ca8353463027d7e605fbc99cd17b24424264636bf6c",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q05",
+   "type": "lookup",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 7560.7,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": true,
+    "reason": "Answer matches policy and includes all required points."
+   },
+   "answer_sha256": "f486880ef8bc9574bd75b70199e2f070d29badc6762c77054c3b031ca21eb332",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q06",
+   "type": "threshold",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 7096.8,
+   "strict_key_points": 1.0,
+   "recall@5": 0.6666666666666666,
+   "full@5": false,
+   "mrr": 1.0,
+   "ndcg@10": 0.7653606369886217,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": true,
+    "reason": "Answer matches policy: department head approval and at least two quotes required."
+   },
+   "answer_sha256": "75eba94ac459187f9aed7469ccb52b68a26b2c50c03e20cc0145e5f150caddc3",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q07",
+   "type": "threshold",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 8707.4,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 0.8854598815714874,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": true,
+    "reason": "Answer matches policy: direct manager approves and only one quotation is required."
+   },
+   "answer_sha256": "7a485a36a63fb7272226366a22ba31859bbd9e1e3f14cfc9b2cfe16eea405ba3",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q08",
+   "type": "threshold",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 7822.7,
+   "strict_key_points": 0.75,
+   "recall@5": 0.6666666666666666,
+   "full@5": false,
+   "mrr": 1.0,
+   "ndcg@10": 0.6713860725233041,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "partial",
+    "key_points_covered": [
+     true,
+     true,
+     false,
+     true
+    ],
+    "abstained": false,
+    "faithful": true,
+    "reason": "Provides correct approvers and risk evaluation but omits the three‑quote/source‑designation requirement."
+   },
+   "answer_sha256": "48a460f96f990f490ee1e4a28cba59c1c0f3190f869b324b4fe16239400f4242",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q09",
+   "type": "calculation",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 8178.3,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true
+    ],
+    "abstained": false,
+    "faithful": true,
+    "reason": "The answer correctly calculates 9 days and matches the policy."
+   },
+   "answer_sha256": "6fa9bdce5f69a006884d3363018d64ca9751f20163c90da4ad48bece1c9c205c",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q10",
+   "type": "calculation",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 5377.2,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true
+    ],
+    "abstained": false,
+    "faithful": true,
+    "reason": "The answer correctly calculates the maximum reimbursement as 6.800.000 VND, matching the policy limits."
+   },
+   "answer_sha256": "ff51bc72316f527602491e79ae5fc86ba6336e2dde48dcbcd28e5caf991c8221",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q11",
+   "type": "calculation",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 7468.7,
+   "strict_key_points": 0.25,
+   "recall@5": 0.0,
+   "full@5": false,
+   "mrr": 0.0,
+   "ndcg@10": 0.0,
+   "citation_precision": 0.0,
+   "citation_any_correct": false,
+   "judge": {
+    "correctness": "partial",
+    "key_points_covered": [
+     true,
+     false,
+     false,
+     false
+    ],
+    "abstained": false,
+    "faithful": false,
+    "reason": "Provides correct total and need for re‑approval but omits the required approvers (Trưởng bộ phận, Mua sắm, Tài chính) and incorrectly claims the policy lacks that information."
+   },
+   "answer_sha256": "7deeed7de744d54d136f01f74b177793febe0489b46641378005d37eea65ab73",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q12",
+   "type": "calculation",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "verifier_block",
+   "elapsed_ms": 10877.7,
+   "strict_key_points": 0.0,
+   "recall@5": 0.0,
+   "full@5": false,
+   "mrr": 0.0,
+   "ndcg@10": 0.0,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false
+    ],
+    "abstained": false,
+    "faithful": null,
+    "reason": "The response does not provide the required explanation and misses both key points."
+   },
+   "answer_sha256": "eaa5f18ab10516bb583e9a38ce76e298abc63c13f79a5b13283c9585e1ca4878",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q13",
+   "type": "multi_part",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 7490.0,
+   "strict_key_points": 0.6666666666666666,
+   "recall@5": 0.5,
+   "full@5": false,
+   "mrr": 1.0,
+   "ndcg@10": 0.6131471927654584,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": true,
+    "reason": "Answer includes all required points and matches policy without adding unsupported information."
+   },
+   "answer_sha256": "fd36f57018d06ac983d5d1375aa65ab1d1fe658db72901d5a8a71cc4ac112ff4",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q14",
+   "type": "multi_part",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 7191.6,
+   "strict_key_points": 0.5,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 0.8503449055347546,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true,
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": true,
+    "reason": "Answer includes all required fields and matches policy."
+   },
+   "answer_sha256": "475638db5ac52444ce89fc714d527f0647c79bc4ccc1bc472d7cc0ba3d5be336",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q15",
+   "type": "out_of_scope",
+   "should_abstain": true,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 5018.8,
+   "strict_key_points": null,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [],
+    "abstained": true,
+    "faithful": true,
+    "reason": "Answer correctly states lack of information, matching reference."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q16",
+   "type": "out_of_scope",
+   "should_abstain": true,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 5436.2,
+   "strict_key_points": null,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [],
+    "abstained": true,
+    "faithful": true,
+    "reason": "Answer correctly states that the available documents do not contain the requested information."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q17",
+   "type": "out_of_scope",
+   "should_abstain": true,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 4944.8,
+   "strict_key_points": null,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [],
+    "abstained": true,
+    "faithful": true,
+    "reason": "Answer correctly states that the policy lacks the requested information."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q18",
+   "type": "cannot_conclude",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "verifier_block",
+   "elapsed_ms": 6912.6,
+   "strict_key_points": 0.0,
+   "recall@5": 0.0,
+   "full@5": false,
+   "mrr": 0.0,
+   "ndcg@10": 0.0,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false
+    ],
+    "abstained": true,
+    "faithful": null,
+    "reason": "The answer does not convey the required explanation about units_received being historical and the need for accepted quantity to match invoice."
+   },
+   "answer_sha256": "eaa5f18ab10516bb583e9a38ce76e298abc63c13f79a5b13283c9585e1ca4878",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q19",
+   "type": "cannot_conclude",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 5976.0,
+   "strict_key_points": 0.5,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 0.4,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": true,
+    "reason": "Answer correctly states that success rate does not prove compliance and that transaction evidence is required."
+   },
+   "answer_sha256": "dbe3afb383a4ec4e00826d5d372e32e4eb3aa7381030696510d58653d1d07fd8",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q20",
+   "type": "trap",
+   "should_abstain": true,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 4838.3,
+   "strict_key_points": null,
+   "recall@5": 0.5,
+   "full@5": false,
+   "mrr": 1.0,
+   "ndcg@10": 0.6131471927654584,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [],
+    "abstained": true,
+    "faithful": true,
+    "reason": "The answer correctly declines, matching the policy that the information is not available."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q21",
+   "type": "rbac",
+   "should_abstain": true,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 7854.3,
+   "strict_key_points": null,
+   "recall@5": 0.0,
+   "full@5": false,
+   "mrr": 0.0,
+   "ndcg@10": 0.0,
+   "citation_precision": 0.0,
+   "citation_any_correct": false,
+   "rbac_leak": false
+  },
+  {
+   "id": "Q22",
+   "type": "english",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 4751.6,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": true,
+    "reason": "Answer matches the policy and includes both required key points."
+   },
+   "answer_sha256": "0fc2eef749378357d3975e93e6af317e7ec5677fe215c0fe03a457c8ab8933ca",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q23",
+   "type": "english",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 4375.9,
+   "strict_key_points": 0.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false,
+     false
+    ],
+    "abstained": true,
+    "faithful": false,
+    "reason": "The answer incorrectly claims insufficient information and does not mention result, remaining risk, or long‑term remediation."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q24",
+   "type": "mixed",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 6814.5,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true,
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": true,
+    "reason": "The answer lists purpose, recipient, minimization, and approval as required."
+   },
+   "answer_sha256": "a7638b85d2c43ac6082cb95cdaca8b845c130f35230de4c5bb56074bdbf4f1eb",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q25",
+   "type": "mixed",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 8727.6,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": true,
+    "reason": "Answer includes all required points and matches policy text."
+   },
+   "answer_sha256": "468220c0b0297432d549a35d7a7615f7b6f6870115ae752e31ba67a9dd967e34",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q26",
+   "type": "no_diacritics",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 5246.2,
+   "strict_key_points": 0.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 0.3333333333333333,
+   "ndcg@10": 0.5,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false
+    ],
+    "abstained": true,
+    "faithful": false,
+    "reason": "The answer incorrectly claims insufficient information instead of stating the policy that employees must not submit time for others."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q27",
+   "type": "typo",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 5073.7,
+   "strict_key_points": 1.0,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "correct",
+    "key_points_covered": [
+     true,
+     true
+    ],
+    "abstained": false,
+    "faithful": true,
+    "reason": "The answer repeats the policy statement and includes both required key points."
+   },
+   "answer_sha256": "4723a7e8f1b1fb2578cd752b6c44bc2541df9b3699f68ee8a8e7de98f2601b95",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q28",
+   "type": "follow_up",
+   "should_abstain": false,
+   "status": "multi_turn_needs_router"
+  },
+  {
+   "id": "Q29",
+   "type": "ambiguous",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": null,
+   "elapsed_ms": 6217.0,
+   "strict_key_points": null,
+   "recall@5": 1.0,
+   "full@5": true,
+   "mrr": 1.0,
+   "ndcg@10": 1.0,
+   "citation_precision": 1.0,
+   "citation_any_correct": true,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [],
+    "abstained": false,
+    "faithful": true,
+    "reason": "The answer gives generic required fields instead of noting the question is ambiguous and asking which specific form is meant."
+   },
+   "answer_sha256": "56e53ca2f05f1efd6dc367d1e10a1c17ffe71a84fda4c7581bceb14ccaba2e2b",
+   "judge_model": "openai/gpt-oss-120b"
+  },
+  {
+   "id": "Q30",
+   "type": "long_paste",
+   "should_abstain": false,
+   "status": "ok",
+   "refusal": "insufficient",
+   "elapsed_ms": 7109.2,
+   "strict_key_points": 0.0,
+   "recall@5": 0.0,
+   "full@5": false,
+   "mrr": 0.0,
+   "ndcg@10": 0.0,
+   "judge": {
+    "correctness": "incorrect",
+    "key_points_covered": [
+     false,
+     false
+    ],
+    "abstained": false,
+    "faithful": false,
+    "reason": "The response claims insufficient information, but the policy provides clear guidance on overtime, compensatory leave, and required documentation."
+   },
+   "answer_sha256": "1a562fc8cd9e0478706d0ee74e05a871c4827eaf84d4c5664675fbab15c0094f",
+   "judge_model": "openai/gpt-oss-120b"
+  }
+ ]
+}

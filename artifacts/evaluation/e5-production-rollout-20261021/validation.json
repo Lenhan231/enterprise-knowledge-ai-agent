@@ -1,0 +1,12 @@
+{
+  "targeted_tests_passed": 57,
+  "benchmark_replay_tests_passed": 4,
+  "freeze_self_check": "passed",
+  "live_e5_smoke": "passed",
+  "external_api_calls": false,
+  "legacy_full_suite_certified": false,
+  "legacy_test_issue": "test_app_request_models imports removed CandidateReviewRequest",
+  "production_model": "intfloat/multilingual-e5-base",
+  "production_dimensions": 768,
+  "production_chunks": 532
+}

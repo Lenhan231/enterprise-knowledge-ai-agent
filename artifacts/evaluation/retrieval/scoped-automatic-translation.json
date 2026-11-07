@@ -1,0 +1,4068 @@
+{
+  "created_at": "2026-10-16T09:57:56.807994+00:00",
+  "scope": {
+    "document_ids": [
+      "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+      "UPLOAD-5149fb823530440da1a2f09704c695d6"
+    ],
+    "roles": [
+      "admin"
+    ],
+    "chunks": 249
+  },
+  "corpus_sha256": "2d894fb2a63095586eb0f7abba9781a3a9ba1273446a38943363777622a6f83e",
+  "case_hashes": {
+    "en": "27e45ee2ed267aefae24286e85b275d99f1e5432b4843d2cfd1a16b6c20dcd74",
+    "vn": "70ea62225f174ac0a874dda2a3d4c3bfaf7fc683b9d57851e5a2fceadc5d8259"
+  },
+  "runner_sha256": "475ed7cfce9d92c3fc7bd96dd483439d7dbcf1bebbf59c214a1ff0e8dc9b6b8c",
+  "translator_sha256": "54e08f07a7f6259794e66b5f25acc2138d5618acb22c7d9eca2818185cbcaae4",
+  "translation_model": "openai/gpt-oss-20b",
+  "translation_summary": {
+    "attempted_cases": 48,
+    "failed_cases": 0,
+    "cache_hits": 0,
+    "mean_latency_ms": 751.31,
+    "usage": {
+      "input_tokens": 6663,
+      "output_tokens": 3143,
+      "total_tokens": 9806
+    },
+    "cases_without_usage": 0
+  },
+  "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "device": "cuda",
+  "paired_intents": 24,
+  "original_query_cases": 48,
+  "configuration": {
+    "language_aware": true,
+    "lexical_document_scopes": {
+      "en": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1"
+      ],
+      "vn": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6"
+      ]
+    },
+    "verified_document_languages": {
+      "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1": "en",
+      "UPLOAD-5149fb823530440da1a2f09704c695d6": "vn"
+    },
+    "top_k": 10,
+    "candidate_k": 100,
+    "rrf_k": 60,
+    "lexical_en_vn_weights": [
+      1.0,
+      1.0
+    ],
+    "dense_bilingual_weights": [
+      1.0,
+      2.0
+    ]
+  },
+  "limitations": "Language-aware mode changes lexical eligibility and corpus-local BM25 statistics; query languages use separate ranked lists with equal fusion weight. Fixed document mapping is manual experimental metadata, not automatic detection. Uses automatic translation. 48 cases represent 24 paired intents. Two-stage rank fusion has deterministic chunk-ID tie breaking; ranking policy differs from SQL hybrid. No database writes or answer-generation calls; query translation uses the LLM. Translation usage excludes unavailable usage from failed calls; missing usage is reported separately. Baseline aggregates are verified saved runs, not new timing measurements.",
+  "summary": {
+    "en": {
+      "dense": {
+        "recall_at_k": 0.3958,
+        "precision_at_k": 0.0417,
+        "mrr": 0.2606,
+        "ndcg_at_k": 0.2865
+      },
+      "hybrid": {
+        "recall_at_k": 0.4583,
+        "precision_at_k": 0.05,
+        "mrr": 0.2583,
+        "ndcg_at_k": 0.3036
+      },
+      "automatic_language_aware_bm25": {
+        "recall_at_k": 0.7708,
+        "precision_at_k": 0.0833,
+        "mrr": 0.4729,
+        "ndcg_at_k": 0.5391
+      },
+      "automatic_language_aware_hybrid": {
+        "recall_at_k": 0.7292,
+        "precision_at_k": 0.0792,
+        "mrr": 0.409,
+        "ndcg_at_k": 0.4819
+      }
+    },
+    "vn": {
+      "dense": {
+        "recall_at_k": 0.4375,
+        "precision_at_k": 0.0458,
+        "mrr": 0.2174,
+        "ndcg_at_k": 0.2675
+      },
+      "hybrid": {
+        "recall_at_k": 0.3125,
+        "precision_at_k": 0.0333,
+        "mrr": 0.2182,
+        "ndcg_at_k": 0.2348
+      },
+      "automatic_language_aware_bm25": {
+        "recall_at_k": 0.8333,
+        "precision_at_k": 0.0875,
+        "mrr": 0.5326,
+        "ndcg_at_k": 0.5938
+      },
+      "automatic_language_aware_hybrid": {
+        "recall_at_k": 0.6667,
+        "precision_at_k": 0.0708,
+        "mrr": 0.5245,
+        "ndcg_at_k": 0.5439
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "Q01",
+      "language": "en",
+      "question": "What are the mission and vision of PetroVietnam Fertilizer and Chemicals Corporation (PVFCCo)?",
+      "lexical_queries": {
+        "en": "What are the mission and vision of PetroVietnam Fertilizer and Chemicals Corporation (PVFCCo)?",
+        "vn": "Câu hỏi: \"Mục tiêu và tầm nhìn của Công ty Cổ phần Dầu Chất và Hoá Chất PetroVietnam (PVFCCo) là gì?\""
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 2649.96,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 134,
+        "output_tokens": 82,
+        "total_tokens": 216
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::4"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::4",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::24"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q01",
+      "language": "en",
+      "question": "What are the mission and vision of PetroVietnam Fertilizer and Chemicals Corporation (PVFCCo)?",
+      "lexical_queries": {
+        "en": "What are the mission and vision of PetroVietnam Fertilizer and Chemicals Corporation (PVFCCo)?",
+        "vn": "Câu hỏi: \"Mục tiêu và tầm nhìn của Công ty Cổ phần Dầu Chất và Hoá Chất PetroVietnam (PVFCCo) là gì?\""
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 2649.96,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 134,
+        "output_tokens": 82,
+        "total_tokens": 216
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::4"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::4",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::2",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::9",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::39",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::44"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.5,
+        "ndcg_at_k": 0.6309297535714575
+      }
+    },
+    {
+      "id": "Q01",
+      "language": "vn",
+      "question": "Sứ mệnh và tầm nhìn của Tổng Công ty Phân bón và Hóa chất Dầu khí (PVFCCo) được xác định như thế nào?",
+      "lexical_queries": {
+        "vn": "Sứ mệnh và tầm nhìn của Tổng Công ty Phân bón và Hóa chất Dầu khí (PVFCCo) được xác định như thế nào?",
+        "en": "How is the mission and vision of the Petrochemical Fertilizer and Chemical Corporation (PVFCCo) defined?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 354.43,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 148,
+        "output_tokens": 43,
+        "total_tokens": 191
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::4"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::4",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::31",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::3",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q01",
+      "language": "vn",
+      "question": "Sứ mệnh và tầm nhìn của Tổng Công ty Phân bón và Hóa chất Dầu khí (PVFCCo) được xác định như thế nào?",
+      "lexical_queries": {
+        "vn": "Sứ mệnh và tầm nhìn của Tổng Công ty Phân bón và Hóa chất Dầu khí (PVFCCo) được xác định như thế nào?",
+        "en": "How is the mission and vision of the Petrochemical Fertilizer and Chemical Corporation (PVFCCo) defined?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 354.43,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 148,
+        "output_tokens": 43,
+        "total_tokens": 191
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::4"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::2",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::7",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::4",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.14285714285714285,
+        "ndcg_at_k": 0.3333333333333333
+      }
+    },
+    {
+      "id": "Q02",
+      "language": "en",
+      "question": "What is PVFCCo's stock ticker, and how many shares were listed on November 5, 2007?",
+      "lexical_queries": {
+        "en": "What is PVFCCo's stock ticker, and how many shares were listed on November 5, 2007?",
+        "vn": "Tên mã cổ phiếu của PVFCCo là gì, và số lượng cổ phiếu đã được niêm yết vào ngày 5 tháng 11 năm 2007 là bao nhiêu?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 323.74,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 137,
+        "output_tokens": 65,
+        "total_tokens": 202
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::16",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::12",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::95",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::18",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::96",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q02",
+      "language": "en",
+      "question": "What is PVFCCo's stock ticker, and how many shares were listed on November 5, 2007?",
+      "lexical_queries": {
+        "en": "What is PVFCCo's stock ticker, and how many shares were listed on November 5, 2007?",
+        "vn": "Tên mã cổ phiếu của PVFCCo là gì, và số lượng cổ phiếu đã được niêm yết vào ngày 5 tháng 11 năm 2007 là bao nhiêu?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 323.74,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 137,
+        "output_tokens": 65,
+        "total_tokens": 202
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::95",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::12",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::96",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::141",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::39",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q02",
+      "language": "vn",
+      "question": "Mã cổ phiếu của PVFCCo là gì và có bao nhiêu cổ phiếu được niêm yết vào ngày 05/11/2007?",
+      "lexical_queries": {
+        "vn": "Mã cổ phiếu của PVFCCo là gì và có bao nhiêu cổ phiếu được niêm yết vào ngày 05/11/2007?",
+        "en": "What is the stock code of PVFCCo and how many shares were listed on 05/11/2007?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 427.91,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 147,
+        "output_tokens": 46,
+        "total_tokens": 193
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::16",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::12",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::141",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q02",
+      "language": "vn",
+      "question": "Mã cổ phiếu của PVFCCo là gì và có bao nhiêu cổ phiếu được niêm yết vào ngày 05/11/2007?",
+      "lexical_queries": {
+        "vn": "Mã cổ phiếu của PVFCCo là gì và có bao nhiêu cổ phiếu được niêm yết vào ngày 05/11/2007?",
+        "en": "What is the stock code of PVFCCo and how many shares were listed on 05/11/2007?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 427.91,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 147,
+        "output_tokens": 46,
+        "total_tokens": 193
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::12",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::95",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::141",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::39",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::96"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q03",
+      "language": "en",
+      "question": "What were PVFCCo's main business sectors according to the 2008 Annual Report?",
+      "lexical_queries": {
+        "en": "What were PVFCCo's main business sectors according to the 2008 Annual Report?",
+        "vn": "Các lĩnh vực kinh doanh chính của PVFCCo là gì theo Báo cáo Thường niên 2008?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 286.29,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 131,
+        "output_tokens": 53,
+        "total_tokens": 184
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::43",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::26"
+      ],
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q03",
+      "language": "en",
+      "question": "What were PVFCCo's main business sectors according to the 2008 Annual Report?",
+      "lexical_queries": {
+        "en": "What were PVFCCo's main business sectors according to the 2008 Annual Report?",
+        "vn": "Các lĩnh vực kinh doanh chính của PVFCCo là gì theo Báo cáo Thường niên 2008?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 286.29,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 131,
+        "output_tokens": 53,
+        "total_tokens": 184
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::77",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::43"
+      ],
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q03",
+      "language": "vn",
+      "question": "PVFCCo hoạt động trong những lĩnh vực kinh doanh chính nào theo Báo cáo thường niên 2008?",
+      "lexical_queries": {
+        "vn": "PVFCCo hoạt động trong những lĩnh vực kinh doanh chính nào theo Báo cáo thường niên 2008?",
+        "en": "What are the main business areas in which PVFCCo operates according to the 2008 Annual Report?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 371.99,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 137,
+        "output_tokens": 47,
+        "total_tokens": 184
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::20",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::24",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6"
+      ],
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q03",
+      "language": "vn",
+      "question": "PVFCCo hoạt động trong những lĩnh vực kinh doanh chính nào theo Báo cáo thường niên 2008?",
+      "lexical_queries": {
+        "vn": "PVFCCo hoạt động trong những lĩnh vực kinh doanh chính nào theo Báo cáo thường niên 2008?",
+        "en": "What are the main business areas in which PVFCCo operates according to the 2008 Annual Report?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 371.99,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 137,
+        "output_tokens": 47,
+        "total_tokens": 184
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::20",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::30",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29"
+      ],
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q04",
+      "language": "en",
+      "question": "In 2008, how many tons of imported fertilizer did PVFCCo import and distribute in the domestic market?",
+      "lexical_queries": {
+        "en": "In 2008, how many tons of imported fertilizer did PVFCCo import and distribute in the domestic market?",
+        "vn": "Vào năm 2008, PVFCCo đã nhập khẩu và phân phối bao nhiêu tấn phân bón nhập khẩu trên thị trường nội địa?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 389.73,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 136,
+        "output_tokens": 57,
+        "total_tokens": 193
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::45",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::44",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.2,
+        "ndcg_at_k": 0.38685280723454163
+      }
+    },
+    {
+      "id": "Q04",
+      "language": "en",
+      "question": "In 2008, how many tons of imported fertilizer did PVFCCo import and distribute in the domestic market?",
+      "lexical_queries": {
+        "en": "In 2008, how many tons of imported fertilizer did PVFCCo import and distribute in the domestic market?",
+        "vn": "Vào năm 2008, PVFCCo đã nhập khẩu và phân phối bao nhiêu tấn phân bón nhập khẩu trên thị trường nội địa?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 389.73,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 136,
+        "output_tokens": 57,
+        "total_tokens": 193
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::50",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.5,
+        "ndcg_at_k": 0.6309297535714575
+      }
+    },
+    {
+      "id": "Q04",
+      "language": "vn",
+      "question": "Năm 2008, PVFCCo đã nhập khẩu và phân phối bao nhiêu tấn phân bón nhập khẩu vào thị trường nội địa?",
+      "lexical_queries": {
+        "vn": "Năm 2008, PVFCCo đã nhập khẩu và phân phối bao nhiêu tấn phân bón nhập khẩu vào thị trường nội địa?",
+        "en": "In 2008, PVFCCo imported and distributed how many tons of imported fertilizer into the domestic market?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 423.72,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 144,
+        "output_tokens": 48,
+        "total_tokens": 192
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::45",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::44",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q04",
+      "language": "vn",
+      "question": "Năm 2008, PVFCCo đã nhập khẩu và phân phối bao nhiêu tấn phân bón nhập khẩu vào thị trường nội địa?",
+      "lexical_queries": {
+        "vn": "Năm 2008, PVFCCo đã nhập khẩu và phân phối bao nhiêu tấn phân bón nhập khẩu vào thị trường nội địa?",
+        "en": "In 2008, PVFCCo imported and distributed how many tons of imported fertilizer into the domestic market?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 423.72,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 144,
+        "output_tokens": 48,
+        "total_tokens": 192
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q05",
+      "language": "en",
+      "question": "By how many tons per year was the urea production capacity expected to increase through the CO2 recovery project at the Phu My Fertilizer Plant?",
+      "lexical_queries": {
+        "en": "By how many tons per year was the urea production capacity expected to increase through the CO2 recovery project at the Phu My Fertilizer Plant?",
+        "vn": "Urea sản xuất tại Nhà máy Phú Mỹ dự kiến tăng bao nhiêu tấn mỗi năm thông qua dự án thu hồi CO2?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 384.51,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 144,
+        "output_tokens": 59,
+        "total_tokens": 203
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::16",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::23",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q05",
+      "language": "en",
+      "question": "By how many tons per year was the urea production capacity expected to increase through the CO2 recovery project at the Phu My Fertilizer Plant?",
+      "lexical_queries": {
+        "en": "By how many tons per year was the urea production capacity expected to increase through the CO2 recovery project at the Phu My Fertilizer Plant?",
+        "vn": "Urea sản xuất tại Nhà máy Phú Mỹ dự kiến tăng bao nhiêu tấn mỗi năm thông qua dự án thu hồi CO2?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 384.51,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 144,
+        "output_tokens": 59,
+        "total_tokens": 203
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::16",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::189"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.5,
+        "ndcg_at_k": 0.6309297535714575
+      }
+    },
+    {
+      "id": "Q05",
+      "language": "vn",
+      "question": "Dự án thu hồi CO₂ tại Nhà máy Đạm Phú Mỹ dự kiến làm tăng công suất sản xuất urê thêm bao nhiêu tấn mỗi năm?",
+      "lexical_queries": {
+        "vn": "Dự án thu hồi CO₂ tại Nhà máy Đạm Phú Mỹ dự kiến làm tăng công suất sản xuất urê thêm bao nhiêu tấn mỗi năm?",
+        "en": "What is the expected increase in annual urea production capacity, in tonnes, from the CO₂ recovery project at the Phú Mỹ Ammonia Plant?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 437.24,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 147,
+        "output_tokens": 61,
+        "total_tokens": 208
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.3333333333333333,
+        "ndcg_at_k": 0.5
+      }
+    },
+    {
+      "id": "Q05",
+      "language": "vn",
+      "question": "Dự án thu hồi CO₂ tại Nhà máy Đạm Phú Mỹ dự kiến làm tăng công suất sản xuất urê thêm bao nhiêu tấn mỗi năm?",
+      "lexical_queries": {
+        "vn": "Dự án thu hồi CO₂ tại Nhà máy Đạm Phú Mỹ dự kiến làm tăng công suất sản xuất urê thêm bao nhiêu tấn mỗi năm?",
+        "en": "What is the expected increase in annual urea production capacity, in tonnes, from the CO₂ recovery project at the Phú Mỹ Ammonia Plant?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 437.24,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 147,
+        "output_tokens": 61,
+        "total_tokens": 208
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q06",
+      "language": "en",
+      "question": "What were PVFCCo's total revenue, profit before tax, and tax payment in 2008?",
+      "lexical_queries": {
+        "en": "What were PVFCCo's total revenue, profit before tax, and tax payment in 2008?",
+        "vn": "Doanh thu tổng cộng, lợi nhuận trước thuế và khoản thuế phải nộp của PVFCCo trong năm 2008 là gì?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 378.58,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 134,
+        "output_tokens": 57,
+        "total_tokens": 191
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q06",
+      "language": "en",
+      "question": "What were PVFCCo's total revenue, profit before tax, and tax payment in 2008?",
+      "lexical_queries": {
+        "en": "What were PVFCCo's total revenue, profit before tax, and tax payment in 2008?",
+        "vn": "Doanh thu tổng cộng, lợi nhuận trước thuế và khoản thuế phải nộp của PVFCCo trong năm 2008 là gì?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 378.58,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 134,
+        "output_tokens": 57,
+        "total_tokens": 191
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::30"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q06",
+      "language": "vn",
+      "question": "Tổng doanh thu, lợi nhuận trước thuế và số thuế nộp của PVFCCo năm 2008 là bao nhiêu?",
+      "lexical_queries": {
+        "vn": "Tổng doanh thu, lợi nhuận trước thuế và số thuế nộp của PVFCCo năm 2008 là bao nhiêu?",
+        "en": "What were the total revenue, pre-tax profit, and tax paid by PVFCCo in 2008?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 290.07,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 144,
+        "output_tokens": 48,
+        "total_tokens": 192
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q06",
+      "language": "vn",
+      "question": "Tổng doanh thu, lợi nhuận trước thuế và số thuế nộp của PVFCCo năm 2008 là bao nhiêu?",
+      "lexical_queries": {
+        "vn": "Tổng doanh thu, lợi nhuận trước thuế và số thuế nộp của PVFCCo năm 2008 là bao nhiêu?",
+        "en": "What were the total revenue, pre-tax profit, and tax paid by PVFCCo in 2008?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 290.07,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 144,
+        "output_tokens": 48,
+        "total_tokens": 192
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q07",
+      "language": "en",
+      "question": "Compare PVFCCo's total revenue in 2007 and 2008.",
+      "lexical_queries": {
+        "en": "Compare PVFCCo's total revenue in 2007 and 2008.",
+        "vn": "So sánh doanh thu tổng cộng của PVFCCo trong năm 2007 và 2008."
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 430.42,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 129,
+        "output_tokens": 54,
+        "total_tokens": 183
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::177",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::40",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q07",
+      "language": "en",
+      "question": "Compare PVFCCo's total revenue in 2007 and 2008.",
+      "lexical_queries": {
+        "en": "Compare PVFCCo's total revenue in 2007 and 2008.",
+        "vn": "So sánh doanh thu tổng cộng của PVFCCo trong năm 2007 và 2008."
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 430.42,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 129,
+        "output_tokens": 54,
+        "total_tokens": 183
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::177",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.5,
+        "ndcg_at_k": 0.6309297535714575
+      }
+    },
+    {
+      "id": "Q07",
+      "language": "vn",
+      "question": "So sánh tổng doanh thu của PVFCCo giữa năm 2007 và 2008.",
+      "lexical_queries": {
+        "vn": "So sánh tổng doanh thu của PVFCCo giữa năm 2007 và 2008.",
+        "en": "Compare the total revenue of PVFCCo between 2007 and 2008."
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 510.37,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 133,
+        "output_tokens": 99,
+        "total_tokens": 232
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::177",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q07",
+      "language": "vn",
+      "question": "So sánh tổng doanh thu của PVFCCo giữa năm 2007 và 2008.",
+      "lexical_queries": {
+        "vn": "So sánh tổng doanh thu của PVFCCo giữa năm 2007 và 2008.",
+        "en": "Compare the total revenue of PVFCCo between 2007 and 2008."
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 510.37,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 133,
+        "output_tokens": 99,
+        "total_tokens": 232
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::177",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.3333333333333333,
+        "ndcg_at_k": 0.5
+      }
+    },
+    {
+      "id": "Q08",
+      "language": "en",
+      "question": "What were PVFCCo's planned urea production and fertilizer imports for 2009?",
+      "lexical_queries": {
+        "en": "What were PVFCCo's planned urea production and fertilizer imports for 2009?",
+        "vn": "PVFCCo dự định sản xuất urea và nhập khẩu phân bón trong năm 2009 là bao nhiêu?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 321.85,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 131,
+        "output_tokens": 55,
+        "total_tokens": 186
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30"
+      ],
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q08",
+      "language": "en",
+      "question": "What were PVFCCo's planned urea production and fertilizer imports for 2009?",
+      "lexical_queries": {
+        "en": "What were PVFCCo's planned urea production and fertilizer imports for 2009?",
+        "vn": "PVFCCo dự định sản xuất urea và nhập khẩu phân bón trong năm 2009 là bao nhiêu?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 321.85,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 131,
+        "output_tokens": 55,
+        "total_tokens": 186
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.16666666666666666,
+        "ndcg_at_k": 0.3562071871080222
+      }
+    },
+    {
+      "id": "Q08",
+      "language": "vn",
+      "question": "Kế hoạch sản lượng sản xuất urê và nhập khẩu phân bón của PVFCCo trong năm 2009 là bao nhiêu?",
+      "lexical_queries": {
+        "vn": "Kế hoạch sản lượng sản xuất urê và nhập khẩu phân bón của PVFCCo trong năm 2009 là bao nhiêu?",
+        "en": "What is the production plan for urea and the import of fertilizer of PVFCCo in 2009?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 315.7,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 142,
+        "output_tokens": 41,
+        "total_tokens": 183
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.3333333333333333,
+        "ndcg_at_k": 0.5
+      }
+    },
+    {
+      "id": "Q08",
+      "language": "vn",
+      "question": "Kế hoạch sản lượng sản xuất urê và nhập khẩu phân bón của PVFCCo trong năm 2009 là bao nhiêu?",
+      "lexical_queries": {
+        "vn": "Kế hoạch sản lượng sản xuất urê và nhập khẩu phân bón của PVFCCo trong năm 2009 là bao nhiêu?",
+        "en": "What is the production plan for urea and the import of fertilizer of PVFCCo in 2009?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 315.7,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 142,
+        "output_tokens": 41,
+        "total_tokens": 183
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q09",
+      "language": "en",
+      "question": "What revenue, profit-before-tax, and state-budget tax-payment targets did PVFCCo set for 2009?",
+      "lexical_queries": {
+        "en": "What revenue, profit-before-tax, and state-budget tax-payment targets did PVFCCo set for 2009?",
+        "vn": "Doanh thu, lợi nhuận trước thuế và mục tiêu thanh toán thuế ngân sách bang mà PVFCCo đặt ra cho năm 2009 là gì?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 382.28,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 136,
+        "output_tokens": 64,
+        "total_tokens": 200
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::77",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q09",
+      "language": "en",
+      "question": "What revenue, profit-before-tax, and state-budget tax-payment targets did PVFCCo set for 2009?",
+      "lexical_queries": {
+        "en": "What revenue, profit-before-tax, and state-budget tax-payment targets did PVFCCo set for 2009?",
+        "vn": "Doanh thu, lợi nhuận trước thuế và mục tiêu thanh toán thuế ngân sách bang mà PVFCCo đặt ra cho năm 2009 là gì?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 382.28,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 136,
+        "output_tokens": 64,
+        "total_tokens": 200
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::77",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q09",
+      "language": "vn",
+      "question": "Các chỉ tiêu doanh thu, lợi nhuận trước thuế và thuế nộp ngân sách mà PVFCCo đặt ra cho năm 2009 là gì?",
+      "lexical_queries": {
+        "vn": "Các chỉ tiêu doanh thu, lợi nhuận trước thuế và thuế nộp ngân sách mà PVFCCo đặt ra cho năm 2009 là gì?",
+        "en": "What are the revenue, pre-tax profit, and tax payment targets set by PVFCCo for the year 2009?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 323.24,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 147,
+        "output_tokens": 51,
+        "total_tokens": 198
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::77",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::24",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q09",
+      "language": "vn",
+      "question": "Các chỉ tiêu doanh thu, lợi nhuận trước thuế và thuế nộp ngân sách mà PVFCCo đặt ra cho năm 2009 là gì?",
+      "lexical_queries": {
+        "vn": "Các chỉ tiêu doanh thu, lợi nhuận trước thuế và thuế nộp ngân sách mà PVFCCo đặt ra cho năm 2009 là gì?",
+        "en": "What are the revenue, pre-tax profit, and tax payment targets set by PVFCCo for the year 2009?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 323.24,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 147,
+        "output_tokens": 51,
+        "total_tokens": 198
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::77",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::92"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q10",
+      "language": "en",
+      "question": "Where was the Phu My Fertilizer Plant located, and what were its designed daily ammonia and urea production capacities?",
+      "lexical_queries": {
+        "en": "Where was the Phu My Fertilizer Plant located, and what were its designed daily ammonia and urea production capacities?",
+        "vn": "Công ty Phu My Fertilizer Plant nằm ở đâu, và công suất sản xuất amoni và urea hàng ngày được thiết kế là bao nhiêu?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 391.29,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 138,
+        "output_tokens": 59,
+        "total_tokens": 197
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::16",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q10",
+      "language": "en",
+      "question": "Where was the Phu My Fertilizer Plant located, and what were its designed daily ammonia and urea production capacities?",
+      "lexical_queries": {
+        "en": "Where was the Phu My Fertilizer Plant located, and what were its designed daily ammonia and urea production capacities?",
+        "vn": "Công ty Phu My Fertilizer Plant nằm ở đâu, và công suất sản xuất amoni và urea hàng ngày được thiết kế là bao nhiêu?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 391.29,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 138,
+        "output_tokens": 59,
+        "total_tokens": 197
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::16",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q10",
+      "language": "vn",
+      "question": "Nhà máy Đạm Phú Mỹ nằm ở đâu và công suất thiết kế sản xuất amoniac, urê mỗi ngày là bao nhiêu?",
+      "lexical_queries": {
+        "vn": "Nhà máy Đạm Phú Mỹ nằm ở đâu và công suất thiết kế sản xuất amoniac, urê mỗi ngày là bao nhiêu?",
+        "en": "Where is the Đạm Phú Mỹ plant located and what is its designed daily production capacity for ammonia and urea?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 352.01,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 144,
+        "output_tokens": 54,
+        "total_tokens": 198
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::40",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q10",
+      "language": "vn",
+      "question": "Nhà máy Đạm Phú Mỹ nằm ở đâu và công suất thiết kế sản xuất amoniac, urê mỗi ngày là bao nhiêu?",
+      "lexical_queries": {
+        "vn": "Nhà máy Đạm Phú Mỹ nằm ở đâu và công suất thiết kế sản xuất amoniac, urê mỗi ngày là bao nhiêu?",
+        "en": "Where is the Đạm Phú Mỹ plant located and what is its designed daily production capacity for ammonia and urea?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 352.01,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 144,
+        "output_tokens": 54,
+        "total_tokens": 198
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q11",
+      "language": "en",
+      "question": "What technical solutions did PVFCCo implement to improve urea quality and plant operating efficiency?",
+      "lexical_queries": {
+        "en": "What technical solutions did PVFCCo implement to improve urea quality and plant operating efficiency?",
+        "vn": "PVFCCo đã triển khai những giải pháp kỹ thuật nào để cải thiện chất lượng urea và hiệu quả vận hành nhà máy?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 441.55,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 131,
+        "output_tokens": 136,
+        "total_tokens": 267
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::25",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36"
+      ],
+      "metrics": {
+        "recall_at_k": 0.5,
+        "precision_at_k": 0.1,
+        "mrr": 0.3333333333333333,
+        "ndcg_at_k": 0.3065735963827292
+      }
+    },
+    {
+      "id": "Q11",
+      "language": "en",
+      "question": "What technical solutions did PVFCCo implement to improve urea quality and plant operating efficiency?",
+      "lexical_queries": {
+        "en": "What technical solutions did PVFCCo implement to improve urea quality and plant operating efficiency?",
+        "vn": "PVFCCo đã triển khai những giải pháp kỹ thuật nào để cải thiện chất lượng urea và hiệu quả vận hành nhà máy?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 441.55,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 131,
+        "output_tokens": 136,
+        "total_tokens": 267
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64"
+      ],
+      "metrics": {
+        "recall_at_k": 0.5,
+        "precision_at_k": 0.1,
+        "mrr": 0.3333333333333333,
+        "ndcg_at_k": 0.3065735963827292
+      }
+    },
+    {
+      "id": "Q11",
+      "language": "vn",
+      "question": "PVFCCo đã triển khai những giải pháp kỹ thuật nào nhằm cải thiện chất lượng urê và hiệu quả vận hành nhà máy?",
+      "lexical_queries": {
+        "vn": "PVFCCo đã triển khai những giải pháp kỹ thuật nào nhằm cải thiện chất lượng urê và hiệu quả vận hành nhà máy?",
+        "en": "What technical solutions has PVFCCo implemented to improve the quality of urea and the operational efficiency of the plant?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 289.35,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 140,
+        "output_tokens": 42,
+        "total_tokens": 182
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::25",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6"
+      ],
+      "metrics": {
+        "recall_at_k": 0.5,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 0.6131471927654584
+      }
+    },
+    {
+      "id": "Q11",
+      "language": "vn",
+      "question": "PVFCCo đã triển khai những giải pháp kỹ thuật nào nhằm cải thiện chất lượng urê và hiệu quả vận hành nhà máy?",
+      "lexical_queries": {
+        "vn": "PVFCCo đã triển khai những giải pháp kỹ thuật nào nhằm cải thiện chất lượng urê và hiệu quả vận hành nhà máy?",
+        "en": "What technical solutions has PVFCCo implemented to improve the quality of urea and the operational efficiency of the plant?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 289.35,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 140,
+        "output_tokens": 42,
+        "total_tokens": 182
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29"
+      ],
+      "metrics": {
+        "recall_at_k": 0.5,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 0.6131471927654584
+      }
+    },
+    {
+      "id": "Q12",
+      "language": "en",
+      "question": "What were PVFCCo's current ratio and quick ratio in 2008?",
+      "lexical_queries": {
+        "en": "What were PVFCCo's current ratio and quick ratio in 2008?",
+        "vn": "Tỷ lệ thanh toán hiện tại và tỷ lệ thanh toán nhanh của PVFCCo trong năm 2008 là bao nhiêu?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 327.48,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 129,
+        "output_tokens": 52,
+        "total_tokens": 181
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::57",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::75",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q12",
+      "language": "en",
+      "question": "What were PVFCCo's current ratio and quick ratio in 2008?",
+      "lexical_queries": {
+        "en": "What were PVFCCo's current ratio and quick ratio in 2008?",
+        "vn": "Tỷ lệ thanh toán hiện tại và tỷ lệ thanh toán nhanh của PVFCCo trong năm 2008 là bao nhiêu?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 327.48,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 129,
+        "output_tokens": 52,
+        "total_tokens": 181
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::57",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.5,
+        "ndcg_at_k": 0.6309297535714575
+      }
+    },
+    {
+      "id": "Q12",
+      "language": "vn",
+      "question": "Tỷ số thanh toán hiện hành và tỷ số thanh toán nhanh của PVFCCo năm 2008 là bao nhiêu?",
+      "lexical_queries": {
+        "vn": "Tỷ số thanh toán hiện hành và tỷ số thanh toán nhanh của PVFCCo năm 2008 là bao nhiêu?",
+        "en": "What are the current ratio and quick ratio of PVFCCo in 2008?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 378.25,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 139,
+        "output_tokens": 113,
+        "total_tokens": 252
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::57",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::49",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::75",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q12",
+      "language": "vn",
+      "question": "Tỷ số thanh toán hiện hành và tỷ số thanh toán nhanh của PVFCCo năm 2008 là bao nhiêu?",
+      "lexical_queries": {
+        "vn": "Tỷ số thanh toán hiện hành và tỷ số thanh toán nhanh của PVFCCo năm 2008 là bao nhiêu?",
+        "en": "What are the current ratio and quick ratio of PVFCCo in 2008?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 378.25,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 139,
+        "output_tokens": 113,
+        "total_tokens": 252
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::49",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::57",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.3333333333333333,
+        "ndcg_at_k": 0.5
+      }
+    },
+    {
+      "id": "Q13",
+      "language": "en",
+      "question": "Under what business registration certificate number was Long Hau Joint Stock Company established, and on what date was it issued?",
+      "lexical_queries": {
+        "en": "Under what business registration certificate number was Long Hau Joint Stock Company established, and on what date was it issued?",
+        "vn": "Dưới số chứng nhận đăng ký kinh doanh nào Công ty Cổ phần Long Hậu được thành lập, và ngày nào nó được cấp?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 437.67,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 135,
+        "output_tokens": 60,
+        "total_tokens": 195
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::141",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::12",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::26",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::20",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.25,
+        "ndcg_at_k": 0.43067655807339306
+      }
+    },
+    {
+      "id": "Q13",
+      "language": "en",
+      "question": "Under what business registration certificate number was Long Hau Joint Stock Company established, and on what date was it issued?",
+      "lexical_queries": {
+        "en": "Under what business registration certificate number was Long Hau Joint Stock Company established, and on what date was it issued?",
+        "vn": "Dưới số chứng nhận đăng ký kinh doanh nào Công ty Cổ phần Long Hậu được thành lập, và ngày nào nó được cấp?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 437.67,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 135,
+        "output_tokens": 60,
+        "total_tokens": 195
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::141",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::12",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::26",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.3333333333333333,
+        "ndcg_at_k": 0.5
+      }
+    },
+    {
+      "id": "Q13",
+      "language": "vn",
+      "question": "Công ty Cổ phần Long Hậu được thành lập theo giấy chứng nhận đăng ký kinh doanh số bao nhiêu và được cấp ngày nào?",
+      "lexical_queries": {
+        "vn": "Công ty Cổ phần Long Hậu được thành lập theo giấy chứng nhận đăng ký kinh doanh số bao nhiêu và được cấp ngày nào?",
+        "en": "What is the registration number of the business registration certificate for Long Hậu Joint Stock Company, and on what date was it issued?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 518.56,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 143,
+        "output_tokens": 115,
+        "total_tokens": 258
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::12",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::141",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::69",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::20",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::26",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::84",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.5,
+        "ndcg_at_k": 0.6309297535714575
+      }
+    },
+    {
+      "id": "Q13",
+      "language": "vn",
+      "question": "Công ty Cổ phần Long Hậu được thành lập theo giấy chứng nhận đăng ký kinh doanh số bao nhiêu và được cấp ngày nào?",
+      "lexical_queries": {
+        "vn": "Công ty Cổ phần Long Hậu được thành lập theo giấy chứng nhận đăng ký kinh doanh số bao nhiêu và được cấp ngày nào?",
+        "en": "What is the registration number of the business registration certificate for Long Hậu Joint Stock Company, and on what date was it issued?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 518.56,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 143,
+        "output_tokens": 115,
+        "total_tokens": 258
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::141",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::26",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::12",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q14",
+      "language": "en",
+      "question": "Which audit firm audited Long Hau's separate financial statements for 2008?",
+      "lexical_queries": {
+        "en": "Which audit firm audited Long Hau's separate financial statements for 2008?",
+        "vn": "Công ty kiểm toán nào đã kiểm toán báo cáo tài chính riêng của Long Hau cho năm 2008?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 369.62,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 128,
+        "output_tokens": 48,
+        "total_tokens": 176
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::113",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::114",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::87",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::108",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.5,
+        "ndcg_at_k": 0.6309297535714575
+      }
+    },
+    {
+      "id": "Q14",
+      "language": "en",
+      "question": "Which audit firm audited Long Hau's separate financial statements for 2008?",
+      "lexical_queries": {
+        "en": "Which audit firm audited Long Hau's separate financial statements for 2008?",
+        "vn": "Công ty kiểm toán nào đã kiểm toán báo cáo tài chính riêng của Long Hau cho năm 2008?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 369.62,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 128,
+        "output_tokens": 48,
+        "total_tokens": 176
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::114",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::113",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::87",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2"
+      ],
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q14",
+      "language": "vn",
+      "question": "Đơn vị kiểm toán nào thực hiện kiểm toán báo cáo tài chính riêng năm 2008 của Long Hậu?",
+      "lexical_queries": {
+        "vn": "Đơn vị kiểm toán nào thực hiện kiểm toán báo cáo tài chính riêng năm 2008 của Long Hậu?",
+        "en": "Which audit firm performed the audit of Long Hậu's standalone financial statements for the year 2008?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 485.51,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 137,
+        "output_tokens": 110,
+        "total_tokens": 247
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::114",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::113",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::86",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::110",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::87",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.5,
+        "ndcg_at_k": 0.6309297535714575
+      }
+    },
+    {
+      "id": "Q14",
+      "language": "vn",
+      "question": "Đơn vị kiểm toán nào thực hiện kiểm toán báo cáo tài chính riêng năm 2008 của Long Hậu?",
+      "lexical_queries": {
+        "vn": "Đơn vị kiểm toán nào thực hiện kiểm toán báo cáo tài chính riêng năm 2008 của Long Hậu?",
+        "en": "Which audit firm performed the audit of Long Hậu's standalone financial statements for the year 2008?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 485.51,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 137,
+        "output_tokens": 110,
+        "total_tokens": 247
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::114",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::110",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::113",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6"
+      ],
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q15",
+      "language": "en",
+      "question": "On what date was Long Hau's independent audit report for 2008 signed?",
+      "lexical_queries": {
+        "en": "On what date was Long Hau's independent audit report for 2008 signed?",
+        "vn": "Ngày nào báo cáo kiểm toán độc lập của Long Hau cho năm 2008 được ký?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 287.67,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 129,
+        "output_tokens": 48,
+        "total_tokens": 177
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::9"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::188",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::114",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::87",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::74",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::3",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::72",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::9"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.1,
+        "ndcg_at_k": 0.2890648263178879
+      }
+    },
+    {
+      "id": "Q15",
+      "language": "en",
+      "question": "On what date was Long Hau's independent audit report for 2008 signed?",
+      "lexical_queries": {
+        "en": "On what date was Long Hau's independent audit report for 2008 signed?",
+        "vn": "Ngày nào báo cáo kiểm toán độc lập của Long Hau cho năm 2008 được ký?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 287.67,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 129,
+        "output_tokens": 48,
+        "total_tokens": 177
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::9"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::114",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::188",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::87",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::74"
+      ],
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q15",
+      "language": "vn",
+      "question": "Báo cáo kiểm toán độc lập của Long Hậu năm 2008 được ký vào ngày nào?",
+      "lexical_queries": {
+        "vn": "Báo cáo kiểm toán độc lập của Long Hậu năm 2008 được ký vào ngày nào?",
+        "en": "On what date was the independent audit report of Long Hậu in 2008 signed?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 363.11,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 135,
+        "output_tokens": 93,
+        "total_tokens": 228
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::9"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::188",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::114",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::87",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::3",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::74",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::72",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::9"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.1,
+        "ndcg_at_k": 0.2890648263178879
+      }
+    },
+    {
+      "id": "Q15",
+      "language": "vn",
+      "question": "Báo cáo kiểm toán độc lập của Long Hậu năm 2008 được ký vào ngày nào?",
+      "lexical_queries": {
+        "vn": "Báo cáo kiểm toán độc lập của Long Hậu năm 2008 được ký vào ngày nào?",
+        "en": "On what date was the independent audit report of Long Hậu in 2008 signed?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 363.11,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 135,
+        "output_tokens": 93,
+        "total_tokens": 228
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::9"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::114",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::188",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::108"
+      ],
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q16",
+      "language": "en",
+      "question": "What were Long Hau's total assets at December 31, 2008 and at the beginning of 2008?",
+      "lexical_queries": {
+        "en": "What were Long Hau's total assets at December 31, 2008 and at the beginning of 2008?",
+        "vn": "Tổng tài sản của Long Hau vào ngày 31 tháng 12 năm 2008 và vào đầu năm 2008 là bao nhiêu?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 435.77,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 137,
+        "output_tokens": 55,
+        "total_tokens": 192
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::14"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::189",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::122",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::75",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::142",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39"
+      ],
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q16",
+      "language": "en",
+      "question": "What were Long Hau's total assets at December 31, 2008 and at the beginning of 2008?",
+      "lexical_queries": {
+        "en": "What were Long Hau's total assets at December 31, 2008 and at the beginning of 2008?",
+        "vn": "Tổng tài sản của Long Hau vào ngày 31 tháng 12 năm 2008 và vào đầu năm 2008 là bao nhiêu?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 435.77,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 137,
+        "output_tokens": 55,
+        "total_tokens": 192
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::14"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::43",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::122",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55"
+      ],
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q16",
+      "language": "vn",
+      "question": "Tổng tài sản của Long Hậu tại ngày 31/12/2008 và đầu năm 2008 là bao nhiêu?",
+      "lexical_queries": {
+        "vn": "Tổng tài sản của Long Hậu tại ngày 31/12/2008 và đầu năm 2008 là bao nhiêu?",
+        "en": "What is the total assets of Long Hậu at December 31, 2008 and at the beginning of 2008?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 279.18,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 141,
+        "output_tokens": 45,
+        "total_tokens": 186
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::14"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::189",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::122",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::75",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::142",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30"
+      ],
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q16",
+      "language": "vn",
+      "question": "Tổng tài sản của Long Hậu tại ngày 31/12/2008 và đầu năm 2008 là bao nhiêu?",
+      "lexical_queries": {
+        "vn": "Tổng tài sản của Long Hậu tại ngày 31/12/2008 và đầu năm 2008 là bao nhiêu?",
+        "en": "What is the total assets of Long Hậu at December 31, 2008 and at the beginning of 2008?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 279.18,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 141,
+        "output_tokens": 45,
+        "total_tokens": 186
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::14"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0"
+      ],
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q17",
+      "language": "en",
+      "question": "How did Long Hau's inventory value change between the end of 2008 and the beginning of 2008?",
+      "lexical_queries": {
+        "en": "How did Long Hau's inventory value change between the end of 2008 and the beginning of 2008?",
+        "vn": "Giá trị hàng tồn kho của Long Hau thay đổi như thế nào giữa cuối năm 2008 và đầu năm 2008?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 2558.87,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 136,
+        "output_tokens": 52,
+        "total_tokens": 188
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::12"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::140",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::12",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::188",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::126",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::13",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::122",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::23"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.25,
+        "ndcg_at_k": 0.43067655807339306
+      }
+    },
+    {
+      "id": "Q17",
+      "language": "en",
+      "question": "How did Long Hau's inventory value change between the end of 2008 and the beginning of 2008?",
+      "lexical_queries": {
+        "en": "How did Long Hau's inventory value change between the end of 2008 and the beginning of 2008?",
+        "vn": "Giá trị hàng tồn kho của Long Hau thay đổi như thế nào giữa cuối năm 2008 và đầu năm 2008?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 2558.87,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 136,
+        "output_tokens": 52,
+        "total_tokens": 188
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::12"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::140",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::122",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::12",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::13",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::126"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.2,
+        "ndcg_at_k": 0.38685280723454163
+      }
+    },
+    {
+      "id": "Q17",
+      "language": "vn",
+      "question": "Giá trị hàng tồn kho của Long Hậu tại cuối năm và đầu năm 2008 thay đổi như thế nào?",
+      "lexical_queries": {
+        "vn": "Giá trị hàng tồn kho của Long Hậu tại cuối năm và đầu năm 2008 thay đổi như thế nào?",
+        "en": "How did the value of Long Hậu's inventory change at the end of the year and at the beginning of 2008?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 506.97,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 138,
+        "output_tokens": 137,
+        "total_tokens": 275
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::12"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::140",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::12",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::136",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::126",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.25,
+        "ndcg_at_k": 0.43067655807339306
+      }
+    },
+    {
+      "id": "Q17",
+      "language": "vn",
+      "question": "Giá trị hàng tồn kho của Long Hậu tại cuối năm và đầu năm 2008 thay đổi như thế nào?",
+      "lexical_queries": {
+        "vn": "Giá trị hàng tồn kho của Long Hậu tại cuối năm và đầu năm 2008 thay đổi như thế nào?",
+        "en": "How did the value of Long Hậu's inventory change at the end of the year and at the beginning of 2008?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 506.97,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 138,
+        "output_tokens": 137,
+        "total_tokens": 275
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::12"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::140",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::12",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.1111111111111111,
+        "ndcg_at_k": 0.3010299956639812
+      }
+    },
+    {
+      "id": "Q18",
+      "language": "en",
+      "question": "What was Long Hau's net revenue in 2008, and by how much did it increase compared with the previous year?",
+      "lexical_queries": {
+        "en": "What was Long Hau's net revenue in 2008, and by how much did it increase compared with the previous year?",
+        "vn": "Doanh thu ròng của Long Hau trong năm 2008 là bao nhiêu, và tăng bao nhiêu so với năm trước?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 2678.51,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 138,
+        "output_tokens": 53,
+        "total_tokens": 191
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::20"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::149",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50"
+      ],
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q18",
+      "language": "en",
+      "question": "What was Long Hau's net revenue in 2008, and by how much did it increase compared with the previous year?",
+      "lexical_queries": {
+        "en": "What was Long Hau's net revenue in 2008, and by how much did it increase compared with the previous year?",
+        "vn": "Doanh thu ròng của Long Hau trong năm 2008 là bao nhiêu, và tăng bao nhiêu so với năm trước?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 2678.51,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 138,
+        "output_tokens": 53,
+        "total_tokens": 191
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::20"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56"
+      ],
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q18",
+      "language": "vn",
+      "question": "Doanh thu thuần của Long Hậu trong năm 2008 là bao nhiêu và tăng bao nhiêu so với năm trước?",
+      "lexical_queries": {
+        "vn": "Doanh thu thuần của Long Hậu trong năm 2008 là bao nhiêu và tăng bao nhiêu so với năm trước?",
+        "en": "What was Long Hậu's net revenue in 2008 and how much did it increase compared to the previous year?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 419.51,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 141,
+        "output_tokens": 43,
+        "total_tokens": 184
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::20"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::20",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::149",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.25,
+        "ndcg_at_k": 0.43067655807339306
+      }
+    },
+    {
+      "id": "Q18",
+      "language": "vn",
+      "question": "Doanh thu thuần của Long Hậu trong năm 2008 là bao nhiêu và tăng bao nhiêu so với năm trước?",
+      "lexical_queries": {
+        "vn": "Doanh thu thuần của Long Hậu trong năm 2008 là bao nhiêu và tăng bao nhiêu so với năm trước?",
+        "en": "What was Long Hậu's net revenue in 2008 and how much did it increase compared to the previous year?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 419.51,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 141,
+        "output_tokens": 43,
+        "total_tokens": 184
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::20"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39"
+      ],
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q19",
+      "language": "en",
+      "question": "What was Long Hau's total accounting profit before tax in 2008 compared with 2007?",
+      "lexical_queries": {
+        "en": "What was Long Hau's total accounting profit before tax in 2008 compared with 2007?",
+        "vn": "Lợi nhuận kế toán trước thuế của Long Hau trong năm 2008 là bao nhiêu so với năm 2007?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 373.45,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 133,
+        "output_tokens": 53,
+        "total_tokens": 186
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.16666666666666666,
+        "ndcg_at_k": 0.3562071871080222
+      }
+    },
+    {
+      "id": "Q19",
+      "language": "en",
+      "question": "What was Long Hau's total accounting profit before tax in 2008 compared with 2007?",
+      "lexical_queries": {
+        "en": "What was Long Hau's total accounting profit before tax in 2008 compared with 2007?",
+        "vn": "Lợi nhuận kế toán trước thuế của Long Hau trong năm 2008 là bao nhiêu so với năm 2007?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 373.45,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 133,
+        "output_tokens": 53,
+        "total_tokens": 186
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.1,
+        "ndcg_at_k": 0.2890648263178879
+      }
+    },
+    {
+      "id": "Q19",
+      "language": "vn",
+      "question": "Tổng lợi nhuận kế toán trước thuế năm 2008 của Long Hậu là bao nhiêu so với năm 2007?",
+      "lexical_queries": {
+        "vn": "Tổng lợi nhuận kế toán trước thuế năm 2008 của Long Hậu là bao nhiêu so với năm 2007?",
+        "en": "What is the total accounting profit before tax for Long Hậu in 2008 compared to 2007?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 2489.71,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 142,
+        "output_tokens": 41,
+        "total_tokens": 183
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.16666666666666666,
+        "ndcg_at_k": 0.3562071871080222
+      }
+    },
+    {
+      "id": "Q19",
+      "language": "vn",
+      "question": "Tổng lợi nhuận kế toán trước thuế năm 2008 của Long Hậu là bao nhiêu so với năm 2007?",
+      "lexical_queries": {
+        "vn": "Tổng lợi nhuận kế toán trước thuế năm 2008 của Long Hậu là bao nhiêu so với năm 2007?",
+        "en": "What is the total accounting profit before tax for Long Hậu in 2008 compared to 2007?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 2489.71,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 142,
+        "output_tokens": 41,
+        "total_tokens": 183
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::30"
+      ],
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q20",
+      "language": "en",
+      "question": "According to the notes to the financial statements, what principle did Long Hau use to determine the value of inventory related to industrial-park development costs?",
+      "lexical_queries": {
+        "en": "According to the notes to the financial statements, what principle did Long Hau use to determine the value of inventory related to industrial-park development costs?",
+        "vn": "Theo ghi chú kèm theo báo cáo tài chính, nguyên tắc nào Long Hau đã sử dụng để xác định giá trị hàng tồn kho liên quan đến chi phí phát triển công viên công nghiệp?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 331.25,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 142,
+        "output_tokens": 84,
+        "total_tokens": 226
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::150",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::146",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::169",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.5,
+        "ndcg_at_k": 0.6309297535714575
+      }
+    },
+    {
+      "id": "Q20",
+      "language": "en",
+      "question": "According to the notes to the financial statements, what principle did Long Hau use to determine the value of inventory related to industrial-park development costs?",
+      "lexical_queries": {
+        "en": "According to the notes to the financial statements, what principle did Long Hau use to determine the value of inventory related to industrial-park development costs?",
+        "vn": "Theo ghi chú kèm theo báo cáo tài chính, nguyên tắc nào Long Hau đã sử dụng để xác định giá trị hàng tồn kho liên quan đến chi phí phát triển công viên công nghiệp?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 331.25,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 142,
+        "output_tokens": 84,
+        "total_tokens": 226
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::169",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::146",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::150",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q20",
+      "language": "vn",
+      "question": "Theo thuyết minh báo cáo tài chính, Long Hậu xác định giá trị hàng tồn kho liên quan đến chi phí phát triển khu công nghiệp theo nguyên tắc nào?",
+      "lexical_queries": {
+        "vn": "Theo thuyết minh báo cáo tài chính, Long Hậu xác định giá trị hàng tồn kho liên quan đến chi phí phát triển khu công nghiệp theo nguyên tắc nào?",
+        "en": "According to the financial statement notes, Long Hậu determines the value of inventory related to the development cost of the industrial park under which principle?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 2675.64,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 149,
+        "output_tokens": 47,
+        "total_tokens": 196
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::142",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::169",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::12",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.5,
+        "ndcg_at_k": 0.6309297535714575
+      }
+    },
+    {
+      "id": "Q20",
+      "language": "vn",
+      "question": "Theo thuyết minh báo cáo tài chính, Long Hậu xác định giá trị hàng tồn kho liên quan đến chi phí phát triển khu công nghiệp theo nguyên tắc nào?",
+      "lexical_queries": {
+        "vn": "Theo thuyết minh báo cáo tài chính, Long Hậu xác định giá trị hàng tồn kho liên quan đến chi phí phát triển khu công nghiệp theo nguyên tắc nào?",
+        "en": "According to the financial statement notes, Long Hậu determines the value of inventory related to the development cost of the industrial park under which principle?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 2675.64,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 149,
+        "output_tokens": 47,
+        "total_tokens": 196
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::146",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::142",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q21",
+      "language": "en",
+      "question": "What depreciation method did Long Hau use, and what estimated depreciation periods applied to its types of fixed assets?",
+      "lexical_queries": {
+        "en": "What depreciation method did Long Hau use, and what estimated depreciation periods applied to its types of fixed assets?",
+        "vn": "Phương pháp khấu hao nào Long Hậu đã sử dụng, và các kỳ khấu hao ước tính áp dụng cho các loại tài sản cố định của công ty là gì?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 429.29,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 134,
+        "output_tokens": 63,
+        "total_tokens": 197
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::146",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::148",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::117",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.5,
+        "ndcg_at_k": 0.6309297535714575
+      }
+    },
+    {
+      "id": "Q21",
+      "language": "en",
+      "question": "What depreciation method did Long Hau use, and what estimated depreciation periods applied to its types of fixed assets?",
+      "lexical_queries": {
+        "en": "What depreciation method did Long Hau use, and what estimated depreciation periods applied to its types of fixed assets?",
+        "vn": "Phương pháp khấu hao nào Long Hậu đã sử dụng, và các kỳ khấu hao ước tính áp dụng cho các loại tài sản cố định của công ty là gì?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 429.29,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 134,
+        "output_tokens": 63,
+        "total_tokens": 197
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::146",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::148",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::117",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.5,
+        "ndcg_at_k": 0.6309297535714575
+      }
+    },
+    {
+      "id": "Q21",
+      "language": "vn",
+      "question": "Long Hậu áp dụng phương pháp khấu hao nào và thời gian khấu hao ước tính cho các loại tài sản cố định là bao lâu?",
+      "lexical_queries": {
+        "vn": "Long Hậu áp dụng phương pháp khấu hao nào và thời gian khấu hao ước tính cho các loại tài sản cố định là bao lâu?",
+        "en": "What depreciation method does Long Hậu apply, and what is the estimated depreciation period for the types of fixed assets?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 2618.87,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 144,
+        "output_tokens": 129,
+        "total_tokens": 273
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::146",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::148",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::117",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::153",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.5,
+        "ndcg_at_k": 0.6309297535714575
+      }
+    },
+    {
+      "id": "Q21",
+      "language": "vn",
+      "question": "Long Hậu áp dụng phương pháp khấu hao nào và thời gian khấu hao ước tính cho các loại tài sản cố định là bao lâu?",
+      "lexical_queries": {
+        "vn": "Long Hậu áp dụng phương pháp khấu hao nào và thời gian khấu hao ước tính cho các loại tài sản cố định là bao lâu?",
+        "en": "What depreciation method does Long Hậu apply, and what is the estimated depreciation period for the types of fixed assets?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 2618.87,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 144,
+        "output_tokens": 129,
+        "total_tokens": 273
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::148",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::146",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::117",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q22",
+      "language": "en",
+      "question": "What were Long Hau's profit attributable to ordinary shareholders and basic earnings per share in 2008?",
+      "lexical_queries": {
+        "en": "What were Long Hau's profit attributable to ordinary shareholders and basic earnings per share in 2008?",
+        "vn": "Lợi nhuận thuộc tính cho cổ đông thường và lợi nhuận cơ bản trên cổ phiếu của Long Hau trong năm 2008 là bao nhiêu?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 432.57,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 133,
+        "output_tokens": 58,
+        "total_tokens": 191
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::183",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::186",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::133",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::20",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.25,
+        "ndcg_at_k": 0.43067655807339306
+      }
+    },
+    {
+      "id": "Q22",
+      "language": "en",
+      "question": "What were Long Hau's profit attributable to ordinary shareholders and basic earnings per share in 2008?",
+      "lexical_queries": {
+        "en": "What were Long Hau's profit attributable to ordinary shareholders and basic earnings per share in 2008?",
+        "vn": "Lợi nhuận thuộc tính cho cổ đông thường và lợi nhuận cơ bản trên cổ phiếu của Long Hau trong năm 2008 là bao nhiêu?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 432.57,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 133,
+        "output_tokens": 58,
+        "total_tokens": 191
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::183",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::186",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.3333333333333333,
+        "ndcg_at_k": 0.5
+      }
+    },
+    {
+      "id": "Q22",
+      "language": "vn",
+      "question": "Lợi nhuận thuộc cổ đông phổ thông và lãi cơ bản trên mỗi cổ phiếu của Long Hậu năm 2008 là bao nhiêu?",
+      "lexical_queries": {
+        "vn": "Lợi nhuận thuộc cổ đông phổ thông và lãi cơ bản trên mỗi cổ phiếu của Long Hậu năm 2008 là bao nhiêu?",
+        "en": "What was the earnings attributable to ordinary shareholders and basic earnings per share of Long Hậu in 2008?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 2535.09,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 145,
+        "output_tokens": 52,
+        "total_tokens": 197
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::183",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::186",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::133",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::20",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.25,
+        "ndcg_at_k": 0.43067655807339306
+      }
+    },
+    {
+      "id": "Q22",
+      "language": "vn",
+      "question": "Lợi nhuận thuộc cổ đông phổ thông và lãi cơ bản trên mỗi cổ phiếu của Long Hậu năm 2008 là bao nhiêu?",
+      "lexical_queries": {
+        "vn": "Lợi nhuận thuộc cổ đông phổ thông và lãi cơ bản trên mỗi cổ phiếu của Long Hậu năm 2008 là bao nhiêu?",
+        "en": "What was the earnings attributable to ordinary shareholders and basic earnings per share of Long Hậu in 2008?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 2535.09,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 145,
+        "output_tokens": 52,
+        "total_tokens": 197
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::183",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::186",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::133",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::97",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34"
+      ],
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.3333333333333333,
+        "ndcg_at_k": 0.5
+      }
+    },
+    {
+      "id": "Q23",
+      "language": "en",
+      "question": "Which two companies did the 2008 PVFCCo Annual Report and Long Hau's 2008 separate financial statements belong to?",
+      "lexical_queries": {
+        "en": "Which two companies did the 2008 PVFCCo Annual Report and Long Hau's 2008 separate financial statements belong to?",
+        "vn": "Công ty nào hai công ty mà Báo cáo thường niên PVFCCo 2008 và Báo cáo tài chính riêng biệt của Long Hau năm 2008 thuộc về?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 389.16,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 139,
+        "output_tokens": 68,
+        "total_tokens": 207
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::0",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::22",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0"
+      ],
+      "metrics": {
+        "recall_at_k": 0.5,
+        "precision_at_k": 0.1,
+        "mrr": 0.1,
+        "ndcg_at_k": 0.17723928678404774
+      }
+    },
+    {
+      "id": "Q23",
+      "language": "en",
+      "question": "Which two companies did the 2008 PVFCCo Annual Report and Long Hau's 2008 separate financial statements belong to?",
+      "lexical_queries": {
+        "en": "Which two companies did the 2008 PVFCCo Annual Report and Long Hau's 2008 separate financial statements belong to?",
+        "vn": "Công ty nào hai công ty mà Báo cáo thường niên PVFCCo 2008 và Báo cáo tài chính riêng biệt của Long Hau năm 2008 thuộc về?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 389.16,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 139,
+        "output_tokens": 68,
+        "total_tokens": 207
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::0",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::22",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2"
+      ],
+      "metrics": {
+        "recall_at_k": 0.5,
+        "precision_at_k": 0.1,
+        "mrr": 0.25,
+        "ndcg_at_k": 0.2640681225725909
+      }
+    },
+    {
+      "id": "Q23",
+      "language": "vn",
+      "question": "Báo cáo thường niên 2008 của PVFCCo và báo cáo tài chính riêng năm 2008 của Long Hậu thuộc hai doanh nghiệp nào?",
+      "lexical_queries": {
+        "vn": "Báo cáo thường niên 2008 của PVFCCo và báo cáo tài chính riêng năm 2008 của Long Hậu thuộc hai doanh nghiệp nào?",
+        "en": "Which two companies are the 2008 annual report of PVFCCo and the 2008 separate financial report of Long Hậu?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 350.29,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 147,
+        "output_tokens": 57,
+        "total_tokens": 204
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::0",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::22",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::20",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0"
+      ],
+      "metrics": {
+        "recall_at_k": 0.5,
+        "precision_at_k": 0.1,
+        "mrr": 0.1,
+        "ndcg_at_k": 0.17723928678404774
+      }
+    },
+    {
+      "id": "Q23",
+      "language": "vn",
+      "question": "Báo cáo thường niên 2008 của PVFCCo và báo cáo tài chính riêng năm 2008 của Long Hậu thuộc hai doanh nghiệp nào?",
+      "lexical_queries": {
+        "vn": "Báo cáo thường niên 2008 của PVFCCo và báo cáo tài chính riêng năm 2008 của Long Hậu thuộc hai doanh nghiệp nào?",
+        "en": "Which two companies are the 2008 annual report of PVFCCo and the 2008 separate financial report of Long Hậu?"
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 350.29,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 147,
+        "output_tokens": 57,
+        "total_tokens": 204
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::0",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::22",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1"
+      ],
+      "metrics": {
+        "recall_at_k": 0.5,
+        "precision_at_k": 0.1,
+        "mrr": 0.3333333333333333,
+        "ndcg_at_k": 0.3065735963827292
+      }
+    },
+    {
+      "id": "Q24",
+      "language": "en",
+      "question": "Compare PVFCCo's and Long Hau's profit before tax in 2008, stating the figures and currency units used in each report.",
+      "lexical_queries": {
+        "en": "Compare PVFCCo's and Long Hau's profit before tax in 2008, stating the figures and currency units used in each report.",
+        "vn": "So sánh lợi nhuận trước thuế của PVFCCo và Long Hau trong năm 2008, nêu rõ các con số và đơn vị tiền tệ được sử dụng trong mỗi báo cáo."
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 2616.11,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 141,
+        "output_tokens": 85,
+        "total_tokens": 226
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::135",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7"
+      ],
+      "metrics": {
+        "recall_at_k": 0.5,
+        "precision_at_k": 0.1,
+        "mrr": 0.2,
+        "ndcg_at_k": 0.23719771276929622
+      }
+    },
+    {
+      "id": "Q24",
+      "language": "en",
+      "question": "Compare PVFCCo's and Long Hau's profit before tax in 2008, stating the figures and currency units used in each report.",
+      "lexical_queries": {
+        "en": "Compare PVFCCo's and Long Hau's profit before tax in 2008, stating the figures and currency units used in each report.",
+        "vn": "So sánh lợi nhuận trước thuế của PVFCCo và Long Hau trong năm 2008, nêu rõ các con số và đơn vị tiền tệ được sử dụng trong mỗi báo cáo."
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 2616.11,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 141,
+        "output_tokens": 85,
+        "total_tokens": 226
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "metrics": {
+        "recall_at_k": 0.5,
+        "precision_at_k": 0.1,
+        "mrr": 0.1,
+        "ndcg_at_k": 0.17723928678404774
+      }
+    },
+    {
+      "id": "Q24",
+      "language": "vn",
+      "question": "So sánh lợi nhuận trước thuế năm 2008 của PVFCCo và Long Hậu, nêu rõ số liệu và đơn vị tiền tệ được sử dụng trong từng báo cáo.",
+      "lexical_queries": {
+        "vn": "So sánh lợi nhuận trước thuế năm 2008 của PVFCCo và Long Hậu, nêu rõ số liệu và đơn vị tiền tệ được sử dụng trong từng báo cáo.",
+        "en": "Compare the pre‑tax profit of 2008 for PVFCCo and Long Hậu, specifying the figures and the currency units used in each report."
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 298.57,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 154,
+        "output_tokens": 61,
+        "total_tokens": 215
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::135",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8"
+      ],
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q24",
+      "language": "vn",
+      "question": "So sánh lợi nhuận trước thuế năm 2008 của PVFCCo và Long Hậu, nêu rõ số liệu và đơn vị tiền tệ được sử dụng trong từng báo cáo.",
+      "lexical_queries": {
+        "vn": "So sánh lợi nhuận trước thuế năm 2008 của PVFCCo và Long Hậu, nêu rõ số liệu và đơn vị tiền tệ được sử dụng trong từng báo cáo.",
+        "en": "Compare the pre‑tax profit of 2008 for PVFCCo and Long Hậu, specifying the figures and the currency units used in each report."
+      },
+      "translation_error": null,
+      "translation_model": "openai/gpt-oss-20b",
+      "translation_latency_ms": 298.57,
+      "translation_cache_hit": false,
+      "translation_usage": {
+        "input_tokens": 154,
+        "output_tokens": 61,
+        "total_tokens": 215
+      },
+      "dense_fallbacks": false,
+      "method": "automatic_language_aware_hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::183",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190"
+      ],
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    }
+  ]
+}

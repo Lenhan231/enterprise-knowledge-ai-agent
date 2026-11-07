@@ -1,0 +1,253 @@
+{
+  "precision_at_10_label_ceiling": 0.155,
+  "final_method_losses": [
+    {
+      "case_id": "H04-vi-to-en",
+      "question": "Mục Hồ sơ bắt buộc và lưu trữ của Manual yêu cầu giữ những nhóm hồ sơ nào?",
+      "missing_components": [
+        "H04.purchase",
+        "H04.receiving",
+        "H04.count",
+        "H04.returns",
+        "H04.kpi"
+      ],
+      "stage": "candidate_pool_missing_evidence",
+      "gold_positions": {
+        "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::16": null
+      },
+      "queries": {
+        "vn": "Mục Hồ sơ bắt buộc và lưu trữ của Manual yêu cầu giữ những nhóm hồ sơ nào?",
+        "en": "What mandatory file categories and storage requirements does the Manual specify for maintaining which groups of files?"
+      }
+    },
+    {
+      "case_id": "H08-vi-to-vi",
+      "question": "Trong Inventory Control, Product ID 19 có Units Sold (Latest) và Avg Monthly Demand (3 snapshots) bao nhiêu?",
+      "missing_components": [
+        "H08.sold",
+        "H08.average"
+      ],
+      "stage": "candidate_pool_missing_evidence",
+      "gold_positions": {
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::15": null
+      },
+      "queries": {
+        "vn": "Trong Inventory Control, Product ID 19 có Units Sold (Latest) và Avg Monthly Demand (3 snapshots) bao nhiêu?",
+        "en": "In Inventory Control, what are the Units Sold (Latest) and Avg Monthly Demand (3 snapshots) for Product ID 19?"
+      }
+    },
+    {
+      "case_id": "H08-en-to-vi",
+      "question": "In Inventory Control, what Units Sold (Latest) and Avg Monthly Demand (3 snapshots) are recorded for Product ID 19?",
+      "missing_components": [
+        "H08.sold",
+        "H08.average"
+      ],
+      "stage": "candidate_pool_missing_evidence",
+      "gold_positions": {
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::15": null
+      },
+      "queries": {
+        "en": "In Inventory Control, what Units Sold (Latest) and Avg Monthly Demand (3 snapshots) are recorded for Product ID 19?",
+        "vn": "Trong Kiểm soát Hàng tồn kho, các Đơn vị Bán (Mới nhất) và Nhu cầu Tháng Trung bình (3 khoảnh khắc) nào được ghi lại cho Mã Sản phẩm 19?"
+      }
+    },
+    {
+      "case_id": "H11-vi-to-vi",
+      "question": "So sánh hai dòng Inventory Control của Product ID 1 và Product ID 3: mỗi sản phẩm có size, màu và On-hand Units nào?",
+      "missing_components": [
+        "H11.p1_size",
+        "H11.p1_color",
+        "H11.p1_on-hand_units",
+        "H11.p3_size",
+        "H11.p3_color",
+        "H11.p3_on-hand_units"
+      ],
+      "stage": "candidate_pool_missing_evidence",
+      "gold_positions": {
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::10": null,
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::9": null
+      },
+      "queries": {
+        "vn": "So sánh hai dòng Inventory Control của Product ID 1 và Product ID 3: mỗi sản phẩm có size, màu và On-hand Units nào?",
+        "en": "Compare the two Inventory Control lines for Product ID 1 and Product ID 3: what size, color, and On-hand Units does each product have?"
+      }
+    },
+    {
+      "case_id": "H11-vi-to-en",
+      "question": "So sánh hai dòng Inventory Control của Product ID 1 và Product ID 3: mỗi sản phẩm có size, màu và On-hand Units nào?",
+      "missing_components": [
+        "H11.p3_size",
+        "H11.p3_color",
+        "H11.p3_on-hand_units"
+      ],
+      "stage": "candidate_pool_missing_evidence",
+      "gold_positions": {
+        "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::10": null,
+        "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::9": 1
+      },
+      "queries": {
+        "vn": "So sánh hai dòng Inventory Control của Product ID 1 và Product ID 3: mỗi sản phẩm có size, màu và On-hand Units nào?",
+        "en": "Compare the two Inventory Control lines for Product ID 1 and Product ID 3: what size, color, and On-hand Units does each product have?"
+      }
+    },
+    {
+      "case_id": "H11-en-to-vi",
+      "question": "Compare the Inventory Control rows for Product ID 1 and Product ID 3: what size, color, and On-hand Units does each product have?",
+      "missing_components": [
+        "H11.p3_size",
+        "H11.p3_color",
+        "H11.p3_on-hand_units"
+      ],
+      "stage": "candidate_pool_missing_evidence",
+      "gold_positions": {
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::10": null,
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::9": 1
+      },
+      "queries": {
+        "en": "Compare the Inventory Control rows for Product ID 1 and Product ID 3: what size, color, and On-hand Units does each product have?",
+        "vn": "So sánh các dòng Kiểm soát Hàng tồn kho cho Mã Sản phẩm 1 và Mã Sản phẩm 3: mỗi sản phẩm có kích thước, màu sắc và Đơn vị Tồn kho nào?"
+      }
+    },
+    {
+      "case_id": "H11-en-to-en",
+      "question": "Compare the Inventory Control rows for Product ID 1 and Product ID 3: what size, color, and On-hand Units does each product have?",
+      "missing_components": [
+        "H11.p3_size",
+        "H11.p3_color",
+        "H11.p3_on-hand_units"
+      ],
+      "stage": "candidate_pool_missing_evidence",
+      "gold_positions": {
+        "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::10": null,
+        "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::9": 1
+      },
+      "queries": {
+        "en": "Compare the Inventory Control rows for Product ID 1 and Product ID 3: what size, color, and On-hand Units does each product have?",
+        "vn": "So sánh các dòng Kiểm soát Hàng tồn kho cho Mã Sản phẩm 1 và Mã Sản phẩm 3: mỗi sản phẩm có kích thước, màu sắc và Đơn vị Tồn kho nào?"
+      }
+    },
+    {
+      "case_id": "H14-vi-to-vi",
+      "question": "Đối chiếu Product ID 8 và 9 trong Inventory Control: On-hand Units và Units Sold (Latest) của từng sản phẩm là bao nhiêu?",
+      "missing_components": [
+        "H14.p8_onhand",
+        "H14.p8_sold",
+        "H14.p9_onhand",
+        "H14.p9_sold"
+      ],
+      "stage": "candidate_pool_missing_evidence",
+      "gold_positions": {
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::11": null,
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::12": null
+      },
+      "queries": {
+        "vn": "Đối chiếu Product ID 8 và 9 trong Inventory Control: On-hand Units và Units Sold (Latest) của từng sản phẩm là bao nhiêu?",
+        "en": "What are the On-hand Units and Units Sold (Latest) for Product ID 8 and 9 in Inventory Control?"
+      }
+    },
+    {
+      "case_id": "H14-vi-to-en",
+      "question": "Đối chiếu Product ID 8 và 9 trong Inventory Control: On-hand Units và Units Sold (Latest) của từng sản phẩm là bao nhiêu?",
+      "missing_components": [
+        "H14.p8_onhand",
+        "H14.p8_sold",
+        "H14.p9_onhand",
+        "H14.p9_sold"
+      ],
+      "stage": "candidate_pool_missing_evidence",
+      "gold_positions": {
+        "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::11": null,
+        "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::12": null
+      },
+      "queries": {
+        "vn": "Đối chiếu Product ID 8 và 9 trong Inventory Control: On-hand Units và Units Sold (Latest) của từng sản phẩm là bao nhiêu?",
+        "en": "What are the On-hand Units and Units Sold (Latest) for Product ID 8 and 9 in Inventory Control?"
+      }
+    },
+    {
+      "case_id": "H14-en-to-vi",
+      "question": "Compare Product IDs 8 and 9 in Inventory Control: what are the On-hand Units and Units Sold (Latest) for each product?",
+      "missing_components": [
+        "H14.p9_onhand",
+        "H14.p9_sold"
+      ],
+      "stage": "candidate_pool_missing_evidence",
+      "gold_positions": {
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::11": 1,
+        "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::12": null
+      },
+      "queries": {
+        "en": "Compare Product IDs 8 and 9 in Inventory Control: what are the On-hand Units and Units Sold (Latest) for each product?",
+        "vn": "So sánh ID sản phẩm 8 và 9 trong Kiểm soát Tồn kho: số lượng Đang có và số lượng Bán (Mới nhất) của mỗi sản phẩm là bao nhiêu?"
+      }
+    },
+    {
+      "case_id": "H14-en-to-en",
+      "question": "Compare Product IDs 8 and 9 in Inventory Control: what are the On-hand Units and Units Sold (Latest) for each product?",
+      "missing_components": [
+        "H14.p9_onhand",
+        "H14.p9_sold"
+      ],
+      "stage": "candidate_pool_missing_evidence",
+      "gold_positions": {
+        "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::11": 4,
+        "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::12": null
+      },
+      "queries": {
+        "en": "Compare Product IDs 8 and 9 in Inventory Control: what are the On-hand Units and Units Sold (Latest) for each product?",
+        "vn": "So sánh ID sản phẩm 8 và 9 trong Kiểm soát Tồn kho: số lượng Đang có và số lượng Bán (Mới nhất) của mỗi sản phẩm là bao nhiêu?"
+      }
+    }
+  ],
+  "reranker_rescues_over_translated_raw": [
+    "H08-vi-to-en",
+    "H08-en-to-en",
+    "H12-en-to-vi",
+    "H13-en-to-en",
+    "H15-vi-to-vi",
+    "H17-vi-to-en"
+  ],
+  "reranker_regressions_over_translated_raw": [],
+  "paired_intent_bootstrap": {
+    "dense": {
+      "gain_pp": 21.25,
+      "ci95_pp": [
+        10.0,
+        35.0
+      ],
+      "clusters": 20,
+      "resamples": 10000,
+      "seed": 20261022
+    },
+    "dense_bge": {
+      "gain_pp": 8.75,
+      "ci95_pp": [
+        0.0,
+        20.0
+      ],
+      "clusters": 20,
+      "resamples": 10000,
+      "seed": 20261022
+    },
+    "translated_hybrid_raw": {
+      "gain_pp": 7.5,
+      "ci95_pp": [
+        2.5,
+        13.750000000000002
+      ],
+      "clusters": 20,
+      "resamples": 10000,
+      "seed": 20261022
+    }
+  },
+  "translation_preparation": {
+    "questions": 40,
+    "failures": 0,
+    "api_mean_seconds": 0.5603415886499533,
+    "api_median_seconds": 0.4670822689995475,
+    "api_p95_seconds": 1.338969617499606
+  },
+  "sql_failure_diagnostics_parity": "11/11 cases exact original top30 match",
+  "offline_diagnostic_parity": "1/11 exact top30 matches; do not treat offline as equivalent"
+}

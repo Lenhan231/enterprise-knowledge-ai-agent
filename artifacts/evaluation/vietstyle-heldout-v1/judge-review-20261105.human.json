@@ -1,0 +1,22 @@
+{
+ "B2/E03": "correct",
+ "B2/T01": "correct",
+ "B2/L11": "incorrect",
+ "B2/C07": "partial",
+ "B2/L13": "correct",
+ "B2/P02": "incorrect",
+ "B2/M02": "partial",
+ "B2/T07": "correct",
+ "B4/O07": "correct",
+ "B4/E01": "incorrect",
+ "B4/T06": "correct",
+ "B4/E04": "correct",
+ "B1/X01": "correct",
+ "B1/C08": "incorrect",
+ "B1/C06": "partial",
+ "B1/C01": "correct",
+ "B0/L09": "correct",
+ "B0/C01": "incorrect",
+ "B0/X07": "partial",
+ "B0/O06": "correct"
+}

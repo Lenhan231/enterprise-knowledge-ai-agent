@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "cases": 48,
+  "paired_rankings": 96,
+  "score_entries": 2880,
+  "hybrid_candidate_replay": "passed",
+  "shared_input_lineage": "passed",
+  "independent_character_coverage": "passed",
+  "results_sha256": "9a9f2f3ded09ebc80e0001ac3109f51875b395b2ca79190ef820c7d31bf98282"
+}

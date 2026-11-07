@@ -1,0 +1,13 @@
+{
+  "source_commit": "279be53005b61b692e2cbcf08208fb21fd177b9b",
+  "corpus_rows": 1063,
+  "corpus_sha256": "b8f5aba0da18a0725ae17762bf083d9101b740f9b86d3a928674225e51db51e5",
+  "original_manifest_file_hashes": "all five match only after LF-to-CRLF byte reconstruction; Git blobs use LF, laptop manifest hashes CRLF",
+  "draft_quotes_offsets_hashes_languages_verified": 24,
+  "cases_language_evidence_consistency_verified": 48,
+  "four_direction_groups_verified": 12,
+  "proposed_evidence_spans": 30,
+  "inference_run": false,
+  "human_approval": false,
+  "existing_draft_files_modified": false
+}

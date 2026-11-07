@@ -1,0 +1,3493 @@
+{
+  "dataset_id": "heldout-review2-v1",
+  "provenance": "Assistant-authored/source-verified; user reviewed the findings and approved replacing H10 with SOP plus rewriting H13/H19 before first inference. No independently certified human annotation agreement.",
+  "sources": {
+    "vi": {
+      "path": "inputs/parser_vi.jsonl",
+      "sha256": "284501a33c514642cd092b9d0b59dbf63cc80950a729088cc7dd226b626c41c3"
+    },
+    "en": {
+      "path": "inputs/parser_en.jsonl",
+      "sha256": "2be61cc3a9bf014c5090b256c98f7433acb67f44e003c312773a3242f035cd58"
+    }
+  },
+  "intents": [
+    {
+      "id": "H01",
+      "category": "narrative",
+      "question": {
+        "vi": "Theo phần mục đích của Manual, chính sách tồn kho phải cân bằng bốn yếu tố nào?",
+        "en": "According to the Manual purpose section, which four factors should the inventory policy balance?"
+      },
+      "reference_answer_vi": "Mức sẵn hàng, chi phí lưu kho, vốn bị chiếm dụng và độ chính xác dữ liệu.",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference.",
+      "requirements": [
+        {
+          "id": "H01.availability",
+          "description_vi": "Sẵn hàng",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H01.availability.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H01.availability.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H01.holding",
+          "description_vi": "Chi phí lưu kho",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H01.holding.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H01.holding.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H01.capital",
+          "description_vi": "Vốn bị chiếm dụng",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H01.capital.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H01.capital.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H01.accuracy",
+          "description_vi": "Độ chính xác dữ liệu",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H01.accuracy.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H01.accuracy.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "H02",
+      "category": "narrative",
+      "question": {
+        "vi": "Phần mô tả dataset liệt kê những nhóm hàng nào đang được quan sát?",
+        "en": "Which product categories are listed as observed in the dataset description?"
+      },
+      "reference_answer_vi": "Streetwear, Outdoor, Casual, GenZ.",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference.",
+      "requirements": [
+        {
+          "id": "H02.streetwear",
+          "description_vi": "Streetwear",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H02.streetwear.vi.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H02.streetwear.vi.a1"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H02.streetwear.en.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H02.streetwear.en.a1"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H02.outdoor",
+          "description_vi": "Outdoor",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H02.outdoor.vi.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H02.outdoor.vi.a1"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H02.outdoor.en.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H02.outdoor.en.a1"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H02.casual",
+          "description_vi": "Casual",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H02.casual.vi.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H02.casual.vi.a1"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H02.casual.en.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H02.casual.en.a1"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H02.genz",
+          "description_vi": "GenZ",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H02.genz.vi.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H02.genz.vi.a1"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H02.genz.en.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H02.genz.en.a1"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "H03",
+      "category": "narrative",
+      "question": {
+        "vi": "Nếu lịch sử nhu cầu chưa đủ tin cậy để phân nhóm ABC, tài liệu cho phép làm gì và phải rà soát lại sau bao nhiêu chu kỳ?",
+        "en": "When demand history is not reliable enough for ABC classification, what temporary approach is allowed and after how many cycles must it be reviewed?"
+      },
+      "reference_answer_vi": "Dùng nhóm tạm và rà soát sau 3 chu kỳ.",
+      "related_development_topics": [
+        "Q03: ABC topic, but new insufficient-history rule"
+      ],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference.",
+      "requirements": [
+        {
+          "id": "H03.provisional",
+          "description_vi": "Dùng nhóm tạm",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H03.provisional.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H03.provisional.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H03.review",
+          "description_vi": "Rà soát sau 3 chu kỳ",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H03.review.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H03.review.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "H04",
+      "category": "narrative",
+      "question": {
+        "vi": "Mục Hồ sơ bắt buộc và lưu trữ của Manual yêu cầu giữ những nhóm hồ sơ nào?",
+        "en": "Which record groups must be retained under the Manual Required Records and Retention section?"
+      },
+      "reference_answer_vi": "PR/PO và phê duyệt; hồ sơ nhận hàng; hồ sơ kiểm kê/điều chỉnh; hàng trả về và QA; KPI/exception/parameter changes/audit trail.",
+      "related_development_topics": [
+        "Q15: records topic; new complete retention inventory"
+      ],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference.",
+      "requirements": [
+        {
+          "id": "H04.purchase",
+          "description_vi": "Mua hàng",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H04.purchase.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H04.purchase.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H04.receiving",
+          "description_vi": "Nhận hàng",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H04.receiving.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H04.receiving.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H04.count",
+          "description_vi": "Kiểm kê",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H04.count.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H04.count.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H04.returns",
+          "description_vi": "Trả hàng",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H04.returns.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H04.returns.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H04.kpi",
+          "description_vi": "Báo cáo và lịch sử",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H04.kpi.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H04.kpi.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "H05",
+      "category": "narrative",
+      "question": {
+        "vi": "Trong xử lý hàng chậm luân chuyển, ba nguyên nhân nào khiến giảm giá không được dùng làm biện pháp mặc định?",
+        "en": "For slow-moving inventory, which three root causes mean discounting must not be the default response?"
+      },
+      "reference_answer_vi": "Không mặc định giảm giá nếu nguyên nhân là sai dữ liệu, sai phân bổ size hoặc đơn hàng đang bị giữ.",
+      "related_development_topics": [
+        "Q07: slow-stock topic, new non-discounting causes"
+      ],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference.",
+      "requirements": [
+        {
+          "id": "H05.restriction",
+          "description_vi": "Không mặc định giảm giá",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H05.restriction.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H05.restriction.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H05.data",
+          "description_vi": "Sai dữ liệu",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H05.data.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H05.data.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H05.size",
+          "description_vi": "Sai phân bổ size",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H05.size.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H05.size.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H05.held",
+          "description_vi": "Đơn bị giữ",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H05.held.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H05.held.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "H06",
+      "category": "table_numeric",
+      "question": {
+        "vi": "Trong sheet Inventory Control của snapshot mẫu, Product ID 17 (DragonWear MA-17) có size, màu và On-hand Units là gì?",
+        "en": "In the sample Inventory Control sheet, what are the size, color, and On-hand Units for Product ID 17 (DragonWear MA-17)?"
+      },
+      "reference_answer_vi": "Size M, màu silver, 28 đơn vị tồn theo snapshot mẫu.",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference.",
+      "requirements": [
+        {
+          "id": "H06.size",
+          "description_vi": "Product 17: Size = M",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H06.size.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H06.size.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H06.color",
+          "description_vi": "Product 17: Color = silver",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H06.color.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H06.color.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H06.onhand",
+          "description_vi": "Product 17: On-hand Units = 28",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H06.onhand.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H06.onhand.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "H07",
+      "category": "table_numeric",
+      "question": {
+        "vi": "Đọc dòng Product ID 18 (DragonWear MA-18) trong Inventory Control: Stockout Days và Fill Rate ghi bao nhiêu?",
+        "en": "Read the Inventory Control row for Product ID 18 (DragonWear MA-18): what Stockout Days and Fill Rate values are recorded?"
+      },
+      "reference_answer_vi": "Stockout Days = 2; Fill Rate = 0.9333 (93.33%); giá trị lịch sử, không phải hiện hành.",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference.",
+      "requirements": [
+        {
+          "id": "H07.days",
+          "description_vi": "Product 18: Stockout Days = 2",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H07.days.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H07.days.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H07.fill",
+          "description_vi": "Product 18: Fill Rate = 0.9333",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H07.fill.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H07.fill.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "H08",
+      "category": "table_numeric",
+      "question": {
+        "vi": "Trong Inventory Control, Product ID 19 có Units Sold (Latest) và Avg Monthly Demand (3 snapshots) bao nhiêu?",
+        "en": "In Inventory Control, what Units Sold (Latest) and Avg Monthly Demand (3 snapshots) are recorded for Product ID 19?"
+      },
+      "reference_answer_vi": "Units Sold Latest = 3; Avg Monthly Demand = 2.333333333333333 (xấp xỉ 2.3333).",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference.",
+      "requirements": [
+        {
+          "id": "H08.sold",
+          "description_vi": "Product 19: Units Sold (Latest) = 3",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H08.sold.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H08.sold.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H08.average",
+          "description_vi": "Product 19: Avg Monthly Demand (3 snapshots) = 2.333333333333333",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H08.average.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H08.average.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "H09",
+      "category": "table_numeric",
+      "question": {
+        "vi": "Theo KPI Summary của workbook, nhóm GenZ có bao nhiêu SKU, On-hand Units và Units Sold (Latest)?",
+        "en": "According to the workbook KPI Summary, how many SKUs, On-hand Units, and Units Sold (Latest) are recorded for GenZ?"
+      },
+      "reference_answer_vi": "44 SKU; 5126 On-hand Units; 199 Units Sold Latest.",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference.",
+      "requirements": [
+        {
+          "id": "H09.skus",
+          "description_vi": "GenZ: SKU Count = 44",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H09.skus.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H09.skus.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H09.onhand",
+          "description_vi": "GenZ: On-hand Units = 5126",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H09.onhand.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H09.onhand.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H09.sold",
+          "description_vi": "GenZ: Units Sold (Latest) = 199",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H09.sold.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H09.sold.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "H10",
+      "category": "table_numeric",
+      "question": {
+        "vi": "Theo bảng ngưỡng xử lý của SOP kiểm kê, nếu không có chênh lệch thì cần làm gì và ai là người duyệt?",
+        "en": "According to the cycle-count SOP handling-threshold table, when there is no variance, what actions are required and who is the approver?"
+      },
+      "reference_answer_vi": "Đóng phiếu; lưu audit trail; người duyệt: Warehouse Supervisor.",
+      "related_development_topics": [
+        "Q13: count-workflow topic; new explicit no-variance table row, not the recurring/high-value branch in F12."
+      ],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference.",
+      "requirements": [
+        {
+          "id": "H10.close_ticket",
+          "description_vi": "Đóng phiếu",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H10.close_ticket.vi.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H10.close_ticket.vi.a1"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H10.close_ticket.en.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H10.close_ticket.en.a1"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H10.audit_trail",
+          "description_vi": "Lưu audit trail",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H10.audit_trail.vi.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H10.audit_trail.vi.a1"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H10.audit_trail.en.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H10.audit_trail.en.a1"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H10.approver",
+          "description_vi": "Warehouse Supervisor duyệt",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H10.approver.vi.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H10.approver.vi.a1"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H10.approver.en.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H10.approver.en.a1"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "H11",
+      "category": "multi_chunk",
+      "question": {
+        "vi": "So sánh hai dòng Inventory Control của Product ID 1 và Product ID 3: mỗi sản phẩm có size, màu và On-hand Units nào?",
+        "en": "Compare the Inventory Control rows for Product ID 1 and Product ID 3: what size, color, and On-hand Units does each product have?"
+      },
+      "reference_answer_vi": "ID1: M/black/3; ID3: XL/blue/151.",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference.",
+      "requirements": [
+        {
+          "id": "H11.p1_size",
+          "description_vi": "Product 1: Size = M",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H11.p1_size.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H11.p1_size.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H11.p1_color",
+          "description_vi": "Product 1: Color = black",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H11.p1_color.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H11.p1_color.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H11.p1_on-hand_units",
+          "description_vi": "Product 1: On-hand Units = 3",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H11.p1_on-hand_units.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H11.p1_on-hand_units.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H11.p3_size",
+          "description_vi": "Product 3: Size = XL",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H11.p3_size.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H11.p3_size.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H11.p3_color",
+          "description_vi": "Product 3: Color = blue",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H11.p3_color.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H11.p3_color.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H11.p3_on-hand_units",
+          "description_vi": "Product 3: On-hand Units = 151",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H11.p3_on-hand_units.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H11.p3_on-hand_units.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "H12",
+      "category": "multi_chunk",
+      "question": {
+        "vi": "Trong Exception Log, Product ID 2212 và 927 có Calculated DOS và Review Status lần lượt là gì?",
+        "en": "In the Exception Log, what are the Calculated DOS and Review Status values for Product IDs 2212 and 927 respectively?"
+      },
+      "reference_answer_vi": "2212: DOS25440; 927: DOS6323.333333333334; cả hai có Review Status CONFLICT - VERIFY BEFORE PO.",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference.",
+      "requirements": [
+        {
+          "id": "H12.p2212_dos",
+          "description_vi": "Product 2212: Calculated DOS = 25440",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H12.p2212_dos.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H12.p2212_dos.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H12.p2212_status",
+          "description_vi": "Product 2212: Review Status = CONFLICT - VERIFY BEFORE PO",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H12.p2212_status.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H12.p2212_status.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H12.p927_dos",
+          "description_vi": "Product 927: Calculated DOS = 6323.333333333334",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H12.p927_dos.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H12.p927_dos.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H12.p927_status",
+          "description_vi": "Product 927: Review Status = CONFLICT - VERIFY BEFORE PO",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H12.p927_status.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H12.p927_status.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "H13",
+      "category": "multi_chunk",
+      "question": {
+        "vi": "Khi chuẩn bị PO trong ngân sách và đúng tham số đã duyệt, Planner chuyển cho ai duyệt? Hồ sơ nhà cung cấp phải duy trì những thông tin nào và cập nhật theo tần suất nào?",
+        "en": "When preparing a PO within budget and approved parameters, whom does the Planner submit it to for approval? Which supplier information must be maintained, and how often must it be updated?"
+      },
+      "reference_answer_vi": "Planner → Procurement Manager; duy trì lead time thực tế, MOQ, lịch giao, tỷ lệ giao đủ/đúng hạn; mỗi lần nhận/hằng tháng.",
+      "related_development_topics": [
+        "Q20: normal Planner-to-Procurement approval flow reused; supplier metrics and update-frequency requirements are new."
+      ],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference.",
+      "requirements": [
+        {
+          "id": "H13.route",
+          "description_vi": "PO trong ngân sách",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H13.route.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H13.route.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H13.supplier_metrics",
+          "description_vi": "Chỉ tiêu nhà cung cấp",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H13.supplier_metrics.vi.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H13.supplier_metrics.vi.a1"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H13.supplier_metrics.en.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H13.supplier_metrics.en.a1"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H13.frequency",
+          "description_vi": "Lịch cập nhật",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H13.frequency.vi.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H13.frequency.vi.a1"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H13.frequency.en.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H13.frequency.en.a1"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "H14",
+      "category": "multi_chunk",
+      "question": {
+        "vi": "Đối chiếu Product ID 8 và 9 trong Inventory Control: On-hand Units và Units Sold (Latest) của từng sản phẩm là bao nhiêu?",
+        "en": "Compare Product IDs 8 and 9 in Inventory Control: what are the On-hand Units and Units Sold (Latest) for each product?"
+      },
+      "reference_answer_vi": "ID8: On-hand101/Sold1; ID9: On-hand83/Sold6.",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference.",
+      "requirements": [
+        {
+          "id": "H14.p8_onhand",
+          "description_vi": "Product 8: On-hand Units = 101",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H14.p8_onhand.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H14.p8_onhand.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H14.p8_sold",
+          "description_vi": "Product 8: Units Sold (Latest) = 1",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H14.p8_sold.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H14.p8_sold.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H14.p9_onhand",
+          "description_vi": "Product 9: On-hand Units = 83",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H14.p9_onhand.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H14.p9_onhand.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H14.p9_sold",
+          "description_vi": "Product 9: Units Sold (Latest) = 6",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H14.p9_sold.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H14.p9_sold.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "H15",
+      "category": "multi_chunk",
+      "question": {
+        "vi": "Theo KPI Summary, Streetwear có bao nhiêu SKU và On-hand Units; đối chiếu với mô tả dữ liệu, toàn bộ products.csv có bao nhiêu SKU?",
+        "en": "According to KPI Summary, how many SKUs and On-hand Units are listed for Streetwear, and how many SKUs are in the full products.csv master according to the data description?"
+      },
+      "reference_answer_vi": "Streetwear196SKU/45085units; product master2412SKU. Không nhầm hai phạm vi.",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference.",
+      "requirements": [
+        {
+          "id": "H15.category_skus",
+          "description_vi": "Streetwear: SKU Count = 196",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H15.category_skus.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H15.category_skus.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H15.category_onhand",
+          "description_vi": "Streetwear: On-hand Units = 45085",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H15.category_onhand.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H15.category_onhand.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H15.master",
+          "description_vi": "Quy mô product master",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H15.master.vi.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H15.master.vi.a1"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H15.master.vi.a2"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H15.master.en.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H15.master.en.a1"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H15.master.en.a2"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "H16",
+      "category": "paraphrase_terminology",
+      "question": {
+        "vi": "Nếu gom nhật ký trả hàng, đơn bán, ưu đãi và vận chuyển thành một nguồn, có thể dùng nó thay sổ tồn chính thức không, hay chỉ phục vụ mục đích gì?",
+        "en": "If returns, order, promotion, and delivery logs are combined, can they replace the authoritative inventory book, or what purpose may they serve instead?"
+      },
+      "reference_answer_vi": "Chỉ hỗ trợ phân tích nguyên nhân; không thay thế inventory ledger.",
+      "related_development_topics": [],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference.",
+      "requirements": [
+        {
+          "id": "H16.analysis",
+          "description_vi": "Phân tích nguyên nhân",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H16.analysis.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H16.analysis.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H16.ledger",
+          "description_vi": "Không thay sổ cái",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H16.ledger.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H16.ledger.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "H17",
+      "category": "paraphrase_terminology",
+      "question": {
+        "vi": "Hàng đến có vẻ đủ số thùng rồi; để xác nhận giao đúng đơn, kho còn phải đối chiếu những thông tin nào theo Manual?",
+        "en": "A delivery appears to contain the expected number of cartons; to confirm that the right order arrived, what details must the warehouse reconcile under the Manual?"
+      },
+      "reference_answer_vi": "Đối chiếu PO, SKU, size, màu, số lượng, tình trạng bao bì, chứng từ giao hàng.",
+      "related_development_topics": [
+        "F01: receiving topic; new pre-receipt reconciliation fields"
+      ],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference.",
+      "requirements": [
+        {
+          "id": "H17.reconcile",
+          "description_vi": "Các trường đối chiếu nhận hàng",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H17.reconcile.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H17.reconcile.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "H18",
+      "category": "paraphrase_terminology",
+      "question": {
+        "vi": "Doanh nghiệp không muốn bê nguyên các KPI mẫu vào vận hành. Theo tài liệu, ba yếu tố kinh doanh nào phải dùng để hiệu chỉnh các mục tiêu này?",
+        "en": "The business does not want to copy the sample KPI targets unchanged into operations. Which three business factors should be used to calibrate those targets?"
+      },
+      "reference_answer_vi": "Mức dịch vụ, margin và chiến lược tồn kho.",
+      "related_development_topics": [
+        "Q05: KPI topic; new calibration dimensions"
+      ],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference.",
+      "requirements": [
+        {
+          "id": "H18.service",
+          "description_vi": "Mức dịch vụ",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H18.service.vi.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H18.service.vi.a1"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H18.service.en.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H18.service.en.a1"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H18.margin",
+          "description_vi": "Margin",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H18.margin.vi.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H18.margin.vi.a1"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H18.margin.en.a0"
+                  ]
+                },
+                {
+                  "all_of": [
+                    "H18.margin.en.a1"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H18.strategy",
+          "description_vi": "Chiến lược tồn kho",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H18.strategy.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H18.strategy.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "H19",
+      "category": "paraphrase_terminology",
+      "question": {
+        "vi": "Khách trả hàng vì sai cỡ hoặc giao chậm. Theo tài liệu, có cần gắn mã lý do trả hàng không, và thông tin này phải phản hồi tới những bộ phận nào?",
+        "en": "A customer returns an item because it did not fit or arrived late. Under the policy, must a return-reason code be assigned, and which departments should receive that feedback?"
+      },
+      "reference_answer_vi": "Gắn return-reason code; phản hồi Merchandising, QA, Logistics.",
+      "related_development_topics": [
+        "Q04/Q16: returns topic; new reason-coding feedback destinations"
+      ],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference.",
+      "requirements": [
+        {
+          "id": "H19.reason_code",
+          "description_vi": "Mã lý do trả hàng",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H19.reason_code.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H19.reason_code.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "H19.destinations",
+          "description_vi": "Các bộ phận nhận phản hồi",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H19.destinations.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H19.destinations.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "H20",
+      "category": "paraphrase_terminology",
+      "question": {
+        "vi": "Trong bảng vai trò của Manual, ai chịu trách nhiệm tổ chức phân quyền, giải nghĩa các trường dữ liệu, quản lý nhật ký và kiểm soát AI?",
+        "en": "In the Manual roles table, who is responsible for access permissions, the meaning of data fields, logging, and AI controls?"
+      },
+      "reference_answer_vi": "System / Data Owner.",
+      "related_development_topics": [
+        "Q02/Q14: roles topic; new data-governance owner"
+      ],
+      "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference.",
+      "requirements": [
+        {
+          "id": "H20.owner",
+          "description_vi": "Chủ sở hữu hệ thống/dữ liệu",
+          "required": true,
+          "status": "ready",
+          "evidence_by_language": {
+            "vi": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H20.owner.vi.a0"
+                  ]
+                }
+              ]
+            },
+            "en": {
+              "alternatives": [
+                {
+                  "all_of": [
+                    "H20.owner.en.a0"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "spans": {
+    "H01.availability.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 2,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "7d15c384bdb52cbf934c092cb49755dfcab1f5a9a7198631bd127176e258ec42",
+      "start_char": 181,
+      "end_char": 196,
+      "quote": "mức độ sẵn hàng"
+    },
+    "H01.availability.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 2,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "94054c782bf30e42503ba1aded6bae2daf842e8d1c69d466e7f8c6bc2e3013d0",
+      "start_char": 201,
+      "end_char": 221,
+      "quote": "product availability"
+    },
+    "H01.holding.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 2,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "7d15c384bdb52cbf934c092cb49755dfcab1f5a9a7198631bd127176e258ec42",
+      "start_char": 198,
+      "end_char": 213,
+      "quote": "chi phí lưu kho"
+    },
+    "H01.holding.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 2,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "94054c782bf30e42503ba1aded6bae2daf842e8d1c69d466e7f8c6bc2e3013d0",
+      "start_char": 223,
+      "end_char": 236,
+      "quote": "holding costs"
+    },
+    "H01.capital.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 2,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "7d15c384bdb52cbf934c092cb49755dfcab1f5a9a7198631bd127176e258ec42",
+      "start_char": 215,
+      "end_char": 232,
+      "quote": "vốn bị chiếm dụng"
+    },
+    "H01.capital.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 2,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "94054c782bf30e42503ba1aded6bae2daf842e8d1c69d466e7f8c6bc2e3013d0",
+      "start_char": 238,
+      "end_char": 253,
+      "quote": "tied-up capital"
+    },
+    "H01.accuracy.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 2,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "7d15c384bdb52cbf934c092cb49755dfcab1f5a9a7198631bd127176e258ec42",
+      "start_char": 236,
+      "end_char": 260,
+      "quote": "độ chính xác của dữ liệu"
+    },
+    "H01.accuracy.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 2,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "94054c782bf30e42503ba1aded6bae2daf842e8d1c69d466e7f8c6bc2e3013d0",
+      "start_char": 259,
+      "end_char": 272,
+      "quote": "data accuracy"
+    },
+    "H02.streetwear.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 3,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "0eb3b92abc62f2b319376aee5eb8f0bb87a3f46160d0e30328707f030adf090c",
+      "start_char": 215,
+      "end_char": 225,
+      "quote": "Streetwear"
+    },
+    "H02.streetwear.vi.a1": {
+      "language": "vi",
+      "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+      "source_parser_index": 1,
+      "source_document": "05_Inventory_Policy_Training_Deck.pptx",
+      "source_content_sha256": "4747bbd372e2f970edac7a9b672d002e2396d01a64c4c80427798b0129616602",
+      "start_char": 227,
+      "end_char": 237,
+      "quote": "Streetwear"
+    },
+    "H02.streetwear.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 3,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "f214d5d46fb21a576a3b14a0484a21bba653620985aa66666b518eba8f864ffe",
+      "start_char": 239,
+      "end_char": 249,
+      "quote": "Streetwear"
+    },
+    "H02.streetwear.en.a1": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx",
+      "source_parser_index": 1,
+      "source_document": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "source_content_sha256": "eb5fcbbe710516fbc31991297fe38e3b65dc7fcc0d2b50b1c971bf85db45af9f",
+      "start_char": 257,
+      "end_char": 267,
+      "quote": "Streetwear"
+    },
+    "H02.outdoor.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 3,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "0eb3b92abc62f2b319376aee5eb8f0bb87a3f46160d0e30328707f030adf090c",
+      "start_char": 227,
+      "end_char": 234,
+      "quote": "Outdoor"
+    },
+    "H02.outdoor.vi.a1": {
+      "language": "vi",
+      "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+      "source_parser_index": 1,
+      "source_document": "05_Inventory_Policy_Training_Deck.pptx",
+      "source_content_sha256": "4747bbd372e2f970edac7a9b672d002e2396d01a64c4c80427798b0129616602",
+      "start_char": 240,
+      "end_char": 247,
+      "quote": "Outdoor"
+    },
+    "H02.outdoor.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 3,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "f214d5d46fb21a576a3b14a0484a21bba653620985aa66666b518eba8f864ffe",
+      "start_char": 251,
+      "end_char": 258,
+      "quote": "Outdoor"
+    },
+    "H02.outdoor.en.a1": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx",
+      "source_parser_index": 1,
+      "source_document": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "source_content_sha256": "eb5fcbbe710516fbc31991297fe38e3b65dc7fcc0d2b50b1c971bf85db45af9f",
+      "start_char": 270,
+      "end_char": 277,
+      "quote": "Outdoor"
+    },
+    "H02.casual.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 3,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "0eb3b92abc62f2b319376aee5eb8f0bb87a3f46160d0e30328707f030adf090c",
+      "start_char": 236,
+      "end_char": 242,
+      "quote": "Casual"
+    },
+    "H02.casual.vi.a1": {
+      "language": "vi",
+      "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+      "source_parser_index": 1,
+      "source_document": "05_Inventory_Policy_Training_Deck.pptx",
+      "source_content_sha256": "4747bbd372e2f970edac7a9b672d002e2396d01a64c4c80427798b0129616602",
+      "start_char": 250,
+      "end_char": 256,
+      "quote": "Casual"
+    },
+    "H02.casual.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 3,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "f214d5d46fb21a576a3b14a0484a21bba653620985aa66666b518eba8f864ffe",
+      "start_char": 260,
+      "end_char": 266,
+      "quote": "Casual"
+    },
+    "H02.casual.en.a1": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx",
+      "source_parser_index": 1,
+      "source_document": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "source_content_sha256": "eb5fcbbe710516fbc31991297fe38e3b65dc7fcc0d2b50b1c971bf85db45af9f",
+      "start_char": 280,
+      "end_char": 286,
+      "quote": "Casual"
+    },
+    "H02.genz.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 3,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "0eb3b92abc62f2b319376aee5eb8f0bb87a3f46160d0e30328707f030adf090c",
+      "start_char": 246,
+      "end_char": 250,
+      "quote": "GenZ"
+    },
+    "H02.genz.vi.a1": {
+      "language": "vi",
+      "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+      "source_parser_index": 1,
+      "source_document": "05_Inventory_Policy_Training_Deck.pptx",
+      "source_content_sha256": "4747bbd372e2f970edac7a9b672d002e2396d01a64c4c80427798b0129616602",
+      "start_char": 259,
+      "end_char": 263,
+      "quote": "GenZ"
+    },
+    "H02.genz.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 3,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "f214d5d46fb21a576a3b14a0484a21bba653620985aa66666b518eba8f864ffe",
+      "start_char": 272,
+      "end_char": 276,
+      "quote": "GenZ"
+    },
+    "H02.genz.en.a1": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx",
+      "source_parser_index": 1,
+      "source_document": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "source_content_sha256": "eb5fcbbe710516fbc31991297fe38e3b65dc7fcc0d2b50b1c971bf85db45af9f",
+      "start_char": 289,
+      "end_char": 293,
+      "quote": "GenZ"
+    },
+    "H03.provisional.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 7,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "88b8518180d4930ce3f19f9f177fd3913a2a31d82145b9d442081883a9e34d72",
+      "start_char": 190,
+      "end_char": 203,
+      "quote": "dùng nhóm tạm"
+    },
+    "H03.provisional.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 8,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "619fc2ab2bb8e61b6b2dde8b291de76074ba78f13d400b838c2208e60e9904a0",
+      "start_char": 213,
+      "end_char": 236,
+      "quote": "use provisional classes"
+    },
+    "H03.review.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 7,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "88b8518180d4930ce3f19f9f177fd3913a2a31d82145b9d442081883a9e34d72",
+      "start_char": 207,
+      "end_char": 227,
+      "quote": "rà soát sau 3 chu kỳ"
+    },
+    "H03.review.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 8,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "619fc2ab2bb8e61b6b2dde8b291de76074ba78f13d400b838c2208e60e9904a0",
+      "start_char": 241,
+      "end_char": 266,
+      "quote": "review after three cycles"
+    },
+    "H04.purchase.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 15,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "bea7b49616c875794a597177b4c7ce83797f9a34927368eb8f0fdc32e7d158d4",
+      "start_char": 30,
+      "end_char": 65,
+      "quote": "Purchase request / PO và phê duyệt."
+    },
+    "H04.purchase.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 16,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "175d3fe27fea5a7bc043b3f0987fd8fdcb290f0c4ba1c02d9e3e9206d3b4889f",
+      "start_char": 35,
+      "end_char": 73,
+      "quote": "Purchase requests / POs and approvals."
+    },
+    "H04.receiving.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 15,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "bea7b49616c875794a597177b4c7ce83797f9a34927368eb8f0fdc32e7d158d4",
+      "start_char": 66,
+      "end_char": 122,
+      "quote": "Biên bản nhận hàng, ảnh ngoại lệ, chứng từ nhà cung cấp."
+    },
+    "H04.receiving.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 16,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "175d3fe27fea5a7bc043b3f0987fd8fdcb290f0c4ba1c02d9e3e9206d3b4889f",
+      "start_char": 74,
+      "end_char": 134,
+      "quote": "Receiving reports, exception photos, and supplier documents."
+    },
+    "H04.count.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 15,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "bea7b49616c875794a597177b4c7ce83797f9a34927368eb8f0fdc32e7d158d4",
+      "start_char": 123,
+      "end_char": 186,
+      "quote": "Phiếu kiểm kê, chênh lệch, nguyên nhân và phê duyệt điều chỉnh."
+    },
+    "H04.count.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 16,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "175d3fe27fea5a7bc043b3f0987fd8fdcb290f0c4ba1c02d9e3e9206d3b4889f",
+      "start_char": 135,
+      "end_char": 193,
+      "quote": "Count sheets, variances, causes, and adjustment approvals."
+    },
+    "H04.returns.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 15,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "bea7b49616c875794a597177b4c7ce83797f9a34927368eb8f0fdc32e7d158d4",
+      "start_char": 187,
+      "end_char": 232,
+      "quote": "Hồ sơ hàng trả về, kết quả QA và disposition."
+    },
+    "H04.returns.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 16,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "175d3fe27fea5a7bc043b3f0987fd8fdcb290f0c4ba1c02d9e3e9206d3b4889f",
+      "start_char": 194,
+      "end_char": 238,
+      "quote": "Return records, QA results, and disposition."
+    },
+    "H04.kpi.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 15,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "bea7b49616c875794a597177b4c7ce83797f9a34927368eb8f0fdc32e7d158d4",
+      "start_char": 233,
+      "end_char": 293,
+      "quote": "Báo cáo KPI, exception log, thay đổi tham số và audit trail."
+    },
+    "H04.kpi.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 16,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "175d3fe27fea5a7bc043b3f0987fd8fdcb290f0c4ba1c02d9e3e9206d3b4889f",
+      "start_char": 239,
+      "end_char": 304,
+      "quote": "KPI reports, exception logs, parameter changes, and audit trails."
+    },
+    "H05.restriction.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 10,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "3f64918bd74f3950f0ec683760f9ed915cc388295c9dc77ea0f9fa03cc55111b",
+      "start_char": 362,
+      "end_char": 404,
+      "quote": "Không dùng giảm giá làm biện pháp mặc định"
+    },
+    "H05.restriction.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 11,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "f00e6cc1d42345870b30fc5d3bf6f0a57a6e88df40eb7af7892a2c2d1e8f51b1",
+      "start_char": 388,
+      "end_char": 417,
+      "quote": "Do not default to discounting"
+    },
+    "H05.data.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 10,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "3f64918bd74f3950f0ec683760f9ed915cc388295c9dc77ea0f9fa03cc55111b",
+      "start_char": 424,
+      "end_char": 435,
+      "quote": "sai dữ liệu"
+    },
+    "H05.data.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 11,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "f00e6cc1d42345870b30fc5d3bf6f0a57a6e88df40eb7af7892a2c2d1e8f51b1",
+      "start_char": 441,
+      "end_char": 449,
+      "quote": "bad data"
+    },
+    "H05.size.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 10,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "3f64918bd74f3950f0ec683760f9ed915cc388295c9dc77ea0f9fa03cc55111b",
+      "start_char": 437,
+      "end_char": 453,
+      "quote": "sai phân bổ size"
+    },
+    "H05.size.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 11,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "f00e6cc1d42345870b30fc5d3bf6f0a57a6e88df40eb7af7892a2c2d1e8f51b1",
+      "start_char": 451,
+      "end_char": 476,
+      "quote": "incorrect size allocation"
+    },
+    "H05.held.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 10,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "3f64918bd74f3950f0ec683760f9ed915cc388295c9dc77ea0f9fa03cc55111b",
+      "start_char": 459,
+      "end_char": 479,
+      "quote": "đơn hàng đang bị giữ"
+    },
+    "H05.held.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 11,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "f00e6cc1d42345870b30fc5d3bf6f0a57a6e88df40eb7af7892a2c2d1e8f51b1",
+      "start_char": 481,
+      "end_char": 492,
+      "quote": "held orders"
+    },
+    "H06.size.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 13,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "fcdb64466e0ededff20342a3d0debe62a53d4304aa387f4a032cb1a053edf510",
+      "start_char": 736,
+      "end_char": 743,
+      "quote": "Size: M"
+    },
+    "H06.size.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 13,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "fcdb64466e0ededff20342a3d0debe62a53d4304aa387f4a032cb1a053edf510",
+      "start_char": 736,
+      "end_char": 743,
+      "quote": "Size: M"
+    },
+    "H06.color.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 13,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "fcdb64466e0ededff20342a3d0debe62a53d4304aa387f4a032cb1a053edf510",
+      "start_char": 746,
+      "end_char": 759,
+      "quote": "Color: silver"
+    },
+    "H06.color.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 13,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "fcdb64466e0ededff20342a3d0debe62a53d4304aa387f4a032cb1a053edf510",
+      "start_char": 746,
+      "end_char": 759,
+      "quote": "Color: silver"
+    },
+    "H06.onhand.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 13,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "fcdb64466e0ededff20342a3d0debe62a53d4304aa387f4a032cb1a053edf510",
+      "start_char": 762,
+      "end_char": 779,
+      "quote": "On-hand Units: 28"
+    },
+    "H06.onhand.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 13,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "fcdb64466e0ededff20342a3d0debe62a53d4304aa387f4a032cb1a053edf510",
+      "start_char": 762,
+      "end_char": 779,
+      "quote": "On-hand Units: 28"
+    },
+    "H07.days.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 14,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "74d4b1606bfb8931f4cd379f39c9dccb22f4578dbaafa3172abd621ded01446c",
+      "start_char": 862,
+      "end_char": 878,
+      "quote": "Stockout Days: 2"
+    },
+    "H07.days.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 14,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "74d4b1606bfb8931f4cd379f39c9dccb22f4578dbaafa3172abd621ded01446c",
+      "start_char": 862,
+      "end_char": 878,
+      "quote": "Stockout Days: 2"
+    },
+    "H07.fill.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 14,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "74d4b1606bfb8931f4cd379f39c9dccb22f4578dbaafa3172abd621ded01446c",
+      "start_char": 881,
+      "end_char": 898,
+      "quote": "Fill Rate: 0.9333"
+    },
+    "H07.fill.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 14,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "74d4b1606bfb8931f4cd379f39c9dccb22f4578dbaafa3172abd621ded01446c",
+      "start_char": 881,
+      "end_char": 898,
+      "quote": "Fill Rate: 0.9333"
+    },
+    "H08.sold.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 15,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "e9dcb30c1c20d685d5f317b4e5b7239ec500eb058f7b9fee29dec2e7c74f15c0",
+      "start_char": 782,
+      "end_char": 804,
+      "quote": "Units Sold (Latest): 3"
+    },
+    "H08.sold.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 15,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "e9dcb30c1c20d685d5f317b4e5b7239ec500eb058f7b9fee29dec2e7c74f15c0",
+      "start_char": 782,
+      "end_char": 804,
+      "quote": "Units Sold (Latest): 3"
+    },
+    "H08.average.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 15,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "e9dcb30c1c20d685d5f317b4e5b7239ec500eb058f7b9fee29dec2e7c74f15c0",
+      "start_char": 807,
+      "end_char": 858,
+      "quote": "Avg Monthly Demand (3 snapshots): 2.333333333333333"
+    },
+    "H08.average.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 15,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "e9dcb30c1c20d685d5f317b4e5b7239ec500eb058f7b9fee29dec2e7c74f15c0",
+      "start_char": 807,
+      "end_char": 858,
+      "quote": "Avg Monthly Demand (3 snapshots): 2.333333333333333"
+    },
+    "H09.skus.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 433,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "bb50c8adc6629087bf50b61ef889fb0a6f8d31c1afcfd2a285fff65481f4118a",
+      "start_char": 256,
+      "end_char": 269,
+      "quote": "SKU Count: 44"
+    },
+    "H09.skus.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 433,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "dd7f1a60a262430327767c82de7ba91bfdad4a9867ddccb59477df40feb2435b",
+      "start_char": 256,
+      "end_char": 269,
+      "quote": "SKU Count: 44"
+    },
+    "H09.onhand.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 433,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "bb50c8adc6629087bf50b61ef889fb0a6f8d31c1afcfd2a285fff65481f4118a",
+      "start_char": 272,
+      "end_char": 291,
+      "quote": "On-hand Units: 5126"
+    },
+    "H09.onhand.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 433,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "dd7f1a60a262430327767c82de7ba91bfdad4a9867ddccb59477df40feb2435b",
+      "start_char": 272,
+      "end_char": 291,
+      "quote": "On-hand Units: 5126"
+    },
+    "H09.sold.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 433,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "bb50c8adc6629087bf50b61ef889fb0a6f8d31c1afcfd2a285fff65481f4118a",
+      "start_char": 294,
+      "end_char": 318,
+      "quote": "Units Sold (Latest): 199"
+    },
+    "H09.sold.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 433,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "dd7f1a60a262430327767c82de7ba91bfdad4a9867ddccb59477df40feb2435b",
+      "start_char": 294,
+      "end_char": 318,
+      "quote": "Units Sold (Latest): 199"
+    },
+    "H10.close_ticket.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+      "source_parser_index": 3,
+      "source_document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+      "source_content_sha256": "6c7c1da4d637951b11280f6b3ee503b3827dd2422401eb47a2bc4ec69852ac42",
+      "start_char": 130,
+      "end_char": 140,
+      "quote": "Đóng phiếu"
+    },
+    "H10.close_ticket.vi.a1": {
+      "language": "vi",
+      "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+      "source_parser_index": 7,
+      "source_document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+      "source_content_sha256": "abcf8c515666a70630b2ef312d44f69f9ca549a3ff170c5a16ae749d3c81c3d1",
+      "start_char": 115,
+      "end_char": 125,
+      "quote": "Đóng phiếu"
+    },
+    "H10.close_ticket.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+      "source_parser_index": 3,
+      "source_document": "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+      "source_content_sha256": "06e7507a257cedd9b50e3d0deda7c920f7fcab507cfaa4a277400c1504b06d0e",
+      "start_char": 429,
+      "end_char": 445,
+      "quote": "Close the ticket"
+    },
+    "H10.close_ticket.en.a1": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+      "source_parser_index": 6,
+      "source_document": "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+      "source_content_sha256": "252e01dd5df005b664c89e07c0cfc1e3e122eadfe9befabb0745d55f804abe59",
+      "start_char": 110,
+      "end_char": 126,
+      "quote": "Close the ticket"
+    },
+    "H10.audit_trail.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+      "source_parser_index": 3,
+      "source_document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+      "source_content_sha256": "6c7c1da4d637951b11280f6b3ee503b3827dd2422401eb47a2bc4ec69852ac42",
+      "start_char": 142,
+      "end_char": 157,
+      "quote": "lưu audit trail"
+    },
+    "H10.audit_trail.vi.a1": {
+      "language": "vi",
+      "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+      "source_parser_index": 7,
+      "source_document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+      "source_content_sha256": "abcf8c515666a70630b2ef312d44f69f9ca549a3ff170c5a16ae749d3c81c3d1",
+      "start_char": 127,
+      "end_char": 142,
+      "quote": "lưu audit trail"
+    },
+    "H10.audit_trail.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+      "source_parser_index": 3,
+      "source_document": "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+      "source_content_sha256": "06e7507a257cedd9b50e3d0deda7c920f7fcab507cfaa4a277400c1504b06d0e",
+      "start_char": 447,
+      "end_char": 469,
+      "quote": "retain the audit trail"
+    },
+    "H10.audit_trail.en.a1": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+      "source_parser_index": 6,
+      "source_document": "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+      "source_content_sha256": "252e01dd5df005b664c89e07c0cfc1e3e122eadfe9befabb0745d55f804abe59",
+      "start_char": 128,
+      "end_char": 150,
+      "quote": "retain the audit\ntrail"
+    },
+    "H10.approver.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+      "source_parser_index": 3,
+      "source_document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+      "source_content_sha256": "6c7c1da4d637951b11280f6b3ee503b3827dd2422401eb47a2bc4ec69852ac42",
+      "start_char": 158,
+      "end_char": 178,
+      "quote": "Warehouse Supervisor"
+    },
+    "H10.approver.vi.a1": {
+      "language": "vi",
+      "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+      "source_parser_index": 7,
+      "source_document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+      "source_content_sha256": "abcf8c515666a70630b2ef312d44f69f9ca549a3ff170c5a16ae749d3c81c3d1",
+      "start_char": 158,
+      "end_char": 178,
+      "quote": "Warehouse Supervisor"
+    },
+    "H10.approver.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+      "source_parser_index": 3,
+      "source_document": "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+      "source_content_sha256": "06e7507a257cedd9b50e3d0deda7c920f7fcab507cfaa4a277400c1504b06d0e",
+      "start_char": 470,
+      "end_char": 490,
+      "quote": "Warehouse Supervisor"
+    },
+    "H10.approver.en.a1": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+      "source_parser_index": 6,
+      "source_document": "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+      "source_content_sha256": "252e01dd5df005b664c89e07c0cfc1e3e122eadfe9befabb0745d55f804abe59",
+      "start_char": 163,
+      "end_char": 183,
+      "quote": "Warehouse\nSupervisor"
+    },
+    "H11.p1_size.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 9,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "cae05247765f71b8f3938f9c85addd087097ab374a0dc17c416139c76bdefac9",
+      "start_char": 735,
+      "end_char": 742,
+      "quote": "Size: M"
+    },
+    "H11.p1_size.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 9,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "cae05247765f71b8f3938f9c85addd087097ab374a0dc17c416139c76bdefac9",
+      "start_char": 735,
+      "end_char": 742,
+      "quote": "Size: M"
+    },
+    "H11.p1_color.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 9,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "cae05247765f71b8f3938f9c85addd087097ab374a0dc17c416139c76bdefac9",
+      "start_char": 745,
+      "end_char": 757,
+      "quote": "Color: black"
+    },
+    "H11.p1_color.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 9,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "cae05247765f71b8f3938f9c85addd087097ab374a0dc17c416139c76bdefac9",
+      "start_char": 745,
+      "end_char": 757,
+      "quote": "Color: black"
+    },
+    "H11.p1_on-hand_units.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 9,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "cae05247765f71b8f3938f9c85addd087097ab374a0dc17c416139c76bdefac9",
+      "start_char": 760,
+      "end_char": 776,
+      "quote": "On-hand Units: 3"
+    },
+    "H11.p1_on-hand_units.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 9,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "cae05247765f71b8f3938f9c85addd087097ab374a0dc17c416139c76bdefac9",
+      "start_char": 760,
+      "end_char": 776,
+      "quote": "On-hand Units: 3"
+    },
+    "H11.p3_size.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 10,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "b0a52d1d867d94770027bf2e7b018e4d5b0f5e9fa3f0f4f40117196a4384b416",
+      "start_char": 735,
+      "end_char": 743,
+      "quote": "Size: XL"
+    },
+    "H11.p3_size.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 10,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "b0a52d1d867d94770027bf2e7b018e4d5b0f5e9fa3f0f4f40117196a4384b416",
+      "start_char": 735,
+      "end_char": 743,
+      "quote": "Size: XL"
+    },
+    "H11.p3_color.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 10,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "b0a52d1d867d94770027bf2e7b018e4d5b0f5e9fa3f0f4f40117196a4384b416",
+      "start_char": 746,
+      "end_char": 757,
+      "quote": "Color: blue"
+    },
+    "H11.p3_color.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 10,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "b0a52d1d867d94770027bf2e7b018e4d5b0f5e9fa3f0f4f40117196a4384b416",
+      "start_char": 746,
+      "end_char": 757,
+      "quote": "Color: blue"
+    },
+    "H11.p3_on-hand_units.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 10,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "b0a52d1d867d94770027bf2e7b018e4d5b0f5e9fa3f0f4f40117196a4384b416",
+      "start_char": 760,
+      "end_char": 778,
+      "quote": "On-hand Units: 151"
+    },
+    "H11.p3_on-hand_units.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 10,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "b0a52d1d867d94770027bf2e7b018e4d5b0f5e9fa3f0f4f40117196a4384b416",
+      "start_char": 760,
+      "end_char": 778,
+      "quote": "On-hand Units: 151"
+    },
+    "H12.p2212_dos.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 435,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "851e211bf12c7f56b734c2b185f2ab7d5698206512754d929f977f4f05e42878",
+      "start_char": 389,
+      "end_char": 410,
+      "quote": "Calculated DOS: 25440"
+    },
+    "H12.p2212_dos.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 435,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "851e211bf12c7f56b734c2b185f2ab7d5698206512754d929f977f4f05e42878",
+      "start_char": 389,
+      "end_char": 410,
+      "quote": "Calculated DOS: 25440"
+    },
+    "H12.p2212_status.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 435,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "851e211bf12c7f56b734c2b185f2ab7d5698206512754d929f977f4f05e42878",
+      "start_char": 464,
+      "end_char": 506,
+      "quote": "Review Status: CONFLICT - VERIFY BEFORE PO"
+    },
+    "H12.p2212_status.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 435,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "851e211bf12c7f56b734c2b185f2ab7d5698206512754d929f977f4f05e42878",
+      "start_char": 464,
+      "end_char": 506,
+      "quote": "Review Status: CONFLICT - VERIFY BEFORE PO"
+    },
+    "H12.p927_dos.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 436,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "b7ba6a4dcd012b83299bbd232bac8f694dc9253568b8b03d57db13751f9307d4",
+      "start_char": 393,
+      "end_char": 426,
+      "quote": "Calculated DOS: 6323.333333333334"
+    },
+    "H12.p927_dos.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 436,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "b7ba6a4dcd012b83299bbd232bac8f694dc9253568b8b03d57db13751f9307d4",
+      "start_char": 393,
+      "end_char": 426,
+      "quote": "Calculated DOS: 6323.333333333334"
+    },
+    "H12.p927_status.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 436,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "b7ba6a4dcd012b83299bbd232bac8f694dc9253568b8b03d57db13751f9307d4",
+      "start_char": 480,
+      "end_char": 522,
+      "quote": "Review Status: CONFLICT - VERIFY BEFORE PO"
+    },
+    "H12.p927_status.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 436,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "b7ba6a4dcd012b83299bbd232bac8f694dc9253568b8b03d57db13751f9307d4",
+      "start_char": 480,
+      "end_char": 522,
+      "quote": "Review Status: CONFLICT - VERIFY BEFORE PO"
+    },
+    "H13.route.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 13,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "9da79266447c3ddf5557d053c60aa4a399c775fcd682a8081997715ff734e8cb",
+      "start_char": 192,
+      "end_char": 221,
+      "quote": "Planner → Procurement Manager"
+    },
+    "H13.route.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 14,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "ae785d214af0e972f19ef52215a31bcf8ad7b5d14bc86632a67b148cec9c61b4",
+      "start_char": 183,
+      "end_char": 212,
+      "quote": "Planner → Procurement Manager"
+    },
+    "H13.supplier_metrics.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+      "source_parser_index": 8,
+      "source_document": "03_Policy_Rules_Registry.csv",
+      "source_content_sha256": "9c11f46cd3e513beadc0bb81fcd6c06ce6cf0225617d1737029432e52ee68f48",
+      "start_char": 310,
+      "end_char": 375,
+      "quote": "Duy trì lead time thực tế, MOQ, lịch giao, tỷ lệ giao đủ/đúng hạn"
+    },
+    "H13.supplier_metrics.vi.a1": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 7,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "174c9d4ce49f030aa2b8379d423871c49bca92912b80322fd320369b25bc9e2d",
+      "start_char": 256,
+      "end_char": 321,
+      "quote": "Duy trì lead time thực tế, MOQ, lịch giao, tỷ lệ giao đủ/đúng hạn"
+    },
+    "H13.supplier_metrics.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv",
+      "source_parser_index": 8,
+      "source_document": "03_Policy_Rules_Registry_EN.csv",
+      "source_content_sha256": "6af993d31917d6d6f8d9b5fde61f1d47f4385cc6a8be46cf0dfbfc506ec9c880",
+      "start_char": 309,
+      "end_char": 393,
+      "quote": "Maintain actual lead times, MOQ, delivery schedules, and fill/on-time delivery rates"
+    },
+    "H13.supplier_metrics.en.a1": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 7,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "3a17d10f177a8777634dfb67ec2447601cf55f1c346c113567e963db1af26e0e",
+      "start_char": 242,
+      "end_char": 326,
+      "quote": "Maintain actual lead times, MOQ, delivery schedules, and fill/on-time delivery rates"
+    },
+    "H13.frequency.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+      "source_parser_index": 8,
+      "source_document": "03_Policy_Rules_Registry.csv",
+      "source_content_sha256": "9c11f46cd3e513beadc0bb81fcd6c06ce6cf0225617d1737029432e52ee68f48",
+      "start_char": 444,
+      "end_char": 469,
+      "quote": "Mỗi lần nhận / hàng tháng"
+    },
+    "H13.frequency.vi.a1": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 7,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "174c9d4ce49f030aa2b8379d423871c49bca92912b80322fd320369b25bc9e2d",
+      "start_char": 388,
+      "end_char": 413,
+      "quote": "Mỗi lần nhận / hàng tháng"
+    },
+    "H13.frequency.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv",
+      "source_parser_index": 8,
+      "source_document": "03_Policy_Rules_Registry_EN.csv",
+      "source_content_sha256": "6af993d31917d6d6f8d9b5fde61f1d47f4385cc6a8be46cf0dfbfc506ec9c880",
+      "start_char": 462,
+      "end_char": 484,
+      "quote": "Each receipt / monthly"
+    },
+    "H13.frequency.en.a1": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 7,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "3a17d10f177a8777634dfb67ec2447601cf55f1c346c113567e963db1af26e0e",
+      "start_char": 394,
+      "end_char": 416,
+      "quote": "Each receipt / monthly"
+    },
+    "H14.p8_onhand.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 11,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "9854195120727e934b7b062d59efb1a22f035867fd1b2091202885459a3f5286",
+      "start_char": 759,
+      "end_char": 777,
+      "quote": "On-hand Units: 101"
+    },
+    "H14.p8_onhand.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 11,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "9854195120727e934b7b062d59efb1a22f035867fd1b2091202885459a3f5286",
+      "start_char": 759,
+      "end_char": 777,
+      "quote": "On-hand Units: 101"
+    },
+    "H14.p8_sold.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 11,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "9854195120727e934b7b062d59efb1a22f035867fd1b2091202885459a3f5286",
+      "start_char": 780,
+      "end_char": 802,
+      "quote": "Units Sold (Latest): 1"
+    },
+    "H14.p8_sold.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 11,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "9854195120727e934b7b062d59efb1a22f035867fd1b2091202885459a3f5286",
+      "start_char": 780,
+      "end_char": 802,
+      "quote": "Units Sold (Latest): 1"
+    },
+    "H14.p9_onhand.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 12,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "c6f3bbdd3d5474ceae1ec475ca1a6aedefe78083a15f38d0c61469d6ac148a82",
+      "start_char": 761,
+      "end_char": 778,
+      "quote": "On-hand Units: 83"
+    },
+    "H14.p9_onhand.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 12,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "c6f3bbdd3d5474ceae1ec475ca1a6aedefe78083a15f38d0c61469d6ac148a82",
+      "start_char": 761,
+      "end_char": 778,
+      "quote": "On-hand Units: 83"
+    },
+    "H14.p9_sold.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 12,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "c6f3bbdd3d5474ceae1ec475ca1a6aedefe78083a15f38d0c61469d6ac148a82",
+      "start_char": 781,
+      "end_char": 803,
+      "quote": "Units Sold (Latest): 6"
+    },
+    "H14.p9_sold.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 12,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "c6f3bbdd3d5474ceae1ec475ca1a6aedefe78083a15f38d0c61469d6ac148a82",
+      "start_char": 781,
+      "end_char": 803,
+      "quote": "Units Sold (Latest): 6"
+    },
+    "H15.category_skus.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 433,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "bb50c8adc6629087bf50b61ef889fb0a6f8d31c1afcfd2a285fff65481f4118a",
+      "start_char": 516,
+      "end_char": 530,
+      "quote": "SKU Count: 196"
+    },
+    "H15.category_skus.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 433,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "dd7f1a60a262430327767c82de7ba91bfdad4a9867ddccb59477df40feb2435b",
+      "start_char": 516,
+      "end_char": 530,
+      "quote": "SKU Count: 196"
+    },
+    "H15.category_onhand.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 433,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "bb50c8adc6629087bf50b61ef889fb0a6f8d31c1afcfd2a285fff65481f4118a",
+      "start_char": 533,
+      "end_char": 553,
+      "quote": "On-hand Units: 45085"
+    },
+    "H15.category_onhand.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 433,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "dd7f1a60a262430327767c82de7ba91bfdad4a9867ddccb59477df40feb2435b",
+      "start_char": 533,
+      "end_char": 553,
+      "quote": "On-hand Units: 45085"
+    },
+    "H15.master.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 3,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "0eb3b92abc62f2b319376aee5eb8f0bb87a3f46160d0e30328707f030adf090c",
+      "start_char": 39,
+      "end_char": 67,
+      "quote": "2,412 SKU trong products.csv"
+    },
+    "H15.master.vi.a1": {
+      "language": "vi",
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "source_parser_index": 0,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+      "source_content_sha256": "0c8903f74b29c2d07c6e81772044132f01b1cc390cfb017ae6f4ef3e63ca05d3",
+      "start_char": 218,
+      "end_char": 246,
+      "quote": "2,412 SKU trong products.csv"
+    },
+    "H15.master.vi.a2": {
+      "language": "vi",
+      "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+      "source_parser_index": 1,
+      "source_document": "05_Inventory_Policy_Training_Deck.pptx",
+      "source_content_sha256": "4747bbd372e2f970edac7a9b672d002e2396d01a64c4c80427798b0129616602",
+      "start_char": 82,
+      "end_char": 112,
+      "quote": "2,412 SKU trong product master"
+    },
+    "H15.master.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 3,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "f214d5d46fb21a576a3b14a0484a21bba653620985aa66666b518eba8f864ffe",
+      "start_char": 45,
+      "end_char": 71,
+      "quote": "2,412 SKUs in products.csv"
+    },
+    "H15.master.en.a1": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_parser_index": 0,
+      "source_document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+      "source_content_sha256": "3b20cce6c36b6dc75a8329c9282d44dd42ae244a7a774a0a9cfda384ce4ca298",
+      "start_char": 214,
+      "end_char": 223,
+      "quote": "2,412 SKU"
+    },
+    "H15.master.en.a2": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx",
+      "source_parser_index": 1,
+      "source_document": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "source_content_sha256": "eb5fcbbe710516fbc31991297fe38e3b65dc7fcc0d2b50b1c971bf85db45af9f",
+      "start_char": 88,
+      "end_char": 116,
+      "quote": "2,412 SKUs in product master"
+    },
+    "H16.analysis.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 3,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "0eb3b92abc62f2b319376aee5eb8f0bb87a3f46160d0e30328707f030adf090c",
+      "start_char": 362,
+      "end_char": 383,
+      "quote": "phân tích nguyên nhân"
+    },
+    "H16.analysis.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 3,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "f214d5d46fb21a576a3b14a0484a21bba653620985aa66666b518eba8f864ffe",
+      "start_char": 377,
+      "end_char": 404,
+      "quote": "support root-cause analysis"
+    },
+    "H16.ledger.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 3,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "0eb3b92abc62f2b319376aee5eb8f0bb87a3f46160d0e30328707f030adf090c",
+      "start_char": 390,
+      "end_char": 419,
+      "quote": "không thay thế sổ cái tồn kho"
+    },
+    "H16.ledger.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 3,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "f214d5d46fb21a576a3b14a0484a21bba653620985aa66666b518eba8f864ffe",
+      "start_char": 409,
+      "end_char": 444,
+      "quote": "do not replace the inventory ledger"
+    },
+    "H17.reconcile.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 11,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "a76f5062756dafb6111fbd949690b76b3303060355190c899d158e809728001a",
+      "start_char": 39,
+      "end_char": 119,
+      "quote": "Đối chiếu PO, SKU, size, màu, số lượng, tình trạng bao bì và chứng từ giao hàng."
+    },
+    "H17.reconcile.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 12,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "06da0d2f5f8a013642737da009e1c85ee17b233d3df151dd1b8e90670a59e61b",
+      "start_char": 38,
+      "end_char": 124,
+      "quote": "Match the PO, SKU, size, color, quantity, packaging condition, and delivery documents."
+    },
+    "H18.service.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 9,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "2d1cf10ec2816407b566dd8570128254c12e746b94bf73892913b2e553e14033",
+      "start_char": 111,
+      "end_char": 122,
+      "quote": "mức dịch vụ"
+    },
+    "H18.service.vi.a1": {
+      "language": "vi",
+      "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+      "source_parser_index": 6,
+      "source_document": "05_Inventory_Policy_Training_Deck.pptx",
+      "source_content_sha256": "26ed88c226b384dee06d645f37f993322bc88f1d31a3caf975c617452f00be13",
+      "start_char": 559,
+      "end_char": 570,
+      "quote": "mức dịch vụ"
+    },
+    "H18.service.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 10,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "299202a9fc42427442fab4fa5513c3aea4ac3a32b4bd4b9e6bd9f90b297a33fc",
+      "start_char": 131,
+      "end_char": 145,
+      "quote": "service levels"
+    },
+    "H18.service.en.a1": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx",
+      "source_parser_index": 6,
+      "source_document": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "source_content_sha256": "d15dc29993ef6b6d5042eda618312a1be7dccc035a8d0fc8196bdb0c962e6ccf",
+      "start_char": 601,
+      "end_char": 615,
+      "quote": "service levels"
+    },
+    "H18.margin.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 9,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "2d1cf10ec2816407b566dd8570128254c12e746b94bf73892913b2e553e14033",
+      "start_char": 124,
+      "end_char": 130,
+      "quote": "margin"
+    },
+    "H18.margin.vi.a1": {
+      "language": "vi",
+      "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+      "source_parser_index": 6,
+      "source_document": "05_Inventory_Policy_Training_Deck.pptx",
+      "source_content_sha256": "26ed88c226b384dee06d645f37f993322bc88f1d31a3caf975c617452f00be13",
+      "start_char": 549,
+      "end_char": 555,
+      "quote": "margin"
+    },
+    "H18.margin.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 10,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "299202a9fc42427442fab4fa5513c3aea4ac3a32b4bd4b9e6bd9f90b297a33fc",
+      "start_char": 147,
+      "end_char": 154,
+      "quote": "margins"
+    },
+    "H18.margin.en.a1": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx",
+      "source_parser_index": 6,
+      "source_document": "05_Inventory_Policy_Training_Deck_EN.pptx",
+      "source_content_sha256": "d15dc29993ef6b6d5042eda618312a1be7dccc035a8d0fc8196bdb0c962e6ccf",
+      "start_char": 590,
+      "end_char": 596,
+      "quote": "margin"
+    },
+    "H18.strategy.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 9,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "2d1cf10ec2816407b566dd8570128254c12e746b94bf73892913b2e553e14033",
+      "start_char": 134,
+      "end_char": 152,
+      "quote": "chiến lược tồn kho"
+    },
+    "H18.strategy.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 10,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "299202a9fc42427442fab4fa5513c3aea4ac3a32b4bd4b9e6bd9f90b297a33fc",
+      "start_char": 160,
+      "end_char": 178,
+      "quote": "inventory strategy"
+    },
+    "H19.reason_code.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 11,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "a76f5062756dafb6111fbd949690b76b3303060355190c899d158e809728001a",
+      "start_char": 481,
+      "end_char": 508,
+      "quote": "Gắn mã nguyên nhân trả hàng"
+    },
+    "H19.reason_code.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 12,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "06da0d2f5f8a013642737da009e1c85ee17b233d3df151dd1b8e90670a59e61b",
+      "start_char": 534,
+      "end_char": 560,
+      "quote": "Assign return-reason codes"
+    },
+    "H19.destinations.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 11,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "a76f5062756dafb6111fbd949690b76b3303060355190c899d158e809728001a",
+      "start_char": 566,
+      "end_char": 596,
+      "quote": "Merchandising, QA và Logistics"
+    },
+    "H19.destinations.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 12,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "06da0d2f5f8a013642737da009e1c85ee17b233d3df151dd1b8e90670a59e61b",
+      "start_char": 621,
+      "end_char": 653,
+      "quote": "Merchandising, QA, and Logistics"
+    },
+    "H20.owner.vi.a0": {
+      "language": "vi",
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "source_parser_index": 4,
+      "source_document": "01_Inventory_Management_Policy_Manual.docx",
+      "source_content_sha256": "7bbaa8fadcd592eade19e266eb0134bc421e24bee4d4689bb8266eb60a93a4f5",
+      "start_char": 841,
+      "end_char": 860,
+      "quote": "System / Data Owner"
+    },
+    "H20.owner.en.a0": {
+      "language": "en",
+      "document_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_parser_index": 5,
+      "source_document": "01_Inventory_Management_Policy_Manual_EN.docx",
+      "source_content_sha256": "7cdcaa30daf15e4f53ca9be0cf076e55d60ed348537cd778ca94ff818c1b5e70",
+      "start_char": 91,
+      "end_char": 110,
+      "quote": "System / Data Owner"
+    }
+  },
+  "revision": "reviewed-r1"
+}

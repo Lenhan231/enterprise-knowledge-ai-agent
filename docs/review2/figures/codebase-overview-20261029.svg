@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<rect width="1600" height="900" fill="white"/>
+<text x="55" y="75" font-family="sans-serif" font-size="44" fill="#34263f" font-weight="700" text-anchor="start">Enterprise Knowledge AI — Codebase Overview</text>
+<text x="55" y="116" font-family="sans-serif" font-size="23" fill="#655b70" font-weight="400" text-anchor="start">Two flows: prepare searchable knowledge, then route user requests to the right capability.</text>
+<text x="55" y="163" font-family="sans-serif" font-size="23" fill="#086c73" font-weight="700" text-anchor="start">1  DOCUMENT INGESTION — NORMAL UPLOAD</text>
+<rect x="55" y="185" width="245" height="115" rx="14" fill="#eaf5f5" stroke="#6dabad" stroke-width="2"/>
+<text x="177.5" y="219" font-family="sans-serif" font-size="23" fill="#34263f" font-weight="700" text-anchor="middle">Upload document</text>
+<text x="177.5" y="248" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">Original file +</text>
+<text x="177.5" y="274" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">document metadata</text>
+<path d="M300,242 L365,242" fill="none" stroke="#086c73" stroke-width="2.7"/>
+<path d="M365,242 L353.0,236.0 L353.0,248.0 Z" fill="#086c73"/>
+<rect x="365" y="185" width="245" height="115" rx="14" fill="#eaf5f5" stroke="#6dabad" stroke-width="2"/>
+<text x="487.5" y="219" font-family="sans-serif" font-size="23" fill="#34263f" font-weight="700" text-anchor="middle">Parse / OCR</text>
+<text x="487.5" y="248" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">Text, tables,</text>
+<text x="487.5" y="274" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">layout + locations</text>
+<path d="M610,242 L675,242" fill="none" stroke="#086c73" stroke-width="2.7"/>
+<path d="M675,242 L663.0,236.0 L663.0,248.0 Z" fill="#086c73"/>
+<rect x="675" y="185" width="245" height="115" rx="14" fill="#eaf5f5" stroke="#6dabad" stroke-width="2"/>
+<text x="797.5" y="219" font-family="sans-serif" font-size="23" fill="#34263f" font-weight="700" text-anchor="middle">Chunk + token check</text>
+<text x="797.5" y="248" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">Sentences / row groups</text>
+<text x="797.5" y="274" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">within model budget</text>
+<path d="M920,242 L985,242" fill="none" stroke="#086c73" stroke-width="2.7"/>
+<path d="M985,242 L973.0,236.0 L973.0,248.0 Z" fill="#086c73"/>
+<rect x="985" y="185" width="245" height="115" rx="14" fill="#eaf5f5" stroke="#6dabad" stroke-width="2"/>
+<text x="1107.5" y="219" font-family="sans-serif" font-size="23" fill="#34263f" font-weight="700" text-anchor="middle">E5 embeddings</text>
+<text x="1107.5" y="248" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">Create vectors</text>
+<text x="1107.5" y="274" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">for indexed chunks</text>
+<path d="M1230,242 L1295,242" fill="none" stroke="#086c73" stroke-width="2.7"/>
+<path d="M1295,242 L1283.0,236.0 L1283.0,248.0 Z" fill="#086c73"/>
+<rect x="1295" y="185" width="245" height="115" rx="14" fill="#eaf5f5" stroke="#6dabad" stroke-width="2"/>
+<text x="1417.5" y="219" font-family="sans-serif" font-size="23" fill="#34263f" font-weight="700" text-anchor="middle">Searchable index</text>
+<text x="1417.5" y="248" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">Supabase + pgvector</text>
+<text x="1417.5" y="274" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">document status: ready</text>
+<text x="55" y="341" font-family="sans-serif" font-size="21" fill="#655b70" font-weight="400" text-anchor="start">The API stores original files and parser output; normal upload still chunks and embeds inline.</text>
+<text x="55" y="398" font-family="sans-serif" font-size="23" fill="#79688b" font-weight="700" text-anchor="start">2  QUESTION ANSWERING / ANALYTICS</text>
+<rect x="55" y="550" width="190" height="110" rx="14" fill="#faf8fc" stroke="#ad9cba" stroke-width="2"/>
+<text x="150.0" y="584" font-family="sans-serif" font-size="24" fill="#34263f" font-weight="700" text-anchor="middle">User / UI</text>
+<text x="150.0" y="613" font-family="sans-serif" font-size="19" fill="#34263f" font-weight="400" text-anchor="middle">Question + mode</text>
+<text x="150.0" y="639" font-family="sans-serif" font-size="19" fill="#34263f" font-weight="400" text-anchor="middle">authenticated user</text>
+<rect x="300" y="550" width="230" height="110" rx="14" fill="#faf8fc" stroke="#ad9cba" stroke-width="2"/>
+<text x="415.0" y="584" font-family="sans-serif" font-size="25" fill="#34263f" font-weight="700" text-anchor="middle">Backend API</text>
+<text x="415.0" y="613" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">Authentication</text>
+<text x="415.0" y="639" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">roles + data scope</text>
+<rect x="585" y="550" width="230" height="110" rx="14" fill="#faf8fc" stroke="#ad9cba" stroke-width="2"/>
+<text x="700.0" y="584" font-family="sans-serif" font-size="25" fill="#34263f" font-weight="700" text-anchor="middle">AgentRouter</text>
+<text x="700.0" y="613" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">LangGraph routing</text>
+<text x="700.0" y="639" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">auto / explicit mode</text>
+<rect x="885" y="438" width="345" height="100" rx="14" fill="#eaf5f5" stroke="#6dabad" stroke-width="2"/>
+<text x="1057.5" y="472" font-family="sans-serif" font-size="25" fill="#34263f" font-weight="700" text-anchor="middle">Knowledge / RAG</text>
+<text x="1057.5" y="501" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">Dense + BM25 → BGE</text>
+<text x="1057.5" y="527" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">LLM answer + citations</text>
+<rect x="885" y="560" width="345" height="100" rx="14" fill="#faf8fc" stroke="#ad9cba" stroke-width="2"/>
+<text x="1057.5" y="594" font-family="sans-serif" font-size="25" fill="#34263f" font-weight="700" text-anchor="middle">SQL Analytics</text>
+<text x="1057.5" y="623" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">Validated, scoped SQL</text>
+<text x="1057.5" y="649" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">structured business data</text>
+<rect x="885" y="682" width="345" height="100" rx="14" fill="#faf8fc" stroke="#ad9cba" stroke-width="2"/>
+<text x="1057.5" y="716" font-family="sans-serif" font-size="25" fill="#34263f" font-weight="700" text-anchor="middle">Dashboard / Report</text>
+<text x="1057.5" y="745" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">Charts / report output</text>
+<text x="1057.5" y="771" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">use SQL and/or documents</text>
+<rect x="1300" y="550" width="245" height="128" rx="14" fill="#eaf5f5" stroke="#6dabad" stroke-width="2"/>
+<text x="1422.5" y="584" font-family="sans-serif" font-size="23" fill="#34263f" font-weight="700" text-anchor="middle">User-facing result</text>
+<text x="1422.5" y="613" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">Answer + sources</text>
+<text x="1422.5" y="639" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">chart / report file</text>
+<path d="M245,605 L300,605" fill="none" stroke="#79688b" stroke-width="2.7"/>
+<path d="M300,605 L288.0,599.0 L288.0,611.0 Z" fill="#79688b"/>
+<path d="M530,605 L585,605" fill="none" stroke="#79688b" stroke-width="2.7"/>
+<path d="M585,605 L573.0,599.0 L573.0,611.0 Z" fill="#79688b"/>
+<path d="M815,605 L850,605 L850,488 L885,488" fill="none" stroke="#79688b" stroke-width="2.7"/>
+<path d="M885,488 L873.0,482.0 L873.0,494.0 Z" fill="#79688b"/>
+<path d="M815,605 L885,605" fill="none" stroke="#79688b" stroke-width="2.7"/>
+<path d="M885,605 L873.0,599.0 L873.0,611.0 Z" fill="#79688b"/>
+<path d="M850,605 L850,732 L885,732" fill="none" stroke="#79688b" stroke-width="2.7"/>
+<path d="M885,732 L873.0,726.0 L873.0,738.0 Z" fill="#79688b"/>
+<path d="M1230,488 L1265,488 L1265,580 L1300,580" fill="none" stroke="#79688b" stroke-width="2.7"/>
+<path d="M1300,580 L1288.0,574.0 L1288.0,586.0 Z" fill="#79688b"/>
+<path d="M1230,610 L1300,610" fill="none" stroke="#79688b" stroke-width="2.7"/>
+<path d="M1300,610 L1288.0,604.0 L1288.0,616.0 Z" fill="#79688b"/>
+<path d="M1230,732 L1265,732 L1265,645 L1300,645" fill="none" stroke="#79688b" stroke-width="2.7"/>
+<path d="M1300,645 L1288.0,639.0 L1288.0,651.0 Z" fill="#79688b"/>
+<text x="55" y="719" font-family="sans-serif" font-size="20" fill="#655b70" font-weight="400" text-anchor="start">Hybrid requests can combine</text>
+<text x="55" y="748" font-family="sans-serif" font-size="20" fill="#655b70" font-weight="400" text-anchor="start">Knowledge and SQL results.</text>
+<rect x="55" y="807" width="1490" height="40" rx="14" fill="#fff6e7" stroke="#d6b879" stroke-width="2"/>
+<text x="72" y="834" font-family="sans-serif" font-size="20" fill="#a56a12" font-weight="400" text-anchor="start">Separate async path: parser-handoff → parsed → chunking worker → chunked. Automatic embedding handoff is pending.</text>
+<text x="55" y="878" font-family="sans-serif" font-size="17" fill="#655b70" font-weight="400" text-anchor="start">Code reference: origin/main @169ea59 · server deployment reported by user; exact VPS revision not inspected.</text>
+</svg>

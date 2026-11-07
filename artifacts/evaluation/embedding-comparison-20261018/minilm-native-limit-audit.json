@@ -1,0 +1,59 @@
+{
+  "model_id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "cached_revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+  "tokenizer_model_max_length": 512,
+  "app_configured_limit": 512,
+  "sentence_transformers_default_limit": 128,
+  "special_tokens": 2,
+  "documents": [
+    {
+      "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+      "title": "03 Policy Rules Registry",
+      "parser_chunks": 12,
+      "over_native_limit": 12,
+      "over_app_limit": 0,
+      "max_tokens_including_special": 244,
+      "headers_alone_exceed_native_limit": 0
+    },
+    {
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "title": "04 Inventory Control and Reorder Planner",
+      "parser_chunks": 485,
+      "over_native_limit": 484,
+      "over_app_limit": 0,
+      "max_tokens_including_special": 474,
+      "headers_alone_exceed_native_limit": 424
+    },
+    {
+      "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+      "title": "02 SOP Cycle Count and Stock Adjustment",
+      "parser_chunks": 9,
+      "over_native_limit": 8,
+      "over_app_limit": 0,
+      "max_tokens_including_special": 304,
+      "headers_alone_exceed_native_limit": 0
+    },
+    {
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "title": "01 Inventory Management Policy Manual",
+      "parser_chunks": 18,
+      "over_native_limit": 10,
+      "over_app_limit": 0,
+      "max_tokens_including_special": 277,
+      "headers_alone_exceed_native_limit": 0
+    },
+    {
+      "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+      "title": "05 Inventory Policy Training Deck",
+      "parser_chunks": 8,
+      "over_native_limit": 7,
+      "over_app_limit": 0,
+      "max_tokens_including_special": 203,
+      "headers_alone_exceed_native_limit": 0
+    }
+  ],
+  "limitations": "Counts measure exposure to truncation at the local backend default, not observed loss of a particular answer. Hosted inference behavior has not been verified. No model weights, application settings or database records were changed.",
+  "total_chunks": 532,
+  "over_native_limit": 521,
+  "over_native_percent": 97.93
+}

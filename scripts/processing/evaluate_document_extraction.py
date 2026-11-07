@@ -21,7 +21,8 @@ import fitz
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from core.document_processing.processors.document_processor import DocumentProcessor  # noqa: E402
+from core.document_processing.document_processor import DocumentProcessor
+from core.document_processing.chunking.processor import ChunkingProcessor  # noqa: E402
 from core.analytics.metric_candidates import candidates as extract_metric_candidates  # noqa: E402
 from core.analytics.financial_extraction import (  # noqa: E402
     extract_financial_candidates, select_financial_pages,
@@ -369,6 +370,8 @@ def evaluate_case(
         scan_png,
         {"document_id": case["document_id"]},
     )
+    chunker = ChunkingProcessor(processor_config)
+    native, raster, image = [chunker.process(parsed) for parsed in (native, raster, image)]
     visual_pdf = fitz.open(stream=native_pdf, filetype="pdf")
     try:
         visual_spans = [

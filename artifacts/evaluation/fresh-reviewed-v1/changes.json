@@ -1,0 +1,26 @@
+{
+  "question_edits": {
+    "F04": {
+      "vi": {
+        "before": "Nếu hàng tồn vượt 240 ngày, ai phải đánh giá và đánh giá những phương án kế toán nào?",
+        "after": "Với SKU có days of supply trên 240 ngày, ai cần đánh giá và xem xét những phương án nào theo quy định kế toán?"
+      },
+      "en": {
+        "before": "For stock exceeding 240 days, who evaluates it and which accounting actions are considered?",
+        "after": "For a SKU with more than 240 days of supply, who assesses it and which accounting actions are considered?"
+      }
+    },
+    "F09": {
+      "vi": {
+        "before": "Với điều chỉnh tồn nhỏ có đủ bằng chứng, ai phê duyệt và thời hạn xử lý là bao lâu?",
+        "after": "Theo bảng phê duyệt trong Inventory Management Policy Manual, ai duyệt điều chỉnh tồn nhỏ có đủ bằng chứng và thời hạn xử lý là bao lâu?"
+      },
+      "en": {
+        "before": "For a small inventory adjustment with sufficient evidence, who approves it and what is the processing deadline?",
+        "after": "According to the Inventory Management Policy Manual approval table, who approves a small inventory adjustment with sufficient evidence, and what is the processing deadline?"
+      }
+    }
+  },
+  "evidence_changes": "Approved proposals: narrowed F06-F08; alternative training deck F02, workbook README F05, extracted SOP table F12; decomposed into 28 required answer components. F09 separation of duties is supported context, not an extra requirement for its approver/deadline question.",
+  "source_role_policy": "F09 Manual-scoped; F12 SOP-scoped; no corpus-wide role reconciliation claimed."
+}

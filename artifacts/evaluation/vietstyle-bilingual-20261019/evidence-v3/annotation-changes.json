@@ -1,0 +1,88 @@
+{
+  "provenance": {
+    "previous_path": "artifacts/evaluation/vietstyle-bilingual-20261019/evidence-v2/evidence.json",
+    "previous_sha256": "6e7a502a4b99cd347940f8c28562ed19d082c2761e8f2e0bbf75f75d142a7f0b",
+    "review_scope": "Q15.transaction_id only: reviewed explicit Adjustment Transaction ID occurrences across both frozen languages. Added VI prose duplicate; EN prose/form already accepted. Every other requirement unchanged.",
+    "evaluation_warning": "Post-hoc evidence correction after inspecting reranker output; label-only score changes are not retrieval/model improvement. No independent held-out claim.",
+    "unchanged": "Sources, questions, reference answers, all other requirements including Q15.history and unresolved Q14, all model inputs and rankings."
+  },
+  "changes": [
+    {
+      "requirement_id": "Q15.transaction_id",
+      "before": {
+        "id": "Q15.transaction_id",
+        "description_vi": "Giữ Adjustment Transaction ID sau phê duyệt",
+        "status": "ready",
+        "evidence_by_language": {
+          "vi": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "vi-S8-3050acd8a086"
+                ]
+              }
+            ]
+          },
+          "en": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "en-S5-83061af6d029"
+                ]
+              }
+            ]
+          }
+        },
+        "required": true
+      },
+      "after": {
+        "id": "Q15.transaction_id",
+        "description_vi": "Giữ Adjustment Transaction ID sau phê duyệt",
+        "status": "ready",
+        "evidence_by_language": {
+          "vi": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "vi-S8-3050acd8a086"
+                ]
+              },
+              {
+                "all_of": [
+                  "vi-v3-q15-transaction-prose"
+                ]
+              }
+            ]
+          },
+          "en": {
+            "alternatives": [
+              {
+                "all_of": [
+                  "en-S5-83061af6d029"
+                ]
+              }
+            ]
+          }
+        },
+        "required": true,
+        "review_note": "Accept the same explicit post-approval Adjustment Transaction ID field in PDF prose and extracted-table representations. English source review confirms its prose/form occurrence is already labelled; no artificial extra English alternative. Other fields and history controls remain required."
+      },
+      "added_span": {
+        "id": "vi-v3-q15-transaction-prose",
+        "language": "vi",
+        "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+        "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "source_parser_index": 5,
+        "source_content_sha256": "0d5cac2f0b776b6f06967e82a2394d69068a5fca6178a7d9c1ec1b029897e609",
+        "start_char": 888,
+        "end_char": 947,
+        "quote": "Adjustment Transaction ID Mã giao dịch điều chỉnh sau duyệt",
+        "location": {
+          "section_title": "8. Hồ sơ lưu trữ",
+          "page_number": 3
+        }
+      }
+    }
+  ],
+  "english_review": "EN Q15.transaction_id already points to en-S5-83061af6d029 in the English Minimum Form Fields prose; unchanged."
+}

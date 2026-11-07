@@ -8,7 +8,10 @@ import asyncio
 import json
 import os
 import platform
-import resource
+try:
+    import resource
+except ImportError:
+    resource = None
 import statistics
 import sys
 import time
@@ -150,7 +153,7 @@ async def main_async(args) -> int:
         "environment": {
             "python": platform.python_version(),
             "platform": platform.platform(),
-            "peak_rss_mb": round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024, 1),
+            "peak_rss_mb": round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024, 1) if resource is not None else None,
             "database_max_connections_per_process": int(
                 os.getenv("DATABASE_MAX_CONNECTIONS_PER_PROCESS", "10")
             ),

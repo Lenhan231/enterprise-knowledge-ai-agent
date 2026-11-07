@@ -1,0 +1,540 @@
+{
+  "summary": {
+    "plain": {
+      "en->en": {
+        "cases": 20,
+        "required_ready_components": 61,
+        "required_met_components": 55,
+        "required_component_coverage_at_10": 0.9016393442622951,
+        "mean_case_component_coverage_at_10": 0.9094444444444444,
+        "full_intent_eligible_cases": 19,
+        "full_evidence_cases_at_10": 14,
+        "full_evidence_success_rate_at_10": 0.7368421052631579,
+        "excluded_full_intent_ids": [
+          "Q14"
+        ]
+      },
+      "en->vi": {
+        "cases": 20,
+        "required_ready_components": 61,
+        "required_met_components": 49,
+        "required_component_coverage_at_10": 0.8032786885245902,
+        "mean_case_component_coverage_at_10": 0.8608333333333333,
+        "full_intent_eligible_cases": 19,
+        "full_evidence_cases_at_10": 12,
+        "full_evidence_success_rate_at_10": 0.631578947368421,
+        "excluded_full_intent_ids": [
+          "Q14"
+        ]
+      },
+      "vi->en": {
+        "cases": 20,
+        "required_ready_components": 61,
+        "required_met_components": 46,
+        "required_component_coverage_at_10": 0.7540983606557377,
+        "mean_case_component_coverage_at_10": 0.8094444444444444,
+        "full_intent_eligible_cases": 19,
+        "full_evidence_cases_at_10": 12,
+        "full_evidence_success_rate_at_10": 0.631578947368421,
+        "excluded_full_intent_ids": [
+          "Q14"
+        ]
+      },
+      "vi->vi": {
+        "cases": 20,
+        "required_ready_components": 61,
+        "required_met_components": 58,
+        "required_component_coverage_at_10": 0.9508196721311475,
+        "mean_case_component_coverage_at_10": 0.9569444444444445,
+        "full_intent_eligible_cases": 19,
+        "full_evidence_cases_at_10": 16,
+        "full_evidence_success_rate_at_10": 0.8421052631578947,
+        "excluded_full_intent_ids": [
+          "Q14"
+        ]
+      }
+    },
+    "source_context": {
+      "en->en": {
+        "cases": 20,
+        "required_ready_components": 61,
+        "required_met_components": 56,
+        "required_component_coverage_at_10": 0.9180327868852459,
+        "mean_case_component_coverage_at_10": 0.915,
+        "full_intent_eligible_cases": 19,
+        "full_evidence_cases_at_10": 15,
+        "full_evidence_success_rate_at_10": 0.7894736842105263,
+        "excluded_full_intent_ids": [
+          "Q14"
+        ]
+      },
+      "en->vi": {
+        "cases": 20,
+        "required_ready_components": 61,
+        "required_met_components": 49,
+        "required_component_coverage_at_10": 0.8032786885245902,
+        "mean_case_component_coverage_at_10": 0.8608333333333333,
+        "full_intent_eligible_cases": 19,
+        "full_evidence_cases_at_10": 12,
+        "full_evidence_success_rate_at_10": 0.631578947368421,
+        "excluded_full_intent_ids": [
+          "Q14"
+        ]
+      },
+      "vi->en": {
+        "cases": 20,
+        "required_ready_components": 61,
+        "required_met_components": 47,
+        "required_component_coverage_at_10": 0.7704918032786885,
+        "mean_case_component_coverage_at_10": 0.815,
+        "full_intent_eligible_cases": 19,
+        "full_evidence_cases_at_10": 12,
+        "full_evidence_success_rate_at_10": 0.631578947368421,
+        "excluded_full_intent_ids": [
+          "Q14"
+        ]
+      },
+      "vi->vi": {
+        "cases": 20,
+        "required_ready_components": 61,
+        "required_met_components": 59,
+        "required_component_coverage_at_10": 0.9672131147540983,
+        "mean_case_component_coverage_at_10": 0.965,
+        "full_intent_eligible_cases": 19,
+        "full_evidence_cases_at_10": 17,
+        "full_evidence_success_rate_at_10": 0.8947368421052632,
+        "excluded_full_intent_ids": [
+          "Q14"
+        ]
+      }
+    }
+  },
+  "component_changes": [
+    {
+      "id": "Q13-vi-to-vi",
+      "direction": "vi->vi",
+      "requirements": {
+        "Q13.audit_update": [
+          false,
+          true
+        ]
+      },
+      "full_before": false,
+      "full_after": true
+    },
+    {
+      "id": "Q15-vi-to-vi",
+      "direction": "vi->vi",
+      "requirements": {
+        "Q15.history": [
+          false,
+          true
+        ]
+      },
+      "full_before": false,
+      "full_after": true
+    },
+    {
+      "id": "Q20-vi-to-vi",
+      "direction": "vi->vi",
+      "requirements": {
+        "Q20.proposal_checks": [
+          true,
+          false
+        ]
+      },
+      "full_before": true,
+      "full_after": false
+    },
+    {
+      "id": "Q13-vi-to-en",
+      "direction": "vi->en",
+      "requirements": {
+        "Q13.freeze": [
+          false,
+          true
+        ]
+      },
+      "full_before": false,
+      "full_after": false
+    },
+    {
+      "id": "Q13-en-to-en",
+      "direction": "en->en",
+      "requirements": {
+        "Q13.freeze": [
+          false,
+          true
+        ]
+      },
+      "full_before": false,
+      "full_after": true
+    }
+  ],
+  "focused_cases": [
+    {
+      "id": "Q13-vi-to-vi",
+      "required": 9,
+      "plain_met": 8,
+      "context_met": 9,
+      "missing_before": [
+        "Q13.audit_update"
+      ],
+      "missing_after": [],
+      "vi_guard_rank_plain": 21,
+      "vi_guard_rank_context": 5
+    },
+    {
+      "id": "Q15-vi-to-vi",
+      "required": 4,
+      "plain_met": 3,
+      "context_met": 4,
+      "missing_before": [
+        "Q15.history"
+      ],
+      "missing_after": [],
+      "vi_guard_rank_plain": 21,
+      "vi_guard_rank_context": 1
+    },
+    {
+      "id": "Q13-en-to-vi",
+      "required": 9,
+      "plain_met": 3,
+      "context_met": 3,
+      "missing_before": [
+        "Q13.prepare",
+        "Q13.independent",
+        "Q13.investigate",
+        "Q13.approve",
+        "Q13.audit_update",
+        "Q13.closure"
+      ],
+      "missing_after": [
+        "Q13.prepare",
+        "Q13.independent",
+        "Q13.investigate",
+        "Q13.approve",
+        "Q13.audit_update",
+        "Q13.closure"
+      ],
+      "vi_guard_rank_plain": null,
+      "vi_guard_rank_context": null
+    },
+    {
+      "id": "Q15-en-to-vi",
+      "required": 4,
+      "plain_met": 3,
+      "context_met": 3,
+      "missing_before": [
+        "Q15.history"
+      ],
+      "missing_after": [
+        "Q15.history"
+      ],
+      "vi_guard_rank_plain": null,
+      "vi_guard_rank_context": null
+    },
+    {
+      "id": "Q13-vi-to-en",
+      "required": 9,
+      "plain_met": 2,
+      "context_met": 3,
+      "missing_before": [
+        "Q13.prepare",
+        "Q13.freeze",
+        "Q13.independent",
+        "Q13.investigate",
+        "Q13.approve",
+        "Q13.audit_update",
+        "Q13.closure"
+      ],
+      "missing_after": [
+        "Q13.prepare",
+        "Q13.independent",
+        "Q13.investigate",
+        "Q13.approve",
+        "Q13.audit_update",
+        "Q13.closure"
+      ],
+      "vi_guard_rank_plain": null,
+      "vi_guard_rank_context": null
+    },
+    {
+      "id": "Q15-vi-to-en",
+      "required": 4,
+      "plain_met": 4,
+      "context_met": 4,
+      "missing_before": [],
+      "missing_after": [],
+      "vi_guard_rank_plain": null,
+      "vi_guard_rank_context": null
+    },
+    {
+      "id": "Q13-en-to-en",
+      "required": 9,
+      "plain_met": 8,
+      "context_met": 9,
+      "missing_before": [
+        "Q13.freeze"
+      ],
+      "missing_after": [],
+      "vi_guard_rank_plain": null,
+      "vi_guard_rank_context": null
+    },
+    {
+      "id": "Q15-en-to-en",
+      "required": 4,
+      "plain_met": 4,
+      "context_met": 4,
+      "missing_before": [],
+      "missing_after": [],
+      "vi_guard_rank_plain": null,
+      "vi_guard_rank_context": null
+    }
+  ],
+  "top10_order_changed_cases": 42,
+  "top10_set_changed_cases": 29,
+  "paired_inference_seconds": 168.5712078200005,
+  "control_order_changes_from_previous_metadata_run": [],
+  "control_evidence_changes_from_previous_metadata_run": [],
+  "control_mode": "metadata",
+  "context_mode": "parent",
+  "original_plain_summary": {
+    "en->en": {
+      "cases": 20,
+      "required_ready_components": 61,
+      "required_met_components": 55,
+      "required_component_coverage_at_10": 0.9016393442622951,
+      "mean_case_component_coverage_at_10": 0.9094444444444444,
+      "full_intent_eligible_cases": 19,
+      "full_evidence_cases_at_10": 14,
+      "full_evidence_success_rate_at_10": 0.7368421052631579,
+      "excluded_full_intent_ids": [
+        "Q14"
+      ]
+    },
+    "en->vi": {
+      "cases": 20,
+      "required_ready_components": 61,
+      "required_met_components": 49,
+      "required_component_coverage_at_10": 0.8032786885245902,
+      "mean_case_component_coverage_at_10": 0.8608333333333333,
+      "full_intent_eligible_cases": 19,
+      "full_evidence_cases_at_10": 12,
+      "full_evidence_success_rate_at_10": 0.631578947368421,
+      "excluded_full_intent_ids": [
+        "Q14"
+      ]
+    },
+    "vi->en": {
+      "cases": 20,
+      "required_ready_components": 61,
+      "required_met_components": 46,
+      "required_component_coverage_at_10": 0.7540983606557377,
+      "mean_case_component_coverage_at_10": 0.8094444444444444,
+      "full_intent_eligible_cases": 19,
+      "full_evidence_cases_at_10": 12,
+      "full_evidence_success_rate_at_10": 0.631578947368421,
+      "excluded_full_intent_ids": [
+        "Q14"
+      ]
+    },
+    "vi->vi": {
+      "cases": 20,
+      "required_ready_components": 61,
+      "required_met_components": 59,
+      "required_component_coverage_at_10": 0.9672131147540983,
+      "mean_case_component_coverage_at_10": 0.9819444444444444,
+      "full_intent_eligible_cases": 19,
+      "full_evidence_cases_at_10": 17,
+      "full_evidence_success_rate_at_10": 0.8947368421052632,
+      "excluded_full_intent_ids": [
+        "Q14"
+      ]
+    }
+  },
+  "changes_vs_original_plain": [
+    {
+      "id": "Q01-vi-to-vi",
+      "original_plain_complete": true,
+      "parent_complete": false
+    },
+    {
+      "id": "Q13-vi-to-vi",
+      "original_plain_complete": false,
+      "parent_complete": true
+    },
+    {
+      "id": "Q15-vi-to-vi",
+      "original_plain_complete": false,
+      "parent_complete": true
+    },
+    {
+      "id": "Q20-vi-to-vi",
+      "original_plain_complete": true,
+      "parent_complete": false
+    },
+    {
+      "id": "Q13-en-to-en",
+      "original_plain_complete": false,
+      "parent_complete": true
+    }
+  ],
+  "diagnostic_passages": [
+    {
+      "id": "Q01-vi-to-vi",
+      "changed_top10_or_guard": []
+    },
+    {
+      "id": "Q13-vi-to-vi",
+      "changed_top10_or_guard": [
+        {
+          "document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+          "parser_index": 4,
+          "original_text": "Section: 7. Cập nhật hệ thống và đóng phiếu\n• Không xóa giao dịch cũ hoặc sửa trực tiếp file nguồn; dùng giao dịch điều chỉnh có thể truy vết.",
+          "plain_rank": 21,
+          "context_rank": 5,
+          "plain_logit": -4.428837299346924,
+          "context_logit": -0.9759654998779297
+        },
+        {
+          "document": "05_Inventory_Policy_Training_Deck.pptx",
+          "parser_index": 4,
+          "original_text": "04 | Kiểm kê chu kỳ & điều chỉnh ABC dựa trên giá trị tiêu thụ năm, không chỉ dựa vào số lượng. NHÓM A ~80% giá trị tiêu thụ Hằng tuần NHÓM B ~15% tiếp theo Hằng tháng NHÓM C ~5% còn lại Hằng quý Quy trình: chuẩn bị danh sách → blind count → recount độc lập → đối chiếu receipts/picks/returns/transfers → ghi nguyên nhân → duyệt → điều chỉnh có audit trail. Không xóa giao dịch cũ; mọi điều chỉnh cần mã phiếu, người nhập, người duyệt, thời điểm và bằng chứng. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 5",
+          "plain_rank": 10,
+          "context_rank": 11,
+          "plain_logit": -2.139399528503418,
+          "context_logit": -2.139399528503418
+        }
+      ]
+    },
+    {
+      "id": "Q15-vi-to-vi",
+      "changed_top10_or_guard": [
+        {
+          "document": "03_Policy_Rules_Registry.csv",
+          "parser_index": 0,
+          "original_text": "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 1: policy_id: INV-POL-001 | policy_name: Quản trị dữ liệu tồn kho | trigger: Mọi thay đổi SKU, tồn kho, giá vốn hoặc trạng thái hàng | rule_or_required_action: Lưu người thao tác, thời điểm, giá trị trước/sau và lý do; không ghi đè lịch sử | owner: Inventory Controller / Data Owner | sla_or_frequency: Trong ngày | approval: Bắt buộc | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+          "plain_rank": 10,
+          "context_rank": 11,
+          "plain_logit": -2.212686777114868,
+          "context_logit": -2.212686777114868
+        },
+        {
+          "document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+          "parser_index": 4,
+          "original_text": "Section: 7. Cập nhật hệ thống và đóng phiếu\n• Không xóa giao dịch cũ hoặc sửa trực tiếp file nguồn; dùng giao dịch điều chỉnh có thể truy vết.",
+          "plain_rank": 21,
+          "context_rank": 1,
+          "plain_logit": -3.6946675777435303,
+          "context_logit": 1.7589728832244873
+        }
+      ]
+    },
+    {
+      "id": "Q20-vi-to-vi",
+      "changed_top10_or_guard": [
+        {
+          "document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+          "parser_index": 434,
+          "original_text": "Section: KPI Summary\nColumns: Category | SKU Count | On-hand Units | Units Sold (Latest) | Mean Fill Rate\nRow 8: Category: P1 - Service | SKU Count: | On-hand Units: Stockout / fill rate cần điều tra | Units Sold (Latest): | Mean Fill Rate:\nRow 9: Category: P2 - Overstock | SKU Count: | On-hand Units: Dừng bổ sung và lập kế hoạch xử lý | Units Sold (Latest): | Mean Fill Rate:\nRow 10: Category: P2 - Replenish | SKU Count: | On-hand Units: Chỉ đề xuất PO sau khi kiểm tra inventory position | Units Sold (Latest): | Mean Fill Rate:\nRow 11: Category: Suggested order units | SKU Count: | On-hand Units: Đề xuất mô phỏng; chưa gồm MOQ / PO inbound / backorder thực | Units Sold (Latest): | Mean Fill Rate:",
+          "plain_rank": 13,
+          "context_rank": 6,
+          "plain_logit": -3.2391438484191895,
+          "context_logit": -0.7044504880905151
+        },
+        {
+          "document": "01_Inventory_Management_Policy_Manual.docx",
+          "parser_index": 5,
+          "original_text": "4. Chính sách bổ sung hàng\nMô hình tham chiếu cho SKU có nhu cầu tương đối ổn định:\nInventory position = On-hand + Open PO − Backorder\nReorder Point (ROP) = Nhu cầu/ngày × (Lead time + Safety days)\nTarget Stock = Nhu cầu/ngày × (Lead time + Safety days + Review period)\nGiả định khởi tạo trong bộ mô phỏng: lead time 14 ngày, safety stock 7 ngày, review period 7 ngày. Các giá trị này có thể chỉnh theo nhà cung cấp / nhóm hàng; không phải lead time được suy ra từ dữ liệu.\nRà soát đề xuất bổ sung ít nhất mỗi tuần và trước chiến dịch khuyến mãi.\nTrước khi phát hành PO, kiểm tra tồn kho khả dụng, PO đang mở, hàng đang giữ, backorder, MOQ, ngân sách và lịch giao.\nNếu có stockout signal cùng days of supply > 120 ngày, không tự động mua thêm; mở điều tra P1.\nKhông đặt hàng bổ sung cho SKU vượt 120 ngày tồn kho trừ khi có phê duyệt chiến dịch, cam kết khách hàng hoặc lý do được ghi nhận.\nMọi PO khẩn cấp phải ghi rõ nguyên nhân, ảnh hưởng dịch vụ và người phê duyệt.",
+          "plain_rank": 10,
+          "context_rank": 11,
+          "plain_logit": -2.5151000022888184,
+          "context_logit": -2.5151000022888184
+        }
+      ]
+    },
+    {
+      "id": "Q13-vi-to-en",
+      "changed_top10_or_guard": [
+        {
+          "document": "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+          "parser_index": 2,
+          "original_text": "Section: VIETSTYLE COMMERCE\n• Freeze transactions at the location being counted or record every transaction occurring during the count window. • Prepare scanners, quarantine labels, recording forms, cameras, and a plan for goods being picked, packed, or transferred. 4. Counting and Reconciliation • Count by SKU + size + color + location; do not combine similar variants. • Record actual quantity, unit of measure, counter, timestamp, and packaging",
+          "plain_rank": 23,
+          "context_rank": 10,
+          "plain_logit": -6.150615692138672,
+          "context_logit": -5.274731636047363
+        },
+        {
+          "document": "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+          "parser_index": 4,
+          "original_text": "Section: VIETSTYLE COMMERCE\nTemporarily block automatic PO recommendations and check available inventory, held stock, unshipped orders, the snapshot timestamp, and the days-of-supply formula. Reopen the replenishment decision only after the Inventory Controller records a conclusion. 7. System Update and Ticket Closure • Every adjustment must include a ticket ID, policy ID, SKU, before/after quantities, reason code, evidence, data-entry person, and approver. • Do not delete old transactions or directly edit source files; use traceable adjustment transactions. • Notify the Planner when a variance affects ROP, target stock, or order fulfillment capability. • Close the ticket after approval, successful system synchronization, and exception-report updates. 8. Records Retention Retain count lists, recount results, photos / supporting documents, root-cause analyses, approvals, transaction IDs, and synchronization timestamps for the retention period specified by the business. For AI/RAG data, retain metadata: policy_id, owner, effective_date, version, approval_status, and source_document.",
+          "plain_rank": 20,
+          "context_rank": 22,
+          "plain_logit": -6.032468795776367,
+          "context_logit": -6.032468795776367
+        },
+        {
+          "document": "03_Policy_Rules_Registry_EN.csv",
+          "parser_index": 6,
+          "original_text": "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 7: policy_id: INV-POL-007 | policy_name: Returned Goods | trigger: Customer return received | rule_or_required_action: Quarantine until QA classifies it: A-grade resale; B-grade repair/repack; C-grade damaged or missing accessories handled separately | owner: Returns QA + Warehouse | sla_or_frequency: Within 2 business days | approval: Scrapping/write-offs require approval | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+          "plain_rank": 10,
+          "context_rank": 11,
+          "plain_logit": -5.330502986907959,
+          "context_logit": -5.330502986907959
+        }
+      ]
+    },
+    {
+      "id": "Q13-en-to-en",
+      "changed_top10_or_guard": [
+        {
+          "document": "01_Inventory_Management_Policy_Manual_EN.docx",
+          "parser_index": 16,
+          "original_text": "12. Required Records and Retention\nPurchase requests / POs and approvals.\nReceiving reports, exception photos, and supplier documents.\nCount sheets, variances, causes, and adjustment approvals.\nReturn records, QA results, and disposition.\nKPI reports, exception logs, parameter changes, and audit trails.",
+          "plain_rank": 10,
+          "context_rank": 12,
+          "plain_logit": -3.0829434394836426,
+          "context_logit": -3.0829434394836426
+        },
+        {
+          "document": "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+          "parser_index": 2,
+          "original_text": "Section: VIETSTYLE COMMERCE\n• Freeze transactions at the location being counted or record every transaction occurring during the count window. • Prepare scanners, quarantine labels, recording forms, cameras, and a plan for goods being picked, packed, or transferred. 4. Counting and Reconciliation • Count by SKU + size + color + location; do not combine similar variants. • Record actual quantity, unit of measure, counter, timestamp, and packaging",
+          "plain_rank": 23,
+          "context_rank": 4,
+          "plain_logit": -5.361973285675049,
+          "context_logit": -1.4337692260742188
+        },
+        {
+          "document": "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+          "parser_index": 4,
+          "original_text": "Section: VIETSTYLE COMMERCE\nTemporarily block automatic PO recommendations and check available inventory, held stock, unshipped orders, the snapshot timestamp, and the days-of-supply formula. Reopen the replenishment decision only after the Inventory Controller records a conclusion. 7. System Update and Ticket Closure • Every adjustment must include a ticket ID, policy ID, SKU, before/after quantities, reason code, evidence, data-entry person, and approver. • Do not delete old transactions or directly edit source files; use traceable adjustment transactions. • Notify the Planner when a variance affects ROP, target stock, or order fulfillment capability. • Close the ticket after approval, successful system synchronization, and exception-report updates. 8. Records Retention Retain count lists, recount results, photos / supporting documents, root-cause analyses, approvals, transaction IDs, and synchronization timestamps for the retention period specified by the business. For AI/RAG data, retain metadata: policy_id, owner, effective_date, version, approval_status, and source_document.",
+          "plain_rank": 3,
+          "context_rank": 3,
+          "plain_logit": -0.3564201295375824,
+          "context_logit": -0.3564201295375824
+        },
+        {
+          "document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+          "parser_index": 4,
+          "original_text": "Section: Policy Matrix\nColumns: Policy ID | Policy | Trigger | Required action | Owner | SLA / Frequency | Approval\nRow 3: Policy ID: INV-POL-003 | Policy: Inventory Conflict Verification | Trigger: A stockout/low-service signal occurs with >120 days of supply, or stockout and overstock flags are both enabled | Required action: Temporarily block automatic POs; check transactions, snapshot, pending orders, and demand calculations | Owner: Inventory Controller | SLA / Frequency: P1 within 1 business day | Approval: Warehouse Manager approves the conclusion\nRow 4: Policy ID: INV-POL-004 | Policy: ABC Cycle Counting | Trigger: A/B/C SKUs classified by annual consumption value | Required action: A: weekly; B: monthly; C: quarterly; use blind counts and independent reconciliation | Owner: Warehouse Supervisor | SLA / Frequency: As scheduled | Approval: Variances above threshold require approval",
+          "plain_rank": 9,
+          "context_rank": 11,
+          "plain_logit": -2.907555103302002,
+          "context_logit": -2.907555103302002
+        },
+        {
+          "document": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+          "parser_index": 434,
+          "original_text": "Section: KPI Summary\nColumns: Category | SKU Count | On-hand Units | Units Sold (Latest) | Mean Fill Rate\nRow 8: Category: P1 - Service | SKU Count: | On-hand Units: Stockout / fill rate requires investigation | Units Sold (Latest): | Mean Fill Rate:\nRow 9: Category: P2 - Overstock | SKU Count: | On-hand Units: Stop replenishment and prepare a handling plan | Units Sold (Latest): | Mean Fill Rate:\nRow 10: Category: P2 - Replenish | SKU Count: | On-hand Units: Propose a PO only after checking inventory position | Units Sold (Latest): | Mean Fill Rate:\nRow 11: Category: Suggested order units | SKU Count: | On-hand Units: Simulation proposal; excludes actual MOQ / inbound PO / backorder | Units Sold (Latest): | Mean Fill Rate:",
+          "plain_rank": 17,
+          "context_rank": 10,
+          "plain_logit": -4.509708881378174,
+          "context_logit": -2.840829372406006
+        }
+      ]
+    }
+  ]
+}

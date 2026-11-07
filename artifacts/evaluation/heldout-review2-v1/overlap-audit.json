@@ -1,0 +1,360 @@
+[
+  {
+    "intent_id": "H01",
+    "related_topics": [],
+    "nearest_old_wording": {
+      "vi": {
+        "old_intent": "F09",
+        "sequence_similarity": 0.39069767441860465,
+        "old_question": "Theo bảng phê duyệt trong Inventory Management Policy Manual, ai duyệt điều chỉnh tồn nhỏ có đủ bằng chứng và thời hạn xử lý là bao lâu?"
+      },
+      "en": {
+        "old_intent": "F06",
+        "sequence_similarity": 0.5376344086021505,
+        "old_question": "According to Appendix A, which fields should stay together in a policy chunk used for RAG?"
+      }
+    },
+    "semantic_overlap_review": "New requested facts/entities; same-domain related topics explicitly flagged. String similarity is not a semantic independence guarantee."
+  },
+  {
+    "intent_id": "H02",
+    "related_topics": [],
+    "nearest_old_wording": {
+      "vi": {
+        "old_intent": "Q03",
+        "sequence_similarity": 0.425,
+        "old_question": "Tần suất kiểm kê chu kỳ cho nhóm ABC là bao nhiêu và ABC được phân loại dựa trên tiêu chí nào?"
+      },
+      "en": {
+        "old_intent": "F03",
+        "sequence_similarity": 0.4383561643835616,
+        "old_question": "Which three details must be documented for an emergency purchase order?"
+      }
+    },
+    "semantic_overlap_review": "New requested facts/entities; same-domain related topics explicitly flagged. String similarity is not a semantic independence guarantee."
+  },
+  {
+    "intent_id": "H03",
+    "related_topics": [
+      "Q03: ABC topic, but new insufficient-history rule"
+    ],
+    "nearest_old_wording": {
+      "vi": {
+        "old_intent": "Q15",
+        "sequence_similarity": 0.39408866995073893,
+        "old_question": "Những trường thông tin tối thiểu nào phải lưu cho một giao dịch điều chỉnh tồn kho?"
+      },
+      "en": {
+        "old_intent": "F01",
+        "sequence_similarity": 0.4076923076923077,
+        "old_question": "When an inbound delivery is short or damaged, when must the exception be recorded and what evidence is required?"
+      }
+    },
+    "semantic_overlap_review": "New requested facts/entities; same-domain related topics explicitly flagged. String similarity is not a semantic independence guarantee."
+  },
+  {
+    "intent_id": "H04",
+    "related_topics": [
+      "Q15: records topic; new complete retention inventory"
+    ],
+    "nearest_old_wording": {
+      "vi": {
+        "old_intent": "Q06",
+        "sequence_similarity": 0.35555555555555557,
+        "old_question": "Trước một campaign, nhóm phải chuẩn bị kế hoạch tồn kho trước bao lâu và cần kiểm tra những thông tin nào?"
+      },
+      "en": {
+        "old_intent": "Q05",
+        "sequence_similarity": 0.5276073619631901,
+        "old_question": "Which inventory KPIs must be monitored regularly under the policy set?"
+      }
+    },
+    "semantic_overlap_review": "New requested facts/entities; same-domain related topics explicitly flagged. String similarity is not a semantic independence guarantee."
+  },
+  {
+    "intent_id": "H05",
+    "related_topics": [
+      "Q07: slow-stock topic, new non-discounting causes"
+    ],
+    "nearest_old_wording": {
+      "vi": {
+        "old_intent": "Q04",
+        "sequence_similarity": 0.4117647058823529,
+        "old_question": "Khi hàng trả về từ khách, hàng phải qua trạng thái nào trước khi được cộng vào tồn kho khả dụng?"
+      },
+      "en": {
+        "old_intent": "F02",
+        "sequence_similarity": 0.40414507772020725,
+        "old_question": "After a campaign ends, which outcomes must be compared with the forecast to revise the plan?"
+      }
+    },
+    "semantic_overlap_review": "New requested facts/entities; same-domain related topics explicitly flagged. String similarity is not a semantic independence guarantee."
+  },
+  {
+    "intent_id": "H06",
+    "related_topics": [],
+    "nearest_old_wording": {
+      "vi": {
+        "old_intent": "F09",
+        "sequence_similarity": 0.31620553359683795,
+        "old_question": "Theo bảng phê duyệt trong Inventory Management Policy Manual, ai duyệt điều chỉnh tồn nhỏ có đủ bằng chứng và thời hạn xử lý là bao lâu?"
+      },
+      "en": {
+        "old_intent": "Q18",
+        "sequence_similarity": 0.43333333333333335,
+        "old_question": "According to the dataset, what are the current inbound PO and backorder quantities for SKU X? Provide the exact numbers."
+      }
+    },
+    "semantic_overlap_review": "New requested facts/entities; same-domain related topics explicitly flagged. String similarity is not a semantic independence guarantee."
+  },
+  {
+    "intent_id": "H07",
+    "related_topics": [],
+    "nearest_old_wording": {
+      "vi": {
+        "old_intent": "F09",
+        "sequence_similarity": 0.38524590163934425,
+        "old_question": "Theo bảng phê duyệt trong Inventory Management Policy Manual, ai duyệt điều chỉnh tồn nhỏ có đủ bằng chứng và thời hạn xử lý là bao lâu?"
+      },
+      "en": {
+        "old_intent": "F12",
+        "sequence_similarity": 0.3697478991596639,
+        "old_question": "According to the SOP handling-threshold table, what action and approvers apply to recurring or high-value variances?"
+      }
+    },
+    "semantic_overlap_review": "New requested facts/entities; same-domain related topics explicitly flagged. String similarity is not a semantic independence guarantee."
+  },
+  {
+    "intent_id": "H08",
+    "related_topics": [],
+    "nearest_old_wording": {
+      "vi": {
+        "old_intent": "F09",
+        "sequence_similarity": 0.4016393442622951,
+        "old_question": "Theo bảng phê duyệt trong Inventory Management Policy Manual, ai duyệt điều chỉnh tồn nhỏ có đủ bằng chứng và thời hạn xử lý là bao lâu?"
+      },
+      "en": {
+        "old_intent": "F06",
+        "sequence_similarity": 0.3902439024390244,
+        "old_question": "According to Appendix A, which fields should stay together in a policy chunk used for RAG?"
+      }
+    },
+    "semantic_overlap_review": "New requested facts/entities; same-domain related topics explicitly flagged. String similarity is not a semantic independence guarantee."
+  },
+  {
+    "intent_id": "H09",
+    "related_topics": [],
+    "nearest_old_wording": {
+      "vi": {
+        "old_intent": "F05",
+        "sequence_similarity": 0.3902439024390244,
+        "old_question": "Nhu cầu bình quân trong workbook dùng tối đa bao nhiêu snapshot, và có bắt buộc là các tháng liên tiếp không?"
+      },
+      "en": {
+        "old_intent": "F12",
+        "sequence_similarity": 0.39826839826839827,
+        "old_question": "According to the SOP handling-threshold table, what action and approvers apply to recurring or high-value variances?"
+      }
+    },
+    "semantic_overlap_review": "New requested facts/entities; same-domain related topics explicitly flagged. String similarity is not a semantic independence guarantee."
+  },
+  {
+    "intent_id": "H10",
+    "related_topics": [
+      "Q13: count-workflow topic; new explicit no-variance table row, not the recurring/high-value branch in F12."
+    ],
+    "nearest_old_wording": {
+      "vi": {
+        "old_intent": "F12",
+        "sequence_similarity": 0.6331658291457286,
+        "old_question": "Theo bảng ngưỡng xử lý trong SOP, chênh lệch lặp lại hoặc giá trị lớn cần hành động gì và ai duyệt?"
+      },
+      "en": {
+        "old_intent": "F12",
+        "sequence_similarity": 0.5396825396825397,
+        "old_question": "According to the SOP handling-threshold table, what action and approvers apply to recurring or high-value variances?"
+      }
+    },
+    "semantic_overlap_review": "New requested facts/entities; same-domain related topics explicitly flagged. String similarity is not a semantic independence guarantee."
+  },
+  {
+    "intent_id": "H11",
+    "related_topics": [],
+    "nearest_old_wording": {
+      "vi": {
+        "old_intent": "F09",
+        "sequence_similarity": 0.35714285714285715,
+        "old_question": "Theo bảng phê duyệt trong Inventory Management Policy Manual, ai duyệt điều chỉnh tồn nhỏ có đủ bằng chứng và thời hạn xử lý là bao lâu?"
+      },
+      "en": {
+        "old_intent": "Q01",
+        "sequence_similarity": 0.3728813559322034,
+        "old_question": "What version and date does the current VietStyle Commerce policy set have, and what is its approval status?"
+      }
+    },
+    "semantic_overlap_review": "New requested facts/entities; same-domain related topics explicitly flagged. String similarity is not a semantic independence guarantee."
+  },
+  {
+    "intent_id": "H12",
+    "related_topics": [],
+    "nearest_old_wording": {
+      "vi": {
+        "old_intent": "F07",
+        "sequence_similarity": 0.31413612565445026,
+        "old_question": "Khi áp dụng blind count, ai phân công người đếm và người đếm có được xem số lượng hệ thống không?"
+      },
+      "en": {
+        "old_intent": "Q18",
+        "sequence_similarity": 0.45569620253164556,
+        "old_question": "According to the dataset, what are the current inbound PO and backorder quantities for SKU X? Provide the exact numbers."
+      }
+    },
+    "semantic_overlap_review": "New requested facts/entities; same-domain related topics explicitly flagged. String similarity is not a semantic independence guarantee."
+  },
+  {
+    "intent_id": "H13",
+    "related_topics": [
+      "Q20: normal Planner-to-Procurement approval flow reused; supplier metrics and update-frequency requirements are new."
+    ],
+    "nearest_old_wording": {
+      "vi": {
+        "old_intent": "F02",
+        "sequence_similarity": 0.40304182509505704,
+        "old_question": "Sau khi chiến dịch kết thúc, cần đối chiếu forecast với những chỉ số nào để cập nhật kế hoạch?"
+      },
+      "en": {
+        "old_intent": "Q15",
+        "sequence_similarity": 0.37037037037037035,
+        "old_question": "What minimum information must be retained for an inventory adjustment transaction?"
+      }
+    },
+    "semantic_overlap_review": "New requested facts/entities; same-domain related topics explicitly flagged. String similarity is not a semantic independence guarantee."
+  },
+  {
+    "intent_id": "H14",
+    "related_topics": [],
+    "nearest_old_wording": {
+      "vi": {
+        "old_intent": "F09",
+        "sequence_similarity": 0.41245136186770426,
+        "old_question": "Theo bảng phê duyệt trong Inventory Management Policy Manual, ai duyệt điều chỉnh tồn nhỏ có đủ bằng chứng và thời hạn xử lý là bao lâu?"
+      },
+      "en": {
+        "old_intent": "Q18",
+        "sequence_similarity": 0.42857142857142855,
+        "old_question": "According to the dataset, what are the current inbound PO and backorder quantities for SKU X? Provide the exact numbers."
+      }
+    },
+    "semantic_overlap_review": "New requested facts/entities; same-domain related topics explicitly flagged. String similarity is not a semantic independence guarantee."
+  },
+  {
+    "intent_id": "H15",
+    "related_topics": [],
+    "nearest_old_wording": {
+      "vi": {
+        "old_intent": "Q08",
+        "sequence_similarity": 0.33858267716535434,
+        "old_question": "Lead time 14 ngày, safety days 7 ngày và review period 7 ngày có phải là dữ liệu thực tế đã được xác nhận từ dataset không?"
+      },
+      "en": {
+        "old_intent": "F05",
+        "sequence_similarity": 0.40148698884758366,
+        "old_question": "How many snapshots can the workbook use for average demand, and must they be consecutive months?"
+      }
+    },
+    "semantic_overlap_review": "New requested facts/entities; same-domain related topics explicitly flagged. String similarity is not a semantic independence guarantee."
+  },
+  {
+    "intent_id": "H16",
+    "related_topics": [],
+    "nearest_old_wording": {
+      "vi": {
+        "old_intent": "Q19",
+        "sequence_similarity": 0.42585551330798477,
+        "old_question": "Snapshot tồn kho mới nhất trong bộ Datathon là ngày nào? Có thể dùng nó để khẳng định tồn kho hiện tại hôm nay không?"
+      },
+      "en": {
+        "old_intent": "Q12",
+        "sequence_similarity": 0.3973941368078176,
+        "old_question": "Both stockout_flag and overstock_flag are enabled for a SKU. Can we conclude it is definitely both understocked and overstocked? What should the system do?"
+      }
+    },
+    "semantic_overlap_review": "New requested facts/entities; same-domain related topics explicitly flagged. String similarity is not a semantic independence guarantee."
+  },
+  {
+    "intent_id": "H17",
+    "related_topics": [
+      "F01: receiving topic; new pre-receipt reconciliation fields"
+    ],
+    "nearest_old_wording": {
+      "vi": {
+        "old_intent": "F02",
+        "sequence_similarity": 0.41346153846153844,
+        "old_question": "Sau khi chiến dịch kết thúc, cần đối chiếu forecast với những chỉ số nào để cập nhật kế hoạch?"
+      },
+      "en": {
+        "old_intent": "F05",
+        "sequence_similarity": 0.4108527131782946,
+        "old_question": "How many snapshots can the workbook use for average demand, and must they be consecutive months?"
+      }
+    },
+    "semantic_overlap_review": "New requested facts/entities; same-domain related topics explicitly flagged. String similarity is not a semantic independence guarantee."
+  },
+  {
+    "intent_id": "H18",
+    "related_topics": [
+      "Q05: KPI topic; new calibration dimensions"
+    ],
+    "nearest_old_wording": {
+      "vi": {
+        "old_intent": "Q15",
+        "sequence_similarity": 0.375,
+        "old_question": "Những trường thông tin tối thiểu nào phải lưu cho một giao dịch điều chỉnh tồn kho?"
+      },
+      "en": {
+        "old_intent": "Q19",
+        "sequence_similarity": 0.39436619718309857,
+        "old_question": "What is the latest inventory snapshot date in the Datathon dataset? Can it be used to claim what the current inventory is today?"
+      }
+    },
+    "semantic_overlap_review": "New requested facts/entities; same-domain related topics explicitly flagged. String similarity is not a semantic independence guarantee."
+  },
+  {
+    "intent_id": "H19",
+    "related_topics": [
+      "Q04/Q16: returns topic; new reason-coding feedback destinations"
+    ],
+    "nearest_old_wording": {
+      "vi": {
+        "old_intent": "F01",
+        "sequence_similarity": 0.3949579831932773,
+        "old_question": "Khi nhận hàng phát hiện thiếu hoặc hư hỏng, phải ghi nhận lúc nào và cần những bằng chứng gì?"
+      },
+      "en": {
+        "old_intent": "F01",
+        "sequence_similarity": 0.4181184668989547,
+        "old_question": "When an inbound delivery is short or damaged, when must the exception be recorded and what evidence is required?"
+      }
+    },
+    "semantic_overlap_review": "New requested facts/entities; same-domain related topics explicitly flagged. String similarity is not a semantic independence guarantee."
+  },
+  {
+    "intent_id": "H20",
+    "related_topics": [
+      "Q02/Q14: roles topic; new data-governance owner"
+    ],
+    "nearest_old_wording": {
+      "vi": {
+        "old_intent": "Q02",
+        "sequence_similarity": 0.39631336405529954,
+        "old_question": "Ai chịu trách nhiệm chính về KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách?"
+      },
+      "en": {
+        "old_intent": "F09",
+        "sequence_similarity": 0.36610169491525424,
+        "old_question": "According to the Inventory Management Policy Manual approval table, who approves a small inventory adjustment with sufficient evidence, and what is the processing deadline?"
+      }
+    },
+    "semantic_overlap_review": "New requested facts/entities; same-domain related topics explicitly flagged. String similarity is not a semantic independence guarantee."
+  }
+]

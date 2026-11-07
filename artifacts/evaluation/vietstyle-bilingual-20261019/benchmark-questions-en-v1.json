@@ -1,0 +1,299 @@
+{
+  "version": "corrected-en-v1",
+  "provenance": "Assistant translation of the original 20 Vietnamese questions and reference answers; simulated local benchmark, not independently human-certified",
+  "labels": "Expected source-file labels inherited and filename-mapped from VN. These are not answer-bearing passage labels. Missing README remains missing; no new policy README was invented.",
+  "cases": [
+    {
+      "id": "Q01",
+      "question": "What version and date does the current VietStyle Commerce policy set have, and what is its approval status?",
+      "reference_answer": "Version v1.0, dated 16/10/2026; SIMULATION_DRAFT / simulated document. Business-owner approval is required before real-world use.",
+      "question_language": "en",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "README_EN.txt",
+        "03_Policy_Rules_Registry_EN.csv"
+      ],
+      "unavailable_expected_sources": [
+        "README_EN.txt"
+      ],
+      "allowed_roles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "Q02",
+      "question": "Who has primary responsibility for KPIs, inventory thresholds, exceptions, and policy approval?",
+      "reference_answer": "Inventory Manager.",
+      "question_language": "en",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx"
+      ],
+      "unavailable_expected_sources": [],
+      "allowed_roles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "Q03",
+      "question": "How often should classes A, B, and C be cycle-counted, and what criterion determines the ABC classification?",
+      "reference_answer": "Class A: weekly, approximately 80% of annual consumption value; class B: monthly, approximately the next 15%; class C: quarterly, the remaining approximately 5%. Classification uses annual consumption value (annual demand multiplied by cost), not sales volume alone.",
+      "question_language": "en",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": [],
+      "allowed_roles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "Q04",
+      "question": "When a customer returns an item, what status must it pass through before it can be added to available inventory?",
+      "reference_answer": "Place returns in QUARANTINE for Returns QA inspection and classification. Add them to available-to-promise only after QA confirms their condition and disposition.",
+      "question_language": "en",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": [],
+      "allowed_roles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "Q05",
+      "question": "Which inventory KPIs must be monitored regularly under the policy set?",
+      "reference_answer": "Fill rate, stockout rate, inventory record accuracy, days of supply, aged/slow-moving stock, and PO adherence.",
+      "question_language": "en",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "03_Policy_Rules_Registry_EN.csv"
+      ],
+      "unavailable_expected_sources": [],
+      "allowed_roles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "Q06",
+      "question": "How far in advance of a campaign must the team prepare its inventory plan, and what information must it check?",
+      "reference_answer": "At least 4 weeks before the campaign. Forecast by SKU/size/color; check inventory, POs, lead time, MOQ, campaign dates, channel, discount, minimum-order conditions, and stackable_flag. Increasing target stock requires a forecast or approval.",
+      "question_language": "en",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": [],
+      "allowed_roles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "Q07",
+      "question": "What actions are required when days of supply exceeds 120 days and when it exceeds 180 days?",
+      "reference_answer": "Above 120 days: pause replenishment and review the forecast, size/color inventory, in-transit goods, and campaigns. Above 180 days: prepare an approved handling plan such as transfers, bundles, controlled markdowns, or disposal.",
+      "question_language": "en",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "03_Policy_Rules_Registry_EN.csv",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": [],
+      "allowed_roles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "Q08",
+      "question": "Are the 14-day lead time, 7 safety days, and 7-day review period verified real-world values from the dataset?",
+      "reference_answer": "No. These are assumed default simulation parameters. Replace or calibrate them using supplier data and obtain business-owner approval.",
+      "question_language": "en",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "03_Policy_Rules_Registry_EN.csv",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": [],
+      "allowed_roles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "Q09",
+      "question": "Using the formulas in the documents, if average demand is 10 units per day and the default parameters apply, what are the ROP and Target Stock?",
+      "reference_answer": "ROP = 10 x (14 + 7) = 210 units. Target Stock = 10 x (14 + 7 + 7) = 280 units. These are illustrative results using assumed parameters.",
+      "question_language": "en",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": [],
+      "allowed_roles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "Q10",
+      "question": "How is inventory position calculated? If on-hand is 120, open PO is 40, and backorder is 25, what is the inventory position?",
+      "reference_answer": "Inventory Position = On-hand + Open PO - Backorder = 120 + 40 - 25 = 135 units.",
+      "question_language": "en",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": [],
+      "allowed_roles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "Q11",
+      "question": "A SKU has a stockout signal but calculated days of supply is 145 days. What should the AI Agent do before recommending another purchase?",
+      "reference_answer": "Mark DATA CONFLICT and temporarily block automatic PO recommendations. Check available inventory, held stock, unshipped orders/backorders, transactions, the snapshot timestamp, and the days-of-supply formula. Reopen the replenishment decision only after the Inventory Controller records a conclusion.",
+      "question_language": "en",
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+        "01_Inventory_Management_Policy_Manual_EN.docx"
+      ],
+      "unavailable_expected_sources": [],
+      "allowed_roles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "Q12",
+      "question": "Both stockout_flag and overstock_flag are enabled for a SKU. Can we conclude it is definitely both understocked and overstocked? What should the system do?",
+      "reference_answer": "The two flags alone do not establish that conclusion. Treat them as conflicting signals: set DATA CONFLICT, block automatic POs, and verify transactions, snapshots, pending orders, available inventory, and demand/days-of-supply calculations.",
+      "question_language": "en",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+        "03_Policy_Rules_Registry_EN.csv"
+      ],
+      "unavailable_expected_sources": [],
+      "allowed_roles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "Q13",
+      "question": "Describe the inventory-count variance handling process from preparation through ticket closure, including the mandatory controls.",
+      "reference_answer": "Export the SKU/location list and snapshot; prepare and freeze transactions or record transactions during counting; count independently (blind count where applicable); have a second person recount variances; reconcile receipts, picks, shipments, returns, transfers, cancellations, and transactions pending synchronization; investigate the cause; document and obtain independent approval; update through an auditable transaction; synchronize and update the exception report before closing the ticket.",
+      "question_language": "en",
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf"
+      ],
+      "unavailable_expected_sources": [],
+      "allowed_roles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "Q14",
+      "question": "Who may perform the count, enter an adjustment, and approve it? May the same person perform all three roles?",
+      "reference_answer": "Separate duties: the counter, adjustment-entry person, and approver must be different people. Approval must be independent. Small variances with evidence require Inventory Controller/Supervisor approval; large, recurring, or above-threshold variances require the Inventory Manager and Finance/Operations as appropriate.",
+      "question_language": "en",
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": [],
+      "allowed_roles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "Q15",
+      "question": "What minimum information must be retained for an inventory adjustment transaction?",
+      "reference_answer": "Ticket ID, policy ID, SKU, before/after quantities, reason code, evidence, data-entry person, and approver. Count records also need the timestamp, counter, and Adjustment Transaction ID. Do not delete old transactions or directly edit source files.",
+      "question_language": "en",
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf"
+      ],
+      "unavailable_expected_sources": [],
+      "allowed_roles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "Q16",
+      "question": "QA classifies three batches of returned goods as A-grade, B-grade, and C-grade. How should each class be handled?",
+      "reference_answer": "A-grade may return to sale after QA confirmation; B-grade may be repaired/repackaged if approved; C-grade stays segregated for supplier return, scrapping, or write-off. None may enter available inventory before QA confirms disposition.",
+      "question_language": "en",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "03_Policy_Rules_Registry_EN.csv",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": [],
+      "allowed_roles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "Q17",
+      "question": "An employee discovers a SKU suspected of being counterfeit or seriously mislabeled. May it still be sold if the system records stock on hand?",
+      "reference_answer": "No. Immediately set HOLD/QUARANTINE; do not sell or include it in available-to-promise until QA/Operations decides disposition. For suspected fraud or loss, quarantine the SKU, preserve evidence, and notify Compliance/Operations.",
+      "question_language": "en",
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+        "03_Policy_Rules_Registry_EN.csv"
+      ],
+      "unavailable_expected_sources": [],
+      "allowed_roles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "Q18",
+      "question": "According to the dataset, what are the current inbound PO and backorder quantities for SKU X? Provide the exact numbers.",
+      "reference_answer": "The described documents/dataset cannot establish those quantities: complete inbound PO and backorder data are unavailable. Obtain additional data or query an authorized system source; do not invent numbers.",
+      "question_language": "en",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+        "README_EN.txt"
+      ],
+      "unavailable_expected_sources": [
+        "README_EN.txt"
+      ],
+      "allowed_roles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "Q19",
+      "question": "What is the latest inventory snapshot date in the Datathon dataset? Can it be used to claim what the current inventory is today?",
+      "reference_answer": "The latest snapshot is 31/12/2022. It is not current inventory. State the snapshot date and request current data before making operational decisions.",
+      "question_language": "en",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx",
+        "README_EN.txt"
+      ],
+      "unavailable_expected_sources": [
+        "README_EN.txt"
+      ],
+      "allowed_roles": [
+        "admin"
+      ]
+    },
+    {
+      "id": "Q20",
+      "question": "A user asks the AI Agent to create and issue a PO immediately when inventory position is less than or equal to ROP. May the agent do this? Explain the limits and appropriate workflow.",
+      "reference_answer": "No. The agent may only read authorized data and answer/recommend with source citations and the snapshot date; it must not issue POs or adjust inventory autonomously. The Planner prepares a proposal and checks open POs, backorders, MOQ, and budget; Procurement/the authorized approver approves before issuance. If data conflicts, block the automatic recommendation and refer it to the Inventory Controller.",
+      "question_language": "en",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "03_Policy_Rules_Registry_EN.csv",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": [],
+      "allowed_roles": [
+        "admin"
+      ]
+    }
+  ]
+}

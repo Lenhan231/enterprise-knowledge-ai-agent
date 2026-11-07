@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1400" viewBox="0 0 1920 1400">
+<rect width="1920" height="1400" fill="white"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#61728C"/></marker></defs>
+<text x="65" y="82" font-family="Arial, sans-serif" font-size="40" font-weight="700" fill="#26344B">TOKENIZATION, EMBEDDING &amp; RETRIEVAL</text>
+<text x="65" y="124" font-family="Arial, sans-serif" font-size="25" font-weight="400" fill="#5A6980">Pipeline tích hợp: translated_hybrid_rerank • phần phụ trách của Huy</text>
+<text x="65" y="189" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#26344B">1   CHUẨN BỊ &amp; LẬP CHỈ MỤC TÀI LIỆU</text>
+<rect x="65" y="220" width="315" height="140" rx="16" fill="#EDF2F7" stroke="#CFD8E5" stroke-width="2"/>
+<text x="222.5" y="271" text-anchor="middle" font-family="Arial, sans-serif" font-size="27" font-weight="700" fill="#26344B">Tài liệu</text>
+<text x="222.5" y="311" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="400" fill="#26344B">PDF / DOCX / XLSX / CSV</text>
+<rect x="420" y="220" width="315" height="140" rx="16" fill="#EDF2F7" stroke="#CFD8E5" stroke-width="2"/>
+<text x="577.5" y="271" text-anchor="middle" font-family="Arial, sans-serif" font-size="27" font-weight="700" fill="#26344B">Parser / OCR</text>
+<text x="577.5" y="311" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="400" fill="#26344B">Nhân → parser chunks</text>
+<rect x="775" y="220" width="315" height="140" rx="16" fill="#E8F2FF" stroke="#CFD8E5" stroke-width="2"/>
+<text x="932.5" y="271" text-anchor="middle" font-family="Arial, sans-serif" font-size="27" font-weight="700" fill="#26344B">Chia theo token</text>
+<text x="932.5" y="311" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="400" fill="#26344B">Giữ nguồn &amp; metadata</text>
+<rect x="1130" y="220" width="315" height="140" rx="16" fill="#E8F2FF" stroke="#CFD8E5" stroke-width="2"/>
+<text x="1287.5" y="271" text-anchor="middle" font-family="Arial, sans-serif" font-size="27" font-weight="700" fill="#26344B">E5 embedding</text>
+<text x="1287.5" y="311" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="400" fill="#26344B">passage: + nội dung</text>
+<rect x="1485" y="220" width="350" height="140" rx="16" fill="#E8F2FF" stroke="#CFD8E5" stroke-width="2"/>
+<text x="1660.0" y="271" text-anchor="middle" font-family="Arial, sans-serif" font-size="27" font-weight="700" fill="#26344B">Supabase / pgvector</text>
+<text x="1660.0" y="311" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="400" fill="#26344B">Vector 768 chiều + chunk</text>
+<polyline points="380,290 420,290" fill="none" stroke="#61728C" stroke-width="3"  marker-end="url(#a)"/>
+<polyline points="735,290 775,290" fill="none" stroke="#61728C" stroke-width="3"  marker-end="url(#a)"/>
+<polyline points="1090,290 1130,290" fill="none" stroke="#61728C" stroke-width="3"  marker-end="url(#a)"/>
+<polyline points="1445,290 1485,290" fill="none" stroke="#61728C" stroke-width="3"  marker-end="url(#a)"/>
+<text x="65" y="438" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#26344B">2   TÌM BẰNG CHỨNG CHO CÂU HỎI</text>
+<polyline points="345,685 385,685 385,550 430,550" fill="none" stroke="#61728C" stroke-width="3"  marker-end="url(#a)"/>
+<polyline points="385,685 385,780 430,780" fill="none" stroke="#61728C" stroke-width="3"  marker-end="url(#a)"/>
+<polyline points="790,550 900,550" fill="none" stroke="#61728C" stroke-width="3"  marker-end="url(#a)"/>
+<polyline points="790,780 900,780" fill="none" stroke="#61728C" stroke-width="3"  marker-end="url(#a)"/>
+<polyline points="1260,550 1330,550 1330,650 1400,650" fill="none" stroke="#61728C" stroke-width="3"  marker-end="url(#a)"/>
+<polyline points="1260,780 1330,780 1330,700 1400,700" fill="none" stroke="#61728C" stroke-width="3"  marker-end="url(#a)"/>
+<polyline points="1650,740 1650,975 230,975 230,1040" fill="none" stroke="#61728C" stroke-width="3"  marker-end="url(#a)"/>
+<polyline points="470,1110 535,1110" fill="none" stroke="#61728C" stroke-width="3"  marker-end="url(#a)"/>
+<polyline points="935,1110 1000,1110" fill="none" stroke="#61728C" stroke-width="3"  marker-end="url(#a)"/>
+<polyline points="1330,1110 1395,1110" fill="none" stroke="#61728C" stroke-width="3"  marker-end="url(#a)"/>
+<polyline points="1660,360 1660,460 1080,460 1080,490" fill="none" stroke="#61728C" stroke-width="3" stroke-dasharray="9 8" marker-end="url(#a)"/>
+<polyline points="1835,290 1870,290 1870,900 1080,900 1080,840" fill="none" stroke="#61728C" stroke-width="3" stroke-dasharray="9 8" marker-end="url(#a)"/>
+<rect x="65" y="625" width="280" height="120" rx="16" fill="#EDF2F7" stroke="#CFD8E5" stroke-width="2"/>
+<text x="205.0" y="676" text-anchor="middle" font-family="Arial, sans-serif" font-size="27" font-weight="700" fill="#26344B">Câu hỏi người dùng</text>
+<text x="205.0" y="716" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="400" fill="#26344B">Một ngôn ngữ: VI hoặc EN</text>
+<rect x="430" y="490" width="360" height="120" rx="16" fill="#E8F2FF" stroke="#CFD8E5" stroke-width="2"/>
+<text x="610.0" y="541" text-anchor="middle" font-family="Arial, sans-serif" font-size="27" font-weight="700" fill="#26344B">E5 query embedding</text>
+<text x="610.0" y="581" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="400" fill="#26344B">query: + câu hỏi gốc</text>
+<rect x="900" y="490" width="360" height="120" rx="16" fill="#E8F2FF" stroke="#CFD8E5" stroke-width="2"/>
+<text x="1080.0" y="541" text-anchor="middle" font-family="Arial, sans-serif" font-size="27" font-weight="700" fill="#26344B">Dense search</text>
+<text x="1080.0" y="581" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="400" fill="#26344B">Tìm theo ý nghĩa</text>
+<rect x="430" y="720" width="360" height="120" rx="16" fill="#E9F8F3" stroke="#CFD8E5" stroke-width="2"/>
+<text x="610.0" y="771" text-anchor="middle" font-family="Arial, sans-serif" font-size="27" font-weight="700" fill="#26344B">Dịch tự động — Groq</text>
+<text x="610.0" y="811" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="400" fill="#26344B">Giữ bản gốc + dịch VI ↔ EN</text>
+<rect x="900" y="720" width="360" height="120" rx="16" fill="#E9F8F3" stroke="#CFD8E5" stroke-width="2"/>
+<text x="1080.0" y="771" text-anchor="middle" font-family="Arial, sans-serif" font-size="27" font-weight="700" fill="#26344B">Lexical search</text>
+<text x="1080.0" y="811" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="400" fill="#26344B">BM25 với query VI và EN</text>
+<rect x="1400" y="610" width="400" height="130" rx="16" fill="#F1EEFF" stroke="#CFD8E5" stroke-width="2"/>
+<text x="1600.0" y="661" text-anchor="middle" font-family="Arial, sans-serif" font-size="27" font-weight="700" fill="#26344B">Fusion — RRF</text>
+<text x="1600.0" y="701" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="400" fill="#26344B">Hợp nhất dense và lexical</text>
+<rect x="65" y="1040" width="405" height="140" rx="16" fill="#F1EEFF" stroke="#CFD8E5" stroke-width="2"/>
+<text x="267.5" y="1091" text-anchor="middle" font-family="Arial, sans-serif" font-size="27" font-weight="700" fill="#26344B">30 ứng viên</text>
+<text x="267.5" y="1131" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="400" fill="#26344B">Chunk có quyền truy cập</text>
+<rect x="535" y="1040" width="400" height="140" rx="16" fill="#FFF3DE" stroke="#CFD8E5" stroke-width="2"/>
+<text x="735.0" y="1091" text-anchor="middle" font-family="Arial, sans-serif" font-size="27" font-weight="700" fill="#26344B">BGE reranker</text>
+<text x="735.0" y="1131" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="400" fill="#26344B">Câu hỏi gốc + từng chunk</text>
+<rect x="1000" y="1040" width="330" height="140" rx="16" fill="#FFF3DE" stroke="#CFD8E5" stroke-width="2"/>
+<text x="1165.0" y="1091" text-anchor="middle" font-family="Arial, sans-serif" font-size="27" font-weight="700" fill="#26344B">Top 10 context</text>
+<text x="1165.0" y="1131" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="400" fill="#26344B">Giữ nguồn và citation ID</text>
+<rect x="1395" y="1040" width="440" height="140" rx="16" fill="#EDF2F7" stroke="#CFD8E5" stroke-width="2"/>
+<text x="1615.0" y="1091" text-anchor="middle" font-family="Arial, sans-serif" font-size="27" font-weight="700" fill="#26344B">LLM Generation — An</text>
+<text x="1615.0" y="1131" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="400" fill="#26344B">Sinh câu trả lời có dẫn nguồn</text>
+<text x="65" y="1273" font-family="Arial, sans-serif" font-size="23" font-weight="700" fill="#26344B">E5: intfloat/multilingual-e5-base     |     Reranker: BAAI/bge-reranker-v2-m3</text>
+<text x="65" y="1314" font-family="Arial, sans-serif" font-size="22" font-weight="400" fill="#26344B">Lọc company / role / document scope trước khi xếp hạng. Dense dùng query gốc; bản dịch dùng cho BM25.</text>
+<text x="65" y="1352" font-family="Arial, sans-serif" font-size="21" font-weight="400" fill="#5A6980">Sơ đồ cấu hình top10 thông thường. LLM nhận context trong giới hạn prompt; không bảo đảm cả 10 chunk đều vừa.</text>
+</svg>

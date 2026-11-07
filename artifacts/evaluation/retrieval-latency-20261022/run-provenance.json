@@ -1,0 +1,27 @@
+{
+  "source_sha256": {
+    "scripts/retrieval/benchmark_fresh_stage_latency.py": "60077dff456ce8afc6af812a57aa616db69b8b95ef3b2dde09143339a4e11adc",
+    "scripts/retrieval/evaluate_fresh_retrieval_metrics.py": "37835187a9a79a6a16d9a5f7b57d6fe721acee79b674efce6e388cea6d630d1b",
+    "src/core/embeddings/embedding_service.py": "5dfac0f9161487a9176cac77c290fd15674e61aa029065301e888ff1a656b978",
+    "src/core/retrieval/retrieval_service.py": "331a09afe63844389a2e0f12c0659060b6e7a18b430d4f673e75ceac86f18c67",
+    "src/core/retrieval/reranker.py": "662cb7a7a67e39f1bc50d5a27f8f0d960d395827a9265e2feb0e305ddb7727c8",
+    "src/core/retrieval/methods/common.py": "a519c9026499968d898b12d6084cb0b44000ba927013d03d4a3e82178b056d6c",
+    "src/core/retrieval/methods/translated_hybrid.py": "de116db2ec144580f48cd155dc5ae3aed12fc58069c314a3b1366e155d53aa4f",
+    "artifacts/evaluation/fresh-reviewed-v1/manifest.json": "c8f9dae06fd70e9e897912aa4a0a7488e98993c88af2b182a1406db72c51f6f3"
+  },
+  "models": {
+    "e5": "intfloat/multilingual-e5-base",
+    "e5_revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "reranker": "BAAI/bge-reranker-v2-m3",
+    "reranker_revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+  },
+  "packages": {
+    "numpy": "2.4.6",
+    "torch": "2.14.0",
+    "transformers": "5.17.0",
+    "sentence-transformers": "6.0.1",
+    "psycopg": "3.3.5",
+    "pgvector": "0.5.0"
+  },
+  "run_kind": "48-case, one-pass warm stage benchmark; cached translation, no generation or persistent database writes"
+}

@@ -1,0 +1,8 @@
+{
+  "contexts_checked": 560,
+  "unique_chunk_ids": "passed",
+  "same_language_acl": "passed",
+  "exact_same_document_neighbor_relation": "passed",
+  "recorded_token_budget_bounds": "passed",
+  "results_sha256": "9400d0a38c3ae9d7ff187e60dd7bdc47bb738a80bdcad26dda4b8e3813084f6a"
+}

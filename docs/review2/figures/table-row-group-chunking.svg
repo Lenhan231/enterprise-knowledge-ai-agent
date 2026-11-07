@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#79688b" /></marker>
+    <style>
+      text { font-family: Arial, sans-serif; fill: #34263f; }
+      .title { font-size: 46px; font-weight: 700; }
+      .label { font-size: 27px; font-weight: 700; }
+      .body { font-size: 24px; }
+      .small { font-size: 21px; fill: #655b70; }
+      .code { font-family: 'Courier New', monospace; font-size: 23px; }
+      .context { fill: #075e63; }
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="#ffffff" />
+  <text x="64" y="78" class="title" font-family="sans-serif" font-size="46" fill="#34263f" font-weight="700">Table Chunking by Row Groups</text>
+  <text x="64" y="123" class="body" font-family="sans-serif" font-size="24" fill="#34263f" font-weight="400">Keep complete rows together. Repeat the context in every table fragment.</text>
+
+  <text x="66" y="238" class="label" font-family="sans-serif" font-size="27" fill="#34263f" font-weight="700">Original structured table</text>
+  <rect x="64" y="262" width="500" height="426" rx="14" fill="#faf8fc" stroke="#ae9fba" stroke-width="2" />
+  <text x="88" y="302" class="body" font-family="sans-serif" font-size="24" fill="#34263f" font-weight="400">Warehouse stock</text>
+  <rect x="88" y="325" width="452" height="44" fill="#dceff0" />
+  <text x="106" y="356" class="body" font-weight="700" font-family="sans-serif" font-size="24" fill="#34263f">SKU</text>
+  <text x="380" y="356" class="body" font-weight="700" font-family="sans-serif" font-size="24" fill="#34263f">Qty</text>
+  <rect x="88" y="369" width="452" height="141" fill="#f0eaf6" />
+  <rect x="88" y="510" width="452" height="141" fill="#e8f2f6" />
+  <path d="M88 416H540 M88 463H540 M88 557H540 M88 604H540" stroke="#d5ccdf" />
+  <path d="M350 325V651" stroke="#b9afc4" />
+  <text x="106" y="402" class="body" font-family="sans-serif" font-size="24" fill="#34263f" font-weight="400">A-01</text><text x="380" y="402" class="body" font-family="sans-serif" font-size="24" fill="#34263f" font-weight="400">20</text>
+  <text x="106" y="449" class="body" font-family="sans-serif" font-size="24" fill="#34263f" font-weight="400">A-02</text><text x="380" y="449" class="body" font-family="sans-serif" font-size="24" fill="#34263f" font-weight="400">15</text>
+  <text x="106" y="496" class="body" font-family="sans-serif" font-size="24" fill="#34263f" font-weight="400">A-03</text><text x="380" y="496" class="body" font-family="sans-serif" font-size="24" fill="#34263f" font-weight="400">30</text>
+  <text x="106" y="543" class="body" font-family="sans-serif" font-size="24" fill="#34263f" font-weight="400">A-04</text><text x="380" y="543" class="body" font-family="sans-serif" font-size="24" fill="#34263f" font-weight="400">12</text>
+  <text x="106" y="590" class="body" font-family="sans-serif" font-size="24" fill="#34263f" font-weight="400">A-05</text><text x="380" y="590" class="body" font-family="sans-serif" font-size="24" fill="#34263f" font-weight="400">8</text>
+  <text x="106" y="637" class="body" font-family="sans-serif" font-size="24" fill="#34263f" font-weight="400">A-06</text><text x="380" y="637" class="body" font-family="sans-serif" font-size="24" fill="#34263f" font-weight="400">25</text>
+  <path d="M88 510H540" stroke="#79688b" stroke-width="2" stroke-dasharray="8 6" />
+
+  <path d="M565 445H622V328H720" fill="none" stroke="#79688b" stroke-width="3" marker-end="url(#arrow)" />
+  <path d="M622 445V630H720" fill="none" stroke="#79688b" stroke-width="3" marker-end="url(#arrow)" />
+
+  <rect x="742" y="188" width="794" height="282" rx="14" fill="#faf8fc" stroke="#ae9fba" stroke-width="2" />
+  <text x="766" y="226" class="label" font-family="sans-serif" font-size="27" fill="#34263f" font-weight="700">Chunk 1 · rows 1–3</text>
+  <rect x="766" y="242" width="746" height="91" rx="6" fill="#dceff0" />
+  <text x="780" y="267" class="code context" font-family="monospace" font-size="23" fill="#075e63" font-weight="400">Section: Stock overview</text>
+  <text x="780" y="295" class="code context" font-family="monospace" font-size="23" fill="#075e63" font-weight="400">Table: Warehouse stock</text>
+  <text x="780" y="323" class="code context" font-family="monospace" font-size="23" fill="#075e63" font-weight="400">Columns: SKU | Qty</text>
+  <text x="780" y="366" class="code" font-family="monospace" font-size="23" fill="#34263f" font-weight="400">Row 1: SKU: A-01 | Qty: 20</text>
+  <text x="780" y="399" class="code" font-family="monospace" font-size="23" fill="#34263f" font-weight="400">Row 2: SKU: A-02 | Qty: 15</text>
+  <text x="780" y="432" class="code" font-family="monospace" font-size="23" fill="#34263f" font-weight="400">Row 3: SKU: A-03 | Qty: 30</text>
+
+  <rect x="742" y="495" width="794" height="282" rx="14" fill="#f7fafc" stroke="#ae9fba" stroke-width="2" />
+  <text x="766" y="533" class="label" font-family="sans-serif" font-size="27" fill="#34263f" font-weight="700">Chunk 2 · rows 4–6</text>
+  <rect x="766" y="549" width="746" height="91" rx="6" fill="#dceff0" />
+  <text x="780" y="574" class="code context" font-family="monospace" font-size="23" fill="#075e63" font-weight="400">Section: Stock overview</text>
+  <text x="780" y="602" class="code context" font-family="monospace" font-size="23" fill="#075e63" font-weight="400">Table: Warehouse stock</text>
+  <text x="780" y="630" class="code context" font-family="monospace" font-size="23" fill="#075e63" font-weight="400">Columns: SKU | Qty</text>
+  <text x="780" y="673" class="code" font-family="monospace" font-size="23" fill="#34263f" font-weight="400">Row 4: SKU: A-04 | Qty: 12</text>
+  <text x="780" y="706" class="code" font-family="monospace" font-size="23" fill="#34263f" font-weight="400">Row 5: SKU: A-05 | Qty: 8</text>
+  <text x="780" y="739" class="code" font-family="monospace" font-size="23" fill="#34263f" font-weight="400">Row 6: SKU: A-06 | Qty: 25</text>
+
+  <text x="66" y="733" class="body" font-weight="700" font-family="sans-serif" font-size="24" fill="#34263f">Repeat headers, not data rows.</text>
+  <text x="66" y="767" class="small" font-family="sans-serif" font-size="21" fill="#655b70" font-weight="400">Each fragment keeps its source row range.</text>
+  <path d="M64 811H1536" stroke="#ae9fba" />
+  <text x="64" y="845" class="small" font-family="sans-serif" font-size="21" fill="#655b70" font-weight="400">Illustrative split after 3 rows. Actual groups depend on text length (default target: 1,100 characters).</text>
+  <text x="64" y="877" class="small" font-family="sans-serif" font-size="21" fill="#655b70" font-weight="400">This is the structure stage; later token bounding can split an oversized row. Context is repeated when available.</text>
+<path d="M708,320 L722,328 L708,336 Z" fill="#79688b" /><path d="M708,622 L722,630 L708,638 Z" fill="#79688b" /></svg>

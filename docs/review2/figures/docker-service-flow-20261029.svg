@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<rect width="1600" height="900" fill="white"/>
+<text x="55" y="75" font-family="sans-serif" font-size="44" fill="#34263f" font-weight="700" text-anchor="start">Docker Service Flow — Contabo VPS</text>
+<text x="55" y="116" font-family="sans-serif" font-size="23" fill="#655b70" font-weight="400" text-anchor="start">Five backend services. Supabase and the LLM API are external to Docker Compose.</text>
+<rect x="310" y="165" width="1005" height="615" rx="14" fill="#fcfbfe" stroke="#ad9cba" stroke-width="2"/>
+<text x="333" y="197" font-family="sans-serif" font-size="21" fill="#79688b" font-weight="700" text-anchor="start">VPS / PRIVATE COMPOSE NETWORK</text>
+<rect x="40" y="342" width="235" height="110" rx="14" fill="#faf8fc" stroke="#ad9cba" stroke-width="2"/>
+<text x="157.5" y="376" font-family="sans-serif" font-size="25" fill="#34263f" font-weight="700" text-anchor="middle">Web frontend</text>
+<text x="157.5" y="405" font-family="sans-serif" font-size="18" fill="#34263f" font-weight="400" text-anchor="middle">Browser / Vercel config</text>
+<text x="157.5" y="431" font-family="sans-serif" font-size="18" fill="#34263f" font-weight="400" text-anchor="middle">outside Compose</text>
+<rect x="335" y="347" width="195" height="110" rx="14" fill="#faf8fc" stroke="#ad9cba" stroke-width="2" stroke-dasharray="8 6"/>
+<text x="432.5" y="381" font-family="sans-serif" font-size="22" fill="#34263f" font-weight="700" text-anchor="middle">HTTPS ingress</text>
+<text x="432.5" y="410" font-family="sans-serif" font-size="17" fill="#34263f" font-weight="400" text-anchor="middle">Host proxy / tunnel</text>
+<text x="432.5" y="436" font-family="sans-serif" font-size="17" fill="#34263f" font-weight="400" text-anchor="middle">optional Nginx profile</text>
+<rect x="580" y="330" width="295" height="178" rx="14" fill="#eaf5f5" stroke="#6dabad" stroke-width="2"/>
+<text x="727.5" y="364" font-family="sans-serif" font-size="27" fill="#34263f" font-weight="700" text-anchor="middle">backend-api</text>
+<text x="727.5" y="393" font-family="sans-serif" font-size="21" fill="#34263f" font-weight="400" text-anchor="middle">Auth + agent routing</text>
+<text x="727.5" y="419" font-family="sans-serif" font-size="21" fill="#34263f" font-weight="400" text-anchor="middle">RAG / SQL / reports</text>
+<text x="727.5" y="445" font-family="sans-serif" font-size="21" fill="#34263f" font-weight="400" text-anchor="middle">DB, storage + LLM client</text>
+<rect x="955" y="215" width="325" height="110" rx="14" fill="#faf8fc" stroke="#ad9cba" stroke-width="2"/>
+<text x="1117.5" y="249" font-family="sans-serif" font-size="24" fill="#34263f" font-weight="700" text-anchor="middle">document-processing</text>
+<text x="1117.5" y="278" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">Docling / OCR</text>
+<text x="1117.5" y="304" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">POST /parse</text>
+<rect x="955" y="370" width="325" height="110" rx="14" fill="#faf8fc" stroke="#ad9cba" stroke-width="2"/>
+<text x="1117.5" y="404" font-family="sans-serif" font-size="25" fill="#34263f" font-weight="700" text-anchor="middle">embeddings</text>
+<text x="1117.5" y="433" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">Multilingual E5</text>
+<text x="1117.5" y="459" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">POST /embed</text>
+<rect x="955" y="525" width="325" height="110" rx="14" fill="#faf8fc" stroke="#ad9cba" stroke-width="2"/>
+<text x="1117.5" y="559" font-family="sans-serif" font-size="25" fill="#34263f" font-weight="700" text-anchor="middle">reranker</text>
+<text x="1117.5" y="588" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">BGE cross-encoder</text>
+<text x="1117.5" y="614" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">POST /rerank</text>
+<rect x="580" y="575" width="295" height="110" rx="14" fill="#fff6e7" stroke="#d6b879" stroke-width="2"/>
+<text x="727.5" y="609" font-family="sans-serif" font-size="25" fill="#34263f" font-weight="700" text-anchor="middle">chunking worker</text>
+<text x="727.5" y="638" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">Poll parsed → chunked</text>
+<text x="727.5" y="664" font-family="sans-serif" font-size="20" fill="#34263f" font-weight="400" text-anchor="middle">Direct DB; no HTTP</text>
+<rect x="1350" y="230" width="210" height="175" rx="14" fill="#eff7ee" stroke="#7ca185" stroke-width="2"/>
+<text x="1455.0" y="264" font-family="sans-serif" font-size="25" fill="#34263f" font-weight="700" text-anchor="middle">Supabase</text>
+<text x="1455.0" y="293" font-family="sans-serif" font-size="18" fill="#34263f" font-weight="400" text-anchor="middle">PostgreSQL</text>
+<text x="1455.0" y="319" font-family="sans-serif" font-size="18" fill="#34263f" font-weight="400" text-anchor="middle">pgvector index</text>
+<text x="1455.0" y="345" font-family="sans-serif" font-size="18" fill="#34263f" font-weight="400" text-anchor="middle">original-file storage</text>
+<rect x="1350" y="600" width="210" height="110" rx="14" fill="#fff6e7" stroke="#d6b879" stroke-width="2"/>
+<text x="1455.0" y="634" font-family="sans-serif" font-size="22" fill="#34263f" font-weight="700" text-anchor="middle">Groq / LLM API</text>
+<text x="1455.0" y="663" font-family="sans-serif" font-size="18" fill="#34263f" font-weight="400" text-anchor="middle">Translation / routing</text>
+<text x="1455.0" y="689" font-family="sans-serif" font-size="18" fill="#34263f" font-weight="400" text-anchor="middle">answer generation</text>
+<path d="M275,397 L335,397" fill="none" stroke="#79688b" stroke-width="2.7"/>
+<path d="M335,397 L323.0,391.0 L323.0,403.0 Z" fill="#79688b"/>
+<path d="M530,402 L580,402" fill="none" stroke="#79688b" stroke-width="2.7"/>
+<path d="M580,402 L568.0,396.0 L568.0,408.0 Z" fill="#79688b"/>
+<path d="M875,355 L910,355 L910,270 L955,270" fill="none" stroke="#086c73" stroke-width="2.7"/>
+<path d="M955,270 L943.0,264.0 L943.0,276.0 Z" fill="#086c73"/>
+<path d="M875,420 L955,420" fill="none" stroke="#086c73" stroke-width="2.7"/>
+<path d="M955,420 L943.0,414.0 L943.0,426.0 Z" fill="#086c73"/>
+<path d="M875,465 L910,465 L910,580 L955,580" fill="none" stroke="#086c73" stroke-width="2.7"/>
+<path d="M955,580 L943.0,574.0 L943.0,586.0 Z" fill="#086c73"/>
+<path d="M780,330 L780,207 L1330,207 L1330,270 L1350,270" fill="none" stroke="#33734d" stroke-width="2.7"/>
+<path d="M1350,270 L1338.0,264.0 L1338.0,276.0 Z" fill="#33734d"/>
+<path d="M875,640 L1300,640 L1300,350 L1350,350" fill="none" stroke="#33734d" stroke-width="2.7"/>
+<path d="M1350,350 L1338.0,344.0 L1338.0,356.0 Z" fill="#33734d"/>
+<path d="M875,490 L920,490 L920,735 L1330,735 L1330,655 L1350,655" fill="none" stroke="#a56a12" stroke-width="2.7"/>
+<path d="M1350,655 L1338.0,649.0 L1338.0,661.0 Z" fill="#a56a12"/>
+<text x="335" y="717" font-family="sans-serif" font-size="19" fill="#655b70" font-weight="400" text-anchor="start">Internal HTTP services require a shared service token.</text>
+<text x="335" y="746" font-family="sans-serif" font-size="19" fill="#a56a12" font-weight="400" text-anchor="start">Chunking worker does not create vectors or call the LLM.</text>
+<text x="55" y="823" font-family="sans-serif" font-size="20" fill="#655b70" font-weight="400" text-anchor="start">Green: database/storage calls     Teal: model/parser HTTP calls     Amber: LLM API / chunking worker</text>
+<text x="55" y="849" font-family="sans-serif" font-size="19" fill="#655b70" font-weight="400" text-anchor="start">Named volumes: embedding_model_cache + document_model_cache. Dashed ingress: deployment-specific configuration.</text>
+<text x="55" y="878" font-family="sans-serif" font-size="17" fill="#655b70" font-weight="400" text-anchor="start">Code reference: origin/main @169ea59 · server deployment reported by user; exact VPS revision not inspected.</text>
+</svg>

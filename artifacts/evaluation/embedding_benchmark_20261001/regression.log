@@ -1,0 +1,94 @@
+Report answer citation validation failed (no_citations=False, unknown_citation_ids=['S9'])
+Report financial answer did not preserve cited numeric values and magnitude units
+tesseract executable not found, OCR fallback disabled
+tesseract executable not found, OCR fallback disabled
+Vision caption failed for uploaded image scan.jpg (RuntimeError)
+finance-revenue-profit-2020-vi finished in 0 ms
+Financial extraction stopped for DOC-2024 after page 1: ValueError
+paddleocr: fixture p.1 CER=0.0 in 0.1s
+easyocr: fixture p.1 CER=0.0 in 0.1s
+tesseract executable not found, OCR fallback disabled
+tesseract executable not found, OCR fallback disabled
+tesseract executable not found, OCR fallback disabled
+tesseract executable not found, OCR fallback disabled
+tesseract executable not found, OCR fallback disabled
+PaddleOCR is unavailable; using the existing PDF/OCR path
+Financial extraction stopped for UPLOAD-3599f7d6f3af42b99729a66f5b8718cd after page 1: APIConnectionError
+Upload or processing failed for UPLOAD-56bce29f7da14da7ac76de409c4beb69
+Traceback (most recent call last):
+  File "D:\School\Kỳ 9\Capstone Project\enterprise-knowledge-ai-agent\src\app\main.py", line 450, in upload_document
+    embedding_service = EmbeddingService()
+                        ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Eroz\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\unittest\mock.py", line 1124, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Eroz\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\unittest\mock.py", line 1128, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Eroz\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\unittest\mock.py", line 1183, in _execute_mock_call
+    raise effect
+RuntimeError: model unavailable
+tesseract executable not found, OCR fallback disabled
+tesseract executable not found, OCR fallback disabled
+Financial extraction stopped for UPLOAD-e6412e61e99a43ebb826502e2aae61b8 after page 1: RuntimeError
+tesseract executable not found, OCR fallback disabled
+LLM provider rate limit reached while answering for analyst
+----------------------------------------------------------------------
+Ran 487 tests in 5.453s
+
+OK (skipped=10)
+{
+  "output": "C:\\Users\\Eroz\\AppData\\Local\\Temp\\tmp0obdm98g\\report.json",
+  "aggregate": {
+    "precision@1": 1.0,
+    "precision@3": 0.3333,
+    "precision@5": 0.2,
+    "recall@1": 1.0,
+    "recall@3": 1.0,
+    "recall@5": 1.0,
+    "mrr": 1.0,
+    "ndcg@1": 1.0,
+    "ndcg@3": 1.0,
+    "ndcg@5": 1.0
+  }
+}
+{
+  "output": "C:\\Users\\Eroz\\AppData\\Local\\Temp\\tmpg93kcyoz\\report.json",
+  "engines": {
+    "paddleocr": {
+      "valid_pages": 0,
+      "ocr_pages": 0,
+      "macro_mean_page_cer": null,
+      "micro_cer": null,
+      "macro_mean_page_wer": null,
+      "micro_wer": null,
+      "mean_latency_seconds": null,
+      "pages_per_minute": null
+    }
+  }
+}
+{
+  "output": "C:\\Users\\Eroz\\AppData\\Local\\Temp\\tmpnoxidcrc\\report.json",
+  "engines": {
+    "paddleocr": {
+      "valid_pages": 1,
+      "ocr_pages": 1,
+      "macro_mean_page_cer": 0.0,
+      "micro_cer": 0.0,
+      "macro_mean_page_wer": 0.0,
+      "micro_wer": 0.0,
+      "mean_latency_seconds": 0.1,
+      "pages_per_minute": 600.0
+    },
+    "easyocr": {
+      "valid_pages": 1,
+      "ocr_pages": 1,
+      "macro_mean_page_cer": 0.0,
+      "micro_cer": 0.0,
+      "macro_mean_page_wer": 0.0,
+      "micro_wer": 0.0,
+      "mean_latency_seconds": 0.1,
+      "pages_per_minute": 600.0
+    }
+  }
+}

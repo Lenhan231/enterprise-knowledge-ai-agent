@@ -27,6 +27,7 @@ ARMS = {
     "B2": PROD,
     "B3": {**PROD, "reranker": "bge-reranker-v2-m3"},  # restart the reranker service with RERANKER_MODEL=bge RERANKER_QUANTIZE=int8
     "B4": {**PROD, "verify": False},
+    "B2-MQ": {**PROD, "decompose": True},  # split into search sub-questions; KNOWLEDGE_MULTIQUERY_MAX=3 allows three
     "B5": {**PROD, "prompt": "old"},
     "B6": {**PROD, "model": "openai/gpt-oss-120b"},
     "B7": {**PROD, "model": "openai/gpt-oss-20b"},
@@ -107,7 +108,7 @@ class InProcess:
                 return {"contexts": [context_row(c, ()) for c in contexts],
                         "retrieval_details": contexts[0]["retrieval_details"] if contexts else {}}
             result = self.rag.generate_answer(case["question"], roles=roles, retrieval_method=self.arm["method"],
-                                              verify_claims=self.arm["verify"])
+                                              verify_claims=self.arm["verify"], decompose=self.arm.get("decompose", False))
             details = result.contexts[0]["retrieval_details"] if result.contexts else {}
             expected = self.arm.get("reranker")
             if expected and details.get("reranker_model") and expected not in details["reranker_model"]:

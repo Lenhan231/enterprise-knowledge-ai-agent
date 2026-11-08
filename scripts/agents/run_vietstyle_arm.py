@@ -115,6 +115,7 @@ class InProcess:
             return {"answer": result.answer, "insufficient_context": result.insufficient_context,
                     "source_ids": result.source_ids, "prompt_sha256": result.prompt_sha256,
                     "verification": result.verification.model_dump() if result.verification else None,
+                    "withheld_draft": result.withheld_draft,
                     "contexts": [context_row(c, set(result.source_ids)) for c in result.contexts],
                     "retrieval_details": details}
         finally:

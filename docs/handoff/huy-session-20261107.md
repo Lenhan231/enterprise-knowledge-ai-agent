@@ -47,7 +47,15 @@ For a new Claude/Codex session: read this first, then `docs/report/huy-gdoc-past
 - Caveats for the report: v1 "before" = production config of 6 Nov (b616744); Judges B and C agree very closely (treat as two strong judges plus A as check).
 - Next: draft report section VI.1.10 + before/after table, fill [pending] lines, slide 21, Notion; decide keeping flags on in production (recommended, with 20000 budget); optional idle-server latency on vs off.
 
-## Next steps
+## Progress on 8–9 Nov — multi-part retrieval attempt (dev set only)
+- Report text for VI.1.10 / Table 6.9 drafted: `docs/report/huy-gdoc-paste-20261108.en.md` (not yet pasted into the Google Doc). Add a note there: Knowledge mode "after" runs used 5 passages per search (multiquery capped unsplit searches at 5; fixed in `5a178f1`).
+- `RAGResult.withheld_draft` added (diagnosis only). Dev analysis: most withheld drafts lacked the evidence page, so the main limit is retrieval of multi-part questions, not the verifier.
+- Tried on dev (`B2-MQ` arm, decompose=True, `KNOWLEDGE_MULTIQUERY_MAX=3` + accent prompt "hủy PO" fix): page recall 0.758 → 0.797, full evidence 38 → 39/60, withheld 7 → 8, declined 2 → 4. X07 fixed (accent fix). M01–M04 still unsolved, M06 worse.
+- **Decision proposed:** keep the accent prompt fix; do NOT adopt the 3-way split. Huy to remove `KNOWLEDGE_MULTIQUERY_MAX=3` from VPS `.env` and `docker compose up -d backend-api`. Multi-part questions → Future Work. Stop tuning; spend remaining time on report, slides, demo.
+- VPS `.env` now: 6 flags ON (`KNOWLEDGE_TOP_K=8`, `KNOWLEDGE_CONTEXT_RADIUS=1`, `QUERY_NORMALIZATION_ENABLED=1`, `KNOWLEDGE_COMPLETENESS_RULE=1`, `KNOWLEDGE_AUDIT_MAX_OUTPUT_TOKENS=1536`, `KNOWLEDGE_CONTEXT_MAX_CHARS=20000`) + `KNOWLEDGE_MULTIQUERY_MAX=3` (to remove).
+- Remaining: paste report section, List of Tables 6.6–6.9, PDF export; slides (Nhân/An results, supervisor name, demo questions + fallback video, share link); Notion final results.
+
+## Next steps (older, mostly done)
 1. Check the overnight run: `tail -5 /opt/enterprise-knowledge-ai-agent/testv2-before.log`. If it stopped on rate limits, resume per arm with the same command plus `--resume --retry-errors`. The runner is not on main: `git show origin/Huy:scripts/agents/run_vietstyle_arm.py > /tmp/run_vietstyle_arm.py`.
 2. scp the two `*-before.json` files to the laptop (`artifacts/local/vietstyle-runs/`).
 3. Turn the 5 flags ON in the VPS `.env`, `docker compose up -d backend-api`, then run "after": test v2 (`B2-after`, `E2E-K-after`) and test v1 (`B2-after`, `E2E-K-after`, cases `/benchmarks/vietstyle-test-v1/questions.json`, rbac role `finance_analyst`).

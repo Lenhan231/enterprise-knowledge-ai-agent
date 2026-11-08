@@ -3,8 +3,9 @@ import json
 from pathlib import Path
 import sys
 import time
+import os
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from core.agents.runtime import deadline
@@ -55,6 +56,25 @@ class KnowledgeSearchPlanTest(unittest.TestCase):
                 rag.llm.generate.side_effect = [plan, 'Answer [S1]']
                 rag.generate_answer('Original?', decompose=True)
                 self.assertEqual(rag.retrieve_contexts.call_args.args, ('Original?',))
+
+    def test_three_searches_only_when_enabled(self):
+        plan = '{"questions":["approver?","quotes?","emergency?"]}'
+        for flag, expected in (('2', ['Original?']), ('3', ['approver?', 'quotes?', 'emergency?'])):
+            with self.subTest(flag=flag), patch.dict(os.environ, {'KNOWLEDGE_MULTIQUERY_MAX': flag}):
+                groups = [[chunk('EN', i)] for i in range(len(expected))]
+                rag = self.service(plan, groups)
+                rag.llm.generate.side_effect = [plan, 'Answer [S1].']
+                rag.generate_answer('Original?', decompose=True, limit=8)
+                self.assertEqual([c.args[0] for c in rag.retrieve_contexts.call_args_list], expected)
+                self.assertEqual(('THREE' in rag.llm.generate.call_args_list[0].args[0]), flag == '3')
+                # an unsplit search keeps the full top-k; split searches use at most 5 each
+                self.assertEqual({c.kwargs['limit'] for c in rag.retrieve_contexts.call_args_list}, {8 if flag == '2' else 5})
+
+    def test_missing_third_branch_does_not_generate_full_answer(self):
+        with patch.dict(os.environ, {'KNOWLEDGE_MULTIQUERY_MAX': '3'}):
+            rag = self.service('{"questions":["a","b","c"]}', [[chunk('EN', 1)], [chunk('EN', 2)], []])
+            result = rag.generate_answer('Q', decompose=True)
+        self.assertEqual(result.answer, INSUFFICIENT_ANSWER)
 
     def test_permission_errors_are_not_fallbacks(self):
         rag = self.service('{"questions":["a","b"]}', [])

@@ -16,7 +16,7 @@ from core.llm.groq_provider import GroqProvider
 from core.rag.claim_verification import VerificationOutcome, VERIFICATION_UNAVAILABLE_ANSWER, verify_answer
 from core.latency import measure
 from core.agents.runtime import deadline, remaining
-from core.prompts.knowledge_search import SEARCH_PLAN_PROMPT
+from core.prompts.knowledge_search import SEARCH_PLAN_PROMPT, SEARCH_PLAN_PROMPT_THREE
 from core.prompts.Knowledge import COMPLETENESS_RULE, ENTERPRISE_ASSISTANT_PROMPT, INSUFFICIENT_ANSWER, NO_MATCHING_DOCUMENTS_ANSWER
 from core.retrieval.retrieval import RetrievalRequest
 from core.retrieval.retrieval_service import RetrievalService
@@ -30,7 +30,7 @@ _log = logging.getLogger(__name__)
 
 class SearchPlan(BaseModel):
     model_config = {"extra": "forbid"}
-    questions: list[Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=4000)]] = Field(min_length=1, max_length=2)
+    questions: list[Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=4000)]] = Field(min_length=1, max_length=3)
 
     @field_validator("questions")
     @classmethod
@@ -200,14 +200,15 @@ class RAGService:
             for query in questions:
                 remaining()
                 groups.append(self.retrieve_contexts(
-                    query, limit=min(limit, 5), company=company, roles=roles,
+                    # A single (unsplit) search keeps the full top-k; split searches share the merged budget.
+                    query, limit=limit if len(questions) == 1 else min(limit, 5), company=company, roles=roles,
                     retrieval_method=retrieval_method, metadata_filter=metadata_filter,
                     document_ids=document_ids, query_language=query_language,
                     document_languages=document_languages,
                 ))
             contexts = _merge_contexts(groups)
             selected = {_context_key(item) for item in contexts}
-            missing_branch = len(questions) == 2 and any(
+            missing_branch = len(questions) > 1 and any(
                 not selected.intersection(_context_key(item) for item in group) for group in groups
             )
             if any(groups) and (not contexts or missing_branch):
@@ -230,13 +231,15 @@ class RAGService:
     def _search_questions(self, question: str) -> list[str]:
         token = deadline.set(time.monotonic() + remaining(15))
         try:
+            most = 3 if os.getenv("KNOWLEDGE_MULTIQUERY_MAX", "2") == "3" else 2
+            prompt = SEARCH_PLAN_PROMPT_THREE if most == 3 else SEARCH_PLAN_PROMPT
             with measure("knowledge_search_planning"):
                 raw = self.llm.generate(
-                    SEARCH_PLAN_PROMPT.format(question=json.dumps(question, ensure_ascii=False)),
+                    prompt.format(question=json.dumps(question, ensure_ascii=False)),
                     max_output_tokens=256,
                 )
             plan = SearchPlan.model_validate_json(raw)
-            return plan.questions if len(plan.questions) == 2 else [question]
+            return plan.questions if 2 <= len(plan.questions) <= most else [question]
         except (APIError, ValueError, RuntimeError) as error:
             _log.warning("Knowledge search plan fallback: %s", type(error).__name__)
             return [question]

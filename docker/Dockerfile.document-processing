@@ -36,8 +36,8 @@ RUN python -m venv /opt/vintern \
         --index-url https://download.pytorch.org/whl/cpu \
         "torch==2.3.1" "torchvision==0.18.1" \
     && /opt/vintern/bin/python -m pip install --no-cache-dir \
-        "transformers==4.47.0" "accelerate==1.15.0" "timm==1.0.30" \
-        "einops==0.8.2" "sentencepiece"
+        "transformers==4.57.6" "accelerate==1.15.0" "peft==0.21.2" \
+        "timm==1.0.30" "einops==0.8.2" "sentencepiece"
 
 COPY src ./src
 

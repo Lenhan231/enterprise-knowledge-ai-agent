@@ -4,14 +4,19 @@
 
 ```text
 PDF/image → Docling OCR, layout and TableFormer → ordered text + table cells
-  → Qwen/Qwen2.5-0.5B-Instruct text-only worker → schema-checked JSON draft
+  → Qwen3-0.6B + private LoRA text-only worker → schema-checked JSON draft
   → public.invoice_extractions
 ```
 
 The invoice intent does not send the image to Qwen. `DocumentProcessor` first
 uses Docling with Vietnamese/English OCR and table extraction, then
 `InvoiceTextProcessor` sends those text results to an isolated Transformers
-worker. The model revision is pinned in `invoice_text_processor.py`; the
+worker. The worker loads the pinned `Qwen/Qwen3-0.6B` base revision and the
+private `lenhanm1/qwen3-0.6b-invoice-lora-900` adapter. Set
+`HF_INVOICE_LLM_TOKEN` in the
+document-processing service environment so the worker can read the adapter.
+Model and adapter revisions are pinned in `invoice_text_processor.py` and can
+be overridden with `DOCUMENT_PROCESSING_INVOICE_*` environment variables. The
 worker uses the interpreter configured by `DOCUMENT_PROCESSING_VINTERN_PYTHON`
 and shares the document-processing model cache.
 
@@ -43,7 +48,7 @@ its existing parser/chunking/indexing route. The isolated Upload Test stores
 the same extraction in its run metadata and renders it above the Docling
 elements/tables, so the OCR evidence and JSON draft can be inspected together.
 
-The first CPU inference may download model weights into `/models`; subsequent
-loads use the persistent model cache. CPU inference is synchronous and every
+The first inference may download base and adapter weights into `/models`;
+subsequent loads use the persistent model cache. CPU inference is synchronous and every
 result is marked `review_required`, so verify extracted fields against the
 source before using them in downstream financial workflows.

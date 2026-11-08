@@ -13,8 +13,10 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, StrictStr, field_validator
 
 
-MODEL_ID = "Qwen/Qwen2.5-0.5B-Instruct"
-MODEL_REVISION = "7ae557604adf67be50417f59c2c2f167def9a775"
+MODEL_ID = "Qwen/Qwen3-0.6B"
+MODEL_REVISION = "c1899de289a04d12100db370d81485cdf75e47ca"
+ADAPTER_ID = "lenhanm1/qwen3-0.6b-invoice-lora-900"
+ADAPTER_REVISION = "7e062bb552f77af64b1c3bc9e205fa107c68c3d3"
 SCHEMA_VERSION = "invoice.v1"
 SCHEMA = {
     "invoice_no": None,
@@ -32,6 +34,17 @@ SCHEMA = {
     "tax_amount": None,
     "total_amount": None,
 }
+HEADER_SCHEMA = {
+    key: SCHEMA[key]
+    for key in (
+        "invoice_no", "date", "seller", "buyer", "subtotal", "tax_amount", "total_amount",
+    )
+}
+TABLE_SCHEMA = {
+    "items": SCHEMA["items"],
+}
+_MAX_EVIDENCE_CHARS = 12_000
+_TABLE_CHUNK_CHARS = 2_400
 
 
 class InvoiceItem(BaseModel):
@@ -75,128 +88,31 @@ def _numeric_text(value: Any) -> Any:
     return value
 
 
-def _is_numbered_column_guide(row: dict[str, Any], columns: list[str]) -> bool:
-    """Drop invoice templates' separate 1..N column guide row, not invoice data."""
-    values = [str(row.get(column) or "").strip() for column in columns]
-    if len(values) < 3 or values[:1] != ["1"]:
-        return False
-    last_value = values[-1]
-    formula_like_amount = bool(
-        re.fullmatch(rf"{len(values)}[\d\s=?:x×*\-]+\.?", last_value, flags=re.IGNORECASE)
-        and re.search(r"[=?:x×*\-]", last_value, flags=re.IGNORECASE)
-    )
-    short_cells = all(len(re.sub(r"[^\w]", "", value)) <= 4 for value in values[:-1])
-    if formula_like_amount and short_cells:
-        return True
-    if any(value != str(index) for index, value in enumerate(values[:-1], start=1)):
-        return False
-    return bool(re.match(rf"{len(values)}.*[x×*]", last_value, flags=re.IGNORECASE))
-
-
 def _prepare_extraction_input(
     elements: list[dict[str, Any]], tables: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    prepared_tables = []
-    for table in tables:
-        columns = [str(column) for column in table.get("columns", [])]
-        description_column = _find_column(columns, ("tên hàng", "mô tả", "description"))
-        quantity_column = _find_column(columns, ("số lượng", "quantity"))
-        unit_column = _find_column(columns, ("đvt", "đơn vị", "unit"))
-        unit_price_column = _find_column(columns, ("đơn giá", "unit price"))
-        amount_column = _find_column(columns, ("thành tiền", "amount"))
-        item_rows = []
-        summary_rows = []
-        for row in table.get("rows", []):
-            if not isinstance(row, dict) or _is_numbered_column_guide(row, columns):
-                continue
-            values = [str(row.get(column) or "").strip() for column in columns]
-            row_text = " | ".join(value for value in values if value)
-            lowered = row_text.lower()
-            summary_kind = _summary_kind(lowered)
-            if summary_kind:
-                summary_rows.append({
-                    "kind": summary_kind,
-                    "label": row_text,
-                    "amount": str(row.get(amount_column) or "").strip() or None,
-                })
-                continue
-            description = str(row.get(description_column) or "").strip()
-            if not description:
-                continue
-            item_rows.append({
-                "description": description,
-                "quantity": _cell_text(row, quantity_column),
-                "unit": _cell_text(row, unit_column),
-                "unit_price": _cell_text(row, unit_price_column),
-                "amount": _cell_text(row, amount_column),
-            })
-        prepared_tables.append({"item_rows": item_rows, "summary_rows": summary_rows})
     return {
         "elements": [
             {
                 "element_type": element.get("element_type") or element.get("type"),
                 "page_number": (element.get("metadata") or {}).get("page_number"),
+                "docling_label": (element.get("metadata") or {}).get("docling_label"),
+                "bbox": (element.get("metadata") or {}).get("bbox"),
+                "section_path": (element.get("metadata") or {}).get("section_path"),
                 "text": str(element.get("text") or "").strip(),
             }
             for element in elements
             if str(element.get("text") or "").strip()
         ],
-        "tables": prepared_tables,
+        "tables": [
+            {
+                key: table[key]
+                for key in ("table_index", "page_number", "bbox", "columns", "rows", "context")
+                if key in table
+            }
+            for table in tables
+        ],
     }
-
-
-def _find_column(columns: list[str], hints: tuple[str, ...]) -> str | None:
-    return next((column for column in columns if any(hint in column.lower() for hint in hints)), None)
-
-
-def _cell_text(row: dict[str, Any], column: str | None) -> str | None:
-    value = str(row.get(column) or "").strip() if column else ""
-    return value or None
-
-
-def _summary_kind(text: str) -> str | None:
-    if "tổng tiền" in text or "total" in text:
-        return "total_amount"
-    if "tiền thuế" in text or "tax amount" in text:
-        return "tax_amount"
-    if "cộng tiền" in text or "subtotal" in text:
-        return "subtotal"
-    if "thuế suất" in text or "vat" in text:
-        return "tax_summary"
-    return None
-
-
-def _fields_from_tables(tables: list[dict[str, Any]]) -> dict[str, Any]:
-    fields: dict[str, Any] = {}
-    items = [item for table in tables for item in table["item_rows"]]
-    if items:
-        fields["items"] = items
-    for table in tables:
-        for row in table["summary_rows"]:
-            if row["kind"] in {"subtotal", "tax_amount", "total_amount"} and row["amount"]:
-                fields[row["kind"]] = row["amount"]
-    return fields
-
-
-def _fields_from_labeled_elements(elements: list[dict[str, Any]]) -> dict[str, Any]:
-    fields: dict[str, Any] = {}
-    for element in elements:
-        text = str(element.get("text") or "").strip()
-        if not text:
-            continue
-        buyer = re.search(
-            r"(?:tên\s+đơn\s+vị|tên\s+người\s+mua|người\s+mua\s+hàng)\s*:\s*(.+)",
-            text, flags=re.IGNORECASE,
-        )
-        if buyer and buyer.group(1).strip():
-            fields["buyer"] = buyer.group(1).strip()
-        seller = re.search(r"(?:tên\s+người\s+bán|người\s+bán\s+hàng)\s*:\s*(.+)", text, flags=re.IGNORECASE)
-        if seller and seller.group(1).strip():
-            fields["seller"] = seller.group(1).strip()
-        element_type = element.get("element_type") or element.get("type")
-        if element_type == "title" and "công ty" in text.lower():
-            fields["seller"] = text
-    return fields
 
 
 def _parse_json_response(response: str) -> dict[str, Any] | None:
@@ -213,8 +129,143 @@ def _parse_json_response(response: str) -> dict[str, Any] | None:
     return parsed.model_dump(mode="json")
 
 
+def _record_chunks(records: list[dict[str, Any]], max_chars: int) -> list[list[dict[str, Any]]]:
+    chunks: list[list[dict[str, Any]]] = []
+    current: list[dict[str, Any]] = []
+    current_size = 0
+    for record in records:
+        size = len(json.dumps(record, ensure_ascii=False))
+        if current and current_size + size > max_chars:
+            chunks.append(current)
+            current, current_size = [], 0
+        current.append(record)
+        current_size += size
+    if current:
+        chunks.append(current)
+    return chunks
+
+
+def _extraction_jobs(ocr_input: dict[str, Any]) -> list[dict[str, Any]]:
+    jobs: list[dict[str, Any]] = []
+    elements = ocr_input["elements"]
+    tables = ocr_input["tables"]
+    instructions = (
+        "Trích xuất hóa đơn tiếng Việt chỉ từ OCR EVIDENCE; không dùng kiến thức ngoài bằng chứng. "
+        "Không bịa, đoán, chuẩn hóa, tự tính hoặc sửa dữ liệu OCR. Giá trị không nhìn thấy hoặc "
+        "không chắc là null; danh sách items không có dòng hàng là [].\n"
+        "OUTPUT phải là đúng một JSON object hợp lệ khớp SCHEMA: chỉ được dùng các key trong "
+        "SCHEMA, không markdown, không code fence, không giải thích. Mọi giá trị lá khác null "
+        "phải là JSON string, được chép từ đúng vùng bằng chứng. Giữ nguyên chữ số và dấu phân "
+        "cách OCR; không xuất giá trị số dưới dạng JSON number hoặc biểu thức tính toán.\n"
+    )
+
+    if not tables:
+        for index, chunk in enumerate(_record_chunks(elements, _MAX_EVIDENCE_CHARS), start=1):
+            jobs.append({
+                "kind": "document",
+                "source": f"OCR elements {index}",
+                "max_new_tokens": 1024,
+                "prompt": (
+                    instructions + "MODE: FULL INVOICE. Trích xuất các trường hóa đơn và dòng hàng.\n"
+                    f"SCHEMA:\n{json.dumps(SCHEMA, ensure_ascii=False)}\n"
+                    f"OCR EVIDENCE:\n{json.dumps(chunk, ensure_ascii=False)}"
+                ),
+            })
+        return jobs
+
+    for index, chunk in enumerate(_record_chunks(elements, _MAX_EVIDENCE_CHARS), start=1):
+        jobs.append({
+            "kind": "header",
+            "source": f"OCR elements {index}",
+            "max_new_tokens": 256,
+            "prompt": (
+                instructions + "MODE: INVOICE FIELDS. Trích invoice_no, date, seller, buyer và các tổng "
+                "có nhãn rõ (subtotal, tax_amount, total_amount) từ OCR EVIDENCE. Seller là bên phát "
+                "hành; buyer là bên mua. Chép seller/buyer từ vùng có nhãn tương ứng; không lấy tiêu "
+                "đề, watermark, ghi chú hoặc địa chỉ làm tên bên mua/bán. invoice_no phải là số hóa đơn "
+                "được ghi rõ, không phải mã phiếu xuất kho. Chép ngày và số tổng đúng như OCR; không "
+                "tính tổng hoặc thuế từ dòng hàng. Không trích items.\n"
+                f"SCHEMA:\n{json.dumps(HEADER_SCHEMA, ensure_ascii=False)}\n"
+                f"OCR EVIDENCE:\n{json.dumps(chunk, ensure_ascii=False)}"
+            ),
+        })
+
+    for table_index, table in enumerate(tables, start=1):
+        columns = table.get("columns", [])
+        rows = table.get("rows", [])
+        row_records = [
+            {"source_row": row_index, "cells": row}
+            for row_index, row in enumerate(rows, start=1)
+            if isinstance(row, dict)
+        ]
+        chunks = _record_chunks(row_records, _TABLE_CHUNK_CHARS)
+        for chunk_index, chunk in enumerate(chunks, start=1):
+            table_evidence = {
+                "table_index": table.get("table_index", table_index),
+                "page_number": table.get("page_number"),
+                "bbox": table.get("bbox"),
+                "columns": columns,
+                "rows": chunk,
+            }
+            jobs.append({
+                "kind": "table",
+                "source": f"table {table_index}, row chunk {chunk_index}",
+                "max_new_tokens": 1024,
+                "prompt": (
+                    instructions + "MODE: TABLE. Chỉ xuất key items theo SCHEMA; không xuất bất kỳ "
+                    "field tổng nào. Chép từng mặt hàng theo từng dòng và đúng theo tiêu đề cột trong "
+                    "bảng; tên/thứ tự cột có thể thay đổi. description lấy từ ô tên hàng, quantity từ "
+                    "ô số lượng, unit từ ô đơn vị, unit_price từ ô đơn giá, amount từ ô thành tiền. "
+                    "Không chuyển giá trị giữa cột, không tính toán, không thêm lời giải thích vào giá "
+                    "trị. Mọi giá trị phải là chuỗi JSON giữ nguyên OCR hoặc null nếu ô trống/không rõ; "
+                    "không dùng chuỗi rỗng. Với description, chép nguyên văn toàn bộ chữ trong ô tên "
+                    "hàng của dòng đó. Giữ thứ tự dòng; "
+                    "bỏ dòng tiêu đề và dòng tổng/thuế.\n"
+                    f"SCHEMA:\n{json.dumps(TABLE_SCHEMA, ensure_ascii=False)}\n"
+                    f"OCR TABLE EVIDENCE:\n{json.dumps(table_evidence, ensure_ascii=False)}"
+                ),
+            })
+    return jobs
+
+
+def _merge_job_fields(
+    parsed_jobs: list[tuple[dict[str, Any], dict[str, Any]]],
+) -> tuple[dict[str, Any], dict[str, list[str]]]:
+    fields = InvoiceFields().model_dump(mode="json")
+    conflicts: dict[str, list[str]] = {}
+    scalar_fields = (
+        "invoice_no", "date", "seller", "buyer", "subtotal", "tax_amount", "total_amount",
+    )
+    items: list[dict[str, Any]] = []
+    owner_by_field = {
+        "invoice_no": {"header", "document"}, "date": {"header", "document"},
+        "seller": {"header", "document"}, "buyer": {"header", "document"},
+        "subtotal": {"header", "document"},
+        "tax_amount": {"header", "document"},
+        "total_amount": {"header", "document"},
+    }
+    for field in scalar_fields:
+        candidates = [
+            str(result[field]).strip()
+            for job, result in parsed_jobs
+            if job["kind"] in owner_by_field[field] and result.get(field) is not None
+            and str(result[field]).strip()
+        ]
+        unique = list(dict.fromkeys(candidates))
+        if len(unique) == 1:
+            fields[field] = unique[0]
+        elif len(unique) > 1:
+            conflicts[field] = unique
+
+    for job, result in parsed_jobs:
+        if job["kind"] in {"table", "document"}:
+            items.extend(item for item in result.get("items", []) if isinstance(item, dict))
+    fields["items"] = items
+    return InvoiceFields.model_validate(fields).model_dump(mode="json"), conflicts
+
+
 class InvoiceTextProcessor:
-    """Use the isolated CPU model after Docling has extracted page text and tables."""
+    """Use an isolated Qwen+LoRA worker after Docling extracts text and tables."""
 
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
@@ -236,6 +287,16 @@ class InvoiceTextProcessor:
             or os.environ.get("DOCUMENT_PROCESSING_INVOICE_REVISION")
             or (MODEL_REVISION if model_id == MODEL_ID else "main")
         )
+        adapter_id = str(
+            self.config.get("invoice_adapter")
+            or os.environ.get("DOCUMENT_PROCESSING_INVOICE_ADAPTER")
+            or ADAPTER_ID
+        )
+        adapter_revision = str(
+            self.config.get("invoice_adapter_revision")
+            or os.environ.get("DOCUMENT_PROCESSING_INVOICE_ADAPTER_REVISION")
+            or (ADAPTER_REVISION if adapter_id == ADAPTER_ID else "main")
+        )
         from document_processing.vintern_processor import resolve_vintern_python
 
         python_path = resolve_vintern_python(self.config)
@@ -245,25 +306,16 @@ class InvoiceTextProcessor:
                 "set DOCUMENT_PROCESSING_VINTERN_PYTHON."
             )
 
-        prompt = (
-            "Trích xuất dữ liệu hóa đơn tiếng Việt từ các vùng OCR và bảng. "
-            "Chỉ trả về một JSON object theo schema. Giữ nguyên chuỗi số và cách viết; "
-            "không tự tính, không suy đoán trường thiếu, dùng null nếu không thấy. "
-            "Các hàng chỉ đánh số cột hoặc ghi công thức mẫu không phải dữ liệu hóa đơn. "
-            "Hàng hướng dẫn có thể bị OCR sai, ví dụ 1, tư., ở., 40 đ., 5., 6 - 45.; "
-            "Chỉ lấy số lượng/đơn giá khi chúng nằm trong hàng hàng hóa thực tế; "
-            "không lấy số thứ tự cột làm dữ liệu và không tự tính bất kỳ số tiền nào. "
-            "Các hàng cộng tiền, tiền thuế và tổng thanh toán là số tổng hợp, không phải item.\n"
-            f"SCHEMA:\n{json.dumps(SCHEMA, ensure_ascii=False)}\n"
-            f"OCR ELEMENTS AND TABLES:\n{json.dumps(ocr_input, ensure_ascii=False)}"
-        )
+        jobs = _extraction_jobs(ocr_input)
         with tempfile.TemporaryDirectory(prefix="invoice-text-") as temp_dir:
             request_path = Path(temp_dir) / "request.json"
             response_path = Path(temp_dir) / "response.json"
             request_path.write_text(json.dumps({
                 "model_id": model_id,
                 "revision": revision,
-                "prompt": prompt,
+                "adapter_id": adapter_id,
+                "adapter_revision": adapter_revision,
+                "jobs": jobs,
                 "cpu_threads": int(self.config.get("invoice_cpu_threads", 2)),
             }, ensure_ascii=False), encoding="utf-8")
             env = os.environ.copy()
@@ -291,18 +343,47 @@ class InvoiceTextProcessor:
             except (OSError, json.JSONDecodeError) as error:
                 raise RuntimeError("Invoice text worker returned invalid output") from error
 
-        raw_response = str(worker_result.get("response", ""))
-        fields = _parse_json_response(raw_response) or InvoiceFields().model_dump(mode="json")
-        fields.update(_fields_from_tables(ocr_input["tables"]))
-        fields.update(_fields_from_labeled_elements(elements))
+        responses = worker_result.get("responses", [])
+        parsed_jobs: list[tuple[dict[str, Any], dict[str, Any]]] = []
+        invalid_sources = []
+        if len(responses) != len(jobs):
+            invalid_sources.append(
+                f"worker returned {len(responses)} responses for {len(jobs)} extraction jobs"
+            )
+        for job, response in zip(jobs, responses):
+            parsed = _parse_json_response(str(response))
+            if parsed is None:
+                invalid_sources.append(job["source"])
+                continue
+            parsed_jobs.append((job, parsed))
+        fields, field_conflicts = _merge_job_fields(parsed_jobs)
+        raw_response = json.dumps(
+            [
+                {"source": job["source"], "response": response}
+                for job, response in zip(jobs, responses)
+            ],
+            ensure_ascii=False,
+        )
+        parse_error = None
+        if invalid_sources:
+            parse_error = "Invalid JSON/schema from: " + ", ".join(invalid_sources)
+        elif not parsed_jobs:
+            parse_error = "Model response did not match invoice.v1"
         return {
             "model": model_id,
             "revision": worker_result.get("revision", revision),
+            "adapter": worker_result.get("adapter", adapter_id),
+            "adapter_revision": worker_result.get("adapter_revision", adapter_revision),
             "schema_version": SCHEMA_VERSION,
             "status": "review_required",
             "review_required": True,
             "fields": fields,
             "raw_response": raw_response,
-            "parse_error": None if fields is not None else "Model response did not match invoice.v1",
-            "metrics": worker_result.get("metrics", {}),
+            "parse_error": parse_error,
+            "field_conflicts": field_conflicts,
+            "metrics": {
+                **worker_result.get("metrics", {}),
+                "extraction_jobs": len(jobs),
+                "invalid_jobs": invalid_sources,
+            },
         }

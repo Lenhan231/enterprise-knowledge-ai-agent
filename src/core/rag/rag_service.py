@@ -92,6 +92,7 @@ class RAGResult(BaseModel):
     insufficient_context: bool = False
     prompt_sha256: str | None = None
     verification: VerificationOutcome | None = None
+    withheld_draft: str | None = None  # the generated answer that was not shown; for diagnosis only, never returned to users
 
 
 def _format_contexts(contexts: list[dict]) -> str:
@@ -272,6 +273,7 @@ class RAGService:
             reason = "unknown_citation" if unknown_source_ids else "uncited_answer"
             _log.warning("Knowledge answer withheld: %s %s", reason, sorted(unknown_source_ids))
             return RAGResult(answer=VERIFICATION_UNAVAILABLE_ANSWER, contexts=contexts, prompt_sha256=prompt_sha256,
+                             withheld_draft=answer,
                              verification=VerificationOutcome(status="unavailable", reason=reason))
 
         verification = None
@@ -279,7 +281,7 @@ class RAGService:
             cited_contexts = [c for c in contexts if c["source_id"] in source_ids]
             verification = verify_answer(self.llm, question, answer, cited_contexts)
             if verification.status != "supported":
-                return RAGResult(answer=VERIFICATION_UNAVAILABLE_ANSWER, contexts=contexts,
+                return RAGResult(answer=VERIFICATION_UNAVAILABLE_ANSWER, contexts=contexts, withheld_draft=answer,
                                  prompt_sha256=prompt_sha256, verification=verification)
 
         return RAGResult(

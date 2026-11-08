@@ -55,5 +55,13 @@ class KnowledgeFlagTest(unittest.TestCase):
         self.assertEqual(importlib.reload(rag_service).MAX_CONTEXT_CHARS, 24000)
 
 
+    def test_withheld_answer_keeps_its_draft_for_diagnosis(self):
+        llm, retrieval = FakeLLM(), FakeRetrieval()
+        llm.generate = lambda prompt, **_: "Câu trả lời không trích dẫn."
+        result = RAGService(retrieval, llm).generate_answer("Hỏi?", roles=["employee"])
+        self.assertNotEqual(result.answer, "Câu trả lời không trích dẫn.")
+        self.assertEqual(result.withheld_draft, "Câu trả lời không trích dẫn.")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -4,20 +4,25 @@
 
 ```text
 PDF/image → Docling OCR, layout and TableFormer → ordered text + table cells
-  → Qwen3-0.6B + private LoRA text-only worker → schema-checked JSON draft
+  → Gemini API or Qwen3-0.6B + private LoRA → schema-checked JSON draft
   → public.invoice_extractions
 ```
 
-The invoice intent does not send the image to Qwen. `DocumentProcessor` first
-uses Docling with Vietnamese/English OCR and table extraction, then
-`InvoiceTextProcessor` sends those text results to an isolated Transformers
-worker. The worker loads the pinned `Qwen/Qwen3-0.6B` base revision and the
+The invoice intent sends OCR text and table cells to the configured text model;
+it does not send invoice images to the LLM. `DocumentProcessor` first uses
+Docling with Vietnamese/English OCR and table extraction. Set
+`DOCUMENT_PROCESSING_INVOICE_PROVIDER=gemini` and `GEMINI_API` to use the
+`gemini-3.1-flash-lite` API. The Gemini path sends the header and table prompts
+as separate JSON-mode requests. The default `modal` provider sends those same
+text prompts to the isolated GPU endpoint. When Modal is not configured, the
+Qwen path uses the local isolated Transformers worker, which loads the pinned
+`Qwen/Qwen3-0.6B` base revision and the
 private `lenhanm1/qwen3-0.6b-invoice-lora-900` adapter. Set
 `HF_INVOICE_LLM_TOKEN` in the
 document-processing service environment so the worker can read the adapter.
 Model and adapter revisions are pinned in `invoice_text_processor.py` and can
 be overridden with `DOCUMENT_PROCESSING_INVOICE_*` environment variables. The
-worker uses the interpreter configured by `DOCUMENT_PROCESSING_VINTERN_PYTHON`
+local worker uses the interpreter configured by `DOCUMENT_PROCESSING_VINTERN_PYTHON`
 and shares the document-processing model cache.
 
 For GPU inference, deploy `modal_invoice_endpoint.py` from the repository root

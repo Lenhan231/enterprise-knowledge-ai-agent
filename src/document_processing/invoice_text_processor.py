@@ -10,8 +10,10 @@ from pathlib import Path
 import re
 import subprocess
 import tempfile
+import time
 from typing import Any
 from urllib.error import HTTPError, URLError
+from urllib.parse import quote
 from urllib.request import Request, urlopen
 
 from pydantic import BaseModel, ConfigDict, StrictStr, field_validator
@@ -269,7 +271,7 @@ def _merge_job_fields(
 
 
 class InvoiceTextProcessor:
-    """Use an isolated Qwen+LoRA worker after Docling extracts text and tables."""
+    """Extract invoice JSON from Docling OCR using a configured text model."""
 
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
@@ -281,26 +283,44 @@ class InvoiceTextProcessor:
         if not ocr_input["elements"] and not ocr_input["tables"]:
             raise ValueError("No OCR elements or tables were extracted from the invoice")
 
-        model_id = str(
-            self.config.get("invoice_model")
-            or os.environ.get("DOCUMENT_PROCESSING_INVOICE_MODEL")
-            or MODEL_ID
-        )
-        revision = str(
-            self.config.get("invoice_model_revision")
-            or os.environ.get("DOCUMENT_PROCESSING_INVOICE_REVISION")
-            or (MODEL_REVISION if model_id == MODEL_ID else "main")
-        )
-        adapter_id = str(
-            self.config.get("invoice_adapter")
-            or os.environ.get("DOCUMENT_PROCESSING_INVOICE_ADAPTER")
-            or ADAPTER_ID
-        )
-        adapter_revision = str(
-            self.config.get("invoice_adapter_revision")
-            or os.environ.get("DOCUMENT_PROCESSING_INVOICE_ADAPTER_REVISION")
-            or (ADAPTER_REVISION if adapter_id == ADAPTER_ID else "main")
-        )
+        provider = str(
+            self.config.get("invoice_provider")
+            or os.environ.get("DOCUMENT_PROCESSING_INVOICE_PROVIDER")
+            or "modal"
+        ).strip().lower()
+        if provider not in {"gemini", "modal", "local"}:
+            raise ValueError(f"Unsupported invoice extraction provider: {provider}")
+
+        if provider == "gemini":
+            model_id = str(
+                self.config.get("gemini_invoice_model")
+                or os.environ.get("DOCUMENT_PROCESSING_GEMINI_INVOICE_MODEL")
+                or "gemini-3.1-flash-lite"
+            )
+            revision = "Gemini API"
+            adapter_id = None
+            adapter_revision = None
+        else:
+            model_id = str(
+                self.config.get("invoice_model")
+                or os.environ.get("DOCUMENT_PROCESSING_INVOICE_MODEL")
+                or MODEL_ID
+            )
+            revision = str(
+                self.config.get("invoice_model_revision")
+                or os.environ.get("DOCUMENT_PROCESSING_INVOICE_REVISION")
+                or (MODEL_REVISION if model_id == MODEL_ID else "main")
+            )
+            adapter_id = str(
+                self.config.get("invoice_adapter")
+                or os.environ.get("DOCUMENT_PROCESSING_INVOICE_ADAPTER")
+                or ADAPTER_ID
+            )
+            adapter_revision = str(
+                self.config.get("invoice_adapter_revision")
+                or os.environ.get("DOCUMENT_PROCESSING_INVOICE_ADAPTER_REVISION")
+                or (ADAPTER_REVISION if adapter_id == ADAPTER_ID else "main")
+            )
         jobs = _extraction_jobs(ocr_input)
         request_payload = {
             "model_id": model_id,
@@ -319,7 +339,14 @@ class InvoiceTextProcessor:
             or os.environ.get("DOCUMENT_PROCESSING_INVOICE_MODAL_URL")
             or ""
         ).strip()
-        if modal_url:
+        if provider == "gemini":
+            worker_result = _infer_with_gemini(
+                jobs,
+                api_key=os.environ.get("GEMINI_API") or os.environ.get("GEMINI_API_KEY") or "",
+                model_id=model_id,
+                timeout=min(timeout, 180),
+            )
+        elif provider == "modal" and modal_url:
             if not modal_url.startswith("https://"):
                 raise ValueError("DOCUMENT_PROCESSING_INVOICE_MODAL_URL must use HTTPS")
             token = os.environ.get("HF_INVOICE_LLM_TOKEN", "")
@@ -435,3 +462,78 @@ class InvoiceTextProcessor:
                 "invalid_jobs": invalid_sources,
             },
         }
+
+
+def _infer_with_gemini(
+    jobs: list[dict[str, Any]], *, api_key: str, model_id: str, timeout: int,
+) -> dict[str, Any]:
+    if not api_key:
+        raise RuntimeError("GEMINI_API is required when DOCUMENT_PROCESSING_INVOICE_PROVIDER=gemini")
+
+    responses: list[str] = []
+    prompt_tokens = generated_tokens = 0
+    elapsed = 0.0
+    model_version = model_id
+    endpoint = (
+        "https://generativelanguage.googleapis.com/v1beta/models/"
+        f"{model_id}:generateContent?key={quote(api_key, safe='')}"
+    )
+    for job in jobs:
+        body = json.dumps({
+            "contents": [{"role": "user", "parts": [{"text": job["prompt"]}]}],
+            "generationConfig": {
+                "temperature": 0,
+                "maxOutputTokens": int(job.get("max_new_tokens", 1024)),
+                "responseMimeType": "application/json",
+            },
+        }, ensure_ascii=False).encode("utf-8")
+        for attempt in range(3):
+            request = Request(
+                endpoint,
+                data=body,
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            started = time.perf_counter()
+            try:
+                with urlopen(request, timeout=timeout) as response:
+                    result = json.loads(response.read().decode("utf-8"))
+                elapsed += time.perf_counter() - started
+                candidates = result.get("candidates") or []
+                parts = ((candidates[0].get("content") or {}).get("parts") or []) if candidates else []
+                responses.append("".join(part.get("text", "") for part in parts))
+                usage = result.get("usageMetadata") or {}
+                prompt_tokens += int(usage.get("promptTokenCount") or 0)
+                generated_tokens += int(usage.get("candidatesTokenCount") or 0)
+                model_version = result.get("modelVersion") or model_version
+                break
+            except HTTPError as error:
+                detail = error.read(1200).decode("utf-8", errors="replace")
+                if error.code != 429 or attempt == 2:
+                    raise RuntimeError(
+                        f"Gemini invoice API returned HTTP {error.code}: {detail}"
+                    ) from error
+                try:
+                    delay = float(error.headers.get("Retry-After", 2 ** (attempt + 1)))
+                except (TypeError, ValueError):
+                    delay = float(2 ** (attempt + 1))
+                time.sleep(max(1.0, min(delay, 30.0)))
+            except (URLError, TimeoutError, json.JSONDecodeError) as error:
+                raise RuntimeError(f"Gemini invoice API request failed: {error}") from error
+
+    return {
+        "revision": model_version,
+        "adapter": None,
+        "adapter_revision": None,
+        "responses": responses,
+        "metrics": {
+            "provider": "gemini_api",
+            "device": "remote_api",
+            "dtype": "remote",
+            "load_seconds": 0,
+            "inference_seconds": round(elapsed, 2),
+            "prompt_tokens": prompt_tokens,
+            "generated_tokens": generated_tokens,
+            "request_count": len(jobs),
+        },
+    }

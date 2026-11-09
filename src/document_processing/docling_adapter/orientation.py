@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import logging
 import subprocess
 import tempfile
 from functools import lru_cache
@@ -14,6 +15,7 @@ from docling_core.types.doc import BoundingBox, CoordOrigin
 from docling.models.stages.ocr.tesseract_utils import parse_tesseract_orientation
 
 _orientation_lock = Lock()
+_log = logging.getLogger(__name__)
 
 
 @lru_cache(maxsize=1)
@@ -37,8 +39,15 @@ def detect_paddle_orientation(image: Image.Image) -> tuple[int, int, float]:
     import numpy as np
 
     image_bgr = np.asarray(image.convert("RGB"))[:, :, ::-1].copy()
-    with _orientation_lock:
-        result = next(iter(_paddle_orientation_model().predict(image_bgr, batch_size=1)))
+    try:
+        with _orientation_lock:
+            result = next(iter(_paddle_orientation_model().predict(image_bgr, batch_size=1)))
+    except Exception:
+        _log.warning(
+            "Paddle page orientation inference failed; continuing without rotation correction.",
+            exc_info=True,
+        )
+        return 0, 0, 0.0
     payload = result.json
     if isinstance(payload, str):
         import json

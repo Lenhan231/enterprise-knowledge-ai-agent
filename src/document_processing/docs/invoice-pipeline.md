@@ -20,6 +20,14 @@ be overridden with `DOCUMENT_PROCESSING_INVOICE_*` environment variables. The
 worker uses the interpreter configured by `DOCUMENT_PROCESSING_VINTERN_PYTHON`
 and shares the document-processing model cache.
 
+For GPU inference, deploy `modal_invoice_endpoint.py` from the repository root
+with `modal deploy src/document_processing/modal_invoice_endpoint.py`. The
+Modal Secret `invoice-hf-token` must expose `HF_INVOICE_LLM_TOKEN`. Set the
+endpoint URL as `DOCUMENT_PROCESSING_INVOICE_MODAL_URL` in the document-
+processing service environment; requests are authenticated with an HMAC derived
+from that same token. When the URL is unset, extraction falls back to the local
+isolated worker.
+
 ## JSON schema
 
 `invoice.v1` contains `invoice_no`, `date`, `seller`, `buyer`, `items`
@@ -48,7 +56,9 @@ its existing parser/chunking/indexing route. The isolated Upload Test stores
 the same extraction in its run metadata and renders it above the Docling
 elements/tables, so the OCR evidence and JSON draft can be inspected together.
 
-The first inference may download base and adapter weights into `/models`;
-subsequent loads use the persistent model cache. CPU inference is synchronous and every
+The first local inference may download base and adapter weights into `/models`;
+subsequent loads use the persistent model cache. Modal loads the base and adapter
+once per GPU container and reuses them for later requests. The configured
+invoice request timeout is 1,200 seconds to allow for OCR and cold starts. Every
 result is marked `review_required`, so verify extracted fields against the
 source before using them in downstream financial workflows.

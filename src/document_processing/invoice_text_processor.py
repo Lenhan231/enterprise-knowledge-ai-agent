@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import hmac
 import os
 from pathlib import Path
 import re
 import subprocess
 import tempfile
 from typing import Any
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 from pydantic import BaseModel, ConfigDict, StrictStr, field_validator
 
@@ -297,51 +301,95 @@ class InvoiceTextProcessor:
             or os.environ.get("DOCUMENT_PROCESSING_INVOICE_ADAPTER_REVISION")
             or (ADAPTER_REVISION if adapter_id == ADAPTER_ID else "main")
         )
-        from document_processing.vintern_processor import resolve_vintern_python
-
-        python_path = resolve_vintern_python(self.config)
-        if python_path is None or not python_path.is_file():
-            raise RuntimeError(
-                "Invoice text extraction needs the isolated Transformers runtime; "
-                "set DOCUMENT_PROCESSING_VINTERN_PYTHON."
-            )
-
         jobs = _extraction_jobs(ocr_input)
-        with tempfile.TemporaryDirectory(prefix="invoice-text-") as temp_dir:
-            request_path = Path(temp_dir) / "request.json"
-            response_path = Path(temp_dir) / "response.json"
-            request_path.write_text(json.dumps({
-                "model_id": model_id,
-                "revision": revision,
-                "adapter_id": adapter_id,
-                "adapter_revision": adapter_revision,
-                "jobs": jobs,
-                "cpu_threads": int(self.config.get("invoice_cpu_threads", 2)),
-            }, ensure_ascii=False), encoding="utf-8")
-            env = os.environ.copy()
-            source_root = str(Path(__file__).resolve().parents[1])
-            env["PYTHONPATH"] = os.pathsep.join(
-                filter(None, [source_root, env.get("PYTHONPATH", "")])
+        request_payload = {
+            "model_id": model_id,
+            "revision": revision,
+            "adapter_id": adapter_id,
+            "adapter_revision": adapter_revision,
+            "jobs": jobs,
+            "cpu_threads": int(self.config.get("invoice_cpu_threads", 2)),
+        }
+        timeout = int(self.config.get(
+            "invoice_timeout_seconds",
+            os.environ.get("DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS", 1200),
+        ))
+        modal_url = str(
+            self.config.get("invoice_modal_url")
+            or os.environ.get("DOCUMENT_PROCESSING_INVOICE_MODAL_URL")
+            or ""
+        ).strip()
+        if modal_url:
+            if not modal_url.startswith("https://"):
+                raise ValueError("DOCUMENT_PROCESSING_INVOICE_MODAL_URL must use HTTPS")
+            token = os.environ.get("HF_INVOICE_LLM_TOKEN", "")
+            if not token:
+                raise RuntimeError("HF_INVOICE_LLM_TOKEN is required to authenticate with Modal")
+            canonical = json.dumps(
+                request_payload, ensure_ascii=False, separators=(",", ":"),
+            ).encode("utf-8")
+            signed_payload = {
+                **request_payload,
+                "auth_signature": hmac.new(
+                    token.encode("utf-8"), canonical, hashlib.sha256,
+                ).hexdigest(),
+            }
+            request = Request(
+                modal_url,
+                data=json.dumps(signed_payload, ensure_ascii=False).encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+                method="POST",
             )
-            timeout = int(self.config.get(
-                "invoice_timeout_seconds",
-                os.environ.get("DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS", 600),
-            ))
-            completed = subprocess.run(
-                [str(python_path), "-m", "document_processing.invoice_text_worker",
-                 str(request_path), str(response_path)],
-                capture_output=True, text=True, env=env, timeout=timeout, check=False,
-            )
-            if completed.returncode != 0:
-                details = (completed.stderr or completed.stdout).strip()[-3000:]
-                raise RuntimeError(
-                    "Invoice text model failed in its isolated runtime. "
-                    f"{details or f'Worker exited with code {completed.returncode}.'}"
-                )
             try:
-                worker_result = json.loads(response_path.read_text(encoding="utf-8"))
-            except (OSError, json.JSONDecodeError) as error:
-                raise RuntimeError("Invoice text worker returned invalid output") from error
+                with urlopen(request, timeout=timeout) as response:
+                    worker_result = json.loads(response.read().decode("utf-8"))
+            except HTTPError as error:
+                detail = error.read(1000).decode("utf-8", errors="replace")
+                raise RuntimeError(
+                    f"Modal invoice endpoint returned HTTP {error.code}: {detail}"
+                ) from error
+            except (URLError, TimeoutError, json.JSONDecodeError) as error:
+                raise RuntimeError(f"Modal invoice endpoint request failed: {error}") from error
+        else:
+            from document_processing.vintern_processor import resolve_vintern_python
+
+            python_path = resolve_vintern_python(self.config)
+            if python_path is None or not python_path.is_file():
+                raise RuntimeError(
+                    "Invoice text extraction needs the isolated Transformers runtime; "
+                    "set DOCUMENT_PROCESSING_VINTERN_PYTHON."
+                )
+            with tempfile.TemporaryDirectory(prefix="invoice-text-") as temp_dir:
+                request_path = Path(temp_dir) / "request.json"
+                response_path = Path(temp_dir) / "response.json"
+                request_path.write_text(
+                    json.dumps(request_payload, ensure_ascii=False), encoding="utf-8",
+                )
+                env = os.environ.copy()
+                source_root = str(Path(__file__).resolve().parents[1])
+                env["PYTHONPATH"] = os.pathsep.join(
+                    filter(None, [source_root, env.get("PYTHONPATH", "")])
+                )
+                try:
+                    completed = subprocess.run(
+                        [str(python_path), "-m", "document_processing.invoice_text_worker",
+                         str(request_path), str(response_path)],
+                        capture_output=True, text=True, env=env, timeout=timeout, check=False,
+                    )
+                except subprocess.TimeoutExpired as error:
+                    raise RuntimeError(
+                        f"Invoice text worker exceeded the {timeout}s timeout"
+                    ) from error
+                if completed.returncode != 0:
+                    details = (completed.stderr or completed.stdout).strip()[-3000:]
+                    raise RuntimeError(
+                        "Invoice text model failed in its isolated runtime. "
+                        f"{details or f'Worker exited with code {completed.returncode}.'}"
+                    )
+                try:
+                    worker_result = json.loads(response_path.read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError) as error:
+                    raise RuntimeError("Invoice text worker returned invalid output") from error
 
         responses = worker_result.get("responses", [])
         parsed_jobs: list[tuple[dict[str, Any], dict[str, Any]]] = []

@@ -40,7 +40,7 @@ image = (
 
 @app.cls(
     image=image,
-    gpu="L4",
+    gpu=["L4", "A10"],
     secrets=[modal.Secret.from_name("invoice-hf-token")],
     scaledown_window=300,
     timeout=1800,

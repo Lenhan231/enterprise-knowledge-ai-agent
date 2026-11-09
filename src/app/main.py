@@ -607,6 +607,7 @@ def _process_invoice_upload(
     content: bytes,
     uploaded_by: str,
     source_sha256: str,
+    model_provider: str,
 ) -> None:
     """Run invoice OCR after the upload response has been sent."""
     from core.database.invoice_repository import InvoiceRepository
@@ -628,6 +629,7 @@ def _process_invoice_upload(
             "config": {
                 "intent": "invoice",
                 "parser_engine": "docling",
+                "invoice_provider": model_provider,
                 "docling_ocr": True,
                 "docling_ocr_engine": os.getenv("DOCUMENT_PROCESSING_OCR_ENGINE", "vietocr"),
                 "docling_ocr_language": "vie+eng",
@@ -667,10 +669,14 @@ async def upload_invoice(
     request: Request,
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
+    model_provider: str = Form("gemini"),
     user: dict = Depends(require_permission("upload_documents")),
 ):
     """OCR an invoice and save its reviewable JSON outside the document corpus."""
     _require_same_origin(request)
+    model_provider = model_provider.strip().lower()
+    if model_provider not in {"gemini", "modal"}:
+        raise HTTPException(422, "Choose Gemini or the fine-tuned Qwen Modal model")
     filename = Path((file.filename or "").replace("\\", "/")).name
     extension = Path(filename).suffix.lower()
     supported = {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"}
@@ -727,6 +733,7 @@ async def upload_invoice(
             content,
             user["sub"],
             source_sha256,
+            model_provider,
         )
         return {
             "invoice_id": invoice_id,

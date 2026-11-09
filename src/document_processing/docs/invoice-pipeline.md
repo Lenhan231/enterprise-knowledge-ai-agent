@@ -61,7 +61,9 @@ records. `GET /api/invoices/{invoice_id}` is limited to the uploader and admins.
 
 The web Upload form exposes “Invoice extraction” separately from “Knowledge
 document”; it hides the knowledge-base access-role controls for invoice mode
-and displays the returned JSON draft. The normal document upload remains on
+and displays the returned JSON draft. Invoice uploads can select Gemini 3.1
+Flash-Lite or the fine-tuned Qwen3-0.6B adapter served through Modal GPU; the
+choice applies to that upload only. The normal document upload remains on
 its existing parser/chunking/indexing route. The isolated Upload Test stores
 the same extraction in its run metadata and renders it above the Docling
 elements/tables, so the OCR evidence and JSON draft can be inspected together.

@@ -1472,6 +1472,7 @@ function validateUploadFile(file, invoiceMode = false) {
 function updateUploadKind() {
   const invoiceMode = $("#upload-kind").value === "invoice";
   $("#upload-access-step").hidden = invoiceMode;
+  $("#invoice-model-field").hidden = !invoiceMode;
   $("#upload-title").required = !invoiceMode;
   $("#upload-title").closest(".upload-field").hidden = invoiceMode;
   $("#upload-file-label").textContent = invoiceMode ? "Invoice file" : "Document file";
@@ -1551,7 +1552,9 @@ $("#upload-form").addEventListener("submit", async (event) => {
   }
   const body = new FormData();
   body.append("file", file);
-  if (!invoiceMode) {
+  if (invoiceMode) {
+    body.append("model_provider", $("#invoice-model").value);
+  } else {
     for (const name of ["title"]) {
       const value = form.elements[name].value.trim();
       if (value) body.append(name, value);

@@ -245,6 +245,14 @@
                 </select>
                 <small id="upload-kind-help" class="upload-field-hint">Knowledge documents are indexed for document Q&amp;A.</small>
               </div>
+              <div id="invoice-model-field" class="upload-field upload-field-wide" hidden>
+                <label for="invoice-model">Extraction model</label>
+                <select id="invoice-model" name="model_provider">
+                  <option value="gemini" selected>Gemini 3.1 Flash-Lite</option>
+                  <option value="modal">Qwen3-0.6B fine-tuned · Modal GPU</option>
+                </select>
+                <small class="upload-field-hint">Choose which model creates the invoice JSON draft. OCR stays the same.</small>
+              </div>
               <div class="upload-field upload-field-wide">
                 <label id="upload-file-label" for="upload-file">Document file</label>
                 <div id="upload-dropzone" class="upload-dropzone">

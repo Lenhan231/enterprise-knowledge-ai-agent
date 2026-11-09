@@ -27,6 +27,7 @@ app = modal.App("enterprise-invoice-qwen3-lora")
 image = (
     modal.Image.debian_slim(python_version="3.11")
     .pip_install(
+        "fastapi[standard]",
         "torch==2.3.1",
         "transformers==4.57.6",
         "accelerate==1.15.0",

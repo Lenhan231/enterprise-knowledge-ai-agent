@@ -25,6 +25,11 @@ be overridden with `DOCUMENT_PROCESSING_INVOICE_*` environment variables. The
 local worker uses the interpreter configured by `DOCUMENT_PROCESSING_VINTERN_PYTHON`
 and shares the document-processing model cache.
 
+Table extraction returns both item rows and explicitly labeled subtotal, tax,
+and total values. The merge accepts totals from OCR text or table evidence;
+an item's `amount` is never copied into `total_amount` without a matching total
+label in the source.
+
 For GPU inference, deploy `modal_invoice_endpoint.py` from the repository root
 with `modal deploy src/document_processing/modal_invoice_endpoint.py`. The
 Modal Secret `invoice-hf-token` must expose `HF_INVOICE_LLM_TOKEN`. Set the

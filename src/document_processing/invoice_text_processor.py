@@ -48,6 +48,9 @@ HEADER_SCHEMA = {
 }
 TABLE_SCHEMA = {
     "items": SCHEMA["items"],
+    "subtotal": SCHEMA["subtotal"],
+    "tax_amount": SCHEMA["tax_amount"],
+    "total_amount": SCHEMA["total_amount"],
 }
 _MAX_EVIDENCE_CHARS = 12_000
 _TABLE_CHUNK_CHARS = 2_400
@@ -218,15 +221,20 @@ def _extraction_jobs(ocr_input: dict[str, Any]) -> list[dict[str, Any]]:
                 "source": f"table {table_index}, row chunk {chunk_index}",
                 "max_new_tokens": 1024,
                 "prompt": (
-                    instructions + "MODE: TABLE. Chỉ xuất key items theo SCHEMA; không xuất bất kỳ "
-                    "field tổng nào. Chép từng mặt hàng theo từng dòng và đúng theo tiêu đề cột trong "
+                    instructions + "MODE: TABLE. Trích items và các field tổng có nhãn rõ trong bảng. "
+                    "Chép từng mặt hàng theo từng dòng và đúng theo tiêu đề cột trong "
                     "bảng; tên/thứ tự cột có thể thay đổi. description lấy từ ô tên hàng, quantity từ "
                     "ô số lượng, unit từ ô đơn vị, unit_price từ ô đơn giá, amount từ ô thành tiền. "
+                    "subtotal là giá trị ở dòng/ô có nhãn cộng tiền hàng hoặc subtotal; tax_amount "
+                    "là giá trị ở dòng/ô thuế VAT/tiền thuế; total_amount là giá trị ở dòng/ô tổng "
+                    "cộng thanh toán/tổng tiền thanh toán/tổng thanh toán. Chỉ gán field tổng khi "
+                    "nhãn tương ứng xuất hiện rõ trong bằng chứng; amount của một mặt hàng không "
+                    "tự động là total_amount. Nếu một dòng tổng xuất hiện trong chunk này, trích "
+                    "giá trị của nó, không bỏ qua dòng đó. "
                     "Không chuyển giá trị giữa cột, không tính toán, không thêm lời giải thích vào giá "
                     "trị. Mọi giá trị phải là chuỗi JSON giữ nguyên OCR hoặc null nếu ô trống/không rõ; "
                     "không dùng chuỗi rỗng. Với description, chép nguyên văn toàn bộ chữ trong ô tên "
-                    "hàng của dòng đó. Giữ thứ tự dòng; "
-                    "bỏ dòng tiêu đề và dòng tổng/thuế.\n"
+                    "hàng của dòng đó. Giữ thứ tự dòng; bỏ dòng tiêu đề.\n"
                     f"SCHEMA:\n{json.dumps(TABLE_SCHEMA, ensure_ascii=False)}\n"
                     f"OCR TABLE EVIDENCE:\n{json.dumps(table_evidence, ensure_ascii=False)}"
                 ),
@@ -246,9 +254,9 @@ def _merge_job_fields(
     owner_by_field = {
         "invoice_no": {"header", "document"}, "date": {"header", "document"},
         "seller": {"header", "document"}, "buyer": {"header", "document"},
-        "subtotal": {"header", "document"},
-        "tax_amount": {"header", "document"},
-        "total_amount": {"header", "document"},
+        "subtotal": {"header", "document", "table"},
+        "tax_amount": {"header", "document", "table"},
+        "total_amount": {"header", "document", "table"},
     }
     for field in scalar_fields:
         candidates = [

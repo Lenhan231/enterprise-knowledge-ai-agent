@@ -35,6 +35,9 @@ class InvoiceModelRuntime:
         self.tokenizer = AutoTokenizer.from_pretrained(
             self.model_id, revision=self.revision, token=token,
         )
+        self.tokenizer.padding_side = "left"
+        if self.tokenizer.pad_token_id is None:
+            self.tokenizer.pad_token = self.tokenizer.eos_token
         model = AutoModelForCausalLM.from_pretrained(
             self.model_id,
             revision=self.revision,
@@ -69,21 +72,27 @@ class InvoiceModelRuntime:
             "source": "document", "prompt": request.get("prompt", ""),
             "max_new_tokens": request.get("max_new_tokens", 384),
         }]
-        responses = []
+        responses: list[str] = []
         prompt_tokens = generated_tokens = 0
         inference_seconds = 0.0
-        for job in jobs:
-            template_options = {"add_generation_prompt": True, "tokenize": False}
-            if self.model_id.startswith("Qwen/Qwen3"):
-                template_options["enable_thinking"] = False
-            prompt = self.tokenizer.apply_chat_template(
-                [{"role": "user", "content": job["prompt"]}],
-                **template_options,
-            )
-            inputs = self.tokenizer(prompt, return_tensors="pt")
-            if inputs["input_ids"].shape[-1] > 32_000:
+        batch_size = 4
+        for offset in range(0, len(jobs), batch_size):
+            batch = jobs[offset:offset + batch_size]
+            prompts = []
+            for job in batch:
+                template_options = {"add_generation_prompt": True, "tokenize": False}
+                if self.model_id.startswith("Qwen/Qwen3"):
+                    template_options["enable_thinking"] = False
+                prompts.append(self.tokenizer.apply_chat_template(
+                    [{"role": "user", "content": job["prompt"]}],
+                    **template_options,
+                ))
+            inputs = self.tokenizer(prompts, padding=True, return_tensors="pt")
+            lengths = inputs["attention_mask"].sum(dim=-1)
+            if int(lengths.max()) > 32_000:
+                source = batch[int(lengths.argmax())].get("source", "")
                 raise ValueError(
-                    f"Invoice OCR chunk {job.get('source', '')} exceeds the model's 32K token context"
+                    f"Invoice OCR chunk {source} exceeds the model's 32K token context"
                 )
             inputs = {key: value.to(self.device) for key, value in inputs.items()}
 
@@ -91,19 +100,23 @@ class InvoiceModelRuntime:
             with torch.inference_mode():
                 output = self.model.generate(
                     **inputs,
-                    max_new_tokens=int(job.get("max_new_tokens", 1024)),
+                    max_new_tokens=max(int(job.get("max_new_tokens", 1024)) for job in batch),
                     do_sample=False,
-                    pad_token_id=self.tokenizer.eos_token_id,
+                    pad_token_id=self.tokenizer.pad_token_id,
                 )
             if self.device.type == "cuda":
                 torch.cuda.synchronize(self.device)
             inference_seconds += time.perf_counter() - infer_start
-            prompt_length = inputs["input_ids"].shape[-1]
-            prompt_tokens += int(prompt_length)
-            generated_tokens += int(output.shape[-1] - prompt_length)
-            responses.append(self.tokenizer.decode(
-                output[0][prompt_length:], skip_special_tokens=True,
-            ).strip())
+            input_width = inputs["input_ids"].shape[-1]
+            prompt_tokens += int(lengths.sum().item())
+            for index, job in enumerate(batch):
+                generated = output[index, input_width:]
+                token_limit = int(job.get("max_new_tokens", 1024))
+                generated = generated[:token_limit]
+                generated_tokens += int(generated.shape[-1])
+                responses.append(self.tokenizer.decode(
+                    generated, skip_special_tokens=True,
+                ).strip())
 
         return {
             "revision": self.revision,

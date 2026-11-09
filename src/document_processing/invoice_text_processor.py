@@ -165,7 +165,11 @@ def _extraction_jobs(ocr_input: dict[str, Any]) -> list[dict[str, Any]]:
         "OUTPUT phải là đúng một JSON object hợp lệ khớp SCHEMA: chỉ được dùng các key trong "
         "SCHEMA, không markdown, không code fence, không giải thích. Mọi giá trị lá khác null "
         "phải là JSON string, được chép từ đúng vùng bằng chứng. Giữ nguyên chữ số và dấu phân "
-        "cách OCR; không xuất giá trị số dưới dạng JSON number hoặc biểu thức tính toán.\n"
+        "cách OCR; với số tiền, chép chính xác nguyên chuỗi số từ một ô/dòng bằng chứng, không "
+        "thêm, bỏ, đổi chỗ chữ số, không ghép chữ số từ vùng khác và không tự sửa số. Trước khi "
+        "trả JSON, đối chiếu từng số tiền với chuỗi OCR tương ứng; nếu không khớp chính xác hoặc "
+        "không xác định được đúng dòng/ô thì trả null. Không xuất số dưới dạng JSON number hoặc "
+        "biểu thức tính toán.\n"
     )
 
     if not tables:
@@ -193,7 +197,10 @@ def _extraction_jobs(ocr_input: dict[str, Any]) -> list[dict[str, Any]]:
                 "hành; buyer là bên mua. Chép seller/buyer từ vùng có nhãn tương ứng; không lấy tiêu "
                 "đề, watermark, ghi chú hoặc địa chỉ làm tên bên mua/bán. invoice_no phải là số hóa đơn "
                 "được ghi rõ, không phải mã phiếu xuất kho. Chép ngày và số tổng đúng như OCR; không "
-                "tính tổng hoặc thuế từ dòng hàng. Không trích items.\n"
+                "tính tổng hoặc thuế từ dòng hàng. Với mỗi field tiền, chỉ chép chuỗi số nằm cạnh "
+                "đúng nhãn subtotal/thuế/tổng thanh toán; không lấy số ở dòng khác, không tự thêm "
+                "chữ số đầu (ví dụ 40.237.560 không được đổi thành 140.237.560). Nếu chuỗi số "
+                "không đọc chắc chắn từng chữ số thì dùng null. Không trích items.\n"
                 f"SCHEMA:\n{json.dumps(HEADER_SCHEMA, ensure_ascii=False)}\n"
                 f"OCR EVIDENCE:\n{json.dumps(chunk, ensure_ascii=False)}"
             ),
@@ -230,7 +237,10 @@ def _extraction_jobs(ocr_input: dict[str, Any]) -> list[dict[str, Any]]:
                     "cộng thanh toán/tổng tiền thanh toán/tổng thanh toán. Chỉ gán field tổng khi "
                     "nhãn tương ứng xuất hiện rõ trong bằng chứng; amount của một mặt hàng không "
                     "tự động là total_amount. Nếu một dòng tổng xuất hiện trong chunk này, trích "
-                    "giá trị của nó, không bỏ qua dòng đó. "
+                    "giá trị của nó, không bỏ qua dòng đó. Chép nguyên chuỗi số đúng ô cạnh nhãn; "
+                    "đối chiếu từng chữ số trước khi trả lời, không thêm chữ số đầu (ví dụ "
+                    "40.237.560 không được thành 140.237.560), không ghép số từ các ô khác. Nếu "
+                    "không đọc chắc chắn chính xác từng chữ số thì trả null. "
                     "Không chuyển giá trị giữa cột, không tính toán, không thêm lời giải thích vào giá "
                     "trị. Mọi giá trị phải là chuỗi JSON giữ nguyên OCR hoặc null nếu ô trống/không rõ; "
                     "không dùng chuỗi rỗng. Với description, chép nguyên văn toàn bộ chữ trong ô tên "

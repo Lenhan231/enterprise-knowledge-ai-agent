@@ -196,7 +196,9 @@ def _extraction_jobs(ocr_input: dict[str, Any]) -> list[dict[str, Any]]:
                 "có nhãn rõ (subtotal, tax_amount, total_amount) từ OCR EVIDENCE. Seller là bên phát "
                 "hành; buyer là bên mua. Chép seller/buyer từ vùng có nhãn tương ứng; không lấy tiêu "
                 "đề, watermark, ghi chú hoặc địa chỉ làm tên bên mua/bán. invoice_no phải là số hóa đơn "
-                "được ghi rõ, không phải mã phiếu xuất kho. Chép ngày và số tổng đúng như OCR; không "
+                "được ghi rõ, không phải mã số thuế, mã ký hiệu hóa đơn hoặc mã phiếu xuất kho. Nếu có "
+                "nhãn 'Số:' hoặc 'Số hóa đơn:', invoice_no là giá trị ngay sau nhãn đó; không lấy số "
+                "sau 'Mã số thuế:'. Chép ngày và số tổng đúng như OCR; không "
                 "tính tổng hoặc thuế từ dòng hàng. Với mỗi field tiền, chỉ chép chuỗi số nằm cạnh "
                 "đúng nhãn subtotal/thuế/tổng thanh toán; không lấy số ở dòng khác, không tự thêm "
                 "chữ số đầu (ví dụ 40.237.560 không được đổi thành 140.237.560). Nếu chuỗi số "
@@ -269,12 +271,20 @@ def _merge_job_fields(
         "total_amount": {"header", "document", "table"},
     }
     for field in scalar_fields:
-        candidates = [
-            str(result[field]).strip()
-            for job, result in parsed_jobs
-            if job["kind"] in owner_by_field[field] and result.get(field) is not None
-            and str(result[field]).strip()
-        ]
+        candidates_by_kind = {
+            kind: [
+                str(result[field]).strip()
+                for job, result in parsed_jobs
+                if job["kind"] == kind and job["kind"] in owner_by_field[field]
+                and result.get(field) is not None
+                and str(result[field]).strip()
+            ]
+            for kind in ("header", "document", "table")
+        }
+        candidates = next(
+            (values for values in candidates_by_kind.values() if values),
+            [],
+        )
         unique = list(dict.fromkeys(candidates))
         if len(unique) == 1:
             fields[field] = unique[0]

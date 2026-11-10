@@ -30,7 +30,8 @@ CONFIG = dict(agent_model='qwen/qwen3.8-27b', temperature=0, top_k=5,
     embedding_revision='d128750597153bb5987e10b1c3493a34e5a4502a',
     reranker_model='BAAI/bge-reranker-v2-m3', reranker_revision='953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e',
     reranker_quantize='int8', cpu_threads=2, document_id=DOC, roles=['employee'],
-    multiquery=False, claim_verification=False, judge_model='gpt-5.6-luna', judge_reasoning='medium')
+    multiquery=False, claim_verification=False, judge_model='gpt-5.6-luna', judge_reasoning='medium',
+    model_startup='preload_outside_request', hf_hub_offline=True, context_max_chars=24000, completeness_rule=False)
 
 
 def digest(value):
@@ -178,9 +179,16 @@ async def generate(out, group, ids):
     if group == 'knowledge':
         import torch
         torch.set_num_threads(CONFIG['cpu_threads'])
+        startup = time.perf_counter()
+        from core.embeddings import EmbeddingService
+        from core.retrieval.reranker import BGEReranker, _load_model
+        embedding = EmbeddingService()
+        reranker = BGEReranker(model=_load_model())
+        append(out/'model-startups.jsonl', dict(started_at=datetime.now(timezone.utc).isoformat(),
+            seconds=time.perf_counter()-startup, config_sha256=digest(CONFIG)))
         from psycopg.conninfo import make_conninfo
         os.environ['DATABASE_URL'] = make_conninfo(os.environ['DATABASE_URL'], options='-c default_transaction_read_only=on -c statement_timeout=60000')
-        rag = RAGService(RetrievalService(repository=DocumentChunkRepository()), provider)
+        rag = RAGService(RetrievalService(embedding_service=embedding, repository=DocumentChunkRepository(), reranker=reranker), provider)
         original = rag.retrieve_contexts
         def retrieve(*args, **kwargs):
             kwargs['document_ids'] = [DOC]
@@ -236,6 +244,8 @@ async def score(out, group, ids):
     existing = {(r['id'],r['metric']) for r in read_jsonl(path)}
     metrics = None
     if group == 'knowledge':
+        import torch
+        torch.set_num_threads(CONFIG['cpu_threads'])
         from evaluation.ragas_judge import build_ragas_metrics, CodexCLIJudge
         class CachedJudge(CodexCLIJudge):
             async def agenerate(self, prompt, response_model):
@@ -332,7 +342,8 @@ def main():
     for key,value in {'GROQ_MODEL':CONFIG['agent_model'],'EMBEDDING_MODEL':CONFIG['embedding_model'],
         'EMBEDDING_BACKEND':'local','RERANKER_MODEL':'bge','RERANKER_QUANTIZE':'int8',
         'KNOWLEDGE_MULTIQUERY_ENABLED':'0','KNOWLEDGE_CLAIM_VERIFICATION_ENABLED':'0','SQL_INVENTORY_ONLY':'false',
-        'OMP_NUM_THREADS':'2','TOKENIZERS_PARALLELISM':'false'}.items():
+        'KNOWLEDGE_CONTEXT_MAX_CHARS':'24000','KNOWLEDGE_COMPLETENESS_RULE':'0',
+        'HF_HUB_OFFLINE':'1','OMP_NUM_THREADS':'2','TOKENIZERS_PARALLELISM':'false'}.items():
         os.environ[key]=value
     out=args.output.resolve()
     if args.stage=='freeze': freeze(out)

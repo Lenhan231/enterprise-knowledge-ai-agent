@@ -41,3 +41,9 @@ hashes match. Old SQL/Report files and results remain byte-identical.
 Comparisons describe integration and preserved historical metrics. A single new
 cohort is not a paired improvement claim over historical, incompatible datasets.
 No optional model sweep or rerunning old SQL/Report benchmarks is in scope.
+
+The v2 cold-start Knowledge smoke timeout is retained as a diagnostic. Invoice
+v2 is independently complete. Knowledge v3 preloads the cached pinned models
+before requests and records startup seconds separately; it does not replace the
+failed cold-start generation. Offline HF loading avoids network metadata checks.
+Do not combine these cohorts into one accuracy/latency average.

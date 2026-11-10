@@ -1,0 +1,35 @@
+{
+  "production_base": "b9ee699",
+  "candidate_revision": "d4def4eab12e1ad25509ab401ae5c5be6806f443",
+  "unchanged_paths": [
+    "src",
+    "data/semantic",
+    "supabase/migrations",
+    "evaluation/run_inventory_agents_benchmark.py",
+    "evaluation/inventory_benchmark_metrics.py",
+    "evaluation/ragas_judge.py",
+    "artifacts/evaluation/agent-benchmarks-2026-11-02",
+    "pyproject.toml",
+    "uv.lock"
+  ],
+  "production_and_catalog_unchanged": true,
+  "candidate_patch_verified": true,
+  "application_manifests_verified": true,
+  "fixture_hash_verified": true,
+  "earlier_full_suite_baseline_source_equals_production_source": true,
+  "scoring_and_judge_unchanged": true,
+  "sql_provider_failures": 0,
+  "evaluator_errors": 0,
+  "source_sha256": {
+    "evaluation/check_cross_domain_fidelity.py": "9f01e1d75019ddb9590cc180768932854278778ff8f767325253d4100269a520",
+    "evaluation/sql_cross_domain_fidelity.patch": "4cbcc837179e9ad9d14c2ed9ad3ce209a3a095c5bb52a7e62e3dde77ac37ece1",
+    "evaluation/run_sql_hybrid_followup.py": "8914373df158ca48d438268fb450c2cf643fbb56c5abd04017909b18fcc99673",
+    "tests/test_sql_cross_domain_fidelity.py": "bf4974f9396c2b08d8334e0fecb0f2ba351b01c5c63a83e1f519ed5fa1c8a185"
+  },
+  "review": {
+    "correctness": "Three genuine guard families reproduced with rejected/accepted fixtures; Ragas and intent/policy ambiguity kept separate.",
+    "security": "Existing RBAC, approved joins, independent aggregation, SQLGlot and read-only boundary retained; ambiguity/quoted-name normalization covered.",
+    "maintainability": "81 runtime additions and 9 deletions across three existing modules; no new agent/model/dependency/routing stage.",
+    "limits": "S26 intent and S27 business approval remain uncertain. Finite mutation tests and three fresh questions are not a universal semantic proof; full suite remains red."
+  }
+}

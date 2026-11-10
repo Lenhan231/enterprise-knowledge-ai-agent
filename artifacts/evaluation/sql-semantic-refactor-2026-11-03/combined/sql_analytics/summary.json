@@ -1,0 +1,37 @@
+{
+  "cases": 30,
+  "generated": 30,
+  "generation_attempts": 44,
+  "generation_outcomes": {
+    "executed_with_rows": 16,
+    "executed_empty": 1,
+    "clarification_required": 3,
+    "RateLimitError": 9,
+    "AmbiguousFunctionError": 1
+  },
+  "latest_rate_limit_failures": 9,
+  "generation_exceptions": 0,
+  "metrics": {
+    "execution_accuracy": {
+      "mean": 0.4642857142857143,
+      "scored": 28,
+      "not_applicable": 2,
+      "evaluator_errors": 0,
+      "pending": 0
+    },
+    "sql_semantic_equivalence": {
+      "mean": 0.17857142857142858,
+      "scored": 28,
+      "not_applicable": 2,
+      "evaluator_errors": 0,
+      "pending": 0
+    },
+    "numerical_accuracy": {
+      "mean": 0.44814814814814813,
+      "scored": 27,
+      "not_applicable": 3,
+      "evaluator_errors": 0,
+      "pending": 0
+    }
+  }
+}

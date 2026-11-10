@@ -1,0 +1,566 @@
+{
+  "production": [
+    {
+      "id": "R01",
+      "attempt": 1,
+      "status": "partial",
+      "download": true,
+      "elapsed_seconds": 72.201,
+      "llm_calls": 11,
+      "provider_failed_attempts": 7,
+      "source_collection": null,
+      "coverage": {
+        "inv_health_overview": {
+          "requested": "Provide stock_on_hand, reorder_rate, stockout_rate, and overstock_rate for the inventory snapshot on 2022-12-31.",
+          "returned": 1,
+          "included": 1,
+          "omitted": 0,
+          "completeness": "returned_query_scope",
+          "snapshots": [
+            "2022-12-31"
+          ]
+        },
+        "inv_stockout_reorder": {
+          "requested": "Provide stockout_rate, reorder_rate, and stockout_days for the inventory snapshot on 2022-12-31.",
+          "returned": 1,
+          "included": 1,
+          "omitted": 0,
+          "completeness": "returned_query_scope",
+          "snapshots": [
+            "2022-12-31"
+          ]
+        },
+        "inv_overstock": {
+          "requested": "Provide overstock_rate for the inventory snapshot on 2022-12-31.",
+          "returned": 1,
+          "included": 1,
+          "omitted": 0,
+          "completeness": "returned_query_scope",
+          "snapshots": [
+            "2022-12-31"
+          ]
+        }
+      },
+      "sections": {
+        "Inventory Health Overview": "failed",
+        "Stockout and Reorder Signals": "complete",
+        "Overstock Indicators": "complete"
+      },
+      "issues": {
+        "Inventory Health Overview": "narrative_failed"
+      },
+      "validated_facts": {
+        "validated": 8,
+        "narrative_semantics": "limited"
+      }
+    },
+    {
+      "id": "R06",
+      "attempt": 1,
+      "status": "clarification_required",
+      "download": false,
+      "elapsed_seconds": 38.528,
+      "llm_calls": 6,
+      "provider_failed_attempts": 4,
+      "source_collection": null,
+      "coverage": null,
+      "sections": null,
+      "issues": null,
+      "validated_facts": null
+    },
+    {
+      "id": "R16",
+      "attempt": 1,
+      "status": "failed",
+      "download": false,
+      "elapsed_seconds": 4.234,
+      "llm_calls": 3,
+      "provider_failed_attempts": 1,
+      "source_collection": {
+        "status": "complete",
+        "selected_route": "analytics",
+        "task_trace": [
+          {
+            "id": "s1",
+            "agent": "sql",
+            "depends_on": [],
+            "status": "complete",
+            "attempts": 1,
+            "elapsed_ms": 2954,
+            "error_type": null
+          }
+        ],
+        "revisions": 0,
+        "specialist_invocations": 1,
+        "planning_fallback": false
+      },
+      "coverage": {
+        "Summary": {
+          "retrieved": 1,
+          "included": 0,
+          "omitted": 1
+        },
+        "Findings": {
+          "retrieved": 1,
+          "included": 0,
+          "omitted": 1
+        },
+        "Limitations": {
+          "retrieved": 1,
+          "included": 0,
+          "omitted": 1
+        }
+      },
+      "sections": {
+        "Summary": "failed",
+        "Findings": "failed",
+        "Limitations": "failed"
+      },
+      "issues": {},
+      "validated_facts": null
+    },
+    {
+      "id": "R16",
+      "attempt": 2,
+      "status": "failed",
+      "download": false,
+      "elapsed_seconds": 4.871,
+      "llm_calls": 3,
+      "provider_failed_attempts": 1,
+      "source_collection": {
+        "status": "complete",
+        "selected_route": "analytics",
+        "task_trace": [
+          {
+            "id": "s1",
+            "agent": "sql",
+            "depends_on": [],
+            "status": "complete",
+            "attempts": 1,
+            "elapsed_ms": 2453,
+            "error_type": null
+          }
+        ],
+        "revisions": 0,
+        "specialist_invocations": 1,
+        "planning_fallback": false
+      },
+      "coverage": {
+        "Summary": {
+          "retrieved": 1,
+          "included": 0,
+          "omitted": 1
+        },
+        "Findings": {
+          "retrieved": 1,
+          "included": 0,
+          "omitted": 1
+        },
+        "Limitations": {
+          "retrieved": 1,
+          "included": 0,
+          "omitted": 1
+        }
+      },
+      "sections": {
+        "Summary": "failed",
+        "Findings": "failed",
+        "Limitations": "failed"
+      },
+      "issues": {},
+      "validated_facts": null
+    }
+  ],
+  "candidate": [
+    {
+      "id": "R01",
+      "attempt": 1,
+      "status": "partial",
+      "download": true,
+      "elapsed_seconds": 11.452,
+      "llm_calls": 4,
+      "provider_failed_attempts": 0,
+      "source_collection": null,
+      "coverage": {
+        "inv_health_2022_12": {
+          "requested": "Calculate stock_on_hand, reorder_rate, stockout_rate, and overstock_rate for the inventory snapshot on 2022-12-31.",
+          "returned": 1,
+          "included": 1,
+          "omitted": 0,
+          "completeness": "returned_query_scope",
+          "snapshots": [
+            "2022-12-31"
+          ]
+        }
+      },
+      "sections": {
+        "Inventory Health Overview": "failed"
+      },
+      "issues": {
+        "Inventory Health Overview": "narrative_failed"
+      },
+      "validated_facts": {
+        "validated": 4,
+        "narrative_semantics": "limited"
+      }
+    },
+    {
+      "id": "R06",
+      "attempt": 1,
+      "status": "clarification_required",
+      "download": false,
+      "elapsed_seconds": 4.298,
+      "llm_calls": 3,
+      "provider_failed_attempts": 1,
+      "source_collection": null,
+      "coverage": null,
+      "sections": null,
+      "issues": null,
+      "validated_facts": null
+    },
+    {
+      "id": "R16",
+      "attempt": 1,
+      "status": "failed",
+      "download": false,
+      "elapsed_seconds": 17.405,
+      "llm_calls": 3,
+      "provider_failed_attempts": 3,
+      "source_collection": {
+        "status": "failed",
+        "selected_route": "unrouted",
+        "task_trace": [],
+        "revisions": null,
+        "specialist_invocations": null,
+        "planning_fallback": null
+      },
+      "coverage": {
+        "Summary": {
+          "retrieved": 0,
+          "included": 0,
+          "omitted": 0
+        },
+        "Findings": {
+          "retrieved": 0,
+          "included": 0,
+          "omitted": 0
+        },
+        "Limitations": {
+          "retrieved": 0,
+          "included": 0,
+          "omitted": 0
+        }
+      },
+      "sections": {
+        "Summary": "failed",
+        "Findings": "failed",
+        "Limitations": "failed"
+      },
+      "issues": {},
+      "validated_facts": null
+    },
+    {
+      "id": "R16",
+      "attempt": 2,
+      "status": "failed",
+      "download": false,
+      "elapsed_seconds": 5.078,
+      "llm_calls": 3,
+      "provider_failed_attempts": 1,
+      "source_collection": {
+        "status": "complete",
+        "selected_route": "analytics",
+        "task_trace": [
+          {
+            "id": "s1",
+            "agent": "sql",
+            "depends_on": [],
+            "status": "complete",
+            "attempts": 1,
+            "elapsed_ms": 2453,
+            "error_type": null
+          }
+        ],
+        "revisions": 0,
+        "specialist_invocations": 1,
+        "planning_fallback": false
+      },
+      "coverage": {
+        "Summary": {
+          "retrieved": 1,
+          "included": 0,
+          "omitted": 1
+        },
+        "Findings": {
+          "retrieved": 1,
+          "included": 0,
+          "omitted": 1
+        },
+        "Limitations": {
+          "retrieved": 1,
+          "included": 0,
+          "omitted": 1
+        }
+      },
+      "sections": {
+        "Summary": "failed",
+        "Findings": "failed",
+        "Limitations": "failed"
+      },
+      "issues": {},
+      "validated_facts": null
+    }
+  ],
+  "report-candidate-v2": [
+    {
+      "id": "R06",
+      "attempt": 1,
+      "status": "clarification_required",
+      "download": false,
+      "elapsed_seconds": 5.174,
+      "llm_calls": 2,
+      "provider_failed_attempts": 0,
+      "source_collection": null,
+      "coverage": null,
+      "sections": null,
+      "issues": null,
+      "validated_facts": null
+    },
+    {
+      "id": "R16",
+      "attempt": 1,
+      "status": "failed",
+      "download": false,
+      "elapsed_seconds": 3.369,
+      "llm_calls": 3,
+      "provider_failed_attempts": 1,
+      "source_collection": {
+        "status": "complete",
+        "selected_route": "analytics",
+        "task_trace": [
+          {
+            "id": "s1",
+            "agent": "sql",
+            "depends_on": [],
+            "status": "complete",
+            "attempts": 1,
+            "elapsed_ms": 2484,
+            "error_type": null
+          }
+        ],
+        "revisions": 0,
+        "specialist_invocations": 1,
+        "planning_fallback": false
+      },
+      "coverage": {
+        "Summary": {
+          "retrieved": 1,
+          "included": 0,
+          "omitted": 1
+        },
+        "Findings": {
+          "retrieved": 1,
+          "included": 0,
+          "omitted": 1
+        },
+        "Limitations": {
+          "retrieved": 1,
+          "included": 0,
+          "omitted": 1
+        }
+      },
+      "sections": {
+        "Summary": "failed",
+        "Findings": "failed",
+        "Limitations": "failed"
+      },
+      "issues": {},
+      "validated_facts": null
+    }
+  ],
+  "report-candidate-v3": [
+    {
+      "id": "R16",
+      "attempt": 1,
+      "status": "failed",
+      "download": false,
+      "elapsed_seconds": 6.339,
+      "llm_calls": 5,
+      "provider_failed_attempts": 3,
+      "source_collection": {
+        "status": "complete",
+        "selected_route": "analytics",
+        "task_trace": [
+          {
+            "id": "s1",
+            "agent": "sql",
+            "depends_on": [],
+            "status": "complete",
+            "attempts": 1,
+            "elapsed_ms": 2265,
+            "error_type": null
+          }
+        ],
+        "revisions": 0,
+        "specialist_invocations": 1,
+        "planning_fallback": false
+      },
+      "coverage": {
+        "Summary": {
+          "retrieved": 4,
+          "included": 2,
+          "omitted": 2,
+          "rows_included": 100,
+          "rows_omitted": 100
+        },
+        "Findings": {
+          "retrieved": 4,
+          "included": 2,
+          "omitted": 2,
+          "rows_included": 100,
+          "rows_omitted": 100
+        },
+        "Limitations": {
+          "retrieved": 4,
+          "included": 2,
+          "omitted": 2,
+          "rows_included": 100,
+          "rows_omitted": 100
+        }
+      },
+      "sections": {
+        "Summary": "failed",
+        "Findings": "failed",
+        "Limitations": "failed"
+      },
+      "issues": {
+        "Summary": "provider_unavailable",
+        "Findings": "provider_unavailable",
+        "Limitations": "provider_unavailable"
+      },
+      "validated_facts": null
+    },
+    {
+      "id": "R16",
+      "attempt": 2,
+      "status": "failed",
+      "download": false,
+      "elapsed_seconds": 5.465,
+      "llm_calls": 5,
+      "provider_failed_attempts": 3,
+      "source_collection": {
+        "status": "complete",
+        "selected_route": "analytics",
+        "task_trace": [
+          {
+            "id": "s1",
+            "agent": "sql",
+            "depends_on": [],
+            "status": "complete",
+            "attempts": 1,
+            "elapsed_ms": 2047,
+            "error_type": null
+          }
+        ],
+        "revisions": 0,
+        "specialist_invocations": 1,
+        "planning_fallback": false
+      },
+      "coverage": {
+        "Summary": {
+          "retrieved": 4,
+          "included": 2,
+          "omitted": 2,
+          "rows_included": 100,
+          "rows_omitted": 100
+        },
+        "Findings": {
+          "retrieved": 4,
+          "included": 2,
+          "omitted": 2,
+          "rows_included": 100,
+          "rows_omitted": 100
+        },
+        "Limitations": {
+          "retrieved": 4,
+          "included": 2,
+          "omitted": 2,
+          "rows_included": 100,
+          "rows_omitted": 100
+        }
+      },
+      "sections": {
+        "Summary": "failed",
+        "Findings": "failed",
+        "Limitations": "failed"
+      },
+      "issues": {
+        "Summary": "provider_unavailable",
+        "Findings": "provider_unavailable",
+        "Limitations": "provider_unavailable"
+      },
+      "validated_facts": null
+    }
+  ],
+  "report-candidate-v4": [
+    {
+      "id": "R16",
+      "attempt": 1,
+      "status": "partial",
+      "download": true,
+      "elapsed_seconds": 26.572,
+      "llm_calls": 11,
+      "provider_failed_attempts": 3,
+      "source_collection": {
+        "status": "complete",
+        "selected_route": "analytics",
+        "task_trace": [
+          {
+            "id": "s1",
+            "agent": "sql",
+            "depends_on": [],
+            "status": "complete",
+            "attempts": 1,
+            "elapsed_ms": 2172,
+            "error_type": null
+          }
+        ],
+        "revisions": 0,
+        "specialist_invocations": 1,
+        "planning_fallback": false
+      },
+      "coverage": {
+        "Summary": {
+          "retrieved": 9,
+          "included": 2,
+          "omitted": 7,
+          "rows_included": 32,
+          "rows_omitted": 168
+        },
+        "Findings": {
+          "retrieved": 9,
+          "included": 2,
+          "omitted": 7,
+          "rows_included": 32,
+          "rows_omitted": 168
+        },
+        "Limitations": {
+          "retrieved": 9,
+          "included": 2,
+          "omitted": 7,
+          "rows_included": 32,
+          "rows_omitted": 168
+        }
+      },
+      "sections": {
+        "Summary": "failed",
+        "Findings": "complete",
+        "Limitations": "failed"
+      },
+      "issues": {
+        "Summary": "unsupported_or_ambiguous_number"
+      },
+      "validated_facts": null
+    }
+  ]
+}

@@ -1,0 +1,662 @@
+[
+  {
+    "id": "S01",
+    "before_status": "executed_with_rows",
+    "after_status": "executed_with_rows",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 1.0,
+        "after": 1.0
+      },
+      "numerical_accuracy": {
+        "before": null,
+        "after": null
+      }
+    },
+    "identical_bound_sql": true,
+    "candidate_error_type": null,
+    "candidate_explanation": null
+  },
+  {
+    "id": "S02",
+    "before_status": "executed_with_rows",
+    "after_status": "executed_with_rows",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 1.0,
+        "after": 1.0
+      },
+      "numerical_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      }
+    },
+    "identical_bound_sql": true,
+    "candidate_error_type": null,
+    "candidate_explanation": null
+  },
+  {
+    "id": "S03",
+    "before_status": "executed_with_rows",
+    "after_status": "executed_with_rows",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": null,
+    "candidate_explanation": null
+  },
+  {
+    "id": "S04",
+    "before_status": "executed_with_rows",
+    "after_status": "executed_with_rows",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": null,
+    "candidate_explanation": null
+  },
+  {
+    "id": "S05",
+    "before_status": "executed_empty",
+    "after_status": "clarification_required",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": 0.0,
+        "after": 0.0
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": "MetricDefinitionError",
+    "candidate_explanation": "The available inventory records are historical. Which snapshot should I use?"
+  },
+  {
+    "id": "S06",
+    "before_status": "executed_with_rows",
+    "after_status": "executed_with_rows",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": null,
+    "candidate_explanation": null
+  },
+  {
+    "id": "S07",
+    "before_status": "executed_with_rows",
+    "after_status": "executed_with_rows",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": null,
+    "candidate_explanation": null
+  },
+  {
+    "id": "S08",
+    "before_status": "executed_with_rows",
+    "after_status": "MetricDefinitionError",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 0.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": 1.0,
+        "after": 0.0
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": "MetricDefinitionError",
+    "candidate_explanation": "I couldn't safely run the generated query: The requested non-NULL population is missing."
+  },
+  {
+    "id": "S09",
+    "before_status": "executed_with_rows",
+    "after_status": "executed_with_rows",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": null,
+    "candidate_explanation": null
+  },
+  {
+    "id": "S10",
+    "before_status": "executed_with_rows",
+    "after_status": "executed_with_rows",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": null,
+    "candidate_explanation": null
+  },
+  {
+    "id": "S11",
+    "before_status": "executed_with_rows",
+    "after_status": "executed_with_rows",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 0.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": 1.0,
+        "after": 0.0
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": null,
+    "candidate_explanation": null
+  },
+  {
+    "id": "S12",
+    "before_status": "executed_with_rows",
+    "after_status": "SQLValidationError",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 0.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": 1.0,
+        "after": 0.0
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": "SQLValidationError",
+    "candidate_explanation": "I couldn't safely run the generated query: The final SELECT needs LIMIT 1..200."
+  },
+  {
+    "id": "S13",
+    "before_status": "MetricDefinitionError",
+    "after_status": "MetricDefinitionError",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": 0.0,
+        "after": 0.0
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": "MetricDefinitionError",
+    "candidate_explanation": "I couldn't safely run the generated query: The requested two-snapshot change and product-intersection calculation is clear, but this SQL planner does not yet have a verified comparison contract. This is a planner limitation. A supported alternative is to request each dated snapshot separately."
+  },
+  {
+    "id": "S14",
+    "before_status": "executed_with_rows",
+    "after_status": "SQLValidationError",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 0.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": null,
+        "after": 0.0
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": "SQLValidationError",
+    "candidate_explanation": "I couldn't safely run the generated query: The final SELECT needs LIMIT 1..200."
+  },
+  {
+    "id": "S15",
+    "before_status": "clarification_required",
+    "after_status": "executed_with_rows",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": 0.0,
+        "after": 0.0
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": null,
+    "candidate_explanation": null
+  },
+  {
+    "id": "S16",
+    "before_status": "executed_with_rows",
+    "after_status": "executed_with_rows",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": 0.0,
+        "after": 0.0
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": null,
+    "candidate_explanation": null
+  },
+  {
+    "id": "S17",
+    "before_status": "executed_with_rows",
+    "after_status": "executed_with_rows",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 1.0,
+        "after": 1.0
+      },
+      "numerical_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      }
+    },
+    "identical_bound_sql": true,
+    "candidate_error_type": null,
+    "candidate_explanation": null
+  },
+  {
+    "id": "S18",
+    "before_status": "executed_with_rows",
+    "after_status": "SQLValidationError",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 0.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 1.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": 1.0,
+        "after": 0.0
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": "SQLValidationError",
+    "candidate_explanation": "I couldn't safely run the generated query: The final SELECT needs LIMIT 1..200."
+  },
+  {
+    "id": "S19",
+    "before_status": "executed_with_rows",
+    "after_status": "executed_with_rows",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 1.0,
+        "after": 1.0
+      },
+      "numerical_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      }
+    },
+    "identical_bound_sql": true,
+    "candidate_error_type": null,
+    "candidate_explanation": null
+  },
+  {
+    "id": "S20",
+    "before_status": "executed_with_rows",
+    "after_status": "executed_with_rows",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      }
+    },
+    "identical_bound_sql": true,
+    "candidate_error_type": null,
+    "candidate_explanation": null
+  },
+  {
+    "id": "S21",
+    "before_status": "executed_with_rows",
+    "after_status": "executed_with_rows",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      }
+    },
+    "identical_bound_sql": true,
+    "candidate_error_type": null,
+    "candidate_explanation": null
+  },
+  {
+    "id": "S22",
+    "before_status": "executed_with_rows",
+    "after_status": "executed_with_rows",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 1.0,
+        "after": 1.0
+      },
+      "numerical_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      }
+    },
+    "identical_bound_sql": true,
+    "candidate_error_type": null,
+    "candidate_explanation": null
+  },
+  {
+    "id": "S23",
+    "before_status": "executed_with_rows",
+    "after_status": "MetricDefinitionError",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 0.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": 1.0,
+        "after": 0.0
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": "MetricDefinitionError",
+    "candidate_explanation": "I couldn't safely run the generated query: Source population must be complete, independently aggregated and free of unrequested restrictions."
+  },
+  {
+    "id": "S24",
+    "before_status": "executed_with_rows",
+    "after_status": "SQLValidationError",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 0.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 1.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": 1.0,
+        "after": 0.0
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": "SQLValidationError",
+    "candidate_explanation": "I couldn't safely run the generated query: The final SELECT needs LIMIT 1..200."
+  },
+  {
+    "id": "S25",
+    "before_status": "executed_empty",
+    "after_status": "executed_empty",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": null,
+        "after": null
+      }
+    },
+    "identical_bound_sql": true,
+    "candidate_error_type": null,
+    "candidate_explanation": null
+  },
+  {
+    "id": "S26",
+    "before_status": "executed_with_rows",
+    "after_status": "executed_with_rows",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 1.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": null,
+        "after": null
+      }
+    },
+    "identical_bound_sql": true,
+    "candidate_error_type": null,
+    "candidate_explanation": null
+  },
+  {
+    "id": "S27",
+    "before_status": "executed_with_rows",
+    "after_status": "SQLValidationError",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 0.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 0.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": 1.0,
+        "after": 0.0
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": "SQLValidationError",
+    "candidate_explanation": "I couldn't safely run the generated query: The final SELECT needs LIMIT 1..200."
+  },
+  {
+    "id": "S28",
+    "before_status": "executed_with_rows",
+    "after_status": "MetricDefinitionError",
+    "metrics": {
+      "execution_accuracy": {
+        "before": 1.0,
+        "after": 0.0
+      },
+      "sql_semantic_equivalence": {
+        "before": 1.0,
+        "after": 0.0
+      },
+      "numerical_accuracy": {
+        "before": 1.0,
+        "after": 0.0
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": "MetricDefinitionError",
+    "candidate_explanation": "I couldn't safely run the generated query: Duplicate rows means excess rows beyond one per key: COALESCE(SUM(group_count - 1),0), not number of duplicate groups."
+  },
+  {
+    "id": "S29",
+    "before_status": "unsupported",
+    "after_status": "unsupported",
+    "metrics": {
+      "execution_accuracy": {
+        "before": null,
+        "after": null
+      },
+      "sql_semantic_equivalence": {
+        "before": null,
+        "after": null
+      },
+      "numerical_accuracy": {
+        "before": null,
+        "after": null
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": "MetricDefinitionError",
+    "candidate_explanation": "No inventory observations are available in the requested current period. The latest available snapshot is 2022-12-31. Historical observations cannot establish current stock. Request an available historical snapshot instead."
+  },
+  {
+    "id": "S30",
+    "before_status": "clarification_required",
+    "after_status": "clarification_required",
+    "metrics": {
+      "execution_accuracy": {
+        "before": null,
+        "after": null
+      },
+      "sql_semantic_equivalence": {
+        "before": null,
+        "after": null
+      },
+      "numerical_accuracy": {
+        "before": null,
+        "after": null
+      }
+    },
+    "identical_bound_sql": false,
+    "candidate_error_type": "MetricDefinitionError",
+    "candidate_explanation": "The full approved schema does not support these requested dimensions: supplier. A supported alternative is inventory observations by product/category at an available historical snapshot."
+  }
+]

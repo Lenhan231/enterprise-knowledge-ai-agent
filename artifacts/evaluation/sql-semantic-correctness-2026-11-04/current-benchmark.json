@@ -1,0 +1,10 @@
+{
+  "benchmark_type": "incremental",
+  "updated_on": "2026-11-06",
+  "original_cohort": "paired",
+  "current_cohort": "../sql-three-case-followup-2026-11-06/merged",
+  "current_summary": "../sql-three-case-followup-2026-11-06/merged/paired-summary.json",
+  "rerun_cases": ["S13", "S15", "S17"],
+  "retained_cases": 27,
+  "note": "Results contain measurements from two application revisions. See merged manifest case_provenance."
+}

@@ -1,0 +1,2643 @@
+{
+  "F01": {
+    "supported": true,
+    "expected_behavior": "Retrieve exactly the explicit raw fields and source population; no calculations or currency inference.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,i.product_id,i.year,i.month FROM commerce.inventory i WHERE i.snapshot_date=DATE '2022-12-31' ORDER BY i.product_id,i.snapshot_date LIMIT 10",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 3,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 8,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 9,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 17,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 18,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 19,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 26,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 29,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 45,
+          "year": 2022,
+          "month": 12
+        }
+      ],
+      "returned_rows": 10,
+      "detail_ceiling": null
+    }
+  },
+  "F02": {
+    "supported": true,
+    "expected_behavior": "Retrieve exactly the explicit raw fields and source population; no calculations or currency inference.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,i.product_id FROM commerce.inventory i WHERE i.snapshot_date>=DATE '2022-11-01' AND i.snapshot_date<DATE '2023-01-01' AND i.product_id IN (1,3) ORDER BY i.snapshot_date,i.product_id LIMIT 20",
+      "rows": [
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 1
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 3
+        }
+      ],
+      "returned_rows": 4,
+      "detail_ceiling": null
+    }
+  },
+  "F03": {
+    "supported": true,
+    "expected_behavior": "Retrieve exactly the explicit raw fields and source population; no calculations or currency inference.",
+    "reference": {
+      "sql": "SELECT p.product_id,p.product_name,p.color,p.price FROM commerce.products p WHERE p.color='blue' ORDER BY p.price DESC,p.product_id LIMIT 5",
+      "rows": [
+        {
+          "product_id": 503,
+          "product_name": "SaigonFlex UM-08",
+          "color": "blue",
+          "price": 21108.804545454543
+        },
+        {
+          "product_id": 353,
+          "product_name": "LotusWear UE-74",
+          "color": "blue",
+          "price": 20786.85
+        },
+        {
+          "product_id": 483,
+          "product_name": "SaigonFlex UM-88",
+          "color": "blue",
+          "price": 19535.011791044777
+        },
+        {
+          "product_id": 473,
+          "product_name": "SaigonFlex UM-78",
+          "color": "blue",
+          "price": 18458.3
+        },
+        {
+          "product_id": 623,
+          "product_name": "SaigonFlex UC-88",
+          "color": "blue",
+          "price": 17011.958108108105
+        }
+      ],
+      "returned_rows": 5,
+      "detail_ceiling": null
+    }
+  },
+  "F04": {
+    "supported": true,
+    "expected_behavior": "Retrieve exactly the explicit raw fields and source population; no calculations or currency inference.",
+    "reference": {
+      "sql": "SELECT p.product_id,p.category,p.size,p.price FROM commerce.products p WHERE p.product_id IN (1,3) AND p.price>=0 ORDER BY p.price,p.product_id LIMIT 10",
+      "rows": [
+        {
+          "product_id": 1,
+          "category": "Casual",
+          "size": "M",
+          "price": 4945.5
+        },
+        {
+          "product_id": 3,
+          "category": "Casual",
+          "size": "XL",
+          "price": 10831.3771884655
+        }
+      ],
+      "returned_rows": 2,
+      "detail_ceiling": null
+    }
+  },
+  "F05": {
+    "supported": true,
+    "expected_behavior": "Retrieve exactly the explicit raw fields and source population; no calculations or currency inference.",
+    "reference": {
+      "sql": "SELECT p.product_id,p.cogs,p.price FROM commerce.products p WHERE p.product_id IN (1,3) ORDER BY p.product_id LIMIT 10",
+      "rows": [
+        {
+          "product_id": 1,
+          "cogs": 2732.8833,
+          "price": 4945.5
+        },
+        {
+          "product_id": 3,
+          "cogs": 10289.808329042224,
+          "price": 10831.3771884655
+        }
+      ],
+      "returned_rows": 2,
+      "detail_ceiling": null
+    }
+  },
+  "F06": {
+    "supported": true,
+    "expected_behavior": "Retrieve exactly the explicit raw fields and source population; no calculations or currency inference.",
+    "reference": {
+      "sql": "SELECT p.product_id,p.category,p.segment FROM commerce.products p WHERE p.category='Streetwear' ORDER BY p.product_id DESC LIMIT 5",
+      "rows": [
+        {
+          "product_id": 2391,
+          "category": "Streetwear",
+          "segment": "Everyday"
+        },
+        {
+          "product_id": 2390,
+          "category": "Streetwear",
+          "segment": "Everyday"
+        },
+        {
+          "product_id": 2389,
+          "category": "Streetwear",
+          "segment": "Everyday"
+        },
+        {
+          "product_id": 2388,
+          "category": "Streetwear",
+          "segment": "Everyday"
+        },
+        {
+          "product_id": 2387,
+          "category": "Streetwear",
+          "segment": "Everyday"
+        }
+      ],
+      "returned_rows": 5,
+      "detail_ceiling": null
+    }
+  },
+  "N01": {
+    "supported": true,
+    "expected_behavior": "Retrieve exactly the explicit raw fields and source population; no calculations or currency inference.",
+    "reference": {
+      "sql": "SELECT p.product_id,p.product_name,p.color,p.price FROM commerce.products p WHERE p.color='blue' ORDER BY p.price DESC,p.product_id LIMIT 5",
+      "rows": [
+        {
+          "product_id": 503,
+          "product_name": "SaigonFlex UM-08",
+          "color": "blue",
+          "price": 21108.804545454543
+        },
+        {
+          "product_id": 353,
+          "product_name": "LotusWear UE-74",
+          "color": "blue",
+          "price": 20786.85
+        },
+        {
+          "product_id": 483,
+          "product_name": "SaigonFlex UM-88",
+          "color": "blue",
+          "price": 19535.011791044777
+        },
+        {
+          "product_id": 473,
+          "product_name": "SaigonFlex UM-78",
+          "color": "blue",
+          "price": 18458.3
+        },
+        {
+          "product_id": 623,
+          "product_name": "SaigonFlex UC-88",
+          "color": "blue",
+          "price": 17011.958108108105
+        }
+      ],
+      "returned_rows": 5,
+      "detail_ceiling": null
+    }
+  },
+  "N02": {
+    "supported": true,
+    "expected_behavior": "Retrieve exactly the explicit raw fields and source population; no calculations or currency inference.",
+    "reference": {
+      "sql": "SELECT p.product_id,p.product_name,p.color,p.price FROM commerce.products p WHERE p.color='blue' ORDER BY p.price DESC,p.product_id LIMIT 5",
+      "rows": [
+        {
+          "product_id": 503,
+          "product_name": "SaigonFlex UM-08",
+          "color": "blue",
+          "price": 21108.804545454543
+        },
+        {
+          "product_id": 353,
+          "product_name": "LotusWear UE-74",
+          "color": "blue",
+          "price": 20786.85
+        },
+        {
+          "product_id": 483,
+          "product_name": "SaigonFlex UM-88",
+          "color": "blue",
+          "price": 19535.011791044777
+        },
+        {
+          "product_id": 473,
+          "product_name": "SaigonFlex UM-78",
+          "color": "blue",
+          "price": 18458.3
+        },
+        {
+          "product_id": 623,
+          "product_name": "SaigonFlex UC-88",
+          "color": "blue",
+          "price": 17011.958108108105
+        }
+      ],
+      "returned_rows": 5,
+      "detail_ceiling": null
+    }
+  },
+  "N03": {
+    "supported": true,
+    "expected_behavior": "Retrieve exactly the explicit raw fields and source population; no calculations or currency inference.",
+    "reference": {
+      "sql": "SELECT p.product_id,p.category,p.segment FROM commerce.products p WHERE p.category='Streetwear' ORDER BY p.product_id DESC LIMIT 5",
+      "rows": [
+        {
+          "product_id": 2391,
+          "category": "Streetwear",
+          "segment": "Everyday"
+        },
+        {
+          "product_id": 2390,
+          "category": "Streetwear",
+          "segment": "Everyday"
+        },
+        {
+          "product_id": 2389,
+          "category": "Streetwear",
+          "segment": "Everyday"
+        },
+        {
+          "product_id": 2388,
+          "category": "Streetwear",
+          "segment": "Everyday"
+        },
+        {
+          "product_id": 2387,
+          "category": "Streetwear",
+          "segment": "Everyday"
+        }
+      ],
+      "returned_rows": 5,
+      "detail_ceiling": null
+    }
+  },
+  "N04": {
+    "supported": true,
+    "expected_behavior": "Retrieve exactly the explicit raw fields and source population; no calculations or currency inference.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,i.product_id,i.year,i.month FROM commerce.inventory i WHERE i.snapshot_date=DATE '2022-12-31' ORDER BY i.product_id,i.snapshot_date LIMIT 10",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 3,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 8,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 9,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 17,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 18,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 19,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 26,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 29,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 45,
+          "year": 2022,
+          "month": 12
+        }
+      ],
+      "returned_rows": 10,
+      "detail_ceiling": null
+    }
+  },
+  "U01": {
+    "supported": false,
+    "expected_behavior": "Clarify unavailable columns or reject unsafe extra statements without execution.",
+    "reference": null
+  },
+  "U02": {
+    "supported": false,
+    "expected_behavior": "Clarify unavailable columns or reject unsafe extra statements without execution.",
+    "reference": null
+  },
+  "S03": {
+    "expected_behavior": "Generate read-only PostgreSQL, use qualified tables and canonical joins; return metric, grain, date, and results without invented values.",
+    "supported": true,
+    "reference": {
+      "sql": "SELECT i.product_id,p.product_name,i.stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date = DATE '2022-12-31' ORDER BY i.stock_on_hand DESC NULLS LAST,i.product_id LIMIT 20",
+      "rows": [
+        {
+          "product_id": 791,
+          "product_name": "HanoiStreet RP-79",
+          "stock_on_hand": 2673
+        },
+        {
+          "product_id": 792,
+          "product_name": "HanoiStreet RP-80",
+          "stock_on_hand": 2617
+        },
+        {
+          "product_id": 604,
+          "product_name": "SaigonFlex UC-69",
+          "stock_on_hand": 2370
+        },
+        {
+          "product_id": 826,
+          "product_name": "HanoiStreet UM-10",
+          "stock_on_hand": 1960
+        },
+        {
+          "product_id": 2332,
+          "product_name": "VietMotion UE-06",
+          "stock_on_hand": 1939
+        },
+        {
+          "product_id": 1182,
+          "product_name": "MekongFit UE-18",
+          "stock_on_hand": 1913
+        },
+        {
+          "product_id": 927,
+          "product_name": "HanoiStreet UE-36",
+          "stock_on_hand": 1897
+        },
+        {
+          "product_id": 2054,
+          "product_name": "UrbanVN UE-14",
+          "stock_on_hand": 1600
+        },
+        {
+          "product_id": 2331,
+          "product_name": "VietMotion UE-05",
+          "stock_on_hand": 1489
+        },
+        {
+          "product_id": 734,
+          "product_name": "HanoiStreet RP-22",
+          "stock_on_hand": 1402
+        },
+        {
+          "product_id": 993,
+          "product_name": "HanoiStreet UC-56",
+          "stock_on_hand": 1394
+        },
+        {
+          "product_id": 1085,
+          "product_name": "MekongFit RP-31",
+          "stock_on_hand": 1390
+        },
+        {
+          "product_id": 1086,
+          "product_name": "MekongFit RP-32",
+          "stock_on_hand": 1373
+        },
+        {
+          "product_id": 733,
+          "product_name": "HanoiStreet RP-21",
+          "stock_on_hand": 1346
+        },
+        {
+          "product_id": 760,
+          "product_name": "HanoiStreet RP-48",
+          "stock_on_hand": 1340
+        },
+        {
+          "product_id": 2064,
+          "product_name": "UrbanVN UE-24",
+          "stock_on_hand": 1334
+        },
+        {
+          "product_id": 759,
+          "product_name": "HanoiStreet RP-47",
+          "stock_on_hand": 1313
+        },
+        {
+          "product_id": 976,
+          "product_name": "HanoiStreet UC-39",
+          "stock_on_hand": 1276
+        },
+        {
+          "product_id": 2055,
+          "product_name": "UrbanVN UE-15",
+          "stock_on_hand": 1256
+        },
+        {
+          "product_id": 2396,
+          "product_name": "VietMotion YY-05",
+          "stock_on_hand": 1254
+        }
+      ],
+      "returned_rows": 20,
+      "detail_ceiling": null
+    },
+    "notes": "Detail scope is capped at 200, ordered by the oracle. Equal-rank ties use product_id. Discount is per line; cancelled/canceled statuses excluded only when requested. S23 uses independently aggregated return_date and order_date windows, not canonical return_rate. S28 counts excess rows beyond the first per duplicate key. S10 averages December stored observations."
+  },
+  "S05": {
+    "expected_behavior": "Generate read-only PostgreSQL, use qualified tables and canonical joins; return metric, grain, date, and results without invented values.",
+    "supported": true,
+    "reference": {
+      "sql": "SELECT COUNT(DISTINCT product_id) AS product_count FROM commerce.inventory WHERE snapshot_date=(SELECT MAX(snapshot_date) FROM commerce.inventory) AND reorder_flag=TRUE",
+      "rows": [
+        {
+          "product_count": 0
+        }
+      ],
+      "returned_rows": 1,
+      "detail_ceiling": null
+    },
+    "notes": "Detail scope is capped at 200, ordered by the oracle. Equal-rank ties use product_id. Discount is per line; cancelled/canceled statuses excluded only when requested. S23 uses independently aggregated return_date and order_date windows, not canonical return_rate. S28 counts excess rows beyond the first per duplicate key. S10 averages December stored observations."
+  },
+  "S16": {
+    "expected_behavior": "Generate read-only PostgreSQL, use qualified tables and canonical joins; return metric, grain, date, and results without invented values.",
+    "supported": true,
+    "reference": {
+      "sql": "SELECT p.category,SUM(i.units_received) AS units_received FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date >= DATE '2022-01-01' AND i.snapshot_date < DATE '2023-01-01' GROUP BY p.category ORDER BY units_received DESC NULLS LAST,p.category",
+      "rows": [
+        {
+          "category": "Streetwear",
+          "units_received": 35844
+        },
+        {
+          "category": "Outdoor",
+          "units_received": 12862
+        },
+        {
+          "category": "GenZ",
+          "units_received": 4638
+        },
+        {
+          "category": "Casual",
+          "units_received": 3576
+        }
+      ],
+      "returned_rows": 4,
+      "detail_ceiling": null
+    },
+    "notes": "Detail scope is capped at 200, ordered by the oracle. Equal-rank ties use product_id. Discount is per line; cancelled/canceled statuses excluded only when requested. S23 uses independently aggregated return_date and order_date windows, not canonical return_rate. S28 counts excess rows beyond the first per duplicate key. S10 averages December stored observations."
+  },
+  "S23": {
+    "expected_behavior": "Generate read-only PostgreSQL, use qualified tables and canonical joins; return metric, grain, date, and results without invented values.",
+    "supported": true,
+    "reference": {
+      "sql": "WITH ret AS (SELECT r.product_id,SUM(r.return_quantity) AS returned_units FROM commerce.returns r WHERE r.return_date >= DATE '2022-01-01' AND r.return_date < DATE '2023-01-01' GROUP BY r.product_id), ord AS (SELECT oi.product_id,SUM(oi.quantity) AS ordered_units FROM commerce.orders o JOIN commerce.order_items oi ON o.order_id=oi.order_id WHERE o.order_date >= DATE '2022-01-01' AND o.order_date < DATE '2023-01-01' GROUP BY oi.product_id) SELECT ret.product_id,ret.returned_units,ord.ordered_units,ret.returned_units::numeric/NULLIF(ord.ordered_units,0) AS returned_to_ordered_ratio FROM ret JOIN ord ON ret.product_id=ord.product_id ORDER BY returned_to_ordered_ratio DESC NULLS LAST,ret.product_id LIMIT 200",
+      "rows": [
+        {
+          "product_id": 1725,
+          "returned_units": 3,
+          "ordered_units": 4,
+          "returned_to_ordered_ratio": 0.75
+        },
+        {
+          "product_id": 633,
+          "returned_units": 4,
+          "ordered_units": 6,
+          "returned_to_ordered_ratio": 0.6666666666666666
+        },
+        {
+          "product_id": 1959,
+          "returned_units": 4,
+          "ordered_units": 6,
+          "returned_to_ordered_ratio": 0.6666666666666666
+        },
+        {
+          "product_id": 1732,
+          "returned_units": 5,
+          "ordered_units": 10,
+          "returned_to_ordered_ratio": 0.5
+        },
+        {
+          "product_id": 1091,
+          "returned_units": 3,
+          "ordered_units": 7,
+          "returned_to_ordered_ratio": 0.42857142857142855
+        },
+        {
+          "product_id": 590,
+          "returned_units": 7,
+          "ordered_units": 17,
+          "returned_to_ordered_ratio": 0.4117647058823529
+        },
+        {
+          "product_id": 12,
+          "returned_units": 2,
+          "ordered_units": 5,
+          "returned_to_ordered_ratio": 0.4
+        },
+        {
+          "product_id": 1717,
+          "returned_units": 2,
+          "ordered_units": 5,
+          "returned_to_ordered_ratio": 0.4
+        },
+        {
+          "product_id": 429,
+          "returned_units": 5,
+          "ordered_units": 15,
+          "returned_to_ordered_ratio": 0.3333333333333333
+        },
+        {
+          "product_id": 882,
+          "returned_units": 3,
+          "ordered_units": 9,
+          "returned_to_ordered_ratio": 0.3333333333333333
+        },
+        {
+          "product_id": 29,
+          "returned_units": 8,
+          "ordered_units": 28,
+          "returned_to_ordered_ratio": 0.2857142857142857
+        },
+        {
+          "product_id": 1240,
+          "returned_units": 4,
+          "ordered_units": 15,
+          "returned_to_ordered_ratio": 0.26666666666666666
+        },
+        {
+          "product_id": 1339,
+          "returned_units": 1,
+          "ordered_units": 4,
+          "returned_to_ordered_ratio": 0.25
+        },
+        {
+          "product_id": 1733,
+          "returned_units": 3,
+          "ordered_units": 12,
+          "returned_to_ordered_ratio": 0.25
+        },
+        {
+          "product_id": 1673,
+          "returned_units": 13,
+          "ordered_units": 53,
+          "returned_to_ordered_ratio": 0.24528301886792453
+        },
+        {
+          "product_id": 66,
+          "returned_units": 7,
+          "ordered_units": 30,
+          "returned_to_ordered_ratio": 0.23333333333333334
+        },
+        {
+          "product_id": 1239,
+          "returned_units": 8,
+          "ordered_units": 36,
+          "returned_to_ordered_ratio": 0.2222222222222222
+        },
+        {
+          "product_id": 197,
+          "returned_units": 3,
+          "ordered_units": 14,
+          "returned_to_ordered_ratio": 0.21428571428571427
+        },
+        {
+          "product_id": 2091,
+          "returned_units": 6,
+          "ordered_units": 28,
+          "returned_to_ordered_ratio": 0.21428571428571427
+        },
+        {
+          "product_id": 424,
+          "returned_units": 2,
+          "ordered_units": 10,
+          "returned_to_ordered_ratio": 0.2
+        },
+        {
+          "product_id": 1095,
+          "returned_units": 1,
+          "ordered_units": 5,
+          "returned_to_ordered_ratio": 0.2
+        },
+        {
+          "product_id": 1727,
+          "returned_units": 3,
+          "ordered_units": 15,
+          "returned_to_ordered_ratio": 0.2
+        },
+        {
+          "product_id": 1145,
+          "returned_units": 4,
+          "ordered_units": 21,
+          "returned_to_ordered_ratio": 0.19047619047619047
+        },
+        {
+          "product_id": 1774,
+          "returned_units": 12,
+          "ordered_units": 64,
+          "returned_to_ordered_ratio": 0.1875
+        },
+        {
+          "product_id": 1872,
+          "returned_units": 8,
+          "ordered_units": 44,
+          "returned_to_ordered_ratio": 0.18181818181818182
+        },
+        {
+          "product_id": 1424,
+          "returned_units": 3,
+          "ordered_units": 17,
+          "returned_to_ordered_ratio": 0.17647058823529413
+        },
+        {
+          "product_id": 1692,
+          "returned_units": 5,
+          "ordered_units": 29,
+          "returned_to_ordered_ratio": 0.1724137931034483
+        },
+        {
+          "product_id": 985,
+          "returned_units": 5,
+          "ordered_units": 30,
+          "returned_to_ordered_ratio": 0.16666666666666666
+        },
+        {
+          "product_id": 1958,
+          "returned_units": 1,
+          "ordered_units": 6,
+          "returned_to_ordered_ratio": 0.16666666666666666
+        },
+        {
+          "product_id": 1562,
+          "returned_units": 5,
+          "ordered_units": 31,
+          "returned_to_ordered_ratio": 0.16129032258064516
+        },
+        {
+          "product_id": 1856,
+          "returned_units": 3,
+          "ordered_units": 19,
+          "returned_to_ordered_ratio": 0.15789473684210525
+        },
+        {
+          "product_id": 1304,
+          "returned_units": 5,
+          "ordered_units": 33,
+          "returned_to_ordered_ratio": 0.15151515151515152
+        },
+        {
+          "product_id": 2348,
+          "returned_units": 2,
+          "ordered_units": 14,
+          "returned_to_ordered_ratio": 0.14285714285714285
+        },
+        {
+          "product_id": 2104,
+          "returned_units": 25,
+          "ordered_units": 178,
+          "returned_to_ordered_ratio": 0.1404494382022472
+        },
+        {
+          "product_id": 1693,
+          "returned_units": 8,
+          "ordered_units": 59,
+          "returned_to_ordered_ratio": 0.13559322033898305
+        },
+        {
+          "product_id": 54,
+          "returned_units": 2,
+          "ordered_units": 15,
+          "returned_to_ordered_ratio": 0.13333333333333333
+        },
+        {
+          "product_id": 1043,
+          "returned_units": 42,
+          "ordered_units": 320,
+          "returned_to_ordered_ratio": 0.13125
+        },
+        {
+          "product_id": 58,
+          "returned_units": 6,
+          "ordered_units": 47,
+          "returned_to_ordered_ratio": 0.1276595744680851
+        },
+        {
+          "product_id": 417,
+          "returned_units": 9,
+          "ordered_units": 72,
+          "returned_to_ordered_ratio": 0.125
+        },
+        {
+          "product_id": 456,
+          "returned_units": 5,
+          "ordered_units": 41,
+          "returned_to_ordered_ratio": 0.12195121951219512
+        },
+        {
+          "product_id": 496,
+          "returned_units": 5,
+          "ordered_units": 41,
+          "returned_to_ordered_ratio": 0.12195121951219512
+        },
+        {
+          "product_id": 1077,
+          "returned_units": 14,
+          "ordered_units": 116,
+          "returned_to_ordered_ratio": 0.1206896551724138
+        },
+        {
+          "product_id": 1575,
+          "returned_units": 3,
+          "ordered_units": 25,
+          "returned_to_ordered_ratio": 0.12
+        },
+        {
+          "product_id": 2343,
+          "returned_units": 22,
+          "ordered_units": 185,
+          "returned_to_ordered_ratio": 0.11891891891891893
+        },
+        {
+          "product_id": 1050,
+          "returned_units": 12,
+          "ordered_units": 105,
+          "returned_to_ordered_ratio": 0.11428571428571428
+        },
+        {
+          "product_id": 1871,
+          "returned_units": 22,
+          "ordered_units": 193,
+          "returned_to_ordered_ratio": 0.11398963730569948
+        },
+        {
+          "product_id": 1342,
+          "returned_units": 7,
+          "ordered_units": 62,
+          "returned_to_ordered_ratio": 0.11290322580645161
+        },
+        {
+          "product_id": 2119,
+          "returned_units": 7,
+          "ordered_units": 64,
+          "returned_to_ordered_ratio": 0.109375
+        },
+        {
+          "product_id": 1529,
+          "returned_units": 27,
+          "ordered_units": 256,
+          "returned_to_ordered_ratio": 0.10546875
+        },
+        {
+          "product_id": 1561,
+          "returned_units": 2,
+          "ordered_units": 19,
+          "returned_to_ordered_ratio": 0.10526315789473684
+        },
+        {
+          "product_id": 1696,
+          "returned_units": 4,
+          "ordered_units": 38,
+          "returned_to_ordered_ratio": 0.10526315789473684
+        },
+        {
+          "product_id": 1810,
+          "returned_units": 13,
+          "ordered_units": 124,
+          "returned_to_ordered_ratio": 0.10483870967741936
+        },
+        {
+          "product_id": 1305,
+          "returned_units": 8,
+          "ordered_units": 77,
+          "returned_to_ordered_ratio": 0.1038961038961039
+        },
+        {
+          "product_id": 1194,
+          "returned_units": 9,
+          "ordered_units": 87,
+          "returned_to_ordered_ratio": 0.10344827586206896
+        },
+        {
+          "product_id": 2051,
+          "returned_units": 15,
+          "ordered_units": 148,
+          "returned_to_ordered_ratio": 0.10135135135135136
+        },
+        {
+          "product_id": 896,
+          "returned_units": 9,
+          "ordered_units": 89,
+          "returned_to_ordered_ratio": 0.10112359550561797
+        },
+        {
+          "product_id": 2405,
+          "returned_units": 16,
+          "ordered_units": 159,
+          "returned_to_ordered_ratio": 0.10062893081761007
+        },
+        {
+          "product_id": 1264,
+          "returned_units": 15,
+          "ordered_units": 150,
+          "returned_to_ordered_ratio": 0.1
+        },
+        {
+          "product_id": 2154,
+          "returned_units": 4,
+          "ordered_units": 40,
+          "returned_to_ordered_ratio": 0.1
+        },
+        {
+          "product_id": 1000,
+          "returned_units": 56,
+          "ordered_units": 578,
+          "returned_to_ordered_ratio": 0.09688581314878893
+        },
+        {
+          "product_id": 1530,
+          "returned_units": 20,
+          "ordered_units": 207,
+          "returned_to_ordered_ratio": 0.0966183574879227
+        },
+        {
+          "product_id": 2275,
+          "returned_units": 60,
+          "ordered_units": 646,
+          "returned_to_ordered_ratio": 0.09287925696594428
+        },
+        {
+          "product_id": 1299,
+          "returned_units": 7,
+          "ordered_units": 78,
+          "returned_to_ordered_ratio": 0.08974358974358974
+        },
+        {
+          "product_id": 1821,
+          "returned_units": 5,
+          "ordered_units": 57,
+          "returned_to_ordered_ratio": 0.08771929824561403
+        },
+        {
+          "product_id": 282,
+          "returned_units": 9,
+          "ordered_units": 103,
+          "returned_to_ordered_ratio": 0.08737864077669903
+        },
+        {
+          "product_id": 1711,
+          "returned_units": 8,
+          "ordered_units": 93,
+          "returned_to_ordered_ratio": 0.08602150537634409
+        },
+        {
+          "product_id": 1420,
+          "returned_units": 6,
+          "ordered_units": 70,
+          "returned_to_ordered_ratio": 0.08571428571428572
+        },
+        {
+          "product_id": 909,
+          "returned_units": 31,
+          "ordered_units": 362,
+          "returned_to_ordered_ratio": 0.0856353591160221
+        },
+        {
+          "product_id": 666,
+          "returned_units": 10,
+          "ordered_units": 117,
+          "returned_to_ordered_ratio": 0.08547008547008547
+        },
+        {
+          "product_id": 1376,
+          "returned_units": 22,
+          "ordered_units": 258,
+          "returned_to_ordered_ratio": 0.08527131782945736
+        },
+        {
+          "product_id": 1567,
+          "returned_units": 4,
+          "ordered_units": 47,
+          "returned_to_ordered_ratio": 0.0851063829787234
+        },
+        {
+          "product_id": 1773,
+          "returned_units": 4,
+          "ordered_units": 47,
+          "returned_to_ordered_ratio": 0.0851063829787234
+        },
+        {
+          "product_id": 1419,
+          "returned_units": 5,
+          "ordered_units": 59,
+          "returned_to_ordered_ratio": 0.0847457627118644
+        },
+        {
+          "product_id": 1496,
+          "returned_units": 13,
+          "ordered_units": 154,
+          "returned_to_ordered_ratio": 0.08441558441558442
+        },
+        {
+          "product_id": 180,
+          "returned_units": 7,
+          "ordered_units": 83,
+          "returned_to_ordered_ratio": 0.08433734939759036
+        },
+        {
+          "product_id": 173,
+          "returned_units": 5,
+          "ordered_units": 60,
+          "returned_to_ordered_ratio": 0.08333333333333333
+        },
+        {
+          "product_id": 1752,
+          "returned_units": 4,
+          "ordered_units": 49,
+          "returned_to_ordered_ratio": 0.08163265306122448
+        },
+        {
+          "product_id": 62,
+          "returned_units": 3,
+          "ordered_units": 37,
+          "returned_to_ordered_ratio": 0.08108108108108109
+        },
+        {
+          "product_id": 2084,
+          "returned_units": 17,
+          "ordered_units": 211,
+          "returned_to_ordered_ratio": 0.08056872037914692
+        },
+        {
+          "product_id": 2180,
+          "returned_units": 13,
+          "ordered_units": 167,
+          "returned_to_ordered_ratio": 0.07784431137724551
+        },
+        {
+          "product_id": 1875,
+          "returned_units": 27,
+          "ordered_units": 350,
+          "returned_to_ordered_ratio": 0.07714285714285714
+        },
+        {
+          "product_id": 1687,
+          "returned_units": 4,
+          "ordered_units": 52,
+          "returned_to_ordered_ratio": 0.07692307692307693
+        },
+        {
+          "product_id": 458,
+          "returned_units": 7,
+          "ordered_units": 92,
+          "returned_to_ordered_ratio": 0.07608695652173914
+        },
+        {
+          "product_id": 636,
+          "returned_units": 3,
+          "ordered_units": 40,
+          "returned_to_ordered_ratio": 0.075
+        },
+        {
+          "product_id": 2355,
+          "returned_units": 11,
+          "ordered_units": 148,
+          "returned_to_ordered_ratio": 0.07432432432432433
+        },
+        {
+          "product_id": 1681,
+          "returned_units": 2,
+          "ordered_units": 27,
+          "returned_to_ordered_ratio": 0.07407407407407407
+        },
+        {
+          "product_id": 809,
+          "returned_units": 22,
+          "ordered_units": 302,
+          "returned_to_ordered_ratio": 0.0728476821192053
+        },
+        {
+          "product_id": 8,
+          "returned_units": 14,
+          "ordered_units": 196,
+          "returned_to_ordered_ratio": 0.07142857142857142
+        },
+        {
+          "product_id": 1826,
+          "returned_units": 14,
+          "ordered_units": 197,
+          "returned_to_ordered_ratio": 0.07106598984771574
+        },
+        {
+          "product_id": 759,
+          "returned_units": 22,
+          "ordered_units": 311,
+          "returned_to_ordered_ratio": 0.0707395498392283
+        },
+        {
+          "product_id": 1845,
+          "returned_units": 7,
+          "ordered_units": 101,
+          "returned_to_ordered_ratio": 0.06930693069306931
+        },
+        {
+          "product_id": 2412,
+          "returned_units": 14,
+          "ordered_units": 204,
+          "returned_to_ordered_ratio": 0.06862745098039216
+        },
+        {
+          "product_id": 1843,
+          "returned_units": 5,
+          "ordered_units": 73,
+          "returned_to_ordered_ratio": 0.0684931506849315
+        },
+        {
+          "product_id": 1126,
+          "returned_units": 3,
+          "ordered_units": 44,
+          "returned_to_ordered_ratio": 0.06818181818181818
+        },
+        {
+          "product_id": 974,
+          "returned_units": 17,
+          "ordered_units": 254,
+          "returned_to_ordered_ratio": 0.06692913385826772
+        },
+        {
+          "product_id": 942,
+          "returned_units": 14,
+          "ordered_units": 210,
+          "returned_to_ordered_ratio": 0.06666666666666667
+        },
+        {
+          "product_id": 1909,
+          "returned_units": 1,
+          "ordered_units": 15,
+          "returned_to_ordered_ratio": 0.06666666666666667
+        },
+        {
+          "product_id": 1375,
+          "returned_units": 19,
+          "ordered_units": 287,
+          "returned_to_ordered_ratio": 0.06620209059233449
+        },
+        {
+          "product_id": 115,
+          "returned_units": 24,
+          "ordered_units": 363,
+          "returned_to_ordered_ratio": 0.06611570247933884
+        },
+        {
+          "product_id": 762,
+          "returned_units": 18,
+          "ordered_units": 274,
+          "returned_to_ordered_ratio": 0.06569343065693431
+        },
+        {
+          "product_id": 977,
+          "returned_units": 3,
+          "ordered_units": 46,
+          "returned_to_ordered_ratio": 0.06521739130434782
+        },
+        {
+          "product_id": 1518,
+          "returned_units": 9,
+          "ordered_units": 140,
+          "returned_to_ordered_ratio": 0.06428571428571428
+        },
+        {
+          "product_id": 1494,
+          "returned_units": 6,
+          "ordered_units": 94,
+          "returned_to_ordered_ratio": 0.06382978723404255
+        },
+        {
+          "product_id": 688,
+          "returned_units": 55,
+          "ordered_units": 875,
+          "returned_to_ordered_ratio": 0.06285714285714286
+        },
+        {
+          "product_id": 1855,
+          "returned_units": 7,
+          "ordered_units": 114,
+          "returned_to_ordered_ratio": 0.06140350877192982
+        },
+        {
+          "product_id": 2402,
+          "returned_units": 10,
+          "ordered_units": 163,
+          "returned_to_ordered_ratio": 0.06134969325153374
+        },
+        {
+          "product_id": 1906,
+          "returned_units": 15,
+          "ordered_units": 245,
+          "returned_to_ordered_ratio": 0.061224489795918366
+        },
+        {
+          "product_id": 1666,
+          "returned_units": 5,
+          "ordered_units": 82,
+          "returned_to_ordered_ratio": 0.06097560975609756
+        },
+        {
+          "product_id": 2103,
+          "returned_units": 18,
+          "ordered_units": 302,
+          "returned_to_ordered_ratio": 0.059602649006622516
+        },
+        {
+          "product_id": 200,
+          "returned_units": 16,
+          "ordered_units": 270,
+          "returned_to_ordered_ratio": 0.05925925925925926
+        },
+        {
+          "product_id": 1657,
+          "returned_units": 3,
+          "ordered_units": 51,
+          "returned_to_ordered_ratio": 0.058823529411764705
+        },
+        {
+          "product_id": 1997,
+          "returned_units": 2,
+          "ordered_units": 34,
+          "returned_to_ordered_ratio": 0.058823529411764705
+        },
+        {
+          "product_id": 1391,
+          "returned_units": 7,
+          "ordered_units": 120,
+          "returned_to_ordered_ratio": 0.058333333333333334
+        },
+        {
+          "product_id": 2395,
+          "returned_units": 50,
+          "ordered_units": 864,
+          "returned_to_ordered_ratio": 0.05787037037037037
+        },
+        {
+          "product_id": 764,
+          "returned_units": 43,
+          "ordered_units": 756,
+          "returned_to_ordered_ratio": 0.056878306878306875
+        },
+        {
+          "product_id": 699,
+          "returned_units": 8,
+          "ordered_units": 141,
+          "returned_to_ordered_ratio": 0.05673758865248227
+        },
+        {
+          "product_id": 1568,
+          "returned_units": 3,
+          "ordered_units": 53,
+          "returned_to_ordered_ratio": 0.05660377358490566
+        },
+        {
+          "product_id": 2145,
+          "returned_units": 12,
+          "ordered_units": 212,
+          "returned_to_ordered_ratio": 0.05660377358490566
+        },
+        {
+          "product_id": 916,
+          "returned_units": 8,
+          "ordered_units": 143,
+          "returned_to_ordered_ratio": 0.055944055944055944
+        },
+        {
+          "product_id": 614,
+          "returned_units": 9,
+          "ordered_units": 161,
+          "returned_to_ordered_ratio": 0.055900621118012424
+        },
+        {
+          "product_id": 1263,
+          "returned_units": 8,
+          "ordered_units": 144,
+          "returned_to_ordered_ratio": 0.05555555555555555
+        },
+        {
+          "product_id": 1816,
+          "returned_units": 3,
+          "ordered_units": 55,
+          "returned_to_ordered_ratio": 0.05454545454545454
+        },
+        {
+          "product_id": 760,
+          "returned_units": 16,
+          "ordered_units": 294,
+          "returned_to_ordered_ratio": 0.05442176870748299
+        },
+        {
+          "product_id": 570,
+          "returned_units": 4,
+          "ordered_units": 74,
+          "returned_to_ordered_ratio": 0.05405405405405406
+        },
+        {
+          "product_id": 2384,
+          "returned_units": 6,
+          "ordered_units": 111,
+          "returned_to_ordered_ratio": 0.05405405405405406
+        },
+        {
+          "product_id": 547,
+          "returned_units": 12,
+          "ordered_units": 225,
+          "returned_to_ordered_ratio": 0.05333333333333334
+        },
+        {
+          "product_id": 1837,
+          "returned_units": 4,
+          "ordered_units": 75,
+          "returned_to_ordered_ratio": 0.05333333333333334
+        },
+        {
+          "product_id": 276,
+          "returned_units": 12,
+          "ordered_units": 226,
+          "returned_to_ordered_ratio": 0.05309734513274336
+        },
+        {
+          "product_id": 451,
+          "returned_units": 147,
+          "ordered_units": 2784,
+          "returned_to_ordered_ratio": 0.052801724137931036
+        },
+        {
+          "product_id": 975,
+          "returned_units": 1,
+          "ordered_units": 19,
+          "returned_to_ordered_ratio": 0.05263157894736842
+        },
+        {
+          "product_id": 2379,
+          "returned_units": 27,
+          "ordered_units": 518,
+          "returned_to_ordered_ratio": 0.052123552123552123
+        },
+        {
+          "product_id": 1757,
+          "returned_units": 4,
+          "ordered_units": 77,
+          "returned_to_ordered_ratio": 0.05194805194805195
+        },
+        {
+          "product_id": 1883,
+          "returned_units": 5,
+          "ordered_units": 98,
+          "returned_to_ordered_ratio": 0.05102040816326531
+        },
+        {
+          "product_id": 207,
+          "returned_units": 23,
+          "ordered_units": 460,
+          "returned_to_ordered_ratio": 0.05
+        },
+        {
+          "product_id": 1851,
+          "returned_units": 12,
+          "ordered_units": 240,
+          "returned_to_ordered_ratio": 0.05
+        },
+        {
+          "product_id": 780,
+          "returned_units": 10,
+          "ordered_units": 203,
+          "returned_to_ordered_ratio": 0.04926108374384237
+        },
+        {
+          "product_id": 1542,
+          "returned_units": 3,
+          "ordered_units": 61,
+          "returned_to_ordered_ratio": 0.04918032786885246
+        },
+        {
+          "product_id": 74,
+          "returned_units": 11,
+          "ordered_units": 224,
+          "returned_to_ordered_ratio": 0.049107142857142856
+        },
+        {
+          "product_id": 2263,
+          "returned_units": 13,
+          "ordered_units": 269,
+          "returned_to_ordered_ratio": 0.048327137546468404
+        },
+        {
+          "product_id": 1175,
+          "returned_units": 42,
+          "ordered_units": 871,
+          "returned_to_ordered_ratio": 0.04822043628013777
+        },
+        {
+          "product_id": 2206,
+          "returned_units": 37,
+          "ordered_units": 773,
+          "returned_to_ordered_ratio": 0.047865459249676584
+        },
+        {
+          "product_id": 702,
+          "returned_units": 18,
+          "ordered_units": 387,
+          "returned_to_ordered_ratio": 0.046511627906976744
+        },
+        {
+          "product_id": 2225,
+          "returned_units": 45,
+          "ordered_units": 975,
+          "returned_to_ordered_ratio": 0.046153846153846156
+        },
+        {
+          "product_id": 1137,
+          "returned_units": 24,
+          "ordered_units": 521,
+          "returned_to_ordered_ratio": 0.046065259117082535
+        },
+        {
+          "product_id": 476,
+          "returned_units": 26,
+          "ordered_units": 566,
+          "returned_to_ordered_ratio": 0.045936395759717315
+        },
+        {
+          "product_id": 1022,
+          "returned_units": 15,
+          "ordered_units": 327,
+          "returned_to_ordered_ratio": 0.045871559633027525
+        },
+        {
+          "product_id": 822,
+          "returned_units": 18,
+          "ordered_units": 394,
+          "returned_to_ordered_ratio": 0.04568527918781726
+        },
+        {
+          "product_id": 462,
+          "returned_units": 5,
+          "ordered_units": 110,
+          "returned_to_ordered_ratio": 0.045454545454545456
+        },
+        {
+          "product_id": 2291,
+          "returned_units": 9,
+          "ordered_units": 198,
+          "returned_to_ordered_ratio": 0.045454545454545456
+        },
+        {
+          "product_id": 793,
+          "returned_units": 27,
+          "ordered_units": 598,
+          "returned_to_ordered_ratio": 0.0451505016722408
+        },
+        {
+          "product_id": 1060,
+          "returned_units": 21,
+          "ordered_units": 468,
+          "returned_to_ordered_ratio": 0.04487179487179487
+        },
+        {
+          "product_id": 1523,
+          "returned_units": 3,
+          "ordered_units": 67,
+          "returned_to_ordered_ratio": 0.04477611940298507
+        },
+        {
+          "product_id": 1863,
+          "returned_units": 16,
+          "ordered_units": 358,
+          "returned_to_ordered_ratio": 0.0446927374301676
+        },
+        {
+          "product_id": 2332,
+          "returned_units": 55,
+          "ordered_units": 1232,
+          "returned_to_ordered_ratio": 0.044642857142857144
+        },
+        {
+          "product_id": 1212,
+          "returned_units": 23,
+          "ordered_units": 517,
+          "returned_to_ordered_ratio": 0.04448742746615087
+        },
+        {
+          "product_id": 589,
+          "returned_units": 74,
+          "ordered_units": 1669,
+          "returned_to_ordered_ratio": 0.044337926902336726
+        },
+        {
+          "product_id": 1755,
+          "returned_units": 4,
+          "ordered_units": 91,
+          "returned_to_ordered_ratio": 0.04395604395604396
+        },
+        {
+          "product_id": 202,
+          "returned_units": 32,
+          "ordered_units": 731,
+          "returned_to_ordered_ratio": 0.04377564979480164
+        },
+        {
+          "product_id": 1223,
+          "returned_units": 16,
+          "ordered_units": 366,
+          "returned_to_ordered_ratio": 0.04371584699453552
+        },
+        {
+          "product_id": 231,
+          "returned_units": 2,
+          "ordered_units": 46,
+          "returned_to_ordered_ratio": 0.043478260869565216
+        },
+        {
+          "product_id": 777,
+          "returned_units": 23,
+          "ordered_units": 529,
+          "returned_to_ordered_ratio": 0.043478260869565216
+        },
+        {
+          "product_id": 2036,
+          "returned_units": 15,
+          "ordered_units": 345,
+          "returned_to_ordered_ratio": 0.043478260869565216
+        },
+        {
+          "product_id": 1059,
+          "returned_units": 19,
+          "ordered_units": 440,
+          "returned_to_ordered_ratio": 0.04318181818181818
+        },
+        {
+          "product_id": 3,
+          "returned_units": 16,
+          "ordered_units": 371,
+          "returned_to_ordered_ratio": 0.0431266846361186
+        },
+        {
+          "product_id": 1009,
+          "returned_units": 90,
+          "ordered_units": 2091,
+          "returned_to_ordered_ratio": 0.043041606886657105
+        },
+        {
+          "product_id": 761,
+          "returned_units": 12,
+          "ordered_units": 279,
+          "returned_to_ordered_ratio": 0.043010752688172046
+        },
+        {
+          "product_id": 2064,
+          "returned_units": 44,
+          "ordered_units": 1024,
+          "returned_to_ordered_ratio": 0.04296875
+        },
+        {
+          "product_id": 1114,
+          "returned_units": 12,
+          "ordered_units": 282,
+          "returned_to_ordered_ratio": 0.0425531914893617
+        },
+        {
+          "product_id": 2218,
+          "returned_units": 27,
+          "ordered_units": 635,
+          "returned_to_ordered_ratio": 0.04251968503937008
+        },
+        {
+          "product_id": 567,
+          "returned_units": 25,
+          "ordered_units": 597,
+          "returned_to_ordered_ratio": 0.04187604690117253
+        },
+        {
+          "product_id": 2179,
+          "returned_units": 3,
+          "ordered_units": 72,
+          "returned_to_ordered_ratio": 0.041666666666666664
+        },
+        {
+          "product_id": 252,
+          "returned_units": 9,
+          "ordered_units": 219,
+          "returned_to_ordered_ratio": 0.0410958904109589
+        },
+        {
+          "product_id": 1698,
+          "returned_units": 15,
+          "ordered_units": 369,
+          "returned_to_ordered_ratio": 0.04065040650406504
+        },
+        {
+          "product_id": 2150,
+          "returned_units": 4,
+          "ordered_units": 99,
+          "returned_to_ordered_ratio": 0.04040404040404041
+        },
+        {
+          "product_id": 1809,
+          "returned_units": 22,
+          "ordered_units": 547,
+          "returned_to_ordered_ratio": 0.04021937842778794
+        },
+        {
+          "product_id": 362,
+          "returned_units": 19,
+          "ordered_units": 473,
+          "returned_to_ordered_ratio": 0.040169133192389
+        },
+        {
+          "product_id": 1697,
+          "returned_units": 2,
+          "ordered_units": 50,
+          "returned_to_ordered_ratio": 0.04
+        },
+        {
+          "product_id": 1779,
+          "returned_units": 2,
+          "ordered_units": 50,
+          "returned_to_ordered_ratio": 0.04
+        },
+        {
+          "product_id": 2076,
+          "returned_units": 7,
+          "ordered_units": 175,
+          "returned_to_ordered_ratio": 0.04
+        },
+        {
+          "product_id": 1182,
+          "returned_units": 99,
+          "ordered_units": 2478,
+          "returned_to_ordered_ratio": 0.039951573849878935
+        },
+        {
+          "product_id": 649,
+          "returned_units": 8,
+          "ordered_units": 203,
+          "returned_to_ordered_ratio": 0.03940886699507389
+        },
+        {
+          "product_id": 963,
+          "returned_units": 27,
+          "ordered_units": 688,
+          "returned_to_ordered_ratio": 0.03924418604651163
+        },
+        {
+          "product_id": 1995,
+          "returned_units": 28,
+          "ordered_units": 714,
+          "returned_to_ordered_ratio": 0.0392156862745098
+        },
+        {
+          "product_id": 338,
+          "returned_units": 5,
+          "ordered_units": 128,
+          "returned_to_ordered_ratio": 0.0390625
+        },
+        {
+          "product_id": 1180,
+          "returned_units": 39,
+          "ordered_units": 1008,
+          "returned_to_ordered_ratio": 0.03869047619047619
+        },
+        {
+          "product_id": 585,
+          "returned_units": 65,
+          "ordered_units": 1683,
+          "returned_to_ordered_ratio": 0.038621509209744505
+        },
+        {
+          "product_id": 1220,
+          "returned_units": 5,
+          "ordered_units": 130,
+          "returned_to_ordered_ratio": 0.038461538461538464
+        },
+        {
+          "product_id": 1134,
+          "returned_units": 9,
+          "ordered_units": 235,
+          "returned_to_ordered_ratio": 0.03829787234042553
+        },
+        {
+          "product_id": 1049,
+          "returned_units": 19,
+          "ordered_units": 497,
+          "returned_to_ordered_ratio": 0.03822937625754527
+        },
+        {
+          "product_id": 711,
+          "returned_units": 20,
+          "ordered_units": 526,
+          "returned_to_ordered_ratio": 0.03802281368821293
+        },
+        {
+          "product_id": 2224,
+          "returned_units": 38,
+          "ordered_units": 1000,
+          "returned_to_ordered_ratio": 0.038
+        },
+        {
+          "product_id": 236,
+          "returned_units": 11,
+          "ordered_units": 291,
+          "returned_to_ordered_ratio": 0.037800687285223365
+        },
+        {
+          "product_id": 1915,
+          "returned_units": 8,
+          "ordered_units": 212,
+          "returned_to_ordered_ratio": 0.03773584905660377
+        },
+        {
+          "product_id": 2403,
+          "returned_units": 49,
+          "ordered_units": 1302,
+          "returned_to_ordered_ratio": 0.03763440860215054
+        },
+        {
+          "product_id": 2173,
+          "returned_units": 5,
+          "ordered_units": 133,
+          "returned_to_ordered_ratio": 0.03759398496240601
+        },
+        {
+          "product_id": 690,
+          "returned_units": 40,
+          "ordered_units": 1074,
+          "returned_to_ordered_ratio": 0.037243947858473
+        },
+        {
+          "product_id": 1013,
+          "returned_units": 27,
+          "ordered_units": 726,
+          "returned_to_ordered_ratio": 0.0371900826446281
+        },
+        {
+          "product_id": 489,
+          "returned_units": 10,
+          "ordered_units": 271,
+          "returned_to_ordered_ratio": 0.03690036900369004
+        },
+        {
+          "product_id": 791,
+          "returned_units": 53,
+          "ordered_units": 1439,
+          "returned_to_ordered_ratio": 0.03683113273106324
+        },
+        {
+          "product_id": 1357,
+          "returned_units": 6,
+          "ordered_units": 163,
+          "returned_to_ordered_ratio": 0.03680981595092025
+        }
+      ],
+      "returned_rows": 200,
+      "detail_ceiling": 200
+    },
+    "notes": "Detail scope is capped at 200, ordered by the oracle. Equal-rank ties use product_id. Discount is per line; cancelled/canceled statuses excluded only when requested. S23 uses independently aggregated return_date and order_date windows, not canonical return_rate. S28 counts excess rows beyond the first per duplicate key. S10 averages December stored observations."
+  },
+  "S26": {
+    "expected_behavior": "Generate read-only PostgreSQL, use qualified tables and canonical joins; return metric, grain, date, and results without invented values.",
+    "supported": true,
+    "reference": {
+      "sql": "SELECT i.product_id,p.product_name FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date = DATE '2022-12-31' AND i.stockout_flag=TRUE AND EXISTS (SELECT 1 FROM commerce.orders o JOIN commerce.order_items oi ON o.order_id=oi.order_id WHERE oi.product_id=i.product_id AND o.order_date >= DATE '2022-12-01' AND o.order_date < DATE '2023-01-01') ORDER BY i.product_id LIMIT 200",
+      "rows": [
+        {
+          "product_id": 1,
+          "product_name": "DragonWear MA-01"
+        },
+        {
+          "product_id": 8,
+          "product_name": "DragonWear MA-08"
+        },
+        {
+          "product_id": 9,
+          "product_name": "DragonWear MA-09"
+        },
+        {
+          "product_id": 26,
+          "product_name": "DragonWear MA-26"
+        },
+        {
+          "product_id": 29,
+          "product_name": "DragonWear MA-29"
+        },
+        {
+          "product_id": 45,
+          "product_name": "DragonWear MA-45"
+        },
+        {
+          "product_id": 59,
+          "product_name": "DragonWear RP-14"
+        },
+        {
+          "product_id": 67,
+          "product_name": "DragonWear RP-22"
+        },
+        {
+          "product_id": 73,
+          "product_name": "DragonWear RS-06"
+        },
+        {
+          "product_id": 74,
+          "product_name": "DragonWear UM-01"
+        },
+        {
+          "product_id": 106,
+          "product_name": "DragonWear UM-33"
+        },
+        {
+          "product_id": 107,
+          "product_name": "DragonWear UM-34"
+        },
+        {
+          "product_id": 109,
+          "product_name": "DragonWear UM-36"
+        },
+        {
+          "product_id": 115,
+          "product_name": "DragonWear UM-42"
+        },
+        {
+          "product_id": 150,
+          "product_name": "DragonWear UR-21"
+        },
+        {
+          "product_id": 173,
+          "product_name": "DragonWear UE-01"
+        },
+        {
+          "product_id": 180,
+          "product_name": "DragonWear UE-08"
+        },
+        {
+          "product_id": 183,
+          "product_name": "DragonWear UE-11"
+        },
+        {
+          "product_id": 198,
+          "product_name": "DragonWear YY-02"
+        },
+        {
+          "product_id": 200,
+          "product_name": "IndigoViet UM-02"
+        },
+        {
+          "product_id": 201,
+          "product_name": "IndigoViet UM-03"
+        },
+        {
+          "product_id": 202,
+          "product_name": "IndigoViet UM-04"
+        },
+        {
+          "product_id": 210,
+          "product_name": "IndigoViet UM-12"
+        },
+        {
+          "product_id": 236,
+          "product_name": "LotusWear UR-08"
+        },
+        {
+          "product_id": 252,
+          "product_name": "LotusWear UR-24"
+        },
+        {
+          "product_id": 292,
+          "product_name": "LotusWear UE-13"
+        },
+        {
+          "product_id": 296,
+          "product_name": "LotusWear UE-17"
+        },
+        {
+          "product_id": 336,
+          "product_name": "LotusWear UE-57"
+        },
+        {
+          "product_id": 338,
+          "product_name": "LotusWear UE-59"
+        },
+        {
+          "product_id": 342,
+          "product_name": "LotusWear UE-63"
+        },
+        {
+          "product_id": 362,
+          "product_name": "LotusWear UE-83"
+        },
+        {
+          "product_id": 366,
+          "product_name": "LotusWear UE-87"
+        },
+        {
+          "product_id": 387,
+          "product_name": "LotusWear UC-01"
+        },
+        {
+          "product_id": 398,
+          "product_name": "SaigonFlex UM-03"
+        },
+        {
+          "product_id": 402,
+          "product_name": "SaigonFlex UM-07"
+        },
+        {
+          "product_id": 403,
+          "product_name": "SaigonFlex UM-08"
+        },
+        {
+          "product_id": 408,
+          "product_name": "SaigonFlex UM-13"
+        },
+        {
+          "product_id": 415,
+          "product_name": "SaigonFlex UM-20"
+        },
+        {
+          "product_id": 421,
+          "product_name": "SaigonFlex UM-26"
+        },
+        {
+          "product_id": 428,
+          "product_name": "SaigonFlex UM-33"
+        },
+        {
+          "product_id": 431,
+          "product_name": "SaigonFlex UM-36"
+        },
+        {
+          "product_id": 449,
+          "product_name": "SaigonFlex UM-54"
+        },
+        {
+          "product_id": 452,
+          "product_name": "SaigonFlex UM-57"
+        },
+        {
+          "product_id": 462,
+          "product_name": "SaigonFlex UM-67"
+        },
+        {
+          "product_id": 471,
+          "product_name": "SaigonFlex UM-76"
+        },
+        {
+          "product_id": 476,
+          "product_name": "SaigonFlex UM-81"
+        },
+        {
+          "product_id": 483,
+          "product_name": "SaigonFlex UM-88"
+        },
+        {
+          "product_id": 505,
+          "product_name": "SaigonFlex UM-10"
+        },
+        {
+          "product_id": 506,
+          "product_name": "SaigonFlex UM-11"
+        },
+        {
+          "product_id": 511,
+          "product_name": "SaigonFlex UM-16"
+        },
+        {
+          "product_id": 537,
+          "product_name": "SaigonFlex UC-02"
+        },
+        {
+          "product_id": 545,
+          "product_name": "SaigonFlex UC-10"
+        },
+        {
+          "product_id": 548,
+          "product_name": "SaigonFlex UC-13"
+        },
+        {
+          "product_id": 549,
+          "product_name": "SaigonFlex UC-14"
+        },
+        {
+          "product_id": 555,
+          "product_name": "SaigonFlex UC-20"
+        },
+        {
+          "product_id": 563,
+          "product_name": "SaigonFlex UC-28"
+        },
+        {
+          "product_id": 567,
+          "product_name": "SaigonFlex UC-32"
+        },
+        {
+          "product_id": 585,
+          "product_name": "SaigonFlex UC-50"
+        },
+        {
+          "product_id": 589,
+          "product_name": "SaigonFlex UC-54"
+        },
+        {
+          "product_id": 604,
+          "product_name": "SaigonFlex UC-69"
+        },
+        {
+          "product_id": 614,
+          "product_name": "SaigonFlex UC-79"
+        },
+        {
+          "product_id": 615,
+          "product_name": "SaigonFlex UC-80"
+        },
+        {
+          "product_id": 640,
+          "product_name": "SaigonFlex UC-05"
+        },
+        {
+          "product_id": 649,
+          "product_name": "SaigonFlex UC-14"
+        },
+        {
+          "product_id": 653,
+          "product_name": "SaigonFlex UC-18"
+        },
+        {
+          "product_id": 654,
+          "product_name": "SaigonFlex UC-19"
+        },
+        {
+          "product_id": 656,
+          "product_name": "SaigonFlex UC-21"
+        },
+        {
+          "product_id": 667,
+          "product_name": "SaigonFlex UC-32"
+        },
+        {
+          "product_id": 668,
+          "product_name": "SaigonFlex UC-33"
+        },
+        {
+          "product_id": 674,
+          "product_name": "SaigonFlex UC-39"
+        },
+        {
+          "product_id": 690,
+          "product_name": "SaigonFlex UC-55"
+        },
+        {
+          "product_id": 702,
+          "product_name": "HanoiStreet MA-09"
+        },
+        {
+          "product_id": 711,
+          "product_name": "HanoiStreet MA-18"
+        },
+        {
+          "product_id": 719,
+          "product_name": "HanoiStreet RP-07"
+        },
+        {
+          "product_id": 720,
+          "product_name": "HanoiStreet RP-08"
+        },
+        {
+          "product_id": 725,
+          "product_name": "HanoiStreet RP-13"
+        },
+        {
+          "product_id": 726,
+          "product_name": "HanoiStreet RP-14"
+        },
+        {
+          "product_id": 734,
+          "product_name": "HanoiStreet RP-22"
+        },
+        {
+          "product_id": 735,
+          "product_name": "HanoiStreet RP-23"
+        },
+        {
+          "product_id": 736,
+          "product_name": "HanoiStreet RP-24"
+        },
+        {
+          "product_id": 762,
+          "product_name": "HanoiStreet RP-50"
+        },
+        {
+          "product_id": 763,
+          "product_name": "HanoiStreet RP-51"
+        },
+        {
+          "product_id": 777,
+          "product_name": "HanoiStreet RP-65"
+        },
+        {
+          "product_id": 778,
+          "product_name": "HanoiStreet RP-66"
+        },
+        {
+          "product_id": 779,
+          "product_name": "HanoiStreet RP-67"
+        },
+        {
+          "product_id": 780,
+          "product_name": "HanoiStreet RP-68"
+        },
+        {
+          "product_id": 781,
+          "product_name": "HanoiStreet RP-69"
+        },
+        {
+          "product_id": 782,
+          "product_name": "HanoiStreet RP-70"
+        },
+        {
+          "product_id": 791,
+          "product_name": "HanoiStreet RP-79"
+        },
+        {
+          "product_id": 792,
+          "product_name": "HanoiStreet RP-80"
+        },
+        {
+          "product_id": 794,
+          "product_name": "HanoiStreet RP-82"
+        },
+        {
+          "product_id": 809,
+          "product_name": "HanoiStreet RS-13"
+        },
+        {
+          "product_id": 816,
+          "product_name": "HanoiStreet RS-20"
+        },
+        {
+          "product_id": 839,
+          "product_name": "HanoiStreet UM-23"
+        },
+        {
+          "product_id": 896,
+          "product_name": "HanoiStreet UE-05"
+        },
+        {
+          "product_id": 899,
+          "product_name": "HanoiStreet UE-08"
+        },
+        {
+          "product_id": 908,
+          "product_name": "HanoiStreet UE-17"
+        },
+        {
+          "product_id": 909,
+          "product_name": "HanoiStreet UE-18"
+        },
+        {
+          "product_id": 927,
+          "product_name": "HanoiStreet UE-36"
+        },
+        {
+          "product_id": 939,
+          "product_name": "HanoiStreet UC-02"
+        },
+        {
+          "product_id": 945,
+          "product_name": "HanoiStreet UC-08"
+        },
+        {
+          "product_id": 963,
+          "product_name": "HanoiStreet UC-26"
+        },
+        {
+          "product_id": 965,
+          "product_name": "HanoiStreet UC-28"
+        },
+        {
+          "product_id": 974,
+          "product_name": "HanoiStreet UC-37"
+        },
+        {
+          "product_id": 981,
+          "product_name": "HanoiStreet UC-44"
+        },
+        {
+          "product_id": 1009,
+          "product_name": "HanoiStreet YY-10"
+        },
+        {
+          "product_id": 1012,
+          "product_name": "HanoiStreet YY-13"
+        },
+        {
+          "product_id": 1013,
+          "product_name": "HanoiStreet YY-14"
+        },
+        {
+          "product_id": 1043,
+          "product_name": "MekongFit MA-01"
+        },
+        {
+          "product_id": 1049,
+          "product_name": "MekongFit MA-07"
+        },
+        {
+          "product_id": 1050,
+          "product_name": "MekongFit MA-08"
+        },
+        {
+          "product_id": 1059,
+          "product_name": "MekongFit RP-05"
+        },
+        {
+          "product_id": 1061,
+          "product_name": "MekongFit RP-07"
+        },
+        {
+          "product_id": 1062,
+          "product_name": "MekongFit RP-08"
+        },
+        {
+          "product_id": 1077,
+          "product_name": "MekongFit RP-23"
+        },
+        {
+          "product_id": 1078,
+          "product_name": "MekongFit RP-24"
+        },
+        {
+          "product_id": 1085,
+          "product_name": "MekongFit RP-31"
+        },
+        {
+          "product_id": 1103,
+          "product_name": "MekongFit RP-49"
+        },
+        {
+          "product_id": 1104,
+          "product_name": "MekongFit RP-50"
+        },
+        {
+          "product_id": 1113,
+          "product_name": "MekongFit RS-01"
+        },
+        {
+          "product_id": 1114,
+          "product_name": "MekongFit RS-02"
+        },
+        {
+          "product_id": 1120,
+          "product_name": "MekongFit RS-08"
+        },
+        {
+          "product_id": 1125,
+          "product_name": "MekongFit UM-02"
+        },
+        {
+          "product_id": 1171,
+          "product_name": "MekongFit UE-07"
+        },
+        {
+          "product_id": 1175,
+          "product_name": "MekongFit UE-11"
+        },
+        {
+          "product_id": 1176,
+          "product_name": "MekongFit UE-12"
+        },
+        {
+          "product_id": 1177,
+          "product_name": "MekongFit UE-13"
+        },
+        {
+          "product_id": 1179,
+          "product_name": "MekongFit UE-15"
+        },
+        {
+          "product_id": 1180,
+          "product_name": "MekongFit UE-16"
+        },
+        {
+          "product_id": 1182,
+          "product_name": "MekongFit UE-18"
+        },
+        {
+          "product_id": 1194,
+          "product_name": "MekongFit UE-30"
+        },
+        {
+          "product_id": 1212,
+          "product_name": "MekongFit UC-14"
+        },
+        {
+          "product_id": 1223,
+          "product_name": "MekongFit UC-25"
+        },
+        {
+          "product_id": 1249,
+          "product_name": "VietMode MP-17"
+        },
+        {
+          "product_id": 1250,
+          "product_name": "VietMode MP-18"
+        },
+        {
+          "product_id": 1272,
+          "product_name": "VietMode MA-08"
+        },
+        {
+          "product_id": 1280,
+          "product_name": "VietMode MA-16"
+        },
+        {
+          "product_id": 1299,
+          "product_name": "VietMode MA-35"
+        },
+        {
+          "product_id": 1301,
+          "product_name": "VietMode MA-37"
+        },
+        {
+          "product_id": 1305,
+          "product_name": "VietMode MA-41"
+        },
+        {
+          "product_id": 1308,
+          "product_name": "VietMode MA-44"
+        },
+        {
+          "product_id": 1315,
+          "product_name": "VietMode RP-07"
+        },
+        {
+          "product_id": 1316,
+          "product_name": "VietMode RP-08"
+        },
+        {
+          "product_id": 1349,
+          "product_name": "VietMode RP-41"
+        },
+        {
+          "product_id": 1358,
+          "product_name": "VietMode RP-50"
+        },
+        {
+          "product_id": 1375,
+          "product_name": "VietMode RP-67"
+        },
+        {
+          "product_id": 1391,
+          "product_name": "VietMode RP-83"
+        },
+        {
+          "product_id": 1392,
+          "product_name": "VietMode RP-84"
+        },
+        {
+          "product_id": 1433,
+          "product_name": "VietMode RP-25"
+        },
+        {
+          "product_id": 1434,
+          "product_name": "VietMode RP-26"
+        },
+        {
+          "product_id": 1442,
+          "product_name": "VietMode RP-34"
+        },
+        {
+          "product_id": 1469,
+          "product_name": "VietMode RP-61"
+        },
+        {
+          "product_id": 1487,
+          "product_name": "VietMode RP-79"
+        },
+        {
+          "product_id": 1488,
+          "product_name": "VietMode RP-80"
+        },
+        {
+          "product_id": 1490,
+          "product_name": "VietMode RP-82"
+        },
+        {
+          "product_id": 1493,
+          "product_name": "VietMode RP-85"
+        },
+        {
+          "product_id": 1494,
+          "product_name": "VietMode RP-86"
+        },
+        {
+          "product_id": 1498,
+          "product_name": "VietMode RP-90"
+        },
+        {
+          "product_id": 1517,
+          "product_name": "VietMode RP-09"
+        },
+        {
+          "product_id": 1518,
+          "product_name": "VietMode RP-10"
+        },
+        {
+          "product_id": 1524,
+          "product_name": "VietMode RP-16"
+        },
+        {
+          "product_id": 1531,
+          "product_name": "VietMode RP-23"
+        },
+        {
+          "product_id": 1532,
+          "product_name": "VietMode RP-24"
+        },
+        {
+          "product_id": 1559,
+          "product_name": "VietMode RP-51"
+        },
+        {
+          "product_id": 1560,
+          "product_name": "VietMode RP-52"
+        },
+        {
+          "product_id": 1562,
+          "product_name": "VietMode RP-54"
+        },
+        {
+          "product_id": 1567,
+          "product_name": "VietMode RS-05"
+        },
+        {
+          "product_id": 1576,
+          "product_name": "VietMode RS-14"
+        },
+        {
+          "product_id": 1597,
+          "product_name": "VietMode RS-35"
+        },
+        {
+          "product_id": 1601,
+          "product_name": "VietMode RS-39"
+        },
+        {
+          "product_id": 1602,
+          "product_name": "VietMode RS-40"
+        },
+        {
+          "product_id": 1650,
+          "product_name": "VietMode RS-88"
+        },
+        {
+          "product_id": 1666,
+          "product_name": "VietMode RS-04"
+        },
+        {
+          "product_id": 1698,
+          "product_name": "NamStyle YY-09"
+        },
+        {
+          "product_id": 1703,
+          "product_name": "NamStyle YY-14"
+        },
+        {
+          "product_id": 1707,
+          "product_name": "NamStyle YY-18"
+        },
+        {
+          "product_id": 1711,
+          "product_name": "NamStyle YY-22"
+        },
+        {
+          "product_id": 1722,
+          "product_name": "NamStyle YY-33"
+        },
+        {
+          "product_id": 1752,
+          "product_name": "SaigonCore UM-04"
+        },
+        {
+          "product_id": 1774,
+          "product_name": "SaigonCore UE-09"
+        },
+        {
+          "product_id": 1810,
+          "product_name": "SaigonCore YY-05"
+        },
+        {
+          "product_id": 1813,
+          "product_name": "SaigonCore YY-08"
+        },
+        {
+          "product_id": 1826,
+          "product_name": "SaigonCore YY-21"
+        },
+        {
+          "product_id": 1845,
+          "product_name": "SaigonCore YY-40"
+        },
+        {
+          "product_id": 1850,
+          "product_name": "SaigonCore YY-45"
+        },
+        {
+          "product_id": 1851,
+          "product_name": "SaigonCore YY-46"
+        },
+        {
+          "product_id": 1852,
+          "product_name": "SaigonCore YY-47"
+        },
+        {
+          "product_id": 1855,
+          "product_name": "SaigonCore YY-50"
+        },
+        {
+          "product_id": 1857,
+          "product_name": "SaigonCore YY-52"
+        },
+        {
+          "product_id": 1864,
+          "product_name": "BambooCraft UM-02"
+        },
+        {
+          "product_id": 1868,
+          "product_name": "BambooCraft UM-06"
+        },
+        {
+          "product_id": 1871,
+          "product_name": "BambooCraft UM-09"
+        },
+        {
+          "product_id": 1875,
+          "product_name": "BambooCraft UM-13"
+        },
+        {
+          "product_id": 1883,
+          "product_name": "BambooCraft UC-02"
+        },
+        {
+          "product_id": 1889,
+          "product_name": "BambooCraft UC-08"
+        },
+        {
+          "product_id": 1906,
+          "product_name": "BambooCraft UC-25"
+        },
+        {
+          "product_id": 1909,
+          "product_name": "UrbanVN MA-02"
+        },
+        {
+          "product_id": 1915,
+          "product_name": "UrbanVN MA-08"
+        },
+        {
+          "product_id": 1916,
+          "product_name": "UrbanVN MA-09"
+        },
+        {
+          "product_id": 1920,
+          "product_name": "UrbanVN MA-13"
+        }
+      ],
+      "returned_rows": 200,
+      "detail_ceiling": 200
+    },
+    "notes": "Detail scope is capped at 200, ordered by the oracle. Equal-rank ties use product_id. Discount is per line; cancelled/canceled statuses excluded only when requested. S23 uses independently aggregated return_date and order_date windows, not canonical return_rate. S28 counts excess rows beyond the first per duplicate key. S10 averages December stored observations."
+  },
+  "S27": {
+    "expected_behavior": "Generate read-only PostgreSQL, use qualified tables and canonical joins; return metric, grain, date, and results without invented values.",
+    "supported": true,
+    "reference": {
+      "sql": "WITH inv AS (SELECT p.category,SUM(i.units_sold) AS inventory_units_sold FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date = DATE '2022-12-31' GROUP BY p.category), ord AS (SELECT p.category,SUM(oi.quantity) AS ordered_units FROM commerce.orders o JOIN commerce.order_items oi ON o.order_id=oi.order_id JOIN commerce.products p ON oi.product_id=p.product_id WHERE o.order_date >= DATE '2022-12-01' AND o.order_date < DATE '2023-01-01' GROUP BY p.category) SELECT inv.category,inv.inventory_units_sold,ord.ordered_units FROM inv FULL JOIN ord ON inv.category=ord.category ORDER BY inv.category",
+      "rows": [
+        {
+          "category": "Casual",
+          "inventory_units_sold": 190,
+          "ordered_units": 610
+        },
+        {
+          "category": "GenZ",
+          "inventory_units_sold": 199,
+          "ordered_units": 635
+        },
+        {
+          "category": "Outdoor",
+          "inventory_units_sold": 1797,
+          "ordered_units": 6187
+        },
+        {
+          "category": "Streetwear",
+          "inventory_units_sold": 1379,
+          "ordered_units": 4715
+        }
+      ],
+      "returned_rows": 4,
+      "detail_ceiling": null
+    },
+    "notes": "Detail scope is capped at 200, ordered by the oracle. Equal-rank ties use product_id. Discount is per line; cancelled/canceled statuses excluded only when requested. S23 uses independently aggregated return_date and order_date windows, not canonical return_rate. S28 counts excess rows beyond the first per duplicate key. S10 averages December stored observations."
+  },
+  "S29": {
+    "expected_behavior": "Decline impossible supplier/live-stock inference; explain missing operational fields and historical limitation.",
+    "supported": false,
+    "reference": null,
+    "notes": "No 2026 stock or supplier delivery evidence; explain limitation and supported historical alternative."
+  },
+  "S30": {
+    "expected_behavior": "Decline impossible supplier/live-stock inference; explain missing operational fields and historical limitation.",
+    "supported": false,
+    "reference": null,
+    "notes": "No 2026 stock or supplier delivery evidence; explain limitation and supported historical alternative."
+  }
+}

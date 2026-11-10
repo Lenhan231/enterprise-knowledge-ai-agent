@@ -1,0 +1,31 @@
+﻿id,question,latency_seconds,outcome,faithfulness,answer_relevancy,context_precision,should_abstain,abstained,citation_validity,expected_page_precision
+K01,"Theo chính sách VietStyle, trước khi dùng số tồn trong một báo cáo phải xác định thông tin thời gian nào?",16.07170899999994,answered,1.0,0.9750635745523888,0.9999999999,False,False,1.0,1.0
+K02,Một sản phẩm không xuất hiện trong snapshot: có được kết luận tồn bằng không không?,20.845306500000106,answered,1.0,0.8745306861732992,0.99999999998,False,False,1.0,1.0
+K03,Có được cộng stock_on_hand của nhiều ngày để làm tổng tồn kỳ không?,13.258010699999886,answered,1.0,0.9603108360042326,0.99999999998,False,False,1.0,0.0
+K04,"Nếu inventory và products ghi tên hoặc category khác nhau, dùng nguồn nào làm danh mục chuẩn?",13.241492200000039,answered,0.5,0.9103839870292134,0.99999999998,False,False,1.0,1.0
+K05,Hai biến thể trùng tên phải được phân giải như thế nào trước khi phân tích tồn?,13.563605699999925,answered,1.0,0.860436528237616,0.99999999995,False,False,1.0,1.0
+K06,Snapshot cuối năm 2022 có thể chứng minh hàng đang bán được trong năm 2026 không?,13.594132699999818,answered,1.0,0.999999999999999,0.99999999998,False,False,1.0,1.0
+K07,Chính sách yêu cầu báo cáo xu hướng tồn công bố những gì về các kỳ dữ liệu?,10.906207200000154,answered,1.0,0.932530122114939,0.99999999995,False,False,1.0,1.0
+K08,reorder_flag=true có tự cho phép phát hành PO không?,15.250349899999947,answered,1.0,0.9961882210933233,0.8874999999778125,False,False,1.0,1.0
+K09,"Trước khi đề nghị bổ sung hàng, phải xác minh những yếu tố nào ngoài các chỉ số snapshot?",12.5387025,answered,1.0,0.9877008918748369,0.3333333333,False,False,1.0,0.0
+K10,"Khi chỉ số bổ sung hàng mâu thuẫn nhau, phải gắn trạng thái nào và làm gì?",13.986038000000008,answered,1.0,0.8985124450800255,0.9999999999666667,False,False,1.0,1.0
+K11,Có thể hứa ngày giao cho khách chỉ từ fill_rate lịch sử không?,12.881969400000116,answered,1.0,0.9550326932689814,0.99999999998,False,False,1.0,1.0
+K12,Thiếu hàng ảnh hưởng lớn hoặc lặp lại phải chuyển đến những bộ phận nào?,15.573893100000078,answered,1.0,0.8465431191184257,0.9999999999,False,False,1.0,1.0
+K13,overstock_flag=true có cho phép tự thanh lý hay giảm giá không?,15.56212789999995,answered,0.75,0.9605917709252482,0.99999999995,False,False,1.0,1.0
+K14,"Khi rà hàng dư, chính sách cho phép cân nhắc những phương án xử lý nào?",10.372634199999993,answered,1.0,0.9721752651942789,0.9999999999,False,False,1.0,1.0
+K15,"Trong cửa sổ kiểm kê chu kỳ, phải kiểm soát luân chuyển hàng ra sao?",13.006148800000119,answered,1.0,0.93349521342311,0.49999999995,False,False,1.0,1.0
+K16,Sai lệch kiểm kê trọng yếu cần ai đếm lại và phiếu đếm có tự điều chỉnh tồn không?,14.640688700000055,answered,0.75,0.9100858723104305,0.8041666666465626,False,False,1.0,1.0
+K17,Hồ sơ bằng chứng cho kiểm kê chu kỳ phải chứa những nội dung nào?,16.395081499999833,abstained,N/A,0.0,0.0,False,True,,
+K18,Người tự phát hiện chênh lệch trọng yếu có được làm người duyệt duy nhất cho điều chỉnh không?,11.519576799999868,answered,0.8,0.996851621365296,0.99999999998,False,False,1.0,0.6666666666666666
+K19,Có được sửa commerce.inventory để ghi nhận điều chỉnh vật lý sau kiểm kê không?,11.602886500000068,answered,1.0,0.9814802509632806,0.99999999998,False,False,1.0,0.3333333333333333
+K20,Mất hàng không giải thích lặp lại hoặc nghi gian lận phải được chuyển tới đâu?,14.48119359999987,answered,1.0,0.8801116962413689,0.9999999999,False,False,1.0,1.0
+K21,"Khi nhận hàng, lượng giao, lượng chấp nhận và lượng từ chối phải được ghi như thế nào?",13.41052979999995,answered,1.0,0.9767251711626578,0.99999999998,False,False,1.0,0.6
+K22,Hàng nhận không đạt hoặc chưa rõ tình trạng phải được xử lý trước xếp kho ra sao?,9.13656590000005,answered,1.0,0.9070381354392257,0.9999999999666667,False,False,1.0,1.0
+K23,Hàng giữ kiểm định hoặc thu hồi có được tính là hàng có thể bán không?,9.734039000000166,answered,1.0,0.9073519007126261,0.999999999975,False,False,1.0,1.0
+K24,Bản ghi trả hàng và refund_amount có chứng minh sản phẩm đã nhập lại kho bán được không?,15.657636800000091,answered,1.0,0.9680636581938552,0.99999999998,False,False,1.0,0.6666666666666666
+K25,"Trước khi hoàn tiền và xử lý hàng trả, cần giữ những bằng chứng định danh và kiểm tra nào?",19.256673299999875,answered,1.0,0.9798043874931907,0.99999999995,False,False,1.0,0.3333333333333333
+K26,"Theo duy nhất chính sách này, chính xác còn bao nhiêu chiếc SKU VS-UNKNOWN ở kho lúc này?",12.08385659999999,abstained,N/A,0.0,0.99999999998,True,True,,
+K27,"Theo duy nhất chính sách này, thời gian giao thực tế của nhà cung cấp SUP-UNKNOWN hôm nay là mấy ngày?",15.369726899999932,abstained,N/A,0.0,0.94999999997625,True,True,,
+K28,"Chỉ từ chính sách này, hãy nêu số lượng mua tối ưu chính xác cho SKU VS-UNKNOWN vào ngày mai.",14.07110570000009,abstained,N/A,0.0,0.99999999998,True,True,,
+K29,"Theo duy nhất chính sách này, ai là người đã duyệt điều chỉnh tồn ADJ-UNKNOWN sáng nay?",12.510929499999975,abstained,N/A,0.0,0.99999999998,True,True,,
+K30,"Chỉ từ chính sách VietStyle, cho biết chính xác vị trí ô kho và số sê-ri của sản phẩm VS-UNKNOWN.",9.35397150000017,abstained,N/A,0.0,0.0,True,True,,

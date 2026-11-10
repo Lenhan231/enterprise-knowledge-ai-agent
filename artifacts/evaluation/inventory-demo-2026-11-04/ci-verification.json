@@ -1,0 +1,528 @@
+{
+  "commit": "3564c0638d0c9654240d222638e02b1ea8b057c5",
+  "url": "https://github.com/Lenhan231/enterprise-knowledge-ai-agent/actions/runs/41959184878",
+  "conclusion": "failure",
+  "failed_step": "uv run python -m unittest discover -s tests -v",
+  "summary": [
+    "814 tests",
+    "31 failures",
+    "97 errors",
+    "45 skips"
+  ],
+  "compileall": "passed",
+  "later_http_and_container_checks": "skipped after unit-suite failure",
+  "failures": [
+    {
+      "method": "test_agent_benchmarks",
+      "test": "unittest.loader._FailedTest.test_agent_benchmarks"
+    },
+    {
+      "method": "test_agents",
+      "test": "unittest.loader._FailedTest.test_agents"
+    },
+    {
+      "method": "test_app_request_models",
+      "test": "unittest.loader._FailedTest.test_app_request_models"
+    },
+    {
+      "method": "test_chunking_retrieval_evaluation",
+      "test": "unittest.loader._FailedTest.test_chunking_retrieval_evaluation"
+    },
+    {
+      "method": "test_commerce_knowledge_manifest",
+      "test": "unittest.loader._FailedTest.test_commerce_knowledge_manifest"
+    },
+    {
+      "method": "test_docling_ocr_postprocessing",
+      "test": "unittest.loader._FailedTest.test_docling_ocr_postprocessing"
+    },
+    {
+      "method": "test_docling_table_sections",
+      "test": "unittest.loader._FailedTest.test_docling_table_sections"
+    },
+    {
+      "method": "test_document_dashboard",
+      "test": "unittest.loader._FailedTest.test_document_dashboard"
+    },
+    {
+      "method": "test_document_extraction_evaluation",
+      "test": "unittest.loader._FailedTest.test_document_extraction_evaluation"
+    },
+    {
+      "method": "test_document_processing_chunk_context",
+      "test": "unittest.loader._FailedTest.test_document_processing_chunk_context"
+    },
+    {
+      "method": "test_get_document_output_reconstructs_chunker_input",
+      "test": "test_document_processing_outputs_repository.DocumentProcessingOutputsRepositoryTest.test_get_document_output_reconstructs_chunker_input"
+    },
+    {
+      "method": "test_document_processor",
+      "test": "unittest.loader._FailedTest.test_document_processor"
+    },
+    {
+      "method": "test_candidate_requires_exact_page_quote_and_uses_page_evidence",
+      "test": "test_financial_extraction.FinancialPageSelectionTests.test_candidate_requires_exact_page_quote_and_uses_page_evidence"
+    },
+    {
+      "method": "test_candidate_with_quote_not_found_on_page_is_discarded",
+      "test": "test_financial_extraction.FinancialPageSelectionTests.test_candidate_with_quote_not_found_on_page_is_discarded"
+    },
+    {
+      "method": "test_llm_cannot_publish_a_comparative_year_as_the_report_year_candidate",
+      "test": "test_financial_extraction.FinancialPageSelectionTests.test_llm_cannot_publish_a_comparative_year_as_the_report_year_candidate"
+    },
+    {
+      "method": "test_ocr_near_match_label_is_reviewable_but_native_and_ungrounded_values_fail",
+      "test": "test_financial_extraction.FinancialPageSelectionTests.test_ocr_near_match_label_is_reviewable_but_native_and_ungrounded_values_fail"
+    },
+    {
+      "method": "test_selects_ranked_financial_pages_and_caps_llm_work",
+      "test": "test_financial_extraction.FinancialPageSelectionTests.test_selects_ranked_financial_pages_and_caps_llm_work"
+    },
+    {
+      "method": "test_table_layout_alone_does_not_select_nonfinancial_pages",
+      "test": "test_financial_extraction.FinancialPageSelectionTests.test_table_layout_alone_does_not_select_nonfinancial_pages"
+    },
+    {
+      "method": "test_table_row_quote_can_use_year_from_column_header",
+      "test": "test_financial_extraction.FinancialPageSelectionTests.test_table_row_quote_can_use_year_from_column_header"
+    },
+    {
+      "method": "test_unexpected_json_shape_fails_closed_and_records_error",
+      "test": "test_financial_extraction.FinancialPageSelectionTests.test_unexpected_json_shape_fails_closed_and_records_error"
+    },
+    {
+      "method": "test_replay_and_reject_changed_scores",
+      "test": "test_fresh_reviewed_reranker.FreshReplayTest.test_replay_and_reject_changed_scores"
+    },
+    {
+      "method": "test_caption_image_rejects_payloads_over_provider_request_budget",
+      "test": "test_llm_provider.GroqProviderTest.test_caption_image_rejects_payloads_over_provider_request_budget"
+    },
+    {
+      "method": "test_caption_image_sends_bounded_base64_input_to_configured_vision_model",
+      "test": "test_llm_provider.GroqProviderTest.test_caption_image_sends_bounded_base64_input_to_configured_vision_model"
+    },
+    {
+      "method": "test_manual_metric_workflow",
+      "test": "unittest.loader._FailedTest.test_manual_metric_workflow"
+    },
+    {
+      "method": "test_metric_candidates",
+      "test": "unittest.loader._FailedTest.test_metric_candidates"
+    },
+    {
+      "method": "test_parser_preload",
+      "test": "unittest.loader._FailedTest.test_parser_preload"
+    },
+    {
+      "method": "test_pdf_upload_processing",
+      "test": "unittest.loader._FailedTest.test_pdf_upload_processing"
+    },
+    {
+      "method": "test_rag",
+      "test": "unittest.loader._FailedTest.test_rag"
+    },
+    {
+      "method": "test_ragas_judge",
+      "test": "unittest.loader._FailedTest.test_ragas_judge"
+    },
+    {
+      "method": "test_retrieval_callers",
+      "test": "unittest.loader._FailedTest.test_retrieval_callers"
+    },
+    {
+      "method": "test_full_text_metadata_location_and_tie_order_are_preserved",
+      "test": "test_retrieval_service.RetrievalServiceTest.test_full_text_metadata_location_and_tie_order_are_preserved"
+    },
+    {
+      "method": "test_latency_includes_embedding_search_and_mapping",
+      "test": "test_retrieval_service.RetrievalServiceTest.test_latency_includes_embedding_search_and_mapping"
+    },
+    {
+      "method": "test_real_repository_boundary_with_fake_cursor",
+      "test": "test_retrieval_service.RetrievalServiceTest.test_real_repository_boundary_with_fake_cursor"
+    },
+    {
+      "method": "test_retrieve_embeds_question_and_maps_repository_results",
+      "test": "test_retrieval_service.RetrievalServiceTest.test_retrieve_embeds_question_and_maps_repository_results"
+    },
+    {
+      "method": "test_commerce_scan_upload_path_scores_ocr_text_and_structured_table_separately",
+      "test": "test_scan_document_processing_evaluation.ScanDocumentProcessingEvaluationTest.test_commerce_scan_upload_path_scores_ocr_text_and_structured_table_separately"
+    },
+    {
+      "method": "test_degraded_image_only_scan_is_not_rasterized_a_second_time",
+      "test": "test_scan_document_processing_evaluation.ScanDocumentProcessingEvaluationTest.test_degraded_image_only_scan_is_not_rasterized_a_second_time"
+    },
+    {
+      "method": "test_shopee_inventory_grid_labels_match_the_registered_source_hash",
+      "test": "test_scan_document_processing_evaluation.ScanDocumentProcessingEvaluationTest.test_shopee_inventory_grid_labels_match_the_registered_source_hash"
+    },
+    {
+      "method": "test_section_title_backfill",
+      "test": "unittest.loader._FailedTest.test_section_title_backfill"
+    },
+    {
+      "method": "test_seed_ingestion",
+      "test": "unittest.loader._FailedTest.test_seed_ingestion"
+    },
+    {
+      "method": "test_seed_ingestion_pipeline",
+      "test": "unittest.loader._FailedTest.test_seed_ingestion_pipeline"
+    },
+    {
+      "method": "test_session_chat",
+      "test": "unittest.loader._FailedTest.test_session_chat"
+    },
+    {
+      "method": "test_accepts_aggregate_select_and_caps_limit",
+      "test": "test_sql_analytics.AnalyticsSqlSafetyTest.test_accepts_aggregate_select_and_caps_limit"
+    },
+    {
+      "method": "test_accepts_case_expressions_inside_allowlisted_aggregates",
+      "test": "test_sql_analytics.AnalyticsSqlSafetyTest.test_accepts_case_expressions_inside_allowlisted_aggregates"
+    },
+    {
+      "method": "test_agent_generates_sql_executes_it_and_returns_provenance",
+      "test": "test_sql_analytics.AnalyticsSqlSafetyTest.test_agent_generates_sql_executes_it_and_returns_provenance"
+    },
+    {
+      "method": "test_document_analytics_cites_visible_documents_not_unrelated_metric_rows",
+      "test": "test_sql_analytics.AnalyticsSqlSafetyTest.test_document_analytics_cites_visible_documents_not_unrelated_metric_rows"
+    },
+    {
+      "method": "test_empty_aggregate_result_with_null_evidence_is_reported_as_no_verified_data",
+      "test": "test_sql_analytics.AnalyticsSqlSafetyTest.test_empty_aggregate_result_with_null_evidence_is_reported_as_no_verified_data"
+    },
+    {
+      "method": "test_metric_result_cites_only_matching_metric_and_year_within_same_document",
+      "test": "test_sql_analytics.AnalyticsSqlSafetyTest.test_metric_result_cites_only_matching_metric_and_year_within_same_document"
+    },
+    {
+      "method": "test_repository_executes_inside_read_only_timeout_and_role_filtered_ctes",
+      "test": "test_sql_analytics.AnalyticsSqlSafetyTest.test_repository_executes_inside_read_only_timeout_and_role_filtered_ctes"
+    },
+    {
+      "method": "test_accepts_cte_aggregation_and_bind_parameters",
+      "test": "test_sql_generation.SQLValidationTest.test_accepts_cte_aggregation_and_bind_parameters"
+    },
+    {
+      "method": "test_accepts_extract_for_standard_date_grouping",
+      "test": "test_sql_generation.SQLValidationTest.test_accepts_extract_for_standard_date_grouping"
+    },
+    {
+      "method": "test_approved_customers_and_payments_tables_and_joins",
+      "test": "test_sql_generation.SQLValidationTest.test_approved_customers_and_payments_tables_and_joins"
+    },
+    {
+      "method": "test_date_column_parameters_are_converted_to_native_dates",
+      "test": "test_sql_generation.SQLValidationTest.test_date_column_parameters_are_converted_to_native_dates"
+    },
+    {
+      "method": "test_date_looking_text_filter_remains_a_string",
+      "test": "test_sql_generation.SQLValidationTest.test_date_looking_text_filter_remains_a_string"
+    },
+    {
+      "method": "test_accepts_detail_measure_and_duplicate_insensitive_aggregates",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_accepts_detail_measure_and_duplicate_insensitive_aggregates"
+    },
+    {
+      "method": "test_accepts_detail_measure_and_duplicate_insensitive_aggregates",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_accepts_detail_measure_and_duplicate_insensitive_aggregates"
+    },
+    {
+      "method": "test_accepts_detail_measure_and_duplicate_insensitive_aggregates",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_accepts_detail_measure_and_duplicate_insensitive_aggregates"
+    },
+    {
+      "method": "test_accepts_detail_measure_and_duplicate_insensitive_aggregates",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_accepts_detail_measure_and_duplicate_insensitive_aggregates"
+    },
+    {
+      "method": "test_accepts_detail_measure_and_duplicate_insensitive_aggregates",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_accepts_detail_measure_and_duplicate_insensitive_aggregates"
+    },
+    {
+      "method": "test_accepts_one_to_one_join",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_accepts_one_to_one_join"
+    },
+    {
+      "method": "test_join_order_does_not_change_measure_safety",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_join_order_does_not_change_measure_safety"
+    },
+    {
+      "method": "test_safe_precomputed_aggregate_remains_safe",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_safe_precomputed_aggregate_remains_safe"
+    },
+    {
+      "method": "test_summary_receives_enforced_units_and_limitations",
+      "test": "test_sql_metric_definitions.MetricAgentTest.test_summary_receives_enforced_units_and_limitations"
+    },
+    {
+      "method": "test_accepts_canonical_revenue_with_arbitrary_alias_and_transparent_cte",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_accepts_canonical_revenue_with_arbitrary_alias_and_transparent_cte"
+    },
+    {
+      "method": "test_accepts_canonical_revenue_with_arbitrary_alias_and_transparent_cte",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_accepts_canonical_revenue_with_arbitrary_alias_and_transparent_cte"
+    },
+    {
+      "method": "test_canonical_examples_for_every_existing_metric_pass_both_validators",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators"
+    },
+    {
+      "method": "test_canonical_examples_for_every_existing_metric_pass_both_validators",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators"
+    },
+    {
+      "method": "test_canonical_examples_for_every_existing_metric_pass_both_validators",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators"
+    },
+    {
+      "method": "test_canonical_examples_for_every_existing_metric_pass_both_validators",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators"
+    },
+    {
+      "method": "test_canonical_examples_for_every_existing_metric_pass_both_validators",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators"
+    },
+    {
+      "method": "test_canonical_examples_for_every_existing_metric_pass_both_validators",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators"
+    },
+    {
+      "method": "test_canonical_examples_for_every_existing_metric_pass_both_validators",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators"
+    },
+    {
+      "method": "test_canonical_examples_for_every_existing_metric_pass_both_validators",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators"
+    },
+    {
+      "method": "test_canonical_examples_for_every_existing_metric_pass_both_validators",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators"
+    },
+    {
+      "method": "test_canonical_examples_for_every_existing_metric_pass_both_validators",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators"
+    },
+    {
+      "method": "test_canonical_examples_for_every_existing_metric_pass_both_validators",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators"
+    },
+    {
+      "method": "test_canonical_examples_for_every_existing_metric_pass_both_validators",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators"
+    },
+    {
+      "method": "test_canonical_metric_label_cannot_disguise_another_formula",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_canonical_metric_label_cannot_disguise_another_formula"
+    },
+    {
+      "method": "test_metric_dimensions_and_snapshot_grain_are_enforced",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_metric_dimensions_and_snapshot_grain_are_enforced"
+    },
+    {
+      "method": "test_order_count_requires_distinct_orders",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_order_count_requires_distinct_orders"
+    },
+    {
+      "method": "test_regional_revenue_requires_the_delivered_filter",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_regional_revenue_requires_the_delivered_filter"
+    },
+    {
+      "method": "test_rejects_wrong_formula_source_or_missing_requested_metric",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_rejects_wrong_formula_source_or_missing_requested_metric"
+    },
+    {
+      "method": "test_rejects_wrong_formula_source_or_missing_requested_metric",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_rejects_wrong_formula_source_or_missing_requested_metric"
+    },
+    {
+      "method": "test_rejects_wrong_formula_source_or_missing_requested_metric",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_rejects_wrong_formula_source_or_missing_requested_metric"
+    },
+    {
+      "method": "test_rejects_wrong_formula_source_or_missing_requested_metric",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_rejects_wrong_formula_source_or_missing_requested_metric"
+    },
+    {
+      "method": "test_rejects_wrong_formula_source_or_missing_requested_metric",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_rejects_wrong_formula_source_or_missing_requested_metric"
+    },
+    {
+      "method": "test_supplementary_counts_do_not_replace_or_restrict_requested_metrics",
+      "test": "test_sql_metric_definitions.MetricEnforcementTest.test_supplementary_counts_do_not_replace_or_restrict_requested_metrics"
+    },
+    {
+      "method": "test_explicit_period_flow_comparison_keeps_sources_independent",
+      "test": "test_sql_semantic_contracts.CrossDomainInventoryTest.test_explicit_period_flow_comparison_keeps_sources_independent"
+    },
+    {
+      "method": "test_stockout_presence_uses_exists_without_multiplication",
+      "test": "test_sql_semantic_contracts.CrossDomainInventoryTest.test_stockout_presence_uses_exists_without_multiplication"
+    },
+    {
+      "method": "test_grouped_operands_can_join_the_unique_product_catalog_key",
+      "test": "test_sql_semantic_contracts.DerivedJoinContractTest.test_grouped_operands_can_join_the_unique_product_catalog_key"
+    },
+    {
+      "method": "test_independent_product_aggregates_are_safe",
+      "test": "test_sql_semantic_contracts.DerivedJoinContractTest.test_independent_product_aggregates_are_safe"
+    },
+    {
+      "method": "test_same_category_lineage_is_safe_but_unrelated_attributes_are_not",
+      "test": "test_sql_semantic_contracts.DerivedJoinContractTest.test_same_category_lineage_is_safe_but_unrelated_attributes_are_not"
+    },
+    {
+      "method": "test_unit_ratio_formula_and_each_period_are_verified",
+      "test": "test_sql_semantic_contracts.DerivedJoinContractTest.test_unit_ratio_formula_and_each_period_are_verified"
+    },
+    {
+      "method": "test_overloaded_date_function_parameter_is_typed",
+      "test": "test_sql_semantic_contracts.InterpretationRegressionTest.test_overloaded_date_function_parameter_is_typed"
+    },
+    {
+      "method": "test_failed_translation_falls_back_and_filters_hold",
+      "test": "test_translated_fresh_reranker.TranslatedReplayTest.test_failed_translation_falls_back_and_filters_hold"
+    },
+    {
+      "method": "test_full_saved_replay_rejects_wrong_rank",
+      "test": "test_translated_fresh_reranker.TranslatedReplayTest.test_full_saved_replay_rejects_wrong_rank"
+    },
+    {
+      "method": "test_upload_processing_flow",
+      "test": "unittest.loader._FailedTest.test_upload_processing_flow"
+    },
+    {
+      "method": "test_websocket_qa",
+      "test": "unittest.loader._FailedTest.test_websocket_qa"
+    },
+    {
+      "method": "test_replace_document_stores_normalized_output_separately",
+      "test": "test_document_processing_outputs_repository.DocumentProcessingOutputsRepositoryTest.test_replace_document_stores_normalized_output_separately"
+    },
+    {
+      "method": "test_expands_vietnamese_financial_metric_to_canonical_english_labels",
+      "test": "test_query_rewriting_evaluation.QueryRewritingEvaluationTest.test_expands_vietnamese_financial_metric_to_canonical_english_labels"
+    },
+    {
+      "method": "test_fixture_round_trip_preserves_all_fields",
+      "test": "test_retrieval_models.RetrievalModelsTest.test_fixture_round_trip_preserves_all_fields"
+    },
+    {
+      "method": "test_response_supports_no_results",
+      "test": "test_retrieval_models.RetrievalModelsTest.test_response_supports_no_results"
+    },
+    {
+      "method": "test_financial_analytics_must_keep_metric_and_year_dimensions",
+      "test": "test_sql_analytics.AnalyticsSqlSafetyTest.test_financial_analytics_must_keep_metric_and_year_dimensions"
+    },
+    {
+      "method": "test_passes_native_date_parameters_to_repository",
+      "test": "test_sql_generation.SQLGenerationAgentTest.test_passes_native_date_parameters_to_repository"
+    },
+    {
+      "method": "test_retries_validation_failure_with_feedback_for_generic_date_query",
+      "test": "test_sql_generation.SQLGenerationAgentTest.test_retries_validation_failure_with_feedback_for_generic_date_query"
+    },
+    {
+      "method": "test_count_star_requires_unambiguous_grain",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_count_star_requires_unambiguous_grain"
+    },
+    {
+      "method": "test_cte_does_not_hide_duplication",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_cte_does_not_hide_duplication"
+    },
+    {
+      "method": "test_distinct_cte_is_not_assumed_to_restore_measure_grain",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_distinct_cte_is_not_assumed_to_restore_measure_grain"
+    },
+    {
+      "method": "test_nested_cte_and_row_counts_cannot_hide_duplication",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_nested_cte_and_row_counts_cannot_hide_duplication"
+    },
+    {
+      "method": "test_nested_cte_and_row_counts_cannot_hide_duplication",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_nested_cte_and_row_counts_cannot_hide_duplication"
+    },
+    {
+      "method": "test_nested_cte_and_row_counts_cannot_hide_duplication",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_nested_cte_and_row_counts_cannot_hide_duplication"
+    },
+    {
+      "method": "test_rejects_duplicated_payment_measures",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_rejects_duplicated_payment_measures"
+    },
+    {
+      "method": "test_rejects_duplicated_payment_measures",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_rejects_duplicated_payment_measures"
+    },
+    {
+      "method": "test_rejects_duplicated_payment_measures",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_rejects_duplicated_payment_measures"
+    },
+    {
+      "method": "test_rejects_duplicated_payment_measures",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_rejects_duplicated_payment_measures"
+    },
+    {
+      "method": "test_rejects_duplicated_payment_measures",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_rejects_duplicated_payment_measures"
+    },
+    {
+      "method": "test_rejects_many_to_many_detail_join",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_rejects_many_to_many_detail_join"
+    },
+    {
+      "method": "test_scalar_subquery_aggregate_cannot_hide_raw_duplicated_rows",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_scalar_subquery_aggregate_cannot_hide_raw_duplicated_rows"
+    },
+    {
+      "method": "test_scalar_subquery_aggregate_cannot_hide_raw_duplicated_rows",
+      "test": "test_sql_join_duplication.JoinDuplicationTest.test_scalar_subquery_aggregate_cannot_hide_raw_duplicated_rows"
+    },
+    {
+      "method": "test_unsafe_plan_is_repaired_before_repository_execution",
+      "test": "test_sql_join_duplication.JoinRepairTest.test_unsafe_plan_is_repaired_before_repository_execution"
+    },
+    {
+      "method": "test_repaired_revenue_returns_the_fixture_total_not_the_average",
+      "test": "test_sql_metric_definitions.MetricAgentTest.test_repaired_revenue_returns_the_fixture_total_not_the_average"
+    },
+    {
+      "method": "test_wrong_metric_is_repaired_before_execution",
+      "test": "test_sql_metric_definitions.MetricAgentTest.test_wrong_metric_is_repaired_before_execution"
+    },
+    {
+      "method": "test_approved_bridge_replaces_an_unnecessary_join_clarification",
+      "test": "test_sql_semantic_contracts.CrossDomainAgentTest.test_approved_bridge_replaces_an_unnecessary_join_clarification"
+    },
+    {
+      "method": "test_comparison_reaches_shared_sql_path_and_readonly_repository",
+      "test": "test_sql_semantic_contracts.CrossDomainAgentTest.test_comparison_reaches_shared_sql_path_and_readonly_repository"
+    },
+    {
+      "method": "test_dropped_order_operand_cannot_execute",
+      "test": "test_sql_semantic_contracts.CrossDomainAgentTest.test_dropped_order_operand_cannot_execute"
+    },
+    {
+      "method": "test_transaction_question_does_not_pass_through_inventory_interpreter",
+      "test": "test_sql_semantic_refactor.CanonicalAgentTest.test_transaction_question_does_not_pass_through_inventory_interpreter"
+    },
+    {
+      "method": "test_context_for_inventory_and_orders_preserves_both_sources",
+      "test": "test_sql_semantic_refactor.SchemaContextTest.test_context_for_inventory_and_orders_preserves_both_sources"
+    },
+    {
+      "method": "test_return_context_keeps_keys_grain_and_excludes_web_traffic",
+      "test": "test_sql_semantic_refactor.SchemaContextTest.test_return_context_keeps_keys_grain_and_excludes_web_traffic"
+    },
+    {
+      "method": "test_sql_filters_are_present_in_all_three_searches",
+      "test": "test_translated_hybrid.TranslatedHybridTest.test_sql_filters_are_present_in_all_three_searches"
+    }
+  ]
+}

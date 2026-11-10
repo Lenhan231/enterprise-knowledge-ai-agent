@@ -1,0 +1,60 @@
+{
+  "baseline_date": "2026-11-02",
+  "resumed_date": "2026-11-03",
+  "cases": 30,
+  "metrics": {
+    "execution_accuracy": {
+      "yesterday": {
+        "mean": 0.21428571428571427,
+        "scored": 28,
+        "not_applicable": 2,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "today": {
+        "mean": 0.4642857142857143,
+        "scored": 28,
+        "not_applicable": 2,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "change_percentage_points": 25.0
+    },
+    "sql_semantic_equivalence": {
+      "yesterday": {
+        "mean": 0.14285714285714285,
+        "scored": 28,
+        "not_applicable": 2,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "today": {
+        "mean": 0.17857142857142858,
+        "scored": 28,
+        "not_applicable": 2,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "change_percentage_points": 3.5714285714285725
+    },
+    "numerical_accuracy": {
+      "yesterday": {
+        "mean": 0.22296085259048223,
+        "scored": 27,
+        "not_applicable": 3,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "today": {
+        "mean": 0.44814814814814813,
+        "scored": 27,
+        "not_applicable": 3,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "change_percentage_points": 22.51872955576659
+    }
+  },
+  "latest_provider_failures": 9,
+  "report_status": "stopped_by_user"
+}

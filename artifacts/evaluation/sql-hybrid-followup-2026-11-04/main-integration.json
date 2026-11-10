@@ -1,0 +1,9 @@
+{
+  "main_revision": "f7ec88590c1b25e264e355d11b02e3d4f13b0129",
+  "candidate_revision": "ff5de28",
+  "tests": 20,
+  "failures": [],
+  "errors": [],
+  "resolution": "Keep confirmation loop and session generation/subject checks plus 401 handling; align Node harness with session transcript and human-readable task labels.",
+  "additional_report_session_security_test": "test_report_main_reconciliation passes on this resolved source"
+}

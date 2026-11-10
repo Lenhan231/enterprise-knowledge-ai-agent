@@ -1,0 +1,60 @@
+{
+  "baseline": {
+    "cohort": "baseline",
+    "metrics": {
+      "execution_accuracy": {
+        "sum": 3.0,
+        "denominator": 3,
+        "not_applicable": 0
+      },
+      "sql_semantic_equivalence": {
+        "sum": 0.0,
+        "denominator": 3,
+        "not_applicable": 0
+      },
+      "numerical_accuracy": {
+        "sum": 2.0,
+        "denominator": 2,
+        "not_applicable": 1
+      }
+    },
+    "llm_calls": 4,
+    "provider_failed_attempts": 0,
+    "request_execution_complete": 3,
+    "latency": {
+      "p50": 3.666,
+      "p95": 9.1299
+    },
+    "unsupported_cases": 0,
+    "valid_refusal_rate": null
+  },
+  "candidate": {
+    "cohort": "candidate-final",
+    "metrics": {
+      "execution_accuracy": {
+        "sum": 3.0,
+        "denominator": 3,
+        "not_applicable": 0
+      },
+      "sql_semantic_equivalence": {
+        "sum": 1.0,
+        "denominator": 3,
+        "not_applicable": 0
+      },
+      "numerical_accuracy": {
+        "sum": 2.0,
+        "denominator": 2,
+        "not_applicable": 1
+      }
+    },
+    "llm_calls": 3,
+    "provider_failed_attempts": 0,
+    "request_execution_complete": 3,
+    "latency": {
+      "p50": 2.612,
+      "p95": 6.9940999999999995
+    },
+    "unsupported_cases": 0,
+    "valid_refusal_rate": null
+  }
+}

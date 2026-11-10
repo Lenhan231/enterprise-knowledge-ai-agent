@@ -1,0 +1,18 @@
+{
+  "tests": 223,
+  "failures": [],
+  "errors": [],
+  "skips": [],
+  "patterns": [
+    "test_sql_semantic_contracts.py",
+    "test_sql_semantic_refactor.py",
+    "test_sql_semantic_ablation.py",
+    "test_metric_mapping.py",
+    "test_sql_followups.py",
+    "test_sql_generation.py",
+    "test_sql_metric_definitions.py",
+    "test_sql_join_duplication.py",
+    "test_inventory_metric_dictionary.py",
+    "test_report*.py"
+  ]
+}

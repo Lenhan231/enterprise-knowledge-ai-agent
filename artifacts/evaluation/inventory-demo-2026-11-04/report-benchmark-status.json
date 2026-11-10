@@ -1,0 +1,11 @@
+{
+  "status": "deferred_by_user",
+  "instruction": "Do not continue Report benchmarking until explicitly requested.",
+  "generation_stopped": true,
+  "scoring_started": false,
+  "publish_report_results": false,
+  "local_checkpoints": [
+    "report-production",
+    "report-final"
+  ]
+}

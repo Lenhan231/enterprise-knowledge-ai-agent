@@ -1,0 +1,443 @@
+{
+  "retained_categories": {
+    "canonical_inventory": {
+      "baseline": {
+        "cases": 13,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 0.6923076923076923,
+            "scored": 13,
+            "not_applicable": 0,
+            "errors": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 0.0,
+            "scored": 13,
+            "not_applicable": 0,
+            "errors": 0
+          },
+          "numerical_accuracy": {
+            "mean": 0.6923076923076923,
+            "scored": 13,
+            "not_applicable": 0,
+            "errors": 0
+          }
+        },
+        "executed": 11,
+        "llm_calls": 12,
+        "provider_failures": 0,
+        "provider_failed_attempts": 0,
+        "latency": {
+          "p50": 2.069,
+          "p95": 2.3971999999999998
+        }
+      },
+      "hybrid_evidence": "Exact SQL/parameter/result/status/answer replay; baseline metrics inherited, not freshly rescored",
+      "matched": 13
+    },
+    "inventory_diagnostics": {
+      "baseline": {
+        "cases": 4,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 1.0,
+            "scored": 4,
+            "not_applicable": 0,
+            "errors": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 0.75,
+            "scored": 4,
+            "not_applicable": 0,
+            "errors": 0
+          },
+          "numerical_accuracy": {
+            "mean": 1.0,
+            "scored": 2,
+            "not_applicable": 2,
+            "errors": 0
+          }
+        },
+        "executed": 4,
+        "llm_calls": 9,
+        "provider_failures": 0,
+        "provider_failed_attempts": 0,
+        "latency": {
+          "p50": 2.885,
+          "p95": 4.551849999999999
+        }
+      },
+      "hybrid_evidence": "Exact SQL/parameter/result/status/answer replay; baseline metrics inherited, not freshly rescored",
+      "matched": 4
+    },
+    "commerce_analytics": {
+      "baseline": {
+        "cases": 8,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 1.0,
+            "scored": 8,
+            "not_applicable": 0,
+            "errors": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 0.625,
+            "scored": 8,
+            "not_applicable": 0,
+            "errors": 0
+          },
+          "numerical_accuracy": {
+            "mean": 1.0,
+            "scored": 7,
+            "not_applicable": 1,
+            "errors": 0
+          }
+        },
+        "executed": 8,
+        "llm_calls": 10,
+        "provider_failures": 0,
+        "provider_failed_attempts": 0,
+        "latency": {
+          "p50": 2.4455,
+          "p95": 2.91885
+        }
+      },
+      "hybrid_evidence": "Exact SQL/parameter/result/status/answer replay; baseline metrics inherited, not freshly rescored",
+      "matched": 8
+    },
+    "cross_domain": {
+      "baseline": {
+        "cases": 3,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 1.0,
+            "scored": 3,
+            "not_applicable": 0,
+            "errors": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 0.0,
+            "scored": 3,
+            "not_applicable": 0,
+            "errors": 0
+          },
+          "numerical_accuracy": {
+            "mean": 1.0,
+            "scored": 2,
+            "not_applicable": 1,
+            "errors": 0
+          }
+        },
+        "executed": 3,
+        "llm_calls": 4,
+        "provider_failures": 0,
+        "provider_failed_attempts": 0,
+        "latency": {
+          "p50": 3.152,
+          "p95": 3.5912
+        }
+      },
+      "hybrid_evidence": "Exact SQL/parameter/result/status/answer replay; baseline metrics inherited, not freshly rescored",
+      "matched": 3
+    },
+    "unsupported": {
+      "baseline": {
+        "cases": 2,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": null,
+            "scored": 0,
+            "not_applicable": 2,
+            "errors": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": null,
+            "scored": 0,
+            "not_applicable": 2,
+            "errors": 0
+          },
+          "numerical_accuracy": {
+            "mean": null,
+            "scored": 0,
+            "not_applicable": 2,
+            "errors": 0
+          }
+        },
+        "executed": 0,
+        "llm_calls": 0,
+        "provider_failures": 0,
+        "provider_failed_attempts": 0,
+        "latency": {
+          "p50": 0.6645,
+          "p95": 1.2616500000000002
+        }
+      },
+      "hybrid_evidence": "Exact SQL/parameter/result/status/answer replay; baseline metrics inherited, not freshly rescored",
+      "matched": 2
+    }
+  },
+  "fresh_field_categories": {
+    "inventory_metadata": {
+      "production": {
+        "cases": 2,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 0.5,
+            "scored": 2,
+            "not_applicable": 0,
+            "errors": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 0.5,
+            "scored": 2,
+            "not_applicable": 0,
+            "errors": 0
+          },
+          "numerical_accuracy": {
+            "mean": 0.0,
+            "scored": 1,
+            "not_applicable": 1,
+            "errors": 0
+          }
+        },
+        "executed": 1,
+        "llm_calls": 5,
+        "provider_failures": 0,
+        "provider_failed_attempts": 0,
+        "latency": {
+          "p50": 3.5785,
+          "p95": 4.481649999999999
+        }
+      },
+      "hybrid": {
+        "cases": 2,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 1.0,
+            "scored": 2,
+            "not_applicable": 0,
+            "errors": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 1.0,
+            "scored": 2,
+            "not_applicable": 0,
+            "errors": 0
+          },
+          "numerical_accuracy": {
+            "mean": null,
+            "scored": 0,
+            "not_applicable": 2,
+            "errors": 0
+          }
+        },
+        "executed": 2,
+        "llm_calls": 2,
+        "provider_failures": 0,
+        "provider_failed_attempts": 0,
+        "latency": {
+          "p50": 2.936,
+          "p95": 3.8963000000000005
+        }
+      }
+    },
+    "product_attributes": {
+      "production": {
+        "cases": 1,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 1.0,
+            "scored": 1,
+            "not_applicable": 0,
+            "errors": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 1.0,
+            "scored": 1,
+            "not_applicable": 0,
+            "errors": 0
+          },
+          "numerical_accuracy": {
+            "mean": null,
+            "scored": 0,
+            "not_applicable": 1,
+            "errors": 0
+          }
+        },
+        "executed": 1,
+        "llm_calls": 1,
+        "provider_failures": 0,
+        "provider_failed_attempts": 0,
+        "latency": {
+          "p50": 1.74,
+          "p95": null
+        }
+      },
+      "hybrid": {
+        "cases": 1,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 1.0,
+            "scored": 1,
+            "not_applicable": 0,
+            "errors": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 1.0,
+            "scored": 1,
+            "not_applicable": 0,
+            "errors": 0
+          },
+          "numerical_accuracy": {
+            "mean": null,
+            "scored": 0,
+            "not_applicable": 1,
+            "errors": 0
+          }
+        },
+        "executed": 1,
+        "llm_calls": 1,
+        "provider_failures": 0,
+        "provider_failed_attempts": 0,
+        "latency": {
+          "p50": 1.791,
+          "p95": null
+        }
+      }
+    },
+    "product_numeric": {
+      "production": {
+        "cases": 3,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 0.6666666666666666,
+            "scored": 3,
+            "not_applicable": 0,
+            "errors": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 0.6666666666666666,
+            "scored": 3,
+            "not_applicable": 0,
+            "errors": 0
+          },
+          "numerical_accuracy": {
+            "mean": 0.6666666666666666,
+            "scored": 3,
+            "not_applicable": 0,
+            "errors": 0
+          }
+        },
+        "executed": 2,
+        "llm_calls": 4,
+        "provider_failures": 0,
+        "provider_failed_attempts": 0,
+        "latency": {
+          "p50": 1.907,
+          "p95": 1.9268
+        }
+      },
+      "hybrid": {
+        "cases": 3,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 1.0,
+            "scored": 3,
+            "not_applicable": 0,
+            "errors": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 1.0,
+            "scored": 3,
+            "not_applicable": 0,
+            "errors": 0
+          },
+          "numerical_accuracy": {
+            "mean": 1.0,
+            "scored": 3,
+            "not_applicable": 0,
+            "errors": 0
+          }
+        },
+        "executed": 3,
+        "llm_calls": 3,
+        "provider_failures": 0,
+        "provider_failed_attempts": 0,
+        "latency": {
+          "p50": 1.799,
+          "p95": 1.8710000000000002
+        }
+      }
+    }
+  },
+  "fresh_fields_total": {
+    "production": {
+      "cases": 6,
+      "metrics": {
+        "execution_accuracy": {
+          "mean": 0.6666666666666666,
+          "scored": 6,
+          "not_applicable": 0,
+          "errors": 0
+        },
+        "sql_semantic_equivalence": {
+          "mean": 0.6666666666666666,
+          "scored": 6,
+          "not_applicable": 0,
+          "errors": 0
+        },
+        "numerical_accuracy": {
+          "mean": 0.5,
+          "scored": 4,
+          "not_applicable": 2,
+          "errors": 0
+        }
+      },
+      "executed": 4,
+      "llm_calls": 10,
+      "provider_failures": 0,
+      "provider_failed_attempts": 0,
+      "latency": {
+        "p50": 1.9180000000000001,
+        "p95": 4.0802499999999995
+      }
+    },
+    "hybrid": {
+      "cases": 6,
+      "metrics": {
+        "execution_accuracy": {
+          "mean": 1.0,
+          "scored": 6,
+          "not_applicable": 0,
+          "errors": 0
+        },
+        "sql_semantic_equivalence": {
+          "mean": 1.0,
+          "scored": 6,
+          "not_applicable": 0,
+          "errors": 0
+        },
+        "numerical_accuracy": {
+          "mean": 1.0,
+          "scored": 3,
+          "not_applicable": 3,
+          "errors": 0
+        }
+      },
+      "executed": 6,
+      "llm_calls": 6,
+      "provider_failures": 0,
+      "provider_failed_attempts": 0,
+      "latency": {
+        "p50": 1.834,
+        "p95": 3.4720000000000004
+      }
+    }
+  },
+  "notes": [
+    "Retained-case metrics are existing baseline scores verified by replay, not a new 30-case provider/judge benchmark.",
+    "Fresh field references are separately frozen author-reviewed fixtures; original references unchanged.",
+    "Metadata fields have no numerical applicability; inherited scorer gives failed supported cases zero before checking applicability.",
+    "A later numeric-magnitude guard was verified by six exact real-DB field replays and adversarial tests; no new provider/latency claim."
+  ]
+}

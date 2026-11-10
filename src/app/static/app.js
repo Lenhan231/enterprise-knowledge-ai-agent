@@ -757,11 +757,6 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
             : source.source_type === "commerce_sql" ? `SQL aggregate · ${(source.source_tables || []).join(", ")}`
               : source.source_type === "commerce_schema" ? `Schema coverage · ${(source.source_tables || []).join(", ")}`
               : Number.isInteger(source.chunk_index) ? `Passage ${source.chunk_index + 1}` : "Reference";
-          const relevanceScore = Number.isFinite(source.score) ? source.score * 100 : null;
-          const scoreClass = relevanceScore && relevanceScore >= 80 ? "high" : relevanceScore && relevanceScore >= 60 ? "med" : "low";
-          const relevanceBadge = relevanceScore !== null
-            ? `<span class="citation-relevance-meter ${scoreClass}">Relevance: ${relevanceScore.toFixed(1)}%</span>`
-            : "";
           const referenceScope = source.reference_applicability
             ? `<p class="citation-scope"><strong>Source scope:</strong> ${escapeHtml(source.reference_applicability)}</p>`
             : "";
@@ -797,7 +792,6 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
               ${sqlTrace}
               <div class="citation-foot">
                 <span>${escapeHtml(publisher)}${source.evidence_class ? ` · ${escapeHtml(source.evidence_class.replaceAll("_", " "))}` : ""}</span>
-                ${relevanceBadge}
                 ${link}
               </div>
             </article>`;

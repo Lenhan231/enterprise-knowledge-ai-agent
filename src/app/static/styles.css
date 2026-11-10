@@ -221,13 +221,6 @@
 
 .citation{padding:14px 16px;border-radius:10px;border:1px solid #dbe4ee;transition:all .2s ease;background:#fff}
 .citation:hover{border-color:#94b8e7;box-shadow:0 4px 14px rgba(20,50,90,.06)}
-.citation-relevance-meter{display:inline-flex;align-items:center;gap:5px;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:700}
-.citation-relevance-meter.high{background:#e3f5eb;color:#1a693f}
-.citation-relevance-meter.med{background:#e8f1fc;color:#1857b2}
-.citation-relevance-meter.low{background:#fff3de;color:#87530c}
-[data-theme="dark"] .citation-relevance-meter.high{background:#112d1f;color:#49ce88}
-[data-theme="dark"] .citation-relevance-meter.med{background:#142740;color:#78adfc}
-[data-theme="dark"] .citation-relevance-meter.low{background:#2f220d;color:#e8a743}
 
 /* FINANCIAL CARDS UPGRADE */
 .financial-kpis{gap:14px}

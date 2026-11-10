@@ -1,18 +1,67 @@
 import hashlib
 import inspect
+import json
+import logging
+import os
 import re
+import time
 import unicodedata
+from itertools import zip_longest
+from typing import Annotated
 
-from pydantic import BaseModel, Field
+from openai import APIError
+from pydantic import BaseModel, Field, StringConstraints, field_validator
 
 from core.llm.groq_provider import GroqProvider
+from core.rag.claim_verification import VerificationOutcome, VERIFICATION_UNAVAILABLE_ANSWER, verify_answer
 from core.latency import measure
-from core.prompts.Knowledge import ENTERPRISE_ASSISTANT_PROMPT, INSUFFICIENT_ANSWER, NO_MATCHING_DOCUMENTS_ANSWER
+from core.agents.runtime import deadline, remaining
+from core.prompts.knowledge_search import SEARCH_PLAN_PROMPT, SEARCH_PLAN_PROMPT_THREE
+from core.prompts.Knowledge import COMPLETENESS_RULE, ENTERPRISE_ASSISTANT_PROMPT, INSUFFICIENT_ANSWER, NO_MATCHING_DOCUMENTS_ANSWER
 from core.retrieval.retrieval import RetrievalRequest
 from core.retrieval.retrieval_service import RetrievalService
 
 
-MAX_CONTEXT_CHARS = 24_000
+# Groq's on-demand tier rejects one request over 7,000 input tokens (~25k Vietnamese chars incl. the prompt);
+# with top-k 8 plus neighbour passages set KNOWLEDGE_CONTEXT_MAX_CHARS=20000.
+MAX_CONTEXT_CHARS = int(os.getenv("KNOWLEDGE_CONTEXT_MAX_CHARS", "24000"))
+_log = logging.getLogger(__name__)
+
+
+class SearchPlan(BaseModel):
+    model_config = {"extra": "forbid"}
+    questions: list[Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=4000)]] = Field(min_length=1, max_length=3)
+
+    @field_validator("questions")
+    @classmethod
+    def distinct_questions(cls, questions):
+        if len({q.casefold() for q in questions}) != len(questions):
+            raise ValueError("Search questions must be distinct")
+        return questions
+
+
+def _context_key(context: dict):
+    return context.get("chunk_id") or (context["metadata"]["document_id"], context["chunk_index"])
+
+
+def _merge_contexts(groups: list[list[dict]]) -> list[dict]:
+    """Interleave branches, deduplicate and keep complete chunks within budget."""
+    merged, seen = [], set()
+    for row in zip_longest(*groups):
+        for context in row:
+            if context is None:
+                continue
+            key = _context_key(context)
+            if key in seen:
+                continue
+            candidate = {**context, "source_id": f"S{len(merged) + 1}"}
+            if len(_format_contexts([*merged, candidate])) > MAX_CONTEXT_CHARS:
+                continue
+            merged.append(candidate)
+            seen.add(key)
+            if len(merged) == 10:
+                return merged
+    return merged
 CITATION_PATTERN = re.compile(
     r"\[\s*(?:(?:source|nguồn)\s*:\s*)?([A-Z]\d+)\s*\]"
     r"|【\s*(?:(?:source|nguồn)\s*:\s*)?([A-Z]\d+)\s*】",
@@ -42,6 +91,8 @@ class RAGResult(BaseModel):
     source_ids: list[str] = Field(default_factory=list)
     insufficient_context: bool = False
     prompt_sha256: str | None = None
+    verification: VerificationOutcome | None = None
+    withheld_draft: str | None = None  # the generated answer that was not shown; for diagnosis only, never returned to users
 
 
 def _format_contexts(contexts: list[dict]) -> str:
@@ -130,7 +181,7 @@ class RAGService:
     def generate_answer(
         self,
         question: str,
-        limit: int = 5,
+        limit: int | None = None,
         company: str | None = None,
         roles: list[str] | None = None,
         retrieval_method: str = "translated_hybrid_rerank",
@@ -138,7 +189,32 @@ class RAGService:
         document_ids: list[str] | None = None,
         query_language: str = "auto",
         document_languages: dict[str, str] | None = None,
+        decompose: bool = False,
+        verify_claims: bool = False,
     ) -> RAGResult:
+        if limit is None:
+            limit = int(os.getenv("KNOWLEDGE_TOP_K", "5"))
+        if decompose:
+            questions = self._search_questions(question)
+            groups = []
+            for query in questions:
+                remaining()
+                groups.append(self.retrieve_contexts(
+                    # A single (unsplit) search keeps the full top-k; split searches share the merged budget.
+                    query, limit=limit if len(questions) == 1 else min(limit, 5), company=company, roles=roles,
+                    retrieval_method=retrieval_method, metadata_filter=metadata_filter,
+                    document_ids=document_ids, query_language=query_language,
+                    document_languages=document_languages,
+                ))
+            contexts = _merge_contexts(groups)
+            selected = {_context_key(item) for item in contexts}
+            missing_branch = len(questions) > 1 and any(
+                not selected.intersection(_context_key(item) for item in group) for group in groups
+            )
+            if any(groups) and (not contexts or missing_branch):
+                return RAGResult(answer=INSUFFICIENT_ANSWER, contexts=contexts, insufficient_context=True)
+            remaining()
+            return self.generate_from_contexts(question, contexts, verify_claims=verify_claims)
         contexts = self.retrieve_contexts(
             question,
             limit=limit,
@@ -150,13 +226,34 @@ class RAGService:
             query_language=query_language,
             document_languages=document_languages,
         )
-        return self.generate_from_contexts(question, contexts)
+        return self.generate_from_contexts(question, contexts, verify_claims=verify_claims)
 
-    def generate_from_contexts(self, question: str, contexts: list[dict]) -> RAGResult:
+    def _search_questions(self, question: str) -> list[str]:
+        token = deadline.set(time.monotonic() + remaining(15))
+        try:
+            most = 3 if os.getenv("KNOWLEDGE_MULTIQUERY_MAX", "2") == "3" else 2
+            prompt = SEARCH_PLAN_PROMPT_THREE if most == 3 else SEARCH_PLAN_PROMPT
+            with measure("knowledge_search_planning"):
+                raw = self.llm.generate(
+                    prompt.format(question=json.dumps(question, ensure_ascii=False)),
+                    max_output_tokens=256,
+                )
+            plan = SearchPlan.model_validate_json(raw)
+            return plan.questions if 2 <= len(plan.questions) <= most else [question]
+        except (APIError, ValueError, RuntimeError) as error:
+            _log.warning("Knowledge search plan fallback: %s", type(error).__name__)
+            return [question]
+        finally:
+            deadline.reset(token)
+
+    def generate_from_contexts(self, question: str, contexts: list[dict], *, verify_claims: bool = False) -> RAGResult:
         if not contexts:
             return RAGResult(answer=NO_MATCHING_DOCUMENTS_ANSWER, insufficient_context=True)
 
-        prompt = ENTERPRISE_ASSISTANT_PROMPT.format(
+        template = ENTERPRISE_ASSISTANT_PROMPT
+        if os.getenv("KNOWLEDGE_COMPLETENESS_RULE", "0") == "1":
+            template = template.replace("\n\nNguồn:\n", "\n" + COMPLETENESS_RULE + "\nNguồn:\n", 1)
+        prompt = template.format(
             context=_format_contexts(contexts)[:MAX_CONTEXT_CHARS],
             question=question,
         )
@@ -173,22 +270,29 @@ class RAGService:
             )
 
         source_ids = extract_source_ids(answer)
-        if not source_ids:
-            raise ValueError(f"Generated answer contains no source citations. Answer: {answer}")
+        unknown_source_ids = set(source_ids) - {context["source_id"] for context in contexts}
+        if not source_ids or unknown_source_ids:
+            # Still fail closed, but with the verifier's user-facing message instead of a 503.
+            reason = "unknown_citation" if unknown_source_ids else "uncited_answer"
+            _log.warning("Knowledge answer withheld: %s %s", reason, sorted(unknown_source_ids))
+            return RAGResult(answer=VERIFICATION_UNAVAILABLE_ANSWER, contexts=contexts, prompt_sha256=prompt_sha256,
+                             withheld_draft=answer,
+                             verification=VerificationOutcome(status="unavailable", reason=reason))
 
-        allowed_source_ids = {context["source_id"] for context in contexts}
-        unknown_source_ids = set(source_ids) - allowed_source_ids
-        if unknown_source_ids:
-            raise ValueError(
-                "Generated answer contains unknown citations: "
-                f"{sorted(unknown_source_ids)}"
-            )
+        verification = None
+        if verify_claims:
+            cited_contexts = [c for c in contexts if c["source_id"] in source_ids]
+            verification = verify_answer(self.llm, question, answer, cited_contexts)
+            if verification.status != "supported":
+                return RAGResult(answer=VERIFICATION_UNAVAILABLE_ANSWER, contexts=contexts, withheld_draft=answer,
+                                 prompt_sha256=prompt_sha256, verification=verification)
 
         return RAGResult(
             answer=answer,
             contexts=contexts,
             source_ids=source_ids,
             prompt_sha256=prompt_sha256,
+            verification=verification,
         )
 
     def close(self) -> None:

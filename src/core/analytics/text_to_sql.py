@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import os
 from dataclasses import dataclass
 from datetime import date
 from typing import Any
@@ -12,6 +13,7 @@ from sqlglot import exp, parse
 from sqlglot.errors import ParseError, TokenError
 
 from core.analytics.metric_ontology import get_metric_definition, resolve_metric_names
+from core.analytics.invoices import is_invoice_question, validate_invoice_currency
 from core.analytics.join_validation import PRIMARY_KEYS, validate_join_aggregations, approved_derived_join, column_origin
 from core.analytics.metric_validation import _single_snapshot
 from sqlglot.optimizer.scope import Scope, traverse_scope
@@ -20,6 +22,13 @@ from core.prompts.sql import SQL_GENERATION_PROMPT, SQL_REPAIR_PROMPT, INVENTORY
 
 MAX_RESULT_ROWS = 200
 APPROVED_COLUMNS: dict[str, frozenset[str]] = {
+    "commerce.invoices": frozenset({
+        "invoice_id", "source_filename", "invoice_no", "invoice_date", "buyer", "seller",
+        "subtotal", "tax_amount", "total_amount", "currency",
+    }),
+    "commerce.invoice_items": frozenset({
+        "invoice_id", "line_no", "description", "unit", "quantity", "unit_price", "amount",
+    }),
     "commerce.sales": frozenset({"date", "revenue", "cogs"}),
     "commerce.orders": frozenset({
         "order_id", "order_date", "customer_id", "zip", "order_status", "payment_method", "device_type", "order_source",
@@ -56,6 +65,7 @@ def _edge(left_table: str, left_column: str, right_table: str, right_column: str
 
 
 APPROVED_JOINS = frozenset({
+    _edge("commerce.invoices", "invoice_id", "commerce.invoice_items", "invoice_id"),
     _edge("commerce.customers", "customer_id", "commerce.orders", "customer_id"),
     _edge("commerce.customers", "zip", "commerce.geography", "zip"),
     _edge("commerce.orders", "order_id", "commerce.payments", "order_id"),
@@ -72,6 +82,7 @@ APPROVED_JOINS = frozenset({
     _edge("commerce.shipments", "order_id", "commerce.orders", "order_id"),
 })
 APPROVED_DATE_COLUMNS = frozenset({
+    ("commerce.invoices", "invoice_date"),
     ("commerce.customers", "signup_date"),
     ("commerce.inventory", "snapshot_date"),
     ("commerce.orders", "order_date"),
@@ -82,6 +93,15 @@ APPROVED_DATE_COLUMNS = frozenset({
     ("commerce.shipments", "ship_date"), ("commerce.shipments", "delivery_date"),
     ("commerce.web_traffic", "date"),
 })
+
+INVENTORY_SOURCES = frozenset({'commerce.inventory', 'commerce.products'})
+
+
+def inventory_scope_enabled():
+    setting = os.getenv('SQL_INVENTORY_ONLY', 'false').strip().casefold()
+    if setting not in {'true', 'false'}:
+        raise ValueError('SQL_INVENTORY_ONLY must be true or false')
+    return setting == 'true'
 
 APPROVED_FUNCTIONS = frozenset({
     "ABS", "AND", "AVG", "CASE", "IF", "CAST", "CEIL", "COALESCE", "COUNT", "DATE_PART", "DATE_TRUNC", "EXTRACT", "FLOOR", "GREATEST",
@@ -124,7 +144,7 @@ def _output_columns(select: exp.Select) -> frozenset[str]:
     return frozenset(names)
 
 
-def validate_commerce_sql(sql: str) -> ValidatedSQL:
+def validate_commerce_sql(sql: str, *, allowed_sources=None) -> ValidatedSQL:
     """Validate one bounded SELECT, including its nested SELECTs and CTEs."""
     try:
         statements = parse(sql, read="postgres")
@@ -250,6 +270,7 @@ def validate_commerce_sql(sql: str) -> ValidatedSQL:
             raise SQLValidationError('JOIN requires an approved relationship in addition to any date filters.')
 
     validate_join_aggregations(tree, SQLValidationError)
+    validate_invoice_currency(tree, SQLValidationError)
 
     def owning_select(node):
         while node is not None and not isinstance(node, exp.Select):
@@ -276,6 +297,8 @@ def validate_commerce_sql(sql: str) -> ValidatedSQL:
     if limit is None or not str(value).isdigit() or not 1 <= int(value) <= MAX_RESULT_ROWS:
         raise SQLValidationError(f"The final SELECT needs LIMIT 1..{MAX_RESULT_ROWS}.")
 
+    if allowed_sources is not None and not set(sources) <= set(allowed_sources):
+        raise SQLValidationError('SQL references sources outside the configured inventory scope.')
     return ValidatedSQL(sql=sql, sources=tuple(dict.fromkeys(sources)))
 
 
@@ -377,6 +400,9 @@ def _date_parameter_indexes(sql: str) -> set[int]:
         for table in tree.find_all(exp.Table) if table.db
     }
     indexes = set()
+    for cast in tree.find_all(exp.Cast):
+        if cast.to.this == exp.DataType.Type.DATE and isinstance(cast.this, exp.Parameter):
+            indexes.add(int(cast.this.this.this))
     for predicate in tree.find_all(exp.In):
         if isinstance(predicate.this, exp.Column) and (
                 table_sources.get(predicate.this.table.casefold()), predicate.this.name.casefold()) in APPROVED_DATE_COLUMNS:
@@ -398,6 +424,8 @@ def _date_parameter_indexes(sql: str) -> set[int]:
 
 def relevant_schema_tables(question, definitions):
     """Select prompt context only; authorization always uses the full backend allowlist."""
+    if is_invoice_question(question) or any(d.get('domain') == 'invoices' for d in definitions.values()):
+        return {'commerce.invoices', 'commerce.invoice_items'}
     text = question.casefold().replace('_', ' ')
     tables = {table for definition in definitions.values()
               for table in re.findall(r'commerce\.\w+', definition['source'])}
@@ -439,7 +467,7 @@ def approved_join_path(tables):
 
 def build_sql_prompt(
     question: str, *, validation_error: str | None = None, previous_response: str | None = None,
-    metric_names: set[str] | None = None, interpretation: dict | None = None,
+    metric_names: set[str] | None = None, interpretation: dict | None = None, allowed_sources=None,
 ) -> str:
     metrics = sorted(resolve_metric_names(question) if metric_names is None else metric_names)
     definitions = {name: get_metric_definition(name) for name in metrics}
@@ -449,6 +477,8 @@ def build_sql_prompt(
         definitions = {name: {**d,'formula':stored_fields[name],'aggregation':'value'} for name,d in definitions.items()}
     inventory = any(definition.get('domain') == 'inventory_management' for definition in definitions.values())
     tables = relevant_schema_tables(question, definitions)
+    if allowed_sources is not None:
+        tables = (tables & set(allowed_sources)) or set(allowed_sources)
     prompt_columns = {table: set(columns) for table, columns in APPROVED_COLUMNS.items() if table in tables}
     if inventory:
         prompt_columns['commerce.inventory'] -= {'year', 'month', 'category', 'segment', 'product_name'}

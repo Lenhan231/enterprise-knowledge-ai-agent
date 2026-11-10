@@ -24,6 +24,24 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(_supported_numbers('1.32 products [S1]', inputs, 'Count products'))
         self.assertFalse(_supported_numbers('1320e6 products [S1]', inputs, 'Count products'))
 
+    def test_numeric_grounding_accepts_exactly_checked_results_with_sourced_operands(self):
+        inputs = [{'data': {}, 'evidence': [{'content': 'Mỗi bữa tối đa 300.000 VND.'}]}]
+        question = '4 nhân viên ăn một bữa, tối đa bao nhiêu?'
+        self.assertTrue(_supported_numbers('4 × 300.000 = 1.200.000 VND [S1].', inputs, question))
+        self.assertFalse(_supported_numbers('4 × 300.000 = 1.300.000 VND [S1].', inputs, question))  # wrong result
+        self.assertFalse(_supported_numbers('5 × 300.000 = 1.500.000 VND [S1].', inputs, question))  # unsourced operand
+        self.assertFalse(_supported_numbers('Tổng 1.200.000 VND [S1].', inputs, question))  # no checked equality
+
+    def test_numeric_grounding_expands_shorthand_and_skips_units_between_operands(self):
+        inputs = [{'data': {}, 'evidence': [{'content': 'Đến 5.000.000 VND do quản lý trực tiếp duyệt.'}]}]
+        question = 'Báo giá 4.000.000 VND cộng vận chuyển 1.500.000 VND, 3 lô mỗi lô 18 triệu, mua đồ 4tr5'
+        self.assertTrue(_supported_numbers('Mỗi lô 18.000.000 VND [S1].', inputs, question))
+        self.assertTrue(_supported_numbers('Khoản 4.500.000 VND [S1].', inputs, question))
+        self.assertTrue(_supported_numbers('3 × 18.000.000 = 54.000.000 VND [S1].', inputs, question))
+        self.assertTrue(_supported_numbers('4.000.000 VND + 1.500.000 VND = 5.500.000 VND [S1].', inputs, question))
+        self.assertFalse(_supported_numbers('4.000.000 VND + 1.500.000 VND = 5.600.000 VND [S1].', inputs, question))
+        self.assertFalse(_supported_numbers('Mỗi lô 19.000.000 VND [S1].', inputs, question))
+
     async def test_knowledge_fails_closed_for_missing_or_empty_document_scope(self):
         rag = Mock()
         agent = KnowledgeAgent(rag)
@@ -36,7 +54,7 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
     async def test_knowledge_insufficient_context_is_explicit_empty_outcome(self):
         rag = Mock()
         rag.generate_answer.return_value = type('R', (), {'answer': 'No evidence', 'contexts': [],
-                                                         'source_ids': [], 'insufficient_context': True})()
+                                                         'source_ids': [], 'insufficient_context': True, 'verification': None})()
         result = await KnowledgeAgent(rag).run(AgentRequest(question='policy', identity=IDENTITY))
         self.assertFalse(result.metadata['ok'])
         self.assertTrue(result.metadata['insufficient_context'])

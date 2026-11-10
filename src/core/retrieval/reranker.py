@@ -6,8 +6,12 @@ from threading import Lock
 from time import perf_counter
 from core.latency import measure
 
-MODEL_ID = "BAAI/bge-reranker-v2-m3"
-REVISION = "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+MODELS = {  # name -> (model id, pinned revision, max pair tokens)
+    "bge": ("BAAI/bge-reranker-v2-m3", "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e", 1024),
+    # ~5x smaller; VietStyle 80-case top-5 evidence 182 vs 183 for BGE, ~1.5x faster than BGE int8 on CPU.
+    "mminilm": ("cross-encoder/mmarco-mMiniLMv2-L12-H384-v1", "1427fd652930e4ba29e8149678df786c240d8825", 512),
+}
+MODEL_ID, REVISION, MAX_LENGTH = MODELS[os.getenv("RERANKER_MODEL", "bge")]
 _INFERENCE_LOCK = Lock()
 
 
@@ -15,12 +19,19 @@ _INFERENCE_LOCK = Lock()
 def _load_model():
     import torch
     from sentence_transformers import CrossEncoder
-    return CrossEncoder(
-        MODEL_ID, revision=REVISION, max_length=1024,
-        device=os.getenv("RERANKER_DEVICE", "cpu"),
+    quantize, device = os.getenv("RERANKER_QUANTIZE", ""), os.getenv("RERANKER_DEVICE", "cpu")
+    if quantize not in ("", "int8") or (quantize and device != "cpu"):
+        raise ValueError("RERANKER_QUANTIZE supports only int8 on cpu")
+    model = CrossEncoder(
+        MODEL_ID, revision=REVISION, max_length=MAX_LENGTH, device=device,
         local_files_only=os.getenv("RERANKER_ALLOW_DOWNLOAD", "0") != "1",
         model_kwargs={"torch_dtype": torch.float32},
     )
+    if quantize:
+        # ~1.75x faster on the 6-core VPS; 80-case VietStyle eval: full@10 57 vs 55 fp32.
+        # shortcut: torch.ao quantize_dynamic is deprecated (pytorch/ao#2259), move to torchao when torch drops it.
+        torch.ao.quantization.quantize_dynamic(model, {torch.nn.Linear}, dtype=torch.qint8, inplace=True)
+    return model
 
 
 class BGEReranker:
@@ -30,17 +41,22 @@ class BGEReranker:
     @measure("reranking")
     def rerank(self, query, chunks, top_k):
         details = {"reranker_model": MODEL_ID, "reranker_revision": REVISION,
-                   "reranker_candidate_count": len(chunks), "reranker_max_pair_tokens": 1024,
+                   "reranker_candidate_count": len(chunks), "reranker_max_pair_tokens": MAX_LENGTH,
                    "reranker_score_type": "raw_logit", "reranker_applied": False}
         if not chunks:
             return [], details
         started = perf_counter()
         if self.model is None and os.getenv("RERANKER_URL"):
             from core.services.client import post
-            scores = post(os.environ["RERANKER_URL"], "/rerank", {
+            response = post(os.environ["RERANKER_URL"], "/rerank", {
                 "query": query, "texts": [chunk.content for chunk in chunks],
-            })["scores"]
+            })
+            scores = response["scores"]
+            # This process's RERANKER_MODEL is not the service's; never label remote scores with it.
+            details.update(reranker_model=response.get("model", "remote-unreported"), reranker_revision=response.get("revision"),
+                           reranker_max_pair_tokens=response.get("max_pair_tokens"), reranker_quantize=response.get("quantize"))
         else:
+            details["reranker_quantize"] = os.getenv("RERANKER_QUANTIZE", "")
             import torch
             with _INFERENCE_LOCK:
                 if self.model is None:

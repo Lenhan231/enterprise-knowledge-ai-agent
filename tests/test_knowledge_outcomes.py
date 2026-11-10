@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import sys
 import unittest
+from core.rag.claim_verification import VERIFICATION_UNAVAILABLE_ANSWER
 from unittest.mock import AsyncMock, Mock, patch
 
 import jwt
@@ -46,12 +47,16 @@ class KnowledgeOutcomeTest(unittest.IsolatedAsyncioTestCase):
         result = self.rag.generate_from_contexts("policy?", self.contexts)
         self.assertFalse(result.insufficient_context)
         self.assertEqual(result.source_ids, ["S1"])
-        for answer in ("Unsupported answer", "Unknown source [S99]"):
-            with self.subTest(answer=answer), self.assertRaises(ValueError):
+        for answer, reason in (("Unsupported answer", "uncited_answer"), ("Unknown source [S99]", "unknown_citation")):
+            with self.subTest(answer=answer):
                 self.rag.llm.generate.return_value = answer
-                self.rag.generate_from_contexts("policy?", self.contexts)
+                withheld = self.rag.generate_from_contexts("policy?", self.contexts)
+                self.assertEqual(withheld.answer, VERIFICATION_UNAVAILABLE_ANSWER)  # fail closed, no 503
+                self.assertEqual((withheld.verification.status, withheld.verification.reason), ("unavailable", reason))
+                self.assertEqual(withheld.source_ids, [])
 
     async def test_knowledge_propagates_both_empty_outcomes(self):
+        self.enterContext(patch.dict(os.environ, {"KNOWLEDGE_MULTIQUERY_ENABLED": "1"}))
         identity = VerifiedIdentity(subject="viewer", permissions={"documents:read"}, document_roles={"employee"})
         for contexts in ([], self.contexts):
             with self.subTest(has_context=bool(contexts)):
@@ -64,8 +69,21 @@ class KnowledgeOutcomeTest(unittest.IsolatedAsyncioTestCase):
                 self.assertTrue(result.metadata["insufficient_context"])
                 self.assertEqual(result.evidence, [])
                 service.generate_answer.assert_called_once_with(
-                    "policy?", roles=["employee"], retrieval_method="translated_hybrid_rerank",
+                    "policy?", decompose=True, verify_claims=False, roles=["employee"], retrieval_method="translated_hybrid_rerank",
                 )
+
+    async def test_multiquery_switch_defaults_off_and_requires_explicit_one(self):
+        identity = VerifiedIdentity(subject="viewer", permissions={"documents:read"}, document_roles={"employee"})
+        for value in (None, "0", "1", "invalid"):
+            with self.subTest(value=value), patch.dict(os.environ):
+                os.environ.pop("KNOWLEDGE_MULTIQUERY_ENABLED", None)
+                if value is not None:
+                    os.environ["KNOWLEDGE_MULTIQUERY_ENABLED"] = value
+                service = Mock()
+                service.generate_answer.return_value = self.rag.generate_from_contexts("policy?", [])
+                await KnowledgeAgent(service).run(AgentRequest(question="policy?", identity=identity))
+                self.assertEqual(service.generate_answer.call_args.kwargs["decompose"], value == "1")
+                self.assertEqual(service.generate_answer.call_args.kwargs["roles"], ["employee"])
 
 
 class KnowledgeAccessMessageTest(unittest.TestCase):

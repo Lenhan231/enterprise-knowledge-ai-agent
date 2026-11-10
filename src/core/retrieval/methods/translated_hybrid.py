@@ -1,4 +1,5 @@
 """Original-query dense search plus automatically translated EN/VI BM25 fusion."""
+from concurrent.futures import ThreadPoolExecutor
 from math import isfinite
 from time import perf_counter
 
@@ -38,26 +39,46 @@ def search(repository, vector, request, get_translator, *, company=None, roles=N
     if metadata_filter:
         filters["metadata_filter"] = metadata_filter
     candidate_k = request.top_k * 10
-    dense = repository.similarity_search(
-        vector, candidate_k, query=request.query, method="dense", **filters)
-    details = {"language_aware": document_languages is not None,
-               "document_ids": document_ids, "candidate_k": candidate_k,
-               "dense_weight": dense_weight, "bm25_weight": bm25_weight, "rrf_k": rrf_k,
-               "lexical_queries": None, "dense_fallback": False,
-               "translation_error": None, "effective_method": "translated_hybrid"}
-    started = perf_counter()
-    try:
-        with measure("query_translation"):
-            translator = get_translator()
-            details["translation_model"] = getattr(translator.llm, "model_name", None)
-            queries = translator.translate(request.query, query_language)
-    except (APIError, ValueError, RuntimeError) as error:
-        details.update(dense_fallback=True, translation_error=type(error).__name__,
-                       effective_method="dense")
-        return dense[:request.top_k], details
-    finally:
-        details["translation_latency_ms"] = (perf_counter() - started) * 1000
-    details["lexical_queries"] = queries
+    # The three searches overlap each other and the translation call; each pays a ~0.4 s DB round trip.
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        dense_future = pool.submit(
+            repository.similarity_search, vector, candidate_k, query=request.query, method="dense", **filters)
+        details = {"language_aware": document_languages is not None,
+                   "document_ids": document_ids, "candidate_k": candidate_k,
+                   "dense_weight": dense_weight, "bm25_weight": bm25_weight, "rrf_k": rrf_k,
+                   "lexical_queries": None, "dense_fallback": False,
+                   "translation_error": None, "effective_method": "translated_hybrid"}
+        started = perf_counter()
+        try:
+            with measure("query_translation"):
+                translator = get_translator()
+                details["translation_model"] = getattr(translator.llm, "model_name", None)
+                queries = translator.translate(request.query, query_language)
+        except (APIError, ValueError, RuntimeError) as error:
+            details.update(dense_fallback=True, translation_error=type(error).__name__,
+                           effective_method="dense")
+            with measure("database_retrieval"):
+                return dense_future.result()[:request.top_k], details
+        finally:
+            details["translation_latency_ms"] = (perf_counter() - started) * 1000
+        details["lexical_queries"] = queries
+        if request.query not in queries.values():
+            details["normalized_query"] = queries["vn"]  # diacritics restored by the translator
+        scopes, lexical_futures = {}, []
+        for lang in ("en", "vn"):
+            scope = document_ids
+            if document_languages is not None:
+                scope = [doc for doc in document_ids if document_languages[doc] == lang]
+            scopes[lang] = scope
+            options = dict(filters)
+            if scope is not None:
+                options["document_ids"] = scope
+            lexical_futures.append(pool.submit(
+                repository.similarity_search, None, candidate_k, query=queries[lang], method="bm25", **options))
+        # Only the DB wait left after translation; the searches themselves run outside the request context.
+        with measure("database_retrieval"):
+            dense = dense_future.result()
+            lexical_results = [future.result() for future in lexical_futures]
     indexed = {}
     def ids(chunks):
         ranking = []
@@ -67,18 +88,7 @@ def search(repository, vector, request, get_translator, *, company=None, roles=N
             ranking.append(key)
         return ranking
     dense_ids = ids(dense)
-    lexical = []
-    scopes = {}
-    for lang in ("en", "vn"):
-        scope = document_ids
-        if document_languages is not None:
-            scope = [doc for doc in document_ids if document_languages[doc] == lang]
-        scopes[lang] = scope
-        options = dict(filters)
-        if scope is not None:
-            options["document_ids"] = scope
-        lexical.append(ids(repository.similarity_search(
-            None, candidate_k, query=queries[lang], method="bm25", **options)))
+    lexical = [ids(chunks) for chunks in lexical_results]
     details["lexical_document_scopes"] = scopes
     lexical_ids, _ = fuse(lexical, [1.0, 1.0], rrf_k)
     ranking, scores = fuse([dense_ids, lexical_ids[:candidate_k]],

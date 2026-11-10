@@ -1,0 +1,1056 @@
+{
+  "method": "Frozen response replay with real read-only PostgreSQL. No fresh provider generations or Ragas rescoring; timings measure replay/DB work only.",
+  "source": "C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\inventory-sql-only-integration",
+  "cases": 60,
+  "passed": 60,
+  "results": [
+    {
+      "id": "I01",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [],
+      "row_sha256": "c588a90eb4bca755b66c661b1c7679348f3345da4fdb58d21ff334bb2327b3a7",
+      "elapsed_seconds": 1.402
+    },
+    {
+      "id": "I02",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [],
+      "row_sha256": "8798aaabea150fc0bfadb949ac232e1ccc8d6bba4aba1b597ad94bb0f29a7a2b",
+      "elapsed_seconds": 1.372
+    },
+    {
+      "id": "I03",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [],
+      "row_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "elapsed_seconds": 1.373
+    },
+    {
+      "id": "I04",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [],
+      "row_sha256": "5719f9a31257ce4a93dea5825beb408ac340dffc189db69d8c462e97f3bbd5c9",
+      "elapsed_seconds": 1.387
+    },
+    {
+      "id": "I05",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [],
+      "row_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "elapsed_seconds": 1.383
+    },
+    {
+      "id": "I06",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [],
+      "row_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "elapsed_seconds": 1.373
+    },
+    {
+      "id": "I07",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [],
+      "row_sha256": "d1c425334f088f5cf3a9283961ecb0dfe0d855a5418786a980f237c36dea72ac",
+      "elapsed_seconds": 1.395
+    },
+    {
+      "id": "I08",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [],
+      "row_sha256": "d763359481fba62b915e0c008843946a2e86c6c90b05dec15da5bec9dd321f9f",
+      "elapsed_seconds": 1.372
+    },
+    {
+      "id": "I09",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [],
+      "row_sha256": "ce8c035560c347bd7a07e8c023263662e3c6b090fd04c0412604899d46e101c4",
+      "elapsed_seconds": 1.372
+    },
+    {
+      "id": "I10",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [],
+      "row_sha256": "74f08b6e7cc3f8261aa7069a32f63f246d855fdda3f0a63936ffce3d0100d591",
+      "elapsed_seconds": 1.372
+    },
+    {
+      "id": "I11",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "29cf3b2bb707bf41fccd9cd264f9044ed79621616468cfeecbe120db591cc322",
+        "255ba3725bd94b62243fbac43bd2fa35f4fea1787290e748218b6684fe9784c6"
+      ],
+      "row_sha256": "c5bfe0b9ab6eb694f191e234faec2232bb095afcef2295164e17f9117c68487b",
+      "elapsed_seconds": 1.407
+    },
+    {
+      "id": "I12",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "ac9202ef5efabc09e002ceb1be17388ccdd711019284dcacc2b273afb4af9886"
+      ],
+      "row_sha256": "3c8db52d637ee6cf3e9fbc07232e36cd568553b231f19b6bc6d258da36c4b4c4",
+      "elapsed_seconds": 1.369
+    },
+    {
+      "id": "I13",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "2e0780a5d86dbc28d8b1e64c37bd3b7c318deeb416900ccebd2e190405ccc80c"
+      ],
+      "row_sha256": "6a90a0d2b4c05ddf2826903e931175f52968b6ebb680cca9c8d9891c96a32b8f",
+      "elapsed_seconds": 1.375
+    },
+    {
+      "id": "I14",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "fcd4501bc7b86185f3ec968992e7510249ecd1c2a8afe8fc9dcb97808ac52f5a",
+        "0de8aa0418de511f7d193a87325cd607acf3ea044661e0597db177d5fde38931"
+      ],
+      "row_sha256": "d8237118e062d77c2e855c356dfef87883c38fad12289656b67e1138f9c5d017",
+      "elapsed_seconds": 1.388
+    },
+    {
+      "id": "I15",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "5699ca758171d13278c540b4329d752c718de0cdfd8ed12d62db23b29ec7bd51",
+        "77323583d780aa2a5bd1feee6badb214490ace9661f9c0b152da1980dfe1c8b9",
+        "e84f105b247b471c48dd10d77cd3e9b59738f74892a17ad76fd210062096c231"
+      ],
+      "row_sha256": "78cb6c419a076d8ab96f597ee14d7bb6a3fed56db601743d064aa6b88b73d313",
+      "elapsed_seconds": 1.43
+    },
+    {
+      "id": "I16",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "1d10dd3d47311657fb980185ea86f3ace2a2fb7d705ff5ff185a2d65c5663c47"
+      ],
+      "row_sha256": "ce07abfeeb5fdcd967f881dc3e443e6bb8d08f1ea7ff9075f4059ba619cc0d98",
+      "elapsed_seconds": 1.427
+    },
+    {
+      "id": "I17",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "8f1eddd0514ad78319fd24d859ceb8f8a7d51375ab2b0535fddf912fd342defc"
+      ],
+      "row_sha256": "1ad1560875cfc53e4f499e2dd64f1bdd025ed95bf2712c41df5ed46aa5c79182",
+      "elapsed_seconds": 1.439
+    },
+    {
+      "id": "I18",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "f8f8b1ee67e59c6f75429871514ab7051ac12b6e92527420c6da571ca644d8d4"
+      ],
+      "row_sha256": "7a4bf2857f24cf36dd127952e25a577c11354d866393d2465b8c141811d48872",
+      "elapsed_seconds": 1.418
+    },
+    {
+      "id": "I19",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "78b75d03c36df75d8299a4d6f12aff40faaf68143ffe4fb0a1ccd4cb085e318a"
+      ],
+      "row_sha256": "3f36ca87f2d8fd6c9fe90e64fafe01174339ae2cdd3845122dba51eda651276c",
+      "elapsed_seconds": 1.44
+    },
+    {
+      "id": "I20",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "4399177c904b00e3b37147a79ceb5204784a5793a831b870db81e24d92bf7b60"
+      ],
+      "row_sha256": "ea04bd2ef50ea24347bcbe0cd39a4b6cbc707c8fcb219dbc8e0295225a36f2d5",
+      "elapsed_seconds": 1.449
+    },
+    {
+      "id": "I21",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "084b07d0da072e3efdc70ea3e2acb06333ec6499e7cf8787be6d2b98e836456f"
+      ],
+      "row_sha256": "6da3cbadeb8a1bacb00f9389536c2b7d85d89e3571b51c984728b0c76f2c0c26",
+      "elapsed_seconds": 1.428
+    },
+    {
+      "id": "I22",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "695c4093f4a36552b1374da69fe2ece5f6dd41c82483c7c26e51845989b9b2f8"
+      ],
+      "row_sha256": "76779b8a09218ea58b4efb2962d1cf08959c5a7b6ab8f2eb19df57a13f63307b",
+      "elapsed_seconds": 1.423
+    },
+    {
+      "id": "I23",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "2c287d3abbb0bfe5585b77030dbce8871adf8248bf6ba8ccb600721fcbcb63c1"
+      ],
+      "row_sha256": "f401e1860dab12e6a755e262fe657863fbbee58467928751950f735cfe3ef4c3",
+      "elapsed_seconds": 1.425
+    },
+    {
+      "id": "I24",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "c3ff683316a693b00f6830f5752b0746b7252154522cd6ec5a7d6aded11e25ec"
+      ],
+      "row_sha256": "f402f4e826216c65849a4ab3bdbe8949a9fc06097ca553c066f3f9cfb88d8c8b",
+      "elapsed_seconds": 1.428
+    },
+    {
+      "id": "I25",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "31326f217b9db7da5ba023bd27e650f3c4f0d540ddb929708a2ed35cb00cf6f8"
+      ],
+      "row_sha256": "2dafd02c608bccb6d092d31a57ae3992ee1bbd6cb301742983ab95cf225a27e3",
+      "elapsed_seconds": 1.452
+    },
+    {
+      "id": "I26",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "ae2e6e235555d9b9d2faf4a99067452047774774399a7a1319f6d4fea52d6296"
+      ],
+      "row_sha256": "2fef663bcf45ee246e5337fc6049aee9ad30dfbbe846849a10bf1c4da163a13c",
+      "elapsed_seconds": 1.417
+    },
+    {
+      "id": "I27",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "24ed0a7f1c3ba2c99413eedeed21ed3182df6a92afde6e242b45617dd16aafc5"
+      ],
+      "row_sha256": "866afa8e9a6d151fcb425376fecbbb825ada37c2f8aeb730074dbc4b1e81a072",
+      "elapsed_seconds": 1.429
+    },
+    {
+      "id": "I28",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "c42310504f7f8e9e17a8e4203f9476af1da85c49d1236f0c25c085062dddae0e"
+      ],
+      "row_sha256": "e4ec25865d8d70f0594cee353ab99363d870c5be3dfb3e19c23adc35628f8c13",
+      "elapsed_seconds": 1.442
+    },
+    {
+      "id": "I29",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "594ce1ef76cf49c123ad42fc9a001de5ca6483808ff6e68935adb7d097841737"
+      ],
+      "row_sha256": "1145c752b48151f9e53104d95e9c38c8016c8fc85ea0db55bd298c80007371be",
+      "elapsed_seconds": 1.47
+    },
+    {
+      "id": "I30",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "6ad1ba3a3943de184c5a2354fc03bf163a14bf83d338327c7c6f6fdf2d0514b2"
+      ],
+      "row_sha256": "a3987af6705819d6745a6735054aa53233a885c185498f9c72b0d4fe122a0852",
+      "elapsed_seconds": 1.478
+    },
+    {
+      "id": "I31",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "40e9642790662466a11ab86499d65fa3f5d7fc4a69d081e32b35b51a5263a1ed"
+      ],
+      "row_sha256": "df7c18410282a0a810d9cb8fc3afc6e1f25c23b7d4d597fc12de7ca782a9acb6",
+      "elapsed_seconds": 1.483
+    },
+    {
+      "id": "I32",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "0e9fab3a590920b90549aaf6d72333189da87a267a7e5d59da9bc83846e06ea5"
+      ],
+      "row_sha256": "bcf10ba17f32c3292fc0500efb0b024c08bc314f01ea93df861e83664c8f261e",
+      "elapsed_seconds": 1.5
+    },
+    {
+      "id": "I33",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "8e837775687e2464c1b3efebb07a493281815053099ff3b1acf971af78735a68"
+      ],
+      "row_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "elapsed_seconds": 1.232
+    },
+    {
+      "id": "I34",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "742a7495f01725f5f2d39feb6b6c36c00daf16813cd936bb9a53459c05cd432f"
+      ],
+      "row_sha256": "ad967ac717829ee07a06ea03038691a170a912da4b5d56d601d3cfbdc542f3e8",
+      "elapsed_seconds": 1.47
+    },
+    {
+      "id": "I35",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "96f9e24b6d45a7047f0a7572d87f43e3fa198df1ad30a084798864c01d4bf08e"
+      ],
+      "row_sha256": "0f966c3d1b5d0020b2fb39ee7a68cd50de918845a041446d8d9761ab3ac5b380",
+      "elapsed_seconds": 1.458
+    },
+    {
+      "id": "I36",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "1cd719680f2a74ad044650587cd71d8c88bb6228aed864d6b22a423ee0dac178"
+      ],
+      "row_sha256": "1ad1560875cfc53e4f499e2dd64f1bdd025ed95bf2712c41df5ed46aa5c79182",
+      "elapsed_seconds": 1.485
+    },
+    {
+      "id": "I37",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "228ab78405e3de3b80aea7ce6b76947b4f42c535322289f39a3f7a7dcd715c0c"
+      ],
+      "row_sha256": "6ed536bc2ec73e48ee6b7582b3e20ecc1deae0b196011fe47def980753100e4f",
+      "elapsed_seconds": 1.475
+    },
+    {
+      "id": "I38",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "6c6af9d740f697b7f6bccdfed47fdb5e7d782ab64082b5deab8993acd53923e1"
+      ],
+      "row_sha256": "2d27e95b45a556f39077b363f8f087d156e3b85f527a6feb33c0c10d59dce3be",
+      "elapsed_seconds": 1.503
+    },
+    {
+      "id": "I39",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "edaa398dd49b4084511b057f4db25b1eb2bc571a6fe3dc0237f8bece9dc5b3da"
+      ],
+      "row_sha256": "9ab834fe08102ec68461badc71d34734bb78d034ab22fbc871b8796b3c1b5d1a",
+      "elapsed_seconds": 1.458
+    },
+    {
+      "id": "I40",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "2d9268b5d823c8107d60b1cdff64be15460c07ce71b4b718cc6cff09e5e1acfa"
+      ],
+      "row_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "elapsed_seconds": 0.016
+    },
+    {
+      "id": "I41",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [],
+      "row_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "elapsed_seconds": 0.004
+    },
+    {
+      "id": "I42",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [],
+      "row_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "elapsed_seconds": 0.003
+    },
+    {
+      "id": "I43",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [],
+      "row_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "elapsed_seconds": 0.001
+    },
+    {
+      "id": "I44",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [],
+      "row_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "elapsed_seconds": 1.358
+    },
+    {
+      "id": "I45",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "da893021e7e90bf08604a385d6807b52708ad59d8eb42c44a99b70109dec8b16"
+      ],
+      "row_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "elapsed_seconds": 0.021
+    },
+    {
+      "id": "I46",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "d5d0a27792106c47fff6359da0434439ed4ac304f6b9e64429666d89ca45ffec"
+      ],
+      "row_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "elapsed_seconds": 0.018
+    },
+    {
+      "id": "I47",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [],
+      "row_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "elapsed_seconds": 0.003
+    },
+    {
+      "id": "I48",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "932b06fe3dd3854826af89e46c933e953c5a1e8b0ff30606c7a1fd45bf3b08cf"
+      ],
+      "row_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "elapsed_seconds": 0.015
+    },
+    {
+      "id": "I49",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "28d33b4c3e81e37ef549c3c811991841f83180383e70e2600b2eb323c82429ce"
+      ],
+      "row_sha256": "e4037b8a3cee5b2af1f8d7efa16a7252d1a22e467d274c66c015a4143a2edec7",
+      "elapsed_seconds": 1.582
+    },
+    {
+      "id": "I50",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "b60bf9036e221c2d34891415352ddbacb1c8a7dbabe868a5f36e9ad9e715b240"
+      ],
+      "row_sha256": "9acedb1b102dbd1ccc18f7e7c0ce88f91500f07bf5ca95c89c2fbe773a6d8be9",
+      "elapsed_seconds": 1.608
+    },
+    {
+      "id": "P01",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [],
+      "row_sha256": "c588a90eb4bca755b66c661b1c7679348f3345da4fdb58d21ff334bb2327b3a7",
+      "elapsed_seconds": 1.156
+    },
+    {
+      "id": "P02",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [],
+      "row_sha256": "8798aaabea150fc0bfadb949ac232e1ccc8d6bba4aba1b597ad94bb0f29a7a2b",
+      "elapsed_seconds": 1.167
+    },
+    {
+      "id": "P06",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [],
+      "row_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "elapsed_seconds": 1.165
+    },
+    {
+      "id": "P16",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "bc3e76f4ca45dce85812b1c9ed74794b98127134a3d4253d1bc90fba30eb23c2"
+      ],
+      "row_sha256": "ce07abfeeb5fdcd967f881dc3e443e6bb8d08f1ea7ff9075f4059ba619cc0d98",
+      "elapsed_seconds": 1.242
+    },
+    {
+      "id": "P17",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "4e47fe2da0be208c11178d02c1851296107229157eb236f46dd465ba1bbad62a"
+      ],
+      "row_sha256": "1ad1560875cfc53e4f499e2dd64f1bdd025ed95bf2712c41df5ed46aa5c79182",
+      "elapsed_seconds": 1.261
+    },
+    {
+      "id": "P19",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "0aeb4ee9e2074bf206b856939459b4270eda9c9bd5f852e502c4298a2524a05c"
+      ],
+      "row_sha256": "3f36ca87f2d8fd6c9fe90e64fafe01174339ae2cdd3845122dba51eda651276c",
+      "elapsed_seconds": 1.245
+    },
+    {
+      "id": "P22",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "17765ef90faaaee376aa5e5a732c9beb134bd08ad41155622e912976440bbda7"
+      ],
+      "row_sha256": "76779b8a09218ea58b4efb2962d1cf08959c5a7b6ab8f2eb19df57a13f63307b",
+      "elapsed_seconds": 1.212
+    },
+    {
+      "id": "P24",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "4413869d0574da8f4e5c44a6144462bd168199b48591b8be005dfdb3f2d609e7"
+      ],
+      "row_sha256": "f402f4e826216c65849a4ab3bdbe8949a9fc06097ca553c066f3f9cfb88d8c8b",
+      "elapsed_seconds": 1.261
+    },
+    {
+      "id": "P27",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "32feca33aaf7f8233aa427274fe6f3cd242f8f1d348fb76cc7dfa8af9f2a9cb4"
+      ],
+      "row_sha256": "866afa8e9a6d151fcb425376fecbbb825ada37c2f8aeb730074dbc4b1e81a072",
+      "elapsed_seconds": 1.212
+    },
+    {
+      "id": "P47",
+      "checks": {
+        "sql": true,
+        "parameters": true,
+        "rows": true,
+        "execution_status": true,
+        "clarification": true,
+        "error_code": true,
+        "calls": true,
+        "scope": true
+      },
+      "prompt_hashes": [
+        "42596624a3eed04423fd4366f62ad894296b0fc105f464cb5f7142f2c9add1f9"
+      ],
+      "row_sha256": "ceec8c4b50b48b06fdb99562dd582ee2aa5a7c23fb9a5d4f9863d1f0bc3385df",
+      "elapsed_seconds": 1.719
+    }
+  ]
+}

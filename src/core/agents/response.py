@@ -6,6 +6,7 @@ from decimal import Decimal, InvalidOperation
 from core.agents.runtime import generate
 from core.models.agents import AgentResult
 from core.prompts.agents import SYNTHESIS_PROMPT
+from core.rag.arithmetic import verified_results
 
 
 def _number_options(text):
@@ -26,13 +27,31 @@ def _number_options(text):
     return numbers
 
 
+_MULTIPLIERS = {'tỷ': 10**9, 'tỉ': 10**9, 'triệu': 10**6, 'tr': 10**6, 'nghìn': 10**3, 'ngàn': 10**3, 'k': 10**3}
+_SHORTHAND = re.compile(r'(?<![\w.,])(\d+(?:[.,]\d+)?)\s*(tỷ|tỉ|triệu|tr|nghìn|ngàn|k)(\d)?(?!\w)', re.IGNORECASE)
+# A unit between operands ('4.000.000 VND + 1.500.000 VND = ...') would otherwise hide the equality.
+_UNITS = re.compile(r'(?<=\d)\s*(?:VNĐ|VND|đồng|USD)(?!\w)', re.IGNORECASE)
+
+
+def _shorthand_amounts(text):
+    """'18 triệu' -> 18000000, '4tr5' -> 4500000, so a full amount in the answer matches a shorthand source."""
+    amounts = set()
+    for number, unit, tail in _SHORTHAND.findall(text):
+        scale = _MULTIPLIERS[unit.lower()]
+        for options in _number_options(number):
+            amounts.update(value * scale + (int(tail) * scale // 10 if tail else 0) for value in options)
+    return amounts
+
+
 def _supported_numbers(answer, inputs, question):
     # Generated specialist prose is not an authority for facts in final synthesis.
     facts = [{'rows': item['data'].get('rows', []),
               'content': [e.get('content') for e in item['evidence']]} for item in inputs]
     source = json.dumps(facts, ensure_ascii=False, default=str) + question
-    source_numbers = _number_options(source)
-    allowed = set().union(*source_numbers) if source_numbers else set()
+    # Results of equalities that check exactly are derived, not invented; their operands must still be sourced.
+    plain = _UNITS.sub('', answer)
+    source_numbers = _number_options(source + ' ' + ' '.join(verified_results(plain)))
+    allowed = set().union(*source_numbers, _shorthand_amounts(source)) if source_numbers else _shorthand_amounts(source)
     return all(options & allowed for options in _number_options(re.sub(r'\[S\d+\]', '', answer)))
 
 

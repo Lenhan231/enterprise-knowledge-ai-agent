@@ -21,7 +21,7 @@ def remaining(default=60.0):
     return value
 
 
-async def run_sync(function, *args, **kwargs):
+async def run_sync(function, *args, _timeout=60.0, **kwargs):
     # Keep the slot until the actual thread exits, even if its caller times out.
     if not _slots.acquire(blocking=False):
         raise RuntimeError('Agent worker capacity is busy')
@@ -41,7 +41,7 @@ async def run_sync(function, *args, **kwargs):
     future.add_done_callback(lambda done: _slots.release() if done.cancelled() else None)
     task = asyncio.wrap_future(future)
     task.add_done_callback(lambda done: None if done.cancelled() else done.exception())
-    return await asyncio.wait_for(asyncio.shield(task), remaining())
+    return await asyncio.wait_for(asyncio.shield(task), remaining(_timeout))
 
 
 async def generate(provider, prompt, *, timeout=15):

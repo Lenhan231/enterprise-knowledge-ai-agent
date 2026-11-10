@@ -73,12 +73,6 @@ def apply_docx_semantics(result: dict[str, Any], source_bytes: bytes | None) -> 
             table_ref = element.get("table_ref")
             if isinstance(table_ref, int) and 0 <= table_ref < len(result.get("tables", [])):
                 table = result["tables"][table_ref]
-                section_metadata = {
-                    "section_path": list(section_path),
-                    "section_title": section_path[-1] if section_path else None,
-                }
-                metadata.update(section_metadata)
-                table.setdefault("metadata", {}).update(section_metadata)
                 table_name = pending_table_title or (section_path[-1] if section_path else None)
                 if table_name:
                     table["table_name"] = table_name
@@ -101,7 +95,7 @@ def apply_docx_semantics(result: dict[str, Any], source_bytes: bytes | None) -> 
             section_path = section_path[: heading_level - 1] + [str(element.get("text") or "")]
             metadata.update({
                 "element_type": "title",
-                "layout_type": "section_header",
+                "layout_type": "title",
                 "heading_level": heading_level,
             })
         elif hint["centered_title"]:

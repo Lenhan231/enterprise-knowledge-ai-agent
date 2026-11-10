@@ -217,6 +217,37 @@ METRIC_ONTOLOGY = {
 
 METRIC_ONTOLOGY.update(load_inventory_catalog())
 
+METRIC_ONTOLOGY.update({
+    'invoice_count': {
+        'aliases': ('invoice count', 'number of invoices', 'count invoices', 'số hóa đơn', 'số lượng hóa đơn'),
+        'source': 'commerce.invoices', 'domain': 'invoices',
+        'formula': 'COUNT(DISTINCT invoice_id)', 'grain': 'invoice',
+        'aggregation': 'count_distinct', 'unit': 'invoices',
+        'dimensions': ('invoice_date', 'buyer', 'seller', 'currency'),
+    },
+    'invoice_total': {
+        'aliases': ('total invoice amount', 'invoice total', 'invoice revenue', 'invoice spending', 'tổng tiền hóa đơn'),
+        'source': 'commerce.invoices', 'domain': 'invoices',
+        'formula': 'SUM(total_amount)', 'grain': 'invoice',
+        'aggregation': 'sum', 'unit': 'currency',
+        'dimensions': ('invoice_date', 'buyer', 'seller', 'currency'),
+    },
+    'invoice_tax': {
+        'aliases': ('invoice tax', 'total tax', 'tax amount', 'thuế hóa đơn', 'tổng tiền thuế'),
+        'source': 'commerce.invoices', 'domain': 'invoices',
+        'formula': 'SUM(tax_amount)', 'grain': 'invoice',
+        'aggregation': 'sum', 'unit': 'currency',
+        'dimensions': ('invoice_date', 'buyer', 'seller', 'currency'),
+    },
+    'invoice_item_amount': {
+        'aliases': ('invoice item amount', 'invoice line amount', 'thành tiền dòng hóa đơn'),
+        'source': 'commerce.invoice_items + commerce.invoices', 'domain': 'invoices',
+        'formula': 'SUM(amount)', 'grain': 'invoice_item',
+        'aggregation': 'sum', 'unit': 'currency',
+        'dimensions': ('invoice_date', 'buyer', 'seller', 'description', 'unit', 'currency'),
+    },
+})
+
 def get_metric_definition(metric_name: str) -> dict:
     """Trả về định nghĩa chuẩn; báo lỗi rõ ràng với metric không được hỗ trợ."""
     try:

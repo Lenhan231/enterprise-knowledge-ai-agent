@@ -3,6 +3,8 @@
 import asyncio
 import inspect
 import json
+import time
+import logging
 from io import BytesIO
 
 from docx import Document
@@ -12,6 +14,9 @@ from core.reports.grounding import UNAVAILABLE, VERIFICATION_SCOPE, validate_sec
 from core.reports.sources import ReportClarificationRequired, authorize_sources, collect_sources, serialize_context
 from core.reports.templates import default_report_template, parse_report_template, render_report_template
 from core.prompts.report import REPORT_SECTION_PROMPT, REPORT_REPAIR_PROMPT
+from core.agents.runtime import deadline, remaining, run_sync
+from core.reports.planning import inventory_request
+from core.analytics.metric_ontology import resolve_metric_names
 
 MIME_TYPES = {
     "markdown": "text/markdown; charset=utf-8",
@@ -33,20 +38,52 @@ class ReportAgent:
 
     async def run(self, request):
         result, payload, _ = await self.generate_from_template(
-            request, source_mode=request.metadata.get("source_mode", "documents"))
+            request, source_mode=request.metadata.get("source_mode", "documents"),
+            template_choice=request.metadata.get('template_choice'),
+            accept_supported_scope=request.metadata.get('accept_supported_scope', False))
         if payload:
             result.answer = payload.decode("utf-8")
         return result
 
     async def generate_from_template(self, request, filename=None, content=None, *,
-                                     source_mode="documents", output_format=None):
+                                     source_mode="documents", output_format=None,
+                                     template_choice=None, accept_supported_scope=False):
+        started = time.monotonic()
+        end = started + remaining(180)
+        token = deadline.set(end - 10)
+        try:
+            result, payload, media_type = await self._generate_from_template(
+                request, filename, content, source_mode=source_mode, output_format=output_format,
+                template_choice=template_choice, accept_supported_scope=accept_supported_scope)
+            result.metadata.setdefault('timing', {})['total_ms'] = round((time.monotonic()-started)*1000)
+            logging.getLogger(__name__).info('report_summary %s', json.dumps({
+                'status': result.metadata.get('status'), 'section_count': result.data.get('section_count', 0),
+                'task_count': len(result.metadata.get('plan', {}).get('tasks', [])),
+                'validated_fact_count': result.metadata.get('fact_validation', {}).get('validated', 0),
+                'total_ms': result.metadata['timing']['total_ms'],
+            }))
+            return result, payload, media_type
+        finally:
+            deadline.reset(token)
+
+    async def _generate_from_template(self, request, filename=None, content=None, *,
+                                      source_mode="documents", output_format=None,
+                                      template_choice=None, accept_supported_scope=False):
         authorize_sources(request, source_mode)
+        if template_choice not in {None, 'uploaded', 'suggested'} or type(accept_supported_scope) is not bool:
+            raise ValueError('Invalid report confirmation choice')
         if output_format is not None and output_format not in MIME_TYPES:
             raise ValueError("Output format must be markdown or docx")
         template = (parse_report_template(filename, content) if filename is not None
                     else default_report_template(output_format or "markdown"))
         if output_format and template.format != output_format:
             raise ValueError("Output format conflicts with uploaded template")
+        if source_mode != 'documents' and (inventory_request(request.question) or resolve_metric_names(request.question)):
+            from core.reports.generation import generate_planned_report
+            return await generate_planned_report(
+                self, request, template if filename else None, source_mode=source_mode,
+                output_format=output_format, template_choice=template_choice,
+                accept_supported_scope=accept_supported_scope)
         if source_mode in {'orchestrated', 'combined'} and self.source_router is None:
             from core.agents.analytics_agent import AnalyticsAgent
             from core.agents.router import AgentRouter
@@ -114,6 +151,7 @@ class ReportAgent:
                     "verification_scope": VERIFICATION_SCOPE, "issues": issues,
                     "failure_type": ("source_unavailable" if not any(contexts.values()) else (
                         "provider_unavailable" if provider_failed else "validation_failed")) if status == "failed" else None}
+        metadata['template_mode'] = ('marked' if template.marked else 'legacy') if filename else 'generated'
         if 'orchestration' in row_coverage:
             metadata['source_collection'] = row_coverage['orchestration']
         result = AgentResult(answer=f"Report status: {status}.", agent="report",
@@ -123,6 +161,9 @@ class ReportAgent:
             return result, b"", MIME_TYPES[template.format]
         output = render_report_template(template, sections, tables)
         appendix = self._appendix(status, limitations, evidence.values(), coverage, row_coverage)
+        if filename:
+            appendix += ('Only explicit fill regions were replaced. Retained template text is user-provided and unverified.\n'
+                         if template.marked else 'Legacy template: body paragraphs and existing table data were replaced.\n')
         if isinstance(output, str):
             payload = (output + appendix).encode("utf-8")
         else:
@@ -137,10 +178,13 @@ class ReportAgent:
         return result, payload, MIME_TYPES[template.format]
 
     async def _generate(self, prompt):
+        timeout = remaining(60)
         provider = self._provider()
         options = {"max_output_tokens": 4096} if "max_output_tokens" in inspect.signature(provider.generate).parameters else {}
-        raw = await asyncio.to_thread(provider.generate, prompt, **options)
-        return await raw if inspect.isawaitable(raw) else raw
+        if inspect.iscoroutinefunction(provider.generate):
+            return await asyncio.wait_for(provider.generate(prompt, **options), timeout)
+        raw = await run_sync(provider.generate, prompt, **options)
+        return await asyncio.wait_for(raw, remaining(60)) if inspect.isawaitable(raw) else raw
 
     def _provider(self):
         if self.llm is None:

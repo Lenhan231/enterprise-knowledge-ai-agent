@@ -42,9 +42,24 @@ def submit_chat(question: str, agent_mode: str, *, metadata: dict | None = None,
         raise RuntimeError("Could not connect to the FastAPI backend.") from None
 
 
+class ReportConfirmationRequired(RuntimeError):
+    def __init__(self, detail):
+        super().__init__('Review the report structure and supported scope before generation.')
+        self.detail = detail
+
+
+class ReportStatus(str):
+    """Keep the existing three-value download contract while carrying UI status detail."""
+    def __new__(cls, value, summary=None):
+        result = super().__new__(cls, value)
+        result.summary = summary if isinstance(summary, dict) else {}
+        return result
+
+
 def submit_report(question: str, filename: str | None = None, content: bytes | None = None, *,
                   api_url: str | None = None, opener=None, source_mode="documents", output_format=None,
-                  agent_prefix="/api", conversation_id: str | None = None) -> tuple[bytes, str, str]:
+                  agent_prefix="/api", conversation_id: str | None = None,
+                  template_choice=None, accept_supported_scope=False) -> tuple[bytes, str, str]:
     safe_name = os.path.basename(filename) if filename is not None else None
     if filename is not None and (not safe_name or any(char in safe_name for char in ('"', "\r", "\n"))):
         raise ValueError("Choose a valid DOCX or Markdown template filename.")
@@ -61,6 +76,10 @@ def submit_report(question: str, filename: str | None = None, content: bytes | N
         fields['conversation_id'] = conversation_id
     if output_format:
         fields["output_format"] = output_format
+    if template_choice:
+        fields['template_choice'] = template_choice
+    if accept_supported_scope:
+        fields['accept_supported_scope'] = 'true'
     parts = [f'--{boundary}\r\nContent-Disposition: form-data; name="{key}"\r\n\r\n{value}\r\n'.encode()
              for key, value in fields.items()]
     if safe_name:
@@ -74,12 +93,20 @@ def submit_report(question: str, filename: str | None = None, content: bytes | N
     )
     try:
         with (opener or urlopen)(request, timeout=600) as response:
+            try:
+                summary = json.loads(response.headers.get('X-Report-Summary', '{}'))
+            except (ValueError, TypeError):
+                summary = {}
             return (response.read(), response.headers.get("Content-Type", content_type or "text/markdown"),
-                    response.headers.get("X-Report-Status", "complete"))
+                    ReportStatus(response.headers.get("X-Report-Status", "complete"), summary))
     except HTTPError as error:
         try:
             detail = json.loads(error.read()).get("detail", {})
+            if error.code == 409 and isinstance(detail, dict) and detail.get('confirmation_required'):
+                raise ReportConfirmationRequired(detail)
             message = "; ".join(detail.get("limitations", [])) if isinstance(detail, dict) else str(detail)
+            if isinstance(detail, dict) and detail.get('status') == 'unsupported':
+                raise RuntimeError(message) from None
             if isinstance(detail, dict) and detail.get("code") == "clarification_required":
                 message = "Clarification needed: " + detail["clarification"]
                 raise RuntimeError(message) from None
@@ -245,8 +272,30 @@ def main() -> None:
                                   'documents': 'Documents only', 'analytics': 'Analytics only'}[mode],key='report_source:'+report_id) if is_report else "documents"
     output_format = st.selectbox("Output format", ["markdown", "docx"],key='report_format:'+report_id) if is_report and report_template is None else None
     category = st.text_input("Inventory category (optional)",key='category:'+st.session_state['conversation_id']) if AGENT_MODES[mode_label] == "dashboard" else ""
-    if is_report and st.button("Generate report", type="primary",
-                               disabled=not question.strip()):
+    confirmation_key = 'report_confirmation:'+report_id
+    report_inputs = (question, report_template.name if report_template else None,
+                     report_template.getvalue() if report_template else None, source_mode, output_format)
+    pending = st.session_state.get(confirmation_key)
+    if pending and pending['inputs'] != report_inputs:
+        st.session_state.pop(confirmation_key, None)
+        pending = None
+    template_choice, accept_scope, confirmed = None, False, False
+    if is_report and pending:
+        detail = pending['detail']
+        st.warning('Review the report structure and supported scope before generation.')
+        for reason in detail.get('mismatch_reasons', []) + detail.get('unsupported_requirements', []):
+            st.write(reason)
+        st.write('Suggested sections: '+ '; '.join(s['heading'] for s in detail.get('suggested_structure', [])))
+        if detail.get('template_decision_required'):
+            label = st.radio('Report structure', ['Use suggested structure', 'Continue with uploaded template'], key='report_choice:'+report_id)
+            template_choice = 'suggested' if label == 'Use suggested structure' else 'uploaded'
+        accept_scope = bool(detail.get('scope_decision_required'))
+        confirmed = st.button('Generate supported report' if accept_scope else 'Generate with selected structure', key='confirm_report:'+report_id)
+        if st.button('Cancel report', key='cancel_report:'+report_id):
+            st.session_state.pop(confirmation_key, None)
+            st.rerun()
+    generate = st.button("Generate report", type="primary", disabled=not question.strip() or bool(pending)) if is_report else False
+    if is_report and (generate or confirmed):
         st.session_state.pop("report_download", None)
         report_client = st.session_state.get('api_opener')
         try:
@@ -255,10 +304,15 @@ def main() -> None:
                     question.strip(), report_template.name if report_template else None,
                     report_template.getvalue() if report_template else None,
                     source_mode=source_mode, output_format=output_format, opener=opener, agent_prefix=prefix,
-                    conversation_id=st.session_state['report_conversation_id'])
+                    conversation_id=st.session_state['report_conversation_id'],
+                    template_choice=template_choice, accept_supported_scope=accept_scope if confirmed else False)
             if (st.session_state.get('report_conversation_id') == report_id
                     and st.session_state.get('api_opener') is report_client):
                 st.session_state["report_download"] = (payload, content_type, status)
+                st.session_state.pop(confirmation_key, None)
+        except ReportConfirmationRequired as error:
+            st.session_state[confirmation_key] = {'inputs': report_inputs, 'detail': error.detail}
+            st.rerun()
         except (RuntimeError, ValueError) as error:
             st.error(str(error))
     if is_report and "report_download" in st.session_state:
@@ -267,6 +321,12 @@ def main() -> None:
             st.warning("Partial report: some sections or sources are unavailable. Review the limitations in the report.")
         else:
             st.success("Report generated. Review the verification scope and sources before use.")
+        summary = getattr(status, 'summary', {})
+        if summary:
+            st.caption(f"Sections: {summary.get('complete', 0)} complete, {summary.get('unavailable', 0)} unavailable, {summary.get('failed', 0)} failed. "
+                       f"Evidence items omitted from narrative: {summary.get('omitted_from_narrative', 0)}; review detail tables and coverage.")
+            for reason in summary.get('reasons', []):
+                st.write(reason)
         extension = ".docx" if "wordprocessingml" in content_type else ".md"
         st.download_button("Download report", payload, file_name=f"report{extension}", mime=content_type,key='report_download:'+report_id)
         if extension == ".md":

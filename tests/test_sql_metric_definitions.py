@@ -117,6 +117,11 @@ class MetricEnforcementTest(unittest.TestCase):
         inventory = " FROM commerce.inventory AS i WHERE i.snapshot_date = $1 LIMIT 1"
         items = (" FROM commerce.orders AS o JOIN commerce.order_items AS oi ON o.order_id = oi.order_id ")
         examples = {
+            "invoice_count": ("SELECT COUNT(DISTINCT inv.invoice_id) FROM commerce.invoices AS inv LIMIT 1", []),
+            "invoice_total": ("SELECT inv.currency, SUM(inv.total_amount) FROM commerce.invoices AS inv GROUP BY inv.currency LIMIT 200", []),
+            "invoice_tax": ("SELECT inv.currency, SUM(inv.tax_amount) FROM commerce.invoices AS inv GROUP BY inv.currency LIMIT 200", []),
+            "invoice_item_amount": ("SELECT inv.currency, SUM(li.amount) FROM commerce.invoice_items AS li "
+                                    "JOIN commerce.invoices AS inv ON li.invoice_id = inv.invoice_id GROUP BY inv.currency LIMIT 200", []),
             "revenue": ("SELECT SUM(s.revenue)" + sales, []),
             "cogs": ("SELECT SUM(s.cogs)" + sales, []),
             "gross_profit": ("SELECT SUM(s.revenue) - SUM(s.cogs)" + sales, []),

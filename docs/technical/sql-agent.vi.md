@@ -1,6 +1,6 @@
 # SQL Agent
 
-Tài liệu dựa trên **`main` local tại commit `c118df325447899f8ea6108d441e31ba6df0a69b`**.
+Tài liệu ban đầu dựa trên commit `c118df325447899f8ea6108d441e31ba6df0a69b`; cập nhật theo code hiện tại và bổ sung truy vấn hóa đơn ngày **07/11/2026**.
 
 ## 1. Agent làm gì?
 
@@ -11,7 +11,7 @@ Cần phân biệt hai lớp:
 - `SQLAnalyticsAgent`: hiểu câu hỏi, tạo và kiểm tra SQL, thực thi, trả các dòng dữ liệu cùng thông tin nguồn.
 - `AnalyticsAgent`: gọi lớp trên rồi dùng mô hình để viết câu trả lời dễ đọc từ kết quả. Trong chế độ chat `sql`, router gọi lớp bọc này.
 
-Agent có thể dùng cả 13 bảng được cho phép, không chỉ `inventory` và `products`. Tuy nhiên, câu hỏi tồn kho có luồng xử lý riêng và quy tắc chặt hơn.
+Agent có thể dùng 15 bảng được cho phép, gồm `invoices` và `invoice_items`. Câu hỏi tồn kho có luồng xử lý riêng và quy tắc chặt hơn. Hóa đơn dùng lại luồng sinh, kiểm tra và thực thi SQL hiện có; không có agent riêng.
 
 ## 2. Luồng tổng thể
 
@@ -31,7 +31,7 @@ API chat của ứng dụng là `POST /api/agents/chat`, chọn `agent_mode: "sq
 
 ### Bước diễn giải trước khi sinh SQL
 
-Agent nhận diện chỉ số qua các tên gọi đã khai báo. Khi có ngữ cảnh SQL hội thoại, chưa nhận diện được chỉ số, hoặc nhận diện được chỉ số tồn kho, agent gọi mô hình tạo `MetricMapping`, tức mô tả có cấu trúc:
+Agent nhận diện chỉ số qua các tên gọi đã khai báo. Khi có ngữ cảnh SQL hội thoại, nhận diện được chỉ số tồn kho, hoặc schema liên quan có tồn kho nhưng chưa nhận diện được chỉ số, agent gọi mô hình tạo `MetricMapping`, tức mô tả có cấu trúc:
 
 | Trường | Ý nghĩa |
 | --- | --- |
@@ -42,7 +42,7 @@ Agent nhận diện chỉ số qua các tên gọi đã khai báo. Khi có ngữ
 | `ranking` | Chỉ số xếp hạng, chiều tăng/giảm và số dòng |
 | `representation` | Kết quả tổng hợp (`aggregate`) hoặc theo sản phẩm (`product`) |
 
-Code kiểm tra mô tả này rồi đưa vào prompt sinh SQL. **Trên `main`, mô hình vẫn sinh SQL cho câu hỏi tồn kho; chưa có `compile_inventory_query()` để biên dịch mô tả thành SQL bằng code.** Sau đó code kiểm tra SQL có giữ đúng chỉ số, nhóm, bộ lọc, thời gian và xếp hạng đã diễn giải hay không.
+Code kiểm tra mô tả này. Với `domain: inventory`, `compile_inventory_query()` biên dịch mô tả thành SQL bằng code. Các câu hỏi khác dùng mô hình sinh SQL. Sau đó code kiểm tra công thức, nhóm, bộ lọc, thời gian và xếp hạng theo các quy tắc áp dụng.
 
 Câu hỏi ngoài tồn kho có thể được diễn giải thành `domain: "other"`, không chứa yêu cầu tồn kho. Khi đã nhận diện chỉ số ngoài tồn kho và không có ngữ cảnh hội thoại, agent có thể đi thẳng tới bước sinh SQL.
 
@@ -52,15 +52,15 @@ Ví dụ câu hỏi: “Ở lần ghi nhận mới nhất, tỷ lệ hết hàng
 
 Mô hình nhận câu hỏi, schema liên quan, các JOIN được phép và định nghĩa chỉ số; sau đó trả JSON chứa `sql`, `parameters`, `explanation`, hoặc yêu cầu làm rõ `clarification`.
 
-`decode_query_plan()` đọc JSON và kiểm tra kế hoạch. Nếu SQL hoặc định nghĩa chỉ số không hợp lệ, agent có thể gửi lỗi cùng câu trả lời cũ cho mô hình sửa **một lần**: tối đa hai lần tạo kế hoạch, áp dụng cả câu hỏi tồn kho. Lỗi truy vấn database không kích hoạt vòng sửa kế hoạch.
+`decode_query_plan()` đọc JSON và kiểm tra kế hoạch. Với SQL do mô hình sinh, agent có thể gửi lỗi cùng câu trả lời cũ cho mô hình sửa **một lần**. SQL tồn kho đã biên dịch không dùng vòng sửa bằng mô hình. Lỗi truy vấn database không kích hoạt vòng sửa kế hoạch.
 
 Nếu không nhận diện được chỉ số trong danh mục, truy vấn đọc thông thường vẫn được phép, miễn vượt qua các kiểm tra áp dụng.
 
 ### Giới hạn khi kết hợp tồn kho và dữ liệu khác
 
-Trên `main`, khi có chỉ số tồn kho, prompt chỉ cung cấp hai bảng `inventory` và `products`. `validate_metric_request()` từ chối yêu cầu chứa đồng thời chỉ số tồn kho và chỉ số thuộc mức chi tiết khác, với mã lỗi `incompatible_grain` và yêu cầu tách truy vấn.
+`relevant_schema_tables()` chọn bảng theo câu hỏi và nguồn của chỉ số, đồng thời thêm bảng cầu nối theo quan hệ đã khai báo. Truy vấn kết hợp tồn kho và đơn hàng đi qua nhánh riêng, giữ các nguồn cần thiết và kiểm tra mức chi tiết độc lập.
 
-Ví dụ, câu hỏi yêu cầu tồn kho và doanh thu trong cùng kết quả có thể bị yêu cầu tách riêng. Phiên bản này chưa có nhánh chuyên xử lý tồn kho kết hợp đơn hàng. Không nên xem các câu hỏi kết hợp đó là khả năng đã được bảo đảm chỉ vì các bảng đều có trong danh sách cho phép.
+Không phải mọi kiểu kết hợp đều được hỗ trợ. Hóa đơn chỉ có quan hệ header–item qua `invoice_id`; chưa có khóa liên kết hóa đơn với đơn hàng, sản phẩm hoặc tồn kho. Không tự nối bằng tên bên mua, bên bán hay mô tả hàng hóa.
 
 ## 3. Các bảng được phép
 
@@ -81,8 +81,10 @@ Danh sách chính thức trong code là `APPROVED_COLUMNS` tại [text_to_sql.py
 | `commerce.reviews` | Đánh giá và điểm số |
 | `commerce.shipments` | Ngày gửi/giao hàng và phí vận chuyển |
 | `commerce.web_traffic` | Lượt truy cập, phiên và nguồn truy cập theo ngày |
+| `commerce.invoices` | Hóa đơn đã duyệt: ngày, bên mua/bán, số tiền, thuế, tiền tệ và tên file nguồn |
+| `commerce.invoice_items` | Dòng hóa đơn: mô tả, đơn vị, số lượng, đơn giá và thành tiền |
 
-`build_sql_prompt()` chọn schema theo chỉ số: nếu có chỉ số tồn kho thì đưa `inventory` và `products`; các trường hợp khác đưa toàn bộ danh sách được phép. Prompt tồn kho còn bỏ các cột trùng thuộc tính sản phẩm ở `inventory` và bỏ `price`, `cogs` ở `products`. Agent không tự quét database để sử dụng bảng mới.
+`build_sql_prompt()` dùng `relevant_schema_tables()` để chọn schema theo câu hỏi và chỉ số. Câu hỏi hóa đơn được cung cấp `invoices` và `invoice_items`; trường hợp không xác định được bảng liên quan mới dùng toàn bộ danh sách. Prompt tồn kho còn bỏ các cột trùng thuộc tính sản phẩm ở `inventory` và bỏ `price`, `cogs` ở `products`. Agent không tự quét database để sử dụng bảng mới.
 
 Các đường JOIN chính:
 
@@ -90,6 +92,7 @@ Các đường JOIN chính:
 - `orders` ↔ `payments`, `order_items`, `shipments`, `returns`, `reviews` qua `order_id`.
 - `products` ↔ `order_items`, `inventory`, `returns`, `reviews` qua `product_id`.
 - `order_items` ↔ `promotions` qua `promo_id` hoặc `promo_id_2`.
+- `invoices` ↔ `invoice_items` qua `invoice_id`.
 
 Hiện không có JOIN được khai báo cho `sales` và `web_traffic`. Không thể tùy ý nối hai bảng chỉ vì chúng cùng có cột ngày.
 
@@ -105,7 +108,7 @@ Hiện không có JOIN được khai báo cho `sales` và `web_traffic`. Không 
 - Câu SELECT cuối phải có `LIMIT` từ 1 đến 200.
 - Placeholder `$1`, `$2`... phải khớp danh sách tham số; tối đa 32 tham số kiểu JSON đơn giản. Tham số ngày được nhận diện phải dùng `YYYY-MM-DD` và được chuyển thành kiểu ngày.
 
-Prompt yêu cầu tách giá trị lọc khỏi chuỗi SQL bằng tham số. Cột trong SQL phải có alias bảng; thiếu alias hoặc thiếu `LIMIT` sẽ bị từ chối, không có bước tự bổ sung. `CAST` chỉ được phép sang `DATE` hoặc `NUMERIC`. `EXISTS` chưa nằm trong danh sách hàm được phép của phiên bản này.
+Prompt yêu cầu tách giá trị lọc khỏi chuỗi SQL bằng tham số. Cột trong SQL phải có alias bảng; thiếu alias hoặc thiếu `LIMIT` sẽ bị từ chối, không có bước tự bổ sung. `CAST` chỉ được phép sang `DATE` hoặc `NUMERIC`. `EXISTS` được hỗ trợ theo các kiểm tra quan hệ áp dụng.
 
 ### Đúng ý nghĩa nghiệp vụ
 
@@ -154,7 +157,7 @@ Bộ nhớ hỏi tiếp chuyên biệt này hỗ trợ chỉ số tồn kho. V�
 | `metadata.semantic_interpretation` | Mô tả tồn kho đã kiểm tra, nếu đi qua nhánh tương ứng |
 | `limitations` | Giới hạn cần giữ khi diễn giải kết quả |
 
-Trên `main` chưa có trường `metadata.execution_status`. Cần đọc kết hợp các dấu hiệu sau:
+`metadata.execution_status` phân biệt `executed`, `executed_empty`, `clarification_required`, `source_failed`, `validation_failed` và `planning_failed`. Có thể đọc kết hợp các dấu hiệu sau:
 
 | Dấu hiệu | Ý nghĩa |
 | --- | --- |
@@ -166,13 +169,13 @@ Trên `main` chưa có trường `metadata.execution_status`. Cần đọc kết
 | `metadata.error_type` | Loại lỗi, ví dụ `SQLValidationError`, `MetricDefinitionError` |
 | `metadata.metric_error_code` | Mã lỗi nghiệp vụ, ví dụ `snapshot_required`, `incompatible_grain` |
 
-Lỗi trước khi có SQL có thể không có `query_status`. Với tồn kho, metadata có thể thêm `metric_catalog_version`, `historical_inventory`, `snapshot_dates`. Phiên bản này chưa thêm các trường riêng `columns`, `filters`, `time_scope`; thông tin bộ lọc và thời gian nằm trong `semantic_interpretation` khi có.
+Lỗi trước khi có SQL có thể không có `query_status`. Metadata có `columns`; với tồn kho có thể thêm `metric_catalog_version`, `historical_inventory`, `snapshot_dates`, `filters`, `time_scope` và `semantic_interpretation`. Với hóa đơn, `invoice_access_control: temporary_all_analytics_readers` ghi rõ cơ chế quyền tạm thời.
 
 Sau khi SQL thành công, `AnalyticsAgent` gửi dữ liệu, định nghĩa chỉ số, giới hạn và nguồn cho mô hình viết phần trả lời. Nếu bước này lỗi, code trả thông báo dự phòng về số dòng và nguồn. SQL Agent trực tiếp thường chỉ trả `Query completed.`; phần diễn giải thuộc lớp bọc.
 
 ## 7. Những giới hạn cần nhớ
 
-- Dữ liệu tồn kho là dữ liệu lịch sử. Ngày mới nhất trong bảng không mặc nhiên là tồn kho hôm nay. Prompt yêu cầu không đổi “hiện tại” thành ngày lịch sử mới nhất; `main` chưa có bước kiểm tra độ sẵn có của kỳ hiện tại như nhánh `QuocAn`.
+- Dữ liệu tồn kho là dữ liệu lịch sử. Ngày mới nhất trong bảng không mặc nhiên là tồn kho hôm nay. Agent kiểm tra ngày mới nhất với kỳ hiện tại được yêu cầu và có thể trả `requested_period_unavailable`.
 - Không có quan sát không đồng nghĩa tồn kho bằng 0. Cờ `reorder_flag` lịch sử không tự tạo thành khuyến nghị đặt hàng hiện tại.
 - Đơn vị tiền tệ của dataset chưa được xác nhận; không tự gắn USD hoặc VND.
 - Chỉ số tỷ lệ trả dạng phân số: `0.25` tương ứng `25%`; các dòng kết quả không tự nhân 100.
@@ -197,3 +200,68 @@ Sau khi SQL thành công, `AnalyticsAgent` gửi dữ liệu, định nghĩa ch�
 Các test có trên `main` nên đọc: [test_sql_analytics.py](../../tests/test_sql_analytics.py), [test_sql_generation.py](../../tests/test_sql_generation.py), [test_sql_metric_definitions.py](../../tests/test_sql_metric_definitions.py), [test_sql_join_duplication.py](../../tests/test_sql_join_duplication.py) và [test_sql_followups.py](../../tests/test_sql_followups.py).
 
 Khi debug, bắt đầu từ `ok`, `query_status`, `metadata.error_type` và `metadata.metric_error_code`; tiếp theo xem SQL và tham số, đối chiếu `metadata.metrics`, rồi kiểm tra `limitations`. Khi thêm bảng/cột hoặc chỉ số, cần cập nhật đồng bộ danh sách cho phép, quan hệ JOIN nếu có, định nghĩa chỉ số, quyền database và test liên quan.
+
+## 9. Truy vấn hóa đơn
+
+### Nguồn dữ liệu và phê duyệt
+
+`public.invoice_extractions` giữ JSON gốc, OCR và metadata xử lý. SQL Agent không được đọc bảng này. Sau khi người vận hành kiểm tra nội dung hóa đơn, chạy:
+
+```powershell
+.venv/Scripts/python.exe scripts/ingestion/approve_invoice.py <invoice_id>
+```
+
+Lệnh dùng `DATABASE_URL` có quyền ghi, không dùng tài khoản analytics. Không chạy tự động để phê duyệt kết quả OCR chưa kiểm tra. `InvoiceRepository.approve()` khóa bản ghi nguồn, chuẩn hóa `invoice.v1`, đổi trạng thái thành `approved` và `review_required = false`, rồi ghi header cùng các items trong một giao dịch. Lỗi chuẩn hóa hoặc ghi database làm rollback toàn bộ thao tác.
+
+| Bảng | Cột truy vấn được |
+| --- | --- |
+| `commerce.invoices` | `invoice_id`, `source_filename`, `invoice_no`, `invoice_date`, `buyer`, `seller`, `subtotal`, `tax_amount`, `total_amount`, `currency` |
+| `commerce.invoice_items` | `invoice_id`, `line_no`, `description`, `unit`, `quantity`, `unit_price`, `amount` |
+
+`invoice_id` tham chiếu bản extraction; khóa của item là `(invoice_id, line_no)`. `invoice_no` không được coi là duy nhất. Hash file chỉ dùng nội bộ để chặn xuất bản trùng cùng một file dưới ID khác; không nằm trong allowlist SQL. Phê duyệt lại thay thế toàn bộ items, không nhân đôi dữ liệu.
+
+Chuỗi số hiện hỗ trợ định dạng Việt Nam: `118.000.000` → `118000000`, `1.234,56` → `1234.56`. Giá trị JSON dạng số được giữ theo giá trị số. Ngày hỗ trợ ISO, `dd/mm/yyyy` và `30 tháng 09 năm 2026`. Chuỗi sai hoặc không rõ định dạng bị từ chối; không tự xóa mọi dấu phân cách. Thiếu dữ liệu giữ `NULL`, không suy ra số lượng từ thành tiền/đơn giá hoặc tự gán VND. `currency` chỉ nhận mã ba chữ cái khi được cung cấp rõ ràng.
+
+Trigger xóa bản xuất bản khi các trường nguồn liên quan được cập nhật, kể cả khi chạy lại extraction. Cần kiểm tra và phê duyệt lại để xuất bản. Xóa extraction sẽ xóa cả header và items nhờ foreign key. Chỉ đổi trạng thái bằng SQL không tạo bản xuất bản: phải dùng lệnh phê duyệt ở trên. Không tự phê duyệt hay backfill bản extraction thực tế đang chờ review.
+
+### Quyền truy cập hiện tại là tạm thời
+
+**Tạm thời, mọi người dùng có danh tính server xác thực và quyền `analytics:read` được xem mọi hóa đơn đã xuất bản, bất kể người tải lên. Chưa có lọc theo owner, tenant hoặc vai trò nghiệp vụ. Cơ chế này phải được thay thế khi hệ thống RBAC được thiết lập.** Quyền rộng chỉ áp dụng cho việc đọc; không cấp quyền sửa/phê duyệt hóa đơn cho người dùng SQL Agent.
+
+Database vẫn bật RLS. Hai policy `invoice_reader_temporary_all` và `invoice_item_reader_temporary_all` dùng `USING (true)` cho role đọc `commerce_analytics_reader`. Migration cấp membership với `INHERIT TRUE` cho login `commerce_reader` hiện có. Không cấp trực tiếp quyền bảng hóa đơn cho `anon`/`authenticated`, không cấp quyền đọc JSON extraction và không dùng service role trong SQL Agent. `ANALYTICS_DATABASE_URL` vẫn phải vượt qua kiểm tra role chỉ đọc của repository. Với môi trường mới, chạy migration rồi script `scripts/provision_commerce_analytics_reader.sql` và cấu hình login theo hướng dẫn đầu script.
+
+Khi bổ sung RBAC: thay hai policy tạm thời, truyền phạm vi người dùng đã xác thực tới database, kiểm tra truy cập giữa các tenant, và cập nhật tài liệu/metadata này. Hiện repository dùng kết nối đọc dùng chung; `uploaded_by` chưa được dùng để phân quyền. Kết quả truy vấn hóa đơn ghi `metadata.invoice_access_control = temporary_all_analytics_readers` và kèm giới hạn quyền tạm thời.
+
+### Truy vấn và giới hạn
+
+Các chỉ số mới là `invoice_count`, `invoice_total`, `invoice_tax`, `invoice_item_amount`. Câu hỏi hóa đơn được định tuyến sang analytics và cung cấp schema hai bảng hóa đơn. Ví dụ: “Tìm hóa đơn ABC”, “Tổng tiền hóa đơn theo bên bán”, “Total tax by month”, “Show invoice items for buyer X”. Không có JOIN từ hóa đơn sang orders/products/inventory.
+
+```sql
+SELECT inv.seller, inv.currency, SUM(inv.total_amount) AS invoice_total
+FROM commerce.invoices AS inv
+WHERE inv.invoice_date >= $1 AND inv.invoice_date < $2
+GROUP BY inv.seller, inv.currency
+ORDER BY 3 DESC
+LIMIT 200
+```
+
+Truy vấn tổng hợp tiền phải xuất và nhóm theo `invoices.currency`. Với tiền ở dòng hàng, JOIN tới header để lấy currency. Nhóm `NULL` vẫn có nghĩa tiền tệ chưa xác định, không chứng minh các hóa đơn dùng cùng tiền tệ. Không coi tiền hóa đơn là doanh thu đã ghi nhận. Bộ kiểm tra JOIN chặn cộng tiền header sau khi JOIN nhiều items; `SUM(DISTINCT total_amount)` không sửa được lỗi này. `description` là tên/mô tả dòng hàng, không có mã sản phẩm suy diễn.
+
+### Kiểm tra và migration
+
+Migration: `supabase/migrations/20261107054431_invoice_sql_projection.sql` (version khớp Supabase). Migration yêu cầu bảng nguồn `public.invoice_extractions` của hệ thống extraction đã tồn tại. Test cục bộ:
+
+```powershell
+.venv/Scripts/python.exe -m unittest discover -s tests -p test_invoice_sql.py -v
+.venv/Scripts/python.exe -m unittest discover -s tests -p test_sql_metric_definitions.py -v
+```
+
+Test tích hợp Supabase là opt-in; fixture được rollback. Cần `DATABASE_URL` có quyền ghi và `ANALYTICS_DATABASE_URL` dùng login đọc đã provision:
+
+```powershell
+$env:RUN_INVOICE_DB_TESTS='1'
+.venv/Scripts/python.exe -m unittest discover -s tests -p test_invoice_publication.py -v
+Remove-Item Env:RUN_INVOICE_DB_TESTS
+```
+
+Kiểm tra bao gồm chuẩn hóa, approval/republication, thu hồi khi xử lý lại, cascade khi xóa nguồn, quyền đọc tạm thời, chặn ghi/đọc extraction thô và kết nối repository thực tế. Mở rộng định dạng số hoặc dữ liệu credit note cần hợp đồng chuẩn hóa riêng; hiện số âm bị từ chối.

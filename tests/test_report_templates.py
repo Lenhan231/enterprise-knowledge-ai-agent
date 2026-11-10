@@ -11,6 +11,49 @@ from core.reports.templates import parse_report_template, render_report_template
 
 
 class ReportTemplateTest(unittest.TestCase):
+    def test_marked_docx_preserves_static_text_styles_headers_and_footers(self):
+        source = Document()
+        source.sections[0].header.paragraphs[0].text = 'Company header'
+        source.sections[0].footer.paragraphs[0].text = 'Company footer'
+        source.add_heading('Summary', 1)
+        source.add_paragraph('Static disclaimer')
+        source.add_paragraph('{{report:Summary}}')
+        table = source.add_table(rows=2, cols=1)
+        table.rows[0].cells[0].text = 'Value'
+        run = table.rows[1].cells[0].paragraphs[0].add_run('{{report:rows}}')
+        run.bold = True
+        source.add_paragraph('Signature')
+        stream = BytesIO(); source.save(stream)
+        template = parse_report_template('a.docx', stream.getvalue())
+        rendered = Document(BytesIO(render_report_template(template, {'Summary': 'Generated'}, [[[str(i)] for i in range(151)]])))
+        self.assertIn('Static disclaimer', [p.text for p in rendered.paragraphs])
+        self.assertIn('Signature', [p.text for p in rendered.paragraphs])
+        self.assertEqual(rendered.sections[0].header.paragraphs[0].text, 'Company header')
+        self.assertEqual(rendered.sections[0].footer.paragraphs[0].text, 'Company footer')
+        self.assertEqual(len(rendered.tables), 4)
+        self.assertEqual(rendered.tables[-1].rows[-1].cells[0].text, '150')
+        self.assertTrue(rendered.tables[0].rows[1].cells[0].paragraphs[0].runs[0].bold)
+
+    def test_explicit_markers_preserve_static_markdown(self):
+        template = parse_report_template('a.md', b'# Summary\nCompany disclaimer\n{{report:Summary}}\n| Metric | Value |\n| --- | --- |\n| {{report:rows}} | |\nSignature')
+        output = render_report_template(template, {'Summary': 'Generated'}, [[['stock', '10']]])
+        self.assertIn('Company disclaimer', output)
+        self.assertIn('Signature', output)
+        self.assertIn('Generated', output)
+        self.assertNotIn('{{report:', output)
+
+    def test_mixed_and_misplaced_markers_rejected(self):
+        for content in [b'# Summary\n{{report:Other}}', b'# Summary\n{{report:Summary}}\n# Missing',
+                        b'# Summary\n{{report:Summary}}\n{{report:Summary}}']:
+            with self.assertRaises(ValueError):
+                parse_report_template('a.md', content)
+
+    def test_large_tables_are_split_into_labeled_blocks(self):
+        template = parse_report_template('a.md', b'# Details\n| Value |\n| --- |')
+        output = render_report_template(template, {'Details': 'Details'}, [[[str(i)] for i in range(151)]])
+        self.assertIn('Rows 101–150', output)
+        self.assertIn('| 150 |', output)
+
     def test_markdown_template_keeps_heading_order_and_fills_table(self):
         source = "# Monthly Report\n\n## Summary\n\n## KPIs\n\n| Metric | Value |\n| --- | --- |\n| placeholder | placeholder |\n"
         template = parse_report_template("report.md", source.encode())

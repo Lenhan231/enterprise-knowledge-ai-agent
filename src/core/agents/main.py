@@ -180,6 +180,8 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
     async def report(request: Request, question: str = Form(...), template: UploadFile | None = File(None),
                      source_mode: Literal["documents", "analytics", "orchestrated", "combined"] = Form("documents"),
                      output_format: Literal["markdown", "docx"] | None = Form(None),
+                     template_choice: Literal['uploaded', 'suggested'] | None = Form(None),
+                     accept_supported_scope: bool = Form(False),
                      conversation_id: str | None = Form(None, max_length=128)):
         try:
             question = ChatRequest(question=question).question
@@ -212,6 +214,7 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
             content = await template.read(10 * 1024 * 1024 + 1) if template else None
             result, payload, media_type = await request.app.state.report_agent.generate_from_template(
                 agent_request, filename, content, source_mode=source_mode, output_format=output_format,
+                template_choice=template_choice, accept_supported_scope=accept_supported_scope,
             )
             return report_response(result, payload, media_type)
         except PermissionError:

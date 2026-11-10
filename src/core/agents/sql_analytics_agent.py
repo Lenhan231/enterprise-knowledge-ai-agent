@@ -155,7 +155,9 @@ class SQLAnalyticsAgent(BaseAgent):
                         result['metadata'].update(status='unsupported',latest_available_snapshot=str(latest) if latest else None,
                             availability_source='MAX(commerce.inventory.snapshot_date)')
                         return result
-            if (direct is None and (context is not None
+            cross_domain = ('commerce.inventory' in tables and bool(tables & {'commerce.orders', 'commerce.order_items'})
+                            and bool(re.search(r'\borders\b|\bordered\b|\border(?!\s+by)\b|đơn hàng', question, re.I)))
+            if (direct is None and not cross_domain and (context is not None
                     or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
                     or (not metric_names and 'commerce.inventory' in tables))):
                 with measure('metric_interpretation'):
@@ -208,6 +210,8 @@ class SQLAnalyticsAgent(BaseAgent):
                             'do not introduce direct fact joins or ask the user to approve an existing relationship.')
                 if plan.sql:
                     validate_commerce_sql(plan.sql, allowed_sources=self.table_columns)
+                    if cross_domain and not {'commerce.inventory','commerce.orders','commerce.order_items'} <= set(validate_commerce_sql(plan.sql).sources):
+                        raise SQLValidationError('The requested cross-domain contract must retain inventory, orders and order_items.')
                     definitions = validate_metric_definitions(plan.sql, metric_names, plan.parameters, APPROVED_COLUMNS,
                                                               question=interpretation.date_question() if interpretation and interpretation.domain == 'inventory' else question)
                     if interpretation:
@@ -247,12 +251,21 @@ class SQLAnalyticsAgent(BaseAgent):
         limitations = list(dict.fromkeys(
             note for definition in definitions.values() for note in definition.get("limitations", ())
         ))
+        invoice_query = any(source in {'commerce.invoices', 'commerce.invoice_items'} for source in validated.sources)
+        if invoice_query:
+            limitations.extend([
+                'Only explicitly approved invoice extractions are included; missing fields remain unknown.',
+                'Invoice access is temporarily shared across all analytics:read users until RBAC is established.',
+                'Currency may be unknown; a NULL currency group does not establish a shared currency.',
+            ])
         if any(definition["unit"].startswith("currency") for definition in definitions.values()):
             limitations.append("Dataset currency is not confirmed; do not assume USD, VND or another currency.")
         if any(definition["aggregation"] == "ratio" and definition["unit"] == "percent"
                for definition in definitions.values()):
             limitations.append("Ratio results are fractions: 0.25 means 25%; raw result rows are not rescaled.")
         metadata = {"source": list(validated.sources), "explanation": plan.explanation, "metrics": definitions}
+        if invoice_query:
+            metadata['invoice_access_control'] = 'temporary_all_analytics_readers'
         metadata['columns'] = [{'name': name, 'unit': definitions.get(name, {}).get('unit')}
                                for name in (rows[0] if rows else ())]
         if interpretation and interpretation.domain == 'inventory':

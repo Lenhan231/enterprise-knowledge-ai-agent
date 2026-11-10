@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from core.agents.streamlit_ui import AGENT_MODES, display_result, submit_chat, submit_report
+from core.agents.streamlit_ui import AGENT_MODES, ReportConfirmationRequired, display_result, submit_chat, submit_report
 
 
 class _Response:
@@ -34,6 +34,20 @@ class _BinaryResponse(_Response):
 
 
 class StreamlitClientTest(unittest.TestCase):
+    def test_report_confirmation_is_preserved_for_explicit_resubmission(self):
+        detail = {'status': 'confirmation_required', 'confirmation_required': True,
+                  'scope_decision_required': True, 'unsupported_requirements': ['Supplier lead time missing']}
+        def opener(request, timeout):
+            raise HTTPError(request.full_url, 409, 'Conflict', {}, BytesIO(json.dumps({'detail': detail}).encode()))
+        with self.assertRaises(ReportConfirmationRequired) as caught:
+            submit_report('Inventory report', opener=opener)
+        self.assertEqual(caught.exception.detail, detail)
+        def accepted(request, timeout):
+            self.assertIn(b'name="template_choice"\r\n\r\nsuggested', request.data)
+            self.assertIn(b'name="accept_supported_scope"\r\n\r\ntrue', request.data)
+            return _BinaryResponse(b'report', 'text/markdown')
+        submit_report('Inventory report', template_choice='suggested', accept_supported_scope=True, opener=accepted)
+
     def test_report_clarification_displays_actual_question(self):
         def opener(request, timeout):
             body = json.dumps({"detail": {"code": "clarification_required",

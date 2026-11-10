@@ -13,7 +13,8 @@ from sqlglot import exp, parse
 from sqlglot.errors import ParseError, TokenError
 
 from core.analytics.metric_ontology import get_metric_definition, resolve_metric_names
-from core.analytics.join_validation import PRIMARY_KEYS, validate_join_aggregations, column_origin
+from core.analytics.invoices import is_invoice_question, validate_invoice_currency
+from core.analytics.join_validation import PRIMARY_KEYS, validate_join_aggregations, approved_derived_join, column_origin
 from core.analytics.metric_validation import _single_snapshot
 from sqlglot.optimizer.scope import Scope, traverse_scope
 from core.prompts.sql import SQL_GENERATION_PROMPT, SQL_REPAIR_PROMPT, INVENTORY_SQL_INSTRUCTIONS
@@ -21,6 +22,13 @@ from core.prompts.sql import SQL_GENERATION_PROMPT, SQL_REPAIR_PROMPT, INVENTORY
 
 MAX_RESULT_ROWS = 200
 APPROVED_COLUMNS: dict[str, frozenset[str]] = {
+    "commerce.invoices": frozenset({
+        "invoice_id", "source_filename", "invoice_no", "invoice_date", "buyer", "seller",
+        "subtotal", "tax_amount", "total_amount", "currency",
+    }),
+    "commerce.invoice_items": frozenset({
+        "invoice_id", "line_no", "description", "unit", "quantity", "unit_price", "amount",
+    }),
     "commerce.sales": frozenset({"date", "revenue", "cogs"}),
     "commerce.orders": frozenset({
         "order_id", "order_date", "customer_id", "zip", "order_status", "payment_method", "device_type", "order_source",
@@ -57,6 +65,7 @@ def _edge(left_table: str, left_column: str, right_table: str, right_column: str
 
 
 APPROVED_JOINS = frozenset({
+    _edge("commerce.invoices", "invoice_id", "commerce.invoice_items", "invoice_id"),
     _edge("commerce.customers", "customer_id", "commerce.orders", "customer_id"),
     _edge("commerce.customers", "zip", "commerce.geography", "zip"),
     _edge("commerce.orders", "order_id", "commerce.payments", "order_id"),
@@ -73,6 +82,7 @@ APPROVED_JOINS = frozenset({
     _edge("commerce.shipments", "order_id", "commerce.orders", "order_id"),
 })
 APPROVED_DATE_COLUMNS = frozenset({
+    ("commerce.invoices", "invoice_date"),
     ("commerce.customers", "signup_date"),
     ("commerce.inventory", "snapshot_date"),
     ("commerce.orders", "order_date"),
@@ -240,6 +250,12 @@ def validate_commerce_sql(sql: str, *, allowed_sources=None) -> ValidatedSQL:
         scope = scopes_by_select[id(join.find_ancestor(exp.Select))]
         if join.this.alias_or_name.casefold() not in {c.table.casefold() for p in predicates for c in p.find_all(exp.Column)}:
             raise SQLValidationError('JOIN condition must connect the joined relation.')
+        if any(isinstance(p, exp.EQ) and any(
+                isinstance(c, exp.Column) and not relations[c.table.casefold()][0]
+                for c in (p.this, p.expression)) for p in predicates):
+            if not all(isinstance(p, exp.EQ) for p in predicates) or not approved_derived_join(scope, predicates, APPROVED_JOINS):
+                raise SQLValidationError('Derived joins require complete grouped keys and approved dimension lineage.')
+            continue
         for predicate in predicates:
             # Snapshot filters belong in ON for an outer join to preserve missing observations.
             if isinstance(predicate, (exp.EQ, exp.GTE, exp.GT, exp.LTE, exp.LT)):
@@ -254,6 +270,7 @@ def validate_commerce_sql(sql: str, *, allowed_sources=None) -> ValidatedSQL:
             raise SQLValidationError('JOIN requires an approved relationship in addition to any date filters.')
 
     validate_join_aggregations(tree, SQLValidationError)
+    validate_invoice_currency(tree, SQLValidationError)
 
     def owning_select(node):
         while node is not None and not isinstance(node, exp.Select):
@@ -407,23 +424,25 @@ def _date_parameter_indexes(sql: str) -> set[int]:
 
 def relevant_schema_tables(question, definitions):
     """Select prompt context only; authorization always uses the full backend allowlist."""
+    if is_invoice_question(question) or any(d.get('domain') == 'invoices' for d in definitions.values()):
+        return {'commerce.invoices', 'commerce.invoice_items'}
     text = question.casefold().replace('_', ' ')
     tables = {table for definition in definitions.values()
               for table in re.findall(r'commerce\.\w+', definition['source'])}
     cues = {
-        'inventory': r'inventory|stock|snapshot|tá»“n kho',
-        'products': r'product|category|catalog|sku|sáº£n pháº©m|danh má»¥c',
-        'returns': r'return|refund|tráº£ hÃ ng|hoÃ n hÃ ng',
-        'orders': r'order|ordered|Ä‘Æ¡n hÃ ng',
+        'inventory': r'inventory|stock|snapshot|tồn kho',
+        'products': r'product|category|catalog|sku|sản phẩm|danh mục',
+        'returns': r'return|refund|trả hàng|hoàn hàng',
+        'orders': r'order|ordered|đơn hàng',
         'order_items': r'quantity|quantities|ordered units|line value|order items|ordered quantities',
-        'customers': r'customer|khÃ¡ch hÃ ng',
-        'geography': r'region|district|city|khu vá»±c|thÃ nh phá»‘',
-        'payments': r'payment|installment|thanh toÃ¡n',
-        'promotions': r'promotion|promo|khuyáº¿n mÃ£i',
-        'reviews': r'review|rating|Ä‘Ã¡nh giÃ¡',
-        'shipments': r'shipment|shipping|delivery|giao hÃ ng',
-        'web_traffic': r'session|traffic|bounce|truy cáº­p',
-        'sales': r'revenue|cogs|gross profit|doanh thu|lá»£i nhuáº­n',
+        'customers': r'customer|khách hàng',
+        'geography': r'region|district|city|khu vực|thành phố',
+        'payments': r'payment|installment|thanh toán',
+        'promotions': r'promotion|promo|khuyến mãi',
+        'reviews': r'review|rating|đánh giá',
+        'shipments': r'shipment|shipping|delivery|giao hàng',
+        'web_traffic': r'session|traffic|bounce|truy cập',
+        'sales': r'revenue|cogs|gross profit|doanh thu|lợi nhuận',
     }
     tables.update('commerce.'+name for name, pattern in cues.items() if re.search(pattern, text))
     # Supply bridge tables for approved paths, without inventing direct fact-to-fact joins.
@@ -484,11 +503,35 @@ def build_sql_prompt(
             {table: sorted(PRIMARY_KEYS[table.split('.')[1]]) for table in sorted(tables)})
         + '\nExplicit calculations with clear operands are supported without creating a canonical KPI. '
           'Aliases must be unique across the entire query, including base tables inside CTEs and outer CTE aliases. '
+          'For returned-unit / ordered-unit ratios, independently aggregate returns.return_quantity by return_date '
+          'and order_items.quantity by orders.order_date at the requested product grain and period, '
+          'then join their complete grouped product keys. Cast numerator AS NUMERIC and divide by NULLIF(denominator,0). '
+          'Use INNER JOIN for paired observed operands; never COALESCE a missing operand to zero. '
+          'Rank the ratio with NULLS LAST and product_id as tie-break. '
+          'Project product_id, returned_units, ordered_units and the ratio so both operands are inspectable. '
+          'This is not the canonical order-based return_rate. Never join raw fact rows for this ratio. '
+          'For inventory/order presence use correlated EXISTS through approved product keys; do not multiply inventory rows. '
+          'Compare inventory and order measures using independent category aggregates, never an unaggregated fact join. '
+          'Only when the user explicitly excludes cancelled orders, use LOWER(order_status) NOT IN (\'cancelled\',\'canceled\'). '
+          'Otherwise retain every order status; never add a default cancellation filter to unit totals or comparisons. '
+          'Every product TOP-N ranking needs product_id as a deterministic tie-break after the requested measure. '
+          'For an explicit inventory units_sold / ordered-quantity comparison, the inventory CTE selects only '
+          'products.category and SUM(inventory.units_sold), groups by category, filters the entire requested period, '
+          'and has no inner LIMIT. This explicit movement-observation sum is not a balance KPI. '
+          'FULL JOIN the complete category aggregates, select COALESCE of category keys, and keep absent measures NULL. '
+          'For stockout_flag=true plus order presence, select snapshot_date and product identity, filter the flag '
+          'and the requested inventory period, use EXISTS with order_items.product_id=products.product_id '
+          'and filter orders.order_date independently to the requested order period. '
+          'Do not treat missing observations as zero or infer that inventory units_sold equals ordered quantities. '
           'For duplicate rows report excess rows SUM(group_count-1), COALESCE to zero; distinguish duplicate groups '
           'and all participating rows when those are explicitly requested. '
           'Use typed DATE range parameters for transaction periods; avoid EXTRACT on an untyped parameter.'
           ' Product names are not unique: product-level results must include product_id, and product-level '
           'aggregates must group by product_id as well as any displayed name.'
+          ' For missing returned product-order pairs, anchor returns through its approved products and orders joins, '
+          'then use NOT EXISTS order_items with order_items.product_id=products.product_id AND '
+          'order_items.order_id=orders.order_id. Select DISTINCT product_id,order_id when pairs are requested. '
+          'An indirect approved path does not require user confirmation; preserve source grain and validated keys.'
         + ('\nStored projection fields: '+json.dumps(stored_fields)+
            '. Select these directly from the inventory alias. Do not aggregate or GROUP BY in product representation. '
            'Product identity may use inventory.product_id or the joined products.product_id.\n' if stored_fields else '')

@@ -11,6 +11,7 @@ Raw evidence for the Knowledge AI evaluation (report Sections IV.4–IV.5 and VI
 | `<arm>.scored.codex.json` | Scored with Judge B (Codex verdicts) |
 | `<arm>.scored.claude.json` | Scored with Judge C (Claude verdicts; test set only) |
 | `judge-verdicts-*.jsonl` | Raw external judge verdicts. In the `-nofaith` versions, faithfulness is nulled, because Judge B did not read the source pages |
+| `B2-after.json`, `E2E-K-after.json` (+ `.scored.json`, `judge-verdicts-*-testv1-after*.jsonl`) | Tuned RAG and Knowledge mode after the improvements of Section VI.1.10; `B2.json` is the matching before run |
 | `latency-after-fix-20261106.json` | V1–V6 latency after the corrective fixes (`scripts/operations/measure_pipeline_latency.py`) |
 
 The judge prompts themselves are not stored. They can be regenerated exactly with `score_vietstyle_arm.py export <runs> --output <file>`, which takes the run files, the question set and the policy text.

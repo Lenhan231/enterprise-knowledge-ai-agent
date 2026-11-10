@@ -657,7 +657,14 @@ def _process_invoice_upload(
     except Exception as error:
         logger.exception("Invoice extraction failed for %s", invoice_id)
         try:
-            repository.mark_failed(invoice_id, type(error).__name__)
+            failure = str(error)
+            safe_failure = next((
+                label for marker, label in (
+                    ("Gemini invoice API returned HTTP 503", "Gemini temporarily unavailable (HTTP 503)"),
+                    ("Gemini invoice API returned HTTP 429", "Gemini rate limited (HTTP 429)"),
+                ) if marker in failure
+            ), type(error).__name__)
+            repository.mark_failed(invoice_id, safe_failure)
         except Exception:
             logger.exception("Failed to record invoice failure %s", invoice_id)
     finally:

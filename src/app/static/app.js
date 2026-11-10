@@ -1719,10 +1719,20 @@ $("#upload-form").addEventListener("submit", async (event) => {
   } catch (error) {
     progress.hidden = true;
     elapsedLabel.hidden = true;
-    status.dataset.state = result ? "warning" : "error";
-    status.textContent = result
-      ? `The file was processed successfully as ${result.document_id}, but the workspace could not refresh: ${error.message}`
-      : error.message;
+    if (invoiceMode) {
+      const invoiceId = result?.invoice_id;
+      status.dataset.state = invoiceId ? "warning" : "error";
+      status.textContent = result?.processing_status === "failed"
+        ? `Invoice ${invoiceId} was saved, but extraction failed: ${result.error_message || error.message}`
+        : invoiceId
+        ? `Invoice ${invoiceId} was saved, but its processing status could not be refreshed: ${error.message}`
+        : error.message;
+    } else {
+      status.dataset.state = result ? "warning" : "error";
+      status.textContent = result
+        ? `The file was processed successfully as ${result.document_id}, but the workspace could not refresh: ${error.message}`
+        : error.message;
+    }
   } finally {
     window.clearInterval(processingTimer);
     controls.forEach((control, index) => { control.disabled = controlsWereDisabled[index]; });

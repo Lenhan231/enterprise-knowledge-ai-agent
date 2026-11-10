@@ -537,7 +537,7 @@ def _infer_with_gemini(
                 break
             except HTTPError as error:
                 detail = error.read(1200).decode("utf-8", errors="replace")
-                if error.code != 429 or attempt == 2:
+                if error.code not in {429, 500, 502, 503, 504} or attempt == 2:
                     raise RuntimeError(
                         f"Gemini invoice API returned HTTP {error.code}: {detail}"
                     ) from error

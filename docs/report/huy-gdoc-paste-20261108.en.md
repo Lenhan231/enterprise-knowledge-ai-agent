@@ -36,9 +36,9 @@ To measure the changes without reusing questions that had informed them, a secon
 | Test set 2, Knowledge mode | 22/38 (58%) | 27/38 (71%) |
 | Both test sets, Tuned RAG (paired) | 39/64 (61%) | 46/64 (72%) |
 
-*Note.* The first test set's "before" run is the final configuration of Section 1.9. Knowledge mode had no complete "before" run on the first test set because the provider's daily quota ran out. Questions skipped by a configuration (follow-up questions in-process, access-control questions over the API) are excluded.
+*Note.* The first test set's "before" run is the final configuration of Section 1.9. Knowledge mode had no complete "before" run on the first test set because the provider's daily quota ran out. Questions skipped by a configuration (follow-up questions in-process, access-control questions over the API) are excluded. In the Knowledge mode "after" runs, each search returned five passages rather than eight, because the search planner applied its per-branch limit even when it did not split the question; this was corrected after the runs, so the Knowledge mode results understate the improved configuration slightly.
 
-Across both test sets, Tuned RAG answered 9 more questions correctly and 2 fewer, a gain of 10.9 percentage points (95% bootstrap CI 1.6 to 20.3). The exact McNemar test on the 64 paired questions gave p = .065, so the improvement is consistent but only borderline significant at this sample size. Knowledge mode improved by 13 points on the second test set (5 gained, none lost; p = .062). On the second test set, Recall@5 rose from 0.81 to 0.87 and MRR from 0.75 to 0.79; on the first, MRR rose from 0.81 to 0.85 and key-point coverage from 66% to 74%.
+Across both test sets, Tuned RAG answered 9 more questions correctly and 2 fewer, a gain of 10.9 percentage points (95% bootstrap CI 1.6 to 20.3). The exact McNemar test on the 64 paired questions gave p = .065, so the improvement is consistent but only borderline significant at this sample size. Knowledge mode improved by 13 points on the second test set (5 gained, none lost; p = .062). On the second test set, Recall@5 rose from 0.81 to 0.87 and MRR from 0.75 to 0.79; on the first, MRR rose from 0.81 to 0.85 and key-point coverage from 66% to 74%. Answers also stayed closer to their sources: Judge A, the only judge that reads the cited pages, rated 83% (Tuned RAG) and 88% (Knowledge mode) of the cited answers on the second test set as faithful, up from 73% and 78%, and 92% in both configurations on the first test set.
 
 The changed questions match the intended causes. The unaccented question about emergency purchases was answered from the wrong policy page before and correctly after accent restoration. Four multi-part questions moved from partially to fully correct, and one question whose audit had failed was verified after the larger verifier budget. The two losses were longer answers that the verifier withheld, and citation precision on the second test set fell from 87% to 82%, because more passages give the model more nearby but non-evidential text to cite. Every remaining incorrect answer was a refusal or a withheld answer rather than a confidently wrong one. The verifier's handling of long answers is therefore the next limit to address, and it should be tuned on the development set, not on these test sets.
 
@@ -49,6 +49,16 @@ Judges B and C agreed very closely (all 74 verdicts on the second test set befor
 ▶ Where: VII.1 Summary of Findings. Replace the sentence that says Knowledge and Auto mode results on the test set are [pending].
 
 A second set of improvements targeted the remaining retrieval failures. On 64 paired questions from two locked test sets, they raised Tuned RAG accuracy from 61% to 72% (95% CI for the difference 1.6 to 20.3 points; McNemar p = .065), and Knowledge mode reached 71–76% on the two test sets. All remaining errors were refusals rather than confidently wrong answers.
+
+— end of block —
+
+▶ Where: VII.3 Future Work (or Limitations). Add.
+
+**Multi-part questions.** Questions whose parts are answered in different policy sections remain the main retrieval failure. Splitting such a question into up to three searches was tried on the development set: it retrieved slightly more evidence pages (0.76 to 0.80 of the evidence pages) but did not fix the target questions and increased refusals, so it was not adopted. A lasting fix likely needs chunking that keeps related clauses together, or retrieval that follows cross-references between sections.
+
+**Verifier on long answers.** The two answers lost after the improvements were long answers that the claim verifier withheld. Verifying long answers in parts, tuned on the development set, is the next step.
+
+**Citation precision.** With more passages in the prompt, the model sometimes cites nearby passages that do not contain the evidence (citation precision 87% to 82% on the second test set). A stricter citation instruction could address this.
 
 — end of block —
 

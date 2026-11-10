@@ -1,0 +1,68 @@
+{
+  "knowledge": {
+    "expected": 30,
+    "attempted": 1,
+    "missing": 29,
+    "metrics": {
+      "faithfulness": {
+        "mean": null,
+        "scored": 0,
+        "not_applicable": 0,
+        "errors": 0,
+        "missing": 30
+      },
+      "answer_relevancy": {
+        "mean": null,
+        "scored": 0,
+        "not_applicable": 0,
+        "errors": 0,
+        "missing": 30
+      },
+      "context_precision": {
+        "mean": null,
+        "scored": 0,
+        "not_applicable": 0,
+        "errors": 0,
+        "missing": 30
+      }
+    },
+    "latency_seconds": {
+      "p50": 60.01360040000009,
+      "p95": 60.01360040000009
+    },
+    "llm_calls": 0,
+    "generation_errors": 1,
+    "abstentions": 0,
+    "verifier_blocks": 0,
+    "valid_citation_questions": 0,
+    "correct_abstentions": 0,
+    "supported_abstentions": 0
+  },
+  "invoice": {
+    "expected": 10,
+    "attempted": 10,
+    "missing": 0,
+    "metrics": {
+      "execution_accuracy": {
+        "mean": 0.9,
+        "scored": 10,
+        "not_applicable": 0,
+        "errors": 0,
+        "missing": 0
+      },
+      "numerical_accuracy": {
+        "mean": 0.8,
+        "scored": 5,
+        "not_applicable": 5,
+        "errors": 0,
+        "missing": 0
+      }
+    },
+    "latency_seconds": {
+      "p50": 2.197881300000006,
+      "p95": 4.961272400000098
+    },
+    "llm_calls": 11,
+    "generation_errors": 0
+  }
+}

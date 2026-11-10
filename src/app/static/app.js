@@ -1201,7 +1201,9 @@ $("#ocr-test-form").addEventListener("submit", async (event) => {
         result = await api(`/api/upload-tests/${encodeURIComponent(runId)}`);
         if (result.status === "processing") {
           const elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000);
-          const runningLabel = intent === "invoice" ? "Docling OCR + Qwen invoice extraction" : "Vintern image caption";
+          const runningLabel = intent === "invoice"
+            ? "Docling OCR + Qwen invoice extraction"
+            : intent === "image_caption" ? "Vintern image caption" : "Docling";
           $("#ocr-test-status").textContent = `${runningLabel} is still processing (${formatDuration(elapsedSeconds * 1000)})…`;
         } else if (result.status === "failed") {
           throw new Error(result.error || "Vintern processing failed");

@@ -218,26 +218,17 @@ async def create_upload_test(
         "page_count": page_count,
         "pymupdf_version": fitz.VersionBind,
     }
-    if intent != "document":
-        now = time.monotonic()
-        for old_id, state in list(_UPLOAD_TEST_JOBS.items()):
-            if state.get("status") == "failed" and now - state.get("finished_at", now) > 3600:
-                _UPLOAD_TEST_JOBS.pop(old_id, None)
-        if len(_UPLOAD_TEST_TASKS) >= 1:
-            raise HTTPException(429, "Another Vintern Upload Test is already running")
-        _UPLOAD_TEST_JOBS[run_id] = {"status": "processing"}
-        task = asyncio.create_task(_run_upload_test_job(run_id, job_args))
-        _UPLOAD_TEST_TASKS.add(task)
-        task.add_done_callback(_UPLOAD_TEST_TASKS.discard)
-        return {"run_id": str(run_id), "status": "processing"}
-
-    try:
-        return await asyncio.to_thread(_process_and_save_upload_test, **job_args)
-    except HTTPException:
-        raise
-    except (ValueError, RuntimeError) as error:
-        status_code = 503 if isinstance(error, RuntimeError) else 422
-        raise HTTPException(status_code, f"Upload Test processing failed: {error}") from error
+    now = time.monotonic()
+    for old_id, state in list(_UPLOAD_TEST_JOBS.items()):
+        if state.get("status") == "failed" and now - state.get("finished_at", now) > 3600:
+            _UPLOAD_TEST_JOBS.pop(old_id, None)
+    if len(_UPLOAD_TEST_TASKS) >= 1:
+        raise HTTPException(429, "Another Upload Test is already running")
+    _UPLOAD_TEST_JOBS[run_id] = {"status": "processing"}
+    task = asyncio.create_task(_run_upload_test_job(run_id, job_args))
+    _UPLOAD_TEST_TASKS.add(task)
+    task.add_done_callback(_UPLOAD_TEST_TASKS.discard)
+    return {"run_id": str(run_id), "status": "processing"}
 
 
 @router.get("/api/upload-tests")

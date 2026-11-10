@@ -113,10 +113,13 @@ class PPDocLayoutModel(BaseLayoutModel):
         ).lower()
         if requested_device.startswith("cuda"):
             if not paddle.is_compiled_with_cuda():
-                raise RuntimeError(
-                    "CUDA was requested for PP-DocLayoutV3, but this image has CPU-only PaddlePaddle."
+                _log.warning(
+                    "CUDA requested for PP-DocLayoutV3, but PaddlePaddle is CPU-only; "
+                    "running layout detection on CPU. Other Docling stages may still use CUDA."
                 )
-            device = "gpu:0"
+                device = "cpu"
+            else:
+                device = "gpu:0"
         else:
             device = "cpu"
 
@@ -156,7 +159,19 @@ class PPDocLayoutModel(BaseLayoutModel):
                 predictions.append(LayoutPrediction())
                 continue
 
-            correction, _, _ = detect_paddle_orientation(image)
+            try:
+                correction, _, _ = detect_paddle_orientation(image)
+            except Exception:
+                # Orientation classification is an optional correction stage.
+                # If Paddle fails, keep the source orientation and continue
+                # layout detection so one bad classifier call cannot drop a page.
+                _log.warning(
+                    "Page orientation detection failed for page %s; "
+                    "continuing without rotation correction.",
+                    page.page_no,
+                    exc_info=True,
+                )
+                correction = 0
             self.page_orientation_corrections[int(page.page_no)] = correction
             if correction:
                 page._backend = OrientedPageBackend(page._backend, correction)

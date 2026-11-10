@@ -86,8 +86,20 @@ def overlaps_region(box: list[float], region: list[float], threshold: float = 0.
 
 
 def create_line_detector():
-    from rapidocr import RapidOCR
+    import logging
+    import torch
+    from rapidocr import EngineType, RapidOCR
 
+    if torch.cuda.is_available():
+        logging.getLogger(__name__).info(
+            "RapidOCR line detection using PyTorch CUDA backend."
+        )
+        return RapidOCR(params={
+            "Det.engine_type": EngineType.TORCH,
+            "EngineConfig.torch.use_cuda": True,
+            "EngineConfig.torch.cuda_ep_cfg.device_id": 0,
+        })
+    logging.getLogger(__name__).info("RapidOCR line detection using default CPU backend.")
     return RapidOCR()
 
 

@@ -81,6 +81,10 @@ self-contained content by `render_svg` in `document_processor.py`.
 | `docling_ocr` | Enable/disable OCR for the request |
 | `docling_device` | Docling accelerator (`cpu` by default; `cuda` when configured and available) |
 | `docling_num_threads` | CPU thread count; defaults to 4 |
+| `DOCUMENT_PROCESSING_VIETOCR_REPO_ID` | Hugging Face repo for the line recognizer; defaults to the enterprise printed checkpoint |
+| `DOCUMENT_PROCESSING_VIETOCR_FILENAME` | Checkpoint file in that repo; defaults to `vietocr/vgg-seq2seq-enterprise-print.pth` |
+| `DOCUMENT_PROCESSING_VIETOCR_REVISION` | Pinned Hugging Face revision used for reproducible model loads |
+| `DOCUMENT_PROCESSING_VIETOCR_CONFIG` | VietOCR architecture config; defaults to `vgg_seq2seq` |
 | `docling_layout_score_threshold` | PP-DocLayoutV3 score threshold; defaults to 0.25 |
 | `docling_table_structure` | Enable TableFormer; defaults to true |
 | `docling_page_images` | Include rendered page previews in parser output |

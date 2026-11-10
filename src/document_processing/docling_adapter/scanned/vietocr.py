@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 import json
 import logging
+import os
 import re
 import unicodedata
 from pathlib import Path
@@ -67,15 +68,50 @@ class VietOcrModel(BaseOcrModel):
         from vietocr.tool.config import Cfg
         from vietocr.tool.predictor import Predictor
 
-        config_dir = Path(__file__).with_name("vietocr_config")
-        config = Cfg.load_config_from_file(config_dir / "base.yml")
-        with (config_dir / "vgg-seq2seq.yml").open(encoding="utf-8") as config_file:
-            config.update(yaml.safe_load(config_file))
+        fine_tuned_weights = os.environ.get("DOCUMENT_PROCESSING_VIETOCR_WEIGHTS")
+        model_repo = os.environ.get("DOCUMENT_PROCESSING_VIETOCR_REPO_ID", "").strip()
+        model_filename = os.environ.get(
+            "DOCUMENT_PROCESSING_VIETOCR_FILENAME",
+            "vietocr/vgg-seq2seq-enterprise-print.pth",
+        )
+        model_revision = os.environ.get("DOCUMENT_PROCESSING_VIETOCR_REVISION", "main")
+        config_name = os.environ.get("DOCUMENT_PROCESSING_VIETOCR_CONFIG", "vgg_seq2seq")
+        if fine_tuned_weights:
+            weights_path = Path(fine_tuned_weights)
+            if not weights_path.is_file():
+                raise FileNotFoundError(
+                    "Configured fine-tuned VietOCR weights do not exist: "
+                    f"{weights_path}"
+                )
+            config = Cfg.load_config_from_name(config_name)
+            config["weights"] = str(weights_path)
+        elif model_repo:
+            from huggingface_hub import hf_hub_download
+
+            weights_path = hf_hub_download(
+                repo_id=model_repo,
+                filename=model_filename,
+                revision=model_revision,
+            )
+            config = Cfg.load_config_from_name(config_name)
+            config["weights"] = weights_path
+        else:
+            config_dir = Path(__file__).with_name("vietocr_config")
+            config = Cfg.load_config_from_file(config_dir / "base.yml")
+            with (config_dir / "vgg-seq2seq.yml").open(encoding="utf-8") as config_file:
+                config.update(yaml.safe_load(config_file))
         config["device"] = "cuda:0" if torch.cuda.is_available() else "cpu"
         config["cnn"]["pretrained"] = False
         config["dataset"]["image_max_width"] = 512
         config["predictor"]["beamsearch"] = False
         self.recognizer = Predictor(config)
+        _LOGGER.info(
+            "Loaded VietOCR config=%s repo=%s revision=%s device=%s",
+            config_name,
+            model_repo or "local/default",
+            model_revision,
+            config["device"],
+        )
         self.detector = create_line_detector()
         self.orientation_diagnostics: list[dict] = []
         self.routing_diagnostics: list[dict] = []
@@ -85,6 +121,32 @@ class VietOcrModel(BaseOcrModel):
     def _recognize_line(self, line: np.ndarray) -> tuple[str, str]:
         image = Image.fromarray(cv2.cvtColor(line, cv2.COLOR_BGR2RGB))
         return str(self.recognizer.predict(image) or "").strip(), "default"
+
+    @staticmethod
+    def _save_crop_debug(line: np.ndarray, diagnostic: dict, text: str, layout_label: str) -> None:
+        debug_dir = os.environ.get("DOCUMENT_PROCESSING_OCR_DEBUG_DIR")
+        debug_file = os.environ.get("DOCUMENT_PROCESSING_OCR_DEBUG_FILE")
+        if not debug_dir or not debug_file:
+            return
+
+        safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", Path(debug_file).stem)
+        target = Path(debug_dir) / safe_name
+        target.mkdir(parents=True, exist_ok=True)
+        crop_name = (
+            f"p{diagnostic['page_number']}_r{diagnostic['ocr_region_index_1based']}"
+            f"_l{diagnostic['line_index_1based']}.png"
+        )
+        cv2.imwrite(str(target / crop_name), line)
+        record = {
+            **diagnostic,
+            "source_file": debug_file,
+            "layout_label": layout_label,
+            "recognized_text": text,
+            "crop_file": crop_name,
+            "crop_size": [int(line.shape[1]), int(line.shape[0])],
+        }
+        with (target / "lines.jsonl").open("a", encoding="utf-8") as output:
+            output.write(json.dumps(record, ensure_ascii=False) + "\n")
 
     @staticmethod
     def _detect_orientation(image: Image.Image) -> tuple[int, int | None, float | None]:
@@ -226,7 +288,16 @@ class VietOcrModel(BaseOcrModel):
                             value=(255, 255, 255),
                         )
                         boxes = detect_line_boxes(self.detector, detection_image)
-                    boxes = merge_line_fragments(boxes)
+                    if region_label == "table":
+                        # Table cells have their own reading order and may share a
+                        # baseline across column borders. Keep detector boxes
+                        # separate so a row number cannot be joined to its description.
+                        boxes = [
+                            (np.asarray(box, dtype=np.float32), False)
+                            for box in (boxes if boxes is not None else [])
+                        ]
+                    else:
+                        boxes = merge_line_fragments(boxes)
                     if boxes is None or len(boxes) == 0:
                         continue
 
@@ -280,6 +351,7 @@ class VietOcrModel(BaseOcrModel):
                             "bbox_coordinate_system": "docling_page_coordinate",
                             "bbox_coordinate_origin": "TOPLEFT",
                         }
+                        self._save_crop_debug(line, diagnostic, text, region_label)
                         self.routing_diagnostics.append(diagnostic)
                         _LOGGER.info("OCR_LINE_ROUTE %s", json.dumps(diagnostic, separators=(",", ":")))
                         line_orientation_diagnostic = {

@@ -53,6 +53,11 @@ services:
       <<: *internal-env
       DOCLING_CACHE_DIR: /models/docling
       PADDLE_PDX_CACHE_HOME: /models/paddlex
+      HF_HOME: /models/huggingface
+      DOCUMENT_PROCESSING_VIETOCR_REPO_ID: ${DOCUMENT_PROCESSING_VIETOCR_REPO_ID:-lenhanm1/enterprise-printed-ocr-vietocr-tesseract}
+      DOCUMENT_PROCESSING_VIETOCR_FILENAME: ${DOCUMENT_PROCESSING_VIETOCR_FILENAME:-vietocr/vgg-seq2seq-enterprise-print.pth}
+      DOCUMENT_PROCESSING_VIETOCR_REVISION: ${DOCUMENT_PROCESSING_VIETOCR_REVISION:-6deb1cb10ecbf240aead77525e80aa4c58adfb23}
+      DOCUMENT_PROCESSING_VIETOCR_CONFIG: ${DOCUMENT_PROCESSING_VIETOCR_CONFIG:-vgg_seq2seq}
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       GROQ_VISION_MODEL: ${GROQ_VISION_MODEL:-qwen/qwen3.8-27b}
       GEMINI_API: ${GEMINI_API:-}

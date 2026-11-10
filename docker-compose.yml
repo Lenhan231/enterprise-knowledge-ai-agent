@@ -95,6 +95,8 @@ services:
       # mMiniLM fp32: VPS rerank ~2-8 s vs ~21 s BGE int8, same VietStyle answers; BGE: RERANKER_MODEL=bge RERANKER_QUANTIZE=int8.
       RERANKER_MODEL: ${RERANKER_MODEL:-mminilm}
       RERANKER_QUANTIZE: ${RERANKER_QUANTIZE-}
+      # On the shared 6-vCPU VPS, 6 torch threads contend: 2 threads halved rerank time (median 5.7 s vs 7.8-13.5 s, 10 Nov).
+      OMP_NUM_THREADS: ${RERANKER_THREADS:-2}
     volumes: ["embedding_model_cache:/models"]
 
   proxy:

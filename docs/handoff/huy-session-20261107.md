@@ -62,3 +62,11 @@ For a new Claude/Codex session: read this first, then `docs/report/huy-gdoc-past
 4. Score with three judges (`scripts/agents/score_vietstyle_arm.py`: Judge A gpt-oss-120b on Groq, Judge B Codex via Orca, Judge C Claude subagent), majority vote, pooled McNemar on v1+v2 (~70 paired questions).
 5. Report: fill the two remaining [pending] lines (VI.1.9, VII.1), add a before/after table, List of Tables (6.6–6.8+), export PDF.
 6. Still pending from before: Knowledge and Auto modes on test v1 with the old configuration (optional now that "after" runs supersede it).
+
+## Progress on 10 Nov — report, slides, latency
+- VPS: multiquery flag removed; 6 flags ON; reranker capped at 2 threads (`OMP_NUM_THREADS: ${RERANKER_THREADS:-2}` in compose, main 0304598); UI Relevance badge removed (main 1bd46ca). All deployed.
+- Latency (same session, warm medians): flags off 20.6 s, on 17.0 / 13.4 s, on + 2 reranker threads 12.1 s. Reranking dominates; thread test in the container showed 1–2 threads faster than 6 (shared vCPUs). Not the Vietnamese PDF (ruled out with older runs).
+- Google Doc: Huy's sections pasted (VI.1.9, VI.1.10 + Table 6.9, VII.1, VII.3, Appendix A) and fixed after a Codex + subagent review (Q39 answered wrongly, overclaims softened, outdated latency/guard/top-5 sentences). Repo copy: docs/report/huy-gdoc-paste-20261108.en.md.
+- Run outputs committed on Huy (47e65a6): artifacts/evaluation/vietstyle-test-{v1,v2}/runs/.
+- Slides updated (artifact GWyieuFzmd1NLZhDsfk5Vv): supervisors Nguyễn Xuân Huy, Nguyễn Trọng Tài; latency, test set, closing (72%, ≈12 s), demo notes with 3 live-checked questions.
+- Open: Nhân/An slide results; List of Tables; Appendix B [Huy TODO]; demo restricted-role + Auto question + fallback video; short wording "5 triệu và 5.000.001 ... về phê duyệt?" is withheld (dev-set tuning backlog, check verifier reason); Notion final results.

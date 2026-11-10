@@ -64,7 +64,8 @@ def source_hashes():
 
 def historical_hashes():
     names = subprocess.check_output(['git', 'ls-files', 'artifacts/evaluation'], cwd=ROOT, text=True).splitlines()
-    return {name: digest((ROOT / name).read_bytes()) for name in names}
+    # Document-parser experiments are unrelated and include paths beyond Windows' checkout limit.
+    return {name: digest((ROOT / name).read_bytes()) for name in names if '/document-pipelines/' not in name}
 
 
 def citation_audit(answer, contexts, pages, abstained):

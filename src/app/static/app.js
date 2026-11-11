@@ -57,7 +57,6 @@ function selectWorkspaceTab(name) {
   $(".agent-overview").hidden = !isKnowledgeTab
     || ["document_processing_owner", "document_uploader"].includes(currentUser?.role);
   $(".stats").hidden = !isKnowledgeTab || currentUser?.role === "document_processing_owner";
-  $("#inventory-snapshot").hidden = !isKnowledgeTab;
   document.querySelectorAll(".workspace-tab").forEach((tab) => {
     const selected = tab === button;
     tab.setAttribute("aria-selected", String(selected));
@@ -1080,7 +1079,6 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
     ${routeDetails}
     ${tokenUsage}
     <div class="answer-text">${renderAnswerBody(data.answer)}</div>
-    ${renderAgentInventoryDashboard(data.data?.dashboard)}
     ${renderAgentRows(data.data)}
     ${renderDashboardVisualization(data.data?.visualization)}
     ${data.citation_validation_failed ? `<p class="error-message">The answer was withheld because it failed evidence validation.${data.decision_validation_failure ? ` <details><summary>Admin diagnostic</summary><code>${escapeHtml(data.decision_validation_failure)}</code>${data.decision_validation_numeric_tokens?.length ? `<p>Unsupported numeric claims: ${data.decision_validation_numeric_tokens.map(escapeHtml).join(", ")}</p>` : ""}</details>` : ""}</p>` : citations.length ? `
@@ -1158,40 +1156,6 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
   }
 
   if (shouldScroll) panel.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-function renderAgentInventoryDashboard(dashboard) {
-  if (dashboard?.outline_id !== "inventory_control") return "";
-  const kpis = dashboard.kpis || {};
-  const metrics = [["SKUs", kpis.sku_count], ["Stockout rate", kpis.stockout_rate == null ? null : `${Number(kpis.stockout_rate).toFixed(1)}%`],
-    ["Overstock rate", kpis.overstock_rate == null ? null : `${Number(kpis.overstock_rate).toFixed(1)}%`],
-    ["Mean fill rate", kpis.mean_fill_rate == null ? null : `${(Number(kpis.mean_fill_rate) * 100).toFixed(1)}%`]];
-  const exceptions = dashboard.exceptions || [];
-  const columns = ["product_name", "category", "stock_on_hand", "days_of_supply", "stockout_flag", "overstock_flag", "reorder_flag"];
-  const rows = exceptions.slice(0, 25).map((row) => `<tr>${columns.map((key) => `<td>${escapeHtml(row[key] ?? "—")}</td>`).join("")}</tr>`).join("");
-  return `<section class="agent-inventory-result"><div class="section-heading"><div><p class="eyebrow">LATEST SNAPSHOT · ${escapeHtml(dashboard.snapshot_date || "date unavailable")}</p><h3>${escapeHtml(dashboard.title || "Inventory Control & Exceptions")}</h3></div></div>
-    <div class="agent-result-kpis">${metrics.map(([label,value]) => `<article><span>${escapeHtml(label)}</span><strong>${escapeHtml(value ?? "Unavailable")}</strong></article>`).join("")}</div>
-    <h4>Flagged products</h4>${rows ? `<div class="commerce-table-wrap"><table><thead><tr>${columns.map((key) => `<th scope="col">${escapeHtml(key.replaceAll("_", " "))}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>` : `<p class="no-citations">No inventory exceptions were returned.</p>`}
-  </section>`;
-}
-
-async function loadInventorySnapshot() {
-  const panel = $("#inventory-snapshot");
-  panel.hidden = false;
-  panel.innerHTML = '<p class="analysis-empty">Loading latest inventory snapshot…</p>';
-  try {
-    const result = await api("/api/agents/chat", {
-      method: "POST",
-      body: JSON.stringify({
-        question: "Show the latest inventory snapshot and stock exceptions.",
-        agent_mode: "dashboard",
-      }),
-    });
-    const dashboard = renderAgentInventoryDashboard(result.data?.dashboard);
-    panel.innerHTML = dashboard || '<p class="analysis-empty">No inventory snapshot is available.</p>';
-  } catch (error) {
-    panel.innerHTML = `<p class="analysis-empty">Inventory snapshot unavailable: ${escapeHtml(error.message)}</p>`;
-  }
 }
 
 function renderAgentRows(data) {
@@ -1365,7 +1329,6 @@ async function loadWorkspace(user) {
   $(".agent-overview").hidden = ["document_processing_owner", "document_uploader"].includes(user.role);
   $(".stats").hidden = user.role === "document_processing_owner";
   const canUseAnalytics = ["admin", "finance_analyst", "sustainability_analyst", "operations", "executive"].includes(user.role);
-  $("#inventory-snapshot").hidden = false;
   ["#analytics-agent-card", "#inventory-agent-card", "#report-agent-card", "#report-agent-form-section"].forEach((selector) => {
     $(selector).hidden = !canUseAnalytics;
   });
@@ -1379,8 +1342,6 @@ async function loadWorkspace(user) {
     try { renderCorpus(await api("/api/dashboard")); }
     catch (error) { $("#connection-status").textContent = `Knowledge base unavailable: ${error.message}`; }
   }
-  if (canUseAnalytics) void loadInventorySnapshot();
-  else $("#inventory-snapshot").innerHTML = '<p class="analysis-empty">Inventory snapshot requires analytics access.</p>';
   try {
     if (user.role === "admin") {
       const access = await api("/api/admin/access-matrix");

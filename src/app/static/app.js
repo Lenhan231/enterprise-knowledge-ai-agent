@@ -1056,9 +1056,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
       return `<p class="analysis-caveat answer-provenance-note" role="status"><strong>Continuing the previous SQL scope.</strong> ${snapshotLabel}: ${escapeHtml(snapshot)}${filters.length ? ` · Filters: ${filters.map(escapeHtml).join("; ")}` : ""}</p>`;
     })()
     : "";
-  const routeDetails = data.selected_route || data.task_trace?.length
-    ? `<details class="agent-diagnostics"><summary>Run details</summary><p>Route: ${escapeHtml(data.selected_route || "not reported")}</p>${Array.isArray(data.task_trace) ? `<ul>${data.task_trace.map((task) => `<li>${escapeHtml(task.agent)} · ${escapeHtml(task.status)} · ${formatNumber(task.elapsed_ms)} ms${task.error_type ? ` · ${escapeHtml(task.error_type)}` : ""}</li>`).join("")}</ul>` : ""}</details>`
-    : "";
+  const routeDetails = renderRunDetails(data);
   panel.innerHTML = `
     <div class="answer-header-wrap">
       <div class="answer-heading">
@@ -1249,6 +1247,63 @@ async function api(path, options = {}) {
     throw Object.assign(new Error(detail || "Request failed"), { status: response.status });
   }
   return data;
+}
+
+const RUN_STAGE_LABELS = {
+  routing: "Routing", knowledge_search_planning: "Search planning", query_translation: "Translation",
+  embedding: "Query embedding", database_retrieval: "Database search", reranking: "Reranking",
+  answer_generation: "Answer writing", claim_verification: "Claim check", sql_planning: "SQL planning",
+  sql_execution: "SQL execution", answer_synthesis: "Synthesis",
+};
+const VERIFICATION_REASONS = {
+  all_claims_supported: "every claim is supported by its cited passage",
+  insufficient: "a claim is not supported by the cited passages",
+  contradicted: "a claim contradicts a cited passage",
+  unsupported_arithmetic: "a calculation does not match the sources",
+  unverified_arithmetic: "a calculation could not be checked",
+  uncited_or_oversized_draft: "the draft was too long or not cited, so it could not be checked",
+  uncited_answer: "the draft cited no source",
+  unknown_citation: "the draft cited a passage that was not retrieved",
+};
+
+// What the system actually did for this answer: route, search queries, passages, claim check, time.
+function renderRunDetails(data) {
+  const rows = [];
+  if (data.selected_route) rows.push(`<p><strong>Route:</strong> ${escapeHtml(data.selected_route)}</p>`);
+  if (Array.isArray(data.task_trace) && data.task_trace.length) {
+    rows.push(`<ul>${data.task_trace.map((task) => `<li>${escapeHtml(task.agent)} · ${escapeHtml(task.status)} · ${formatNumber(task.elapsed_ms)} ms${task.error_type ? ` · ${escapeHtml(task.error_type)}` : ""}</li>`).join("")}</ul>`);
+  }
+  const search = data.search;
+  if (search) {
+    const queries = search.lexical_queries || {};
+    const lines = [["Vietnamese", queries.vn], ["English", queries.en]].filter(([, text]) => text);
+    if (lines.length) {
+      rows.push(`<p><strong>Searched as:</strong></p><ul>${lines.map(([label, text]) => `<li>${label}: “${escapeHtml(text)}”</li>`).join("")}</ul>`);
+    }
+    const counts = [
+      search.candidate_count ? `${formatNumber(search.candidate_count)} candidates reranked` : "",
+      `${formatNumber(search.passages_to_model)} passages given to the model${search.context_radius ? " (with neighbouring text)" : ""}`,
+      `${formatNumber((data.citations || []).length)} cited`,
+    ].filter(Boolean);
+    rows.push(`<p><strong>Passages:</strong> ${counts.join(" → ")}${search.reranker_model ? ` · reranker ${escapeHtml(String(search.reranker_model).split("/").pop())}` : ""}</p>`);
+  }
+  const check = data.claim_verification;
+  if (check) {
+    const verdict = check.status === "supported" ? "Passed" : "Answer withheld";
+    const reason = VERIFICATION_REASONS[check.reason] || check.reason || "";
+    const counted = [check.claim_count ? `${formatNumber(check.claim_count)} claims checked` : "",
+      check.arithmetic_checked ? `${formatNumber(check.arithmetic_checked)} calculations checked` : ""].filter(Boolean);
+    rows.push(`<p><strong>Claim check:</strong> ${verdict}${reason ? `: ${escapeHtml(reason)}` : ""}${counted.length ? ` (${counted.join(", ")})` : ""}</p>`);
+  }
+  const latency = data.latency || {};
+  const stages = Object.entries(latency.stages_ms || {})
+    .filter(([stage, ms]) => ms != null && RUN_STAGE_LABELS[stage])
+    .sort((a, b) => b[1] - a[1]);
+  if (stages.length || latency.request_total_ms) {
+    const seconds = (ms) => `${(ms / 1000).toFixed(1)} s`;
+    rows.push(`<p><strong>Time:</strong> ${latency.request_total_ms ? `${seconds(latency.request_total_ms)} on the server` : ""}</p>${stages.length ? `<ul>${stages.map(([stage, ms]) => `<li>${RUN_STAGE_LABELS[stage]}: ${seconds(ms)}</li>`).join("")}</ul><small>Some stages overlap, so they do not add up to the total.</small>` : ""}`);
+  }
+  return rows.length ? `<details class="agent-diagnostics"><summary>Run details</summary>${rows.join("")}</details>` : "";
 }
 
 // Reveals an already verified, fully rendered answer; markup and citation links stay intact

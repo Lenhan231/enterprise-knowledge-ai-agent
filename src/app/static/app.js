@@ -272,10 +272,11 @@ function renderInvoiceReviewList() {
   $("#invoice-review-list").innerHTML = invoiceReviewItems.map((invoice) => {
     const data = invoice.invoice_data || {};
     const selected = invoice.invoice_id === activeInvoiceReview?.invoice_id;
+    const status = invoice.processing_status || "unknown";
     return `<button class="invoice-review-card ${selected ? "active" : ""}" type="button" data-invoice-review-id="${escapeHtml(invoice.invoice_id)}">
       <strong>${escapeHtml(invoice.source_filename || invoice.invoice_id)}</strong>
       <span>${escapeHtml(data.invoice_no || "Invoice number not extracted")} · ${escapeHtml(data.seller || "Seller not extracted")}</span>
-      <small>${escapeHtml(({review_required: "Needs review", failed: "Extraction failed", processing: "Processing", approved: "Approved"})[invoice.processing_status] || invoice.processing_status)} · ${escapeHtml(new Date(invoice.updated_at || invoice.created_at).toLocaleDateString())}</small>
+      <small><span class="invoice-status-badge is-${escapeHtml(({approved: "approved", review_required: "review", failed: "failed", processing: "processing"})[status] || "unknown")}">${escapeHtml(({review_required: "Needs review", failed: "Extraction failed", processing: "Processing", approved: "Approved"})[status] || status)}</span> · ${escapeHtml(new Date(invoice.updated_at || invoice.created_at).toLocaleDateString())}</small>
     </button>`;
   }).join("") || '<p class="analysis-empty">No invoice drafts to review.</p>';
 }

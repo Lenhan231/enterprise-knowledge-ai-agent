@@ -1251,6 +1251,72 @@ async function api(path, options = {}) {
   return data;
 }
 
+const STAGE_STATUS = {
+  routing: "Routing your request to the right agent...",
+  knowledge_search_planning: "Planning the document search...",
+  query_translation: "Translating the question for bilingual search...",
+  embedding: "Searching the documents...",
+  database_retrieval: "Searching the documents...",
+  reranking: "Ranking the best passages...",
+  answer_generation: "Writing a cited answer...",
+  claim_verification: "Checking every claim against its source...",
+  sql_planning: "Planning the data query...",
+  sql_execution: "Running the data query...",
+  answer_synthesis: "Combining the results...",
+};
+
+// Streams stage progress; the answer arrives only after the claim verifier, never as draft tokens.
+// Throws { streamUnavailable: true } before any answer is received so the caller can retry on /chat.
+async function askAgentStream(body, signal, onStatus) {
+  const unavailable = (message) => Object.assign(new Error(message), { streamUnavailable: true });
+  let response;
+  try {
+    response = await fetch("/api/agents/chat/stream", {
+      method: "POST", credentials: "same-origin", body, signal,
+      headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "1" },
+    });
+  } catch (error) {
+    if (error.name === "TimeoutError" || error.name === "AbortError") throw error;
+    throw unavailable(error.message);
+  }
+  if (response.status === 401) {
+    clearExpiredSession();
+    throw new Error("Sign in to continue");
+  }
+  if (!response.ok || !response.body || !(response.headers.get("content-type") || "").includes("text/event-stream")) {
+    throw unavailable(`Streaming unavailable (HTTP ${response.status})`);
+  }
+  const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+  let buffer = "";
+  for (;;) {
+    let chunk;
+    try { chunk = await reader.read(); }
+    catch (error) {
+      if (error.name === "TimeoutError" || error.name === "AbortError") throw error;
+      throw unavailable(error.message);
+    }
+    if (chunk.done) throw unavailable("The stream ended before the answer");
+    buffer += chunk.value;
+    let end;
+    while ((end = buffer.indexOf("\n\n")) >= 0) {
+      const block = buffer.slice(0, end);
+      buffer = buffer.slice(end + 2);
+      const kind = /^event: (.*)$/m.exec(block)?.[1];
+      const data = /^data: (.*)$/m.exec(block)?.[1];
+      if (!kind || data === undefined) continue;
+      const payload = JSON.parse(data);
+      if (kind === "stage") {
+        if (payload.state === "started" && STAGE_STATUS[payload.stage]) onStatus(STAGE_STATUS[payload.stage]);
+      } else if (kind === "result") {
+        reader.cancel().catch(() => {});
+        return payload;
+      } else if (kind === "error") {
+        throw Object.assign(new Error(payload.detail || "Request failed"), { status: payload.status });
+      }
+    }
+  }
+}
+
 function resetConversationState() {
   agentConversationId = crypto.randomUUID();
   reportConversationId = crypto.randomUUID();
@@ -1674,7 +1740,7 @@ function renderSessionTranscript(shouldScroll = false) {
     response.className = "answer-panel chat-turn-response";
     entry.append(response);
     root.append(entry);
-    if (turn.state === "pending") renderSkeletonAnswer(response, "Routing your request to the right agent...");
+    if (turn.state === "pending") renderSkeletonAnswer(response, turn.status || "Routing your request to the right agent...");
     else if (turn.state === "error") response.innerHTML = `<p class="error-message">${escapeHtml(turn.error)}. Please check service configuration or connection.</p>`;
     else if (turn.result) renderAgentResult(turn.result, response, false);
   }
@@ -1701,10 +1767,23 @@ $("#ask-form").addEventListener("submit", async (event) => {
   button.disabled = true;
   button.innerHTML = "<span>Working...</span>";
   try {
-    const data = await api("/api/agents/chat", { method: "POST", body: JSON.stringify({
+    const body = JSON.stringify({
       question, agent_mode: $("#agent-mode").value, retrieval_method: "translated_hybrid_rerank",
       conversation_id: requestConversationId,
-    }), signal: AbortSignal.timeout(135_000) });
+    });
+    const signal = AbortSignal.timeout(135_000);
+    const showStage = (status) => {
+      turn.status = status;
+      const heading = document.querySelector(`[data-turn-id="${turn.id}"] .answer-heading h3`);
+      if (heading) heading.textContent = status;
+    };
+    let data;
+    try {
+      data = await askAgentStream(body, signal, showStage);
+    } catch (error) {
+      if (!error.streamUnavailable) throw error;
+      data = await api("/api/agents/chat", { method: "POST", body, signal });
+    }
     if (agentConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
     $("#connection-status").textContent = "Agent services connected";
     $(".status-dot").classList.add("connected");

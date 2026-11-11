@@ -1251,6 +1251,39 @@ async function api(path, options = {}) {
   return data;
 }
 
+// Reveals an already verified, fully rendered answer; markup and citation links stay intact
+// because only the text nodes are filled in. Capped at ~1.5 s; skipped for reduced motion.
+function typeOutText(element) {
+  if (!element || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push([walker.currentNode, walker.currentNode.nodeValue]);
+  const total = nodes.reduce((sum, [, text]) => sum + text.length, 0);
+  if (!total) return;
+  for (const [node] of nodes) node.nodeValue = "";
+  element.setAttribute("aria-busy", "true");
+  const perFrame = Math.max(2, Math.ceil(total / 90));  // ~90 frames ≈ 1.5 s at 60 fps
+  let index = 0;
+  let shown = 0;
+  const step = () => {
+    let budget = perFrame;
+    while (budget > 0 && index < nodes.length) {
+      const [node, text] = nodes[index];
+      const take = Math.min(budget, text.length - shown);
+      node.nodeValue = text.slice(0, shown + take);
+      shown += take;
+      budget -= take;
+      if (shown >= text.length) { index += 1; shown = 0; }
+    }
+    if (index < nodes.length && element.isConnected) requestAnimationFrame(step);
+    else {
+      for (const [node, text] of nodes) node.nodeValue = text;
+      element.removeAttribute("aria-busy");
+    }
+  };
+  requestAnimationFrame(step);
+}
+
 const STAGE_STATUS = {
   routing: "Routing your request to the right agent...",
   knowledge_search_planning: "Planning the document search...",
@@ -1742,7 +1775,13 @@ function renderSessionTranscript(shouldScroll = false) {
     root.append(entry);
     if (turn.state === "pending") renderSkeletonAnswer(response, turn.status || "Routing your request to the right agent...");
     else if (turn.state === "error") response.innerHTML = `<p class="error-message">${escapeHtml(turn.error)}. Please check service configuration or connection.</p>`;
-    else if (turn.result) renderAgentResult(turn.result, response, false);
+    else if (turn.result) {
+      renderAgentResult(turn.result, response, false);
+      if (turn.typeOut) {
+        turn.typeOut = false;
+        typeOutText(response.querySelector(".answer-text"));
+      }
+    }
   }
   if (shouldScroll) root.lastElementChild?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -1789,6 +1828,7 @@ $("#ask-form").addEventListener("submit", async (event) => {
     $(".status-dot").classList.add("connected");
     turn.result = data;
     turn.state = "complete";
+    turn.typeOut = true;
   } catch (error) {
     if (agentConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
     turn.error = error.name === "TimeoutError" ? "The request timed out. No answer was received; try again or choose a specialist" : error.message;

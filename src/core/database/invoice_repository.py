@@ -129,6 +129,22 @@ class InvoiceRepository:
             if cursor.rowcount != 1:
                 raise ValueError("Only completed, unapproved invoices can be edited")
 
+    def reject(self, invoice_id: str, reviewer: str) -> None:
+        with self.connection.transaction(), self.connection.cursor() as cursor:
+            cursor.execute(
+                """UPDATE public.invoice_extractions
+                   SET processing_status = 'rejected', review_required = false,
+                       extraction_metadata = COALESCE(extraction_metadata, '{}'::jsonb)
+                           || jsonb_build_object('human_review',
+                               COALESCE(extraction_metadata->'human_review', '{}'::jsonb)
+                               || jsonb_build_object('rejected_by', %s::text, 'rejected_at', now())),
+                       updated_at = now()
+                   WHERE invoice_id = %s AND processing_status = 'review_required'""",
+                (reviewer, invoice_id),
+            )
+            if cursor.rowcount != 1:
+                raise ValueError("Only pending invoices can be rejected")
+
     def approve(self, invoice_id, *, invoice_data: dict | None = None, reviewer: str | None = None):
         """Explicit administrative review action; never called by the SQL agent."""
         with self.connection.transaction(), self.connection.cursor(row_factory=dict_row) as cursor:

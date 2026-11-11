@@ -561,6 +561,7 @@
 .invoice-review-card .invoice-status-badge.is-review{background:#fff3d8;color:#895b00}
 .invoice-review-card .invoice-status-badge.is-failed{background:#fde9e7;color:#a4362d}
 .invoice-review-card .invoice-status-badge.is-processing{background:#e8f0ff;color:#285cb0}
+.invoice-review-card .invoice-status-badge.is-rejected{background:#eee9f7;color:#59447b}
 .invoice-review-detail{min-width:0}.invoice-review-source-wrap{height:min(68vh,760px);min-height:320px;margin-bottom:14px;border:1px solid var(--line);border-radius:8px;overflow:hidden}.invoice-review-source{width:100%;height:100%;border:0;background:#f5f7fa}
 .invoice-processing-progress{margin-bottom:14px;padding:14px}
 .invoice-processing-progress .upload-progress{height:7px}

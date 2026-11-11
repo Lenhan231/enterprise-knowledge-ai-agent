@@ -205,6 +205,8 @@
 
 .primary-button{display:inline-flex;align-items:center;justify-content:center;height:42px;padding:0 20px;border:0;border-radius:8px;background:linear-gradient(135deg,#1756b5,#236bd7);color:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s ease}
 .primary-button:hover:not(:disabled){background:#13499b;transform:translateY(-1px)}
+.danger-button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 16px;border:1px solid #c7463b;border-radius:8px;background:var(--paper);color:#a4362d;font:600 13px "DM Sans",sans-serif;cursor:pointer}.danger-button:hover:not(:disabled){background:#fde9e7}.danger-button:focus-visible{outline:2px solid #c7463b;outline-offset:2px}.danger-button:disabled{opacity:.6;cursor:wait}
+[data-theme="dark"] .danger-button{border-color:#ff8580;background:var(--paper);color:#ffaaa6}[data-theme="dark"] .danger-button:hover:not(:disabled){background:#321a1a}
 .logout-btn{border:1px solid var(--line);border-radius:6px;padding:4px 10px;background:var(--paper);color:var(--muted);font-size:11px;cursor:pointer;transition:all .15s}
 .logout-btn:hover{color:#b3261e;border-color:#f5c2c7;background:#fff5f5}
 [data-theme="dark"] .logout-btn:hover{color:#ff8580;border-color:#6c1815;background:#261011}

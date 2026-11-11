@@ -49,7 +49,8 @@
 .knowledge-filters label{display:grid;gap:5px;min-width:min(230px,100%);color:var(--muted);font-size:10px;font-weight:600}
 .knowledge-filters select{height:36px;padding:0 9px;border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--ink);font:11px "DM Sans",sans-serif}
 .knowledge-documents-list{display:grid;gap:9px;margin-top:12px}
-.knowledge-document-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px;border:1px solid var(--line);border-radius:8px;background:var(--paper)}
+.knowledge-document-entry{overflow:hidden;border:1px solid var(--line);border-radius:8px;background:var(--paper)}
+.knowledge-document-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px;border:0;border-radius:0;background:var(--paper)}
 .knowledge-document-row.is-removed{opacity:.7}
 .knowledge-document-copy{display:grid;min-width:0;gap:5px}
 .knowledge-document-copy strong{color:var(--navy);font-size:12px}
@@ -63,7 +64,21 @@
 .knowledge-document-actions>button{min-height:36px;padding:7px 10px;font:600 10px "DM Sans",sans-serif;cursor:pointer}
 .knowledge-document-actions>[data-knowledge-toggle]{border:1px solid #a84943;border-radius:7px;background:#fff;color:#963d37}
 .knowledge-document-actions>button:disabled{opacity:.55;cursor:wait}
+.knowledge-output-review{border-top:1px solid var(--line);padding:12px;background:var(--surface,#f7f9fc)}
+.knowledge-output-review>header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.knowledge-output-review>header>div{display:grid;gap:3px}.knowledge-output-review>header strong{font-size:12px}.knowledge-output-review>header span{color:var(--muted);font-size:10px}
+.knowledge-output-columns{display:grid;grid-template-columns:minmax(240px,1fr) minmax(300px,1fr);gap:12px;align-items:start}
+.knowledge-output-source-pane{min-width:0}.knowledge-output-source{width:100%;height:min(70vh,760px);min-height:400px;border:1px solid var(--line);border-radius:7px;background:var(--paper)}
+.knowledge-output-image{display:block;max-width:100%;max-height:70vh;margin:auto;border:1px solid var(--line);border-radius:7px;object-fit:contain}
+.knowledge-output-evidence{max-height:min(70vh,760px);overflow:auto;padding:10px;border:1px solid var(--line);border-radius:7px;background:var(--paper)}
+.knowledge-output-evidence h3{margin:4px 0 8px;color:var(--navy);font-size:11px}.knowledge-output-evidence h3:not(:first-child){margin-top:14px}
+.knowledge-output-element,.knowledge-output-table{padding:8px 0;border-top:1px solid var(--line)}
+.knowledge-output-element summary,.knowledge-output-table summary{cursor:pointer;color:var(--ink);font-size:10px}
+.knowledge-output-element pre,.knowledge-output-metadata pre{max-height:220px;overflow:auto;margin:7px 0;padding:8px;border-radius:5px;background:var(--surface,#f7f9fc);color:var(--muted);font:10px/1.5 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+.knowledge-output-metadata{font-size:9px}.knowledge-output-metadata summary{cursor:pointer;color:var(--muted)}
+.knowledge-output-table-scroll{overflow:auto;margin-top:7px}.knowledge-output-table table{width:100%;border-collapse:collapse;font-size:10px}.knowledge-output-table th,.knowledge-output-table td{padding:5px 7px;border:1px solid var(--line);text-align:left;vertical-align:top}.knowledge-output-table th{background:var(--surface,#f7f9fc);white-space:nowrap}
 @media(max-width:640px){.knowledge-document-row{align-items:flex-start;flex-direction:column}.knowledge-document-actions{width:100%}}
+@media(max-width:760px){.knowledge-output-columns{grid-template-columns:1fr}.knowledge-output-source{height:55vh;min-height:300px}.knowledge-output-evidence{max-height:55vh}}
 [data-theme="dark"] .knowledge-document-actions>[data-knowledge-toggle]{background:#261716;color:#ffd8d4;border-color:#88504c}
 [data-theme="dark"] .knowledge-document-row>button{background:#261716;color:#ffd8d4;border-color:#88504c}
 @media(max-width:900px){.monitoring-summary{grid-template-columns:repeat(3,minmax(0,1fr))}}

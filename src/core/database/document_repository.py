@@ -46,6 +46,10 @@ class DocumentRepository:
                                     d.document_type, d.format, max(c.metadata->>'source_url') AS source_url,
                                     d.source_type, d.processing_status,
                                     d.knowledge_base_active,
+                                    EXISTS (
+                                        SELECT 1 FROM public.document_processing_outputs output
+                                        WHERE output.document_id = d.document_id
+                                    ) AS has_processing_output,
                                     d.allowed_roles,
                                     count(c.id)::int AS chunk_count,
                                     max(c.metadata->>'source_publisher') AS source_publisher,

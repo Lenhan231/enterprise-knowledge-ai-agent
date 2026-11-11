@@ -258,6 +258,28 @@ def admin_knowledge_documents(user: dict = Depends(require_permission("list_proc
             repository.close()
 
 
+@app.get("/api/admin/knowledge-documents/{document_id}/processing-output")
+def admin_knowledge_document_processing_output(
+    document_id: str,
+    user: dict = Depends(require_permission("manage_knowledge")),
+):
+    from core.database.document_processing_output_repository import DocumentProcessingOutputRepository
+
+    repository = DocumentProcessingOutputRepository()
+    try:
+        output = repository.get_document_output(document_id, company=CORPUS_COMPANY)
+        if output is None:
+            raise HTTPException(404, "No parser output is available for this source")
+        return {"document_id": document_id, **output}
+    except HTTPException:
+        raise
+    except Exception as error:
+        logger.exception("Could not load parser output for %s", document_id)
+        raise HTTPException(503, "Parser output could not be loaded") from error
+    finally:
+        repository.close()
+
+
 def _synthetic_policy_file_response(document_id: str) -> Response:
     """Resolve a synthetic policy PDF only through the checked-in corpus manifest."""
     root = Path(__file__).resolve().parents[2]
@@ -1146,10 +1168,11 @@ def _uploaded_source_response(document_id: str, user: dict) -> Response:
     try:
         source = repository.uploaded_source(
             document_id,
+            company=CORPUS_COMPANY,
             role=user["role"], username=user["sub"],
         )
         policy = None if source else repository.accessible_synthetic_policy_source(
-            document_id, role=user["role"],
+            document_id, company=CORPUS_COMPANY, role=user["role"],
         )
     finally:
         repository.close()

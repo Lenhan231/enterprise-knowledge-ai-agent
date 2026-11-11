@@ -2,6 +2,7 @@ const $ = (selector) => document.querySelector(selector);
 let activeTab = "knowledge";
 let currentUser = null;
 let knowledgeDocuments = [];
+let activeKnowledgeReview = null;
 let invoiceReviewItems = [];
 let activeInvoiceReview = null;
 let invoiceProgressGeneration = 0;
@@ -135,6 +136,60 @@ function knowledgeDocumentIsRetrievable(doc) {
   return doc.knowledge_base_active && doc.processing_status === "ready" && Number(doc.chunk_count) > 0;
 }
 
+function renderKnowledgeProcessingReview(doc) {
+  if (activeKnowledgeReview?.status === "loading") {
+    return '<section class="knowledge-output-review"><p class="corpus-note">Loading parser evidence…</p></section>';
+  }
+  if (activeKnowledgeReview?.error) {
+    return `<section class="knowledge-output-review"><p class="error-message">${escapeHtml(activeKnowledgeReview.error)}</p></section>`;
+  }
+
+  const output = activeKnowledgeReview?.output;
+  if (!output) return "";
+  const sourceUrl = doc.source_type === "user_upload"
+    ? uploadedSourcePageUrl(doc.document_id)
+    : doc.synthetic_company_policy
+      ? `/api/admin/knowledge-documents/${encodeURIComponent(doc.document_id)}/source`
+      : "";
+  const format = String(doc.format || "").toLowerCase();
+  const sourcePreview = format === "pdf"
+    ? `<iframe class="knowledge-output-source" title="${escapeHtml(doc.title)} source" src="${escapeHtml(sourceUrl)}"></iframe>`
+    : ["png", "jpg", "jpeg", "tif", "tiff"].includes(format)
+      ? `<img class="knowledge-output-image" src="${escapeHtml(sourceUrl)}" alt="Source file: ${escapeHtml(doc.title)}">`
+      : `<p class="corpus-note">Inline preview is unavailable for ${escapeHtml(format.toUpperCase() || "this format")} files. <a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">Open original file</a></p>`;
+  const elements = Array.isArray(output.elements) ? output.elements : [];
+  const tables = Array.isArray(output.tables) ? output.tables : [];
+  const elementList = elements.map((element) => {
+    const metadata = element.metadata || {};
+    const page = metadata.page_number ?? element.page_number ?? "?";
+    const type = metadata.element_type || metadata.layout_type || element.element_type || "text";
+    const content = element.text ?? element.content ?? (element.table_ref != null ? `Table reference ${element.table_ref}` : "No text content");
+    return `<details class="knowledge-output-element">
+      <summary>Page ${escapeHtml(page)} · ${escapeHtml(type)} · ${formatNumber(String(content).length)} chars</summary>
+      <pre>${escapeHtml(content)}</pre>
+      <details class="knowledge-output-metadata"><summary>Element metadata</summary><pre>${escapeHtml(JSON.stringify(metadata, null, 2))}</pre></details>
+    </details>`;
+  }).join("");
+  const tableList = tables.map((table, index) => {
+    const rows = Array.isArray(table.rows) ? table.rows : [];
+    const columns = Array.isArray(table.columns) ? table.columns : (rows[0] && !Array.isArray(rows[0]) ? Object.keys(rows[0]) : []);
+    const header = columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("");
+    const body = rows.map((row) => `<tr>${columns.map((column, cellIndex) => `<td>${escapeHtml(Array.isArray(row) ? row[cellIndex] : row?.[column])}</td>`).join("")}</tr>`).join("");
+    const page = table.metadata?.page_number ?? table.page_number ?? "?";
+    return `<details class="knowledge-output-table"><summary>Table ${index + 1} · Page ${escapeHtml(page)} · ${formatNumber(rows.length)} rows</summary>
+      <div class="knowledge-output-table-scroll"><table><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table></div>
+    </details>`;
+  }).join("");
+
+  return `<section class="knowledge-output-review" aria-label="Parser output review">
+    <header><div><strong>Parser output</strong><span>${escapeHtml(output.pipeline_id || output.metadata?.pipeline_id || "Parser")} · ${formatNumber(elements.length)} elements · ${formatNumber(tables.length)} tables</span></div>
+      <button type="button" class="secondary-button" data-close-knowledge-review>Close review</button></header>
+    <div class="knowledge-output-columns"><div class="knowledge-output-source-pane">${sourcePreview}</div>
+      <div class="knowledge-output-evidence"><h3>Elements</h3>${elementList || '<p class="corpus-note">No parser elements were saved.</p>'}
+        <h3>Tables</h3>${tableList || '<p class="corpus-note">No tables were extracted.</p>'}</div></div>
+  </section>`;
+}
+
 function renderKnowledgeDocuments() {
   const query = $("#knowledge-documents-search").value.trim().toLocaleLowerCase();
   const selectedDomain = $("#knowledge-domain-filter").value;
@@ -175,7 +230,8 @@ function renderKnowledgeDocuments() {
         ? `<a href="${escapeHtml(uploadedSource)}" target="_blank" rel="noopener noreferrer">Open uploaded file</a>`
         : href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Open source</a>` : "";
     const canRetryEmbedding = doc.source_type === "user_upload" && doc.processing_status === "failed";
-    return `<article class="knowledge-document-row ${doc.knowledge_base_active ? "" : "is-removed"}">
+    const reviewOpen = activeKnowledgeReview?.document_id === doc.document_id;
+    return `<div class="knowledge-document-entry"><article class="knowledge-document-row ${doc.knowledge_base_active ? "" : "is-removed"}">
       <div class="knowledge-document-copy"><strong>${escapeHtml(doc.title)}</strong>
         <span class="knowledge-source-kind ${doc.synthetic_company_policy ? "is-synthetic" : ""}">${escapeHtml(sourceKind)}</span>
         <span>${escapeHtml(doc.source_publisher || "Unknown publisher")} · ${escapeHtml(doc.format || "File")} · ${formatNumber(doc.chunk_count)} passages</span>
@@ -190,10 +246,11 @@ function renderKnowledgeDocuments() {
         </details>
       </div>
       <div class="knowledge-document-actions">
+        ${doc.has_processing_output ? `<button class="secondary-button" type="button" data-review-elements="${escapeHtml(doc.document_id)}" aria-expanded="${reviewOpen ? "true" : "false"}">${reviewOpen ? "Hide element review" : "Review elements"}</button>` : ""}
         ${canRetryEmbedding ? `<button class="secondary-button" type="button" data-retry-embedding="${escapeHtml(doc.document_id)}">Retry embedding</button>` : ""}
         <button class="${doc.knowledge_base_active ? "danger-button" : "secondary-button"}" type="button" data-knowledge-toggle="${escapeHtml(doc.document_id)}" data-active="${doc.knowledge_base_active ? "true" : "false"}">${doc.knowledge_base_active ? "Remove from knowledge base" : "Restore to knowledge base"}</button>
       </div>
-    </article>`;
+    </article>${reviewOpen ? renderKnowledgeProcessingReview(doc) : ""}</div>`;
   }).join("") || '<p class="loading-card">No matching indexed sources.</p>';
 }
 
@@ -1346,6 +1403,35 @@ $("#knowledge-documents-refresh").addEventListener("click", async () => {
   catch (error) { $("#knowledge-documents-status").textContent = error.message; }
 });
 $("#knowledge-documents-list").addEventListener("click", async (event) => {
+  if (event.target.closest("[data-close-knowledge-review]")) {
+    activeKnowledgeReview = null;
+    renderKnowledgeDocuments();
+    return;
+  }
+  const reviewButton = event.target.closest("[data-review-elements]");
+  if (reviewButton) {
+    const documentId = reviewButton.dataset.reviewElements;
+    if (activeKnowledgeReview?.document_id === documentId) {
+      activeKnowledgeReview = null;
+      renderKnowledgeDocuments();
+      return;
+    }
+    activeKnowledgeReview = { document_id: documentId, status: "loading" };
+    renderKnowledgeDocuments();
+    try {
+      const output = await api(`/api/admin/knowledge-documents/${encodeURIComponent(documentId)}/processing-output`);
+      if (activeKnowledgeReview?.document_id === documentId) {
+        activeKnowledgeReview = { document_id: documentId, output };
+        renderKnowledgeDocuments();
+      }
+    } catch (error) {
+      if (activeKnowledgeReview?.document_id === documentId) {
+        activeKnowledgeReview = { document_id: documentId, error: error.message };
+        renderKnowledgeDocuments();
+      }
+    }
+    return;
+  }
   const retryButton = event.target.closest("[data-retry-embedding]");
   if (retryButton) {
     const documentId = retryButton.dataset.retryEmbedding;

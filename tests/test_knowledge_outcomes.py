@@ -72,6 +72,21 @@ class KnowledgeOutcomeTest(unittest.IsolatedAsyncioTestCase):
                     "policy?", decompose=True, verify_claims=False, roles=["employee"], retrieval_method="translated_hybrid_rerank",
                 )
 
+    async def test_search_details_are_kept_even_when_nothing_is_cited(self):
+        identity = VerifiedIdentity(subject="viewer", permissions={"documents:read"}, document_roles={"employee"})
+        contexts = [{**self.contexts[0], "retrieval_details": {
+            "lexical_queries": {"vn": "hủy PO", "en": "cancel PO"}, "reranker_candidate_count": 30,
+            "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1", "context_radius": 1}}]
+        self.rag.llm.generate.return_value = INSUFFICIENT_ANSWER
+        service = Mock()
+        service.generate_answer.return_value = self.rag.generate_from_contexts("huy PO?", contexts)
+        result = await KnowledgeAgent(service).run(AgentRequest(question="huy PO?", identity=identity))
+        self.assertEqual(result.evidence, [])
+        self.assertEqual(result.metadata["search"], {
+            "lexical_queries": {"vn": "hủy PO", "en": "cancel PO"}, "candidate_count": 30,
+            "passages_to_model": 1, "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+            "context_radius": 1})
+
     async def test_multiquery_switch_defaults_off_and_requires_explicit_one(self):
         identity = VerifiedIdentity(subject="viewer", permissions={"documents:read"}, document_roles={"employee"})
         for value in (None, "0", "1", "invalid"):

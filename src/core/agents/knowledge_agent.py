@@ -78,6 +78,16 @@ class KnowledgeAgent(BaseAgent):
         ]
 
         metadata = {"ok": not result.insufficient_context, "insufficient_context": result.insufficient_context}
+        if result.contexts:
+            # For the UI's run details; kept even when nothing is cited (e.g. a withheld answer).
+            details = result.contexts[0].get("retrieval_details") or {}
+            metadata["search"] = {
+                "lexical_queries": details.get("lexical_queries"),
+                "candidate_count": details.get("reranker_candidate_count"),
+                "passages_to_model": len(result.contexts),
+                "reranker_model": details.get("reranker_model"),
+                "context_radius": details.get("context_radius", 0),
+            }
         if result.verification is not None:
             metadata["claim_verification"] = result.verification.model_dump()
             metadata["ok"] = metadata["ok"] and result.verification.status == "supported"

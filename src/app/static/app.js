@@ -1252,8 +1252,9 @@ async function api(path, options = {}) {
 }
 
 // Reveals an already verified, fully rendered answer; markup and citation links stay intact
-// because only the text nodes are filled in. Capped at ~1.5 s; skipped for reduced motion.
-function typeOutText(element) {
+// because only the text nodes are filled in. About 120 characters a second, 2–6 s in total;
+// `revealAfter` (the source cards) stays hidden until the text is complete. Skipped for reduced motion.
+function typeOutText(element, revealAfter = []) {
   if (!element || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
   const nodes = [];
@@ -1261,8 +1262,10 @@ function typeOutText(element) {
   const total = nodes.reduce((sum, [, text]) => sum + text.length, 0);
   if (!total) return;
   for (const [node] of nodes) node.nodeValue = "";
+  for (const item of revealAfter) item.hidden = true;
   element.setAttribute("aria-busy", "true");
-  const perFrame = Math.max(2, Math.ceil(total / 90));  // ~90 frames ≈ 1.5 s at 60 fps
+  const seconds = Math.min(6, Math.max(2, total / 120));
+  const perFrame = Math.max(1, Math.ceil(total / (seconds * 60)));
   let index = 0;
   let shown = 0;
   const step = () => {
@@ -1279,6 +1282,7 @@ function typeOutText(element) {
     else {
       for (const [node, text] of nodes) node.nodeValue = text;
       element.removeAttribute("aria-busy");
+      for (const item of revealAfter) item.hidden = false;
     }
   };
   requestAnimationFrame(step);
@@ -1779,7 +1783,7 @@ function renderSessionTranscript(shouldScroll = false) {
       renderAgentResult(turn.result, response, false);
       if (turn.typeOut) {
         turn.typeOut = false;
-        typeOutText(response.querySelector(".answer-text"));
+        typeOutText(response.querySelector(".answer-text"), [...response.querySelectorAll(".citations")]);
       }
     }
   }

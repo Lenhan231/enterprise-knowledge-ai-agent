@@ -4,6 +4,7 @@ let currentUser = null;
 let knowledgeDocuments = [];
 let invoiceReviewItems = [];
 let activeInvoiceReview = null;
+let invoiceProgressGeneration = 0;
 let agentConversationId = crypto.randomUUID();
 let reportConversationId = crypto.randomUUID();
 let sessionTurns = [];
@@ -219,6 +220,7 @@ function renderInvoiceReviewList() {
 }
 
 function renderInvoiceReviewDetail(invoice) {
+  invoiceProgressGeneration += 1;
   activeInvoiceReview = invoice;
   renderInvoiceReviewList();
   const data = invoice.invoice_data || {};
@@ -247,7 +249,11 @@ function renderInvoiceReviewDetail(invoice) {
   $("#invoice-review-detail").innerHTML = `
     ${failed ? `<p role="status">Extraction failed${invoice.error_message ? `: ${escapeHtml(invoice.error_message)}` : "."}</p>` : ""}
     ${retry}
-    ${processing ? '<p role="status">Running OCR and extraction. Refresh to check progress.</p>' : ""}
+    ${processing ? `<div class="upload-status-wrap invoice-processing-progress" aria-busy="true">
+      <div class="upload-progress" role="progressbar" aria-label="Invoice extraction" aria-valuetext="OCR and extraction in progress"><span></span></div>
+      <p role="status" data-invoice-progress-status>Running OCR and extraction. Status updates automatically.</p>
+      <small class="upload-elapsed" data-invoice-progress-elapsed aria-live="off"></small>
+    </div>` : ""}
     <div class="invoice-review-source-wrap">${source}</div>
     <form id="invoice-review-form" data-invoice-id="${escapeHtml(invoice.invoice_id)}">
       <div class="invoice-review-fields">${fields}</div><div id="invoice-review-items">${itemRows}</div>
@@ -255,6 +261,49 @@ function renderInvoiceReviewDetail(invoice) {
       <p class="corpus-note" data-invoice-edit-status aria-live="polite"></p>
     </form><details class="invoice-ocr-evidence"><summary>OCR evidence (${elements.length} elements, ${(invoice.ocr_tables || []).length} tables)</summary>${evidence || '<p>No OCR text was saved.</p>'}</details>`;
   if (retry) $("#invoice-retry-model").value = "groq";
+  if (processing) watchInvoiceProgress(invoice, invoiceProgressGeneration);
+}
+
+async function watchInvoiceProgress(invoice, progressGeneration) {
+  const session = sessionGeneration;
+  const parsedStart = Date.parse(invoice.updated_at || invoice.created_at);
+  const startedAt = Number.isFinite(parsedStart) ? parsedStart : Date.now();
+  let nextPollAt = Date.now() + 4000;
+  while (
+    progressGeneration === invoiceProgressGeneration
+    && session === sessionGeneration
+    && activeInvoiceReview?.invoice_id === invoice.invoice_id
+  ) {
+    const elapsed = $("#invoice-review-detail [data-invoice-progress-elapsed]");
+    if (!elapsed) return;
+    const seconds = Math.floor(Math.max(0, Date.now() - startedAt) / 1000);
+    elapsed.textContent = `Elapsed: ${Math.floor(seconds / 60)}m ${seconds % 60}s · Checking status every 4s`;
+    await new Promise((resolve) => window.setTimeout(resolve, 1000));
+    if (progressGeneration !== invoiceProgressGeneration || session !== sessionGeneration) return;
+    if (Date.now() < nextPollAt) continue;
+    nextPollAt = Date.now() + 4000;
+    let result;
+    try {
+      result = await api(`/api/invoices/${encodeURIComponent(invoice.invoice_id)}`, { cache: "no-store" });
+    } catch (error) {
+      if (progressGeneration !== invoiceProgressGeneration || session !== sessionGeneration) return;
+      $("#invoice-review-detail [data-invoice-progress-status]").textContent =
+        `Could not check status: ${error.message}. Reconnecting…`;
+      continue;
+    }
+    if (progressGeneration !== invoiceProgressGeneration || session !== sessionGeneration) return;
+    invoiceReviewItems = invoiceReviewItems.map((item) => item.invoice_id === result.invoice_id ? { ...item, ...result } : item);
+    if (result.processing_status !== "processing") {
+      renderInvoiceReviewDetail(result);
+      $("#invoice-review-status").textContent = result.processing_status === "review_required"
+        ? "Extraction finished. Review the invoice fields below."
+        : result.processing_status === "failed" ? "Extraction failed. You can retry with another model." : `Invoice status: ${result.processing_status}`;
+      return;
+    }
+    activeInvoiceReview = result;
+    $("#invoice-review-detail [data-invoice-progress-status]").textContent =
+      "Running OCR and extraction. Status updates automatically.";
+  }
 }
 
 async function refreshInvoiceReview(selectId = activeInvoiceReview?.invoice_id) {
@@ -297,38 +346,14 @@ async function retryInvoiceExtraction(form) {
     return;
   }
 
-  function updateInvoice(invoice) {
-    invoiceReviewItems = invoiceReviewItems.map((item) => item.invoice_id === invoiceId ? { ...item, ...invoice } : item);
-    if (activeInvoiceReview?.invoice_id === invoiceId) {
-      renderInvoiceReviewDetail(invoice);
-    } else {
-      renderInvoiceReviewList();
-    }
-  }
-
   if (generation !== sessionGeneration) return;
-  const invoice = invoiceReviewItems.find((item) => item.invoice_id === invoiceId) || activeInvoiceReview;
-  if (invoice?.invoice_id === invoiceId) {
-    updateInvoice({ ...invoice, source_available: true, processing_status: "processing", error_message: null });
-  }
-  const deadline = Date.now() + 22 * 60 * 1000;
-  while (Date.now() < deadline) {
-    await new Promise((resolve) => window.setTimeout(resolve, 4000));
-    if (generation !== sessionGeneration) return;
-    let result;
-    try {
-      result = await api(path, { cache: "no-store" });
-    } catch (error) {
-      if (generation === sessionGeneration && activeInvoiceReview?.invoice_id === invoiceId) {
-        $("#invoice-review-status").textContent = `Could not check extraction status: ${error.message}. Use Refresh to check again.`;
-      }
-      return;
-    }
-    if (generation !== sessionGeneration) return;
-    if (result.processing_status !== "processing") {
-      updateInvoice(result);
-      return;
-    }
+  const invoice = activeInvoiceReview?.invoice_id === invoiceId ? activeInvoiceReview
+    : invoiceReviewItems.find((item) => item.invoice_id === invoiceId);
+  if (invoice) {
+    const processingInvoice = { ...invoice, processing_status: "processing", error_message: null, updated_at: new Date().toISOString() };
+    invoiceReviewItems = invoiceReviewItems.map((item) => item.invoice_id === invoiceId ? processingInvoice : item);
+    if (activeInvoiceReview?.invoice_id === invoiceId) renderInvoiceReviewDetail(processingInvoice);
+    else renderInvoiceReviewList();
   }
 }
 

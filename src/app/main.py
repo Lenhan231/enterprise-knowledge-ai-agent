@@ -700,7 +700,7 @@ async def upload_invoice(
     _require_same_origin(request)
     model_provider = model_provider.strip().lower()
     if model_provider not in {"gemini", "groq", "modal"}:
-        raise HTTPException(422, "Choose Gemini, Groq GPT-OSS 20B, or the fine-tuned Qwen Modal model")
+        raise HTTPException(422, "Choose Gemini, Groq GPT-OSS 120B, or the fine-tuned Qwen Modal model")
     filename = Path((file.filename or "").replace("\\", "/")).name
     extension = Path(filename).suffix.lower()
     supported = {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"}

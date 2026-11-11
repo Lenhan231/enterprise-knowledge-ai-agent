@@ -207,6 +207,8 @@ const INVOICE_ITEM_FIELDS = [
 ];
 const invoiceReviewValue = (value) => value == null ? "" : String(value);
 
+let invoiceOpenGeneration = 0;
+
 function renderInvoiceReviewList() {
   $("#invoice-review-list").innerHTML = invoiceReviewItems.map((invoice) => {
     const data = invoice.invoice_data || {};
@@ -214,7 +216,7 @@ function renderInvoiceReviewList() {
     return `<button class="invoice-review-card ${selected ? "active" : ""}" type="button" data-invoice-review-id="${escapeHtml(invoice.invoice_id)}">
       <strong>${escapeHtml(invoice.source_filename || invoice.invoice_id)}</strong>
       <span>${escapeHtml(data.invoice_no || "Invoice number not extracted")} · ${escapeHtml(data.seller || "Seller not extracted")}</span>
-      <small>${escapeHtml(invoice.processing_status)} · ${escapeHtml(invoice.uploaded_by || "")} · ${escapeHtml(invoice.updated_at || invoice.created_at || "")}</small>
+      <small>${escapeHtml(({review_required: "Needs review", failed: "Extraction failed", processing: "Processing", approved: "Approved"})[invoice.processing_status] || invoice.processing_status)} · ${escapeHtml(new Date(invoice.updated_at || invoice.created_at).toLocaleDateString())}</small>
     </button>`;
   }).join("") || '<p class="analysis-empty">No invoice drafts to review.</p>';
 }
@@ -246,7 +248,13 @@ function renderInvoiceReviewDetail(invoice) {
       <p class="corpus-note" data-invoice-retry-status role="status"></p>
     </form>` : "";
   const processing = invoice.processing_status === "processing";
-  $("#invoice-review-detail").innerHTML = `
+  const detail = $("#invoice-review-detail");
+  const existingSource = detail.querySelector(".invoice-review-source-wrap");
+  const keepSource = existingSource?.dataset.invoiceId === invoice.invoice_id && !!existingSource.querySelector("iframe") === !!invoice.source_available;
+  const previousWorkspace = keepSource ? existingSource.parentElement : null;
+  if (previousWorkspace) previousWorkspace.removeChild(previousWorkspace.querySelector(".invoice-review-editor"));
+  const rendered = document.createElement("div");
+  rendered.innerHTML = `
     ${failed ? `<p role="status">Extraction failed${invoice.error_message ? `: ${escapeHtml(invoice.error_message)}` : "."}</p>` : ""}
     ${retry}
     ${processing ? `<div class="upload-status-wrap invoice-processing-progress" aria-busy="true">
@@ -254,12 +262,21 @@ function renderInvoiceReviewDetail(invoice) {
       <p role="status" data-invoice-progress-status>Running OCR and extraction. Status updates automatically.</p>
       <small class="upload-elapsed" data-invoice-progress-elapsed aria-live="off"></small>
     </div>` : ""}
-    <div class="invoice-review-source-wrap">${source}</div>
-    <form id="invoice-review-form" data-invoice-id="${escapeHtml(invoice.invoice_id)}">
+    <div class="invoice-review-workspace">
+    <div class="invoice-review-source-wrap" data-invoice-id="${escapeHtml(invoice.invoice_id)}">${source}</div>
+    <div class="invoice-review-editor">
+    ${(failed || processing) && !Object.keys(data).length ? `<p class="analysis-empty">${failed ? "No extracted data. Retry extraction to create a draft." : "Your draft will appear here when extraction finishes."}</p>` : `<form id="invoice-review-form" data-invoice-id="${escapeHtml(invoice.invoice_id)}">
       <div class="invoice-review-fields">${fields}</div><div id="invoice-review-items">${itemRows}</div>
       ${editable ? `<div class="invoice-review-actions"><button class="secondary-button" type="button" data-add-invoice-item>Add line item</button><button class="primary-button" type="submit">Save corrections</button>${canApprove ? `<button class="primary-button" type="button" data-approve-invoice>Approve and publish</button>` : ""}</div>` : `<p class="corpus-note">This invoice is ${escapeHtml(invoice.processing_status)} and read-only.</p>`}
       <p class="corpus-note" data-invoice-edit-status aria-live="polite"></p>
-    </form><details class="invoice-ocr-evidence"><summary>OCR evidence (${elements.length} elements, ${(invoice.ocr_tables || []).length} tables)</summary>${evidence || '<p>No OCR text was saved.</p>'}</details>`;
+    </form>`}
+    ${elements.length || (invoice.ocr_tables || []).length ? `<details class="invoice-ocr-evidence"><summary>OCR evidence (${elements.length} elements, ${(invoice.ocr_tables || []).length} tables)</summary>${evidence || '<p>No OCR text was saved.</p>'}</details>` : ""}
+    </div></div>`;
+  if (keepSource) {
+    previousWorkspace.append(rendered.querySelector(".invoice-review-editor"));
+    for (const child of [...detail.children]) if (child !== previousWorkspace) child.remove();
+    while (rendered.firstElementChild && !rendered.firstElementChild.classList.contains("invoice-review-workspace")) detail.insertBefore(rendered.firstElementChild, previousWorkspace);
+  } else detail.replaceChildren(...rendered.childNodes);
   if (retry) $("#invoice-retry-model").value = "groq";
   if (processing) watchInvoiceProgress(invoice, invoiceProgressGeneration);
 }
@@ -322,7 +339,10 @@ async function refreshInvoiceReview(selectId = activeInvoiceReview?.invoice_id) 
 }
 
 async function openInvoiceReview(invoiceId) {
+  const generation = ++invoiceOpenGeneration;
+  const session = sessionGeneration;
   const invoice = await api(`/api/invoices/${encodeURIComponent(invoiceId)}`);
+  if (generation !== invoiceOpenGeneration || session !== sessionGeneration) return;
   renderInvoiceReviewDetail(invoice);
 }
 

@@ -622,3 +622,14 @@
 
 #workspace-main.page.invoice-review-active{max-width:none;padding:12px 14px 20px}
 .invoice-review-active .invoice-review-section{max-width:none;margin:0}
+@media(min-width:781px){
+  #workspace.sidebar-collapsed{grid-template-columns:64px minmax(0,1fr)}
+  .sidebar-collapsed .workspace-sidebar{padding:12px 8px;gap:12px}
+  .sidebar-collapsed .sidebar-toggle{width:26px;height:26px;margin:8px 0 0 11px;font-size:22px}
+  .sidebar-collapsed .sidebar-brand{padding-bottom:12px}
+  .sidebar-collapsed .sidebar-brand .brand-mark{width:34px;height:34px;font-size:17px}
+  .sidebar-collapsed .workspace-tabs{gap:2px}
+  .sidebar-collapsed .workspace-tab{min-height:38px;padding:9px 4px}
+  .sidebar-collapsed .nav-icon{width:18px;height:18px}
+  .sidebar-collapsed .sidebar-account{gap:6px;padding-top:10px}
+}

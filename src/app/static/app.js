@@ -2022,3 +2022,19 @@ function setupThemeToggle() {
 setupThemeToggle();
 setupQuickPrompts();
 loadCorpus();
+
+// Keep this preference local to the browser; storage may be disabled.
+function setSidebarCollapsed(collapsed) {
+  $("#workspace").classList.toggle("sidebar-collapsed", collapsed);
+  const toggle = $("#sidebar-toggle");
+  toggle.setAttribute("aria-expanded", String(!collapsed));
+  toggle.setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
+  toggle.title = collapsed ? "Expand sidebar" : "Collapse sidebar";
+  toggle.firstElementChild.textContent = collapsed ? "›" : "‹";
+}
+try { setSidebarCollapsed(localStorage.getItem("sidebar_collapsed") === "true"); } catch {}
+$("#sidebar-toggle").addEventListener("click", () => {
+  const collapsed = !$("#workspace").classList.contains("sidebar-collapsed");
+  setSidebarCollapsed(collapsed);
+  try { localStorage.setItem("sidebar_collapsed", String(collapsed)); } catch {}
+});

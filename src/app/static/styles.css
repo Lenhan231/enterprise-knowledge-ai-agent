@@ -565,3 +565,23 @@
 .invoice-ocr-evidence summary{cursor:pointer;font-size:13px}
 @media(max-width:1100px){.invoice-review-workspace{grid-template-columns:1fr}.invoice-review-source-wrap{position:static;height:50vh;min-height:260px}.invoice-review-editor{max-height:none;overflow:visible}.invoice-review-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.invoice-review-section{padding:14px}.invoice-review-layout{grid-template-columns:1fr}.invoice-review-list{max-height:190px}.invoice-review-fields{grid-template-columns:1fr}}
+
+/* Compact desktop navigation; mobile retains labeled navigation. */
+.sidebar-toggle{align-self:flex-end;display:grid;place-items:center;width:30px;height:30px;padding:0;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--ink);font-size:26px;cursor:pointer}
+.sidebar-toggle:focus-visible{outline:2px solid var(--navy);outline-offset:3px}
+.workspace-sidebar .workspace-tab{display:flex;align-items:center;gap:10px}
+.workspace-sidebar .workspace-tab[hidden]{display:none}
+.nav-icon{width:20px;height:20px;flex:none}
+@media(min-width:781px){
+  #workspace.app-shell{grid-template-columns:220px minmax(0,1fr)}
+  #workspace.sidebar-collapsed{grid-template-columns:76px minmax(0,1fr)}
+  .sidebar-collapsed .workspace-sidebar{padding:16px 10px;gap:18px}
+  .sidebar-collapsed .sidebar-toggle{align-self:center}
+  .sidebar-collapsed .sidebar-brand{justify-content:center;padding:0 0 16px}
+  .sidebar-collapsed .sidebar-brand>span:last-child,.sidebar-collapsed .nav-label{display:none}
+  .sidebar-collapsed .workspace-tab{justify-content:center;padding:12px 8px}
+  .sidebar-collapsed .sidebar-account{display:flex;flex-direction:column;align-items:center;padding:14px 0 0}
+  .sidebar-collapsed #connection-status,.sidebar-collapsed #user-badge,.sidebar-collapsed .status-dot{display:none}
+  .sidebar-collapsed #theme-toggle,.sidebar-collapsed #logout-button{font-size:10px;padding:6px 0;min-width:0}
+}
+@media(max-width:780px){.sidebar-toggle{display:none}.workspace-sidebar .workspace-tab{justify-content:center}}

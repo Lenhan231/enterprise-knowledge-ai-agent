@@ -987,6 +987,29 @@ def approve_invoice_review(
         repository.close()
 
 
+@app.post("/api/invoices/{invoice_id}/reject")
+def reject_invoice_review(
+    invoice_id: str,
+    request: Request,
+    user: dict = Depends(require_permission("manage_knowledge")),
+):
+    _require_same_origin(request)
+    from core.database.invoice_repository import InvoiceRepository
+
+    repository = InvoiceRepository()
+    try:
+        invoice = _invoice_for_user(repository, invoice_id, user)
+        if invoice["processing_status"] != "review_required":
+            raise HTTPException(409, "Only pending invoices can be rejected")
+        try:
+            repository.reject(invoice_id, reviewer=user["sub"])
+        except ValueError as error:
+            raise HTTPException(409, str(error)) from error
+        return {"invoice_id": invoice_id, "processing_status": "rejected"}
+    finally:
+        repository.close()
+
+
 @app.get("/api/invoices/{invoice_id}/source")
 def invoice_source(
     invoice_id: str,

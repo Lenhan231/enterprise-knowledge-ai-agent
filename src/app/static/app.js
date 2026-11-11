@@ -288,7 +288,7 @@ function renderInvoiceReviewList() {
     return `<button class="invoice-review-card ${selected ? "active" : ""}" type="button" data-invoice-review-id="${escapeHtml(invoice.invoice_id)}">
       <strong>${escapeHtml(invoice.source_filename || invoice.invoice_id)}</strong>
       <span>${escapeHtml(data.invoice_no || "Invoice number not extracted")} · ${escapeHtml(data.seller || "Seller not extracted")}</span>
-      <small><span class="invoice-status-badge is-${escapeHtml(({approved: "approved", review_required: "review", failed: "failed", processing: "processing"})[status] || "unknown")}">${escapeHtml(({review_required: "Needs review", failed: "Extraction failed", processing: "Processing", approved: "Approved"})[status] || status)}</span> · ${escapeHtml(new Date(invoice.updated_at || invoice.created_at).toLocaleDateString())}</small>
+      <small><span class="invoice-status-badge is-${escapeHtml(({approved: "approved", review_required: "review", failed: "failed", processing: "processing", rejected: "rejected"})[status] || "unknown")}">${escapeHtml(({review_required: "Needs review", failed: "Extraction failed", processing: "Processing", approved: "Approved", rejected: "Rejected"})[status] || status)}</span> · ${escapeHtml(new Date(invoice.updated_at || invoice.created_at).toLocaleDateString())}</small>
     </button>`;
   }).join("") || '<p class="analysis-empty">No invoice drafts to review.</p>';
 }
@@ -300,6 +300,7 @@ function renderInvoiceReviewDetail(invoice) {
   const data = invoice.invoice_data || {};
   const editable = invoice.processing_status === "review_required";
   const canApprove = currentUser?.role === "admin" && editable;
+  const canReject = currentUser?.role === "admin" && editable;
   const fields = INVOICE_REVIEW_FIELDS.map(([key, label]) => `<label>${escapeHtml(label)}<input name="${key}" value="${escapeHtml(key === "date" ? formatInvoiceDate(data[key]) : invoiceReviewValue(data[key]))}" ${editable ? "" : "readonly"}></label>`).join("");
   const items = Array.isArray(data.items) ? data.items : [];
   const itemRows = items.map((item, index) => `<fieldset class="invoice-review-item" data-item-index="${index}"><legend>Line item ${index + 1}</legend>
@@ -339,7 +340,7 @@ function renderInvoiceReviewDetail(invoice) {
     <div class="invoice-review-editor">
     ${(failed || processing) && !Object.keys(data).length ? `<p class="analysis-empty">${failed ? "No extracted data. Retry extraction to create a draft." : "Your draft will appear here when extraction finishes."}</p>` : `<form id="invoice-review-form" data-invoice-id="${escapeHtml(invoice.invoice_id)}">
       <div class="invoice-review-fields">${fields}</div><div id="invoice-review-items">${itemRows}</div>
-      ${editable ? `<div class="invoice-review-actions"><button class="secondary-button" type="button" data-add-invoice-item>Add line item</button><button class="primary-button" type="submit">Save corrections</button>${canApprove ? `<button class="primary-button" type="button" data-approve-invoice>Approve and publish</button>` : ""}</div>` : `<p class="corpus-note">This invoice is ${escapeHtml(invoice.processing_status)} and read-only.</p>`}
+      ${editable ? `<div class="invoice-review-actions"><button class="secondary-button" type="button" data-add-invoice-item>Add line item</button><button class="primary-button" type="submit">Save corrections</button>${canApprove ? `<button class="primary-button" type="button" data-approve-invoice>Approve and publish</button>` : ""}${canReject ? `<button class="danger-button" type="button" data-reject-invoice>Reject invoice</button>` : ""}</div>` : `<p class="corpus-note">This invoice is ${escapeHtml(invoice.processing_status)} and read-only.</p>`}
       <p class="corpus-note" data-invoice-edit-status aria-live="polite"></p>
     </form>`}
     ${elements.length || (invoice.ocr_tables || []).length ? `<details class="invoice-ocr-evidence"><summary>OCR evidence (${elements.length} elements, ${(invoice.ocr_tables || []).length} tables)</summary>${evidence || '<p>No OCR text was saved.</p>'}</details>` : ""}
@@ -476,6 +477,23 @@ async function saveInvoiceReview(form, approve = false) {
   }
 }
 
+async function rejectInvoice(form) {
+  const invoiceId = form.dataset.invoiceId;
+  if (!window.confirm("Reject this invoice? It will remain available for review but will not be published to analytics.")) return;
+  const button = form.querySelector("[data-reject-invoice]");
+  const status = form.querySelector("[data-invoice-edit-status]");
+  button.disabled = true;
+  status.textContent = "Rejecting invoice…";
+  try {
+    await api(`/api/invoices/${encodeURIComponent(invoiceId)}/reject`, { method: "POST" });
+    await refreshInvoiceReview(invoiceId);
+    $("#invoice-review-status").textContent = "Invoice rejected and kept out of analytics.";
+  } catch (error) {
+    status.textContent = error.message;
+    button.disabled = false;
+  }
+}
+
 $("#invoice-review-refresh").addEventListener("click", () => refreshInvoiceReview().catch((error) => {
   $("#invoice-review-status").textContent = `Could not load invoices: ${error.message}`;
 }));
@@ -499,6 +517,7 @@ $("#invoice-review-detail").addEventListener("click", (event) => {
   const form = event.target.closest("#invoice-review-form");
   if (!form) return;
   if (event.target.closest("[data-approve-invoice]")) return saveInvoiceReview(form, true);
+  if (event.target.closest("[data-reject-invoice]")) return rejectInvoice(form);
   if (event.target.closest("[data-add-invoice-item]")) {
     const currentData = invoiceReviewPayload(form);
     currentData.items.push(Object.fromEntries(INVOICE_ITEM_FIELDS.map(([key]) => [key, null])));

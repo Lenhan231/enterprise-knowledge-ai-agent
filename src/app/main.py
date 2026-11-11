@@ -451,8 +451,6 @@ async def upload_document(
         })
         registered = True
         repository.update_processing_status(document_id, "processing")
-        from document_processing.document_processor import DocumentProcessor
-
         metadata = {
             "document_id": document_id,
             "company": CORPUS_COMPANY,
@@ -467,25 +465,33 @@ async def upload_document(
         }
         if synthetic_company_policy:
             metadata["source_type"] = "synthetic_demo_policy"
-        processor = DocumentProcessor({
-            "parser_engine": "docling",
-            "chunking_strategy": os.getenv("DOCUMENT_CHUNKING_STRATEGY", "sentence"),
-            "paddle_layout": os.getenv("DOCUMENT_PADDLE_LAYOUT", "false").strip().lower() == "true",
-            "paddle_chart_recognition": os.getenv(
-                "DOCUMENT_PADDLE_CHART_RECOGNITION", "false",
-            ).strip().lower() == "true",
-            "paddle_formula_recognition": os.getenv(
-                "DOCUMENT_PADDLE_FORMULA_RECOGNITION", "false",
-            ).strip().lower() == "true",
-            "vision_captioning": os.getenv("DOCUMENT_VISION_CAPTIONS", "false").strip().lower() == "true",
-            "ocr_language": ocr_language,
-        })
         try:
             from core.database.document_processing_output_repository import (
                 DocumentProcessingOutputRepository,
             )
 
-            parsed = processor.process(filename, content, metadata)
+            processing_url = os.environ.get("DOCUMENT_PROCESSING_URL")
+            if not processing_url:
+                raise RuntimeError("DOCUMENT_PROCESSING_URL is required")
+            parser_config = {
+                "parser_engine": "docling",
+                "chunking_strategy": os.getenv("DOCUMENT_CHUNKING_STRATEGY", "sentence"),
+                "paddle_layout": os.getenv("DOCUMENT_PADDLE_LAYOUT", "false").strip().lower() == "true",
+                "paddle_chart_recognition": os.getenv(
+                    "DOCUMENT_PADDLE_CHART_RECOGNITION", "false",
+                ).strip().lower() == "true",
+                "paddle_formula_recognition": os.getenv(
+                    "DOCUMENT_PADDLE_FORMULA_RECOGNITION", "false",
+                ).strip().lower() == "true",
+                "vision_captioning": os.getenv("DOCUMENT_VISION_CAPTIONS", "false").strip().lower() == "true",
+                "ocr_language": ocr_language,
+            }
+            parsed = post_internal_service(processing_url, "/parse", {
+                "filename": filename,
+                "content": base64.b64encode(content).decode("ascii"),
+                "metadata": metadata,
+                "config": parser_config,
+            }, timeout=int(os.getenv("DOCUMENT_PROCESSING_TIMEOUT_SECONDS", "600")))
             outputs_repository = DocumentProcessingOutputRepository()
             try:
                 outputs_repository.replace_document(document_id, parsed)
@@ -515,7 +521,7 @@ async def upload_document(
                 }
 
             from core.chunking.processor import ChunkingProcessor
-            processed = ChunkingProcessor(processor.config).process(parsed)
+            processed = ChunkingProcessor(parser_config).process(parsed)
         except ValueError as error:
             raise HTTPException(422, str(error)) from error
         parser_chunks = processed["chunks"]

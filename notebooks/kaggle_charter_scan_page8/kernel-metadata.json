@@ -1,0 +1,18 @@
+{
+  "id": "ltrngnhn/vinamilk-charter-scan-page-8-ocr-diagnostic",
+  "title": "Vinamilk Charter Scan Page 8 OCR Diagnostic",
+  "code_file": "kaggle-charter-scan-page8.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": "true",
+  "enable_gpu": "true",
+  "enable_tpu": "false",
+  "enable_internet": "true",
+  "machine_shape": "",
+  "dataset_sources": [
+    "ltrngnhn/vinamilk-charter-scan-page8-assets"
+  ],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}

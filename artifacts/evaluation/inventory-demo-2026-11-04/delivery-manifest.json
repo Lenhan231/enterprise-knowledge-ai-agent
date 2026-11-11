@@ -1,0 +1,9 @@
+{
+  "measured_sql_revision": "3564c0638d0c9654240d222638e02b1ea8b057c5",
+  "production_baseline_revision": "1a6470b84443d6f9819b242357e76435eb329ce5",
+  "application_source_matches_final_manifest": true,
+  "question_sha256": "3d1b140392072695b87d2d47fa3139b47098b0b5a99f5ba207ea994e376f74f2",
+  "reference_sha256": "6eb1cc0c285dd565aedb468ef43de9d60eb27275ebdd493354f33d36db81a3d1",
+  "report_status": "Deferred until explicit user instruction",
+  "main_merge": "Not performed; gates remain red."
+}

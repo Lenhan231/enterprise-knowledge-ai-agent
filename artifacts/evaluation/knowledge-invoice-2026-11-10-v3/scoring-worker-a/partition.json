@@ -1,0 +1,59 @@
+{
+  "ids": [
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K07",
+    "K08",
+    "K09",
+    "K10",
+    "K11",
+    "K12",
+    "K13",
+    "K14",
+    "K15"
+  ],
+  "config": {
+    "agent_model": "qwen/qwen3.8-27b",
+    "temperature": 0,
+    "top_k": 5,
+    "retrieval_method": "translated_hybrid_rerank",
+    "embedding_model": "intfloat/multilingual-e5-base",
+    "embedding_revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "reranker_model": "BAAI/bge-reranker-v2-m3",
+    "reranker_revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+    "reranker_quantize": "int8",
+    "cpu_threads": 2,
+    "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+    "roles": [
+      "employee"
+    ],
+    "multiquery": false,
+    "claim_verification": false,
+    "judge_model": "gpt-5.6-luna",
+    "judge_reasoning": "medium",
+    "model_startup": "preload_outside_request",
+    "hf_hub_offline": true,
+    "context_max_chars": 24000,
+    "completeness_rule": false
+  },
+  "parent_manifest_sha256": "b604c353863da26bd9f9c4308641ec879869a14ec5f05ea097e709f3589e647d",
+  "generation_hashes": {
+    "K02": "c9d744aa990fa86a814aef7421a6ba2d9617f982f4f18baa59ff726fa2a534be",
+    "K03": "995f3f2ff067e40b1f57c99dd1f09c75927a9ae4d9fbd8881f4c25b771fe67e6",
+    "K04": "96491622c7232ceadd57326322bd689f41ca839d19dfdc3340188ff03b377e9c",
+    "K05": "5ea227c511cea3c0500e5fbd4e94a47f0461bad70d992b21beea9ed491f32eac",
+    "K06": "3b943c0ae3c75f26f52b09b6e73acc7916abbccca79552eca2042808af6d8993",
+    "K07": "e465eae77884ff3f22130a608c164923334958a8353c3afcd77947b20798cc6b",
+    "K08": "aa8d27b68269094693964b6e33161f20bd12cad1c8d47a7651fc061a65b48e94",
+    "K09": "732967049572666778ff5b6c1994f36a0d88c657b949f29725478ec1aa37df3b",
+    "K10": "5cfcb708791ae3807dfa5922e4b043dfea97a6d482ccc7383ca69e13fc25ac6d",
+    "K11": "67a4fbe5e939ecebf779940537b8be6d9fb4d88fa95bd15be7d92f289a84bfb6",
+    "K12": "5604da653ec670f7f17dce5a82b930cb9da00ab9e70e7ff16f6eb778cc1216bf",
+    "K13": "f38f6dc5c84091b63cc802a9214ee275be1e03512d63384b0151aa11ec202aa4",
+    "K14": "3da0ddd8fb02fc29211347f0e840ff42936677bcdfa5f4ee24ca1ad6b647c747",
+    "K15": "ae995321915d086804eca45774c43a838e5b352623b104ff14cce587f0a78d1c"
+  }
+}

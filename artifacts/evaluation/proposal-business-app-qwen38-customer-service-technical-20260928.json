@@ -1,0 +1,65 @@
+{
+  "created_at_utc": "2026-09-28T03:22:20.749421+00:00",
+  "route": "POST /api/ask",
+  "corpus_id": "VNM-ENTERPRISE-RAG-DEMO",
+  "corpus_manifest_sha256": "236010d3c0973b27fed8ffc5f70099496931251e3160fb088ddc74353d244031",
+  "route_dataset_sha256": "1ed8d581f3178d169aab73d07cab8d922a4fc6932992122165dafc9126de7f6f",
+  "coverage_dataset_sha256": "3648cbc5fe22a52adfd08805a6f8abbd3533fe0edc367a10e04156ba004907ea",
+  "actor_role": "admin",
+  "case_count": 2,
+  "attempted_count": 2,
+  "unrun_case_ids": [],
+  "stop_reason": null,
+  "passed": 2,
+  "failed": 0,
+  "mean_latency_seconds": 23.645,
+  "results": [
+    {
+      "id": "customer-service-knowledge",
+      "corpus_coverage": "partial",
+      "expected_outcome": "answer_only_vinamilk_store_return_steps_and_qualify_channel_scope",
+      "expected_route": "knowledge",
+      "actual_route": "knowledge",
+      "passed": true,
+      "checks": {
+        "expected_route": true,
+        "citation_integrity": true,
+        "no_citation_validation_failure": true,
+        "citations_have_source_locations": true,
+        "partial_case_abstains_or_uses_labeled_source": true
+      },
+      "insufficient_context": true,
+      "cited_document_ids": [],
+      "citation_pages": [],
+      "answer": "Insufficient information in the retrieved documents.",
+      "data_result_count": 0,
+      "latency_seconds": 29.081
+    },
+    {
+      "id": "technical-documentation-assistant",
+      "corpus_coverage": "unsupported",
+      "expected_outcome": "abstain_no_server_setup_instructions",
+      "expected_route": "knowledge",
+      "actual_route": "knowledge",
+      "passed": true,
+      "checks": {
+        "expected_route": true,
+        "citation_integrity": true,
+        "no_citation_validation_failure": true,
+        "citations_have_source_locations": true,
+        "unsupported_case_abstains": true
+      },
+      "insufficient_context": true,
+      "cited_document_ids": [],
+      "citation_pages": [],
+      "answer": "Insufficient information in the retrieved documents.",
+      "data_result_count": 0,
+      "latency_seconds": 18.21
+    }
+  ],
+  "limitations": [
+    "This is a single authenticated admin run over the public Vinamilk corpus; it is not a role-matrix test.",
+    "Supported and unsupported outcomes have deterministic route, source, value, abstention and result-shape checks.",
+    "Partial HR, compliance and executive cases still need blinded semantic review; these labels do not prove private-domain capability."
+  ]
+}

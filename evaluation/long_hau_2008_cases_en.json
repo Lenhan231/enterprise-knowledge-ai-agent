@@ -1,0 +1,379 @@
+[
+  {
+    "id": "Q01",
+    "question": "What are the mission and vision of PetroVietnam Fertilizer and Chemicals Corporation (PVFCCo)?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Semantic / multi-fact",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 4,
+        "page_number": 5
+      }
+    ]
+  },
+  {
+    "id": "Q02",
+    "question": "What is PVFCCo's stock ticker, and how many shares were listed on November 5, 2007?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Direct factual",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 13,
+        "page_number": 11
+      }
+    ]
+  },
+  {
+    "id": "Q03",
+    "question": "What were PVFCCo's main business sectors according to the 2008 Annual Report?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Multi-fact",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 14,
+        "page_number": 12
+      }
+    ]
+  },
+  {
+    "id": "Q04",
+    "question": "In 2008, how many tons of imported fertilizer did PVFCCo import and distribute in the domestic market?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Numeric",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 15,
+        "page_number": 13
+      }
+    ]
+  },
+  {
+    "id": "Q05",
+    "question": "By how many tons per year was the urea production capacity expected to increase through the CO2 recovery project at the Phu My Fertilizer Plant?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Numeric",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 15,
+        "page_number": 13
+      }
+    ]
+  },
+  {
+    "id": "Q06",
+    "question": "What were PVFCCo's total revenue, profit before tax, and tax payment in 2008?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Table / numeric",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 17,
+        "page_number": 14
+      }
+    ]
+  },
+  {
+    "id": "Q07",
+    "question": "Compare PVFCCo's total revenue in 2007 and 2008.",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Comparative reasoning",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 17,
+        "page_number": 14
+      }
+    ]
+  },
+  {
+    "id": "Q08",
+    "question": "What were PVFCCo's planned urea production and fertilizer imports for 2009?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Multi-fact",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 6,
+        "page_number": 6
+      }
+    ]
+  },
+  {
+    "id": "Q09",
+    "question": "What revenue, profit-before-tax, and state-budget tax-payment targets did PVFCCo set for 2009?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Table / numeric",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 19,
+        "page_number": 16
+      }
+    ]
+  },
+  {
+    "id": "Q10",
+    "question": "Where was the Phu My Fertilizer Plant located, and what were its designed daily ammonia and urea production capacities?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Multi-fact",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 23,
+        "page_number": 20
+      }
+    ]
+  },
+  {
+    "id": "Q11",
+    "question": "What technical solutions did PVFCCo implement to improve urea quality and plant operating efficiency?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Summarization",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 25,
+        "page_number": 21
+      },
+      {
+        "source": "annual_report",
+        "chunk_index": 26,
+        "page_number": 21
+      }
+    ]
+  },
+  {
+    "id": "Q12",
+    "question": "What were PVFCCo's current ratio and quick ratio in 2008?",
+    "expected_sources": [
+      "annual_report"
+    ],
+    "type": "Table extraction",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 55,
+        "page_number": 39
+      }
+    ]
+  },
+  {
+    "id": "Q13",
+    "question": "Under what business registration certificate number was Long Hau Joint Stock Company established, and on what date was it issued?",
+    "expected_sources": [
+      "long_hau_fs"
+    ],
+    "type": "Direct factual",
+    "evidence": [
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 25,
+        "page_number": 10
+      }
+    ]
+  },
+  {
+    "id": "Q14",
+    "question": "Which audit firm audited Long Hau's separate financial statements for 2008?",
+    "expected_sources": [
+      "long_hau_fs"
+    ],
+    "type": "Direct factual",
+    "evidence": [
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 7,
+        "page_number": 5
+      }
+    ]
+  },
+  {
+    "id": "Q15",
+    "question": "On what date was Long Hau's independent audit report for 2008 signed?",
+    "expected_sources": [
+      "long_hau_fs"
+    ],
+    "type": "Direct factual",
+    "evidence": [
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 9,
+        "page_number": 5
+      }
+    ]
+  },
+  {
+    "id": "Q16",
+    "question": "What were Long Hau's total assets at December 31, 2008 and at the beginning of 2008?",
+    "expected_sources": [
+      "long_hau_fs"
+    ],
+    "type": "Table / numeric",
+    "evidence": [
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 14,
+        "page_number": 6
+      }
+    ]
+  },
+  {
+    "id": "Q17",
+    "question": "How did Long Hau's inventory value change between the end of 2008 and the beginning of 2008?",
+    "expected_sources": [
+      "long_hau_fs"
+    ],
+    "type": "Comparative reasoning",
+    "evidence": [
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 12,
+        "page_number": 6
+      }
+    ]
+  },
+  {
+    "id": "Q18",
+    "question": "What was Long Hau's net revenue in 2008, and by how much did it increase compared with the previous year?",
+    "expected_sources": [
+      "long_hau_fs"
+    ],
+    "type": "Calculation",
+    "evidence": [
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 20,
+        "page_number": 8
+      }
+    ]
+  },
+  {
+    "id": "Q19",
+    "question": "What was Long Hau's total accounting profit before tax in 2008 compared with 2007?",
+    "expected_sources": [
+      "long_hau_fs"
+    ],
+    "type": "Table / numeric",
+    "evidence": [
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 21,
+        "page_number": 8
+      }
+    ]
+  },
+  {
+    "id": "Q20",
+    "question": "According to the notes to the financial statements, what principle did Long Hau use to determine the value of inventory related to industrial-park development costs?",
+    "expected_sources": [
+      "long_hau_fs"
+    ],
+    "type": "Semantic retrieval",
+    "evidence": [
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 28,
+        "page_number": 11
+      }
+    ]
+  },
+  {
+    "id": "Q21",
+    "question": "What depreciation method did Long Hau use, and what estimated depreciation periods applied to its types of fixed assets?",
+    "expected_sources": [
+      "long_hau_fs"
+    ],
+    "type": "Multi-fact",
+    "evidence": [
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 29,
+        "page_number": 11
+      }
+    ]
+  },
+  {
+    "id": "Q22",
+    "question": "What were Long Hau's profit attributable to ordinary shareholders and basic earnings per share in 2008?",
+    "expected_sources": [
+      "long_hau_fs"
+    ],
+    "type": "Table / numeric",
+    "evidence": [
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 55,
+        "page_number": 22
+      }
+    ]
+  },
+  {
+    "id": "Q23",
+    "question": "Which two companies did the 2008 PVFCCo Annual Report and Long Hau's 2008 separate financial statements belong to?",
+    "expected_sources": [
+      "annual_report",
+      "long_hau_fs"
+    ],
+    "type": "Entity disambiguation",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 0,
+        "page_number": 1
+      },
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 0,
+        "page_number": 1
+      }
+    ]
+  },
+  {
+    "id": "Q24",
+    "question": "Compare PVFCCo's and Long Hau's profit before tax in 2008, stating the figures and currency units used in each report.",
+    "expected_sources": [
+      "annual_report",
+      "long_hau_fs"
+    ],
+    "type": "Cross-document / reasoning",
+    "evidence": [
+      {
+        "source": "annual_report",
+        "chunk_index": 17,
+        "page_number": 14
+      },
+      {
+        "source": "long_hau_fs",
+        "chunk_index": 21,
+        "page_number": 8
+      }
+    ]
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "application_revision": "388ccc6dac2c87396d28358cd068daee98808760",
+  "new_model_api_calls": 0,
+  "captured_success_responses": 8,
+  "method": "Replay captured successful v4 responses through real read-only repository; recovered provider attempts not reissued. No fresh model score or latency claim.",
+  "same_status_and_coverage": true,
+  "status": "partial",
+  "download": true,
+  "appendix_discloses_rows": true
+}

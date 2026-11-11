@@ -1,0 +1,49 @@
+{
+  "case_id": "R01",
+  "model": "qwen/qwen3.8-27b",
+  "temperature": 0,
+  "max_output_tokens": 4096,
+  "prompt_sha256": "f62f86d230697cf4c288b45b81087b081b029e4a1a554ace200b7356976ebc4f",
+  "note": "Individual fresh-client probes of the exact R01 planning prompt, after repeated batch failures. No key values stored.",
+  "keys": [
+    {
+      "key_index": 1,
+      "key_role": "primary",
+      "status": "rate_limited",
+      "events": [
+        {
+          "status": 429,
+          "message": "Rate limit reached for model `qwen/qwen3.8-27b` in organization `[organization]` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 196506, Requested 4799. Please try again in 9m23.76s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing",
+          "retry_after_seconds": 564.0
+        }
+      ],
+      "elapsed_seconds": 2.017
+    },
+    {
+      "key_index": 2,
+      "key_role": "numbered_backup",
+      "status": "rate_limited",
+      "events": [
+        {
+          "status": 429,
+          "message": "Rate limit reached for model `qwen/qwen3.8-27b` in organization `[organization]` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 196577, Requested 4547. Please try again in 8m5.568s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing",
+          "retry_after_seconds": 486.0
+        }
+      ],
+      "elapsed_seconds": 0.441
+    },
+    {
+      "key_index": 3,
+      "key_role": "ragas_fallback",
+      "status": "rate_limited",
+      "events": [
+        {
+          "status": 429,
+          "message": "Rate limit reached for model `qwen/qwen3.8-27b` in organization `[organization]` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199509, Requested 4799. Please try again in 31m1.056s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing",
+          "retry_after_seconds": 1862.0
+        }
+      ],
+      "elapsed_seconds": 0.453
+    }
+  ]
+}

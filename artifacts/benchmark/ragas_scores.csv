@@ -1,0 +1,85 @@
+﻿question_id,model,question,answer,faithfulness,answer_relevancy,context_precision,hallucination_rate,status,error
+Q01,gpt_oss_20b,Sứ mệnh và tầm nhìn của Tổng Công ty Phân bón và Hóa chất Dầu khí (PVFCCo) được xác định như thế nào?,Không đủ thông tin trong các tài liệu được truy xuất.,0.0,0.0,0.0,,SCORED,
+Q01,gemini_flash,Sứ mệnh và tầm nhìn của Tổng Công ty Phân bón và Hóa chất Dầu khí (PVFCCo) được xác định như thế nào?,,,,,,NO_RESPONSE,ValueError
+Q01,qwen3,Sứ mệnh và tầm nhìn của Tổng Công ty Phân bón và Hóa chất Dầu khí (PVFCCo) được xác định như thế nào?,Không đủ thông tin trong các tài liệu được truy xuất.,0.0,0.0,0.0,,SCORED,
+Q02,gpt_oss_20b,Mã cổ phiếu của PVFCCo là gì và có bao nhiêu cổ phiếu được niêm yết vào ngày 05/11/2007?,"Mã cổ phiếu của PVFCCo là **DPM**.  
+Vào ngày 5 tháng 11 năm 2007, **380 000 000** cổ phiếu của công ty đã được niêm yết trên sàn HOSE. [S2]",1.0,0.7865,0.5,,SCORED,
+Q02,gemini_flash,Mã cổ phiếu của PVFCCo là gì và có bao nhiêu cổ phiếu được niêm yết vào ngày 05/11/2007?,"Mã cổ phiếu của PVFCCo là DPM [S2]. Vào ngày 05 tháng 11 năm 2007, có 380.000.000 cổ phiếu của Công ty được niêm yết chính thức và giao dịch tại HOSE [S2].",1.0,0.8265,0.5,,SCORED,
+Q02,qwen3,Mã cổ phiếu của PVFCCo là gì và có bao nhiêu cổ phiếu được niêm yết vào ngày 05/11/2007?,Mã cổ phiếu của PVFCCo là DPM và có 380.000.000 cổ phiếu được niêm yết vào ngày 05/11/2007 [S2].,1.0,1.0,0.5,,SCORED,
+Q03,gpt_oss_20b,PVFCCo hoạt động trong những lĩnh vực kinh doanh chính nào theo Báo cáo thường niên 2008?,"PVFCCo chủ yếu hoạt động trong các lĩnh vực kinh doanh chính sau đây (được nêu trong Báo cáo thường niên 2008):
+
+- **Sản xuất và giao dịch phân bón** – công ty sản xuất urea tại nhà máy Phú Mỹ và nhập khẩu các loại phân bón khác để cung cấp cho thị trường trong nước và quốc tế.  
+  [S1]  
+- **Sản xuất và giao dịch hóa chất** – ngoài phân bón, PVFCCo còn tham gia vào các hoạt động liên quan đến các sản phẩm hóa chất.  
+  [S1]  
+- **Quản lý chuỗi cung ứng và mạng lưới phân phối** – xây dựng và duy trì mạng lưới phân phối rộng khắp (hơn 2.100 điểm bán lẻ) để tối ưu chi phí và nâng cao lợi nhuận.  
+  [S10]  
+
+Những lĩnh vực này được mô tả trong phần “THE CHAIRMAN” và các mục liên quan của Báo cáo thường niên 2008.",1.0,0.886,0.0,,SCORED,
+Q03,gemini_flash,PVFCCo hoạt động trong những lĩnh vực kinh doanh chính nào theo Báo cáo thường niên 2008?,"Theo Báo cáo thường niên 2008, lĩnh vực kinh doanh chính của PVFCCo là sản xuất và kinh doanh phân bón và hóa chất [S6]. Sản phẩm cốt lõi của PVFCCo là urê Phú Mỹ và các loại phân bón khác được PVFCCo nhập khẩu và tiêu thụ trong nước [S6].
+
+Các hoạt động kinh doanh chính bao gồm:
+*   Vận hành nhà máy an toàn để sản xuất 750.000 tấn urê [S1].
+*   Nhập khẩu 250.000 tấn phân bón và hóa chất để cung cấp cho thị trường trong nước và quốc tế [S1].
+*   Đa dạng hóa các sản phẩm phân bón và hóa chất của PVFCCo [S1].
+*   Vận hành Nhà máy Đạm Phú Mỹ với công suất tối đa và nhập khẩu phân bón từ nước ngoài để đáp ứng nhu cầu trong nước [S4].
+*   Thành lập các công ty kinh doanh phân bón và đạt sản lượng 740.000 tấn urê vào năm 2008 [S10].",1.0,0.9232,0.0,,SCORED,
+Q03,qwen3,PVFCCo hoạt động trong những lĩnh vực kinh doanh chính nào theo Báo cáo thường niên 2008?,"Theo Báo cáo thường niên 2008, lĩnh vực kinh doanh chính của PVFCCo là sản xuất và thương mại phân bón và hóa chất [S6].",1.0,0.8946,0.0,,SCORED,
+Q04,gpt_oss_20b,"Năm 2008, PVFCCo đã nhập khẩu và phân phối bao nhiêu tấn phân bón nhập khẩu vào thị trường nội địa?","Năm 2008, PVFCCo đã nhập khẩu 268 000 tấn phân bón nhập khẩu và phân phối 198 000 tấn phân bón nhập khẩu vào thị trường nội địa. [S1]",1.0,0.9825,1.0,,SCORED,
+Q04,gemini_flash,"Năm 2008, PVFCCo đã nhập khẩu và phân phối bao nhiêu tấn phân bón nhập khẩu vào thị trường nội địa?","Năm 2008, PVFCCo đã nhập khẩu 268.000 tấn và phân phối 198.000 tấn phân bón nhập khẩu vào thị trường nội địa [S1].",1.0,0.9825,1.0,,SCORED,
+Q04,qwen3,"Năm 2008, PVFCCo đã nhập khẩu và phân phối bao nhiêu tấn phân bón nhập khẩu vào thị trường nội địa?","Năm 2008, PVFCCo đã nhập khẩu 268.000 tấn và phân phối 198.000 tấn phân bón nhập khẩu vào thị trường nội địa [S1].",1.0,0.9825,1.0,,SCORED,
+Q05,gpt_oss_20b,Dự án thu hồi CO₂ tại Nhà máy Đạm Phú Mỹ dự kiến làm tăng công suất sản xuất urê thêm bao nhiêu tấn mỗi năm?,Dự án thu hồi CO₂ tại Nhà máy Đạm Phú Mỹ dự kiến làm tăng công suất sản xuất urê thêm **60 000 tấn mỗi năm**. [S8],1.0,1.0,0.125,,SCORED,
+Q05,gemini_flash,Dự án thu hồi CO₂ tại Nhà máy Đạm Phú Mỹ dự kiến làm tăng công suất sản xuất urê thêm bao nhiêu tấn mỗi năm?,"Dự án thu hồi CO₂ từ khí thải của Nhà máy Đạm Phú Mỹ để sản xuất urê dự kiến sẽ làm tăng công suất sản xuất của nhà máy thêm 60.000 tấn urê mỗi năm, nâng tổng công suất lên 800.000 tấn urê mỗi năm sau khi hoàn thành [S8].",1.0,0.9915,0.125,,SCORED,
+Q05,qwen3,Dự án thu hồi CO₂ tại Nhà máy Đạm Phú Mỹ dự kiến làm tăng công suất sản xuất urê thêm bao nhiêu tấn mỗi năm?,Dự án thu hồi CO₂ tại Nhà máy Đạm Phú Mỹ dự kiến làm tăng công suất sản xuất urê thêm 60.000 tấn mỗi năm [S8].,1.0,1.0,0.125,,SCORED,
+Q06,gpt_oss_20b,"Tổng doanh thu, lợi nhuận trước thuế và số thuế nộp của PVFCCo năm 2008 là bao nhiêu?",,,,,,NO_RESPONSE,ValueError
+Q06,gemini_flash,"Tổng doanh thu, lợi nhuận trước thuế và số thuế nộp của PVFCCo năm 2008 là bao nhiêu?",,,,,,NO_RESPONSE,InternalServerError
+Q06,qwen3,"Tổng doanh thu, lợi nhuận trước thuế và số thuế nộp của PVFCCo năm 2008 là bao nhiêu?","Theo tài liệu được cung cấp, các chỉ tiêu tài chính của PVFCCo năm 2008 như sau:
+
+*   Tổng doanh thu (Gross Revenue) đạt 6.643 tỷ VNĐ [S8].
+*   Lợi nhuận trước thuế (Net Profit before tax) đạt 1.501 tỷ VNĐ [S8].
+*   Số thuế nộp (Tax Payment) là 283 tỷ VNĐ [S8].",1.0,0.7179,0.125,,SCORED,
+Q07,gpt_oss_20b,So sánh tổng doanh thu của PVFCCo giữa năm 2007 và 2008.,Không đủ thông tin trong các tài liệu được truy xuất.,1.0,0.0,0.0,,SCORED,
+Q07,gemini_flash,So sánh tổng doanh thu của PVFCCo giữa năm 2007 và 2008.,"Tổng doanh thu của PVFCCo trong năm 2008 đạt mức kỷ lục hơn 6.500 tỷ VND, đạt 170% kết quả mục tiêu [S8]. Không đủ thông tin trong các tài liệu được truy xuất để so sánh tổng doanh thu của PVFCCo giữa năm 2007 và 2008.",1.0,0.0,0.0,,SCORED,
+Q07,qwen3,So sánh tổng doanh thu của PVFCCo giữa năm 2007 và 2008.,Không đủ thông tin trong các tài liệu được truy xuất.,1.0,0.0,0.0,,SCORED,
+Q08,gpt_oss_20b,Kế hoạch sản lượng sản xuất urê và nhập khẩu phân bón của PVFCCo trong năm 2009 là bao nhiêu?,"Kế hoạch của PVFCCo cho năm 2009 là:
+
+- **Sản lượng urea:** 750 000 tấn  
+- **Nhập khẩu phân bón và hóa chất:** 250 000 tấn  
+
+[S1]",1.0,0.9357,1.0,,SCORED,
+Q08,gemini_flash,Kế hoạch sản lượng sản xuất urê và nhập khẩu phân bón của PVFCCo trong năm 2009 là bao nhiêu?,"Kế hoạch kinh doanh năm 2009 của PVFCCo đã được Hội đồng Quản trị phê duyệt với các mục tiêu và nhiệm vụ sau: tiếp tục vận hành nhà máy an toàn để sản xuất 750.000 tấn urê [S1]. Ngoài ra, công ty cũng có kế hoạch nhập khẩu 250.000 tấn phân bón và hóa chất để cung cấp cho thị trường trong nước và quốc tế [S1].",1.0,0.7353,1.0,,SCORED,
+Q08,qwen3,Kế hoạch sản lượng sản xuất urê và nhập khẩu phân bón của PVFCCo trong năm 2009 là bao nhiêu?,"Theo kế hoạch kinh doanh năm 2009 đã được Hội đồng Quản trị phê duyệt, PVFCCo đặt mục tiêu sản xuất 750.000 tấn urê và nhập khẩu 250.000 tấn phân bón cùng hóa chất [S1].",1.0,0.9196,1.0,,SCORED,
+Q09,gpt_oss_20b,"Các chỉ tiêu doanh thu, lợi nhuận trước thuế và thuế nộp ngân sách mà PVFCCo đặt ra cho năm 2009 là gì?","Các chỉ tiêu mà PVFCCo đặt ra cho năm 2009 là:
+
+- **Doanh thu (Gross revenue)**: 5 815 triệu đồng VND  
+- **Lợi nhuận trước thuế (Net profit before tax)**: 1 084 triệu đồng VND  
+- **Thuế nộp ngân sách (Tax payment)**: 240 triệu đồng VND  
+
+[S10]",0.0,0.841,0.1,,SCORED,
+Q09,qwen3,"Các chỉ tiêu doanh thu, lợi nhuận trước thuế và thuế nộp ngân sách mà PVFCCo đặt ra cho năm 2009 là gì?","Các chỉ tiêu mà PVFCCo đặt ra cho năm 2009 bao gồm doanh thu gộp là 5.815 tỷ VND, lợi nhuận trước thuế là 1.084 tỷ VND và thuế nộp ngân sách là 240 tỷ VND [S10].",1.0,0.8305,0.1,,SCORED,
+Q10,gpt_oss_20b,"Nhà máy Đạm Phú Mỹ nằm ở đâu và công suất thiết kế sản xuất amoniac, urê mỗi ngày là bao nhiêu?","Nhà máy Đạm Phú My tọa lạc tại Khu công nghiệp Phú My 1, huyện Tân Thanh, tỉnh Bà Rịa‑Vũng Tàu. Công suất thiết kế của nhà máy là 1 350 tấn amoniac và 2 200 tấn urê mỗi ngày. [S3]",1.0,0.8992,0.3333,,SCORED,
+Q10,gemini_flash,"Nhà máy Đạm Phú Mỹ nằm ở đâu và công suất thiết kế sản xuất amoniac, urê mỗi ngày là bao nhiêu?","Nhà máy Đạm Phú Mỹ nằm trên diện tích 63 hecta tại Khu công nghiệp Phú Mỹ 1, huyện Tân Thành, tỉnh Bà Rịa – Vũng Tàu [S3]. Nhà máy này được thiết kế và xây dựng để sản xuất amoniac với công suất 1.350 tấn/ngày và urê dạng hạt với công suất 2.200 tấn/ngày [S3].",1.0,0.8518,0.3333,,SCORED,
+Q10,qwen3,"Nhà máy Đạm Phú Mỹ nằm ở đâu và công suất thiết kế sản xuất amoniac, urê mỗi ngày là bao nhiêu?","Nhà máy Đạm Phú Mỹ nằm tại Khu công nghiệp Phú Mỹ 1, huyện Tân Thành, tỉnh Bà Rịa – Vũng Tàu [S3]. Công suất thiết kế sản xuất của nhà máy là 1.350 tấn amoniac mỗi ngày và 2.200 tấn urê mỗi ngày [S3].",1.0,0.7895,0.3333,,SCORED,
+Q11,gpt_oss_20b,PVFCCo đã triển khai những giải pháp kỹ thuật nào nhằm cải thiện chất lượng urê và hiệu quả vận hành nhà máy?,"PVFCCo đã triển khai các giải pháp kỹ thuật nhằm cải thiện chất lượng urê và nâng cao hiệu quả vận hành nhà máy như sau:
+
+- **Thiết lập hệ thống kinh tế‑kỹ thuật** để kiểm soát chi phí sản xuất, bao gồm việc quản lý lao động, giảm thiểu lãng phí vật liệu, tiết kiệm nhiên liệu và xây dựng quy chuẩn sử dụng vật tư, phụ tùng trong quá trình bảo trì – sửa chữa.  
+  [S2]  
+- **Phát triển hệ thống kinh tế‑kỹ thuật cho hoạt động sản xuất và thương mại** của PVFCCo, bao gồm các quy trình liên quan đến lao động, vật liệu, tiêu thụ nhiên liệu và chuẩn mực bảo trì, nhằm tối ưu hóa hiệu suất và chất lượng sản phẩm.  
+  [S3]  
+- **Dự án khôi phục CO₂ từ lò phản ứng chính tại Nhà máy Phú Mỹ** nhằm tăng năng suất urê thêm 60.000 tấn/ năm, đồng thời cải thiện hiệu quả sử dụng năng lượng và giảm khí thải.  
+  [S3]",0.75,0.9744,0.0,,SCORED,
+Q11,gemini_flash,PVFCCo đã triển khai những giải pháp kỹ thuật nào nhằm cải thiện chất lượng urê và hiệu quả vận hành nhà máy?,,,,,,NO_RESPONSE,ValueError
+Q13,gemini_flash,Công ty Cổ phần Long Hậu được thành lập theo giấy chứng nhận đăng ký kinh doanh số bao nhiêu và được cấp ngày nào?,,,,,,NO_RESPONSE,ValueError
+Q14,gemini_flash,Đơn vị kiểm toán nào thực hiện kiểm toán báo cáo tài chính riêng năm 2008 của Long Hậu?,Đơn vị kiểm toán thực hiện kiểm toán báo cáo tài chính riêng của Công ty Cổ Phần Long Hậu vào ngày 31 tháng 12 năm 2008 là Emst & Young [S1].,1.0,0.9158,1.0,,SCORED,
+Q14,qwen3,Đơn vị kiểm toán nào thực hiện kiểm toán báo cáo tài chính riêng năm 2008 của Long Hậu?,Đơn vị kiểm toán thực hiện kiểm toán báo cáo tài chính riêng năm 2008 của Công ty Cổ Phần Long Hậu là Ernst & Young [S1].,1.0,0.9453,1.0,,SCORED,
+Q09,gemini_flash,"Các chỉ tiêu doanh thu, lợi nhuận trước thuế và thuế nộp ngân sách mà PVFCCo đặt ra cho năm 2009 là gì?","Các chỉ tiêu mà PVFCCo đặt ra cho năm 2009 là: doanh thu gộp 5.815 tỷ VND, lợi nhuận trước thuế 1.084 tỷ VND và thuế nộp ngân sách 240 tỷ VND [S10].",,,,,PARTIAL," faithfulness: InstructorRetryException: Error code: 503 - [{'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}] answer_relevancy: InstructorRetryException: Error code: 503 - [{'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}] context_precision: InstructorRetryException: Error code: 503 - [{'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}]"
+Q11,qwen3,PVFCCo đã triển khai những giải pháp kỹ thuật nào nhằm cải thiện chất lượng urê và hiệu quả vận hành nhà máy?,"Dựa trên các tài liệu được cung cấp, PVFCCo đã triển khai các giải pháp kỹ thuật và vận hành sau:
+
+*   Thực hiện bảo trì và sửa chữa lớn cho Nhà máy Phân bón Phú Mỹ vào tháng 4 năm 2008, hoàn thành sớm 5 ngày so với kế hoạch, giúp giảm thời gian ngừng hoạt động của nhà máy [S2].
+*   Thiết lập hệ thống kinh tế - kỹ thuật để kiểm soát hiệu quả chi phí sản xuất của nhà máy [S2].
+*   Ban hành hệ thống kinh tế - kỹ thuật cho các hoạt động sản xuất và thương mại, bao gồm các quy định về lao động, giảm thiểu vật tư, tiêu thụ nhiên liệu và xây dựng định mức sử dụng, bảo trì vật tư và phụ tùng [S3].
+*   Đầu tư và phê duyệt kế hoạch đấu thầu cho Dự án thu hồi CO2 từ bộ cải tạo sơ cấp tại Nhà máy Phân bón Phú Mỹ nhằm tăng sản lượng urê hàng năm thêm 60.000 tấn/năm [S3].",1.0,0.8846,,,PARTIAL," context_precision: InstructorRetryException: Error code: 503 - [{'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}]"
+Q12,gpt_oss_20b,Tỷ số thanh toán hiện hành và tỷ số thanh toán nhanh của PVFCCo năm 2008 là bao nhiêu?,Không đủ thông tin trong các tài liệu được truy xuất.,1.0,0.0,,,PARTIAL," context_precision: InstructorRetryException: Error code: 503 - [{'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}]"
+Q12,gemini_flash,Tỷ số thanh toán hiện hành và tỷ số thanh toán nhanh của PVFCCo năm 2008 là bao nhiêu?,Không đủ thông tin trong các tài liệu được truy xuất.,1.0,,,,PARTIAL," answer_relevancy: InstructorRetryException: Error code: 503 - [{'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}] context_precision: InstructorRetryException: Error code: 503 - [{'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}]"
+Q12,qwen3,Tỷ số thanh toán hiện hành và tỷ số thanh toán nhanh của PVFCCo năm 2008 là bao nhiêu?,Không đủ thông tin trong các tài liệu được truy xuất.,1.0,0.0,0.0,,SCORED,
+Q13,gpt_oss_20b,Công ty Cổ phần Long Hậu được thành lập theo giấy chứng nhận đăng ký kinh doanh số bao nhiêu và được cấp ngày nào?,Công ty Cổ phần Long Hậu được thành lập theo giấy chứng nhận đăng ký kinh doanh số **5003000142** và được cấp ngày **23 tháng 5 năm 2006**. [S1] [S2],1.0,0.901,0.8167,,SCORED,

@@ -1,0 +1,287 @@
+{
+  "created_at_utc": "2026-09-27T20:54:13.458724+00:00",
+  "dataset": "data/evaluation/proposal_business_route_cases.json",
+  "dataset_id": "proposal-business-cases-route-v1",
+  "dataset_sha256": "1ed8d581f3178d169aab73d07cab8d922a4fc6932992122165dafc9126de7f6f",
+  "selected_case_ids": [
+    "financial-report-analysis",
+    "executive-decision-support",
+    "business-intelligence-analytics"
+  ],
+  "label_method": "Expected route manually mapped from each proposal business-case task to the app's current agent contract. These labels assess routing only, not domain answer quality or corpus coverage.",
+  "classifier_model": "openai/gpt-oss-20b",
+  "provider": "Groq Responses API",
+  "software_version": "47a68d209e2b5dde2da8c803cbe7fb7bcfdf408c",
+  "working_tree_dirty": true,
+  "implementation_sha256": {
+    "scripts/evaluate_agent_routes.py": "e2deb76dd4d5468ffea089e5da55fb87b7e28ec2a14887e81a28ae57eb99f4fe",
+    "src/core/agents/intent_classifier.py": "3546f66220f11178a2f86aabc8d9f6baaaed40cf6292d56798e578d88fe5ba17",
+    "src/core/agents/router.py": "5a9d71f3e29b7819713472c58790d19e66a71397830af8f3872c697443139740",
+    "src/core/prompts/intent.py": "5554f3f56847e73ae7684d34ec761dd28e3e7012fbba5ad513858f634ef1cf07"
+  },
+  "environment": {
+    "python": "3.11.16",
+    "platform": "Linux-7.2.6-arch2-1-x86_64-with-glibc2.44"
+  },
+  "route_metrics": {
+    "case_count": 3,
+    "correct": 3,
+    "accuracy": 1.0,
+    "confusion_matrix": {
+      "knowledge": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      },
+      "analytics": {
+        "knowledge": 0,
+        "analytics": 1,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      },
+      "hybrid": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 1,
+        "dashboard": 0,
+        "report": 0
+      },
+      "dashboard": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      },
+      "report": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 1
+      }
+    },
+    "per_route": {
+      "knowledge": {
+        "support": 0,
+        "predicted": 0,
+        "precision": null,
+        "recall": null
+      },
+      "analytics": {
+        "support": 1,
+        "predicted": 1,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "hybrid": {
+        "support": 1,
+        "predicted": 1,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "dashboard": {
+        "support": 0,
+        "predicted": 0,
+        "precision": null,
+        "recall": null
+      },
+      "report": {
+        "support": 1,
+        "predicted": 1,
+        "precision": 1.0,
+        "recall": 1.0
+      }
+    }
+  },
+  "direct_model_route_metrics": {
+    "case_count": 3,
+    "correct": 3,
+    "accuracy": 1.0,
+    "confusion_matrix": {
+      "knowledge": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      },
+      "analytics": {
+        "knowledge": 0,
+        "analytics": 1,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      },
+      "hybrid": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 1,
+        "dashboard": 0,
+        "report": 0
+      },
+      "dashboard": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      },
+      "report": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 1
+      }
+    },
+    "per_route": {
+      "knowledge": {
+        "support": 0,
+        "predicted": 0,
+        "precision": null,
+        "recall": null
+      },
+      "analytics": {
+        "support": 1,
+        "predicted": 1,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "hybrid": {
+        "support": 1,
+        "predicted": 1,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "dashboard": {
+        "support": 0,
+        "predicted": 0,
+        "precision": null,
+        "recall": null
+      },
+      "report": {
+        "support": 1,
+        "predicted": 1,
+        "precision": 1.0,
+        "recall": 1.0
+      }
+    }
+  },
+  "fallback_route_metrics": {
+    "case_count": 0,
+    "correct": 0,
+    "accuracy": null,
+    "confusion_matrix": {
+      "knowledge": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      },
+      "analytics": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      },
+      "hybrid": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      },
+      "dashboard": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      },
+      "report": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 0,
+        "dashboard": 0,
+        "report": 0
+      }
+    },
+    "per_route": {
+      "knowledge": {
+        "support": 0,
+        "predicted": 0,
+        "precision": null,
+        "recall": null
+      },
+      "analytics": {
+        "support": 0,
+        "predicted": 0,
+        "precision": null,
+        "recall": null
+      },
+      "hybrid": {
+        "support": 0,
+        "predicted": 0,
+        "precision": null,
+        "recall": null
+      },
+      "dashboard": {
+        "support": 0,
+        "predicted": 0,
+        "precision": null,
+        "recall": null
+      },
+      "report": {
+        "support": 0,
+        "predicted": 0,
+        "precision": null,
+        "recall": null
+      }
+    }
+  },
+  "fallback_count": 0,
+  "provider_error_count": 0,
+  "mean_latency_seconds": 0.672,
+  "limitations": "Measures classifier/router selection against manually mapped proposal-task labels only. Agent tools and answer generation are stubbed; it does not establish task completion, answer quality, domain evidence, or coverage for private enterprise cases.",
+  "results": [
+    {
+      "id": "financial-report-analysis",
+      "category": "Financial Report Analysis",
+      "expected_route": "hybrid",
+      "actual_route": "hybrid",
+      "model_intent": "analytics",
+      "passed": true,
+      "fallback_used": false,
+      "provider_error_type": null,
+      "latency_seconds": 1.074
+    },
+    {
+      "id": "executive-decision-support",
+      "category": "Executive Decision Support",
+      "expected_route": "report",
+      "actual_route": "report",
+      "model_intent": "report",
+      "passed": true,
+      "fallback_used": false,
+      "provider_error_type": null,
+      "latency_seconds": 0.429
+    },
+    {
+      "id": "business-intelligence-analytics",
+      "category": "Business Intelligence Analytics",
+      "expected_route": "analytics",
+      "actual_route": "analytics",
+      "model_intent": "analytics",
+      "passed": true,
+      "fallback_used": false,
+      "provider_error_type": null,
+      "latency_seconds": 0.512
+    }
+  ]
+}

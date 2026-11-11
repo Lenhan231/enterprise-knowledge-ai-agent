@@ -1,0 +1,14 @@
+{
+  "checkout": "4788487",
+  "tests": 46,
+  "failures": [],
+  "errors": [],
+  "classes": [
+    "test_sql_join_duplication.JoinDuplicationTest",
+    "test_sql_metric_definitions.MetricEnforcementTest",
+    "test_sql_generation.SQLValidationTest",
+    "test_sql_generation.RepositoryBoundaryTest",
+    "test_sql_semantic_contracts.DerivedJoinContractTest",
+    "test_sql_semantic_contracts.CrossDomainInventoryTest"
+  ]
+}

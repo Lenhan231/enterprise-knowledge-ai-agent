@@ -1,0 +1,55 @@
+{
+  "purpose": "Frozen before first comparison of revised prompt. Manually hypothesized evidence topics, not gold retrieval/answer labels. No subsequent prompt tuning against this set in this experiment.",
+  "cases": [
+    {
+      "id": "T01",
+      "question": "Thiết bị AB-20 rộng và cao bao nhiêu?",
+      "expected_planner": false
+    },
+    {
+      "id": "T02",
+      "question": "Who signs an equipment handover form and what fields must it contain?",
+      "expected_planner": false
+    },
+    {
+      "id": "T03",
+      "question": "Quy trình sao lưu cần giữ bản sao bao lâu và kiểm tra khôi phục thế nào?",
+      "expected_planner": false
+    },
+    {
+      "id": "T04",
+      "question": "Compare approval requirements for an expense of 1,200,000 and 1,200,001 VND.",
+      "expected_planner": false
+    },
+    {
+      "id": "T05",
+      "question": "Is an equipment handover without the receiver signature valid? What other validations apply to that form?",
+      "expected_planner": false
+    },
+    {
+      "id": "T06",
+      "question": "Mô tả điều kiện xin nghỉ học và lịch sao lưu cơ sở dữ liệu.",
+      "expected_planner": true
+    },
+    {
+      "id": "T07",
+      "question": "What are the supplier onboarding requirements and which secrets are prohibited in system logs?",
+      "expected_planner": true
+    },
+    {
+      "id": "T08",
+      "question": "1. Hướng dẫn xử lý hàng trả lại\n2. Trình bày điều kiện cấp tài khoản nội bộ",
+      "expected_planner": true
+    },
+    {
+      "id": "T09",
+      "question": "Compare employee leave allowances and backup retention requirements.",
+      "expected_planner": true
+    },
+    {
+      "id": "T10",
+      "question": "Quy trình báo mất thiết bị; điều kiện phê duyệt hợp đồng thuê văn phòng.",
+      "expected_planner": true
+    }
+  ]
+}

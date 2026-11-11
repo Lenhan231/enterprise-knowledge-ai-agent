@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-30",
+  "branch": "Huy",
+  "previous_implementation_commit": "489b641",
+  "policy": "Verified admin may bypass empty/NULL document ACLs; active/ready and requested company/document/metadata scope still apply.",
+  "tests": {
+    "run": 47,
+    "passed": 47,
+    "selected_unit": 41,
+    "isolated_postgresql": 6,
+    "server": "PostgreSQL 16.15, UTF8 database, local Unix socket with TCP disabled",
+    "log": "tests.txt"
+  },
+  "regression": "New admin exception test failed against 489b641 before the fix.",
+  "boundaries": [
+    "No production database or VPS writes",
+    "No model downloads or inference",
+    "Full suite and Docker build not run",
+    "Internal roles=None retains nonempty ACL requirement"
+  ],
+  "sha256": {
+    "src/core/retrieval/methods/common.py": "5f95a43bbed2ce38de622954fc39fe354010bba32a39b2623077793460d35b44",
+    "src/core/database/document_chunks_repository.py": "26b61c84ff711ac507bdb9940889e826c0a543f94b90741b2e7649f5c8ceabf5",
+    "tests/test_retrieval_access.py": "3ce291930a8450990c3468a228ab66c5fc0c0b000a511b71a3051db12989b106",
+    "tests/test_document_chunks_repository.py": "0b113871f0ea4aa84ddac90939af72b29d230e3d1ff48a071c7dc94965aa8531",
+    "tests/test_e5_production.py": "624ce8d7ea5ca718d615cdd14e8da6f3c7637f3f77c2d333a7ba714c225fc439"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "backend": {
+    "url": "http://127.0.0.1:8000/health",
+    "status": 200,
+    "body": "{\"status\":\"ok\"}"
+  },
+  "streamlit": {
+    "url": "http://127.0.0.1:8501/_stcore/health",
+    "status": 200,
+    "body": "ok"
+  },
+  "implementation_sha256": {
+    "src/core/agents/router.py": "186a6d5118115f49b7ec4610a74e92ade2b8841edbf9d02ba1b0faced43bd8d9",
+    "src/core/agents/planning.py": "9c0956bed76d53fa6c5b9c593ba9539138e3823252df691924d1aa21aed601fe",
+    "src/core/agents/execution.py": "8d3178f10da58fdb3d40c721aac8b11eb56522611fc37153fbce0ece2a312503",
+    "src/core/agents/response.py": "34aa1e320166ccb9e117945a76d5312b3ff9228e0805c055800864a53b7aea91",
+    "src/core/agents/runtime.py": "21711733e13d7452693e0e151309851e6619fad2176ba496dfb7769222b066c2",
+    "src/core/llm/groq_provider.py": "4f55dbdb3504fea7359e5b9a17b90c2767bb6c57de3c359106f20989bb483f85"
+  }
+}

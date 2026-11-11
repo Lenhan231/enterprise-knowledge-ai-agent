@@ -1,0 +1,439 @@
+{
+  "dataset": "commerce-agent-benchmarks-v1",
+  "model_key": "gpt_oss_120b",
+  "model": "openai/gpt-oss-120b",
+  "judge_model": "Luna 5.6 Medium (Codex CLI)",
+  "run_date": "2026-10-23",
+  "evaluation_config": {
+    "cases_per_agent": 25,
+    "agents": [
+      "knowledge",
+      "sql",
+      "report"
+    ],
+    "metrics": [
+      "faithfulness",
+      "answer_relevancy",
+      "context_precision"
+    ],
+    "retry_policy": "one retry for transient failures; two attempts maximum"
+  },
+  "summary": {
+    "case_count": 3,
+    "by_agent": {
+      "knowledge": {
+        "case_count": 1,
+        "answered_cases": 1,
+        "run_errors": 0,
+        "mean_agent_latency_seconds": 86.484,
+        "latency_cases": 1,
+        "ragas": {
+          "faithfulness": {
+            "mean": null,
+            "scored_cases": 0,
+            "eligible_cases": 0,
+            "coverage": null,
+            "score_errors": 0
+          },
+          "answer_relevancy": {
+            "mean": 0.0,
+            "scored_cases": 1,
+            "eligible_cases": 1,
+            "coverage": 1.0,
+            "score_errors": 0
+          },
+          "context_precision": {
+            "mean": null,
+            "scored_cases": 0,
+            "eligible_cases": 0,
+            "coverage": null,
+            "score_errors": 0
+          }
+        }
+      },
+      "report": {
+        "case_count": 1,
+        "answered_cases": 1,
+        "run_errors": 0,
+        "mean_agent_latency_seconds": 61.894,
+        "latency_cases": 1,
+        "ragas": {
+          "faithfulness": {
+            "mean": 0.7333,
+            "scored_cases": 1,
+            "eligible_cases": 1,
+            "coverage": 1.0,
+            "score_errors": 0
+          },
+          "answer_relevancy": {
+            "mean": 0.8451,
+            "scored_cases": 1,
+            "eligible_cases": 1,
+            "coverage": 1.0,
+            "score_errors": 0
+          },
+          "context_precision": {
+            "mean": 0.0,
+            "scored_cases": 1,
+            "eligible_cases": 1,
+            "coverage": 1.0,
+            "score_errors": 0
+          }
+        }
+      },
+      "sql": {
+        "case_count": 1,
+        "answered_cases": 1,
+        "run_errors": 0,
+        "mean_agent_latency_seconds": 13.57,
+        "latency_cases": 1,
+        "ragas": {
+          "faithfulness": {
+            "mean": 0.0,
+            "scored_cases": 1,
+            "eligible_cases": 1,
+            "coverage": 1.0,
+            "score_errors": 0
+          },
+          "answer_relevancy": {
+            "mean": 0.0,
+            "scored_cases": 1,
+            "eligible_cases": 1,
+            "coverage": 1.0,
+            "score_errors": 0
+          },
+          "context_precision": {
+            "mean": 0.0,
+            "scored_cases": 1,
+            "eligible_cases": 1,
+            "coverage": 1.0,
+            "score_errors": 0
+          }
+        }
+      }
+    },
+    "ragas": {
+      "faithfulness": {
+        "mean": 0.3666,
+        "scored_cases": 2,
+        "eligible_cases": 2,
+        "coverage": 1.0,
+        "score_errors": 0
+      },
+      "answer_relevancy": {
+        "mean": 0.2817,
+        "scored_cases": 3,
+        "eligible_cases": 3,
+        "coverage": 1.0,
+        "score_errors": 0
+      },
+      "context_precision": {
+        "mean": 0.0,
+        "scored_cases": 2,
+        "eligible_cases": 2,
+        "coverage": 1.0,
+        "score_errors": 0
+      }
+    },
+    "sql": {
+      "safety_pass_rate": 0.0,
+      "safety_cases": 1,
+      "semantic_correctness_rate": 0.0,
+      "semantic_cases": 1,
+      "abstention_accuracy": 0.0,
+      "abstention_cases": 1
+    },
+    "hallucination_rate": null,
+    "hallucination_note": "Requires manual claim-level review; not inferred from faithfulness."
+  },
+  "results": [
+    {
+      "case_id": "K01",
+      "agent": "knowledge",
+      "model": "openai/gpt-oss-120b",
+      "question": "Mã tài liệu, phiên bản, ngày ban hành và trạng thái phê duyệt của Bộ chính sách quản lý tồn kho là gì?",
+      "answer": "Không đủ thông tin trong các tài liệu được truy xuất.",
+      "contexts": [],
+      "reference": "[\"INV-MAN-001\", \"v1.0\", \"16/10/2026\", \"tài liệu mô phỏng / chưa được phê duyệt chính thức\"]",
+      "evidence_sources": [],
+      "agent_metadata": {},
+      "latency_seconds": 86.484,
+      "total_case_seconds": 153.99,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.0,
+        "context_precision": null
+      },
+      "metric_eligibility": {
+        "faithfulness": false,
+        "answer_relevancy": true,
+        "context_precision": false
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 86.484,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 67.506,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "S01",
+      "agent": "sql",
+      "model": "openai/gpt-oss-120b",
+      "question": "Tổng doanh thu và giá vốn (COGS) tháng 12/2022 là bao nhiêu?",
+      "answer": "The approved data query could not be completed. Please try again later.",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"field\": \"revenue\", \"equals\": 52454936.2}, {\"field\": \"cogs\", \"equals\": 53489673.44}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "AmbiguousFunctionError",
+        "ok": false,
+        "limitations": [
+          "Database query did not complete."
+        ]
+      },
+      "latency_seconds": 13.57,
+      "total_case_seconds": 180.032,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": false,
+      "sql_semantic_correctness": false,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 13.57,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 47.684,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 95.097,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 23.681,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "R01",
+      "agent": "report",
+      "model": "openai/gpt-oss-120b",
+      "question": "Tạo báo cáo doanh thu và COGS tháng 12/2022 theo template đã tải lên.",
+      "answer": "# Revenue Performance Report\n\nRevenue data for December 2022 not provided in source files.\n\n\n## Report title\n\nDecember 2022 Revenue and COGS Summary\n\n\n## Reporting period\n\nDecember 2022\n\n\n## Executive summary\n\nCOGS values are available for four products; revenue figures are unavailable.\n\n\n## KPI table\n\nKey performance indicators include on‑hand COGS per product.\n\n\n| Metric | Value | Period | Source |\n| --- | --- | --- | --- |\n| Metric | Value | Period | Source |\n| COGS Product 1249 (VietMode MP-17) | 3661.613046 | Dec 2022 | [S1] |\n| COGS Product 1250 (VietMode MP-18) | 3635.735922 | Dec 2022 | [S2] |\n| COGS Product 198 (DragonWear YY-02) | 3768.03819 | Dec 2022 | [S3] |\n## Monthly trend\n\nTrend analysis cannot be performed due to single‑month snapshot.\n\n\n## Segment/region breakdown\n\nProducts span Activewear and Trendy segments; no regional data supplied.\n\n\n## Limitations and assumptions\n\nData limited to inventory snapshot; assumes COGS reflects cost of goods sold.\n\n\n## Sources and evidence\n\nData extracted from inventory control workbook rows cited.\n",
+      "contexts": [
+        "Section: Inventory Control\nColumns: Snapshot Date | Product ID | Product Name | Category | Segment | Size | Color | On-hand Units | Units Sold (Latest) | Avg Monthly Demand (3 snapshots) | Avg Daily Demand | Stockout Days | Fill Rate | Source Stockout Flag | Source Overstock Flag | Source Reorder Flag | Open PO Units (input) | Backorder Units (input) | Inventory Position | Lead Time Days (input) | Safety Days | Review Period Days | Reorder Point (ROP) | Target Stock | Calculated Days of Supply | Policy Decision | Suggested Order Qty | Priority | Unit Price (source) | COGS (source) | On-hand COGS Value\nRow 17: Snapshot Date: 2022-12-31 | Product ID: 1249 | Product Name: VietMode MP-17 | Category: Casual | Segment: Activewear | Size: M | Color: yellow | On-hand Units: 3 | Units Sold (Latest): 1 | Avg Monthly Demand (3 snapshots): 1.333333333333333 | Avg Daily Demand: | Stockout Days: 2 | Fill Rate: 0.9333 | Source Stockout Flag: 1 | Source Overstock Flag: 0 | Source Reorder Flag: 0 | Open PO Units (input): 0 | Backorder Units (input): 0 | Inventory Position: | Lead Time Days (input): 14 | Safety Days: 7 | Review Period Days: 7 | Reorder Point (ROP): | Target Stock: | Calculated Days of Supply: | Policy Decision: | Suggested Order Qty: | Priority: | Unit Price (source): 4976.37 | COGS (source): 3661.613046 | On-hand COGS Value:",
+        "Section: Inventory Control\nColumns: Snapshot Date | Product ID | Product Name | Category | Segment | Size | Color | On-hand Units | Units Sold (Latest) | Avg Monthly Demand (3 snapshots) | Avg Daily Demand | Stockout Days | Fill Rate | Source Stockout Flag | Source Overstock Flag | Source Reorder Flag | Open PO Units (input) | Backorder Units (input) | Inventory Position | Lead Time Days (input) | Safety Days | Review Period Days | Reorder Point (ROP) | Target Stock | Calculated Days of Supply | Policy Decision | Suggested Order Qty | Priority | Unit Price (source) | COGS (source) | On-hand COGS Value\nRow 18: Snapshot Date: 2022-12-31 | Product ID: 1250 | Product Name: VietMode MP-18 | Category: Casual | Segment: Activewear | Size: L | Color: red | On-hand Units: 3 | Units Sold (Latest): 1 | Avg Monthly Demand (3 snapshots): 1.333333333333333 | Avg Daily Demand: | Stockout Days: 1 | Fill Rate: 0.9667 | Source Stockout Flag: 1 | Source Overstock Flag: 0 | Source Reorder Flag: 0 | Open PO Units (input): 0 | Backorder Units (input): 0 | Inventory Position: | Lead Time Days (input): 14 | Safety Days: 7 | Review Period Days: 7 | Reorder Point (ROP): | Target Stock: | Calculated Days of Supply: | Policy Decision: | Suggested Order Qty: | Priority: | Unit Price (source): 4976.37 | COGS (source): 3635.735922 | On-hand COGS Value:",
+        "Section: Inventory Control\nColumns: Snapshot Date | Product ID | Product Name | Category | Segment | Size | Color | On-hand Units | Units Sold (Latest) | Avg Monthly Demand (3 snapshots) | Avg Daily Demand | Stockout Days | Fill Rate | Source Stockout Flag | Source Overstock Flag | Source Reorder Flag | Open PO Units (input) | Backorder Units (input) | Inventory Position | Lead Time Days (input) | Safety Days | Review Period Days | Reorder Point (ROP) | Target Stock | Calculated Days of Supply | Policy Decision | Suggested Order Qty | Priority | Unit Price (source) | COGS (source) | On-hand COGS Value\nRow 42: Snapshot Date: 2022-12-31 | Product ID: 198 | Product Name: DragonWear YY-02 | Category: GenZ | Segment: Trendy | Size: L | Color: pink | On-hand Units: 16 | Units Sold (Latest): 6 | Avg Monthly Demand (3 snapshots): 7.666666666666667 | Avg Daily Demand: | Stockout Days: 1 | Fill Rate: 0.9667 | Source Stockout Flag: 1 | Source Overstock Flag: 0 | Source Reorder Flag: 0 | Open PO Units (input): 0 | Backorder Units (input): 0 | Inventory Position: | Lead Time Days (input): 14 | Safety Days: 7 | Review Period Days: 7 | Reorder Point (ROP): | Target Stock: | Calculated Days of Supply: | Policy Decision: | Suggested Order Qty: | Priority: | Unit Price (source): 6293.7 | COGS (source): 3768.03819 | On-hand COGS Value:",
+        "Section: Inventory Control\nColumns: Snapshot Date | Product ID | Product Name | Category | Segment | Size | Color | On-hand Units | Units Sold (Latest) | Avg Monthly Demand (3 snapshots) | Avg Daily Demand | Stockout Days | Fill Rate | Source Stockout Flag | Source Overstock Flag | Source Reorder Flag | Open PO Units (input) | Backorder Units (input) | Inventory Position | Lead Time Days (input) | Safety Days | Review Period Days | Reorder Point (ROP) | Target Stock | Calculated Days of Supply | Policy Decision | Suggested Order Qty | Priority | Unit Price (source) | COGS (source) | On-hand COGS Value\nRow 41: Snapshot Date: 2022-12-31 | Product ID: 197 | Product Name: DragonWear YY-01 | Category: GenZ | Segment: Trendy | Size: M | Color: silver | On-hand Units: 9 | Units Sold (Latest): 1 | Avg Monthly Demand (3 snapshots): 2 | Avg Daily Demand: | Stockout Days: 0 | Fill Rate: 1 | Source Stockout Flag: 0 | Source Overstock Flag: 1 | Source Reorder Flag: 0 | Open PO Units (input): 0 | Backorder Units (input): 0 | Inventory Position: | Lead Time Days (input): 14 | Safety Days: 7 | Review Period Days: 7 | Reorder Point (ROP): | Target Stock: | Calculated Days of Supply: | Policy Decision: | Suggested Order Qty: | Priority: | Unit Price (source): 6041.7 | COGS (source): 5739.615 | On-hand COGS Value:",
+        "Section: Inventory Control\nColumns: Snapshot Date | Product ID | Product Name | Category | Segment | Size | Color | On-hand Units | Units Sold (Latest) | Avg Monthly Demand (3 snapshots) | Avg Daily Demand | Stockout Days | Fill Rate | Source Stockout Flag | Source Overstock Flag | Source Reorder Flag | Open PO Units (input) | Backorder Units (input) | Inventory Position | Lead Time Days (input) | Safety Days | Review Period Days | Reorder Point (ROP) | Target Stock | Calculated Days of Supply | Policy Decision | Suggested Order Qty | Priority | Unit Price (source) | COGS (source) | On-hand COGS Value\nRow 50: Snapshot Date: 2022-12-31 | Product ID: 1700 | Product Name: NamStyle YY-11 | Category: GenZ | Segment: Trendy | Size: S | Color: red | On-hand Units: 9 | Units Sold (Latest): 1 | Avg Monthly Demand (3 snapshots): 1.333333333333333 | Avg Daily Demand: | Stockout Days: 0 | Fill Rate: 1 | Source Stockout Flag: 0 | Source Overstock Flag: 1 | Source Reorder Flag: 0 | Open PO Units (input): 0 | Backorder Units (input): 0 | Inventory Position: | Lead Time Days (input): 14 | Safety Days: 7 | Review Period Days: 7 | Reorder Point (ROP): | Target Stock: | Calculated Days of Supply: | Policy Decision: | Suggested Order Qty: | Priority: | Unit Price (source): 1301.63582278481 | COGS (source): 745.4468357088607 | On-hand COGS Value:",
+        "{}"
+      ],
+      "reference": "[\"Doanh thu 52,454,936.20\", \"COGS 53,489,673.44\", \"kỳ báo cáo 2022-12\"]",
+      "evidence_sources": [
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "commerce.sales"
+      ],
+      "agent_metadata": {
+        "ok": true,
+        "limitations": []
+      },
+      "latency_seconds": 61.894,
+      "total_case_seconds": 294.521,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": 0.7333,
+        "answer_relevancy": 0.8451,
+        "context_precision": 0.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 61.894,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 52.321,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 67.592,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 112.714,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    }
+  ]
+}

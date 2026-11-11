@@ -1,0 +1,76 @@
+{
+  "dataset": "shared-html-owner-reviewed",
+  "engine": "docling-vietocr",
+  "run_id": "docling-vietocr-osd-longhau-p15-table-auto",
+  "started_at_utc": "2026-10-21T14:07:11.852675+00:00",
+  "finished_at_utc": "2026-10-21T14:08:19.598849+00:00",
+  "device": "CPU",
+  "ocr": "Docling layout + Tesseract OSD per OCR crop + RapidOCR detection + VietOCR vgg_seq2seq greedy",
+  "layout_model": "Layout heron",
+  "table_structure": "Docling TableFormer accurate + per-crop Tesseract OSD; OCR cell matching",
+  "threads": 2,
+  "page_filter": "E2E-LONG-HAU-2008-p15",
+  "page_count": 1,
+  "successful_pages": 1,
+  "failed_pages": 0,
+  "wall_seconds": 67.746,
+  "peak_process_rss_mib": 3981.8,
+  "prediction_generation_seconds": 67.746,
+  "reused_raw_outputs": false,
+  "raw_output_directory": "/home/lenhanm1/Thesis/enterprise-knowledge-ai-agent/artifacts/evaluation/document-pipelines/results/shared-html/docling-vietocr-osd-longhau-p15-table-auto/raw_pages",
+  "predictions": "/home/lenhanm1/Thesis/enterprise-knowledge-ai-agent/artifacts/evaluation/document-pipelines/results/shared-html/docling-vietocr-osd-longhau-p15-table-auto/predictions.jsonl",
+  "pages": [
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p15",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 56.059
+    }
+  ],
+  "table_orientation_detections": [
+    {
+      "page_id": "E2E-LONG-HAU-2008-p15",
+      "table_index_1based": 1,
+      "bbox_scaled": [
+        264,
+        288,
+        1244,
+        942
+      ],
+      "rotation_clockwise": 0,
+      "osd_confidence": 9.64,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "page_id": "E2E-LONG-HAU-2008-p15",
+      "table_index_1based": 2,
+      "bbox_scaled": [
+        260,
+        1050,
+        1244,
+        1258
+      ],
+      "rotation_clockwise": 0,
+      "osd_confidence": 2.81,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "page_id": "E2E-LONG-HAU-2008-p15",
+      "table_index_1based": 3,
+      "bbox_scaled": [
+        260,
+        1442,
+        1244,
+        1716
+      ],
+      "rotation_clockwise": 0,
+      "osd_confidence": 4.03,
+      "minimum_osd_confidence": 5.0
+    }
+  ],
+  "inference_wall_seconds": 67.746,
+  "inference_page_seconds": {
+    "E2E-LONG-HAU-2008-p15": 56.059
+  },
+  "inference_successful_pages": 1,
+  "docling_version": "2.129.0"
+}

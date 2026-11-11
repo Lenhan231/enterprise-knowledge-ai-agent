@@ -1,0 +1,59 @@
+{
+  "ids": [
+    "K16",
+    "K17",
+    "K18",
+    "K19",
+    "K20",
+    "K21",
+    "K22",
+    "K23",
+    "K24",
+    "K25",
+    "K27",
+    "K28",
+    "K29",
+    "K30"
+  ],
+  "config": {
+    "agent_model": "qwen/qwen3.8-27b",
+    "temperature": 0,
+    "top_k": 5,
+    "retrieval_method": "translated_hybrid_rerank",
+    "embedding_model": "intfloat/multilingual-e5-base",
+    "embedding_revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "reranker_model": "BAAI/bge-reranker-v2-m3",
+    "reranker_revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+    "reranker_quantize": "int8",
+    "cpu_threads": 2,
+    "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+    "roles": [
+      "employee"
+    ],
+    "multiquery": false,
+    "claim_verification": false,
+    "judge_model": "gpt-5.6-luna",
+    "judge_reasoning": "medium",
+    "model_startup": "preload_outside_request",
+    "hf_hub_offline": true,
+    "context_max_chars": 24000,
+    "completeness_rule": false
+  },
+  "parent_manifest_sha256": "b604c353863da26bd9f9c4308641ec879869a14ec5f05ea097e709f3589e647d",
+  "generation_hashes": {
+    "K16": "b6e782ed6ca6d5760ede6061b20266a885eec684e5bf2f55c936bd706c8435a7",
+    "K17": "29bccacfde63b247df8dfd46ffa5c0af942e8f1926593e15dffe42f528d0b40a",
+    "K18": "130b51f230de49cead071861ccfb9fabcbd35cb2a7a56077687f61acff6efe6a",
+    "K19": "08f1aae1c5daa71cd5f6fda6361fac3d3bf8fb4fc3b56a03094b8dc133574060",
+    "K20": "5eb1b180bc9ef8c540c3993951da1085313c1389a596d2642ef5c9d65ee86bda",
+    "K21": "239b3d08d92c173ad2edb35ae18fe1c0dfc2238fb7e9f1152add2a45e5affd89",
+    "K22": "8a269d399ebab06331f4a85407b9f2ce85f42dcee3a16baf768831f9770c8a15",
+    "K23": "501b1d0b4f7f060c82695454a5c7293dc66f825c3c8edaeee767e9b9ca7ec773",
+    "K24": "8abd50267593d6fe4bbca025092ddcf49bcb7c89c8f448ef87e82fb48aa2356d",
+    "K25": "84ed65d467c336e63f124feae0d984eb9940be7feeba5418d4dbcc3b888527ca",
+    "K27": "dd528195fb6eab43a2b7c109aa7f4117e8332e6f4dcdc0fa7e5470c910f27d74",
+    "K28": "bbd9bb9577695e38f51eaf63ddbd9b5b847145952a005683e5c247e83cb2890f",
+    "K29": "1c182486e5b0c180014d6403cc2c510cf624bafe794d3a3674062398122fb7fd",
+    "K30": "da3c05ecbf731730937a64d438bc50aca45f6848bd9cfd008a64110ebb5af074"
+  }
+}

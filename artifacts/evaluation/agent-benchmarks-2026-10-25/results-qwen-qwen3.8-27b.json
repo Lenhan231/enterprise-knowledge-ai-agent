@@ -1,0 +1,2969 @@
+{
+  "dataset": "commerce-agent-benchmarks-v1",
+  "model_key": "qwen3",
+  "model": "qwen/qwen3.8-27b",
+  "judge_model": "RAGAS library metrics; Codex CLI gpt-5.6-luna (medium); first 9 cases manually scored",
+  "summary": {
+    "case_count": 75,
+    "by_agent": {
+      "knowledge": {
+        "cases": 25,
+        "answered": 25,
+        "run_errors": 0
+      },
+      "sql": {
+        "cases": 25,
+        "answered": 25,
+        "run_errors": 0
+      },
+      "report": {
+        "cases": 25,
+        "answered": 16,
+        "run_errors": 9
+      }
+    },
+    "sql": {
+      "safety": {
+        "passed": 17,
+        "checked": 25
+      },
+      "result_checks": {
+        "passed": 22,
+        "checked": 25
+      },
+      "abstention": {
+        "passed": 17,
+        "checked": 25
+      }
+    },
+    "ragas_partial": {
+      "faithfulness": {
+        "mean": 0.4762,
+        "scored_cases": 55
+      },
+      "answer_relevancy": {
+        "mean": 0.7721,
+        "scored_cases": 66
+      },
+      "context_precision": {
+        "mean": 0.462,
+        "scored_cases": 57
+      }
+    }
+  },
+  "results": [
+    {
+      "case_id": "K01",
+      "agent": "knowledge",
+      "question": "Mã tài liệu, phiên bản, ngày ban hành và trạng thái phê duyệt của Bộ chính sách quản lý tồn kho là gì?",
+      "answer": "Mã tài liệu của Bộ chính sách quản lý tồn kho là INV-MAN-001, phiên bản là v1.0 và ngày ban hành là 16/10/2026 [S1]. Các nguồn được cung cấp không chứa thông tin về \"trạng thái phê duyệt\" cụ thể cho tài liệu này, do đó không đủ thông tin để trả lời phần này [S1].",
+      "contexts": [
+        "VIETSTYLE COMMERCE\nBỘ CHÍNH SÁCH QUẢN LÝ TỒN KHO\nMã tài liệu: INV-MAN-001Phiên bản: v1.0 | 16/10/2026Phạm vi: SKU thời trang, streetwear và outdoor; bán lẻ / thương mại điện tử"
+      ],
+      "reference": "[\"INV-MAN-001\", \"v1.0\", \"16/10/2026\", \"tài liệu mô phỏng / chưa được phê duyệt chính thức\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.8,
+        "answer_relevancy": 0.8571,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 106.261,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K02",
+      "agent": "knowledge",
+      "question": "Snapshot tồn kho mới nhất trong bộ dữ liệu là ngày nào và có bao nhiêu SKU có bản ghi tại ngày đó?",
+      "answer": "Snapshot tồn kho mới nhất trong bộ dữ liệu là ngày 2022-12-31 và có 424 SKU có bản ghi tại ngày đó [S1].",
+      "contexts": [
+        "2. Phạm vi và cơ sở dữ liệu\nDataset có 2,412 SKU trong products.csv và 60,247 bản ghi inventory.csv, bao phủ 2012-07-31 đến 2022-12-31. Snapshot mới nhất là 2022-12-31 với 424 SKU có bản ghi. Nhóm hàng quan sát gồm Streetwear, Outdoor, Casual và GenZ. Sales.csv bao phủ 2012-07-04 đến 2022-12-31. Dữ liệu trả về, đơn hàng, khuyến mãi và giao hàng có thể dùng để phân tích nguyên nhân nhưng không thay thế sổ cái tồn kho.\nDataset không cung cấp đầy đủ purchase orders inbound, MOQ, lead time nhà cung cấp, backorder, vị trí kho hoặc đơn vị tiền tệ được xác nhận. Vì vậy, các trường này phải được bổ sung trước khi triển khai chính sách mua hàng trong môi trường thật."
+      ],
+      "reference": "[\"2022-12-31\", \"424 SKU\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.8767,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 58.616,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K03",
+      "agent": "knowledge",
+      "question": "Ai chịu trách nhiệm về KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách?",
+      "answer": "Inventory Manager chịu trách nhiệm về KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách [S1].",
+      "contexts": [
+        "Section: 3. Vai trò và trách nhiệm\nColumns: Vai trò | Trách nhiệm chính\nRow 1: Vai trò: Inventory Manager | Trách nhiệm chính: Chịu trách nhiệm KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách.\nRow 2: Vai trò: Inventory Controller / Planner | Trách nhiệm chính: Tính nhu cầu, ROP, target stock; rà soát cảnh báo và lập đề xuất PO.\nRow 3: Vai trò: Procurement | Trách nhiệm chính: Quản lý nhà cung cấp, MOQ, lead time, PO và xác nhận lịch giao.\nRow 4: Vai trò: Warehouse Supervisor | Trách nhiệm chính: Nhận hàng, put-away, kiểm kê, điều tra chênh lệch và kỷ luật thao tác.\nRow 5: Vai trò: Returns QA | Trách nhiệm chính: Kiểm tra hàng trả về; phân loại bán lại, sửa chữa, cách ly hoặc loại bỏ.\nRow 6: Vai trò: Finance | Trách nhiệm chính: Đối chiếu giá vốn, điều chỉnh giá trị tồn và phê duyệt ghi giảm theo thẩm quyền.\nRow 7: Vai trò: System / Data Owner | Trách nhiệm chính: Quản lý quyền truy cập, định nghĩa trường dữ liệu, nhật ký và kiểm soát AI."
+      ],
+      "reference": "[\"Inventory Manager\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.78,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 59.951,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K04",
+      "agent": "knowledge",
+      "question": "Vai trò nào tính nhu cầu, ROP, target stock và rà soát cảnh báo tồn kho?",
+      "answer": "Vai trò Inventory Controller / Planner chịu trách nhiệm tính nhu cầu, ROP, target stock; rà soát cảnh báo và lập đề xuất PO [S1].",
+      "contexts": [
+        "Section: 3. Vai trò và trách nhiệm\nColumns: Vai trò | Trách nhiệm chính\nRow 1: Vai trò: Inventory Manager | Trách nhiệm chính: Chịu trách nhiệm KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách.\nRow 2: Vai trò: Inventory Controller / Planner | Trách nhiệm chính: Tính nhu cầu, ROP, target stock; rà soát cảnh báo và lập đề xuất PO.\nRow 3: Vai trò: Procurement | Trách nhiệm chính: Quản lý nhà cung cấp, MOQ, lead time, PO và xác nhận lịch giao.\nRow 4: Vai trò: Warehouse Supervisor | Trách nhiệm chính: Nhận hàng, put-away, kiểm kê, điều tra chênh lệch và kỷ luật thao tác.\nRow 5: Vai trò: Returns QA | Trách nhiệm chính: Kiểm tra hàng trả về; phân loại bán lại, sửa chữa, cách ly hoặc loại bỏ.\nRow 6: Vai trò: Finance | Trách nhiệm chính: Đối chiếu giá vốn, điều chỉnh giá trị tồn và phê duyệt ghi giảm theo thẩm quyền.\nRow 7: Vai trò: System / Data Owner | Trách nhiệm chính: Quản lý quyền truy cập, định nghĩa trường dữ liệu, nhật ký và kiểm soát AI."
+      ],
+      "reference": "[\"Inventory Controller / Planner\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.8146,
+        "context_precision": 1.0
+      },
+      "score_errors": {
+        "faithfulness": "InstructorRetryException: Error code: 400 - {'error': {'message': \"Failed to validate JSON. Please adjust your prompt. See 'failed_generation' for more details.\", 'type': 'invalid_request_error', 'code': 'json_validate_failed', 'failed_generation': ''}}"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial",
+      "total_case_seconds": 53.951,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K05",
+      "agent": "knowledge",
+      "question": "Công thức Inventory Position được định nghĩa thế nào?",
+      "answer": "Công thức Inventory Position được định nghĩa là: Inventory Position = On-hand + Open PO − Backorder [S1].",
+      "contexts": [
+        "03 | Quy tắc bổ sung hàng Thông số mặc định chỉ để mô phỏng; cần thay bằng dữ liệu nhà cung cấp. Công thức Inventory Position = On-hand + Open PO − Backorder ROP = Daily Demand × (Lead Time + Safety Days) Target = Daily Demand × (Lead Time + Safety Days + Review Period) THAM SỐ KHỞI TẠO Lead time: 14 ngày Safety stock: 7 ngày Review period: 7 ngày Reorder trigger: Inventory Position ≤ ROP Nếu có stockout/service signal nhưng calculated days of supply >120 ngày → DATA CONFLICT. Khóa đề xuất PO tự động, xác minh giao dịch và nhu cầu trước khi mua. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 4"
+      ],
+      "reference": "[\"On-hand + Open PO − Backorder\"]",
+      "evidence_sources": [
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9241,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 58.194,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K06",
+      "agent": "knowledge",
+      "question": "Công thức Reorder Point (ROP) và các tham số mô phỏng mặc định là gì?",
+      "answer": "Công thức tính Reorder Point (ROP) là Nhu cầu/ngày nhân với tổng của Lead time và Safety days [S2].\nCác tham số mô phỏng mặc định bao gồm lead time là 14 ngày, safety stock là 7 ngày và review period là 7 ngày [S1][S2].",
+      "contexts": [
+        "03 | Quy tắc bổ sung hàng Thông số mặc định chỉ để mô phỏng; cần thay bằng dữ liệu nhà cung cấp. Công thức Inventory Position = On-hand + Open PO − Backorder ROP = Daily Demand × (Lead Time + Safety Days) Target = Daily Demand × (Lead Time + Safety Days + Review Period) THAM SỐ KHỞI TẠO Lead time: 14 ngày Safety stock: 7 ngày Review period: 7 ngày Reorder trigger: Inventory Position ≤ ROP Nếu có stockout/service signal nhưng calculated days of supply >120 ngày → DATA CONFLICT. Khóa đề xuất PO tự động, xác minh giao dịch và nhu cầu trước khi mua. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 4",
+        "4. Chính sách bổ sung hàng\nMô hình tham chiếu cho SKU có nhu cầu tương đối ổn định:\nInventory position = On-hand + Open PO − Backorder\nReorder Point (ROP) = Nhu cầu/ngày × (Lead time + Safety days)\nTarget Stock = Nhu cầu/ngày × (Lead time + Safety days + Review period)\nGiả định khởi tạo trong bộ mô phỏng: lead time 14 ngày, safety stock 7 ngày, review period 7 ngày. Các giá trị này có thể chỉnh theo nhà cung cấp / nhóm hàng; không phải lead time được suy ra từ dữ liệu.\nRà soát đề xuất bổ sung ít nhất mỗi tuần và trước chiến dịch khuyến mãi.\nTrước khi phát hành PO, kiểm tra tồn kho khả dụng, PO đang mở, hàng đang giữ, backorder, MOQ, ngân sách và lịch giao.\nNếu có stockout signal cùng days of supply > 120 ngày, không tự động mua thêm; mở điều tra P1.\nKhông đặt hàng bổ sung cho SKU vượt 120 ngày tồn kho trừ khi có phê duyệt chiến dịch, cam kết khách hàng hoặc lý do được ghi nhận.\nMọi PO khẩn cấp phải ghi rõ nguyên nhân, ảnh hưởng dịch vụ và người phê duyệt."
+      ],
+      "reference": "[\"ROP = nhu cầu/ngày × (Lead time + Safety days)\", \"lead time 14 ngày\", \"safety days 7 ngày\", \"tham số là giả định mô phỏng\"]",
+      "evidence_sources": [
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.8828,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 82.092,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K07",
+      "agent": "knowledge",
+      "question": "Target Stock được tính theo công thức nào và review period mặc định là bao lâu?",
+      "answer": "Target Stock được tính theo công thức: Nhu cầu/ngày × (Lead time + Safety days + Review period) [S1].\nReview period mặc định (tham số khởi tạo) là 7 ngày [S1].",
+      "contexts": [
+        "4. Chính sách bổ sung hàng\nMô hình tham chiếu cho SKU có nhu cầu tương đối ổn định:\nInventory position = On-hand + Open PO − Backorder\nReorder Point (ROP) = Nhu cầu/ngày × (Lead time + Safety days)\nTarget Stock = Nhu cầu/ngày × (Lead time + Safety days + Review period)\nGiả định khởi tạo trong bộ mô phỏng: lead time 14 ngày, safety stock 7 ngày, review period 7 ngày. Các giá trị này có thể chỉnh theo nhà cung cấp / nhóm hàng; không phải lead time được suy ra từ dữ liệu.\nRà soát đề xuất bổ sung ít nhất mỗi tuần và trước chiến dịch khuyến mãi.\nTrước khi phát hành PO, kiểm tra tồn kho khả dụng, PO đang mở, hàng đang giữ, backorder, MOQ, ngân sách và lịch giao.\nNếu có stockout signal cùng days of supply > 120 ngày, không tự động mua thêm; mở điều tra P1.\nKhông đặt hàng bổ sung cho SKU vượt 120 ngày tồn kho trừ khi có phê duyệt chiến dịch, cam kết khách hàng hoặc lý do được ghi nhận.\nMọi PO khẩn cấp phải ghi rõ nguyên nhân, ảnh hưởng dịch vụ và người phê duyệt."
+      ],
+      "reference": "[\"Daily demand × (Lead time + Safety days + Review period)\", \"review period 7 ngày\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.8864,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 66.215,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K08",
+      "agent": "knowledge",
+      "question": "Điều kiện nào kích hoạt DATA CONFLICT và cần làm gì trước khi đề xuất mua hàng?",
+      "answer": "Điều kiện kích hoạt trạng thái DATA CONFLICT là khi có tín hiệu thiếu hàng (stockout signal) đồng thời với số ngày cung cấp tính toán (calculated days of supply) lớn hơn 120 ngày [S1]. Tín hiệu thiếu hàng được xác định khi số ngày thiếu hàng (stockout_days) lớn hơn hoặc bằng 1, hoặc tỷ lệ lấp đầy (fill_rate) nhỏ hơn 95%, hoặc số ngày cung cấp tính toán nhỏ hơn hoặc bằng 14 ngày [S2].\n\nTrước khi đề xuất mua hàng, cần thực hiện các bước sau:\n- Khóa đề xuất đơn đặt hàng (PO) tự động [S1].\n- Xác minh giao dịch và nhu cầu trước khi mua [S1].\n- Kiểm tra tồn khả dụng, hàng giữ, đơn chưa xuất, snapshot timestamp và công thức days of supply [S3].\n- Chỉ mở lại quyết định bổ sung sau khi Inventory Controller ghi nhận kết luận [S3].",
+      "contexts": [
+        "03 | Quy tắc bổ sung hàng Thông số mặc định chỉ để mô phỏng; cần thay bằng dữ liệu nhà cung cấp. Công thức Inventory Position = On-hand + Open PO − Backorder ROP = Daily Demand × (Lead Time + Safety Days) Target = Daily Demand × (Lead Time + Safety Days + Review Period) THAM SỐ KHỞI TẠO Lead time: 14 ngày Safety stock: 7 ngày Review period: 7 ngày Reorder trigger: Inventory Position ≤ ROP Nếu có stockout/service signal nhưng calculated days of supply >120 ngày → DATA CONFLICT. Khóa đề xuất PO tự động, xác minh giao dịch và nhu cầu trước khi mua. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 4",
+        "Section: README\nColumns: Mục | Nội dung\nRow 8: Mục: Inventory position | Nội dung: On-hand + Open PO − Backorder. Dataset không có Open PO / Backorder; workbook mặc định 0 và yêu cầu nhập số thực tế.\nRow 9: Mục: Stockout signal | Nội dung: stockout_days ≥ 1 hoặc fill_rate < 95% hoặc calculated days of supply ≤ 14 ngày.\nRow 10: Mục: Overstock signal | Nội dung: Calculated days of supply > 120 ngày. >180 ngày cần kế hoạch xử lý theo chính sách.\nRow 11: Mục: Conflict gate | Nội dung: Nếu stockout signal đồng thời calculated days of supply >120 ngày, trạng thái DATA CONFLICT; không tự động đề xuất PO.\nRow 12: Mục: Giới hạn | Nội dung: Dataset không xác nhận đơn vị tiền tệ, inbound lead time, MOQ, kho/vị trí, PO đang mở hoặc backorder. Cờ reorder_flag trong nguồn luôn bằng 0.\nRow 13: Mục: Hướng dẫn | Nội dung: Điền Open PO / Backorder và lead time thực tế; xem KPI Summary; lọc Inventory Control theo Priority / Policy Decision; xác minh mọi DATA CONFLICT.",
+        "Section: 7. Cập nhật hệ thống và đóng phiếu\nNgưỡng xử lý và phê duyệt Tình huống Hành động tối thiểu Người duyệt Không chênh lệch Đóng phiếu; lưu audit trail Warehouse Supervisor Chênh lệch nhỏ, có nguyên nhân rõ và bằng chứng Recount + biên bản; cập nhật sau duyệt Inventory Controller / Supervisor Chênh lệch lặp lại, giá trị lớn hoặc vượt ngưỡng nội bộ Giữ giao dịch liên quan; điều tra nguyên nhân gốc Inventory Manager + Finance Nghi ngờ gian lận / mất mát / hàng giả Cách ly SKU, bảo toàn bằng chứng, thông báo Compliance / Operations Operations / Compliance 6. Không tự động đặt hàng khi dữ liệu mâu thuẫn Nếu tồn kho tính lại cho thấy dư hàng trên 120 ngày nhưng có stockout signal (stockout_days ≥ 1 hoặc fill_rate < 95%), đánh dấu DATA CONFLICT. Tạm khóa đề xuất PO tự động, kiểm tra tồn khả dụng, hàng giữ, đơn chưa xuất, snapshot timestamp và công thức days of supply. Chỉ mở lại quyết định bổ sung sau khi Inventory Controller ghi nhận kết luận. 7. Cập nhật hệ thống và đóng phiếu • Mỗi điều chỉnh phải có mã phiếu, policy ID, SKU, số lượng trước/sau, mã nguyên nhân, bằng chứng, người nhập và người duyệt."
+      ],
+      "reference": "[\"stockout/service thấp đồng thời days of supply >120 ngày; hoặc stockout_flag và overstock_flag cùng bật\", \"tạm khóa/dừng đề xuất PO tự động\", \"kiểm tra giao dịch, snapshot, đơn đang treo và cách tính nhu cầu\"]",
+      "evidence_sources": [
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.8749,
+        "context_precision": 1.0
+      },
+      "score_errors": {
+        "faithfulness": "InstructorRetryException: Error code: 400 - {'error': {'message': \"Failed to validate JSON. Please adjust your prompt. See 'failed_generation' for more details.\", 'type': 'invalid_request_error', 'code': 'json_validate_failed', 'failed_generation': ''}}"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial",
+      "total_case_seconds": 76.76,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K09",
+      "agent": "knowledge",
+      "question": "Tần suất kiểm kê tham chiếu cho nhóm ABC A, B và C là bao nhiêu?",
+      "answer": "Tần suất kiểm kê tham chiếu cho các nhóm ABC được quy định như sau:\n- Nhóm A: Hằng tuần [S1].\n- Nhóm B: Hằng tháng [S1].\n- Nhóm C: Hằng quý [S1].",
+      "contexts": [
+        "Section: 5. Phân loại ABC và lịch kiểm kê\nColumns: Nhóm | Tiêu chí tham chiếu | Tần suất | SLA điều tra\nRow 1: Nhóm: A | Tiêu chí tham chiếu: Nhóm SKU đóng góp xấp xỉ 80% giá trị tiêu thụ năm | Tần suất: Hằng tuần | SLA điều tra: Điều tra chênh lệch ngay trong ngày\nRow 2: Nhóm: B | Tiêu chí tham chiếu: Nhóm tiếp theo đóng góp xấp xỉ 15% | Tần suất: Hằng tháng | SLA điều tra: Điều tra trong 2 ngày làm việc\nRow 3: Nhóm: C | Tiêu chí tham chiếu: Phần còn lại, xấp xỉ 5% | Tần suất: Hằng quý | SLA điều tra: Điều tra trong 5 ngày làm việc"
+      ],
+      "reference": "[\"A khoảng 80% giá trị tiêu thụ năm: hàng tuần\", \"B khoảng 15% tiếp theo: hàng tháng\", \"C khoảng 5% còn lại: hàng quý\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.8534,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 59.03,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K10",
+      "agent": "knowledge",
+      "question": "Mục tiêu fill rate mô phỏng là bao nhiêu và khi nào cần cảnh báo P1?",
+      "answer": "Mục tiêu fill rate mô phỏng là ≥ 98% [S1]. Cảnh báo P1 được kích hoạt khi fill rate dưới 95% [S1].",
+      "contexts": [
+        "Section: 6. Ngưỡng vận hành và KPI\nColumns: KPI | Mục tiêu / ngưỡng giả lập | Hành động\nRow 1: KPI: Fill rate | Mục tiêu / ngưỡng giả lập: Mục tiêu mô phỏng ≥ 98% | Hành động: Dưới 95%: cảnh báo P1 và phân tích nguyên nhân\nRow 2: KPI: Days of supply | Mục tiêu / ngưỡng giả lập: Tham chiếu 28–60 ngày tùy nhóm hàng | Hành động: >120 ngày: overstock review; >180 ngày: kế hoạch xử lý bắt buộc\nRow 3: KPI: Inventory record accuracy | Mục tiêu / ngưỡng giả lập: Mục tiêu mô phỏng ≥ 98% | Hành động: Sai lệch có giá trị cao hoặc lặp lại: kiểm tra nguyên nhân gốc\nRow 4: KPI: Stockout rate | Mục tiêu / ngưỡng giả lập: Mục tiêu mô phỏng < 2% dòng SKU/ngày | Hành động: Theo dõi riêng stockout thật và cờ dữ liệu\nRow 5: KPI: Aged / slow-moving stock | Mục tiêu / ngưỡng giả lập: Không để tồn >180 ngày không có kế hoạch | Hành động: Chuyển kho, bundle, markdown hoặc thanh lý theo phê duyệt"
+      ],
+      "reference": "[\"mục tiêu mô phỏng ≥98%\", \"dưới 95%: cảnh báo P1 và phân tích nguyên nhân\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9833,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 43.004,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K11",
+      "agent": "knowledge",
+      "question": "Ngưỡng days of supply nào yêu cầu rà soát overstock và khi nào phải có kế hoạch xử lý?",
+      "answer": "Ngưỡng days of supply yêu cầu rà soát overstock là khi vượt quá 120 ngày [S1][S2][S3][S4][S5]. Kế hoạch xử lý bắt buộc phải có khi days of supply vượt quá 180 ngày [S1][S2][S3][S4][S5].",
+      "contexts": [
+        "Section: 6. Ngưỡng vận hành và KPI\nColumns: KPI | Mục tiêu / ngưỡng giả lập | Hành động\nRow 1: KPI: Fill rate | Mục tiêu / ngưỡng giả lập: Mục tiêu mô phỏng ≥ 98% | Hành động: Dưới 95%: cảnh báo P1 và phân tích nguyên nhân\nRow 2: KPI: Days of supply | Mục tiêu / ngưỡng giả lập: Tham chiếu 28–60 ngày tùy nhóm hàng | Hành động: >120 ngày: overstock review; >180 ngày: kế hoạch xử lý bắt buộc\nRow 3: KPI: Inventory record accuracy | Mục tiêu / ngưỡng giả lập: Mục tiêu mô phỏng ≥ 98% | Hành động: Sai lệch có giá trị cao hoặc lặp lại: kiểm tra nguyên nhân gốc\nRow 4: KPI: Stockout rate | Mục tiêu / ngưỡng giả lập: Mục tiêu mô phỏng < 2% dòng SKU/ngày | Hành động: Theo dõi riêng stockout thật và cờ dữ liệu\nRow 5: KPI: Aged / slow-moving stock | Mục tiêu / ngưỡng giả lập: Không để tồn >180 ngày không có kế hoạch | Hành động: Chuyển kho, bundle, markdown hoặc thanh lý theo phê duyệt",
+        "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 6: policy_id: INV-POL-006 | policy_name: Hàng dư thừa / chậm luân chuyển | trigger: Calculated days of supply > 120 ngày; > 180 ngày cần kế hoạch xử lý | rule_or_required_action: Dừng mua bổ sung; rà soát chuyển kho, bundle, markdown hoặc thanh lý; bảo vệ biên lợi nhuận | owner: Merchandising + Procurement | sla_or_frequency: Rà soát hằng tháng | approval: Markdown theo thẩm quyền giá | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+        "Section: README\nColumns: Mục | Nội dung\nRow 8: Mục: Inventory position | Nội dung: On-hand + Open PO − Backorder. Dataset không có Open PO / Backorder; workbook mặc định 0 và yêu cầu nhập số thực tế.\nRow 9: Mục: Stockout signal | Nội dung: stockout_days ≥ 1 hoặc fill_rate < 95% hoặc calculated days of supply ≤ 14 ngày.\nRow 10: Mục: Overstock signal | Nội dung: Calculated days of supply > 120 ngày. >180 ngày cần kế hoạch xử lý theo chính sách.\nRow 11: Mục: Conflict gate | Nội dung: Nếu stockout signal đồng thời calculated days of supply >120 ngày, trạng thái DATA CONFLICT; không tự động đề xuất PO.\nRow 12: Mục: Giới hạn | Nội dung: Dataset không xác nhận đơn vị tiền tệ, inbound lead time, MOQ, kho/vị trí, PO đang mở hoặc backorder. Cờ reorder_flag trong nguồn luôn bằng 0.\nRow 13: Mục: Hướng dẫn | Nội dung: Điền Open PO / Backorder và lead time thực tế; xem KPI Summary; lọc Inventory Control theo Priority / Policy Decision; xác minh mọi DATA CONFLICT.",
+        "Section: Policy Matrix\nColumns: Policy ID | Chính sách | Trigger | Hành động bắt buộc | Owner | SLA / Tần suất | Approval\nRow 5: Policy ID: INV-POL-005 | Chính sách: Điều chỉnh tồn kho | Trigger: Có chênh lệch giữa đếm thực tế và hệ thống | Hành động bắt buộc: Không điều chỉnh khi chưa có biên bản, mã nguyên nhân và bằng chứng; phân tách người đếm và người duyệt | Owner: Warehouse Supervisor + Inventory Controller | SLA / Tần suất: Trong 1 ngày làm việc | Approval: Sai lệch lớn cần Finance/Operations\nRow 6: Policy ID: INV-POL-006 | Chính sách: Hàng dư thừa / chậm luân chuyển | Trigger: Calculated days of supply > 120 ngày; > 180 ngày cần kế hoạch xử lý | Hành động bắt buộc: Dừng mua bổ sung; rà soát chuyển kho, bundle, markdown hoặc thanh lý; bảo vệ biên lợi nhuận | Owner: Merchandising + Procurement | SLA / Tần suất: Rà soát hằng tháng | Approval: Markdown theo thẩm quyền giá",
+        "05 | Dư thừa, trả hàng và cách ly Tồn kho cao không có nghĩa là hàng sẵn sàng bán. DAYS OF SUPPLY >120 Tạm dừng bổ sung; kiểm tra forecast, size/màu và hàng đang chuyển. >180 NGÀY Lập kế hoạch chuyển kho, bundle, markdown hoặc thanh lý có phê duyệt. HÀNG TRẢ VỀ Quarantine → QA → A-grade bán lại / B-grade sửa / C-grade xử lý riêng. Hàng trả về chỉ được cộng vào tồn khả dụng sau khi QA xác nhận tình trạng và cập nhật disposition. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 6"
+      ],
+      "reference": "[\">120 ngày: rà soát overstock / dừng bổ sung\", \">180 ngày: kế hoạch xử lý bắt buộc\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9645,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 94.298,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K12",
+      "agent": "knowledge",
+      "question": "Cần có những gì trước khi điều chỉnh tồn kho trong hệ thống?",
+      "answer": "Trước khi điều chỉnh tồn kho trong hệ thống, cần đảm bảo có biên bản, mã nguyên nhân và bằng chứng [S4].\nMỗi điều chỉnh phải có mã phiếu, policy ID, SKU, số lượng trước/sau, mã nguyên nhân, bằng chứng, người nhập và người duyệt [S1].\nCần phân tách người đếm và người duyệt [S4].\nNgười duyệt phải là người độc lập với người đếm hoặc người nhập điều chỉnh [S2].",
+      "contexts": [
+        "Section: 7. Cập nhật hệ thống và đóng phiếu\nNgưỡng xử lý và phê duyệt Tình huống Hành động tối thiểu Người duyệt Không chênh lệch Đóng phiếu; lưu audit trail Warehouse Supervisor Chênh lệch nhỏ, có nguyên nhân rõ và bằng chứng Recount + biên bản; cập nhật sau duyệt Inventory Controller / Supervisor Chênh lệch lặp lại, giá trị lớn hoặc vượt ngưỡng nội bộ Giữ giao dịch liên quan; điều tra nguyên nhân gốc Inventory Manager + Finance Nghi ngờ gian lận / mất mát / hàng giả Cách ly SKU, bảo toàn bằng chứng, thông báo Compliance / Operations Operations / Compliance 6. Không tự động đặt hàng khi dữ liệu mâu thuẫn Nếu tồn kho tính lại cho thấy dư hàng trên 120 ngày nhưng có stockout signal (stockout_days ≥ 1 hoặc fill_rate < 95%), đánh dấu DATA CONFLICT. Tạm khóa đề xuất PO tự động, kiểm tra tồn khả dụng, hàng giữ, đơn chưa xuất, snapshot timestamp và công thức days of supply. Chỉ mở lại quyết định bổ sung sau khi Inventory Controller ghi nhận kết luận. 7. Cập nhật hệ thống và đóng phiếu • Mỗi điều chỉnh phải có mã phiếu, policy ID, SKU, số lượng trước/sau, mã nguyên nhân, bằng chứng, người nhập và người duyệt.",
+        "Section: VÀ ĐIỀU CHỈNH TỒN KHO\nVietStyle Commerce • SOP-INV-002 • Tài liệu mô phỏng Trang 1 VIETSTYLE COMMERCE SOP-INV-002 QUY TRÌNH KIỂM KÊ VÀ ĐIỀU CHỈNH TỒN KHO Phiên bản v1.0 • 16/10/2026 • Chủ sở hữu: Inventory Manager TÀI LIỆU MÔ PHỎNG CHO DATATHON 2026. Các ngưỡng vận hành, lead time, KPI và cấp phê duyệt là đề xuất giả lập cần được chủ sở hữu nghiệp vụ phê duyệt trước khi áp dụng thực tế. Dataset không xác định rõ đơn vị tiền tệ và không cung cấp dữ liệu PO inbound, tồn kho theo kho hoặc backorder; không dùng kết quả mẫu như số liệu tồn kho hiện hành. Bước Đầu ra bắt buộc 1. Chuẩn bị Danh sách SKU / vị trí, phạm vi đếm, thời điểm freeze giao dịch nếu cần 2. Đếm độc lập Số lượng thực tế; người đếm; thời gian; ảnh / ghi chú ngoại lệ 3. Đối chiếu Chênh lệch tuyệt đối và %, giá trị ảnh hưởng nếu có 4. Điều tra Nguyên nhân gốc và chứng từ liên quan 5. Phê duyệt Người duyệt độc lập với người đếm / nhập điều chỉnh 6. Cập nhật Điều chỉnh có audit trail; thông báo cho Planner nếu ảnh hưởng ROP",
+        "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 5: policy_id: INV-POL-005 | policy_name: Điều chỉnh tồn kho | trigger: Có chênh lệch giữa đếm thực tế và hệ thống | rule_or_required_action: Không điều chỉnh khi chưa có biên bản, mã nguyên nhân và bằng chứng; phân tách người đếm và người duyệt | owner: Warehouse Supervisor + Inventory Controller | sla_or_frequency: Trong 1 ngày làm việc | approval: Sai lệch lớn cần Finance/Operations | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions"
+      ],
+      "reference": "[\"biên bản\", \"mã nguyên nhân\", \"bằng chứng\", \"người đếm tách biệt người nhập/điều chỉnh và người phê duyệt\", \"audit trail\"]",
+      "evidence_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9442,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 68.681,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K13",
+      "agent": "knowledge",
+      "question": "Ai cần tham gia phê duyệt khi chênh lệch tồn kho lặp lại, có giá trị lớn hoặc vượt ngưỡng nội bộ?",
+      "answer": "Khi chênh lệch tồn kho lặp lại, có giá trị lớn hoặc vượt ngưỡng nội bộ, người cần tham gia phê duyệt là Inventory Manager và Finance [S1][S2].",
+      "contexts": [
+        "Section: 7. Cập nhật hệ thống và đóng phiếu\nNgưỡng xử lý và phê duyệt Tình huống Hành động tối thiểu Người duyệt Không chênh lệch Đóng phiếu; lưu audit trail Warehouse Supervisor Chênh lệch nhỏ, có nguyên nhân rõ và bằng chứng Recount + biên bản; cập nhật sau duyệt Inventory Controller / Supervisor Chênh lệch lặp lại, giá trị lớn hoặc vượt ngưỡng nội bộ Giữ giao dịch liên quan; điều tra nguyên nhân gốc Inventory Manager + Finance Nghi ngờ gian lận / mất mát / hàng giả Cách ly SKU, bảo toàn bằng chứng, thông báo Compliance / Operations Operations / Compliance 6. Không tự động đặt hàng khi dữ liệu mâu thuẫn Nếu tồn kho tính lại cho thấy dư hàng trên 120 ngày nhưng có stockout signal (stockout_days ≥ 1 hoặc fill_rate < 95%), đánh dấu DATA CONFLICT. Tạm khóa đề xuất PO tự động, kiểm tra tồn khả dụng, hàng giữ, đơn chưa xuất, snapshot timestamp và công thức days of supply. Chỉ mở lại quyết định bổ sung sau khi Inventory Controller ghi nhận kết luận. 7. Cập nhật hệ thống và đóng phiếu • Mỗi điều chỉnh phải có mã phiếu, policy ID, SKU, số lượng trước/sau, mã nguyên nhân, bằng chứng, người nhập và người duyệt.",
+        "Columns: Tình huống | Hành động tối thiểu | Người duyệt\nRow 1: Tình huống: Không chênh lệch | Hành động tối thiểu: Đóng phiếu; lưu audit trail | Người duyệt: Warehouse Supervisor\nRow 2: Tình huống: Chênh lệch nhỏ, có nguyên\nnhân rõ và bằng chứng | Hành động tối thiểu: Recount + biên bản; cập nhật sau duyệt | Người duyệt: Inventory Controller /\nSupervisor\nRow 3: Tình huống: Chênh lệch lặp lại, giá trị lớn\nhoặc vượt ngưỡng nội bộ | Hành động tối thiểu: Giữ giao dịch liên quan; điều tra nguyên nhân gốc | Người duyệt: Inventory Manager +\nFinance\nRow 4: Tình huống: Nghi ngờ gian lận / mất mát /\nhàng giả | Hành động tối thiểu: Cách ly SKU, bảo toàn bằng chứng, thông báo\nCompliance / Operations | Người duyệt: Operations / Compliance"
+      ],
+      "reference": "[\"Inventory Manager + Finance\", \"giữ giao dịch liên quan và điều tra nguyên nhân gốc\"]",
+      "evidence_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9381,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 77.27,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K14",
+      "agent": "knowledge",
+      "question": "Những tình huống nào cần kiểm kê đột xuất theo SOP?",
+      "answer": "Theo SOP, các tình huống cần kiểm kê đột xuất bao gồm:\n*   SKU có fill rate dưới 95% hoặc phát sinh stockout nhưng hệ thống vẫn ghi nhận lượng tồn cao [S1].\n*   Cờ stockout_flag và overstock_flag cùng bật; days of supply tính lại >120 ngày nhưng vẫn có stockout signal [S1].\n*   SKU có sai lệch lặp lại, hàng giá trị cao, nghi ngờ mất mát, lỗi barcode hoặc sai size/màu [S1].\n*   Sau campaign lớn, thay đổi vị trí kho, đổi mã SKU, trả hàng số lượng lớn hoặc sự cố hệ thống [S1].",
+      "contexts": [
+        "Section: 3. Chuẩn bị trước khi đếm\nVietStyle Commerce • SOP-INV-002 • Tài liệu mô phỏng Trang 2 1. Mục đích và phạm vi Áp dụng cho SKU thời trang và outdoor trong kho / điểm xử lý đơn của mô hình VietStyle Commerce. SOP bao gồm kiểm kê chu kỳ, kiểm kê theo sự kiện và điều chỉnh chênh lệch. Không dùng SOP này để thay thế quy trình nhận hàng hoặc QA hàng trả về. 2. Khi nào phải kiểm kê đột xuất? • SKU có fill rate dưới 95% hoặc phát sinh stockout nhưng hệ thống vẫn ghi nhận lượng tồn cao. • Cờ stockout_flag và overstock_flag cùng bật; days of supply tính lại >120 ngày nhưng vẫn có stockout signal. • SKU có sai lệch lặp lại, hàng giá trị cao, nghi ngờ mất mát, lỗi barcode hoặc sai size/màu. • Sau campaign lớn, thay đổi vị trí kho, đổi mã SKU, trả hàng số lượng lớn hoặc sự cố hệ thống. 3. Chuẩn bị trước khi đếm • Inventory Controller xuất danh sách SKU, vị trí, đơn vị tính, snapshot timestamp và số lượng hệ thống. • Warehouse Supervisor phân công người đếm; người đếm không được xem số lượng hệ thống nếu tổ chức áp dụng blind count."
+      ],
+      "reference": "[\"fill rate dưới 95% hoặc stockout nhưng hệ thống vẫn ghi tồn cao\", \"stockout_flag và overstock_flag cùng bật hoặc days of supply >120 kèm stockout signal\", \"sai lệch lặp lại, hàng giá trị cao, nghi mất mát, lỗi barcode/sai size-màu\", \"sau campaign lớn, đổi vị trí/mã SKU, trả hàng lớn hoặc sự cố hệ thống\"]",
+      "evidence_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9893,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 38.934,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K15",
+      "agent": "knowledge",
+      "question": "Liệt kê trình tự tối thiểu của quy trình cycle count và đầu ra bắt buộc ở mỗi bước.",
+      "answer": "Trình tự tối thiểu của quy trình kiểm kê chu kỳ (cycle count) và đầu ra bắt buộc ở mỗi bước bao gồm:\n\n1. **Bước 1: Chuẩn bị** – Đầu ra bắt buộc là danh sách SKU/vị trí, phạm vi đếm, thời điểm freeze giao dịch nếu cần [S1][S2].\n2. **Bước 2: Đếm độc lập** – Đầu ra bắt buộc là số lượng thực tế; người đếm; thời gian; ảnh/ghi chú ngoại lệ [S1][S2].\n3. **Bước 3: Đối chiếu** – Đầu ra bắt buộc là chênh lệch tuyệt đối và %, giá trị ảnh hưởng nếu có [S1][S2].\n4. **Bước 4: Điều tra** – Đầu ra bắt buộc là nguyên nhân gốc và chứng từ liên quan [S1][S2].\n5. **Bước 5: Phê duyệt** – Đầu ra bắt buộc là người duyệt độc lập với người đếm/nhập điều chỉnh [S1][S2].\n6. **Bước 6: Cập nhật** – Đầu ra bắt buộc là điều chỉnh có audit trail; thông báo cho Planner nếu ảnh hưởng ROP [S1][S2].",
+      "contexts": [
+        "Columns: Bước | Đầu ra bắt buộc\nRow 1: Bước: 1. Chuẩn bị | Đầu ra bắt buộc: Danh sách SKU / vị trí, phạm vi đếm, thời điểm freeze giao dịch nếu cần\nRow 2: Bước: 2. Đếm độc lập | Đầu ra bắt buộc: Số lượng thực tế; người đếm; thời gian; ảnh / ghi chú ngoại lệ\nRow 3: Bước: 3. Đối chiếu | Đầu ra bắt buộc: Chênh lệch tuyệt đối và %, giá trị ảnh hưởng nếu có\nRow 4: Bước: 4. Điều tra | Đầu ra bắt buộc: Nguyên nhân gốc và chứng từ liên quan\nRow 5: Bước: 5. Phê duyệt | Đầu ra bắt buộc: Người duyệt độc lập với người đếm / nhập điều chỉnh\nRow 6: Bước: 6. Cập nhật | Đầu ra bắt buộc: Điều chỉnh có audit trail; thông báo cho Planner nếu ảnh hưởng ROP",
+        "Section: VÀ ĐIỀU CHỈNH TỒN KHO\nVietStyle Commerce • SOP-INV-002 • Tài liệu mô phỏng Trang 1 VIETSTYLE COMMERCE SOP-INV-002 QUY TRÌNH KIỂM KÊ VÀ ĐIỀU CHỈNH TỒN KHO Phiên bản v1.0 • 16/10/2026 • Chủ sở hữu: Inventory Manager TÀI LIỆU MÔ PHỎNG CHO DATATHON 2026. Các ngưỡng vận hành, lead time, KPI và cấp phê duyệt là đề xuất giả lập cần được chủ sở hữu nghiệp vụ phê duyệt trước khi áp dụng thực tế. Dataset không xác định rõ đơn vị tiền tệ và không cung cấp dữ liệu PO inbound, tồn kho theo kho hoặc backorder; không dùng kết quả mẫu như số liệu tồn kho hiện hành. Bước Đầu ra bắt buộc 1. Chuẩn bị Danh sách SKU / vị trí, phạm vi đếm, thời điểm freeze giao dịch nếu cần 2. Đếm độc lập Số lượng thực tế; người đếm; thời gian; ảnh / ghi chú ngoại lệ 3. Đối chiếu Chênh lệch tuyệt đối và %, giá trị ảnh hưởng nếu có 4. Điều tra Nguyên nhân gốc và chứng từ liên quan 5. Phê duyệt Người duyệt độc lập với người đếm / nhập điều chỉnh 6. Cập nhật Điều chỉnh có audit trail; thông báo cho Planner nếu ảnh hưởng ROP"
+      ],
+      "reference": "[\"chuẩn bị danh sách SKU/vị trí/phạm vi\", \"đếm độc lập và ghi người đếm/thời gian/bằng chứng\", \"đối chiếu chênh lệch tuyệt đối và phần trăm\", \"điều tra nguyên nhân/chứng từ\", \"phê duyệt độc lập\", \"cập nhật có audit trail\"]",
+      "evidence_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.9524,
+        "answer_relevancy": 0.9195,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 59.648,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K16",
+      "agent": "knowledge",
+      "question": "Hàng trả về được phân loại A-grade, B-grade và C-grade như thế nào?",
+      "answer": "Hàng trả về phải được đưa vào trạng thái cách ly (QUARANTINE) cho đến khi bộ phận QA kiểm tra và phân loại [S1].\nCụ thể, hàng A-grade sẽ được đưa về bán lại [S1].\nHàng B-grade sẽ được sửa hoặc đóng gói lại nếu được duyệt [S1].\nHàng C-grade sẽ được giữ riêng để trả nhà cung cấp, hủy bỏ (scrap) hoặc ghi giảm [S1].\nViệc phân loại này cần được hoàn thành trong vòng 2 ngày làm việc [S2].",
+      "contexts": [
+        "8. Nhận hàng, trả hàng và hàng cách ly\nĐối chiếu PO, SKU, size, màu, số lượng, tình trạng bao bì và chứng từ giao hàng.\nGhi nhận thiếu / thừa / hư hỏng trước khi xác nhận nhận hàng; ảnh chụp và biên bản bắt buộc cho ngoại lệ.\nHàng trả về phải vào trạng thái QUARANTINE cho đến khi QA kiểm tra; không cộng vào available-to-promise trước khi đạt điều kiện.\nA-grade: đưa về bán; B-grade: sửa / đóng gói lại nếu được duyệt; C-grade: giữ riêng để trả nhà cung cấp, scrap hoặc ghi giảm.\nGắn mã nguyên nhân trả hàng (ví dụ sai size, lỗi sản phẩm, giao trễ) để phản hồi cho Merchandising, QA và Logistics.",
+        "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 7: policy_id: INV-POL-007 | policy_name: Hàng trả về | trigger: Nhận hàng trả về từ khách | rule_or_required_action: Cách ly đến khi QA phân loại: A-grade bán lại; B-grade sửa/đóng gói lại; C-grade hỏng/thiếu phụ kiện xử lý riêng | owner: Returns QA + Warehouse | sla_or_frequency: Trong 2 ngày làm việc | approval: Scrap/ghi giảm cần phê duyệt | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions"
+      ],
+      "reference": "[\"A-grade bán lại\", \"B-grade sửa chữa/đóng gói lại\", \"C-grade hỏng hoặc thiếu phụ kiện xử lý riêng\", \"hàng trả về phải cách ly qua QA trước khi cộng lại vào tồn khả dụng\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9158,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 50.76,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K17",
+      "agent": "knowledge",
+      "question": "Nếu stockout_flag và overstock_flag cùng bật, có được tự động phát hành PO không?",
+      "answer": "Không được tự động phát hành PO khi stockout_flag và overstock_flag cùng bật [S1]. Trong trường hợp này, hệ thống sẽ chuyển sang trạng thái DATA CONFLICT và yêu cầu chặn PO tự động [S1]. Hành động bắt buộc là tạm khóa PO tự động và kiểm tra các yếu tố liên quan như giao dịch, snapshot, đơn hàng treo và cách tính nhu cầu [S2]. Người chịu trách nhiệm thực hiện xác minh là Inventory Controller với thời hạn xử lý P1 trong 1 ngày làm việc [S2].",
+      "contexts": [
+        "11. Kiểm soát chất lượng dữ liệu\nTrong inventory.csv, 67.3% bản ghi có stockout_flag=1, 76.3% có overstock_flag=1, 30,495 bản ghi bật đồng thời hai cờ, và tổng reorder_flag bằng 0. Trên snapshot 2022-12-31, 232 SKU bật đồng thời stockout_flag và overstock_flag. Đây là tín hiệu cần xác minh, không phải bằng chứng rằng từng SKU chắc chắn thiếu và dư hàng cùng lúc.\nTính lại days of supply từ tồn khả dụng và nhu cầu bình quân; lưu cả giá trị gốc và giá trị tính lại.\nKiểm tra định nghĩa của stockout_flag, overstock_flag, reorder_flag trước khi dùng cho quyết định.\nGắn source file, snapshot date, công thức, thời điểm cập nhật và người sở hữu dữ liệu.\nKhi tín hiệu mâu thuẫn, chuyển sang trạng thái DATA CONFLICT; chặn PO tự động và yêu cầu Inventory Controller xác minh.\nKhông để AI tự sửa dữ liệu nguồn hoặc tự phát hành PO. Câu trả lời AI cần nêu snapshot date, nguồn và mức độ tin cậy.",
+        "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 3: policy_id: INV-POL-003 | policy_name: Xác minh mâu thuẫn tồn kho | trigger: Có tín hiệu stockout/service thấp đồng thời days of supply > 120; hoặc cờ stockout và overstock cùng bật | rule_or_required_action: Tạm khóa PO tự động; kiểm tra giao dịch, snapshot, đơn hàng treo và cách tính nhu cầu | owner: Inventory Controller | sla_or_frequency: P1 trong 1 ngày làm việc | approval: Quản lý kho duyệt kết luận | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions"
+      ],
+      "reference": "[\"không\", \"tạm khóa đề xuất PO tự động\", \"kiểm tra tồn khả dụng, đơn đang giữ, snapshot timestamp và công thức days of supply\", \"Inventory Controller ghi kết luận trước khi mở lại quyết định bổ sung\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9441,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 75.627,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K18",
+      "agent": "knowledge",
+      "question": "Kế hoạch tồn kho cho campaign cần bắt đầu trước bao lâu và cần xác minh các yếu tố nào?",
+      "answer": "Kế hoạch tồn kho cho campaign cần bắt đầu trước tối thiểu 4 tuần [S1][S2][S4]. Các yếu tố cần xác minh bao gồm: dự báo nhu cầu (forecast) theo SKU, size và màu; kiểm tra tồn kho (stock), đơn đặt hàng mở (PO), thời gian giao hàng (lead time) và số lượng đặt hàng tối thiểu (MOQ); xác nhận mức giảm giá (discount), kênh (channel) và cờ cộng dồn ưu đãi (stackable flag) [S1][S2][S4].",
+      "contexts": [
+        "06 | Khuyến mãi và KPI Campaign phải có kế hoạch tồn kho trước khi chạy. Trước campaign (T−4 tuần) • Forecast theo SKU / size / màu • Kiểm tra stock, PO, lead time, MOQ • Xác nhận discount, channel, stackable flag • Duyệt tăng target stock nếu cần Sau campaign • Sell-through / tồn còn lại • Return rate và lý do trả • Sai số forecast và hành động điều chỉnh Fill rate ≥98% mục tiêu giả lập Inventory accuracy ≥98% mục tiêu giả lập Stockout rate <2% mục tiêu giả lập Aged stock >180 ngày phải có kế hoạch KPI là ngưỡng mô phỏng, cần hiệu chỉnh theo margin và mức dịch vụ. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 7",
+        "9. Khuyến mãi và mùa vụ\nTối thiểu 4 tuần trước campaign, Merchandising và Planner thống nhất forecast theo SKU / size / màu.\nKiểm tra promotions.csv hoặc hệ thống campaign: ngày bắt đầu/kết thúc, kênh, mức giảm, điều kiện đơn tối thiểu và stackable_flag.\nChỉ tăng target stock khi có forecast hoặc phê duyệt; không đặt hàng chỉ dựa vào traffic hoặc doanh thu tổng.\nSau campaign, đối chiếu forecast với sell-through, tồn còn lại và return rate để cập nhật kế hoạch.",
+        "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 8: policy_id: INV-POL-008 | policy_name: Quản lý khuyến mãi | trigger: Campaign/promotion được lên lịch | rule_or_required_action: Dự báo nhu cầu trước tối thiểu 4 tuần; kiểm tra tồn kho, lead time, stackable_flag và mức giảm; chốt kế hoạch sau duyệt | owner: Merchandising + Planner | sla_or_frequency: T-4 tuần | approval: Không tự cộng dồn ưu đãi nếu không được phép | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions"
+      ],
+      "reference": "[\"tối thiểu 4 tuần trước campaign\", \"forecast theo SKU/size/color\", \"stock, PO, lead time, MOQ\", \"discount, channel và stackable_flag\", \"phê duyệt trước khi chốt\"]",
+      "evidence_sources": [
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9998,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 60.206,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K19",
+      "agent": "knowledge",
+      "question": "Những trường tối thiểu nào cần lưu trong phiếu điều chỉnh tồn kho?",
+      "answer": "Các trường tối thiểu cần lưu trong phiếu điều chỉnh tồn kho bao gồm: Count ID / Date (Mã phiếu / thời điểm kiểm kê), SKU / Size / Color / Location (Định danh biến thể và vị trí), System Qty / Counted Qty (Số hệ thống / số đếm thực tế), Variance / Reason Code (Chênh lệch / nguyên nhân), Evidence / Counter / Reviewer (Bằng chứng / người đếm / người duyệt) và Adjustment Transaction ID (Mã giao dịch điều chỉnh sau duyệt) [S4].",
+      "contexts": [
+        "Section: 8. Hồ sơ lưu trữ\nVietStyle Commerce • SOP-INV-002 • Tài liệu mô phỏng Trang 3 • Cập nhật Planner khi chênh lệch ảnh hưởng ROP, target stock hoặc khả năng đáp ứng đơn hàng. • Đóng phiếu khi đã duyệt, hệ thống đồng bộ thành công và báo cáo ngoại lệ được cập nhật. 8. Hồ sơ lưu trữ Lưu danh sách đếm, kết quả recount, ảnh / chứng từ, phân tích nguyên nhân, phê duyệt, transaction ID và thời điểm đồng bộ theo thời hạn lưu hồ sơ do doanh nghiệp quy định. Với dữ liệu phục vụ AI/RAG, giữ metadata: policy_id, owner, effective_date, version, approval_status và source_document. Biểu mẫu tối thiểu Field Nội dung Count ID / Date Mã phiếu / thời điểm kiểm kê SKU / Size / Color / Location Định danh biến thể và vị trí System Qty / Counted Qty Số hệ thống / số đếm thực tế Variance / Reason Code Chênh lệch / nguyên nhân Evidence / Counter / Reviewer Bằng chứng / người đếm / người duyệt Adjustment Transaction ID Mã giao dịch điều chỉnh sau duyệt"
+      ],
+      "reference": "[\"Count ID/date\", \"SKU/size/color/location\", \"system quantity và counted quantity\", \"variance/reason code\", \"evidence/counter/reviewer\", \"Adjustment Transaction ID\"]",
+      "evidence_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9993,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 43.005,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K20",
+      "agent": "knowledge",
+      "question": "Những trường dữ liệu còn thiếu khiến hệ thống chưa thể đề xuất PO đáng tin cậy?",
+      "answer": "Dựa trên các tài liệu được cung cấp, các trường dữ liệu còn thiếu hoặc chưa được xác nhận khiến hệ thống chưa thể đề xuất PO đáng tin cậy bao gồm:\n\n*   **Open PO (Đơn đặt hàng đang mở) và Backorder (Đơn hàng tồn đọng):** Dataset hiện tại không có dữ liệu về Open PO và Backorder, do đó workbook mặc định giá trị là 0 và yêu cầu phải nhập số thực tế để tính toán vị trí tồn kho (Inventory position) chính xác [S4].\n*   **Inbound lead time (Thời gian chờ hàng nhập):** Dữ liệu đầu vào không xác nhận inbound lead time, đây là thông tin cần thiết để lập kế hoạch bổ sung hàng [S4].\n*   **MOQ (Số lượng đặt hàng tối thiểu):** Hệ thống chưa có dữ liệu về MOQ, trong khi quy trình bổ sung hàng yêu cầu phải kiểm tra MOQ trước khi gửi duyệt PO [S4] [S1].\n*   **Kho/Vị trí (Warehouse/Location):** Dữ liệu không xác nhận thông tin về kho hoặc vị trí lưu trữ [S4].\n*   **Đơn vị tiền tệ:** Dataset không xác nhận đơn vị tiền tệ, ảnh hưởng đến việc kiểm tra ngân sách trước khi gửi duyệt PO [S4] [S1].\n*   **Cờ reorder_flag:** Cờ reorder_flag trong nguồn dữ liệu luôn bằng 0, do đó không thể sử dụng trực tiếp làm tín hiệu đặt hàng mà cần kiểm tra định nghĩa và tính lại các chỉ số khác [S4] [S2].\n\nNgoài ra, nếu tồn tại tín hiệu mâu thuẫn (ví dụ: đồng thời có tín hiệu thiếu hàng và dư hàng trên 120 ngày), hệ thống sẽ chuyển sang trạng thái DATA CONFLICT và chặn việc đề xuất PO tự động cho đến khi được xác minh [S3] [S4].",
+      "contexts": [
+        "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 2: policy_id: INV-POL-002 | policy_name: Bổ sung hàng | trigger: Inventory position <= reorder point và không có cảnh báo dữ liệu chưa xử lý | rule_or_required_action: Đề xuất PO theo target stock; kiểm tra PO đang mở, backorder, MOQ và ngân sách trước khi gửi duyệt | owner: Planner + Procurement | sla_or_frequency: Rà soát hằng tuần | approval: Theo hạn mức mua hàng | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+        "11. Kiểm soát chất lượng dữ liệu\nTrong inventory.csv, 67.3% bản ghi có stockout_flag=1, 76.3% có overstock_flag=1, 30,495 bản ghi bật đồng thời hai cờ, và tổng reorder_flag bằng 0. Trên snapshot 2022-12-31, 232 SKU bật đồng thời stockout_flag và overstock_flag. Đây là tín hiệu cần xác minh, không phải bằng chứng rằng từng SKU chắc chắn thiếu và dư hàng cùng lúc.\nTính lại days of supply từ tồn khả dụng và nhu cầu bình quân; lưu cả giá trị gốc và giá trị tính lại.\nKiểm tra định nghĩa của stockout_flag, overstock_flag, reorder_flag trước khi dùng cho quyết định.\nGắn source file, snapshot date, công thức, thời điểm cập nhật và người sở hữu dữ liệu.\nKhi tín hiệu mâu thuẫn, chuyển sang trạng thái DATA CONFLICT; chặn PO tự động và yêu cầu Inventory Controller xác minh.\nKhông để AI tự sửa dữ liệu nguồn hoặc tự phát hành PO. Câu trả lời AI cần nêu snapshot date, nguồn và mức độ tin cậy.",
+        "Section: 7. Cập nhật hệ thống và đóng phiếu\nNgưỡng xử lý và phê duyệt Tình huống Hành động tối thiểu Người duyệt Không chênh lệch Đóng phiếu; lưu audit trail Warehouse Supervisor Chênh lệch nhỏ, có nguyên nhân rõ và bằng chứng Recount + biên bản; cập nhật sau duyệt Inventory Controller / Supervisor Chênh lệch lặp lại, giá trị lớn hoặc vượt ngưỡng nội bộ Giữ giao dịch liên quan; điều tra nguyên nhân gốc Inventory Manager + Finance Nghi ngờ gian lận / mất mát / hàng giả Cách ly SKU, bảo toàn bằng chứng, thông báo Compliance / Operations Operations / Compliance 6. Không tự động đặt hàng khi dữ liệu mâu thuẫn Nếu tồn kho tính lại cho thấy dư hàng trên 120 ngày nhưng có stockout signal (stockout_days ≥ 1 hoặc fill_rate < 95%), đánh dấu DATA CONFLICT. Tạm khóa đề xuất PO tự động, kiểm tra tồn khả dụng, hàng giữ, đơn chưa xuất, snapshot timestamp và công thức days of supply. Chỉ mở lại quyết định bổ sung sau khi Inventory Controller ghi nhận kết luận. 7. Cập nhật hệ thống và đóng phiếu • Mỗi điều chỉnh phải có mã phiếu, policy ID, SKU, số lượng trước/sau, mã nguyên nhân, bằng chứng, người nhập và người duyệt.",
+        "Section: README\nColumns: Mục | Nội dung\nRow 8: Mục: Inventory position | Nội dung: On-hand + Open PO − Backorder. Dataset không có Open PO / Backorder; workbook mặc định 0 và yêu cầu nhập số thực tế.\nRow 9: Mục: Stockout signal | Nội dung: stockout_days ≥ 1 hoặc fill_rate < 95% hoặc calculated days of supply ≤ 14 ngày.\nRow 10: Mục: Overstock signal | Nội dung: Calculated days of supply > 120 ngày. >180 ngày cần kế hoạch xử lý theo chính sách.\nRow 11: Mục: Conflict gate | Nội dung: Nếu stockout signal đồng thời calculated days of supply >120 ngày, trạng thái DATA CONFLICT; không tự động đề xuất PO.\nRow 12: Mục: Giới hạn | Nội dung: Dataset không xác nhận đơn vị tiền tệ, inbound lead time, MOQ, kho/vị trí, PO đang mở hoặc backorder. Cờ reorder_flag trong nguồn luôn bằng 0.\nRow 13: Mục: Hướng dẫn | Nội dung: Điền Open PO / Backorder và lead time thực tế; xem KPI Summary; lọc Inventory Control theo Priority / Policy Decision; xác minh mọi DATA CONFLICT."
+      ],
+      "reference": "[\"PO inbound/open PO đầy đủ\", \"MOQ\", \"lead time nhà cung cấp thực tế\", \"backorder\", \"vị trí kho\", \"đơn vị tiền tệ chưa được xác nhận\"]",
+      "evidence_sources": [
+        "03_Policy_Rules_Registry.csv",
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "04_Inventory_Control_and_Reorder_Planner.xlsx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.875,
+        "answer_relevancy": 0.9733,
+        "context_precision": 0.75
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 93.297,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K21",
+      "agent": "knowledge",
+      "question": "Trong bộ dữ liệu mô phỏng, số SKU ở product master, số bản ghi inventory và số bản ghi vừa bật stockout vừa overstock là bao nhiêu?",
+      "answer": "Trong bộ dữ liệu mô phỏng, số SKU ở product master là 2,412 [S1].\nSố bản ghi inventory là 60,247 [S1].\nSố bản ghi vừa bật stockout vừa overstock là 30,495 [S1].",
+      "contexts": [
+        "01 | Bối cảnh dữ liệu Dataset là cơ sở mô phỏng; không phản ánh tồn kho hiện tại. 2,412 SKU trong product master 60,247 Bản ghi inventory theo snapshot 424 SKU có snapshot 31/12/2022 67.3% Bản ghi bật stockout_flag Nhóm hàng • Streetwear • Outdoor • Casual • GenZ Vấn đề dữ liệu cần kiểm soát • 76.3% bản ghi bật overstock_flag • 30,495 bản ghi bật đồng thời stockout + overstock • reorder_flag có tổng bằng 0 • Snapshot mới nhất trong file: 2022-12-31 VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 2"
+      ],
+      "reference": "[\"2,412 SKU\", \"60,247 bản ghi inventory\", \"30,495 bản ghi bật đồng thời stockout và overstock\", \"snapshot mới nhất 2022-12-31\"]",
+      "evidence_sources": [
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9879,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 60.094,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K22",
+      "agent": "knowledge",
+      "question": "Tại sao không được cộng stock_on_hand qua nhiều snapshot để mô tả tồn kho hiện tại?",
+      "answer": "Không đủ thông tin trong các tài liệu được truy xuất.",
+      "contexts": [],
+      "reference": "[\"nhiều snapshot của cùng SKU sẽ bị cộng lặp\", \"dùng snapshot mới nhất cho câu hỏi hiện trạng hoặc nhóm riêng theo snapshot_date\"]",
+      "evidence_sources": [],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": null,
+        "context_precision": null,
+        "answer_relevancy": 0.0
+      },
+      "score_errors": {
+        "faithfulness": "not scored: no retrieved contexts (required by RAGAS)",
+        "context_precision": "not scored: missing retrieved contexts or reference (required by RAGAS)"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial",
+      "total_case_seconds": 53.218,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K23",
+      "agent": "knowledge",
+      "question": "Người dùng có role procurement có thể đọc Policy Rules Registry và Inventory Management Policy Manual theo metadata phân quyền hiện tại không?",
+      "answer": "Không đủ thông tin trong các tài liệu được truy xuất.",
+      "contexts": [],
+      "reference": "[\"Policy Rules Registry có procurement trong allowed_roles\", \"Inventory Management Policy Manual chỉ liệt kê employee, finance_analyst, admin nên procurement không được phép đọc\"]",
+      "evidence_sources": [],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": null,
+        "context_precision": null,
+        "answer_relevancy": 0.0
+      },
+      "score_errors": {
+        "faithfulness": "not scored: no retrieved contexts (required by RAGAS)",
+        "context_precision": "not scored: missing retrieved contexts or reference (required by RAGAS)"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial",
+      "total_case_seconds": 47.184,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K24",
+      "agent": "knowledge",
+      "question": "Agent có được tự phát hành purchase order hoặc tự sửa tồn kho không?",
+      "answer": "Không, AI Agent không được tự phát hành purchase order (PO) hoặc tự sửa tồn kho [S1].\nTheo chính sách, AI Agent chỉ được đọc dữ liệu được phân quyền và đưa ra đề xuất, không có quyền tự phát hành PO hoặc tự sửa tồn kho [S1].\nQuy tắc kiểm soát yêu cầu AI Agent chỉ dùng dữ liệu được phân quyền, trích dẫn nguồn và snapshot date, đồng thời không tự ghi PO hay điều chỉnh tồn kho [S3].\nTrong trường hợp có mâu thuẫn dữ liệu, AI Agent phải chuyển cho người duyệt và không được tự động xử lý [S3].\nHệ thống cũng quy định rõ rằng không để AI tự sửa dữ liệu nguồn hoặc tự phát hành PO [S2].",
+      "contexts": [
+        "02 | Mô hình vận hành Tách quyền ra quyết định khỏi thao tác nhập liệu. PLAN Forecast / campaign ROP & target stock → APPROVE Budget / supplier PO authorization → RECEIVE PO match QC & put-away → CONTROL Cycle count Exception handling → LEARN KPI / root cause Forecast update Nguyên tắc kiểm soát: người đếm ≠ người nhập điều chỉnh ≠ người duyệt. AI Agent chỉ đọc dữ liệu được phân quyền và đề xuất; không tự phát hành PO hoặc tự sửa tồn kho. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 3",
+        "11. Kiểm soát chất lượng dữ liệu\nTrong inventory.csv, 67.3% bản ghi có stockout_flag=1, 76.3% có overstock_flag=1, 30,495 bản ghi bật đồng thời hai cờ, và tổng reorder_flag bằng 0. Trên snapshot 2022-12-31, 232 SKU bật đồng thời stockout_flag và overstock_flag. Đây là tín hiệu cần xác minh, không phải bằng chứng rằng từng SKU chắc chắn thiếu và dư hàng cùng lúc.\nTính lại days of supply từ tồn khả dụng và nhu cầu bình quân; lưu cả giá trị gốc và giá trị tính lại.\nKiểm tra định nghĩa của stockout_flag, overstock_flag, reorder_flag trước khi dùng cho quyết định.\nGắn source file, snapshot date, công thức, thời điểm cập nhật và người sở hữu dữ liệu.\nKhi tín hiệu mâu thuẫn, chuyển sang trạng thái DATA CONFLICT; chặn PO tự động và yêu cầu Inventory Controller xác minh.\nKhông để AI tự sửa dữ liệu nguồn hoặc tự phát hành PO. Câu trả lời AI cần nêu snapshot date, nguồn và mức độ tin cậy.",
+        "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 12: policy_id: INV-POL-012 | policy_name: AI / báo cáo tự động | trigger: AI Agent tạo câu trả lời hoặc đề xuất PO | rule_or_required_action: Chỉ dùng dữ liệu được phân quyền; trích dẫn nguồn và snapshot date; không tự ghi PO/điều chỉnh tồn kho; mâu thuẫn phải chuyển người duyệt | owner: System Owner + Inventory Controller | sla_or_frequency: Mỗi yêu cầu | approval: Human approval bắt buộc | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions"
+      ],
+      "reference": "[\"không\", \"AI chỉ truy vấn/đề xuất\", \"phê duyệt của con người là bắt buộc\", \"trích nguồn và snapshot date\", \"mâu thuẫn phải chuyển người chịu trách nhiệm\"]",
+      "evidence_sources": [
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9813,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 54.961,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "K25",
+      "agent": "knowledge",
+      "question": "Hãy cho biết tồn kho thực tế hôm nay của một SKU bất kỳ trong năm 2026, cùng lead time và PO inbound của nhà cung cấp.",
+      "answer": "Không đủ thông tin trong các tài liệu được truy xuất.",
+      "contexts": [],
+      "reference": "[\"không thể xác minh tồn kho 2026 từ dataset kết thúc 2022-12-31\", \"lead time thực tế và PO inbound không được cung cấp\", \"cần yêu cầu nguồn dữ liệu cập nhật hoặc từ chối kết luận\"]",
+      "evidence_sources": [],
+      "agent_metadata": {},
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": null,
+        "context_precision": null,
+        "answer_relevancy": 0.0
+      },
+      "score_errors": {
+        "faithfulness": "not scored: no retrieved contexts (required by RAGAS)",
+        "context_precision": "not scored: missing retrieved contexts or reference (required by RAGAS)"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": true,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial",
+      "total_case_seconds": 35.131,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S01",
+      "agent": "sql",
+      "question": "Tổng doanh thu và giá vốn (COGS) tháng 12/2022 là bao nhiêu?",
+      "answer": "I couldn't safely run the generated query: Function is not approved: CAST",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"field\": \"revenue\", \"equals\": 52454936.2}, {\"field\": \"cogs\", \"equals\": 53489673.44}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "SQLValidationError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7296,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": false,
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 14.259,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "sql_semantic_correctness": false,
+      "sql_rows": [],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S02",
+      "agent": "sql",
+      "question": "Trình bày doanh thu và COGS theo từng tháng trong năm 2022.",
+      "answer": "Dưới đây là bảng tổng hợp doanh thu (Revenue) và giá vốn hàng bán (COGS) theo từng tháng trong năm 2022 [S1]:\n\n| Tháng | Doanh thu (Revenue) | Giá vốn hàng bán (COGS) |\n| :--- | :--- | :--- |\n| Tháng 1 | 59,663,486.32 | 50,851,459.60 |\n| Tháng 2 | 79,103,095.50 | 65,285,573.13 |\n| Tháng 3 | 137,537,949.28 | 121,666,971.00 |\n| Tháng 4 | 141,305,508.81 | 124,361,629.97 |\n| Tháng 5 | 139,027,887.16 | 113,951,506.27 |\n| Tháng 6 | 135,812,426.69 | 117,710,885.93 |\n| Tháng 7 | 98,141,777.72 | 91,605,928.72 |\n| Tháng 8 | 113,542,943.47 | 94,033,378.34 |\n| Tháng 9 | 85,764,286.59 | 78,395,242.27 |\n| Tháng 10 | 75,194,452.31 | 61,969,893.80 |\n| Tháng 11 | 52,200,081.64 | 47,098,021.50 |\n| Tháng 12 | 52,454,936.20 | 53,489,673.44 |\n\n**Nhận xét từ dữ liệu:**\n*   Doanh thu đạt mức cao nhất vào tháng 4 (141,305,508.81) và thấp nhất vào tháng 11 (52,200,081.64) [S1].\n*   Trong tháng 12, giá vốn hàng bán (53,489,673.44) cao hơn doanh thu (52,454,936.20), dẫn đến lỗ gộp trong tháng này [S1].\n\nSources: [S1] commerce.sales",
+      "contexts": [
+        "{}",
+        "[{\"month\": \"2022-01-01 00:00:00+00:00\", \"total_revenue\": \"59663486.32\", \"total_cogs\": \"50851459.60\"}, {\"month\": \"2022-02-01 00:00:00+00:00\", \"total_revenue\": \"79103095.50\", \"total_cogs\": \"65285573.13\"}, {\"month\": \"2022-03-01 00:00:00+00:00\", \"total_revenue\": \"137537949.28\", \"total_cogs\": \"121666971.00\"}, {\"month\": \"2022-04-01 00:00:00+00:00\", \"total_revenue\": \"141305508.81\", \"total_cogs\": \"124361629.97\"}, {\"month\": \"2022-05-01 00:00:00+00:00\", \"total_revenue\": \"139027887.16\", \"total_cogs\": \"113951506.27\"}, {\"month\": \"2022-06-01 00:00:00+00:00\", \"total_revenue\": \"135812426.69\", \"total_cogs\": \"117710885.93\"}, {\"month\": \"2022-07-01 00:00:00+00:00\", \"total_revenue\": \"98141777.72\", \"total_cogs\": \"91605928.72\"}, {\"month\": \"2022-08-01 00:00:00+00:00\", \"total_revenue\": \"113542943.47\", \"total_cogs\": \"94033378.34\"}, {\"month\": \"2022-09-01 00:00:00+00:00\", \"total_revenue\": \"85764286.59\", \"total_cogs\": \"78395242.27\"}, {\"month\": \"2022-10-01 00:00:00+00:00\", \"total_revenue\": \"75194452.31\", \"total_cogs\": \"61969893.80\"}, {\"month\": \"2022-11-01 00:00:00+00:00\", \"total_revenue\": \"52200081.64\", \"total_cogs\": \"47098021.50\"}, {\"month\": \"2022-12-01 00:00:00+00:00\", \"total_revenue\": \"52454936.20\", \"total_cogs\": \"53489673.44\"}]"
+      ],
+      "reference": "[{\"row_count\": 12}]",
+      "evidence_sources": [
+        "commerce.sales"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.sales"
+        ],
+        "explanation": "Aggregates revenue and COGS by month for the year 2022 using the sales table.",
+        "ok": true
+      },
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.9667,
+        "answer_relevancy": 0.8784,
+        "context_precision": 0.5
+      },
+      "score_errors": {},
+      "sql_safety_pass": true,
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 127.667,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "month": "2022-01-01 00:00:00+00:00",
+          "total_revenue": "59663486.32",
+          "total_cogs": "50851459.60"
+        },
+        {
+          "month": "2022-02-01 00:00:00+00:00",
+          "total_revenue": "79103095.50",
+          "total_cogs": "65285573.13"
+        },
+        {
+          "month": "2022-03-01 00:00:00+00:00",
+          "total_revenue": "137537949.28",
+          "total_cogs": "121666971.00"
+        },
+        {
+          "month": "2022-04-01 00:00:00+00:00",
+          "total_revenue": "141305508.81",
+          "total_cogs": "124361629.97"
+        },
+        {
+          "month": "2022-05-01 00:00:00+00:00",
+          "total_revenue": "139027887.16",
+          "total_cogs": "113951506.27"
+        },
+        {
+          "month": "2022-06-01 00:00:00+00:00",
+          "total_revenue": "135812426.69",
+          "total_cogs": "117710885.93"
+        },
+        {
+          "month": "2022-07-01 00:00:00+00:00",
+          "total_revenue": "98141777.72",
+          "total_cogs": "91605928.72"
+        },
+        {
+          "month": "2022-08-01 00:00:00+00:00",
+          "total_revenue": "113542943.47",
+          "total_cogs": "94033378.34"
+        },
+        {
+          "month": "2022-09-01 00:00:00+00:00",
+          "total_revenue": "85764286.59",
+          "total_cogs": "78395242.27"
+        },
+        {
+          "month": "2022-10-01 00:00:00+00:00",
+          "total_revenue": "75194452.31",
+          "total_cogs": "61969893.80"
+        },
+        {
+          "month": "2022-11-01 00:00:00+00:00",
+          "total_revenue": "52200081.64",
+          "total_cogs": "47098021.50"
+        },
+        {
+          "month": "2022-12-01 00:00:00+00:00",
+          "total_revenue": "52454936.20",
+          "total_cogs": "53489673.44"
+        }
+      ],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S03",
+      "agent": "sql",
+      "question": "Tháng nào có tổng doanh thu cao nhất trong năm 2022?",
+      "answer": "Tháng 4 năm 2022 có tổng doanh thu cao nhất với 141.305.508,81 [S1].\n\nSources: [S1] commerce.sales",
+      "contexts": [
+        "{}",
+        "[{\"month\": \"2022-04-01 00:00:00+00:00\", \"total_revenue\": \"141305508.81\"}]"
+      ],
+      "reference": "[{\"row_count\": 1}, {\"field\": \"revenue\", \"non_null\": true}]",
+      "evidence_sources": [
+        "commerce.sales"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.sales"
+        ],
+        "explanation": "The query filters sales data for the year 2022, groups the revenue by month, sums the revenue for each month, and returns the month with the highest total revenue.",
+        "ok": true
+      },
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9682,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": true,
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 173.141,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "sql_semantic_correctness": false,
+      "sql_rows": [
+        {
+          "month": "2022-04-01 00:00:00+00:00",
+          "total_revenue": "141305508.81"
+        }
+      ],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S04",
+      "agent": "sql",
+      "question": "Tính doanh thu trừ giá vốn theo từng tháng trong năm 2022.",
+      "answer": "Doanh thu trừ giá vốn (lợi nhuận gộp) theo từng tháng trong năm 2022 như sau [S1]:\n\n*   **Tháng 1:** 8.812.026,72\n*   **Tháng 2:** 13.817.522,37\n*   **Tháng 3:** 15.870.978,28\n*   **Tháng 4:** 16.943.878,84\n*   **Tháng 5:** 25.076.380,89\n*   **Tháng 6:** 18.101.540,76\n*   **Tháng 7:** 6.535.849,00\n*   **Tháng 8:** 19.509.565,13\n*   **Tháng 9:** 7.369.044,32\n*   **Tháng 10:** 13.224.558,51\n*   **Tháng 11:** 5.102.060,14\n*   **Tháng 12:** -1.034.737,24\n\nSources: [S1] commerce.sales",
+      "contexts": [
+        "{}",
+        "[{\"month\": \"2022-01-01 00:00:00+00:00\", \"profit\": \"8812026.72\"}, {\"month\": \"2022-02-01 00:00:00+00:00\", \"profit\": \"13817522.37\"}, {\"month\": \"2022-03-01 00:00:00+00:00\", \"profit\": \"15870978.28\"}, {\"month\": \"2022-04-01 00:00:00+00:00\", \"profit\": \"16943878.84\"}, {\"month\": \"2022-05-01 00:00:00+00:00\", \"profit\": \"25076380.89\"}, {\"month\": \"2022-06-01 00:00:00+00:00\", \"profit\": \"18101540.76\"}, {\"month\": \"2022-07-01 00:00:00+00:00\", \"profit\": \"6535849.00\"}, {\"month\": \"2022-08-01 00:00:00+00:00\", \"profit\": \"19509565.13\"}, {\"month\": \"2022-09-01 00:00:00+00:00\", \"profit\": \"7369044.32\"}, {\"month\": \"2022-10-01 00:00:00+00:00\", \"profit\": \"13224558.51\"}, {\"month\": \"2022-11-01 00:00:00+00:00\", \"profit\": \"5102060.14\"}, {\"month\": \"2022-12-01 00:00:00+00:00\", \"profit\": \"-1034737.24\"}]"
+      ],
+      "reference": "[{\"row_count\": 12}]",
+      "evidence_sources": [
+        "commerce.sales"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.sales"
+        ],
+        "explanation": "Tính doanh thu trừ giá vốn (lợi nhuận gộp) theo từng tháng trong năm 2022 bằng cách nhóm theo tháng và tổng hợp chênh lệch giữa doanh thu và giá vốn.",
+        "ok": true
+      },
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.9231,
+        "answer_relevancy": 0.9228,
+        "context_precision": 0.5
+      },
+      "score_errors": {},
+      "sql_safety_pass": true,
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 142.916,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "month": "2022-01-01 00:00:00+00:00",
+          "profit": "8812026.72"
+        },
+        {
+          "month": "2022-02-01 00:00:00+00:00",
+          "profit": "13817522.37"
+        },
+        {
+          "month": "2022-03-01 00:00:00+00:00",
+          "profit": "15870978.28"
+        },
+        {
+          "month": "2022-04-01 00:00:00+00:00",
+          "profit": "16943878.84"
+        },
+        {
+          "month": "2022-05-01 00:00:00+00:00",
+          "profit": "25076380.89"
+        },
+        {
+          "month": "2022-06-01 00:00:00+00:00",
+          "profit": "18101540.76"
+        },
+        {
+          "month": "2022-07-01 00:00:00+00:00",
+          "profit": "6535849.00"
+        },
+        {
+          "month": "2022-08-01 00:00:00+00:00",
+          "profit": "19509565.13"
+        },
+        {
+          "month": "2022-09-01 00:00:00+00:00",
+          "profit": "7369044.32"
+        },
+        {
+          "month": "2022-10-01 00:00:00+00:00",
+          "profit": "13224558.51"
+        },
+        {
+          "month": "2022-11-01 00:00:00+00:00",
+          "profit": "5102060.14"
+        },
+        {
+          "month": "2022-12-01 00:00:00+00:00",
+          "profit": "-1034737.24"
+        }
+      ],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S05",
+      "agent": "sql",
+      "question": "Trong năm 2022 có bao nhiêu đơn hàng theo từng order_status?",
+      "answer": "I couldn't safely run the generated query: The model did not return valid JSON.",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 50]}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "SQLValidationError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7512,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": false,
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 200.229,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "sql_semantic_correctness": true,
+      "sql_rows": [],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S06",
+      "agent": "sql",
+      "question": "Trong năm 2022, số đơn hàng theo từng payment_method là bao nhiêu?",
+      "answer": "Trong năm 2022, số lượng đơn hàng theo từng phương thức thanh toán như sau [S1]:\n\n*   **credit_card**: 19.868 đơn\n*   **cod**: 5.376 đơn\n*   **paypal**: 5.335 đơn\n*   **apple_pay**: 3.581 đơn\n*   **bank_transfer**: 1.844 đơn\n\nSources: [S1] commerce.orders",
+      "contexts": [
+        "{}",
+        "[{\"payment_method\": \"apple_pay\", \"order_count\": 3581}, {\"payment_method\": \"bank_transfer\", \"order_count\": 1844}, {\"payment_method\": \"cod\", \"order_count\": 5376}, {\"payment_method\": \"credit_card\", \"order_count\": 19868}, {\"payment_method\": \"paypal\", \"order_count\": 5335}]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 50]}]",
+      "evidence_sources": [
+        "commerce.orders"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.orders"
+        ],
+        "explanation": "Counts the number of orders for each payment method in the year 2022 by filtering the orders table on the year of order_date and grouping by payment_method.",
+        "ok": true
+      },
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.9622,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": true,
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 145.654,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "payment_method": "apple_pay",
+          "order_count": 3581
+        },
+        {
+          "payment_method": "bank_transfer",
+          "order_count": 1844
+        },
+        {
+          "payment_method": "cod",
+          "order_count": 5376
+        },
+        {
+          "payment_method": "credit_card",
+          "order_count": 19868
+        },
+        {
+          "payment_method": "paypal",
+          "order_count": 5335
+        }
+      ],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S07",
+      "agent": "sql",
+      "question": "So sánh số đơn hàng theo device_type trong năm 2022.",
+      "answer": "I couldn't safely run the generated query: The final SELECT needs LIMIT 1..200.",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 50]}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "SQLValidationError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7717,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": false,
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 142.839,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "sql_semantic_correctness": true,
+      "sql_rows": [],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S08",
+      "agent": "sql",
+      "question": "Doanh thu thuần theo khu vực trong tháng 12/2022 là bao nhiêu?",
+      "answer": "I couldn't safely run the generated query: JOIN does not match an approved relationship.",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"field\": \"region\", \"contains\": \"East\"}, {\"field\": \"net_sales\", \"equals\": 14079268.92}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "SQLValidationError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7143,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": false,
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 143.923,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "sql_semantic_correctness": false,
+      "sql_rows": [],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S09",
+      "agent": "sql",
+      "question": "Xếp hạng các category theo doanh thu thuần của sản phẩm trong năm 2022.",
+      "answer": "I couldn't safely run the generated query: JOIN does not match an approved relationship.",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 20]}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "SQLValidationError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.742,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": false,
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 179.979,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "sql_semantic_correctness": true,
+      "sql_rows": [],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S10",
+      "agent": "sql",
+      "question": "Liệt kê 10 sản phẩm bán ra nhiều nhất theo tổng quantity trong năm 2022.",
+      "answer": "Dưới đây là 10 sản phẩm bán ra nhiều nhất theo tổng số lượng (quantity) trong năm 2022 [S1][S2][S3]:\n\n1. SaigonFlex UM-54: 8.976\n2. SaigonFlex UM-11: 4.266\n3. SaigonFlex UM-56: 2.784\n4. SaigonFlex UM-66: 2.730\n5. SaigonFlex UM-75: 2.613\n6. HanoiStreet UE-17: 2.532\n7. MekongFit UE-18: 2.478\n8. SaigonFlex UM-12: 2.355\n9. HanoiStreet YY-10: 2.091\n10. SaigonFlex UC-50: 1.683\n\nSources: [S1] commerce.order_items; [S2] commerce.orders; [S3] commerce.products",
+      "contexts": [
+        "{}",
+        "{}",
+        "{}",
+        "[{\"product_name\": \"SaigonFlex UM-54\", \"total_quantity\": 8976}, {\"product_name\": \"SaigonFlex UM-11\", \"total_quantity\": 4266}, {\"product_name\": \"SaigonFlex UM-56\", \"total_quantity\": 2784}, {\"product_name\": \"SaigonFlex UM-66\", \"total_quantity\": 2730}, {\"product_name\": \"SaigonFlex UM-75\", \"total_quantity\": 2613}, {\"product_name\": \"HanoiStreet UE-17\", \"total_quantity\": 2532}, {\"product_name\": \"MekongFit UE-18\", \"total_quantity\": 2478}, {\"product_name\": \"SaigonFlex UM-12\", \"total_quantity\": 2355}, {\"product_name\": \"HanoiStreet YY-10\", \"total_quantity\": 2091}, {\"product_name\": \"SaigonFlex UC-50\", \"total_quantity\": 1683}]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 10]}]",
+      "evidence_sources": [
+        "commerce.order_items",
+        "commerce.orders",
+        "commerce.products"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.order_items",
+          "commerce.orders",
+          "commerce.products"
+        ],
+        "explanation": "Joins order_items with orders to filter by year 2022 and with products to get product names. Sums the quantity for each product, orders by the total quantity in descending order, and limits the result to the top 10 products.",
+        "ok": true
+      },
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.9386,
+        "context_precision": 0.25
+      },
+      "score_errors": {},
+      "sql_safety_pass": true,
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 147.173,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "product_name": "SaigonFlex UM-54",
+          "total_quantity": 8976
+        },
+        {
+          "product_name": "SaigonFlex UM-11",
+          "total_quantity": 4266
+        },
+        {
+          "product_name": "SaigonFlex UM-56",
+          "total_quantity": 2784
+        },
+        {
+          "product_name": "SaigonFlex UM-66",
+          "total_quantity": 2730
+        },
+        {
+          "product_name": "SaigonFlex UM-75",
+          "total_quantity": 2613
+        },
+        {
+          "product_name": "HanoiStreet UE-17",
+          "total_quantity": 2532
+        },
+        {
+          "product_name": "MekongFit UE-18",
+          "total_quantity": 2478
+        },
+        {
+          "product_name": "SaigonFlex UM-12",
+          "total_quantity": 2355
+        },
+        {
+          "product_name": "HanoiStreet YY-10",
+          "total_quantity": 2091
+        },
+        {
+          "product_name": "SaigonFlex UC-50",
+          "total_quantity": 1683
+        }
+      ],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S11",
+      "agent": "sql",
+      "question": "Số đơn hàng theo acquisition_channel của khách hàng trong năm 2022 là bao nhiêu?",
+      "answer": "Trong năm 2022, số lượng đơn hàng theo kênh tiếp cận (acquisition_channel) của khách hàng như sau [S1]:\n\n*   **Organic search:** 10.744 đơn\n*   **Paid search:** 7.261 đơn\n*   **Social media:** 7.289 đơn\n*   **Email campaign:** 4.304 đơn\n*   **Referral:** 3.473 đơn\n*   **Direct:** 2.933 đơn\n\nSources: [S1] commerce.orders; [S2] commerce.customers",
+      "contexts": [
+        "{}",
+        "{}",
+        "[{\"acquisition_channel\": \"direct\", \"order_count\": 2933}, {\"acquisition_channel\": \"email_campaign\", \"order_count\": 4304}, {\"acquisition_channel\": \"organic_search\", \"order_count\": 10744}, {\"acquisition_channel\": \"paid_search\", \"order_count\": 7261}, {\"acquisition_channel\": \"referral\", \"order_count\": 3473}, {\"acquisition_channel\": \"social_media\", \"order_count\": 7289}]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 50]}]",
+      "evidence_sources": [
+        "commerce.orders",
+        "commerce.customers"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.orders",
+          "commerce.customers"
+        ],
+        "explanation": "Joins orders with customers to count the number of orders per customer acquisition channel for the year 2022.",
+        "ok": true
+      },
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.95,
+        "context_precision": 0.3333
+      },
+      "score_errors": {},
+      "sql_safety_pass": true,
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 185.239,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "acquisition_channel": "direct",
+          "order_count": 2933
+        },
+        {
+          "acquisition_channel": "email_campaign",
+          "order_count": 4304
+        },
+        {
+          "acquisition_channel": "organic_search",
+          "order_count": 10744
+        },
+        {
+          "acquisition_channel": "paid_search",
+          "order_count": 7261
+        },
+        {
+          "acquisition_channel": "referral",
+          "order_count": 3473
+        },
+        {
+          "acquisition_channel": "social_media",
+          "order_count": 7289
+        }
+      ],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S12",
+      "agent": "sql",
+      "question": "AOV theo khu vực trong năm 2022 là bao nhiêu, dùng payment_value làm giá trị đơn hàng?",
+      "answer": "AOV theo khu vực trong năm 2022 là:\n*   Central: 32,602.74 [S1]\n*   East: 31,429.41 [S1]\n*   West: 27,865.94 [S1]\n\nSources: [S1] commerce.payments; [S2] commerce.orders; [S3] commerce.geography",
+      "contexts": [
+        "{}",
+        "{}",
+        "{}",
+        "[{\"region\": \"Central\", \"aov\": \"32602.74\"}, {\"region\": \"East\", \"aov\": \"31429.41\"}, {\"region\": \"West\", \"aov\": \"27865.94\"}]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 50]}]",
+      "evidence_sources": [
+        "commerce.payments",
+        "commerce.orders",
+        "commerce.geography"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.payments",
+          "commerce.orders",
+          "commerce.geography"
+        ],
+        "explanation": "Calculates the Average Order Value (AOV) by region for the year 2022 using the payment_value from the payments table. Joins payments to orders to get the order date and zip code, then joins to geography to map the zip code to a region. Filters for orders in 2022 and groups by region.",
+        "ok": true
+      },
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.9405,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": true,
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 141.939,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "region": "Central",
+          "aov": "32602.74"
+        },
+        {
+          "region": "East",
+          "aov": "31429.41"
+        },
+        {
+          "region": "West",
+          "aov": "27865.94"
+        }
+      ],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S13",
+      "agent": "sql",
+      "question": "Tỷ lệ stockout theo category tại snapshot 2022-12-31 là bao nhiêu?",
+      "answer": "I couldn't safely run the generated query: Function is not approved: CASE",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 20]}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "SQLValidationError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7378,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": false,
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 140.666,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "sql_semantic_correctness": true,
+      "sql_rows": [],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S14",
+      "agent": "sql",
+      "question": "Đếm số SKU đồng thời bật stockout_flag và overstock_flag theo category tại 2022-12-31.",
+      "answer": "Dựa trên dữ liệu được cung cấp, số lượng SKU có cả `stockout_flag` và `overstock_flag` được bật theo từng danh mục vào ngày 2022-12-31 như sau:\n\n*   **Casual**: 22 SKU [S1]\n*   **GenZ**: 22 SKU [S1]\n*   **Outdoor**: 79 SKU [S1]\n*   **Streetwear**: 109 SKU [S1]\n\nSources: [S1] commerce.inventory",
+      "contexts": [
+        "{}",
+        "[{\"category\": \"Casual\", \"sku_count\": 22}, {\"category\": \"GenZ\", \"sku_count\": 22}, {\"category\": \"Outdoor\", \"sku_count\": 79}, {\"category\": \"Streetwear\", \"sku_count\": 109}]"
+      ],
+      "reference": "[{\"row_count_between\": [0, 20]}]",
+      "evidence_sources": [
+        "commerce.inventory"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.inventory"
+        ],
+        "explanation": "Counts the number of distinct SKUs (product_id) for each category where both stockout_flag and overstock_flag are true on the snapshot date 2022-12-31.",
+        "ok": true
+      },
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.9294,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": true,
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 190.594,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "category": "Casual",
+          "sku_count": 22
+        },
+        {
+          "category": "GenZ",
+          "sku_count": 22
+        },
+        {
+          "category": "Outdoor",
+          "sku_count": 79
+        },
+        {
+          "category": "Streetwear",
+          "sku_count": 109
+        }
+      ],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S15",
+      "agent": "sql",
+      "question": "Top 10 SKU có days_of_supply cao nhất ở snapshot mới nhất 2022-12-31 là gì?",
+      "answer": "Dựa trên dữ liệu từ [S1], 10 SKU có số ngày cung ứng (days_of_supply) cao nhất tại snapshot 2022-12-31 là:\n\n1. HanoiStreet UC-39 (38.280 ngày)\n2. HanoiStreet RP-13 (30.270 ngày)\n3. VietMotion UC-36 (29.370 ngày)\n4. HanoiStreet RP-14 (27.180 ngày)\n5. VietMotion RP-09 (25.440 ngày)\n6. VietMotion UC-07 (25.410 ngày)\n7. SaigonFlex UC-69 (23.700 ngày)\n8. VietMotion RP-10 (22.980 ngày)\n9. HanoiStreet UE-36 (18.970 ngày)\n10. HanoiStreet UC-28 (16.050 ngày)\n\nSources: [S1] commerce.inventory",
+      "contexts": [
+        "{}",
+        "[{\"product_id\": 976, \"product_name\": \"HanoiStreet UC-39\", \"days_of_supply\": \"38280.0\"}, {\"product_id\": 725, \"product_name\": \"HanoiStreet RP-13\", \"days_of_supply\": \"30270.0\"}, {\"product_id\": 2388, \"product_name\": \"VietMotion UC-36\", \"days_of_supply\": \"29370.0\"}, {\"product_id\": 726, \"product_name\": \"HanoiStreet RP-14\", \"days_of_supply\": \"27180.0\"}, {\"product_id\": 2212, \"product_name\": \"VietMotion RP-09\", \"days_of_supply\": \"25440.0\"}, {\"product_id\": 2359, \"product_name\": \"VietMotion UC-07\", \"days_of_supply\": \"25410.0\"}, {\"product_id\": 604, \"product_name\": \"SaigonFlex UC-69\", \"days_of_supply\": \"23700.0\"}, {\"product_id\": 2213, \"product_name\": \"VietMotion RP-10\", \"days_of_supply\": \"22980.0\"}, {\"product_id\": 927, \"product_name\": \"HanoiStreet UE-36\", \"days_of_supply\": \"18970.0\"}, {\"product_id\": 965, \"product_name\": \"HanoiStreet UC-28\", \"days_of_supply\": \"16050.0\"}]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 10]}]",
+      "evidence_sources": [
+        "commerce.inventory"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.inventory"
+        ],
+        "explanation": "Selects the top 10 products by days_of_supply from the inventory table for the specific snapshot date 2022-12-31.",
+        "ok": true
+      },
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.9856,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": true,
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 144.603,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "product_id": 976,
+          "product_name": "HanoiStreet UC-39",
+          "days_of_supply": "38280.0"
+        },
+        {
+          "product_id": 725,
+          "product_name": "HanoiStreet RP-13",
+          "days_of_supply": "30270.0"
+        },
+        {
+          "product_id": 2388,
+          "product_name": "VietMotion UC-36",
+          "days_of_supply": "29370.0"
+        },
+        {
+          "product_id": 726,
+          "product_name": "HanoiStreet RP-14",
+          "days_of_supply": "27180.0"
+        },
+        {
+          "product_id": 2212,
+          "product_name": "VietMotion RP-09",
+          "days_of_supply": "25440.0"
+        },
+        {
+          "product_id": 2359,
+          "product_name": "VietMotion UC-07",
+          "days_of_supply": "25410.0"
+        },
+        {
+          "product_id": 604,
+          "product_name": "SaigonFlex UC-69",
+          "days_of_supply": "23700.0"
+        },
+        {
+          "product_id": 2213,
+          "product_name": "VietMotion RP-10",
+          "days_of_supply": "22980.0"
+        },
+        {
+          "product_id": 927,
+          "product_name": "HanoiStreet UE-36",
+          "days_of_supply": "18970.0"
+        },
+        {
+          "product_id": 965,
+          "product_name": "HanoiStreet UC-28",
+          "days_of_supply": "16050.0"
+        }
+      ],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S16",
+      "agent": "sql",
+      "question": "Tổng stock_on_hand theo category ở snapshot 2022-12-31 là bao nhiêu?",
+      "answer": "Tổng stock_on_hand theo category ở snapshot 2022-12-31 là:\n*   Casual: 4,095 [S1]\n*   GenZ: 5,126 [S1]\n*   Outdoor: 49,929 [S1]\n*   Streetwear: 45,085 [S1]\n\nSources: [S1] commerce.inventory",
+      "contexts": [
+        "{}",
+        "[{\"category\": \"Casual\", \"total_stock\": 4095}, {\"category\": \"GenZ\", \"total_stock\": 5126}, {\"category\": \"Outdoor\", \"total_stock\": 49929}, {\"category\": \"Streetwear\", \"total_stock\": 45085}]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 20]}]",
+      "evidence_sources": [
+        "commerce.inventory"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.inventory"
+        ],
+        "explanation": "The query filters the inventory table for the specific snapshot date '2022-12-31', groups the records by product category, and calculates the sum of stock_on_hand for each category.",
+        "ok": true
+      },
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.997,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": true,
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 141.76,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "category": "Casual",
+          "total_stock": 4095
+        },
+        {
+          "category": "GenZ",
+          "total_stock": 5126
+        },
+        {
+          "category": "Outdoor",
+          "total_stock": 49929
+        },
+        {
+          "category": "Streetwear",
+          "total_stock": 45085
+        }
+      ],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S17",
+      "agent": "sql",
+      "question": "Số lượt trả hàng và tổng refund_amount theo return_reason trong năm 2022 là bao nhiêu?",
+      "answer": "Dựa trên dữ liệu từ [S1], số lượt trả hàng và tổng số tiền hoàn lại (refund_amount) theo lý do trả hàng trong năm 2022 như sau:\n\n*   **wrong_size**: 773 lượt, tổng hoàn tiền 12.671.732,22 [S1]\n*   **defective**: 415 lượt, tổng hoàn tiền 6.343.922,30 [S1]\n*   **not_as_described**: 366 lượt, tổng hoàn tiền 6.615.699,52 [S1]\n*   **changed_mind**: 362 lượt, tổng hoàn tiền 6.370.104,97 [S1]\n*   **late_delivery**: 234 lượt, tổng hoàn tiền 3.710.776,82 [S1]\n\nSources: [S1] commerce.returns",
+      "contexts": [
+        "{}",
+        "[{\"return_reason\": \"changed_mind\", \"return_count\": 362, \"total_refund_amount\": \"6370104.97\"}, {\"return_reason\": \"defective\", \"return_count\": 415, \"total_refund_amount\": \"6343922.30\"}, {\"return_reason\": \"late_delivery\", \"return_count\": 234, \"total_refund_amount\": \"3710776.82\"}, {\"return_reason\": \"not_as_described\", \"return_count\": 366, \"total_refund_amount\": \"6615699.52\"}, {\"return_reason\": \"wrong_size\", \"return_count\": 773, \"total_refund_amount\": \"12671732.22\"}]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 50]}]",
+      "evidence_sources": [
+        "commerce.returns"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.returns"
+        ],
+        "explanation": "Counts the number of returns and sums the refund amounts grouped by return reason for the year 2022.",
+        "ok": true
+      },
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.954,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": true,
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 132.845,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "return_reason": "changed_mind",
+          "return_count": 362,
+          "total_refund_amount": "6370104.97"
+        },
+        {
+          "return_reason": "defective",
+          "return_count": 415,
+          "total_refund_amount": "6343922.30"
+        },
+        {
+          "return_reason": "late_delivery",
+          "return_count": 234,
+          "total_refund_amount": "3710776.82"
+        },
+        {
+          "return_reason": "not_as_described",
+          "return_count": 366,
+          "total_refund_amount": "6615699.52"
+        },
+        {
+          "return_reason": "wrong_size",
+          "return_count": 773,
+          "total_refund_amount": "12671732.22"
+        }
+      ],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S18",
+      "agent": "sql",
+      "question": "Số lượt trả hàng và tổng refund_amount theo category trong năm 2022 là bao nhiêu?",
+      "answer": "Dựa trên dữ liệu được cung cấp, số lượt trả hàng và tổng số tiền hoàn lại (refund_amount) theo từng danh mục trong năm 2022 như sau:\n\n*   **Casual**: 140 lượt trả hàng, tổng hoàn tiền 1.873.455,01 [S1].\n*   **GenZ**: 198 lượt trả hàng, tổng hoàn tiền 1.001.547,38 [S1].\n*   **Outdoor**: 491 lượt trả hàng, tổng hoàn tiền 3.323.355,41 [S1].\n*   **Streetwear**: 1.321 lượt trả hàng, tổng hoàn tiền 29.513.878,03 [S1].\n\nSources: [S1] commerce.returns; [S2] commerce.products",
+      "contexts": [
+        "{}",
+        "{}",
+        "[{\"category\": \"Casual\", \"return_count\": 140, \"total_refund_amount\": \"1873455.01\"}, {\"category\": \"GenZ\", \"return_count\": 198, \"total_refund_amount\": \"1001547.38\"}, {\"category\": \"Outdoor\", \"return_count\": 491, \"total_refund_amount\": \"3323355.41\"}, {\"category\": \"Streetwear\", \"return_count\": 1321, \"total_refund_amount\": \"29513878.03\"}]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 20]}]",
+      "evidence_sources": [
+        "commerce.returns",
+        "commerce.products"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.returns",
+          "commerce.products"
+        ],
+        "explanation": "Joins returns with products to get the category, filters for returns in 2022, and aggregates the count of returns and total refund amount by category.",
+        "ok": true
+      },
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.9292,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": true,
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 142.875,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "category": "Casual",
+          "return_count": 140,
+          "total_refund_amount": "1873455.01"
+        },
+        {
+          "category": "GenZ",
+          "return_count": 198,
+          "total_refund_amount": "1001547.38"
+        },
+        {
+          "category": "Outdoor",
+          "return_count": 491,
+          "total_refund_amount": "3323355.41"
+        },
+        {
+          "category": "Streetwear",
+          "return_count": 1321,
+          "total_refund_amount": "29513878.03"
+        }
+      ],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S19",
+      "agent": "sql",
+      "question": "Điểm rating trung bình theo category trong năm 2022 là bao nhiêu?",
+      "answer": "Dựa trên dữ liệu được cung cấp, điểm đánh giá trung bình theo từng danh mục trong năm 2022 như sau [S1]:\n\n*   **Casual:** 3.96\n*   **GenZ:** 3.93\n*   **Outdoor:** 3.96\n*   **Streetwear:** 3.95\n\nSources: [S1] commerce.reviews; [S2] commerce.products",
+      "contexts": [
+        "{}",
+        "{}",
+        "[{\"category\": \"Casual\", \"avg_rating\": \"3.9609609609609610\"}, {\"category\": \"GenZ\", \"avg_rating\": \"3.9260042283298097\"}, {\"category\": \"Outdoor\", \"avg_rating\": \"3.9580792682926829\"}, {\"category\": \"Streetwear\", \"avg_rating\": \"3.9529891304347826\"}]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 20]}]",
+      "evidence_sources": [
+        "commerce.reviews",
+        "commerce.products"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.reviews",
+          "commerce.products"
+        ],
+        "explanation": "Joins reviews with products to access the category, filters for reviews in 2022, calculates the average rating per category, and orders the results by category.",
+        "ok": true
+      },
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.9498,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": true,
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 142.836,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "category": "Casual",
+          "avg_rating": "3.9609609609609610"
+        },
+        {
+          "category": "GenZ",
+          "avg_rating": "3.9260042283298097"
+        },
+        {
+          "category": "Outdoor",
+          "avg_rating": "3.9580792682926829"
+        },
+        {
+          "category": "Streetwear",
+          "avg_rating": "3.9529891304347826"
+        }
+      ],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S20",
+      "agent": "sql",
+      "question": "Thời gian giao hàng trung bình theo region trong năm 2022 là bao nhiêu ngày?",
+      "answer": "I couldn't safely run the generated query: The model did not return valid JSON.",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 50]}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "SQLValidationError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": null,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7431,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": false,
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "total_case_seconds": 144.332,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "sql_semantic_correctness": true,
+      "sql_rows": [],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S21",
+      "agent": "sql",
+      "question": "Tổng shipping_fee theo region của các đơn đặt trong năm 2022 là bao nhiêu?",
+      "answer": "Tổng shipping_fee theo region cho các đơn đặt trong năm 2022 là:\n*   Central: 38,227.50 [S1]\n*   East: 54,473.08 [S1]\n*   West: 26,639.03 [S1]\n\nSources: [S1] commerce.shipments; [S2] commerce.orders; [S3] commerce.geography",
+      "contexts": [
+        "{}",
+        "{}",
+        "{}",
+        "[{\"region\": \"Central\", \"total_shipping_fee\": \"38227.50\"}, {\"region\": \"East\", \"total_shipping_fee\": \"54473.08\"}, {\"region\": \"West\", \"total_shipping_fee\": \"26639.03\"}]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 50]}]",
+      "evidence_sources": [
+        "commerce.shipments",
+        "commerce.orders",
+        "commerce.geography"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.shipments",
+          "commerce.orders",
+          "commerce.geography"
+        ],
+        "explanation": "Joins shipments to orders and geography to map orders to regions, filters for orders in 2022, and sums shipping fees by region.",
+        "ok": true
+      },
+      "latency_seconds": 5.726,
+      "total_case_seconds": 5.726,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.997,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": true,
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "region": "Central",
+          "total_shipping_fee": "38227.50"
+        },
+        {
+          "region": "East",
+          "total_shipping_fee": "54473.08"
+        },
+        {
+          "region": "West",
+          "total_shipping_fee": "26639.03"
+        }
+      ],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S22",
+      "agent": "sql",
+      "question": "Trong năm 2022, sessions, unique_visitors và page_views theo traffic_source là bao nhiêu?",
+      "answer": "Dựa trên dữ liệu năm 2022, các chỉ số theo nguồn lưu lượng (traffic_source) như sau [S1]:\n\n*   **Direct**: 695.578 sessions, 518.761 unique visitors, 3.000.646 page views.\n*   **Email Campaign**: 1.246.661 sessions, 947.515 unique visitors, 5.317.478 page views.\n*   **Organic Search**: 3.569.310 sessions, 2.710.890 unique visitors, 15.357.415 page views.\n*   **Paid Search**: 2.623.117 sessions, 1.992.092 unique visitors, 11.413.589 page views.\n*   **Referral**: 841.332 sessions, 641.081 unique visitors, 3.684.781 page views.\n*   **Social Media**: 2.087.660 sessions, 1.598.941 unique visitors, 8.957.644 page views.\n\nSources: [S1] commerce.web_traffic",
+      "contexts": [
+        "{}",
+        "[{\"traffic_source\": \"direct\", \"total_sessions\": 695578, \"total_unique_visitors\": 518761, \"total_page_views\": 3000646}, {\"traffic_source\": \"email_campaign\", \"total_sessions\": 1246661, \"total_unique_visitors\": 947515, \"total_page_views\": 5317478}, {\"traffic_source\": \"organic_search\", \"total_sessions\": 3569310, \"total_unique_visitors\": 2710890, \"total_page_views\": 15357415}, {\"traffic_source\": \"paid_search\", \"total_sessions\": 2623117, \"total_unique_visitors\": 1992092, \"total_page_views\": 11413589}, {\"traffic_source\": \"referral\", \"total_sessions\": 841332, \"total_unique_visitors\": 641081, \"total_page_views\": 3684781}, {\"traffic_source\": \"social_media\", \"total_sessions\": 2087660, \"total_unique_visitors\": 1598941, \"total_page_views\": 8957644}]"
+      ],
+      "reference": "[{\"row_count_between\": [1, 50]}]",
+      "evidence_sources": [
+        "commerce.web_traffic"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.web_traffic"
+        ],
+        "explanation": "Aggregates sessions, unique visitors, and page views by traffic source for the year 2022.",
+        "ok": true
+      },
+      "latency_seconds": 3.487,
+      "total_case_seconds": 3.487,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.9,
+        "answer_relevancy": 0.9385,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": true,
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "traffic_source": "direct",
+          "total_sessions": 695578,
+          "total_unique_visitors": 518761,
+          "total_page_views": 3000646
+        },
+        {
+          "traffic_source": "email_campaign",
+          "total_sessions": 1246661,
+          "total_unique_visitors": 947515,
+          "total_page_views": 5317478
+        },
+        {
+          "traffic_source": "organic_search",
+          "total_sessions": 3569310,
+          "total_unique_visitors": 2710890,
+          "total_page_views": 15357415
+        },
+        {
+          "traffic_source": "paid_search",
+          "total_sessions": 2623117,
+          "total_unique_visitors": 1992092,
+          "total_page_views": 11413589
+        },
+        {
+          "traffic_source": "referral",
+          "total_sessions": 841332,
+          "total_unique_visitors": 641081,
+          "total_page_views": 3684781
+        },
+        {
+          "traffic_source": "social_media",
+          "total_sessions": 2087660,
+          "total_unique_visitors": 1598941,
+          "total_page_views": 8957644
+        }
+      ],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S23",
+      "agent": "sql",
+      "question": "Có bao nhiêu promotion bắt đầu trong năm 2022 theo promo_type và discount_value trung bình của từng loại là bao nhiêu?",
+      "answer": "Theo dữ liệu, có 4 promotion bắt đầu trong năm 2022 với loại `percentage` và giá trị giảm giá trung bình là 15.00 [S1].\n\nSources: [S1] commerce.promotions",
+      "contexts": [
+        "{}",
+        "[{\"promo_type\": \"percentage\", \"promo_count\": 4, \"avg_discount_value\": \"15.0000000000000000\"}]"
+      ],
+      "reference": "[{\"row_count_between\": [0, 20]}]",
+      "evidence_sources": [
+        "commerce.promotions"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.promotions"
+        ],
+        "explanation": "Counts the number of promotions that started in 2022 and calculates the average discount value for each promotion type.",
+        "ok": true
+      },
+      "latency_seconds": 11.937,
+      "total_case_seconds": 11.937,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.5,
+        "answer_relevancy": 0.9653,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": true,
+      "abstention_expected": false,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "promo_type": "percentage",
+          "promo_count": 4,
+          "avg_discount_value": "15.0000000000000000"
+        }
+      ],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S24",
+      "agent": "sql",
+      "question": "Doanh thu và COGS của năm 2025 là bao nhiêu?",
+      "answer": "Dữ liệu không xác định doanh thu và COGS của năm 2025 vì các giá trị `total_revenue` và `total_cogs` đều là null [S1].\n\nSources: [S1] commerce.sales",
+      "contexts": [
+        "{}",
+        "[{\"total_revenue\": null, \"total_cogs\": null}]"
+      ],
+      "reference": "[{\"expected\": \"abstain\", \"reason\": \"sales date coverage ends 2022-12-31\"}]",
+      "evidence_sources": [
+        "commerce.sales"
+      ],
+      "agent_metadata": {
+        "source": [
+          "commerce.sales"
+        ],
+        "explanation": "Calculates the total revenue and cost of goods sold (COGS) for the year 2025 by summing the respective columns from the sales table where the year part of the date is 2025.",
+        "ok": true
+      },
+      "latency_seconds": 19.337,
+      "total_case_seconds": 19.337,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.9345,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": true,
+      "abstention_expected": true,
+      "abstention_observed": false,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "sql_semantic_correctness": true,
+      "sql_rows": [
+        {
+          "total_revenue": null,
+          "total_cogs": null
+        }
+      ],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "S25",
+      "agent": "sql",
+      "question": "Tồn kho hiện tại theo từng warehouse, PO inbound còn mở và lead time theo supplier là bao nhiêu?",
+      "answer": "The requested data (warehouse, PO inbound, supplier lead time) is not available in the provided schema. The schema contains inventory data (stock_on_hand, product_id) but lacks warehouse location, purchase orders (PO), and supplier information.",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"expected\": \"abstain\", \"reason\": \"warehouse, open PO, supplier lead time are not present\"}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "clarification_required": true,
+        "ok": false,
+        "limitations": [
+          "The question needs clarification before a safe query can be generated."
+        ]
+      },
+      "latency_seconds": 0.544,
+      "total_case_seconds": 0.544,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": false,
+      "abstention_expected": true,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "sql_semantic_correctness": true,
+      "sql_rows": [],
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R01",
+      "agent": "report",
+      "question": "Tạo báo cáo doanh thu và COGS tháng 12/2022 theo template đã tải lên.",
+      "answer": "# Revenue Performance Report\n\nunavailable in source data\n\n\n## Report title\n\nunavailable in source data\n\n\n## Reporting period\n\nunavailable in source data\n\n\n## Executive summary\n\nunavailable in source data\n\n\n## KPI table\n\nunavailable in source data\n\n\n| Metric | Value | Period | Source |\n| --- | --- | --- | --- |\n| Metric | Value | Period | Source |\n| unavailable in source data | unavailable in source data | unavailable in source data | unavailable in source data |\n## Monthly trend\n\nunavailable in source data\n\n\n## Segment/region breakdown\n\nunavailable in source data\n\n\n## Limitations and assumptions\n\nThe question needs clarification before a safe query can be generated. [S1]\n\n\n## Sources and evidence\n\nValidated analytics result rows: {\"ok\": false, \"operation\": \"text_to_sql\", \"rows\": [], \"limitations\": [\"The question needs clarification before a safe query can be generated.\"]} [S1]\n",
+      "contexts": [],
+      "reference": "[\"Doanh thu 52,454,936.20\", \"COGS 53,489,673.44\", \"kỳ báo cáo 2022-12\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": true,
+        "limitations": [
+          "The question needs clarification before a safe query can be generated."
+        ]
+      },
+      "latency_seconds": 82.957,
+      "total_case_seconds": 82.957,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "context_precision": null,
+        "answer_relevancy": 0.0
+      },
+      "score_errors": {
+        "faithfulness": "not scored: no retrieved contexts (required by RAGAS)",
+        "context_precision": "not scored: missing retrieved contexts or reference (required by RAGAS)"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R02",
+      "agent": "report",
+      "question": "Tạo báo cáo xu hướng doanh thu và COGS từng tháng trong năm 2022 theo template.",
+      "latency_seconds": null,
+      "error": "RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01kkrbgmt7fsqah31t71rrpr68` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199863, Requested 3525. Please try again in 24m23.616s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "langchain_callback_events": 1,
+      "status": "run_error",
+      "model": "qwen/qwen3.8-27b",
+      "total_case_seconds": 73.912,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded."
+    },
+    {
+      "case_id": "R03",
+      "agent": "report",
+      "question": "Tạo báo cáo so sánh doanh thu thuần theo region trong tháng 12/2022.",
+      "answer": "# Revenue Performance Report\n\nThis report compares net revenue by region for December 2022. However, the requested data is unavailable in source data because the underlying analytics query was rejected during validation.\n\n\n## Report title\n\nRevenue Performance Report: Net Revenue by Region (December 2022)\n\n\n## Reporting period\n\nDecember 2022\n\n\n## Executive summary\n\nThe analysis of net revenue by region for December 2022 could not be completed. The automated data retrieval process failed, and no validated rows were returned. Consequently, no comparative figures or trends can be presented.\n\n\n## KPI table\n\nNo Key Performance Indicators are available in source data due to the failure of the data query.\n\n\n| Metric | Value | Period | Source |\n| --- | --- | --- | --- |\n| Metric | Value | Period | Source |\n| Net Revenue by Region | unavailable in source data | December 2022 | unavailable in source data |\n## Monthly trend\n\nMonthly trend data for December 2022 is unavailable in source data.\n\n\n## Segment/region breakdown\n\nA breakdown of net revenue by region for December 2022 is unavailable in source data.\n\n\n## Limitations and assumptions\n\nThe primary limitation is that the generated SQL query did not pass planning or validation, resulting in a rejected status. No assumptions were made to fill in missing data; all specific metrics are marked as unavailable.\n\n\n## Sources and evidence\n\nThe only available evidence is the status of the analytics operation, which indicates a rejection due to validation failure. No factual claims regarding revenue figures can be cited from the provided source data.\n",
+      "contexts": [],
+      "reference": "[\"East region có giá trị net sales 14,079,268.92 theo định nghĩa trong benchmark\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": true,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 87.16,
+      "total_case_seconds": 87.161,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "context_precision": null,
+        "answer_relevancy": 0.0
+      },
+      "score_errors": {
+        "faithfulness": "not scored: no retrieved contexts (required by RAGAS)",
+        "context_precision": "not scored: missing retrieved contexts or reference (required by RAGAS)"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R04",
+      "agent": "report",
+      "question": "Tạo báo cáo xếp hạng category theo doanh thu thuần của order items năm 2022.",
+      "answer": "# Revenue Performance Report\n\nBáo cáo xếp hạng danh mục (category) theo doanh thu thuần của order items năm 2022.\n\n\n## Report title\n\nBáo cáo xếp hạng danh mục theo doanh thu thuần năm 2022\n\n\n## Reporting period\n\nNăm 2022\n\n\n## Executive summary\n\nDựa trên dữ liệu đã xác thực, danh mục Streetwear dẫn đầu về doanh thu thuần với 935.781.192,17. Danh mục Outdoor xếp thứ hai với 99.887.464,80. Danh mục Casual xếp thứ ba với 51.541.535,51 và danh mục GenZ xếp cuối với 28.096.904,02.\n\n\n## KPI table\n\nBảng KPI tổng hợp doanh thu thuần theo danh mục được trình bày trong bảng dữ liệu bên dưới.\n\n\n| Metric | Value | Period | Source |\n| --- | --- | --- | --- |\n| Metric | Value | Period | Source |\n| Net Revenue - Streetwear | 935781192.17 | 2022 | [S4] |\n| Net Revenue - Outdoor | 99887464.80 | 2022 | [S4] |\n| Net Revenue - Casual | 51541535.51 | 2022 | [S4] |\n| Net Revenue - GenZ | 28096904.02 | 2022 | [S4] |\n## Monthly trend\n\nunavailable in source data\n\n\n## Segment/region breakdown\n\nunavailable in source data\n\n\n## Limitations and assumptions\n\nDữ liệu chỉ bao gồm 4 danh mục được xác thực. Không có dữ liệu về xu hướng hàng tháng hoặc phân khúc khu vực. Các ngưỡng chính sách tồn kho được coi là bản nháp mô phỏng và không được áp dụng.\n\n\n## Sources and evidence\n\nDữ liệu được trích xuất từ các bảng commerce.order_items [S1], commerce.products [S2], commerce.orders [S3] và kết quả phân tích đã xác thực [S4].\n",
+      "contexts": [
+        "{}",
+        "{}",
+        "{}"
+      ],
+      "reference": "[\"Xếp hạng dùng tất cả nhóm category có dữ liệu\"]",
+      "evidence_sources": [
+        "commerce.order_items",
+        "commerce.products",
+        "commerce.orders"
+      ],
+      "agent_metadata": {
+        "ok": true,
+        "limitations": []
+      },
+      "latency_seconds": 49.729,
+      "total_case_seconds": 49.729,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8622,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R05",
+      "agent": "report",
+      "question": "Tạo báo cáo cơ cấu order_status của các đơn hàng trong năm 2022.",
+      "answer": "# Executive Decision Brief\n\nBáo cáo này trình bày cơ cấu trạng thái đơn hàng (order_status) trong năm 2022 dựa trên dữ liệu từ bảng commerce.orders. Dữ liệu được xác thực cho thấy tổng số đơn hàng là 40.404, trong đó trạng thái 'delivered' chiếm tỷ trọng lớn nhất.\n\n\n## Report title\n\nBáo cáo cơ cấu order_status của các đơn hàng trong năm 2022\n\n\n## Reporting period\n\nNăm 2022\n\n\n## Executive summary\n\nTrong năm 2022, tổng số đơn hàng được ghi nhận là 40.404. Trạng thái 'delivered' là phổ biến nhất với 27.688 đơn hàng, tiếp theo là 'cancelled' với 3.384 đơn hàng. Các trạng thái khác bao gồm 'returned' (2.022), 'paid' (1.090), 'shipped' (1.065) và 'created' (755).\n\n\n## Business highlights\n\nTỷ lệ đơn hàng được giao thành công (delivered) chiếm khoảng 68,5% tổng số đơn hàng. Tỷ lệ đơn hàng bị hủy (cancelled) là 8,4%. Các trạng thái trung gian như 'shipped' và 'paid' chiếm tỷ lệ nhỏ hơn, lần lượt là 2,6% và 2,7%.\n\n\n## Risks and limitations\n\nDữ liệu chỉ phản ánh số lượng đơn hàng theo trạng thái tại thời điểm báo cáo, không bao gồm giá trị tài chính hay lý do cụ thể cho từng trạng thái. Không có thông tin về xu hướng theo tháng hoặc quý trong năm 2022.\n\n\n## Recommended decisions\n\nKhông có khuyến nghị cụ thể nào được đưa ra trong dữ liệu nguồn. Cần phân tích sâu hơn về nguyên nhân hủy đơn hàng và tỷ lệ hoàn trả để tối ưu hóa quy trình vận hành.\n\n\n## Evidence and sources\n\nDữ liệu được lấy từ bảng commerce.orders [S1]. Kết quả phân tích đã được xác thực với các hàng dữ liệu chi tiết về số lượng đơn hàng theo từng trạng thái [S1].\n",
+      "contexts": [
+        "{}"
+      ],
+      "reference": "[\"Đếm theo từng order_status\", \"nêu rõ kỳ 2022\"]",
+      "evidence_sources": [
+        "commerce.orders"
+      ],
+      "agent_metadata": {
+        "ok": true,
+        "limitations": []
+      },
+      "latency_seconds": 51.178,
+      "total_case_seconds": 51.178,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8629,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R06",
+      "agent": "report",
+      "question": "Tạo báo cáo số lượng đơn hàng theo payment_method và device_type trong năm 2022.",
+      "latency_seconds": null,
+      "error": "ValueError: Report draft must contain one data block per template table",
+      "langchain_callback_events": 1,
+      "status": "run_error",
+      "total_case_seconds": 45.113,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R07",
+      "agent": "report",
+      "question": "Tạo báo cáo return_count và refund_total theo return_reason cho năm 2022.",
+      "answer": "# Executive Decision Brief\n\nThis report presents return_count and refund_total metrics for 2022, categorized by return_reason. The data is derived from validated analytics results [S1].\n\n\n## Report title\n\nReturn Count and Refund Total by Return Reason for 2022\n\n\n## Reporting period\n\n2022\n\n\n## Executive summary\n\nThe analysis covers five return reasons: changed_mind, defective, late_delivery, not_as_described, and wrong_size. The total return count across all reasons is 2150, with a combined refund total of 35,712,235.83 [S1].\n\n\n## Business highlights\n\nThe 'wrong_size' reason had the highest return count (773) and the highest refund total (12,671,732.22) [S1]. The 'late_delivery' reason had the lowest return count (234) and the lowest refund total (3,710,776.82) [S1].\n\n\n## Risks and limitations\n\nThe source data does not specify the currency for the refund_total values [S1]. No additional limitations were reported in the validated analytics result [S1].\n\n\n## Recommended decisions\n\nunavailable in source data\n\n\n## Evidence and sources\n\nData sourced from commerce.returns [S1]. Validated analytics result rows confirm the return_count and refund_total for each return_reason [S1].\n",
+      "contexts": [
+        "{}"
+      ],
+      "reference": "[\"COUNT(return_id)\", \"SUM(refund_amount)\"]",
+      "evidence_sources": [
+        "commerce.returns"
+      ],
+      "agent_metadata": {
+        "ok": true,
+        "limitations": []
+      },
+      "latency_seconds": 89.44,
+      "total_case_seconds": 89.44,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8775,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R08",
+      "agent": "report",
+      "question": "Tạo báo cáo hàng trả về theo category, gồm số lượt và tổng refund trong 2022.",
+      "answer": "# Revenue Performance Report\n\nBáo cáo này trình bày dữ liệu hàng trả về theo category trong năm 2022, bao gồm số lượt trả hàng và tổng giá trị hoàn tiền.\n\n\n## Report title\n\nBáo cáo hàng trả về theo category năm 2022\n\n\n## Reporting period\n\nNăm 2022\n\n\n## Executive summary\n\nDữ liệu cho thấy tổng cộng 2150 lượt trả hàng trong năm 2022. Category Streetwear có số lượt trả hàng cao nhất (1321 lượt) và tổng giá trị hoàn tiền lớn nhất (29,513,878.03). Category Outdoor có tổng giá trị hoàn tiền cao thứ hai (3,323,355.41) với 491 lượt trả hàng. Dữ liệu được trích xuất từ bảng commerce.returns [S1].\n\n\n## KPI table\n\nBảng KPI dưới đây tóm tắt các chỉ số chính về số lượt trả hàng và tổng giá trị hoàn tiền theo từng category.\n\n\n| Metric | Value | Period | Source |\n| --- | --- | --- | --- |\n| Metric | Value | Period | Source |\n| Casual - return_count | 140 | 2022 | [S3] |\n| Casual - total_refund | 1873455.01 | 2022 | [S3] |\n| GenZ - return_count | 198 | 2022 | [S3] |\n| GenZ - total_refund | 1001547.38 | 2022 | [S3] |\n| Outdoor - return_count | 491 | 2022 | [S3] |\n| Outdoor - total_refund | 3323355.41 | 2022 | [S3] |\n| Streetwear - return_count | 1321 | 2022 | [S3] |\n| Streetwear - total_refund | 29513878.03 | 2022 | [S3] |\n## Monthly trend\n\nDữ liệu xu hướng hàng tháng không có trong nguồn dữ liệu được cung cấp. unavailable in source data\n\n\n## Segment/region breakdown\n\nPhân tích theo category cho thấy sự khác biệt rõ rệt giữa các nhóm. Streetwear chiếm phần lớn số lượt trả hàng (1321/2150) và giá trị hoàn tiền. Casual và GenZ có số lượt trả hàng thấp hơn lần lượt là 140 và 198. Outdoor có 491 lượt trả hàng. Dữ liệu chi tiết được trình bày trong bảng KPI.\n\n\n## Limitations and assumptions\n\nDữ liệu chỉ bao gồm tổng hợp theo category cho năm 2022. Không có dữ liệu chi tiết theo tháng hoặc khu vực. Các giá trị tiền tệ được báo cáo như trong dữ liệu gốc mà không suy luận đơn vị tiền tệ cụ thể. Dữ liệu dựa trên kết quả phân tích đã được xác thực [S3].\n\n\n## Sources and evidence\n\nDữ liệu được lấy từ bảng commerce.returns [S1] và kết quả phân tích đã xác thực [S3]. Bảng commerce.products [S2] được tham chiếu nhưng không chứa dữ liệu trả hàng.\n",
+      "contexts": [
+        "{}",
+        "{}"
+      ],
+      "reference": "[\"Nhóm theo products.category\", \"nêu kỳ return_date trong năm 2022\"]",
+      "evidence_sources": [
+        "commerce.returns",
+        "commerce.products"
+      ],
+      "agent_metadata": {
+        "ok": true,
+        "limitations": []
+      },
+      "latency_seconds": 77.532,
+      "total_case_seconds": 77.532,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8622,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R09",
+      "agent": "report",
+      "question": "Tạo báo cáo thời gian giao hàng trung bình theo region cho các đơn đặt trong năm 2022.",
+      "answer": "# Executive Decision Brief\n\nunavailable in source data\n\n\n## Report title\n\nBáo cáo thời gian giao hàng trung bình theo region cho các đơn đặt trong năm 2022\n\n\n## Reporting period\n\nNăm 2022\n\n\n## Executive summary\n\nunavailable in source data\n\n\n## Business highlights\n\nunavailable in source data\n\n\n## Risks and limitations\n\nDatabase query did not complete.\n\n\n## Recommended decisions\n\nunavailable in source data\n\n\n## Evidence and sources\n\nValidated analytics result rows: {\"ok\": false, \"operation\": \"text_to_sql\", \"rows\": [], \"limitations\": [\"Database query did not complete.\"], \"query_status\": \"error\"}\n",
+      "contexts": [],
+      "reference": "[\"Dùng delivery_date - ship_date\", \"loại bản ghi thiếu ngày giao/ship khỏi phép tính\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": true,
+        "limitations": [
+          "Database query did not complete."
+        ]
+      },
+      "latency_seconds": 82.316,
+      "total_case_seconds": 82.316,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "context_precision": null,
+        "answer_relevancy": 0.0
+      },
+      "score_errors": {
+        "faithfulness": "not scored: no retrieved contexts (required by RAGAS)",
+        "context_precision": "not scored: missing retrieved contexts or reference (required by RAGAS)"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R10",
+      "agent": "report",
+      "question": "Tạo báo cáo tổng shipping_fee theo region trong năm 2022.",
+      "answer": "# Executive Decision Brief\n\nThis report summarizes the total shipping fees by region for the year 2022 based on validated analytics data.\n\n\n## Report title\n\nTổng shipping_fee theo region trong năm 2022\n\n\n## Reporting period\n\n2022\n\n\n## Executive summary\n\nThe total shipping fees for 2022 were aggregated by region. The East region recorded the highest total shipping fee at 54473.08, followed by the Central region at 38227.50, and the West region at 26639.03 [S4].\n\n\n## Business highlights\n\nThe East region accounted for the largest portion of total shipping fees in 2022 [S4].\n\n\n## Risks and limitations\n\nThe source data for commerce.shipments, commerce.orders, and commerce.geography was provided as empty objects, meaning detailed row-level data is unavailable in source data [S1][S2][S3]. The analysis relies solely on the validated aggregate results [S4].\n\n\n## Recommended decisions\n\nNo specific decisions are recommended as the source data lacks detailed context for causal analysis. Further investigation into the East region's shipping costs may be warranted given its higher total fees [S4].\n\n\n## Evidence and sources\n\nData sourced from commerce.shipments [S1], commerce.orders [S2], commerce.geography [S3], and validated analytics results [S4].\n",
+      "contexts": [
+        "{}",
+        "{}",
+        "{}"
+      ],
+      "reference": "[\"SUM(shipping_fee) theo region\"]",
+      "evidence_sources": [
+        "commerce.shipments",
+        "commerce.orders",
+        "commerce.geography"
+      ],
+      "agent_metadata": {
+        "ok": true,
+        "limitations": []
+      },
+      "latency_seconds": 32.245,
+      "total_case_seconds": 32.245,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8784,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R11",
+      "agent": "report",
+      "question": "Tạo báo cáo web sessions, visitors, page views và average bounce rate theo traffic_source trong năm 2022.",
+      "answer": "# Executive Decision Brief\n\nThe requested report on web sessions, visitors, page views, and average bounce rate by traffic source for 2022 could not be generated because the underlying database query failed to complete. No data is available to support any business decisions or highlights at this time.\n\n\n## Report title\n\nWeb Sessions, Visitors, Page Views, and Average Bounce Rate by Traffic Source (2022)\n\n\n## Reporting period\n\n2022\n\n\n## Executive summary\n\nAn attempt was made to retrieve analytics data for web sessions, visitors, page views, and average bounce rate grouped by traffic source for the year 2022. The operation resulted in an error, and no rows were returned. Consequently, no factual claims can be made regarding the performance metrics for this period.\n\n\n## Business highlights\n\nunavailable in source data\n\n\n## Risks and limitations\n\nThe primary limitation is that the database query did not complete, resulting in an error status. No data was retrieved, making it impossible to analyze trends, identify top traffic sources, or calculate aggregate metrics for the specified period.\n\n\n## Recommended decisions\n\nInvestigate and resolve the database query error to allow for the successful retrieval of analytics data. Once data is available, re-run the analysis to generate the requested report.\n\n\n## Evidence and sources\n\nThe only available evidence is the system log indicating a failed operation: {\"ok\": false, \"operation\": \"text_to_sql\", \"rows\": [], \"limitations\": [\"Database query did not complete.\"], \"query_status\": \"error\"}.\n",
+      "contexts": [],
+      "reference": "[\"Nhóm theo traffic_source\", \"nêu rõ cách tính average bounce rate\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": true,
+        "limitations": [
+          "Database query did not complete."
+        ]
+      },
+      "latency_seconds": 44.703,
+      "total_case_seconds": 44.703,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "context_precision": null,
+        "answer_relevancy": 0.8291
+      },
+      "score_errors": {
+        "faithfulness": "not scored: no retrieved contexts (required by RAGAS)",
+        "context_precision": "not scored: missing retrieved contexts or reference (required by RAGAS)"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R12",
+      "agent": "report",
+      "question": "Tạo báo cáo số promotion bắt đầu trong năm 2022 theo promo_type và discount_value trung bình.",
+      "answer": "# Revenue Performance Report\n\nBáo cáo số lượng promotion bắt đầu trong năm 2022 theo promo_type và giá trị giảm giá trung bình.\n\n\n## Report title\n\nBáo cáo số lượng promotion bắt đầu trong năm 2022 theo promo_type và giá trị giảm giá trung bình\n\n\n## Reporting period\n\nNăm 2022\n\n\n## Executive summary\n\nDựa trên dữ liệu đã xác thực, có 4 promotion thuộc loại 'percentage' được bắt đầu trong năm 2022 với giá trị giảm giá trung bình là 15.0000000000000000. Không có dữ liệu cho các loại promotion khác trong nguồn dữ liệu được cung cấp.\n\n\n## KPI table\n\nBảng KPI tóm tắt các chỉ số chính từ kết quả phân tích đã xác thực.\n\n\n| Metric | Value | Period | Source |\n| --- | --- | --- | --- |\n| Metric | Value | Period | Source |\n| promo_type: percentage, avg_discount_value: 15.0000000000000000, promo_count: 4 | 4 promotions, avg discount 15.0000000000000000 | 2022 | [S1] |\n## Monthly trend\n\nDữ liệu xu hướng hàng tháng không có trong nguồn dữ liệu.\n\n\n## Segment/region breakdown\n\nDữ liệu phân khúc theo khu vực không có trong nguồn dữ liệu.\n\n\n## Limitations and assumptions\n\nDữ liệu chỉ bao gồm các promotion bắt đầu trong năm 2022. Các giá trị được trích xuất trực tiếp từ kết quả phân tích đã xác thực. Không có dữ liệu cho các loại promotion khác ngoài 'percentage'.\n\n\n## Sources and evidence\n\nNguồn dữ liệu chính: commerce.promotions [S1]. Kết quả phân tích đã xác thực [S1].\n",
+      "contexts": [
+        "{}"
+      ],
+      "reference": "[\"Nhóm theo promo_type\", \"không trộn scale percentage và fixed discount\"]",
+      "evidence_sources": [
+        "commerce.promotions"
+      ],
+      "agent_metadata": {
+        "ok": true,
+        "limitations": []
+      },
+      "latency_seconds": 85.805,
+      "total_case_seconds": 85.805,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.8683,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R13",
+      "agent": "report",
+      "question": "Tạo báo cáo tồn kho theo category tại snapshot 2022-12-31.",
+      "answer": "# Inventory Exception Report\n\nBáo cáo tồn kho theo danh mục tại snapshot 2022-12-31.\n\n\n## Report title\n\nBáo cáo tồn kho theo danh mục\n\n\n## Snapshot date and coverage\n\nNgày snapshot: 2022-12-31. Phạm vi: Toàn bộ danh mục sản phẩm có dữ liệu tồn kho và doanh số.\n\n\n## KPI summary\n\nTổng tồn kho: 100,435 đơn vị. Tổng đơn vị đã bán: 3,565 đơn vị. Dữ liệu chi tiết theo danh mục được trình bày trong bảng dưới đây.\n\n\n## Exception table\n\nBảng dưới đây liệt kê các chỉ số tồn kho theo danh mục dựa trên dữ liệu đã xác thực.\n\n\n| Product ID | Category | Stock on hand | Days of supply | Stockout flag | Overstock flag | Recommended follow-up |\n| --- | --- | --- | --- | --- | --- | --- |\n| Product ID | Category | Stock on hand | Days of supply | Stockout flag | Overstock flag | Recommended follow-up |\n| unavailable in source data | Casual | 4095 | 830.9525000000000000 | unavailable in source data | unavailable in source data | unavailable in source data |\n| unavailable in source data | GenZ | 5126 | 1019.4159090909090909 | unavailable in source data | unavailable in source data | unavailable in source data |\n| unavailable in source data | Outdoor | 49929 | 2196.0048611111111111 | unavailable in source data | unavailable in source data | unavailable in source data |\n| unavailable in source data | Streetwear | 45085 | 2031.8173469387755102 | unavailable in source data | unavailable in source data | unavailable in source data |\n## Policy thresholds\n\nCác ngưỡng chính sách tồn kho (stockout/overstock) không có sẵn trong dữ liệu nguồn. Các cột liên quan đến cờ cảnh báo và hành động đề xuất được đánh dấu là không có sẵn.\n\n\n## Required actions\n\nKhông có sẵn trong dữ liệu nguồn.\n\n\n## Data limitations\n\nDữ liệu nguồn không cung cấp thông tin về các ngưỡng chính sách cụ thể, cờ cảnh báo stockout/overstock, hoặc các hành động theo dõi được đề xuất. Dữ liệu chỉ bao gồm tổng tồn kho, tổng đơn vị đã bán và số ngày cung cấp trung bình theo danh mục.\n\n\n## Sources and evidence\n\nDữ liệu được trích xuất từ commerce.inventory [S1]. Kết quả phân tích đã được xác thực [S1].\n",
+      "contexts": [
+        "{}"
+      ],
+      "reference": "[\"Snapshot ngày 2022-12-31\", \"đếm SKU trong snapshot\", \"tổng stock_on_hand theo category\"]",
+      "evidence_sources": [
+        "commerce.inventory"
+      ],
+      "agent_metadata": {
+        "ok": true,
+        "limitations": []
+      },
+      "latency_seconds": 44.795,
+      "total_case_seconds": 44.795,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.863,
+        "context_precision": 0.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R14",
+      "agent": "report",
+      "question": "Tạo báo cáo stockout rate theo category tại snapshot 2022-12-31.",
+      "answer": "# Inventory Exception Report\n\nThis report is generated based on the requested snapshot date of 2022-12-31. The primary objective is to analyze stockout rates by category. However, the underlying data retrieval process encountered a critical failure, resulting in no available data for analysis.\n\n\n## Report title\n\nStockout Rate Report by Category - Snapshot 2022-12-31\n\n\n## Snapshot date and coverage\n\nSnapshot date: 2022-12-31. Coverage: All categories. Note: Data coverage is effectively zero due to query failure.\n\n\n## KPI summary\n\nNo KPIs could be calculated. The database query did not complete, resulting in an empty dataset. All stockout rate metrics are unavailable in source data.\n\n\n## Exception table\n\nNo exception records are available. The table below is empty because the source data query returned an error status with no rows.\n\n\n| Product ID | Category | Stock on hand | Days of supply | Stockout flag | Overstock flag | Recommended follow-up |\n| --- | --- | --- | --- | --- | --- | --- |\n| Product ID | Category | Stock on hand | Days of supply | Stockout flag | Overstock flag | Recommended follow-up |\n| unavailable in source data | unavailable in source data | unavailable in source data | unavailable in source data | unavailable in source data | unavailable in source data | unavailable in source data |\n## Policy thresholds\n\nInventory policy thresholds are treated as simulated drafts and are not approved policy. No specific threshold values are provided in the source data. Currency inference is not performed.\n\n\n## Required actions\n\n1. Investigate the database query error that prevented data retrieval. 2. Re-run the analytics operation once the database issue is resolved. 3. Verify data availability for the snapshot date 2022-12-31.\n\n\n## Data limitations\n\nThe database query did not complete. The operation status is 'error'. No rows were returned. All factual claims regarding stock levels, days of supply, and flags are unavailable in source data.\n\n\n## Sources and evidence\n\nEvidence [S1]: Validated analytics result rows indicate {\"ok\": false, \"operation\": \"text_to_sql\", \"rows\": [], \"limitations\": [\"Database query did not complete.\"], \"query_status\": \"error\"}.\n",
+      "contexts": [],
+      "reference": "[\"Stockout rate tính từ stockout_flag / SKU trong snapshot\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": true,
+        "limitations": [
+          "Database query did not complete."
+        ]
+      },
+      "latency_seconds": 84.489,
+      "total_case_seconds": 84.489,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "context_precision": null,
+        "answer_relevancy": 0.0
+      },
+      "score_errors": {
+        "faithfulness": "not scored: no retrieved contexts (required by RAGAS)",
+        "context_precision": "not scored: missing retrieved contexts or reference (required by RAGAS)"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R15",
+      "agent": "report",
+      "question": "Tạo báo cáo SKU đồng thời có stockout_flag và overstock_flag ở snapshot 2022-12-31.",
+      "latency_seconds": null,
+      "error": "APIStatusError: Error code: 413 - {'error': {'message': 'Request too large for model `qwen/qwen3.8-27b` in organization `org_01kkrbgmt7fsqah31t71rrpr68` service tier `on_demand` on input tokens per minute (ITPM): Limit 7000, Requested 8897, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "langchain_callback_events": 1,
+      "status": "run_error",
+      "total_case_seconds": 64.257,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R16",
+      "agent": "report",
+      "question": "Tạo báo cáo các SKU có days_of_supply cao nhất tại snapshot 2022-12-31 và đề xuất bước rà soát theo chính sách.",
+      "latency_seconds": null,
+      "error": "APIStatusError: Error code: 413 - {'error': {'message': 'Request too large for model `qwen/qwen3.8-27b` in organization `org_01kkrbgmt7fsqah31t71rrpr68` service tier `on_demand` on input tokens per minute (ITPM): Limit 7000, Requested 13726, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "langchain_callback_events": 1,
+      "status": "run_error",
+      "total_case_seconds": 47.108,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R17",
+      "agent": "report",
+      "question": "Tạo báo cáo điều khiển kiểm kê ABC, tần suất cycle count và SLA theo chính sách.",
+      "answer": "# Policy and Controls Review\n\nThe review focuses on inventory control policies, specifically INV-POL-003 (Inventory Discrepancy Verification) and INV-POL-004 (ABC Cycle Counting). These policies define triggers, mandatory actions, owners, and SLAs for managing inventory accuracy and stock levels.\n\n\n## Report title\n\nBáo cáo điều khiển kiểm kê ABC, tần suất cycle count và SLA theo chính sách\n\n\n## Policy/source metadata\n\nSources include 04_Inventory_Control_and_Reorder_Planner.xlsx (Policy Matrix) and 03_Policy_Rules_Registry.csv. The policy INV-POL-004 is associated with company VietStyle Commerce, document version v1.0, and effective status SIMULATION_DRAFT. The source basis is noted as 'Datathon dataset + explicitly stated operating assumptions'.\n\n\n## Control summary\n\nPolicy INV-POL-003 requires temporary locking of automatic POs and verification of transactions when stockout signals coexist with high days of supply (>120) or conflicting stockout/overstock flags. Policy INV-POL-004 mandates blind cycle counts and independent reconciliation for SKUs classified as A (weekly), B (monthly), and C (quarterly) based on annual consumption value.\n\n\n## Observed evidence\n\nEvidence from [S1] and [S2] confirms the existence of policies INV-POL-003 and INV-POL-004. INV-POL-003 has an SLA of P1 within 1 business day and requires approval by the Warehouse Manager for conclusions. INV-POL-004 has an SLA of 'Theo lịch' (According to schedule) and requires approval for discrepancies exceeding thresholds. The owner for INV-POL-003 is the Inventory Controller, and for INV-POL-004 is the Warehouse Supervisor.\n\n\n## Conflicts or gaps\n\nNo direct conflicts were found between the two sources regarding the content of INV-POL-004. However, the analytics operation to generate specific data rows failed with the limitation: 'The question needs clarification before a safe query can be generated.' Therefore, specific quantitative results for cycle count frequencies or SLA compliance metrics are unavailable in source data.\n\n\n## Owner and approver\n\nFor INV-POL-003, the Owner is the Inventory Controller and the approver is the Warehouse Manager (Quản lý kho). For INV-POL-004, the Owner is the Warehouse Supervisor, and approval is required for discrepancies exceeding thresholds (Sai lệch vượt ngưỡng phải duyệt).\n\n\n## Recommended actions\n\nClarify the specific data requirements to enable safe SQL query generation for detailed analytics. Ensure that the SIMULATION_DRAFT status of INV-POL-004 is reviewed and approved for production use if intended for operational enforcement. Verify that the 'Theo lịch' SLA for INV-POL-004 is mapped to specific calendar dates in the operational system.\n\n\n## Approval status and caveats\n\nThe policy INV-POL-004 is currently marked as SIMULATION_DRAFT in the registry [S2]. This indicates it is a simulated draft and not necessarily an approved, active policy in the production environment. No currency information is inferred. All facts are cited from the provided source data.\n\n\n## Citations\n\n[S1] 04_Inventory_Control_and_Reorder_Planner.xlsx; [S2] 03_Policy_Rules_Registry.csv\n",
+      "contexts": [
+        "Section: Policy Matrix\nColumns: Policy ID | Chính sách | Trigger | Hành động bắt buộc | Owner | SLA / Tần suất | Approval\nRow 3: Policy ID: INV-POL-003 | Chính sách: Xác minh mâu thuẫn tồn kho | Trigger: Có tín hiệu stockout/service thấp đồng thời days of supply > 120; hoặc cờ stockout và overstock cùng bật | Hành động bắt buộc: Tạm khóa PO tự động; kiểm tra giao dịch, snapshot, đơn hàng treo và cách tính nhu cầu | Owner: Inventory Controller | SLA / Tần suất: P1 trong 1 ngày làm việc | Approval: Quản lý kho duyệt kết luận\nRow 4: Policy ID: INV-POL-004 | Chính sách: Kiểm kê chu kỳ ABC | Trigger: SKU nhóm A/B/C theo giá trị tiêu thụ năm | Hành động bắt buộc: A: hằng tuần; B: hằng tháng; C: hằng quý; kiểm kê mù và đối chiếu độc lập | Owner: Warehouse Supervisor | SLA / Tần suất: Theo lịch | Approval: Sai lệch vượt ngưỡng phải duyệt",
+        "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 4: policy_id: INV-POL-004 | policy_name: Kiểm kê chu kỳ ABC | trigger: SKU nhóm A/B/C theo giá trị tiêu thụ năm | rule_or_required_action: A: hằng tuần; B: hằng tháng; C: hằng quý; kiểm kê mù và đối chiếu độc lập | owner: Warehouse Supervisor | sla_or_frequency: Theo lịch | approval: Sai lệch vượt ngưỡng phải duyệt | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions"
+      ],
+      "reference": "[\"A hàng tuần, B hàng tháng, C hàng quý\", \"ABC dựa trên annual consumption value\"]",
+      "evidence_sources": [
+        "04_Inventory_Control_and_Reorder_Planner.xlsx",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "agent_metadata": {
+        "ok": true,
+        "limitations": [
+          "The question needs clarification before a safe query can be generated."
+        ]
+      },
+      "latency_seconds": 34.193,
+      "total_case_seconds": 34.193,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": 0.6122,
+        "answer_relevancy": 0.7939,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R18",
+      "agent": "report",
+      "question": "Tạo báo cáo quy trình xử lý discrepancy, vai trò phê duyệt và dữ liệu audit trail bắt buộc.",
+      "answer": "# Policy and Controls Review\n\nQuy trình kiểm kê và điều chỉnh tồn kho được mô tả trong SOP-INV-002 và Policy Manual. Các ngưỡng vận hành, lead time, KPI và cấp phê duyệt trong tài liệu là đề xuất giả lập (simulated drafts) cần được chủ sở hữu nghiệp vụ phê duyệt trước khi áp dụng thực tế [S2]. Quy trình bao gồm 6 bước chính: chuẩn bị, đếm độc lập, đối chiếu, điều tra, phê duyệt và cập nhật hệ thống [S2][S3].\n\n\n## Report title\n\nBáo cáo quy trình xử lý discrepancy, vai trò phê duyệt và dữ liệu audit trail bắt buộc\n\n\n## Policy/source metadata\n\nNguồn dữ liệu bao gồm 01_Inventory_Management_Policy_Manual.docx [S1], 02_SOP_Cycle_Count_and_Stock_Adjustment.pdf [S2][S3][S4] và 05_Inventory_Policy_Training_Deck.pptx [S5]. Tài liệu SOP-INV-002 phiên bản v1.0, ngày 16/10/2026, chủ sở hữu là Inventory Manager [S2]. Dữ liệu được xác định là tài liệu mô phỏng cho Datathon 2026 [S2][S5].\n\n\n## Control summary\n\nQuy trình kiểm soát bắt đầu từ việc chuẩn bị danh sách SKU và phạm vi đếm, tiếp theo là bước đếm độc lập và đối chiếu chênh lệch [S3]. Sau khi xác định nguyên nhân gốc, điều chỉnh chỉ được thực hiện sau khi có phê duyệt từ người độc lập với người đếm [S3]. Mọi điều chỉnh phải được ghi nhận trong hệ thống với audit trail đầy đủ [S2][S4].\n\n\n## Observed evidence\n\nHồ sơ bắt buộc bao gồm phiếu kiểm kê, chênh lệch, nguyên nhân và phê duyệt điều chỉnh [S1]. Mỗi điều chỉnh phải có mã phiếu, policy ID, SKU, số lượng trước/sau, mã nguyên nhân, bằng chứng, người nhập và người duyệt [S4]. Quy trình yêu cầu không xóa giao dịch cũ và mọi điều chỉnh cần có thời điểm và bằng chứng [S5].\n\n\n## Conflicts or gaps\n\nDataset không xác định rõ đơn vị tiền tệ và không cung cấp dữ liệu PO inbound, tồn kho theo kho hoặc backorder [S2]. Kết quả phân tích văn bản (text_to_sql) trả về lỗi do cần làm rõ câu hỏi trước khi truy vấn an toàn, do đó không có dữ liệu định lượng cụ thể về mức độ discrepancy [S6].\n\n\n## Owner and approver\n\nChủ sở hữu tài liệu là Inventory Manager [S2]. Vai trò phê duyệt phụ thuộc vào mức độ chênh lệch: Warehouse Supervisor cho trường hợp không chênh lệch; Inventory Controller/Supervisor cho chênh lệch nhỏ; Inventory Manager + Finance cho chênh lệch lặp lại hoặc giá trị lớn; Operations/Compliance cho nghi ngờ gian lận [S4]. Người phê duyệt phải độc lập với người đếm hoặc người nhập điều chỉnh [S3].\n\n\n## Recommended actions\n\nÁp dụng quy trình 6 bước: chuẩn bị, đếm độc lập, đối chiếu, điều tra, phê duyệt và cập nhật [S3]. Đảm bảo mỗi điều chỉnh có đầy đủ mã phiếu, người nhập, người duyệt, thời điểm và bằng chứng [S5]. Trong trường hợp phát hiện mâu thuẫn dữ liệu (DATA CONFLICT), tạm khóa đề xuất PO tự động và chờ kết luận từ Inventory Controller [S4].\n\n\n## Approval status and caveats\n\nCác ngưỡng và cấp phê duyệt hiện tại là đề xuất giả lập (simulated drafts) và chưa được phê duyệt chính thức cho vận hành thực tế [S2]. Không sử dụng kết quả mẫu như số liệu tồn kho hiện hành [S2].\n\n\n## Citations\n\n[S1] 01_Inventory_Management_Policy_Manual.docx; [S2] 02_SOP_Cycle_Count_and_Stock_Adjustment.pdf; [S3] 02_SOP_Cycle_Count_and_Stock_Adjustment.pdf; [S4] 02_SOP_Cycle_Count_and_Stock_Adjustment.pdf; [S5] 05_Inventory_Policy_Training_Deck.pptx; [S6] Validated analytics result rows\n",
+      "contexts": [
+        "12. Hồ sơ bắt buộc và lưu trữ\nPurchase request / PO và phê duyệt.\nBiên bản nhận hàng, ảnh ngoại lệ, chứng từ nhà cung cấp.\nPhiếu kiểm kê, chênh lệch, nguyên nhân và phê duyệt điều chỉnh.\nHồ sơ hàng trả về, kết quả QA và disposition.\nBáo cáo KPI, exception log, thay đổi tham số và audit trail.",
+        "Section: VÀ ĐIỀU CHỈNH TỒN KHO\nVietStyle Commerce • SOP-INV-002 • Tài liệu mô phỏng Trang 1 VIETSTYLE COMMERCE SOP-INV-002 QUY TRÌNH KIỂM KÊ VÀ ĐIỀU CHỈNH TỒN KHO Phiên bản v1.0 • 16/10/2026 • Chủ sở hữu: Inventory Manager TÀI LIỆU MÔ PHỎNG CHO DATATHON 2026. Các ngưỡng vận hành, lead time, KPI và cấp phê duyệt là đề xuất giả lập cần được chủ sở hữu nghiệp vụ phê duyệt trước khi áp dụng thực tế. Dataset không xác định rõ đơn vị tiền tệ và không cung cấp dữ liệu PO inbound, tồn kho theo kho hoặc backorder; không dùng kết quả mẫu như số liệu tồn kho hiện hành. Bước Đầu ra bắt buộc 1. Chuẩn bị Danh sách SKU / vị trí, phạm vi đếm, thời điểm freeze giao dịch nếu cần 2. Đếm độc lập Số lượng thực tế; người đếm; thời gian; ảnh / ghi chú ngoại lệ 3. Đối chiếu Chênh lệch tuyệt đối và %, giá trị ảnh hưởng nếu có 4. Điều tra Nguyên nhân gốc và chứng từ liên quan 5. Phê duyệt Người duyệt độc lập với người đếm / nhập điều chỉnh 6. Cập nhật Điều chỉnh có audit trail; thông báo cho Planner nếu ảnh hưởng ROP",
+        "Columns: Bước | Đầu ra bắt buộc\nRow 1: Bước: 1. Chuẩn bị | Đầu ra bắt buộc: Danh sách SKU / vị trí, phạm vi đếm, thời điểm freeze giao dịch nếu cần\nRow 2: Bước: 2. Đếm độc lập | Đầu ra bắt buộc: Số lượng thực tế; người đếm; thời gian; ảnh / ghi chú ngoại lệ\nRow 3: Bước: 3. Đối chiếu | Đầu ra bắt buộc: Chênh lệch tuyệt đối và %, giá trị ảnh hưởng nếu có\nRow 4: Bước: 4. Điều tra | Đầu ra bắt buộc: Nguyên nhân gốc và chứng từ liên quan\nRow 5: Bước: 5. Phê duyệt | Đầu ra bắt buộc: Người duyệt độc lập với người đếm / nhập điều chỉnh\nRow 6: Bước: 6. Cập nhật | Đầu ra bắt buộc: Điều chỉnh có audit trail; thông báo cho Planner nếu ảnh hưởng ROP",
+        "Section: 7. Cập nhật hệ thống và đóng phiếu\nNgưỡng xử lý và phê duyệt Tình huống Hành động tối thiểu Người duyệt Không chênh lệch Đóng phiếu; lưu audit trail Warehouse Supervisor Chênh lệch nhỏ, có nguyên nhân rõ và bằng chứng Recount + biên bản; cập nhật sau duyệt Inventory Controller / Supervisor Chênh lệch lặp lại, giá trị lớn hoặc vượt ngưỡng nội bộ Giữ giao dịch liên quan; điều tra nguyên nhân gốc Inventory Manager + Finance Nghi ngờ gian lận / mất mát / hàng giả Cách ly SKU, bảo toàn bằng chứng, thông báo Compliance / Operations Operations / Compliance 6. Không tự động đặt hàng khi dữ liệu mâu thuẫn Nếu tồn kho tính lại cho thấy dư hàng trên 120 ngày nhưng có stockout signal (stockout_days ≥ 1 hoặc fill_rate < 95%), đánh dấu DATA CONFLICT. Tạm khóa đề xuất PO tự động, kiểm tra tồn khả dụng, hàng giữ, đơn chưa xuất, snapshot timestamp và công thức days of supply. Chỉ mở lại quyết định bổ sung sau khi Inventory Controller ghi nhận kết luận. 7. Cập nhật hệ thống và đóng phiếu • Mỗi điều chỉnh phải có mã phiếu, policy ID, SKU, số lượng trước/sau, mã nguyên nhân, bằng chứng, người nhập và người duyệt.",
+        "04 | Kiểm kê chu kỳ & điều chỉnh ABC dựa trên giá trị tiêu thụ năm, không chỉ dựa vào số lượng. NHÓM A ~80% giá trị tiêu thụ Hằng tuần NHÓM B ~15% tiếp theo Hằng tháng NHÓM C ~5% còn lại Hằng quý Quy trình: chuẩn bị danh sách → blind count → recount độc lập → đối chiếu receipts/picks/returns/transfers → ghi nguyên nhân → duyệt → điều chỉnh có audit trail. Không xóa giao dịch cũ; mọi điều chỉnh cần mã phiếu, người nhập, người duyệt, thời điểm và bằng chứng. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 5"
+      ],
+      "reference": "[\"recount độc lập\", \"root-cause investigation khi discrepancy lặp lại/lớn\", \"audit trail\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "agent_metadata": {
+        "ok": true,
+        "limitations": [
+          "The question needs clarification before a safe query can be generated."
+        ]
+      },
+      "latency_seconds": 89.868,
+      "total_case_seconds": 89.868,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": 0.8788,
+        "answer_relevancy": 0.7885,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R19",
+      "agent": "report",
+      "question": "Tạo báo cáo kiểm soát hàng trả về: quarantine, QA grading và điều kiện đưa hàng trở lại tồn khả dụng.",
+      "answer": "# Policy and Controls Review\n\nThe review covers the handling of returned inventory, specifically focusing on quarantine procedures, QA grading, and conditions for returning items to available stock. The policy is identified as INV-POL-007 'Hàng trả về' (Returns) under the VietStyle Commerce inventory management framework [S3]. The effective status of this policy is marked as SIMULATION_DRAFT, indicating it is a simulated draft and not approved policy [S3].\n\n\n## Report title\n\nBáo cáo kiểm soát hàng trả về: quarantine, QA grading và điều kiện đưa hàng trở lại tồn khả dụng\n\n\n## Policy/source metadata\n\nPolicy ID: INV-POL-007; Policy Name: Hàng trả về; Owner: Returns QA + Warehouse; Company: VietStyle Commerce; Document Version: v1.0; Effective Status: SIMULATION_DRAFT; Source Basis: Datathon dataset + explicitly stated operating assumptions [S3]. The policy is part of the 01_Inventory_Management_Policy_Manual.docx and 03_Policy_Rules_Registry.csv [S2, S3].\n\n\n## Control summary\n\nUpon receipt of returned goods, items must be placed in QUARANTINE status until QA inspection is completed [S2]. Items are not added to available-to-promise stock before meeting specific conditions [S2]. QA grading classifies items into three grades: A-grade (resell), B-grade (repair/repackage if approved), and C-grade (separate handling for return to supplier, scrap, or write-off) [S2, S3]. The SLA for this process is within 2 working days [S3]. Scrap or write-off actions require approval [S3].\n\n\n## Observed evidence\n\nEvidence from the training deck indicates that high inventory does not equate to sellable stock, and returned goods follow a specific flow: Quarantine → QA → A-grade resell / B-grade repair / C-grade separate handling [S1]. The manual mandates recording shortages, overages, or damages before confirming receipt, with photos and minutes required for exceptions [S2]. Return reason codes (e.g., wrong size, product defect, late delivery) must be attached to feed back to Merchandising, QA, and Logistics [S2]. Required records include return files, QA results, and disposition [S4].\n\n\n## Conflicts or gaps\n\nNo conflicts were identified in the supplied source data. A gap exists in the validated analytics results, where the text-to-SQL operation returned no rows and indicated that the question needs clarification before a safe query can be generated [S5].\n\n\n## Owner and approver\n\nThe owner of the policy is Returns QA + Warehouse [S3]. Approval is required for scrap or write-off actions [S3].\n\n\n## Recommended actions\n\n1. Ensure all returned items are immediately moved to QUARANTINE status upon receipt [S2]. 2. Complete QA grading within the 2-working-day SLA [S3]. 3. Only add A-grade items to available-to-promise stock after QA confirmation and disposition update [S1, S2]. 4. Obtain necessary approvals for B-grade repairs or C-grade scrap/write-offs [S2, S3]. 5. Maintain complete records including return files, QA results, and disposition as per mandatory documentation requirements [S4].\n\n\n## Approval status and caveats\n\nThe policy status is SIMULATION_DRAFT [S3]. This report is based on simulated data and explicitly stated operating assumptions from the Datathon dataset [S3]. No currency is inferred. Facts not present in the source data are marked as unavailable.\n\n\n## Citations\n\n[S1] 05_Inventory_Policy_Training_Deck.pptx; [S2] 01_Inventory_Management_Policy_Manual.docx; [S3] 03_Policy_Rules_Registry.csv; [S4] 01_Inventory_Management_Policy_Manual.docx; [S5] Validated analytics result rows\n",
+      "contexts": [
+        "05 | Dư thừa, trả hàng và cách ly Tồn kho cao không có nghĩa là hàng sẵn sàng bán. DAYS OF SUPPLY >120 Tạm dừng bổ sung; kiểm tra forecast, size/màu và hàng đang chuyển. >180 NGÀY Lập kế hoạch chuyển kho, bundle, markdown hoặc thanh lý có phê duyệt. HÀNG TRẢ VỀ Quarantine → QA → A-grade bán lại / B-grade sửa / C-grade xử lý riêng. Hàng trả về chỉ được cộng vào tồn khả dụng sau khi QA xác nhận tình trạng và cập nhật disposition. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 6",
+        "8. Nhận hàng, trả hàng và hàng cách ly\nĐối chiếu PO, SKU, size, màu, số lượng, tình trạng bao bì và chứng từ giao hàng.\nGhi nhận thiếu / thừa / hư hỏng trước khi xác nhận nhận hàng; ảnh chụp và biên bản bắt buộc cho ngoại lệ.\nHàng trả về phải vào trạng thái QUARANTINE cho đến khi QA kiểm tra; không cộng vào available-to-promise trước khi đạt điều kiện.\nA-grade: đưa về bán; B-grade: sửa / đóng gói lại nếu được duyệt; C-grade: giữ riêng để trả nhà cung cấp, scrap hoặc ghi giảm.\nGắn mã nguyên nhân trả hàng (ví dụ sai size, lỗi sản phẩm, giao trễ) để phản hồi cho Merchandising, QA và Logistics.",
+        "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 7: policy_id: INV-POL-007 | policy_name: Hàng trả về | trigger: Nhận hàng trả về từ khách | rule_or_required_action: Cách ly đến khi QA phân loại: A-grade bán lại; B-grade sửa/đóng gói lại; C-grade hỏng/thiếu phụ kiện xử lý riêng | owner: Returns QA + Warehouse | sla_or_frequency: Trong 2 ngày làm việc | approval: Scrap/ghi giảm cần phê duyệt | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+        "12. Hồ sơ bắt buộc và lưu trữ\nPurchase request / PO và phê duyệt.\nBiên bản nhận hàng, ảnh ngoại lệ, chứng từ nhà cung cấp.\nPhiếu kiểm kê, chênh lệch, nguyên nhân và phê duyệt điều chỉnh.\nHồ sơ hàng trả về, kết quả QA và disposition.\nBáo cáo KPI, exception log, thay đổi tham số và audit trail."
+      ],
+      "reference": "[\"A-grade bán lại, B-grade sửa/đóng gói lại, C-grade xử lý riêng\", \"chỉ cộng tồn khả dụng sau QA disposition\"]",
+      "evidence_sources": [
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {
+        "ok": true,
+        "limitations": [
+          "The question needs clarification before a safe query can be generated."
+        ]
+      },
+      "latency_seconds": 96.922,
+      "total_case_seconds": 96.922,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": 0.7812,
+        "answer_relevancy": 0.853,
+        "context_precision": 1.0
+      },
+      "score_errors": {},
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "scored",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R20",
+      "agent": "report",
+      "question": "Tạo báo cáo readiness trước campaign, bao gồm checklist tồn kho và các dữ liệu còn thiếu.",
+      "latency_seconds": null,
+      "error": "JSONDecodeError: Unterminated string starting at: line 11 column 36 (char 3440)",
+      "langchain_callback_events": 1,
+      "status": "run_error",
+      "total_case_seconds": 123.044,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R21",
+      "agent": "report",
+      "question": "Tạo executive brief tổng hợp doanh thu, COGS, trả hàng và các giới hạn của commerce dataset trong năm 2022.",
+      "answer": "# Executive Decision Brief\n\nExecutive Decision Brief\n\n\n## Report title\n\nExecutive Brief: 2022 Commerce Dataset Overview\n\n\n## Reporting period\n\n2022\n\n\n## Executive summary\n\nThe requested executive brief for 2022 revenue, COGS, and returns could not be generated with specific figures because the underlying data query failed validation. No financial metrics are available in the source data.\n\n\n## Business highlights\n\nunavailable in source data\n\n\n## Risks and limitations\n\nThe generated query for the commerce dataset did not pass planning or SQL validation, resulting in no data rows being returned. Consequently, specific financial performance indicators for 2022 are unavailable.\n\n\n## Recommended decisions\n\nunavailable in source data\n\n\n## Evidence and sources\n\nValidated analytics result rows indicate that the operation 'text_to_sql' returned no rows due to validation failure [S1].\n",
+      "contexts": [],
+      "reference": "[\"Mỗi KPI có period + nguồn\", \"phân biệt doanh thu/COGS/refund\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": true,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 76.344,
+      "total_case_seconds": 76.344,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "context_precision": null,
+        "answer_relevancy": 0.0
+      },
+      "score_errors": {
+        "faithfulness": "not scored: no retrieved contexts (required by RAGAS)",
+        "context_precision": "not scored: missing retrieved contexts or reference (required by RAGAS)"
+      },
+      "sql_safety_pass": null,
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "score_partial",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R22",
+      "agent": "report",
+      "question": "Tạo báo cáo quản trị tồn kho kết hợp số liệu snapshot 2022-12-31 và các quy tắc DATA CONFLICT trong SOP.",
+      "latency_seconds": null,
+      "error": "JSONDecodeError: Unterminated string starting at: line 10 column 28 (char 3674)",
+      "langchain_callback_events": 1,
+      "status": "run_error",
+      "total_case_seconds": 166.024,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R23",
+      "agent": "report",
+      "question": "Dùng template minimal_user_template_v1 để lập báo cáo doanh thu tháng 12/2022; giữ nguyên tiêu đề và thứ tự section.",
+      "latency_seconds": null,
+      "error": "RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01kkrbgmt7fsqah31t71rrpr68` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199927, Requested 2979. Please try again in 20m55.392s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "langchain_callback_events": 1,
+      "status": "run_error",
+      "total_case_seconds": 28.254,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R24",
+      "agent": "report",
+      "question": "Dùng một template do người dùng tải lên có bảng KPI ba cột Metric, Value, Source; tạo báo cáo stockout theo category tại 2022-12-31.",
+      "latency_seconds": null,
+      "error": "RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01kkrbgmt7fsqah31t71rrpr68` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199834, Requested 3635. Please try again in 24m58.608s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "langchain_callback_events": 1,
+      "status": "run_error",
+      "total_case_seconds": 40.277,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    },
+    {
+      "case_id": "R25",
+      "agent": "report",
+      "question": "Tạo báo cáo doanh thu năm 2025 và tồn kho hiện tại năm 2026 theo template executive brief.",
+      "latency_seconds": null,
+      "error": "RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01kkrbgmt7fsqah31t71rrpr68` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199775, Requested 2646. Please try again in 17m25.871999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "langchain_callback_events": 1,
+      "status": "run_error",
+      "total_case_seconds": 25.429,
+      "latency_note": "Legacy run included judge time; isolated agent latency was not recorded.",
+      "model": "qwen/qwen3.8-27b"
+    }
+  ]
+}

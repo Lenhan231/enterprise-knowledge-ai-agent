@@ -1,0 +1,442 @@
+{
+  "generated_at": "2026-09-27T03:40:26.969691+00:00",
+  "git_commit": "47a68d209e2b5dde2da8c803cbe7fb7bcfdf408c",
+  "case_file": "vinamilk_qa_cases.json",
+  "case_file_sha256": "62169b43d2a95a3b2f47db4e37ec71f350201b7dfff0d6d94fb791dc034fb3f2",
+  "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+  "top_k": 10,
+  "retrieval_method": "hybrid",
+  "prompt_template_sha256": "d54c398374f294436fcafcc6bf5313b0614e77ef78e6042af9e884a039f09fdf",
+  "delay_seconds_between_cases": 1.0,
+  "llm_model": "openai/gpt-oss-20b",
+  "human_review_required": [
+    "faithfulness and answer relevancy on a 1-5 scale",
+    "context precision on a 1-5 scale",
+    "hallucinated_claim_count and factual_claim_count"
+  ],
+  "human_review_rubric": {
+    "scale": "1-5; 1=poor, 3=partly meets, 5=fully meets",
+    "faithfulness": "Rate whether each factual claim is supported by the cited source content.",
+    "answer_relevancy": "Rate whether the answer directly and completely addresses the question.",
+    "context_precision": "Rate whether the cited/retrieved evidence is relevant to the question and answer.",
+    "hallucinated_claim_count": "Count factual claims unsupported or contradicted by the cited evidence.",
+    "factual_claim_count": "Count all verifiable factual claims in the answer; exclude correct abstentions.",
+    "reviewer": "Use an anonymous reviewer ID. Reviewers should score answers against source pages, not model identity."
+  },
+  "summary": {
+    "total": 5,
+    "completed": 5,
+    "execution_errors": 0,
+    "passed": 4,
+    "failed": 1,
+    "input_tokens": 11805,
+    "output_tokens": 367,
+    "expected_source_accuracy": 1.0,
+    "expected_key_fact_case_accuracy": 0.75
+  },
+  "baseline": [
+    "Default retrieval mode selected by RetrievalService",
+    "Evidence-only generation prompt",
+    "Inline [S#] source citations",
+    "Citation ID validation",
+    "Document and page provenance",
+    "Insufficient-context refusal"
+  ],
+  "planned": [
+    "Clickable citation UX",
+    "Exact cited-span highlighting",
+    "Claim-level citation alignment",
+    "Automated faithfulness evaluation",
+    "Regression evaluation harness"
+  ],
+  "results": [
+    {
+      "id": "finance-2020-revenue-profit",
+      "question": "Doanh thu thuần và lợi nhuận sau thuế hợp nhất của Vinamilk năm 2020 là bao nhiêu?",
+      "role": "finance_analyst",
+      "expected_agent": "hybrid",
+      "expected_document_id": "VNM-AR-2020-VI",
+      "relevant_document_ids": [
+        "VNM-AR-2020-VI"
+      ],
+      "expected_key_facts": [
+        "59 723",
+        "11 236"
+      ],
+      "expect_insufficient": false,
+      "passed": true,
+      "reason": "Answer cites the expected document",
+      "answer": "Doanh thu thuần hợp nhất của Vinamilk năm 2020 là **VND 59 723 tỷ** và lợi nhuận sau thuế hợp nhất là **VND 11 236 tỷ**. [S10]",
+      "insufficient_context": false,
+      "source_ids": [
+        "S10"
+      ],
+      "sources": [
+        {
+          "source_id": "S10",
+          "document_id": "VNM-AR-2020-VI",
+          "source_document": "vnm-ar-2020-vi.pdf",
+          "page_number": 8,
+          "section_title": "SUSTAINABLE GOALS AS WELL AS SOCIAL",
+          "chunk_index": 14,
+          "retrieval_score": 0.0327868852459016,
+          "retrieval_method": "hybrid",
+          "official_url": "https://d8um25gjecm9v.cloudfront.net/cms/1617354921_f48f48ff7baf40d9af270083a736eaaf0f52a6c5873367d134b4c83f193b0677_a1d64e4bbf.pdf",
+          "content_preview": "ement and the entire staff, Vinamilk's business results recorded growth in both revenue and profit, with consolidated net revenue and net profit after tax in 2020 reaching VND 59,723 billion and VND 11,236 billion respectively, increasing by 6% and 6.5% compared to 2019. Particularly, the branch of Moc Chau Milk, after one year of M&A into Vinamilk, recorded a breakthrough with net revenue in 2020 reaching VND 2,823 billion, increasing by 10.3%, and net profit after tax reaching VND 281 billion,",
+          "evidence": "ement and the entire staff, Vinamilk's business results recorded growth in both revenue and profit, with consolidated net revenue and net profit after tax in 2020 reaching VND 59,723 billion and VND 11,236 billion respectively, increasing by 6% and 6.5% compared to 2019. Particularly, the branch of Moc Chau Milk, after one year of M&A into Vinamilk, recorded a breakthrough with net revenue in 2020 reaching VND 2,823 billion, increasing by 10.3%, and net profit after tax reaching VND 281 billion, an impressive growth of 68.2% compared to 2019. In December 2020, Moc Chau Milk Stock (MCM) was officially listed on UPCoM, marking the maturity in its business operation and corporate governance. Maintaining growth in extremely adverse market conditions is the result of our relentless pursuit of SUSTAINABLE VALUES that emphasize continuous development of dairy farming, digital transformation and commitment to sustainable goals as well as social responsibility. In a year of various setbacks to the supply chain, thanks to the increasing autonomy in domestic raw material development and a diverse network of foreign suppliers, Vinamilk successfully ensured stable production to fulfill both"
+        }
+      ],
+      "quality_checks": {
+        "expected_source_correct": true,
+        "expected_key_facts_present": true,
+        "missing_key_facts": []
+      },
+      "generation_metrics": {
+        "context_precision_at_cited_sources": 1.0,
+        "citation_covered_line_fraction": 1.0,
+        "answer_has_valid_citation": true,
+        "expected_fact_count": 4,
+        "expected_facts_literal_in_cited_evidence": 4,
+        "expected_facts_not_supported_by_cited_evidence": 0,
+        "expected_facts_unverifiable_due_to_truncated_preview": 0,
+        "expected_fact_evidence_assessed_count": 4,
+        "expected_fact_cited_evidence_rate": 1.0,
+        "claim_count": 1,
+        "claims_with_valid_citations": 1,
+        "context_precision_definition": "fraction of cited source documents matching manually labeled relevant_document_ids; not RAGAS context precision",
+        "citation_coverage_definition": "fraction of non-empty answer lines or paragraphs containing a valid [S#] citation; bullets are not independently claim-aligned",
+        "expected_fact_cited_evidence_definition": "fraction of assessable labeled expected facts present in both the answer and its cited source text by normalized literal matching; missing literals in a 500-character preview are marked unverifiable, not unsupported; this is not semantic entailment or a hallucination score"
+      },
+      "retrieved_context_count": 10,
+      "context_sha256": "f34c83826a4332219a9c603570357023d6f84778251797597e6117b7a683616e",
+      "prompt_sha256": "b1ce8b14f3b17764ed14cf1256b3a24a9240b935bc92a1c8bc2ae17a1bca6acc",
+      "total_latency_ms": 15638.03,
+      "human_reviews": [],
+      "llm_usage": {
+        "input_tokens": 3010,
+        "output_tokens": 102,
+        "total_tokens": 3112
+      },
+      "expected_key_fact_groups": [
+        [
+          "59 723 tỷ",
+          "59 723 billion"
+        ],
+        [
+          "11 236 tỷ",
+          "11 236 billion"
+        ]
+      ]
+    },
+    {
+      "id": "finance-2024-revenue-profit",
+      "question": "Tóm tắt doanh thu hợp nhất và lợi nhuận sau thuế của Vinamilk năm 2024.",
+      "role": "finance_analyst",
+      "expected_agent": "report",
+      "expected_document_id": "VNM-AR-2024-VI",
+      "relevant_document_ids": [
+        "VNM-AR-2024-VI"
+      ],
+      "expected_key_facts": [
+        "61 824",
+        "9 453"
+      ],
+      "expect_insufficient": false,
+      "passed": false,
+      "reason": "Answer omitted expected facts: ['61 824 tỷ đồng or 61 824 billion VND', '9 453 tỷ đồng or 9 453 billion VND']",
+      "answer": "Tổng doanh thu hợp nhất của Vinamilk trong năm 2024 là 61 824 triệu đồng, trong khi lợi nhuận sau thuế hợp nhất đạt 9 453 triệu đồng. [S3] [S8]",
+      "insufficient_context": false,
+      "source_ids": [
+        "S3",
+        "S8"
+      ],
+      "sources": [
+        {
+          "source_id": "S3",
+          "document_id": "VNM-AR-2024-VI",
+          "source_document": "vnm-ar-2024-vi.pdf",
+          "page_number": 12,
+          "section_title": "Hạ nguồn",
+          "chunk_index": 27,
+          "retrieval_score": 0.043691389599318,
+          "retrieval_method": "hybrid",
+          "official_url": "https://www.vinamilk.com.vn/bao-cao-thuong-nien/bao-cao/2024/doc/vi/full-bao-cao.pdf",
+          "content_preview": "Báo cáo thường niên Vinamilk 2024 22 23 Luôn cầu tiến Thông tin chung Sức khỏe tài chính Tổng doanh thu hợp nhất năm 2024 Lợi nhuận sau thuế hợp nhất năm 2024 tỷ đồng tỷ đồng 9.453 61.824 Tổng tài sản tại ngày 31.12.2024 Tổng vốn chủ sở hữu tại ngày 31.12.2024 tỷ đồng tỷ đồng 55.049 36.174 Kết quả mang lại trong năm 2024 Chuỗi giá trị Thượng nguồn Nghiên cứu phát triển Phân phối Vùng nguyên liệu Marketing và bán hàng Sản xuất Hạ nguồn Đội ngũ tiếp thị và nghiên cứu phát triển của chúng tôi có sự",
+          "evidence": "Báo cáo thường niên Vinamilk 2024 22 23 Luôn cầu tiến Thông tin chung Sức khỏe tài chính Tổng doanh thu hợp nhất năm 2024 Lợi nhuận sau thuế hợp nhất năm 2024 tỷ đồng tỷ đồng 9.453 61.824 Tổng tài sản tại ngày 31.12.2024 Tổng vốn chủ sở hữu tại ngày 31.12.2024 tỷ đồng tỷ đồng 55.049 36.174 Kết quả mang lại trong năm 2024 Chuỗi giá trị Thượng nguồn Nghiên cứu phát triển Phân phối Vùng nguyên liệu Marketing và bán hàng Sản xuất Hạ nguồn Đội ngũ tiếp thị và nghiên cứu phát triển của chúng tôi có sự hiểu biết sâu sắc về người tiêu dùng và trình độ chuyên môn để phát triển các sản phẩm phù hợp với nhu cầu của người tiêu dùng. Hệ thống và mạng lưới phân phối rộng khắp đảm bảo các sản phẩm của chúng tôi được phân phối hiệu quả đến người tiêu dùng. Trong các hoạt động của mình, chúng tôi cố gắng tiên phong triển khai các mô hình mới đáp ứng nhu cầu sản xuất trong nước và xuất khẩu một cách nhanh chóng, hiệu quả chi phí, tuân thủ luật định. Chúng tôi hợp tác chặt chẽ với các nhà cung cấp để đảm bảo hàng hóa và dịch vụ của họ đáp ứng các tiêu chuẩn về chất lượng, môi trường và xã hội, bên cạnh các tiêu chuẩn nội bộ nghiêm ngặt của chúng tôi Chúng tôi thể hiện trách nhiệm với người tiêu dùng"
+        },
+        {
+          "source_id": "S8",
+          "document_id": "VNM-AR-2024-VI",
+          "source_document": "vnm-ar-2024-vi.pdf",
+          "page_number": 48,
+          "section_title": "Ông Lê Thành Liêm",
+          "chunk_index": 160,
+          "retrieval_score": 0.0400100025006252,
+          "retrieval_method": "hybrid",
+          "official_url": "https://www.vinamilk.com.vn/bao-cao-thuong-nien/bao-cao/2024/doc/vi/full-bao-cao.pdf",
+          "content_preview": "g đó doanh thu thuần trong nước đạt 50.799 tỷ đồng trong năm 2024, tăng 0,4% và doanh thu thuần nước ngoài đạt 10.983 tỷ đồng, tăng 12,6%. Với kết quả này, Công ty đã ghi nhận tăng trưởng doanh thu ở cả mảng kinh doanh trong và ngoài nước với hai cột mốc quan trọng: gần như hoàn thành thay đổi bao bì sản phẩm cho thị trường trong nước theo bộ nhận diện thương hiệu mới và thị trường nước ngoài đạt mức tăng trưởng cao nhất trong 5 năm gần đây. Lợi nhuận từ hoạt động kinh doanh hợp nhất đạt 11.594 ",
+          "evidence": "g đó doanh thu thuần trong nước đạt 50.799 tỷ đồng trong năm 2024, tăng 0,4% và doanh thu thuần nước ngoài đạt 10.983 tỷ đồng, tăng 12,6%. Với kết quả này, Công ty đã ghi nhận tăng trưởng doanh thu ở cả mảng kinh doanh trong và ngoài nước với hai cột mốc quan trọng: gần như hoàn thành thay đổi bao bì sản phẩm cho thị trường trong nước theo bộ nhận diện thương hiệu mới và thị trường nước ngoài đạt mức tăng trưởng cao nhất trong 5 năm gần đây. Lợi nhuận từ hoạt động kinh doanh hợp nhất đạt 11.594 tỷ đồng, tăng 6,3% so với cùng kỳ. Tốc độ tăng trưởng lợi nhuận nhanh hơn doanh thu nhờ tối ưu cơ cấu bán hàng và chi phí đầu vào trung bình tốt hơn so với cùng kỳ. Lợi nhuận khác trong năm là 6 tỷ đồng, chiếm tỷ trọng không đáng kể trong cơ cấu lợi nhuận hợp nhất. Theo đó, lợi nhuận trước và sau thuế hợp nhất đạt lần lượt 11.600 tỷ đồng và 9.453 tỷ đồng, tăng trưởng 5,8% và 4,8% so với cùng kỳ. Mức đóng góp ngân sách nhà nước đạt 4.569 tỷ đồng, tăng 11,3% so với cùng kỳ. Vinamilk tự hào khi luôn trả lại một phần đáng kể lợi nhuận cho các cổ đông. Trong năm 2024, Công ty đã tạm ứng 2.000 đồng/cổ phiếu cho cổ tức đợt 1 và 2. Dự kiến, tổng mức cổ tức dự kiến cho năm 2024 sẽ không thấp hơn so"
+        }
+      ],
+      "quality_checks": {
+        "expected_source_correct": true,
+        "expected_key_facts_present": false,
+        "missing_key_facts": []
+      },
+      "generation_metrics": {
+        "context_precision_at_cited_sources": 1.0,
+        "citation_covered_line_fraction": 1.0,
+        "answer_has_valid_citation": true,
+        "expected_fact_count": 4,
+        "expected_facts_literal_in_cited_evidence": 2,
+        "expected_facts_not_supported_by_cited_evidence": 2,
+        "expected_facts_unverifiable_due_to_truncated_preview": 0,
+        "expected_fact_evidence_assessed_count": 4,
+        "expected_fact_cited_evidence_rate": 0.5,
+        "claim_count": 1,
+        "claims_with_valid_citations": 1,
+        "context_precision_definition": "fraction of cited source documents matching manually labeled relevant_document_ids; not RAGAS context precision",
+        "citation_coverage_definition": "fraction of non-empty answer lines or paragraphs containing a valid [S#] citation; bullets are not independently claim-aligned",
+        "expected_fact_cited_evidence_definition": "fraction of assessable labeled expected facts present in both the answer and its cited source text by normalized literal matching; missing literals in a 500-character preview are marked unverifiable, not unsupported; this is not semantic entailment or a hallucination score"
+      },
+      "retrieved_context_count": 10,
+      "context_sha256": "762508a94621ad4f37adf753270ab56d84da5941967a34414e8de056064c6cec",
+      "prompt_sha256": "7ef7ec4363dd1e0bc9a6a2680560bd1abdb4a9084505747687cf86fd80327123",
+      "total_latency_ms": 2702.2,
+      "human_reviews": [],
+      "llm_usage": {
+        "input_tokens": 4683,
+        "output_tokens": 98,
+        "total_tokens": 4781
+      },
+      "expected_key_fact_groups": [
+        [
+          "61 824 tỷ đồng",
+          "61 824 billion VND"
+        ],
+        [
+          "9 453 tỷ đồng",
+          "9 453 billion VND"
+        ]
+      ]
+    },
+    {
+      "id": "sustainability-2024-ghg-inventory",
+      "question": "According to Vinamilk's 2024 Sustainability Report, which factories and farms implement a greenhouse gas emissions inventory?",
+      "role": "sustainability_analyst",
+      "expected_agent": "report",
+      "expected_document_id": "VNM-SR-2024-EN",
+      "relevant_document_ids": [
+        "VNM-SR-2024-EN"
+      ],
+      "expected_key_fact_groups": [
+        [
+          "100%",
+          "all of its factories and all of its farms",
+          "all of Vinamilk's factories and farms"
+        ],
+        [
+          "factories and farms",
+          "all of its factories and all of its farms"
+        ]
+      ],
+      "expect_insufficient": false,
+      "passed": true,
+      "reason": "Answer cites the expected document",
+      "answer": "According to Vinamilk’s 2024 Sustainability Report, **100 % of Vinamilk’s factories and farms implement a greenhouse gas emissions inventory**. [S6]",
+      "insufficient_context": false,
+      "source_ids": [
+        "S6"
+      ],
+      "sources": [
+        {
+          "source_id": "S6",
+          "document_id": "VNM-SR-2024-EN",
+          "source_document": "vnm-sr-2024-en.pdf",
+          "page_number": 3,
+          "section_title": "to",
+          "chunk_index": 2,
+          "retrieval_score": 0.0442811381194649,
+          "retrieval_method": "hybrid",
+          "official_url": "https://d8um25gjecm9v.cloudfront.net/cms/VNMSR_2024_EN_7def0938c9.pdf",
+          "content_preview": "Vinamilk Sustainable Development Report 2024 CEO’s Message 2024 marks a watershed moment for Vinamilk in our journey towards building a sustainable future. Amid global challenges related to climate, economics, and geopolitics, we have clearly defined our role and responsibility as an industry leader, not only in business operations but also in creating shared value for people, communities, and the planet. Ms. Mai Kieu Lien Chief Executive Officer This transformation goes beyond innovation. It re",
+          "evidence": "Vinamilk Sustainable Development Report 2024 CEO’s Message 2024 marks a watershed moment for Vinamilk in our journey towards building a sustainable future. Amid global challenges related to climate, economics, and geopolitics, we have clearly defined our role and responsibility as an industry leader, not only in business operations but also in creating shared value for people, communities, and the planet. Ms. Mai Kieu Lien Chief Executive Officer This transformation goes beyond innovation. It reflects our determination to take greater strides, enhance transparency, and drive sustainability, as evidenced by tangible results: • Three units (two factories and one farm) have achieved Carbon Neutrality Certificates according to PAS 2060 standards, making significant progress towards the Net Zero 2050 goal. • Vinamilk’s corporate ESG data system enables transparent, real-time sustainability governance. • 100% of Vinamilk’s factories and farms now implement a greenhouse gas emissions inventory. • Since 2013, all Vinamilk factories have adhered to energy management systems in line with ISO 50001 standards. In addition to guiding and participating in global initiatives such as CDP, SBTi,"
+        }
+      ],
+      "quality_checks": {
+        "expected_source_correct": true,
+        "expected_key_facts_present": true,
+        "missing_key_facts": []
+      },
+      "generation_metrics": {
+        "context_precision_at_cited_sources": 1.0,
+        "citation_covered_line_fraction": 1.0,
+        "answer_has_valid_citation": true,
+        "expected_fact_count": 2,
+        "expected_facts_literal_in_cited_evidence": 2,
+        "expected_facts_not_supported_by_cited_evidence": 0,
+        "expected_facts_unverifiable_due_to_truncated_preview": 0,
+        "expected_fact_evidence_assessed_count": 2,
+        "expected_fact_cited_evidence_rate": 1.0,
+        "claim_count": 1,
+        "claims_with_valid_citations": 1,
+        "context_precision_definition": "fraction of cited source documents matching manually labeled relevant_document_ids; not RAGAS context precision",
+        "citation_coverage_definition": "fraction of non-empty answer lines or paragraphs containing a valid [S#] citation; bullets are not independently claim-aligned",
+        "expected_fact_cited_evidence_definition": "fraction of assessable labeled expected facts present in both the answer and its cited source text by normalized literal matching; missing literals in a 500-character preview are marked unverifiable, not unsupported; this is not semantic entailment or a hallucination score"
+      },
+      "retrieved_context_count": 10,
+      "context_sha256": "59aa02eddf17340b07f0a83b225ed4cb88f27862e047f02bdc9627ba72b8480a",
+      "prompt_sha256": "1200e825a80f909dc42762fc298faa5794b7dc796a992d346c25550ac69bc70c",
+      "total_latency_ms": 20024.53,
+      "human_reviews": [],
+      "llm_usage": {
+        "input_tokens": 3109,
+        "output_tokens": 71,
+        "total_tokens": 3180
+      },
+      "expected_key_facts": []
+    },
+    {
+      "id": "employee-product-nutrition",
+      "question": "Trong 100 ml sữa ADM Ít Đường có bao nhiêu năng lượng, protein và đường?",
+      "role": "employee",
+      "expected_agent": "knowledge",
+      "expected_document_id": "VNM-PROD-ADM-LOW-SUGAR-VI",
+      "relevant_document_ids": [
+        "VNM-PROD-ADM-LOW-SUGAR-VI"
+      ],
+      "expected_key_facts": [
+        "68,2 kcal",
+        "3,0 g",
+        "7,3 g"
+      ],
+      "expect_insufficient": false,
+      "passed": true,
+      "reason": "Answer cites the expected document",
+      "answer": "Trong 100 ml sữa ADM Ít Đường có:\n\n- Năng lượng: 68,2 kcal  \n- Chất đạm (protein): 3,0 g  \n- Đường: 7,3 g  \n\n[S1]",
+      "insufficient_context": false,
+      "source_ids": [
+        "S1"
+      ],
+      "sources": [
+        {
+          "source_id": "S1",
+          "document_id": "VNM-PROD-ADM-LOW-SUGAR-VI",
+          "source_document": "vnm-prod-adm-low-sugar-vi.html",
+          "page_number": null,
+          "section_title": null,
+          "chunk_index": 0,
+          "retrieval_score": 0.0491803278688525,
+          "retrieval_method": "hybrid",
+          "official_url": "https://new.vinamilk.com.vn/products/sua-dinh-duong-vinamilk-adm-it-duong",
+          "content_preview": "Miễn phí vận chuyển cho đơn từ 300K Luôn là Vinamilk Luôn cầu tiến Cửa hàng Sữa dinh dưỡng ADM Ít Đường Giao 2H Nhận tại cửa hàng Sữa dinh dưỡng ADM giúp bé phát triển tối ưu với nhiều dưỡng chất đa dạng bao gồm: Vitamin A, D3, Canxi, DHA, Kẽm, Selen & tới 17 dưỡng chất khác - hỗ trợ mắt sáng, dáng cao, tốt cho đề kháng. 180ml 110ml Thành phần & Dinh dưỡng Sữa (95,1%) (nước, sữa bột, sữa tươi chuẩn hóa, chất béo sữa)/ Milk (95.1%) (water, milk powder, standardized fresh milk, milk fat), đường (2",
+          "evidence": "Miễn phí vận chuyển cho đơn từ 300K\n\nLuôn là Vinamilk\n\nLuôn cầu tiến\n\nCửa hàng\n\nSữa dinh dưỡng\n\nADM Ít Đường\n\nGiao 2H\n\nNhận tại cửa hàng\n\nSữa dinh dưỡng ADM giúp bé phát triển tối ưu với nhiều dưỡng chất đa dạng bao gồm: Vitamin A, D3, Canxi, DHA, Kẽm, Selen & tới 17 dưỡng chất khác - hỗ trợ mắt sáng, dáng cao, tốt cho đề kháng. 180ml\n\n110ml\n\nThành phần & Dinh dưỡng\n\nSữa (95,1%) (nước, sữa bột, sữa tươi chuẩn hóa, chất béo sữa)/ Milk (95.1%) (water, milk powder, standardized fresh milk, milk fat), đường (2,4%), dầu thực vật, chất ổn định* (471, 460(i), 407, 466), vitamin (natri ascorbat, niacin, hỗn hợp tocopherol, ascorbyl palmitat, B1, B5, B6, A, acid folic, K1, biotin, D3, B12), dầu cá giàu DHA/ fish oil rich in DHA, hương liệu tổng hợp dùng cho thực phẩm, khoáng chất (kẽm sulfat, kali iodid, natri selenit). *Chất nhũ hóa hay chất ổn định là phụ gia thực phẩm có nguồn gốc tự nhiên, giúp giữ cấu trúc và tính đồng nhất, hòa quyện của các thành phần bên trong sản phẩm. Giá trị dinh dưỡng trung bình trong 100 ml*: Năng lượng: 68,2 kcal; Chất đạm: 3,0 g; Chất béo: 3,0 g; DHA (Docosahexaenoic acid): 3,0 mg; Carbohydrat: 7,3 g; Đường tổng số: 7,3 g; Lysin: 250 mg; Natri: 39 mg; Calci: 110 mg; Phospho: 90 mg *Hàm lượng vitamin và khoáng chất không thấp hơn 80% giá trị trên nhãn. Hướng dẫn sử dụng\n\nCó gì đặc sắc\n\nĐôi mắt sáng\n\nVitamin A, Kẽm, Selen hỗ trợ tăng sức đề kháng, cho bé hệ miễn dịch khoẻ hơn mỗi ngày."
+        }
+      ],
+      "quality_checks": {
+        "expected_source_correct": true,
+        "expected_key_facts_present": true,
+        "missing_key_facts": []
+      },
+      "generation_metrics": {
+        "context_precision_at_cited_sources": 1.0,
+        "citation_covered_line_fraction": 0.2,
+        "answer_has_valid_citation": true,
+        "expected_fact_count": 3,
+        "expected_facts_literal_in_cited_evidence": 3,
+        "expected_facts_not_supported_by_cited_evidence": 0,
+        "expected_facts_unverifiable_due_to_truncated_preview": 0,
+        "expected_fact_evidence_assessed_count": 3,
+        "expected_fact_cited_evidence_rate": 1.0,
+        "claim_count": 5,
+        "claims_with_valid_citations": 1,
+        "context_precision_definition": "fraction of cited source documents matching manually labeled relevant_document_ids; not RAGAS context precision",
+        "citation_coverage_definition": "fraction of non-empty answer lines or paragraphs containing a valid [S#] citation; bullets are not independently claim-aligned",
+        "expected_fact_cited_evidence_definition": "fraction of assessable labeled expected facts present in both the answer and its cited source text by normalized literal matching; missing literals in a 500-character preview are marked unverifiable, not unsupported; this is not semantic entailment or a hallucination score"
+      },
+      "retrieved_context_count": 2,
+      "context_sha256": "e3b1ea5df6a1abcb357c0aeb3b9bef9dbb89ea0baed46f4b631fcf1ef2900fce",
+      "prompt_sha256": "eaed8ff438f0e93e889ce4ef07190956a8a13b52366e04e6a90a6012f433670f",
+      "total_latency_ms": 9697.57,
+      "human_reviews": [],
+      "llm_usage": {
+        "input_tokens": 1003,
+        "output_tokens": 96,
+        "total_tokens": 1099
+      }
+    },
+    {
+      "id": "employee-financial-denial",
+      "question": "Doanh thu và lợi nhuận sau thuế của Vinamilk năm 2024 là bao nhiêu?",
+      "role": "employee",
+      "expected_agent": "hybrid",
+      "expected_document_id": null,
+      "relevant_document_ids": [],
+      "expect_insufficient": true,
+      "passed": true,
+      "reason": "Correctly refused unsupported question",
+      "answer": "Insufficient information in the retrieved documents.",
+      "insufficient_context": true,
+      "source_ids": [],
+      "sources": [],
+      "quality_checks": {
+        "expected_source_correct": true,
+        "expected_key_facts_present": true,
+        "missing_key_facts": []
+      },
+      "generation_metrics": {
+        "context_precision_at_cited_sources": null,
+        "citation_covered_line_fraction": null,
+        "answer_has_valid_citation": false,
+        "expected_fact_count": 0,
+        "expected_facts_literal_in_cited_evidence": 0,
+        "expected_facts_not_supported_by_cited_evidence": 0,
+        "expected_facts_unverifiable_due_to_truncated_preview": 0,
+        "expected_fact_evidence_assessed_count": 0,
+        "expected_fact_cited_evidence_rate": null,
+        "claim_count": 0,
+        "claims_with_valid_citations": 0,
+        "context_precision_definition": "fraction of cited source documents matching manually labeled relevant_document_ids; not RAGAS context precision",
+        "citation_coverage_definition": "fraction of non-empty answer lines or paragraphs containing a valid [S#] citation; bullets are not independently claim-aligned",
+        "expected_fact_cited_evidence_definition": "fraction of assessable labeled expected facts present in both the answer and its cited source text by normalized literal matching; missing literals in a 500-character preview are marked unverifiable, not unsupported; this is not semantic entailment or a hallucination score"
+      },
+      "retrieved_context_count": 2,
+      "context_sha256": "e9b9d9483516e9e2512a59b26cc4e0c063a35e75e0f02cf520821c430f7d9959",
+      "prompt_sha256": "ec4f040be2c57441cde4734fbc4bff1b4529eb28e157300ed77d7501c36cf424",
+      "total_latency_ms": 6699.51,
+      "human_reviews": [],
+      "llm_usage": null,
+      "expected_key_facts": []
+    }
+  ],
+  "scoring_protocol": {
+    "case_file": "vinamilk_qa_cases.json",
+    "case_file_sha256": "2398dc9ab6d51fedbd487781f11f99a31ffdf763922d7bdf18a108728105d361",
+    "scored_at": "2026-09-27T03:48:42.972911+00:00",
+    "source_run": "artifacts/evaluation/vinamilk-qa-gpt-oss-20b-full-evidence.json"
+  },
+  "generation_metric_summary": {
+    "scored_answer_cases": 4,
+    "mean_labeled_context_precision": 1.0,
+    "mean_line_citation_coverage": 0.8,
+    "valid_citation_answer_rate": 1.0,
+    "mean_expected_fact_cited_evidence_rate": 0.875,
+    "expected_fact_evidence_assessed_count": 13,
+    "expected_fact_evidence_unverifiable_count": 0,
+    "expected_fact_evidence_coverage_rate": 1.0,
+    "human_review": {
+      "reviewed_case_count": 0,
+      "reviewer_count": 0,
+      "mean_faithfulness": null,
+      "mean_answer_relevancy": null,
+      "mean_context_precision": null,
+      "claim_review_case_count": 0,
+      "factual_claim_count": 0,
+      "hallucinated_claim_count": 0,
+      "hallucination_rate": null,
+      "note": "Human metrics include only rows with a reviewer ID and valid values; score each model's answer against source evidence."
+    },
+    "note": "Correct abstentions are excluded from answer citation averages; literal expected-fact presence in cited excerpts is a deterministic proxy, not semantic entailment or a human quality score.",
+    "source_run": "artifacts/evaluation/vinamilk-qa-gpt-oss-20b-full-evidence.json"
+  }
+}

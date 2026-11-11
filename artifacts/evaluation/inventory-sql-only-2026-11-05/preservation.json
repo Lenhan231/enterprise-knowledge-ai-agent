@@ -1,0 +1,46 @@
+{
+  "baseline": "d40162be0af86e2f679da4372158ea2e3d47f6ae",
+  "candidate": "af56d59",
+  "unchanged_git_objects": {
+    "src/app": {
+      "main": "2b22e6a07cc866b19787d653d9241fa759733862",
+      "candidate": "2b22e6a07cc866b19787d653d9241fa759733862"
+    },
+    "src/core/rag": {
+      "main": "1908d7915c9bf57547c33c43d3ebc51ce487bb20",
+      "candidate": "1908d7915c9bf57547c33c43d3ebc51ce487bb20"
+    },
+    "src/core/reports": {
+      "main": "4aee924e53d0f7a9182a88b9d0e99d1c90e9a888",
+      "candidate": "4aee924e53d0f7a9182a88b9d0e99d1c90e9a888"
+    },
+    "src/document_processing": {
+      "main": "9c456d5e6d8d59de9d0ecede4e13616c9243b5d9",
+      "candidate": "9c456d5e6d8d59de9d0ecede4e13616c9243b5d9"
+    },
+    "src/core/agents/knowledge_agent.py": {
+      "main": "9b7dba4a19caa2c6fd83de425ffa15bb5049d247",
+      "candidate": "9b7dba4a19caa2c6fd83de425ffa15bb5049d247"
+    },
+    "src/core/agents/report_agent.py": {
+      "main": "e1e4d8da3d63a5220c82287f9490d9eb140fc7b2",
+      "candidate": "e1e4d8da3d63a5220c82287f9490d9eb140fc7b2"
+    },
+    "src/core/agents/streamlit_ui.py": {
+      "main": "2e69a16ee8a0a7641e7886abd9e60ee462631125",
+      "candidate": "2e69a16ee8a0a7641e7886abd9e60ee462631125"
+    },
+    "pyproject.toml": {
+      "main": "af4ea12090303d41305e1df69e1f5ff3d9bd45c6",
+      "candidate": "af4ea12090303d41305e1df69e1f5ff3d9bd45c6"
+    },
+    "uv.lock": {
+      "main": "14fee9cd0b48c1dfef070ae8f3a240afaaabad85",
+      "candidate": "14fee9cd0b48c1dfef070ae8f3a240afaaabad85"
+    },
+    ".github/workflows/ci.yml": {
+      "main": "ad181c23895f99d9b51e4d4f9c9fd98903390e30",
+      "candidate": "ad181c23895f99d9b51e4d4f9c9fd98903390e30"
+    }
+  }
+}

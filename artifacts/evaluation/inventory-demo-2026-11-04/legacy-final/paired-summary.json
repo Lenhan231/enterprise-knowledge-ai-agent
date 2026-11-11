@@ -1,0 +1,348 @@
+{
+  "before": {
+    "cases": 3,
+    "expected_cases": 3,
+    "unattempted": 0,
+    "metrics": {
+      "execution_accuracy": {
+        "mean": 0.3333333333333333,
+        "scored": 3,
+        "not_applicable": 0,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "sql_semantic_equivalence": {
+        "mean": 0.0,
+        "scored": 3,
+        "not_applicable": 0,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "numerical_accuracy": {
+        "mean": 0.3333333333333333,
+        "scored": 3,
+        "not_applicable": 0,
+        "evaluator_errors": 0,
+        "pending": 0
+      }
+    },
+    "outcomes": {
+      "executed_with_rows": 2,
+      "MetricDefinitionError": 1
+    },
+    "executed": 2,
+    "downloads": 0,
+    "provider_failures": 0,
+    "unsupported_cases": 0,
+    "unsupported_clarifications": 0,
+    "supported_cases": 3,
+    "supported_clarifications": 0,
+    "llm_calls": 2,
+    "latency_seconds": {
+      "p50": 2.23,
+      "p95": 4.381
+    },
+    "application_revision": "da2ce09a00224977050753e82981fe80ef3d91a1",
+    "total_attempts": 3,
+    "provider_failed_attempts": 0
+  },
+  "after": {
+    "cases": 3,
+    "expected_cases": 3,
+    "unattempted": 0,
+    "metrics": {
+      "execution_accuracy": {
+        "mean": 0.3333333333333333,
+        "scored": 3,
+        "not_applicable": 0,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "sql_semantic_equivalence": {
+        "mean": 0.0,
+        "scored": 3,
+        "not_applicable": 0,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "numerical_accuracy": {
+        "mean": 0.3333333333333333,
+        "scored": 3,
+        "not_applicable": 0,
+        "evaluator_errors": 0,
+        "pending": 0
+      }
+    },
+    "outcomes": {
+      "executed_with_rows": 2,
+      "clarification_required": 1
+    },
+    "executed": 2,
+    "downloads": 0,
+    "provider_failures": 0,
+    "unsupported_cases": 0,
+    "unsupported_clarifications": 0,
+    "supported_cases": 3,
+    "supported_clarifications": 1,
+    "llm_calls": 3,
+    "latency_seconds": {
+      "p50": 2.222,
+      "p95": 3.9257000000000004
+    },
+    "application_revision": "3564c0638d0c9654240d222638e02b1ea8b057c5",
+    "total_attempts": 3,
+    "provider_failed_attempts": 0
+  },
+  "cases": [
+    {
+      "id": "S12",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 0.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 0.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "S13",
+      "before_status": "MetricDefinitionError",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "numerical_accuracy": {
+          "before": 0.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "S16",
+      "before_status": "executed_with_rows",
+      "after_status": "clarification_required",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "numerical_accuracy": {
+          "before": 0.0,
+          "after": 0.0
+        }
+      },
+      "identical_bound_sql": false
+    }
+  ],
+  "identical_sql_semantic_score_changes": [],
+  "common_numerical_applicability": {
+    "cases": 3,
+    "before_mean": 0.3333333333333333,
+    "after_mean": 0.3333333333333333
+  },
+  "by_category": {
+    "flow_aggregate": {
+      "before": {
+        "cases": 2,
+        "expected_cases": 2,
+        "unattempted": 0,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 0.5,
+            "scored": 2,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 0.0,
+            "scored": 2,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "numerical_accuracy": {
+            "mean": 0.5,
+            "scored": 2,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          }
+        },
+        "outcomes": {
+          "executed_with_rows": 2
+        },
+        "executed": 2,
+        "downloads": 0,
+        "provider_failures": 0,
+        "unsupported_cases": 0,
+        "unsupported_clarifications": 0,
+        "supported_cases": 2,
+        "supported_clarifications": 0,
+        "llm_calls": 2,
+        "latency_seconds": {
+          "p50": 3.425,
+          "p95": 4.5005
+        }
+      },
+      "after": {
+        "cases": 2,
+        "expected_cases": 2,
+        "unattempted": 0,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 0.0,
+            "scored": 2,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 0.0,
+            "scored": 2,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "numerical_accuracy": {
+            "mean": 0.0,
+            "scored": 2,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          }
+        },
+        "outcomes": {
+          "executed_with_rows": 1,
+          "clarification_required": 1
+        },
+        "executed": 1,
+        "downloads": 0,
+        "provider_failures": 0,
+        "unsupported_cases": 0,
+        "unsupported_clarifications": 0,
+        "supported_cases": 2,
+        "supported_clarifications": 1,
+        "llm_calls": 2,
+        "latency_seconds": {
+          "p50": 2.479,
+          "p95": 3.9514
+        }
+      }
+    },
+    "snapshot_delta": {
+      "before": {
+        "cases": 1,
+        "expected_cases": 1,
+        "unattempted": 0,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 0.0,
+            "scored": 1,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 0.0,
+            "scored": 1,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "numerical_accuracy": {
+            "mean": 0.0,
+            "scored": 1,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          }
+        },
+        "outcomes": {
+          "MetricDefinitionError": 1
+        },
+        "executed": 0,
+        "downloads": 0,
+        "provider_failures": 0,
+        "unsupported_cases": 0,
+        "unsupported_clarifications": 0,
+        "supported_cases": 1,
+        "supported_clarifications": 0,
+        "llm_calls": 0,
+        "latency_seconds": {
+          "p50": 0.016,
+          "p95": null
+        }
+      },
+      "after": {
+        "cases": 1,
+        "expected_cases": 1,
+        "unattempted": 0,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 1.0,
+            "scored": 1,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 0.0,
+            "scored": 1,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "numerical_accuracy": {
+            "mean": 1.0,
+            "scored": 1,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          }
+        },
+        "outcomes": {
+          "executed_with_rows": 1
+        },
+        "executed": 1,
+        "downloads": 0,
+        "provider_failures": 0,
+        "unsupported_cases": 0,
+        "unsupported_clarifications": 0,
+        "supported_cases": 1,
+        "supported_clarifications": 0,
+        "llm_calls": 1,
+        "latency_seconds": {
+          "p50": 2.222,
+          "p95": null
+        }
+      }
+    }
+  },
+  "notes": [
+    "Separate runs with identical frozen inputs and judge, not a simultaneous A/B run.",
+    "Identical-SQL judge score changes are evaluator variability, not demonstrated code improvements.",
+    "Numerical common applicability is a descriptive intersection; neither scorer nor references were changed."
+  ]
+}

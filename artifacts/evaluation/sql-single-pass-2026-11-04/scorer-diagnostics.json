@@ -1,0 +1,8 @@
+{
+  "case": "S11",
+  "direct_common_column_multiset_match": true,
+  "rows": 200,
+  "official_execution_accuracy": 0,
+  "official_numerical_accuracy": 0,
+  "method": "Diagnostic only: project identically named gold columns and compare raw runtime rows. Official scores are unchanged. The inherited scoring pipeline uses an LLM for column alignment; that step is a possible source of this discrepancy and its mapping was not logged."
+}

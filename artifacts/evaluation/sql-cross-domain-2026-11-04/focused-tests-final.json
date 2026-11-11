@@ -1,0 +1,20 @@
+{
+  "revision": "c37afee",
+  "tests": 183,
+  "failures": [],
+  "errors": [],
+  "skips": [
+    {
+      "test": "test_report_evidence_followup.ReportEvidenceFollowupTest.test_oversized_rows_become_attributable_passages_instead_of_all_disappearing",
+      "reason": "Isolated Report evidence experiment"
+    },
+    {
+      "test": "test_report_evidence_followup.ReportEvidenceFollowupTest.test_report_evidence_does_not_generate_a_redundant_summary",
+      "reason": "Isolated Report evidence experiment"
+    },
+    {
+      "test": "test_report_main_reconciliation.ReportMainReconciliationTest.test_confirmation_resubmission_stops_after_session_change_or_401",
+      "reason": "Isolated main integration"
+    }
+  ]
+}

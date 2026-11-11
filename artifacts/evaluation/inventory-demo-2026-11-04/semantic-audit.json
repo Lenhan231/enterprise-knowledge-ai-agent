@@ -1,0 +1,331 @@
+{
+  "legend": {
+    "1": "Genuine semantic mismatch",
+    "2": "Valid equivalent SQL / legitimate output-schema alternative",
+    "3": "Reference/evaluator ambiguity",
+    "4": "Query execution or data/capability limitation"
+  },
+  "cases": [
+    {
+      "cohort": "production",
+      "id": "I01",
+      "classification": 3,
+      "reason": "Reference specifies a stable default/tie-break order that the question does not fully specify. Baseline can select different tied/limited rows; deterministic defaults improve reproducibility.",
+      "judge_reason": "Response: The generated SQL query retrieves product_id and product_name from commerce.products, using p as a table alias, and returns up to 10 rows without specifying their order.\nReference: The reference SQL query retrieves product_id and product_name from commerce.products, sorts the rows by product_id in ascending order, and returns the first 10 rows."
+    },
+    {
+      "cohort": "production",
+      "id": "I03",
+      "classification": 3,
+      "reason": "Reference specifies a stable default/tie-break order that the question does not fully specify. Baseline can select different tied/limited rows; deterministic defaults improve reproducibility.",
+      "judge_reason": "Response: The generated SQL query selects product_id and size from commerce.products where size is NULL, limits the result to 20 rows, and does not specify a result order.\nReference: The reference SQL query selects product_id and size from commerce.products where size is NULL, orders the results by product_id, and limits the result to 20 rows."
+    },
+    {
+      "cohort": "production",
+      "id": "I05",
+      "classification": 1,
+      "reason": "Raw product cogs was unnecessarily forced onto the unrelated company-level COGS metric.",
+      "judge_reason": "Supported question did not execute successfully."
+    },
+    {
+      "cohort": "production",
+      "id": "I04",
+      "classification": 3,
+      "reason": "Reference specifies a stable default/tie-break order that the question does not fully specify. Baseline can select different tied/limited rows; deterministic defaults improve reproducibility.",
+      "judge_reason": "Response: The generated SQL query selects product_id and category from commerce.products for products in the Streetwear or Activewear categories, returning at most 12 rows. It does not specify an ordering, so the selected rows and their order are not guaranteed.\nReference: The reference SQL query selects product_id and category from commerce.products for products in the Streetwear or Activewear categories, orders the results by product_id, and returns the first 12 rows."
+    },
+    {
+      "cohort": "production",
+      "id": "I06",
+      "classification": 3,
+      "reason": "Reference specifies a stable default/tie-break order that the question does not fully specify. Baseline can select different tied/limited rows; deterministic defaults improve reproducibility.",
+      "judge_reason": "Response: The generated SQL query selects product_id and price from commerce.products where price is at least 200000 and less than 500000. It orders the results by the second selected column, price, in descending order, and returns at most 8 rows.\nReference: The reference SQL query selects product_id and price from commerce.products where price is at least 200000 and less than 500000. It orders the results by price descending and then product_id ascending as a tie breaker, and returns at most 8 rows."
+    },
+    {
+      "cohort": "production",
+      "id": "I07",
+      "classification": 3,
+      "reason": "Reference specifies a stable default/tie-break order that the question does not fully specify. Baseline can select different tied/limited rows; deterministic defaults improve reproducibility.",
+      "judge_reason": "Response: The generated SQL query selects snapshot_date and product_id from commerce.inventory, using alias i, filters rows to snapshot_date equal to the date 2022-12-31 and product_id in 1, 3, or 5, and returns at most 10 rows without specifying an order.\nReference: The reference SQL query selects snapshot_date and product_id from commerce.inventory, filters rows to snapshot_date equal to the date 2022-12-31 and product_id in 1, 3, or 5, orders the results by product_id and then snapshot_date, and returns at most 10 rows."
+    },
+    {
+      "cohort": "production",
+      "id": "I08",
+      "classification": 3,
+      "reason": "Reference specifies a stable default/tie-break order that the question does not fully specify. Baseline can select different tied/limited rows; deterministic defaults improve reproducibility.",
+      "judge_reason": "Response: The generated SQL query selects product_id and segment from commerce.products, excludes rows where segment is NULL, sorts by the second selected column, segment, in ascending order, and returns up to 9 rows. It does not specify a secondary sort by product_id.\nReference: The reference SQL query selects product_id and segment from commerce.products, excludes rows where segment is NULL, sorts first by segment ascending and then by product_id ascending, and returns up to 9 rows."
+    },
+    {
+      "cohort": "production",
+      "id": "I10",
+      "classification": 1,
+      "reason": "Ordinary inventory key/year/month retrieval was rejected by mandatory metric interpretation.",
+      "judge_reason": "Supported question did not execute successfully."
+    },
+    {
+      "cohort": "production",
+      "id": "I13",
+      "classification": 2,
+      "reason": "COUNT(product_id) equals COUNT(*) because products.product_id is a non-null primary key.",
+      "judge_reason": "Response: The generated SQL query groups products by category, counts non-null product_id values in each category, orders the results by the first selected column, category, and returns up to 200 rows.\nReference: The reference SQL query groups products by category, counts all product rows in each category, orders the results by category, and returns up to 200 rows."
+    },
+    {
+      "cohort": "production",
+      "id": "I16",
+      "classification": 2,
+      "reason": "The product join is lossless and cannot multiply inventory rows: verified products PK and inventory FK, with zero orphans. Claims that this join can change totals do not apply to the approved database.",
+      "judge_reason": "Response: The generated SQL query joins commerce.inventory with commerce.products on product_id, filters inventory rows to snapshot_date equal to 2022-12-31, groups by snapshot_date, sums stock_on_hand, orders by snapshot_date, and limits the output to 200 rows. The inner join can exclude inventory rows without a matching product and can duplicate rows if product_id is not unique in commerce.products.\nReference: The reference SQL query filters commerce.inventory to snapshot_date equal to the date 2022-12-31, groups the remaining rows by snapshot_date, sums stock_on_hand, and limits the output to 200 rows. It does not join with any other table or order the results."
+    },
+    {
+      "cohort": "production",
+      "id": "I19",
+      "classification": 2,
+      "reason": "Snapshot date is constant and product_id is unique. Extra date/name tie-break terms cannot change the requested ranking.",
+      "judge_reason": "Response: The generated SQL query joins inventory with products on product_id, filters rows to the date 2022-12-31, selects snapshot date, product ID, product name, and stock on hand, then orders by stock on hand ascending with additional tie-breakers of snapshot date, product ID, and product name before returning 10 rows.\nReference: The reference SQL query joins inventory with products on product_id, filters rows to the date 2022-12-31 using an explicit DATE cast, selects snapshot date, product ID, product name, and stock on hand, then orders by stock on hand ascending and product ID before returning 10 rows."
+    },
+    {
+      "cohort": "production",
+      "id": "I20",
+      "classification": 3,
+      "reason": "Reference DESC uses PostgreSQL default NULLS FIRST; catalog compilation ranks known values NULLS LAST. Equal on this data, but undefined-value ranking policy is ambiguous in the reference.",
+      "judge_reason": "Response: The generated query joins inventory with products on product_id, filters inventory rows to the date 2022-11-30, and returns the snapshot date, product ID, product category, and stock on hand. It orders by stock on hand descending with NULL values last, then by snapshot date, product ID, and category, returning at most 7 rows.\nReference: The reference query joins inventory, aliased as i, with products, aliased as p, on product_id. It filters rows to the date 2022-11-30, returns the snapshot date, product ID, product category, and stock on hand, and orders by stock on hand descending followed by product ID ascending, returning at most 7 rows."
+    },
+    {
+      "cohort": "production",
+      "id": "I27",
+      "classification": 1,
+      "reason": "Unrequested grouping by a constant category filter returns no row instead of scalar COUNT zero for an empty population.",
+      "judge_reason": "Response: The generated query joins inventory with products, filters rows to the specified snapshot date and absent category, groups by snapshot date and category, counts distinct products in each group, sorts the groups, and returns up to 200 rows.\nReference: The reference query joins inventory with products and counts distinct products matching the specified snapshot date and absent category. It returns one aggregate count, limited to at most 200 rows."
+    },
+    {
+      "cohort": "production",
+      "id": "I26",
+      "classification": 2,
+      "reason": "Canonical COUNT is correct, including zero. The result adds snapshot provenance and uses the approved lossless product FK join; strict schema comparison is different.",
+      "judge_reason": "Response: The generated SQL query joins commerce.inventory with commerce.products on product_id, filters inventory rows to the date 2022-12-31, groups by snapshot_date, orders by snapshot_date, and returns the snapshot date together with the distinct product count. The inner join can exclude inventory products that have no matching product record, and the result includes an additional snapshot_date column.\nReference: The reference SQL query counts distinct product_id values in commerce.inventory for snapshot_date 2022-12-31 and returns that count, with a limit of 200 rows."
+    },
+    {
+      "cohort": "production",
+      "id": "I29",
+      "classification": 2,
+      "reason": "The product join is lossless and cannot multiply inventory rows: verified products PK and inventory FK, with zero orphans. Claims that this join can change totals do not apply to the approved database.",
+      "judge_reason": "Response: The generated SQL query selects inventory snapshot dates, product IDs, and reorder flags for rows dated 2022-12-31, orders them by snapshot date and product ID, and returns at most 200 rows. It also performs an inner join with commerce.products on product ID, so inventory rows without a matching product are excluded. The reorder_flag column is given the alias reorder_indicator.\nReference: The reference SQL query selects snapshot_date, product_id, and reorder_flag from commerce.inventory for rows whose snapshot date equals the date 2022-12-31. It orders the results by snapshot_date and product_id and returns at most 200 rows."
+    },
+    {
+      "cohort": "production",
+      "id": "I30",
+      "classification": 2,
+      "reason": "The product join is lossless and cannot multiply inventory rows: verified products PK and inventory FK, with zero orphans. Claims that this join can change totals do not apply to the approved database.",
+      "judge_reason": "Response: The generated query selects snapshot date, product ID, and stock on hand from commerce.inventory for product ID 1 during 2022, orders the results by snapshot date and product ID, and limits them to 200 rows. It also performs an inner join with commerce.products on product ID, which can filter out inventory rows without a matching product and can duplicate rows if products contains multiple matching product IDs. The join condition uses unqualified inventory and products references, which may also be invalid in SQL dialects that require the schema-qualified table names.\nReference: The reference query selects snapshot date, product ID, and stock on hand from commerce.inventory for product ID 1 where snapshot date is from the start of 2022 through the end of 2022, orders by snapshot date and product ID, and limits the output to 200 rows. The date casts explicitly convert the boundary strings to DATE values."
+    },
+    {
+      "cohort": "production",
+      "id": "I33",
+      "classification": 2,
+      "reason": "The product join is lossless and cannot multiply inventory rows: verified products PK and inventory FK, with zero orphans. Claims that this join can change totals do not apply to the approved database.",
+      "judge_reason": "Response: The generated query joins commerce.inventory with commerce.products on product_id, keeps rows whose snapshot_date is 1900-01-01, groups by snapshot_date, sums stock_on_hand, orders by snapshot_date, and returns at most 200 rows. The join may exclude inventory rows without a matching product or duplicate rows if product_id is not unique in commerce.products.\nReference: The reference query filters commerce.inventory to snapshot_date 1900-01-01, groups the matching rows by snapshot_date, sums stock_on_hand, and returns at most 200 rows without an explicit ordering or join."
+    },
+    {
+      "cohort": "production",
+      "id": "I32",
+      "classification": 2,
+      "reason": "Schema-qualified FROM tables can legally be referenced by table name in JOIN ON. PostgreSQL execution and validated FK/PK show the query is valid and equivalent.",
+      "judge_reason": "Response: The generated query groups inventory records joined to products by snapshot date, product color, and product size. It sums stock_on_hand, filters for December 31, 2022, orders the grouped results, and limits them to 200 rows. However, its JOIN condition references inventory and products without the commerce schema qualification or declared aliases, which may fail to resolve based on the provided schema.\nReference: The reference query joins commerce.inventory, aliased as i, with commerce.products, aliased as p, using product_id. It filters inventory to the date December 31, 2022, groups by snapshot date, color, and size, sums stock_on_hand, orders the results by those grouping columns, and limits the output to 200 rows."
+    },
+    {
+      "cohort": "production",
+      "id": "I34",
+      "classification": 2,
+      "reason": "The product join is lossless and cannot multiply inventory rows: verified products PK and inventory FK, with zero orphans. Claims that this join can change totals do not apply to the approved database.",
+      "judge_reason": "Response: The generated SQL query selects snapshot date, product ID, and stock on hand from commerce.inventory for rows with stock on hand below 10 and snapshot date equal to 2022-12-31. It orders by snapshot date and product ID and limits the output to 200 rows. It also performs an inner join with commerce.products on product ID, which can exclude inventory rows without a matching product and can duplicate rows if product IDs are not unique in commerce.products.\nReference: The reference SQL query selects snapshot date, product ID, and stock on hand from commerce.inventory for rows with snapshot date equal to 2022-12-31 and stock on hand below 10. It orders by snapshot date and product ID and limits the output to 200 rows. It does not join with any other table."
+    },
+    {
+      "cohort": "production",
+      "id": "I37",
+      "classification": 2,
+      "reason": "The product join is lossless and cannot multiply inventory rows: verified products PK and inventory FK, with zero orphans. Claims that this join can change totals do not apply to the approved database.",
+      "judge_reason": "Response: The generated query sums units_received by snapshot_date for inventory records from 2022-01-01 through 2022-12-31, ordering dates ascending and returning at most 200 rows. It also performs an inner join with commerce.products on product_id, which can exclude inventory rows without a matching product and can duplicate rows if product_id is not unique in products.\nReference: The reference query sums units_received by snapshot_date directly from commerce.inventory for dates from 2022-01-01 inclusive through 2023-01-01 exclusive, orders the dates ascending, and returns at most 200 rows. It does not join to any other table."
+    },
+    {
+      "cohort": "production",
+      "id": "I39",
+      "classification": 2,
+      "reason": "The product join is lossless and cannot multiply inventory rows: verified products PK and inventory FK, with zero orphans. Claims that this join can change totals do not apply to the approved database.",
+      "judge_reason": "Response: The generated query selects snapshot date, product ID, and stockout days from commerce.inventory for rows dated 2022-12-31, orders them by snapshot date and product ID, and limits the output to 200 rows. It also performs an inner join with commerce.products on product ID, so inventory rows without a matching product are excluded and rows may be duplicated if product IDs are not unique in commerce.products.\nReference: The reference query selects snapshot date, product ID, and stockout days directly from commerce.inventory for rows whose snapshot date equals the date 2022-12-31, orders them by snapshot date and product ID, and limits the output to 200 rows."
+    },
+    {
+      "cohort": "production",
+      "id": "I49",
+      "classification": 4,
+      "reason": "Two-snapshot comparison was unavailable or incorrectly interpreted before compilation; no verified requested delta was executed.",
+      "judge_reason": "Supported question did not execute successfully."
+    },
+    {
+      "cohort": "production",
+      "id": "I50",
+      "classification": 4,
+      "reason": "Two-snapshot comparison was unavailable or incorrectly interpreted before compilation; no verified requested delta was executed.",
+      "judge_reason": "Supported question did not execute successfully."
+    },
+    {
+      "cohort": "production",
+      "id": "P01",
+      "classification": 3,
+      "reason": "Reference specifies a stable default/tie-break order that the question does not fully specify. Baseline can select different tied/limited rows; deterministic defaults improve reproducibility.",
+      "judge_reason": "Response: The generated SQL query selects product_id and product_name from commerce.products using the alias p, returning up to 10 rows without specifying an ordering. The database may therefore return any 10 rows.\nReference: The reference SQL query selects product_id and product_name from commerce.products, orders the rows by product_id in ascending order, and returns the first 10 rows."
+    },
+    {
+      "cohort": "production",
+      "id": "P02",
+      "classification": 3,
+      "reason": "Reference specifies a stable default/tie-break order that the question does not fully specify. Baseline can select different tied/limited rows; deterministic defaults improve reproducibility.",
+      "judge_reason": "Response: The generated SQL query retrieves the product_id, color, and price for products whose color is blue, orders them by price descending, and returns at most five rows. Products with equal prices have no specified tie-breaking order.\nReference: The reference SQL query retrieves the product_id, color, and price for products whose color is blue, orders them by price descending and then product_id ascending, and returns at most five rows."
+    },
+    {
+      "cohort": "production",
+      "id": "P06",
+      "classification": 3,
+      "reason": "Reference specifies a stable default/tie-break order that the question does not fully specify. Baseline can select different tied/limited rows; deterministic defaults improve reproducibility.",
+      "judge_reason": "Response: The generated SQL query selects product_id and price from commerce.products for products priced from 200000 inclusive to below 500000. It sorts the results by price descending only, using the second selected column, and returns at most 8 rows.\nReference: The reference SQL query selects product_id and price from commerce.products for products priced from 200000 inclusive to below 500000. It sorts by price descending and then product_id ascending, and returns at most 8 rows."
+    },
+    {
+      "cohort": "production",
+      "id": "P16",
+      "classification": 2,
+      "reason": "The product join is lossless and cannot multiply inventory rows: verified products PK and inventory FK, with zero orphans. Claims that this join can change totals do not apply to the approved database.",
+      "judge_reason": "Response: The generated SQL query sums stock_on_hand for inventory records dated 2022-12-31, grouped by snapshot_date and limited to 200 rows. It also joins commerce.products on product_id, which can exclude inventory records without a matching product or duplicate rows when product_id is not unique in products, and orders the results by snapshot_date.\nReference: The reference SQL query sums stock_on_hand from commerce.inventory for records whose snapshot_date equals the date 2022-12-31, groups the result by snapshot_date, and limits the output to 200 rows. It does not join to any other table."
+    },
+    {
+      "cohort": "production",
+      "id": "P19",
+      "classification": 2,
+      "reason": "Snapshot date is constant and product_id is unique. Extra date/name tie-break terms cannot change the requested ranking.",
+      "judge_reason": "Response: The generated SQL query joins commerce.inventory with commerce.products on product_id, filters inventory rows to the date 2022-12-31, selects snapshot date, product ID, product name, and stock on hand, then orders by stock on hand, snapshot date, product ID, and product name before returning up to 10 rows.\nReference: The reference SQL query joins commerce.inventory with commerce.products on product_id, filters inventory rows to the date 2022-12-31 using an explicit date cast, selects snapshot date, product ID, product name, and stock on hand, then orders by stock on hand and product ID before returning up to 10 rows."
+    },
+    {
+      "cohort": "production",
+      "id": "P27",
+      "classification": 1,
+      "reason": "Unrequested grouping by a constant category filter returns no row instead of scalar COUNT zero for an empty population.",
+      "judge_reason": "Response: The generated query joins inventory with products on product_id, filters rows to snapshot date 2022-12-31 and the absent category value, groups by snapshot date and category, and returns those fields with the distinct product count. It orders the grouped results and limits output to 200 rows.\nReference: The reference query joins inventory with products on product_id, filters to snapshot date 2022-12-31 and the absent category value, and returns the distinct count of observed product IDs as a single aggregate result. The limit does not materially affect this aggregate query."
+    },
+    {
+      "cohort": "final",
+      "id": "I13",
+      "classification": 2,
+      "reason": "COUNT(product_id) equals COUNT(*) because products.product_id is a non-null primary key.",
+      "judge_reason": "Response: The generated SQL query groups products by category, counts non-null product_id values in each category, orders the groups by the first selected column, category, and returns at most 200 rows.\nReference: The reference SQL query groups products by category, counts all rows in each category, orders the groups alphabetically or according to the database ordering of category, and returns at most 200 rows."
+    },
+    {
+      "cohort": "final",
+      "id": "I16",
+      "classification": 2,
+      "reason": "The product join is lossless and cannot multiply inventory rows: verified products PK and inventory FK, with zero orphans. Claims that this join can change totals do not apply to the approved database.",
+      "judge_reason": "Response: The generated query filters inventory records to the specified snapshot date, joins them with products using product_id, sums stock_on_hand by snapshot_date, orders the grouped result by snapshot_date, and returns up to 200 rows. Because the join is an inner join, inventory records without a matching product are excluded, and duplicate product matches could multiply rows.\nReference: The reference query filters inventory records to the specified snapshot date, sums stock_on_hand grouped by snapshot_date, and returns up to 200 rows. It does not join with the products table or apply ordering."
+    },
+    {
+      "cohort": "final",
+      "id": "I20",
+      "classification": 3,
+      "reason": "Reference DESC uses PostgreSQL default NULLS FIRST; catalog compilation ranks known values NULLS LAST. Equal on this data, but undefined-value ranking policy is ambiguous in the reference.",
+      "judge_reason": "Response: The generated SQL query joins inventory with products by product_id, filters rows to the 2022-11-30 snapshot, and returns snapshot date, product ID, category, and stock on hand. It orders by stock on hand descending with nulls last, then by snapshot date, product ID, and category, and returns at most 7 rows.\nReference: The reference SQL query joins inventory with products by product_id, filters rows to the 2022-11-30 snapshot, and returns snapshot date, product ID, category, and stock on hand. It orders by stock on hand descending, then by product ID, and returns at most 7 rows."
+    },
+    {
+      "cohort": "final",
+      "id": "I26",
+      "classification": 2,
+      "reason": "Canonical COUNT is correct, including zero. The result adds snapshot provenance and uses the approved lossless product FK join; strict schema comparison is different.",
+      "judge_reason": "Response: The generated SQL query joins inventory with products on product_id, filters inventory records for the date 2022-12-31, and returns that date together with the count of distinct product IDs that have matching rows in products.\nReference: The reference SQL query filters inventory records for the date 2022-12-31 and returns the count of distinct product IDs, without joining the products table or returning the date as a separate column."
+    },
+    {
+      "cohort": "final",
+      "id": "I27",
+      "classification": 2,
+      "reason": "Canonical COUNT is correct, including zero. The result adds snapshot provenance and uses the approved lossless product FK join; strict schema comparison is different.",
+      "judge_reason": "Response: The generated query joins inventory with products, filters for the absent category and the 2022-12-31 snapshot date, and counts distinct product IDs. It returns both the snapshot date and the count.\nReference: The reference query joins inventory with products, applies the same category and snapshot date filters, and counts distinct product IDs. It returns only the count column."
+    },
+    {
+      "cohort": "final",
+      "id": "I29",
+      "classification": 2,
+      "reason": "The product join is lossless and cannot multiply inventory rows: verified products PK and inventory FK, with zero orphans. Claims that this join can change totals do not apply to the approved database.",
+      "judge_reason": "Response: The generated query selects snapshot_date, product_id, and reorder_flag from commerce.inventory, renaming reorder_flag to reorder_indicator. It joins commerce.products on product_id, filters inventory rows to the date 2022-12-31, orders by snapshot_date and product_id, and returns at most 200 rows. The join may filter rows without a matching product or duplicate rows when multiple products share a product_id.\nReference: The reference query selects snapshot_date, product_id, and reorder_flag from commerce.inventory for rows whose snapshot_date equals the date 2022-12-31. It orders the results by snapshot_date and product_id and returns at most 200 rows."
+    },
+    {
+      "cohort": "final",
+      "id": "I30",
+      "classification": 2,
+      "reason": "The product join is lossless and cannot multiply inventory rows: verified products PK and inventory FK, with zero orphans. Claims that this join can change totals do not apply to the approved database.",
+      "judge_reason": "Response: The generated SQL query selects snapshot date, product ID, and stock on hand from commerce.inventory for product 1 during calendar year 2022, orders the results by snapshot date and product ID, and limits them to 200 rows. It also performs an inner join with commerce.products on product ID, which can exclude inventory rows without a matching product and can duplicate rows if product IDs are not unique in commerce.products.\nReference: The reference SQL query selects snapshot date, product ID, and stock on hand from commerce.inventory for product 1 from 2022-01-01 through the end of 2022, orders the results by snapshot date and product ID, and limits them to 200 rows. It does not join any other table."
+    },
+    {
+      "cohort": "final",
+      "id": "I33",
+      "classification": 2,
+      "reason": "The product join is lossless and cannot multiply inventory rows: verified products PK and inventory FK, with zero orphans. Claims that this join can change totals do not apply to the approved database.",
+      "judge_reason": "Response: The generated SQL query joins commerce.inventory with commerce.products on product_id, filters inventory rows to snapshot_date equal to January 1, 1900, groups by snapshot_date, sums stock_on_hand, orders the grouped results by snapshot_date, and returns up to 200 rows. The join can exclude inventory records without a matching product and can duplicate records if products contains multiple matching product_id values.\nReference: The reference SQL query filters commerce.inventory to snapshot_date equal to January 1, 1900, groups the matching rows by snapshot_date, sums stock_on_hand for each date, and returns up to 200 grouped rows. It does not join with commerce.products or apply ordering."
+    },
+    {
+      "cohort": "final",
+      "id": "I34",
+      "classification": 2,
+      "reason": "The product join is lossless and cannot multiply inventory rows: verified products PK and inventory FK, with zero orphans. Claims that this join can change totals do not apply to the approved database.",
+      "judge_reason": "Response: The generated query returns up to 200 inventory records with stock_on_hand below 10 and snapshot_date equal to December 31, 2022. It also performs an inner join with commerce.products on product_id, so inventory records without a matching product are excluded, and duplicate product_id values could duplicate results.\nReference: The reference query returns up to 200 inventory records with snapshot_date equal to December 31, 2022 and stock_on_hand below 10, ordered by snapshot_date and product_id. It reads only from commerce.inventory and does not require a matching product record."
+    },
+    {
+      "cohort": "final",
+      "id": "I37",
+      "classification": 2,
+      "reason": "The product join is lossless and cannot multiply inventory rows: verified products PK and inventory FK, with zero orphans. Claims that this join can change totals do not apply to the approved database.",
+      "judge_reason": "Response: The generated SQL query sums units_received by snapshot_date for dates from 2022-01-01 inclusive through 2022-12-31, orders the results by snapshot_date, and returns at most 200 rows. It additionally performs an inner join with commerce.products on product_id, which can exclude inventory rows without a matching product and can duplicate rows if product_id is not unique in commerce.products.\nReference: The reference SQL query sums units_received by snapshot_date from commerce.inventory for dates from 2022-01-01 inclusive through 2022-12-31, orders the results by snapshot_date, and returns at most 200 rows. It does not join with commerce.products."
+    },
+    {
+      "cohort": "final",
+      "id": "I39",
+      "classification": 2,
+      "reason": "The product join is lossless and cannot multiply inventory rows: verified products PK and inventory FK, with zero orphans. Claims that this join can change totals do not apply to the approved database.",
+      "judge_reason": "Response: The generated SQL query selects snapshot date, product ID, and stockout days from commerce.inventory for records dated 2022-12-31, orders them by snapshot date and product ID, and returns at most 200 rows. It also performs an inner join with commerce.products on product ID, so inventory records without a matching product are excluded and duplicate product IDs could duplicate results.\nReference: The reference SQL query selects snapshot date, product ID, and stockout days from commerce.inventory for records whose snapshot date equals the date 2022-12-31, orders them by snapshot date and product ID, and returns at most 200 rows. It does not join with commerce.products."
+    },
+    {
+      "cohort": "final",
+      "id": "I49",
+      "classification": 2,
+      "reason": "Conditional MAX over the two exact dates plus COUNT(DISTINCT snapshot_date)=2 is equivalent to the frozen self-join under the verified inventory primary key. NULL operands remain NULL. Extra before/after date provenance changes output shape. The new reference also requires product_name although the question does not; actual product IDs and all requested numeric values match.",
+      "judge_reason": "Response: The generated SQL query joins inventory with products, filters inventory records to the two specified snapshot dates, groups records by product_id, and keeps only products present on both dates. It computes stock_before and stock_after using conditional MAX aggregations, then calculates stock_delta as the difference between them. It returns product_id, the two date values, and stock quantities, ordered by product_id and limited to 200 rows. It does not return product_name.\nReference: The reference SQL query self-joins inventory to match each product across the two exact snapshot dates, joins the matching product record, and returns product_id, product_name, the two dates cast to DATE, stock_before, stock_after, and stock_delta. It orders the results by product_id and limits the output to 200 rows."
+    },
+    {
+      "cohort": "final",
+      "id": "I50",
+      "classification": 2,
+      "reason": "Conditional MAX over the two exact dates plus COUNT(DISTINCT snapshot_date)=2 is equivalent to the frozen self-join under the verified inventory primary key. NULL operands remain NULL. Extra before/after date provenance changes output shape.",
+      "judge_reason": "Response: The generated query filters inventory records for product_id 1 at the two specified snapshot dates, joins product information, groups the records by product and product name, and requires both dates to be present. It calculates stock_before and stock_after using MAX over conditional expressions, then computes stock_delta as their difference, ordering by product_id and limiting the output to 200 rows. The date values are returned as string literals.\nReference: The reference query self-joins inventory to pair records for product_id 1 at the November 30, 2022 and December 31, 2022 snapshots, joins the matching product information, and returns the stock values and their difference. It returns the dates as DATE values, orders by product_id, and limits the output to 200 rows. If multiple inventory records exist for either date, the self-join can return multiple combinations."
+    },
+    {
+      "cohort": "final",
+      "id": "P16",
+      "classification": 2,
+      "reason": "The product join is lossless and cannot multiply inventory rows: verified products PK and inventory FK, with zero orphans. Claims that this join can change totals do not apply to the approved database.",
+      "judge_reason": "Response: The generated query joins commerce.inventory with commerce.products on product_id, filters inventory records for 2022-12-31, groups by snapshot_date, sums stock_on_hand, orders by snapshot_date, and limits the result to 200 rows. The join can exclude inventory rows without a matching product and can duplicate rows if product_id is not unique in commerce.products.\nReference: The reference query filters commerce.inventory records to snapshot_date 2022-12-31, groups them by snapshot_date, sums stock_on_hand, and limits the result to 200 rows. The date is explicitly cast to the DATE type."
+    },
+    {
+      "cohort": "final",
+      "id": "P19",
+      "classification": 2,
+      "reason": "Snapshot date is constant and product_id is unique. Extra date/name tie-break terms cannot change the requested ranking.",
+      "judge_reason": "Response: The generated query joins inventory with products by product_id, filters inventory records to the date 2022-12-31, selects snapshot date, product ID, product name, and stock on hand, then orders by stock on hand, snapshot date, product ID, and product name before returning at most 10 rows.\nReference: The reference query joins inventory with products by product_id, filters records to the date 2022-12-31, selects snapshot date, product ID, product name, and stock on hand, then orders by stock on hand and product ID before returning at most 10 rows."
+    },
+    {
+      "cohort": "final",
+      "id": "P27",
+      "classification": 2,
+      "reason": "Canonical COUNT is correct, including zero. The result adds snapshot provenance and uses the approved lossless product FK join; strict schema comparison is different.",
+      "judge_reason": "Response: The generated query joins inventory with products on product_id, filters for the 2022-12-31 snapshot date and the absent category, counts distinct observed product IDs, and also returns the snapshot date as an additional column. It limits the result to 200 rows.\nReference: The reference query joins inventory with products on product_id, filters for the 2022-12-31 snapshot date and the absent category, and returns the count of distinct observed product IDs. It limits the result to 200 rows."
+    }
+  ],
+  "assurance": "Manual constraint-aware audit supplements, and never replaces, frozen Ragas scores. Current-data matching alone is not universal SQL equivalence.",
+  "evidence": [
+    "data-assurance.json",
+    "postgres-repair-probes.json",
+    "fixture-errata.json"
+  ]
+}

@@ -1,0 +1,1768 @@
+{
+  "before": {
+    "cases": 60,
+    "expected_cases": 60,
+    "unattempted": 0,
+    "metrics": {
+      "execution_accuracy": {
+        "mean": 0.8,
+        "scored": 50,
+        "not_applicable": 10,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "sql_semantic_equivalence": {
+        "mean": 0.42,
+        "scored": 50,
+        "not_applicable": 10,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "numerical_accuracy": {
+        "mean": 0.8378378378378378,
+        "scored": 37,
+        "not_applicable": 23,
+        "evaluator_errors": 0,
+        "pending": 0
+      }
+    },
+    "outcomes": {
+      "executed_with_rows": 43,
+      "executed_empty": 6,
+      "clarification_required": 9,
+      "MetricDefinitionError": 2
+    },
+    "executed": 49,
+    "downloads": 0,
+    "provider_failures": 0,
+    "unsupported_cases": 10,
+    "unsupported_clarifications": 6,
+    "supported_cases": 50,
+    "supported_clarifications": 3,
+    "llm_calls": 62,
+    "latency_seconds": {
+      "p50": 2.0935,
+      "p95": 2.7421500000000005
+    },
+    "application_revision": "1a6470b84443d6f9819b242357e76435eb329ce5",
+    "total_attempts": 60,
+    "provider_failed_attempts": 0
+  },
+  "after": {
+    "cases": 60,
+    "expected_cases": 60,
+    "unattempted": 0,
+    "metrics": {
+      "execution_accuracy": {
+        "mean": 0.98,
+        "scored": 50,
+        "not_applicable": 10,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "sql_semantic_equivalence": {
+        "mean": 0.68,
+        "scored": 50,
+        "not_applicable": 10,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "numerical_accuracy": {
+        "mean": 0.9714285714285714,
+        "scored": 35,
+        "not_applicable": 25,
+        "evaluator_errors": 0,
+        "pending": 0
+      }
+    },
+    "outcomes": {
+      "executed_with_rows": 46,
+      "executed_empty": 5,
+      "clarification_required": 8,
+      "unsupported": 1
+    },
+    "executed": 51,
+    "downloads": 0,
+    "provider_failures": 0,
+    "unsupported_cases": 10,
+    "unsupported_clarifications": 8,
+    "supported_cases": 50,
+    "supported_clarifications": 0,
+    "llm_calls": 46,
+    "latency_seconds": {
+      "p50": 2.169,
+      "p95": 3.6467499999999995
+    },
+    "application_revision": "3564c0638d0c9654240d222638e02b1ea8b057c5",
+    "total_attempts": 60,
+    "provider_failed_attempts": 0
+  },
+  "cases": [
+    {
+      "id": "I01",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I02",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I03",
+      "before_status": "executed_empty",
+      "after_status": "executed_empty",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I04",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I05",
+      "before_status": "clarification_required",
+      "after_status": "executed_empty",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 0.0,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I06",
+      "before_status": "executed_empty",
+      "after_status": "executed_empty",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I07",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I08",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I09",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I10",
+      "before_status": "clarification_required",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 0.0,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I11",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I12",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I13",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I14",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I15",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I16",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I17",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I18",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I19",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I20",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I21",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I22",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I23",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I24",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I25",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I26",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I27",
+      "before_status": "executed_empty",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "numerical_accuracy": {
+          "before": 0.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I28",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I29",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I30",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I31",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I32",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I33",
+      "before_status": "executed_empty",
+      "after_status": "executed_empty",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I34",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I35",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I36",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I37",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I38",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I39",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "I40",
+      "before_status": "clarification_required",
+      "after_status": "clarification_required",
+      "metrics": {
+        "execution_accuracy": {
+          "before": null,
+          "after": null
+        },
+        "sql_semantic_equivalence": {
+          "before": null,
+          "after": null
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I41",
+      "before_status": "clarification_required",
+      "after_status": "clarification_required",
+      "metrics": {
+        "execution_accuracy": {
+          "before": null,
+          "after": null
+        },
+        "sql_semantic_equivalence": {
+          "before": null,
+          "after": null
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I42",
+      "before_status": "clarification_required",
+      "after_status": "clarification_required",
+      "metrics": {
+        "execution_accuracy": {
+          "before": null,
+          "after": null
+        },
+        "sql_semantic_equivalence": {
+          "before": null,
+          "after": null
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I43",
+      "before_status": "clarification_required",
+      "after_status": "clarification_required",
+      "metrics": {
+        "execution_accuracy": {
+          "before": null,
+          "after": null
+        },
+        "sql_semantic_equivalence": {
+          "before": null,
+          "after": null
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I44",
+      "before_status": "executed_with_rows",
+      "after_status": "unsupported",
+      "metrics": {
+        "execution_accuracy": {
+          "before": null,
+          "after": null
+        },
+        "sql_semantic_equivalence": {
+          "before": null,
+          "after": null
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I45",
+      "before_status": "executed_with_rows",
+      "after_status": "clarification_required",
+      "metrics": {
+        "execution_accuracy": {
+          "before": null,
+          "after": null
+        },
+        "sql_semantic_equivalence": {
+          "before": null,
+          "after": null
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I46",
+      "before_status": "executed_with_rows",
+      "after_status": "clarification_required",
+      "metrics": {
+        "execution_accuracy": {
+          "before": null,
+          "after": null
+        },
+        "sql_semantic_equivalence": {
+          "before": null,
+          "after": null
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I47",
+      "before_status": "clarification_required",
+      "after_status": "clarification_required",
+      "metrics": {
+        "execution_accuracy": {
+          "before": null,
+          "after": null
+        },
+        "sql_semantic_equivalence": {
+          "before": null,
+          "after": null
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I48",
+      "before_status": "clarification_required",
+      "after_status": "clarification_required",
+      "metrics": {
+        "execution_accuracy": {
+          "before": null,
+          "after": null
+        },
+        "sql_semantic_equivalence": {
+          "before": null,
+          "after": null
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I49",
+      "before_status": "MetricDefinitionError",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "numerical_accuracy": {
+          "before": 0.0,
+          "after": 0.0
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "I50",
+      "before_status": "clarification_required",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "numerical_accuracy": {
+          "before": 0.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "P01",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "P02",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "P06",
+      "before_status": "executed_empty",
+      "after_status": "executed_empty",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "P16",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "P17",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "P19",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "P22",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "P24",
+      "before_status": "executed_with_rows",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 1.0,
+          "after": 1.0
+        },
+        "numerical_accuracy": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": true
+    },
+    {
+      "id": "P27",
+      "before_status": "executed_empty",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": 0.0,
+          "after": 1.0
+        },
+        "sql_semantic_equivalence": {
+          "before": 0.0,
+          "after": 0.0
+        },
+        "numerical_accuracy": {
+          "before": 0.0,
+          "after": 1.0
+        }
+      },
+      "identical_bound_sql": false
+    },
+    {
+      "id": "P47",
+      "before_status": "MetricDefinitionError",
+      "after_status": "executed_with_rows",
+      "metrics": {
+        "execution_accuracy": {
+          "before": null,
+          "after": null
+        },
+        "sql_semantic_equivalence": {
+          "before": null,
+          "after": null
+        },
+        "numerical_accuracy": {
+          "before": null,
+          "after": null
+        }
+      },
+      "identical_bound_sql": false
+    }
+  ],
+  "identical_sql_semantic_score_changes": [
+    "I19",
+    "I32"
+  ],
+  "common_numerical_applicability": {
+    "cases": 35,
+    "before_mean": 0.8857142857142857,
+    "after_mean": 0.9714285714285714
+  },
+  "by_category": {
+    "direct": {
+      "before": {
+        "cases": 13,
+        "expected_cases": 13,
+        "unattempted": 0,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 0.5384615384615384,
+            "scored": 13,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 0.15384615384615385,
+            "scored": 13,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "numerical_accuracy": {
+            "mean": 0.5,
+            "scored": 4,
+            "not_applicable": 9,
+            "evaluator_errors": 0,
+            "pending": 0
+          }
+        },
+        "outcomes": {
+          "executed_with_rows": 8,
+          "executed_empty": 3,
+          "clarification_required": 2
+        },
+        "executed": 11,
+        "downloads": 0,
+        "provider_failures": 0,
+        "unsupported_cases": 0,
+        "unsupported_clarifications": 0,
+        "supported_cases": 13,
+        "supported_clarifications": 2,
+        "llm_calls": 17,
+        "latency_seconds": {
+          "p50": 1.905,
+          "p95": 3.6606000000000005
+        }
+      },
+      "after": {
+        "cases": 13,
+        "expected_cases": 13,
+        "unattempted": 0,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 1.0,
+            "scored": 13,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 1.0,
+            "scored": 13,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "numerical_accuracy": {
+            "mean": 1.0,
+            "scored": 2,
+            "not_applicable": 11,
+            "evaluator_errors": 0,
+            "pending": 0
+          }
+        },
+        "outcomes": {
+          "executed_with_rows": 9,
+          "executed_empty": 4
+        },
+        "executed": 13,
+        "downloads": 0,
+        "provider_failures": 0,
+        "unsupported_cases": 0,
+        "unsupported_clarifications": 0,
+        "supported_cases": 13,
+        "supported_clarifications": 0,
+        "llm_calls": 0,
+        "latency_seconds": {
+          "p50": 1.141,
+          "p95": 2.1415999999999995
+        }
+      }
+    },
+    "structural": {
+      "before": {
+        "cases": 5,
+        "expected_cases": 5,
+        "unattempted": 0,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 1.0,
+            "scored": 5,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 0.8,
+            "scored": 5,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "numerical_accuracy": {
+            "mean": 1.0,
+            "scored": 3,
+            "not_applicable": 2,
+            "evaluator_errors": 0,
+            "pending": 0
+          }
+        },
+        "outcomes": {
+          "executed_with_rows": 5
+        },
+        "executed": 5,
+        "downloads": 0,
+        "provider_failures": 0,
+        "unsupported_cases": 0,
+        "unsupported_clarifications": 0,
+        "supported_cases": 5,
+        "supported_clarifications": 0,
+        "llm_calls": 9,
+        "latency_seconds": {
+          "p50": 2.424,
+          "p95": 3.5784
+        }
+      },
+      "after": {
+        "cases": 5,
+        "expected_cases": 5,
+        "unattempted": 0,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 1.0,
+            "scored": 5,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 0.8,
+            "scored": 5,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "numerical_accuracy": {
+            "mean": 1.0,
+            "scored": 3,
+            "not_applicable": 2,
+            "evaluator_errors": 0,
+            "pending": 0
+          }
+        },
+        "outcomes": {
+          "executed_with_rows": 5
+        },
+        "executed": 5,
+        "downloads": 0,
+        "provider_failures": 0,
+        "unsupported_cases": 0,
+        "unsupported_clarifications": 0,
+        "supported_cases": 5,
+        "supported_clarifications": 0,
+        "llm_calls": 9,
+        "latency_seconds": {
+          "p50": 2.535,
+          "p95": 4.909800000000001
+        }
+      }
+    },
+    "inventory": {
+      "before": {
+        "cases": 30,
+        "expected_cases": 30,
+        "unattempted": 0,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 0.9333333333333333,
+            "scored": 30,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 0.5,
+            "scored": 30,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "numerical_accuracy": {
+            "mean": 0.9285714285714286,
+            "scored": 28,
+            "not_applicable": 2,
+            "evaluator_errors": 0,
+            "pending": 0
+          }
+        },
+        "outcomes": {
+          "executed_with_rows": 27,
+          "executed_empty": 3
+        },
+        "executed": 30,
+        "downloads": 0,
+        "provider_failures": 0,
+        "unsupported_cases": 0,
+        "unsupported_clarifications": 0,
+        "supported_cases": 30,
+        "supported_clarifications": 0,
+        "llm_calls": 30,
+        "latency_seconds": {
+          "p50": 2.185,
+          "p95": 2.6122
+        }
+      },
+      "after": {
+        "cases": 30,
+        "expected_cases": 30,
+        "unattempted": 0,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 1.0,
+            "scored": 30,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 0.5666666666666667,
+            "scored": 30,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "numerical_accuracy": {
+            "mean": 1.0,
+            "scored": 28,
+            "not_applicable": 2,
+            "evaluator_errors": 0,
+            "pending": 0
+          }
+        },
+        "outcomes": {
+          "executed_with_rows": 29,
+          "executed_empty": 1
+        },
+        "executed": 30,
+        "downloads": 0,
+        "provider_failures": 0,
+        "unsupported_cases": 0,
+        "unsupported_clarifications": 0,
+        "supported_cases": 30,
+        "supported_clarifications": 0,
+        "llm_calls": 30,
+        "latency_seconds": {
+          "p50": 2.3754999999999997,
+          "p95": 3.22505
+        }
+      }
+    },
+    "clarification": {
+      "before": {
+        "cases": 10,
+        "expected_cases": 10,
+        "unattempted": 0,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": null,
+            "scored": 0,
+            "not_applicable": 10,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": null,
+            "scored": 0,
+            "not_applicable": 10,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "numerical_accuracy": {
+            "mean": null,
+            "scored": 0,
+            "not_applicable": 10,
+            "evaluator_errors": 0,
+            "pending": 0
+          }
+        },
+        "outcomes": {
+          "clarification_required": 6,
+          "executed_with_rows": 3,
+          "MetricDefinitionError": 1
+        },
+        "executed": 3,
+        "downloads": 0,
+        "provider_failures": 0,
+        "unsupported_cases": 10,
+        "unsupported_clarifications": 6,
+        "supported_cases": 0,
+        "supported_clarifications": 0,
+        "llm_calls": 5,
+        "latency_seconds": {
+          "p50": 0.3565,
+          "p95": 2.4890000000000003
+        }
+      },
+      "after": {
+        "cases": 10,
+        "expected_cases": 10,
+        "unattempted": 0,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": null,
+            "scored": 0,
+            "not_applicable": 10,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": null,
+            "scored": 0,
+            "not_applicable": 10,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "numerical_accuracy": {
+            "mean": null,
+            "scored": 0,
+            "not_applicable": 10,
+            "evaluator_errors": 0,
+            "pending": 0
+          }
+        },
+        "outcomes": {
+          "clarification_required": 8,
+          "unsupported": 1,
+          "executed_with_rows": 1
+        },
+        "executed": 1,
+        "downloads": 0,
+        "provider_failures": 0,
+        "unsupported_cases": 10,
+        "unsupported_clarifications": 8,
+        "supported_cases": 0,
+        "supported_clarifications": 0,
+        "llm_calls": 5,
+        "latency_seconds": {
+          "p50": 0.765,
+          "p95": 3.3013999999999997
+        }
+      }
+    },
+    "comparison": {
+      "before": {
+        "cases": 2,
+        "expected_cases": 2,
+        "unattempted": 0,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 0.0,
+            "scored": 2,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 0.0,
+            "scored": 2,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "numerical_accuracy": {
+            "mean": 0.0,
+            "scored": 2,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          }
+        },
+        "outcomes": {
+          "MetricDefinitionError": 1,
+          "clarification_required": 1
+        },
+        "executed": 0,
+        "downloads": 0,
+        "provider_failures": 0,
+        "unsupported_cases": 0,
+        "unsupported_clarifications": 0,
+        "supported_cases": 2,
+        "supported_clarifications": 1,
+        "llm_calls": 1,
+        "latency_seconds": {
+          "p50": 0.458,
+          "p95": 0.8665999999999999
+        }
+      },
+      "after": {
+        "cases": 2,
+        "expected_cases": 2,
+        "unattempted": 0,
+        "metrics": {
+          "execution_accuracy": {
+            "mean": 0.5,
+            "scored": 2,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "sql_semantic_equivalence": {
+            "mean": 0.0,
+            "scored": 2,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          },
+          "numerical_accuracy": {
+            "mean": 0.5,
+            "scored": 2,
+            "not_applicable": 0,
+            "evaluator_errors": 0,
+            "pending": 0
+          }
+        },
+        "outcomes": {
+          "executed_with_rows": 2
+        },
+        "executed": 2,
+        "downloads": 0,
+        "provider_failures": 0,
+        "unsupported_cases": 0,
+        "unsupported_clarifications": 0,
+        "supported_cases": 2,
+        "supported_clarifications": 0,
+        "llm_calls": 2,
+        "latency_seconds": {
+          "p50": 2.8994999999999997,
+          "p95": 3.35445
+        }
+      }
+    }
+  },
+  "notes": [
+    "Separate runs with identical frozen inputs and judge, not a simultaneous A/B run.",
+    "Identical-SQL judge score changes are evaluator variability, not demonstrated code improvements.",
+    "Numerical common applicability is a descriptive intersection; neither scorer nor references were changed."
+  ]
+}

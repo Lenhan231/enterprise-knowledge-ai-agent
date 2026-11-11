@@ -1,0 +1,650 @@
+{
+  "benchmark": "VietStyle RAG Benchmark",
+  "model": "qwen3",
+  "model_name": "qwen/qwen3.8-27b",
+  "retrieval_method": "translated_Hybrid",
+  "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "top_k": 10,
+  "scope_document_ids": [
+    "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+    "UPLOAD-7a57f65f5ea3418eb42f0d49d3905acf",
+    "UPLOAD-a8b54a0cd83e44e8af22437eeba5ba65"
+  ],
+  "document_languages": {
+    "UPLOAD-01e597aeef0d43a9867718fabf2b3854": "vn",
+    "UPLOAD-7a57f65f5ea3418eb42f0d49d3905acf": "vn",
+    "UPLOAD-a8b54a0cd83e44e8af22437eeba5ba65": "vn"
+  },
+  "scope_note": "Each question searches only indexed expected-source documents. README.txt is not indexed.",
+  "results": [
+    {
+      "id": "Q01",
+      "question": "Bộ chính sách VietStyle Commerce hiện ở phiên bản nào, ngày nào, và trạng thái phê duyệt ra sao?",
+      "translated_query": "What version of the VietStyle Commerce policy is currently in place, on what date, and what is its approval status?",
+      "query_language": "vn+en",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "README.txt",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "scoped_document_ids": [
+        "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+        "UPLOAD-7a57f65f5ea3418eb42f0d49d3905acf"
+      ],
+      "document_languages": {
+        "UPLOAD-01e597aeef0d43a9867718fabf2b3854": "vn",
+        "UPLOAD-7a57f65f5ea3418eb42f0d49d3905acf": "vn"
+      },
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "source_recall_at_10": 0.6667,
+      "policy_id": "Tất cả / trạng thái tài liệu",
+      "scoring_criteria": "Nêu đúng phiên bản, ngày và chưa được phê duyệt; không khẳng định đây là chính sách đang có hiệu lực thực tế.",
+      "retrieved_contexts": [
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 0,
+          "content": "VIETSTYLE COMMERCE",
+          "score": 0.0437907028969234,
+          "source_id": "S1"
+        },
+        {
+          "document_id": "UPLOAD-7a57f65f5ea3418eb42f0d49d3905acf",
+          "document_language": "vn",
+          "document_name": "03_Policy_Rules_Registry.csv",
+          "chunk_index": 0,
+          "content": "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 1: policy_id: INV-POL-001 | policy_name: Quản trị dữ liệu tồn kho | trigger: Mọi thay đổi SKU, tồn kho, giá vốn hoặc trạng thái hàng | rule_or_required_action: Lưu người thao tác, thời điểm, giá trị trước/sau và lý do; không ghi đè lịch sử | owner: Inventory Controller / Data Owner | sla_or_frequency: Trong ngày | approval: Bắt buộc | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+          "score": 0.0449486301369863,
+          "source_id": "S2"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 1,
+          "content": "BỘ CHÍNH SÁCH QUẢN LÝ TỒN KHO",
+          "score": 0.0489159175039662,
+          "source_id": "S3"
+        },
+        {
+          "document_id": "UPLOAD-7a57f65f5ea3418eb42f0d49d3905acf",
+          "document_language": "vn",
+          "document_name": "03_Policy_Rules_Registry.csv",
+          "chunk_index": 10,
+          "content": "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 11: policy_id: INV-POL-011 | policy_name: KPI và cảnh báo | trigger: Báo cáo vận hành định kỳ | rule_or_required_action: Theo dõi fill rate, stockout rate, inventory accuracy, days of supply, aged stock và PO adherence | owner: Inventory Manager | sla_or_frequency: Hằng tuần/tháng | approval: Định nghĩa metric phải thống nhất | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+          "score": 0.0463425715583826,
+          "source_id": "S4"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 62,
+          "content": "Loại quyết định: Đề xuất PO trong ngân sách và trong tham số đã duyệt | Luồng phê duyệt: Planner → Procurement Manager | Thời điểm: Theo quy trình mua hàng hiện hành",
+          "score": 0.0471834376504574,
+          "source_id": "S5"
+        },
+        {
+          "document_id": "UPLOAD-7a57f65f5ea3418eb42f0d49d3905acf",
+          "document_language": "vn",
+          "document_name": "03_Policy_Rules_Registry.csv",
+          "chunk_index": 5,
+          "content": "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 6: policy_id: INV-POL-006 | policy_name: Hàng dư thừa / chậm luân chuyển | trigger: Calculated days of supply > 120 ngày; > 180 ngày cần kế hoạch xử lý | rule_or_required_action: Dừng mua bổ sung; rà soát chuyển kho, bundle, markdown hoặc thanh lý; bảo vệ biên lợi nhuận | owner: Merchandising + Procurement | sla_or_frequency: Rà soát hằng tháng | approval: Markdown theo thẩm quyền giá | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+          "score": 0.0461760461760462,
+          "source_id": "S6"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 15,
+          "content": "Vai trò: Inventory Manager | Trách nhiệm chính: Chịu trách nhiệm KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách.",
+          "score": 0.0464519140989729,
+          "source_id": "S7"
+        },
+        {
+          "document_id": "UPLOAD-7a57f65f5ea3418eb42f0d49d3905acf",
+          "document_language": "vn",
+          "document_name": "03_Policy_Rules_Registry.csv",
+          "chunk_index": 3,
+          "content": "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 4: policy_id: INV-POL-004 | policy_name: Kiểm kê chu kỳ ABC | trigger: SKU nhóm A/B/C theo giá trị tiêu thụ năm | rule_or_required_action: A: hằng tuần; B: hằng tháng; C: hằng quý; kiểm kê mù và đối chiếu độc lập | owner: Warehouse Supervisor | sla_or_frequency: Theo lịch | approval: Sai lệch vượt ngưỡng phải duyệt | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+          "score": 0.0445665445665446,
+          "source_id": "S8"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 22,
+          "content": "4. Chính sách bổ sung hàng",
+          "score": 0.0453789498693276,
+          "source_id": "S9"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 3,
+          "content": "TÀI LIỆU MÔ PHỎNG CHO DATATHON 2026. Các ngưỡng vận hành, lead time, KPI và cấp phê duyệt là đề xuất giả lập cần được chủ sở hữu nghiệp vụ phê duyệt trước khi áp dụng thực tế. Dataset không xác định rõ đơn vị tiền tệ và không cung cấp dữ liệu PO inbound, tồn kho theo kho hoặc backorder; không dùng kết quả mẫu như số liệu tồn kho hiện hành.",
+          "score": 0.0429292929292929,
+          "source_id": "S10"
+        }
+      ],
+      "generated": {
+        "answer": "Bộ chính sách của VietStyle Commerce hiện ở phiên bản v1.0, với ngày hiệu lực là 16/10/2026 và trạng thái hiệu lực là SIMULATION_DRAFT [S2][S4][S6][S8].",
+        "source_ids": [
+          "S2",
+          "S4",
+          "S6",
+          "S8"
+        ],
+        "insufficient_context": false
+      }
+    },
+    {
+      "id": "Q02",
+      "question": "Ai chịu trách nhiệm chính về KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách?",
+      "translated_query": "Who is primarily responsible for KPI, inventory threshold, exceptions, and policy approvals?",
+      "query_language": "vn+en",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "scoped_document_ids": [
+        "UPLOAD-01e597aeef0d43a9867718fabf2b3854"
+      ],
+      "document_languages": {
+        "UPLOAD-01e597aeef0d43a9867718fabf2b3854": "vn"
+      },
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "source_recall_at_10": 1.0,
+      "policy_id": "INV-POL-011",
+      "scoring_criteria": "Trả lời đúng vai trò Inventory Manager.",
+      "retrieved_contexts": [
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 15,
+          "content": "Vai trò: Inventory Manager | Trách nhiệm chính: Chịu trách nhiệm KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách.",
+          "score": 0.0491803278688525,
+          "source_id": "S1"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 38,
+          "content": "6. Ngưỡng vận hành và KPI",
+          "score": 0.046875,
+          "source_id": "S2"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 3,
+          "content": "TÀI LIỆU MÔ PHỎNG CHO DATATHON 2026. Các ngưỡng vận hành, lead time, KPI và cấp phê duyệt là đề xuất giả lập cần được chủ sở hữu nghiệp vụ phê duyệt trước khi áp dụng thực tế. Dataset không xác định rõ đơn vị tiền tệ và không cung cấp dữ liệu PO inbound, tồn kho theo kho hoặc backorder; không dùng kết quả mẫu như số liệu tồn kho hiện hành.",
+          "score": 0.0421030582320905,
+          "source_id": "S3"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 20,
+          "content": "Vai trò: Finance | Trách nhiệm chính: Đối chiếu giá vốn, điều chỉnh giá trị tồn và phê duyệt ghi giảm theo thẩm quyền.",
+          "score": 0.046031746031746,
+          "source_id": "S4"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 41,
+          "content": "KPI: Inventory record accuracy | Mục tiêu / ngưỡng giả lập: Mục tiêu mô phỏng ≥ 98% | Hành động: Sai lệch có giá trị cao hoặc lặp lại: kiểm tra nguyên nhân gốc",
+          "score": 0.0476426799007444,
+          "source_id": "S5"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 1,
+          "content": "BỘ CHÍNH SÁCH QUẢN LÝ TỒN KHO",
+          "score": 0.0459207459207459,
+          "source_id": "S6"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 43,
+          "content": "KPI: Aged / slow-moving stock | Mục tiêu / ngưỡng giả lập: Không để tồn >180 ngày không có kế hoạch | Hành động: Chuyển kho, bundle, markdown hoặc thanh lý theo phê duyệt",
+          "score": 0.0456876456876457,
+          "source_id": "S7"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 79,
+          "content": "Báo cáo KPI, exception log, thay đổi tham số và audit trail.",
+          "score": 0.0441919191919192,
+          "source_id": "S8"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 16,
+          "content": "Vai trò: Inventory Controller / Planner | Trách nhiệm chính: Tính nhu cầu, ROP, target stock; rà soát cảnh báo và lập đề xuất PO.",
+          "score": 0.0439108803807052,
+          "source_id": "S9"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 66,
+          "content": "Loại quyết định: Thanh lý / scrap / ghi giảm giá trị | Luồng phê duyệt: QA + Inventory Manager + Finance | Thời điểm: Theo thẩm quyền tài chính",
+          "score": 0.043064182194617,
+          "source_id": "S10"
+        }
+      ],
+      "generated": {
+        "answer": "Vai trò chịu trách nhiệm chính về KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách là Inventory Manager [S1].",
+        "source_ids": [
+          "S1"
+        ],
+        "insufficient_context": false
+      }
+    },
+    {
+      "id": "Q03",
+      "question": "Tần suất kiểm kê chu kỳ cho nhóm ABC là bao nhiêu và ABC được phân loại dựa trên tiêu chí nào?",
+      "translated_query": "What is the cycle inventory frequency for group ABC, and on what criteria is ABC classified?",
+      "query_language": "vn+en",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "scoped_document_ids": [
+        "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+        "UPLOAD-a8b54a0cd83e44e8af22437eeba5ba65"
+      ],
+      "document_languages": {
+        "UPLOAD-01e597aeef0d43a9867718fabf2b3854": "vn",
+        "UPLOAD-a8b54a0cd83e44e8af22437eeba5ba65": "vn"
+      },
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "source_recall_at_10": 1.0,
+      "policy_id": "INV-POL-004",
+      "scoring_criteria": "Đủ tần suất cả A/B/C và nêu đúng tiêu chí giá trị tiêu thụ năm.",
+      "retrieved_contexts": [
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 33,
+          "content": "5. Phân loại ABC và lịch kiểm kê",
+          "score": 0.0491803278688525,
+          "source_id": "S1"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 37,
+          "content": "ABC phải được tính từ annual consumption value (nhu cầu năm × cost), không phân loại chỉ theo số lượng bán. Khi chưa có lịch sử nhu cầu đủ tin cậy, dùng nhóm tạm và rà soát sau 3 chu kỳ.",
+          "score": 0.0483870967741935,
+          "source_id": "S2"
+        },
+        {
+          "document_id": "UPLOAD-a8b54a0cd83e44e8af22437eeba5ba65",
+          "document_language": "vn",
+          "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+          "chunk_index": 4,
+          "content": "04 | Kiểm kê chu kỳ & điều chỉnh ABC dựa trên giá trị tiêu thụ năm, không chỉ dựa vào số lượng. NHÓM A ~80% giá trị tiêu thụ Hằng tuần NHÓM B ~15% tiếp theo Hằng tháng NHÓM C ~5% còn lại Hằng quý Quy trình: chuẩn bị danh sách → blind count → recount độc lập → đối chiếu receipts/picks/returns/transfers → ghi nguyên nhân → duyệt → điều chỉnh có audit trail. Không xóa giao dịch cũ; mọi điều chỉnh cần mã phiếu, người nhập, người duyệt, thời điểm và bằng chứng. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 5",
+          "score": 0.0436507936507936,
+          "source_id": "S3"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 41,
+          "content": "KPI: Inventory record accuracy | Mục tiêu / ngưỡng giả lập: Mục tiêu mô phỏng ≥ 98% | Hành động: Sai lệch có giá trị cao hoặc lặp lại: kiểm tra nguyên nhân gốc",
+          "score": 0.0420849420849421,
+          "source_id": "S4"
+        },
+        {
+          "document_id": "UPLOAD-a8b54a0cd83e44e8af22437eeba5ba65",
+          "document_language": "vn",
+          "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+          "chunk_index": 2,
+          "content": "02 | Mô hình vận hành Tách quyền ra quyết định khỏi thao tác nhập liệu. PLAN Forecast / campaign ROP & target stock → APPROVE Budget / supplier PO authorization → RECEIVE PO match QC & put-away → CONTROL Cycle count Exception handling → LEARN KPI / root cause Forecast update Nguyên tắc kiểm soát: người đếm ≠ người nhập điều chỉnh ≠ người duyệt. AI Agent chỉ đọc dữ liệu được phân quyền và đề xuất; không tự phát hành PO hoặc tự sửa tồn kho. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 3",
+          "score": 0.04375,
+          "source_id": "S5"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 35,
+          "content": "Nhóm: B | Tiêu chí tham chiếu: Nhóm tiếp theo đóng góp xấp xỉ 15% | Tần suất: Hằng tháng | SLA điều tra: Điều tra trong 2 ngày làm việc",
+          "score": 0.0466346153846154,
+          "source_id": "S6"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 36,
+          "content": "Nhóm: C | Tiêu chí tham chiếu: Phần còn lại, xấp xỉ 5% | Tần suất: Hằng quý | SLA điều tra: Điều tra trong 5 ngày làm việc",
+          "score": 0.0459280303030303,
+          "source_id": "S7"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 34,
+          "content": "Nhóm: A | Tiêu chí tham chiếu: Nhóm SKU đóng góp xấp xỉ 80% giá trị tiêu thụ năm | Tần suất: Hằng tuần | SLA điều tra: Điều tra chênh lệch ngay trong ngày",
+          "score": 0.0459207459207459,
+          "source_id": "S8"
+        },
+        {
+          "document_id": "UPLOAD-a8b54a0cd83e44e8af22437eeba5ba65",
+          "document_language": "vn",
+          "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+          "chunk_index": 1,
+          "content": "01 | Bối cảnh dữ liệu Dataset là cơ sở mô phỏng; không phản ánh tồn kho hiện tại. 2,412 SKU trong product master 60,247 Bản ghi inventory theo snapshot 424 SKU có snapshot 31/12/2022 67.3% Bản ghi bật stockout_flag Nhóm hàng • Streetwear • Outdoor • Casual • GenZ Vấn đề dữ liệu cần kiểm soát • 76.3% bản ghi bật overstock_flag • 30,495 bản ghi bật đồng thời stockout + overstock • reorder_flag có tổng bằng 0 • Snapshot mới nhất trong file: 2022-12-31 VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 2",
+          "score": 0.0407511737089202,
+          "source_id": "S9"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 48,
+          "content": "Trên 240 ngày: Inventory Manager và Finance đánh giá dự phòng giảm giá trị / loại bỏ theo quy định kế toán.",
+          "score": 0.0406123086535458,
+          "source_id": "S10"
+        }
+      ],
+      "generated": {
+        "answer": "ABC được phân loại dựa trên annual consumption value (nhu cầu năm × cost), không phân loại chỉ theo số lượng bán [S2].\n\nTần suất kiểm kê chu kỳ cho các nhóm cụ thể như sau:\n- Nhóm A (đóng góp xấp xỉ 80% giá trị tiêu thụ năm): Hằng tuần [S8].\n- Nhóm B (đóng góp xấp xỉ 15%): Hằng tháng [S6].\n- Nhóm C (phần còn lại, xấp xỉ 5%): Hằng quý [S7].",
+        "source_ids": [
+          "S2",
+          "S8",
+          "S6",
+          "S7"
+        ],
+        "insufficient_context": false
+      }
+    },
+    {
+      "id": "Q04",
+      "question": "Khi hàng trả về từ khách, hàng phải qua trạng thái nào trước khi được cộng vào tồn kho khả dụng?",
+      "translated_query": "When goods are returned from a customer, through which status must the goods pass before being added to available inventory?",
+      "query_language": "vn+en",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "scoped_document_ids": [
+        "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+        "UPLOAD-a8b54a0cd83e44e8af22437eeba5ba65"
+      ],
+      "document_languages": {
+        "UPLOAD-01e597aeef0d43a9867718fabf2b3854": "vn",
+        "UPLOAD-a8b54a0cd83e44e8af22437eeba5ba65": "vn"
+      },
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "source_recall_at_10": 1.0,
+      "policy_id": "INV-POL-007",
+      "scoring_criteria": "Nêu QUARANTINE và điều kiện QA xác nhận trước khi cộng vào tồn khả dụng.",
+      "retrieved_contexts": [
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 53,
+          "content": "Hàng trả về phải vào trạng thái QUARANTINE cho đến khi QA kiểm tra; không cộng vào available-to-promise trước khi đạt điều kiện.",
+          "score": 0.0470725995316159,
+          "source_id": "S1"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 24,
+          "content": "Inventory position = On-hand + Open PO − Backorder",
+          "score": 0.0422723475355054,
+          "source_id": "S2"
+        },
+        {
+          "document_id": "UPLOAD-a8b54a0cd83e44e8af22437eeba5ba65",
+          "document_language": "vn",
+          "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+          "chunk_index": 5,
+          "content": "05 | Dư thừa, trả hàng và cách ly Tồn kho cao không có nghĩa là hàng sẵn sàng bán. DAYS OF SUPPLY >120 Tạm dừng bổ sung; kiểm tra forecast, size/màu và hàng đang chuyển. >180 NGÀY Lập kế hoạch chuyển kho, bundle, markdown hoặc thanh lý có phê duyệt. HÀNG TRẢ VỀ Quarantine → QA → A-grade bán lại / B-grade sửa / C-grade xử lý riêng. Hàng trả về chỉ được cộng vào tồn khả dụng sau khi QA xác nhận tình trạng và cập nhật disposition. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 6",
+          "score": 0.0481394743689826,
+          "source_id": "S3"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 60,
+          "content": "Sau campaign, đối chiếu forecast với sell-through, tồn còn lại và return rate để cập nhật kế hoạch.",
+          "score": 0.042258064516129,
+          "source_id": "S4"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 69,
+          "content": "Tính lại days of supply từ tồn khả dụng và nhu cầu bình quân; lưu cả giá trị gốc và giá trị tính lại.",
+          "score": 0.0473790322580645,
+          "source_id": "S5"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 15,
+          "content": "Vai trò: Inventory Manager | Trách nhiệm chính: Chịu trách nhiệm KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách.",
+          "score": 0.0410785091197462,
+          "source_id": "S6"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 5,
+          "content": "Tài liệu thiết lập cách kiểm soát hàng hóa từ lúc lập kế hoạch bổ sung đến khi nhận, lưu kho, kiểm kê, xử lý hàng trả về và thanh lý. Mục tiêu là cân bằng mức độ sẵn hàng, chi phí lưu kho, vốn bị chiếm dụng và độ chính xác của dữ liệu.",
+          "score": 0.0461760461760462,
+          "source_id": "S7"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 29,
+          "content": "Trước khi phát hành PO, kiểm tra tồn kho khả dụng, PO đang mở, hàng đang giữ, backorder, MOQ, ngân sách và lịch giao.",
+          "score": 0.0437523173896922,
+          "source_id": "S8"
+        },
+        {
+          "document_id": "UPLOAD-a8b54a0cd83e44e8af22437eeba5ba65",
+          "document_language": "vn",
+          "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+          "chunk_index": 3,
+          "content": "03 | Quy tắc bổ sung hàng Thông số mặc định chỉ để mô phỏng; cần thay bằng dữ liệu nhà cung cấp. Công thức Inventory Position = On-hand + Open PO − Backorder ROP = Daily Demand × (Lead Time + Safety Days) Target = Daily Demand × (Lead Time + Safety Days + Review Period) THAM SỐ KHỞI TẠO Lead time: 14 ngày Safety stock: 7 ngày Review period: 7 ngày Reorder trigger: Inventory Position ≤ ROP Nếu có stockout/service signal nhưng calculated days of supply >120 ngày → DATA CONFLICT. Khóa đề xuất PO tự động, xác minh giao dịch và nhu cầu trước khi mua. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 4",
+          "score": 0.0402777777777778,
+          "source_id": "S9"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 3,
+          "content": "TÀI LIỆU MÔ PHỎNG CHO DATATHON 2026. Các ngưỡng vận hành, lead time, KPI và cấp phê duyệt là đề xuất giả lập cần được chủ sở hữu nghiệp vụ phê duyệt trước khi áp dụng thực tế. Dataset không xác định rõ đơn vị tiền tệ và không cung cấp dữ liệu PO inbound, tồn kho theo kho hoặc backorder; không dùng kết quả mẫu như số liệu tồn kho hiện hành.",
+          "score": 0.0418060200668896,
+          "source_id": "S10"
+        }
+      ],
+      "generated": {
+        "answer": "Hàng trả về phải vào trạng thái QUARANTINE cho đến khi QA kiểm tra [S1]. Hàng trả về chỉ được cộng vào tồn khả dụng sau khi QA xác nhận tình trạng và cập nhật disposition [S3].",
+        "source_ids": [
+          "S1",
+          "S3"
+        ],
+        "insufficient_context": false
+      }
+    },
+    {
+      "id": "Q05",
+      "question": "Những KPI tồn kho nào cần theo dõi định kỳ theo bộ chính sách?",
+      "translated_query": "Which inventory KPIs need to be monitored periodically according to the policy set?",
+      "query_language": "vn+en",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "scoped_document_ids": [
+        "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+        "UPLOAD-7a57f65f5ea3418eb42f0d49d3905acf"
+      ],
+      "document_languages": {
+        "UPLOAD-01e597aeef0d43a9867718fabf2b3854": "vn",
+        "UPLOAD-7a57f65f5ea3418eb42f0d49d3905acf": "vn"
+      },
+      "found_expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "source_recall_at_10": 1.0,
+      "policy_id": "INV-POL-011",
+      "scoring_criteria": "Nêu được ít nhất 5/6 KPI, không thay bằng KPI không có trong tài liệu.",
+      "retrieved_contexts": [
+        {
+          "document_id": "UPLOAD-7a57f65f5ea3418eb42f0d49d3905acf",
+          "document_language": "vn",
+          "document_name": "03_Policy_Rules_Registry.csv",
+          "chunk_index": 10,
+          "content": "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 11: policy_id: INV-POL-011 | policy_name: KPI và cảnh báo | trigger: Báo cáo vận hành định kỳ | rule_or_required_action: Theo dõi fill rate, stockout rate, inventory accuracy, days of supply, aged stock và PO adherence | owner: Inventory Manager | sla_or_frequency: Hằng tuần/tháng | approval: Định nghĩa metric phải thống nhất | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+          "score": 0.0457738982329146,
+          "source_id": "S1"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 15,
+          "content": "Vai trò: Inventory Manager | Trách nhiệm chính: Chịu trách nhiệm KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách.",
+          "score": 0.0403603603603604,
+          "source_id": "S2"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 44,
+          "content": "Các mục tiêu KPI là mục tiêu khởi tạo để mô phỏng, cần được hiệu chỉnh theo mức dịch vụ, margin và chiến lược tồn kho của doanh nghiệp.",
+          "score": 0.0476190476190476,
+          "source_id": "S3"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 3,
+          "content": "TÀI LIỆU MÔ PHỎNG CHO DATATHON 2026. Các ngưỡng vận hành, lead time, KPI và cấp phê duyệt là đề xuất giả lập cần được chủ sở hữu nghiệp vụ phê duyệt trước khi áp dụng thực tế. Dataset không xác định rõ đơn vị tiền tệ và không cung cấp dữ liệu PO inbound, tồn kho theo kho hoặc backorder; không dùng kết quả mẫu như số liệu tồn kho hiện hành.",
+          "score": 0.046875,
+          "source_id": "S4"
+        },
+        {
+          "document_id": "UPLOAD-7a57f65f5ea3418eb42f0d49d3905acf",
+          "document_language": "vn",
+          "document_name": "03_Policy_Rules_Registry.csv",
+          "chunk_index": 0,
+          "content": "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 1: policy_id: INV-POL-001 | policy_name: Quản trị dữ liệu tồn kho | trigger: Mọi thay đổi SKU, tồn kho, giá vốn hoặc trạng thái hàng | rule_or_required_action: Lưu người thao tác, thời điểm, giá trị trước/sau và lý do; không ghi đè lịch sử | owner: Inventory Controller / Data Owner | sla_or_frequency: Trong ngày | approval: Bắt buộc | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+          "score": 0.0426747311827957,
+          "source_id": "S5"
+        },
+        {
+          "document_id": "UPLOAD-7a57f65f5ea3418eb42f0d49d3905acf",
+          "document_language": "vn",
+          "document_name": "03_Policy_Rules_Registry.csv",
+          "chunk_index": 3,
+          "content": "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 4: policy_id: INV-POL-004 | policy_name: Kiểm kê chu kỳ ABC | trigger: SKU nhóm A/B/C theo giá trị tiêu thụ năm | rule_or_required_action: A: hằng tuần; B: hằng tháng; C: hằng quý; kiểm kê mù và đối chiếu độc lập | owner: Warehouse Supervisor | sla_or_frequency: Theo lịch | approval: Sai lệch vượt ngưỡng phải duyệt | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+          "score": 0.0414599574769667,
+          "source_id": "S6"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 41,
+          "content": "KPI: Inventory record accuracy | Mục tiêu / ngưỡng giả lập: Mục tiêu mô phỏng ≥ 98% | Hành động: Sai lệch có giá trị cao hoặc lặp lại: kiểm tra nguyên nhân gốc",
+          "score": 0.0411894715692184,
+          "source_id": "S7"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 43,
+          "content": "KPI: Aged / slow-moving stock | Mục tiêu / ngưỡng giả lập: Không để tồn >180 ngày không có kế hoạch | Hành động: Chuyển kho, bundle, markdown hoặc thanh lý theo phê duyệt",
+          "score": 0.0459797785267212,
+          "source_id": "S8"
+        },
+        {
+          "document_id": "UPLOAD-01e597aeef0d43a9867718fabf2b3854",
+          "document_language": "vn",
+          "document_name": "01_Inventory_Management_Policy_Manual.docx",
+          "chunk_index": 42,
+          "content": "KPI: Stockout rate | Mục tiêu / ngưỡng giả lập: Mục tiêu mô phỏng < 2% dòng SKU/ngày | Hành động: Theo dõi riêng stockout thật và cờ dữ liệu",
+          "score": 0.0459207459207459,
+          "source_id": "S9"
+        },
+        {
+          "document_id": "UPLOAD-7a57f65f5ea3418eb42f0d49d3905acf",
+          "document_language": "vn",
+          "document_name": "03_Policy_Rules_Registry.csv",
+          "chunk_index": 1,
+          "content": "Columns: policy_id | policy_name | trigger | rule_or_required_action | owner | sla_or_frequency | approval | company | document_version | effective_status | source_basis\nRow 2: policy_id: INV-POL-002 | policy_name: Bổ sung hàng | trigger: Inventory position <= reorder point và không có cảnh báo dữ liệu chưa xử lý | rule_or_required_action: Đề xuất PO theo target stock; kiểm tra PO đang mở, backorder, MOQ và ngân sách trước khi gửi duyệt | owner: Planner + Procurement | sla_or_frequency: Rà soát hằng tuần | approval: Theo hạn mức mua hàng | company: VietStyle Commerce | document_version: v1.0 | 16/10/2026 | effective_status: SIMULATION_DRAFT | source_basis: Datathon dataset + explicitly stated operating assumptions",
+          "score": 0.0406746031746032,
+          "source_id": "S10"
+        }
+      ],
+      "generated": {
+        "answer": "Theo bộ chính sách, các KPI tồn kho cần theo dõi định kỳ bao gồm: fill rate, stockout rate, inventory accuracy, days of supply, aged stock và PO adherence [S1].",
+        "source_ids": [
+          "S1"
+        ],
+        "insufficient_context": false
+      }
+    }
+  ],
+  "summary": {
+    "question_count": 5,
+    "mean_source_recall_at_10": 0.9333,
+    "generation_completed": 5
+  }
+}

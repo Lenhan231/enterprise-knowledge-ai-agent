@@ -1,0 +1,138 @@
+{
+  "created_at_utc": "2026-09-26T23:26:20.917436+00:00",
+  "route": "POST /api/ask",
+  "dataset": "data/evaluation/vinamilk_qa_cases.json",
+  "dataset_sha256": "62169b43d2a95a3b2f47db4e37ec71f350201b7dfff0d6d94fb791dc034fb3f2",
+  "model": "openai/gpt-oss-20b",
+  "case_count": 5,
+  "passed": 5,
+  "failed": 0,
+  "mean_latency_seconds": 26.405,
+  "limitations": "Live authenticated app-route evaluation for the labeled public finance, sustainability, product and denial cases only. Automated exact-fact/source/route checks do not measure semantic faithfulness or human usefulness; private HR, contracts, invoices, manufacturing and customer-service documents are not in this corpus.",
+  "results": [
+    {
+      "id": "finance-2020-revenue-profit",
+      "role": "finance_analyst",
+      "question": "Doanh thu thuần và lợi nhuận sau thuế hợp nhất của Vinamilk năm 2020 là bao nhiêu?",
+      "passed": true,
+      "checks": {
+        "expected_agent": true,
+        "expected_abstention": true,
+        "expected_facts": true,
+        "expected_source_document": true,
+        "citation_integrity": true,
+        "denial_has_no_sources": true
+      },
+      "missing_facts": [],
+      "failed_fact_groups": [],
+      "cited_document_ids": [
+        "VNM-AR-2020-VI"
+      ],
+      "citation_pages": [
+        8
+      ],
+      "agent": "hybrid",
+      "insufficient_context": false,
+      "answer": "Doanh thu thuần hợp nhất của Vinamilk năm 2020 là **VND 59 723 tỷ** và lợi nhuận sau thuế hợp nhất là **VND 11 236 tỷ**. [S10]",
+      "latency_seconds": 30.069
+    },
+    {
+      "id": "finance-2024-revenue-profit",
+      "role": "finance_analyst",
+      "question": "Tóm tắt doanh thu hợp nhất và lợi nhuận sau thuế của Vinamilk năm 2024.",
+      "passed": true,
+      "checks": {
+        "expected_agent": true,
+        "expected_abstention": true,
+        "expected_facts": true,
+        "expected_source_document": true,
+        "citation_integrity": true,
+        "denial_has_no_sources": true
+      },
+      "missing_facts": [],
+      "failed_fact_groups": [],
+      "cited_document_ids": [
+        "VNM-AR-2024-VI"
+      ],
+      "citation_pages": [
+        12
+      ],
+      "agent": "report",
+      "insufficient_context": false,
+      "answer": "- Tổng doanh thu hợp nhất năm 2024: 61,824 tỷ đồng. [S3]  \n- Lợi nhuận sau thuế hợp nhất năm 2024: 9,453 tỷ đồng. [S3]",
+      "latency_seconds": 28.359
+    },
+    {
+      "id": "sustainability-2024-ghg-inventory",
+      "role": "sustainability_analyst",
+      "question": "According to Vinamilk's 2024 Sustainability Report, which factories and farms implement a greenhouse gas emissions inventory?",
+      "passed": true,
+      "checks": {
+        "expected_agent": true,
+        "expected_abstention": true,
+        "expected_facts": true,
+        "expected_source_document": true,
+        "citation_integrity": true,
+        "denial_has_no_sources": true
+      },
+      "missing_facts": [],
+      "failed_fact_groups": [],
+      "cited_document_ids": [
+        "VNM-SR-2024-EN"
+      ],
+      "citation_pages": [
+        41
+      ],
+      "agent": "report",
+      "insufficient_context": false,
+      "answer": "All of Vinamilk’s factories and farms have implemented a greenhouse‑gas emissions inventory in accordance with ISO 14064 standards. [S3]",
+      "latency_seconds": 25.705
+    },
+    {
+      "id": "employee-product-nutrition",
+      "role": "employee",
+      "question": "Trong 100 ml sữa ADM Ít Đường có bao nhiêu năng lượng, protein và đường?",
+      "passed": true,
+      "checks": {
+        "expected_agent": true,
+        "expected_abstention": true,
+        "expected_facts": true,
+        "expected_source_document": true,
+        "citation_integrity": true,
+        "denial_has_no_sources": true
+      },
+      "missing_facts": [],
+      "failed_fact_groups": [],
+      "cited_document_ids": [
+        "VNM-PROD-ADM-LOW-SUGAR-VI"
+      ],
+      "citation_pages": [],
+      "agent": "knowledge",
+      "insufficient_context": false,
+      "answer": "Trong 100 ml sữa ADM Ít Đường có:\n\n- Năng lượng: 68,2 kcal  \n- Chất đạm (protein): 3,0 g  \n- Đường tổng số: 7,3 g  \n\n[S1]",
+      "latency_seconds": 22.832
+    },
+    {
+      "id": "employee-financial-denial",
+      "role": "employee",
+      "question": "Doanh thu và lợi nhuận sau thuế của Vinamilk năm 2024 là bao nhiêu?",
+      "passed": true,
+      "checks": {
+        "expected_agent": true,
+        "expected_abstention": true,
+        "expected_facts": true,
+        "expected_source_document": true,
+        "citation_integrity": true,
+        "denial_has_no_sources": true
+      },
+      "missing_facts": [],
+      "failed_fact_groups": [],
+      "cited_document_ids": [],
+      "citation_pages": [],
+      "agent": "hybrid",
+      "insufficient_context": true,
+      "answer": "Insufficient information in the retrieved documents.",
+      "latency_seconds": 25.06
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "dataset_id": "knowledge-verifier-finance-paired-probe-v2",
+  "limitations": "Paired development probes based on observed F10 failure, not independent quality evidence. Question language/completeness varies while facts remain fixed.",
+  "contexts": {
+    "finance": [
+      {
+        "source_id": "S1",
+        "document_name": "synthetic-consolidated-report.txt",
+        "metadata": {
+          "section_title": "Consolidated results, VND billion"
+        },
+        "content": "Consolidated financial results. Unit: VND billion. Revenue: 2024 = 100; 2023 = 90. Profit after tax: 2024 = 20; 2023 = 15. The report does not provide a forecast or audit opinion."
+      },
+      {
+        "source_id": "S2",
+        "document_name": "synthetic-separate-report.txt",
+        "metadata": {
+          "section_title": "Separate results, VND billion"
+        },
+        "content": "Separate financial results of the parent company. Unit: VND billion. Revenue: 2024 = 80; 2023 = 70. Profit after tax: 2024 = 12; 2023 = 10."
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "D01",
+      "context": "finance",
+      "question": "Doanh thu và lợi nhuận hợp nhất năm 2024 là bao nhiêu?",
+      "answer": "Lợi nhuận sau thuế hợp nhất năm 2024 là 20 tỷ đồng [S1].",
+      "expected": "supported",
+      "topic": "original_f10_partial_answer"
+    },
+    {
+      "id": "D02",
+      "context": "finance",
+      "question": "Lợi nhuận sau thuế hợp nhất năm 2024 là bao nhiêu?",
+      "answer": "Lợi nhuận sau thuế hợp nhất năm 2024 là 20 tỷ đồng [S1].",
+      "expected": "supported",
+      "topic": "profit_only_question"
+    },
+    {
+      "id": "D03",
+      "context": "finance",
+      "question": "What is consolidated profit after tax in 2024?",
+      "answer": "Consolidated profit after tax in 2024 is VND 20 billion [S1].",
+      "expected": "supported",
+      "topic": "english_same_fact"
+    },
+    {
+      "id": "D04",
+      "context": "finance",
+      "question": "Doanh thu và lợi nhuận hợp nhất năm 2024 là bao nhiêu?",
+      "answer": "Lợi nhuận sau thuế hợp nhất năm 2024 là 100 tỷ đồng [S1].",
+      "expected": "rejected",
+      "topic": "metric_control"
+    }
+  ]
+}

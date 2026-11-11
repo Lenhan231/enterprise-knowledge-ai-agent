@@ -1,0 +1,64 @@
+{
+  "tests": 7,
+  "failures": [],
+  "errors": [],
+  "observations": [
+    {
+      "case": "direct_mutation",
+      "sql": "SELECT p.product_id,p.product_name,p.color,p.price FROM commerce.products p WHERE p.color=$1 AND p.price>=$2 ORDER BY 4 DESC,p.product_id LIMIT 5",
+      "blocked": true,
+      "calls": 2
+    },
+    {
+      "case": "direct_mutation",
+      "sql": "SELECT p.product_id,p.color,p.price FROM commerce.products p WHERE p.color=$1 AND p.price>=$2 ORDER BY 4 DESC,p.product_id LIMIT 5",
+      "blocked": true,
+      "calls": 2
+    },
+    {
+      "case": "direct_mutation",
+      "sql": "SELECT p.product_id,p.product_name,p.color,p.price FROM commerce.products p WHERE p.color=$1 AND p.price>=$2 ORDER BY 4 ASC,p.product_id LIMIT 5",
+      "blocked": true,
+      "calls": 2
+    },
+    {
+      "case": "direct_mutation",
+      "sql": "SELECT p.product_id,p.product_name,p.color,p.price FROM commerce.products p WHERE p.color=$1 AND p.price>=$2 ORDER BY 4 DESC,p.product_id LIMIT 4",
+      "blocked": true,
+      "calls": 2
+    },
+    {
+      "case": "direct_mutation",
+      "sql": "DELETE FROM commerce.products",
+      "blocked": true,
+      "calls": 2
+    },
+    {
+      "case": "direct_mutation",
+      "sql": "SELECT p.secret FROM private.secrets p LIMIT 5",
+      "blocked": true,
+      "calls": 2
+    },
+    {
+      "case": "free_text_blue_stock",
+      "blocked": true,
+      "calls": 1
+    },
+    {
+      "case": "direct_filter_repair",
+      "calls": 2,
+      "executed": true
+    },
+    {
+      "case": "dropped_snapshot",
+      "blocked": true,
+      "calls": 2
+    },
+    {
+      "case": "oversized_model_number",
+      "invalid_attempt_blocked": true,
+      "calls": 2,
+      "executed_after_repair": true
+    }
+  ]
+}

@@ -1,0 +1,227 @@
+{
+  "baseline_revision": "153e5d5e8684e742fffdd7e464bf5848be555931",
+  "baseline_directory": "artifacts\\evaluation\\sql-semantic-contracts-2026-11-03\\final\\sql_analytics",
+  "reference_sha256": "4ebff61142108f3eb0b0a65df4a09af16bb21985021d1b6a815ae7e66a9e1457",
+  "failures": [
+    {
+      "id": "S03",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Same product grain, date, top 20 and deterministic IDs; extra constant snapshot column changes output schema but not selection.",
+      "question": "List the 20 products with the highest stock_on_hand on 2022-12-31, with product names.",
+      "generated_sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.inventory.product_id AS product_id, commerce.products.product_name AS product_name, commerce.inventory.stock_on_hand AS stock_on_hand FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.snapshot_date = $1 ORDER BY commerce.inventory.stock_on_hand DESC NULLS LAST, commerce.inventory.snapshot_date, commerce.inventory.product_id, commerce.products.product_name LIMIT 20",
+      "answer": "Query completed.",
+      "reference_sql": "SELECT i.product_id,p.product_name,i.stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date = DATE '2022-12-31' ORDER BY i.stock_on_hand DESC NULLS LAST,i.product_id LIMIT 20",
+      "judge_reason": "Response: The generated SQL query joins inventory with products on product_id, filters rows to the snapshot date \"2022-12-31\", returns snapshot_date along with product_id, product_name, and stock_on_hand, and orders by stock_on_hand descending with additional tie-breakers before limiting the result to 20 rows.\nReference: The reference SQL query joins inventory with products on product_id, filters rows to the date \"2022-12-31\", returns product_id, product_name, and stock_on_hand, and orders by stock_on_hand descending with product_id as a tie-breaker before limiting the result to 20 rows."
+    },
+    {
+      "id": "S04",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Same category totals at one date, ordering and bounded results. Extra constant snapshot projection/grouping is provenance; safety LIMIT 200 is not a requested top-N. Strict output-schema equality differs.",
+      "question": "Which product categories have the highest total stock_on_hand on 2022-12-31?",
+      "generated_sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.products.category AS category, SUM(commerce.inventory.stock_on_hand) AS stock_on_hand FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.snapshot_date = $1 GROUP BY commerce.inventory.snapshot_date, commerce.products.category ORDER BY SUM(commerce.inventory.stock_on_hand) DESC NULLS LAST, commerce.inventory.snapshot_date, commerce.products.category LIMIT 200",
+      "answer": "Query completed.",
+      "reference_sql": "SELECT p.category,SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date = DATE '2022-12-31' GROUP BY p.category ORDER BY stock_on_hand DESC NULLS LAST,p.category",
+      "judge_reason": "Response: The generated query joins inventory with products, filters rows to the 2022-12-31 snapshot, groups by snapshot date and product category, and calculates total stock on hand for each group. It returns snapshot date, category, and total stock, ordered by total stock descending with nulls last, then by snapshot date and category, limited to 200 rows.\nReference: The reference query joins inventory with products, filters rows to the 2022-12-31 snapshot, groups by product category, and calculates total stock on hand for each category. It returns category and total stock, ordered by total stock descending with nulls last and then category, limited to 200 rows."
+    },
+    {
+      "id": "S05",
+      "classification": "Genuine semantic mismatch",
+      "rationale": "Grouping by snapshot yields no row when no flags match; scalar COUNT should return zero. Provenance requirement currently couples scalar count to observed rows.",
+      "question": "How many products have reorder_flag=true on the last snapshot?",
+      "generated_sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, COUNT(DISTINCT commerce.inventory.product_id) AS observed_product_count FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.reorder_flag = TRUE AND commerce.inventory.snapshot_date = (SELECT MAX(inventory.snapshot_date) FROM commerce.inventory) GROUP BY commerce.inventory.snapshot_date ORDER BY commerce.inventory.snapshot_date LIMIT 200",
+      "answer": "No matching rows were found in the approved data sources.",
+      "reference_sql": "SELECT COUNT(DISTINCT product_id) AS product_count FROM commerce.inventory WHERE snapshot_date=(SELECT MAX(snapshot_date) FROM commerce.inventory) AND reorder_flag=TRUE",
+      "judge_reason": "Response: The generated SQL joins inventory records with products, filters records to those marked for reorder at the latest snapshot date, groups the results by snapshot date, and returns the snapshot date together with the distinct product count. It orders by snapshot date and limits the output to 200 rows. The join can also change the results if products contains duplicate product IDs.\nReference: The reference SQL counts the distinct products in commerce.inventory that are marked for reorder at the latest snapshot date. It returns one aggregate product count, limited to 200 rows."
+    },
+    {
+      "id": "S06",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Same source/filter/product grain/order; extra constant snapshot output is provenance, not a different population.",
+      "question": "List products with stockout_flag=true on 2022-12-31, including stockout_days.",
+      "generated_sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.inventory.product_id AS product_id, commerce.products.product_name AS product_name, commerce.inventory.stockout_days AS stockout_days FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.stockout_flag = TRUE AND commerce.inventory.snapshot_date = $1 ORDER BY commerce.inventory.snapshot_date, commerce.inventory.product_id, commerce.products.product_name LIMIT 200",
+      "answer": "Query completed.",
+      "reference_sql": "SELECT i.product_id,p.product_name,i.stockout_days FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date = DATE '2022-12-31' AND i.stockout_flag=TRUE ORDER BY i.product_id LIMIT 200",
+      "judge_reason": "Response: The generated query joins inventory records with matching products, filters to rows where stockout_flag is TRUE and snapshot_date is 2022-12-31, returns snapshot_date along with product_id, product_name, and stockout_days, sorts by snapshot_date, product_id, and product_name, and limits the result to 200 rows.\nReference: The reference query joins inventory records with matching products, filters to rows where snapshot_date equals 2022-12-31 and stockout_flag is TRUE, returns product_id, product_name, and stockout_days, sorts by product_id, and limits the result to 200 rows."
+    },
+    {
+      "id": "S07",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Same flagged product count/category/date; extra constant snapshot and canonical metric alias differ. PK prevents hypothetical duplicate product IDs raised by judge.",
+      "question": "Which categories have the most overstock_flag=true products on 2022-12-31?",
+      "generated_sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.products.category AS category, COUNT(DISTINCT commerce.inventory.product_id) AS observed_product_count FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.overstock_flag = TRUE AND commerce.inventory.snapshot_date = $1 GROUP BY commerce.inventory.snapshot_date, commerce.products.category ORDER BY COUNT(DISTINCT commerce.inventory.product_id) DESC NULLS LAST, commerce.inventory.snapshot_date, commerce.products.category LIMIT 200",
+      "answer": "Query completed.",
+      "reference_sql": "SELECT p.category,COUNT(DISTINCT i.product_id) AS product_count FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date = DATE '2022-12-31' AND i.overstock_flag=TRUE GROUP BY p.category ORDER BY product_count DESC,p.category",
+      "judge_reason": "Response: The generated SQL query joins inventory with products, filters to overstocked inventory observed on 2022-12-31, groups by snapshot date and product category, counts distinct products in each group, orders by that count descending and then by snapshot date and category, and returns up to 200 rows. It includes snapshot_date in the output.\nReference: The reference SQL query joins inventory with products, filters to overstocked inventory observed on 2022-12-31, groups by product category, counts distinct products in each category, orders by product count descending and category, and returns up to 200 rows."
+    },
+    {
+      "id": "S08",
+      "classification": "Genuine semantic mismatch",
+      "rationale": "Explicit non-null days_of_supply predicate is missing. PostgreSQL ascending null order and LIMIT can change membership.",
+      "question": "Which products have the lowest non-null days_of_supply on the latest snapshot?",
+      "generated_sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.inventory.product_id AS product_id, commerce.products.product_name AS product_name, commerce.inventory.days_of_supply AS days_of_supply FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.snapshot_date = (SELECT MAX(inventory.snapshot_date) FROM commerce.inventory) ORDER BY commerce.inventory.days_of_supply ASC, commerce.inventory.snapshot_date, commerce.inventory.product_id, commerce.products.product_name LIMIT 200",
+      "answer": "Query completed.",
+      "reference_sql": "SELECT i.product_id,p.product_name,i.days_of_supply FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date = DATE '2022-12-31' AND i.days_of_supply IS NOT NULL ORDER BY i.days_of_supply,i.product_id LIMIT 200",
+      "judge_reason": "Response: The generated SQL query joins inventory with products, returns snapshot date, product ID, product name, and days of supply, and keeps rows from the latest available inventory snapshot. It orders by days of supply and additional snapshot, product ID, and product name fields, then limits the result to 200 rows. It does not explicitly exclude null days_of_supply values.\nReference: The reference SQL query joins inventory with products, returns product ID, product name, and days of supply for the fixed snapshot date December 31, 2022, and excludes rows where days_of_supply is null. It orders by days of supply and product ID, then limits the result to 200 rows."
+    },
+    {
+      "id": "S09",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Same product IDs and exact date; extra constant snapshot output and redundant tie-break fields do not change selected products.",
+      "question": "Compare the 2022-12-31 stock_on_hand of DragonWear MA-01 (product_id 1) and DragonWear MA-03 (product_id 3).",
+      "generated_sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.inventory.product_id AS product_id, commerce.products.product_name AS product_name, commerce.inventory.stock_on_hand AS stock_on_hand FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.product_id IN ($1, $2) AND commerce.inventory.snapshot_date = $3 ORDER BY commerce.inventory.snapshot_date, commerce.inventory.product_id, commerce.products.product_name LIMIT 200",
+      "answer": "Query completed.",
+      "reference_sql": "SELECT i.product_id,p.product_name,i.stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date = DATE '2022-12-31' AND i.product_id IN (1,3) ORDER BY i.product_id",
+      "judge_reason": "Response: The generated SQL query joins inventory with products on product_id, filters to product IDs 1 and 3 with a snapshot date of 2022-12-31, and returns snapshot_date, product_id, product_name, and stock_on_hand. It orders by snapshot_date, product_id, and product_name, then limits the result to 200 rows.\nReference: The reference SQL query joins inventory with products on product_id, filters to the snapshot date 2022-12-31 and product IDs 1 and 3, and returns product_id, product_name, and stock_on_hand. It orders only by product_id and limits the result to 200 rows."
+    },
+    {
+      "id": "S10",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Question and frozen notes request December average, but oracle restricts Dec 31. Catalog requires separate exact snapshots. Multiple December snapshots distinguish these semantics; do not assume month means closing date.",
+      "question": "What is the average fill_rate by category in December 2022?",
+      "generated_sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.products.category AS category, AVG(commerce.inventory.fill_rate) AS fill_rate FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.snapshot_date >= $1 AND commerce.inventory.snapshot_date < $2 GROUP BY commerce.inventory.snapshot_date, commerce.products.category ORDER BY commerce.inventory.snapshot_date, commerce.products.category LIMIT 200",
+      "answer": "Query completed.",
+      "reference_sql": "SELECT p.category,AVG(i.fill_rate) AS fill_rate FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date = DATE '2022-12-31' GROUP BY p.category ORDER BY p.category",
+      "judge_reason": "Response: The generated SQL query joins inventory with products, filters inventory records to all dates from December 1, 2022 inclusive through January 1, 2023 exclusive, calculates the average fill rate grouped by snapshot date and product category, returns the snapshot date, category, and average fill rate, orders by snapshot date and category, and limits the result to 200 rows.\nReference: The reference SQL query joins inventory with products, filters records to the single snapshot date December 31, 2022, calculates the average fill rate grouped only by product category, orders the results by category, and limits the result to 200 rows."
+    },
+    {
+      "id": "S11",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Question names December; oracle chooses month end. Multiple observations can change products/rank. Current policy retains dated observations rather than silently select closing date.",
+      "question": "Which products have the highest stockout_days in December 2022?",
+      "generated_sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.inventory.product_id AS product_id, commerce.products.product_name AS product_name, commerce.inventory.stockout_days AS stockout_days FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.snapshot_date >= $1 AND commerce.inventory.snapshot_date < $2 ORDER BY commerce.inventory.stockout_days DESC NULLS LAST, commerce.inventory.snapshot_date, commerce.inventory.product_id, commerce.products.product_name LIMIT 200",
+      "answer": "Query completed.",
+      "reference_sql": "SELECT i.product_id,p.product_name,i.stockout_days FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date = DATE '2022-12-31' ORDER BY i.stockout_days DESC NULLS LAST,i.product_id LIMIT 200",
+      "judge_reason": "Response: The generated query joins inventory with products by product_id, returns snapshot_date, product_id, product_name, and stockout_days, filters records to the full December 2022 date range, orders by stockout_days descending with nulls last followed by snapshot_date, product_id, and product_name, and limits the result to 200 rows.\nReference: The reference query joins inventory with products by product_id, returns product_id, product_name, and stockout_days, filters records to the single snapshot date of December 31, 2022, orders by stockout_days descending with nulls last followed by product_id, and limits the result to 200 rows."
+    },
+    {
+      "id": "S12",
+      "classification": "Genuine semantic mismatch",
+      "rationale": "Exact snapshot grouping differs from requested monthly grouping on multi-observation months. Catalog does not certify combining movement windows; not solved by changing a date label.",
+      "question": "What is the monthly sum of units_sold in 2022?",
+      "generated_sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, SUM(commerce.inventory.units_sold) AS inventory_units_sold FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.snapshot_date >= $1 AND commerce.inventory.snapshot_date < $2 GROUP BY commerce.inventory.snapshot_date ORDER BY commerce.inventory.snapshot_date LIMIT 200",
+      "answer": "Query completed.",
+      "reference_sql": "SELECT DATE_TRUNC('month',i.snapshot_date)::date AS month,SUM(i.units_sold) AS units_sold FROM commerce.inventory i WHERE i.snapshot_date >= DATE '2022-01-01' AND i.snapshot_date < DATE '2023-01-01' GROUP BY 1 ORDER BY 1",
+      "judge_reason": "Response: The generated SQL joins commerce.inventory with commerce.products, filters inventory records from 2022-01-01 inclusive through 2023-01-01 exclusive, groups by each inventory snapshot_date, and returns daily summed units_sold ordered by date with a maximum of 200 rows. The join may also affect results if product_id is not unique in commerce.products.\nReference: The reference SQL filters commerce.inventory records to the same date range, truncates snapshot_date to the month, sums units_sold for each month, orders the monthly results chronologically, and limits the output to 200 rows."
+    },
+    {
+      "id": "S13",
+      "classification": "Query execution or data limitation",
+      "rationale": "Clear intersection/delta request lacks a verified comparison contract; latest code returns an honest capability refusal. Not a successful answer.",
+      "question": "How did stock_on_hand change between November 30 and December 31, 2022, for products present on both dates?",
+      "generated_sql": null,
+      "answer": "The interpretation changed the requested historical period.",
+      "reference_sql": "SELECT a.product_id,a.stock_on_hand AS november_stock,b.stock_on_hand AS december_stock,b.stock_on_hand-a.stock_on_hand AS stock_change FROM commerce.inventory a JOIN commerce.inventory b ON a.product_id=b.product_id WHERE a.snapshot_date=DATE '2022-11-30' AND b.snapshot_date=DATE '2022-12-31' ORDER BY a.product_id LIMIT 200",
+      "judge_reason": "Supported question did not execute successfully."
+    },
+    {
+      "id": "S14",
+      "classification": "Query execution or data limitation",
+      "rationale": "Valid approved-key NOT EXISTS rejected by old correlated lineage validation. Later code fixes scope resolution; requires measured validation.",
+      "question": "Which catalog products are missing an inventory row on 2022-12-31?",
+      "generated_sql": null,
+      "answer": "Inventory queries require an inventory interpretation.",
+      "reference_sql": "SELECT p.product_id,p.product_name FROM commerce.products p WHERE NOT EXISTS (SELECT 1 FROM commerce.inventory i WHERE i.product_id=p.product_id AND i.snapshot_date=DATE '2022-12-31') ORDER BY p.product_id LIMIT 200",
+      "judge_reason": "Supported question did not execute successfully."
+    },
+    {
+      "id": "S15",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Unspecified inventory metrics has no unambiguous field set. Model selects only stock; reference implicitly enumerates eleven fields. Coverage difference is real but requested scope is underspecified.",
+      "question": "Show the historical inventory snapshot metrics for DragonWear MA-08 (product_id 8) on 2022-12-31.",
+      "generated_sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.inventory.product_id AS product_id, commerce.products.product_name AS product_name, commerce.inventory.stock_on_hand AS stock_on_hand FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.product_id = $1 AND commerce.inventory.snapshot_date = $2 ORDER BY commerce.inventory.snapshot_date, commerce.inventory.product_id, commerce.products.product_name LIMIT 200",
+      "answer": "Query completed.",
+      "reference_sql": "SELECT i.snapshot_date,i.product_id,i.stock_on_hand,i.units_received,i.units_sold,i.stockout_days,i.days_of_supply,i.fill_rate,i.stockout_flag,i.overstock_flag,i.reorder_flag,i.sell_through_rate FROM commerce.inventory i WHERE i.snapshot_date = DATE '2022-12-31' AND i.product_id=8",
+      "judge_reason": "Response: The generated SQL query joins inventory records for product 8 on 2022-12-31 with matching products records, returns the snapshot date, product ID, product name, and stock on hand, orders the results by date, product ID, and product name, and limits the output to 200 rows.\nReference: The reference SQL query retrieves all listed inventory metrics for product 8 on 2022-12-31 and limits the output to 200 rows. It does not join the products table or specify an ordering."
+    },
+    {
+      "id": "S16",
+      "classification": "Genuine semantic mismatch",
+      "rationale": "Per-snapshot category totals do not answer annual category totals. Catalog snapshot grain prevents silently combining windows; remain explicit about unsupported annual rollup.",
+      "question": "Which categories had the greatest total units_received during 2022?",
+      "generated_sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.products.category AS category, SUM(commerce.inventory.units_received) AS units_received FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.snapshot_date >= $1 AND commerce.inventory.snapshot_date < $2 GROUP BY commerce.inventory.snapshot_date, commerce.products.category ORDER BY SUM(commerce.inventory.units_received) DESC NULLS LAST, commerce.inventory.snapshot_date, commerce.products.category LIMIT 200",
+      "answer": "Query completed.",
+      "reference_sql": "SELECT p.category,SUM(i.units_received) AS units_received FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date >= DATE '2022-01-01' AND i.snapshot_date < DATE '2023-01-01' GROUP BY p.category ORDER BY units_received DESC NULLS LAST,p.category",
+      "judge_reason": "Response: The generated SQL query joins inventory with products, filters inventory records from January 1, 2022 inclusive through January 1, 2023 exclusive, and sums units received grouped by both snapshot date and product category. It returns the snapshot date, category, and summed units, ordered by the sum descending with nulls last, then by date and category, limited to 200 rows.\nReference: The reference SQL query joins inventory with products, applies the same date range, and sums units received grouped only by product category. It returns each category with its total units received, ordered by total descending with nulls last and then by category, limited to 200 rows."
+    },
+    {
+      "id": "S17",
+      "classification": "Genuine semantic mismatch",
+      "rationale": "Cancelled exclusion is case-sensitive and omits canceled spelling; top 20 lacks deterministic product tie-break.",
+      "question": "List the 20 products with the highest order_items.quantity sold during 2022, excluding cancelled orders.",
+      "generated_sql": "SELECT p.product_id, p.product_name, SUM(oi.quantity) AS total_quantity FROM commerce.order_items AS oi JOIN commerce.orders AS o ON oi.order_id = o.order_id JOIN commerce.products AS p ON oi.product_id = p.product_id WHERE o.order_status <> 'cancelled' AND o.order_date >= $1 AND o.order_date < $2 GROUP BY p.product_id, p.product_name ORDER BY 3 DESC LIMIT 20",
+      "answer": "Query completed.",
+      "reference_sql": "SELECT p.product_id,p.product_name,SUM(oi.quantity) AS ordered_units FROM commerce.orders o JOIN commerce.order_items oi ON o.order_id=oi.order_id JOIN commerce.products p ON oi.product_id=p.product_id WHERE o.order_date >= DATE '2022-01-01' AND o.order_date < DATE '2023-01-01' AND LOWER(o.order_status) NOT IN ('cancelled','canceled') GROUP BY p.product_id,p.product_name ORDER BY ordered_units DESC,p.product_id LIMIT 20",
+      "judge_reason": "Response: The generated SQL joins orders, order items, and products, then calculates the total ordered quantity for each product during 2022. It excludes rows whose order status is exactly cancelled, groups by product, sorts by the third selected expression, which is the quantity sum, in descending order, and returns up to 20 rows. It does not specify a secondary ordering for ties.\nReference: The reference SQL joins the same tables and calculates total ordered units per product during 2022. It excludes orders whose status, after conversion to lowercase, is either cancelled or canceled. It groups by product, sorts by total ordered units descending and then product ID ascending, and returns up to 20 rows."
+    },
+    {
+      "id": "S20",
+      "classification": "Valid equivalent SQL",
+      "rationale": "Approved schema discount_amount is NUMERIC NOT NULL. Direct subtraction equals COALESCE(discount_amount,0) on all approved rows. Nullable counterexample is outside that schema; do not change formula.",
+      "question": "What is the net line value after discount_amount by product category in 2022?",
+      "generated_sql": "SELECT p.category, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_line_value FROM commerce.order_items AS oi JOIN commerce.orders AS o ON oi.order_id = o.order_id JOIN commerce.products AS p ON oi.product_id = p.product_id WHERE o.order_date >= $1 AND o.order_date < $2 GROUP BY p.category ORDER BY 1 LIMIT 200",
+      "answer": "Query completed.",
+      "reference_sql": "SELECT p.category,SUM(oi.quantity*oi.unit_price-COALESCE(oi.discount_amount,0)) AS net_line_value FROM commerce.orders o JOIN commerce.order_items oi ON o.order_id=oi.order_id JOIN commerce.products p ON oi.product_id=p.product_id WHERE o.order_date >= DATE '2022-01-01' AND o.order_date < DATE '2023-01-01' GROUP BY p.category ORDER BY p.category",
+      "judge_reason": "Response: The generated SQL query joins orders, order items, and products, filters orders to the 2022 calendar year, groups results by product category, and calculates net line value as quantity multiplied by unit price minus discount amount. Because it does not use COALESCE, rows with a null discount amount produce a null expression that SUM ignores. Results are ordered by the first selected column, the category, and limited to 200 rows.\nReference: The reference SQL query performs the same joins, 2022 date filtering, grouping by product category, ordering by category, and 200 row limit. It calculates net line value as quantity multiplied by unit price minus the discount amount, treating null discounts as zero through COALESCE."
+    },
+    {
+      "id": "S21",
+      "classification": "Genuine semantic mismatch",
+      "rationale": "Missing product-ID tie-break can alter top 10 membership on ties. Extra name/FK join is equivalent under actual PK/FK, but output schema differs.",
+      "question": "Which 10 products had the most units returned in 2022?",
+      "generated_sql": "SELECT p.product_id, p.product_name, SUM(r.return_quantity) AS total_units_returned FROM commerce.products AS p JOIN commerce.returns AS r ON p.product_id = r.product_id WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY p.product_id, p.product_name ORDER BY 3 DESC LIMIT 10",
+      "answer": "Query completed.",
+      "reference_sql": "SELECT r.product_id,SUM(r.return_quantity) AS returned_units FROM commerce.returns r WHERE r.return_date >= DATE '2022-01-01' AND r.return_date < DATE '2023-01-01' GROUP BY r.product_id ORDER BY returned_units DESC,r.product_id LIMIT 10",
+      "judge_reason": "Response: The generated query joins returns to products, filters returns to calendar year 2022, groups by product ID and product name, calculates total returned units, sorts by that total in descending order, and returns the first 10 rows. The join also excludes returns without a matching product, and the query does not specify a deterministic product ID tie breaker.\nReference: The reference query filters returns to calendar year 2022, groups only by product ID, calculates the sum of returned units for each product, sorts by returned units in descending order and product ID ascending as a tie breaker, and returns the first 10 products."
+    },
+    {
+      "id": "S23",
+      "classification": "Query execution or data limitation",
+      "rationale": "Old validator rejects safe unique catalog anchor. Generated zero substitution for missing numerator also violates strict missing-value contract; both issues need separate checks.",
+      "question": "Which products have the highest ratio of returned units in 2022 to ordered units in 2022?",
+      "generated_sql": null,
+      "answer": "I couldn't safely run the generated query: Derived joins require complete grouped keys and approved dimension lineage.",
+      "reference_sql": "WITH ret AS (SELECT r.product_id,SUM(r.return_quantity) AS returned_units FROM commerce.returns r WHERE r.return_date >= DATE '2022-01-01' AND r.return_date < DATE '2023-01-01' GROUP BY r.product_id), ord AS (SELECT oi.product_id,SUM(oi.quantity) AS ordered_units FROM commerce.orders o JOIN commerce.order_items oi ON o.order_id=oi.order_id WHERE o.order_date >= DATE '2022-01-01' AND o.order_date < DATE '2023-01-01' GROUP BY oi.product_id) SELECT ret.product_id,ret.returned_units,ord.ordered_units,ret.returned_units::numeric/NULLIF(ord.ordered_units,0) AS returned_to_ordered_ratio FROM ret JOIN ord ON ret.product_id=ord.product_id ORDER BY returned_to_ordered_ratio DESC NULLS LAST,ret.product_id LIMIT 200",
+      "judge_reason": "Supported question did not execute successfully."
+    },
+    {
+      "id": "S25",
+      "classification": "Query execution or data limitation",
+      "rationale": "Unnecessary clarification: approved product/order bridges suffice for composite existence check. No raw returns/order_items edge should be added.",
+      "question": "Find returned product-order pairs absent from their original order_items records.",
+      "generated_sql": null,
+      "answer": "The requested query is ambiguous because the approved schema does not define a direct join between commerce.returns and commerce.order_items. The approved joins only allow linking returns to orders (via order_id) and products (via product_id), and order_items to orders (via order_id) and products (via product_id). To find 'returned product-order pairs absent from their original order_items records', I need to know if you want to check for the absence of the specific product within the order (which would require a join through products or a composite key not explicitly approved for direct returns-order_items correlation) or if you are looking for returns where the order itself has no items (which is a different metric). Please clarify the intended relationship or provide the specific join logic you expect.",
+      "reference_sql": "SELECT DISTINCT r.order_id,r.product_id FROM commerce.returns r WHERE NOT EXISTS (SELECT 1 FROM commerce.order_items oi WHERE oi.order_id=r.order_id AND oi.product_id=r.product_id) ORDER BY r.order_id,r.product_id LIMIT 200",
+      "judge_reason": "Supported question did not execute successfully."
+    },
+    {
+      "id": "S26",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Question month vs oracle closing snapshot and extra date provenance. EXISTS avoids fanout; matches current single monthly observation but not all possible data.",
+      "question": "Which products had stockout_flag=true in December 2022 and any customer orders that month?",
+      "generated_sql": "SELECT inv.snapshot_date, p.product_id, p.product_name FROM commerce.inventory AS inv JOIN commerce.products AS p ON inv.product_id = p.product_id WHERE inv.stockout_flag = $1 AND inv.snapshot_date >= $2 AND inv.snapshot_date < $3 AND EXISTS (SELECT 1 FROM commerce.order_items AS oi JOIN commerce.orders AS o ON oi.order_id = o.order_id WHERE oi.product_id = p.product_id AND o.order_date >= $4 AND o.order_date < $5) ORDER BY 1, 2 LIMIT 200",
+      "answer": "Query completed.",
+      "reference_sql": "SELECT i.product_id,p.product_name FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date = DATE '2022-12-31' AND i.stockout_flag=TRUE AND EXISTS (SELECT 1 FROM commerce.orders o JOIN commerce.order_items oi ON o.order_id=oi.order_id WHERE oi.product_id=i.product_id AND o.order_date >= DATE '2022-12-01' AND o.order_date < DATE '2023-01-01') ORDER BY i.product_id LIMIT 200",
+      "judge_reason": "Response: The generated query joins inventory with products, selects the inventory snapshot date along with the product ID and product name, filters to stockout inventory records whose snapshot date falls anywhere in December 2022, and requires at least one matching order item from an order placed during December 2022. It orders by snapshot date and product ID and returns up to 200 rows.\nReference: The reference query joins inventory with products, selects the product ID and product name, filters to stockout inventory records from exactly December 31, 2022, and requires at least one matching order item from an order placed during December 2022. It orders by product ID and returns up to 200 rows."
+    },
+    {
+      "id": "S27",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Explicit summed December observations vs oracle Dec 31. FULL JOIN COALESCE of category preserves order-only labels better than oracle inventory-only label. Measures must remain NULL when absent.",
+      "question": "For each category, compare summed December 2022 inventory units_sold with December 2022 ordered quantities.",
+      "generated_sql": "WITH inv_agg AS (SELECT p.category AS category, SUM(i.units_sold) AS inventory_units_sold FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date >= $1 AND i.snapshot_date < $2 GROUP BY p.category), ord_agg AS (SELECT p.category AS category, SUM(oi.quantity) AS ordered_quantity FROM commerce.order_items AS oi JOIN commerce.orders AS o ON oi.order_id = o.order_id JOIN commerce.products AS p ON oi.product_id = p.product_id WHERE o.order_date >= $3 AND o.order_date < $4 GROUP BY p.category) SELECT COALESCE(inv.category, ord.category) AS category, inv.inventory_units_sold, ord.ordered_quantity FROM inv_agg AS inv FULL JOIN ord_agg AS ord ON inv.category = ord.category ORDER BY 1 LIMIT 200",
+      "answer": "Query completed.",
+      "reference_sql": "WITH inv AS (SELECT p.category,SUM(i.units_sold) AS inventory_units_sold FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date = DATE '2022-12-31' GROUP BY p.category), ord AS (SELECT p.category,SUM(oi.quantity) AS ordered_units FROM commerce.orders o JOIN commerce.order_items oi ON o.order_id=oi.order_id JOIN commerce.products p ON oi.product_id=p.product_id WHERE o.order_date >= DATE '2022-12-01' AND o.order_date < DATE '2023-01-01' GROUP BY p.category) SELECT inv.category,inv.inventory_units_sold,ord.ordered_units FROM inv FULL JOIN ord ON inv.category=ord.category ORDER BY inv.category",
+      "judge_reason": "Response: The generated query aggregates inventory units sold by product category for all inventory snapshots in December 2022, and ordered quantities by category for orders placed in December 2022. It performs a full join, uses the non-null category from either side, orders by that combined category, and returns up to 200 rows.\nReference: The reference query aggregates inventory units sold by category only for the inventory snapshot on December 31, 2022, and ordered quantities by category for orders placed during December 2022. It performs a full join, selects the inventory-side category, orders by that category, and returns up to 200 rows."
+    },
+    {
+      "id": "S28",
+      "classification": "Query execution or data limitation",
+      "rationale": "Unqualified inner keys/missing outer LIMIT cause SQL rejection; safe syntax normalization is possible. Excess rows, duplicate groups and all participants are distinct semantics, tested on nonempty data.",
+      "question": "How many inventory rows have duplicate (snapshot_date,product_id) keys?",
+      "generated_sql": null,
+      "answer": "I couldn't safely run the generated query: Columns must use a table alias: snapshot_date",
+      "reference_sql": "SELECT COALESCE(SUM(n-1),0) AS duplicate_rows FROM (SELECT COUNT(*) AS n FROM commerce.inventory GROUP BY snapshot_date,product_id HAVING COUNT(*)>1) d",
+      "judge_reason": "Supported question did not execute successfully."
+    }
+  ]
+}

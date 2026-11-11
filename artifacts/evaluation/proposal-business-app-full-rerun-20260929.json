@@ -1,0 +1,92 @@
+{
+  "created_at_utc": "2026-09-28T22:54:32.312304+00:00",
+  "route": "POST /api/ask",
+  "corpus_id": "VNM-ENTERPRISE-RAG-DEMO",
+  "corpus_manifest_sha256": "236010d3c0973b27fed8ffc5f70099496931251e3160fb088ddc74353d244031",
+  "route_dataset_sha256": "1ad8e2a2b1687694d7b3141cf3c2fc18783b68485a4871018fbac16a875937bd",
+  "coverage_dataset_sha256": "1c81bf452ffe9c0e158c2e24219b0c3175d15d7bddf638dff47fd539bc5b6d5a",
+  "model": "openai/gpt-oss-20b",
+  "actor_role": "admin",
+  "case_count": 12,
+  "attempted_count": 3,
+  "unrun_case_ids": [
+    "contract-analysis",
+    "financial-report-analysis",
+    "invoice-information-retrieval",
+    "manufacturing-documentation",
+    "customer-service-knowledge",
+    "technical-documentation-assistant",
+    "compliance-management",
+    "executive-decision-support",
+    "business-intelligence-analytics"
+  ],
+  "stop_reason": "provider_rate_limit",
+  "passed": 1,
+  "failed": 2,
+  "mean_latency_seconds": 21.465,
+  "results": [
+    {
+      "id": "enterprise-knowledge-management",
+      "corpus_coverage": "unsupported",
+      "expected_outcome": "abstain_no_retention_standard",
+      "expected_route": "knowledge",
+      "actual_route": "knowledge",
+      "passed": true,
+      "checks": {
+        "expected_route": true,
+        "citation_integrity": true,
+        "no_citation_validation_failure": true,
+        "citations_have_source_locations": true,
+        "unsupported_case_abstains": true
+      },
+      "insufficient_context": true,
+      "cited_document_ids": [],
+      "citation_pages": [],
+      "answer": "Insufficient information in the retrieved documents.",
+      "data_result_count": 0,
+      "latency_seconds": 23.335
+    },
+    {
+      "id": "internal-document-search",
+      "corpus_coverage": "partial",
+      "expected_outcome": "answer_code_of_conduct_access_controls_and_disclose_dedicated_information_system_policy_absent",
+      "expected_route": "knowledge",
+      "actual_route": "knowledge",
+      "passed": false,
+      "checks": {
+        "expected_route": true,
+        "citation_integrity": true,
+        "no_citation_validation_failure": true,
+        "citations_have_source_locations": true,
+        "employee_access_answer_uses_code_source": true,
+        "dedicated_access_policy_absence_is_disclosed": false,
+        "answer_qualifies_document_type": false
+      },
+      "insufficient_context": false,
+      "cited_document_ids": [
+        "VNM-CODE-2025-EN"
+      ],
+      "citation_pages": [
+        28
+      ],
+      "answer": "The VINAMILK employee access policy is outlined in the company’s Information System Policy. It states that employees are assigned rights to access and process information that are appropriate for the execution of their duties, and that any exceptions require approvals from both their competent managers and the IT Department. Unauthorized access or processing is treated as an infringement of VINAMILK property. Employees must also obtain approvals from both their competent managers and the IT Director before installing proprietary software, and the copyright of such software must be shown before installation. Only senior executives or managers have the authority to make decisions relating to company property, and employees must seek approval from competent executives and managers before making such decisions. Employees should contact the director or the Department of Internal Control for more information regarding who has the right to make such decisions. [S1]",
+      "data_result_count": 0,
+      "latency_seconds": 21.4
+    },
+    {
+      "id": "hr-policy-consultation",
+      "corpus_coverage": "partial",
+      "expected_route": "knowledge",
+      "passed": false,
+      "http_status": 429,
+      "error": "The model provider is temporarily rate-limited. Please retry later.",
+      "checks": {},
+      "latency_seconds": 19.661
+    }
+  ],
+  "limitations": [
+    "This is a single authenticated admin run over the public Vinamilk corpus; it is not a role-matrix test.",
+    "Supported and unsupported outcomes have deterministic route, source, value, abstention and result-shape checks.",
+    "Partial HR, compliance and executive cases still need blinded semantic review; these labels do not prove private-domain capability."
+  ]
+}

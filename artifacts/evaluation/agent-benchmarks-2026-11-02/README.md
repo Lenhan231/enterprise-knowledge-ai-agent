@@ -1,0 +1,65 @@
+# Inventory agent benchmark — 2026-11-02
+
+The attached 90-case JSONL is archived unchanged in `source-dataset.jsonl`; its SHA-256 is in `manifest.json`. Each agent has its own directory and question file. **Knowledge's 30 cases are deferred.** SQL and Report each run all 30 original questions, without rewriting prompts or supplying a template.
+
+The application baseline was committed and pushed to `QuocAn` before evaluation (`f8996f6`). Generation uses the configured Groq model at temperature 0. The existing provider switches to numbered `.env` keys on rate/quota errors, preserving the model. During this run the user also authorized `GROQ_API_KEY_RAGAS` as a third generation fallback; the Codex judge configuration is unchanged. A process-local numbered alias propagates this fallback to lazy document-source providers without editing `.env` or application code. No keys are written to artifacts. Judge: the existing `CodexCLIJudge`, `gpt-5.6-luna`, reasoning `medium`, with the same evaluator preamble.
+
+## Files and reproduction
+
+Each evaluated agent directory contains `questions.jsonl`, independent `references.json`, append-only `generations.jsonl`, append-only per-metric `scores.jsonl`, and `summary.json`. Report downloads are also saved as `Rxx.md`. Generation records retain actual evidence, result metadata, status, latency and failures. Scores retain judge reasons/traces and evaluator errors. Knowledge contains questions only.
+
+```powershell
+uv run python -m evaluation.run_inventory_agents_benchmark --stage references
+uv run python -m evaluation.run_inventory_agents_benchmark --stage generate
+uv run python -m evaluation.run_inventory_agents_benchmark --stage score
+uv run python -m evaluation.run_inventory_agents_benchmark --stage summary
+uv run python -m unittest discover -s tests -p test_inventory_benchmark.py
+```
+
+Stages resume missing work. They never regenerate successful responses or overwrite frozen references. One explicit infrastructure retry is allowed for previously recorded rate-limit failures; all original attempts are retained. Validation and answer failures are not retried. Agent execution is serial, with bounded waits/retries for Groq cooldowns (which consume the normal report deadline); each scoring process runs at most two cases concurrently. Report's normal internal two-operation concurrency and 180-second deadline remain in effect. Decisions requiring user confirmation are recorded as the first response; the evaluator does not implicitly authorize restricted scope.
+
+## Metrics
+
+All reported scores are 0–1. Definitions and denominators matter more than a blended average; no cross-agent aggregate is computed.
+
+| Agent | Metric | Method |
+|---|---|---|
+| SQL | Execution Accuracy | Custom Ragas metric: result multiset equality against independent read-only reference SQL, numeric tolerance 1e-6 absolute / 1e-12 relative. Judge aligns column aliases; values are compared in code. Calendar-month labels are normalized, and names may replace product IDs only when frozen reference evidence verifies a unique identity. Extra descriptive response columns are ignored; the normalized reference columns must match. |
+| SQL | SQL Semantic Equivalence | Ragas `SQLSemanticEquivalence` with the shared schema; generated parameters are bound before comparison. The evaluator applies the same 200-row SQL ceiling to references without an explicit limit, preserving top-N limits. |
+| SQL | Numerical Accuracy | Reference numeric-cell accuracy at matching dimensions/entities; excludes dates and IDs, penalizes missing/extra rows. Uses the same alias alignment and decimal tolerance. |
+| Report | Faithfulness | Ragas `Faithfulness` against actual retrieved evidence and runtime validated facts, never the independent oracle or report text itself. |
+| Report | Factual Correctness | Ragas `FactualCorrectness`, F1 mode, against the independently frozen case reference. |
+| Report | Numerical Accuracy | Custom Ragas metric enumerates quantitative claims with judge alignment of metric/entity/date/unit, then compares normalized decimal values in code. Stores every evaluated claim and reason. Missing reference coverage is unverified, not incorrect; score is correct/covered claims and verification coverage is reported separately. No covered quantitative claims yields N/A. |
+| Report | Report Completeness | Ragas `RubricsScoreWithReference`, query-specific requirements plus applicable report components; five-point rubric normalized as `(score-1)/4`. Correct unsupported-request explanations can be complete without a fabricated report. |
+
+SQL execution failures for supported requests score zero, not N/A. Unsupported S29/S30 have no valid SQL or numeric gold, so those metrics are N/A and their actual refusal responses remain inspectable. Report faithfulness is N/A when no evidence was retrieved. Evaluator errors are null with an error reason, never zero or a fabricated score. Summaries show scored/N/A/error/pending counts separately; means cover scored cases only. Inspect these counts before comparing agents.
+
+## Reference scope and limitations
+
+The supplied dataset has behavioral rubrics but **no gold SQL or factual/numeric answers**. References are separately authored fixed SQL queries, executed in a single read-only repeatable-read transaction before generation. They are not generated from agent outputs. Their hashes are frozen. These are author-reviewed evaluator references, not independently certified gold.
+
+The bounded detail interpretation is 200 rows with explicit oracle ordering; top-N ties use product ID. Consequently an equally defensible alternative detail ordering/default limit can lose execution accuracy: inspect semantic-equivalence and SQL before interpreting a zero. Aggregates always cover the full requested scope before detail limits. S28 means duplicate rows in excess of the first row per key. S23's independently aggregated calendar-year unit ratio is distinct from canonical order-based return rate.
+
+Historical evidence cannot establish current 2026 quantities, supplier receipt compliance or whether returns were restocked. Catalog COGS supports only explicitly labelled cost proxies, not approved accounting valuation. Source ratios, missing observations, overlapping flags, currency uncertainty and approval restrictions remain explicit in references.
+
+The dataset names a policy identifier/page but does not include policy passages. No invented policy text is used as gold; report factual correctness therefore has incomplete policy-reference coverage. Reference detail samples are capped at 200 and are not exhaustive truth for every possible report claim. Numerical claim enumeration and semantic scope alignment are model judgments, not formal proof. Large responses may exceed the judge's timeout; these remain visible evaluator errors. No manual scores are substituted for failed Ragas calls.
+
+## Evaluation audit
+
+Original attempts and scoring revisions remain in the append-only files. Summaries use the latest record per case/metric. SQL scoring revision 4 fixes presentation normalization and applies the shared SQL ceiling to semantic references; it also treats an executed empty result as comparable, distinct from failure or a scalar zero; frozen source SQL/results and application code are unchanged. Failed column alignment is a zero for an unmatched required result projection, not an omitted evaluator error.
+
+Focused benchmark tests, Groq fallback tests, and the existing Ragas adapter test pass. The older `test_agent_benchmarks.py` suite has an existing failure: `test_known_citation_and_codex_auth_failures_are_retried` expects a citation-validation error to be classified as transient by the legacy runner. That unrelated runner was not changed.
+
+Report numerical revision 2 separates missing reference coverage from incorrect claims and supplements numeric checks with matching entity/metric rows selected from the already frozen independent reference pool. It does not execute model SQL or use generated values as gold. Numeric scores must be read with their verified/unverified claim counts. Earlier exploratory numerical scores remain in the audit file and are superseded.
+
+Generation harness revision 2 explicitly installs the same fallback classifier and source-router specialists as the production app. Earlier legacy-path attempts used ReportAgent's standalone router fallback; those attempts are retained and superseded by a single harness-correction run. Planned inventory reports and SQL responses are not regenerated for this wiring correction. Scores are tied to their generation attempt so resumed runs cannot reuse stale judgments.
+
+The later authorized third-key retries preserve all earlier outcomes. Only failed provider-limited work and failed nested-source attempts requiring fallback propagation are retried; successful reports and validation outcomes are retained. Report availability is constrained by Groq's observed per-minute output and daily token allowances. Some report-sized requests exceed the primary account's output allowance even after waiting. This is an operationally constrained baseline, not a clean capability-only comparison.
+
+No dependencies were added. Reproduction commands assume the existing local environment; exact installed Ragas/OpenAI/Pydantic versions are in the manifest. Full-suite validation ran 624 tests with 11 failures, 51 errors and 15 skips. An existing-tests-only check ran 612 tests with the same 11 failures and 51 errors; missing optional/platform modules and stale interfaces are outside this benchmark change. See `validation.json`.
+
+## Final results
+
+[SQL results](sql_analytics/RESULTS.md) and [Report results](report/RESULTS.md) are finalized separately. All 60 selected questions have current metric records (90 SQL + 120 Report), with no pending metrics or evaluator errors. Knowledge remains deferred. Report means must be read with coverage and availability counts.
+
+The final SQL identity validation uses the independent full-catalog multiplicity audit in sql_analytics/identity-counts.json, not uniqueness inferred from a reference sample. Names are mapped to IDs row by row only when globally unique; ambiguous names remain unverified and cannot receive product-specific numerical credit. Identity validation revision 2 supersedes earlier exploratory normalization scores.

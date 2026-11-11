@@ -1,0 +1,44 @@
+{
+  "production": {
+    "revision": "1a6470b84443d6f9819b242357e76435eb329ce5",
+    "requests": 60,
+    "role": "paired primary baseline",
+    "notes": ""
+  },
+  "candidate": {
+    "revision": "4691732d1ff7a3724a11d596510b09f7d20c0047",
+    "requests": 11,
+    "role": "diagnostic cohort, superseded; not used as final results",
+    "notes": "Interrupted after missing retrieval aliases were observed."
+  },
+  "candidate-final": {
+    "revision": "199a1ff5830d1192f1e7266cf5d36e12c7c2dae9",
+    "requests": 4,
+    "role": "diagnostic cohort, superseded; not used as final results",
+    "notes": "Interrupted after canonical-vs-source alias collision was found by full-suite tests."
+  },
+  "candidate-e14c9d5": {
+    "revision": "e14c9d5c3118f4b9e147cc22559096db9a9606d1",
+    "requests": 60,
+    "role": "diagnostic cohort, superseded; not used as final results",
+    "notes": "Completed diagnostic run exposing real PostgreSQL date binding and count/snapshot-total failures; retained unchanged."
+  },
+  "final": {
+    "revision": "3564c0638d0c9654240d222638e02b1ea8b057c5",
+    "requests": 60,
+    "role": "paired primary final candidate",
+    "notes": ""
+  },
+  "legacy-production": {
+    "revision": "da2ce09a00224977050753e82981fe80ef3d91a1",
+    "requests": 3,
+    "role": "frozen legacy temporal audit",
+    "notes": ""
+  },
+  "legacy-final": {
+    "revision": "3564c0638d0c9654240d222638e02b1ea8b057c5",
+    "requests": 3,
+    "role": "frozen legacy temporal audit",
+    "notes": ""
+  }
+}

@@ -1,0 +1,5185 @@
+{
+  "created_at_utc": "2026-10-25T17:29:36.097153+00:00",
+  "base_url": "http://127.0.0.1:8000",
+  "mode": "agentic",
+  "retrieval_method": "translated_hybrid_rerank",
+  "role": "admin",
+  "configuration": {
+    "concurrency": 1,
+    "passes": 2,
+    "cases_per_pass": 10,
+    "timeout_seconds": 180
+  },
+  "boundaries": {
+    "http_e2e": "Client HTTP request through authentication, routing, agents and telemetry; login excluded",
+    "request_total_ms": "Handler wall time before persistence of the agent event; authentication excluded",
+    "stages": "Wall times; null means skipped. Nested stages overlap; parallel agent durations must not be added to infer E2E",
+    "first_pass": "First pass after restart; models preloaded. Only the first relevant request is first inference, not all ten",
+    "warm_pass": "Same questions and order; includes the existing query-translation cache"
+  },
+  "results": [
+    {
+      "phase": "first_pass",
+      "case_id": "K1",
+      "expected_route": "knowledge",
+      "question": "According to the inventory policy, what checks are required before transferring stock between locations?",
+      "status": 200,
+      "agent": "agentic",
+      "selected_route": "knowledge",
+      "application_ok": null,
+      "citation_count": 0,
+      "latency": {
+        "stages_ms": {
+          "routing": 2281.331128000602,
+          "embedding": 761.3073339998664,
+          "database_retrieval": 4613.323626999772,
+          "retrieval_fusion": 0.5284170001687016,
+          "query_translation": 666.7670550014009,
+          "reranking": 21519.749544997467,
+          "answer_generation": 677.9188170003181,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 27565.785011000116,
+          "agent_workflow": 35447.41556900044
+        },
+        "events": [
+          {
+            "stage": "routing",
+            "elapsed_ms": 2281.331128000602,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 761.3073339998664,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 2891.2209029986116,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 666.7670550014009,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1157.411330001196,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 564.6913939999649,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.24485600079060532,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.2835609993780963,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 21519.749544997467,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 27565.785011000116,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 677.9188170003181,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 35447.41556900044,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 40119.55538000257
+      },
+      "answer_characters": 53,
+      "error": null,
+      "http_elapsed_ms": 42757.35
+    },
+    {
+      "phase": "first_pass",
+      "case_id": "K2",
+      "expected_route": "knowledge",
+      "question": "What is the cycle-count procedure when counted stock differs from the system quantity?",
+      "status": 200,
+      "agent": "agentic",
+      "selected_route": "knowledge",
+      "application_ok": null,
+      "citation_count": 2,
+      "latency": {
+        "stages_ms": {
+          "routing": 611.0465359997761,
+          "embedding": 916.0152000004018,
+          "database_retrieval": 3438.3616629966127,
+          "retrieval_fusion": 1.4227249994291924,
+          "query_translation": 666.794848999416,
+          "reranking": 29596.977250002965,
+          "answer_generation": 1625.565694001125,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 34626.66545100001,
+          "agent_workflow": 36879.965012001776
+        },
+        "events": [
+          {
+            "stage": "routing",
+            "elapsed_ms": 611.0465359997761,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 916.0152000004018,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1762.8237299977627,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 666.794848999416,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 852.0247019987437,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 823.5132310001063,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.6653529999312013,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.757371999497991,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 29596.977250002965,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 34626.66545100001,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 1625.565694001125,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 36879.965012001776,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 36880.127487998834
+      },
+      "answer_characters": 1025,
+      "error": null,
+      "http_elapsed_ms": 39280.4
+    },
+    {
+      "phase": "first_pass",
+      "case_id": "K3",
+      "expected_route": "knowledge",
+      "question": "What approvals and evidence are required before a stock adjustment?",
+      "status": 200,
+      "agent": "agentic",
+      "selected_route": "knowledge",
+      "application_ok": null,
+      "citation_count": 2,
+      "latency": {
+        "stages_ms": {
+          "routing": 630.4213369985519,
+          "embedding": 142.1289469981275,
+          "database_retrieval": 3315.670994001266,
+          "retrieval_fusion": 0.5924910001340322,
+          "query_translation": 574.2963910015533,
+          "reranking": 10976.28756499762,
+          "answer_generation": 1107.4962589991628,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 15012.789821001206,
+          "agent_workflow": 16765.032749000966
+        },
+        "events": [
+          {
+            "stage": "routing",
+            "elapsed_ms": 630.4213369985519,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 142.1289469981275,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1653.5072730002867,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 574.2963910015533,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1093.750298001396,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 568.4134229995834,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.2910050025093369,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.3014859976246953,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 10976.28756499762,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 15012.789821001206,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 1107.4962589991628,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 16765.032749000966,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 16765.160406997893
+      },
+      "answer_characters": 533,
+      "error": null,
+      "http_elapsed_ms": 19166.31
+    },
+    {
+      "phase": "first_pass",
+      "case_id": "K4",
+      "expected_route": "knowledge",
+      "question": "How should overlapping stockout and overstock flags be interpreted under the inventory policy?",
+      "status": 503,
+      "agent": null,
+      "selected_route": null,
+      "application_ok": null,
+      "citation_count": 0,
+      "latency": {
+        "request_total_ms": 27183.415449999302,
+        "stages_ms": {
+          "routing": 1608.4884629999578,
+          "embedding": 131.96744300148566,
+          "database_retrieval": 3340.6026150005346,
+          "retrieval_fusion": 0.8038129999476951,
+          "query_translation": 633.1895460025407,
+          "reranking": 19827.072575000784,
+          "answer_generation": 1607.7802079998946,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 23939.453901999514,
+          "agent_workflow": 27180.61244799901
+        },
+        "events": [
+          {
+            "stage": "routing",
+            "elapsed_ms": 1608.4884629999578,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 131.96744300148566,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1682.1653389997664,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 633.1895460025407,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1102.8413890016964,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 555.5958869990718,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.314532000629697,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.48928099931799807,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 19827.072575000784,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 23939.453901999514,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 1607.7802079998946,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 27180.61244799901,
+            "status": "failed"
+          }
+        ]
+      },
+      "answer_characters": 0,
+      "error": "The agent service is unavailable",
+      "http_elapsed_ms": 29780.39,
+      "latency_source": "unique_failed_server_event_between_matched_successful_requests",
+      "error_classification": "answer_missing_source_citations"
+    },
+    {
+      "phase": "first_pass",
+      "case_id": "S1",
+      "expected_route": "analytics",
+      "question": "What is the stockout rate by category in the latest inventory snapshot?",
+      "status": 200,
+      "agent": "agentic",
+      "selected_route": "analytics",
+      "application_ok": false,
+      "citation_count": 0,
+      "latency": {
+        "stages_ms": {
+          "routing": 1161.3959089991113,
+          "embedding": null,
+          "database_retrieval": null,
+          "retrieval_fusion": null,
+          "query_translation": null,
+          "reranking": null,
+          "answer_generation": null,
+          "sql_planning": 2838.2708680001087,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": null,
+          "agent_workflow": 4058.5067360007088
+        },
+        "events": [
+          {
+            "stage": "routing",
+            "elapsed_ms": 1161.3959089991113,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 1491.8015539988119,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 1346.4693140012969,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 4058.5067360007088,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 4058.6471679998795
+      },
+      "answer_characters": 73,
+      "error": null,
+      "http_elapsed_ms": 6493.98
+    },
+    {
+      "phase": "first_pass",
+      "case_id": "S2",
+      "expected_route": "analytics",
+      "question": "List the five products with the highest days of supply in the latest inventory snapshot.",
+      "status": 200,
+      "agent": "agentic",
+      "selected_route": "analytics",
+      "application_ok": true,
+      "citation_count": 2,
+      "latency": {
+        "stages_ms": {
+          "routing": 394.01675800036173,
+          "embedding": null,
+          "database_retrieval": null,
+          "retrieval_fusion": null,
+          "query_translation": null,
+          "reranking": null,
+          "answer_generation": 667.9464919980092,
+          "sql_planning": 1797.7928839973174,
+          "sql_execution": 1841.0023260003072,
+          "answer_synthesis": null,
+          "retrieval_total": null,
+          "agent_workflow": 4723.279872003332
+        },
+        "events": [
+          {
+            "stage": "routing",
+            "elapsed_ms": 394.01675800036173,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 794.4675649996498,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 1003.3253189976676,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_execution",
+            "elapsed_ms": 1841.0023260003072,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 667.9464919980092,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 4723.279872003332,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 4723.415165000915
+      },
+      "answer_characters": 303,
+      "error": null,
+      "http_elapsed_ms": 7130.07
+    },
+    {
+      "phase": "first_pass",
+      "case_id": "S3",
+      "expected_route": "analytics",
+      "question": "What were total sales revenue and units sold in 2024?",
+      "status": 200,
+      "agent": "agentic",
+      "selected_route": "analytics",
+      "application_ok": false,
+      "citation_count": 0,
+      "latency": {
+        "stages_ms": {
+          "routing": 1087.1881339990068,
+          "embedding": null,
+          "database_retrieval": null,
+          "retrieval_fusion": null,
+          "query_translation": null,
+          "reranking": null,
+          "answer_generation": null,
+          "sql_planning": 802.8723190000164,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": null,
+          "agent_workflow": 1900.2256700005091
+        },
+        "events": [
+          {
+            "stage": "routing",
+            "elapsed_ms": 1087.1881339990068,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 802.8723190000164,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 1900.2256700005091,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 1900.337295999634
+      },
+      "answer_characters": 325,
+      "error": null,
+      "http_elapsed_ms": 4266.05
+    },
+    {
+      "phase": "first_pass",
+      "case_id": "M1",
+      "expected_route": "both",
+      "question": "Using the latest inventory data, identify the category with the highest stockout rate, then explain the inventory policy checks before reallocating its stock.",
+      "status": 200,
+      "agent": "agentic",
+      "selected_route": "both",
+      "application_ok": false,
+      "citation_count": 0,
+      "latency": {
+        "stages_ms": {
+          "routing": 457.322236001346,
+          "embedding": 226.0758230004285,
+          "database_retrieval": 3602.974486995663,
+          "retrieval_fusion": 0.7858360004320275,
+          "query_translation": 644.1352940018987,
+          "reranking": 21188.494264999463,
+          "answer_generation": 726.2960449988896,
+          "sql_planning": 9605.57191800035,
+          "sql_execution": null,
+          "answer_synthesis": 684.7985179992975,
+          "retrieval_total": 25667.233068001224,
+          "agent_workflow": 27558.25233900032
+        },
+        "events": [
+          {
+            "stage": "routing",
+            "elapsed_ms": 457.322236001346,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 226.0758230004285,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 1061.295153998799,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1953.8493799991556,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 644.1352940018987,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1097.5857569974323,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 551.5393499990751,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.28275899967411533,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.5030770007579122,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 8544.276764001552,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 21188.494264999463,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 25667.233068001224,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 726.2960449988896,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_synthesis",
+            "elapsed_ms": 684.7985179992975,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 27558.25233900032,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 27558.444241996767
+      },
+      "answer_characters": 355,
+      "error": null,
+      "http_elapsed_ms": 29936.05
+    },
+    {
+      "phase": "first_pass",
+      "case_id": "M2",
+      "expected_route": "both",
+      "question": "List products with overlapping stockout and overstock flags in the latest snapshot, then explain the policy guidance for resolving those overlaps.",
+      "status": 200,
+      "agent": "agentic",
+      "selected_route": "both",
+      "application_ok": true,
+      "citation_count": 4,
+      "latency": {
+        "stages_ms": {
+          "routing": 444.20798999999533,
+          "embedding": 163.2046930026263,
+          "database_retrieval": 3325.9758389976923,
+          "retrieval_fusion": 1.0236000016448088,
+          "query_translation": 689.428603000124,
+          "reranking": 20198.43640700128,
+          "answer_generation": 11697.69412900132,
+          "sql_planning": 15634.683283002232,
+          "sql_execution": 1781.0935160014196,
+          "answer_synthesis": 537.3022759995365,
+          "retrieval_total": 24383.901634999347,
+          "agent_workflow": 36733.65709299833
+        },
+        "events": [
+          {
+            "stage": "routing",
+            "elapsed_ms": 444.20798999999533,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 163.2046930026263,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1673.5486990000936,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 689.428603000124,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1091.8513879987586,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 560.5757519988401,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.524050003150478,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.4995499984943308,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 5502.531750000344,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 10132.151533001888,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_execution",
+            "elapsed_ms": 1781.0935160014196,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 353.38545000195154,
+            "status": "failed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 20198.43640700128,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 24383.901634999347,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 11344.308678999369,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_synthesis",
+            "elapsed_ms": 537.3022759995365,
+            "status": "failed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 36733.65709299833,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 36733.823255999596
+      },
+      "answer_characters": 2157,
+      "error": null,
+      "http_elapsed_ms": 39087.85
+    },
+    {
+      "phase": "first_pass",
+      "case_id": "M3",
+      "expected_route": "both",
+      "question": "Show the latest products with reorder flags and explain which inventory-policy checks should precede a replenishment recommendation.",
+      "status": 200,
+      "agent": "agentic",
+      "selected_route": "both",
+      "application_ok": true,
+      "citation_count": 2,
+      "latency": {
+        "stages_ms": {
+          "routing": 3731.317334000778,
+          "embedding": 173.22723699908238,
+          "database_retrieval": 3329.3539859987504,
+          "retrieval_fusion": 0.7601100005558692,
+          "query_translation": 676.3892150011088,
+          "reranking": 14847.881345001952,
+          "answer_generation": 3139.6728600011556,
+          "sql_planning": 10665.995794999617,
+          "sql_execution": 1546.9450830023561,
+          "answer_synthesis": 406.42849299911177,
+          "retrieval_total": 19032.126943999174,
+          "agent_workflow": 26061.29688800138
+        },
+        "events": [
+          {
+            "stage": "routing",
+            "elapsed_ms": 3731.317334000778,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 173.22723699908238,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1642.5716190024104,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 676.3892150011088,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1137.2683759982465,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 549.5139909980935,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.3479170009086374,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.4121929996472318,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 7271.113498998602,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 3394.8822960010148,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_execution",
+            "elapsed_ms": 1546.9450830023561,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 274.39820500148926,
+            "status": "failed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 14847.881345001952,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 19032.126943999174,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 2865.2746549996664,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_synthesis",
+            "elapsed_ms": 406.42849299911177,
+            "status": "failed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 26061.29688800138,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 26061.474222999095
+      },
+      "answer_characters": 292,
+      "error": null,
+      "http_elapsed_ms": 28383.94
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "K1",
+      "expected_route": "knowledge",
+      "question": "According to the inventory policy, what checks are required before transferring stock between locations?",
+      "status": 200,
+      "agent": "agentic",
+      "selected_route": "knowledge",
+      "application_ok": null,
+      "citation_count": 0,
+      "latency": {
+        "stages_ms": {
+          "routing": 1014.5243800034223,
+          "embedding": 135.88931500271428,
+          "database_retrieval": 3086.3536719989497,
+          "retrieval_fusion": 0.6587099960597698,
+          "query_translation": 0.011422001989558339,
+          "reranking": 16708.642109999346,
+          "answer_generation": 640.4467630018189,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 19937.018790002185,
+          "agent_workflow": 21604.93377399689
+        },
+        "events": [
+          {
+            "stage": "routing",
+            "elapsed_ms": 1014.5243800034223,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 135.88931500271428,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1642.02404399839,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.011422001989558339,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 876.490777998697,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 567.8388500018627,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.3359829970577266,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.32272699900204316,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 16708.642109999346,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 19937.018790002185,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 640.4467630018189,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 21604.93377399689,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 21605.08875600135
+      },
+      "answer_characters": 53,
+      "error": null,
+      "http_elapsed_ms": 24106.91
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "K2",
+      "expected_route": "knowledge",
+      "question": "What is the cycle-count procedure when counted stock differs from the system quantity?",
+      "status": 200,
+      "agent": "agentic",
+      "selected_route": "knowledge",
+      "application_ok": null,
+      "citation_count": 3,
+      "latency": {
+        "stages_ms": {
+          "routing": 857.169660001091,
+          "embedding": 83.78350799830514,
+          "database_retrieval": 3029.4343269997626,
+          "retrieval_fusion": 0.5859689954377245,
+          "query_translation": 0.008786999387666583,
+          "reranking": 14923.449474001245,
+          "answer_generation": 1571.5618659996835,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 18041.068979000556,
+          "agent_workflow": 20482.702408000478
+        },
+        "events": [
+          {
+            "stage": "routing",
+            "elapsed_ms": 857.169660001091,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 83.78350799830514,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1638.2872430003772,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.008786999387666583,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 829.3247559995507,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 561.8223279998347,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.27123699692310765,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.31473199851461686,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 14923.449474001245,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 18041.068979000556,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 1571.5618659996835,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 20482.702408000478,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 20482.826179002586
+      },
+      "answer_characters": 938,
+      "error": null,
+      "http_elapsed_ms": 22996.07
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "K3",
+      "expected_route": "knowledge",
+      "question": "What approvals and evidence are required before a stock adjustment?",
+      "status": 200,
+      "agent": "agentic",
+      "selected_route": "knowledge",
+      "application_ok": null,
+      "citation_count": 2,
+      "latency": {
+        "stages_ms": {
+          "routing": 625.0586130008742,
+          "embedding": 83.96983399870805,
+          "database_retrieval": 3017.579837996891,
+          "retrieval_fusion": 0.618661997577874,
+          "query_translation": 0.009739000233821571,
+          "reranking": 10857.617751997168,
+          "answer_generation": 924.0635429996473,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 13963.863840999693,
+          "agent_workflow": 15528.285443997447
+        },
+        "events": [
+          {
+            "stage": "routing",
+            "elapsed_ms": 625.0586130008742,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 83.96983399870805,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1628.6855779981124,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.009739000233821571,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 830.5985820006754,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 558.2956779981032,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.3133889986202121,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.3052729989576619,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 10857.617751997168,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 13963.863840999693,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 924.0635429996473,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 15528.285443997447,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 15528.393294000125
+      },
+      "answer_characters": 533,
+      "error": null,
+      "http_elapsed_ms": 18104.47
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "K4",
+      "expected_route": "knowledge",
+      "question": "How should overlapping stockout and overstock flags be interpreted under the inventory policy?",
+      "status": 200,
+      "agent": "agentic",
+      "selected_route": "knowledge",
+      "application_ok": null,
+      "citation_count": 3,
+      "latency": {
+        "stages_ms": {
+          "routing": 567.7536479997798,
+          "embedding": 101.55127100006212,
+          "database_retrieval": 3972.92175199982,
+          "retrieval_fusion": 0.6744810016243719,
+          "query_translation": 0.009990002581616864,
+          "reranking": 20616.17415799992,
+          "answer_generation": 1270.9557000016503,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 24696.73189799869,
+          "agent_workflow": 26547.827141999733
+        },
+        "events": [
+          {
+            "stage": "routing",
+            "elapsed_ms": 567.7536479997798,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 101.55127100006212,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 2413.498822999827,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.009990002581616864,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1010.0462150003295,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 549.3767139996635,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.26327200248488225,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.4112089991394896,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 20616.17415799992,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 24696.73189799869,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 1270.9557000016503,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 26547.827141999733,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 26547.95642300087
+      },
+      "answer_characters": 991,
+      "error": null,
+      "http_elapsed_ms": 28933.34
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "S1",
+      "expected_route": "analytics",
+      "question": "What is the stockout rate by category in the latest inventory snapshot?",
+      "status": 200,
+      "agent": "agentic",
+      "selected_route": "analytics",
+      "application_ok": false,
+      "citation_count": 0,
+      "latency": {
+        "stages_ms": {
+          "routing": 573.2747220026795,
+          "embedding": null,
+          "database_retrieval": null,
+          "retrieval_fusion": null,
+          "query_translation": null,
+          "reranking": null,
+          "answer_generation": null,
+          "sql_planning": 1919.9029039955349,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": null,
+          "agent_workflow": 2512.772957001289
+        },
+        "events": [
+          {
+            "stage": "routing",
+            "elapsed_ms": 573.2747220026795,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 950.3807029977906,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 969.5222009977442,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 2512.772957001289,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 2512.9036599973915
+      },
+      "answer_characters": 73,
+      "error": null,
+      "http_elapsed_ms": 4882.3
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "S2",
+      "expected_route": "analytics",
+      "question": "List the five products with the highest days of supply in the latest inventory snapshot.",
+      "status": 200,
+      "agent": "agentic",
+      "selected_route": "analytics",
+      "application_ok": true,
+      "citation_count": 2,
+      "latency": {
+        "stages_ms": {
+          "routing": 486.89283299972885,
+          "embedding": null,
+          "database_retrieval": null,
+          "retrieval_fusion": null,
+          "query_translation": null,
+          "reranking": null,
+          "answer_generation": 684.0182519990776,
+          "sql_planning": 1449.0498840023065,
+          "sql_execution": 1521.8044159992132,
+          "answer_synthesis": null,
+          "retrieval_total": null,
+          "agent_workflow": 4164.461672997277
+        },
+        "events": [
+          {
+            "stage": "routing",
+            "elapsed_ms": 486.89283299972885,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 813.7811800006602,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 635.2687040016463,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_execution",
+            "elapsed_ms": 1521.8044159992132,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 684.0182519990776,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 4164.461672997277,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 4164.571967998199
+      },
+      "answer_characters": 303,
+      "error": null,
+      "http_elapsed_ms": 6634.13
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "S3",
+      "expected_route": "analytics",
+      "question": "What were total sales revenue and units sold in 2024?",
+      "status": 200,
+      "agent": "agentic",
+      "selected_route": "analytics",
+      "application_ok": true,
+      "citation_count": 3,
+      "latency": {
+        "stages_ms": {
+          "routing": 545.0010069980635,
+          "embedding": null,
+          "database_retrieval": null,
+          "retrieval_fusion": null,
+          "query_translation": null,
+          "reranking": null,
+          "answer_generation": 506.11066299825325,
+          "sql_planning": 1383.1907979983953,
+          "sql_execution": 3612.521557999571,
+          "answer_synthesis": null,
+          "retrieval_total": null,
+          "agent_workflow": 6074.565252001776
+        },
+        "events": [
+          {
+            "stage": "routing",
+            "elapsed_ms": 545.0010069980635,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 1383.1907979983953,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_execution",
+            "elapsed_ms": 3612.521557999571,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 506.11066299825325,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 6074.565252001776,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 6074.666649001301
+      },
+      "answer_characters": 146,
+      "error": null,
+      "http_elapsed_ms": 8416.06
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "M1",
+      "expected_route": "both",
+      "question": "Using the latest inventory data, identify the category with the highest stockout rate, then explain the inventory policy checks before reallocating its stock.",
+      "status": 200,
+      "agent": "agentic",
+      "selected_route": "both",
+      "application_ok": false,
+      "citation_count": 0,
+      "latency": {
+        "stages_ms": {
+          "routing": 502.11625000156346,
+          "embedding": 119.17661600091378,
+          "database_retrieval": 3338.179645004857,
+          "retrieval_fusion": 0.9315079987572972,
+          "query_translation": 0.010930998541880399,
+          "reranking": 20116.147790999094,
+          "answer_generation": 728.1978569990315,
+          "sql_planning": 1971.1950109995087,
+          "sql_execution": null,
+          "answer_synthesis": 684.4186299967987,
+          "retrieval_total": 23580.357979000837,
+          "agent_workflow": 25510.414771000796
+        },
+        "events": [
+          {
+            "stage": "routing",
+            "elapsed_ms": 502.11625000156346,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 119.17661600091378,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 971.3828589992772,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 999.8121520002314,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1901.7116880022513,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.010930998541880399,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 883.9953660026367,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 552.4725909999688,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.40082799750962295,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.5306800012476742,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 20116.147790999094,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 23580.357979000837,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 728.1978569990315,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_synthesis",
+            "elapsed_ms": 684.4186299967987,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 25510.414771000796,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 25510.527890000958
+      },
+      "answer_characters": 355,
+      "error": null,
+      "http_elapsed_ms": 27880.21
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "M2",
+      "expected_route": "both",
+      "question": "List products with overlapping stockout and overstock flags in the latest snapshot, then explain the policy guidance for resolving those overlaps.",
+      "status": 200,
+      "agent": "agentic",
+      "selected_route": "both",
+      "application_ok": true,
+      "citation_count": 4,
+      "latency": {
+        "stages_ms": {
+          "routing": 444.1772399986803,
+          "embedding": 130.96754499929375,
+          "database_retrieval": 3310.3347810028936,
+          "retrieval_fusion": 2.4400140027864836,
+          "query_translation": 0.017293998098466545,
+          "reranking": 20311.185490001662,
+          "answer_generation": 58126.424048001354,
+          "sql_planning": 2049.8082439989957,
+          "sql_execution": 1569.8173939999833,
+          "answer_synthesis": 327.1716749986808,
+          "retrieval_total": 23762.988899998163,
+          "agent_workflow": 59848.04858800271
+        },
+        "events": [
+          {
+            "stage": "routing",
+            "elapsed_ms": 444.1772399986803,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 130.96754499929375,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 959.0373210012331,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1873.5682650003582,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.017293998098466545,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 1090.7709229977627,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 885.2431940031238,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 551.5233219994116,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 1.6618010013189632,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.7782130014675204,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_execution",
+            "elapsed_ms": 1569.8173939999833,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 20311.185490001662,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 23762.988899998163,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 2709.295654000016,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 55417.12839400134,
+            "status": "failed"
+          },
+          {
+            "stage": "answer_synthesis",
+            "elapsed_ms": 327.1716749986808,
+            "status": "failed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 59848.04858800271,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 59848.17655599909
+      },
+      "answer_characters": 3247,
+      "error": null,
+      "http_elapsed_ms": 62224.01
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "M3",
+      "expected_route": "both",
+      "question": "Show the latest products with reorder flags and explain which inventory-policy checks should precede a replenishment recommendation.",
+      "status": 200,
+      "agent": "agentic",
+      "selected_route": "both",
+      "application_ok": true,
+      "citation_count": 5,
+      "latency": {
+        "stages_ms": {
+          "routing": 557.8784789977362,
+          "embedding": 117.27805099872057,
+          "database_retrieval": 3270.620698996936,
+          "retrieval_fusion": 1.2813670000468846,
+          "query_translation": 0.014869001461192966,
+          "reranking": 13854.79396899973,
+          "answer_generation": 2015.7241510023596,
+          "sql_planning": 808.5708870021335,
+          "sql_execution": 1811.468892999983,
+          "answer_synthesis": 425.271365998924,
+          "retrieval_total": 17248.877893001918,
+          "agent_workflow": 19993.804427002033
+        },
+        "events": [
+          {
+            "stage": "routing",
+            "elapsed_ms": 557.8784789977362,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 117.27805099872057,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_planning",
+            "elapsed_ms": 808.5708870021335,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1637.7610269992147,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.014869001461192966,
+            "status": "completed"
+          },
+          {
+            "stage": "sql_execution",
+            "elapsed_ms": 1811.468892999983,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1079.0538609981013,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 273.51309699952253,
+            "status": "failed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 553.80581099962,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.34770499769365415,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.9336620023532305,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 13854.79396899973,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 17248.877893001918,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 1742.211054002837,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_synthesis",
+            "elapsed_ms": 425.271365998924,
+            "status": "failed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 19993.804427002033,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 19994.012170998758
+      },
+      "answer_characters": 1475,
+      "error": null,
+      "http_elapsed_ms": 22523.15
+    }
+  ],
+  "resource_samples": [
+    {
+      "elapsed_ms": 1838.73,
+      "containers": [
+        {
+          "BlockIO": "526MB / 74.4MB",
+          "CPUPerc": "88.92%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "18.36%",
+          "MemUsage": "1.355GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "237kB / 29.3kB",
+          "PIDs": "33"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.43%",
+          "MemUsage": "32.48MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 6941.96,
+      "containers": [
+        {
+          "BlockIO": "535MB / 74.4MB",
+          "CPUPerc": "63.34%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "18.73%",
+          "MemUsage": "1.383GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "262kB / 44.8kB",
+          "PIDs": "36"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.43%",
+          "MemUsage": "32.48MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 11825.49,
+      "containers": [
+        {
+          "BlockIO": "535MB / 120MB",
+          "CPUPerc": "0.55%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "18.75%",
+          "MemUsage": "1.384GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "274kB / 51.8kB",
+          "PIDs": "37"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.67%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.43%",
+          "MemUsage": "32.85MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 15924.09,
+      "containers": [
+        {
+          "BlockIO": "633MB / 120MB",
+          "CPUPerc": "1.74%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "18.89%",
+          "MemUsage": "1.394GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "866kB / 74.6kB",
+          "PIDs": "61"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.43%",
+          "MemUsage": "32.74MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 20867.94,
+      "containers": [
+        {
+          "BlockIO": "687MB / 120MB",
+          "CPUPerc": "760.52%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "19.83%",
+          "MemUsage": "1.464GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "1.9MB / 114kB",
+          "PIDs": "61"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.43%",
+          "MemUsage": "32.74MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 24998.37,
+      "containers": [
+        {
+          "BlockIO": "687MB / 120MB",
+          "CPUPerc": "777.19%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "20.09%",
+          "MemUsage": "1.483GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "1.9MB / 114kB",
+          "PIDs": "61"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.43%",
+          "MemUsage": "32.74MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 29131.84,
+      "containers": [
+        {
+          "BlockIO": "687MB / 120MB",
+          "CPUPerc": "795.12%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "19.89%",
+          "MemUsage": "1.468GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "1.9MB / 114kB",
+          "PIDs": "61"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.43%",
+          "MemUsage": "32.74MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 34269.04,
+      "containers": [
+        {
+          "BlockIO": "915MB / 120MB",
+          "CPUPerc": "788.76%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "20.00%",
+          "MemUsage": "1.476GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "3.55MB / 184kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.43%",
+          "MemUsage": "32.74MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 39425.53,
+      "containers": [
+        {
+          "BlockIO": "1.02GB / 120MB",
+          "CPUPerc": "789.47%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "19.85%",
+          "MemUsage": "1.465GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "4.77MB / 223kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.01%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.43%",
+          "MemUsage": "32.74MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 44577.4,
+      "containers": [
+        {
+          "BlockIO": "1.06GB / 131MB",
+          "CPUPerc": "1522.46%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.63%",
+          "MemUsage": "1.597GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "4.79MB / 247kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.33MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 49717.38,
+      "containers": [
+        {
+          "BlockIO": "1.06GB / 131MB",
+          "CPUPerc": "799.11%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "20.90%",
+          "MemUsage": "1.542GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "6.43MB / 324kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.02%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.33MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 54854.86,
+      "containers": [
+        {
+          "BlockIO": "1.06GB / 131MB",
+          "CPUPerc": "790.22%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "20.90%",
+          "MemUsage": "1.543GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "6.43MB / 324kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.01%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.28MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 59995.37,
+      "containers": [
+        {
+          "BlockIO": "1.06GB / 131MB",
+          "CPUPerc": "796.64%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "20.90%",
+          "MemUsage": "1.543GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "6.43MB / 324kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.01%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.28MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 65127.51,
+      "containers": [
+        {
+          "BlockIO": "1.06GB / 131MB",
+          "CPUPerc": "793.77%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "22.18%",
+          "MemUsage": "1.637GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "6.44MB / 339kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.28MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 69254.02,
+      "containers": [
+        {
+          "BlockIO": "1.11GB / 131MB",
+          "CPUPerc": "788.91%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.44%",
+          "MemUsage": "1.582GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "6.44MB / 361kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.01%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.28MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 74382.52,
+      "containers": [
+        {
+          "BlockIO": "1.11GB / 131MB",
+          "CPUPerc": "799.78%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.44%",
+          "MemUsage": "1.582GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "6.44MB / 362kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.63MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 78522.22,
+      "containers": [
+        {
+          "BlockIO": "1.14GB / 131MB",
+          "CPUPerc": "633.83%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.44%",
+          "MemUsage": "1.583GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "6.44MB / 364kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.63MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 83613.38,
+      "containers": [
+        {
+          "BlockIO": "1.15GB / 131MB",
+          "CPUPerc": "101.88%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.44%",
+          "MemUsage": "1.582GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "6.48MB / 402kB",
+          "PIDs": "70"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.55MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 88727.57,
+      "containers": [
+        {
+          "BlockIO": "1.15GB / 131MB",
+          "CPUPerc": "792.00%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.44%",
+          "MemUsage": "1.583GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "7.69MB / 443kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.55MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 93857.69,
+      "containers": [
+        {
+          "BlockIO": "1.15GB / 131MB",
+          "CPUPerc": "791.32%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.44%",
+          "MemUsage": "1.583GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "7.69MB / 443kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.55MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 97971.12,
+      "containers": [
+        {
+          "BlockIO": "1.2GB / 131MB",
+          "CPUPerc": "801.90%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.44%",
+          "MemUsage": "1.583GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "7.69MB / 443kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.55MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 102084.4,
+      "containers": [
+        {
+          "BlockIO": "1.2GB / 131MB",
+          "CPUPerc": "1.90%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.45%",
+          "MemUsage": "1.583GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "7.71MB / 468kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.37MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 106202.09,
+      "containers": [
+        {
+          "BlockIO": "1.23GB / 131MB",
+          "CPUPerc": "1.39%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.44%",
+          "MemUsage": "1.583GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "8.96MB / 522kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.34MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 110940.26,
+      "containers": [
+        {
+          "BlockIO": "1.34GB / 131MB",
+          "CPUPerc": "793.08%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "20.90%",
+          "MemUsage": "1.543GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "9.88MB / 547kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.34MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 116072.44,
+      "containers": [
+        {
+          "BlockIO": "1.35GB / 131MB",
+          "CPUPerc": "792.38%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.05%",
+          "MemUsage": "1.554GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "9.88MB / 547kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.34MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 120932.47,
+      "containers": [
+        {
+          "BlockIO": "1.35GB / 131MB",
+          "CPUPerc": "789.17%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.05%",
+          "MemUsage": "1.554GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "9.88MB / 547kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.34MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 125054.49,
+      "containers": [
+        {
+          "BlockIO": "1.4GB / 131MB",
+          "CPUPerc": "798.39%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.05%",
+          "MemUsage": "1.554GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "9.88MB / 547kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.01%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.34MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 130158.63,
+      "containers": [
+        {
+          "BlockIO": "1.41GB / 131MB",
+          "CPUPerc": "3.26%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.06%",
+          "MemUsage": "1.554GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "9.89MB / 559kB",
+          "PIDs": "70"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.02%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.34MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 135287.03,
+      "containers": [
+        {
+          "BlockIO": "1.41GB / 131MB",
+          "CPUPerc": "0.62%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.06%",
+          "MemUsage": "1.554GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "9.91MB / 584kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.45MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 140422.17,
+      "containers": [
+        {
+          "BlockIO": "1.41GB / 131MB",
+          "CPUPerc": "2.08%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.06%",
+          "MemUsage": "1.554GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "9.93MB / 605kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.36MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 145534.41,
+      "containers": [
+        {
+          "BlockIO": "1.41GB / 131MB",
+          "CPUPerc": "1.64%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.06%",
+          "MemUsage": "1.554GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "9.94MB / 620kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.36MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 150665.41,
+      "containers": [
+        {
+          "BlockIO": "1.41GB / 131MB",
+          "CPUPerc": "1.90%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.06%",
+          "MemUsage": "1.554GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "9.95MB / 636kB",
+          "PIDs": "70"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.02%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.36MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 154784.81,
+      "containers": [
+        {
+          "BlockIO": "1.5GB / 131MB",
+          "CPUPerc": "502.05%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.09%",
+          "MemUsage": "1.556GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "12MB / 721kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.36MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 159939.72,
+      "containers": [
+        {
+          "BlockIO": "1.53GB / 131MB",
+          "CPUPerc": "779.58%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.10%",
+          "MemUsage": "1.557GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "12MB / 735kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.36MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 165071.95,
+      "containers": [
+        {
+          "BlockIO": "1.57GB / 131MB",
+          "CPUPerc": "794.27%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.09%",
+          "MemUsage": "1.557GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "12MB / 735kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.47MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 169207.94,
+      "containers": [
+        {
+          "BlockIO": "1.58GB / 131MB",
+          "CPUPerc": "793.19%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.10%",
+          "MemUsage": "1.557GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "12MB / 735kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.39MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 173336.33,
+      "containers": [
+        {
+          "BlockIO": "1.58GB / 131MB",
+          "CPUPerc": "797.90%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.10%",
+          "MemUsage": "1.557GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "12MB / 735kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.39MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 177448.55,
+      "containers": [
+        {
+          "BlockIO": "1.59GB / 131MB",
+          "CPUPerc": "2.98%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.10%",
+          "MemUsage": "1.557GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "12MB / 755kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.39MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 181982.31,
+      "containers": [
+        {
+          "BlockIO": "1.63GB / 131MB",
+          "CPUPerc": "4.40%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.10%",
+          "MemUsage": "1.558GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "13MB / 806kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.39MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 186101.18,
+      "containers": [
+        {
+          "BlockIO": "1.64GB / 131MB",
+          "CPUPerc": "784.53%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.64%",
+          "MemUsage": "1.597GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "14.2MB / 854kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.39MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 191017.52,
+      "containers": [
+        {
+          "BlockIO": "1.64GB / 131MB",
+          "CPUPerc": "788.84%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.36%",
+          "MemUsage": "1.577GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "14.2MB / 854kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.01%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.39MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 195154.42,
+      "containers": [
+        {
+          "BlockIO": "1.64GB / 131MB",
+          "CPUPerc": "790.59%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.36%",
+          "MemUsage": "1.577GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "14.2MB / 862kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.01%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.44MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 200294.34,
+      "containers": [
+        {
+          "BlockIO": "1.64GB / 131MB",
+          "CPUPerc": "790.97%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.36%",
+          "MemUsage": "1.577GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "14.2MB / 921kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.44MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 205443.1,
+      "containers": [
+        {
+          "BlockIO": "1.64GB / 131MB",
+          "CPUPerc": "0.53%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.36%",
+          "MemUsage": "1.577GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "14.2MB / 933kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.44MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 210552.5,
+      "containers": [
+        {
+          "BlockIO": "1.64GB / 131MB",
+          "CPUPerc": "0.57%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.36%",
+          "MemUsage": "1.577GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "14.2MB / 933kB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.44MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 215691.76,
+      "containers": [
+        {
+          "BlockIO": "1.64GB / 131MB",
+          "CPUPerc": "2.63%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.36%",
+          "MemUsage": "1.576GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "14.2MB / 1.02MB",
+          "PIDs": "70"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.44MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 219789.36,
+      "containers": [
+        {
+          "BlockIO": "1.64GB / 131MB",
+          "CPUPerc": "0.64%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.36%",
+          "MemUsage": "1.577GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "14.2MB / 1.1MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.44MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 223905.59,
+      "containers": [
+        {
+          "BlockIO": "1.67GB / 131MB",
+          "CPUPerc": "5.97%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.36%",
+          "MemUsage": "1.577GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "14.8MB / 1.14MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.57MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 229036.42,
+      "containers": [
+        {
+          "BlockIO": "1.67GB / 131MB",
+          "CPUPerc": "780.85%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.36%",
+          "MemUsage": "1.576GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "16MB / 1.18MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.45MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 233168.4,
+      "containers": [
+        {
+          "BlockIO": "1.67GB / 131MB",
+          "CPUPerc": "799.89%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.37%",
+          "MemUsage": "1.577GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "16MB / 1.2MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.45MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 238297.07,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "801.14%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.37%",
+          "MemUsage": "1.577GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "16MB / 1.23MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.45MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 242403.5,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "0.53%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.37%",
+          "MemUsage": "1.577GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "16MB / 1.23MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.01%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.45MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 247514.1,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "2.44%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.37%",
+          "MemUsage": "1.577GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "16.1MB / 1.31MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.45MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 252063.81,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "786.26%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.37%",
+          "MemUsage": "1.577GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "17.7MB / 1.36MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.75%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.22MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 256188.47,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "788.72%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.37%",
+          "MemUsage": "1.577GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "17.7MB / 1.36MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.22MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 261140.0,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "797.56%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.37%",
+          "MemUsage": "1.577GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "17.7MB / 1.36MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.22MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 265288.28,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "803.34%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.37%",
+          "MemUsage": "1.577GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "17.7MB / 1.36MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.22MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 270392.03,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "1.14%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.36%",
+          "MemUsage": "1.577GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "17.7MB / 1.37MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.22MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 275504.24,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "618.90%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.49%",
+          "MemUsage": "1.586GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "19.1MB / 1.43MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.21MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 280682.7,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "794.92%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.49%",
+          "MemUsage": "1.586GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "19.1MB / 1.43MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.21MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 284825.63,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "798.63%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.49%",
+          "MemUsage": "1.586GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "19.1MB / 1.43MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.33MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 288953.01,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "800.70%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.49%",
+          "MemUsage": "1.586GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "19.1MB / 1.43MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.33MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 293078.13,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "1.39%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.49%",
+          "MemUsage": "1.586GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "19.2MB / 1.44MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.01%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.25MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 297176.26,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "3.05%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.48%",
+          "MemUsage": "1.586GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "20.2MB / 1.5MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.25MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 302142.15,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "797.51%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.49%",
+          "MemUsage": "1.586GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "20.4MB / 1.5MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.25MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 307269.06,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "800.07%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.48%",
+          "MemUsage": "1.586GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "20.4MB / 1.5MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.25MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 312102.31,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "2.28%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.48%",
+          "MemUsage": "1.586GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "20.4MB / 1.53MB",
+          "PIDs": "70"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.86%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.52MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 317215.34,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "559.68%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.73%",
+          "MemUsage": "1.604GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "22.4MB / 1.59MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.52MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 322153.02,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "793.16%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "20.84%",
+          "MemUsage": "1.538GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "22.4MB / 1.59MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.52MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 326285.39,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "788.68%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.64%",
+          "MemUsage": "1.597GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "22.4MB / 1.59MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.52MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 331165.6,
+      "containers": [
+        {
+          "BlockIO": "1.69GB / 131MB",
+          "CPUPerc": "898.54%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "23.24%",
+          "MemUsage": "1.715GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "22.4MB / 1.59MB",
+          "PIDs": "70"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.52MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 336296.57,
+      "containers": [
+        {
+          "BlockIO": "1.86GB / 131MB",
+          "CPUPerc": "884.95%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "25.36%",
+          "MemUsage": "1.871GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "22.4MB / 1.59MB",
+          "PIDs": "85"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.44%",
+          "MemUsage": "33.52MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 341121.49,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "2.24%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.68%",
+          "MemUsage": "1.6GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "22.4MB / 1.63MB",
+          "PIDs": "70"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.77%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "33.89MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 346231.67,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "2.45%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.67%",
+          "MemUsage": "1.6GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "22.4MB / 1.65MB",
+          "PIDs": "70"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.01%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "33.8MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 351135.86,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "1.18%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.67%",
+          "MemUsage": "1.6GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "22.5MB / 1.67MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "33.8MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 355250.89,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "2.15%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.67%",
+          "MemUsage": "1.6GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "22.5MB / 1.68MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.01%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "33.8MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 359358.88,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "2.00%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.67%",
+          "MemUsage": "1.6GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "22.5MB / 1.69MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "33.8MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 364462.25,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "3.95%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.68%",
+          "MemUsage": "1.6GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "24.4MB / 1.77MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "33.8MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 369597.2,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "787.91%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.68%",
+          "MemUsage": "1.6GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "24.5MB / 1.78MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "33.8MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 373718.8,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "792.44%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.68%",
+          "MemUsage": "1.6GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "24.5MB / 1.78MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "34.08MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 378843.13,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "793.55%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.68%",
+          "MemUsage": "1.6GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "24.5MB / 1.78MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "34.08MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 383961.42,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "802.16%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.68%",
+          "MemUsage": "1.6GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "24.5MB / 1.78MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "34.08MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 388066.26,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "1.32%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.68%",
+          "MemUsage": "1.6GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "24.5MB / 1.8MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "34.08MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 392189.38,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "5.45%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.68%",
+          "MemUsage": "1.6GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "26.4MB / 1.87MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "34.08MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 397315.05,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "790.99%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.68%",
+          "MemUsage": "1.6GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "26.6MB / 1.9MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "34.08MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 402203.89,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "789.17%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.14%",
+          "MemUsage": "1.56GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "26.6MB / 1.9MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "34.16MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 407337.93,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "795.51%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.14%",
+          "MemUsage": "1.56GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "26.6MB / 1.9MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "34.16MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 412204.57,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "798.99%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.14%",
+          "MemUsage": "1.56GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "26.6MB / 1.9MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "34.16MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 416313.72,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "0.90%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.14%",
+          "MemUsage": "1.56GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "26.6MB / 1.91MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.01%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "34.16MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 421199.09,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "0.45%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.14%",
+          "MemUsage": "1.56GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "26.6MB / 1.91MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "34.16MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 426309.98,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "0.47%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.14%",
+          "MemUsage": "1.56GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "26.6MB / 1.91MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.01%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "34.16MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 431171.25,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "0.48%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.14%",
+          "MemUsage": "1.56GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "26.6MB / 1.94MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "34.16MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 436279.96,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "0.47%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.14%",
+          "MemUsage": "1.56GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "26.6MB / 1.94MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.01%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "33.87MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 441189.2,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "0.48%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.14%",
+          "MemUsage": "1.56GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "26.6MB / 1.94MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "33.87MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 445281.75,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "0.55%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.14%",
+          "MemUsage": "1.56GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "26.6MB / 1.94MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.01%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "33.87MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 449381.67,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "2.71%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.13%",
+          "MemUsage": "1.56GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "26.6MB / 2.02MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "33.87MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 454490.74,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "3.38%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.14%",
+          "MemUsage": "1.56GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "27.2MB / 2.09MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "33.87MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 458615.34,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "781.95%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.14%",
+          "MemUsage": "1.56GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "28.3MB / 2.14MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "33.87MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 462728.17,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "790.22%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.14%",
+          "MemUsage": "1.56GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "28.3MB / 2.14MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "33.94MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 467853.52,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "800.56%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.14%",
+          "MemUsage": "1.56GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "28.3MB / 2.14MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "33.94MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    },
+    {
+      "elapsed_ms": 472223.62,
+      "containers": [
+        {
+          "BlockIO": "2.1GB / 131MB",
+          "CPUPerc": "1.20%",
+          "Container": "enterprise-knowledge-ai-agent-web-1",
+          "ID": "72163879a63a",
+          "MemPerc": "21.14%",
+          "MemUsage": "1.56GiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-web-1",
+          "NetIO": "28.3MB / 2.2MB",
+          "PIDs": "69"
+        },
+        {
+          "BlockIO": "85.2MB / 53.4MB",
+          "CPUPerc": "0.00%",
+          "Container": "enterprise-knowledge-ai-agent-db-1",
+          "ID": "235e3f042497",
+          "MemPerc": "0.45%",
+          "MemUsage": "33.94MiB / 7.381GiB",
+          "Name": "enterprise-knowledge-ai-agent-db-1",
+          "NetIO": "2.66kB / 126B",
+          "PIDs": "6"
+        }
+      ]
+    }
+  ],
+  "elapsed_seconds": 473.36,
+  "summary": {
+    "first_pass": {
+      "requests": 10,
+      "http_200": 9,
+      "http_e2e": {
+        "n": 10,
+        "median_ms": 29082.17,
+        "min_ms": 4266.05,
+        "max_ms": 42757.35
+      },
+      "stages": {
+        "agent_workflow": {
+          "n": 10,
+          "median_ms": 26620.95,
+          "min_ms": 1900.23,
+          "max_ms": 36879.97
+        },
+        "answer_generation": {
+          "n": 8,
+          "median_ms": 1357.64,
+          "min_ms": 667.95,
+          "max_ms": 11697.69
+        },
+        "answer_synthesis": {
+          "n": 3,
+          "median_ms": 537.3,
+          "min_ms": 406.43,
+          "max_ms": 684.8
+        },
+        "database_retrieval": {
+          "n": 7,
+          "median_ms": 3340.6,
+          "min_ms": 3315.67,
+          "max_ms": 4613.32
+        },
+        "embedding": {
+          "n": 7,
+          "median_ms": 173.23,
+          "min_ms": 131.97,
+          "max_ms": 916.02
+        },
+        "query_translation": {
+          "n": 7,
+          "median_ms": 666.77,
+          "min_ms": 574.3,
+          "max_ms": 689.43
+        },
+        "reranking": {
+          "n": 7,
+          "median_ms": 20198.44,
+          "min_ms": 10976.29,
+          "max_ms": 29596.98
+        },
+        "retrieval_fusion": {
+          "n": 7,
+          "median_ms": 0.79,
+          "min_ms": 0.53,
+          "max_ms": 1.42
+        },
+        "retrieval_total": {
+          "n": 7,
+          "median_ms": 24383.9,
+          "min_ms": 15012.79,
+          "max_ms": 34626.67
+        },
+        "routing": {
+          "n": 10,
+          "median_ms": 858.8,
+          "min_ms": 394.02,
+          "max_ms": 3731.32
+        },
+        "sql_execution": {
+          "n": 3,
+          "median_ms": 1781.09,
+          "min_ms": 1546.95,
+          "max_ms": 1841.0
+        },
+        "sql_planning": {
+          "n": 6,
+          "median_ms": 6221.92,
+          "min_ms": 802.87,
+          "max_ms": 15634.68
+        }
+      }
+    },
+    "warm_pass": {
+      "requests": 10,
+      "http_200": 10,
+      "http_e2e": {
+        "n": 10,
+        "median_ms": 22759.61,
+        "min_ms": 4882.3,
+        "max_ms": 62224.01
+      },
+      "stages": {
+        "agent_workflow": {
+          "n": 10,
+          "median_ms": 20238.25,
+          "min_ms": 2512.77,
+          "max_ms": 59848.05
+        },
+        "answer_generation": {
+          "n": 9,
+          "median_ms": 924.06,
+          "min_ms": 506.11,
+          "max_ms": 58126.42
+        },
+        "answer_synthesis": {
+          "n": 3,
+          "median_ms": 425.27,
+          "min_ms": 327.17,
+          "max_ms": 684.42
+        },
+        "database_retrieval": {
+          "n": 7,
+          "median_ms": 3270.62,
+          "min_ms": 3017.58,
+          "max_ms": 3972.92
+        },
+        "embedding": {
+          "n": 7,
+          "median_ms": 117.28,
+          "min_ms": 83.78,
+          "max_ms": 135.89
+        },
+        "query_translation": {
+          "n": 7,
+          "median_ms": 0.01,
+          "min_ms": 0.01,
+          "max_ms": 0.02
+        },
+        "reranking": {
+          "n": 7,
+          "median_ms": 16708.64,
+          "min_ms": 10857.62,
+          "max_ms": 20616.17
+        },
+        "retrieval_fusion": {
+          "n": 7,
+          "median_ms": 0.67,
+          "min_ms": 0.59,
+          "max_ms": 2.44
+        },
+        "retrieval_total": {
+          "n": 7,
+          "median_ms": 19937.02,
+          "min_ms": 13963.86,
+          "max_ms": 24696.73
+        },
+        "routing": {
+          "n": 10,
+          "median_ms": 562.82,
+          "min_ms": 444.18,
+          "max_ms": 1014.52
+        },
+        "sql_execution": {
+          "n": 4,
+          "median_ms": 1690.64,
+          "min_ms": 1521.8,
+          "max_ms": 3612.52
+        },
+        "sql_planning": {
+          "n": 6,
+          "median_ms": 1684.48,
+          "min_ms": 808.57,
+          "max_ms": 2049.81
+        }
+      }
+    }
+  },
+  "limitations": "Timing smoke, not a quality or load benchmark. No OCR/upload work occurs during chat. Provider/network variance and translation caching affect results. Resource peaks are sampled container-wide, not attributed to E5.",
+  "startup": {
+    "created_at_utc": "2026-10-25T17:29:27.827543+00:00",
+    "compose_recreate_to_health_seconds": 62.67,
+    "image": "sha256:e377ac16f9985fcd5b5206b3a4bd1d195eb976c507b6b5f52b72153d98400efc",
+    "note": "Includes Compose recreation and startup model loading; cached weights; no question or inference warm-up"
+  },
+  "models": {
+    "embedding": "intfloat/multilingual-e5-base",
+    "reranker": "BAAI/bge-reranker-v2-m3",
+    "generation": "openai/gpt-oss-120b via Groq",
+    "device": "cpu",
+    "docker_cpus": 16,
+    "docker_memory_gib": 7.380519866943359
+  },
+  "route_group_summary": {
+    "first_pass": {
+      "Knowledge": {
+        "requests": 4,
+        "http_200": 3,
+        "http_e2e": {
+          "n": 4,
+          "median_ms": 34530.4,
+          "min_ms": 19166.31,
+          "max_ms": 42757.35
+        },
+        "stages": {
+          "agent_workflow": {
+            "n": 4,
+            "median_ms": 31314.01,
+            "min_ms": 16765.03,
+            "max_ms": 36879.97
+          },
+          "answer_generation": {
+            "n": 4,
+            "median_ms": 1357.64,
+            "min_ms": 677.92,
+            "max_ms": 1625.57
+          },
+          "answer_synthesis": {
+            "n": 0
+          },
+          "database_retrieval": {
+            "n": 4,
+            "median_ms": 3389.48,
+            "min_ms": 3315.67,
+            "max_ms": 4613.32
+          },
+          "embedding": {
+            "n": 4,
+            "median_ms": 451.72,
+            "min_ms": 131.97,
+            "max_ms": 916.02
+          },
+          "query_translation": {
+            "n": 4,
+            "median_ms": 649.98,
+            "min_ms": 574.3,
+            "max_ms": 666.79
+          },
+          "reranking": {
+            "n": 4,
+            "median_ms": 20673.41,
+            "min_ms": 10976.29,
+            "max_ms": 29596.98
+          },
+          "retrieval_fusion": {
+            "n": 4,
+            "median_ms": 0.7,
+            "min_ms": 0.53,
+            "max_ms": 1.42
+          },
+          "retrieval_total": {
+            "n": 4,
+            "median_ms": 25752.62,
+            "min_ms": 15012.79,
+            "max_ms": 34626.67
+          },
+          "routing": {
+            "n": 4,
+            "median_ms": 1119.45,
+            "min_ms": 611.05,
+            "max_ms": 2281.33
+          },
+          "sql_execution": {
+            "n": 0
+          },
+          "sql_planning": {
+            "n": 0
+          }
+        }
+      },
+      "Analytics": {
+        "requests": 3,
+        "http_200": 3,
+        "http_e2e": {
+          "n": 3,
+          "median_ms": 6493.98,
+          "min_ms": 4266.05,
+          "max_ms": 7130.07
+        },
+        "stages": {
+          "agent_workflow": {
+            "n": 3,
+            "median_ms": 4058.51,
+            "min_ms": 1900.23,
+            "max_ms": 4723.28
+          },
+          "answer_generation": {
+            "n": 1,
+            "median_ms": 667.95,
+            "min_ms": 667.95,
+            "max_ms": 667.95
+          },
+          "answer_synthesis": {
+            "n": 0
+          },
+          "database_retrieval": {
+            "n": 0
+          },
+          "embedding": {
+            "n": 0
+          },
+          "query_translation": {
+            "n": 0
+          },
+          "reranking": {
+            "n": 0
+          },
+          "retrieval_fusion": {
+            "n": 0
+          },
+          "retrieval_total": {
+            "n": 0
+          },
+          "routing": {
+            "n": 3,
+            "median_ms": 1087.19,
+            "min_ms": 394.02,
+            "max_ms": 1161.4
+          },
+          "sql_execution": {
+            "n": 1,
+            "median_ms": 1841.0,
+            "min_ms": 1841.0,
+            "max_ms": 1841.0
+          },
+          "sql_planning": {
+            "n": 3,
+            "median_ms": 1797.79,
+            "min_ms": 802.87,
+            "max_ms": 2838.27
+          }
+        }
+      },
+      "Mixed": {
+        "requests": 3,
+        "http_200": 3,
+        "http_e2e": {
+          "n": 3,
+          "median_ms": 29936.05,
+          "min_ms": 28383.94,
+          "max_ms": 39087.85
+        },
+        "stages": {
+          "agent_workflow": {
+            "n": 3,
+            "median_ms": 27558.25,
+            "min_ms": 26061.3,
+            "max_ms": 36733.66
+          },
+          "answer_generation": {
+            "n": 3,
+            "median_ms": 3139.67,
+            "min_ms": 726.3,
+            "max_ms": 11697.69
+          },
+          "answer_synthesis": {
+            "n": 3,
+            "median_ms": 537.3,
+            "min_ms": 406.43,
+            "max_ms": 684.8
+          },
+          "database_retrieval": {
+            "n": 3,
+            "median_ms": 3329.35,
+            "min_ms": 3325.98,
+            "max_ms": 3602.97
+          },
+          "embedding": {
+            "n": 3,
+            "median_ms": 173.23,
+            "min_ms": 163.2,
+            "max_ms": 226.08
+          },
+          "query_translation": {
+            "n": 3,
+            "median_ms": 676.39,
+            "min_ms": 644.14,
+            "max_ms": 689.43
+          },
+          "reranking": {
+            "n": 3,
+            "median_ms": 20198.44,
+            "min_ms": 14847.88,
+            "max_ms": 21188.49
+          },
+          "retrieval_fusion": {
+            "n": 3,
+            "median_ms": 0.79,
+            "min_ms": 0.76,
+            "max_ms": 1.02
+          },
+          "retrieval_total": {
+            "n": 3,
+            "median_ms": 24383.9,
+            "min_ms": 19032.13,
+            "max_ms": 25667.23
+          },
+          "routing": {
+            "n": 3,
+            "median_ms": 457.32,
+            "min_ms": 444.21,
+            "max_ms": 3731.32
+          },
+          "sql_execution": {
+            "n": 2,
+            "median_ms": 1664.02,
+            "min_ms": 1546.95,
+            "max_ms": 1781.09
+          },
+          "sql_planning": {
+            "n": 3,
+            "median_ms": 10666.0,
+            "min_ms": 9605.57,
+            "max_ms": 15634.68
+          }
+        }
+      }
+    },
+    "warm_pass": {
+      "Knowledge": {
+        "requests": 4,
+        "http_200": 4,
+        "http_e2e": {
+          "n": 4,
+          "median_ms": 23551.49,
+          "min_ms": 18104.47,
+          "max_ms": 28933.34
+        },
+        "stages": {
+          "agent_workflow": {
+            "n": 4,
+            "median_ms": 21043.82,
+            "min_ms": 15528.29,
+            "max_ms": 26547.83
+          },
+          "answer_generation": {
+            "n": 4,
+            "median_ms": 1097.51,
+            "min_ms": 640.45,
+            "max_ms": 1571.56
+          },
+          "answer_synthesis": {
+            "n": 0
+          },
+          "database_retrieval": {
+            "n": 4,
+            "median_ms": 3057.89,
+            "min_ms": 3017.58,
+            "max_ms": 3972.92
+          },
+          "embedding": {
+            "n": 4,
+            "median_ms": 92.76,
+            "min_ms": 83.78,
+            "max_ms": 135.89
+          },
+          "query_translation": {
+            "n": 4,
+            "median_ms": 0.01,
+            "min_ms": 0.01,
+            "max_ms": 0.01
+          },
+          "reranking": {
+            "n": 4,
+            "median_ms": 15816.05,
+            "min_ms": 10857.62,
+            "max_ms": 20616.17
+          },
+          "retrieval_fusion": {
+            "n": 4,
+            "median_ms": 0.64,
+            "min_ms": 0.59,
+            "max_ms": 0.67
+          },
+          "retrieval_total": {
+            "n": 4,
+            "median_ms": 18989.04,
+            "min_ms": 13963.86,
+            "max_ms": 24696.73
+          },
+          "routing": {
+            "n": 4,
+            "median_ms": 741.11,
+            "min_ms": 567.75,
+            "max_ms": 1014.52
+          },
+          "sql_execution": {
+            "n": 0
+          },
+          "sql_planning": {
+            "n": 0
+          }
+        }
+      },
+      "Analytics": {
+        "requests": 3,
+        "http_200": 3,
+        "http_e2e": {
+          "n": 3,
+          "median_ms": 6634.13,
+          "min_ms": 4882.3,
+          "max_ms": 8416.06
+        },
+        "stages": {
+          "agent_workflow": {
+            "n": 3,
+            "median_ms": 4164.46,
+            "min_ms": 2512.77,
+            "max_ms": 6074.57
+          },
+          "answer_generation": {
+            "n": 2,
+            "median_ms": 595.06,
+            "min_ms": 506.11,
+            "max_ms": 684.02
+          },
+          "answer_synthesis": {
+            "n": 0
+          },
+          "database_retrieval": {
+            "n": 0
+          },
+          "embedding": {
+            "n": 0
+          },
+          "query_translation": {
+            "n": 0
+          },
+          "reranking": {
+            "n": 0
+          },
+          "retrieval_fusion": {
+            "n": 0
+          },
+          "retrieval_total": {
+            "n": 0
+          },
+          "routing": {
+            "n": 3,
+            "median_ms": 545.0,
+            "min_ms": 486.89,
+            "max_ms": 573.27
+          },
+          "sql_execution": {
+            "n": 2,
+            "median_ms": 2567.16,
+            "min_ms": 1521.8,
+            "max_ms": 3612.52
+          },
+          "sql_planning": {
+            "n": 3,
+            "median_ms": 1449.05,
+            "min_ms": 1383.19,
+            "max_ms": 1919.9
+          }
+        }
+      },
+      "Mixed": {
+        "requests": 3,
+        "http_200": 3,
+        "http_e2e": {
+          "n": 3,
+          "median_ms": 27880.21,
+          "min_ms": 22523.15,
+          "max_ms": 62224.01
+        },
+        "stages": {
+          "agent_workflow": {
+            "n": 3,
+            "median_ms": 25510.41,
+            "min_ms": 19993.8,
+            "max_ms": 59848.05
+          },
+          "answer_generation": {
+            "n": 3,
+            "median_ms": 2015.72,
+            "min_ms": 728.2,
+            "max_ms": 58126.42
+          },
+          "answer_synthesis": {
+            "n": 3,
+            "median_ms": 425.27,
+            "min_ms": 327.17,
+            "max_ms": 684.42
+          },
+          "database_retrieval": {
+            "n": 3,
+            "median_ms": 3310.33,
+            "min_ms": 3270.62,
+            "max_ms": 3338.18
+          },
+          "embedding": {
+            "n": 3,
+            "median_ms": 119.18,
+            "min_ms": 117.28,
+            "max_ms": 130.97
+          },
+          "query_translation": {
+            "n": 3,
+            "median_ms": 0.01,
+            "min_ms": 0.01,
+            "max_ms": 0.02
+          },
+          "reranking": {
+            "n": 3,
+            "median_ms": 20116.15,
+            "min_ms": 13854.79,
+            "max_ms": 20311.19
+          },
+          "retrieval_fusion": {
+            "n": 3,
+            "median_ms": 1.28,
+            "min_ms": 0.93,
+            "max_ms": 2.44
+          },
+          "retrieval_total": {
+            "n": 3,
+            "median_ms": 23580.36,
+            "min_ms": 17248.88,
+            "max_ms": 23762.99
+          },
+          "routing": {
+            "n": 3,
+            "median_ms": 502.12,
+            "min_ms": 444.18,
+            "max_ms": 557.88
+          },
+          "sql_execution": {
+            "n": 2,
+            "median_ms": 1690.64,
+            "min_ms": 1569.82,
+            "max_ms": 1811.47
+          },
+          "sql_planning": {
+            "n": 3,
+            "median_ms": 1971.2,
+            "min_ms": 808.57,
+            "max_ms": 2049.81
+          }
+        }
+      }
+    }
+  },
+  "run_outcomes": {
+    "http_200": 19,
+    "http_503": 1,
+    "application_ok_false": 5,
+    "http_200_without_citations": 7,
+    "routing_matches_on_returned_routes": 19,
+    "returned_routes": 19
+  },
+  "background_traffic": {
+    "unmatched_server_requests_during_window": 1,
+    "note": "Other requests were observed during the first pass; benchmark concurrency is one but the shared server was not isolated."
+  },
+  "resource_summary": {
+    "enterprise-knowledge-ai-agent-web-1": {
+      "samples": 101,
+      "max_sampled_cpu_percent": 1522.46,
+      "max_sampled_memory_gib": 1.871
+    },
+    "enterprise-knowledge-ai-agent-db-1": {
+      "samples": 101,
+      "max_sampled_cpu_percent": 0.86,
+      "max_sampled_memory_gib": 0.0334
+    }
+  },
+  "measurement_notes": [
+    "Per-stage medians include executed stages from the citation-rejected request; its timings were recovered from the unique failed server event between two matching response events.",
+    "Null stages are excluded from stage distributions, never converted to zero.",
+    "Nested totals and concurrent agent durations overlap. Generation is the sum of calls within a request; it can overlap retrieval in the other branch.",
+    "Warm-pass query translation used the existing in-process cache. No generated-answer cache was added.",
+    "No model quality evaluation, OCR rerun, isolated-server load test or production p95 claim. No Vercel frontend was deployed."
+  ]
+}

@@ -1,0 +1,1359 @@
+{
+  "created_at_utc": "2026-09-28T01:48:09.027613+00:00",
+  "experiment": "bilingual_metric_label_expansion",
+  "rewrite_rule": "Append the canonical English metric label for each metric alias recognized by the shared ontology; leave all other queries unchanged.",
+  "case_file": "vinamilk_retrieval_cases.json",
+  "case_file_sha256": "a6b584945d15d4be4fd5a3b474ee4495c04272376e126a663fd142ffdc48c1a8",
+  "database_snapshot": {
+    "postgres_version": "17.6",
+    "all_documents": 44,
+    "all_chunks": 5052,
+    "company_ready_documents": 25,
+    "company_ready_chunks": 4750
+  },
+  "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+  "top_k": 30,
+  "method": {
+    "retrieval": "hybrid",
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60
+  },
+  "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "environment": {
+    "python": "3.11.16",
+    "platform": "Linux",
+    "gpu": {
+      "available": false,
+      "devices": []
+    }
+  },
+  "query_changed_cases": 4,
+  "case_count": 12,
+  "aggregates": {
+    "raw": {
+      "document": {
+        "precision@1": 0.9167,
+        "recall@5": 1.0,
+        "mrr": 0.9444,
+        "ndcg@5": 0.9583
+      },
+      "passage": {
+        "precision@1": 0.3333,
+        "recall@5": 0.375,
+        "mrr": 0.4277,
+        "ndcg@5": 0.3529
+      },
+      "mean_latency_ms": 1343.65
+    },
+    "metric_label_expansion": {
+      "document": {
+        "precision@1": 0.9167,
+        "recall@5": 1.0,
+        "mrr": 0.9444,
+        "ndcg@5": 0.9583
+      },
+      "passage": {
+        "precision@1": 0.3333,
+        "recall@5": 0.375,
+        "mrr": 0.4356,
+        "ndcg@5": 0.3494
+      },
+      "mean_latency_ms": 1349.71
+    }
+  },
+  "results": [
+    {
+      "id": "finance-revenue-profit-2020-vi",
+      "role": "finance_analyst",
+      "variants": {
+        "raw": {
+          "query": "Doanh thu thuần và lợi nhuận sau thuế của Vinamilk năm 2020 là bao nhiêu?",
+          "query_changed": false,
+          "latency_ms": 1984.28,
+          "ranked_document_ids": [
+            "VNM-AR-2020-VI"
+          ],
+          "ranked_passage_ids": [
+            "VNM-AR-2020-VI::chunk::141",
+            "VNM-AR-2020-VI::chunk::112",
+            "VNM-AR-2020-VI::chunk::302",
+            "VNM-AR-2020-VI::chunk::208",
+            "VNM-AR-2020-VI::chunk::123",
+            "VNM-AR-2020-VI::chunk::74",
+            "VNM-AR-2020-VI::chunk::188",
+            "VNM-AR-2020-VI::chunk::20",
+            "VNM-AR-2020-VI::chunk::133",
+            "VNM-AR-2020-VI::chunk::167",
+            "VNM-AR-2020-VI::chunk::199",
+            "VNM-AR-2020-VI::chunk::334",
+            "VNM-AR-2020-VI::chunk::62",
+            "VNM-AR-2020-VI::chunk::75",
+            "VNM-AR-2020-VI::chunk::310",
+            "VNM-AR-2020-VI::chunk::14",
+            "VNM-AR-2020-VI::chunk::144",
+            "VNM-AR-2020-VI::chunk::244",
+            "VNM-AR-2020-VI::chunk::174",
+            "VNM-AR-2020-VI::chunk::331",
+            "VNM-AR-2020-VI::chunk::170",
+            "VNM-AR-2020-VI::chunk::335",
+            "VNM-AR-2020-VI::chunk::324",
+            "VNM-AR-2020-VI::chunk::171",
+            "VNM-AR-2020-VI::chunk::284",
+            "VNM-AR-2020-VI::chunk::344",
+            "VNM-AR-2020-VI::chunk::1",
+            "VNM-AR-2020-VI::chunk::305",
+            "VNM-AR-2020-VI::chunk::158",
+            "VNM-AR-2020-VI::chunk::5"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 0.0,
+            "recall@5": 0.0,
+            "mrr": 0.0,
+            "ndcg@5": 0.0
+          }
+        },
+        "metric_label_expansion": {
+          "query": "Doanh thu thuần và lợi nhuận sau thuế của Vinamilk năm 2020 là bao nhiêu? Net revenue; Profit after tax",
+          "query_changed": true,
+          "latency_ms": 1889.09,
+          "ranked_document_ids": [
+            "VNM-AR-2020-VI"
+          ],
+          "ranked_passage_ids": [
+            "VNM-AR-2020-VI::chunk::14",
+            "VNM-AR-2020-VI::chunk::1",
+            "VNM-AR-2020-VI::chunk::334",
+            "VNM-AR-2020-VI::chunk::19",
+            "VNM-AR-2020-VI::chunk::323",
+            "VNM-AR-2020-VI::chunk::132",
+            "VNM-AR-2020-VI::chunk::188",
+            "VNM-AR-2020-VI::chunk::133",
+            "VNM-AR-2020-VI::chunk::225",
+            "VNM-AR-2020-VI::chunk::189",
+            "VNM-AR-2020-VI::chunk::2",
+            "VNM-AR-2020-VI::chunk::224",
+            "VNM-AR-2020-VI::chunk::324",
+            "VNM-AR-2020-VI::chunk::336",
+            "VNM-AR-2020-VI::chunk::17",
+            "VNM-AR-2020-VI::chunk::272",
+            "VNM-AR-2020-VI::chunk::13",
+            "VNM-AR-2020-VI::chunk::335",
+            "VNM-AR-2020-VI::chunk::136",
+            "VNM-AR-2020-VI::chunk::337",
+            "VNM-AR-2020-VI::chunk::277",
+            "VNM-AR-2020-VI::chunk::298",
+            "VNM-AR-2020-VI::chunk::331",
+            "VNM-AR-2020-VI::chunk::316",
+            "VNM-AR-2020-VI::chunk::275",
+            "VNM-AR-2020-VI::chunk::120",
+            "VNM-AR-2020-VI::chunk::322",
+            "VNM-AR-2020-VI::chunk::273",
+            "VNM-AR-2020-VI::chunk::330",
+            "VNM-AR-2020-VI::chunk::141"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 0.0,
+            "recall@5": 0.0,
+            "mrr": 0.1111111111111111,
+            "ndcg@5": 0.0
+          }
+        }
+      }
+    },
+    {
+      "id": "finance-revenue-profit-2021-vi",
+      "role": "finance_analyst",
+      "variants": {
+        "metric_label_expansion": {
+          "query": "Doanh thu thuần và lợi nhuận sau thuế của Vinamilk năm 2021 là bao nhiêu? Net revenue; Profit after tax",
+          "query_changed": true,
+          "latency_ms": 1898.51,
+          "ranked_document_ids": [
+            "VNM-AR-2021-VI"
+          ],
+          "ranked_passage_ids": [
+            "VNM-AR-2021-VI::chunk::133",
+            "VNM-AR-2021-VI::chunk::214",
+            "VNM-AR-2021-VI::chunk::141",
+            "VNM-AR-2021-VI::chunk::365",
+            "VNM-AR-2021-VI::chunk::21",
+            "VNM-AR-2021-VI::chunk::374",
+            "VNM-AR-2021-VI::chunk::2",
+            "VNM-AR-2021-VI::chunk::142",
+            "VNM-AR-2021-VI::chunk::366",
+            "VNM-AR-2021-VI::chunk::3",
+            "VNM-AR-2021-VI::chunk::376",
+            "VNM-AR-2021-VI::chunk::129",
+            "VNM-AR-2021-VI::chunk::257",
+            "VNM-AR-2021-VI::chunk::370",
+            "VNM-AR-2021-VI::chunk::310",
+            "VNM-AR-2021-VI::chunk::213",
+            "VNM-AR-2021-VI::chunk::314",
+            "VNM-AR-2021-VI::chunk::143",
+            "VNM-AR-2021-VI::chunk::137",
+            "VNM-AR-2021-VI::chunk::256",
+            "VNM-AR-2021-VI::chunk::377",
+            "VNM-AR-2021-VI::chunk::15",
+            "VNM-AR-2021-VI::chunk::90",
+            "VNM-AR-2021-VI::chunk::17",
+            "VNM-AR-2021-VI::chunk::130",
+            "VNM-AR-2021-VI::chunk::307",
+            "VNM-AR-2021-VI::chunk::174",
+            "VNM-AR-2021-VI::chunk::375",
+            "VNM-AR-2021-VI::chunk::357",
+            "VNM-AR-2021-VI::chunk::16"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 0.0,
+            "recall@5": 0.0,
+            "mrr": 0.07692307692307693,
+            "ndcg@5": 0.0
+          }
+        },
+        "raw": {
+          "query": "Doanh thu thuần và lợi nhuận sau thuế của Vinamilk năm 2021 là bao nhiêu?",
+          "query_changed": false,
+          "latency_ms": 1536.33,
+          "ranked_document_ids": [
+            "VNM-AR-2021-VI"
+          ],
+          "ranked_passage_ids": [
+            "VNM-AR-2021-VI::chunk::137",
+            "VNM-AR-2021-VI::chunk::214",
+            "VNM-AR-2021-VI::chunk::129",
+            "VNM-AR-2021-VI::chunk::2",
+            "VNM-AR-2021-VI::chunk::3",
+            "VNM-AR-2021-VI::chunk::192",
+            "VNM-AR-2021-VI::chunk::144",
+            "VNM-AR-2021-VI::chunk::190",
+            "VNM-AR-2021-VI::chunk::140",
+            "VNM-AR-2021-VI::chunk::369",
+            "VNM-AR-2021-VI::chunk::197",
+            "VNM-AR-2021-VI::chunk::163",
+            "VNM-AR-2021-VI::chunk::195",
+            "VNM-AR-2021-VI::chunk::216",
+            "VNM-AR-2021-VI::chunk::379",
+            "VNM-AR-2021-VI::chunk::280",
+            "VNM-AR-2021-VI::chunk::215",
+            "VNM-AR-2021-VI::chunk::66",
+            "VNM-AR-2021-VI::chunk::199",
+            "VNM-AR-2021-VI::chunk::353",
+            "VNM-AR-2021-VI::chunk::167",
+            "VNM-AR-2021-VI::chunk::361",
+            "VNM-AR-2021-VI::chunk::241",
+            "VNM-AR-2021-VI::chunk::355",
+            "VNM-AR-2021-VI::chunk::182",
+            "VNM-AR-2021-VI::chunk::1",
+            "VNM-AR-2021-VI::chunk::133",
+            "VNM-AR-2021-VI::chunk::183",
+            "VNM-AR-2021-VI::chunk::272",
+            "VNM-AR-2021-VI::chunk::351"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 0.0,
+            "recall@5": 0.0,
+            "mrr": 0.0,
+            "ndcg@5": 0.0
+          }
+        }
+      }
+    },
+    {
+      "id": "finance-revenue-profit-2022-vi",
+      "role": "finance_analyst",
+      "variants": {
+        "raw": {
+          "query": "Doanh thu thuần và lợi nhuận sau thuế của Vinamilk năm 2022 là bao nhiêu?",
+          "query_changed": false,
+          "latency_ms": 1846.06,
+          "ranked_document_ids": [
+            "VNM-AR-2022-VI"
+          ],
+          "ranked_passage_ids": [
+            "VNM-AR-2022-VI::chunk::356",
+            "VNM-AR-2022-VI::chunk::369",
+            "VNM-AR-2022-VI::chunk::10",
+            "VNM-AR-2022-VI::chunk::367",
+            "VNM-AR-2022-VI::chunk::31",
+            "VNM-AR-2022-VI::chunk::12",
+            "VNM-AR-2022-VI::chunk::347",
+            "VNM-AR-2022-VI::chunk::357",
+            "VNM-AR-2022-VI::chunk::202",
+            "VNM-AR-2022-VI::chunk::32",
+            "VNM-AR-2022-VI::chunk::362",
+            "VNM-AR-2022-VI::chunk::305",
+            "VNM-AR-2022-VI::chunk::240",
+            "VNM-AR-2022-VI::chunk::139",
+            "VNM-AR-2022-VI::chunk::241",
+            "VNM-AR-2022-VI::chunk::368",
+            "VNM-AR-2022-VI::chunk::299",
+            "VNM-AR-2022-VI::chunk::354",
+            "VNM-AR-2022-VI::chunk::242",
+            "VNM-AR-2022-VI::chunk::1",
+            "VNM-AR-2022-VI::chunk::298",
+            "VNM-AR-2022-VI::chunk::13",
+            "VNM-AR-2022-VI::chunk::243",
+            "VNM-AR-2022-VI::chunk::329",
+            "VNM-AR-2022-VI::chunk::239",
+            "VNM-AR-2022-VI::chunk::201",
+            "VNM-AR-2022-VI::chunk::300",
+            "VNM-AR-2022-VI::chunk::129",
+            "VNM-AR-2022-VI::chunk::304",
+            "VNM-AR-2022-VI::chunk::330"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 0.0,
+            "recall@5": 0.0,
+            "mrr": 0.07692307692307693,
+            "ndcg@5": 0.0
+          }
+        },
+        "metric_label_expansion": {
+          "query": "Doanh thu thuần và lợi nhuận sau thuế của Vinamilk năm 2022 là bao nhiêu? Net revenue; Profit after tax",
+          "query_changed": true,
+          "latency_ms": 1532.11,
+          "ranked_document_ids": [
+            "VNM-AR-2022-VI"
+          ],
+          "ranked_passage_ids": [
+            "VNM-AR-2022-VI::chunk::356",
+            "VNM-AR-2022-VI::chunk::369",
+            "VNM-AR-2022-VI::chunk::10",
+            "VNM-AR-2022-VI::chunk::357",
+            "VNM-AR-2022-VI::chunk::367",
+            "VNM-AR-2022-VI::chunk::347",
+            "VNM-AR-2022-VI::chunk::31",
+            "VNM-AR-2022-VI::chunk::12",
+            "VNM-AR-2022-VI::chunk::202",
+            "VNM-AR-2022-VI::chunk::32",
+            "VNM-AR-2022-VI::chunk::305",
+            "VNM-AR-2022-VI::chunk::299",
+            "VNM-AR-2022-VI::chunk::362",
+            "VNM-AR-2022-VI::chunk::139",
+            "VNM-AR-2022-VI::chunk::240",
+            "VNM-AR-2022-VI::chunk::298",
+            "VNM-AR-2022-VI::chunk::241",
+            "VNM-AR-2022-VI::chunk::368",
+            "VNM-AR-2022-VI::chunk::242",
+            "VNM-AR-2022-VI::chunk::329",
+            "VNM-AR-2022-VI::chunk::1",
+            "VNM-AR-2022-VI::chunk::300",
+            "VNM-AR-2022-VI::chunk::201",
+            "VNM-AR-2022-VI::chunk::243",
+            "VNM-AR-2022-VI::chunk::354",
+            "VNM-AR-2022-VI::chunk::239",
+            "VNM-AR-2022-VI::chunk::13",
+            "VNM-AR-2022-VI::chunk::129",
+            "VNM-AR-2022-VI::chunk::80",
+            "VNM-AR-2022-VI::chunk::304"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 0.0,
+            "recall@5": 0.0,
+            "mrr": 0.06666666666666667,
+            "ndcg@5": 0.0
+          }
+        }
+      }
+    },
+    {
+      "id": "finance-revenue-profit-2023-en",
+      "role": "finance_analyst",
+      "variants": {
+        "metric_label_expansion": {
+          "query": "What were Vinamilk's net revenue and profit after tax in 2023?",
+          "query_changed": false,
+          "latency_ms": 1535.49,
+          "ranked_document_ids": [
+            "VNM-AR-2023-EN"
+          ],
+          "ranked_passage_ids": [
+            "VNM-AR-2023-EN::chunk::263",
+            "VNM-AR-2023-EN::chunk::366",
+            "VNM-AR-2023-EN::chunk::388",
+            "VNM-AR-2023-EN::chunk::324",
+            "VNM-AR-2023-EN::chunk::30",
+            "VNM-AR-2023-EN::chunk::264",
+            "VNM-AR-2023-EN::chunk::262",
+            "VNM-AR-2023-EN::chunk::212",
+            "VNM-AR-2023-EN::chunk::149",
+            "VNM-AR-2023-EN::chunk::28",
+            "VNM-AR-2023-EN::chunk::12",
+            "VNM-AR-2023-EN::chunk::1",
+            "VNM-AR-2023-EN::chunk::390",
+            "VNM-AR-2023-EN::chunk::9",
+            "VNM-AR-2023-EN::chunk::380",
+            "VNM-AR-2023-EN::chunk::369",
+            "VNM-AR-2023-EN::chunk::211",
+            "VNM-AR-2023-EN::chunk::378",
+            "VNM-AR-2023-EN::chunk::8",
+            "VNM-AR-2023-EN::chunk::6",
+            "VNM-AR-2023-EN::chunk::319",
+            "VNM-AR-2023-EN::chunk::13",
+            "VNM-AR-2023-EN::chunk::31",
+            "VNM-AR-2023-EN::chunk::94",
+            "VNM-AR-2023-EN::chunk::389",
+            "VNM-AR-2023-EN::chunk::150",
+            "VNM-AR-2023-EN::chunk::98",
+            "VNM-AR-2023-EN::chunk::265",
+            "VNM-AR-2023-EN::chunk::95",
+            "VNM-AR-2023-EN::chunk::351"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 1.0,
+            "recall@5": 0.5,
+            "mrr": 1.0,
+            "ndcg@5": 0.6131471927654584
+          }
+        },
+        "raw": {
+          "query": "What were Vinamilk's net revenue and profit after tax in 2023?",
+          "query_changed": false,
+          "latency_ms": 1433.47,
+          "ranked_document_ids": [
+            "VNM-AR-2023-EN"
+          ],
+          "ranked_passage_ids": [
+            "VNM-AR-2023-EN::chunk::263",
+            "VNM-AR-2023-EN::chunk::366",
+            "VNM-AR-2023-EN::chunk::388",
+            "VNM-AR-2023-EN::chunk::324",
+            "VNM-AR-2023-EN::chunk::30",
+            "VNM-AR-2023-EN::chunk::264",
+            "VNM-AR-2023-EN::chunk::262",
+            "VNM-AR-2023-EN::chunk::212",
+            "VNM-AR-2023-EN::chunk::149",
+            "VNM-AR-2023-EN::chunk::28",
+            "VNM-AR-2023-EN::chunk::12",
+            "VNM-AR-2023-EN::chunk::1",
+            "VNM-AR-2023-EN::chunk::390",
+            "VNM-AR-2023-EN::chunk::9",
+            "VNM-AR-2023-EN::chunk::380",
+            "VNM-AR-2023-EN::chunk::369",
+            "VNM-AR-2023-EN::chunk::211",
+            "VNM-AR-2023-EN::chunk::378",
+            "VNM-AR-2023-EN::chunk::8",
+            "VNM-AR-2023-EN::chunk::6",
+            "VNM-AR-2023-EN::chunk::319",
+            "VNM-AR-2023-EN::chunk::13",
+            "VNM-AR-2023-EN::chunk::31",
+            "VNM-AR-2023-EN::chunk::94",
+            "VNM-AR-2023-EN::chunk::389",
+            "VNM-AR-2023-EN::chunk::150",
+            "VNM-AR-2023-EN::chunk::98",
+            "VNM-AR-2023-EN::chunk::265",
+            "VNM-AR-2023-EN::chunk::95",
+            "VNM-AR-2023-EN::chunk::351"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 1.0,
+            "recall@5": 0.5,
+            "mrr": 1.0,
+            "ndcg@5": 0.6131471927654584
+          }
+        }
+      }
+    },
+    {
+      "id": "finance-revenue-profit-2024-en",
+      "role": "finance_analyst",
+      "variants": {
+        "raw": {
+          "query": "Tóm tắt doanh thu hợp nhất và lợi nhuận sau thuế của Vinamilk năm 2024.",
+          "query_changed": false,
+          "latency_ms": 1745.11,
+          "ranked_document_ids": [
+            "VNM-AR-2024-VI"
+          ],
+          "ranked_passage_ids": [
+            "VNM-AR-2024-VI::chunk::35",
+            "VNM-AR-2024-VI::chunk::385",
+            "VNM-AR-2024-VI::chunk::27",
+            "VNM-AR-2024-VI::chunk::1",
+            "VNM-AR-2024-VI::chunk::387",
+            "VNM-AR-2024-VI::chunk::9",
+            "VNM-AR-2024-VI::chunk::197",
+            "VNM-AR-2024-VI::chunk::160",
+            "VNM-AR-2024-VI::chunk::386",
+            "VNM-AR-2024-VI::chunk::81",
+            "VNM-AR-2024-VI::chunk::101",
+            "VNM-AR-2024-VI::chunk::382",
+            "VNM-AR-2024-VI::chunk::264",
+            "VNM-AR-2024-VI::chunk::159",
+            "VNM-AR-2024-VI::chunk::82",
+            "VNM-AR-2024-VI::chunk::203",
+            "VNM-AR-2024-VI::chunk::253",
+            "VNM-AR-2024-VI::chunk::19",
+            "VNM-AR-2024-VI::chunk::102",
+            "VNM-AR-2024-VI::chunk::383",
+            "VNM-AR-2024-VI::chunk::158",
+            "VNM-AR-2024-VI::chunk::36",
+            "VNM-AR-2024-VI::chunk::2",
+            "VNM-AR-2024-VI::chunk::5",
+            "VNM-AR-2024-VI::chunk::162",
+            "VNM-AR-2024-VI::chunk::150",
+            "VNM-AR-2024-VI::chunk::100",
+            "VNM-AR-2024-VI::chunk::10",
+            "VNM-AR-2024-VI::chunk::39",
+            "VNM-AR-2024-VI::chunk::288"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 0.0,
+            "recall@5": 0.5,
+            "mrr": 0.3333333333333333,
+            "ndcg@5": 0.3065735963827292
+          }
+        },
+        "metric_label_expansion": {
+          "query": "Tóm tắt doanh thu hợp nhất và lợi nhuận sau thuế của Vinamilk năm 2024. Profit after tax; Total consolidated revenue",
+          "query_changed": true,
+          "latency_ms": 1940.52,
+          "ranked_document_ids": [
+            "VNM-AR-2024-VI"
+          ],
+          "ranked_passage_ids": [
+            "VNM-AR-2024-VI::chunk::35",
+            "VNM-AR-2024-VI::chunk::385",
+            "VNM-AR-2024-VI::chunk::1",
+            "VNM-AR-2024-VI::chunk::27",
+            "VNM-AR-2024-VI::chunk::160",
+            "VNM-AR-2024-VI::chunk::387",
+            "VNM-AR-2024-VI::chunk::9",
+            "VNM-AR-2024-VI::chunk::197",
+            "VNM-AR-2024-VI::chunk::386",
+            "VNM-AR-2024-VI::chunk::81",
+            "VNM-AR-2024-VI::chunk::101",
+            "VNM-AR-2024-VI::chunk::159",
+            "VNM-AR-2024-VI::chunk::253",
+            "VNM-AR-2024-VI::chunk::382",
+            "VNM-AR-2024-VI::chunk::264",
+            "VNM-AR-2024-VI::chunk::203",
+            "VNM-AR-2024-VI::chunk::82",
+            "VNM-AR-2024-VI::chunk::19",
+            "VNM-AR-2024-VI::chunk::36",
+            "VNM-AR-2024-VI::chunk::150",
+            "VNM-AR-2024-VI::chunk::10",
+            "VNM-AR-2024-VI::chunk::2",
+            "VNM-AR-2024-VI::chunk::383",
+            "VNM-AR-2024-VI::chunk::102",
+            "VNM-AR-2024-VI::chunk::5",
+            "VNM-AR-2024-VI::chunk::100",
+            "VNM-AR-2024-VI::chunk::162",
+            "VNM-AR-2024-VI::chunk::158",
+            "VNM-AR-2024-VI::chunk::39",
+            "VNM-AR-2024-VI::chunk::288"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 0.0,
+            "recall@5": 0.5,
+            "mrr": 0.25,
+            "ndcg@5": 0.2640681225725909
+          }
+        }
+      }
+    },
+    {
+      "id": "sustainability-ghg-reporting-scopes-2020-en",
+      "role": "sustainability_analyst",
+      "variants": {
+        "metric_label_expansion": {
+          "query": "Which greenhouse gas emission scopes does Vinamilk disclose in its 2020 sustainability report?",
+          "query_changed": false,
+          "latency_ms": 1432.73,
+          "ranked_document_ids": [
+            "VNM-SR-2020-EN"
+          ],
+          "ranked_passage_ids": [
+            "VNM-SR-2020-EN::chunk::250",
+            "VNM-SR-2020-EN::chunk::77",
+            "VNM-SR-2020-EN::chunk::257",
+            "VNM-SR-2020-EN::chunk::40",
+            "VNM-SR-2020-EN::chunk::278",
+            "VNM-SR-2020-EN::chunk::261",
+            "VNM-SR-2020-EN::chunk::276",
+            "VNM-SR-2020-EN::chunk::81",
+            "VNM-SR-2020-EN::chunk::62",
+            "VNM-SR-2020-EN::chunk::70",
+            "VNM-SR-2020-EN::chunk::69",
+            "VNM-SR-2020-EN::chunk::26",
+            "VNM-SR-2020-EN::chunk::182",
+            "VNM-SR-2020-EN::chunk::264",
+            "VNM-SR-2020-EN::chunk::76",
+            "VNM-SR-2020-EN::chunk::88",
+            "VNM-SR-2020-EN::chunk::51",
+            "VNM-SR-2020-EN::chunk::147",
+            "VNM-SR-2020-EN::chunk::56",
+            "VNM-SR-2020-EN::chunk::121",
+            "VNM-SR-2020-EN::chunk::78",
+            "VNM-SR-2020-EN::chunk::285",
+            "VNM-SR-2020-EN::chunk::80",
+            "VNM-SR-2020-EN::chunk::208",
+            "VNM-SR-2020-EN::chunk::191",
+            "VNM-SR-2020-EN::chunk::256",
+            "VNM-SR-2020-EN::chunk::25",
+            "VNM-SR-2020-EN::chunk::75",
+            "VNM-SR-2020-EN::chunk::120",
+            "VNM-SR-2020-EN::chunk::60"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 0.0,
+            "recall@5": 0.0,
+            "mrr": 0.0,
+            "ndcg@5": 0.0
+          }
+        },
+        "raw": {
+          "query": "Which greenhouse gas emission scopes does Vinamilk disclose in its 2020 sustainability report?",
+          "query_changed": false,
+          "latency_ms": 1383.26,
+          "ranked_document_ids": [
+            "VNM-SR-2020-EN"
+          ],
+          "ranked_passage_ids": [
+            "VNM-SR-2020-EN::chunk::250",
+            "VNM-SR-2020-EN::chunk::77",
+            "VNM-SR-2020-EN::chunk::257",
+            "VNM-SR-2020-EN::chunk::40",
+            "VNM-SR-2020-EN::chunk::278",
+            "VNM-SR-2020-EN::chunk::261",
+            "VNM-SR-2020-EN::chunk::276",
+            "VNM-SR-2020-EN::chunk::81",
+            "VNM-SR-2020-EN::chunk::62",
+            "VNM-SR-2020-EN::chunk::70",
+            "VNM-SR-2020-EN::chunk::69",
+            "VNM-SR-2020-EN::chunk::26",
+            "VNM-SR-2020-EN::chunk::182",
+            "VNM-SR-2020-EN::chunk::264",
+            "VNM-SR-2020-EN::chunk::76",
+            "VNM-SR-2020-EN::chunk::88",
+            "VNM-SR-2020-EN::chunk::51",
+            "VNM-SR-2020-EN::chunk::147",
+            "VNM-SR-2020-EN::chunk::56",
+            "VNM-SR-2020-EN::chunk::121",
+            "VNM-SR-2020-EN::chunk::78",
+            "VNM-SR-2020-EN::chunk::285",
+            "VNM-SR-2020-EN::chunk::80",
+            "VNM-SR-2020-EN::chunk::208",
+            "VNM-SR-2020-EN::chunk::191",
+            "VNM-SR-2020-EN::chunk::256",
+            "VNM-SR-2020-EN::chunk::25",
+            "VNM-SR-2020-EN::chunk::75",
+            "VNM-SR-2020-EN::chunk::120",
+            "VNM-SR-2020-EN::chunk::60"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 0.0,
+            "recall@5": 0.0,
+            "mrr": 0.0,
+            "ndcg@5": 0.0
+          }
+        }
+      }
+    },
+    {
+      "id": "sustainability-ghg-inventory-2024-en",
+      "role": "sustainability_analyst",
+      "variants": {
+        "raw": {
+          "query": "Which Vinamilk factories and farms implement a greenhouse gas emissions inventory?",
+          "query_changed": false,
+          "latency_ms": 1381.39,
+          "ranked_document_ids": [
+            "VNM-SR-2025-EN",
+            "VNM-SR-2022-EN",
+            "VNM-SR-2024-EN",
+            "VNM-SR-2023-EN",
+            "VNM-SR-2021-EN"
+          ],
+          "ranked_passage_ids": [
+            "VNM-SR-2025-EN::chunk::157",
+            "VNM-SR-2025-EN::chunk::158",
+            "VNM-SR-2025-EN::chunk::416",
+            "VNM-SR-2022-EN::chunk::135",
+            "VNM-SR-2024-EN::chunk::96",
+            "VNM-SR-2025-EN::chunk::150",
+            "VNM-SR-2023-EN::chunk::3",
+            "VNM-SR-2025-EN::chunk::159",
+            "VNM-SR-2024-EN::chunk::94",
+            "VNM-SR-2024-EN::chunk::12",
+            "VNM-SR-2025-EN::chunk::161",
+            "VNM-SR-2025-EN::chunk::415",
+            "VNM-SR-2024-EN::chunk::2",
+            "VNM-SR-2024-EN::chunk::93",
+            "VNM-SR-2023-EN::chunk::67",
+            "VNM-SR-2025-EN::chunk::147",
+            "VNM-SR-2025-EN::chunk::164",
+            "VNM-SR-2021-EN::chunk::272",
+            "VNM-SR-2025-EN::chunk::155",
+            "VNM-SR-2022-EN::chunk::133",
+            "VNM-SR-2023-EN::chunk::57",
+            "VNM-SR-2023-EN::chunk::100",
+            "VNM-SR-2023-EN::chunk::31",
+            "VNM-SR-2023-EN::chunk::60",
+            "VNM-SR-2025-EN::chunk::154",
+            "VNM-SR-2022-EN::chunk::23",
+            "VNM-SR-2022-EN::chunk::213",
+            "VNM-SR-2022-EN::chunk::67",
+            "VNM-SR-2025-EN::chunk::145",
+            "VNM-SR-2025-EN::chunk::148"
+          ],
+          "document": {
+            "precision@1": 0.0,
+            "recall@5": 1.0,
+            "mrr": 0.3333333333333333,
+            "ndcg@5": 0.5
+          },
+          "passage": {
+            "precision@1": 0.0,
+            "recall@5": 0.0,
+            "mrr": 0.1111111111111111,
+            "ndcg@5": 0.0
+          }
+        },
+        "metric_label_expansion": {
+          "query": "Which Vinamilk factories and farms implement a greenhouse gas emissions inventory?",
+          "query_changed": false,
+          "latency_ms": 1433.59,
+          "ranked_document_ids": [
+            "VNM-SR-2025-EN",
+            "VNM-SR-2022-EN",
+            "VNM-SR-2024-EN",
+            "VNM-SR-2023-EN",
+            "VNM-SR-2021-EN"
+          ],
+          "ranked_passage_ids": [
+            "VNM-SR-2025-EN::chunk::157",
+            "VNM-SR-2025-EN::chunk::158",
+            "VNM-SR-2025-EN::chunk::416",
+            "VNM-SR-2022-EN::chunk::135",
+            "VNM-SR-2024-EN::chunk::96",
+            "VNM-SR-2025-EN::chunk::150",
+            "VNM-SR-2023-EN::chunk::3",
+            "VNM-SR-2025-EN::chunk::159",
+            "VNM-SR-2024-EN::chunk::94",
+            "VNM-SR-2024-EN::chunk::12",
+            "VNM-SR-2025-EN::chunk::161",
+            "VNM-SR-2025-EN::chunk::415",
+            "VNM-SR-2024-EN::chunk::2",
+            "VNM-SR-2024-EN::chunk::93",
+            "VNM-SR-2023-EN::chunk::67",
+            "VNM-SR-2025-EN::chunk::147",
+            "VNM-SR-2025-EN::chunk::164",
+            "VNM-SR-2021-EN::chunk::272",
+            "VNM-SR-2025-EN::chunk::155",
+            "VNM-SR-2022-EN::chunk::133",
+            "VNM-SR-2023-EN::chunk::57",
+            "VNM-SR-2023-EN::chunk::100",
+            "VNM-SR-2023-EN::chunk::31",
+            "VNM-SR-2023-EN::chunk::60",
+            "VNM-SR-2025-EN::chunk::154",
+            "VNM-SR-2022-EN::chunk::23",
+            "VNM-SR-2022-EN::chunk::213",
+            "VNM-SR-2022-EN::chunk::67",
+            "VNM-SR-2025-EN::chunk::145",
+            "VNM-SR-2025-EN::chunk::148"
+          ],
+          "document": {
+            "precision@1": 0.0,
+            "recall@5": 1.0,
+            "mrr": 0.3333333333333333,
+            "ndcg@5": 0.5
+          },
+          "passage": {
+            "precision@1": 0.0,
+            "recall@5": 0.0,
+            "mrr": 0.1111111111111111,
+            "ndcg@5": 0.0
+          }
+        }
+      }
+    },
+    {
+      "id": "sustainability-ghg-inventory-2025-en",
+      "role": "sustainability_analyst",
+      "variants": {
+        "metric_label_expansion": {
+          "query": "What greenhouse gas inventory actions does Vinamilk report for 2025?",
+          "query_changed": false,
+          "latency_ms": 1329.55,
+          "ranked_document_ids": [
+            "VNM-SR-2025-EN"
+          ],
+          "ranked_passage_ids": [
+            "VNM-SR-2025-EN::chunk::157",
+            "VNM-SR-2025-EN::chunk::416",
+            "VNM-SR-2025-EN::chunk::150",
+            "VNM-SR-2025-EN::chunk::145",
+            "VNM-SR-2025-EN::chunk::147",
+            "VNM-SR-2025-EN::chunk::144",
+            "VNM-SR-2025-EN::chunk::161",
+            "VNM-SR-2025-EN::chunk::155",
+            "VNM-SR-2025-EN::chunk::146",
+            "VNM-SR-2025-EN::chunk::415",
+            "VNM-SR-2025-EN::chunk::159",
+            "VNM-SR-2025-EN::chunk::158",
+            "VNM-SR-2025-EN::chunk::381",
+            "VNM-SR-2025-EN::chunk::417",
+            "VNM-SR-2025-EN::chunk::418",
+            "VNM-SR-2025-EN::chunk::149",
+            "VNM-SR-2025-EN::chunk::439",
+            "VNM-SR-2025-EN::chunk::375",
+            "VNM-SR-2025-EN::chunk::264",
+            "VNM-SR-2025-EN::chunk::175",
+            "VNM-SR-2025-EN::chunk::108",
+            "VNM-SR-2025-EN::chunk::421",
+            "VNM-SR-2025-EN::chunk::225",
+            "VNM-SR-2025-EN::chunk::81",
+            "VNM-SR-2025-EN::chunk::347",
+            "VNM-SR-2025-EN::chunk::151",
+            "VNM-SR-2025-EN::chunk::222",
+            "VNM-SR-2025-EN::chunk::152",
+            "VNM-SR-2025-EN::chunk::160",
+            "VNM-SR-2025-EN::chunk::440"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 1.0,
+            "recall@5": 0.5,
+            "mrr": 1.0,
+            "ndcg@5": 0.6843515475204855
+          }
+        },
+        "raw": {
+          "query": "What greenhouse gas inventory actions does Vinamilk report for 2025?",
+          "query_changed": false,
+          "latency_ms": 1249.66,
+          "ranked_document_ids": [
+            "VNM-SR-2025-EN"
+          ],
+          "ranked_passage_ids": [
+            "VNM-SR-2025-EN::chunk::157",
+            "VNM-SR-2025-EN::chunk::416",
+            "VNM-SR-2025-EN::chunk::150",
+            "VNM-SR-2025-EN::chunk::145",
+            "VNM-SR-2025-EN::chunk::147",
+            "VNM-SR-2025-EN::chunk::144",
+            "VNM-SR-2025-EN::chunk::161",
+            "VNM-SR-2025-EN::chunk::155",
+            "VNM-SR-2025-EN::chunk::146",
+            "VNM-SR-2025-EN::chunk::415",
+            "VNM-SR-2025-EN::chunk::159",
+            "VNM-SR-2025-EN::chunk::158",
+            "VNM-SR-2025-EN::chunk::381",
+            "VNM-SR-2025-EN::chunk::417",
+            "VNM-SR-2025-EN::chunk::418",
+            "VNM-SR-2025-EN::chunk::149",
+            "VNM-SR-2025-EN::chunk::439",
+            "VNM-SR-2025-EN::chunk::375",
+            "VNM-SR-2025-EN::chunk::264",
+            "VNM-SR-2025-EN::chunk::175",
+            "VNM-SR-2025-EN::chunk::108",
+            "VNM-SR-2025-EN::chunk::421",
+            "VNM-SR-2025-EN::chunk::225",
+            "VNM-SR-2025-EN::chunk::81",
+            "VNM-SR-2025-EN::chunk::347",
+            "VNM-SR-2025-EN::chunk::151",
+            "VNM-SR-2025-EN::chunk::222",
+            "VNM-SR-2025-EN::chunk::152",
+            "VNM-SR-2025-EN::chunk::160",
+            "VNM-SR-2025-EN::chunk::440"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 1.0,
+            "recall@5": 0.5,
+            "mrr": 1.0,
+            "ndcg@5": 0.6843515475204855
+          }
+        }
+      }
+    },
+    {
+      "id": "product-nutrition-adm-low-sugar-vi",
+      "role": "employee",
+      "variants": {
+        "raw": {
+          "query": "Trong 100 ml sữa ADM Ít Đường có bao nhiêu năng lượng, protein và đường?",
+          "query_changed": false,
+          "latency_ms": 356.71,
+          "ranked_document_ids": [
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "ranked_passage_ids": [
+            "VNM-PROD-ADM-LOW-SUGAR-VI::chunk::0",
+            "VNM-PROD-ADM-LOW-SUGAR-VI::chunk::1"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 0.0,
+            "recall@5": 1.0,
+            "mrr": 0.5,
+            "ndcg@5": 0.6309297535714575
+          }
+        },
+        "metric_label_expansion": {
+          "query": "Trong 100 ml sữa ADM Ít Đường có bao nhiêu năng lượng, protein và đường?",
+          "query_changed": false,
+          "latency_ms": 351.07,
+          "ranked_document_ids": [
+            "VNM-PROD-ADM-LOW-SUGAR-VI"
+          ],
+          "ranked_passage_ids": [
+            "VNM-PROD-ADM-LOW-SUGAR-VI::chunk::0",
+            "VNM-PROD-ADM-LOW-SUGAR-VI::chunk::1"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 0.0,
+            "recall@5": 1.0,
+            "mrr": 0.5,
+            "ndcg@5": 0.6309297535714575
+          }
+        }
+      }
+    },
+    {
+      "id": "governance-charter-effective-date-2026",
+      "role": "legal_compliance",
+      "variants": {
+        "metric_label_expansion": {
+          "query": "When did Vinamilk's current Company Charter enter into force?",
+          "query_changed": false,
+          "latency_ms": 1113.97,
+          "ranked_document_ids": [
+            "VNM-CHARTER-2026-EN",
+            "VNM-CGRULES-2026-EN",
+            "VNM-CODE-2025-EN",
+            "VNM-DISCLOSURE-2025-EN",
+            "VNM-CGR-2021-EN",
+            "VNM-CGR-2022-EN"
+          ],
+          "ranked_passage_ids": [
+            "VNM-CHARTER-2026-EN::chunk::128",
+            "VNM-CGRULES-2026-EN::chunk::10",
+            "VNM-CODE-2025-EN::chunk::30",
+            "VNM-CODE-2025-EN::chunk::67",
+            "VNM-CHARTER-2026-EN::chunk::6",
+            "VNM-CHARTER-2026-EN::chunk::129",
+            "VNM-DISCLOSURE-2025-EN::chunk::34",
+            "VNM-CODE-2025-EN::chunk::41",
+            "VNM-CODE-2025-EN::chunk::1",
+            "VNM-CHARTER-2026-EN::chunk::69",
+            "VNM-CHARTER-2026-EN::chunk::95",
+            "VNM-CODE-2025-EN::chunk::38",
+            "VNM-DISCLOSURE-2025-EN::chunk::17",
+            "VNM-CODE-2025-EN::chunk::72",
+            "VNM-CHARTER-2026-EN::chunk::40",
+            "VNM-CHARTER-2026-EN::chunk::113",
+            "VNM-CHARTER-2026-EN::chunk::7",
+            "VNM-CGRULES-2026-EN::chunk::83",
+            "VNM-CHARTER-2026-EN::chunk::31",
+            "VNM-DISCLOSURE-2025-EN::chunk::45",
+            "VNM-CGR-2021-EN::chunk::6",
+            "VNM-CHARTER-2026-EN::chunk::17",
+            "VNM-CHARTER-2026-EN::chunk::39",
+            "VNM-CHARTER-2026-EN::chunk::5",
+            "VNM-CGRULES-2026-EN::chunk::128",
+            "VNM-CGRULES-2026-EN::chunk::12",
+            "VNM-CHARTER-2026-EN::chunk::67",
+            "VNM-CODE-2025-EN::chunk::68",
+            "VNM-CGR-2022-EN::chunk::7",
+            "VNM-DISCLOSURE-2025-EN::chunk::31"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          }
+        },
+        "raw": {
+          "query": "When did Vinamilk's current Company Charter enter into force?",
+          "query_changed": false,
+          "latency_ms": 1126.09,
+          "ranked_document_ids": [
+            "VNM-CHARTER-2026-EN",
+            "VNM-CGRULES-2026-EN",
+            "VNM-CODE-2025-EN",
+            "VNM-DISCLOSURE-2025-EN",
+            "VNM-CGR-2021-EN",
+            "VNM-CGR-2022-EN"
+          ],
+          "ranked_passage_ids": [
+            "VNM-CHARTER-2026-EN::chunk::128",
+            "VNM-CGRULES-2026-EN::chunk::10",
+            "VNM-CODE-2025-EN::chunk::30",
+            "VNM-CODE-2025-EN::chunk::67",
+            "VNM-CHARTER-2026-EN::chunk::6",
+            "VNM-CHARTER-2026-EN::chunk::129",
+            "VNM-DISCLOSURE-2025-EN::chunk::34",
+            "VNM-CODE-2025-EN::chunk::41",
+            "VNM-CODE-2025-EN::chunk::1",
+            "VNM-CHARTER-2026-EN::chunk::69",
+            "VNM-CHARTER-2026-EN::chunk::95",
+            "VNM-CODE-2025-EN::chunk::38",
+            "VNM-DISCLOSURE-2025-EN::chunk::17",
+            "VNM-CODE-2025-EN::chunk::72",
+            "VNM-CHARTER-2026-EN::chunk::40",
+            "VNM-CHARTER-2026-EN::chunk::113",
+            "VNM-CHARTER-2026-EN::chunk::7",
+            "VNM-CGRULES-2026-EN::chunk::83",
+            "VNM-CHARTER-2026-EN::chunk::31",
+            "VNM-DISCLOSURE-2025-EN::chunk::45",
+            "VNM-CGR-2021-EN::chunk::6",
+            "VNM-CHARTER-2026-EN::chunk::17",
+            "VNM-CHARTER-2026-EN::chunk::39",
+            "VNM-CHARTER-2026-EN::chunk::5",
+            "VNM-CGRULES-2026-EN::chunk::128",
+            "VNM-CGRULES-2026-EN::chunk::12",
+            "VNM-CHARTER-2026-EN::chunk::67",
+            "VNM-CODE-2025-EN::chunk::68",
+            "VNM-CGR-2022-EN::chunk::7",
+            "VNM-DISCLOSURE-2025-EN::chunk::31"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          }
+        }
+      }
+    },
+    {
+      "id": "governance-code-conflicts-of-interest",
+      "role": "legal_compliance",
+      "variants": {
+        "raw": {
+          "query": "What does Vinamilk's Code of Conduct say about employees' conflicts of interest?",
+          "query_changed": false,
+          "latency_ms": 1125.22,
+          "ranked_document_ids": [
+            "VNM-CODE-2025-EN",
+            "VNM-CHARTER-2026-EN"
+          ],
+          "ranked_passage_ids": [
+            "VNM-CODE-2025-EN::chunk::51",
+            "VNM-CODE-2025-EN::chunk::61",
+            "VNM-CODE-2025-EN::chunk::56",
+            "VNM-CODE-2025-EN::chunk::16",
+            "VNM-CODE-2025-EN::chunk::13",
+            "VNM-CODE-2025-EN::chunk::52",
+            "VNM-CODE-2025-EN::chunk::14",
+            "VNM-CODE-2025-EN::chunk::2",
+            "VNM-CODE-2025-EN::chunk::50",
+            "VNM-CODE-2025-EN::chunk::55",
+            "VNM-CODE-2025-EN::chunk::60",
+            "VNM-CODE-2025-EN::chunk::18",
+            "VNM-CODE-2025-EN::chunk::53",
+            "VNM-CODE-2025-EN::chunk::67",
+            "VNM-CODE-2025-EN::chunk::4",
+            "VNM-CODE-2025-EN::chunk::15",
+            "VNM-CODE-2025-EN::chunk::65",
+            "VNM-CODE-2025-EN::chunk::73",
+            "VNM-CODE-2025-EN::chunk::1",
+            "VNM-CHARTER-2026-EN::chunk::4",
+            "VNM-CODE-2025-EN::chunk::29",
+            "VNM-CODE-2025-EN::chunk::54",
+            "VNM-CODE-2025-EN::chunk::8",
+            "VNM-CODE-2025-EN::chunk::36",
+            "VNM-CODE-2025-EN::chunk::17",
+            "VNM-CODE-2025-EN::chunk::62",
+            "VNM-CODE-2025-EN::chunk::45",
+            "VNM-CODE-2025-EN::chunk::11",
+            "VNM-CHARTER-2026-EN::chunk::102",
+            "VNM-CODE-2025-EN::chunk::69"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 0.0,
+            "recall@5": 0.0,
+            "mrr": 0.1111111111111111,
+            "ndcg@5": 0.0
+          }
+        },
+        "metric_label_expansion": {
+          "query": "What does Vinamilk's Code of Conduct say about employees' conflicts of interest?",
+          "query_changed": false,
+          "latency_ms": 718.29,
+          "ranked_document_ids": [
+            "VNM-CODE-2025-EN",
+            "VNM-CHARTER-2026-EN"
+          ],
+          "ranked_passage_ids": [
+            "VNM-CODE-2025-EN::chunk::51",
+            "VNM-CODE-2025-EN::chunk::61",
+            "VNM-CODE-2025-EN::chunk::56",
+            "VNM-CODE-2025-EN::chunk::16",
+            "VNM-CODE-2025-EN::chunk::13",
+            "VNM-CODE-2025-EN::chunk::52",
+            "VNM-CODE-2025-EN::chunk::14",
+            "VNM-CODE-2025-EN::chunk::2",
+            "VNM-CODE-2025-EN::chunk::50",
+            "VNM-CODE-2025-EN::chunk::55",
+            "VNM-CODE-2025-EN::chunk::60",
+            "VNM-CODE-2025-EN::chunk::18",
+            "VNM-CODE-2025-EN::chunk::53",
+            "VNM-CODE-2025-EN::chunk::67",
+            "VNM-CODE-2025-EN::chunk::4",
+            "VNM-CODE-2025-EN::chunk::15",
+            "VNM-CODE-2025-EN::chunk::65",
+            "VNM-CODE-2025-EN::chunk::73",
+            "VNM-CODE-2025-EN::chunk::1",
+            "VNM-CHARTER-2026-EN::chunk::4",
+            "VNM-CODE-2025-EN::chunk::29",
+            "VNM-CODE-2025-EN::chunk::54",
+            "VNM-CODE-2025-EN::chunk::8",
+            "VNM-CODE-2025-EN::chunk::36",
+            "VNM-CODE-2025-EN::chunk::17",
+            "VNM-CODE-2025-EN::chunk::62",
+            "VNM-CODE-2025-EN::chunk::45",
+            "VNM-CODE-2025-EN::chunk::11",
+            "VNM-CHARTER-2026-EN::chunk::102",
+            "VNM-CODE-2025-EN::chunk::69"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 0.0,
+            "recall@5": 0.0,
+            "mrr": 0.1111111111111111,
+            "ndcg@5": 0.0
+          }
+        }
+      }
+    },
+    {
+      "id": "governance-disclosure-full-year-report-deadline",
+      "role": "legal_compliance",
+      "variants": {
+        "metric_label_expansion": {
+          "query": "When is Vinamilk's full-year corporate governance report due for disclosure?",
+          "query_changed": false,
+          "latency_ms": 1021.65,
+          "ranked_document_ids": [
+            "VNM-DISCLOSURE-2025-EN",
+            "VNM-CHARTER-2026-EN",
+            "VNM-CGRULES-2026-EN",
+            "VNM-CGR-2022-EN"
+          ],
+          "ranked_passage_ids": [
+            "VNM-DISCLOSURE-2025-EN::chunk::27",
+            "VNM-DISCLOSURE-2025-EN::chunk::24",
+            "VNM-DISCLOSURE-2025-EN::chunk::45",
+            "VNM-DISCLOSURE-2025-EN::chunk::22",
+            "VNM-CHARTER-2026-EN::chunk::75",
+            "VNM-DISCLOSURE-2025-EN::chunk::23",
+            "VNM-DISCLOSURE-2025-EN::chunk::46",
+            "VNM-CHARTER-2026-EN::chunk::119",
+            "VNM-CGRULES-2026-EN::chunk::81",
+            "VNM-DISCLOSURE-2025-EN::chunk::15",
+            "VNM-DISCLOSURE-2025-EN::chunk::33",
+            "VNM-DISCLOSURE-2025-EN::chunk::39",
+            "VNM-CHARTER-2026-EN::chunk::35",
+            "VNM-DISCLOSURE-2025-EN::chunk::47",
+            "VNM-DISCLOSURE-2025-EN::chunk::44",
+            "VNM-DISCLOSURE-2025-EN::chunk::4",
+            "VNM-DISCLOSURE-2025-EN::chunk::14",
+            "VNM-CGRULES-2026-EN::chunk::106",
+            "VNM-CHARTER-2026-EN::chunk::121",
+            "VNM-DISCLOSURE-2025-EN::chunk::17",
+            "VNM-CGRULES-2026-EN::chunk::6",
+            "VNM-CGRULES-2026-EN::chunk::109",
+            "VNM-DISCLOSURE-2025-EN::chunk::48",
+            "VNM-CGRULES-2026-EN::chunk::102",
+            "VNM-DISCLOSURE-2025-EN::chunk::13",
+            "VNM-DISCLOSURE-2025-EN::chunk::7",
+            "VNM-CGR-2022-EN::chunk::20",
+            "VNM-CHARTER-2026-EN::chunk::33",
+            "VNM-CHARTER-2026-EN::chunk::3",
+            "VNM-CGRULES-2026-EN::chunk::101"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          }
+        },
+        "raw": {
+          "query": "When is Vinamilk's full-year corporate governance report due for disclosure?",
+          "query_changed": false,
+          "latency_ms": 956.27,
+          "ranked_document_ids": [
+            "VNM-DISCLOSURE-2025-EN",
+            "VNM-CHARTER-2026-EN",
+            "VNM-CGRULES-2026-EN",
+            "VNM-CGR-2022-EN"
+          ],
+          "ranked_passage_ids": [
+            "VNM-DISCLOSURE-2025-EN::chunk::27",
+            "VNM-DISCLOSURE-2025-EN::chunk::24",
+            "VNM-DISCLOSURE-2025-EN::chunk::45",
+            "VNM-DISCLOSURE-2025-EN::chunk::22",
+            "VNM-CHARTER-2026-EN::chunk::75",
+            "VNM-DISCLOSURE-2025-EN::chunk::23",
+            "VNM-DISCLOSURE-2025-EN::chunk::46",
+            "VNM-CHARTER-2026-EN::chunk::119",
+            "VNM-CGRULES-2026-EN::chunk::81",
+            "VNM-DISCLOSURE-2025-EN::chunk::15",
+            "VNM-DISCLOSURE-2025-EN::chunk::33",
+            "VNM-DISCLOSURE-2025-EN::chunk::39",
+            "VNM-CHARTER-2026-EN::chunk::35",
+            "VNM-DISCLOSURE-2025-EN::chunk::47",
+            "VNM-DISCLOSURE-2025-EN::chunk::44",
+            "VNM-DISCLOSURE-2025-EN::chunk::4",
+            "VNM-DISCLOSURE-2025-EN::chunk::14",
+            "VNM-CGRULES-2026-EN::chunk::106",
+            "VNM-CHARTER-2026-EN::chunk::121",
+            "VNM-DISCLOSURE-2025-EN::chunk::17",
+            "VNM-CGRULES-2026-EN::chunk::6",
+            "VNM-CGRULES-2026-EN::chunk::109",
+            "VNM-DISCLOSURE-2025-EN::chunk::48",
+            "VNM-CGRULES-2026-EN::chunk::102",
+            "VNM-DISCLOSURE-2025-EN::chunk::13",
+            "VNM-DISCLOSURE-2025-EN::chunk::7",
+            "VNM-CGR-2022-EN::chunk::20",
+            "VNM-CHARTER-2026-EN::chunk::33",
+            "VNM-CHARTER-2026-EN::chunk::3",
+            "VNM-CGRULES-2026-EN::chunk::101"
+          ],
+          "document": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          },
+          "passage": {
+            "precision@1": 1.0,
+            "recall@5": 1.0,
+            "mrr": 1.0,
+            "ndcg@5": 1.0
+          }
+        }
+      }
+    }
+  ],
+  "pairing": "Both variants run for every query with identical role, corpus, candidates, embedding model and hybrid weights; execution order alternates by case to reduce database-cache order bias.",
+  "limitations": "Twelve manually labeled cases with selected, non-exhaustive passage judgments. This tests a deterministic ontology-based expansion, not LLM query rewriting or answer quality. It is an offline retrieval experiment and does not enable rewriting in production."
+}

@@ -1,0 +1,16 @@
+{
+  "observed_github_metadata": {
+    "/branches/main": {
+      "protected": false,
+      "name": "main"
+    },
+    "/rules/branches/main": [],
+    "/rulesets": []
+  },
+  "authenticated_author": "Anquoc211",
+  "requested_independent_reviewer": "Lenhan231",
+  "reviewer_permission": "admin",
+  "decision": "HOLD",
+  "exception_granted": false,
+  "deployment_performed": false
+}

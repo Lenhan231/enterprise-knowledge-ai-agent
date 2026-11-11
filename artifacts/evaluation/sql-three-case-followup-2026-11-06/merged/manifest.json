@@ -1,0 +1,204 @@
+{
+  "judge": {
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "medium",
+    "adapter": "evaluation.ragas_judge.CodexCLIJudge"
+  },
+  "source_sha256": "a811884f94446d055da4f92158e7db5485a5f5eeb2d0aa8b797cc659c44e7303",
+  "reference_sha256": {
+    "sql_analytics": "4ebff61142108f3eb0b0a65df4a09af16bb21985021d1b6a815ae7e66a9e1457",
+    "report": "7b6a62dcc7e593a13598d2c3eb82e1ba22a3979e662f32522b06b16ed0350a66"
+  },
+  "oracle_status": "independent SQL oracles, author review only; not externally certified gold",
+  "application_revision": "mixed; see case_provenance",
+  "sql_ids": [
+    "S01",
+    "S02",
+    "S03",
+    "S04",
+    "S05",
+    "S06",
+    "S07",
+    "S08",
+    "S09",
+    "S10",
+    "S11",
+    "S12",
+    "S13",
+    "S14",
+    "S15",
+    "S16",
+    "S17",
+    "S18",
+    "S19",
+    "S20",
+    "S21",
+    "S22",
+    "S23",
+    "S24",
+    "S25",
+    "S26",
+    "S27",
+    "S28",
+    "S29",
+    "S30"
+  ],
+  "report_ids": [
+    "R01",
+    "R06",
+    "R16",
+    "R17",
+    "R20",
+    "R28"
+  ],
+  "knowledge_status": "deferred",
+  "status": "sql_complete_report_not_run",
+  "between_request_seconds": 10,
+  "agent_model": "qwen/qwen3.8-27b",
+  "agent_temperature": 0,
+  "groq_key_count": 3,
+  "groq_failover": "primary, numbered backups, then GROQ_API_KEY_RAGAS; rotate on RateLimitError, keep same model",
+  "package_versions": {
+    "ragas": "0.1.dev1148+g735726d5c",
+    "openai": "2.41.0",
+    "pydantic": "2.11.7"
+  },
+  "report_source_mode": "orchestrated",
+  "confirmation_policy": "first response only; no implicit scope acceptance",
+  "benchmark_pacing": "Up to 3 provider attempts for 429 only; wait for existing key cooldowns within normal report deadline. One case retry for previously recorded 429; originals retained.",
+  "generation_harness_revision": 3,
+  "lazy_provider_fallback_alias": "GROQ_API_KEY_3",
+  "completed_sql_cases": 30,
+  "current_sql_metric_records": 90,
+  "report_status": "not_run",
+  "benchmark_type": "incremental",
+  "retained_count": 27,
+  "rerun_count": 3,
+  "replaced_ids": [
+    "S13",
+    "S15",
+    "S17"
+  ],
+  "case_provenance": {
+    "S01": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S02": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S03": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S04": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S05": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S06": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S07": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S08": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S09": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S10": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S11": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S12": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S13": {
+      "source": "artifacts\\evaluation\\sql-three-case-followup-2026-11-06\\final",
+      "application_revision": "f4c9ec1b086591ed340dc5250d161513cbc4d020"
+    },
+    "S14": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S15": {
+      "source": "artifacts\\evaluation\\sql-three-case-followup-2026-11-06\\final",
+      "application_revision": "f4c9ec1b086591ed340dc5250d161513cbc4d020"
+    },
+    "S16": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S17": {
+      "source": "artifacts\\evaluation\\sql-three-case-followup-2026-11-06\\final",
+      "application_revision": "f4c9ec1b086591ed340dc5250d161513cbc4d020"
+    },
+    "S18": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S19": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S20": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S21": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S22": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S23": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S24": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S25": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S26": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S27": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S28": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S29": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    },
+    "S30": {
+      "source": "artifacts\\evaluation\\sql-semantic-correctness-2026-11-04\\paired",
+      "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+    }
+  }
+}

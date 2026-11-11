@@ -1,0 +1,14 @@
+{
+  "baseline_revision": "1c17bd03b8dadccdb1d0705b9ef71c2819a6621a",
+  "baseline_tests": 715,
+  "candidate_revision": "d4def4eab12e1ad25509ab401ae5c5be6806f443",
+  "candidate_tests": 737,
+  "baseline_failures": 11,
+  "candidate_failures": 11,
+  "baseline_errors": 51,
+  "candidate_errors": 51,
+  "new_failures": [],
+  "resolved_failures": [],
+  "new_errors": [],
+  "resolved_errors": []
+}

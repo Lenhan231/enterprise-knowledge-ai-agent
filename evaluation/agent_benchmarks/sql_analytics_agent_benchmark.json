@@ -1,0 +1,660 @@
+{
+  "dataset_id": "commerce-sql-agent-v1",
+  "title": "SQL Analytics Agent benchmark (25 questions)",
+  "database": "Supabase PostgreSQL schema commerce",
+  "coverage": {
+    "sales": "2012-07-04 to 2022-12-31",
+    "orders": "2012-07-04 to 2022-12-31",
+    "inventory": "2012-07-31 to 2022-12-31",
+    "web_traffic": "2013-01-01 to 2022-12-31"
+  },
+  "gold_sql_policy": "Gold SQL is a reference semantic formulation, not an exact-string target. Evaluate generated SQL after the existing safety validator; execute only read-only, parameterized queries with limits.",
+  "cases": [
+    {
+      "id": "S01",
+      "category": "scalar_aggregation",
+      "question": "Tổng doanh thu và giá vốn (COGS) tháng 12/2022 là bao nhiêu?",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.sales"
+      ],
+      "gold_sql": "SELECT SUM(s.revenue) AS revenue, SUM(s.cogs) AS cogs FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 LIMIT 1",
+      "parameters": [
+        "2022-12-01",
+        "2023-01-01"
+      ],
+      "expected_result_checks": [
+        {
+          "field": "revenue",
+          "equals": 52454936.2
+        },
+        {
+          "field": "cogs",
+          "equals": 53489673.44
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Hai giá trị kỳ vọng đã được ghi trong smoke test hiện có của repo."
+    },
+    {
+      "id": "S02",
+      "category": "time_series",
+      "question": "Trình bày doanh thu và COGS theo từng tháng trong năm 2022.",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.sales"
+      ],
+      "gold_sql": "SELECT DATE_TRUNC('month', s.date)::date AS month, SUM(s.revenue) AS revenue, SUM(s.cogs) AS cogs FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 GROUP BY DATE_TRUNC('month', s.date) ORDER BY DATE_TRUNC('month', s.date) LIMIT 12",
+      "parameters": [
+        "2022-01-01",
+        "2023-01-01"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count": 12
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Cần đúng 12 nhóm tháng; không gộp toàn năm thành một dòng."
+    },
+    {
+      "id": "S03",
+      "category": "ranking",
+      "question": "Tháng nào có tổng doanh thu cao nhất trong năm 2022?",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.sales"
+      ],
+      "gold_sql": "SELECT DATE_TRUNC('month', s.date)::date AS month, SUM(s.revenue) AS revenue FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 GROUP BY DATE_TRUNC('month', s.date) ORDER BY SUM(s.revenue) DESC LIMIT 1",
+      "parameters": [
+        "2022-01-01",
+        "2023-01-01"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count": 1
+        },
+        {
+          "field": "revenue",
+          "non_null": true
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Gold SQL là một truy vấn tham chiếu; chấp nhận SQL tương đương nếu kết quả, bộ lọc thời gian và nguồn dữ liệu đúng."
+    },
+    {
+      "id": "S04",
+      "category": "derived_metric",
+      "question": "Tính doanh thu trừ giá vốn theo từng tháng trong năm 2022.",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.sales"
+      ],
+      "gold_sql": "SELECT DATE_TRUNC('month', s.date)::date AS month, SUM(s.revenue) - SUM(s.cogs) AS gross_contribution FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 GROUP BY DATE_TRUNC('month', s.date) ORDER BY DATE_TRUNC('month', s.date) LIMIT 12",
+      "parameters": [
+        "2022-01-01",
+        "2023-01-01"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count": 12
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Không gọi metric này là lợi nhuận ròng; chỉ là doanh thu trừ COGS."
+    },
+    {
+      "id": "S05",
+      "category": "group_aggregate",
+      "question": "Trong năm 2022 có bao nhiêu đơn hàng theo từng order_status?",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.orders"
+      ],
+      "gold_sql": "SELECT o.order_status AS order_status, COUNT(o.order_id) AS order_count FROM commerce.orders AS o WHERE o.order_date >= $1 AND o.order_date < $2 GROUP BY o.order_status ORDER BY COUNT(o.order_id) DESC LIMIT 50",
+      "parameters": [
+        "2022-01-01",
+        "2023-01-01"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count_between": [
+            1,
+            50
+          ]
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Gold SQL là một truy vấn tham chiếu; chấp nhận SQL tương đương nếu kết quả, bộ lọc thời gian và nguồn dữ liệu đúng."
+    },
+    {
+      "id": "S06",
+      "category": "group_aggregate",
+      "question": "Trong năm 2022, số đơn hàng theo từng payment_method là bao nhiêu?",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.orders"
+      ],
+      "gold_sql": "SELECT o.payment_method AS payment_method, COUNT(o.order_id) AS order_count FROM commerce.orders AS o WHERE o.order_date >= $1 AND o.order_date < $2 GROUP BY o.payment_method ORDER BY COUNT(o.order_id) DESC LIMIT 50",
+      "parameters": [
+        "2022-01-01",
+        "2023-01-01"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count_between": [
+            1,
+            50
+          ]
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Gold SQL là một truy vấn tham chiếu; chấp nhận SQL tương đương nếu kết quả, bộ lọc thời gian và nguồn dữ liệu đúng."
+    },
+    {
+      "id": "S07",
+      "category": "group_aggregate",
+      "question": "So sánh số đơn hàng theo device_type trong năm 2022.",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.orders"
+      ],
+      "gold_sql": "SELECT o.device_type AS device_type, COUNT(o.order_id) AS order_count FROM commerce.orders AS o WHERE o.order_date >= $1 AND o.order_date < $2 GROUP BY o.device_type ORDER BY COUNT(o.order_id) DESC LIMIT 50",
+      "parameters": [
+        "2022-01-01",
+        "2023-01-01"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count_between": [
+            1,
+            50
+          ]
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Gold SQL là một truy vấn tham chiếu; chấp nhận SQL tương đương nếu kết quả, bộ lọc thời gian và nguồn dữ liệu đúng."
+    },
+    {
+      "id": "S08",
+      "category": "multi_table_aggregation",
+      "question": "Doanh thu thuần theo khu vực trong tháng 12/2022 là bao nhiêu?",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.orders",
+        "commerce.order_items",
+        "commerce.geography"
+      ],
+      "gold_sql": "SELECT g.region AS region, SUM((oi.quantity * oi.unit_price) - oi.discount_amount) AS net_sales FROM commerce.orders AS o JOIN commerce.order_items AS oi ON o.order_id = oi.order_id JOIN commerce.geography AS g ON o.zip = g.zip WHERE o.order_date >= $1 AND o.order_date < $2 GROUP BY g.region ORDER BY SUM((oi.quantity * oi.unit_price) - oi.discount_amount) DESC LIMIT 50",
+      "parameters": [
+        "2022-12-01",
+        "2023-01-01"
+      ],
+      "expected_result_checks": [
+        {
+          "field": "region",
+          "contains": "East"
+        },
+        {
+          "field": "net_sales",
+          "equals": 14079268.92
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Giá trị East lấy từ smoke test hiện có; định nghĩa net sales dựa trên quantity × unit_price − discount_amount."
+    },
+    {
+      "id": "S09",
+      "category": "multi_table_aggregation",
+      "question": "Xếp hạng các category theo doanh thu thuần của sản phẩm trong năm 2022.",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.orders",
+        "commerce.order_items",
+        "commerce.products"
+      ],
+      "gold_sql": "SELECT p.category AS category, SUM((oi.quantity * oi.unit_price) - oi.discount_amount) AS net_sales FROM commerce.orders AS o JOIN commerce.order_items AS oi ON o.order_id = oi.order_id JOIN commerce.products AS p ON oi.product_id = p.product_id WHERE o.order_date >= $1 AND o.order_date < $2 GROUP BY p.category ORDER BY SUM((oi.quantity * oi.unit_price) - oi.discount_amount) DESC LIMIT 20",
+      "parameters": [
+        "2022-01-01",
+        "2023-01-01"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count_between": [
+            1,
+            20
+          ]
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Gold SQL là một truy vấn tham chiếu; chấp nhận SQL tương đương nếu kết quả, bộ lọc thời gian và nguồn dữ liệu đúng."
+    },
+    {
+      "id": "S10",
+      "category": "ranking",
+      "question": "Liệt kê 10 sản phẩm bán ra nhiều nhất theo tổng quantity trong năm 2022.",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.orders",
+        "commerce.order_items",
+        "commerce.products"
+      ],
+      "gold_sql": "SELECT p.product_id AS product_id, p.product_name AS product_name, SUM(oi.quantity) AS quantity_sold FROM commerce.orders AS o JOIN commerce.order_items AS oi ON o.order_id = oi.order_id JOIN commerce.products AS p ON oi.product_id = p.product_id WHERE o.order_date >= $1 AND o.order_date < $2 GROUP BY p.product_id, p.product_name ORDER BY SUM(oi.quantity) DESC LIMIT 10",
+      "parameters": [
+        "2022-01-01",
+        "2023-01-01"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count_between": [
+            1,
+            10
+          ]
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Gold SQL là một truy vấn tham chiếu; chấp nhận SQL tương đương nếu kết quả, bộ lọc thời gian và nguồn dữ liệu đúng."
+    },
+    {
+      "id": "S11",
+      "category": "customer_dimension",
+      "question": "Số đơn hàng theo acquisition_channel của khách hàng trong năm 2022 là bao nhiêu?",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.orders",
+        "commerce.customers"
+      ],
+      "gold_sql": "SELECT c.acquisition_channel AS acquisition_channel, COUNT(o.order_id) AS order_count FROM commerce.orders AS o JOIN commerce.customers AS c ON o.customer_id = c.customer_id WHERE o.order_date >= $1 AND o.order_date < $2 GROUP BY c.acquisition_channel ORDER BY COUNT(o.order_id) DESC LIMIT 50",
+      "parameters": [
+        "2022-01-01",
+        "2023-01-01"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count_between": [
+            1,
+            50
+          ]
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Gold SQL là một truy vấn tham chiếu; chấp nhận SQL tương đương nếu kết quả, bộ lọc thời gian và nguồn dữ liệu đúng."
+    },
+    {
+      "id": "S12",
+      "category": "multi_table_aggregation",
+      "question": "AOV theo khu vực trong năm 2022 là bao nhiêu, dùng payment_value làm giá trị đơn hàng?",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.orders",
+        "commerce.payments",
+        "commerce.geography"
+      ],
+      "gold_sql": "SELECT g.region AS region, AVG(pm.payment_value) AS average_order_value, COUNT(o.order_id) AS order_count FROM commerce.orders AS o JOIN commerce.payments AS pm ON o.order_id = pm.order_id JOIN commerce.geography AS g ON o.zip = g.zip WHERE o.order_date >= $1 AND o.order_date < $2 GROUP BY g.region ORDER BY AVG(pm.payment_value) DESC LIMIT 50",
+      "parameters": [
+        "2022-01-01",
+        "2023-01-01"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count_between": [
+            1,
+            50
+          ]
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Định nghĩa AOV ở đây là AVG(payment_value) trên các đơn hàng có payment record."
+    },
+    {
+      "id": "S13",
+      "category": "inventory_kpi",
+      "question": "Tỷ lệ stockout theo category tại snapshot 2022-12-31 là bao nhiêu?",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.inventory"
+      ],
+      "gold_sql": "SELECT i.category AS category, AVG(CASE WHEN i.stockout_flag THEN 1.0 ELSE 0.0 END) * 100 AS stockout_rate_pct, COUNT(i.product_id) AS sku_count FROM commerce.inventory AS i WHERE i.snapshot_date = $1 GROUP BY i.category ORDER BY AVG(CASE WHEN i.stockout_flag THEN 1.0 ELSE 0.0 END) DESC LIMIT 20",
+      "parameters": [
+        "2022-12-31"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count_between": [
+            1,
+            20
+          ]
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Chỉ dùng snapshot được hỏi; không cộng trạng thái qua nhiều snapshot."
+    },
+    {
+      "id": "S14",
+      "category": "inventory_data_conflict",
+      "question": "Đếm số SKU đồng thời bật stockout_flag và overstock_flag theo category tại 2022-12-31.",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.inventory"
+      ],
+      "gold_sql": "SELECT i.category AS category, COUNT(i.product_id) AS conflict_sku_count FROM commerce.inventory AS i WHERE i.snapshot_date = $1 AND i.stockout_flag = TRUE AND i.overstock_flag = TRUE GROUP BY i.category ORDER BY COUNT(i.product_id) DESC LIMIT 20",
+      "parameters": [
+        "2022-12-31"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count_between": [
+            0,
+            20
+          ]
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Giá trị này là số SKU trong snapshot, không phải số record của toàn bộ lịch sử."
+    },
+    {
+      "id": "S15",
+      "category": "ranking",
+      "question": "Top 10 SKU có days_of_supply cao nhất ở snapshot mới nhất 2022-12-31 là gì?",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.inventory"
+      ],
+      "gold_sql": "SELECT i.product_id AS product_id, i.product_name AS product_name, i.category AS category, i.days_of_supply AS days_of_supply FROM commerce.inventory AS i WHERE i.snapshot_date = $1 AND i.days_of_supply IS NOT NULL ORDER BY i.days_of_supply DESC LIMIT 10",
+      "parameters": [
+        "2022-12-31"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count_between": [
+            1,
+            10
+          ]
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Gold SQL là một truy vấn tham chiếu; chấp nhận SQL tương đương nếu kết quả, bộ lọc thời gian và nguồn dữ liệu đúng."
+    },
+    {
+      "id": "S16",
+      "category": "inventory_aggregation",
+      "question": "Tổng stock_on_hand theo category ở snapshot 2022-12-31 là bao nhiêu?",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.inventory"
+      ],
+      "gold_sql": "SELECT i.category AS category, SUM(i.stock_on_hand) AS stock_on_hand_total FROM commerce.inventory AS i WHERE i.snapshot_date = $1 GROUP BY i.category ORDER BY SUM(i.stock_on_hand) DESC LIMIT 20",
+      "parameters": [
+        "2022-12-31"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count_between": [
+            1,
+            20
+          ]
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Bộ validator yêu cầu inventory stock phải được lọc theo snapshot_date hoặc group theo snapshot_date."
+    },
+    {
+      "id": "S17",
+      "category": "returns",
+      "question": "Số lượt trả hàng và tổng refund_amount theo return_reason trong năm 2022 là bao nhiêu?",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.returns"
+      ],
+      "gold_sql": "SELECT r.return_reason AS return_reason, COUNT(r.return_id) AS return_count, SUM(r.refund_amount) AS refund_total FROM commerce.returns AS r WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY r.return_reason ORDER BY COUNT(r.return_id) DESC LIMIT 50",
+      "parameters": [
+        "2022-01-01",
+        "2023-01-01"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count_between": [
+            1,
+            50
+          ]
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Gold SQL là một truy vấn tham chiếu; chấp nhận SQL tương đương nếu kết quả, bộ lọc thời gian và nguồn dữ liệu đúng."
+    },
+    {
+      "id": "S18",
+      "category": "returns",
+      "question": "Số lượt trả hàng và tổng refund_amount theo category trong năm 2022 là bao nhiêu?",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.returns",
+        "commerce.products"
+      ],
+      "gold_sql": "SELECT p.category AS category, COUNT(r.return_id) AS return_count, SUM(r.refund_amount) AS refund_total FROM commerce.returns AS r JOIN commerce.products AS p ON r.product_id = p.product_id WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY p.category ORDER BY COUNT(r.return_id) DESC LIMIT 20",
+      "parameters": [
+        "2022-01-01",
+        "2023-01-01"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count_between": [
+            1,
+            20
+          ]
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Gold SQL là một truy vấn tham chiếu; chấp nhận SQL tương đương nếu kết quả, bộ lọc thời gian và nguồn dữ liệu đúng."
+    },
+    {
+      "id": "S19",
+      "category": "reviews",
+      "question": "Điểm rating trung bình theo category trong năm 2022 là bao nhiêu?",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.reviews",
+        "commerce.products"
+      ],
+      "gold_sql": "SELECT p.category AS category, AVG(r.rating) AS average_rating, COUNT(r.review_id) AS review_count FROM commerce.reviews AS r JOIN commerce.products AS p ON r.product_id = p.product_id WHERE r.review_date >= $1 AND r.review_date < $2 GROUP BY p.category ORDER BY AVG(r.rating) DESC LIMIT 20",
+      "parameters": [
+        "2022-01-01",
+        "2023-01-01"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count_between": [
+            1,
+            20
+          ]
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Gold SQL là một truy vấn tham chiếu; chấp nhận SQL tương đương nếu kết quả, bộ lọc thời gian và nguồn dữ liệu đúng."
+    },
+    {
+      "id": "S20",
+      "category": "delivery_performance",
+      "question": "Thời gian giao hàng trung bình theo region trong năm 2022 là bao nhiêu ngày?",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.orders",
+        "commerce.shipments",
+        "commerce.geography"
+      ],
+      "gold_sql": "SELECT g.region AS region, AVG(sh.delivery_date - sh.ship_date) AS average_delivery_days, COUNT(sh.order_id) AS shipment_count FROM commerce.orders AS o JOIN commerce.shipments AS sh ON o.order_id = sh.order_id JOIN commerce.geography AS g ON o.zip = g.zip WHERE o.order_date >= $1 AND o.order_date < $2 AND sh.ship_date IS NOT NULL AND sh.delivery_date IS NOT NULL GROUP BY g.region ORDER BY AVG(sh.delivery_date - sh.ship_date) DESC LIMIT 50",
+      "parameters": [
+        "2022-01-01",
+        "2023-01-01"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count_between": [
+            1,
+            50
+          ]
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Gold SQL là một truy vấn tham chiếu; chấp nhận SQL tương đương nếu kết quả, bộ lọc thời gian và nguồn dữ liệu đúng."
+    },
+    {
+      "id": "S21",
+      "category": "delivery_performance",
+      "question": "Tổng shipping_fee theo region của các đơn đặt trong năm 2022 là bao nhiêu?",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.orders",
+        "commerce.shipments",
+        "commerce.geography"
+      ],
+      "gold_sql": "SELECT g.region AS region, SUM(sh.shipping_fee) AS shipping_fee_total, COUNT(sh.order_id) AS shipment_count FROM commerce.orders AS o JOIN commerce.shipments AS sh ON o.order_id = sh.order_id JOIN commerce.geography AS g ON o.zip = g.zip WHERE o.order_date >= $1 AND o.order_date < $2 GROUP BY g.region ORDER BY SUM(sh.shipping_fee) DESC LIMIT 50",
+      "parameters": [
+        "2022-01-01",
+        "2023-01-01"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count_between": [
+            1,
+            50
+          ]
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Gold SQL là một truy vấn tham chiếu; chấp nhận SQL tương đương nếu kết quả, bộ lọc thời gian và nguồn dữ liệu đúng."
+    },
+    {
+      "id": "S22",
+      "category": "web_traffic",
+      "question": "Trong năm 2022, sessions, unique_visitors và page_views theo traffic_source là bao nhiêu?",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.web_traffic"
+      ],
+      "gold_sql": "SELECT w.traffic_source AS traffic_source, SUM(w.sessions) AS sessions, SUM(w.unique_visitors) AS unique_visitors, SUM(w.page_views) AS page_views, AVG(w.bounce_rate) AS average_bounce_rate FROM commerce.web_traffic AS w WHERE w.date >= $1 AND w.date < $2 GROUP BY w.traffic_source ORDER BY SUM(w.sessions) DESC LIMIT 50",
+      "parameters": [
+        "2022-01-01",
+        "2023-01-01"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count_between": [
+            1,
+            50
+          ]
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Gold SQL là một truy vấn tham chiếu; chấp nhận SQL tương đương nếu kết quả, bộ lọc thời gian và nguồn dữ liệu đúng."
+    },
+    {
+      "id": "S23",
+      "category": "promotions",
+      "question": "Có bao nhiêu promotion bắt đầu trong năm 2022 theo promo_type và discount_value trung bình của từng loại là bao nhiêu?",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "execute",
+      "expected_tables": [
+        "commerce.promotions"
+      ],
+      "gold_sql": "SELECT pr.promo_type AS promo_type, COUNT(pr.promo_id) AS promotion_count, AVG(pr.discount_value) AS average_discount_value FROM commerce.promotions AS pr WHERE pr.start_date >= $1 AND pr.start_date < $2 GROUP BY pr.promo_type ORDER BY COUNT(pr.promo_id) DESC LIMIT 20",
+      "parameters": [
+        "2022-01-01",
+        "2023-01-01"
+      ],
+      "expected_result_checks": [
+        {
+          "row_count_between": [
+            0,
+            20
+          ]
+        }
+      ],
+      "expected_reason_if_abstaining": null,
+      "evaluation_notes": "Giữ nguyên đơn vị/loại discount_value; không cộng tỷ lệ phần trăm với giá trị cố định."
+    },
+    {
+      "id": "S24",
+      "category": "out_of_coverage",
+      "question": "Doanh thu và COGS của năm 2025 là bao nhiêu?",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "abstain",
+      "expected_tables": [],
+      "gold_sql": null,
+      "parameters": [],
+      "expected_result_checks": [
+        {
+          "expected": "abstain",
+          "reason": "sales date coverage ends 2022-12-31"
+        }
+      ],
+      "expected_reason_if_abstaining": "Dữ liệu commerce.sales kết thúc 2022-12-31; yêu cầu năm 2025 nằm ngoài phạm vi dữ liệu.",
+      "evaluation_notes": "Không tạo SQL với kỳ dữ liệu không tồn tại hoặc bịa ra kết quả."
+    },
+    {
+      "id": "S25",
+      "category": "unsupported_dimensions",
+      "question": "Tồn kho hiện tại theo từng warehouse, PO inbound còn mở và lead time theo supplier là bao nhiêu?",
+      "language": "vi",
+      "expected_agent": "analytics",
+      "expected_behavior": "abstain",
+      "expected_tables": [],
+      "gold_sql": null,
+      "parameters": [],
+      "expected_result_checks": [
+        {
+          "expected": "abstain",
+          "reason": "warehouse, open PO, supplier lead time are not present"
+        }
+      ],
+      "expected_reason_if_abstaining": "Schema commerce không có đầy đủ warehouse, inbound/open purchase order hoặc supplier lead-time fields.",
+      "evaluation_notes": "Agent nên nêu dữ liệu còn thiếu và yêu cầu nguồn được cập nhật; không tạo các bảng/cột giả."
+    }
+  ]
+}

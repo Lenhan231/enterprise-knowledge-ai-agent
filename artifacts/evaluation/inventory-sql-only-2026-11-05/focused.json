@@ -1,0 +1,20 @@
+{
+  "run": 194,
+  "failures": [],
+  "errors": [],
+  "skipped": 0,
+  "revision": "af56d59",
+  "patterns": [
+    "test_inventory*.py",
+    "test_sql_generation.py",
+    "test_sql_join_duplication.py",
+    "test_sql_metric_definitions.py",
+    "test_sql_followups.py",
+    "test_metric_mapping.py",
+    "test_report*.py",
+    "test_hybrid_field_contract.py",
+    "test_sql_semantic_authority.py",
+    "test_orchestration_evaluation.py",
+    "test_orchestration_contracts.py"
+  ]
+}

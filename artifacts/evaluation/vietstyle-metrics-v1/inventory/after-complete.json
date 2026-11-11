@@ -1,0 +1,1735 @@
+{
+  "created_at_utc": "2026-10-30T10:25:32.931116+00:00",
+  "source_ref": "fa74b34b441ba71b005a2c568de5e32e9c5699f7",
+  "model": "qwen/qwen3.8-27b",
+  "temperature": 0,
+  "reasoning_effort": "none",
+  "max_output_tokens": 1000,
+  "case_sha256": "8c31f828a9eaa6b2de60e35c941920613756d8d4b3817784dcce951db659e2bc",
+  "pace_seconds": 20,
+  "write_probes": false,
+  "source_sha256": {
+    "src/core/analytics/metric_ontology.py": "b9a703526f05ddf1e0fa89c6e8a9e3b6a6b3a351facc0ea4e4c384bec74c51a3",
+    "src/core/analytics/metric_validation.py": "4e7cdda1ff47fce148247fbda7daf78699a53c509df64c1e3681cfd2b2cc731c",
+    "src/core/analytics/text_to_sql.py": "3eae34663f2b6eaeb769ef7eef6e9d091c3d3e4b3eb3c7abea50c3fcbf70e06f",
+    "src/core/agents/sql_analytics_agent.py": "f79ba31f4c43eeba89e054bdbdfb375dec6e94b63a389ad2ce6204ce447630d4",
+    "src/core/prompts/sql.py": "eebe98a85a73843a420a82e33702c65947fecd447527e41416107716d6c030ca"
+  },
+  "cases": [
+    {
+      "id": "lowest_fill",
+      "question": "Which 10 products had the lowest fill rates in the latest inventory snapshot?",
+      "field": "fill_rate",
+      "dimensions": [],
+      "result": {
+        "ok": true,
+        "operation": "text_to_sql",
+        "rows": [
+          {
+            "snapshot_date": "2022-12-31",
+            "product_name": "HanoiStreet RP-08",
+            "fill_rate": "0.1667"
+          },
+          {
+            "snapshot_date": "2022-12-31",
+            "product_name": "HanoiStreet RP-07",
+            "fill_rate": "0.2"
+          },
+          {
+            "snapshot_date": "2022-12-31",
+            "product_name": "MekongFit UE-13",
+            "fill_rate": "0.4333"
+          },
+          {
+            "snapshot_date": "2022-12-31",
+            "product_name": "SaigonFlex UC-33",
+            "fill_rate": "0.6333"
+          },
+          {
+            "snapshot_date": "2022-12-31",
+            "product_name": "VietMode RS-05",
+            "fill_rate": "0.8333"
+          },
+          {
+            "snapshot_date": "2022-12-31",
+            "product_name": "SaigonFlex UM-10",
+            "fill_rate": "0.8667"
+          },
+          {
+            "snapshot_date": "2022-12-31",
+            "product_name": "SaigonFlex UM-57",
+            "fill_rate": "0.9"
+          },
+          {
+            "snapshot_date": "2022-12-31",
+            "product_name": "BambooCraft UC-02",
+            "fill_rate": "0.9333"
+          },
+          {
+            "snapshot_date": "2022-12-31",
+            "product_name": "BambooCraft UC-08",
+            "fill_rate": "0.9333"
+          },
+          {
+            "snapshot_date": "2022-12-31",
+            "product_name": "BambooCraft UC-20",
+            "fill_rate": "0.9333"
+          }
+        ],
+        "answer": "Query completed.",
+        "sql": "SELECT i.snapshot_date AS snapshot_date, p.product_name AS product_name, i.fill_rate AS fill_rate FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) ORDER BY 3 ASC, 2 ASC LIMIT 10",
+        "parameters": [],
+        "query_status": "executed",
+        "evidence": [
+          {
+            "source": "commerce.inventory",
+            "metadata": {
+              "metrics": {
+                "stored_fill_rate": {
+                  "name": "Stored product fill rate",
+                  "description": "Recorded product-level value; do not infer its original formula or treat it as an aggregate fulfillment rate.",
+                  "version": "1.0.0",
+                  "domain": "inventory_management",
+                  "aliases": [
+                    "stored fill rate",
+                    "stored fill rates",
+                    "product fill rate",
+                    "product fill rates",
+                    "tỷ lệ đáp ứng từng sản phẩm",
+                    "tỷ lệ đáp ứng được lưu"
+                  ],
+                  "source": "commerce.inventory + commerce.products",
+                  "source_columns": {
+                    "commerce.inventory": [
+                      "snapshot_date",
+                      "product_id",
+                      "year",
+                      "month",
+                      "fill_rate"
+                    ],
+                    "commerce.products": [
+                      "product_id",
+                      "product_name",
+                      "category",
+                      "segment",
+                      "size",
+                      "color"
+                    ]
+                  },
+                  "formula": "fill_rate within one snapshot",
+                  "grain": "product_snapshot",
+                  "dimensions": [
+                    "snapshot_date",
+                    "product_id",
+                    "product_name",
+                    "category",
+                    "segment",
+                    "size",
+                    "color",
+                    "year",
+                    "month"
+                  ],
+                  "date_field": "commerce.inventory.snapshot_date",
+                  "temporal_semantics": "One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.",
+                  "aggregation": "value",
+                  "unit": "percent",
+                  "eligibility_filters": [],
+                  "null_handling": "Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.",
+                  "zero_denominator": "Return NULL using NULLIF; never substitute zero for an undefined ratio.",
+                  "join_requirements": [
+                    "inventory.product_id = products.product_id; many-to-one only"
+                  ],
+                  "provenance": "team_defined",
+                  "definition_status": "executable",
+                  "approval_status": "team_accepted",
+                  "business_approval_status": "not_recorded",
+                  "validation_status": "data_profiled",
+                  "currency": "dataset_currency_unknown",
+                  "snapshot_required": true,
+                  "evidence": [
+                    "artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json",
+                    "VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections",
+                    "User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded."
+                  ],
+                  "limitations": [
+                    "Historical monthly observations; every answer must state the selected snapshot date.",
+                    "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+                    "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+                    "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula."
+                  ],
+                  "examples": {
+                    "en": "Show stored product fill rate at the latest available inventory snapshot.",
+                    "vi": "Cho biết tỷ lệ đáp ứng từng sản phẩm tại kỳ tồn kho mới nhất."
+                  },
+                  "aliases_by_language": {
+                    "en": [
+                      "stored fill rate",
+                      "stored fill rates",
+                      "product fill rate",
+                      "product fill rates"
+                    ],
+                    "vi": [
+                      "tỷ lệ đáp ứng từng sản phẩm",
+                      "tỷ lệ đáp ứng được lưu"
+                    ]
+                  },
+                  "representation": "stored_value"
+                }
+              }
+            }
+          },
+          {
+            "source": "commerce.products",
+            "metadata": {
+              "metrics": {
+                "stored_fill_rate": {
+                  "name": "Stored product fill rate",
+                  "description": "Recorded product-level value; do not infer its original formula or treat it as an aggregate fulfillment rate.",
+                  "version": "1.0.0",
+                  "domain": "inventory_management",
+                  "aliases": [
+                    "stored fill rate",
+                    "stored fill rates",
+                    "product fill rate",
+                    "product fill rates",
+                    "tỷ lệ đáp ứng từng sản phẩm",
+                    "tỷ lệ đáp ứng được lưu"
+                  ],
+                  "source": "commerce.inventory + commerce.products",
+                  "source_columns": {
+                    "commerce.inventory": [
+                      "snapshot_date",
+                      "product_id",
+                      "year",
+                      "month",
+                      "fill_rate"
+                    ],
+                    "commerce.products": [
+                      "product_id",
+                      "product_name",
+                      "category",
+                      "segment",
+                      "size",
+                      "color"
+                    ]
+                  },
+                  "formula": "fill_rate within one snapshot",
+                  "grain": "product_snapshot",
+                  "dimensions": [
+                    "snapshot_date",
+                    "product_id",
+                    "product_name",
+                    "category",
+                    "segment",
+                    "size",
+                    "color",
+                    "year",
+                    "month"
+                  ],
+                  "date_field": "commerce.inventory.snapshot_date",
+                  "temporal_semantics": "One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.",
+                  "aggregation": "value",
+                  "unit": "percent",
+                  "eligibility_filters": [],
+                  "null_handling": "Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.",
+                  "zero_denominator": "Return NULL using NULLIF; never substitute zero for an undefined ratio.",
+                  "join_requirements": [
+                    "inventory.product_id = products.product_id; many-to-one only"
+                  ],
+                  "provenance": "team_defined",
+                  "definition_status": "executable",
+                  "approval_status": "team_accepted",
+                  "business_approval_status": "not_recorded",
+                  "validation_status": "data_profiled",
+                  "currency": "dataset_currency_unknown",
+                  "snapshot_required": true,
+                  "evidence": [
+                    "artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json",
+                    "VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections",
+                    "User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded."
+                  ],
+                  "limitations": [
+                    "Historical monthly observations; every answer must state the selected snapshot date.",
+                    "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+                    "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+                    "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula."
+                  ],
+                  "examples": {
+                    "en": "Show stored product fill rate at the latest available inventory snapshot.",
+                    "vi": "Cho biết tỷ lệ đáp ứng từng sản phẩm tại kỳ tồn kho mới nhất."
+                  },
+                  "aliases_by_language": {
+                    "en": [
+                      "stored fill rate",
+                      "stored fill rates",
+                      "product fill rate",
+                      "product fill rates"
+                    ],
+                    "vi": [
+                      "tỷ lệ đáp ứng từng sản phẩm",
+                      "tỷ lệ đáp ứng được lưu"
+                    ]
+                  },
+                  "representation": "stored_value"
+                }
+              }
+            }
+          }
+        ],
+        "limitations": [
+          "Historical monthly observations; every answer must state the selected snapshot date.",
+          "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+          "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+          "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.",
+          "Inventory observations are historical; selected snapshot dates: 2022-12-31"
+        ],
+        "metadata": {
+          "source": [
+            "commerce.inventory",
+            "commerce.products"
+          ],
+          "explanation": "Retrieves the 10 products with the lowest stored fill rates from the latest inventory snapshot. It joins inventory to products to get product names, filters for the maximum snapshot date, orders by fill rate ascending, and includes the snapshot date as required.",
+          "metrics": {
+            "stored_fill_rate": {
+              "name": "Stored product fill rate",
+              "description": "Recorded product-level value; do not infer its original formula or treat it as an aggregate fulfillment rate.",
+              "version": "1.0.0",
+              "domain": "inventory_management",
+              "aliases": [
+                "stored fill rate",
+                "stored fill rates",
+                "product fill rate",
+                "product fill rates",
+                "tỷ lệ đáp ứng từng sản phẩm",
+                "tỷ lệ đáp ứng được lưu"
+              ],
+              "source": "commerce.inventory + commerce.products",
+              "source_columns": {
+                "commerce.inventory": [
+                  "snapshot_date",
+                  "product_id",
+                  "year",
+                  "month",
+                  "fill_rate"
+                ],
+                "commerce.products": [
+                  "product_id",
+                  "product_name",
+                  "category",
+                  "segment",
+                  "size",
+                  "color"
+                ]
+              },
+              "formula": "fill_rate within one snapshot",
+              "grain": "product_snapshot",
+              "dimensions": [
+                "snapshot_date",
+                "product_id",
+                "product_name",
+                "category",
+                "segment",
+                "size",
+                "color",
+                "year",
+                "month"
+              ],
+              "date_field": "commerce.inventory.snapshot_date",
+              "temporal_semantics": "One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.",
+              "aggregation": "value",
+              "unit": "percent",
+              "eligibility_filters": [],
+              "null_handling": "Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.",
+              "zero_denominator": "Return NULL using NULLIF; never substitute zero for an undefined ratio.",
+              "join_requirements": [
+                "inventory.product_id = products.product_id; many-to-one only"
+              ],
+              "provenance": "team_defined",
+              "definition_status": "executable",
+              "approval_status": "team_accepted",
+              "business_approval_status": "not_recorded",
+              "validation_status": "data_profiled",
+              "currency": "dataset_currency_unknown",
+              "snapshot_required": true,
+              "evidence": [
+                "artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json",
+                "VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections",
+                "User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded."
+              ],
+              "limitations": [
+                "Historical monthly observations; every answer must state the selected snapshot date.",
+                "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+                "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+                "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula."
+              ],
+              "examples": {
+                "en": "Show stored product fill rate at the latest available inventory snapshot.",
+                "vi": "Cho biết tỷ lệ đáp ứng từng sản phẩm tại kỳ tồn kho mới nhất."
+              },
+              "aliases_by_language": {
+                "en": [
+                  "stored fill rate",
+                  "stored fill rates",
+                  "product fill rate",
+                  "product fill rates"
+                ],
+                "vi": [
+                  "tỷ lệ đáp ứng từng sản phẩm",
+                  "tỷ lệ đáp ứng được lưu"
+                ]
+              },
+              "representation": "stored_value"
+            }
+          },
+          "metric_catalog_version": "1.0.0",
+          "historical_inventory": true,
+          "snapshot_dates": [
+            "2022-12-31"
+          ]
+        }
+      },
+      "generation_calls": [
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nInventory Management requirements:\nEvery result MUST include i.snapshot_date AS snapshot_date. For aggregates, GROUP BY i.snapshot_date and every other dimension. The final SELECT MUST have LIMIT 200, including repairs.\nExample for latest total stock: SELECT i.snapshot_date AS snapshot_date, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date LIMIT 200\nFor category results JOIN commerce.products AS p ON i.product_id = p.product_id and select/group p.category. Never use i.category, i.year or i.month; use the approved product attributes and snapshot_date. For a requested year use i.snapshot_date >= $1 AND i.snapshot_date < $2, binding January 1 of that year and January 1 of the next year.\nproducts.product_id is a primary key; the inventory-to-products join is many-to-one. Flag ratios count i.product_id in both numerator and denominator so their source grain remains explicit. Never replace these counts with COUNT(*).\naggregation=value selects the stored product field without AVG or SUM; scalar_formula is only for ungrouped product rows. Means are explicitly unweighted. Do not invent source formulas or demand weights. Keep exact snapshot_date groups for trends; never sum balances across dates or invent zero for an absent product.\nLatest means the unfiltered MAX(snapshot_date) from commerce.inventory, never a guessed date. Historical flags do not authorize reorders. Team acceptance and validation do not imply official business approval. Unresolved/unreviewed metrics cannot execute.\nRequested metrics: {\"metrics\": [\"stored_fill_rate\"]}\nCanonical metric definitions: {\"stored_fill_rate\": {\"name\": \"Stored product fill rate\", \"description\": \"Recorded product-level value; do not infer its original formula or treat it as an aggregate fulfillment rate.\", \"version\": \"1.0.0\", \"domain\": \"inventory_management\", \"aliases\": [\"stored fill rate\", \"stored fill rates\", \"product fill rate\", \"product fill rates\", \"tỷ lệ đáp ứng từng sản phẩm\", \"tỷ lệ đáp ứng được lưu\"], \"source\": \"commerce.inventory + commerce.products\", \"source_columns\": {\"commerce.inventory\": [\"snapshot_date\", \"product_id\", \"year\", \"month\", \"fill_rate\"], \"commerce.products\": [\"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\"]}, \"formula\": \"fill_rate within one snapshot\", \"grain\": \"product_snapshot\", \"dimensions\": [\"snapshot_date\", \"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\", \"year\", \"month\"], \"date_field\": \"commerce.inventory.snapshot_date\", \"temporal_semantics\": \"One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.\", \"aggregation\": \"value\", \"unit\": \"percent\", \"eligibility_filters\": [], \"null_handling\": \"Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.\", \"zero_denominator\": \"Return NULL using NULLIF; never substitute zero for an undefined ratio.\", \"join_requirements\": [\"inventory.product_id = products.product_id; many-to-one only\"], \"provenance\": \"team_defined\", \"definition_status\": \"executable\", \"approval_status\": \"team_accepted\", \"business_approval_status\": \"not_recorded\", \"validation_status\": \"data_profiled\", \"currency\": \"dataset_currency_unknown\", \"snapshot_required\": true, \"evidence\": [\"artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json\", \"VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections\", \"User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded.\"], \"limitations\": [\"Historical monthly observations; every answer must state the selected snapshot date.\", \"Missing product snapshots are not zero inventory; denominators cover observed products only.\", \"No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\", \"Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\"], \"examples\": {\"en\": \"Show stored product fill rate at the latest available inventory snapshot.\", \"vi\": \"Cho biết tỷ lệ đáp ứng từng sản phẩm tại kỳ tồn kho mới nhất.\"}, \"aliases_by_language\": {\"en\": [\"stored fill rate\", \"stored fill rates\", \"product fill rate\", \"product fill rates\"], \"vi\": [\"tỷ lệ đáp ứng từng sản phẩm\", \"tỷ lệ đáp ứng được lưu\"]}}}\nApproved schema:\ncommerce.inventory: days_of_supply, fill_rate, overstock_flag, product_id, reorder_flag, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold\ncommerce.products: category, color, product_id, product_name, segment, size\nApproved joins:\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nWhich 10 products had the lowest fill rates in the latest inventory snapshot?",
+          "response": "{\n  \"sql\": \"SELECT p.product_name, i.fill_rate FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) ORDER BY i.fill_rate ASC LIMIT 10\",\n  \"parameters\": [],\n  \"explanation\": \"Retrieves the 10 products with the lowest stored fill rates from the latest inventory snapshot by joining inventory and products, filtering for the maximum snapshot date, and ordering by fill rate ascending.\"\n}",
+          "usage": {
+            "input_tokens": 1556,
+            "output_tokens": 117,
+            "total_tokens": 1673
+          },
+          "elapsed_ms": 3464.25
+        },
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nInventory Management requirements:\nEvery result MUST include i.snapshot_date AS snapshot_date. For aggregates, GROUP BY i.snapshot_date and every other dimension. The final SELECT MUST have LIMIT 200, including repairs.\nExample for latest total stock: SELECT i.snapshot_date AS snapshot_date, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date LIMIT 200\nFor category results JOIN commerce.products AS p ON i.product_id = p.product_id and select/group p.category. Never use i.category, i.year or i.month; use the approved product attributes and snapshot_date. For a requested year use i.snapshot_date >= $1 AND i.snapshot_date < $2, binding January 1 of that year and January 1 of the next year.\nproducts.product_id is a primary key; the inventory-to-products join is many-to-one. Flag ratios count i.product_id in both numerator and denominator so their source grain remains explicit. Never replace these counts with COUNT(*).\naggregation=value selects the stored product field without AVG or SUM; scalar_formula is only for ungrouped product rows. Means are explicitly unweighted. Do not invent source formulas or demand weights. Keep exact snapshot_date groups for trends; never sum balances across dates or invent zero for an absent product.\nLatest means the unfiltered MAX(snapshot_date) from commerce.inventory, never a guessed date. Historical flags do not authorize reorders. Team acceptance and validation do not imply official business approval. Unresolved/unreviewed metrics cannot execute.\nRequested metrics: {\"metrics\": [\"stored_fill_rate\"]}\nCanonical metric definitions: {\"stored_fill_rate\": {\"name\": \"Stored product fill rate\", \"description\": \"Recorded product-level value; do not infer its original formula or treat it as an aggregate fulfillment rate.\", \"version\": \"1.0.0\", \"domain\": \"inventory_management\", \"aliases\": [\"stored fill rate\", \"stored fill rates\", \"product fill rate\", \"product fill rates\", \"tỷ lệ đáp ứng từng sản phẩm\", \"tỷ lệ đáp ứng được lưu\"], \"source\": \"commerce.inventory + commerce.products\", \"source_columns\": {\"commerce.inventory\": [\"snapshot_date\", \"product_id\", \"year\", \"month\", \"fill_rate\"], \"commerce.products\": [\"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\"]}, \"formula\": \"fill_rate within one snapshot\", \"grain\": \"product_snapshot\", \"dimensions\": [\"snapshot_date\", \"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\", \"year\", \"month\"], \"date_field\": \"commerce.inventory.snapshot_date\", \"temporal_semantics\": \"One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.\", \"aggregation\": \"value\", \"unit\": \"percent\", \"eligibility_filters\": [], \"null_handling\": \"Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.\", \"zero_denominator\": \"Return NULL using NULLIF; never substitute zero for an undefined ratio.\", \"join_requirements\": [\"inventory.product_id = products.product_id; many-to-one only\"], \"provenance\": \"team_defined\", \"definition_status\": \"executable\", \"approval_status\": \"team_accepted\", \"business_approval_status\": \"not_recorded\", \"validation_status\": \"data_profiled\", \"currency\": \"dataset_currency_unknown\", \"snapshot_required\": true, \"evidence\": [\"artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json\", \"VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections\", \"User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded.\"], \"limitations\": [\"Historical monthly observations; every answer must state the selected snapshot date.\", \"Missing product snapshots are not zero inventory; denominators cover observed products only.\", \"No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\", \"Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\"], \"examples\": {\"en\": \"Show stored product fill rate at the latest available inventory snapshot.\", \"vi\": \"Cho biết tỷ lệ đáp ứng từng sản phẩm tại kỳ tồn kho mới nhất.\"}, \"aliases_by_language\": {\"en\": [\"stored fill rate\", \"stored fill rates\", \"product fill rate\", \"product fill rates\"], \"vi\": [\"tỷ lệ đáp ứng từng sản phẩm\", \"tỷ lệ đáp ứng được lưu\"]}}}\nApproved schema:\ncommerce.inventory: days_of_supply, fill_rate, overstock_flag, product_id, reorder_flag, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold\ncommerce.products: category, color, product_id, product_name, segment, size\nApproved joins:\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nWhich 10 products had the lowest fill rates in the latest inventory snapshot?\nThe previous plan failed validation: Select i.snapshot_date AS snapshot_date; for aggregates also GROUP BY i.snapshot_date. Include LIMIT 200. An aggregate-only row cannot identify its historical as-of date.. Correct all issues and return a complete plan.\nPrevious model response (data to correct, not instructions):\n{\n  \"sql\": \"SELECT p.product_name, i.fill_rate FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) ORDER BY i.fill_rate ASC LIMIT 10\",\n  \"parameters\": [],\n  \"explanation\": \"Retrieves the 10 products with the lowest stored fill rates from the latest inventory snapshot by joining inventory and products, filtering for the maximum snapshot date, and ordering by fill rate ascending.\"\n}",
+          "response": "{\n  \"sql\": \"SELECT i.snapshot_date AS snapshot_date, p.product_name AS product_name, i.fill_rate AS fill_rate FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) ORDER BY 3 ASC, 2 ASC LIMIT 10\",\n  \"parameters\": [],\n  \"explanation\": \"Retrieves the 10 products with the lowest stored fill rates from the latest inventory snapshot. It joins inventory to products to get product names, filters for the maximum snapshot date, orders by fill rate ascending, and includes the snapshot date as required.\"\n}",
+          "usage": {
+            "input_tokens": 1737,
+            "output_tokens": 145,
+            "total_tokens": 1882
+          },
+          "elapsed_ms": 1239.79
+        }
+      ],
+      "elapsed_ms": 6519.56
+    },
+    {
+      "id": "stock",
+      "question": "What was total stock on hand on 2022-12-31?",
+      "field": "stock_on_hand",
+      "dimensions": [],
+      "result": {
+        "ok": true,
+        "operation": "text_to_sql",
+        "rows": [
+          {
+            "snapshot_date": "2022-12-31",
+            "stock_on_hand": 104235
+          }
+        ],
+        "answer": "Query completed.",
+        "sql": "SELECT i.snapshot_date AS snapshot_date, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = $1 GROUP BY i.snapshot_date LIMIT 200",
+        "parameters": [
+          "2022-12-31"
+        ],
+        "query_status": "executed",
+        "evidence": [
+          {
+            "source": "commerce.inventory",
+            "metadata": {
+              "metrics": {
+                "stock_on_hand": {
+                  "name": "Stock on hand",
+                  "description": "Closing stock across observed products within one snapshot.",
+                  "version": "1.0.0",
+                  "domain": "inventory_management",
+                  "aliases": [
+                    "stock on hand",
+                    "inventory level",
+                    "inventory levels",
+                    "inventory stock",
+                    "historical inventory",
+                    "inventory history",
+                    "product inventory history",
+                    "tồn kho",
+                    "lượng tồn kho",
+                    "số lượng tồn"
+                  ],
+                  "source": "commerce.inventory + commerce.products",
+                  "source_columns": {
+                    "commerce.inventory": [
+                      "snapshot_date",
+                      "product_id",
+                      "year",
+                      "month",
+                      "stock_on_hand"
+                    ],
+                    "commerce.products": [
+                      "product_id",
+                      "product_name",
+                      "category",
+                      "segment",
+                      "size",
+                      "color"
+                    ]
+                  },
+                  "formula": "SUM(stock_on_hand) within one snapshot",
+                  "scalar_formula": "stock_on_hand",
+                  "grain": "product_snapshot",
+                  "dimensions": [
+                    "snapshot_date",
+                    "product_id",
+                    "product_name",
+                    "category",
+                    "segment",
+                    "size",
+                    "color",
+                    "year",
+                    "month"
+                  ],
+                  "date_field": "commerce.inventory.snapshot_date",
+                  "temporal_semantics": "One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.",
+                  "aggregation": "sum",
+                  "unit": "units",
+                  "eligibility_filters": [],
+                  "null_handling": "Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.",
+                  "zero_denominator": "Return NULL using NULLIF; never substitute zero for an undefined ratio.",
+                  "join_requirements": [
+                    "inventory.product_id = products.product_id; many-to-one only"
+                  ],
+                  "provenance": "team_defined",
+                  "definition_status": "executable",
+                  "approval_status": "team_accepted",
+                  "business_approval_status": "not_recorded",
+                  "validation_status": "data_profiled",
+                  "currency": "dataset_currency_unknown",
+                  "snapshot_required": true,
+                  "evidence": [
+                    "artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json",
+                    "VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections",
+                    "User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded."
+                  ],
+                  "limitations": [
+                    "Historical monthly observations; every answer must state the selected snapshot date.",
+                    "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+                    "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+                    "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula."
+                  ],
+                  "examples": {
+                    "en": "Show stock on hand at the latest available inventory snapshot.",
+                    "vi": "Cho biết tồn kho tại kỳ tồn kho mới nhất."
+                  },
+                  "aliases_by_language": {
+                    "en": [
+                      "stock on hand",
+                      "inventory level",
+                      "inventory levels",
+                      "inventory stock",
+                      "historical inventory",
+                      "inventory history",
+                      "product inventory history"
+                    ],
+                    "vi": [
+                      "tồn kho",
+                      "lượng tồn kho",
+                      "số lượng tồn"
+                    ]
+                  },
+                  "representation": "aggregate"
+                }
+              }
+            }
+          }
+        ],
+        "limitations": [
+          "Historical monthly observations; every answer must state the selected snapshot date.",
+          "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+          "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+          "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.",
+          "Inventory observations are historical; selected snapshot dates: 2022-12-31"
+        ],
+        "metadata": {
+          "source": [
+            "commerce.inventory"
+          ],
+          "explanation": "Calculates the total stock on hand for the specific snapshot date 2022-12-31 by summing the stock_on_hand column from the inventory table, grouped by the snapshot date.",
+          "metrics": {
+            "stock_on_hand": {
+              "name": "Stock on hand",
+              "description": "Closing stock across observed products within one snapshot.",
+              "version": "1.0.0",
+              "domain": "inventory_management",
+              "aliases": [
+                "stock on hand",
+                "inventory level",
+                "inventory levels",
+                "inventory stock",
+                "historical inventory",
+                "inventory history",
+                "product inventory history",
+                "tồn kho",
+                "lượng tồn kho",
+                "số lượng tồn"
+              ],
+              "source": "commerce.inventory + commerce.products",
+              "source_columns": {
+                "commerce.inventory": [
+                  "snapshot_date",
+                  "product_id",
+                  "year",
+                  "month",
+                  "stock_on_hand"
+                ],
+                "commerce.products": [
+                  "product_id",
+                  "product_name",
+                  "category",
+                  "segment",
+                  "size",
+                  "color"
+                ]
+              },
+              "formula": "SUM(stock_on_hand) within one snapshot",
+              "scalar_formula": "stock_on_hand",
+              "grain": "product_snapshot",
+              "dimensions": [
+                "snapshot_date",
+                "product_id",
+                "product_name",
+                "category",
+                "segment",
+                "size",
+                "color",
+                "year",
+                "month"
+              ],
+              "date_field": "commerce.inventory.snapshot_date",
+              "temporal_semantics": "One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.",
+              "aggregation": "sum",
+              "unit": "units",
+              "eligibility_filters": [],
+              "null_handling": "Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.",
+              "zero_denominator": "Return NULL using NULLIF; never substitute zero for an undefined ratio.",
+              "join_requirements": [
+                "inventory.product_id = products.product_id; many-to-one only"
+              ],
+              "provenance": "team_defined",
+              "definition_status": "executable",
+              "approval_status": "team_accepted",
+              "business_approval_status": "not_recorded",
+              "validation_status": "data_profiled",
+              "currency": "dataset_currency_unknown",
+              "snapshot_required": true,
+              "evidence": [
+                "artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json",
+                "VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections",
+                "User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded."
+              ],
+              "limitations": [
+                "Historical monthly observations; every answer must state the selected snapshot date.",
+                "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+                "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+                "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula."
+              ],
+              "examples": {
+                "en": "Show stock on hand at the latest available inventory snapshot.",
+                "vi": "Cho biết tồn kho tại kỳ tồn kho mới nhất."
+              },
+              "aliases_by_language": {
+                "en": [
+                  "stock on hand",
+                  "inventory level",
+                  "inventory levels",
+                  "inventory stock",
+                  "historical inventory",
+                  "inventory history",
+                  "product inventory history"
+                ],
+                "vi": [
+                  "tồn kho",
+                  "lượng tồn kho",
+                  "số lượng tồn"
+                ]
+              },
+              "representation": "aggregate"
+            }
+          },
+          "metric_catalog_version": "1.0.0",
+          "historical_inventory": true,
+          "snapshot_dates": [
+            "2022-12-31"
+          ]
+        }
+      },
+      "generation_calls": [
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nInventory Management requirements:\nEvery result MUST include i.snapshot_date AS snapshot_date. For aggregates, GROUP BY i.snapshot_date and every other dimension. The final SELECT MUST have LIMIT 200, including repairs.\nExample for latest total stock: SELECT i.snapshot_date AS snapshot_date, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date LIMIT 200\nFor category results JOIN commerce.products AS p ON i.product_id = p.product_id and select/group p.category. Never use i.category, i.year or i.month; use the approved product attributes and snapshot_date. For a requested year use i.snapshot_date >= $1 AND i.snapshot_date < $2, binding January 1 of that year and January 1 of the next year.\nproducts.product_id is a primary key; the inventory-to-products join is many-to-one. Flag ratios count i.product_id in both numerator and denominator so their source grain remains explicit. Never replace these counts with COUNT(*).\naggregation=value selects the stored product field without AVG or SUM; scalar_formula is only for ungrouped product rows. Means are explicitly unweighted. Do not invent source formulas or demand weights. Keep exact snapshot_date groups for trends; never sum balances across dates or invent zero for an absent product.\nLatest means the unfiltered MAX(snapshot_date) from commerce.inventory, never a guessed date. Historical flags do not authorize reorders. Team acceptance and validation do not imply official business approval. Unresolved/unreviewed metrics cannot execute.\nRequested metrics: {\"metrics\": [\"stock_on_hand\"]}\nCanonical metric definitions: {\"stock_on_hand\": {\"name\": \"Stock on hand\", \"description\": \"Closing stock across observed products within one snapshot.\", \"version\": \"1.0.0\", \"domain\": \"inventory_management\", \"aliases\": [\"stock on hand\", \"inventory level\", \"inventory levels\", \"inventory stock\", \"historical inventory\", \"inventory history\", \"product inventory history\", \"tồn kho\", \"lượng tồn kho\", \"số lượng tồn\"], \"source\": \"commerce.inventory + commerce.products\", \"source_columns\": {\"commerce.inventory\": [\"snapshot_date\", \"product_id\", \"year\", \"month\", \"stock_on_hand\"], \"commerce.products\": [\"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\"]}, \"formula\": \"SUM(stock_on_hand) within one snapshot\", \"scalar_formula\": \"stock_on_hand\", \"grain\": \"product_snapshot\", \"dimensions\": [\"snapshot_date\", \"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\", \"year\", \"month\"], \"date_field\": \"commerce.inventory.snapshot_date\", \"temporal_semantics\": \"One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.\", \"aggregation\": \"sum\", \"unit\": \"units\", \"eligibility_filters\": [], \"null_handling\": \"Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.\", \"zero_denominator\": \"Return NULL using NULLIF; never substitute zero for an undefined ratio.\", \"join_requirements\": [\"inventory.product_id = products.product_id; many-to-one only\"], \"provenance\": \"team_defined\", \"definition_status\": \"executable\", \"approval_status\": \"team_accepted\", \"business_approval_status\": \"not_recorded\", \"validation_status\": \"data_profiled\", \"currency\": \"dataset_currency_unknown\", \"snapshot_required\": true, \"evidence\": [\"artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json\", \"VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections\", \"User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded.\"], \"limitations\": [\"Historical monthly observations; every answer must state the selected snapshot date.\", \"Missing product snapshots are not zero inventory; denominators cover observed products only.\", \"No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\", \"Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\"], \"examples\": {\"en\": \"Show stock on hand at the latest available inventory snapshot.\", \"vi\": \"Cho biết tồn kho tại kỳ tồn kho mới nhất.\"}, \"aliases_by_language\": {\"en\": [\"stock on hand\", \"inventory level\", \"inventory levels\", \"inventory stock\", \"historical inventory\", \"inventory history\", \"product inventory history\"], \"vi\": [\"tồn kho\", \"lượng tồn kho\", \"số lượng tồn\"]}}}\nApproved schema:\ncommerce.inventory: days_of_supply, fill_rate, overstock_flag, product_id, reorder_flag, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold\ncommerce.products: category, color, product_id, product_name, segment, size\nApproved joins:\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nWhat was total stock on hand on 2022-12-31?",
+          "response": "{\n  \"sql\": \"SELECT i.snapshot_date AS snapshot_date, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = $1 GROUP BY i.snapshot_date LIMIT 200\",\n  \"parameters\": [\n    \"2022-12-31\"\n  ],\n  \"explanation\": \"Calculates the total stock on hand for the specific snapshot date 2022-12-31 by summing the stock_on_hand column from the inventory table, grouped by the snapshot date.\"\n}",
+          "usage": {
+            "input_tokens": 1569,
+            "output_tokens": 123,
+            "total_tokens": 1692
+          },
+          "elapsed_ms": 1234.68
+        }
+      ],
+      "elapsed_ms": 2962.13
+    },
+    {
+      "id": "mean_fill",
+      "question": "Show average stored fill rate by category at the latest available inventory snapshot.",
+      "field": "fill_rate",
+      "dimensions": [
+        "category"
+      ],
+      "result": {
+        "ok": true,
+        "operation": "text_to_sql",
+        "rows": [
+          {
+            "snapshot_date": "2022-12-31",
+            "category": "Casual",
+            "fill_rate": "0.96083250000000000000"
+          },
+          {
+            "snapshot_date": "2022-12-31",
+            "category": "GenZ",
+            "fill_rate": "0.97197045454545454545"
+          },
+          {
+            "snapshot_date": "2022-12-31",
+            "category": "Outdoor",
+            "fill_rate": "0.95671527777777777778"
+          },
+          {
+            "snapshot_date": "2022-12-31",
+            "category": "Streetwear",
+            "fill_rate": "0.96224744897959183673"
+          }
+        ],
+        "answer": "Query completed.",
+        "sql": "SELECT i.snapshot_date AS snapshot_date, p.category AS category, AVG(i.fill_rate) AS fill_rate FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date, p.category ORDER BY 2 LIMIT 200",
+        "parameters": [],
+        "query_status": "executed",
+        "evidence": [
+          {
+            "source": "commerce.inventory",
+            "metadata": {
+              "metrics": {
+                "fill_rate": {
+                  "name": "Mean stored fill rate",
+                  "description": "Team-defined unweighted mean of non-null stored product fill-rate values within one snapshot; original fulfillment formula and weights are unknown.",
+                  "version": "1.0.0",
+                  "domain": "inventory_management",
+                  "aliases": [
+                    "fill rate",
+                    "fill rates",
+                    "average fill rate",
+                    "average fill rates",
+                    "mean fill rate",
+                    "average stored fill rate",
+                    "average stored fill rates",
+                    "mean stored fill rate",
+                    "tỷ lệ đáp ứng",
+                    "tỷ lệ đáp ứng trung bình"
+                  ],
+                  "source": "commerce.inventory + commerce.products",
+                  "source_columns": {
+                    "commerce.inventory": [
+                      "snapshot_date",
+                      "product_id",
+                      "year",
+                      "month",
+                      "fill_rate"
+                    ],
+                    "commerce.products": [
+                      "product_id",
+                      "product_name",
+                      "category",
+                      "segment",
+                      "size",
+                      "color"
+                    ]
+                  },
+                  "formula": "AVG(fill_rate) within one snapshot",
+                  "grain": "product_snapshot",
+                  "dimensions": [
+                    "snapshot_date",
+                    "product_id",
+                    "product_name",
+                    "category",
+                    "segment",
+                    "size",
+                    "color",
+                    "year",
+                    "month"
+                  ],
+                  "date_field": "commerce.inventory.snapshot_date",
+                  "temporal_semantics": "One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.",
+                  "aggregation": "mean",
+                  "unit": "percent",
+                  "eligibility_filters": [],
+                  "null_handling": "Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.",
+                  "zero_denominator": "Return NULL using NULLIF; never substitute zero for an undefined ratio.",
+                  "join_requirements": [
+                    "inventory.product_id = products.product_id; many-to-one only"
+                  ],
+                  "provenance": "team_defined",
+                  "definition_status": "executable",
+                  "approval_status": "team_accepted",
+                  "business_approval_status": "not_recorded",
+                  "validation_status": "data_profiled",
+                  "currency": "dataset_currency_unknown",
+                  "snapshot_required": true,
+                  "evidence": [
+                    "artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json",
+                    "VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections",
+                    "User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded."
+                  ],
+                  "limitations": [
+                    "Historical monthly observations; every answer must state the selected snapshot date.",
+                    "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+                    "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+                    "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula."
+                  ],
+                  "examples": {
+                    "en": "Show mean stored fill rate at the latest available inventory snapshot.",
+                    "vi": "Cho biết tỷ lệ đáp ứng tại kỳ tồn kho mới nhất."
+                  },
+                  "aliases_by_language": {
+                    "en": [
+                      "fill rate",
+                      "fill rates",
+                      "average fill rate",
+                      "average fill rates",
+                      "mean fill rate",
+                      "average stored fill rate",
+                      "average stored fill rates",
+                      "mean stored fill rate"
+                    ],
+                    "vi": [
+                      "tỷ lệ đáp ứng",
+                      "tỷ lệ đáp ứng trung bình"
+                    ]
+                  },
+                  "representation": "aggregate"
+                }
+              }
+            }
+          },
+          {
+            "source": "commerce.products",
+            "metadata": {
+              "metrics": {
+                "fill_rate": {
+                  "name": "Mean stored fill rate",
+                  "description": "Team-defined unweighted mean of non-null stored product fill-rate values within one snapshot; original fulfillment formula and weights are unknown.",
+                  "version": "1.0.0",
+                  "domain": "inventory_management",
+                  "aliases": [
+                    "fill rate",
+                    "fill rates",
+                    "average fill rate",
+                    "average fill rates",
+                    "mean fill rate",
+                    "average stored fill rate",
+                    "average stored fill rates",
+                    "mean stored fill rate",
+                    "tỷ lệ đáp ứng",
+                    "tỷ lệ đáp ứng trung bình"
+                  ],
+                  "source": "commerce.inventory + commerce.products",
+                  "source_columns": {
+                    "commerce.inventory": [
+                      "snapshot_date",
+                      "product_id",
+                      "year",
+                      "month",
+                      "fill_rate"
+                    ],
+                    "commerce.products": [
+                      "product_id",
+                      "product_name",
+                      "category",
+                      "segment",
+                      "size",
+                      "color"
+                    ]
+                  },
+                  "formula": "AVG(fill_rate) within one snapshot",
+                  "grain": "product_snapshot",
+                  "dimensions": [
+                    "snapshot_date",
+                    "product_id",
+                    "product_name",
+                    "category",
+                    "segment",
+                    "size",
+                    "color",
+                    "year",
+                    "month"
+                  ],
+                  "date_field": "commerce.inventory.snapshot_date",
+                  "temporal_semantics": "One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.",
+                  "aggregation": "mean",
+                  "unit": "percent",
+                  "eligibility_filters": [],
+                  "null_handling": "Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.",
+                  "zero_denominator": "Return NULL using NULLIF; never substitute zero for an undefined ratio.",
+                  "join_requirements": [
+                    "inventory.product_id = products.product_id; many-to-one only"
+                  ],
+                  "provenance": "team_defined",
+                  "definition_status": "executable",
+                  "approval_status": "team_accepted",
+                  "business_approval_status": "not_recorded",
+                  "validation_status": "data_profiled",
+                  "currency": "dataset_currency_unknown",
+                  "snapshot_required": true,
+                  "evidence": [
+                    "artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json",
+                    "VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections",
+                    "User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded."
+                  ],
+                  "limitations": [
+                    "Historical monthly observations; every answer must state the selected snapshot date.",
+                    "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+                    "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+                    "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula."
+                  ],
+                  "examples": {
+                    "en": "Show mean stored fill rate at the latest available inventory snapshot.",
+                    "vi": "Cho biết tỷ lệ đáp ứng tại kỳ tồn kho mới nhất."
+                  },
+                  "aliases_by_language": {
+                    "en": [
+                      "fill rate",
+                      "fill rates",
+                      "average fill rate",
+                      "average fill rates",
+                      "mean fill rate",
+                      "average stored fill rate",
+                      "average stored fill rates",
+                      "mean stored fill rate"
+                    ],
+                    "vi": [
+                      "tỷ lệ đáp ứng",
+                      "tỷ lệ đáp ứng trung bình"
+                    ]
+                  },
+                  "representation": "aggregate"
+                }
+              }
+            }
+          }
+        ],
+        "limitations": [
+          "Historical monthly observations; every answer must state the selected snapshot date.",
+          "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+          "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+          "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.",
+          "Inventory observations are historical; selected snapshot dates: 2022-12-31"
+        ],
+        "metadata": {
+          "source": [
+            "commerce.inventory",
+            "commerce.products"
+          ],
+          "explanation": "Computes the unweighted mean of non-null stored fill_rate values per product category at the latest inventory snapshot. Joins inventory to products on product_id (many-to-one) to obtain category. Filters to the maximum snapshot_date and groups by snapshot_date and category. Returns the fraction as stored (e.g., 0.25 for 25%).",
+          "metrics": {
+            "fill_rate": {
+              "name": "Mean stored fill rate",
+              "description": "Team-defined unweighted mean of non-null stored product fill-rate values within one snapshot; original fulfillment formula and weights are unknown.",
+              "version": "1.0.0",
+              "domain": "inventory_management",
+              "aliases": [
+                "fill rate",
+                "fill rates",
+                "average fill rate",
+                "average fill rates",
+                "mean fill rate",
+                "average stored fill rate",
+                "average stored fill rates",
+                "mean stored fill rate",
+                "tỷ lệ đáp ứng",
+                "tỷ lệ đáp ứng trung bình"
+              ],
+              "source": "commerce.inventory + commerce.products",
+              "source_columns": {
+                "commerce.inventory": [
+                  "snapshot_date",
+                  "product_id",
+                  "year",
+                  "month",
+                  "fill_rate"
+                ],
+                "commerce.products": [
+                  "product_id",
+                  "product_name",
+                  "category",
+                  "segment",
+                  "size",
+                  "color"
+                ]
+              },
+              "formula": "AVG(fill_rate) within one snapshot",
+              "grain": "product_snapshot",
+              "dimensions": [
+                "snapshot_date",
+                "product_id",
+                "product_name",
+                "category",
+                "segment",
+                "size",
+                "color",
+                "year",
+                "month"
+              ],
+              "date_field": "commerce.inventory.snapshot_date",
+              "temporal_semantics": "One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.",
+              "aggregation": "mean",
+              "unit": "percent",
+              "eligibility_filters": [],
+              "null_handling": "Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.",
+              "zero_denominator": "Return NULL using NULLIF; never substitute zero for an undefined ratio.",
+              "join_requirements": [
+                "inventory.product_id = products.product_id; many-to-one only"
+              ],
+              "provenance": "team_defined",
+              "definition_status": "executable",
+              "approval_status": "team_accepted",
+              "business_approval_status": "not_recorded",
+              "validation_status": "data_profiled",
+              "currency": "dataset_currency_unknown",
+              "snapshot_required": true,
+              "evidence": [
+                "artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json",
+                "VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections",
+                "User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded."
+              ],
+              "limitations": [
+                "Historical monthly observations; every answer must state the selected snapshot date.",
+                "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+                "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+                "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula."
+              ],
+              "examples": {
+                "en": "Show mean stored fill rate at the latest available inventory snapshot.",
+                "vi": "Cho biết tỷ lệ đáp ứng tại kỳ tồn kho mới nhất."
+              },
+              "aliases_by_language": {
+                "en": [
+                  "fill rate",
+                  "fill rates",
+                  "average fill rate",
+                  "average fill rates",
+                  "mean fill rate",
+                  "average stored fill rate",
+                  "average stored fill rates",
+                  "mean stored fill rate"
+                ],
+                "vi": [
+                  "tỷ lệ đáp ứng",
+                  "tỷ lệ đáp ứng trung bình"
+                ]
+              },
+              "representation": "aggregate"
+            }
+          },
+          "metric_catalog_version": "1.0.0",
+          "historical_inventory": true,
+          "snapshot_dates": [
+            "2022-12-31"
+          ]
+        }
+      },
+      "generation_calls": [
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nInventory Management requirements:\nEvery result MUST include i.snapshot_date AS snapshot_date. For aggregates, GROUP BY i.snapshot_date and every other dimension. The final SELECT MUST have LIMIT 200, including repairs.\nExample for latest total stock: SELECT i.snapshot_date AS snapshot_date, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date LIMIT 200\nFor category results JOIN commerce.products AS p ON i.product_id = p.product_id and select/group p.category. Never use i.category, i.year or i.month; use the approved product attributes and snapshot_date. For a requested year use i.snapshot_date >= $1 AND i.snapshot_date < $2, binding January 1 of that year and January 1 of the next year.\nproducts.product_id is a primary key; the inventory-to-products join is many-to-one. Flag ratios count i.product_id in both numerator and denominator so their source grain remains explicit. Never replace these counts with COUNT(*).\naggregation=value selects the stored product field without AVG or SUM; scalar_formula is only for ungrouped product rows. Means are explicitly unweighted. Do not invent source formulas or demand weights. Keep exact snapshot_date groups for trends; never sum balances across dates or invent zero for an absent product.\nLatest means the unfiltered MAX(snapshot_date) from commerce.inventory, never a guessed date. Historical flags do not authorize reorders. Team acceptance and validation do not imply official business approval. Unresolved/unreviewed metrics cannot execute.\nRequested metrics: {\"metrics\": [\"fill_rate\"]}\nCanonical metric definitions: {\"fill_rate\": {\"name\": \"Mean stored fill rate\", \"description\": \"Team-defined unweighted mean of non-null stored product fill-rate values within one snapshot; original fulfillment formula and weights are unknown.\", \"version\": \"1.0.0\", \"domain\": \"inventory_management\", \"aliases\": [\"fill rate\", \"fill rates\", \"average fill rate\", \"average fill rates\", \"mean fill rate\", \"average stored fill rate\", \"average stored fill rates\", \"mean stored fill rate\", \"tỷ lệ đáp ứng\", \"tỷ lệ đáp ứng trung bình\"], \"source\": \"commerce.inventory + commerce.products\", \"source_columns\": {\"commerce.inventory\": [\"snapshot_date\", \"product_id\", \"year\", \"month\", \"fill_rate\"], \"commerce.products\": [\"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\"]}, \"formula\": \"AVG(fill_rate) within one snapshot\", \"grain\": \"product_snapshot\", \"dimensions\": [\"snapshot_date\", \"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\", \"year\", \"month\"], \"date_field\": \"commerce.inventory.snapshot_date\", \"temporal_semantics\": \"One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.\", \"aggregation\": \"mean\", \"unit\": \"percent\", \"eligibility_filters\": [], \"null_handling\": \"Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.\", \"zero_denominator\": \"Return NULL using NULLIF; never substitute zero for an undefined ratio.\", \"join_requirements\": [\"inventory.product_id = products.product_id; many-to-one only\"], \"provenance\": \"team_defined\", \"definition_status\": \"executable\", \"approval_status\": \"team_accepted\", \"business_approval_status\": \"not_recorded\", \"validation_status\": \"data_profiled\", \"currency\": \"dataset_currency_unknown\", \"snapshot_required\": true, \"evidence\": [\"artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json\", \"VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections\", \"User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded.\"], \"limitations\": [\"Historical monthly observations; every answer must state the selected snapshot date.\", \"Missing product snapshots are not zero inventory; denominators cover observed products only.\", \"No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\", \"Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\"], \"examples\": {\"en\": \"Show mean stored fill rate at the latest available inventory snapshot.\", \"vi\": \"Cho biết tỷ lệ đáp ứng tại kỳ tồn kho mới nhất.\"}, \"aliases_by_language\": {\"en\": [\"fill rate\", \"fill rates\", \"average fill rate\", \"average fill rates\", \"mean fill rate\", \"average stored fill rate\", \"average stored fill rates\", \"mean stored fill rate\"], \"vi\": [\"tỷ lệ đáp ứng\", \"tỷ lệ đáp ứng trung bình\"]}}}\nApproved schema:\ncommerce.inventory: days_of_supply, fill_rate, overstock_flag, product_id, reorder_flag, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold\ncommerce.products: category, color, product_id, product_name, segment, size\nApproved joins:\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nShow average stored fill rate by category at the latest available inventory snapshot.",
+          "response": "```json\n{\n  \"sql\": \"SELECT i.snapshot_date AS snapshot_date, p.category AS category, AVG(i.fill_rate) AS fill_rate FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date, p.category ORDER BY 2 LIMIT 200\",\n  \"parameters\": [],\n  \"explanation\": \"Computes the unweighted mean of non-null stored fill_rate values per product category at the latest inventory snapshot. Joins inventory to products on product_id (many-to-one) to obtain category. Filters to the maximum snapshot_date and groups by snapshot_date and category. Returns the fraction as stored (e.g., 0.25 for 25%).\"\n}\n```",
+          "usage": {
+            "input_tokens": 1592,
+            "output_tokens": 176,
+            "total_tokens": 1768
+          },
+          "elapsed_ms": 915.78
+        },
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nInventory Management requirements:\nEvery result MUST include i.snapshot_date AS snapshot_date. For aggregates, GROUP BY i.snapshot_date and every other dimension. The final SELECT MUST have LIMIT 200, including repairs.\nExample for latest total stock: SELECT i.snapshot_date AS snapshot_date, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date LIMIT 200\nFor category results JOIN commerce.products AS p ON i.product_id = p.product_id and select/group p.category. Never use i.category, i.year or i.month; use the approved product attributes and snapshot_date. For a requested year use i.snapshot_date >= $1 AND i.snapshot_date < $2, binding January 1 of that year and January 1 of the next year.\nproducts.product_id is a primary key; the inventory-to-products join is many-to-one. Flag ratios count i.product_id in both numerator and denominator so their source grain remains explicit. Never replace these counts with COUNT(*).\naggregation=value selects the stored product field without AVG or SUM; scalar_formula is only for ungrouped product rows. Means are explicitly unweighted. Do not invent source formulas or demand weights. Keep exact snapshot_date groups for trends; never sum balances across dates or invent zero for an absent product.\nLatest means the unfiltered MAX(snapshot_date) from commerce.inventory, never a guessed date. Historical flags do not authorize reorders. Team acceptance and validation do not imply official business approval. Unresolved/unreviewed metrics cannot execute.\nRequested metrics: {\"metrics\": [\"fill_rate\"]}\nCanonical metric definitions: {\"fill_rate\": {\"name\": \"Mean stored fill rate\", \"description\": \"Team-defined unweighted mean of non-null stored product fill-rate values within one snapshot; original fulfillment formula and weights are unknown.\", \"version\": \"1.0.0\", \"domain\": \"inventory_management\", \"aliases\": [\"fill rate\", \"fill rates\", \"average fill rate\", \"average fill rates\", \"mean fill rate\", \"average stored fill rate\", \"average stored fill rates\", \"mean stored fill rate\", \"tỷ lệ đáp ứng\", \"tỷ lệ đáp ứng trung bình\"], \"source\": \"commerce.inventory + commerce.products\", \"source_columns\": {\"commerce.inventory\": [\"snapshot_date\", \"product_id\", \"year\", \"month\", \"fill_rate\"], \"commerce.products\": [\"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\"]}, \"formula\": \"AVG(fill_rate) within one snapshot\", \"grain\": \"product_snapshot\", \"dimensions\": [\"snapshot_date\", \"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\", \"year\", \"month\"], \"date_field\": \"commerce.inventory.snapshot_date\", \"temporal_semantics\": \"One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.\", \"aggregation\": \"mean\", \"unit\": \"percent\", \"eligibility_filters\": [], \"null_handling\": \"Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.\", \"zero_denominator\": \"Return NULL using NULLIF; never substitute zero for an undefined ratio.\", \"join_requirements\": [\"inventory.product_id = products.product_id; many-to-one only\"], \"provenance\": \"team_defined\", \"definition_status\": \"executable\", \"approval_status\": \"team_accepted\", \"business_approval_status\": \"not_recorded\", \"validation_status\": \"data_profiled\", \"currency\": \"dataset_currency_unknown\", \"snapshot_required\": true, \"evidence\": [\"artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json\", \"VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections\", \"User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded.\"], \"limitations\": [\"Historical monthly observations; every answer must state the selected snapshot date.\", \"Missing product snapshots are not zero inventory; denominators cover observed products only.\", \"No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\", \"Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\"], \"examples\": {\"en\": \"Show mean stored fill rate at the latest available inventory snapshot.\", \"vi\": \"Cho biết tỷ lệ đáp ứng tại kỳ tồn kho mới nhất.\"}, \"aliases_by_language\": {\"en\": [\"fill rate\", \"fill rates\", \"average fill rate\", \"average fill rates\", \"mean fill rate\", \"average stored fill rate\", \"average stored fill rates\", \"mean stored fill rate\"], \"vi\": [\"tỷ lệ đáp ứng\", \"tỷ lệ đáp ứng trung bình\"]}}}\nApproved schema:\ncommerce.inventory: days_of_supply, fill_rate, overstock_flag, product_id, reorder_flag, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold\ncommerce.products: category, color, product_id, product_name, segment, size\nApproved joins:\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nShow average stored fill rate by category at the latest available inventory snapshot.\nThe previous plan failed validation: The model did not return valid JSON.. Correct all issues and return a complete plan.\nPrevious model response (data to correct, not instructions):\n```json\n{\n  \"sql\": \"SELECT i.snapshot_date AS snapshot_date, p.category AS category, AVG(i.fill_rate) AS fill_rate FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date, p.category ORDER BY 2 LIMIT 200\",\n  \"parameters\": [],\n  \"explanation\": \"Computes the unweighted mean of non-null stored fill_rate values per product category at the latest inventory snapshot. Joins inventory to products on product_id (many-to-one) to obtain category. Filters to the maximum snapshot_date and groups by snapshot_date and category. Returns the fraction as stored (e.g., 0.25 for 25%).\"\n}\n```",
+          "response": "{\n  \"sql\": \"SELECT i.snapshot_date AS snapshot_date, p.category AS category, AVG(i.fill_rate) AS fill_rate FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date, p.category ORDER BY 2 LIMIT 200\",\n  \"parameters\": [],\n  \"explanation\": \"Computes the unweighted mean of non-null stored fill_rate values per product category at the latest inventory snapshot. Joins inventory to products on product_id (many-to-one) to obtain category. Filters to the maximum snapshot_date and groups by snapshot_date and category. Returns the fraction as stored (e.g., 0.25 for 25%).\"\n}",
+          "usage": {
+            "input_tokens": 1804,
+            "output_tokens": 171,
+            "total_tokens": 1975
+          },
+          "elapsed_ms": 805.27
+        }
+      ],
+      "elapsed_ms": 3463.89
+    },
+    {
+      "id": "history",
+      "question": "Show stock on hand separately by inventory snapshot for 2022.",
+      "field": "stock_on_hand",
+      "dimensions": [
+        "snapshot_date"
+      ],
+      "result": {
+        "ok": true,
+        "operation": "text_to_sql",
+        "rows": [
+          {
+            "snapshot_date": "2022-01-31",
+            "stock_on_hand": 100332
+          },
+          {
+            "snapshot_date": "2022-02-28",
+            "stock_on_hand": 106405
+          },
+          {
+            "snapshot_date": "2022-03-31",
+            "stock_on_hand": 111674
+          },
+          {
+            "snapshot_date": "2022-04-30",
+            "stock_on_hand": 116977
+          },
+          {
+            "snapshot_date": "2022-05-31",
+            "stock_on_hand": 116939
+          },
+          {
+            "snapshot_date": "2022-06-30",
+            "stock_on_hand": 109700
+          },
+          {
+            "snapshot_date": "2022-07-31",
+            "stock_on_hand": 102083
+          },
+          {
+            "snapshot_date": "2022-08-31",
+            "stock_on_hand": 104884
+          },
+          {
+            "snapshot_date": "2022-09-30",
+            "stock_on_hand": 107309
+          },
+          {
+            "snapshot_date": "2022-10-31",
+            "stock_on_hand": 104255
+          },
+          {
+            "snapshot_date": "2022-11-30",
+            "stock_on_hand": 95003
+          },
+          {
+            "snapshot_date": "2022-12-31",
+            "stock_on_hand": 104235
+          }
+        ],
+        "answer": "Query completed.",
+        "sql": "SELECT i.snapshot_date AS snapshot_date, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date >= $1 AND i.snapshot_date < $2 GROUP BY i.snapshot_date ORDER BY 1 LIMIT 200",
+        "parameters": [
+          "2022-01-01",
+          "2023-01-01"
+        ],
+        "query_status": "executed",
+        "evidence": [
+          {
+            "source": "commerce.inventory",
+            "metadata": {
+              "metrics": {
+                "stock_on_hand": {
+                  "name": "Stock on hand",
+                  "description": "Closing stock across observed products within one snapshot.",
+                  "version": "1.0.0",
+                  "domain": "inventory_management",
+                  "aliases": [
+                    "stock on hand",
+                    "inventory level",
+                    "inventory levels",
+                    "inventory stock",
+                    "historical inventory",
+                    "inventory history",
+                    "product inventory history",
+                    "tồn kho",
+                    "lượng tồn kho",
+                    "số lượng tồn"
+                  ],
+                  "source": "commerce.inventory + commerce.products",
+                  "source_columns": {
+                    "commerce.inventory": [
+                      "snapshot_date",
+                      "product_id",
+                      "year",
+                      "month",
+                      "stock_on_hand"
+                    ],
+                    "commerce.products": [
+                      "product_id",
+                      "product_name",
+                      "category",
+                      "segment",
+                      "size",
+                      "color"
+                    ]
+                  },
+                  "formula": "SUM(stock_on_hand) within one snapshot",
+                  "scalar_formula": "stock_on_hand",
+                  "grain": "product_snapshot",
+                  "dimensions": [
+                    "snapshot_date",
+                    "product_id",
+                    "product_name",
+                    "category",
+                    "segment",
+                    "size",
+                    "color",
+                    "year",
+                    "month"
+                  ],
+                  "date_field": "commerce.inventory.snapshot_date",
+                  "temporal_semantics": "One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.",
+                  "aggregation": "sum",
+                  "unit": "units",
+                  "eligibility_filters": [],
+                  "null_handling": "Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.",
+                  "zero_denominator": "Return NULL using NULLIF; never substitute zero for an undefined ratio.",
+                  "join_requirements": [
+                    "inventory.product_id = products.product_id; many-to-one only"
+                  ],
+                  "provenance": "team_defined",
+                  "definition_status": "executable",
+                  "approval_status": "team_accepted",
+                  "business_approval_status": "not_recorded",
+                  "validation_status": "data_profiled",
+                  "currency": "dataset_currency_unknown",
+                  "snapshot_required": true,
+                  "evidence": [
+                    "artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json",
+                    "VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections",
+                    "User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded."
+                  ],
+                  "limitations": [
+                    "Historical monthly observations; every answer must state the selected snapshot date.",
+                    "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+                    "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+                    "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula."
+                  ],
+                  "examples": {
+                    "en": "Show stock on hand at the latest available inventory snapshot.",
+                    "vi": "Cho biết tồn kho tại kỳ tồn kho mới nhất."
+                  },
+                  "aliases_by_language": {
+                    "en": [
+                      "stock on hand",
+                      "inventory level",
+                      "inventory levels",
+                      "inventory stock",
+                      "historical inventory",
+                      "inventory history",
+                      "product inventory history"
+                    ],
+                    "vi": [
+                      "tồn kho",
+                      "lượng tồn kho",
+                      "số lượng tồn"
+                    ]
+                  },
+                  "representation": "aggregate"
+                }
+              }
+            }
+          }
+        ],
+        "limitations": [
+          "Historical monthly observations; every answer must state the selected snapshot date.",
+          "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+          "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+          "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.",
+          "Inventory observations are historical; selected snapshot dates: 2022-01-31, 2022-02-28, 2022-03-31, 2022-04-30, 2022-05-31, 2022-06-30, 2022-07-31, 2022-08-31, 2022-09-30, 2022-10-31, 2022-11-30, 2022-12-31"
+        ],
+        "metadata": {
+          "source": [
+            "commerce.inventory"
+          ],
+          "explanation": "Sum stock_on_hand per snapshot_date for all snapshots in 2022, ordered by snapshot_date.",
+          "metrics": {
+            "stock_on_hand": {
+              "name": "Stock on hand",
+              "description": "Closing stock across observed products within one snapshot.",
+              "version": "1.0.0",
+              "domain": "inventory_management",
+              "aliases": [
+                "stock on hand",
+                "inventory level",
+                "inventory levels",
+                "inventory stock",
+                "historical inventory",
+                "inventory history",
+                "product inventory history",
+                "tồn kho",
+                "lượng tồn kho",
+                "số lượng tồn"
+              ],
+              "source": "commerce.inventory + commerce.products",
+              "source_columns": {
+                "commerce.inventory": [
+                  "snapshot_date",
+                  "product_id",
+                  "year",
+                  "month",
+                  "stock_on_hand"
+                ],
+                "commerce.products": [
+                  "product_id",
+                  "product_name",
+                  "category",
+                  "segment",
+                  "size",
+                  "color"
+                ]
+              },
+              "formula": "SUM(stock_on_hand) within one snapshot",
+              "scalar_formula": "stock_on_hand",
+              "grain": "product_snapshot",
+              "dimensions": [
+                "snapshot_date",
+                "product_id",
+                "product_name",
+                "category",
+                "segment",
+                "size",
+                "color",
+                "year",
+                "month"
+              ],
+              "date_field": "commerce.inventory.snapshot_date",
+              "temporal_semantics": "One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.",
+              "aggregation": "sum",
+              "unit": "units",
+              "eligibility_filters": [],
+              "null_handling": "Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.",
+              "zero_denominator": "Return NULL using NULLIF; never substitute zero for an undefined ratio.",
+              "join_requirements": [
+                "inventory.product_id = products.product_id; many-to-one only"
+              ],
+              "provenance": "team_defined",
+              "definition_status": "executable",
+              "approval_status": "team_accepted",
+              "business_approval_status": "not_recorded",
+              "validation_status": "data_profiled",
+              "currency": "dataset_currency_unknown",
+              "snapshot_required": true,
+              "evidence": [
+                "artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json",
+                "VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections",
+                "User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded."
+              ],
+              "limitations": [
+                "Historical monthly observations; every answer must state the selected snapshot date.",
+                "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+                "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+                "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula."
+              ],
+              "examples": {
+                "en": "Show stock on hand at the latest available inventory snapshot.",
+                "vi": "Cho biết tồn kho tại kỳ tồn kho mới nhất."
+              },
+              "aliases_by_language": {
+                "en": [
+                  "stock on hand",
+                  "inventory level",
+                  "inventory levels",
+                  "inventory stock",
+                  "historical inventory",
+                  "inventory history",
+                  "product inventory history"
+                ],
+                "vi": [
+                  "tồn kho",
+                  "lượng tồn kho",
+                  "số lượng tồn"
+                ]
+              },
+              "representation": "aggregate"
+            }
+          },
+          "metric_catalog_version": "1.0.0",
+          "historical_inventory": true,
+          "snapshot_dates": [
+            "2022-01-31",
+            "2022-02-28",
+            "2022-03-31",
+            "2022-04-30",
+            "2022-05-31",
+            "2022-06-30",
+            "2022-07-31",
+            "2022-08-31",
+            "2022-09-30",
+            "2022-10-31",
+            "2022-11-30",
+            "2022-12-31"
+          ]
+        }
+      },
+      "generation_calls": [
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nInventory Management requirements:\nEvery result MUST include i.snapshot_date AS snapshot_date. For aggregates, GROUP BY i.snapshot_date and every other dimension. The final SELECT MUST have LIMIT 200, including repairs.\nExample for latest total stock: SELECT i.snapshot_date AS snapshot_date, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date LIMIT 200\nFor category results JOIN commerce.products AS p ON i.product_id = p.product_id and select/group p.category. Never use i.category, i.year or i.month; use the approved product attributes and snapshot_date. For a requested year use i.snapshot_date >= $1 AND i.snapshot_date < $2, binding January 1 of that year and January 1 of the next year.\nproducts.product_id is a primary key; the inventory-to-products join is many-to-one. Flag ratios count i.product_id in both numerator and denominator so their source grain remains explicit. Never replace these counts with COUNT(*).\naggregation=value selects the stored product field without AVG or SUM; scalar_formula is only for ungrouped product rows. Means are explicitly unweighted. Do not invent source formulas or demand weights. Keep exact snapshot_date groups for trends; never sum balances across dates or invent zero for an absent product.\nLatest means the unfiltered MAX(snapshot_date) from commerce.inventory, never a guessed date. Historical flags do not authorize reorders. Team acceptance and validation do not imply official business approval. Unresolved/unreviewed metrics cannot execute.\nRequested metrics: {\"metrics\": [\"stock_on_hand\"]}\nCanonical metric definitions: {\"stock_on_hand\": {\"name\": \"Stock on hand\", \"description\": \"Closing stock across observed products within one snapshot.\", \"version\": \"1.0.0\", \"domain\": \"inventory_management\", \"aliases\": [\"stock on hand\", \"inventory level\", \"inventory levels\", \"inventory stock\", \"historical inventory\", \"inventory history\", \"product inventory history\", \"tồn kho\", \"lượng tồn kho\", \"số lượng tồn\"], \"source\": \"commerce.inventory + commerce.products\", \"source_columns\": {\"commerce.inventory\": [\"snapshot_date\", \"product_id\", \"year\", \"month\", \"stock_on_hand\"], \"commerce.products\": [\"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\"]}, \"formula\": \"SUM(stock_on_hand) within one snapshot\", \"scalar_formula\": \"stock_on_hand\", \"grain\": \"product_snapshot\", \"dimensions\": [\"snapshot_date\", \"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\", \"year\", \"month\"], \"date_field\": \"commerce.inventory.snapshot_date\", \"temporal_semantics\": \"One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.\", \"aggregation\": \"sum\", \"unit\": \"units\", \"eligibility_filters\": [], \"null_handling\": \"Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.\", \"zero_denominator\": \"Return NULL using NULLIF; never substitute zero for an undefined ratio.\", \"join_requirements\": [\"inventory.product_id = products.product_id; many-to-one only\"], \"provenance\": \"team_defined\", \"definition_status\": \"executable\", \"approval_status\": \"team_accepted\", \"business_approval_status\": \"not_recorded\", \"validation_status\": \"data_profiled\", \"currency\": \"dataset_currency_unknown\", \"snapshot_required\": true, \"evidence\": [\"artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json\", \"VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections\", \"User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded.\"], \"limitations\": [\"Historical monthly observations; every answer must state the selected snapshot date.\", \"Missing product snapshots are not zero inventory; denominators cover observed products only.\", \"No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\", \"Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\"], \"examples\": {\"en\": \"Show stock on hand at the latest available inventory snapshot.\", \"vi\": \"Cho biết tồn kho tại kỳ tồn kho mới nhất.\"}, \"aliases_by_language\": {\"en\": [\"stock on hand\", \"inventory level\", \"inventory levels\", \"inventory stock\", \"historical inventory\", \"inventory history\", \"product inventory history\"], \"vi\": [\"tồn kho\", \"lượng tồn kho\", \"số lượng tồn\"]}}}\nApproved schema:\ncommerce.inventory: days_of_supply, fill_rate, overstock_flag, product_id, reorder_flag, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold\ncommerce.products: category, color, product_id, product_name, segment, size\nApproved joins:\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nShow stock on hand separately by inventory snapshot for 2022.",
+          "response": "```json\n{\n  \"sql\": \"SELECT i.snapshot_date AS snapshot_date, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date >= $1 AND i.snapshot_date < $2 GROUP BY i.snapshot_date ORDER BY 1 LIMIT 200\",\n  \"parameters\": [\"2022-01-01\", \"2023-01-01\"],\n  \"explanation\": \"Sum stock_on_hand per snapshot_date for all snapshots in 2022, ordered by snapshot_date.\"\n}\n```",
+          "usage": {
+            "input_tokens": 1565,
+            "output_tokens": 125,
+            "total_tokens": 1690
+          },
+          "elapsed_ms": 776.87
+        },
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nInventory Management requirements:\nEvery result MUST include i.snapshot_date AS snapshot_date. For aggregates, GROUP BY i.snapshot_date and every other dimension. The final SELECT MUST have LIMIT 200, including repairs.\nExample for latest total stock: SELECT i.snapshot_date AS snapshot_date, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date LIMIT 200\nFor category results JOIN commerce.products AS p ON i.product_id = p.product_id and select/group p.category. Never use i.category, i.year or i.month; use the approved product attributes and snapshot_date. For a requested year use i.snapshot_date >= $1 AND i.snapshot_date < $2, binding January 1 of that year and January 1 of the next year.\nproducts.product_id is a primary key; the inventory-to-products join is many-to-one. Flag ratios count i.product_id in both numerator and denominator so their source grain remains explicit. Never replace these counts with COUNT(*).\naggregation=value selects the stored product field without AVG or SUM; scalar_formula is only for ungrouped product rows. Means are explicitly unweighted. Do not invent source formulas or demand weights. Keep exact snapshot_date groups for trends; never sum balances across dates or invent zero for an absent product.\nLatest means the unfiltered MAX(snapshot_date) from commerce.inventory, never a guessed date. Historical flags do not authorize reorders. Team acceptance and validation do not imply official business approval. Unresolved/unreviewed metrics cannot execute.\nRequested metrics: {\"metrics\": [\"stock_on_hand\"]}\nCanonical metric definitions: {\"stock_on_hand\": {\"name\": \"Stock on hand\", \"description\": \"Closing stock across observed products within one snapshot.\", \"version\": \"1.0.0\", \"domain\": \"inventory_management\", \"aliases\": [\"stock on hand\", \"inventory level\", \"inventory levels\", \"inventory stock\", \"historical inventory\", \"inventory history\", \"product inventory history\", \"tồn kho\", \"lượng tồn kho\", \"số lượng tồn\"], \"source\": \"commerce.inventory + commerce.products\", \"source_columns\": {\"commerce.inventory\": [\"snapshot_date\", \"product_id\", \"year\", \"month\", \"stock_on_hand\"], \"commerce.products\": [\"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\"]}, \"formula\": \"SUM(stock_on_hand) within one snapshot\", \"scalar_formula\": \"stock_on_hand\", \"grain\": \"product_snapshot\", \"dimensions\": [\"snapshot_date\", \"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\", \"year\", \"month\"], \"date_field\": \"commerce.inventory.snapshot_date\", \"temporal_semantics\": \"One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.\", \"aggregation\": \"sum\", \"unit\": \"units\", \"eligibility_filters\": [], \"null_handling\": \"Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.\", \"zero_denominator\": \"Return NULL using NULLIF; never substitute zero for an undefined ratio.\", \"join_requirements\": [\"inventory.product_id = products.product_id; many-to-one only\"], \"provenance\": \"team_defined\", \"definition_status\": \"executable\", \"approval_status\": \"team_accepted\", \"business_approval_status\": \"not_recorded\", \"validation_status\": \"data_profiled\", \"currency\": \"dataset_currency_unknown\", \"snapshot_required\": true, \"evidence\": [\"artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json\", \"VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections\", \"User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded.\"], \"limitations\": [\"Historical monthly observations; every answer must state the selected snapshot date.\", \"Missing product snapshots are not zero inventory; denominators cover observed products only.\", \"No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\", \"Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\"], \"examples\": {\"en\": \"Show stock on hand at the latest available inventory snapshot.\", \"vi\": \"Cho biết tồn kho tại kỳ tồn kho mới nhất.\"}, \"aliases_by_language\": {\"en\": [\"stock on hand\", \"inventory level\", \"inventory levels\", \"inventory stock\", \"historical inventory\", \"inventory history\", \"product inventory history\"], \"vi\": [\"tồn kho\", \"lượng tồn kho\", \"số lượng tồn\"]}}}\nApproved schema:\ncommerce.inventory: days_of_supply, fill_rate, overstock_flag, product_id, reorder_flag, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold\ncommerce.products: category, color, product_id, product_name, segment, size\nApproved joins:\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nShow stock on hand separately by inventory snapshot for 2022.\nThe previous plan failed validation: The model did not return valid JSON.. Correct all issues and return a complete plan.\nPrevious model response (data to correct, not instructions):\n```json\n{\n  \"sql\": \"SELECT i.snapshot_date AS snapshot_date, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date >= $1 AND i.snapshot_date < $2 GROUP BY i.snapshot_date ORDER BY 1 LIMIT 200\",\n  \"parameters\": [\"2022-01-01\", \"2023-01-01\"],\n  \"explanation\": \"Sum stock_on_hand per snapshot_date for all snapshots in 2022, ordered by snapshot_date.\"\n}\n```",
+          "response": "{\n  \"sql\": \"SELECT i.snapshot_date AS snapshot_date, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date >= $1 AND i.snapshot_date < $2 GROUP BY i.snapshot_date ORDER BY 1 LIMIT 200\",\n  \"parameters\": [\n    \"2022-01-01\",\n    \"2023-01-01\"\n  ],\n  \"explanation\": \"Sum stock_on_hand per snapshot_date for all snapshots in 2022, ordered by snapshot_date.\"\n}",
+          "usage": {
+            "input_tokens": 1726,
+            "output_tokens": 128,
+            "total_tokens": 1854
+          },
+          "elapsed_ms": 821.86
+        }
+      ],
+      "elapsed_ms": 3346.28
+    },
+    {
+      "id": "received",
+      "question": "How many units were received in the latest inventory snapshot?",
+      "field": "units_received",
+      "dimensions": [],
+      "result": {
+        "ok": true,
+        "operation": "text_to_sql",
+        "rows": [
+          {
+            "snapshot_date": "2022-12-31",
+            "units_received": 4081
+          }
+        ],
+        "answer": "Query completed.",
+        "sql": "SELECT i.snapshot_date AS snapshot_date, SUM(i.units_received) AS units_received FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date LIMIT 200",
+        "parameters": [],
+        "query_status": "executed",
+        "evidence": [
+          {
+            "source": "commerce.inventory",
+            "metadata": {
+              "metrics": {
+                "units_received": {
+                  "name": "Inventory receipt movement units",
+                  "description": "Recorded receipt movement across observed products for the selected monthly snapshot; not PO or receiving-event counts.",
+                  "version": "1.0.0",
+                  "domain": "inventory_management",
+                  "aliases": [
+                    "units received",
+                    "units were received",
+                    "inventory receipts",
+                    "received units",
+                    "số lượng hàng nhập kho",
+                    "lượng hàng nhận",
+                    "số lượng nhập kho"
+                  ],
+                  "source": "commerce.inventory + commerce.products",
+                  "source_columns": {
+                    "commerce.inventory": [
+                      "snapshot_date",
+                      "product_id",
+                      "year",
+                      "month",
+                      "units_received"
+                    ],
+                    "commerce.products": [
+                      "product_id",
+                      "product_name",
+                      "category",
+                      "segment",
+                      "size",
+                      "color"
+                    ]
+                  },
+                  "formula": "SUM(units_received) within one snapshot",
+                  "scalar_formula": "units_received",
+                  "grain": "product_snapshot",
+                  "dimensions": [
+                    "snapshot_date",
+                    "product_id",
+                    "product_name",
+                    "category",
+                    "segment",
+                    "size",
+                    "color",
+                    "year",
+                    "month"
+                  ],
+                  "date_field": "commerce.inventory.snapshot_date",
+                  "temporal_semantics": "One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.",
+                  "aggregation": "sum",
+                  "unit": "units",
+                  "eligibility_filters": [],
+                  "null_handling": "Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.",
+                  "zero_denominator": "Return NULL using NULLIF; never substitute zero for an undefined ratio.",
+                  "join_requirements": [
+                    "inventory.product_id = products.product_id; many-to-one only"
+                  ],
+                  "provenance": "team_defined",
+                  "definition_status": "executable",
+                  "approval_status": "team_accepted",
+                  "business_approval_status": "not_recorded",
+                  "validation_status": "data_profiled",
+                  "currency": "dataset_currency_unknown",
+                  "snapshot_required": true,
+                  "evidence": [
+                    "artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json",
+                    "VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections",
+                    "User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded."
+                  ],
+                  "limitations": [
+                    "Historical monthly observations; every answer must state the selected snapshot date.",
+                    "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+                    "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+                    "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula."
+                  ],
+                  "examples": {
+                    "en": "Show inventory receipt movement units at the latest available inventory snapshot.",
+                    "vi": "Cho biết số lượng hàng nhập kho tại kỳ tồn kho mới nhất."
+                  },
+                  "aliases_by_language": {
+                    "en": [
+                      "units received",
+                      "units were received",
+                      "inventory receipts",
+                      "received units"
+                    ],
+                    "vi": [
+                      "số lượng hàng nhập kho",
+                      "lượng hàng nhận",
+                      "số lượng nhập kho"
+                    ]
+                  },
+                  "representation": "aggregate"
+                }
+              }
+            }
+          }
+        ],
+        "limitations": [
+          "Historical monthly observations; every answer must state the selected snapshot date.",
+          "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+          "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+          "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.",
+          "Inventory observations are historical; selected snapshot dates: 2022-12-31"
+        ],
+        "metadata": {
+          "source": [
+            "commerce.inventory"
+          ],
+          "explanation": "Calculates the total units received in the latest inventory snapshot by filtering for the maximum snapshot_date and summing the units_received column.",
+          "metrics": {
+            "units_received": {
+              "name": "Inventory receipt movement units",
+              "description": "Recorded receipt movement across observed products for the selected monthly snapshot; not PO or receiving-event counts.",
+              "version": "1.0.0",
+              "domain": "inventory_management",
+              "aliases": [
+                "units received",
+                "units were received",
+                "inventory receipts",
+                "received units",
+                "số lượng hàng nhập kho",
+                "lượng hàng nhận",
+                "số lượng nhập kho"
+              ],
+              "source": "commerce.inventory + commerce.products",
+              "source_columns": {
+                "commerce.inventory": [
+                  "snapshot_date",
+                  "product_id",
+                  "year",
+                  "month",
+                  "units_received"
+                ],
+                "commerce.products": [
+                  "product_id",
+                  "product_name",
+                  "category",
+                  "segment",
+                  "size",
+                  "color"
+                ]
+              },
+              "formula": "SUM(units_received) within one snapshot",
+              "scalar_formula": "units_received",
+              "grain": "product_snapshot",
+              "dimensions": [
+                "snapshot_date",
+                "product_id",
+                "product_name",
+                "category",
+                "segment",
+                "size",
+                "color",
+                "year",
+                "month"
+              ],
+              "date_field": "commerce.inventory.snapshot_date",
+              "temporal_semantics": "One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.",
+              "aggregation": "sum",
+              "unit": "units",
+              "eligibility_filters": [],
+              "null_handling": "Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.",
+              "zero_denominator": "Return NULL using NULLIF; never substitute zero for an undefined ratio.",
+              "join_requirements": [
+                "inventory.product_id = products.product_id; many-to-one only"
+              ],
+              "provenance": "team_defined",
+              "definition_status": "executable",
+              "approval_status": "team_accepted",
+              "business_approval_status": "not_recorded",
+              "validation_status": "data_profiled",
+              "currency": "dataset_currency_unknown",
+              "snapshot_required": true,
+              "evidence": [
+                "artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json",
+                "VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections",
+                "User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded."
+              ],
+              "limitations": [
+                "Historical monthly observations; every answer must state the selected snapshot date.",
+                "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+                "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+                "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula."
+              ],
+              "examples": {
+                "en": "Show inventory receipt movement units at the latest available inventory snapshot.",
+                "vi": "Cho biết số lượng hàng nhập kho tại kỳ tồn kho mới nhất."
+              },
+              "aliases_by_language": {
+                "en": [
+                  "units received",
+                  "units were received",
+                  "inventory receipts",
+                  "received units"
+                ],
+                "vi": [
+                  "số lượng hàng nhập kho",
+                  "lượng hàng nhận",
+                  "số lượng nhập kho"
+                ]
+              },
+              "representation": "aggregate"
+            }
+          },
+          "metric_catalog_version": "1.0.0",
+          "historical_inventory": true,
+          "snapshot_dates": [
+            "2022-12-31"
+          ]
+        }
+      },
+      "generation_calls": [
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nInventory Management requirements:\nEvery result MUST include i.snapshot_date AS snapshot_date. For aggregates, GROUP BY i.snapshot_date and every other dimension. The final SELECT MUST have LIMIT 200, including repairs.\nExample for latest total stock: SELECT i.snapshot_date AS snapshot_date, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date LIMIT 200\nFor category results JOIN commerce.products AS p ON i.product_id = p.product_id and select/group p.category. Never use i.category, i.year or i.month; use the approved product attributes and snapshot_date. For a requested year use i.snapshot_date >= $1 AND i.snapshot_date < $2, binding January 1 of that year and January 1 of the next year.\nproducts.product_id is a primary key; the inventory-to-products join is many-to-one. Flag ratios count i.product_id in both numerator and denominator so their source grain remains explicit. Never replace these counts with COUNT(*).\naggregation=value selects the stored product field without AVG or SUM; scalar_formula is only for ungrouped product rows. Means are explicitly unweighted. Do not invent source formulas or demand weights. Keep exact snapshot_date groups for trends; never sum balances across dates or invent zero for an absent product.\nLatest means the unfiltered MAX(snapshot_date) from commerce.inventory, never a guessed date. Historical flags do not authorize reorders. Team acceptance and validation do not imply official business approval. Unresolved/unreviewed metrics cannot execute.\nRequested metrics: {\"metrics\": [\"units_received\"]}\nCanonical metric definitions: {\"units_received\": {\"name\": \"Inventory receipt movement units\", \"description\": \"Recorded receipt movement across observed products for the selected monthly snapshot; not PO or receiving-event counts.\", \"version\": \"1.0.0\", \"domain\": \"inventory_management\", \"aliases\": [\"units received\", \"units were received\", \"inventory receipts\", \"received units\", \"số lượng hàng nhập kho\", \"lượng hàng nhận\", \"số lượng nhập kho\"], \"source\": \"commerce.inventory + commerce.products\", \"source_columns\": {\"commerce.inventory\": [\"snapshot_date\", \"product_id\", \"year\", \"month\", \"units_received\"], \"commerce.products\": [\"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\"]}, \"formula\": \"SUM(units_received) within one snapshot\", \"scalar_formula\": \"units_received\", \"grain\": \"product_snapshot\", \"dimensions\": [\"snapshot_date\", \"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\", \"year\", \"month\"], \"date_field\": \"commerce.inventory.snapshot_date\", \"temporal_semantics\": \"One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.\", \"aggregation\": \"sum\", \"unit\": \"units\", \"eligibility_filters\": [], \"null_handling\": \"Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.\", \"zero_denominator\": \"Return NULL using NULLIF; never substitute zero for an undefined ratio.\", \"join_requirements\": [\"inventory.product_id = products.product_id; many-to-one only\"], \"provenance\": \"team_defined\", \"definition_status\": \"executable\", \"approval_status\": \"team_accepted\", \"business_approval_status\": \"not_recorded\", \"validation_status\": \"data_profiled\", \"currency\": \"dataset_currency_unknown\", \"snapshot_required\": true, \"evidence\": [\"artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json\", \"VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections\", \"User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded.\"], \"limitations\": [\"Historical monthly observations; every answer must state the selected snapshot date.\", \"Missing product snapshots are not zero inventory; denominators cover observed products only.\", \"No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\", \"Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\"], \"examples\": {\"en\": \"Show inventory receipt movement units at the latest available inventory snapshot.\", \"vi\": \"Cho biết số lượng hàng nhập kho tại kỳ tồn kho mới nhất.\"}, \"aliases_by_language\": {\"en\": [\"units received\", \"units were received\", \"inventory receipts\", \"received units\"], \"vi\": [\"số lượng hàng nhập kho\", \"lượng hàng nhận\", \"số lượng nhập kho\"]}}}\nApproved schema:\ncommerce.inventory: days_of_supply, fill_rate, overstock_flag, product_id, reorder_flag, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold\ncommerce.products: category, color, product_id, product_name, segment, size\nApproved joins:\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nHow many units were received in the latest inventory snapshot?",
+          "response": "{\n  \"sql\": \"SELECT i.snapshot_date AS snapshot_date, SUM(i.units_received) AS units_received FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date LIMIT 200\",\n  \"parameters\": [],\n  \"explanation\": \"Calculates the total units received in the latest inventory snapshot by filtering for the maximum snapshot_date and summing the units_received column.\"\n}",
+          "usage": {
+            "input_tokens": 1552,
+            "output_tokens": 99,
+            "total_tokens": 1651
+          },
+          "elapsed_ms": 1176.99
+        }
+      ],
+      "elapsed_ms": 2918.79
+    },
+    {
+      "id": "stockout",
+      "question": "Show stockout rate by category at the latest inventory snapshot.",
+      "field": "stockout_flag",
+      "dimensions": [
+        "category"
+      ],
+      "result": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "I couldn't safely run the generated query: The model did not return valid JSON.",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "SQLValidationError"
+        }
+      },
+      "generation_calls": [
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nInventory Management requirements:\nEvery result MUST include i.snapshot_date AS snapshot_date. For aggregates, GROUP BY i.snapshot_date and every other dimension. The final SELECT MUST have LIMIT 200, including repairs.\nExample for latest total stock: SELECT i.snapshot_date AS snapshot_date, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date LIMIT 200\nFor category results JOIN commerce.products AS p ON i.product_id = p.product_id and select/group p.category. Never use i.category, i.year or i.month; use the approved product attributes and snapshot_date. For a requested year use i.snapshot_date >= $1 AND i.snapshot_date < $2, binding January 1 of that year and January 1 of the next year.\nproducts.product_id is a primary key; the inventory-to-products join is many-to-one. Flag ratios count i.product_id in both numerator and denominator so their source grain remains explicit. Never replace these counts with COUNT(*).\naggregation=value selects the stored product field without AVG or SUM; scalar_formula is only for ungrouped product rows. Means are explicitly unweighted. Do not invent source formulas or demand weights. Keep exact snapshot_date groups for trends; never sum balances across dates or invent zero for an absent product.\nLatest means the unfiltered MAX(snapshot_date) from commerce.inventory, never a guessed date. Historical flags do not authorize reorders. Team acceptance and validation do not imply official business approval. Unresolved/unreviewed metrics cannot execute.\nRequested metrics: {\"metrics\": [\"stockout_rate\"]}\nCanonical metric definitions: {\"stockout_rate\": {\"name\": \"Observed stockout-flag share\", \"description\": \"Flagged observed product rows divided by all observed rows in one snapshot; missing products are excluded.\", \"version\": \"1.0.0\", \"domain\": \"inventory_management\", \"aliases\": [\"stockout rate\", \"stockout rates\", \"stockout share\", \"tỷ lệ hết hàng\", \"tỷ lệ thiếu hàng\"], \"source\": \"commerce.inventory + commerce.products\", \"source_columns\": {\"commerce.inventory\": [\"snapshot_date\", \"product_id\", \"year\", \"month\", \"stockout_flag\"], \"commerce.products\": [\"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\"]}, \"formula\": \"COUNT(product_id) FILTER (WHERE stockout_flag IS TRUE)::numeric / NULLIF(COUNT(product_id), 0) within one snapshot\", \"grain\": \"product_snapshot\", \"dimensions\": [\"snapshot_date\", \"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\", \"year\", \"month\"], \"date_field\": \"commerce.inventory.snapshot_date\", \"temporal_semantics\": \"One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.\", \"aggregation\": \"ratio\", \"unit\": \"percent\", \"eligibility_filters\": [], \"null_handling\": \"Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.\", \"zero_denominator\": \"Return NULL using NULLIF; never substitute zero for an undefined ratio.\", \"join_requirements\": [\"inventory.product_id = products.product_id; many-to-one only\"], \"provenance\": \"team_defined\", \"definition_status\": \"executable\", \"approval_status\": \"team_accepted\", \"business_approval_status\": \"not_recorded\", \"validation_status\": \"data_profiled\", \"currency\": \"dataset_currency_unknown\", \"snapshot_required\": true, \"evidence\": [\"artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json\", \"VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections\", \"User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded.\"], \"limitations\": [\"Historical monthly observations; every answer must state the selected snapshot date.\", \"Missing product snapshots are not zero inventory; denominators cover observed products only.\", \"No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\", \"Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\"], \"examples\": {\"en\": \"Show observed stockout-flag share at the latest available inventory snapshot.\", \"vi\": \"Cho biết tỷ lệ hết hàng tại kỳ tồn kho mới nhất.\"}, \"aliases_by_language\": {\"en\": [\"stockout rate\", \"stockout rates\", \"stockout share\"], \"vi\": [\"tỷ lệ hết hàng\", \"tỷ lệ thiếu hàng\"]}}}\nApproved schema:\ncommerce.inventory: days_of_supply, fill_rate, overstock_flag, product_id, reorder_flag, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold\ncommerce.products: category, color, product_id, product_name, segment, size\nApproved joins:\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nShow stockout rate by category at the latest inventory snapshot.",
+          "response": "```json\n{\n  \"sql\": \"SELECT i.snapshot_date AS snapshot_date, p.category AS category, COUNT(i.product_id) FILTER (WHERE i.stockout_flag IS TRUE)::numeric / NULLIF(COUNT(i.product_id), 0) AS stockout_rate FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date, p.category ORDER BY 2 LIMIT 200\",\n  \"parameters\": [],\n  \"explanation\": \"Calculates the observed stockout-flag share by category at the latest inventory snapshot. The query filters inventory to the maximum snapshot_date, joins with products to get the category, and computes the ratio of flagged products to total observed products per category using the canonical formula.\"\n}\n```",
+          "usage": {
+            "input_tokens": 1554,
+            "output_tokens": 179,
+            "total_tokens": 1733
+          },
+          "elapsed_ms": 848.94
+        },
+        {
+          "prompt": "Generate one read-only PostgreSQL SELECT for the user question. Use only the tables, columns, and join keys below. Write each table as commerce.<table> AS <short_alias> and refer to its columns only as <alias>.<column>; never use commerce.<table>.<column> or unqualified columns. Use PostgreSQL functions only from this validator-approved list: ABS, AVG, CAST, CEIL, COALESCE, COUNT, DATE_PART, DATE_TRUNC, EXTRACT, FLOOR, GREATEST, LEAST, LOWER, MAX, MIN, NULLIF, OR, ROUND, STRING_AGG, SUM, TIMESTAMP_TRUNC, UPPER. Bind each user-provided filter value with $1, $2, ... and include exactly one corresponding value in the JSON parameters array for every placeholder; never emit an unbound placeholder or an unused parameter. Use ORDER BY positions (such as ORDER BY 1) and LIMIT at most 200 in the final SELECT. Return clarification only if the requested data is ambiguous. Return only JSON: {\"sql\": string, \"parameters\": array, \"explanation\": string} or {\"clarification\": string}. Never use writes, comments, or multiple statements.\nUse the canonical formula, sources, grain, dimensions and required filters for each recognized metric. Do not invent a metric definition or substitute a different measure. Ask for clarification if the requested definition or dimension conflicts with the ontology. Preserve unknown currency; do not assume USD or VND. CAST is permitted only to DATE or NUMERIC. Ratio formulas return fractions even when the unit is percent; do not silently multiply them by 100. When no metric is recognized, ordinary read-only queries are still permitted.\nJoins must preserve each aggregate's source grain: many-to-one dimension joins are safe; do not sum or average parent measures after joining multiple detail rows. Remove unnecessary detail joins; use COUNT(DISTINCT entity_key) for entity counts. SUM(DISTINCT value) is not a fix.\nInventory Management requirements:\nEvery result MUST include i.snapshot_date AS snapshot_date. For aggregates, GROUP BY i.snapshot_date and every other dimension. The final SELECT MUST have LIMIT 200, including repairs.\nExample for latest total stock: SELECT i.snapshot_date AS snapshot_date, SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date LIMIT 200\nFor category results JOIN commerce.products AS p ON i.product_id = p.product_id and select/group p.category. Never use i.category, i.year or i.month; use the approved product attributes and snapshot_date. For a requested year use i.snapshot_date >= $1 AND i.snapshot_date < $2, binding January 1 of that year and January 1 of the next year.\nproducts.product_id is a primary key; the inventory-to-products join is many-to-one. Flag ratios count i.product_id in both numerator and denominator so their source grain remains explicit. Never replace these counts with COUNT(*).\naggregation=value selects the stored product field without AVG or SUM; scalar_formula is only for ungrouped product rows. Means are explicitly unweighted. Do not invent source formulas or demand weights. Keep exact snapshot_date groups for trends; never sum balances across dates or invent zero for an absent product.\nLatest means the unfiltered MAX(snapshot_date) from commerce.inventory, never a guessed date. Historical flags do not authorize reorders. Team acceptance and validation do not imply official business approval. Unresolved/unreviewed metrics cannot execute.\nRequested metrics: {\"metrics\": [\"stockout_rate\"]}\nCanonical metric definitions: {\"stockout_rate\": {\"name\": \"Observed stockout-flag share\", \"description\": \"Flagged observed product rows divided by all observed rows in one snapshot; missing products are excluded.\", \"version\": \"1.0.0\", \"domain\": \"inventory_management\", \"aliases\": [\"stockout rate\", \"stockout rates\", \"stockout share\", \"tỷ lệ hết hàng\", \"tỷ lệ thiếu hàng\"], \"source\": \"commerce.inventory + commerce.products\", \"source_columns\": {\"commerce.inventory\": [\"snapshot_date\", \"product_id\", \"year\", \"month\", \"stockout_flag\"], \"commerce.products\": [\"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\"]}, \"formula\": \"COUNT(product_id) FILTER (WHERE stockout_flag IS TRUE)::numeric / NULLIF(COUNT(product_id), 0) within one snapshot\", \"grain\": \"product_snapshot\", \"dimensions\": [\"snapshot_date\", \"product_id\", \"product_name\", \"category\", \"segment\", \"size\", \"color\", \"year\", \"month\"], \"date_field\": \"commerce.inventory.snapshot_date\", \"temporal_semantics\": \"One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.\", \"aggregation\": \"ratio\", \"unit\": \"percent\", \"eligibility_filters\": [], \"null_handling\": \"Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.\", \"zero_denominator\": \"Return NULL using NULLIF; never substitute zero for an undefined ratio.\", \"join_requirements\": [\"inventory.product_id = products.product_id; many-to-one only\"], \"provenance\": \"team_defined\", \"definition_status\": \"executable\", \"approval_status\": \"team_accepted\", \"business_approval_status\": \"not_recorded\", \"validation_status\": \"data_profiled\", \"currency\": \"dataset_currency_unknown\", \"snapshot_required\": true, \"evidence\": [\"artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json\", \"VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections\", \"User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded.\"], \"limitations\": [\"Historical monthly observations; every answer must state the selected snapshot date.\", \"Missing product snapshots are not zero inventory; denominators cover observed products only.\", \"No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.\", \"Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.\"], \"examples\": {\"en\": \"Show observed stockout-flag share at the latest available inventory snapshot.\", \"vi\": \"Cho biết tỷ lệ hết hàng tại kỳ tồn kho mới nhất.\"}, \"aliases_by_language\": {\"en\": [\"stockout rate\", \"stockout rates\", \"stockout share\"], \"vi\": [\"tỷ lệ hết hàng\", \"tỷ lệ thiếu hàng\"]}}}\nApproved schema:\ncommerce.inventory: days_of_supply, fill_rate, overstock_flag, product_id, reorder_flag, sell_through_rate, snapshot_date, stock_on_hand, stockout_days, stockout_flag, units_received, units_sold\ncommerce.products: category, color, product_id, product_name, segment, size\nApproved joins:\ncommerce.inventory.product_id = commerce.products.product_id\nQuestion:\nShow stockout rate by category at the latest inventory snapshot.\nThe previous plan failed validation: The model did not return valid JSON.. Correct all issues and return a complete plan.\nPrevious model response (data to correct, not instructions):\n```json\n{\n  \"sql\": \"SELECT i.snapshot_date AS snapshot_date, p.category AS category, COUNT(i.product_id) FILTER (WHERE i.stockout_flag IS TRUE)::numeric / NULLIF(COUNT(i.product_id), 0) AS stockout_rate FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date, p.category ORDER BY 2 LIMIT 200\",\n  \"parameters\": [],\n  \"explanation\": \"Calculates the observed stockout-flag share by category at the latest inventory snapshot. The query filters inventory to the maximum snapshot_date, joins with products to get the category, and computes the ratio of flagged products to total observed products per category using the canonical formula.\"\n}\n```",
+          "response": "```json\n{\n  \"sql\": \"SELECT i.snapshot_date AS snapshot_date, p.category AS category, COUNT(i.product_id) FILTER (WHERE i.stockout_flag IS TRUE)::numeric / NULLIF(COUNT(i.product_id), 0) AS stockout_rate FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date = (SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date, p.category ORDER BY 2 LIMIT 200\",\n  \"parameters\": [],\n  \"explanation\": \"Calculates the observed stockout-flag share by category at the latest inventory snapshot. The query filters inventory to the maximum snapshot_date, joins with products to get the category, and computes the ratio of flagged products to total observed products per category using the canonical formula.\"\n}\n```",
+          "usage": {
+            "input_tokens": 1769,
+            "output_tokens": 179,
+            "total_tokens": 1948
+          },
+          "elapsed_ms": 731.11
+        }
+      ],
+      "elapsed_ms": 1586.21
+    },
+    {
+      "id": "reorder",
+      "question": "What quantity should we reorder for the latest inventory snapshot?",
+      "clarification_code": "metric_unresolved",
+      "result": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "Operational reorder quantities need approved demand, lead time, safety stock, open POs, backorders and ordering constraints. Stored historical flags do not define a safe quantity.",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError",
+          "metric_error_code": "metric_unresolved",
+          "clarification_required": true,
+          "status": "clarification_required"
+        }
+      },
+      "generation_calls": [],
+      "elapsed_ms": 1.37
+    },
+    {
+      "id": "weighted_fill",
+      "question": "What is the demand-weighted fill rate on 2022-12-31?",
+      "clarification_code": "metric_unresolved",
+      "result": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "The dataset does not contain a reviewed demand/fulfilled-units denominator or source weighting rule. Use a stored product fill rate or the team-defined unweighted mean instead.",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError",
+          "metric_error_code": "metric_unresolved",
+          "clarification_required": true,
+          "status": "clarification_required"
+        }
+      },
+      "generation_calls": [],
+      "elapsed_ms": 1.7
+    }
+  ]
+}

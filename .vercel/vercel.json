@@ -1,0 +1,27 @@
+{
+  "framework": null,
+  "buildCommand": null,
+  "installCommand": null,
+  "outputDirectory": "src/app/static",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://repugnant-unwagged-susan.ngrok-free.dev/api/:path*"
+    },
+    {
+      "source": "/static/:path*",
+      "destination": "/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/:path*",
+      "headers": [
+        {
+          "key": "x-vercel-enable-rewrite-caching",
+          "value": "0"
+        }
+      ]
+    }
+  ]
+}

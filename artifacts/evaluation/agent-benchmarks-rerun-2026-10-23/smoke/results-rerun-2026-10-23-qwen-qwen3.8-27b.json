@@ -1,0 +1,431 @@
+{
+  "dataset": "commerce-agent-benchmarks-v1",
+  "model_key": "qwen3",
+  "model": "qwen/qwen3.8-27b",
+  "judge_model": "Luna 5.6 Medium (Codex CLI)",
+  "run_date": "2026-10-23",
+  "evaluation_config": {
+    "cases_per_agent": 25,
+    "agents": [
+      "knowledge",
+      "sql",
+      "report"
+    ],
+    "metrics": [
+      "faithfulness",
+      "answer_relevancy",
+      "context_precision"
+    ],
+    "retry_policy": "one retry for transient failures; two attempts maximum"
+  },
+  "summary": {
+    "case_count": 3,
+    "by_agent": {
+      "knowledge": {
+        "case_count": 1,
+        "answered_cases": 1,
+        "run_errors": 0,
+        "mean_agent_latency_seconds": 51.402,
+        "latency_cases": 1,
+        "ragas": {
+          "faithfulness": {
+            "mean": 1.0,
+            "scored_cases": 1,
+            "eligible_cases": 1,
+            "coverage": 1.0,
+            "score_errors": 0
+          },
+          "answer_relevancy": {
+            "mean": 0.8954,
+            "scored_cases": 1,
+            "eligible_cases": 1,
+            "coverage": 1.0,
+            "score_errors": 0
+          },
+          "context_precision": {
+            "mean": 1.0,
+            "scored_cases": 1,
+            "eligible_cases": 1,
+            "coverage": 1.0,
+            "score_errors": 0
+          }
+        }
+      },
+      "report": {
+        "case_count": 1,
+        "answered_cases": 1,
+        "run_errors": 0,
+        "mean_agent_latency_seconds": 57.579,
+        "latency_cases": 1,
+        "ragas": {
+          "faithfulness": {
+            "mean": null,
+            "scored_cases": 0,
+            "eligible_cases": 0,
+            "coverage": null,
+            "score_errors": 0
+          },
+          "answer_relevancy": {
+            "mean": 0.0,
+            "scored_cases": 1,
+            "eligible_cases": 1,
+            "coverage": 1.0,
+            "score_errors": 0
+          },
+          "context_precision": {
+            "mean": null,
+            "scored_cases": 0,
+            "eligible_cases": 0,
+            "coverage": null,
+            "score_errors": 0
+          }
+        }
+      },
+      "sql": {
+        "case_count": 1,
+        "answered_cases": 1,
+        "run_errors": 0,
+        "mean_agent_latency_seconds": 3.806,
+        "latency_cases": 1,
+        "ragas": {
+          "faithfulness": {
+            "mean": 0.0,
+            "scored_cases": 1,
+            "eligible_cases": 1,
+            "coverage": 1.0,
+            "score_errors": 0
+          },
+          "answer_relevancy": {
+            "mean": 0.7296,
+            "scored_cases": 1,
+            "eligible_cases": 1,
+            "coverage": 1.0,
+            "score_errors": 0
+          },
+          "context_precision": {
+            "mean": 0.0,
+            "scored_cases": 1,
+            "eligible_cases": 1,
+            "coverage": 1.0,
+            "score_errors": 0
+          }
+        }
+      }
+    },
+    "ragas": {
+      "faithfulness": {
+        "mean": 0.5,
+        "scored_cases": 2,
+        "eligible_cases": 2,
+        "coverage": 1.0,
+        "score_errors": 0
+      },
+      "answer_relevancy": {
+        "mean": 0.5417,
+        "scored_cases": 3,
+        "eligible_cases": 3,
+        "coverage": 1.0,
+        "score_errors": 0
+      },
+      "context_precision": {
+        "mean": 0.5,
+        "scored_cases": 2,
+        "eligible_cases": 2,
+        "coverage": 1.0,
+        "score_errors": 0
+      }
+    },
+    "sql": {
+      "safety_pass_rate": 0.0,
+      "safety_cases": 1,
+      "semantic_correctness_rate": 0.0,
+      "semantic_cases": 1,
+      "abstention_accuracy": 0.0,
+      "abstention_cases": 1
+    },
+    "hallucination_rate": null,
+    "hallucination_note": "Requires manual claim-level review; not inferred from faithfulness."
+  },
+  "results": [
+    {
+      "case_id": "K01",
+      "agent": "knowledge",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Mã tài liệu, phiên bản, ngày ban hành và trạng thái phê duyệt của Bộ chính sách quản lý tồn kho là gì?",
+      "answer": "Mã tài liệu của Bộ chính sách quản lý tồn kho là INV-MAN-001, phiên bản là v1.0 và ngày ban hành là 16/10/2026 [S1]. Các nguồn được cung cấp không chứa thông tin về \"trạng thái phê duyệt\" cụ thể cho tài liệu này, do đó không đủ thông tin để trả lời phần này [S1].",
+      "contexts": [
+        "VIETSTYLE COMMERCE\nBỘ CHÍNH SÁCH QUẢN LÝ TỒN KHO\nMã tài liệu: INV-MAN-001Phiên bản: v1.0 | 16/10/2026Phạm vi: SKU thời trang, streetwear và outdoor; bán lẻ / thương mại điện tử"
+      ],
+      "reference": "[\"INV-MAN-001\", \"v1.0\", \"16/10/2026\", \"tài liệu mô phỏng / chưa được phê duyệt chính thức\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 51.402,
+      "total_case_seconds": 181.047,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.8954,
+        "context_precision": 1.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 51.402,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 31.07,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 81.687,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 16.887,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "S01",
+      "agent": "sql",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Tổng doanh thu và giá vốn (COGS) tháng 12/2022 là bao nhiêu?",
+      "answer": "I couldn't safely run the generated query: Function is not approved: CAST",
+      "contexts": [
+        "[]"
+      ],
+      "reference": "[{\"field\": \"revenue\", \"equals\": 52454936.2}, {\"field\": \"cogs\", \"equals\": 53489673.44}]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "error_type": "SQLValidationError",
+        "ok": false,
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ]
+      },
+      "latency_seconds": 3.806,
+      "total_case_seconds": 161.065,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7296,
+        "context_precision": 0.0
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": false,
+      "sql_semantic_correctness": false,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": true,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 3.806,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.faithfulness",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 35.236,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 100.09,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.context_precision",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 21.932,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    },
+    {
+      "case_id": "R01",
+      "agent": "report",
+      "model": "qwen/qwen3.8-27b",
+      "question": "Tạo báo cáo doanh thu và COGS tháng 12/2022 theo template đã tải lên.",
+      "answer": "# Revenue Performance Report\n\nunavailable in source data\n\n\n## Report title\n\nunavailable in source data\n\n\n## Reporting period\n\nunavailable in source data\n\n\n## Executive summary\n\nunavailable in source data\n\n\n## KPI table\n\nunavailable in source data\n\n\n| Metric | Value | Period | Source |\n| --- | --- | --- | --- |\n| Metric | Value | Period | Source |\n| unavailable in source data | unavailable in source data | unavailable in source data | unavailable in source data |\n## Monthly trend\n\nunavailable in source data\n\n\n## Segment/region breakdown\n\nunavailable in source data\n\n\n## Limitations and assumptions\n\nThe question needs clarification before a safe query can be generated.\n\n\n## Sources and evidence\n\nunavailable in source data\n",
+      "contexts": [],
+      "reference": "[\"Doanh thu 52,454,936.20\", \"COGS 53,489,673.44\", \"kỳ báo cáo 2022-12\"]",
+      "evidence_sources": [],
+      "agent_metadata": {
+        "ok": false,
+        "limitations": [
+          "The question needs clarification before a safe query can be generated."
+        ]
+      },
+      "latency_seconds": 57.579,
+      "total_case_seconds": 134.553,
+      "langchain_callback_events": 1,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": 0.0,
+        "context_precision": null
+      },
+      "metric_eligibility": {
+        "faithfulness": false,
+        "answer_relevancy": true,
+        "context_precision": false
+      },
+      "score_errors": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "complete",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 57.579,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        },
+        {
+          "operation": "judge.answer_relevancy",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 76.974,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    }
+  ]
+}

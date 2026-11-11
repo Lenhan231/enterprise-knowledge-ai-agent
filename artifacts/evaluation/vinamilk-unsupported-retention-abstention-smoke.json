@@ -1,0 +1,34 @@
+{
+  "created_at_utc": "2026-09-27T13:29:43.797393+00:00",
+  "route": "POST /api/ask",
+  "dataset": "data/evaluation/vinamilk_unsupported_abstention_case.json",
+  "dataset_sha256": "a138dd17e9d40e5adf76e46c0eed20b72f99bc456083767427d3e12e517ba6c5",
+  "case_count": 1,
+  "passed": 1,
+  "failed": 0,
+  "limitations": "Single live authenticated abstention smoke for one unsupported policy request; not a substitute for the five-case app QA suite or end-to-end evaluation of the other proposal business cases.",
+  "results": [
+    {
+      "id": "unsupported-document-retention-policy",
+      "role": "finance_analyst",
+      "question": "Find the company document retention standard",
+      "passed": true,
+      "checks": {
+        "expected_agent": true,
+        "expected_abstention": true,
+        "expected_facts": true,
+        "expected_source_document": true,
+        "citation_integrity": true,
+        "denial_has_no_sources": true
+      },
+      "missing_facts": [],
+      "failed_fact_groups": [],
+      "cited_document_ids": [],
+      "citation_pages": [],
+      "agent": "knowledge",
+      "insufficient_context": true,
+      "answer": "Insufficient information in the retrieved documents.",
+      "http_status": 200
+    }
+  ]
+}

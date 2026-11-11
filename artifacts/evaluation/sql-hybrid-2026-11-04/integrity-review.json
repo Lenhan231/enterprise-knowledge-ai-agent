@@ -1,0 +1,36 @@
+{
+  "revision": "1c17bd03b8dadccdb1d0705b9ef71c2819a6621a",
+  "unchanged_paths": [
+    "src",
+    "data/semantic",
+    "supabase/migrations",
+    "evaluation/run_inventory_agents_benchmark.py",
+    "evaluation/inventory_benchmark_metrics.py",
+    "evaluation/ragas_judge.py",
+    "pyproject.toml",
+    "uv.lock",
+    "artifacts/evaluation/agent-benchmarks-2026-11-02"
+  ],
+  "production_source_matches_recorded_baseline": true,
+  "field_fixture_hashes_verified": true,
+  "frozen_replay_matches": 30,
+  "latest_field_replay_matches": 6,
+  "fresh_counts": {
+    "production": {
+      "generations": 6,
+      "scores": 18,
+      "score_errors": 0
+    },
+    "hybrid": {
+      "generations": 6,
+      "scores": 18,
+      "score_errors": 0
+    }
+  },
+  "review": {
+    "correctness": "Exact request AST and bounded repair tested; original paths replay identically.",
+    "security": "RBAC before provider/DB; existing SQLGlot, metric, join and read-only boundaries unchanged; negative writes/private sources blocked.",
+    "architecture": "Evaluation-only patch to existing agent; no production import, dependency or agent duplication.",
+    "limitation": "Narrow literal grammar is not general natural-language intent validation; production adoption deferred."
+  }
+}

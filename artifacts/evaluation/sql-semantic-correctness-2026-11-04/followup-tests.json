@@ -1,0 +1,17 @@
+{
+  "revision": "a287d53296fe6588b7ae599022017943828ef9aa",
+  "runs": [
+    {
+      "command": "uv run python -m unittest discover -s tests -p test_sql_semantic_authority.py",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "command": "uv run python -m unittest discover -s tests -p test_sql_semantic_contracts.py",
+      "tests": 30,
+      "failures": 0,
+      "errors": 0
+    }
+  ]
+}

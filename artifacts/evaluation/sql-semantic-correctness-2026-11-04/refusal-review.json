@@ -1,0 +1,19 @@
+{
+  "method": "Manual review; unsupported gold cases only; not Ragas scores",
+  "before": {
+    "valid": 1,
+    "total": 2,
+    "cases": {
+      "S29": "Invalid explanation: vague interpretation-period mismatch; did not explain unavailable current observations.",
+      "S30": "Valid: approved schema lacks supplier attribution and offers historical product/category scope."
+    }
+  },
+  "after": {
+    "valid": 2,
+    "total": 2,
+    "cases": {
+      "S29": "Valid: read-only MAX(snapshot_date) verifies latest available 2022-12-31; explicitly explains current 2026 observations absent.",
+      "S30": "Valid: absent supplier dimensions accurately explained; supported alternative offered."
+    }
+  }
+}

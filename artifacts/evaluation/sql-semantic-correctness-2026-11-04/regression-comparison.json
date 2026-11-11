@@ -1,0 +1,29 @@
+{
+  "current": {
+    "revision": "a287d53296fe6588b7ae599022017943828ef9aa",
+    "tests": 688
+  },
+  "main_revision": "6095d4f819e83745a65e9515d8bccd4e3e20cec8",
+  "previous_quocan_revision": "3b3a9f32073469b976dc45e2de4d14df1eadbc42",
+  "counts": {
+    "current": {
+      "failures": 11,
+      "errors": 51,
+      "skips": 15
+    },
+    "main": {
+      "failures": 17,
+      "errors": 60,
+      "skips": 15
+    },
+    "previous_quocan": {
+      "failures": 11,
+      "errors": 51,
+      "skips": 15
+    }
+  },
+  "new_failures_vs_main": [],
+  "new_errors_vs_main": [],
+  "new_failures_vs_previous_quocan": [],
+  "new_errors_vs_previous_quocan": []
+}

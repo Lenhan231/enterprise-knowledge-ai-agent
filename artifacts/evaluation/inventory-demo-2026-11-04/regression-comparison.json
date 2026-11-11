@@ -1,0 +1,1134 @@
+{
+  "baseline": {
+    "summary": [
+      "Ran 739 tests in 71.085s",
+      "FAILED (failures=11, errors=51, skipped=39)"
+    ],
+    "failures": [
+      {
+        "kind": "ERROR",
+        "test": "test_agents (unittest.loader._FailedTest.test_agents)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_api_load_evaluation (unittest.loader._FailedTest.test_api_load_evaluation)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_app_request_models (unittest.loader._FailedTest.test_app_request_models)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_chunking_retrieval_evaluation (unittest.loader._FailedTest.test_chunking_retrieval_evaluation)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_commerce_knowledge_manifest (unittest.loader._FailedTest.test_commerce_knowledge_manifest)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_docling_ocr_postprocessing (unittest.loader._FailedTest.test_docling_ocr_postprocessing)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_docling_table_sections (unittest.loader._FailedTest.test_docling_table_sections)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_document_dashboard (unittest.loader._FailedTest.test_document_dashboard)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_document_extraction_evaluation (unittest.loader._FailedTest.test_document_extraction_evaluation)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_document_processing_chunk_context (unittest.loader._FailedTest.test_document_processing_chunk_context)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_get_document_output_reconstructs_chunker_input (test_document_processing_outputs_repository.DocumentProcess ingOutputsRepositoryTest.test_get_document_output_reconstructs_chunker_input)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_document_processor (unittest.loader._FailedTest.test_document_processor)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_embedding_evaluation (unittest.loader._FailedTest.test_embedding_evaluation)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_candidate_requires_exact_page_quote_and_uses_page_evidence (test_financial_extraction.FinancialPageSelectionTests.test_candidate_requires_exact_page_quote_and_uses_page_evidence)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_candidate_with_quote_not_found_on_page_is_discarded (test_financial_extraction.FinancialPageSelectionTests.test_candidate_with_quote_not_found_on_page_is_discarded)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_llm_cannot_publish_a_comparative_year_as_the_report_year_candidate (test_financial_extraction.FinancialPage SelectionTests.test_llm_cannot_publish_a_comparative_year_as_the_report_year_candidate)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_ocr_near_match_label_is_reviewable_but_native_and_ungrounded_values_fail (test_financial_extraction.Financi alPageSelectionTests.test_ocr_near_match_label_is_reviewable_but_native_and_ungrounded_values_fail)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_selects_ranked_financial_pages_and_caps_llm_work (test_financial_extraction.FinancialPageSelectionTests.test_selects_ranked_financial_pages_and_caps_llm_work)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_table_layout_alone_does_not_select_nonfinancial_pages (test_financial_extraction.FinancialPageSelectionTests.test_table_layout_alone_does_not_select_nonfinancial_pages)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_table_row_quote_can_use_year_from_column_header (test_financial_extraction.FinancialPageSelectionTests.test_table_row_quote_can_use_year_from_column_header)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_unexpected_json_shape_fails_closed_and_records_error (test_financial_extraction.FinancialPageSelectionTests.test_unexpected_json_shape_fails_closed_and_records_error)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_fresh_reviewed_reranker (unittest.loader._FailedTest.test_fresh_reviewed_reranker)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_caption_image_rejects_payloads_over_provider_request_budget (test_llm_provider.GroqProviderTest.test_caption_image_rejects_payloads_over_provider_request_budget)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_caption_image_sends_bounded_base64_input_to_configured_vision_model (test_llm_provider.GroqProviderTest.test_caption_image_sends_bounded_base64_input_to_configured_vision_model)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_manual_metric_workflow (unittest.loader._FailedTest.test_manual_metric_workflow)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_metric_candidates (unittest.loader._FailedTest.test_metric_candidates)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_ocr_evaluation (unittest.loader._FailedTest.test_ocr_evaluation)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_ocr_report_merging (unittest.loader._FailedTest.test_ocr_report_merging)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_parser_preload (unittest.loader._FailedTest.test_parser_preload)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_pdf_upload_processing (unittest.loader._FailedTest.test_pdf_upload_processing)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "setUpClass (test_proposal_business_app_evaluation.ProposalBusinessAppEvaluationTest)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_all_proposal_cases_have_manifest_backed_coverage_labels (test_proposal_case_coverage.ProposalCaseCoverageTest.test_all_proposal_cases_have_manifest_backed_coverage_labels)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_coverage_labels_must_keep_route_case_set_in_sync (test_proposal_case_coverage.ProposalCaseCoverageTest.test_coverage_labels_must_keep_route_case_set_in_sync)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_unknown_source_document_is_rejected (test_proposal_case_coverage.ProposalCaseCoverageTest.test_unknown_source_document_is_rejected)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_rag (unittest.loader._FailedTest.test_rag)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_reranker_evaluation (unittest.loader._FailedTest.test_reranker_evaluation)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_retrieval_callers (unittest.loader._FailedTest.test_retrieval_callers)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_scan_document_processing_evaluation (unittest.loader._FailedTest.test_scan_document_processing_evaluation)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_section_title_backfill (unittest.loader._FailedTest.test_section_title_backfill)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_seed_ingestion (unittest.loader._FailedTest.test_seed_ingestion)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_seed_ingestion_pipeline (unittest.loader._FailedTest.test_seed_ingestion_pipeline)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_accepts_aggregate_select_and_caps_limit (test_sql_analytics.AnalyticsSqlSafetyTest.test_accepts_aggregate_select_and_caps_limit)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_accepts_case_expressions_inside_allowlisted_aggregates (test_sql_analytics.AnalyticsSqlSafetyTest.test_accepts_case_expressions_inside_allowlisted_aggregates)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_agent_generates_sql_executes_it_and_returns_provenance (test_sql_analytics.AnalyticsSqlSafetyTest.test_agent_generates_sql_executes_it_and_returns_provenance)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_document_analytics_cites_visible_documents_not_unrelated_metric_rows (test_sql_analytics.AnalyticsSqlSafetyTest.test_document_analytics_cites_visible_documents_not_unrelated_metric_rows)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_empty_aggregate_result_with_null_evidence_is_reported_as_no_verified_data (test_sql_analytics.AnalyticsSqlS afetyTest.test_empty_aggregate_result_with_null_evidence_is_reported_as_no_verified_data)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_metric_result_cites_only_matching_metric_and_year_within_same_document (test_sql_analytics.AnalyticsSqlSafetyTest.test_metric_result_cites_only_matching_metric_and_year_within_same_document)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_repository_executes_inside_read_only_timeout_and_role_filtered_ctes (test_sql_analytics.AnalyticsSqlSafetyTest.test_repository_executes_inside_read_only_timeout_and_role_filtered_ctes)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_translated_fresh_reranker (unittest.loader._FailedTest.test_translated_fresh_reranker)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_upload_processing_flow (unittest.loader._FailedTest.test_upload_processing_flow)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_websocket_qa (unittest.loader._FailedTest.test_websocket_qa)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_known_citation_and_codex_auth_failures_are_retried (test_agent_benchmarks.AgentBenchmarkAssetsTest.test_known_citation_and_codex_auth_failures_are_retried)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_replace_document_stores_normalized_output_separately (test_document_processing_outputs_repository.DocumentPr ocessingOutputsRepositoryTest.test_replace_document_stores_normalized_output_separately)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_blinded_packets_hide_model_labels_and_import_multiple_reviewers (test_qa_human_review.BlindQAReviewTest.test_blinded_packets_hide_model_labels_and_import_multiple_reviewers)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_expands_vietnamese_financial_metric_to_canonical_english_labels (test_query_rewriting_evaluation.QueryRewrit ingEvaluationTest.test_expands_vietnamese_financial_metric_to_canonical_english_labels)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_fixture_round_trip_preserves_all_fields (test_retrieval_models.RetrievalModelsTest.test_fixture_round_trip_preserves_all_fields)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_response_supports_no_results (test_retrieval_models.RetrievalModelsTest.test_response_supports_no_results)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_full_text_metadata_location_and_tie_order_are_preserved (test_retrieval_service.RetrievalServiceTest.test_full_text_metadata_location_and_tie_order_are_preserved)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_latency_includes_embedding_search_and_mapping (test_retrieval_service.RetrievalServiceTest.test_latency_includes_embedding_search_and_mapping)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_retrieve_embeds_question_and_maps_repository_results (test_retrieval_service.RetrievalServiceTest.test_retrieve_embeds_question_and_maps_repository_results)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_financial_analytics_must_keep_metric_and_year_dimensions (test_sql_analytics.AnalyticsSqlSafetyTest.test_financial_analytics_must_keep_metric_and_year_dimensions)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_sql_filters_are_present_in_all_three_searches (test_translated_hybrid.TranslatedHybridTest.test_sql_filters_are_present_in_all_three_searches)",
+        "reason": "FAILED (failures=11, errors=51, skipped=39)"
+      }
+    ]
+  },
+  "candidate": {
+    "summary": [
+      "Ran 752 tests in 77.232s",
+      "FAILED (failures=36, errors=96, skipped=39)"
+    ],
+    "failures": [
+      {
+        "kind": "ERROR",
+        "test": "test_agents (unittest.loader._FailedTest.test_agents)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_api_load_evaluation (unittest.loader._FailedTest.test_api_load_evaluation)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_app_request_models (unittest.loader._FailedTest.test_app_request_models)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_chunking_retrieval_evaluation (unittest.loader._FailedTest.test_chunking_retrieval_evaluation)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_commerce_knowledge_manifest (unittest.loader._FailedTest.test_commerce_knowledge_manifest)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_docling_ocr_postprocessing (unittest.loader._FailedTest.test_docling_ocr_postprocessing)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_docling_table_sections (unittest.loader._FailedTest.test_docling_table_sections)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_document_dashboard (unittest.loader._FailedTest.test_document_dashboard)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_document_extraction_evaluation (unittest.loader._FailedTest.test_document_extraction_evaluation)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_document_processing_chunk_context (unittest.loader._FailedTest.test_document_processing_chunk_context)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_get_document_output_reconstructs_chunker_input (test_document_processing_outputs_repository.DocumentProcess ingOutputsRepositoryTest.test_get_document_output_reconstructs_chunker_input)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_document_processor (unittest.loader._FailedTest.test_document_processor)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_embedding_evaluation (unittest.loader._FailedTest.test_embedding_evaluation)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_candidate_requires_exact_page_quote_and_uses_page_evidence (test_financial_extraction.FinancialPageSelectionTests.test_candidate_requires_exact_page_quote_and_uses_page_evidence)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_candidate_with_quote_not_found_on_page_is_discarded (test_financial_extraction.FinancialPageSelectionTests.test_candidate_with_quote_not_found_on_page_is_discarded)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_llm_cannot_publish_a_comparative_year_as_the_report_year_candidate (test_financial_extraction.FinancialPage SelectionTests.test_llm_cannot_publish_a_comparative_year_as_the_report_year_candidate)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_ocr_near_match_label_is_reviewable_but_native_and_ungrounded_values_fail (test_financial_extraction.Financi alPageSelectionTests.test_ocr_near_match_label_is_reviewable_but_native_and_ungrounded_values_fail)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_selects_ranked_financial_pages_and_caps_llm_work (test_financial_extraction.FinancialPageSelectionTests.test_selects_ranked_financial_pages_and_caps_llm_work)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_table_layout_alone_does_not_select_nonfinancial_pages (test_financial_extraction.FinancialPageSelectionTests.test_table_layout_alone_does_not_select_nonfinancial_pages)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_table_row_quote_can_use_year_from_column_header (test_financial_extraction.FinancialPageSelectionTests.test_table_row_quote_can_use_year_from_column_header)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_unexpected_json_shape_fails_closed_and_records_error (test_financial_extraction.FinancialPageSelectionTests.test_unexpected_json_shape_fails_closed_and_records_error)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_fresh_reviewed_reranker (unittest.loader._FailedTest.test_fresh_reviewed_reranker)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_caption_image_rejects_payloads_over_provider_request_budget (test_llm_provider.GroqProviderTest.test_caption_image_rejects_payloads_over_provider_request_budget)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_caption_image_sends_bounded_base64_input_to_configured_vision_model (test_llm_provider.GroqProviderTest.test_caption_image_sends_bounded_base64_input_to_configured_vision_model)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_manual_metric_workflow (unittest.loader._FailedTest.test_manual_metric_workflow)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_metric_candidates (unittest.loader._FailedTest.test_metric_candidates)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_ocr_evaluation (unittest.loader._FailedTest.test_ocr_evaluation)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_ocr_report_merging (unittest.loader._FailedTest.test_ocr_report_merging)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_parser_preload (unittest.loader._FailedTest.test_parser_preload)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_pdf_upload_processing (unittest.loader._FailedTest.test_pdf_upload_processing)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "setUpClass (test_proposal_business_app_evaluation.ProposalBusinessAppEvaluationTest)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_all_proposal_cases_have_manifest_backed_coverage_labels (test_proposal_case_coverage.ProposalCaseCoverageTest.test_all_proposal_cases_have_manifest_backed_coverage_labels)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_coverage_labels_must_keep_route_case_set_in_sync (test_proposal_case_coverage.ProposalCaseCoverageTest.test_coverage_labels_must_keep_route_case_set_in_sync)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_unknown_source_document_is_rejected (test_proposal_case_coverage.ProposalCaseCoverageTest.test_unknown_source_document_is_rejected)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_rag (unittest.loader._FailedTest.test_rag)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_reranker_evaluation (unittest.loader._FailedTest.test_reranker_evaluation)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_retrieval_callers (unittest.loader._FailedTest.test_retrieval_callers)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_scan_document_processing_evaluation (unittest.loader._FailedTest.test_scan_document_processing_evaluation)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_section_title_backfill (unittest.loader._FailedTest.test_section_title_backfill)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_seed_ingestion (unittest.loader._FailedTest.test_seed_ingestion)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_seed_ingestion_pipeline (unittest.loader._FailedTest.test_seed_ingestion_pipeline)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_accepts_aggregate_select_and_caps_limit (test_sql_analytics.AnalyticsSqlSafetyTest.test_accepts_aggregate_select_and_caps_limit)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_accepts_case_expressions_inside_allowlisted_aggregates (test_sql_analytics.AnalyticsSqlSafetyTest.test_accepts_case_expressions_inside_allowlisted_aggregates)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_agent_generates_sql_executes_it_and_returns_provenance (test_sql_analytics.AnalyticsSqlSafetyTest.test_agent_generates_sql_executes_it_and_returns_provenance)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_document_analytics_cites_visible_documents_not_unrelated_metric_rows (test_sql_analytics.AnalyticsSqlSafetyTest.test_document_analytics_cites_visible_documents_not_unrelated_metric_rows)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_empty_aggregate_result_with_null_evidence_is_reported_as_no_verified_data (test_sql_analytics.AnalyticsSqlS afetyTest.test_empty_aggregate_result_with_null_evidence_is_reported_as_no_verified_data)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_metric_result_cites_only_matching_metric_and_year_within_same_document (test_sql_analytics.AnalyticsSqlSafetyTest.test_metric_result_cites_only_matching_metric_and_year_within_same_document)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_repository_executes_inside_read_only_timeout_and_role_filtered_ctes (test_sql_analytics.AnalyticsSqlSafetyTest.test_repository_executes_inside_read_only_timeout_and_role_filtered_ctes)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_accepts_cte_aggregation_and_bind_parameters (test_sql_generation.SQLValidationTest.test_accepts_cte_aggregation_and_bind_parameters)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_accepts_extract_for_standard_date_grouping (test_sql_generation.SQLValidationTest.test_accepts_extract_for_standard_date_grouping)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_approved_customers_and_payments_tables_and_joins (test_sql_generation.SQLValidationTest.test_approved_customers_and_payments_tables_and_joins)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_date_column_parameters_are_converted_to_native_dates (test_sql_generation.SQLValidationTest.test_date_column_parameters_are_converted_to_native_dates)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_date_looking_text_filter_remains_a_string (test_sql_generation.SQLValidationTest.test_date_looking_text_filter_remains_a_string)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_accepts_detail_measure_and_duplicate_insensitive_aggregates (test_sql_join_duplication.JoinDuplicationTest.test_accepts_detail_measure_and_duplicate_insensitive_aggregates) (expression='SUM(i.quantity)')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_accepts_detail_measure_and_duplicate_insensitive_aggregates (test_sql_join_duplication.JoinDuplicationTest.test_accepts_detail_measure_and_duplicate_insensitive_aggregates) (expression='COUNT(i.order_item_id)')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_accepts_detail_measure_and_duplicate_insensitive_aggregates (test_sql_join_duplication.JoinDuplicationTest.test_accepts_detail_measure_and_duplicate_insensitive_aggregates) (expression='COUNT(DISTINCT p.order_id)')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_accepts_detail_measure_and_duplicate_insensitive_aggregates (test_sql_join_duplication.JoinDuplicationTest.test_accepts_detail_measure_and_duplicate_insensitive_aggregates) (expression='MIN(p.payment_value)')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_accepts_detail_measure_and_duplicate_insensitive_aggregates (test_sql_join_duplication.JoinDuplicationTest.test_accepts_detail_measure_and_duplicate_insensitive_aggregates) (expression='MAX(p.payment_value)')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_accepts_one_to_one_join (test_sql_join_duplication.JoinDuplicationTest.test_accepts_one_to_one_join)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_join_order_does_not_change_measure_safety (test_sql_join_duplication.JoinDuplicationTest.test_join_order_does_not_change_measure_safety)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_safe_precomputed_aggregate_remains_safe (test_sql_join_duplication.JoinDuplicationTest.test_safe_precomputed_aggregate_remains_safe)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_summary_receives_enforced_units_and_limitations (test_sql_metric_definitions.MetricAgentTest.test_summary_receives_enforced_units_and_limitations)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_accepts_canonical_revenue_with_arbitrary_alias_and_transparent_cte (test_sql_metric_definitions.MetricEnfor cementTest.test_accepts_canonical_revenue_with_arbitrary_alias_and_transparent_cte) (sql='SELECT SUM(s.revenue) AS total FROM commerce.sales AS s LIMIT 1')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_accepts_canonical_revenue_with_arbitrary_alias_and_transparent_cte (test_sql_metric_definitions.MetricEnfor cementTest.test_accepts_canonical_revenue_with_arbitrary_alias_and_transparent_cte) (sql='WITH m AS (SELECT SUM(s.revenue) AS total FROM commerce.sales AS s) SELECT m.total FROM m LIMIT 1')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='revenue')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='cogs')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='gross_profit')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='regional_revenue')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='order_count')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='average_order_value')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='return_rate')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='rating')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='sessions')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='bounce_rate')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='delivery_time')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='promotion_discount')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_canonical_metric_label_cannot_disguise_another_formula (test_sql_metric_definitions.MetricEnforcementTest.test_canonical_metric_label_cannot_disguise_another_formula)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_metric_dimensions_and_snapshot_grain_are_enforced (test_sql_metric_definitions.MetricEnforcementTest.test_metric_dimensions_and_snapshot_grain_are_enforced) (sql='SELECT s.cogs, SUM(s.revenue) FROM commerce.sales AS s GROUP BY s.cogs LIMIT 20')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_order_count_requires_distinct_orders (test_sql_metric_definitions.MetricEnforcementTest.test_order_count_requires_distinct_orders)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_regional_revenue_requires_the_delivered_filter (test_sql_metric_definitions.MetricEnforcementTest.test_regional_revenue_requires_the_delivered_filter)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_rejects_wrong_formula_source_or_missing_requested_metric (test_sql_metric_definitions.MetricEnforcementTest.test_rejects_wrong_formula_source_or_missing_requested_metric) (sql='SELECT AVG(s.revenue) AS revenue FROM commerce.sales AS s LIMIT 1')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_rejects_wrong_formula_source_or_missing_requested_metric (test_sql_metric_definitions.MetricEnforcementTest.test_rejects_wrong_formula_source_or_missing_requested_metric) (sql='SELECT SUM(p.payment_value) AS revenue FROM commerce.payments AS p LIMIT 1')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_rejects_wrong_formula_source_or_missing_requested_metric (test_sql_metric_definitions.MetricEnforcementTest.test_rejects_wrong_formula_source_or_missing_requested_metric) (sql='SELECT SUM(s.cogs) AS cogs FROM commerce.sales AS s LIMIT 1')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_rejects_wrong_formula_source_or_missing_requested_metric (test_sql_metric_definitions.MetricEnforcementTest.test_rejects_wrong_formula_source_or_missing_requested_metric) (sql='SELECT SUM(s.revenue) AS good, AVG(s.revenue) AS wrong FROM commerce.sales AS s LIMIT 1')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_rejects_wrong_formula_source_or_missing_requested_metric (test_sql_metric_definitions.MetricEnforcementTest.test_rejects_wrong_formula_source_or_missing_requested_metric) (sql='SELECT SUM(s.revenue) + 1 AS revenue FROM commerce.sales AS s LIMIT 1')",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_supplementary_counts_do_not_replace_or_restrict_requested_metrics (test_sql_metric_definitions.MetricEnforc ementTest.test_supplementary_counts_do_not_replace_or_restrict_requested_metrics)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_explicit_period_flow_comparison_keeps_sources_independent (test_sql_semantic_contracts.CrossDomainInventoryTest.test_explicit_period_flow_comparison_keeps_sources_independent)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_stockout_presence_uses_exists_without_multiplication (test_sql_semantic_contracts.CrossDomainInventoryTest.test_stockout_presence_uses_exists_without_multiplication)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_grouped_operands_can_join_the_unique_product_catalog_key (test_sql_semantic_contracts.DerivedJoinContractTest.test_grouped_operands_can_join_the_unique_product_catalog_key)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_independent_product_aggregates_are_safe (test_sql_semantic_contracts.DerivedJoinContractTest.test_independent_product_aggregates_are_safe)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_same_category_lineage_is_safe_but_unrelated_attributes_are_not (test_sql_semantic_contracts.DerivedJoinCont ractTest.test_same_category_lineage_is_safe_but_unrelated_attributes_are_not)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_unit_ratio_formula_and_each_period_are_verified (test_sql_semantic_contracts.DerivedJoinContractTest.test_unit_ratio_formula_and_each_period_are_verified)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_overloaded_date_function_parameter_is_typed (test_sql_semantic_contracts.InterpretationRegressionTest.test_overloaded_date_function_parameter_is_typed)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_translated_fresh_reranker (unittest.loader._FailedTest.test_translated_fresh_reranker)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_upload_processing_flow (unittest.loader._FailedTest.test_upload_processing_flow)",
+        "reason": ""
+      },
+      {
+        "kind": "ERROR",
+        "test": "test_websocket_qa (unittest.loader._FailedTest.test_websocket_qa)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_known_citation_and_codex_auth_failures_are_retried (test_agent_benchmarks.AgentBenchmarkAssetsTest.test_known_citation_and_codex_auth_failures_are_retried)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_replace_document_stores_normalized_output_separately (test_document_processing_outputs_repository.DocumentPr ocessingOutputsRepositoryTest.test_replace_document_stores_normalized_output_separately)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_blinded_packets_hide_model_labels_and_import_multiple_reviewers (test_qa_human_review.BlindQAReviewTest.test_blinded_packets_hide_model_labels_and_import_multiple_reviewers)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_expands_vietnamese_financial_metric_to_canonical_english_labels (test_query_rewriting_evaluation.QueryRewrit ingEvaluationTest.test_expands_vietnamese_financial_metric_to_canonical_english_labels)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_fixture_round_trip_preserves_all_fields (test_retrieval_models.RetrievalModelsTest.test_fixture_round_trip_preserves_all_fields)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_response_supports_no_results (test_retrieval_models.RetrievalModelsTest.test_response_supports_no_results)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_full_text_metadata_location_and_tie_order_are_preserved (test_retrieval_service.RetrievalServiceTest.test_full_text_metadata_location_and_tie_order_are_preserved)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_latency_includes_embedding_search_and_mapping (test_retrieval_service.RetrievalServiceTest.test_latency_includes_embedding_search_and_mapping)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_retrieve_embeds_question_and_maps_repository_results (test_retrieval_service.RetrievalServiceTest.test_retrieve_embeds_question_and_maps_repository_results)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_financial_analytics_must_keep_metric_and_year_dimensions (test_sql_analytics.AnalyticsSqlSafetyTest.test_financial_analytics_must_keep_metric_and_year_dimensions)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_passes_native_date_parameters_to_repository (test_sql_generation.SQLGenerationAgentTest.test_passes_native_date_parameters_to_repository)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_retries_validation_failure_with_feedback_for_generic_date_query (test_sql_generation.SQLGenerationAgentTest.test_retries_validation_failure_with_feedback_for_generic_date_query)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_count_star_requires_unambiguous_grain (test_sql_join_duplication.JoinDuplicationTest.test_count_star_requires_unambiguous_grain)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_cte_does_not_hide_duplication (test_sql_join_duplication.JoinDuplicationTest.test_cte_does_not_hide_duplication)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_distinct_cte_is_not_assumed_to_restore_measure_grain (test_sql_join_duplication.JoinDuplicationTest.test_distinct_cte_is_not_assumed_to_restore_measure_grain)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_nested_cte_and_row_counts_cannot_hide_duplication (test_sql_join_duplication.JoinDuplicationTest.test_nested_cte_and_row_counts_cannot_hide_duplication) (expression='SUM(x.value)')",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_nested_cte_and_row_counts_cannot_hide_duplication (test_sql_join_duplication.JoinDuplicationTest.test_nested_cte_and_row_counts_cannot_hide_duplication) (expression='COUNT(*)')",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_nested_cte_and_row_counts_cannot_hide_duplication (test_sql_join_duplication.JoinDuplicationTest.test_nested_cte_and_row_counts_cannot_hide_duplication) (expression='SUM(1)')",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_rejects_duplicated_payment_measures (test_sql_join_duplication.JoinDuplicationTest.test_rejects_duplicated_payment_measures) (expression='SUM(p.payment_value)')",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_rejects_duplicated_payment_measures (test_sql_join_duplication.JoinDuplicationTest.test_rejects_duplicated_payment_measures) (expression='AVG(p.payment_value)')",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_rejects_duplicated_payment_measures (test_sql_join_duplication.JoinDuplicationTest.test_rejects_duplicated_payment_measures) (expression='COUNT(p.order_id)')",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_rejects_duplicated_payment_measures (test_sql_join_duplication.JoinDuplicationTest.test_rejects_duplicated_payment_measures) (expression='SUM(DISTINCT p.payment_value)')",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_rejects_duplicated_payment_measures (test_sql_join_duplication.JoinDuplicationTest.test_rejects_duplicated_payment_measures) (expression='SUM(p.payment_value * i.quantity)')",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_rejects_many_to_many_detail_join (test_sql_join_duplication.JoinDuplicationTest.test_rejects_many_to_many_detail_join)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_scalar_subquery_aggregate_cannot_hide_raw_duplicated_rows (test_sql_join_duplication.JoinDuplicationTest.test_scalar_subquery_aggregate_cannot_hide_raw_duplicated_rows) (expression='SUM(d.value)')",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_scalar_subquery_aggregate_cannot_hide_raw_duplicated_rows (test_sql_join_duplication.JoinDuplicationTest.test_scalar_subquery_aggregate_cannot_hide_raw_duplicated_rows) (expression='COUNT(*)')",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_unsafe_plan_is_repaired_before_repository_execution (test_sql_join_duplication.JoinRepairTest.test_unsafe_plan_is_repaired_before_repository_execution)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_repaired_revenue_returns_the_fixture_total_not_the_average (test_sql_metric_definitions.MetricAgentTest.test_repaired_revenue_returns_the_fixture_total_not_the_average)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_wrong_metric_is_repaired_before_execution (test_sql_metric_definitions.MetricAgentTest.test_wrong_metric_is_repaired_before_execution)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_approved_bridge_replaces_an_unnecessary_join_clarification (test_sql_semantic_contracts.CrossDomainAgentTest.test_approved_bridge_replaces_an_unnecessary_join_clarification)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_comparison_reaches_shared_sql_path_and_readonly_repository (test_sql_semantic_contracts.CrossDomainAgentTest.test_comparison_reaches_shared_sql_path_and_readonly_repository)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_dropped_order_operand_cannot_execute (test_sql_semantic_contracts.CrossDomainAgentTest.test_dropped_order_operand_cannot_execute)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_transaction_question_does_not_pass_through_inventory_interpreter (test_sql_semantic_refactor.CanonicalAgentTest.test_transaction_question_does_not_pass_through_inventory_interpreter)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_context_for_inventory_and_orders_preserves_both_sources (test_sql_semantic_refactor.SchemaContextTest.test_context_for_inventory_and_orders_preserves_both_sources)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_return_context_keeps_keys_grain_and_excludes_web_traffic (test_sql_semantic_refactor.SchemaContextTest.test_return_context_keeps_keys_grain_and_excludes_web_traffic)",
+        "reason": ""
+      },
+      {
+        "kind": "FAIL",
+        "test": "test_sql_filters_are_present_in_all_three_searches (test_translated_hybrid.TranslatedHybridTest.test_sql_filters_are_present_in_all_three_searches)",
+        "reason": "FAILED (failures=36, errors=96, skipped=39)"
+      }
+    ]
+  },
+  "new_failure_names": [
+    "test_accepts_canonical_revenue_with_arbitrary_alias_and_transparent_cte (test_sql_metric_definitions.MetricEnfor cementTest.test_accepts_canonical_revenue_with_arbitrary_alias_and_transparent_cte) (sql='SELECT SUM(s.revenue) AS total FROM commerce.sales AS s LIMIT 1')",
+    "test_accepts_canonical_revenue_with_arbitrary_alias_and_transparent_cte (test_sql_metric_definitions.MetricEnfor cementTest.test_accepts_canonical_revenue_with_arbitrary_alias_and_transparent_cte) (sql='WITH m AS (SELECT SUM(s.revenue) AS total FROM commerce.sales AS s) SELECT m.total FROM m LIMIT 1')",
+    "test_accepts_cte_aggregation_and_bind_parameters (test_sql_generation.SQLValidationTest.test_accepts_cte_aggregation_and_bind_parameters)",
+    "test_accepts_detail_measure_and_duplicate_insensitive_aggregates (test_sql_join_duplication.JoinDuplicationTest.test_accepts_detail_measure_and_duplicate_insensitive_aggregates) (expression='COUNT(DISTINCT p.order_id)')",
+    "test_accepts_detail_measure_and_duplicate_insensitive_aggregates (test_sql_join_duplication.JoinDuplicationTest.test_accepts_detail_measure_and_duplicate_insensitive_aggregates) (expression='COUNT(i.order_item_id)')",
+    "test_accepts_detail_measure_and_duplicate_insensitive_aggregates (test_sql_join_duplication.JoinDuplicationTest.test_accepts_detail_measure_and_duplicate_insensitive_aggregates) (expression='MAX(p.payment_value)')",
+    "test_accepts_detail_measure_and_duplicate_insensitive_aggregates (test_sql_join_duplication.JoinDuplicationTest.test_accepts_detail_measure_and_duplicate_insensitive_aggregates) (expression='MIN(p.payment_value)')",
+    "test_accepts_detail_measure_and_duplicate_insensitive_aggregates (test_sql_join_duplication.JoinDuplicationTest.test_accepts_detail_measure_and_duplicate_insensitive_aggregates) (expression='SUM(i.quantity)')",
+    "test_accepts_extract_for_standard_date_grouping (test_sql_generation.SQLValidationTest.test_accepts_extract_for_standard_date_grouping)",
+    "test_accepts_one_to_one_join (test_sql_join_duplication.JoinDuplicationTest.test_accepts_one_to_one_join)",
+    "test_approved_bridge_replaces_an_unnecessary_join_clarification (test_sql_semantic_contracts.CrossDomainAgentTest.test_approved_bridge_replaces_an_unnecessary_join_clarification)",
+    "test_approved_customers_and_payments_tables_and_joins (test_sql_generation.SQLValidationTest.test_approved_customers_and_payments_tables_and_joins)",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='average_order_value')",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='bounce_rate')",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='cogs')",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='delivery_time')",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='gross_profit')",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='order_count')",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='promotion_discount')",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='rating')",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='regional_revenue')",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='return_rate')",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='revenue')",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='sessions')",
+    "test_canonical_metric_label_cannot_disguise_another_formula (test_sql_metric_definitions.MetricEnforcementTest.test_canonical_metric_label_cannot_disguise_another_formula)",
+    "test_comparison_reaches_shared_sql_path_and_readonly_repository (test_sql_semantic_contracts.CrossDomainAgentTest.test_comparison_reaches_shared_sql_path_and_readonly_repository)",
+    "test_context_for_inventory_and_orders_preserves_both_sources (test_sql_semantic_refactor.SchemaContextTest.test_context_for_inventory_and_orders_preserves_both_sources)",
+    "test_count_star_requires_unambiguous_grain (test_sql_join_duplication.JoinDuplicationTest.test_count_star_requires_unambiguous_grain)",
+    "test_cte_does_not_hide_duplication (test_sql_join_duplication.JoinDuplicationTest.test_cte_does_not_hide_duplication)",
+    "test_date_column_parameters_are_converted_to_native_dates (test_sql_generation.SQLValidationTest.test_date_column_parameters_are_converted_to_native_dates)",
+    "test_date_looking_text_filter_remains_a_string (test_sql_generation.SQLValidationTest.test_date_looking_text_filter_remains_a_string)",
+    "test_distinct_cte_is_not_assumed_to_restore_measure_grain (test_sql_join_duplication.JoinDuplicationTest.test_distinct_cte_is_not_assumed_to_restore_measure_grain)",
+    "test_dropped_order_operand_cannot_execute (test_sql_semantic_contracts.CrossDomainAgentTest.test_dropped_order_operand_cannot_execute)",
+    "test_explicit_period_flow_comparison_keeps_sources_independent (test_sql_semantic_contracts.CrossDomainInventoryTest.test_explicit_period_flow_comparison_keeps_sources_independent)",
+    "test_grouped_operands_can_join_the_unique_product_catalog_key (test_sql_semantic_contracts.DerivedJoinContractTest.test_grouped_operands_can_join_the_unique_product_catalog_key)",
+    "test_independent_product_aggregates_are_safe (test_sql_semantic_contracts.DerivedJoinContractTest.test_independent_product_aggregates_are_safe)",
+    "test_join_order_does_not_change_measure_safety (test_sql_join_duplication.JoinDuplicationTest.test_join_order_does_not_change_measure_safety)",
+    "test_metric_dimensions_and_snapshot_grain_are_enforced (test_sql_metric_definitions.MetricEnforcementTest.test_metric_dimensions_and_snapshot_grain_are_enforced) (sql='SELECT s.cogs, SUM(s.revenue) FROM commerce.sales AS s GROUP BY s.cogs LIMIT 20')",
+    "test_nested_cte_and_row_counts_cannot_hide_duplication (test_sql_join_duplication.JoinDuplicationTest.test_nested_cte_and_row_counts_cannot_hide_duplication) (expression='COUNT(*)')",
+    "test_nested_cte_and_row_counts_cannot_hide_duplication (test_sql_join_duplication.JoinDuplicationTest.test_nested_cte_and_row_counts_cannot_hide_duplication) (expression='SUM(1)')",
+    "test_nested_cte_and_row_counts_cannot_hide_duplication (test_sql_join_duplication.JoinDuplicationTest.test_nested_cte_and_row_counts_cannot_hide_duplication) (expression='SUM(x.value)')",
+    "test_order_count_requires_distinct_orders (test_sql_metric_definitions.MetricEnforcementTest.test_order_count_requires_distinct_orders)",
+    "test_overloaded_date_function_parameter_is_typed (test_sql_semantic_contracts.InterpretationRegressionTest.test_overloaded_date_function_parameter_is_typed)",
+    "test_passes_native_date_parameters_to_repository (test_sql_generation.SQLGenerationAgentTest.test_passes_native_date_parameters_to_repository)",
+    "test_regional_revenue_requires_the_delivered_filter (test_sql_metric_definitions.MetricEnforcementTest.test_regional_revenue_requires_the_delivered_filter)",
+    "test_rejects_duplicated_payment_measures (test_sql_join_duplication.JoinDuplicationTest.test_rejects_duplicated_payment_measures) (expression='AVG(p.payment_value)')",
+    "test_rejects_duplicated_payment_measures (test_sql_join_duplication.JoinDuplicationTest.test_rejects_duplicated_payment_measures) (expression='COUNT(p.order_id)')",
+    "test_rejects_duplicated_payment_measures (test_sql_join_duplication.JoinDuplicationTest.test_rejects_duplicated_payment_measures) (expression='SUM(DISTINCT p.payment_value)')",
+    "test_rejects_duplicated_payment_measures (test_sql_join_duplication.JoinDuplicationTest.test_rejects_duplicated_payment_measures) (expression='SUM(p.payment_value * i.quantity)')",
+    "test_rejects_duplicated_payment_measures (test_sql_join_duplication.JoinDuplicationTest.test_rejects_duplicated_payment_measures) (expression='SUM(p.payment_value)')",
+    "test_rejects_many_to_many_detail_join (test_sql_join_duplication.JoinDuplicationTest.test_rejects_many_to_many_detail_join)",
+    "test_rejects_wrong_formula_source_or_missing_requested_metric (test_sql_metric_definitions.MetricEnforcementTest.test_rejects_wrong_formula_source_or_missing_requested_metric) (sql='SELECT AVG(s.revenue) AS revenue FROM commerce.sales AS s LIMIT 1')",
+    "test_rejects_wrong_formula_source_or_missing_requested_metric (test_sql_metric_definitions.MetricEnforcementTest.test_rejects_wrong_formula_source_or_missing_requested_metric) (sql='SELECT SUM(p.payment_value) AS revenue FROM commerce.payments AS p LIMIT 1')",
+    "test_rejects_wrong_formula_source_or_missing_requested_metric (test_sql_metric_definitions.MetricEnforcementTest.test_rejects_wrong_formula_source_or_missing_requested_metric) (sql='SELECT SUM(s.cogs) AS cogs FROM commerce.sales AS s LIMIT 1')",
+    "test_rejects_wrong_formula_source_or_missing_requested_metric (test_sql_metric_definitions.MetricEnforcementTest.test_rejects_wrong_formula_source_or_missing_requested_metric) (sql='SELECT SUM(s.revenue) + 1 AS revenue FROM commerce.sales AS s LIMIT 1')",
+    "test_rejects_wrong_formula_source_or_missing_requested_metric (test_sql_metric_definitions.MetricEnforcementTest.test_rejects_wrong_formula_source_or_missing_requested_metric) (sql='SELECT SUM(s.revenue) AS good, AVG(s.revenue) AS wrong FROM commerce.sales AS s LIMIT 1')",
+    "test_repaired_revenue_returns_the_fixture_total_not_the_average (test_sql_metric_definitions.MetricAgentTest.test_repaired_revenue_returns_the_fixture_total_not_the_average)",
+    "test_retries_validation_failure_with_feedback_for_generic_date_query (test_sql_generation.SQLGenerationAgentTest.test_retries_validation_failure_with_feedback_for_generic_date_query)",
+    "test_return_context_keeps_keys_grain_and_excludes_web_traffic (test_sql_semantic_refactor.SchemaContextTest.test_return_context_keeps_keys_grain_and_excludes_web_traffic)",
+    "test_safe_precomputed_aggregate_remains_safe (test_sql_join_duplication.JoinDuplicationTest.test_safe_precomputed_aggregate_remains_safe)",
+    "test_same_category_lineage_is_safe_but_unrelated_attributes_are_not (test_sql_semantic_contracts.DerivedJoinCont ractTest.test_same_category_lineage_is_safe_but_unrelated_attributes_are_not)",
+    "test_scalar_subquery_aggregate_cannot_hide_raw_duplicated_rows (test_sql_join_duplication.JoinDuplicationTest.test_scalar_subquery_aggregate_cannot_hide_raw_duplicated_rows) (expression='COUNT(*)')",
+    "test_scalar_subquery_aggregate_cannot_hide_raw_duplicated_rows (test_sql_join_duplication.JoinDuplicationTest.test_scalar_subquery_aggregate_cannot_hide_raw_duplicated_rows) (expression='SUM(d.value)')",
+    "test_stockout_presence_uses_exists_without_multiplication (test_sql_semantic_contracts.CrossDomainInventoryTest.test_stockout_presence_uses_exists_without_multiplication)",
+    "test_summary_receives_enforced_units_and_limitations (test_sql_metric_definitions.MetricAgentTest.test_summary_receives_enforced_units_and_limitations)",
+    "test_supplementary_counts_do_not_replace_or_restrict_requested_metrics (test_sql_metric_definitions.MetricEnforc ementTest.test_supplementary_counts_do_not_replace_or_restrict_requested_metrics)",
+    "test_transaction_question_does_not_pass_through_inventory_interpreter (test_sql_semantic_refactor.CanonicalAgentTest.test_transaction_question_does_not_pass_through_inventory_interpreter)",
+    "test_unit_ratio_formula_and_each_period_are_verified (test_sql_semantic_contracts.DerivedJoinContractTest.test_unit_ratio_formula_and_each_period_are_verified)",
+    "test_unsafe_plan_is_repaired_before_repository_execution (test_sql_join_duplication.JoinRepairTest.test_unsafe_plan_is_repaired_before_repository_execution)",
+    "test_wrong_metric_is_repaired_before_execution (test_sql_metric_definitions.MetricAgentTest.test_wrong_metric_is_repaired_before_execution)"
+  ],
+  "resolved_failure_names": [],
+  "new_failure_classification": {
+    "test_accepts_canonical_revenue_with_arbitrary_alias_and_transparent_cte (test_sql_metric_definitions.MetricEnfor cementTest.test_accepts_canonical_revenue_with_arbitrary_alias_and_transparent_cte) (sql='SELECT SUM(s.revenue) AS total FROM commerce.sales AS s LIMIT 1')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_accepts_canonical_revenue_with_arbitrary_alias_and_transparent_cte (test_sql_metric_definitions.MetricEnfor cementTest.test_accepts_canonical_revenue_with_arbitrary_alias_and_transparent_cte) (sql='WITH m AS (SELECT SUM(s.revenue) AS total FROM commerce.sales AS s) SELECT m.total FROM m LIMIT 1')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_accepts_cte_aggregation_and_bind_parameters (test_sql_generation.SQLValidationTest.test_accepts_cte_aggregation_and_bind_parameters)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_accepts_detail_measure_and_duplicate_insensitive_aggregates (test_sql_join_duplication.JoinDuplicationTest.test_accepts_detail_measure_and_duplicate_insensitive_aggregates) (expression='COUNT(DISTINCT p.order_id)')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_accepts_detail_measure_and_duplicate_insensitive_aggregates (test_sql_join_duplication.JoinDuplicationTest.test_accepts_detail_measure_and_duplicate_insensitive_aggregates) (expression='COUNT(i.order_item_id)')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_accepts_detail_measure_and_duplicate_insensitive_aggregates (test_sql_join_duplication.JoinDuplicationTest.test_accepts_detail_measure_and_duplicate_insensitive_aggregates) (expression='MAX(p.payment_value)')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_accepts_detail_measure_and_duplicate_insensitive_aggregates (test_sql_join_duplication.JoinDuplicationTest.test_accepts_detail_measure_and_duplicate_insensitive_aggregates) (expression='MIN(p.payment_value)')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_accepts_detail_measure_and_duplicate_insensitive_aggregates (test_sql_join_duplication.JoinDuplicationTest.test_accepts_detail_measure_and_duplicate_insensitive_aggregates) (expression='SUM(i.quantity)')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_accepts_extract_for_standard_date_grouping (test_sql_generation.SQLValidationTest.test_accepts_extract_for_standard_date_grouping)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_accepts_one_to_one_join (test_sql_join_duplication.JoinDuplicationTest.test_accepts_one_to_one_join)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_approved_bridge_replaces_an_unnecessary_join_clarification (test_sql_semantic_contracts.CrossDomainAgentTest.test_approved_bridge_replaces_an_unnecessary_join_clarification)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_approved_customers_and_payments_tables_and_joins (test_sql_generation.SQLValidationTest.test_approved_customers_and_payments_tables_and_joins)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='average_order_value')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='bounce_rate')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='cogs')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='delivery_time')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='gross_profit')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='order_count')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='promotion_discount')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='rating')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='regional_revenue')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='return_rate')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='revenue')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_canonical_examples_for_every_existing_metric_pass_both_validators (test_sql_metric_definitions.MetricEnforc ementTest.test_canonical_examples_for_every_existing_metric_pass_both_validators) (metric='sessions')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_canonical_metric_label_cannot_disguise_another_formula (test_sql_metric_definitions.MetricEnforcementTest.test_canonical_metric_label_cannot_disguise_another_formula)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_comparison_reaches_shared_sql_path_and_readonly_repository (test_sql_semantic_contracts.CrossDomainAgentTest.test_comparison_reaches_shared_sql_path_and_readonly_repository)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_context_for_inventory_and_orders_preserves_both_sources (test_sql_semantic_refactor.SchemaContextTest.test_context_for_inventory_and_orders_preserves_both_sources)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_count_star_requires_unambiguous_grain (test_sql_join_duplication.JoinDuplicationTest.test_count_star_requires_unambiguous_grain)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_cte_does_not_hide_duplication (test_sql_join_duplication.JoinDuplicationTest.test_cte_does_not_hide_duplication)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_date_column_parameters_are_converted_to_native_dates (test_sql_generation.SQLValidationTest.test_date_column_parameters_are_converted_to_native_dates)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_date_looking_text_filter_remains_a_string (test_sql_generation.SQLValidationTest.test_date_looking_text_filter_remains_a_string)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_distinct_cte_is_not_assumed_to_restore_measure_grain (test_sql_join_duplication.JoinDuplicationTest.test_distinct_cte_is_not_assumed_to_restore_measure_grain)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_dropped_order_operand_cannot_execute (test_sql_semantic_contracts.CrossDomainAgentTest.test_dropped_order_operand_cannot_execute)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_explicit_period_flow_comparison_keeps_sources_independent (test_sql_semantic_contracts.CrossDomainInventoryTest.test_explicit_period_flow_comparison_keeps_sources_independent)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_grouped_operands_can_join_the_unique_product_catalog_key (test_sql_semantic_contracts.DerivedJoinContractTest.test_grouped_operands_can_join_the_unique_product_catalog_key)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_independent_product_aggregates_are_safe (test_sql_semantic_contracts.DerivedJoinContractTest.test_independent_product_aggregates_are_safe)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_join_order_does_not_change_measure_safety (test_sql_join_duplication.JoinDuplicationTest.test_join_order_does_not_change_measure_safety)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_metric_dimensions_and_snapshot_grain_are_enforced (test_sql_metric_definitions.MetricEnforcementTest.test_metric_dimensions_and_snapshot_grain_are_enforced) (sql='SELECT s.cogs, SUM(s.revenue) FROM commerce.sales AS s GROUP BY s.cogs LIMIT 20')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_nested_cte_and_row_counts_cannot_hide_duplication (test_sql_join_duplication.JoinDuplicationTest.test_nested_cte_and_row_counts_cannot_hide_duplication) (expression='COUNT(*)')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_nested_cte_and_row_counts_cannot_hide_duplication (test_sql_join_duplication.JoinDuplicationTest.test_nested_cte_and_row_counts_cannot_hide_duplication) (expression='SUM(1)')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_nested_cte_and_row_counts_cannot_hide_duplication (test_sql_join_duplication.JoinDuplicationTest.test_nested_cte_and_row_counts_cannot_hide_duplication) (expression='SUM(x.value)')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_order_count_requires_distinct_orders (test_sql_metric_definitions.MetricEnforcementTest.test_order_count_requires_distinct_orders)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_overloaded_date_function_parameter_is_typed (test_sql_semantic_contracts.InterpretationRegressionTest.test_overloaded_date_function_parameter_is_typed)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_passes_native_date_parameters_to_repository (test_sql_generation.SQLGenerationAgentTest.test_passes_native_date_parameters_to_repository)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_regional_revenue_requires_the_delivered_filter (test_sql_metric_definitions.MetricEnforcementTest.test_regional_revenue_requires_the_delivered_filter)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_rejects_duplicated_payment_measures (test_sql_join_duplication.JoinDuplicationTest.test_rejects_duplicated_payment_measures) (expression='AVG(p.payment_value)')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_rejects_duplicated_payment_measures (test_sql_join_duplication.JoinDuplicationTest.test_rejects_duplicated_payment_measures) (expression='COUNT(p.order_id)')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_rejects_duplicated_payment_measures (test_sql_join_duplication.JoinDuplicationTest.test_rejects_duplicated_payment_measures) (expression='SUM(DISTINCT p.payment_value)')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_rejects_duplicated_payment_measures (test_sql_join_duplication.JoinDuplicationTest.test_rejects_duplicated_payment_measures) (expression='SUM(p.payment_value * i.quantity)')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_rejects_duplicated_payment_measures (test_sql_join_duplication.JoinDuplicationTest.test_rejects_duplicated_payment_measures) (expression='SUM(p.payment_value)')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_rejects_many_to_many_detail_join (test_sql_join_duplication.JoinDuplicationTest.test_rejects_many_to_many_detail_join)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_rejects_wrong_formula_source_or_missing_requested_metric (test_sql_metric_definitions.MetricEnforcementTest.test_rejects_wrong_formula_source_or_missing_requested_metric) (sql='SELECT AVG(s.revenue) AS revenue FROM commerce.sales AS s LIMIT 1')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_rejects_wrong_formula_source_or_missing_requested_metric (test_sql_metric_definitions.MetricEnforcementTest.test_rejects_wrong_formula_source_or_missing_requested_metric) (sql='SELECT SUM(p.payment_value) AS revenue FROM commerce.payments AS p LIMIT 1')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_rejects_wrong_formula_source_or_missing_requested_metric (test_sql_metric_definitions.MetricEnforcementTest.test_rejects_wrong_formula_source_or_missing_requested_metric) (sql='SELECT SUM(s.cogs) AS cogs FROM commerce.sales AS s LIMIT 1')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_rejects_wrong_formula_source_or_missing_requested_metric (test_sql_metric_definitions.MetricEnforcementTest.test_rejects_wrong_formula_source_or_missing_requested_metric) (sql='SELECT SUM(s.revenue) + 1 AS revenue FROM commerce.sales AS s LIMIT 1')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_rejects_wrong_formula_source_or_missing_requested_metric (test_sql_metric_definitions.MetricEnforcementTest.test_rejects_wrong_formula_source_or_missing_requested_metric) (sql='SELECT SUM(s.revenue) AS good, AVG(s.revenue) AS wrong FROM commerce.sales AS s LIMIT 1')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_repaired_revenue_returns_the_fixture_total_not_the_average (test_sql_metric_definitions.MetricAgentTest.test_repaired_revenue_returns_the_fixture_total_not_the_average)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_retries_validation_failure_with_feedback_for_generic_date_query (test_sql_generation.SQLGenerationAgentTest.test_retries_validation_failure_with_feedback_for_generic_date_query)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_return_context_keeps_keys_grain_and_excludes_web_traffic (test_sql_semantic_refactor.SchemaContextTest.test_return_context_keeps_keys_grain_and_excludes_web_traffic)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_safe_precomputed_aggregate_remains_safe (test_sql_join_duplication.JoinDuplicationTest.test_safe_precomputed_aggregate_remains_safe)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_same_category_lineage_is_safe_but_unrelated_attributes_are_not (test_sql_semantic_contracts.DerivedJoinCont ractTest.test_same_category_lineage_is_safe_but_unrelated_attributes_are_not)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_scalar_subquery_aggregate_cannot_hide_raw_duplicated_rows (test_sql_join_duplication.JoinDuplicationTest.test_scalar_subquery_aggregate_cannot_hide_raw_duplicated_rows) (expression='COUNT(*)')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_scalar_subquery_aggregate_cannot_hide_raw_duplicated_rows (test_sql_join_duplication.JoinDuplicationTest.test_scalar_subquery_aggregate_cannot_hide_raw_duplicated_rows) (expression='SUM(d.value)')": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_stockout_presence_uses_exists_without_multiplication (test_sql_semantic_contracts.CrossDomainInventoryTest.test_stockout_presence_uses_exists_without_multiplication)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_summary_receives_enforced_units_and_limitations (test_sql_metric_definitions.MetricAgentTest.test_summary_receives_enforced_units_and_limitations)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_supplementary_counts_do_not_replace_or_restrict_requested_metrics (test_sql_metric_definitions.MetricEnforc ementTest.test_supplementary_counts_do_not_replace_or_restrict_requested_metrics)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_transaction_question_does_not_pass_through_inventory_interpreter (test_sql_semantic_refactor.CanonicalAgentTest.test_transaction_question_does_not_pass_through_inventory_interpreter)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_unit_ratio_formula_and_each_period_are_verified (test_sql_semantic_contracts.DerivedJoinContractTest.test_unit_ratio_formula_and_each_period_are_verified)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_unsafe_plan_is_repaired_before_repository_execution (test_sql_join_duplication.JoinRepairTest.test_unsafe_plan_is_repaired_before_repository_execution)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary.",
+    "test_wrong_metric_is_repaired_before_execution (test_sql_metric_definitions.MetricAgentTest.test_wrong_metric_is_repaired_before_execution)": "Historical broad-domain test expects financial/order/returns capabilities removed by approved inventory-only boundary."
+  },
+  "candidate_revision": "3564c06"
+}

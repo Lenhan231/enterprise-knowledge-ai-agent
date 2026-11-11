@@ -1,0 +1,10 @@
+{
+  "current_revision": "c5e879be580a26ee5b534c02c9cef64fc15deaa0",
+  "tests": 703,
+  "failures": 11,
+  "errors": 51,
+  "skips": 15,
+  "baseline_revision": "a287d53296fe6588b7ae599022017943828ef9aa",
+  "new_failure_names": [],
+  "new_error_names": []
+}

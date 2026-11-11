@@ -1,0 +1,6 @@
+{"id": "F01", "category": "inventory_metadata", "question": "List recorded snapshot_date, product_id, year and month from commerce.inventory where snapshot_date='2022-12-31' order by product_id asc limit 10."}
+{"id": "F02", "category": "inventory_metadata", "question": "List snapshot_date, product_id from commerce.inventory where snapshot_date>='2022-11-01' and snapshot_date<'2023-01-01' and product_id in (1,3) order by snapshot_date asc, product_id asc limit 20."}
+{"id": "F03", "category": "product_numeric", "question": "List product_id, product_name, color, price from commerce.products where color='blue' order by price desc, product_id asc limit 5."}
+{"id": "F04", "category": "product_numeric", "question": "List product_id, category, size, price from commerce.products where product_id in (1,3) and price>=0 order by price asc, product_id asc limit 10."}
+{"id": "F05", "category": "product_numeric", "question": "List product_id, cogs, price from commerce.products where product_id in (1,3) order by product_id asc limit 10."}
+{"id": "F06", "category": "product_attributes", "question": "List product_id, category, segment from commerce.products where category='Streetwear' order by product_id desc limit 5."}

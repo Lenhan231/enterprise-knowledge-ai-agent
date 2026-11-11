@@ -1,0 +1,15 @@
+{
+  "baseline_tests": 715,
+  "candidate_tests": 721,
+  "baseline_failures": 11,
+  "candidate_failures": 10,
+  "baseline_errors": 51,
+  "candidate_errors": 51,
+  "candidate_skips": 19,
+  "new_failures": [],
+  "resolved_failures": [
+    "test_retrieval_service.RetrievalServiceTest.test_latency_includes_embedding_search_and_mapping"
+  ],
+  "new_errors": [],
+  "resolved_errors": []
+}

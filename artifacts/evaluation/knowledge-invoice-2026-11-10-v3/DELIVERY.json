@@ -1,0 +1,37 @@
+{
+  "status": "complete",
+  "branch": "eval/knowledge-invoice-20261110",
+  "knowledge": {
+    "cohort": "knowledge-invoice-2026-11-10-v3",
+    "application_evaluator_revision": "6bf2f73f2eb32940571dcfb424f20a6d336b56f2",
+    "dataset_version": "vietstyle-inventory-knowledge-30-v1",
+    "questions": 30,
+    "metric_records": 90,
+    "evaluator_errors": 0,
+    "missing_scores": 0,
+    "summary": "summary.json",
+    "per_question": "knowledge/per-question.csv"
+  },
+  "invoice": {
+    "cohort": "knowledge-invoice-2026-11-10-v2",
+    "application_evaluator_revision": "fe53b21f4e76907e90db6f8398eb3bcc119e7ffe",
+    "dataset_version": "commerce-invoice-10-v1",
+    "questions": 10,
+    "metric_records": 20,
+    "evaluator_errors": 0,
+    "missing_scores": 0,
+    "summary": "../knowledge-invoice-2026-11-10-v2/summary.json",
+    "per_question": "../knowledge-invoice-2026-11-10-v2/invoice/per-question.csv"
+  },
+  "integrity": {
+    "independent_cohorts_not_pooled": true,
+    "protected_historical_files": 754,
+    "historical_files_changed": 0,
+    "failed_scores_replaced": 0,
+    "production_writes": 0,
+    "main_merged_or_pushed": false,
+    "cold_start_failure_preserved_in_v2": true
+  },
+  "comparison": "COMPARISON.md",
+  "reproduction": "README.md"
+}

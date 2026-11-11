@@ -1,0 +1,20 @@
+{
+  "S26": {
+    "note": "Synthetic in-memory supplement: product 1 flagged mid-month but not closing date; frozen SQL unchanged.",
+    "period_products": [
+      1,
+      2
+    ],
+    "reference_closing_products": [
+      2
+    ]
+  },
+  "S27": {
+    "period_A": 13,
+    "reference_closing_A": 9,
+    "period_order_only_category": "D",
+    "reference_order_only_category": null,
+    "note": "Existing synthetic source fixture; period and closing totals differ and the frozen reference loses the order-only label."
+  },
+  "method": "Additional interpretive probes; no changes to original Ragas scores or source fixture rows persisted."
+}

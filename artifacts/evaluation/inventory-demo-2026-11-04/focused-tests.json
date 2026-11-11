@@ -1,0 +1,24 @@
+{
+  "source_revision": "3564c0638d0c9654240d222638e02b1ea8b057c5",
+  "focused": {
+    "run": 194,
+    "passed": 191,
+    "skipped": 3,
+    "failures": 0,
+    "errors": 0
+  },
+  "syntax_compile": "passed",
+  "local_full": {
+    "run": 752,
+    "failures": 36,
+    "errors": 96,
+    "skipped": 39
+  },
+  "baseline_full": {
+    "run": 739,
+    "failures": 11,
+    "errors": 51,
+    "skipped": 39
+  },
+  "full_environment": "Python 3.11.16, same installed environment for both; HF_HUB_OFFLINE=1 and TRANSFORMERS_OFFLINE=1; downloaded model dependencies disabled for reproducibility."
+}

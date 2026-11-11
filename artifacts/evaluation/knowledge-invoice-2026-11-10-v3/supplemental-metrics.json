@@ -1,0 +1,29 @@
+{
+  "knowledge": {
+    "generations": 30,
+    "metric_records": 90,
+    "errors": 0,
+    "citation_validity": {
+      "mean": 1.0,
+      "applicable": 24
+    },
+    "expected_page_precision": {
+      "mean": 0.8166666666666667,
+      "applicable": 24
+    },
+    "correct_unsupported_abstentions": 5,
+    "unsupported_cases": 5,
+    "supported_abstention_ids": [
+      "K17"
+    ],
+    "recorded_answer_model_calls": 30,
+    "successful_translation_tasks": 30,
+    "judge_cache_records": 222,
+    "cost_limit": "Translation tasks are inferred from source/trace; their tokens, API retries and dollar charges were not instrumented."
+  },
+  "invoice": {
+    "generations": 10,
+    "metric_records": 20,
+    "errors": 0
+  }
+}

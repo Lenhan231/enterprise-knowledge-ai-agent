@@ -1,0 +1,38 @@
+{
+  "application_revision": "f4c9ec1b086591ed340dc5250d161513cbc4d020",
+  "focused": {
+    "tests": 211,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modules": ["test_sql_three_case_followup", "test_sql_semantic_ablation", "test_sql_contract_benchmark", "test_metric_mapping", "test_sql_semantic_contracts", "test_sql_semantic_authority", "test_sql_semantic_refactor", "test_sql_generation", "test_sql_metric_definitions", "test_sql_join_duplication", "test_sql_followups", "test_inventory_metric_dictionary", "test_report_planning", "test_report_inventory", "test_report_facts", "test_analytics_agents"],
+    "command": "$env:PYTHONPATH = 'src;tests'; .venv/Scripts/python.exe -m unittest <listed modules with tests. prefix> -q"
+  },
+  "legacy_financial_suite": {
+    "module": "tests.test_sql_analytics",
+    "baseline_revision": "e297839",
+    "tests": 14,
+    "baseline_failures": 1,
+    "baseline_errors": 7,
+    "after_failures": 1,
+    "after_errors": 7,
+    "same_failure_error_identities": true,
+    "failures": ["test_financial_analytics_must_keep_metric_and_year_dimensions"],
+    "errors": ["test_accepts_aggregate_select_and_caps_limit", "test_accepts_case_expressions_inside_allowlisted_aggregates", "test_agent_generates_sql_executes_it_and_returns_provenance", "test_document_analytics_cites_visible_documents_not_unrelated_metric_rows", "test_empty_aggregate_result_with_null_evidence_is_reported_as_no_verified_data", "test_metric_result_cites_only_matching_metric_and_year_within_same_document", "test_repository_executes_inside_read_only_timeout_and_role_filtered_ctes"]
+  },
+  "full_suite": "Not rerun; approved scope was affected SQL and caller tests.",
+  "post_review_merge_test": {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "note": "Rechecked the incremental merge after removing inherited single-revision reproduction metadata. Application source was unchanged."
+  },
+  "benchmark_integrity": {
+    "retained_generations_unchanged": 27,
+    "retained_scores_unchanged": 81,
+    "merged_cases": 30,
+    "merged_scores": 90,
+    "current_application_hashes_match_measured_manifest": true,
+    "frozen_reference_matches": ["S13", "S15", "S17"]
+  }
+}

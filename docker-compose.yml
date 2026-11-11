@@ -1,0 +1,129 @@
+x-private: &private
+  restart: unless-stopped
+  environment: &internal-env
+    INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:?Set INTERNAL_SERVICE_TOKEN in .env}
+  healthcheck:
+    test: ["CMD", "python", "-c", "import os,urllib.request; urllib.request.urlopen(urllib.request.Request('http://localhost:8000/health', headers={'Authorization':'Bearer '+os.environ['INTERNAL_SERVICE_TOKEN']}),timeout=5)"]
+    interval: 15s
+    timeout: 10s
+    retries: 5
+    start_period: 15m
+
+services:
+  backend-api:
+    image: enterprise-knowledge-backend-api:local
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend-api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      <<: *internal-env
+      BACKEND_ONLY: "1"
+      EMBEDDING_BACKEND: remote
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-intfloat/multilingual-e5-base}
+      EMBEDDING_MAX_SEQUENCE_LENGTH: ${EMBEDDING_MAX_SEQUENCE_LENGTH:-512}
+      EMBEDDING_PRELOAD: "0"
+      RERANKER_PRELOAD: "0"
+      EMBEDDINGS_URL: http://embeddings:8000
+      RERANKER_URL: http://reranker:8000
+      DOCUMENT_PROCESSING_URL: http://document-processing:8000
+      DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS: ${DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS:-1200}
+    ports: ["127.0.0.1:8000:8000"]
+    volumes:
+      - embedding_model_cache:/models
+      - ./artifacts/local/knowledge-latency:/benchmarks
+    depends_on:
+      embeddings: {condition: service_healthy}
+      reranker: {condition: service_healthy}
+      document-processing: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health',timeout=5)"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  document-processing:
+    <<: *private
+    image: enterprise-knowledge-document-processing:local
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.document-processing
+    environment:
+      <<: *internal-env
+      DOCLING_CACHE_DIR: /models/docling
+      PADDLE_PDX_CACHE_HOME: /models/paddlex
+      HF_HOME: /models/huggingface
+      DOCUMENT_PROCESSING_VIETOCR_REPO_ID: ${DOCUMENT_PROCESSING_VIETOCR_REPO_ID:-lenhanm1/enterprise-printed-ocr-vietocr-tesseract}
+      DOCUMENT_PROCESSING_VIETOCR_FILENAME: ${DOCUMENT_PROCESSING_VIETOCR_FILENAME:-vietocr/vgg-seq2seq-enterprise-print.pth}
+      DOCUMENT_PROCESSING_VIETOCR_REVISION: ${DOCUMENT_PROCESSING_VIETOCR_REVISION:-6deb1cb10ecbf240aead77525e80aa4c58adfb23}
+      DOCUMENT_PROCESSING_VIETOCR_CONFIG: ${DOCUMENT_PROCESSING_VIETOCR_CONFIG:-vgg_seq2seq}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_VISION_MODEL: ${GROQ_VISION_MODEL:-qwen/qwen3.8-27b}
+      GEMINI_API: ${GEMINI_API:-}
+      OPEN_PARSER_API_KEY: ${OPEN_PARSER_API_KEY:-}
+      HF_INVOICE_LLM_TOKEN: ${HF_INVOICE_LLM_TOKEN:-}
+      DOCUMENT_PROCESSING_INVOICE_PROVIDER: ${DOCUMENT_PROCESSING_INVOICE_PROVIDER:-modal}
+      DOCUMENT_PROCESSING_GEMINI_INVOICE_MODEL: ${DOCUMENT_PROCESSING_GEMINI_INVOICE_MODEL:-gemini-3.1-flash-lite}
+      DOCUMENT_PROCESSING_INVOICE_MODAL_URL: ${DOCUMENT_PROCESSING_INVOICE_MODAL_URL:-}
+      DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS: ${DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS:-1200}
+      DOCUMENT_PROCESSING_INVOICE_MODEL: ${DOCUMENT_PROCESSING_INVOICE_MODEL:-Qwen/Qwen3-0.6B}
+      DOCUMENT_PROCESSING_INVOICE_REVISION: ${DOCUMENT_PROCESSING_INVOICE_REVISION:-c1899de289a04d12100db370d81485cdf75e47ca}
+      DOCUMENT_PROCESSING_INVOICE_ADAPTER: ${DOCUMENT_PROCESSING_INVOICE_ADAPTER:-lenhanm1/qwen3-0.6b-invoice-lora-900}
+      DOCUMENT_PROCESSING_INVOICE_ADAPTER_REVISION: ${DOCUMENT_PROCESSING_INVOICE_ADAPTER_REVISION:-7e062bb552f77af64b1c3bc9e205fa107c68c3d3}
+    volumes: ["document_model_cache:/models"]
+
+  chunking:
+    image: enterprise-knowledge-chunking:local
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.chunking
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 30s
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
+      DATABASE_MAX_CONNECTIONS_PER_PROCESS: "1"
+      DOCUMENT_CHUNKING_STRATEGY: ${DOCUMENT_CHUNKING_STRATEGY:-sentence}
+      CHUNKING_POLL_INTERVAL_SECONDS: ${CHUNKING_POLL_INTERVAL_SECONDS:-5}
+
+  embeddings:
+    <<: *private
+    image: enterprise-knowledge-embeddings:local
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.embeddings
+    environment:
+      <<: *internal-env
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-intfloat/multilingual-e5-base}
+      EMBEDDING_MAX_SEQUENCE_LENGTH: ${EMBEDDING_MAX_SEQUENCE_LENGTH:-512}
+      HUGGINGFACE_API_KEY: ${HUGGINGFACE_API_KEY:-}
+    volumes: ["embedding_model_cache:/models"]
+
+  reranker:
+    <<: *private
+    image: enterprise-knowledge-reranker:local
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.reranker
+    environment:
+      <<: *internal-env
+      # mMiniLM fp32: VPS rerank ~2-8 s vs ~21 s BGE int8, same VietStyle answers; BGE: RERANKER_MODEL=bge RERANKER_QUANTIZE=int8.
+      RERANKER_MODEL: ${RERANKER_MODEL:-mminilm}
+      RERANKER_QUANTIZE: ${RERANKER_QUANTIZE-}
+      # On the shared 6-vCPU VPS, 6 torch threads contend: 2 threads halved rerank time (median 5.7 s vs 7.8-13.5 s, 10 Nov).
+      OMP_NUM_THREADS: ${RERANKER_THREADS:-2}
+    volumes: ["embedding_model_cache:/models"]
+
+  proxy:
+    image: nginx:1.27-alpine
+    profiles: ["proxy"]
+    restart: unless-stopped
+    depends_on:
+      backend-api: {condition: service_healthy}
+    ports: ["127.0.0.1:8080:80"]
+    volumes: ["./docker/nginx.conf:/etc/nginx/nginx.conf:ro"]
+
+volumes:
+  embedding_model_cache:
+  document_model_cache:

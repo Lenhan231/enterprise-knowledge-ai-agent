@@ -1,0 +1,401 @@
+{
+  "created_at_utc": "2026-09-28T04:06:46.802652+00:00",
+  "method": "query-term extractive sentence selection; no generation or paraphrase",
+  "target_ratio": 0.5,
+  "packet_sha256": "bfb433fb5bcf3d62ac1c1fb1ccc93016c5fe73a8918de920ab7eae98a5c789d4",
+  "qa_cases_sha256": "cb4f32e387d126dd08e2f1e219a216d562bd21c5d9eb5420cfcc4fd3e9840cfb",
+  "response_count": 15,
+  "distinct_case_count": 5,
+  "mean_character_ratio": 0.3976,
+  "baseline_fact_coverage_unchanged_count": 15,
+  "all_expected_fact_groups_present_before_count": 6,
+  "all_expected_fact_groups_present_after_count": 6,
+  "annotated_fact_groups_present_before_count": 14,
+  "annotated_fact_groups_present_after_count": 14,
+  "citation_source_ids_preserved_count": 15,
+  "rows": [
+    {
+      "case_id": "employee-product-nutrition",
+      "response_id": "nDtMLeJj19eq3-St",
+      "question_sha256": "fa62381bd4731143e3f3021a4ae579082610de660d42878fcb41116054decf93",
+      "source_ids": [
+        "S1"
+      ],
+      "compressed_source_ids": [
+        "S1"
+      ],
+      "source_characters_before": 1429,
+      "source_characters_after": 711,
+      "compression_ratio": 0.4976,
+      "fact_groups_present_before": [],
+      "fact_groups_present_after": [],
+      "annotated_fact_group_count": 0,
+      "annotated_fact_groups_present_before": 0,
+      "annotated_fact_groups_present_after": 0,
+      "baseline_fact_coverage_unchanged": true,
+      "all_expected_fact_groups_present_before": false,
+      "all_expected_fact_groups_present_after": false
+    },
+    {
+      "case_id": "finance-2024-revenue-profit",
+      "response_id": "4jQOSHhFcJDzws-U",
+      "question_sha256": "87c6a9fc17cce2d552de275de2764add6d56daa855fab06af6444b2cd431ffa2",
+      "source_ids": [
+        "S4",
+        "S6"
+      ],
+      "compressed_source_ids": [
+        "S4",
+        "S6"
+      ],
+      "source_characters_before": 2071,
+      "source_characters_after": 1451,
+      "compression_ratio": 0.7006,
+      "fact_groups_present_before": [
+        false,
+        false
+      ],
+      "fact_groups_present_after": [
+        false,
+        false
+      ],
+      "annotated_fact_group_count": 2,
+      "annotated_fact_groups_present_before": 0,
+      "annotated_fact_groups_present_after": 0,
+      "baseline_fact_coverage_unchanged": true,
+      "all_expected_fact_groups_present_before": false,
+      "all_expected_fact_groups_present_after": false
+    },
+    {
+      "case_id": "finance-2024-revenue-profit",
+      "response_id": "QQWw7XY8TsrOd8SC",
+      "question_sha256": "87c6a9fc17cce2d552de275de2764add6d56daa855fab06af6444b2cd431ffa2",
+      "source_ids": [
+        "S3",
+        "S8"
+      ],
+      "compressed_source_ids": [
+        "S3",
+        "S8"
+      ],
+      "source_characters_before": 2399,
+      "source_characters_after": 1154,
+      "compression_ratio": 0.481,
+      "fact_groups_present_before": [
+        false,
+        true
+      ],
+      "fact_groups_present_after": [
+        false,
+        true
+      ],
+      "annotated_fact_group_count": 2,
+      "annotated_fact_groups_present_before": 1,
+      "annotated_fact_groups_present_after": 1,
+      "baseline_fact_coverage_unchanged": true,
+      "all_expected_fact_groups_present_before": false,
+      "all_expected_fact_groups_present_after": false
+    },
+    {
+      "case_id": "finance-2020-revenue-profit",
+      "response_id": "A0jRPr1CSRdWtnQg",
+      "question_sha256": "181626f49deb7b00e62371cfc1d03eb8fa26e9a89b82f7a301b3262d6638669e",
+      "source_ids": [
+        "S10"
+      ],
+      "compressed_source_ids": [
+        "S10"
+      ],
+      "source_characters_before": 1196,
+      "source_characters_after": 549,
+      "compression_ratio": 0.459,
+      "fact_groups_present_before": [
+        true,
+        true
+      ],
+      "fact_groups_present_after": [
+        true,
+        true
+      ],
+      "annotated_fact_group_count": 2,
+      "annotated_fact_groups_present_before": 2,
+      "annotated_fact_groups_present_after": 2,
+      "baseline_fact_coverage_unchanged": true,
+      "all_expected_fact_groups_present_before": true,
+      "all_expected_fact_groups_present_after": true
+    },
+    {
+      "case_id": "employee-financial-denial",
+      "response_id": "OV5cS9bmkSNoO-p_",
+      "question_sha256": "6d16512d3ec137605c6d2e93e96edf17f38e552775fe6e0802aa27b158cefb08",
+      "source_ids": [],
+      "compressed_source_ids": [],
+      "source_characters_before": 0,
+      "source_characters_after": 0,
+      "compression_ratio": 0.0,
+      "fact_groups_present_before": [],
+      "fact_groups_present_after": [],
+      "annotated_fact_group_count": 0,
+      "annotated_fact_groups_present_before": 0,
+      "annotated_fact_groups_present_after": 0,
+      "baseline_fact_coverage_unchanged": true,
+      "all_expected_fact_groups_present_before": false,
+      "all_expected_fact_groups_present_after": false
+    },
+    {
+      "case_id": "sustainability-2024-ghg-inventory",
+      "response_id": "dfpVBRQUdRmatZgP",
+      "question_sha256": "4c3a5d2ef5f104adef6b9aa3f27b2f2ace3fdb62ac65ee70e572a25d92b2c2e5",
+      "source_ids": [
+        "S3",
+        "S6"
+      ],
+      "compressed_source_ids": [
+        "S3",
+        "S6"
+      ],
+      "source_characters_before": 2395,
+      "source_characters_after": 1147,
+      "compression_ratio": 0.4789,
+      "fact_groups_present_before": [
+        true,
+        true
+      ],
+      "fact_groups_present_after": [
+        true,
+        true
+      ],
+      "annotated_fact_group_count": 2,
+      "annotated_fact_groups_present_before": 2,
+      "annotated_fact_groups_present_after": 2,
+      "baseline_fact_coverage_unchanged": true,
+      "all_expected_fact_groups_present_before": true,
+      "all_expected_fact_groups_present_after": true
+    },
+    {
+      "case_id": "finance-2024-revenue-profit",
+      "response_id": "X_aCdPhV6E_ax0Vw",
+      "question_sha256": "87c6a9fc17cce2d552de275de2764add6d56daa855fab06af6444b2cd431ffa2",
+      "source_ids": [
+        "S8"
+      ],
+      "compressed_source_ids": [
+        "S8"
+      ],
+      "source_characters_before": 1198,
+      "source_characters_after": 580,
+      "compression_ratio": 0.4841,
+      "fact_groups_present_before": [
+        false,
+        true
+      ],
+      "fact_groups_present_after": [
+        false,
+        true
+      ],
+      "annotated_fact_group_count": 2,
+      "annotated_fact_groups_present_before": 1,
+      "annotated_fact_groups_present_after": 1,
+      "baseline_fact_coverage_unchanged": true,
+      "all_expected_fact_groups_present_before": false,
+      "all_expected_fact_groups_present_after": false
+    },
+    {
+      "case_id": "finance-2020-revenue-profit",
+      "response_id": "D3gSNd8w7yPJWi_J",
+      "question_sha256": "181626f49deb7b00e62371cfc1d03eb8fa26e9a89b82f7a301b3262d6638669e",
+      "source_ids": [
+        "S10"
+      ],
+      "compressed_source_ids": [
+        "S10"
+      ],
+      "source_characters_before": 1196,
+      "source_characters_after": 549,
+      "compression_ratio": 0.459,
+      "fact_groups_present_before": [
+        true,
+        true
+      ],
+      "fact_groups_present_after": [
+        true,
+        true
+      ],
+      "annotated_fact_group_count": 2,
+      "annotated_fact_groups_present_before": 2,
+      "annotated_fact_groups_present_after": 2,
+      "baseline_fact_coverage_unchanged": true,
+      "all_expected_fact_groups_present_before": true,
+      "all_expected_fact_groups_present_after": true
+    },
+    {
+      "case_id": "sustainability-2024-ghg-inventory",
+      "response_id": "4pBtYBhnvMCrdFUl",
+      "question_sha256": "4c3a5d2ef5f104adef6b9aa3f27b2f2ace3fdb62ac65ee70e572a25d92b2c2e5",
+      "source_ids": [
+        "S6"
+      ],
+      "compressed_source_ids": [
+        "S6"
+      ],
+      "source_characters_before": 1197,
+      "source_characters_after": 568,
+      "compression_ratio": 0.4745,
+      "fact_groups_present_before": [
+        true,
+        true
+      ],
+      "fact_groups_present_after": [
+        true,
+        true
+      ],
+      "annotated_fact_group_count": 2,
+      "annotated_fact_groups_present_before": 2,
+      "annotated_fact_groups_present_after": 2,
+      "baseline_fact_coverage_unchanged": true,
+      "all_expected_fact_groups_present_before": true,
+      "all_expected_fact_groups_present_after": true
+    },
+    {
+      "case_id": "employee-product-nutrition",
+      "response_id": "5_Q6Lwj2Tec00FPc",
+      "question_sha256": "fa62381bd4731143e3f3021a4ae579082610de660d42878fcb41116054decf93",
+      "source_ids": [
+        "S1"
+      ],
+      "compressed_source_ids": [
+        "S1"
+      ],
+      "source_characters_before": 1429,
+      "source_characters_after": 711,
+      "compression_ratio": 0.4976,
+      "fact_groups_present_before": [],
+      "fact_groups_present_after": [],
+      "annotated_fact_group_count": 0,
+      "annotated_fact_groups_present_before": 0,
+      "annotated_fact_groups_present_after": 0,
+      "baseline_fact_coverage_unchanged": true,
+      "all_expected_fact_groups_present_before": false,
+      "all_expected_fact_groups_present_after": false
+    },
+    {
+      "case_id": "finance-2020-revenue-profit",
+      "response_id": "vXfo6o0nfGrsvFc0",
+      "question_sha256": "181626f49deb7b00e62371cfc1d03eb8fa26e9a89b82f7a301b3262d6638669e",
+      "source_ids": [
+        "S10"
+      ],
+      "compressed_source_ids": [
+        "S10"
+      ],
+      "source_characters_before": 1196,
+      "source_characters_after": 549,
+      "compression_ratio": 0.459,
+      "fact_groups_present_before": [
+        true,
+        true
+      ],
+      "fact_groups_present_after": [
+        true,
+        true
+      ],
+      "annotated_fact_group_count": 2,
+      "annotated_fact_groups_present_before": 2,
+      "annotated_fact_groups_present_after": 2,
+      "baseline_fact_coverage_unchanged": true,
+      "all_expected_fact_groups_present_before": true,
+      "all_expected_fact_groups_present_after": true
+    },
+    {
+      "case_id": "employee-financial-denial",
+      "response_id": "ATAl1o60YhsYIeP-",
+      "question_sha256": "6d16512d3ec137605c6d2e93e96edf17f38e552775fe6e0802aa27b158cefb08",
+      "source_ids": [],
+      "compressed_source_ids": [],
+      "source_characters_before": 0,
+      "source_characters_after": 0,
+      "compression_ratio": 0.0,
+      "fact_groups_present_before": [],
+      "fact_groups_present_after": [],
+      "annotated_fact_group_count": 0,
+      "annotated_fact_groups_present_before": 0,
+      "annotated_fact_groups_present_after": 0,
+      "baseline_fact_coverage_unchanged": true,
+      "all_expected_fact_groups_present_before": false,
+      "all_expected_fact_groups_present_after": false
+    },
+    {
+      "case_id": "sustainability-2024-ghg-inventory",
+      "response_id": "8C86nxoeW6UwOoxK",
+      "question_sha256": "4c3a5d2ef5f104adef6b9aa3f27b2f2ace3fdb62ac65ee70e572a25d92b2c2e5",
+      "source_ids": [
+        "S1",
+        "S3",
+        "S6"
+      ],
+      "compressed_source_ids": [
+        "S1",
+        "S3",
+        "S6"
+      ],
+      "source_characters_before": 3378,
+      "source_characters_after": 1603,
+      "compression_ratio": 0.4745,
+      "fact_groups_present_before": [
+        true,
+        true
+      ],
+      "fact_groups_present_after": [
+        true,
+        true
+      ],
+      "annotated_fact_group_count": 2,
+      "annotated_fact_groups_present_before": 2,
+      "annotated_fact_groups_present_after": 2,
+      "baseline_fact_coverage_unchanged": true,
+      "all_expected_fact_groups_present_before": true,
+      "all_expected_fact_groups_present_after": true
+    },
+    {
+      "case_id": "employee-financial-denial",
+      "response_id": "5KHYlh9bt8M3y84N",
+      "question_sha256": "6d16512d3ec137605c6d2e93e96edf17f38e552775fe6e0802aa27b158cefb08",
+      "source_ids": [],
+      "compressed_source_ids": [],
+      "source_characters_before": 0,
+      "source_characters_after": 0,
+      "compression_ratio": 0.0,
+      "fact_groups_present_before": [],
+      "fact_groups_present_after": [],
+      "annotated_fact_group_count": 0,
+      "annotated_fact_groups_present_before": 0,
+      "annotated_fact_groups_present_after": 0,
+      "baseline_fact_coverage_unchanged": true,
+      "all_expected_fact_groups_present_before": false,
+      "all_expected_fact_groups_present_after": false
+    },
+    {
+      "case_id": "employee-product-nutrition",
+      "response_id": "l1yTi5Z_Hv7z3MME",
+      "question_sha256": "fa62381bd4731143e3f3021a4ae579082610de660d42878fcb41116054decf93",
+      "source_ids": [
+        "S1"
+      ],
+      "compressed_source_ids": [
+        "S1"
+      ],
+      "source_characters_before": 1429,
+      "source_characters_after": 711,
+      "compression_ratio": 0.4976,
+      "fact_groups_present_before": [],
+      "fact_groups_present_after": [],
+      "annotated_fact_group_count": 0,
+      "annotated_fact_groups_present_before": 0,
+      "annotated_fact_groups_present_after": 0,
+      "baseline_fact_coverage_unchanged": true,
+      "all_expected_fact_groups_present_before": false,
+      "all_expected_fact_groups_present_after": false
+    }
+  ],
+  "limitations": "Character count is a token-cost proxy, not tokenizer measurement. Repeated blind responses share questions and evidence, labels cover only annotated fact phrases, and no model answers or human ratings were generated. This diagnostic does not establish answer quality or justify production activation."
+}

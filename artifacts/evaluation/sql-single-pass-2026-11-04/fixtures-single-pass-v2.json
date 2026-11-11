@@ -1,0 +1,104 @@
+{
+  "checkout": "fd44615",
+  "tests": 14,
+  "failures": [],
+  "errors": [],
+  "observations": [
+    {
+      "question": "Top 2 blue products by highest stock_on_hand on 2022-12-31.",
+      "expected_ids": [
+        1
+      ],
+      "returned_ids": [
+        2,
+        1
+      ],
+      "expected_allowed": false,
+      "allowed": true,
+      "semantic_regression": true,
+      "llm_calls": 1,
+      "repository_calls": 1
+    },
+    {
+      "question": "Top 2 products by highest stock_on_hand on 2022-12-31, only color='blue'.",
+      "sql": "SELECT i.snapshot_date,i.product_id,i.stock_on_hand*2 FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date=$1 AND p.color=$2 ORDER BY 3 DESC NULLS LAST,i.product_id LIMIT 2",
+      "expected_allowed": false,
+      "allowed": false,
+      "llm_calls": 1,
+      "repository_calls": 0
+    },
+    {
+      "question": "Top 2 products by highest stock_on_hand on 2022-12-31, only color='blue'.",
+      "sql": "SELECT i.snapshot_date,i.product_id,i.stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date=$1 AND p.color=$2 ORDER BY 3 DESC NULLS LAST,i.product_id LIMIT 2",
+      "expected_allowed": false,
+      "allowed": false,
+      "llm_calls": 1,
+      "repository_calls": 0
+    },
+    {
+      "question": "Top 2 products by highest stock_on_hand on 2022-12-31, only color='blue'.",
+      "sql": "SELECT i.snapshot_date,i.product_id,i.stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date=$1 ORDER BY 3 DESC NULLS LAST,i.product_id LIMIT 2",
+      "expected_allowed": false,
+      "allowed": false,
+      "llm_calls": 1,
+      "repository_calls": 0
+    },
+    {
+      "question": "Top 2 products by highest stock_on_hand on 2022-12-31, only color='blue'.",
+      "sql": "SELECT i.snapshot_date,i.product_id,i.stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date=$1 AND p.color=$2 ORDER BY 3 ASC,i.product_id LIMIT 2",
+      "expected_allowed": false,
+      "allowed": false,
+      "llm_calls": 1,
+      "repository_calls": 0
+    },
+    {
+      "question": "Top 2 products by highest stock_on_hand on 2022-12-31, only color='blue'.",
+      "sql": "DELETE FROM commerce.inventory",
+      "expected_allowed": false,
+      "allowed": false,
+      "llm_calls": 1,
+      "repository_calls": 0
+    },
+    {
+      "question": "Top 2 products by highest stock_on_hand on 2022-12-31, only color='blue'.",
+      "sql": "SELECT s.secret FROM private.secrets s LIMIT 2",
+      "expected_allowed": false,
+      "allowed": false,
+      "llm_calls": 1,
+      "repository_calls": 0
+    },
+    {
+      "question": "Top 2 products by highest stock_on_hand on 2022-12-31, only color='blue'.",
+      "sql": "SELECT i.snapshot_date,i.product_id,i.stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id JOIN commerce.returns r ON r.product_id=p.product_id WHERE i.snapshot_date=$1 AND p.color=$2 ORDER BY 3 DESC NULLS LAST,i.product_id LIMIT 2",
+      "expected_allowed": false,
+      "allowed": false,
+      "llm_calls": 1,
+      "repository_calls": 0
+    },
+    {
+      "question": "ordinary inventory year/month fields",
+      "expected_allowed": true,
+      "allowed": true,
+      "llm_calls": 1,
+      "repository_calls": 1
+    },
+    {
+      "report_format": "markdown",
+      "status": "complete",
+      "facts": 3
+    },
+    {
+      "report_format": "docx",
+      "status": "complete",
+      "facts": 3
+    },
+    {
+      "question": "Top 2 products by highest stock_on_hand on 2022-12-31, only color='blue'.",
+      "sql": "SELECT i.snapshot_date,i.product_id,i.stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date=$1 AND p.color=$2 ORDER BY 3 DESC NULLS LAST,i.product_id LIMIT 2",
+      "expected_allowed": true,
+      "allowed": true,
+      "llm_calls": 1,
+      "repository_calls": 1
+    }
+  ]
+}

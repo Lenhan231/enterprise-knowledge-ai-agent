@@ -1,0 +1,72 @@
+{
+  "created_at_utc": "2026-09-27T22:41:47.917192+00:00",
+  "mode": "dry_run",
+  "metadata_only": true,
+  "documents": [
+    {
+      "document_id": "VNM-AR-2020-VI",
+      "stored_chunks": 346,
+      "parsed_chunks": 366,
+      "exact_content_match": false,
+      "status": "skipped_mismatch",
+      "mismatch": "chunk_count_mismatch",
+      "eligible_updates": 0
+    },
+    {
+      "document_id": "VNM-AR-2023-EN",
+      "stored_chunks": 401,
+      "parsed_chunks": 418,
+      "exact_content_match": false,
+      "status": "skipped_mismatch",
+      "mismatch": "chunk_count_mismatch",
+      "eligible_updates": 0
+    },
+    {
+      "document_id": "VNM-AR-2024-VI",
+      "stored_chunks": 397,
+      "parsed_chunks": 406,
+      "exact_content_match": false,
+      "status": "skipped_mismatch",
+      "mismatch": "chunk_count_mismatch",
+      "eligible_updates": 0
+    },
+    {
+      "document_id": "VNM-SR-2020-EN",
+      "stored_chunks": 305,
+      "parsed_chunks": 308,
+      "exact_content_match": false,
+      "status": "skipped_mismatch",
+      "mismatch": "chunk_count_mismatch",
+      "eligible_updates": 0
+    },
+    {
+      "document_id": "VNM-SR-2021-EN",
+      "stored_chunks": 326,
+      "parsed_chunks": 338,
+      "exact_content_match": false,
+      "status": "skipped_mismatch",
+      "mismatch": "chunk_count_mismatch",
+      "eligible_updates": 0
+    },
+    {
+      "document_id": "VNM-SR-2022-EN",
+      "stored_chunks": 239,
+      "parsed_chunks": 240,
+      "exact_content_match": false,
+      "status": "skipped_mismatch",
+      "mismatch": "chunk_count_mismatch",
+      "eligible_updates": 0
+    },
+    {
+      "document_id": "VNM-SR-2024-EN",
+      "stored_chunks": 276,
+      "parsed_chunks": 279,
+      "exact_content_match": false,
+      "status": "skipped_mismatch",
+      "mismatch": "chunk_count_mismatch",
+      "eligible_updates": 0
+    }
+  ],
+  "eligible_updates": 0,
+  "applied_updates": 0
+}

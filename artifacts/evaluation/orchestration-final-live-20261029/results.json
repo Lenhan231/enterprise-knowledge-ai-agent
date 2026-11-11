@@ -1,0 +1,1084 @@
+{
+  "model": "qwen/qwen3.8-27b",
+  "implementation_sha256": {
+    "src/core/agents/router.py": "186a6d5118115f49b7ec4610a74e92ade2b8841edbf9d02ba1b0faced43bd8d9",
+    "src/core/agents/planning.py": "423e4ba54fe5c1e0681971046bbb17f765be516d4dda3dde3d665d739d33c32f",
+    "src/core/agents/execution.py": "8d3178f10da58fdb3d40c721aac8b11eb56522611fc37153fbce0ece2a312503",
+    "src/core/agents/response.py": "cd51fb7d94a8e32853cb7ff57391f21b251b4d4031382baa56a0212f1c057ed6",
+    "src/core/agents/runtime.py": "21711733e13d7452693e0e151309851e6619fad2176ba496dfb7769222b066c2",
+    "src/core/llm/groq_provider.py": "4f55dbdb3504fea7359e5b9a17b90c2767bb6c57de3c359106f20989bb483f85"
+  },
+  "cases": [
+    {
+      "id": "mixed-en",
+      "question": "Count the catalog products, and summarize the safety-stock and reorder rules in the Inventory Management Policy Manual.",
+      "expected_route": "hybrid",
+      "contract": "SQL count plus cited document rules",
+      "http_status": 200,
+      "result": {
+        "answer": "The catalog contains 2,412 products [S1]. No information regarding safety-stock or reorder rules in the Inventory Management Policy Manual is available in the provided evidence.\n\nLimitations: knowledge task k1: empty.",
+        "agent": "hybrid",
+        "evidence": [
+          {
+            "citation_id": "S1",
+            "source_type": "database",
+            "source": "commerce.products",
+            "content": null,
+            "metadata": {}
+          }
+        ],
+        "data": {
+          "sql": {
+            "ok": true,
+            "operation": "text_to_sql",
+            "rows": [
+              {
+                "count": 2412
+              }
+            ],
+            "sql": "SELECT COUNT(*) FROM commerce.products AS p LIMIT 200",
+            "parameters": [],
+            "query_status": "executed",
+            "limitations": []
+          }
+        },
+        "metadata": {
+          "ok": false,
+          "status": "partial",
+          "fallback": false,
+          "limitations": [
+            "knowledge task k1: empty."
+          ],
+          "selected_route": "hybrid",
+          "task_trace": [
+            {
+              "id": "k1",
+              "agent": "knowledge",
+              "depends_on": [],
+              "status": "empty",
+              "attempts": 1,
+              "elapsed_ms": 9031,
+              "error_type": null
+            },
+            {
+              "id": "s1",
+              "agent": "sql",
+              "depends_on": [],
+              "status": "complete",
+              "attempts": 1,
+              "elapsed_ms": 10452,
+              "error_type": null
+            }
+          ],
+          "specialist_invocations": 2,
+          "planning_fallback": false,
+          "revisions": 1,
+          "latency": {
+            "stages_ms": {
+              "routing": 2665.219142998467,
+              "embedding": 1837.7097259999573,
+              "database_retrieval": 1574.5365429993399,
+              "retrieval_fusion": null,
+              "query_translation": null,
+              "reranking": null,
+              "answer_generation": 846.7449139989185,
+              "sql_planning": 5581.804076000481,
+              "sql_execution": 4486.35420500068,
+              "answer_synthesis": 419.92411499995796,
+              "retrieval_total": 3412.6253069989616,
+              "agent_workflow": 14285.380423001698
+            },
+            "events": [
+              {
+                "stage": "routing",
+                "elapsed_ms": 2665.219142998467,
+                "status": "completed"
+              },
+              {
+                "stage": "sql_planning",
+                "elapsed_ms": 5101.577678000467,
+                "status": "completed"
+              },
+              {
+                "stage": "sql_planning",
+                "elapsed_ms": 480.22639800001343,
+                "status": "completed"
+              },
+              {
+                "stage": "embedding",
+                "elapsed_ms": 1837.7097259999573,
+                "status": "completed"
+              },
+              {
+                "stage": "database_retrieval",
+                "elapsed_ms": 1574.5365429993399,
+                "status": "completed"
+              },
+              {
+                "stage": "retrieval_total",
+                "elapsed_ms": 3412.6253069989616,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_generation",
+                "elapsed_ms": 511.37240400021255,
+                "status": "completed"
+              },
+              {
+                "stage": "sql_execution",
+                "elapsed_ms": 4486.35420500068,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_generation",
+                "elapsed_ms": 335.37250999870594,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_synthesis",
+                "elapsed_ms": 419.92411499995796,
+                "status": "completed"
+              },
+              {
+                "stage": "agent_workflow",
+                "elapsed_ms": 14285.380423001698,
+                "status": "completed"
+              }
+            ],
+            "request_total_ms": 19721.821922001254
+          }
+        }
+      },
+      "elapsed_seconds": 22.406999999999243
+    },
+    {
+      "id": "mixed-vi",
+      "question": "??m s? s?n ph?m theo nh?m h?ng v? t?m t?t h??ng d?n ki?m k? trong t?i li?u SOP Cycle Count and Stock Adjustment.",
+      "expected_route": "hybrid",
+      "contract": "grouped SQL counts plus cited stock-count procedure",
+      "http_status": 200,
+      "result": {
+        "answer": "Không thể xác định các nhóm hàng có tồn kho thấp vì truy vấn dữ liệu đã thất bại (lỗi SQL validation) và không có dữ liệu quan sát nào được cung cấp trong kết quả. Tuy nhiên, dựa trên tài liệu SOP Cycle Count and Stock Adjustment, hướng dẫn kiểm kê và điều chỉnh tồn kho bao gồm các bước sau: 1. Chuẩn bị: Inventory Controller xuất danh sách SKU, vị trí, đơn vị tính, snapshot timestamp và số lượng hệ thống; Warehouse Supervisor phân công người đếm, người đếm không được xem số lượng hệ thống nếu áp dụng blind count [S1]. 2. Đếm độc lập: Ghi nhận số lượng thực tế, người đếm, thời gian và ảnh/ghi chú ngoại lệ [S2]. 3. Đối chiếu: Xác định chênh lệch tuyệt đối, phần trăm và giá trị ảnh hưởng [S2]. 4. Điều tra: Xác định nguyên nhân gốc và thu thập chứng từ [S2]. 5. Phê duyệt: Người duyệt phải độc lập với người đếm hoặc người nhập điều chỉnh [S2]. 6. Cập nhật: Thực hiện điều chỉnh có audit trail và thông báo cho Planner nếu ảnh hưởng đến ROP [S2]. Quy trình chi tiết hơn bao gồm: chuẩn bị danh sách → blind count → recount độc lập → đối chiếu receipts/picks/returns/transfers → ghi nguyên nhân → duyệt → điều chỉnh có audit trail [S3]. Mọi điều chỉnh cần mã phiếu, người nhập, người duyệt, thời điểm và bằng chứng, đồng thời không xóa giao dịch cũ [S3].\n\nLimitations: The generated query did not pass planning or SQL validation. sql task s1: failed.",
+        "agent": "hybrid",
+        "evidence": [
+          {
+            "citation_id": "S1",
+            "source_type": "document",
+            "source": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+            "content": "Section: 3. Chuẩn bị trước khi đếm\nVietStyle Commerce • SOP-INV-002 • Tài liệu mô phỏng Trang 2 1. Mục đích và phạm vi Áp dụng cho SKU thời trang và outdoor trong kho / điểm xử lý đơn của mô hình VietStyle Commerce. SOP bao gồm kiểm kê chu kỳ, kiểm kê theo sự kiện và điều chỉnh chênh lệch. Không dùng SOP này để thay thế quy trình nhận hàng hoặc QA hàng trả về. 2. Khi nào phải kiểm kê đột xuất? • SKU có fill rate dưới 95% hoặc phát sinh stockout nhưng hệ thống vẫn ghi nhận lượng tồn cao. • Cờ stockout_flag và overstock_flag cùng bật; days of supply tính lại >120 ngày nhưng vẫn có stockout signal. • SKU có sai lệch lặp lại, hàng giá trị cao, nghi ngờ mất mát, lỗi barcode hoặc sai size/màu. • Sau campaign lớn, thay đổi vị trí kho, đổi mã SKU, trả hàng số lượng lớn hoặc sự cố hệ thống. 3. Chuẩn bị trước khi đếm • Inventory Controller xuất danh sách SKU, vị trí, đơn vị tính, snapshot timestamp và số lượng hệ thống. • Warehouse Supervisor phân công người đếm; người đếm không được xem số lượng hệ thống nếu tổ chức áp dụng blind count.",
+            "metadata": {
+              "domain": "general_knowledge",
+              "format": "PDF",
+              "parser": "pymupdf",
+              "company": "Commerce Demo",
+              "filename": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+              "page_count": 3,
+              "source_url": null,
+              "chunk_index": 1,
+              "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+              "fiscal_year": null,
+              "layout_type": "text",
+              "page_number": 2,
+              "pipeline_id": "built_in",
+              "source_type": "user_upload",
+              "token_count": 291,
+              "allowed_roles": [
+                "admin",
+                "employee",
+                "executive",
+                "finance_analyst",
+                "legal_compliance",
+                "operations",
+                "procurement",
+                "sustainability_analyst"
+              ],
+              "document_type": "knowledge_document",
+              "heading_level": 1,
+              "parser_engine": "built_in",
+              "section_title": "3. Chuẩn bị trước khi đếm",
+              "chunk_strategy": "sentence",
+              "evidence_class": null,
+              "embedding_model": "intfloat/multilingual-e5-base",
+              "chunk_size_chars": 1100,
+              "source_publisher": null,
+              "actual_char_count": 1043,
+              "knowledge_domains": [],
+              "embedding_revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+              "chunk_overlap_chars": 0,
+              "embedding_dimensions": 768,
+              "embedding_normalized": true,
+              "embedding_query_prefix": "query: ",
+              "text_extraction_method": "pymupdf.get_text",
+              "external_reference_type": null,
+              "reference_applicability": null,
+              "embedding_passage_prefix": "passage: ",
+              "synthetic_company_policy": false,
+              "commerce_reference_active": false,
+              "external_policy_reference": false,
+              "external_business_reference": false,
+              "embedding_max_sequence_length": 512,
+              "similarity_score": 0.0476190476190476,
+              "retrieval_method": "hybrid",
+              "retrieval_details": {}
+            }
+          },
+          {
+            "citation_id": "S2",
+            "source_type": "document",
+            "source": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+            "content": "Section: VÀ ĐIỀU CHỈNH TỒN KHO\nVietStyle Commerce • SOP-INV-002 • Tài liệu mô phỏng Trang 1 VIETSTYLE COMMERCE SOP-INV-002 QUY TRÌNH KIỂM KÊ VÀ ĐIỀU CHỈNH TỒN KHO Phiên bản v1.0 • 16/10/2026 • Chủ sở hữu: Inventory Manager TÀI LIỆU MÔ PHỎNG CHO DATATHON 2026. Các ngưỡng vận hành, lead time, KPI và cấp phê duyệt là đề xuất giả lập cần được chủ sở hữu nghiệp vụ phê duyệt trước khi áp dụng thực tế. Dataset không xác định rõ đơn vị tiền tệ và không cung cấp dữ liệu PO inbound, tồn kho theo kho hoặc backorder; không dùng kết quả mẫu như số liệu tồn kho hiện hành. Bước Đầu ra bắt buộc 1. Chuẩn bị Danh sách SKU / vị trí, phạm vi đếm, thời điểm freeze giao dịch nếu cần 2. Đếm độc lập Số lượng thực tế; người đếm; thời gian; ảnh / ghi chú ngoại lệ 3. Đối chiếu Chênh lệch tuyệt đối và %, giá trị ảnh hưởng nếu có 4. Điều tra Nguyên nhân gốc và chứng từ liên quan 5. Phê duyệt Người duyệt độc lập với người đếm / nhập điều chỉnh 6. Cập nhật Điều chỉnh có audit trail; thông báo cho Planner nếu ảnh hưởng ROP",
+            "metadata": {
+              "domain": "general_knowledge",
+              "format": "PDF",
+              "parser": "pymupdf",
+              "company": "Commerce Demo",
+              "filename": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+              "page_count": 3,
+              "source_url": null,
+              "chunk_index": 0,
+              "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+              "fiscal_year": null,
+              "layout_type": "text",
+              "page_number": 1,
+              "pipeline_id": "built_in",
+              "source_type": "user_upload",
+              "token_count": 302,
+              "allowed_roles": [
+                "admin",
+                "employee",
+                "executive",
+                "finance_analyst",
+                "legal_compliance",
+                "operations",
+                "procurement",
+                "sustainability_analyst"
+              ],
+              "document_type": "knowledge_document",
+              "heading_level": 1,
+              "parser_engine": "built_in",
+              "section_title": "VÀ ĐIỀU CHỈNH TỒN KHO",
+              "chunk_strategy": "sentence",
+              "evidence_class": null,
+              "embedding_model": "intfloat/multilingual-e5-base",
+              "chunk_size_chars": 1100,
+              "source_publisher": null,
+              "actual_char_count": 1006,
+              "knowledge_domains": [],
+              "embedding_revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+              "chunk_overlap_chars": 0,
+              "embedding_dimensions": 768,
+              "embedding_normalized": true,
+              "embedding_query_prefix": "query: ",
+              "text_extraction_method": "pymupdf.get_text",
+              "external_reference_type": null,
+              "reference_applicability": null,
+              "embedding_passage_prefix": "passage: ",
+              "synthetic_company_policy": false,
+              "commerce_reference_active": false,
+              "external_policy_reference": false,
+              "external_business_reference": false,
+              "embedding_max_sequence_length": 512,
+              "similarity_score": 0.0459447799827437,
+              "retrieval_method": "hybrid",
+              "retrieval_details": {}
+            }
+          },
+          {
+            "citation_id": "S3",
+            "source_type": "document",
+            "source": "05_Inventory_Policy_Training_Deck.pptx",
+            "content": "04 | Kiểm kê chu kỳ & điều chỉnh ABC dựa trên giá trị tiêu thụ năm, không chỉ dựa vào số lượng. NHÓM A ~80% giá trị tiêu thụ Hằng tuần NHÓM B ~15% tiếp theo Hằng tháng NHÓM C ~5% còn lại Hằng quý Quy trình: chuẩn bị danh sách → blind count → recount độc lập → đối chiếu receipts/picks/returns/transfers → ghi nguyên nhân → duyệt → điều chỉnh có audit trail. Không xóa giao dịch cũ; mọi điều chỉnh cần mã phiếu, người nhập, người duyệt, thời điểm và bằng chứng. VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 5",
+            "metadata": {
+              "domain": "general_knowledge",
+              "format": "PPTX",
+              "parser": "python-stdlib-pptx-xml",
+              "company": "Commerce Demo",
+              "filename": "05_Inventory_Policy_Training_Deck.pptx",
+              "source_url": null,
+              "chunk_index": 4,
+              "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+              "fiscal_year": null,
+              "pipeline_id": "built_in",
+              "source_type": "user_upload",
+              "token_count": 145,
+              "slide_number": 5,
+              "allowed_roles": [
+                "admin",
+                "employee",
+                "executive",
+                "finance_analyst",
+                "legal_compliance",
+                "operations",
+                "procurement",
+                "sustainability_analyst"
+              ],
+              "document_type": "knowledge_document",
+              "heading_level": null,
+              "parser_engine": "built_in",
+              "section_title": null,
+              "chunk_strategy": "sentence",
+              "evidence_class": null,
+              "embedding_model": "intfloat/multilingual-e5-base",
+              "chunk_size_chars": 1100,
+              "source_publisher": null,
+              "actual_char_count": 517,
+              "knowledge_domains": [],
+              "embedding_revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+              "chunk_overlap_chars": 0,
+              "embedding_dimensions": 768,
+              "embedding_normalized": true,
+              "embedding_query_prefix": "query: ",
+              "text_extraction_method": "python-stdlib-pptx-xml",
+              "external_reference_type": null,
+              "reference_applicability": null,
+              "embedding_passage_prefix": "passage: ",
+              "synthetic_company_policy": false,
+              "commerce_reference_active": false,
+              "external_policy_reference": false,
+              "external_business_reference": false,
+              "embedding_max_sequence_length": 512,
+              "similarity_score": 0.0452353616532721,
+              "retrieval_method": "hybrid",
+              "retrieval_details": {}
+            }
+          }
+        ],
+        "data": {
+          "sql": {
+            "attempted_sql": "SELECT inv.category, SUM(inv.stock_on_hand) AS stock_on_hand FROM commerce.inventory AS inv WHERE inv.snapshot_date = (SELECT MAX(inv2.snapshot_date) FROM commerce.inventory AS inv2) AND (inv.days_of_supply < 7 OR inv.stockout_flag = true) GROUP BY inv.category ORDER BY 1 LIMIT 200",
+            "parameters": [],
+            "query_status": "rejected"
+          },
+          "knowledge": {}
+        },
+        "metadata": {
+          "ok": false,
+          "status": "partial",
+          "fallback": false,
+          "limitations": [
+            "The generated query did not pass planning or SQL validation.",
+            "sql task s1: failed."
+          ],
+          "selected_route": "hybrid",
+          "task_trace": [
+            {
+              "id": "s1",
+              "agent": "sql",
+              "depends_on": [],
+              "status": "failed",
+              "attempts": 1,
+              "elapsed_ms": 1391,
+              "error_type": "SQLValidationError"
+            },
+            {
+              "id": "k1",
+              "agent": "knowledge",
+              "depends_on": [],
+              "status": "complete",
+              "attempts": 1,
+              "elapsed_ms": 2518,
+              "error_type": null
+            }
+          ],
+          "specialist_invocations": 2,
+          "planning_fallback": false,
+          "revisions": 1,
+          "latency": {
+            "stages_ms": {
+              "routing": 883.182861000023,
+              "embedding": 683.1026630006818,
+              "database_retrieval": 637.763378001182,
+              "retrieval_fusion": null,
+              "query_translation": null,
+              "reranking": null,
+              "answer_generation": 1188.3906919993024,
+              "sql_planning": 1379.8171400012507,
+              "sql_execution": null,
+              "answer_synthesis": 1354.9397309998312,
+              "retrieval_total": 1321.1910019999777,
+              "agent_workflow": 5970.248948999142
+            },
+            "events": [
+              {
+                "stage": "routing",
+                "elapsed_ms": 883.182861000023,
+                "status": "completed"
+              },
+              {
+                "stage": "sql_planning",
+                "elapsed_ms": 680.6569330001366,
+                "status": "completed"
+              },
+              {
+                "stage": "embedding",
+                "elapsed_ms": 683.1026630006818,
+                "status": "completed"
+              },
+              {
+                "stage": "database_retrieval",
+                "elapsed_ms": 637.763378001182,
+                "status": "completed"
+              },
+              {
+                "stage": "retrieval_total",
+                "elapsed_ms": 1321.1910019999777,
+                "status": "completed"
+              },
+              {
+                "stage": "sql_planning",
+                "elapsed_ms": 699.160207001114,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_generation",
+                "elapsed_ms": 1188.3906919993024,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_synthesis",
+                "elapsed_ms": 1354.9397309998312,
+                "status": "completed"
+              },
+              {
+                "stage": "agent_workflow",
+                "elapsed_ms": 5970.248948999142,
+                "status": "completed"
+              }
+            ],
+            "request_total_ms": 5970.601142000305
+          }
+        }
+      },
+      "elapsed_seconds": 8.578000000001339
+    },
+    {
+      "id": "sql-knowledge",
+      "question": "Find the top three categories by number of catalog products, then retrieve guidance from the Inventory Management Policy Manual relevant to those categories.",
+      "expected_route": "hybrid",
+      "contract": "SQL category values must feed dependent document task",
+      "http_status": 200,
+      "result": {
+        "answer": "The top three categories by the number of catalog products are Streetwear (1,320 products), Outdoor (743 products), and Casual (201 products) [S1]. However, guidance from the Inventory Management Policy Manual relevant to these categories could not be retrieved because the associated knowledge task (k1) returned empty results.\n\nLimitations: knowledge task k1: empty.",
+        "agent": "hybrid",
+        "evidence": [
+          {
+            "citation_id": "S1",
+            "source_type": "database",
+            "source": "commerce.products",
+            "content": null,
+            "metadata": {}
+          }
+        ],
+        "data": {
+          "sql": {
+            "ok": true,
+            "operation": "text_to_sql",
+            "rows": [
+              {
+                "category": "Streetwear",
+                "product_count": 1320
+              },
+              {
+                "category": "Outdoor",
+                "product_count": 743
+              },
+              {
+                "category": "Casual",
+                "product_count": 201
+              }
+            ],
+            "sql": "SELECT p.category, COUNT(DISTINCT p.product_id) AS product_count FROM commerce.products AS p GROUP BY p.category ORDER BY 2 DESC LIMIT 3",
+            "parameters": [],
+            "query_status": "executed",
+            "limitations": []
+          }
+        },
+        "metadata": {
+          "ok": false,
+          "status": "partial",
+          "fallback": false,
+          "limitations": [
+            "knowledge task k1: empty."
+          ],
+          "selected_route": "hybrid",
+          "task_trace": [
+            {
+              "id": "s1",
+              "agent": "sql",
+              "depends_on": [],
+              "status": "complete",
+              "attempts": 1,
+              "elapsed_ms": 2719,
+              "error_type": null
+            },
+            {
+              "id": "k1",
+              "agent": "knowledge",
+              "depends_on": [
+                "s1"
+              ],
+              "status": "empty",
+              "attempts": 1,
+              "elapsed_ms": 2333,
+              "error_type": null
+            },
+            {
+              "id": "k1",
+              "agent": "knowledge",
+              "depends_on": [
+                "s1"
+              ],
+              "status": "empty",
+              "attempts": 1,
+              "elapsed_ms": 2148,
+              "error_type": null
+            }
+          ],
+          "specialist_invocations": 3,
+          "planning_fallback": false,
+          "revisions": 1,
+          "latency": {
+            "stages_ms": {
+              "routing": 898.9396569995733,
+              "embedding": 1362.3787010001251,
+              "database_retrieval": 1272.2729329998401,
+              "retrieval_fusion": null,
+              "query_translation": null,
+              "reranking": null,
+              "answer_generation": 2258.9282270018884,
+              "sql_planning": 519.15714200004,
+              "sql_execution": 1776.7584680004802,
+              "answer_synthesis": 875.8200019983633,
+              "retrieval_total": 2635.423269999592,
+              "agent_workflow": 9820.205091999014
+            },
+            "events": [
+              {
+                "stage": "routing",
+                "elapsed_ms": 898.9396569995733,
+                "status": "completed"
+              },
+              {
+                "stage": "sql_planning",
+                "elapsed_ms": 519.15714200004,
+                "status": "completed"
+              },
+              {
+                "stage": "sql_execution",
+                "elapsed_ms": 1776.7584680004802,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_generation",
+                "elapsed_ms": 417.78178500135255,
+                "status": "completed"
+              },
+              {
+                "stage": "embedding",
+                "elapsed_ms": 1140.1646550002624,
+                "status": "completed"
+              },
+              {
+                "stage": "database_retrieval",
+                "elapsed_ms": 654.4263249998039,
+                "status": "completed"
+              },
+              {
+                "stage": "retrieval_total",
+                "elapsed_ms": 1795.0489260001632,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_generation",
+                "elapsed_ms": 536.1237420001999,
+                "status": "completed"
+              },
+              {
+                "stage": "embedding",
+                "elapsed_ms": 222.21404599986272,
+                "status": "completed"
+              },
+              {
+                "stage": "database_retrieval",
+                "elapsed_ms": 617.8466080000362,
+                "status": "completed"
+              },
+              {
+                "stage": "retrieval_total",
+                "elapsed_ms": 840.3743439994287,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_generation",
+                "elapsed_ms": 1305.022700000336,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_synthesis",
+                "elapsed_ms": 875.8200019983633,
+                "status": "completed"
+              },
+              {
+                "stage": "agent_workflow",
+                "elapsed_ms": 9820.205091999014,
+                "status": "completed"
+              }
+            ],
+            "request_total_ms": 9820.38520199967
+          }
+        }
+      },
+      "elapsed_seconds": 12.639999999999418
+    },
+    {
+      "id": "knowledge-sql",
+      "question": "Find a single numeric stockout-days threshold in the Policy Rules Registry, then count inventory rows that exceed that cited threshold. If the documents do not define one, state that rather than inventing a value.",
+      "expected_route": "hybrid",
+      "contract": "cited threshold feeds dependent SQL or explicitly unfulfilled count",
+      "http_status": 200,
+      "result": {
+        "answer": "No supported answer could be completed. A task failed or its deadline/evidence budget was exhausted.\n\nLimitations: knowledge task k1: empty. sql task s1: blocked.",
+        "agent": "hybrid",
+        "evidence": [],
+        "data": {},
+        "metadata": {
+          "ok": false,
+          "status": "failed",
+          "fallback": true,
+          "limitations": [
+            "knowledge task k1: empty.",
+            "sql task s1: blocked."
+          ],
+          "selected_route": "hybrid",
+          "task_trace": [
+            {
+              "id": "k1",
+              "agent": "knowledge",
+              "depends_on": [],
+              "status": "empty",
+              "attempts": 1,
+              "elapsed_ms": 1337,
+              "error_type": null
+            },
+            {
+              "id": "s1",
+              "agent": "sql",
+              "depends_on": [
+                "k1"
+              ],
+              "status": "blocked",
+              "attempts": 0,
+              "elapsed_ms": 0,
+              "error_type": "DependencyUnavailable"
+            },
+            {
+              "id": "s1",
+              "agent": "sql",
+              "depends_on": [
+                "k1"
+              ],
+              "status": "blocked",
+              "attempts": 0,
+              "elapsed_ms": 0,
+              "error_type": "DependencyUnavailable"
+            }
+          ],
+          "specialist_invocations": 1,
+          "planning_fallback": false,
+          "revisions": 1,
+          "latency": {
+            "stages_ms": {
+              "routing": 923.8768459999847,
+              "embedding": 208.080598999004,
+              "database_retrieval": 625.3726229988388,
+              "retrieval_fusion": null,
+              "query_translation": null,
+              "reranking": null,
+              "answer_generation": 502.0908900005452,
+              "sql_planning": null,
+              "sql_execution": null,
+              "answer_synthesis": 0.09253299867850728,
+              "retrieval_total": 833.7463899988506,
+              "agent_workflow": 3128.511016999255
+            },
+            "events": [
+              {
+                "stage": "routing",
+                "elapsed_ms": 923.8768459999847,
+                "status": "completed"
+              },
+              {
+                "stage": "embedding",
+                "elapsed_ms": 208.080598999004,
+                "status": "completed"
+              },
+              {
+                "stage": "database_retrieval",
+                "elapsed_ms": 625.3726229988388,
+                "status": "completed"
+              },
+              {
+                "stage": "retrieval_total",
+                "elapsed_ms": 833.7463899988506,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_generation",
+                "elapsed_ms": 502.0908900005452,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_synthesis",
+                "elapsed_ms": 0.09253299867850728,
+                "status": "completed"
+              },
+              {
+                "stage": "agent_workflow",
+                "elapsed_ms": 3128.511016999255,
+                "status": "completed"
+              }
+            ],
+            "request_total_ms": 3128.604389999964
+          }
+        }
+      },
+      "elapsed_seconds": 5.765999999999622
+    },
+    {
+      "id": "followup",
+      "question": "Now count catalog products only in the Outdoor category instead.",
+      "expected_route": "analytics",
+      "contract": "follow-up resolves product-count objective with category filter",
+      "http_status": 200,
+      "result": {
+        "answer": "There are 743 products in the 'Outdoor' category [S1].\n\nSources: [S1] commerce.products",
+        "agent": "analytics",
+        "evidence": [
+          {
+            "citation_id": "S1",
+            "source_type": "database",
+            "source": "commerce.products",
+            "content": null,
+            "metadata": {}
+          }
+        ],
+        "data": {
+          "sql": {
+            "ok": true,
+            "operation": "text_to_sql",
+            "rows": [
+              {
+                "count": 743
+              }
+            ],
+            "sql": "SELECT COUNT(p.product_id) FROM commerce.products AS p WHERE p.category = $1 LIMIT 200",
+            "parameters": [
+              "Outdoor"
+            ],
+            "query_status": "executed",
+            "limitations": []
+          }
+        },
+        "metadata": {
+          "ok": true,
+          "status": "complete",
+          "fallback": false,
+          "limitations": [],
+          "selected_route": "analytics",
+          "task_trace": [
+            {
+              "id": "s1",
+              "agent": "sql",
+              "depends_on": [],
+              "status": "complete",
+              "attempts": 1,
+              "elapsed_ms": 3171,
+              "error_type": null
+            }
+          ],
+          "specialist_invocations": 1,
+          "planning_fallback": false,
+          "revisions": 0,
+          "latency": {
+            "stages_ms": {
+              "routing": 684.8117569988972,
+              "embedding": null,
+              "database_retrieval": null,
+              "retrieval_fusion": null,
+              "query_translation": null,
+              "reranking": null,
+              "answer_generation": 344.1063459995348,
+              "sql_planning": 1012.2681829998328,
+              "sql_execution": 1807.0580439998594,
+              "answer_synthesis": 0.09082700125873089,
+              "retrieval_total": null,
+              "agent_workflow": 3868.622234000213
+            },
+            "events": [
+              {
+                "stage": "routing",
+                "elapsed_ms": 684.8117569988972,
+                "status": "completed"
+              },
+              {
+                "stage": "sql_planning",
+                "elapsed_ms": 481.04339100063953,
+                "status": "completed"
+              },
+              {
+                "stage": "sql_planning",
+                "elapsed_ms": 531.2247919991933,
+                "status": "completed"
+              },
+              {
+                "stage": "sql_execution",
+                "elapsed_ms": 1807.0580439998594,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_generation",
+                "elapsed_ms": 344.1063459995348,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_synthesis",
+                "elapsed_ms": 0.09082700125873089,
+                "status": "completed"
+              },
+              {
+                "stage": "agent_workflow",
+                "elapsed_ms": 3868.622234000213,
+                "status": "completed"
+              }
+            ],
+            "request_total_ms": 3869.0366320006433
+          }
+        }
+      },
+      "elapsed_seconds": 6.54700000000048
+    },
+    {
+      "id": "knowledge-vi",
+      "question": "T?m t?t quy t?c t?nh ?i?m ??t h?ng l?i trong t?i li?u Inventory Management Policy Manual.",
+      "expected_route": "knowledge",
+      "contract": "cited reorder-rule document evidence",
+      "http_status": 200,
+      "result": {
+        "answer": "No supported answer could be completed. A task failed or its deadline/evidence budget was exhausted.\n\nLimitations: knowledge task k1: empty.",
+        "agent": "knowledge",
+        "evidence": [],
+        "data": {},
+        "metadata": {
+          "ok": false,
+          "status": "failed",
+          "fallback": true,
+          "limitations": [
+            "knowledge task k1: empty."
+          ],
+          "selected_route": "knowledge",
+          "task_trace": [
+            {
+              "id": "k1",
+              "agent": "knowledge",
+              "depends_on": [],
+              "status": "empty",
+              "attempts": 1,
+              "elapsed_ms": 1886,
+              "error_type": null
+            }
+          ],
+          "specialist_invocations": 1,
+          "planning_fallback": false,
+          "revisions": 1,
+          "latency": {
+            "stages_ms": {
+              "routing": 698.5693250007898,
+              "embedding": 368.3168110001134,
+              "database_retrieval": 946.7840479992446,
+              "retrieval_fusion": null,
+              "query_translation": null,
+              "reranking": null,
+              "answer_generation": 569.9841090008704,
+              "sql_planning": null,
+              "sql_execution": null,
+              "answer_synthesis": 0.04209200051263906,
+              "retrieval_total": 1315.346577001037,
+              "agent_workflow": 3150.329600999612
+            },
+            "events": [
+              {
+                "stage": "routing",
+                "elapsed_ms": 698.5693250007898,
+                "status": "completed"
+              },
+              {
+                "stage": "embedding",
+                "elapsed_ms": 368.3168110001134,
+                "status": "completed"
+              },
+              {
+                "stage": "database_retrieval",
+                "elapsed_ms": 946.7840479992446,
+                "status": "completed"
+              },
+              {
+                "stage": "retrieval_total",
+                "elapsed_ms": 1315.346577001037,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_generation",
+                "elapsed_ms": 569.9841090008704,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_synthesis",
+                "elapsed_ms": 0.04209200051263906,
+                "status": "completed"
+              },
+              {
+                "stage": "agent_workflow",
+                "elapsed_ms": 3150.329600999612,
+                "status": "completed"
+              }
+            ],
+            "request_total_ms": 3150.4221209997922
+          }
+        }
+      },
+      "elapsed_seconds": 5.78099999999904
+    },
+    {
+      "id": "sql-en",
+      "question": "Count the products in each category.",
+      "expected_route": "analytics",
+      "contract": "validated SQL and returned category counts",
+      "http_status": 200,
+      "result": {
+        "answer": "Based on the provided data, the number of products in each category is as follows [S1]:\n\n*   **Streetwear**: 1,320\n*   **Outdoor**: 743\n*   **Casual**: 201\n*   **GenZ**: 148\n\nSources: [S1] commerce.products",
+        "agent": "analytics",
+        "evidence": [
+          {
+            "citation_id": "S1",
+            "source_type": "database",
+            "source": "commerce.products",
+            "content": null,
+            "metadata": {}
+          }
+        ],
+        "data": {
+          "sql": {
+            "ok": true,
+            "operation": "text_to_sql",
+            "rows": [
+              {
+                "category": "Casual",
+                "product_count": 201
+              },
+              {
+                "category": "GenZ",
+                "product_count": 148
+              },
+              {
+                "category": "Outdoor",
+                "product_count": 743
+              },
+              {
+                "category": "Streetwear",
+                "product_count": 1320
+              }
+            ],
+            "sql": "SELECT commerce.products.category AS category, COUNT(commerce.products.product_id) AS product_count FROM commerce.products GROUP BY commerce.products.category ORDER BY 1 LIMIT 200",
+            "parameters": [],
+            "query_status": "executed",
+            "limitations": []
+          }
+        },
+        "metadata": {
+          "ok": true,
+          "status": "complete",
+          "fallback": false,
+          "limitations": [],
+          "selected_route": "analytics",
+          "task_trace": [
+            {
+              "id": "s1",
+              "agent": "sql",
+              "depends_on": [],
+              "status": "complete",
+              "attempts": 1,
+              "elapsed_ms": 2752,
+              "error_type": null
+            }
+          ],
+          "specialist_invocations": 1,
+          "planning_fallback": false,
+          "revisions": 0,
+          "latency": {
+            "stages_ms": {
+              "routing": 665.8321819995763,
+              "embedding": null,
+              "database_retrieval": null,
+              "retrieval_fusion": null,
+              "query_translation": null,
+              "reranking": null,
+              "answer_generation": 420.4925350004487,
+              "sql_planning": 529.5871660000557,
+              "sql_execution": 1793.141411999386,
+              "answer_synthesis": 0.11918199925275985,
+              "retrieval_total": null,
+              "agent_workflow": 3432.064601000093
+            },
+            "events": [
+              {
+                "stage": "routing",
+                "elapsed_ms": 665.8321819995763,
+                "status": "completed"
+              },
+              {
+                "stage": "sql_planning",
+                "elapsed_ms": 529.5871660000557,
+                "status": "completed"
+              },
+              {
+                "stage": "sql_execution",
+                "elapsed_ms": 1793.141411999386,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_generation",
+                "elapsed_ms": 420.4925350004487,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_synthesis",
+                "elapsed_ms": 0.11918199925275985,
+                "status": "completed"
+              },
+              {
+                "stage": "agent_workflow",
+                "elapsed_ms": 3432.064601000093,
+                "status": "completed"
+              }
+            ],
+            "request_total_ms": 3432.201116000215
+          }
+        }
+      },
+      "elapsed_seconds": 6.235000000000582
+    },
+    {
+      "id": "denial",
+      "question": "Count orders in 2022.",
+      "expected_route": "analytics",
+      "contract": "viewer must receive HTTP 403 without SQL data",
+      "http_status": 403,
+      "error_type": "HTTPError",
+      "elapsed_seconds": 3.3439999999991414
+    }
+  ],
+  "limitations": [
+    "Authorized live API; review factual grounding separately. No credentials recorded.",
+    "30-second interval between cases to respect same-model provider quotas."
+  ]
+}

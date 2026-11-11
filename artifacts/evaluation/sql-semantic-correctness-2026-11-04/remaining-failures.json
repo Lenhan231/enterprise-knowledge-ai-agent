@@ -1,0 +1,127 @@
+{
+  "application_revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6",
+  "failures": [
+    {
+      "id": "S03",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Same product grain, date, top 20 and deterministic IDs; extra constant snapshot column changes output schema but not selection.",
+      "judge_reason": "Response: The generated query joins commerce.inventory with commerce.products on product_id, filters inventory rows to snapshot date 2022-12-31, and returns the snapshot date, product ID, product name, and stock on hand. It orders primarily by stock on hand descending with nulls last, then applies additional tie breakers using snapshot date, product ID, and product name, returning at most 20 rows.\nReference: The reference query joins commerce.inventory with commerce.products on product_id, filters inventory rows to snapshot date 2022-12-31, and returns product ID, product name, and stock on hand. It orders by stock on hand descending with nulls last, then product ID, returning at most 20 rows."
+    },
+    {
+      "id": "S04",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Same category totals at one date, ordering and bounded results. Extra constant snapshot projection/grouping is provenance; safety LIMIT 200 is not a requested top-N. Strict output-schema equality differs.",
+      "judge_reason": "Response: The generated SQL query joins inventory with products, filters inventory records to the 2022-12-31 snapshot, groups stock by snapshot date and product category, and returns the snapshot date, category, and summed stock on hand. Results are ordered by summed stock descending with nulls last, then snapshot date and category, limited to 200 rows.\nReference: The reference SQL query joins inventory with products, filters records to the 2022-12-31 snapshot, groups summed stock on hand by product category, and returns each category with its total stock. Results are ordered by total stock descending with nulls last and then category, limited to 200 rows."
+    },
+    {
+      "id": "S05",
+      "classification": "Genuine semantic mismatch",
+      "rationale": "Grouping by snapshot yields no row when no flags match; scalar COUNT should return zero. Provenance requirement currently couples scalar count to observed rows.",
+      "judge_reason": "Response: The generated SQL query filters inventory records to those with reorder_flag equal to TRUE and the maximum snapshot_date. It inner joins matching products, groups the results by snapshot_date, counts distinct product_id values, orders by snapshot_date, and returns the snapshot date with the observed product count, limited to 200 rows. The join may exclude inventory records without a matching product.\nReference: The reference SQL query counts distinct product_id values in commerce.inventory where reorder_flag equals TRUE and snapshot_date equals the maximum snapshot_date in the inventory table. It returns one aggregate count, limited to 200 rows."
+    },
+    {
+      "id": "S06",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Same source/filter/product grain/order; extra constant snapshot output is provenance, not a different population.",
+      "judge_reason": "Response: The generated SQL query joins commerce.inventory with commerce.products on product_id, filters to rows where stockout_flag is TRUE and snapshot_date is 2022-12-31, selects snapshot_date, product_id, product_name, and stockout_days, sorts by snapshot_date, product_id, and product_name, and limits the result to 200 rows.\nReference: The reference SQL query joins commerce.inventory with commerce.products on product_id, filters to rows where snapshot_date equals 2022-12-31 and stockout_flag is TRUE, selects product_id, product_name, and stockout_days, sorts by product_id, and limits the result to 200 rows."
+    },
+    {
+      "id": "S07",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Same flagged product count/category/date; extra constant snapshot and canonical metric alias differ. PK prevents hypothetical duplicate product IDs raised by judge.",
+      "judge_reason": "Response: The generated SQL query joins inventory with products, filters to overstocked inventory records from 2022-12-31, and groups by snapshot date and product category. It counts distinct products in each group, returns the snapshot date, category, and count, orders by the count descending with nulls last followed by date and category, and limits the output to 200 rows.\nReference: The reference SQL query joins inventory with products, filters to overstocked inventory records from 2022-12-31, and groups by product category. It counts distinct products in each category, orders the categories by count descending and then category, and limits the output to 200 rows."
+    },
+    {
+      "id": "S08",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Explicit non-NULL predicate is now present. Remaining differences are extra date provenance and dynamic latest versus a frozen fixed date.",
+      "judge_reason": "Response: The generated SQL query joins inventory with products by product_id, filters out rows where days_of_supply is null, and keeps only rows from the latest snapshot_date in the inventory table. It returns snapshot_date, product_id, product_name, and days_of_supply, orders primarily by days_of_supply with additional ordering columns, and limits the result to 200 rows.\nReference: The reference SQL query joins inventory with products by product_id, filters to rows with a snapshot_date of December 31, 2022, and excludes rows where days_of_supply is null. It returns product_id, product_name, and days_of_supply, orders by days_of_supply and product_id, and limits the result to 200 rows."
+    },
+    {
+      "id": "S10",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Question and frozen notes request December average, but oracle restricts Dec 31. Catalog requires separate exact snapshots. Multiple December snapshots distinguish these semantics; do not assume month means closing date.",
+      "judge_reason": "Response: The generated query joins inventory records to products, filters records to the full month of December 2022, computes average fill rate grouped by snapshot date and product category, and orders results by snapshot date and category. It also returns the snapshot date column. The join references inventory and products without the aliases or full commerce-qualified names declared in the FROM and JOIN clauses, which may make the query invalid in some SQL dialects.\nReference: The reference query joins inventory records to products, filters records to exactly December 31, 2022, computes average fill rate grouped only by product category, orders results by category, and returns up to 200 category-level rows."
+    },
+    {
+      "id": "S09",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Same product IDs and exact date; extra constant snapshot output and redundant tie-break fields do not change selected products.",
+      "judge_reason": "Response: The generated SQL query joins inventory records with matching products, filters to product IDs 1 and 3 on snapshot date 2022-12-31, selects snapshot date, product ID, product name, and stock on hand, orders by snapshot date, product ID, and product name, and limits the result to 200 rows.\nReference: The reference SQL query joins inventory records with matching products, filters to product IDs 1 and 3 on snapshot date 2022-12-31, selects product ID, product name, and stock on hand, orders by product ID, and limits the result to 200 rows."
+    },
+    {
+      "id": "S12",
+      "classification": "Genuine semantic mismatch",
+      "rationale": "Exact snapshot grouping differs from requested monthly grouping on multi-observation months. Catalog does not certify combining movement windows; not solved by changing a date label.",
+      "judge_reason": "Response: The generated query joins commerce.inventory with commerce.products on product_id, filters inventory snapshots from 2022-01-01 inclusive through 2023-01-01 exclusive, groups by the exact snapshot_date, and returns daily inventory units sold totals ordered by date, limited to 200 rows. The join can also exclude inventory rows without a matching product.\nReference: The reference query filters commerce.inventory snapshots over the same date range, groups records by month using the truncated snapshot_date, and returns monthly units sold totals ordered chronologically, limited to 200 rows. It does not join with commerce.products."
+    },
+    {
+      "id": "S13",
+      "classification": "Query execution or data limitation",
+      "rationale": "Clear intersection/delta request lacks a verified comparison contract; latest code returns an honest capability refusal. Not a successful answer.",
+      "judge_reason": "Supported question did not execute successfully."
+    },
+    {
+      "id": "S11",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Question names December; oracle chooses month end. Multiple observations can change products/rank. Current policy retains dated observations rather than silently select closing date.",
+      "judge_reason": "Response: The generated SQL joins inventory with products by product_id, returns snapshot_date, product_id, product_name, and stockout_days, filters inventory records to dates from December 1, 2022 inclusive through January 1, 2023 exclusive, sorts primarily by stockout_days descending with nulls last and additional tie breakers, and limits the result to 200 rows.\nReference: The reference SQL joins inventory with products by product_id, returns product_id, product_name, and stockout_days, filters records to exactly December 31, 2022, sorts by stockout_days descending with nulls last and then product_id, and limits the result to 200 rows."
+    },
+    {
+      "id": "S15",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Unspecified inventory metrics has no unambiguous field set. Model selects only stock; reference implicitly enumerates eleven fields. Coverage difference is real but requested scope is underspecified.",
+      "judge_reason": "Supported question did not execute successfully."
+    },
+    {
+      "id": "S16",
+      "classification": "Genuine semantic mismatch",
+      "rationale": "Per-snapshot category totals do not answer annual category totals. Catalog snapshot grain prevents silently combining windows; remain explicit about unsupported annual rollup.",
+      "judge_reason": "Response: The generated SQL joins inventory with products, filters inventory records from 2022-01-01 inclusive through 2023-01-01 exclusive, and calculates total units received grouped separately by snapshot date and product category. It returns the snapshot date, category, and total units received, ordered by total units received descending with nulls last, then by snapshot date and category, limited to 200 rows.\nReference: The reference SQL joins inventory with products, applies the same date range filter, and calculates total units received grouped only by product category. It returns one aggregate row per category, ordered by total units received descending with nulls last and then by category, limited to 200 rows."
+    },
+    {
+      "id": "S20",
+      "classification": "Valid equivalent SQL",
+      "rationale": "Approved schema discount_amount is NUMERIC NOT NULL. Direct subtraction equals COALESCE(discount_amount,0) on all approved rows. Nullable counterexample is outside that schema; do not change formula.",
+      "judge_reason": "Response: The generated SQL joins order items with orders and products, filters orders from January 1, 2022 through December 31, 2022, groups results by product category, and sums quantity multiplied by unit price minus discount amount. Because discount_amount is not wrapped in COALESCE, rows with a null discount amount produce null expressions and are ignored by SUM. Results are ordered by the first selected column, p.category, and limited to 200 rows.\nReference: The reference SQL performs the same joins, date filtering, grouping, ordering, and row limiting. It sums quantity multiplied by unit price minus discount amount, but COALESCE converts null discount_amount values to zero so those rows contribute their full quantity multiplied by unit price."
+    },
+    {
+      "id": "S21",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Stable product-ID tie-break is now present; remaining output includes product_name and an approved FK/PK dimension join.",
+      "judge_reason": "Response: The generated SQL query joins products with returns, filters returns to calendar year 2022, groups results by product ID and product name, and returns the top 10 products ordered by total returned units descending and product ID ascending. It returns product ID, product name, and the summed return quantity.\nReference: The reference SQL query filters returns to calendar year 2022, groups them by product ID, sums the returned quantities, and returns the top 10 product IDs ordered by returned units descending and product ID ascending."
+    },
+    {
+      "id": "S23",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Both complete independent operands, NUMERIC/NULLIF ratio, exact source periods, paired product population and stable ranking now execute and match numeric reference. Extra product_name changes output schema.",
+      "judge_reason": "Response: The generated query aggregates ordered units and returned units by product for 2022, then joins both aggregates to commerce.products. It returns product_id, product_name, returned units, ordered units, and the return-to-order ratio, sorted by the ratio descending with nulls last and limited to 200 rows.\nReference: The reference query aggregates returned units and ordered units by product for 2022, joins the two aggregates, and returns product_id, returned units, ordered units, and the returned-to-ordered ratio. It sorts by the ratio descending with nulls last, then by product_id, and limits the result to 200 rows."
+    },
+    {
+      "id": "S25",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Approved NOT EXISTS bridges now execute; declared FKs make anchors population-preserving. Output/order use product then order, while gold orders by order then product. For more than 200 unmatched pairs the bounded subsets can differ; no exhaustive equivalence claim.",
+      "judge_reason": "Response: The generated query returns up to 200 distinct product and order pairs from returns, but only when matching product and order records exist. It excludes pairs having a matching order_items record. The selected columns are ordered as product_id then order_id, and the results are sorted by product_id then order_id.\nReference: The reference query returns up to 200 distinct order and product pairs from returns where no matching order_items record exists. It does not require corresponding records in the products or orders tables. The results are sorted by order_id then product_id."
+    },
+    {
+      "id": "S27",
+      "classification": "Query execution or data limitation",
+      "rationale": "Safety validator rejects an invented cancelled-order exclusion. The a287d53 follow-up removes it, executes and matches numerical reference; semantic score stays zero because full-month observations/FULL JOIN labels differ from frozen closing-date SQL.",
+      "judge_reason": "Supported question did not execute successfully."
+    },
+    {
+      "id": "S26",
+      "classification": "Reference/evaluator ambiguity",
+      "rationale": "Question month vs oracle closing snapshot and extra date provenance. EXISTS avoids fanout; matches current single monthly observation but not all possible data.",
+      "judge_reason": "Response: The generated query joins inventory with products, selects distinct snapshot dates, product IDs, and product names for inventory records marked as stockouts during December 2022, and keeps products with at least one order item in that month. It orders by snapshot date and product ID, then returns at most 200 rows.\nReference: The reference query joins inventory with products and selects product IDs and product names for inventory records that were stockouts specifically on December 31, 2022, and for which the product had at least one order during December 2022. It orders by product ID and returns at most 200 rows."
+    }
+  ],
+  "followup": {
+    "revision": "a287d53296fe6588b7ae599022017943828ef9aa",
+    "id": "S27",
+    "classification": "Reference/evaluator ambiguity",
+    "execution_accuracy": 1,
+    "numerical_accuracy": 1,
+    "sql_semantic_equivalence": 0
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "application_revision": "1ec500717f29c1bb392e6132666078d7f4c92345",
+  "captured_sql_revision": "fd44615deaffdc392d5bf69dbc5320e711593eb7",
+  "case": "S09",
+  "method": "Captured single-pass SQL response replayed through the unchanged Report shared-SQL evidence path and real read-only repository; deterministic fact-reference writer.",
+  "new_model_api_calls": 0,
+  "quality_benchmark": false,
+  "results": [
+    {
+      "format": "markdown",
+      "status": "complete",
+      "bytes": 1962,
+      "media_type": "text/markdown; charset=utf-8",
+      "facts": 8,
+      "coverage": {
+        "stock": {
+          "requested": "Compare the 2022-12-31 stock_on_hand of DragonWear MA-01 (product_id 1) and DragonWear MA-03 (product_id 3).",
+          "returned": 2,
+          "included": 2,
+          "omitted": 0,
+          "completeness": "returned_query_scope",
+          "snapshots": []
+        }
+      }
+    },
+    {
+      "format": "docx",
+      "status": "complete",
+      "bytes": 37677,
+      "media_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "facts": 8,
+      "coverage": {
+        "stock": {
+          "requested": "Compare the 2022-12-31 stock_on_hand of DragonWear MA-01 (product_id 1) and DragonWear MA-03 (product_id 3).",
+          "returned": 2,
+          "included": 2,
+          "omitted": 0,
+          "completeness": "returned_query_scope",
+          "snapshots": []
+        }
+      }
+    }
+  ]
+}

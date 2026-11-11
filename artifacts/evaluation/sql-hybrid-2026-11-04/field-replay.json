@@ -1,0 +1,50 @@
+{
+  "application_revision": "60c9a91b9c5bfde9fefc0bd170563c1a8d10c35f",
+  "method": "Captured responses replayed through hybrid and real read-only repository; no fresh LLM judgments, generation or end-to-end latency claim.",
+  "new_model_api_calls": 0,
+  "all_match": true,
+  "results": [
+    {
+      "id": "F01",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.1457783000078052
+    },
+    {
+      "id": "F02",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.1258093999931589
+    },
+    {
+      "id": "F03",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.1544359999825247
+    },
+    {
+      "id": "F04",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.1247922999900766
+    },
+    {
+      "id": "F05",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.1153547000139952
+    },
+    {
+      "id": "F06",
+      "matches": true,
+      "cached_responses": 1,
+      "status": "executed",
+      "elapsed_seconds": 1.1164776000077836
+    }
+  ]
+}

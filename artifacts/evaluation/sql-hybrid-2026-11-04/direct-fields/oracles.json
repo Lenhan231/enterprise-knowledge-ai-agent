@@ -1,0 +1,221 @@
+{
+  "F01": {
+    "supported": true,
+    "expected_behavior": "Retrieve exactly the explicit raw fields and source population; no calculations or currency inference.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,i.product_id,i.year,i.month FROM commerce.inventory i WHERE i.snapshot_date=DATE '2022-12-31' ORDER BY i.product_id,i.snapshot_date LIMIT 10",
+      "rows": [
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 3,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 8,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 9,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 17,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 18,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 19,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 26,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 29,
+          "year": 2022,
+          "month": 12
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 45,
+          "year": 2022,
+          "month": 12
+        }
+      ],
+      "returned_rows": 10,
+      "detail_ceiling": null
+    }
+  },
+  "F02": {
+    "supported": true,
+    "expected_behavior": "Retrieve exactly the explicit raw fields and source population; no calculations or currency inference.",
+    "reference": {
+      "sql": "SELECT i.snapshot_date,i.product_id FROM commerce.inventory i WHERE i.snapshot_date>=DATE '2022-11-01' AND i.snapshot_date<DATE '2023-01-01' AND i.product_id IN (1,3) ORDER BY i.snapshot_date,i.product_id LIMIT 20",
+      "rows": [
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 1
+        },
+        {
+          "snapshot_date": "2022-11-30",
+          "product_id": 3
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 1
+        },
+        {
+          "snapshot_date": "2022-12-31",
+          "product_id": 3
+        }
+      ],
+      "returned_rows": 4,
+      "detail_ceiling": null
+    }
+  },
+  "F03": {
+    "supported": true,
+    "expected_behavior": "Retrieve exactly the explicit raw fields and source population; no calculations or currency inference.",
+    "reference": {
+      "sql": "SELECT p.product_id,p.product_name,p.color,p.price FROM commerce.products p WHERE p.color='blue' ORDER BY p.price DESC,p.product_id LIMIT 5",
+      "rows": [
+        {
+          "product_id": 503,
+          "product_name": "SaigonFlex UM-08",
+          "color": "blue",
+          "price": 21108.804545454543
+        },
+        {
+          "product_id": 353,
+          "product_name": "LotusWear UE-74",
+          "color": "blue",
+          "price": 20786.85
+        },
+        {
+          "product_id": 483,
+          "product_name": "SaigonFlex UM-88",
+          "color": "blue",
+          "price": 19535.011791044777
+        },
+        {
+          "product_id": 473,
+          "product_name": "SaigonFlex UM-78",
+          "color": "blue",
+          "price": 18458.3
+        },
+        {
+          "product_id": 623,
+          "product_name": "SaigonFlex UC-88",
+          "color": "blue",
+          "price": 17011.958108108105
+        }
+      ],
+      "returned_rows": 5,
+      "detail_ceiling": null
+    }
+  },
+  "F04": {
+    "supported": true,
+    "expected_behavior": "Retrieve exactly the explicit raw fields and source population; no calculations or currency inference.",
+    "reference": {
+      "sql": "SELECT p.product_id,p.category,p.size,p.price FROM commerce.products p WHERE p.product_id IN (1,3) AND p.price>=0 ORDER BY p.price,p.product_id LIMIT 10",
+      "rows": [
+        {
+          "product_id": 1,
+          "category": "Casual",
+          "size": "M",
+          "price": 4945.5
+        },
+        {
+          "product_id": 3,
+          "category": "Casual",
+          "size": "XL",
+          "price": 10831.3771884655
+        }
+      ],
+      "returned_rows": 2,
+      "detail_ceiling": null
+    }
+  },
+  "F05": {
+    "supported": true,
+    "expected_behavior": "Retrieve exactly the explicit raw fields and source population; no calculations or currency inference.",
+    "reference": {
+      "sql": "SELECT p.product_id,p.cogs,p.price FROM commerce.products p WHERE p.product_id IN (1,3) ORDER BY p.product_id LIMIT 10",
+      "rows": [
+        {
+          "product_id": 1,
+          "cogs": 2732.8833,
+          "price": 4945.5
+        },
+        {
+          "product_id": 3,
+          "cogs": 10289.808329042224,
+          "price": 10831.3771884655
+        }
+      ],
+      "returned_rows": 2,
+      "detail_ceiling": null
+    }
+  },
+  "F06": {
+    "supported": true,
+    "expected_behavior": "Retrieve exactly the explicit raw fields and source population; no calculations or currency inference.",
+    "reference": {
+      "sql": "SELECT p.product_id,p.category,p.segment FROM commerce.products p WHERE p.category='Streetwear' ORDER BY p.product_id DESC LIMIT 5",
+      "rows": [
+        {
+          "product_id": 2391,
+          "category": "Streetwear",
+          "segment": "Everyday"
+        },
+        {
+          "product_id": 2390,
+          "category": "Streetwear",
+          "segment": "Everyday"
+        },
+        {
+          "product_id": 2389,
+          "category": "Streetwear",
+          "segment": "Everyday"
+        },
+        {
+          "product_id": 2388,
+          "category": "Streetwear",
+          "segment": "Everyday"
+        },
+        {
+          "product_id": 2387,
+          "category": "Streetwear",
+          "segment": "Everyday"
+        }
+      ],
+      "returned_rows": 5,
+      "detail_ceiling": null
+    }
+  }
+}

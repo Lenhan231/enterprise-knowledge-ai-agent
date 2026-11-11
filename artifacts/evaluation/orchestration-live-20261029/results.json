@@ -1,0 +1,621 @@
+{
+  "model": "qwen/qwen3.8-27b",
+  "cases": [
+    {
+      "id": "mixed-en",
+      "question": "How many products are in the catalog, and what does the inventory policy say to verify before transferring stock between categories?",
+      "expected_route": "hybrid",
+      "contract": "independent; count and cited pre-action requirements",
+      "http_status": 200,
+      "result": {
+        "answer": "The catalog contains 2,412 distinct products [S1]. However, the specific verification steps required by the inventory policy before transferring stock between categories cannot be provided because the knowledge task for the inventory policy failed [Limitations].\n\nLimitations: knowledge task knowledge_inventory_policy: failed.",
+        "agent": "hybrid",
+        "evidence": [
+          {
+            "citation_id": "S1",
+            "source_type": "database",
+            "source": "commerce.products",
+            "content": null,
+            "metadata": {}
+          }
+        ],
+        "data": {
+          "sql": {
+            "ok": true,
+            "operation": "text_to_sql",
+            "rows": [
+              {
+                "count": 2412
+              }
+            ],
+            "sql": "SELECT COUNT(DISTINCT p.product_id) FROM commerce.products AS p LIMIT 200",
+            "parameters": [],
+            "query_status": "executed",
+            "limitations": []
+          }
+        },
+        "metadata": {
+          "ok": false,
+          "status": "partial",
+          "fallback": false,
+          "limitations": [
+            "knowledge task knowledge_inventory_policy: failed."
+          ],
+          "selected_route": "hybrid",
+          "task_trace": [
+            {
+              "id": "sql_count_products",
+              "agent": "sql",
+              "depends_on": [],
+              "status": "complete",
+              "attempts": 1,
+              "elapsed_ms": 11477,
+              "error_type": null
+            },
+            {
+              "id": "knowledge_inventory_policy",
+              "agent": "knowledge",
+              "depends_on": [],
+              "status": "empty",
+              "attempts": 1,
+              "elapsed_ms": 8884,
+              "error_type": null
+            },
+            {
+              "id": "knowledge_inventory_policy",
+              "agent": "knowledge",
+              "depends_on": [],
+              "status": "failed",
+              "attempts": 0,
+              "elapsed_ms": 0,
+              "error_type": "NoProgress"
+            }
+          ],
+          "specialist_invocations": 2,
+          "planning_fallback": false,
+          "revisions": 1,
+          "latency": {
+            "stages_ms": {
+              "routing": 2539.408008000464,
+              "embedding": 499.1617289997521,
+              "database_retrieval": 2163.701821998984,
+              "retrieval_fusion": null,
+              "query_translation": null,
+              "reranking": null,
+              "answer_generation": 1162.5717880015145,
+              "sql_planning": 6829.2828100002225,
+              "sql_execution": 4286.74282800057,
+              "answer_synthesis": 447.3620620010479,
+              "retrieval_total": 2663.2094449996657,
+              "agent_workflow": 15241.656080999746
+            },
+            "events": [
+              {
+                "stage": "routing",
+                "elapsed_ms": 2539.408008000464,
+                "status": "completed"
+              },
+              {
+                "stage": "embedding",
+                "elapsed_ms": 499.1617289997521,
+                "status": "completed"
+              },
+              {
+                "stage": "sql_planning",
+                "elapsed_ms": 5962.549681000382,
+                "status": "completed"
+              },
+              {
+                "stage": "sql_planning",
+                "elapsed_ms": 866.7331289998401,
+                "status": "completed"
+              },
+              {
+                "stage": "database_retrieval",
+                "elapsed_ms": 2163.701821998984,
+                "status": "completed"
+              },
+              {
+                "stage": "retrieval_total",
+                "elapsed_ms": 2663.2094449996657,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_generation",
+                "elapsed_ms": 841.1405050010217,
+                "status": "completed"
+              },
+              {
+                "stage": "sql_execution",
+                "elapsed_ms": 4286.74282800057,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_generation",
+                "elapsed_ms": 321.43128300049284,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_synthesis",
+                "elapsed_ms": 447.3620620010479,
+                "status": "completed"
+              },
+              {
+                "stage": "agent_workflow",
+                "elapsed_ms": 15241.656080999746,
+                "status": "completed"
+              }
+            ],
+            "request_total_ms": 20356.014369999684
+          }
+        }
+      },
+      "elapsed_seconds": 23.0
+    },
+    {
+      "id": "mixed-vi",
+      "question": "??m s? ??n h?ng trong n?m 2022 v? t?m quy tr?nh x? l? ??n h?ng trong t?i li?u.",
+      "expected_route": "hybrid",
+      "contract": "independent; year retained; document gaps disclosed",
+      "http_status": 200,
+      "result": {
+        "answer": "Automatic planning is unavailable or could not safely complete this request. Please retry or select Knowledge or SQL.",
+        "agent": "agentic",
+        "evidence": [],
+        "data": {},
+        "metadata": {
+          "ok": false,
+          "status": "failed",
+          "selected_route": "unrouted",
+          "task_trace": [],
+          "error_type": "ValueError",
+          "latency": {
+            "stages_ms": {
+              "routing": 632.4654370000644,
+              "embedding": null,
+              "database_retrieval": null,
+              "retrieval_fusion": null,
+              "query_translation": null,
+              "reranking": null,
+              "answer_generation": null,
+              "sql_planning": null,
+              "sql_execution": null,
+              "answer_synthesis": null,
+              "retrieval_total": null,
+              "agent_workflow": 641.045803000452
+            },
+            "events": [
+              {
+                "stage": "routing",
+                "elapsed_ms": 632.4654370000644,
+                "status": "failed"
+              },
+              {
+                "stage": "agent_workflow",
+                "elapsed_ms": 641.045803000452,
+                "status": "failed"
+              }
+            ],
+            "request_total_ms": 641.1706360013341
+          }
+        }
+      },
+      "elapsed_seconds": 3.311999999999898
+    },
+    {
+      "id": "sql-knowledge",
+      "question": "Find the top three product categories by number of catalog products, then retrieve inventory guidance relevant to those categories.",
+      "expected_route": "hybrid",
+      "contract": "SQL category results feed document lookup",
+      "http_status": 200,
+      "result": {
+        "answer": "No supported answer could be completed. A task failed or its deadline/evidence budget was exhausted.\n\nLimitations: sql task sql_top_cats: failed. knowledge task know_inv_guidance: blocked.",
+        "agent": "hybrid",
+        "evidence": [],
+        "data": {},
+        "metadata": {
+          "ok": false,
+          "status": "failed",
+          "fallback": true,
+          "limitations": [
+            "sql task sql_top_cats: failed.",
+            "knowledge task know_inv_guidance: blocked."
+          ],
+          "selected_route": "hybrid",
+          "task_trace": [
+            {
+              "id": "sql_top_cats",
+              "agent": "sql",
+              "depends_on": [],
+              "status": "failed",
+              "attempts": 2,
+              "elapsed_ms": 289,
+              "error_type": "RateLimitError"
+            },
+            {
+              "id": "know_inv_guidance",
+              "agent": "knowledge",
+              "depends_on": [
+                "sql_top_cats"
+              ],
+              "status": "blocked",
+              "attempts": 0,
+              "elapsed_ms": 0,
+              "error_type": "DependencyUnavailable"
+            },
+            {
+              "id": "sql_top_cats",
+              "agent": "sql",
+              "depends_on": [],
+              "status": "failed",
+              "attempts": 0,
+              "elapsed_ms": 0,
+              "error_type": "NoProgress"
+            },
+            {
+              "id": "know_inv_guidance",
+              "agent": "knowledge",
+              "depends_on": [
+                "sql_top_cats"
+              ],
+              "status": "blocked",
+              "attempts": 0,
+              "elapsed_ms": 0,
+              "error_type": "DependencyUnavailable"
+            }
+          ],
+          "specialist_invocations": 2,
+          "planning_fallback": false,
+          "revisions": 1,
+          "latency": {
+            "stages_ms": {
+              "routing": 796.082581000519,
+              "embedding": null,
+              "database_retrieval": null,
+              "retrieval_fusion": null,
+              "query_translation": null,
+              "reranking": null,
+              "answer_generation": null,
+              "sql_planning": 285.0968210004794,
+              "sql_execution": null,
+              "answer_synthesis": 0.08245999924838543,
+              "retrieval_total": null,
+              "agent_workflow": 1113.7236169997777
+            },
+            "events": [
+              {
+                "stage": "routing",
+                "elapsed_ms": 796.082581000519,
+                "status": "completed"
+              },
+              {
+                "stage": "sql_planning",
+                "elapsed_ms": 284.5338240003912,
+                "status": "failed"
+              },
+              {
+                "stage": "sql_planning",
+                "elapsed_ms": 0.5629970000882167,
+                "status": "failed"
+              },
+              {
+                "stage": "answer_synthesis",
+                "elapsed_ms": 0.08245999924838543,
+                "status": "completed"
+              },
+              {
+                "stage": "agent_workflow",
+                "elapsed_ms": 1113.7236169997777,
+                "status": "completed"
+              }
+            ],
+            "request_total_ms": 1113.834281999516
+          }
+        }
+      },
+      "elapsed_seconds": 3.7190000000009604
+    },
+    {
+      "id": "knowledge-sql",
+      "question": "Read the inventory policy to find a numeric stock threshold, then count inventory rows exceeding the cited threshold. If the documents do not define one, do not invent a threshold.",
+      "expected_route": "hybrid",
+      "contract": "cited threshold feeds SQL or explicit missing-evidence abstention; abstention not task completion",
+      "http_status": 200,
+      "result": {
+        "answer": "Automatic planning is unavailable or could not safely complete this request. Please retry or select Knowledge or SQL.",
+        "agent": "agentic",
+        "evidence": [],
+        "data": {},
+        "metadata": {
+          "ok": false,
+          "status": "failed",
+          "selected_route": "unrouted",
+          "task_trace": [],
+          "error_type": "ValueError",
+          "latency": {
+            "stages_ms": {
+              "routing": 5.349787001250661,
+              "embedding": null,
+              "database_retrieval": null,
+              "retrieval_fusion": null,
+              "query_translation": null,
+              "reranking": null,
+              "answer_generation": null,
+              "sql_planning": null,
+              "sql_execution": null,
+              "answer_synthesis": null,
+              "retrieval_total": null,
+              "agent_workflow": 10.957772999972804
+            },
+            "events": [
+              {
+                "stage": "routing",
+                "elapsed_ms": 5.349787001250661,
+                "status": "failed"
+              },
+              {
+                "stage": "agent_workflow",
+                "elapsed_ms": 10.957772999972804,
+                "status": "failed"
+              }
+            ],
+            "request_total_ms": 11.060241000450333
+          }
+        }
+      },
+      "elapsed_seconds": 2.625
+    },
+    {
+      "id": "followup",
+      "question": "Now count orders for 2021 instead.",
+      "expected_route": "analytics",
+      "contract": "resolves orders from the earlier 2022 question",
+      "http_status": 200,
+      "result": {
+        "answer": "No supported answer could be completed. A task failed or its deadline/evidence budget was exhausted.\n\nLimitations: sql task count_orders_2021: failed.",
+        "agent": "analytics",
+        "evidence": [],
+        "data": {},
+        "metadata": {
+          "ok": false,
+          "status": "failed",
+          "fallback": true,
+          "limitations": [
+            "sql task count_orders_2021: failed."
+          ],
+          "selected_route": "analytics",
+          "task_trace": [
+            {
+              "id": "count_orders_2021",
+              "agent": "sql",
+              "depends_on": [],
+              "status": "failed",
+              "attempts": 2,
+              "elapsed_ms": 263,
+              "error_type": "RateLimitError"
+            },
+            {
+              "id": "count_orders_2021",
+              "agent": "sql",
+              "depends_on": [],
+              "status": "failed",
+              "attempts": 0,
+              "elapsed_ms": 0,
+              "error_type": "NoProgress"
+            }
+          ],
+          "specialist_invocations": 2,
+          "planning_fallback": false,
+          "revisions": 1,
+          "latency": {
+            "stages_ms": {
+              "routing": 1042.590315999405,
+              "embedding": null,
+              "database_retrieval": null,
+              "retrieval_fusion": null,
+              "query_translation": null,
+              "reranking": null,
+              "answer_generation": null,
+              "sql_planning": 260.15299199934816,
+              "sql_execution": null,
+              "answer_synthesis": 0.0420340002165176,
+              "retrieval_total": null,
+              "agent_workflow": 1329.415620999498
+            },
+            "events": [
+              {
+                "stage": "routing",
+                "elapsed_ms": 1042.590315999405,
+                "status": "completed"
+              },
+              {
+                "stage": "sql_planning",
+                "elapsed_ms": 259.2515260002983,
+                "status": "failed"
+              },
+              {
+                "stage": "sql_planning",
+                "elapsed_ms": 0.901465999049833,
+                "status": "failed"
+              },
+              {
+                "stage": "answer_synthesis",
+                "elapsed_ms": 0.0420340002165176,
+                "status": "completed"
+              },
+              {
+                "stage": "agent_workflow",
+                "elapsed_ms": 1329.415620999498,
+                "status": "completed"
+              }
+            ],
+            "request_total_ms": 1329.5126899993193
+          }
+        }
+      },
+      "elapsed_seconds": 3.938000000000102
+    },
+    {
+      "id": "knowledge-vi",
+      "question": "Ch?nh s?ch t?n kho y?u c?u ki?m tra d? li?u g? tr??c khi chuy?n h?ng?",
+      "expected_route": "knowledge",
+      "contract": "cited authorized policy evidence",
+      "http_status": 200,
+      "result": {
+        "answer": "No supported answer could be completed. A task failed or its deadline/evidence budget was exhausted.\n\nLimitations: knowledge task k1: failed.",
+        "agent": "knowledge",
+        "evidence": [],
+        "data": {},
+        "metadata": {
+          "ok": false,
+          "status": "failed",
+          "fallback": true,
+          "limitations": [
+            "knowledge task k1: failed."
+          ],
+          "selected_route": "knowledge",
+          "task_trace": [
+            {
+              "id": "k1",
+              "agent": "knowledge",
+              "depends_on": [],
+              "status": "failed",
+              "attempts": 1,
+              "elapsed_ms": 1575,
+              "error_type": "RateLimitError"
+            },
+            {
+              "id": "k1",
+              "agent": "knowledge",
+              "depends_on": [],
+              "status": "failed",
+              "attempts": 0,
+              "elapsed_ms": 0,
+              "error_type": "NoProgress"
+            }
+          ],
+          "specialist_invocations": 1,
+          "planning_fallback": false,
+          "revisions": 1,
+          "latency": {
+            "stages_ms": {
+              "routing": 564.1681890010659,
+              "embedding": 207.89536600022984,
+              "database_retrieval": 617.2175700012303,
+              "retrieval_fusion": null,
+              "query_translation": null,
+              "reranking": null,
+              "answer_generation": 749.2651919983473,
+              "sql_planning": null,
+              "sql_execution": null,
+              "answer_synthesis": 0.055029999202815816,
+              "retrieval_total": 825.3265719995397,
+              "agent_workflow": 2420.118762000129
+            },
+            "events": [
+              {
+                "stage": "routing",
+                "elapsed_ms": 564.1681890010659,
+                "status": "completed"
+              },
+              {
+                "stage": "embedding",
+                "elapsed_ms": 207.89536600022984,
+                "status": "completed"
+              },
+              {
+                "stage": "database_retrieval",
+                "elapsed_ms": 617.2175700012303,
+                "status": "completed"
+              },
+              {
+                "stage": "retrieval_total",
+                "elapsed_ms": 825.3265719995397,
+                "status": "completed"
+              },
+              {
+                "stage": "answer_generation",
+                "elapsed_ms": 749.2651919983473,
+                "status": "failed"
+              },
+              {
+                "stage": "answer_synthesis",
+                "elapsed_ms": 0.055029999202815816,
+                "status": "completed"
+              },
+              {
+                "stage": "agent_workflow",
+                "elapsed_ms": 2420.118762000129,
+                "status": "completed"
+              }
+            ],
+            "request_total_ms": 2420.216956999866
+          }
+        }
+      },
+      "elapsed_seconds": 5.109000000000378
+    },
+    {
+      "id": "sql-en",
+      "question": "Count the products in each category.",
+      "expected_route": "analytics",
+      "contract": "executed grouped product counts",
+      "http_status": 200,
+      "result": {
+        "answer": "Automatic planning is unavailable or could not safely complete this request. Please retry or select Knowledge or SQL.",
+        "agent": "agentic",
+        "evidence": [],
+        "data": {},
+        "metadata": {
+          "ok": false,
+          "status": "failed",
+          "selected_route": "unrouted",
+          "task_trace": [],
+          "error_type": "ValueError",
+          "latency": {
+            "stages_ms": {
+              "routing": 366.98068599980616,
+              "embedding": null,
+              "database_retrieval": null,
+              "retrieval_fusion": null,
+              "query_translation": null,
+              "reranking": null,
+              "answer_generation": null,
+              "sql_planning": null,
+              "sql_execution": null,
+              "answer_synthesis": null,
+              "retrieval_total": null,
+              "agent_workflow": 374.36219200026244
+            },
+            "events": [
+              {
+                "stage": "routing",
+                "elapsed_ms": 366.98068599980616,
+                "status": "failed"
+              },
+              {
+                "stage": "agent_workflow",
+                "elapsed_ms": 374.36219200026244,
+                "status": "failed"
+              }
+            ],
+            "request_total_ms": 374.504073000935
+          }
+        }
+      },
+      "elapsed_seconds": 2.9690000000009604
+    },
+    {
+      "id": "denial",
+      "question": "Count orders in 2022.",
+      "expected_route": "analytics",
+      "contract": "document-only viewer receives HTTP 403 without SQL data",
+      "http_status": 403,
+      "error_type": "HTTPError",
+      "elapsed_seconds": 3.188000000000102
+    }
+  ],
+  "limitations": [
+    "Authorized live API; results require manual source-grounding review. No credentials recorded."
+  ]
+}

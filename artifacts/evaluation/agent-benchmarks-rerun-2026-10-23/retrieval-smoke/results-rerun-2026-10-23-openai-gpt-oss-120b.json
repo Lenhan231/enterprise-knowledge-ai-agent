@@ -1,0 +1,152 @@
+{
+  "dataset": "commerce-agent-benchmarks-v1",
+  "model_key": "gpt_oss_120b",
+  "model": "openai/gpt-oss-120b",
+  "judge_model": "Luna 5.6 Medium (Codex CLI)",
+  "run_date": "2026-10-23",
+  "evaluation_config": {
+    "cases_per_agent": 25,
+    "agents": [
+      "knowledge",
+      "sql",
+      "report"
+    ],
+    "metrics": [
+      "faithfulness",
+      "answer_relevancy",
+      "context_precision"
+    ],
+    "retry_policy": "one retry for transient failures; two attempts maximum"
+  },
+  "summary": {
+    "case_count": 1,
+    "by_agent": {
+      "knowledge": {
+        "case_count": 1,
+        "answered_cases": 1,
+        "run_errors": 0,
+        "mean_agent_latency_seconds": 70.181,
+        "latency_cases": 1,
+        "ragas": {
+          "faithfulness": {
+            "mean": null,
+            "scored_cases": 0,
+            "eligible_cases": 1,
+            "coverage": 0.0,
+            "score_errors": 1
+          },
+          "answer_relevancy": {
+            "mean": null,
+            "scored_cases": 0,
+            "eligible_cases": 1,
+            "coverage": 0.0,
+            "score_errors": 1
+          },
+          "context_precision": {
+            "mean": null,
+            "scored_cases": 0,
+            "eligible_cases": 1,
+            "coverage": 0.0,
+            "score_errors": 1
+          }
+        }
+      }
+    },
+    "ragas": {
+      "faithfulness": {
+        "mean": null,
+        "scored_cases": 0,
+        "eligible_cases": 1,
+        "coverage": 0.0,
+        "score_errors": 1
+      },
+      "answer_relevancy": {
+        "mean": null,
+        "scored_cases": 0,
+        "eligible_cases": 1,
+        "coverage": 0.0,
+        "score_errors": 1
+      },
+      "context_precision": {
+        "mean": null,
+        "scored_cases": 0,
+        "eligible_cases": 1,
+        "coverage": 0.0,
+        "score_errors": 1
+      }
+    },
+    "sql": {
+      "safety_pass_rate": null,
+      "safety_cases": 0,
+      "semantic_correctness_rate": null,
+      "semantic_cases": 0,
+      "abstention_accuracy": null,
+      "abstention_cases": 0
+    },
+    "hallucination_rate": null,
+    "hallucination_note": "Requires manual claim-level review; not inferred from faithfulness."
+  },
+  "results": [
+    {
+      "case_id": "K02",
+      "agent": "knowledge",
+      "model": "openai/gpt-oss-120b",
+      "question": "Snapshot tồn kho mới nhất trong bộ dữ liệu là ngày nào và có bao nhiêu SKU có bản ghi tại ngày đó?",
+      "answer": "Snapshot tồn kho mới nhất trong bộ dữ liệu là **ngày 31/12/2022** và tại thời điểm này có **424 SKU** có bản ghi. [S1][S2]",
+      "contexts": [
+        "2. Phạm vi và cơ sở dữ liệu\nDataset có 2,412 SKU trong products.csv và 60,247 bản ghi inventory.csv, bao phủ 2012-07-31 đến 2022-12-31. Snapshot mới nhất là 2022-12-31 với 424 SKU có bản ghi. Nhóm hàng quan sát gồm Streetwear, Outdoor, Casual và GenZ. Sales.csv bao phủ 2012-07-04 đến 2022-12-31. Dữ liệu trả về, đơn hàng, khuyến mãi và giao hàng có thể dùng để phân tích nguyên nhân nhưng không thay thế sổ cái tồn kho.\nDataset không cung cấp đầy đủ purchase orders inbound, MOQ, lead time nhà cung cấp, backorder, vị trí kho hoặc đơn vị tiền tệ được xác nhận. Vì vậy, các trường này phải được bổ sung trước khi triển khai chính sách mua hàng trong môi trường thật.",
+        "01 | Bối cảnh dữ liệu Dataset là cơ sở mô phỏng; không phản ánh tồn kho hiện tại. 2,412 SKU trong product master 60,247 Bản ghi inventory theo snapshot 424 SKU có snapshot 31/12/2022 67.3% Bản ghi bật stockout_flag Nhóm hàng • Streetwear • Outdoor • Casual • GenZ Vấn đề dữ liệu cần kiểm soát • 76.3% bản ghi bật overstock_flag • 30,495 bản ghi bật đồng thời stockout + overstock • reorder_flag có tổng bằng 0 • Snapshot mới nhất trong file: 2022-12-31 VietStyle Commerce • Datathon 2026 • Tài liệu mô phỏng 2"
+      ],
+      "reference": "[\"2022-12-31\", \"424 SKU\"]",
+      "evidence_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "agent_metadata": {},
+      "latency_seconds": 70.181,
+      "total_case_seconds": 70.181,
+      "langchain_callback_events": 5,
+      "scores": {
+        "faithfulness": null,
+        "answer_relevancy": null,
+        "context_precision": null
+      },
+      "metric_eligibility": {
+        "faithfulness": true,
+        "answer_relevancy": true,
+        "context_precision": true
+      },
+      "score_errors": {
+        "faithfulness": "judge_skipped",
+        "answer_relevancy": "judge_skipped",
+        "context_precision": "judge_skipped"
+      },
+      "sql_safety_pass": null,
+      "sql_semantic_correctness": null,
+      "sql_rows": [],
+      "abstention_expected": false,
+      "abstention_observed": null,
+      "hallucination_rate": null,
+      "hallucination_review": "manual claim-level review required",
+      "status": "completed",
+      "scoring_status": "partial",
+      "error": null,
+      "operation_attempts": [
+        {
+          "operation": "model_generation",
+          "attempts": [
+            {
+              "attempt": 1,
+              "success": true,
+              "transient_failure": false,
+              "elapsed_seconds": 70.181,
+              "error": null
+            }
+          ],
+          "first_attempt_success": true,
+          "final_success": true
+        }
+      ]
+    }
+  ]
+}

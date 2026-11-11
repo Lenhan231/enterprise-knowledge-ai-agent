@@ -1,0 +1,219 @@
+{
+  "dataset_id": "vinamilk-ocr-human-reviewed-regions-v6",
+  "source": "Official Vinamilk annual/sustainability reports and Company Charter PDFs listed in data/vietnam_enterprises/manifest.json.",
+  "reference_method": "Manual transcription from rendered PDF regions; v6 corrects two scan crops that clipped printed text at the horizontal edges; the Vietnamese balance-sheet rows were visually checked at full resolution.",
+  "reference_quality": "human_transcribed_visual_review",
+  "primary_metric_selection_eligible": false,
+  "clip_coordinates": "PDF points [x0, y0, x1, y1], top-left origin; OCR images are rendered at the same configured DPI for every engine.",
+  "limitations": "Six manually reviewed regions: five carried from v4 (Vietnamese financial infographic, English sustainability text, Vietnamese raster-embedded product artwork, and two image-only English governance scans with corrected full-width text crops) plus one Vietnamese two-period financial table rendered from a born-digital PDF page. The new table adds manually reviewed row/value references but is not a physical scan. This pilot remains too small for model selection and has only one table page.",
+  "pages": [
+    {
+      "id": "annual-2024-financial-infographic-vi",
+      "document_id": "VNM-AR-2024-VI",
+      "file": "data/raw/vietnam_enterprises/vnm/vnm-ar-2024-vi.pdf",
+      "page": 12,
+      "language": "vi",
+      "clip_rect": [
+        155,
+        165,
+        485,
+        810
+      ],
+      "reference_text": "Tổng doanh thu hợp nhất năm 2024\n61.824 tỷ đồng\nLợi nhuận sau thuế hợp nhất năm 2024\n9.453 tỷ đồng\nTổng tài sản tại ngày 31.12.2024\n55.049 tỷ đồng\nTổng vốn chủ sở hữu tại ngày 31.12.2024\n36.174 tỷ đồng"
+    },
+    {
+      "id": "sustainability-2024-ceo-bullets-en",
+      "document_id": "VNM-SR-2024-EN",
+      "file": "data/raw/vietnam_enterprises/vnm/vnm-sr-2024-en.pdf",
+      "page": 3,
+      "language": "en",
+      "clip_rect": [
+        245,
+        120,
+        470,
+        307
+      ],
+      "reference_text": "This transformation goes beyond innovation. It reflects our determination to take greater strides, enhance transparency, and drive sustainability, as evidenced by tangible results:\nThree units (two factories and one farm) have achieved Carbon Neutrality Certificates according to PAS 2060 standards, making significant progress towards the Net Zero 2050 goal.\nVinamilk's corporate ESG data system enables transparent, real-time sustainability governance.\n100% of Vinamilk's factories and farms now implement a greenhouse gas emissions inventory.\nSince 2013, all Vinamilk factories have adhered to energy management systems in line with ISO 50001 standards."
+    },
+    {
+      "id": "annual-2020-product-poster-vi",
+      "document_id": "VNM-AR-2020-VI",
+      "file": "data/raw/vietnam_enterprises/vnm/vnm-ar-2020-vi.pdf",
+      "page": 22,
+      "language": "vi",
+      "clip_rect": [
+        581,
+        0,
+        1162,
+        822
+      ],
+      "reference_text": "DINH DƯỠNG VÀNG\nTĂNG CƯỜNG ĐỀ KHÁNG\nPREMIUM NATURE PRODUCT\nVINAMILK\n100% SỮA TƯƠI\nSỮA TƯƠI TIỆT TRÙNG\nÍT ĐƯỜNG\nCAO CẤP MỚI\nThể tích thực 180 ml\nTHỰC PHẨM BỔ SUNG"
+    },
+    {
+      "id": "charter-2026-introduction-scan-en",
+      "document_id": "VNM-CHARTER-2026-EN",
+      "file": "data/raw/vietnam_enterprises/vnm/vnm-charter-2026-en.pdf",
+      "page": 4,
+      "language": "en",
+      "physical_scan": true,
+      "clip_rect": [
+        60,
+        60,
+        575,
+        225
+      ],
+      "reference_text": "INTRODUCTION\nThis Charter of Vietnam Dairy Products Joint-Stock Company (\"Vinamilk\" or \"Company\"), a joint stock company incorporated and operating under the Law on Enterprises, is the legal basis for the corporate governance, management, business, investment operations and otherwise of the Company.\nThis Charter was approved by the Resolution No.: 01/NQ-CTS.DHDCĐ/2026 of the General Meeting of Shareholders on 22nd April 2026 (hereinafter referred to as the \"Charter\").",
+      "annotation": "Crop extended rightward to include the complete printed lines; the prior x1=520 crop clipped words while the transcription retained them."
+    },
+    {
+      "id": "governance-rules-2026-table-of-contents-scan-en",
+      "document_id": "VNM-CGRULES-2026-EN",
+      "file": "data/raw/vietnam_enterprises/vnm/vnm-cgrules-2026-en.pdf",
+      "page": 4,
+      "language": "en",
+      "physical_scan": true,
+      "clip_rect": [
+        30,
+        110,
+        565,
+        770
+      ],
+      "reference_text": "11.8. Minutes of the Board meeting 29\n11.9. Notification of the Resolution 30\nCHAPTER IV 30\nAUDIT COMMITTEE 30\nArticle 12. Rights and duties of the Audit Committee 30\nArticle 13. Candidacy and nomination of members of the Audit Committee 31\n13.1. Term of the Audit Committee 31\n13.2. Number and structure of the Audit Committee 31\n13.3. Audit Committee member criteria 31\n13.4. Candidacy and nomination of the Audit Committee member 31\nArticle 14. Activities of the Audit Committee 32\n14.1. Financial Statements 32\n14.2. Internal Audit Activities 32\n14.3. Services provided by Independent Auditors 32\n14.4. Internal control and Risk management 33\n14.5. Compliance 33\nCHAPTER V 33\nOTHER COMMITTEES OF THE BOARD 33\nArticle 15. Other Board Committees 33\nArticle 16. Nomination, candidacy, election, dismissal or removal of members of the Committees 33\n16.1. Term of Committees 33\n16.2. Number and Composition of the Committees 33\n16.3. Criteria for Committees under the Board 34\n16.4. Method of Candidacy, Nomination and Election of Committee Members 34\nArticle 17. Roles and responsibilities of the Committees 34\n17.1. Nomination Committee 34\n17.2. Remuneration Committee 35\n17.3. Strategy Committee 36\nCHAPTER VI 36\nCORPORATE GOVERNANCE OFFICER 36\nArticle 18. Selection, appointment and removal of the Corporate Governance Officer 36\n18.1. Criteria for the Corporate Governance Officer 36\n18.2. Appointment of the Corporate Governance Officer 37\n18.3. Cases of removal or dismissal of the Corporate Governance Officer 37\n18.4. Notification of appointment and removal of the Corporate Governance Officer 37",
+      "annotation": "Crop extended left and right to include complete chapter headings and printed page numbers; the prior crop clipped the first characters of bold headings."
+    },
+    {
+      "id": "annual-2024-balance-sheet-table-vi",
+      "document_id": "VNM-AR-2024-VI",
+      "file": "data/raw/vietnam_enterprises/vnm/vnm-ar-2024-vi.pdf",
+      "page": 91,
+      "language": "vi",
+      "layout_type": "financial_table",
+      "physical_scan": false,
+      "printed_pages": [
+        180,
+        181
+      ],
+      "clip_rect": [
+        20,
+        248,
+        575,
+        607
+      ],
+      "reference_text": "31/12/2024\nTriệu VND\n31/12/2023\nTriệu VND\nTài sản ngắn hạn 37.501.520 35.931.145\nTiền và các khoản tương đương tiền 2.225.944 2.912.027\nCác khoản đầu tư khác 23.260.089 20.137.243\nPhải thu khách hàng và phải thu khác 6.380.777 6.799.642\nHàng tồn kho 5.634.710 6.082.233\nTài sản dài hạn 19.491.725 18.301.346\nCác khoản đầu tư khác 750.966 228.636\nPhải thu khách hàng và phải thu khác 368.084 437.546\nQuyền sử dụng tài sản 1.158.883 979.312\nNhà xưởng, máy móc và thiết bị 11.852.774 11.514.220\nTài sản sinh học 1.488.268 1.383.074\nTài sản vô hình và lợi thế thương mại 3.106.730 3.087.920\nBất động sản đầu tư 53.618 55.594\nĐầu tư vốn được hạch toán theo phương pháp vốn chủ sở hữu 622.224 602.591\nTài sản thuế thu nhập hoãn lại 90.178 12.453\nTổng tài sản 56.993.245 54.232.491",
+      "table_rows": [
+        {
+          "label": "Tài sản ngắn hạn",
+          "values": [
+            "37.501.520",
+            "35.931.145"
+          ]
+        },
+        {
+          "label": "Tiền và các khoản tương đương tiền",
+          "values": [
+            "2.225.944",
+            "2.912.027"
+          ]
+        },
+        {
+          "label": "Các khoản đầu tư khác",
+          "values": [
+            "23.260.089",
+            "20.137.243"
+          ]
+        },
+        {
+          "label": "Phải thu khách hàng và phải thu khác",
+          "values": [
+            "6.380.777",
+            "6.799.642"
+          ]
+        },
+        {
+          "label": "Hàng tồn kho",
+          "values": [
+            "5.634.710",
+            "6.082.233"
+          ]
+        },
+        {
+          "label": "Tài sản dài hạn",
+          "values": [
+            "19.491.725",
+            "18.301.346"
+          ]
+        },
+        {
+          "label": "Các khoản đầu tư khác",
+          "values": [
+            "750.966",
+            "228.636"
+          ]
+        },
+        {
+          "label": "Phải thu khách hàng và phải thu khác",
+          "values": [
+            "368.084",
+            "437.546"
+          ]
+        },
+        {
+          "label": "Quyền sử dụng tài sản",
+          "values": [
+            "1.158.883",
+            "979.312"
+          ]
+        },
+        {
+          "label": "Nhà xưởng, máy móc và thiết bị",
+          "values": [
+            "11.852.774",
+            "11.514.220"
+          ]
+        },
+        {
+          "label": "Tài sản sinh học",
+          "values": [
+            "1.488.268",
+            "1.383.074"
+          ]
+        },
+        {
+          "label": "Tài sản vô hình và lợi thế thương mại",
+          "values": [
+            "3.106.730",
+            "3.087.920"
+          ]
+        },
+        {
+          "label": "Bất động sản đầu tư",
+          "values": [
+            "53.618",
+            "55.594"
+          ]
+        },
+        {
+          "label": "Đầu tư vốn được hạch toán theo phương pháp vốn chủ sở hữu",
+          "values": [
+            "622.224",
+            "602.591"
+          ]
+        },
+        {
+          "label": "Tài sản thuế thu nhập hoãn lại",
+          "values": [
+            "90.178",
+            "12.453"
+          ]
+        },
+        {
+          "label": "Tổng tài sản",
+          "values": [
+            "56.993.245",
+            "54.232.491"
+          ]
+        }
+      ]
+    }
+  ]
+}

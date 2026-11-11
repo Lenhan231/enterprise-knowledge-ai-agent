@@ -1,0 +1,20 @@
+{
+  "tests": 246,
+  "failures": [],
+  "errors": [],
+  "patterns": [
+    "test_metric_mapping.py",
+    "test_sql_semantic_authority.py",
+    "test_sql_semantic_contracts.py",
+    "test_sql_semantic_refactor.py",
+    "test_sql_semantic_ablation.py",
+    "test_sql_contract_benchmark.py",
+    "test_sql_followups.py",
+    "test_sql_generation.py",
+    "test_sql_metric_definitions.py",
+    "test_sql_join_duplication.py",
+    "test_inventory_metric_dictionary.py",
+    "test_report*.py"
+  ],
+  "revision": "f53c56fada9892f433a9609c4d9e5a8df98ee1b6"
+}

@@ -1,0 +1,71 @@
+{
+  "source_pdf_sha256": "80f38fbb18f729fab611ed84f699d06cde76fb2ab18f89dd953d2e589f39f0bc",
+  "fixture_sha256": "4a237ab9bc707bf4671bb08f2a4804c5672461ab6c5aab218a972b2db0d65ebb",
+  "source_pages": [
+    7,
+    8,
+    10
+  ],
+  "dpi": 216,
+  "upload": {
+    "document_id": "UPLOAD-bf2ad2b926214e11a24e062db1d48132",
+    "processing_status": "ready",
+    "searchable": true,
+    "sha256": "4a237ab9bc707bf4671bb08f2a4804c5672461ab6c5aab218a972b2db0d65ebb"
+  },
+  "persistence": {
+    "chunks": 9,
+    "ocr_chunks": 9,
+    "page_numbers": [
+      1,
+      2,
+      3
+    ],
+    "tables": 3,
+    "table_rows": 58,
+    "table_metadata_keys": [
+      "allowed_roles",
+      "bbox",
+      "bbox_coordinate_system",
+      "column_alignment",
+      "company",
+      "document_id",
+      "document_type",
+      "domain",
+      "element_type",
+      "filename",
+      "fiscal_year",
+      "format",
+      "layout_type",
+      "ocr",
+      "official_url",
+      "row_cell_bboxes",
+      "source_type",
+      "table_detection_strategy",
+      "table_extraction_method",
+      "title"
+    ],
+    "private_source_sha256_matches": true
+  },
+  "rbac": {
+    "analyst": {
+      "visible": true,
+      "expected": true
+    },
+    "viewer": {
+      "visible": false,
+      "expected": false
+    }
+  },
+  "checks": {
+    "ready": true,
+    "ocr_persisted": true,
+    "table_rows_persisted": true,
+    "private_source_integrity": true,
+    "rbac": true
+  },
+  "cleanup": {
+    "database_rows_deleted": true,
+    "storage_object_deleted": true
+  }
+}

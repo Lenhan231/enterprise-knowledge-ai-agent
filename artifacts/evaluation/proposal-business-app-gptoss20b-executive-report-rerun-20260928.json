@@ -1,0 +1,24 @@
+{
+  "created_at_utc": "2026-09-28T03:44:00.347512+00:00",
+  "route": "POST /api/ask",
+  "corpus_id": "VNM-ENTERPRISE-RAG-DEMO",
+  "corpus_manifest_sha256": "236010d3c0973b27fed8ffc5f70099496931251e3160fb088ddc74353d244031",
+  "route_dataset_sha256": "1ed8d581f3178d169aab73d07cab8d922a4fc6932992122165dafc9126de7f6f",
+  "coverage_dataset_sha256": "3648cbc5fe22a52adfd08805a6f8abbd3533fe0edc367a10e04156ba004907ea",
+  "actor_role": "admin",
+  "model": "openai/gpt-oss-20b",
+  "attempted_count": 1,
+  "passed": 0,
+  "failed": 1,
+  "stop_reason": "provider_rate_limit",
+  "results": [
+    {
+      "id": "executive-decision-support",
+      "passed": false,
+      "http_status": 429,
+      "error": "The model provider is temporarily rate-limited. Please retry later.",
+      "checks": {},
+      "latency_seconds": 31.512
+    }
+  ]
+}

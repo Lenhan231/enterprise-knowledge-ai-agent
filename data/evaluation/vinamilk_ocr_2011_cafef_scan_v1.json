@@ -1,0 +1,91 @@
+{
+  "dataset_id": "vinamilk-2011-cafef-archived-scan-cross-capture-v1",
+  "dataset_title": "Vinamilk 2011 Audited Financial Scan — CafeF Capture",
+  "source": "CafeF-hosted archived copy of Vinamilk’s consolidated 2011 audited financial statements; the source PDF metadata identifies an HP Digital Sending Device. This is a separate scan capture of the same signed financial statement represented in the existing Tai-Lieu.com diagnostic.",
+  "source_download_url": "https://cafef1.mediacdn.vn/Images/Uploaded/DuLieuDownload/2011/VNM_11Q4_BCTC_HN.pdf",
+  "source_download_referer": "https://cafef.vn/",
+  "source_pdf_sha256": "d4bd33e16bed1d176f215830135456059366318c1b9a7071976554450a08ddf6",
+  "reference_method": "The 2011 income-statement reference and seven selected financial rows were transferred from the visually reviewed duplicate scan transcription and visually checked against this separate full-page scanned capture. No OCR/text-layer from this source was used.",
+  "reference_quality": "visually_checked_duplicate_capture_reference_not_independent_annotation",
+  "primary_metric_selection_eligible": false,
+  "render_dpi": 180,
+  "limitations": "One Vietnamese page from a separate archive scan capture of the same 2011 statement, not a new issuer/report/year. Reference labels originate in the existing visually transcribed duplicate statement and were checked against this capture; they are not independent double-entry labels. The PDF is hosted by CafeF, not Vinamilk. This diagnostic measures capture-to-capture OCR robustness only and cannot establish representative Vietnamese OCR quality or select a production engine.",
+  "pages": [
+    {
+      "id": "vinamilk-2011-income-statement-cafef-scan-p8",
+      "document_id": "VNM-FS-2011-CONSOLIDATED-CAFEF-SCAN",
+      "file": "data/raw/vietnam_enterprises/vnm/vnm-financial-statements-2011-cafef.pdf",
+      "page": 8,
+      "printed_page": 7,
+      "language": "vi",
+      "physical_scan": true,
+      "layout_type": "financial_statement_table",
+      "clip_rect": [
+        0,
+        0,
+        595,
+        841
+      ],
+      "reference_text": "CÔNG TY CỔ PHẦN SỮA VIỆT NAM\nBÁO CÁO KẾT QUẢ HOẠT ĐỘNG KINH DOANH HỢP NHẤT\nNăm tài chính kết thúc ngày 31.12.2011 VNĐ 31.12.2010 VNĐ\nDoanh thu bán hàng và cung cấp dịch vụ 22.070.557.490.766 16.081.466.183.586\nCác khoản giảm trừ doanh thu (443.128.597.657) (328.600.184.161)\nDoanh thu thuần về bán hàng và cung cấp dịch vụ 21.627.428.893.109 15.752.865.999.425\nGiá vốn hàng bán (15.039.305.378.364) (10.579.208.129.197)\nLợi nhuận gộp về bán hàng và cung cấp dịch vụ 6.588.123.514.745 5.173.657.870.228\nDoanh thu hoạt động tài chính 680.232.453.133 448.530.127.237\nChi phí tài chính (246.429.909.362) (153.198.613.988)\nChi phí bán hàng (1.811.914.247.629) (1.438.185.805.872)\nChi phí quản lý doanh nghiệp (459.431.997.199) (388.147.124.772)\nLợi nhuận từ hoạt động kinh doanh 4.750.579.813.688 3.642.656.452.833\nThu nhập khác - số thuần 237.226.032.153 608.785.500.303\nPhần lỗ trong liên doanh, liên kết (8.813.950.770) (234.529.528)\nTổng lợi nhuận kế toán trước thuế 4.978.991.895.071 4.251.207.423.608\nChi phí thuế thu nhập doanh nghiệp - hiện hành (778.588.561.106) (645.058.588.114)\nChi phí thuế thu nhập doanh nghiệp - hoãn lại 17.778.374.972 9.344.103.477\nLỗ phân bổ cho cổ đông thiểu số - 693.010.209\nLợi nhuận sau thuế thu nhập doanh nghiệp 4.218.181.708.937 3.616.185.949.180\nLãi cơ bản trên cổ phiếu (đồng) 7.717 6.834",
+      "table_columns": [
+        "31/12/2011",
+        "31/12/2010"
+      ],
+      "table_rows": [
+        {
+          "label": "Doanh thu bán hàng và cung cấp dịch vụ",
+          "values": [
+            "22.070.557.490.766",
+            "16.081.466.183.586"
+          ]
+        },
+        {
+          "label": "Các khoản giảm trừ doanh thu",
+          "values": [
+            "(443.128.597.657)",
+            "(328.600.184.161)"
+          ]
+        },
+        {
+          "label": "Lợi nhuận gộp về bán hàng và cung cấp dịch vụ",
+          "values": [
+            "6.588.123.514.745",
+            "5.173.657.870.228"
+          ]
+        },
+        {
+          "label": "Lợi nhuận từ hoạt động kinh doanh",
+          "values": [
+            "4.750.579.813.688",
+            "3.642.656.452.833"
+          ]
+        },
+        {
+          "label": "Tổng lợi nhuận kế toán trước thuế",
+          "values": [
+            "4.978.991.895.071",
+            "4.251.207.423.608"
+          ]
+        },
+        {
+          "label": "Lỗ phân bổ cho cổ đông thiểu số",
+          "values": [
+            "-",
+            "693.010.209"
+          ]
+        },
+        {
+          "label": "Lợi nhuận sau thuế thu nhập doanh nghiệp",
+          "values": [
+            "4.218.181.708.937",
+            "3.616.185.949.180"
+          ]
+        }
+      ],
+      "source_pdf_sha256": "d4bd33e16bed1d176f215830135456059366318c1b9a7071976554450a08ddf6",
+      "rendered_image_sha256": "6f0d09c09dde5b1a0039de20eac51028a1eba5397c05d67f9388784a673e4d95",
+      "reference_annotation_method": "transferred_from_visually_reviewed_duplicate_statement_and_checked_against_this_scan",
+      "source_archive_url": "https://cafef1.mediacdn.vn/Images/Uploaded/DuLieuDownload/2011/VNM_11Q4_BCTC_HN.pdf"
+    }
+  ]
+}

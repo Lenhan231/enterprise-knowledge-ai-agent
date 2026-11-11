@@ -1,0 +1,727 @@
+{
+  "dataset_id": "commerce-report-agent-v1",
+  "title": "Report Agent benchmark (25 questions)",
+  "task_contract": "Generate the requested report using the user's uploaded template as the format contract. Populate only evidence-supported sections; explicitly mark unavailable values and preserve source citations.",
+  "template_fixtures_ref": "report_template_fixtures.json",
+  "cases": [
+    {
+      "id": "R01",
+      "category": "revenue_performance",
+      "question": "Tạo báo cáo doanh thu và COGS tháng 12/2022 theo template đã tải lên.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "revenue_performance_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "commerce.sales"
+      ],
+      "required_sections": [
+        "Report title",
+        "Reporting period",
+        "Executive summary",
+        "KPI table",
+        "Limitations and assumptions",
+        "Sources and evidence"
+      ],
+      "expected_facts": [
+        "Doanh thu 52,454,936.20",
+        "COGS 53,489,673.44",
+        "kỳ báo cáo 2022-12"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Không tự gán đơn vị tiền tệ."
+    },
+    {
+      "id": "R02",
+      "category": "revenue_performance",
+      "question": "Tạo báo cáo xu hướng doanh thu và COGS từng tháng trong năm 2022 theo template.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "revenue_performance_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "commerce.sales"
+      ],
+      "required_sections": [
+        "Monthly trend",
+        "KPI table",
+        "Limitations and assumptions"
+      ],
+      "expected_facts": [
+        "12 tháng trong năm 2022",
+        "doanh thu và COGS cho từng tháng"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Không kết luận năm 2023-2026 nếu chưa có dữ liệu."
+    },
+    {
+      "id": "R03",
+      "category": "regional_analysis",
+      "question": "Tạo báo cáo so sánh doanh thu thuần theo region trong tháng 12/2022.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "revenue_performance_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "commerce.orders",
+        "commerce.order_items",
+        "commerce.geography"
+      ],
+      "required_sections": [
+        "Segment/region breakdown",
+        "Sources and evidence"
+      ],
+      "expected_facts": [
+        "East region có giá trị net sales 14,079,268.92 theo định nghĩa trong benchmark"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Định nghĩa net sales phải nêu quantity × unit_price − discount_amount."
+    },
+    {
+      "id": "R04",
+      "category": "product_category",
+      "question": "Tạo báo cáo xếp hạng category theo doanh thu thuần của order items năm 2022.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "revenue_performance_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "commerce.orders",
+        "commerce.order_items",
+        "commerce.products"
+      ],
+      "required_sections": [
+        "Executive summary",
+        "Segment/region breakdown",
+        "Limitations and assumptions"
+      ],
+      "expected_facts": [
+        "Xếp hạng dùng tất cả nhóm category có dữ liệu"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Không tự coi net sales là lợi nhuận."
+    },
+    {
+      "id": "R05",
+      "category": "orders",
+      "question": "Tạo báo cáo cơ cấu order_status của các đơn hàng trong năm 2022.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "executive_summary_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "commerce.orders"
+      ],
+      "required_sections": [
+        "Executive summary",
+        "Business highlights",
+        "Evidence and sources"
+      ],
+      "expected_facts": [
+        "Đếm theo từng order_status",
+        "nêu rõ kỳ 2022"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Không gọi order status là conversion funnel nếu không có định nghĩa funnel."
+    },
+    {
+      "id": "R06",
+      "category": "payment_methods",
+      "question": "Tạo báo cáo số lượng đơn hàng theo payment_method và device_type trong năm 2022.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "executive_summary_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "commerce.orders"
+      ],
+      "required_sections": [
+        "Business highlights",
+        "Evidence and sources"
+      ],
+      "expected_facts": [
+        "Bảng riêng cho payment_method và device_type hoặc ghi chú hai breakdown"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Không ghép hai chiều thành một phép đếm sai."
+    },
+    {
+      "id": "R07",
+      "category": "returns",
+      "question": "Tạo báo cáo return_count và refund_total theo return_reason cho năm 2022.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "executive_summary_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "commerce.returns"
+      ],
+      "required_sections": [
+        "KPI table",
+        "Risks and limitations",
+        "Evidence and sources"
+      ],
+      "expected_facts": [
+        "COUNT(return_id)",
+        "SUM(refund_amount)"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Không gọi refund_total là lost revenue nếu chưa định nghĩa."
+    },
+    {
+      "id": "R08",
+      "category": "returns_by_category",
+      "question": "Tạo báo cáo hàng trả về theo category, gồm số lượt và tổng refund trong 2022.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "revenue_performance_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "commerce.returns",
+        "commerce.products"
+      ],
+      "required_sections": [
+        "Segment/region breakdown",
+        "Sources and evidence"
+      ],
+      "expected_facts": [
+        "Nhóm theo products.category",
+        "nêu kỳ return_date trong năm 2022"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Không suy ra nguyên nhân trả hàng ngoài trường return_reason."
+    },
+    {
+      "id": "R09",
+      "category": "delivery",
+      "question": "Tạo báo cáo thời gian giao hàng trung bình theo region cho các đơn đặt trong năm 2022.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "executive_summary_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "commerce.orders",
+        "commerce.shipments",
+        "commerce.geography"
+      ],
+      "required_sections": [
+        "KPI table",
+        "Risks and limitations",
+        "Evidence and sources"
+      ],
+      "expected_facts": [
+        "Dùng delivery_date - ship_date",
+        "loại bản ghi thiếu ngày giao/ship khỏi phép tính"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Nêu rõ bộ lọc kỳ dựa trên order_date."
+    },
+    {
+      "id": "R10",
+      "category": "shipping_cost",
+      "question": "Tạo báo cáo tổng shipping_fee theo region trong năm 2022.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "executive_summary_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "commerce.orders",
+        "commerce.shipments",
+        "commerce.geography"
+      ],
+      "required_sections": [
+        "KPI table",
+        "Business highlights",
+        "Evidence and sources"
+      ],
+      "expected_facts": [
+        "SUM(shipping_fee) theo region"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Không suy luận nguyên nhân phí cao khi chưa có evidence."
+    },
+    {
+      "id": "R11",
+      "category": "web_traffic",
+      "question": "Tạo báo cáo web sessions, visitors, page views và average bounce rate theo traffic_source trong năm 2022.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "executive_summary_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "commerce.web_traffic"
+      ],
+      "required_sections": [
+        "KPI table",
+        "Business highlights",
+        "Evidence and sources"
+      ],
+      "expected_facts": [
+        "Nhóm theo traffic_source",
+        "nêu rõ cách tính average bounce rate"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Không coi correlation là quan hệ nhân quả."
+    },
+    {
+      "id": "R12",
+      "category": "promotion_summary",
+      "question": "Tạo báo cáo số promotion bắt đầu trong năm 2022 theo promo_type và discount_value trung bình.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "revenue_performance_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "commerce.promotions"
+      ],
+      "required_sections": [
+        "KPI table",
+        "Business highlights",
+        "Limitations and assumptions"
+      ],
+      "expected_facts": [
+        "Nhóm theo promo_type",
+        "không trộn scale percentage và fixed discount"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Không gọi đây là campaign ROI vì schema không đủ chi phí/attribution."
+    },
+    {
+      "id": "R13",
+      "category": "inventory_snapshot",
+      "question": "Tạo báo cáo tồn kho theo category tại snapshot 2022-12-31.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "inventory_exception_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "commerce.inventory"
+      ],
+      "required_sections": [
+        "Snapshot date and coverage",
+        "KPI summary",
+        "Exception table",
+        "Data limitations"
+      ],
+      "expected_facts": [
+        "Snapshot ngày 2022-12-31",
+        "đếm SKU trong snapshot",
+        "tổng stock_on_hand theo category"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Tuyệt đối không sum stock_on_hand xuyên nhiều snapshot."
+    },
+    {
+      "id": "R14",
+      "category": "stockout_kpi",
+      "question": "Tạo báo cáo stockout rate theo category tại snapshot 2022-12-31.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "inventory_exception_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "commerce.inventory"
+      ],
+      "required_sections": [
+        "Snapshot date and coverage",
+        "KPI summary",
+        "Policy thresholds",
+        "Sources and evidence"
+      ],
+      "expected_facts": [
+        "Stockout rate tính từ stockout_flag / SKU trong snapshot"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Nêu mẫu số và định nghĩa tỷ lệ."
+    },
+    {
+      "id": "R15",
+      "category": "data_conflict",
+      "question": "Tạo báo cáo SKU đồng thời có stockout_flag và overstock_flag ở snapshot 2022-12-31.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "inventory_exception_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "commerce.inventory",
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "required_sections": [
+        "Exception table",
+        "Required actions",
+        "Data limitations"
+      ],
+      "expected_facts": [
+        "Danh sách hoặc số lượng conflict theo category",
+        "khuyến nghị DATA CONFLICT investigation"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Không tự đề xuất PO khi có xung đột."
+    },
+    {
+      "id": "R16",
+      "category": "overstock",
+      "question": "Tạo báo cáo các SKU có days_of_supply cao nhất tại snapshot 2022-12-31 và đề xuất bước rà soát theo chính sách.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "inventory_exception_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "commerce.inventory",
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "required_sections": [
+        "Exception table",
+        "Policy thresholds",
+        "Required actions"
+      ],
+      "expected_facts": [
+        "Top SKU theo days_of_supply",
+        ">120 ngày cần rà soát; >180 ngày cần kế hoạch xử lý (ngưỡng mô phỏng)"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Cần đánh dấu policy thresholds là draft/mô phỏng."
+    },
+    {
+      "id": "R17",
+      "category": "policy_controls",
+      "question": "Tạo báo cáo điều khiển kiểm kê ABC, tần suất cycle count và SLA theo chính sách.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "policy_compliance_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "required_sections": [
+        "Control summary",
+        "Observed evidence",
+        "Owner and approver",
+        "Approval status and caveats"
+      ],
+      "expected_facts": [
+        "A hàng tuần, B hàng tháng, C hàng quý",
+        "ABC dựa trên annual consumption value"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Không tuyên bố đây là chính sách đã ký duyệt."
+    },
+    {
+      "id": "R18",
+      "category": "policy_controls",
+      "question": "Tạo báo cáo quy trình xử lý discrepancy, vai trò phê duyệt và dữ liệu audit trail bắt buộc.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "policy_compliance_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "required_sections": [
+        "Observed evidence",
+        "Owner and approver",
+        "Recommended actions",
+        "Citations"
+      ],
+      "expected_facts": [
+        "recount độc lập",
+        "root-cause investigation khi discrepancy lặp lại/lớn",
+        "audit trail"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Phân biệt quy trình SOP với phát hiện từ dữ liệu thực tế."
+    },
+    {
+      "id": "R19",
+      "category": "returns_policy",
+      "question": "Tạo báo cáo kiểm soát hàng trả về: quarantine, QA grading và điều kiện đưa hàng trở lại tồn khả dụng.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "policy_compliance_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "required_sections": [
+        "Control summary",
+        "Observed evidence",
+        "Recommended actions",
+        "Approval status and caveats"
+      ],
+      "expected_facts": [
+        "A-grade bán lại, B-grade sửa/đóng gói lại, C-grade xử lý riêng",
+        "chỉ cộng tồn khả dụng sau QA disposition"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Không tự ghi cập nhật tồn kho."
+    },
+    {
+      "id": "R20",
+      "category": "campaign_readiness",
+      "question": "Tạo báo cáo readiness trước campaign, bao gồm checklist tồn kho và các dữ liệu còn thiếu.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "policy_compliance_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "03_Policy_Rules_Registry.csv",
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "required_sections": [
+        "Control summary",
+        "Conflicts or gaps",
+        "Recommended actions",
+        "Approval status and caveats"
+      ],
+      "expected_facts": [
+        "lập kế hoạch tối thiểu T-4 tuần",
+        "cần forecast, stock, PO, lead time, MOQ, discount, channel, stackable flag"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Không giả lập PO inbound hoặc supplier lead time thiếu trong dữ liệu."
+    },
+    {
+      "id": "R21",
+      "category": "executive_summary",
+      "question": "Tạo executive brief tổng hợp doanh thu, COGS, trả hàng và các giới hạn của commerce dataset trong năm 2022.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "executive_summary_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "commerce.sales",
+        "commerce.returns"
+      ],
+      "required_sections": [
+        "Executive summary",
+        "Business highlights",
+        "Risks and limitations",
+        "Evidence and sources"
+      ],
+      "expected_facts": [
+        "Mỗi KPI có period + nguồn",
+        "phân biệt doanh thu/COGS/refund"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Không dùng dữ liệu từ năm ngoài phạm vi."
+    },
+    {
+      "id": "R22",
+      "category": "policy_and_analytics_hybrid",
+      "question": "Tạo báo cáo quản trị tồn kho kết hợp số liệu snapshot 2022-12-31 và các quy tắc DATA CONFLICT trong SOP.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "policy_compliance_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "commerce.inventory",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "required_sections": [
+        "Observed evidence",
+        "Conflicts or gaps",
+        "Recommended actions",
+        "Citations"
+      ],
+      "expected_facts": [
+        "Tách số liệu từ DB và quy tắc văn bản",
+        "có trích dẫn từng phần"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Không trình bày threshold giả lập như số liệu quan sát."
+    },
+    {
+      "id": "R23",
+      "category": "template_fidelity",
+      "question": "Dùng template minimal_user_template_v1 để lập báo cáo doanh thu tháng 12/2022; giữ nguyên tiêu đề và thứ tự section.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "minimal_user_template_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "commerce.sales"
+      ],
+      "required_sections": [
+        "1. Summary",
+        "2. KPI Table",
+        "3. Evidence",
+        "4. Limitations"
+      ],
+      "expected_facts": [
+        "Giữ nguyên đủ bốn heading theo đúng thứ tự",
+        "điền KPI table"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Không thêm/xóa heading hoặc bịa style không có trong template."
+    },
+    {
+      "id": "R24",
+      "category": "template_fidelity",
+      "question": "Dùng một template do người dùng tải lên có bảng KPI ba cột Metric, Value, Source; tạo báo cáo stockout theo category tại 2022-12-31.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "inventory_exception_v1",
+      "expected_behavior": "generate_report",
+      "expected_sources": [
+        "commerce.inventory"
+      ],
+      "required_sections": [
+        "Exception table",
+        "Sources and evidence"
+      ],
+      "expected_facts": [
+        "Giữ cấu trúc bảng/heading của template",
+        "tất cả giá trị có nguồn hoặc tính toán được"
+      ],
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Template phải được xử lý như định dạng, không phải nguồn sự thật."
+    },
+    {
+      "id": "R25",
+      "category": "unsupported_scope",
+      "question": "Tạo báo cáo doanh thu năm 2025 và tồn kho hiện tại năm 2026 theo template executive brief.",
+      "language": "vi",
+      "expected_agent": "report",
+      "template_fixture_id": "executive_summary_v1",
+      "expected_behavior": "generate_with_limitations",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "required_sections": [
+        "Ghi rõ dữ liệu sales/inventory kết thúc 2022-12-31",
+        "nêu thiếu dữ liệu hiện tại và từ chối điền số liệu không có bằng chứng"
+      ],
+      "expected_facts": "abstain_or_limitation",
+      "must_not_do": [
+        "invent metrics or dates not supported by database/documents",
+        "treat simulated policy thresholds as approved production policy",
+        "perform database writes or issue purchase orders",
+        "discard or reorder required user-template headings"
+      ],
+      "evaluation_notes": "Không báo cáo số 2025/2026 như sự thật; có thể tạo report khung với cảnh báo."
+    }
+  ]
+}

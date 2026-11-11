@@ -1,0 +1,17 @@
+{
+  "candidate": "af56d59",
+  "source_branch": "inventory-production-integration-2026-11-05",
+  "source_revision": "fdd4d4c",
+  "baseline": "d40162be0af86e2f679da4372158ea2e3d47f6ae",
+  "replay_cases": 60,
+  "matching_rows": 60,
+  "unchanged_prompt_cases": 55,
+  "cohort_hashes": {
+    "questions.jsonl": "3d1b140392072695b87d2d47fa3139b47098b0b5a99f5ba207ea994e376f74f2",
+    "references.json": "6eb1cc0c285dd565aedb468ef43de9d60eb27275ebdd493354f33d36db81a3d1",
+    "generations.jsonl": "16042db62140bdf92047d76ed60aff55588a626830518ebef2ad86301ade9c91"
+  },
+  "source_cohort": "inventory-demo-2026-11-04/final/sql_analytics at source branch",
+  "new_ragas_scoring": false,
+  "report_benchmark": false
+}

@@ -1,0 +1,133 @@
+{
+  "revision": "af56d59",
+  "method": "Five fresh authenticated SQL requests through container/Nginx; same configured provider and read-only Supabase. All cells compared, ignoring output aliases and unspecified ordering. Not Ragas scoring.",
+  "cases": [
+    {
+      "id": "I11",
+      "question": "What is the latest available inventory snapshot date?",
+      "checks": {
+        "http_200": true,
+        "executed": true,
+        "inventory_scope": true,
+        "all_cell_values_match_frozen_result": true
+      },
+      "elapsed_seconds": 4.566,
+      "returned_rows": 1,
+      "sql": "SELECT MAX(inv.snapshot_date) AS latest_snapshot_date FROM commerce.inventory AS inv LIMIT 200",
+      "parameters": [],
+      "error_type": null,
+      "error_code": null,
+      "passed": true
+    },
+    {
+      "id": "I12",
+      "question": "How many master product records are in commerce.products?",
+      "checks": {
+        "http_200": true,
+        "executed": true,
+        "inventory_scope": true,
+        "all_cell_values_match_frozen_result": true
+      },
+      "elapsed_seconds": 2.677,
+      "returned_rows": 1,
+      "sql": "SELECT COUNT(*) AS record_count FROM commerce.products AS p LIMIT 200",
+      "parameters": [],
+      "error_type": null,
+      "error_code": null,
+      "passed": true
+    },
+    {
+      "id": "I13",
+      "question": "Count products by category in the master products table.",
+      "checks": {
+        "http_200": true,
+        "executed": true,
+        "inventory_scope": true,
+        "all_cell_values_match_frozen_result": true
+      },
+      "elapsed_seconds": 2.705,
+      "returned_rows": 4,
+      "sql": "SELECT p.category, COUNT(p.product_id) AS product_count FROM commerce.products AS p GROUP BY p.category ORDER BY 1 LIMIT 200",
+      "parameters": [],
+      "error_type": null,
+      "error_code": null,
+      "passed": true
+    },
+    {
+      "id": "I14",
+      "question": "Which distinct snapshot dates were observed in inventory during December 2022?",
+      "checks": {
+        "http_200": true,
+        "executed": true,
+        "inventory_scope": true,
+        "all_cell_values_match_frozen_result": true
+      },
+      "elapsed_seconds": 3.285,
+      "returned_rows": 1,
+      "sql": "SELECT DISTINCT inv.snapshot_date FROM commerce.inventory AS inv WHERE inv.snapshot_date >= $1 AND inv.snapshot_date < $2 ORDER BY 1 LIMIT 200",
+      "parameters": [
+        "2022-12-01",
+        "2023-01-01"
+      ],
+      "error_type": null,
+      "error_code": null,
+      "passed": true,
+      "previous_attempts": [
+        {
+          "id": "I14",
+          "question": "Which distinct snapshot dates were observed in inventory during December 2022?",
+          "checks": {
+            "http_200": true,
+            "executed": false,
+            "inventory_scope": true,
+            "all_cell_values_match_frozen_result": false
+          },
+          "elapsed_seconds": 0.018,
+          "returned_rows": 0,
+          "sql": null,
+          "parameters": null,
+          "error_type": "RateLimitError",
+          "error_code": null,
+          "passed": false
+        }
+      ]
+    },
+    {
+      "id": "I15",
+      "question": "Count excess duplicate inventory rows beyond the first per (snapshot_date, product_id) key.",
+      "checks": {
+        "http_200": true,
+        "executed": true,
+        "inventory_scope": true,
+        "all_cell_values_match_frozen_result": true
+      },
+      "elapsed_seconds": 4.284,
+      "returned_rows": 1,
+      "sql": "SELECT COALESCE(SUM(g.cnt - 1), 0) AS excess_duplicate_rows FROM (SELECT inv.snapshot_date, inv.product_id, COUNT(*) AS cnt FROM commerce.inventory AS inv GROUP BY inv.snapshot_date, inv.product_id) AS g LIMIT 200",
+      "parameters": [],
+      "error_type": null,
+      "error_code": null,
+      "passed": true,
+      "previous_attempts": [
+        {
+          "id": "I15",
+          "question": "Count excess duplicate inventory rows beyond the first per (snapshot_date, product_id) key.",
+          "checks": {
+            "http_200": true,
+            "executed": false,
+            "inventory_scope": true,
+            "all_cell_values_match_frozen_result": false
+          },
+          "elapsed_seconds": 0.018,
+          "returned_rows": 0,
+          "sql": null,
+          "parameters": null,
+          "error_type": "RateLimitError",
+          "error_code": null,
+          "passed": false
+        }
+      ]
+    }
+  ],
+  "passed": true
+}

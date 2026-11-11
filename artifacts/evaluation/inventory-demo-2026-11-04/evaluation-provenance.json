@@ -1,0 +1,13 @@
+{
+  "files": {
+    "evaluation/inventory_benchmark_metrics.py": "af916acd876bb1dfc543aaaa8bd1c38508049010d86bd53b0c0347690504631d",
+    "evaluation/run_inventory_agents_benchmark.py": "5e5240387834f80d7e08a9135effac36efa97d9060f0f9dc202b1c2ccaf13d92",
+    "evaluation/ragas_judge.py": "b0b6fa72fcb09ec75f7aea36961068de60554e853069b3f0c16350bf7ccbc9e0"
+  },
+  "judge": {
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "medium",
+    "adapter": "evaluation.ragas_judge.CodexCLIJudge"
+  },
+  "notes": "Original grading logic unchanged. Reporting helpers generalized for manifest-defined IDs; no frozen SQL or formulas altered."
+}

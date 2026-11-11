@@ -1,0 +1,269 @@
+{
+  "schema": [
+    {
+      "table_name": "invoice_items",
+      "column_name": "invoice_id",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "invoice_items",
+      "column_name": "line_no",
+      "data_type": "integer",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "invoice_items",
+      "column_name": "description",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoice_items",
+      "column_name": "unit",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoice_items",
+      "column_name": "quantity",
+      "data_type": "numeric",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoice_items",
+      "column_name": "unit_price",
+      "data_type": "numeric",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoice_items",
+      "column_name": "amount",
+      "data_type": "numeric",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoices",
+      "column_name": "invoice_id",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "invoices",
+      "column_name": "source_filename",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "invoices",
+      "column_name": "invoice_no",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoices",
+      "column_name": "invoice_date",
+      "data_type": "date",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoices",
+      "column_name": "buyer",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoices",
+      "column_name": "seller",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoices",
+      "column_name": "subtotal",
+      "data_type": "numeric",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoices",
+      "column_name": "tax_amount",
+      "data_type": "numeric",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoices",
+      "column_name": "total_amount",
+      "data_type": "numeric",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoices",
+      "column_name": "currency",
+      "data_type": "text",
+      "is_nullable": "YES"
+    }
+  ],
+  "keys": [
+    {
+      "relation": "commerce.invoice_items",
+      "definition": "CHECK (((amount >= (0)::numeric) AND (amount < 'Infinity'::numeric)))"
+    },
+    {
+      "relation": "commerce.invoice_items",
+      "definition": "CHECK (((quantity >= (0)::numeric) AND (quantity < 'Infinity'::numeric)))"
+    },
+    {
+      "relation": "commerce.invoice_items",
+      "definition": "CHECK (((unit_price >= (0)::numeric) AND (unit_price < 'Infinity'::numeric)))"
+    },
+    {
+      "relation": "commerce.invoice_items",
+      "definition": "CHECK ((line_no > 0))"
+    },
+    {
+      "relation": "commerce.invoice_items",
+      "definition": "FOREIGN KEY (invoice_id) REFERENCES commerce.invoices(invoice_id) ON DELETE CASCADE"
+    },
+    {
+      "relation": "commerce.invoice_items",
+      "definition": "PRIMARY KEY (invoice_id, line_no)"
+    },
+    {
+      "relation": "commerce.invoices",
+      "definition": "CHECK (((subtotal >= (0)::numeric) AND (subtotal < 'Infinity'::numeric)))"
+    },
+    {
+      "relation": "commerce.invoices",
+      "definition": "CHECK (((tax_amount >= (0)::numeric) AND (tax_amount < 'Infinity'::numeric)))"
+    },
+    {
+      "relation": "commerce.invoices",
+      "definition": "CHECK (((total_amount >= (0)::numeric) AND (total_amount < 'Infinity'::numeric)))"
+    },
+    {
+      "relation": "commerce.invoices",
+      "definition": "CHECK ((currency ~ '^[A-Z]{3}$'::text))"
+    },
+    {
+      "relation": "commerce.invoices",
+      "definition": "FOREIGN KEY (invoice_id) REFERENCES invoice_extractions(invoice_id) ON DELETE CASCADE"
+    },
+    {
+      "relation": "commerce.invoices",
+      "definition": "PRIMARY KEY (invoice_id)"
+    },
+    {
+      "relation": "commerce.invoices",
+      "definition": "UNIQUE (source_sha256)"
+    }
+  ],
+  "role": {
+    "role": "commerce_reader",
+    "readonly": "on"
+  },
+  "invoice_rows": 1,
+  "item_rows": 4,
+  "invoice_data_sha256": "1e431e7f1b41ca7f72149dd3e633747c068d33fb92a2c3c59f726d3124829266",
+  "references": [
+    [
+      {
+        "invoice_count": 1
+      }
+    ],
+    [
+      {
+        "invoice_id": "INV-44f38e1d7b2b4febaa9b3c15b8fce5b6",
+        "invoice_no": null,
+        "invoice_date": null,
+        "source_filename": "invoice_0009.pdf"
+      }
+    ],
+    [
+      {
+        "seller": null,
+        "currency": null,
+        "invoice_total": null
+      }
+    ],
+    [
+      {
+        "currency": null,
+        "invoice_tax": null
+      }
+    ],
+    [
+      {
+        "buyer": "công ty cổ phần kỹ thuật hưng thịnh",
+        "invoice_count": 1
+      }
+    ],
+    [
+      {
+        "month": null,
+        "currency": null,
+        "invoice_total": null
+      }
+    ],
+    [
+      {
+        "invoice_id": "INV-44f38e1d7b2b4febaa9b3c15b8fce5b6",
+        "line_no": 1,
+        "description": "1 Tấm thạch cao chống ẩm - theo phiếu xuất kho 795/PXK, công trình táng 2",
+        "unit": "Thùng",
+        "quantity": null,
+        "unit_price": 583000.0,
+        "amount": 11077000.0
+      },
+      {
+        "invoice_id": "INV-44f38e1d7b2b4febaa9b3c15b8fce5b6",
+        "line_no": 2,
+        "description": "Khung nhôm định hình hệ 55 - theo phiếu xuất kho 650/PXK, công trình nhà thạng mục xưởng B",
+        "unit": null,
+        "quantity": null,
+        "unit_price": 1992000.0,
+        "amount": 57768000.0
+      },
+      {
+        "invoice_id": "INV-44f38e1d7b2b4febaa9b3c15b8fce5b6",
+        "line_no": 3,
+        "description": "3 Bulong inox M10 - theo phiếu xuất kho 461/PXK, công trình nhà xưởng B",
+        "unit": "Cái",
+        "quantity": null,
+        "unit_price": 1104000.0,
+        "amount": 34224000.0
+      },
+      {
+        "invoice_id": "INV-44f38e1d7b2b4febaa9b3c15b8fce5b6",
+        "line_no": 4,
+        "description": "sơn nước nội thất màu trắng , theo phiếu xuất kho 2 Th PXX công trịnh nhà",
+        "unit": "Cái",
+        "quantity": null,
+        "unit_price": 2321000.0,
+        "amount": 71951000.0
+      }
+    ],
+    [
+      {
+        "seller": null,
+        "currency": null,
+        "invoice_item_amount": 175020000.0
+      }
+    ],
+    [
+      {
+        "invoice_count": 1
+      }
+    ],
+    []
+  ],
+  "policy_document": {
+    "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+    "storage_path": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919/VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+    "processing_status": "ready"
+  },
+  "corpus_sha256": "6496876ec30f941eab40bebbd0c9e3ec9479345ca924c3f2f1407af62200c625",
+  "chunks": 747,
+  "embedding_models": [
+    "intfloat/multilingual-e5-base"
+  ]
+}

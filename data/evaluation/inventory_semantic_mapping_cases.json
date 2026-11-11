@@ -1,0 +1,10 @@
+[
+  {"id":"lowest_stock","question":"Which ten styles have the fewest pieces left at the latest recorded inventory observation?","field":"stock_on_hand","dimensions":[]},
+  {"id":"category_stock","question":"Cho xem lượng hàng còn lại theo category ở kỳ ghi nhận mới nhất.","field":"stock_on_hand","dimensions":["category"]},
+  {"id":"top_category","question":"Which category carries the biggest balance in the latest available inventory snapshot? Return the top 1.","field":"stock_on_hand","dimensions":["category"]},
+  {"id":"lowest_fill","question":"Những mã hàng nào có mức đáp ứng kém nhất ở kỳ tồn kho mới nhất? Lấy 10 sản phẩm.","field":"fill_rate","dimensions":[]},
+  {"id":"history","question":"Cho xem balance hàng còn lại trong năm 2022, riêng từng snapshot, không cộng dồn các kỳ.","field":"stock_on_hand","dimensions":["snapshot_date"]},
+  {"id":"low_stock","question":"Show low stock products in the latest available inventory snapshot.","clarification_code":"metric_ambiguous"},
+  {"id":"safety_stock","question":"What is an appropriate safety stock buffer for the latest inventory snapshot?","clarification_code":"metric_unresolved"},
+  {"id":"weighted_fill","question":"What is the demand-weighted fill rate on 2022-12-31?","clarification_code":"metric_unresolved"}
+]

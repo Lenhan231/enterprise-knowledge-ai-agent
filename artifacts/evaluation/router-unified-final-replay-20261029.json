@@ -1,0 +1,417 @@
+{
+  "method": "Recorded live planner outputs replayed through final source; synthetic specialists/synthesis. No new live model-quality claim.",
+  "source_artifact": "router-unified-paced-20261029/results.json",
+  "implementation_sha256": {
+    "src/core/agents/router.py": "186a6d5118115f49b7ec4610a74e92ade2b8841edbf9d02ba1b0faced43bd8d9",
+    "src/core/agents/planning.py": "423e4ba54fe5c1e0681971046bbb17f765be516d4dda3dde3d665d739d33c32f",
+    "src/core/models/agent_plan.py": "ea33285bccb3c708c70326d73986fdd5b961fdf859ef1097ab38821b2cc09f67",
+    "src/core/agents/execution.py": "8d3178f10da58fdb3d40c721aac8b11eb56522611fc37153fbce0ece2a312503",
+    "src/core/agents/response.py": "cd51fb7d94a8e32853cb7ff57391f21b251b4d4031382baa56a0212f1c057ed6",
+    "src/core/agents/runtime.py": "21711733e13d7452693e0e151309851e6619fad2176ba496dfb7769222b066c2"
+  },
+  "source_stable": true,
+  "metrics": {
+    "n": 50,
+    "correct": 48,
+    "incorrect": 2,
+    "accuracy": 0.96,
+    "confusion_matrix": {
+      "knowledge": {
+        "knowledge": 16,
+        "analytics": 0,
+        "hybrid": 0
+      },
+      "analytics": {
+        "knowledge": 1,
+        "analytics": 18,
+        "hybrid": 1
+      },
+      "hybrid": {
+        "knowledge": 0,
+        "analytics": 0,
+        "hybrid": 14
+      }
+    },
+    "out_of_scope_predictions_by_expected": {
+      "knowledge": {},
+      "analytics": {},
+      "hybrid": {}
+    },
+    "per_class": {
+      "knowledge": {
+        "support": 16,
+        "precision": 0.9411764705882353,
+        "recall": 1.0,
+        "f1": 0.9696969696969697
+      },
+      "analytics": {
+        "support": 20,
+        "precision": 1.0,
+        "recall": 0.9,
+        "f1": 0.9473684210526316
+      },
+      "hybrid": {
+        "support": 14,
+        "precision": 0.9333333333333333,
+        "recall": 1.0,
+        "f1": 0.9655172413793104
+      }
+    },
+    "macro_f1": 0.9608608773763039,
+    "weighted_f1": 0.9595952263102899,
+    "zero_division": "precision/recall undefined as null when denominator is zero; F1 is 0 when both are defined and sum to zero"
+  },
+  "identical_routes": true,
+  "records": [
+    {
+      "case_id": "Q001",
+      "expected_route": "knowledge",
+      "predicted_route": "knowledge",
+      "original_predicted_route": "knowledge",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q002",
+      "expected_route": "knowledge",
+      "predicted_route": "knowledge",
+      "original_predicted_route": "knowledge",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q003",
+      "expected_route": "knowledge",
+      "predicted_route": "knowledge",
+      "original_predicted_route": "knowledge",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q004",
+      "expected_route": "knowledge",
+      "predicted_route": "knowledge",
+      "original_predicted_route": "knowledge",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q005",
+      "expected_route": "knowledge",
+      "predicted_route": "knowledge",
+      "original_predicted_route": "knowledge",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q006",
+      "expected_route": "knowledge",
+      "predicted_route": "knowledge",
+      "original_predicted_route": "knowledge",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q007",
+      "expected_route": "knowledge",
+      "predicted_route": "knowledge",
+      "original_predicted_route": "knowledge",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q008",
+      "expected_route": "knowledge",
+      "predicted_route": "knowledge",
+      "original_predicted_route": "knowledge",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q009",
+      "expected_route": "analytics",
+      "predicted_route": "analytics",
+      "original_predicted_route": "analytics",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q010",
+      "expected_route": "analytics",
+      "predicted_route": "analytics",
+      "original_predicted_route": "analytics",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q011",
+      "expected_route": "analytics",
+      "predicted_route": "analytics",
+      "original_predicted_route": "analytics",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q012",
+      "expected_route": "analytics",
+      "predicted_route": "analytics",
+      "original_predicted_route": "analytics",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q013",
+      "expected_route": "analytics",
+      "predicted_route": "analytics",
+      "original_predicted_route": "analytics",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q014",
+      "expected_route": "analytics",
+      "predicted_route": "analytics",
+      "original_predicted_route": "analytics",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q015",
+      "expected_route": "analytics",
+      "predicted_route": "analytics",
+      "original_predicted_route": "analytics",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q016",
+      "expected_route": "analytics",
+      "predicted_route": "analytics",
+      "original_predicted_route": "analytics",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q017",
+      "expected_route": "analytics",
+      "predicted_route": "analytics",
+      "original_predicted_route": "analytics",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q018",
+      "expected_route": "analytics",
+      "predicted_route": "knowledge",
+      "original_predicted_route": "knowledge",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q019",
+      "expected_route": "hybrid",
+      "predicted_route": "hybrid",
+      "original_predicted_route": "hybrid",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q020",
+      "expected_route": "hybrid",
+      "predicted_route": "hybrid",
+      "original_predicted_route": "hybrid",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q021",
+      "expected_route": "hybrid",
+      "predicted_route": "hybrid",
+      "original_predicted_route": "hybrid",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q022",
+      "expected_route": "hybrid",
+      "predicted_route": "hybrid",
+      "original_predicted_route": "hybrid",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q023",
+      "expected_route": "hybrid",
+      "predicted_route": "hybrid",
+      "original_predicted_route": "hybrid",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q024",
+      "expected_route": "hybrid",
+      "predicted_route": "hybrid",
+      "original_predicted_route": "hybrid",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q025",
+      "expected_route": "hybrid",
+      "predicted_route": "hybrid",
+      "original_predicted_route": "hybrid",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q026",
+      "expected_route": "knowledge",
+      "predicted_route": "knowledge",
+      "original_predicted_route": "knowledge",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q027",
+      "expected_route": "knowledge",
+      "predicted_route": "knowledge",
+      "original_predicted_route": "knowledge",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q028",
+      "expected_route": "knowledge",
+      "predicted_route": "knowledge",
+      "original_predicted_route": "knowledge",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q029",
+      "expected_route": "knowledge",
+      "predicted_route": "knowledge",
+      "original_predicted_route": "knowledge",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q030",
+      "expected_route": "knowledge",
+      "predicted_route": "knowledge",
+      "original_predicted_route": "knowledge",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q031",
+      "expected_route": "knowledge",
+      "predicted_route": "knowledge",
+      "original_predicted_route": "knowledge",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q032",
+      "expected_route": "knowledge",
+      "predicted_route": "knowledge",
+      "original_predicted_route": "knowledge",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q033",
+      "expected_route": "knowledge",
+      "predicted_route": "knowledge",
+      "original_predicted_route": "knowledge",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q034",
+      "expected_route": "analytics",
+      "predicted_route": "analytics",
+      "original_predicted_route": "analytics",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q035",
+      "expected_route": "analytics",
+      "predicted_route": "analytics",
+      "original_predicted_route": "analytics",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q036",
+      "expected_route": "analytics",
+      "predicted_route": "analytics",
+      "original_predicted_route": "analytics",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q037",
+      "expected_route": "analytics",
+      "predicted_route": "analytics",
+      "original_predicted_route": "analytics",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q038",
+      "expected_route": "analytics",
+      "predicted_route": "analytics",
+      "original_predicted_route": "analytics",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q039",
+      "expected_route": "analytics",
+      "predicted_route": "analytics",
+      "original_predicted_route": "analytics",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q040",
+      "expected_route": "analytics",
+      "predicted_route": "hybrid",
+      "original_predicted_route": "hybrid",
+      "status": "partial"
+    },
+    {
+      "case_id": "Q041",
+      "expected_route": "analytics",
+      "predicted_route": "analytics",
+      "original_predicted_route": "analytics",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q042",
+      "expected_route": "analytics",
+      "predicted_route": "analytics",
+      "original_predicted_route": "analytics",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q043",
+      "expected_route": "analytics",
+      "predicted_route": "analytics",
+      "original_predicted_route": "analytics",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q044",
+      "expected_route": "hybrid",
+      "predicted_route": "hybrid",
+      "original_predicted_route": "hybrid",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q045",
+      "expected_route": "hybrid",
+      "predicted_route": "hybrid",
+      "original_predicted_route": "hybrid",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q046",
+      "expected_route": "hybrid",
+      "predicted_route": "hybrid",
+      "original_predicted_route": "hybrid",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q047",
+      "expected_route": "hybrid",
+      "predicted_route": "hybrid",
+      "original_predicted_route": "hybrid",
+      "status": "partial"
+    },
+    {
+      "case_id": "Q048",
+      "expected_route": "hybrid",
+      "predicted_route": "hybrid",
+      "original_predicted_route": "hybrid",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q049",
+      "expected_route": "hybrid",
+      "predicted_route": "hybrid",
+      "original_predicted_route": "hybrid",
+      "status": "complete"
+    },
+    {
+      "case_id": "Q050",
+      "expected_route": "hybrid",
+      "predicted_route": "hybrid",
+      "original_predicted_route": "hybrid",
+      "status": "complete"
+    }
+  ]
+}

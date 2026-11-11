@@ -1,0 +1,252 @@
+{
+  "settings": {
+    "model": "qwen/qwen3.8-27b",
+    "temperature": 0,
+    "reasoning_effort": "none",
+    "max_output_tokens": 1000,
+    "case_sha256": "408ed00cbe96bb30db1d1753547b9269fd6c675933cc2d0f1f91a1e838d19f96",
+    "pace_seconds": 20
+  },
+  "supported_cases": 5,
+  "unresolved_cases": 3,
+  "before": {
+    "cases": [
+      {
+        "id": "lowest_stock",
+        "elapsed_ms": 3395.06,
+        "generation_calls": 2,
+        "executed": false,
+        "clarification": true,
+        "current_semantics": false,
+        "sql_validation": true,
+        "generated_sql": true,
+        "calculation": false,
+        "metric_correct": false
+      },
+      {
+        "id": "category_stock",
+        "elapsed_ms": 1180.04,
+        "generation_calls": 2,
+        "executed": false,
+        "clarification": true,
+        "current_semantics": false,
+        "sql_validation": false,
+        "generated_sql": false,
+        "calculation": false,
+        "metric_correct": false
+      },
+      {
+        "id": "top_category",
+        "elapsed_ms": 1374.54,
+        "generation_calls": 2,
+        "executed": false,
+        "clarification": true,
+        "current_semantics": false,
+        "sql_validation": true,
+        "generated_sql": true,
+        "calculation": false,
+        "metric_correct": false
+      },
+      {
+        "id": "lowest_fill",
+        "elapsed_ms": 1323.07,
+        "generation_calls": 2,
+        "executed": false,
+        "clarification": true,
+        "current_semantics": false,
+        "sql_validation": false,
+        "generated_sql": false,
+        "calculation": false,
+        "metric_correct": false
+      },
+      {
+        "id": "history",
+        "elapsed_ms": 3008.19,
+        "generation_calls": 1,
+        "executed": true,
+        "clarification": false,
+        "current_semantics": true,
+        "sql_validation": true,
+        "generated_sql": true,
+        "calculation": false,
+        "metric_correct": false
+      },
+      {
+        "id": "low_stock",
+        "elapsed_ms": 1303.93,
+        "generation_calls": 2,
+        "executed": false,
+        "clarification": true,
+        "current_semantics": false,
+        "sql_validation": true,
+        "generated_sql": true,
+        "calculation": false,
+        "metric_correct": false,
+        "targeted_clarification": false
+      },
+      {
+        "id": "safety_stock",
+        "elapsed_ms": 1.72,
+        "generation_calls": 0,
+        "executed": false,
+        "clarification": true,
+        "current_semantics": false,
+        "sql_validation": false,
+        "generated_sql": false,
+        "calculation": false,
+        "metric_correct": false,
+        "targeted_clarification": true
+      },
+      {
+        "id": "weighted_fill",
+        "elapsed_ms": 1.33,
+        "generation_calls": 0,
+        "executed": false,
+        "clarification": true,
+        "current_semantics": false,
+        "sql_validation": false,
+        "generated_sql": false,
+        "calculation": false,
+        "metric_correct": false,
+        "targeted_clarification": true
+      }
+    ],
+    "totals": {
+      "generated_sql": 4,
+      "sql_validation": 4,
+      "executed": 1,
+      "calculation": 0,
+      "metric_correct": 0,
+      "targeted_clarification": 2
+    },
+    "supported_totals": {
+      "generated_sql": 3,
+      "sql_validation": 3,
+      "executed": 1,
+      "calculation": 0,
+      "metric_correct": 0
+    },
+    "median_elapsed_ms": 1313.5,
+    "supported_median_ms": 1374.54
+  },
+  "after": {
+    "cases": [
+      {
+        "id": "lowest_stock",
+        "elapsed_ms": 2419.86,
+        "generation_calls": 2,
+        "executed": true,
+        "clarification": false,
+        "current_semantics": true,
+        "sql_validation": true,
+        "generated_sql": true,
+        "calculation": true,
+        "metric_correct": true
+      },
+      {
+        "id": "category_stock",
+        "elapsed_ms": 2436.21,
+        "generation_calls": 2,
+        "executed": true,
+        "clarification": false,
+        "current_semantics": true,
+        "sql_validation": true,
+        "generated_sql": true,
+        "calculation": true,
+        "metric_correct": true
+      },
+      {
+        "id": "top_category",
+        "elapsed_ms": 2391.38,
+        "generation_calls": 2,
+        "executed": true,
+        "clarification": false,
+        "current_semantics": true,
+        "sql_validation": true,
+        "generated_sql": true,
+        "calculation": true,
+        "metric_correct": true
+      },
+      {
+        "id": "lowest_fill",
+        "elapsed_ms": 2423.63,
+        "generation_calls": 2,
+        "executed": true,
+        "clarification": false,
+        "current_semantics": false,
+        "sql_validation": false,
+        "generated_sql": false,
+        "calculation": true,
+        "metric_correct": false
+      },
+      {
+        "id": "history",
+        "elapsed_ms": 2411.98,
+        "generation_calls": 2,
+        "executed": true,
+        "clarification": false,
+        "current_semantics": true,
+        "sql_validation": true,
+        "generated_sql": true,
+        "calculation": true,
+        "metric_correct": true
+      },
+      {
+        "id": "low_stock",
+        "elapsed_ms": 347.86,
+        "generation_calls": 1,
+        "executed": false,
+        "clarification": true,
+        "current_semantics": false,
+        "sql_validation": false,
+        "generated_sql": false,
+        "calculation": false,
+        "metric_correct": false,
+        "targeted_clarification": true
+      },
+      {
+        "id": "safety_stock",
+        "elapsed_ms": 339.55,
+        "generation_calls": 0,
+        "executed": false,
+        "clarification": true,
+        "current_semantics": false,
+        "sql_validation": false,
+        "generated_sql": false,
+        "calculation": false,
+        "metric_correct": false,
+        "targeted_clarification": true
+      },
+      {
+        "id": "weighted_fill",
+        "elapsed_ms": 336.62,
+        "generation_calls": 0,
+        "executed": false,
+        "clarification": true,
+        "current_semantics": false,
+        "sql_validation": false,
+        "generated_sql": false,
+        "calculation": false,
+        "metric_correct": false,
+        "targeted_clarification": true
+      }
+    ],
+    "totals": {
+      "generated_sql": 4,
+      "sql_validation": 4,
+      "executed": 5,
+      "calculation": 5,
+      "metric_correct": 4,
+      "targeted_clarification": 3
+    },
+    "supported_totals": {
+      "generated_sql": 4,
+      "sql_validation": 4,
+      "executed": 5,
+      "calculation": 5,
+      "metric_correct": 4
+    },
+    "median_elapsed_ms": 2401.6800000000003,
+    "supported_median_ms": 2419.86
+  }
+}

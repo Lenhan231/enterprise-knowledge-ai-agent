@@ -1,0 +1,35 @@
+{
+  "production_base": "62489af",
+  "sql_ids": [
+    "F01",
+    "F02",
+    "F03",
+    "F04",
+    "F05",
+    "F06",
+    "N01",
+    "N02",
+    "N03",
+    "N04",
+    "U01",
+    "U02",
+    "S03",
+    "S05",
+    "S16",
+    "S23",
+    "S26",
+    "S27",
+    "S29",
+    "S30"
+  ],
+  "report_ids": [
+    "R01",
+    "R06",
+    "R16"
+  ],
+  "notes": "Original references copied unchanged; N01-N04 are predeclared paraphrases of separately frozen field fixtures. U01/U02 test safe refusals.",
+  "hashes": {
+    "questions.jsonl": "5313850bf1d56516c0a6f747626a9f5e2521cf2c5af579bb73d2cca3eddeb5e6",
+    "references.json": "1cf082b449aafcc13cd9bf1d0ce216843fc9e05dd50c614c008155acb85e396b"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "production_base": "ac0d8a2",
+  "categories": {
+    "canonical_inventory": [
+      "S03",
+      "S04",
+      "S05",
+      "S06",
+      "S07",
+      "S08",
+      "S09",
+      "S10",
+      "S11",
+      "S12",
+      "S13",
+      "S15",
+      "S16"
+    ],
+    "inventory_diagnostics": [
+      "S01",
+      "S02",
+      "S14",
+      "S28"
+    ],
+    "commerce_analytics": [
+      "S17",
+      "S18",
+      "S19",
+      "S20",
+      "S21",
+      "S22",
+      "S24",
+      "S25"
+    ],
+    "cross_domain": [
+      "S23",
+      "S26",
+      "S27"
+    ],
+    "unsupported": [
+      "S29",
+      "S30"
+    ]
+  },
+  "oracle_status": "Separately authored schema-field fixtures; not changes to original frozen references or externally certified gold.",
+  "sha256": {
+    "cases.jsonl": "d637718caef801a7043d686962cb2e22f1c5c2690f01dc7c7353c84464ef2510",
+    "oracles.json": "9a6305c020ee0ce07164448a0d221565d5c2d05a86957abd62d58e90592c96b7"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "dataset_id": "fa26ai69-router-benchmark-25-v1",
+  "label_method": "Manual ground-truth routes supplied by the benchmark requester.",
+  "cases": [
+    {"id":"Q001","question":"What is the company's leave policy?","expected_route":"knowledge","difficulty":"easy"},
+    {"id":"Q002","question":"Find the employee handbook.","expected_route":"knowledge","difficulty":"easy"},
+    {"id":"Q003","question":"What does the refund policy say?","expected_route":"knowledge","difficulty":"easy"},
+    {"id":"Q004","question":"Explain the company's return procedure.","expected_route":"knowledge","difficulty":"easy"},
+    {"id":"Q005","question":"What are the payment terms in the supplier contract?","expected_route":"knowledge","difficulty":"medium"},
+    {"id":"Q006","question":"Summarize the company's inventory policy.","expected_route":"knowledge","difficulty":"medium"},
+    {"id":"Q007","question":"Which document describes employee responsibilities?","expected_route":"knowledge","difficulty":"medium"},
+    {"id":"Q008","question":"What does our shipping policy say about delayed deliveries?","expected_route":"knowledge","difficulty":"medium"},
+    {"id":"Q009","question":"What was the total revenue in 2025?","expected_route":"analytics","difficulty":"easy"},
+    {"id":"Q010","question":"How many orders were placed in 2025?","expected_route":"analytics","difficulty":"easy"},
+    {"id":"Q011","question":"Which products generated the most revenue?","expected_route":"analytics","difficulty":"easy"},
+    {"id":"Q012","question":"What was the total cost of goods sold in 2025?","expected_route":"analytics","difficulty":"medium"},
+    {"id":"Q013","question":"Compare revenue between 2024 and 2025.","expected_route":"analytics","difficulty":"medium"},
+    {"id":"Q014","question":"What is the average order value?","expected_route":"analytics","difficulty":"medium"},
+    {"id":"Q015","question":"How many products are currently out of stock?","expected_route":"analytics","difficulty":"medium"},
+    {"id":"Q016","question":"Show revenue growth by month.","expected_route":"analytics","difficulty":"medium"},
+    {"id":"Q017","question":"Which product categories have the highest return rates?","expected_route":"analytics","difficulty":"hard"},
+    {"id":"Q018","question":"How many documents are stored in each business domain?","expected_route":"analytics","difficulty":"hard"},
+    {"id":"Q019","question":"Compare total revenue against the company's sales policy.","expected_route":"hybrid","difficulty":"medium"},
+    {"id":"Q020","question":"What does our return policy say, and how many returns were recorded?","expected_route":"hybrid","difficulty":"medium"},
+    {"id":"Q021","question":"Compare inventory stockout statistics with our inventory management policy.","expected_route":"hybrid","difficulty":"medium"},
+    {"id":"Q022","question":"What is our shipping policy, and what is the average delivery time?","expected_route":"hybrid","difficulty":"medium"},
+    {"id":"Q023","question":"Compare the company's refund procedures with actual refund statistics.","expected_route":"hybrid","difficulty":"hard"},
+    {"id":"Q024","question":"How many orders were returned, and what does our return policy require?","expected_route":"hybrid","difficulty":"hard"},
+    {"id":"Q025","question":"Compare revenue growth with the targets described in our sales documents.","expected_route":"hybrid","difficulty":"hard"}
+  ]
+}

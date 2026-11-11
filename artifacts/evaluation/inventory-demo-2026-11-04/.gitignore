@@ -1,0 +1,3 @@
+# User deferred Report benchmarking; retain interrupted checkpoints locally.
+/report-production/
+/report-final/

@@ -1,0 +1,162 @@
+{
+  "dataset": "vinamilk-2011-vietnamese-financial-scan-diagnostic-v2",
+  "dataset_sha256": "a3470db4deb6b4bd4122a6ee54669f10997be3ec1e10545280df18bc66c06bfb",
+  "render_dpi": 180,
+  "paired_pages": [
+    {
+      "document_id": "VNM-FS-2011-VI-SCAN-DIAGNOSTIC",
+      "page": 7,
+      "language": "vi",
+      "source_pdf_sha256": "80f38fbb18f729fab611ed84f699d06cde76fb2ab18f89dd953d2e589f39f0bc",
+      "rendered_image_sha256": "ed6be06ad82ec17ff2005de5ba4c00721bfacc5d43ee838c4da942fe8e9cc642"
+    },
+    {
+      "document_id": "VNM-FS-2011-VI-SCAN-DIAGNOSTIC",
+      "page": 8,
+      "language": "vi",
+      "source_pdf_sha256": "80f38fbb18f729fab611ed84f699d06cde76fb2ab18f89dd953d2e589f39f0bc",
+      "rendered_image_sha256": "1bd65b9278d617ac37d44af5a9f6ba07a9f1a75a386ab295353265c48b45a4c7"
+    },
+    {
+      "document_id": "VNM-FS-2011-VI-SCAN-DIAGNOSTIC",
+      "page": 10,
+      "language": "vi",
+      "source_pdf_sha256": "80f38fbb18f729fab611ed84f699d06cde76fb2ab18f89dd953d2e589f39f0bc",
+      "rendered_image_sha256": "9b857c3d51a6eb626b4ccfab7e45bae8382c6940b9dfd667d24b9558f2f320c0"
+    }
+  ],
+  "engines": [
+    {
+      "engine": "tesseract_psm3",
+      "base_engine": "tesseract",
+      "configuration": {
+        "render_dpi": 180,
+        "tesseract_language": "vie+eng",
+        "tesseract_page_segmentation_mode": 3
+      },
+      "engine_version": "tesseract 4.1.1",
+      "runtime_device": "CPU; CUDA unavailable",
+      "valid_pages": 1,
+      "ocr_pages": 3,
+      "failed_pages": 0,
+      "micro_cer": 0.840715,
+      "micro_wer": 1.126214,
+      "mean_latency_seconds": 2.765,
+      "pages_per_minute": 21.697,
+      "initialization_seconds": null,
+      "process_peak_rss_mb": 266.047,
+      "child_peak_rss_mb": 266.047,
+      "cuda_memory": {
+        "torch_cuda_peak_allocated_mb": null,
+        "torch_cuda_peak_reserved_mb": null,
+        "cuda_measurement": "PyTorch CUDA allocator; may not include non-PyTorch engines"
+      },
+      "table_rows_expected": 17,
+      "table_rows_exact": 0,
+      "table_row_recall": 0.0,
+      "table_cells_expected": 51,
+      "table_cells_text_matched": 50,
+      "table_cell_text_recall": 0.980392,
+      "table_cell_metric_scope": "cell text presence only; ignores row and column association"
+    },
+    {
+      "engine": "paddleocr",
+      "base_engine": "paddleocr",
+      "configuration": {
+        "render_dpi": 180,
+        "tesseract_language": "vie+eng",
+        "tesseract_page_segmentation_mode": 3
+      },
+      "engine_version": "3.7.0",
+      "runtime_device": "cpu",
+      "valid_pages": 1,
+      "ocr_pages": 3,
+      "failed_pages": 0,
+      "micro_cer": 0.373737,
+      "micro_wer": 0.592233,
+      "mean_latency_seconds": 67.722,
+      "pages_per_minute": 0.886,
+      "initialization_seconds": 54.068,
+      "process_peak_rss_mb": 3754.391,
+      "child_peak_rss_mb": 3754.391,
+      "cuda_memory": {
+        "torch_cuda_peak_allocated_mb": null,
+        "torch_cuda_peak_reserved_mb": null,
+        "cuda_measurement": "PyTorch CUDA allocator; may not include non-PyTorch engines"
+      },
+      "table_rows_expected": 17,
+      "table_rows_exact": 0,
+      "table_row_recall": 0.0,
+      "table_cells_expected": 51,
+      "table_cells_text_matched": 34,
+      "table_cell_text_recall": 0.666667,
+      "table_cell_metric_scope": "cell text presence only; ignores row and column association"
+    },
+    {
+      "engine": "easyocr",
+      "base_engine": "easyocr",
+      "configuration": {
+        "render_dpi": 180,
+        "tesseract_language": "vie+eng",
+        "tesseract_page_segmentation_mode": 3
+      },
+      "engine_version": "1.7.2",
+      "runtime_device": "cuda:0",
+      "valid_pages": 1,
+      "ocr_pages": 3,
+      "failed_pages": 0,
+      "micro_cer": 0.468531,
+      "micro_wer": 0.533981,
+      "mean_latency_seconds": 3.92,
+      "pages_per_minute": 15.307,
+      "initialization_seconds": 10.656,
+      "process_peak_rss_mb": 1540.109,
+      "child_peak_rss_mb": 1540.109,
+      "cuda_memory": {
+        "torch_cuda_peak_allocated_mb": 1863.214,
+        "torch_cuda_peak_reserved_mb": 2300.0,
+        "cuda_measurement": "PyTorch CUDA allocator; may not include non-PyTorch engines"
+      },
+      "table_rows_expected": 17,
+      "table_rows_exact": 9,
+      "table_row_recall": 0.529412,
+      "table_cells_expected": 51,
+      "table_cells_text_matched": 50,
+      "table_cell_text_recall": 0.980392,
+      "table_cell_metric_scope": "cell text presence only; ignores row and column association"
+    },
+    {
+      "engine": "surya",
+      "base_engine": "surya",
+      "configuration": {
+        "render_dpi": 180,
+        "tesseract_language": "vie+eng",
+        "tesseract_page_segmentation_mode": 3
+      },
+      "engine_version": "0.17.1",
+      "runtime_device": "cuda:0",
+      "valid_pages": 1,
+      "ocr_pages": 3,
+      "failed_pages": 0,
+      "micro_cer": 0.316239,
+      "micro_wer": 0.349515,
+      "mean_latency_seconds": 9.775,
+      "pages_per_minute": 6.138,
+      "initialization_seconds": 57.084,
+      "process_peak_rss_mb": 4412.629,
+      "child_peak_rss_mb": 1274.891,
+      "cuda_memory": {
+        "torch_cuda_peak_allocated_mb": 3011.241,
+        "torch_cuda_peak_reserved_mb": 3494.0,
+        "cuda_measurement": "PyTorch CUDA allocator; may not include non-PyTorch engines"
+      },
+      "table_rows_expected": 17,
+      "table_rows_exact": 2,
+      "table_row_recall": 0.117647,
+      "table_cells_expected": 51,
+      "table_cells_text_matched": 51,
+      "table_cell_text_recall": 1.0,
+      "table_cell_metric_scope": "cell text presence only; ignores row and column association"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "reference_matches": {
+    "S13": true,
+    "S15": true,
+    "S17": true
+  },
+  "all_match": true,
+  "note": "Repeatable-read verification of oracle results, not a persisted database snapshot."
+}

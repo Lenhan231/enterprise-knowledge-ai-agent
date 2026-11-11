@@ -1,0 +1,21 @@
+{
+  "dataset_id": "vinamilk-ocr-native-text-reference-v1",
+  "source": "Official Vinamilk annual and sustainability report PDFs already downloaded from the URLs recorded in data/vietnam_enterprises/manifest.json.",
+  "reference_method": "PyMuPDF native PDF text extracted from each selected page; diagnostic reference only, not manually transcribed ground truth.",
+  "reference_quality": "native_pdf_text_unreviewed",
+  "language_label_method": "Dominant visible language of each rendered evaluation page was checked visually; it does not inherit the language suffix from the document ID.",
+  "primary_metric_selection_eligible": false,
+  "limitations": "Born-digital pages only; native text may contain extraction errors or differ in reading order. Not representative of scanned, skewed, low-resolution or degraded documents. Layout and table accuracy are not labeled. Do not use these scores to select a production OCR model or make thesis accuracy claims until references are manually checked.",
+  "pages": [
+    {"document_id": "VNM-AR-2020-VI", "file": "data/raw/vietnam_enterprises/vnm/vnm-ar-2020-vi.pdf", "page": 8, "language": "en"},
+    {"document_id": "VNM-AR-2021-VI", "file": "data/raw/vietnam_enterprises/vnm/vnm-ar-2021-vi.pdf", "page": 8, "language": "en"},
+    {"document_id": "VNM-AR-2022-VI", "file": "data/raw/vietnam_enterprises/vnm/vnm-ar-2022-vi.pdf", "page": 8, "language": "vi"},
+    {"document_id": "VNM-AR-2023-EN", "file": "data/raw/vietnam_enterprises/vnm/vnm-ar-2023-en.pdf", "page": 8, "language": "en"},
+    {"document_id": "VNM-AR-2024-VI", "file": "data/raw/vietnam_enterprises/vnm/vnm-ar-2024-vi.pdf", "page": 12, "language": "vi"},
+    {"document_id": "VNM-SR-2020-EN", "file": "data/raw/vietnam_enterprises/vnm/vnm-sr-2020-en.pdf", "page": 3, "language": "en"},
+    {"document_id": "VNM-SR-2021-EN", "file": "data/raw/vietnam_enterprises/vnm/vnm-sr-2021-en.pdf", "page": 3, "language": "en"},
+    {"document_id": "VNM-SR-2022-EN", "file": "data/raw/vietnam_enterprises/vnm/vnm-sr-2022-en.pdf", "page": 3, "language": "en"},
+    {"document_id": "VNM-SR-2023-EN", "file": "data/raw/vietnam_enterprises/vnm/vnm-sr-2023-en.pdf", "page": 3, "language": "en"},
+    {"document_id": "VNM-SR-2024-EN", "file": "data/raw/vietnam_enterprises/vnm/vnm-sr-2024-en.pdf", "page": 3, "language": "en"}
+  ]
+}

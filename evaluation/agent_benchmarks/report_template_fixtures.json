@@ -1,0 +1,166 @@
+{
+  "dataset_id": "report-template-fixtures-v1",
+  "note": "Logical fixture templates for automated tests. The actual report agent should accept user-uploaded DOCX/Markdown/PDF templates and preserve headings/order/layout where supported.",
+  "templates": [
+    {
+      "id": "revenue_performance_v1",
+      "name": "Revenue Performance Report",
+      "required_sections": [
+        "Report title",
+        "Reporting period",
+        "Executive summary",
+        "KPI table",
+        "Monthly trend",
+        "Segment/region breakdown",
+        "Limitations and assumptions",
+        "Sources and evidence"
+      ],
+      "tables": [
+        {
+          "name": "KPI table",
+          "columns": [
+            "Metric",
+            "Value",
+            "Period",
+            "Source"
+          ]
+        },
+        {
+          "name": "Trend table",
+          "columns": [
+            "Period",
+            "Revenue",
+            "COGS",
+            "Revenue minus COGS"
+          ]
+        }
+      ],
+      "formatting_rules": [
+        "Preserve section order",
+        "Never label revenue minus COGS as net profit",
+        "State that currency is unspecified unless verified from source"
+      ]
+    },
+    {
+      "id": "inventory_exception_v1",
+      "name": "Inventory Exception Report",
+      "required_sections": [
+        "Report title",
+        "Snapshot date and coverage",
+        "KPI summary",
+        "Exception table",
+        "Policy thresholds",
+        "Required actions",
+        "Data limitations",
+        "Sources and evidence"
+      ],
+      "tables": [
+        {
+          "name": "Exception table",
+          "columns": [
+            "Product ID",
+            "Category",
+            "Stock on hand",
+            "Days of supply",
+            "Stockout flag",
+            "Overstock flag",
+            "Recommended follow-up"
+          ]
+        }
+      ],
+      "formatting_rules": [
+        "Use latest snapshot for current-state metrics",
+        "Do not sum stock_on_hand across snapshots",
+        "Distinguish observed flags from simulated policy thresholds",
+        "Do not issue purchase orders"
+      ]
+    },
+    {
+      "id": "policy_compliance_v1",
+      "name": "Policy and Controls Review",
+      "required_sections": [
+        "Report title",
+        "Policy/source metadata",
+        "Control summary",
+        "Observed evidence",
+        "Conflicts or gaps",
+        "Owner and approver",
+        "Recommended actions",
+        "Approval status and caveats",
+        "Citations"
+      ],
+      "tables": [
+        {
+          "name": "Control table",
+          "columns": [
+            "Policy ID",
+            "Trigger",
+            "Required action",
+            "Owner",
+            "Approval",
+            "Evidence status"
+          ]
+        }
+      ],
+      "formatting_rules": [
+        "Mark policy threshold assumptions as SIMULATION_DRAFT unless approved evidence says otherwise",
+        "Separate documented policy from observed data",
+        "Include citations for every material claim"
+      ]
+    },
+    {
+      "id": "executive_summary_v1",
+      "name": "Executive Decision Brief",
+      "required_sections": [
+        "Report title",
+        "Reporting period",
+        "Executive summary",
+        "Business highlights",
+        "Risks and limitations",
+        "Recommended decisions",
+        "Evidence and sources"
+      ],
+      "tables": [
+        {
+          "name": "KPI table",
+          "columns": [
+            "KPI",
+            "Value",
+            "Comparison period",
+            "Evidence source"
+          ]
+        }
+      ],
+      "formatting_rules": [
+        "Every number must map to SQL result or document evidence",
+        "Use no unverified current-state claims",
+        "Make recommendations conditional on data quality and authorization"
+      ]
+    },
+    {
+      "id": "minimal_user_template_v1",
+      "name": "Minimal User Template",
+      "required_sections": [
+        "1. Summary",
+        "2. KPI Table",
+        "3. Evidence",
+        "4. Limitations"
+      ],
+      "tables": [
+        {
+          "name": "KPI Table",
+          "columns": [
+            "Metric",
+            "Value",
+            "Source"
+          ]
+        }
+      ],
+      "formatting_rules": [
+        "Preserve exact headings and order",
+        "Do not add sections unless user approves",
+        "Keep unsupported values explicitly unavailable"
+      ]
+    }
+  ]
+}

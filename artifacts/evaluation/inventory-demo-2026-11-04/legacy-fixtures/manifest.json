@@ -1,0 +1,13 @@
+{
+  "sql_ids": [
+    "S12",
+    "S13",
+    "S16"
+  ],
+  "report_ids": [],
+  "notes": "Exact original questions and reference records copied unchanged. Catalog period restrictions are audited separately from official scores.",
+  "hashes": {
+    "questions.jsonl": "75ec421e170994705e94a998e58295ccda3ec2c300dc90e27747655a47ead623",
+    "references.json": "54036d35cfcd16f712e42c545eb2a8a811f3a8842e20f8b137b8633ff801fa96"
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "purpose": "Offline routing hypotheses for unseen wording/topics; manually assigned expected planner need, not gold retrieval relevance or quality. No claim topics exist in current corpus. Do not tune against these cases and call them held-out afterwards.",
+  "cases": [
+    {
+      "id": "H01",
+      "question": "CTL-4100 nặng bao nhiêu?",
+      "expected_planner": false
+    },
+    {
+      "id": "H02",
+      "question": "Compare the dimensions of CTL-4100 and CTL-4100WL.",
+      "expected_planner": false
+    },
+    {
+      "id": "H03",
+      "question": "What fields are required in a leave request?",
+      "expected_planner": false
+    },
+    {
+      "id": "H04",
+      "question": "How many comparable quotes are required for a purchase of VND 20 million?",
+      "expected_planner": false
+    },
+    {
+      "id": "H05",
+      "question": "So sánh thời hạn bảo hành và trọng lượng của CTL-4100 với CTL-4100WL.",
+      "expected_planner": false
+    },
+    {
+      "id": "H06",
+      "question": "Yêu cầu nghỉ phép cần những gì?",
+      "expected_planner": false
+    },
+    {
+      "id": "H07",
+      "question": "Theo biểu mẫu này, ai ký và cần bao nhiêu bản?",
+      "expected_planner": false
+    },
+    {
+      "id": "H08",
+      "question": "What documents are required and how long is the retention period for this form?",
+      "expected_planner": false
+    },
+    {
+      "id": "H09",
+      "question": "Giao hàng 100, nhận 90, từ chối 15 có đúng không? Vì sao?",
+      "expected_planner": false
+    },
+    {
+      "id": "H10",
+      "question": "Summarize the approval matrix.",
+      "expected_planner": false
+    },
+    {
+      "id": "H11",
+      "question": "Danh sách phòng ban A và B có quyền xem tài liệu.",
+      "expected_planner": false
+    },
+    {
+      "id": "H12",
+      "question": "When does the warranty expire?",
+      "expected_planner": false
+    },
+    {
+      "id": "H13",
+      "question": "Who approves a purchase and when must a security incident be reported?",
+      "expected_planner": true
+    },
+    {
+      "id": "H14",
+      "question": "Tôi được nghỉ phép bao nhiêu ngày và sự cố bảo mật phải báo khi nào?",
+      "expected_planner": true
+    },
+    {
+      "id": "H15",
+      "question": "1. Trình bày quy định nghỉ phép\n2. Nêu quy trình sao lưu dữ liệu",
+      "expected_planner": true
+    },
+    {
+      "id": "H16",
+      "question": "Summarize leave rules; explain procurement approvals.",
+      "expected_planner": true
+    },
+    {
+      "id": "H17",
+      "question": "Mô tả quy trình nghỉ phép và xử lý sự cố bảo mật.",
+      "expected_planner": true
+    },
+    {
+      "id": "H18",
+      "question": "Mức lương tối thiểu và lịch sao lưu dữ liệu.",
+      "expected_planner": true
+    },
+    {
+      "id": "H19",
+      "question": "List purchase approval requirements and explain the backup procedure.",
+      "expected_planner": true
+    },
+    {
+      "id": "H20",
+      "question": "Where are backup files stored? Who approves supplier contracts?",
+      "expected_planner": true
+    }
+  ]
+}

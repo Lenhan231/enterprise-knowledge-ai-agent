@@ -1,0 +1,12 @@
+{
+  "commit": "3564c0638d0c9654240d222638e02b1ea8b057c5",
+  "workflow_runs": [
+    {
+      "id": 41959184878,
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "failure",
+      "html_url": "https://github.com/Lenhan231/enterprise-knowledge-ai-agent/actions/runs/41959184878"
+    }
+  ]
+}

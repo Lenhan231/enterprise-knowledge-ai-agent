@@ -1,0 +1,130 @@
+{
+  "dataset_id": "knowledge-verifier-transfer-v2-development",
+  "limitations": "Synthetic development probes authored after the initial 28-case run. Not independently reviewed or held-out; do not pool into baseline or claim representative accuracy.",
+  "contexts": {
+    "finance_transfer": [
+      {
+        "source_id": "S1",
+        "document_name": "fictional-2025-consolidated.txt",
+        "metadata": {
+          "section_title": "Consolidated income statement"
+        },
+        "content": "Consolidated income statement. Unit: VND million. 2025: revenue 72; profit after tax 9. 2024: revenue 68; profit after tax 8."
+      },
+      {
+        "source_id": "S2",
+        "document_name": "fictional-2025-separate.txt",
+        "metadata": {
+          "section_title": "Separate income statement"
+        },
+        "content": "Separate income statement of parent company. Unit: VND million. 2025: revenue 65; profit after tax 7."
+      }
+    ],
+    "math_transfer": [
+      {
+        "source_id": "S1",
+        "document_name": "fictional-cost-rule.txt",
+        "metadata": {},
+        "content": "Total cost = quantity multiplied by unit price. Unit price can be derived by dividing total cost by nonzero quantity. Budget variance is total cost minus budget."
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "N01",
+      "context": "finance_transfer",
+      "question": "Cho biết doanh thu và lợi nhuận sau thuế hợp nhất năm 2025.",
+      "answer": "Lợi nhuận sau thuế hợp nhất năm 2025 là 9 triệu đồng [S1].",
+      "expected": "supported",
+      "topic": "partial_answer_is_factual"
+    },
+    {
+      "id": "N02",
+      "context": "finance_transfer",
+      "question": "Cho biết doanh thu và lợi nhuận sau thuế hợp nhất năm 2025.",
+      "answer": "Lợi nhuận sau thuế hợp nhất năm 2025 là 72 triệu đồng [S1].",
+      "expected": "rejected",
+      "topic": "wrong_metric"
+    },
+    {
+      "id": "N03",
+      "context": "finance_transfer",
+      "question": "Cho biết doanh thu và lợi nhuận sau thuế hợp nhất năm 2025.",
+      "answer": "Lợi nhuận sau thuế hợp nhất năm 2024 là 9 triệu đồng [S1].",
+      "expected": "rejected",
+      "topic": "wrong_period"
+    },
+    {
+      "id": "N04",
+      "context": "finance_transfer",
+      "question": "Cho biết doanh thu và lợi nhuận sau thuế hợp nhất năm 2025.",
+      "answer": "Lợi nhuận sau thuế hợp nhất năm 2025 là 9 tỷ đồng [S1].",
+      "expected": "rejected",
+      "topic": "wrong_scale"
+    },
+    {
+      "id": "N05",
+      "context": "finance_transfer",
+      "question": "Cho biết doanh thu và lợi nhuận sau thuế hợp nhất năm 2025.",
+      "answer": "Lợi nhuận sau thuế riêng công ty mẹ năm 2025 là 9 triệu đồng [S1].",
+      "expected": "rejected",
+      "topic": "wrong_scope"
+    },
+    {
+      "id": "N06",
+      "context": "finance_transfer",
+      "question": "Cho biết doanh thu và lợi nhuận sau thuế hợp nhất năm 2025.",
+      "answer": "Lợi nhuận sau thuế hợp nhất năm 2025 là 9 triệu USD [S1].",
+      "expected": "rejected",
+      "topic": "wrong_currency"
+    },
+    {
+      "id": "N07",
+      "context": "finance_transfer",
+      "question": "Cho biết doanh thu và lợi nhuận sau thuế hợp nhất năm 2025.",
+      "answer": "Doanh thu hợp nhất năm 2025 là 72 triệu đồng, lợi nhuận sau thuế là 9 triệu đồng [S1].",
+      "expected": "supported",
+      "topic": "two_metrics_same_source"
+    },
+    {
+      "id": "N08",
+      "context": "finance_transfer",
+      "question": "Lợi nhuận sau thuế riêng công ty mẹ năm 2025?",
+      "answer": "Lợi nhuận sau thuế riêng công ty mẹ năm 2025 là 7 triệu đồng [S2].",
+      "expected": "supported",
+      "topic": "separate_scope"
+    },
+    {
+      "id": "N09",
+      "context": "math_transfer",
+      "question": "Mua 3 sản phẩm, đơn giá 2,5 triệu đồng. Tổng chi phí?",
+      "answer": "Tổng chi phí là 3 × 2,5 = 7,5 triệu đồng [S1].",
+      "expected": "supported",
+      "topic": "decimal_multiplication"
+    },
+    {
+      "id": "N10",
+      "context": "math_transfer",
+      "question": "Mua 3 sản phẩm, đơn giá 2,5 triệu đồng. Tổng chi phí?",
+      "answer": "Tổng chi phí là 3 × 2,5 = 8,5 triệu đồng [S1].",
+      "expected": "rejected",
+      "topic": "wrong_arithmetic"
+    },
+    {
+      "id": "N11",
+      "context": "math_transfer",
+      "question": "Tổng chi phí 9 triệu cho 4 sản phẩm như nhau. Đơn giá?",
+      "answer": "Đơn giá là 9 / 4 = 2,25 triệu đồng [S1].",
+      "expected": "supported",
+      "topic": "exact_division"
+    },
+    {
+      "id": "N12",
+      "context": "math_transfer",
+      "question": "Tổng chi phí 9 triệu cho 4 sản phẩm như nhau. Đơn giá?",
+      "answer": "Đơn giá là 9 / 4 = 3,25 triệu đồng [S1].",
+      "expected": "rejected",
+      "topic": "wrong_arithmetic"
+    }
+  ]
+}

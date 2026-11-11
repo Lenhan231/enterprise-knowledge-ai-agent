@@ -1,0 +1,34 @@
+{
+  "production_base": "62489af",
+  "production_source_unchanged": true,
+  "original_frozen_inputs_and_scoring_unchanged": true,
+  "candidate_patch_verified": true,
+  "helper_verified": true,
+  "fixture_hashes_verified": true,
+  "paired_sql_generations": 40,
+  "paired_sql_scores": 120,
+  "provider_failed_attempts": 0,
+  "evaluator_errors": 0,
+  "application_revision": "ff5de28270450c89ae39dd17ac535020834b9789",
+  "test_only_revision": "518052285cdefd232bc3793475afcf286445fd97",
+  "experiment_source_sha256": {
+    "evaluation\\hybrid_field_contract.py": "439b53346ce0d0fe733dec832073f5ead0549c6a45384af1b9b12a8c638e0071",
+    "evaluation\\sql_hybrid_deterministic.patch": "ae00017b4f529d92ed487f32689a02f4e143d2fce30504b400abb5afffb2cbb2",
+    "evaluation\\run_sql_hybrid_followup.py": "486bb0cea61c1d16710701efa7120f51f35d19e39957450f28d9ffc96b9ea226",
+    "evaluation\\sql_report_planning.patch": "4e7673ff93e02b5c621d78cbaa191bf07f5f0db29c17523d576528eff9c4e603",
+    "evaluation\\sql_report_evidence.patch": "4242df75b9e8024ecebe09fc1c59688f84868d7657c6912794fd7430d975b442",
+    "evaluation\\sql_report_main_reconciliation.patch": "f70ed750c3c038f891a636b58b83f875d690bb2d70c653307d9c901eab2ae5d1"
+  },
+  "report_trials": {
+    "prompt_only": "0ffa8f5",
+    "evidence_first": "5f6a5ab",
+    "evidence_provider_budget": "06952c7",
+    "appendix_replay": "388ccc6"
+  },
+  "final_review": {
+    "correctness": "SQL comparison is fresh on ff5de28; later Report trials separate source revisions and no reattributed SQL scores. All 20 original zero semantic scores audited without editing references.",
+    "safety": "RBAC, read-only repository, approved joins, SQLGlot and metric validation retained. No source schema, formulas or permissions changed.",
+    "maintainability": "Same production modules patched in isolated worktree; no second agent or model. Small bounded language normalization and row-passage helper.",
+    "limits": "Grammar is bounded; original semantic ambiguities and some real failures remain. Report partial results are not evidence of full report correctness. Full CI remains blocked."
+  }
+}

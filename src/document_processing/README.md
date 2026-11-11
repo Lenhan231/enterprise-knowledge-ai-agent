@@ -1,0 +1,45 @@
+# Document processing
+
+This package converts supported files into parser output: ordered `elements`,
+structured `tables`, and provenance metadata. It does not own chunking,
+embeddings, retrieval, or application persistence.
+
+Start here when tracing a document:
+
+1. [Architecture and request flow](docs/architecture.md)
+2. [Parser contract and callers](docs/document-processing.md)
+3. Follow the selected path: [Docling and OCR](docs/docling-pipeline.md) or
+   [Vintern invoice and image caption](docs/vintern-pipeline.md)
+4. Check [output metadata](docs/metadata.md), then the separate
+   [chunking pipeline](../core/chunking/README.md)
+
+## Current routes
+
+```text
+DocumentProcessor.process
+  ├─ intent=document       → Docling → elements + tables
+  ├─ intent=invoice        → Vintern → invoice JSON draft + text element
+  └─ intent=image_caption  → Vintern → caption + text element
+
+parser output → application handoff → core/chunking → persistence / indexing
+```
+
+Invoice and image-caption are explicit Upload Test intents. The document
+parser does not automatically classify an upload as an invoice. The current
+invoice intent asks Vintern to read page images directly; it does not combine
+Vintern with Docling OCR.
+
+## Useful entry points
+
+| Need to find | Start at |
+| --- | --- |
+| Intent and file-format routing | `document_processor.py` |
+| Docling layout, OCR, tables, chart handling | `docling_adapter/processor.py` |
+| OCR line detection and printed/handwritten routing | `docling_adapter/scanned/` |
+| Docling output mapping | `docling_adapter/result_mapper.py` |
+| Invoice/caption preprocessing and output shaping | `vintern_processor.py` |
+| Vintern model loading and inference | `vintern_worker.py` |
+| Upload Test API | `src/app/upload_test.py` |
+| Production upload caller | `src/app/main.py` |
+
+For local commands and image build notes, see [development](docs/development.md).

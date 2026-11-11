@@ -1,0 +1,848 @@
+[
+  {
+    "case_id": "Q001",
+    "question": "What is the company's leave policy?",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 3036.9386000002123,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Retrieve the company's leave policy from available documentation.\",\n  \"tasks\": [\n    {\n      \"id\": \"k_leave_policy\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What is the company's leave policy? Please provide details on types of leave, eligibility, and any specific rules or limits.\"\n    }\n  ]\n}"
+    ],
+    "knowledge_questions": [
+      "What is the company's leave policy? Please provide details on types of leave, eligibility, and any specific rules or limits."
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k_leave_policy",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q002",
+    "question": "Find the employee handbook.",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 781.7622000002302,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Find the employee handbook.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"Find the employee handbook.\"\n    }\n  ]\n}"
+    ],
+    "knowledge_questions": [
+      "Find the employee handbook."
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q003",
+    "question": "What does the refund policy say?",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 536.6388000002189,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Retrieve the content of the refund policy from available enterprise documents.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What does the refund policy say? Please provide the specific terms, conditions, and any relevant details regarding refunds.\"\n    }\n  ]\n}"
+    ],
+    "knowledge_questions": [
+      "What does the refund policy say? Please provide the specific terms, conditions, and any relevant details regarding refunds."
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q004",
+    "question": "Explain the company's return procedure.",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 537.1345999992627,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Explain the company's return procedure.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What is the company's return procedure, including eligibility, time limits, and refund process?\"\n    }\n  ]\n}"
+    ],
+    "knowledge_questions": [
+      "What is the company's return procedure, including eligibility, time limits, and refund process?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q005",
+    "question": "What are the payment terms in the supplier contract?",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 517.9625000000669,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Identify the payment terms specified in the supplier contract.\",\n  \"tasks\": [\n    {\n      \"id\": \"k1\",\n      \"agent\": \"knowledge\",\n      \"question\": \"What are the payment terms defined in the supplier contract?\"\n    }\n  ]\n}"
+    ],
+    "knowledge_questions": [
+      "What are the payment terms defined in the supplier contract?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "k1",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q006",
+    "question": "Summarize the company's inventory policy.",
+    "expected_route": "knowledge",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 509.0471000003163,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q007",
+    "question": "Which document describes employee responsibilities?",
+    "expected_route": "knowledge",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 527.1986000007018,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q008",
+    "question": "What does our shipping policy say about delayed deliveries?",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 527.7080000014394,
+    "planner_outputs": [],
+    "knowledge_questions": [
+      "What does our shipping policy say about delayed deliveries?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "fallback",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": true
+  },
+  {
+    "case_id": "Q009",
+    "question": "What was the total revenue in 2025?",
+    "expected_route": "analytics",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 512.9312999997637,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q010",
+    "question": "How many orders were placed in 2025?",
+    "expected_route": "analytics",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 519.3634999995993,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q011",
+    "question": "Which products generated the most revenue?",
+    "expected_route": "analytics",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 521.7678000008164,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q012",
+    "question": "What was the total cost of goods sold in 2025?",
+    "expected_route": "analytics",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 516.6948999994929,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q013",
+    "question": "Compare revenue between 2024 and 2025.",
+    "expected_route": "analytics",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 519.8326999998244,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q014",
+    "question": "What is the average order value?",
+    "expected_route": "analytics",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 519.8371000005864,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q015",
+    "question": "How many products are currently out of stock?",
+    "expected_route": "analytics",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 510.7716000002256,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q016",
+    "question": "Show revenue growth by month.",
+    "expected_route": "analytics",
+    "predicted_route": "analytics",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 1048.8612999997713,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Show revenue growth by month.\",\n  \"tasks\": [\n    {\n      \"id\": \"sql_monthly_revenue\",\n      \"agent\": \"sql\",\n      \"question\": \"Calculate total revenue by month from the commerce.sales table, ordered by month ascending.\"\n    }\n  ]\n}"
+    ],
+    "knowledge_questions": [],
+    "sql_questions": [
+      "Calculate total revenue by month from the commerce.sales table, ordered by month ascending."
+    ],
+    "task_trace": [
+      {
+        "id": "sql_monthly_revenue",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q017",
+    "question": "Which product categories have the highest return rates?",
+    "expected_route": "analytics",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 703.2449999987875,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q018",
+    "question": "How many documents are stored in each business domain?",
+    "expected_route": "analytics",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 531.6504000002169,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q019",
+    "question": "Compare total revenue against the company's sales policy.",
+    "expected_route": "hybrid",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 515.4065000006085,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q020",
+    "question": "What does our return policy say, and how many returns were recorded?",
+    "expected_route": "hybrid",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": false,
+    "latency_ms": 518.6512000000221,
+    "planner_outputs": [],
+    "knowledge_questions": [
+      "What does our return policy say, and how many returns were recorded?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "fallback",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": true
+  },
+  {
+    "case_id": "Q021",
+    "question": "Compare inventory stockout statistics with our inventory management policy.",
+    "expected_route": "hybrid",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 512.8605000008974,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q022",
+    "question": "What is our shipping policy, and what is the average delivery time?",
+    "expected_route": "hybrid",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 517.4127999998746,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q023",
+    "question": "Compare the company's refund procedures with actual refund statistics.",
+    "expected_route": "hybrid",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 519.8558000010962,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q024",
+    "question": "How many orders were returned, and what does our return policy require?",
+    "expected_route": "hybrid",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": false,
+    "latency_ms": 515.716899999461,
+    "planner_outputs": [],
+    "knowledge_questions": [
+      "How many orders were returned, and what does our return policy require?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "fallback",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": true
+  },
+  {
+    "case_id": "Q025",
+    "question": "Compare revenue growth with the targets described in our sales documents.",
+    "expected_route": "hybrid",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 513.1187999995745,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q026",
+    "question": "Where can I find the company's data privacy policy?",
+    "expected_route": "knowledge",
+    "predicted_route": "knowledge",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 516.2973999995302,
+    "planner_outputs": [],
+    "knowledge_questions": [
+      "Where can I find the company's data privacy policy?"
+    ],
+    "sql_questions": [],
+    "task_trace": [
+      {
+        "id": "fallback",
+        "agent": "knowledge",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": true
+  },
+  {
+    "case_id": "Q027",
+    "question": "What steps must employees follow when requesting reimbursement?",
+    "expected_route": "knowledge",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 514.1179000002012,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q028",
+    "question": "Explain the warranty conditions stated in our product documentation.",
+    "expected_route": "knowledge",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 532.0707999999286,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q029",
+    "question": "According to our internal guidelines, how should customer complaints be handled?",
+    "expected_route": "knowledge",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 524.8665999988589,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q030",
+    "question": "What are the eligibility requirements for employee benefits?",
+    "expected_route": "knowledge",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 511.56079999964277,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q031",
+    "question": "Which internal documents describe the company's quality control standards?",
+    "expected_route": "knowledge",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 502.9443999992509,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q032",
+    "question": "What actions are required when a supplier violates contract terms?",
+    "expected_route": "knowledge",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 521.5028999991773,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q033",
+    "question": "Compare the responsibilities assigned to employees and managers in our HR guidelines.",
+    "expected_route": "knowledge",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 510.4696000016702,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q034",
+    "question": "How many customers made purchases during 2025?",
+    "expected_route": "analytics",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 509.5056999998633,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q035",
+    "question": "Which month had the highest sales revenue in 2025?",
+    "expected_route": "analytics",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 526.8833000009181,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q036",
+    "question": "Calculate the average shipping cost per order.",
+    "expected_route": "analytics",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 517.4932999998418,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q037",
+    "question": "Which products have the highest inventory levels?",
+    "expected_route": "analytics",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 514.3299999999726,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q038",
+    "question": "What percentage of orders were returned in 2025?",
+    "expected_route": "analytics",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 522.3423000006733,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q039",
+    "question": "Compare the total number of orders between 2024 and 2025.",
+    "expected_route": "analytics",
+    "predicted_route": "analytics",
+    "status": "complete",
+    "correct": true,
+    "latency_ms": 641.6266999985965,
+    "planner_outputs": [
+      "{\n  \"objective\": \"Compare the total number of orders between 2024 and 2025.\",\n  \"tasks\": [\n    {\n      \"id\": \"sql_orders_2024_2025\",\n      \"agent\": \"sql\",\n      \"question\": \"Calculate the total number of orders for the year 2024 and the total number of orders for the year 2025. Return the count for each year.\"\n    }\n  ]\n}"
+    ],
+    "knowledge_questions": [],
+    "sql_questions": [
+      "Calculate the total number of orders for the year 2024 and the total number of orders for the year 2025. Return the count for each year."
+    ],
+    "task_trace": [
+      {
+        "id": "sql_orders_2024_2025",
+        "agent": "sql",
+        "depends_on": [],
+        "status": "complete",
+        "attempts": 1,
+        "elapsed_ms": 0,
+        "error_type": null
+      }
+    ],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q040",
+    "question": "Which customer segment generated the highest average revenue per customer?",
+    "expected_route": "analytics",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 505.5415000006178,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q041",
+    "question": "Identify the three product categories with the greatest revenue growth.",
+    "expected_route": "analytics",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 516.1317000001873,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q042",
+    "question": "How many transactions used each payment method?",
+    "expected_route": "analytics",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 507.650300000023,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q043",
+    "question": "What is the average delivery time for orders in each region?",
+    "expected_route": "analytics",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 528.0211999997846,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q044",
+    "question": "Compare the company's delivery policy with actual delivery performance.",
+    "expected_route": "hybrid",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 506.74939999953494,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q045",
+    "question": "What does our inventory policy recommend, and which products are currently overstocked?",
+    "expected_route": "hybrid",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 518.3574999991833,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q046",
+    "question": "Compare the refund eligibility rules with the number of refunds processed in 2025.",
+    "expected_route": "hybrid",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 515.074499999173,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q047",
+    "question": "According to our sales strategy documents, are the highest-revenue products aligned with company priorities?",
+    "expected_route": "hybrid",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 524.492199998349,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q048",
+    "question": "What do our customer service guidelines require, and which products have the most complaints?",
+    "expected_route": "hybrid",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 517.3904000002949,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q049",
+    "question": "Compare the company's shipping standards against average delivery times across regions.",
+    "expected_route": "hybrid",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 514.6888999988732,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  },
+  {
+    "case_id": "Q050",
+    "question": "Based on our inventory management guidelines and current stock levels, which product categories require attention?",
+    "expected_route": "hybrid",
+    "predicted_route": "unrouted",
+    "status": "failed",
+    "correct": false,
+    "latency_ms": 516.0668000007718,
+    "planner_outputs": [],
+    "knowledge_questions": [],
+    "sql_questions": [],
+    "task_trace": [],
+    "planning_fallback": false
+  }
+]

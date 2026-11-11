@@ -1,0 +1,84 @@
+{
+  "dataset": "shared-html-owner-reviewed",
+  "run_id": "vietocr-html-baseline",
+  "engine": "RapidOCR detection-only + VietOCR vgg_seq2seq greedy",
+  "device": "cpu",
+  "max_width": 512,
+  "page_count": 10,
+  "successful_pages": 10,
+  "failed_pages": 0,
+  "model_initialization_seconds": 27.074,
+  "detection_seconds": 19.057,
+  "recognition_seconds": 91.262,
+  "finished_at_utc": "2026-10-21T12:45:23.843132+00:00",
+  "packages": {
+    "vietocr": "0.3.13",
+    "rapidocr": "3.9.2",
+    "torch": "2.14.0",
+    "onnxruntime": "1.31.0"
+  },
+  "pages": [
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p13",
+      "status": "ok",
+      "seconds": 14.768,
+      "line_count": 135
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p24",
+      "status": "ok",
+      "seconds": 12.319,
+      "line_count": 90
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p15",
+      "status": "ok",
+      "seconds": 10.575,
+      "line_count": 101
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p17",
+      "status": "ok",
+      "seconds": 9.259,
+      "line_count": 73
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p3",
+      "status": "ok",
+      "seconds": 8.341,
+      "line_count": 46
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p4",
+      "status": "ok",
+      "seconds": 7.631,
+      "line_count": 33
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p6",
+      "status": "ok",
+      "seconds": 15.157,
+      "line_count": 143
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p7",
+      "status": "ok",
+      "seconds": 10.907,
+      "line_count": 110
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p8",
+      "status": "ok",
+      "seconds": 11.937,
+      "line_count": 113
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p9",
+      "status": "ok",
+      "seconds": 10.518,
+      "line_count": 138
+    }
+  ],
+  "predictions": "/home/lenhanm1/Thesis/enterprise-knowledge-ai-agent/artifacts/evaluation/document-pipelines/results/shared-html/vietocr-html-baseline/predictions.jsonl",
+  "evaluation": "/home/lenhanm1/Thesis/enterprise-knowledge-ai-agent/artifacts/evaluation/document-pipelines/results/shared-html/vietocr-html-baseline/evaluation.json"
+}

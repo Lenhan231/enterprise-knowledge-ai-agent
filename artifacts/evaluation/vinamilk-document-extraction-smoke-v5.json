@@ -1,0 +1,766 @@
+{
+  "created_at_utc": "2026-09-26T20:34:20.666182+00:00",
+  "dataset_id": "VNM-MULTIYEAR-MANUAL-EXTRACTION-ANCHORS-V2",
+  "dataset_sha256": "1362ea08d005ecdd31da5aa9cf6424dfb057d78e14f138a278cba3d903dc2fbf",
+  "reference_quality": "human_visually_checked_sampled_financial_fields",
+  "reference_method": "The selected strings and figures were manually transcribed from rendered images of each source PDF page and checked against visible labels/headings. The 2020 values come from the financial infographic on PDF page index 7 (printed pages 14-15); 2024 balance-sheet rows come from PDF page index 90 (printed pages 180-181).",
+  "limitations": "Two born-digital PDF pages and five sampled financial anchors only. Each OCR arm rasterizes its source page into a synthetic scan; neither is a real scanned-source benchmark. This is a reproducible diagnostic fixture, not representative document-extraction accuracy or a model-selection result.",
+  "software": {
+    "python": "3.11.16",
+    "pymupdf": "1.27.2.3"
+  },
+  "results": [
+    {
+      "id": "ar2020-financial-infographic-p8",
+      "document_id": "VNM-AR-2020-VI",
+      "file": "data/raw/vietnam_enterprises/vnm/vnm-ar-2020-vi.pdf",
+      "file_sha256": "0abbd2bb78b4be637107b1975014a118c7eda9d79ebe4634d612337910b25f00",
+      "synthetic_raster_pdf_sha256": "23bb0007ae03e745839ba5dec7266cc39c1aea34a6196395c47dca9d7098323f",
+      "synthetic_raster_png_sha256": "186bf28e6ef97cf8e952f07eb839fcd8744470779ea193c8c21e30a8caaa8b0e",
+      "official_url": "https://d8um25gjecm9v.cloudfront.net/cms/1617354921_f48f48ff7baf40d9af270083a736eaaf0f52a6c5873367d134b4c83f193b0677_a1d64e4bbf.pdf",
+      "page_index": 7,
+      "printed_pages": [
+        14,
+        15
+      ],
+      "synthetic_raster_dpi": 180,
+      "table_strategy_sweep": null,
+      "conditions": [
+        {
+          "condition": "born_digital_pdf",
+          "text_extraction_methods": [
+            "pymupdf.get_text"
+          ],
+          "chunk_count": 6,
+          "extracted_page_text": "MESSAGE FROM THE CEO MAINTAINING GROWTH IN EXTREMELY ADVERSE MARKET CONDITIONS IS THE RESULT OF OUR RELENTLESS PURSUIT OF SUSTAINABLE VALUES THAT EMPHASIZES CONTINUOUS DEVELOPMENT OF DAIRY FARMING, DIGITAL TRANSFORMATION AND COMMITMENT TO SUSTAINABLE GOALS AS WELL AS SOCIAL RESPONSIBILITY. Dear Valued Shareholders, In 2020, the Covid-19 pandemic created unprecedented challenges for the entire economy and all related businesses. The dairy industry is no exception. Milk is an essential product in the grocery list of Vietnamese consumers, yet the dairy industry experienced a negative growth of -6% in 2020 (AC Nielsen) when 32.1 million people were affected by Covid-19 and the average income of employees decreased by 2.3% compared to 2019 (GSO). In such challenging context, Vinamilk has made timely responses to achieve the dual goals of ensuring growth and stabilizing production and business activities while strictly observing new regulatory guidance on pandemic relief and prevention. Thanks to incredible efforts of the Board of Management and the entire staff, Vinamilk's business relief and prevention. Thanks to incredible efforts of the Board of Management and the entire staff, Vinamilk's business results recorded growth in both revenue and profit, with consolidated net revenue and net profit after tax in 2020 reaching VND 59,723 billion and VND 11,236 billion respectively, increasing by 6% and 6.5% compared to 2019. Particularly, the branch of Moc Chau Milk, after one year of M&A into Vinamilk, recorded a breakthrough with net revenue in 2020 reaching VND 2,823 billion, increasing by 10.3%, and net profit after tax reaching VND 281 billion, an impressive growth of 68.2% compared to 2019. In December 2020, Moc Chau Milk Stock (MCM) was officially listed on UPCoM, marking the maturity in its business operation and corporate governance. Maintaining growth in extremely adverse market conditions is the result of our relentless pursuit of SUSTAINABLE VALUES that emphasize continuous development of dairy farming, digital transformation and commitment to sustainable goals as well as social responsibility. In a year of various setbacks to the supply chain, thanks mitment to sustainable goals as well as social responsibility. In a year of various setbacks to the supply chain, thanks to the increasing autonomy in domestic raw material development and a diverse network of foreign suppliers, Vinamilk successfully ensured stable production to fulfill both demands of domestic consumption and international export. Application of technology is the managerial change that Vinamilk has endorsed for many years, and it was specifically promoted in 2020 to accommodate the requirements of social distancing and trade restriction during the global pandemic. Realizing the theme of 2020 as \"Technology - Key to Innovation\", the digital transformation process has been implemented swiftly, not only at Vinamilk but also in its subsidiaries and affiliates. A prime example of this is the completion of go-live for the ERP system at Moc Chau Milk within 10 months since the date of its M&A by Vinamilk. Other digital transformation projects have also been proceeded in many areas of Vinamilk's operation including administration, finance, human resources, international o been proceeded in many areas of Vinamilk's operation including administration, finance, human resources, international sales and supply chain management. These powerful tools are crucial to Vinamilk's successful maintenance of the business governance, stability and efficiency despite the Company’s ever-increasing scope of operation. With the mindset that enterprises can only grow sustainably in a healthy community, Vinamilk has actively organized corporate social responsibility programs, especially during the most difficult periods of the Covid-19 pandemic. Last year, Vinamilk, its affiliates, subsidiaries and employees contributed more than VND 40 billion to support state-sanctioned Covid-19 relief and prevention measures, protecting at- risk workers in the front line and vulnerable communities affected by the pandemic as well as other disasters. With respect to labor safety during the pandemic, Vinamilk has implemented drastic preventative measures at the workplace while ensuring the best possible working conditions and job security. Suffice it to say that after a turbulent workplace while ensuring the best possible working conditions and job security. Suffice it to say that after a turbulent year, one of Vinamilk's greatest successes has been stability: to maintain the steady and efficient operation of all member units, and to ensure work, income and social benefits for nearly 10,000 employees of the company across the country. The pandemic will pass, but SUSTAINABLE VALUES remain. This is the most important code to embrace, enforce and enhance by Vinamilk’s Board of Management and the entire staff. To be the first and only Vietnamese company to win the \"ASEAN Asset Class\" award by the Vietnam Institute of Directors (VIOD) is a special honor and an enormous motivation for us to persevere in this direction. Following positive forecasts about the recovery of the economy, we believe that Vinamilk will move into 2021, the final year of the strategic period 2017-2021, with great confidence and high determination to achieve growth and to reach new heights. We wish all shareholders good health and success. MAI KIEU LIEN Chief Executive Officer Ho Chi Minh o reach new heights. We wish all shareholders good health and success. MAI KIEU LIEN Chief Executive Officer Ho Chi Minh City, 1st March 2021 CONSOLIDATED NET REVENUE 59,723 CONSOLIDATED NET PROFIT AFTER TAX 11,236 VND BILLION VND BILLION VINAMILIK’S CORE VALUES Integrity and transparency in all actions and transactions. To have self-respect, respect colleagues, respect the Company and partners, and cooperate with respect. To be fair with employees, customers, suppliers and other parties. To respect the established ethical standards and act accordingly. To comply with legal regulations and the Company’s Code of Conduct, rules, policies and procedures. RESPECT FAIRNESS ETHICS COMPLIANCE INTEGRITY Annual Report 2020 www.vinamilk.com.vn 14 15",
+          "extracted_tables": [],
+          "expected_table_regions": null,
+          "detected_tables": 0,
+          "table_region_recall": null,
+          "expected_field_count": 2,
+          "text_anchor_exact_match_count": 2,
+          "text_anchor_recall": 1.0,
+          "text_anchor_normalized_match_count": 2,
+          "text_anchor_normalized_recall": 1.0,
+          "table_anchor_exact_match_count": 0,
+          "table_anchor_recall": 0.0,
+          "table_anchor_normalized_match_count": 0,
+          "table_anchor_normalized_recall": 0.0,
+          "fields": [
+            {
+              "id": "net-revenue-2020",
+              "label": "CONSOLIDATED NET REVENUE",
+              "values": [
+                "59,723"
+              ],
+              "text_anchor_exact_match": true,
+              "text_anchor_normalized_match": true,
+              "table_anchor_exact_match": false,
+              "table_anchor_normalized_match": false
+            },
+            {
+              "id": "profit-after-tax-2020",
+              "label": "CONSOLIDATED NET PROFIT AFTER TAX",
+              "values": [
+                "11,236"
+              ],
+              "text_anchor_exact_match": true,
+              "text_anchor_normalized_match": true,
+              "table_anchor_exact_match": false,
+              "table_anchor_normalized_match": false
+            }
+          ]
+        },
+        {
+          "condition": "synthetic_raster_pdf_tesseract",
+          "text_extraction_methods": [
+            "tesseract"
+          ],
+          "chunk_count": 6,
+          "extracted_page_text": "Report 2020 MESSAGE FROM THE CEO CONSOLIDATED NET REVENUE 59,723 VND BILLION CONSOLIDATED NET PROFIT AFTER TAX 11,236 VND BILLION u VINAMILIK'S CORE VALUES Integrity and To have selfrespect, To be fair with transparency inall respect olleagues, employees, established ethical actions and respectthe Company customers, suppliers standards and act transactions and partners,and and other parties. accordingly. cooperate with respect @ @ Ệ _ Torespect the To comply with legal regulations and the Company's Code of Conduct ules,policies and procedures. MAINTAINING GROWTH IN EXTREMELY ADVERSE MARKET CONDITIONS ISTHE RESULT OFOURRELENTLESSPURSUITOF SUSTAINABLE VALUES THAT EMPHASIZES CONTINUOUS DEVELOPMENT OF DAIRY FARMING, DIGITAL TRANSFORMATION AND COMMITMENT TO SUSTAINABLE GOALS AS WELL AS SOCIAL RESPONSIBILITY. Dear Valued Shareholders, n 2020, the Covid-19 pandemic created unprecedented chalenges for the entire economy and all related businesses. The dairy industry is no exception. oceryist of Vietname: Milkisan essential productinthe consumers, yet the dairy industry experienced a y is no exception. oceryist of Vietname: Milkisan essential productinthe consumers, yet the dairy industry experienced a negative growth of -6% in 2020 (AC Nielsen) when 32.1 million people were affected by Covid-19 and the average income of employees decreased by 23% compared to 2019 (GSO) n such challenging context, Vinamilk has made timely responses to achieve the dual goals of ensuring growth and stabilizing production and business activiies while strictly observing new regulatory guidance on pandemic relief and prevention. Thanks to incredible efforts of the Board of Management and the entire staff, Vinamilk's business results recorded growth in both revenue and profit, with consolidated et revenue and net profit after tax in 2020 reaching VND 59723 bilion and VND 11,236 bilion respectively, hcreasing by 6% and 6.5% compared to 2019. Particulary the branch of Moc Chau Mik, after one year of M&A into Vinamik, recorded a breakthrough with net revenue in 2020 reaching VND 2,823 billion, increasing by 10.3%, and het profit after tax reaching VND 281 bilion, an impressive growth of aching VND 2,823 billion, increasing by 10.3%, and het profit after tax reaching VND 281 bilion, an impressive growth of 682% compared to 2019. In December 2020, Moc Chau Mik Stock (MCM) was offialy listed on UPCoM, marking the maturity in its business operation and corporate governance. Maintaining growth in extemely adverse market conditions is the result of our relentless pursuit of SUSTAINABLE VALUES thai emphasze continuous development of dairy farming, digital transformation and commitment to sustainable goals as well as social responsibilty. In a year of various setbacks to the supply chaïn, thanks to the increasing autonomy in domestic raw material development and a diverse network of foreign suppliers, Vinamilk successfully ensured stable production promoted in 2020 to accommodate the requirements of social distancing and trade restiction during the global pandemic. Realizing the theme of 2020 as “Technology - Key Innovation', the digital transformation process has been implemented swftl,, not only at Vinamik but also in its subsidiaries and affllates. A prime example of process has been implemented swftl,, not only at Vinamik but also in its subsidiaries and affllates. A prime example of this is the completion of gơ le for the ERP system at Moc Chau Milk within 10 months since the date of Is M&A by Vinamik Other digital trandomnation projects have ako been proceeded ín many areas of Vinamilks operation including administration, inance, human resources, international sales and supply chain management. These powerful tools are crucial to Vinamilks successful maintenance of the business goverance, stabiity and efficiency despite the Companys sing scope ofoperation ever With the mindset that enterprises can only grow sustainably in a healthy community, Vinamilk has actively organized corporate social responsibilty programs, especialy duri the most difficult periods of the Covid-19 pandemic. Last year, Vinamilk s affates, subsiciaries and employees contributed more than VND 40 billon to support state-sanctioned Covid-19 relief and prevention measures, protecting at- risk workers in the front line and vulnerable communities affected by the pandemic as revention measures, protecting at- risk workers in the front line and vulnerable communities affected by the pandemic as well as other disasters Wihrespecttolaborsafetyduringthepandemic,Vinamikhas implemented drastic preventative measuresat the workploce while ensuring the best possible working conditions and job securiy. Suffice ít to say that after a turbulent year, one of Vinamilks greatest successes has been stabilty: to maintain the steady and efficient operation of all member units, and o ensure work, income and social benefis for nearly 10000 employees of the company ac: e country. The pandemic wil pass, but SUSTAINABLE VALUES remain. This s the most important code to embrace, enforce and enhance by Vinamiks Board of Management and the entire staff. To be the first and only Vietnamese company to win the 'ASEAN Asset Class\" award by the Vietnam Institute of Directors (VOD) is a special honor and an enormous motivation for us to persevere in this direction. Following postive forecasts about the recovery of the economy, we believe that Vinamilk will move into 2021 the final year llowing postive forecasts about the recovery of the economy, we believe that Vinamilk will move into 2021 the final year of the strategic period 2017-2021, with great confidence and high determination to achieve growth and toreach new heights We wish all shareholders good health and success. to fufl both demands of domestic consumption and S — nternational export Application of technology i the managerial change that Vinamik has endorsed for many years, and it was specificall MAI KIEU LIEN Chief Executive Officer Ho ChiMinh City, 1 March 2021",
+          "extracted_tables": [],
+          "expected_table_regions": null,
+          "detected_tables": 0,
+          "table_region_recall": null,
+          "expected_field_count": 2,
+          "text_anchor_exact_match_count": 2,
+          "text_anchor_recall": 1.0,
+          "text_anchor_normalized_match_count": 2,
+          "text_anchor_normalized_recall": 1.0,
+          "table_anchor_exact_match_count": 0,
+          "table_anchor_recall": 0.0,
+          "table_anchor_normalized_match_count": 0,
+          "table_anchor_normalized_recall": 0.0,
+          "fields": [
+            {
+              "id": "net-revenue-2020",
+              "label": "CONSOLIDATED NET REVENUE",
+              "values": [
+                "59,723"
+              ],
+              "text_anchor_exact_match": true,
+              "text_anchor_normalized_match": true,
+              "table_anchor_exact_match": false,
+              "table_anchor_normalized_match": false
+            },
+            {
+              "id": "profit-after-tax-2020",
+              "label": "CONSOLIDATED NET PROFIT AFTER TAX",
+              "values": [
+                "11,236"
+              ],
+              "text_anchor_exact_match": true,
+              "text_anchor_normalized_match": true,
+              "table_anchor_exact_match": false,
+              "table_anchor_normalized_match": false
+            }
+          ]
+        },
+        {
+          "condition": "synthetic_raster_image_upload_tesseract",
+          "text_extraction_methods": [
+            "tesseract"
+          ],
+          "chunk_count": 6,
+          "extracted_page_text": "Annual Report 2020 = MESSAGE FROM THE CEO tllỷe) CONSOLIDATED NET REVENUE 59,723 VND BILLION CONSOLIDATED NET PROFIT AFTER TAX 11,236 VND BILLION VINAMILIK'S CORE VALUES Integrity and To have self-respect, transparency in all respect colleagues, actions and respect the Company transactions. and partners, and cooperate with respect. I<sn INTEGRITY RESPECT To be fair with employees, customers, suppliers and other parties. 52 FAIRNESS To respect the established ethical standards and act accordingly. To comply with legal regulations and the Companys Code of Conduct, rules, policies : and procedures. Ể 5 =) C0MPLIANCE MAINTAINING _ GROWTH IN EXTREMELY ADVERSE MARKET CONDITIONSISTHERESULT OFOURRELENTLESSPURSUITOFSUSTAINABLE VALUES THAT EMPHASIZES CONTINUOUS DEVELOPMENT OF DAIRY FARMING, DIGITAL TRANSFORMATION AND COMMITMENT TO SUSTAINABLE GOALS AS WELL AS SOCIAL RESPONSIBILITY. Dear Valued Shareholders, In 2020, the Covid-19 pandemic created unprecedented challenges for the entire economy and all related businesses. The dairy industry is no exception. Milkis an essential productin the for the entire economy and all related businesses. The dairy industry is no exception. Milkis an essential productin the grocery list of Vietnamese consumers, yet the dairy industry experienced a negative growth of -6% in 2020 (AC Nielsen) when 32.1 million people were affected by Covid-19and the average income ofemployees decreased by 2.3% compared to 2019 (GSO). In such challenging context, Vinamilk has made timely responses to achieve the dual goals of ensuring growth and stabilizing production and business activities while strictly observing new regulatory guidance on pandemic relief and prevention. Thanks to incredible efforts of the Board of Management and the entire staff, Vinamilk's business results recorded growth in both revenue and profit, with consolidated net revenue and net profit after tax in 2020 reaching VND 59,723 billion and VND 11,236 billion respectively, increasing by 6% and 6.5% compared to 2019. Particularly, the branch of Moc Chau Milk, after one year of M&A into Vinamilk, recorded a breakthrough with net revenue in 2020 reaching VND 2,823 billion, Milk, after one year of M&A into Vinamilk, recorded a breakthrough with net revenue in 2020 reaching VND 2,823 billion, increasing by 10.3%, and net profit after tax reaching VND 281 billion, an impressive growth of 682% compared to 2019. In December 2020, Moc Chau Milk Stock (MCM) was officially listed on UPCoM, marking the maturity in its business operation and corporate governance. Maintaining growth in extremely adverse market conditions is the result of our relentless pursuit of SUSTAINABLE VALUES that emphasize continuous development of dairy farming, digital transformation and commitment to sustainable goals as well as social responsibility. In a year of various setbacks to the supply chain, thanks to the increasing autonomy in domestic raw material development and a diverse network of foreign suppliers, Vinamilk successfully ensured stable production promoted in 2020 to accommodate the requirements of social distancing and trade restriction during the global pandemic. Realizing the theme of 2020 as \"Technology - Key to Innovation\", the digital transformation process has global pandemic. Realizing the theme of 2020 as \"Technology - Key to Innovation\", the digital transformation process has been implemented swiftly, not only at Vinamilk but also in its subsidiaries and affiliates. A prime example of this is the completion of go-live for the ERP system at Moc Chau Milk within 10 months since the date of its M&A by Vinamilk. Other digital transformation projects have also been proceeded in many areas of Vinamilk's operation including administration, finance, human resources, international sales and supply chain management. These powerful tools are crucial to Vinamilks successful maintenance of the business governance, stability and efficiency despite the Companys ever-increasing scope of operation. With the mindset that enterprises can only grow sustainably in a healthy community, Vinamilk has actively organized corporate social responsibility programs, especially during themostdifficult periods ofthe Covid-19 pandemic. Last year, Vinamilk its affiliates, subsidiaries and employees contributed more than VND 40 billion to support state-sanctioned ar, Vinamilk its affiliates, subsidiaries and employees contributed more than VND 40 billion to support state-sanctioned Covid-19 relief and prevention measures, protecting at- risk workers in the front line and vulnerable communities affected by the pandemic as well as other disasters. Withrespecttolaborsafetyduringthe pandemic,Vinamilkhas implemented drastic preventative measures at the workplace while ensuring the best possible working conditions and job security. Suffice it to say that after a turbulent year, one of Vinamilk's greatest successes has been stability: to maintain the steady and efficient operation of all member units, and to ensure work, income and social benefits for nearly 10,000 employees of the company across the country. The pandemic will pass, but SUSTAINABLE VALUES remain. This is the most important code to embrace, enforce and enhance by Vinamilks Board of Management and the entire staff. To be the first and only Vietnamese company to win the \"ASEAN Asset Class\" award by the Vietnam Institute of Directors (VIOD) is a special honor and an enormous motivation the \"ASEAN Asset Class\" award by the Vietnam Institute of Directors (VIOD) is a special honor and an enormous motivation for us to persevere in this direction. Following positive forecasts about the recovery of the economy, we believe that Vinamilk will move into 2021, the final year of the strategic period 2017-2021, with great confidence and high determination to achieve growth and to reach new heights. We wish all shareholders good health and success. to fulfill both demands of domestic consumption ffl1d—/' international export. Application of technology is the managerial change that Vinamilk has endorsed for many years, and it was specifically MAI KIEU LIEN Chief Executive Officer Ho Chi Minh City, 1**March 2021 www.vinamilk.com.vn u",
+          "extracted_tables": [],
+          "expected_table_regions": null,
+          "detected_tables": 0,
+          "table_region_recall": null,
+          "expected_field_count": 2,
+          "text_anchor_exact_match_count": 2,
+          "text_anchor_recall": 1.0,
+          "text_anchor_normalized_match_count": 2,
+          "text_anchor_normalized_recall": 1.0,
+          "table_anchor_exact_match_count": 0,
+          "table_anchor_recall": 0.0,
+          "table_anchor_normalized_match_count": 0,
+          "table_anchor_normalized_recall": 0.0,
+          "fields": [
+            {
+              "id": "net-revenue-2020",
+              "label": "CONSOLIDATED NET REVENUE",
+              "values": [
+                "59,723"
+              ],
+              "text_anchor_exact_match": true,
+              "text_anchor_normalized_match": true,
+              "table_anchor_exact_match": false,
+              "table_anchor_normalized_match": false
+            },
+            {
+              "id": "profit-after-tax-2020",
+              "label": "CONSOLIDATED NET PROFIT AFTER TAX",
+              "values": [
+                "11,236"
+              ],
+              "text_anchor_exact_match": true,
+              "text_anchor_normalized_match": true,
+              "table_anchor_exact_match": false,
+              "table_anchor_normalized_match": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ar2024-balance-sheet-p91",
+      "document_id": "VNM-AR-2024-VI",
+      "file": "data/raw/vietnam_enterprises/vnm/vnm-ar-2024-vi.pdf",
+      "file_sha256": "f0d99c9a6650e5f718f098784de037b342a5b9fff4184f5fd00ef7f8656c774a",
+      "synthetic_raster_pdf_sha256": "b4d889b6b0c6bb54156d508a6632aabb108d42b6937f4017b659141c994034cc",
+      "synthetic_raster_png_sha256": "b8c0a62fa3c5bae05fcbecea3ee07e0dc809d5d287df8a32f1503875f7a3fc83",
+      "official_url": "https://www.vinamilk.com.vn/bao-cao-thuong-nien/bao-cao/2024/doc/vi/full-bao-cao.pdf",
+      "page_index": 90,
+      "printed_pages": [
+        180,
+        181
+      ],
+      "synthetic_raster_dpi": 180,
+      "table_strategy_sweep": [
+        {
+          "strategy": "default",
+          "options": {},
+          "detected_tables": 0,
+          "table_shapes": [],
+          "expected_table_regions": 2,
+          "exact_anchor_matches": 0,
+          "normalized_anchor_matches": 0,
+          "expected_anchor_count": 3,
+          "fields": [
+            {
+              "id": "cash-2024-2023",
+              "exact_match": false,
+              "normalized_match": false
+            },
+            {
+              "id": "inventory-2024-2023",
+              "exact_match": false,
+              "normalized_match": false
+            },
+            {
+              "id": "total-assets-2024-2023",
+              "exact_match": false,
+              "normalized_match": false
+            }
+          ],
+          "latency_seconds": 0.088539
+        },
+        {
+          "strategy": "text_text",
+          "options": {
+            "vertical_strategy": "text",
+            "horizontal_strategy": "text"
+          },
+          "detected_tables": 1,
+          "table_shapes": [
+            [
+              75,
+              15
+            ]
+          ],
+          "expected_table_regions": 2,
+          "exact_anchor_matches": 1,
+          "normalized_anchor_matches": 3,
+          "expected_anchor_count": 3,
+          "fields": [
+            {
+              "id": "cash-2024-2023",
+              "exact_match": false,
+              "normalized_match": true
+            },
+            {
+              "id": "inventory-2024-2023",
+              "exact_match": false,
+              "normalized_match": true
+            },
+            {
+              "id": "total-assets-2024-2023",
+              "exact_match": true,
+              "normalized_match": true
+            }
+          ],
+          "latency_seconds": 0.404614
+        },
+        {
+          "strategy": "text_lines",
+          "options": {
+            "vertical_strategy": "text",
+            "horizontal_strategy": "lines"
+          },
+          "detected_tables": 2,
+          "table_shapes": [
+            [
+              4,
+              6
+            ],
+            [
+              2,
+              8
+            ]
+          ],
+          "expected_table_regions": 2,
+          "exact_anchor_matches": 0,
+          "normalized_anchor_matches": 0,
+          "expected_anchor_count": 3,
+          "fields": [
+            {
+              "id": "cash-2024-2023",
+              "exact_match": false,
+              "normalized_match": false
+            },
+            {
+              "id": "inventory-2024-2023",
+              "exact_match": false,
+              "normalized_match": false
+            },
+            {
+              "id": "total-assets-2024-2023",
+              "exact_match": false,
+              "normalized_match": false
+            }
+          ],
+          "latency_seconds": 0.191666
+        },
+        {
+          "strategy": "lines_text",
+          "options": {
+            "vertical_strategy": "lines",
+            "horizontal_strategy": "text"
+          },
+          "detected_tables": 0,
+          "table_shapes": [],
+          "expected_table_regions": 2,
+          "exact_anchor_matches": 0,
+          "normalized_anchor_matches": 0,
+          "expected_anchor_count": 3,
+          "fields": [
+            {
+              "id": "cash-2024-2023",
+              "exact_match": false,
+              "normalized_match": false
+            },
+            {
+              "id": "inventory-2024-2023",
+              "exact_match": false,
+              "normalized_match": false
+            },
+            {
+              "id": "total-assets-2024-2023",
+              "exact_match": false,
+              "normalized_match": false
+            }
+          ],
+          "latency_seconds": 0.068628
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "born_digital_pdf",
+          "text_extraction_methods": [
+            "pymupdf.get_text"
+          ],
+          "chunk_count": 3,
+          "extracted_page_text": "Báo cáo thường niên Vinamilk 2024 180 181 Luôn cầu tiến Báo cáo tài chính 31/12/2024 Triệu VND 31/12/2023 Triệu VND Tài sản ngắn hạn 37.501.520 35.931.145 Tiền và các khoản tương đương tiền 2.225.944 2.912.027 Các khoản đầu tư khác 23.260.089 20.137.243 Phải thu khách hàng và phải thu khác 6.380.777 6.799.642 Hàng tồn kho 5.634.710 6.082.233 Tài sản dài hạn 19.491.725 18.301.346 Các khoản đầu tư khác 750.966 228.636 Phải thu khách hàng và phải thu khác 368.084 437.546 Quyền sử dụng tài sản 1.158.883 979.312 Nhà xưởng, máy móc và thiết bị 11.852.774 11.514.220 Tài sản sinh học 1.488.268 1.383.074 Tài sản vô hình và lợi thế thương mại 3.106.730 3.087.920 Bất động sản đầu tư 53.618 55.594 Đầu tư vốn được hạch toán theo phương pháp vốn chủ sở hữu 622.224 602.591 Tài sản thuế thu nhập hoãn lại 90.178 12.453 Tổng tài sản 56.993.245 54.232.491 Công ty Cổ phần Sữa Việt Nam và các công ty con Báo cáo tình hình tài chính hợp nhất tại ngày 31 tháng 12 năm 2024 Báo cáo tài chính hợp nhất cho năm kết thúc ngày 31 tháng 12 năm 2024 Lập theo Chuẩn mực Báo cáo Tài chính Quốc tế (IFRS) Công ty Cổ chính hợp nhất cho năm kết thúc ngày 31 tháng 12 năm 2024 Lập theo Chuẩn mực Báo cáo Tài chính Quốc tế (IFRS) Công ty Cổ phần Sữa Việt Nam và các công ty con Báo cáo tình hình tài chính hợp nhất tại ngày 31 tháng 12 năm 2024 (tiếp theo) 31/12/2024 Triệu VND 31/12/2023 Triệu VND Nợ phải trả và vốn chủ sở hữu Nợ phải trả 19.827.315 18.448.765 Nợ ngắn hạn 18.500.425 17.182.479 Vay ngắn hạn 9.115.435 8.271.117 Phải trả người bán và phải trả khác 8.130.526 7.778.770 Nợ thuê tài sản 48.650 - Thuế thu nhập doanh nghiệp phải nộp 885.059 803.305 Thuế phải nộp khác 129.419 164.574 Người mua trả tiền trước 191.336 164.713 Nợ dài hạn 1.326.890 1.266.286 Vay dài hạn 157.904 238.476 Phải trả người bán và phải trả khác 723 1.063 Nợ thuê tài sản 737.077 588.616 Dự phòng trợ cấp thôi việc 174.701 168.733 Thuế thu nhập hoãn lại phải trả 256.485 269.398 Vốn chủ sở hữu 37.165.930 35.783.726 Vốn chủ sở hữu của cổ đông Công ty 33.199.680 32.391.741 Vốn cổ phần 20.899.554 20.899.554 Thặng dư vốn cổ phần 34.111 34.111 Vốn khác của chủ sở hữu 499.081 499.081 Chênh lệch giá trị hợp lý (15.048) (14.950) Chênh g dư vốn cổ phần 34.111 34.111 Vốn khác của chủ sở hữu 499.081 499.081 Chênh lệch giá trị hợp lý (15.048) (14.950) Chênh lệch quy đổi tiền tệ 295.165 174.150 Các quỹ khác 7.079.115 6.163.736 Lợi nhuận chưa phân phối 4.407.702 4.636.059 Lợi ích cổ đông không kiểm soát 3.966.250 3.391.985 Tổng nợ phải trả và vốn chủ sở hữu 56.993.245 54.232.491",
+          "extracted_tables": [
+            {
+              "page_number": 91,
+              "table_index": 0,
+              "columns": [
+                "label",
+                "31/12/2024",
+                "31/12/2023"
+              ],
+              "rows": [
+                {
+                  "label": "Tài sản ngắn hạn",
+                  "31/12/2024": "37.501.520",
+                  "31/12/2023": "35.931.145"
+                },
+                {
+                  "label": "Tiền và các khoản tương đương tiền",
+                  "31/12/2024": "2.225.944",
+                  "31/12/2023": "2.912.027"
+                },
+                {
+                  "label": "Các khoản đầu tư khác",
+                  "31/12/2024": "23.260.089",
+                  "31/12/2023": "20.137.243"
+                },
+                {
+                  "label": "Phải thu khách hàng và phải thu khác",
+                  "31/12/2024": "6.380.777",
+                  "31/12/2023": "6.799.642"
+                },
+                {
+                  "label": "Hàng tồn kho",
+                  "31/12/2024": "5.634.710",
+                  "31/12/2023": "6.082.233"
+                },
+                {
+                  "label": "Tài sản dài hạn",
+                  "31/12/2024": "19.491.725",
+                  "31/12/2023": "18.301.346"
+                },
+                {
+                  "label": "Các khoản đầu tư khác",
+                  "31/12/2024": "750.966",
+                  "31/12/2023": "228.636"
+                },
+                {
+                  "label": "Phải thu khách hàng và phải thu khác",
+                  "31/12/2024": "368.084",
+                  "31/12/2023": "437.546"
+                },
+                {
+                  "label": "Quyền sử dụng tài sản",
+                  "31/12/2024": "1.158.883",
+                  "31/12/2023": "979.312"
+                },
+                {
+                  "label": "Nhà xưởng, máy móc và thiết bị",
+                  "31/12/2024": "11.852.774",
+                  "31/12/2023": "11.514.220"
+                },
+                {
+                  "label": "Tài sản sinh học",
+                  "31/12/2024": "1.488.268",
+                  "31/12/2023": "1.383.074"
+                },
+                {
+                  "label": "Tài sản vô hình và lợi thế thương mại",
+                  "31/12/2024": "3.106.730",
+                  "31/12/2023": "3.087.920"
+                },
+                {
+                  "label": "Bất động sản đầu tư",
+                  "31/12/2024": "53.618",
+                  "31/12/2023": "55.594"
+                },
+                {
+                  "label": "Đầu tư vốn được hạch toán theo",
+                  "31/12/2024": "622.224",
+                  "31/12/2023": "602.591"
+                },
+                {
+                  "label": "Tài sản thuế thu nhập hoãn lại",
+                  "31/12/2024": "90.178",
+                  "31/12/2023": "12.453"
+                },
+                {
+                  "label": "Tổng tài sản",
+                  "31/12/2024": "56.993.245",
+                  "31/12/2023": "54.232.491"
+                }
+              ],
+              "metadata": {
+                "element_type": "table",
+                "layout_type": "table",
+                "table_extraction_method": "pymupdf.find_tables_text_aligned_columns",
+                "table_detection_strategy": "text",
+                "numeric_columns": [
+                  5,
+                  6
+                ],
+                "bbox": [
+                  28.3460693359375,
+                  23.139083862304688,
+                  1162.202880859375,
+                  758.0635375976562
+                ],
+                "bbox_coordinate_system": "pdf_points",
+                "document_id": "VNM-AR-2024-VI",
+                "filename": "vnm-ar-2024-vi.pdf",
+                "format": "PDF"
+              }
+            },
+            {
+              "page_number": 91,
+              "table_index": 1,
+              "columns": [
+                "label",
+                "31/12/2024",
+                "31/12/2023"
+              ],
+              "rows": [
+                {
+                  "label": "Nợ phải trả",
+                  "31/12/2024": "19.827.315",
+                  "31/12/2023": "18.448.765"
+                },
+                {
+                  "label": "Nợ ngắn hạn",
+                  "31/12/2024": "18.500.425",
+                  "31/12/2023": "17.182.479"
+                },
+                {
+                  "label": "Vay ngắn hạn",
+                  "31/12/2024": "9.115.435",
+                  "31/12/2023": "8.271.117"
+                },
+                {
+                  "label": "Phải trả người bán và phải trả khác",
+                  "31/12/2024": "8.130.526",
+                  "31/12/2023": "7.778.770"
+                },
+                {
+                  "label": "Nợ thuê tài sản",
+                  "31/12/2024": "48.650",
+                  "31/12/2023": "-"
+                },
+                {
+                  "label": "Thuế thu nhập doanh nghiệp phải nộp",
+                  "31/12/2024": "885.059",
+                  "31/12/2023": "803.305"
+                },
+                {
+                  "label": "Thuế phải nộp khác",
+                  "31/12/2024": "129.419",
+                  "31/12/2023": "164.574"
+                },
+                {
+                  "label": "Người mua trả tiền trước",
+                  "31/12/2024": "191.336",
+                  "31/12/2023": "164.713"
+                },
+                {
+                  "label": "Nợ dài hạn",
+                  "31/12/2024": "1.326.890",
+                  "31/12/2023": "1.266.286"
+                },
+                {
+                  "label": "Vay dài hạn",
+                  "31/12/2024": "157.904",
+                  "31/12/2023": "238.476"
+                },
+                {
+                  "label": "Phải trả người bán và phải trả khác",
+                  "31/12/2024": "723",
+                  "31/12/2023": "1.063"
+                },
+                {
+                  "label": "Nợ thuê tài sản",
+                  "31/12/2024": "737.077",
+                  "31/12/2023": "588.616"
+                },
+                {
+                  "label": "Dự phòng trợ cấp thôi việc",
+                  "31/12/2024": "174.701",
+                  "31/12/2023": "168.733"
+                },
+                {
+                  "label": "Thuế thu nhập hoãn lại phải trả",
+                  "31/12/2024": "256.485",
+                  "31/12/2023": "269.398"
+                },
+                {
+                  "label": "Vốn chủ sở hữu",
+                  "31/12/2024": "37.165.930",
+                  "31/12/2023": "35.783.726"
+                },
+                {
+                  "label": "Vốn chủ sở hữu của cổ đông Công ty",
+                  "31/12/2024": "33.199.680",
+                  "31/12/2023": "32.391.741"
+                },
+                {
+                  "label": "Vốn cổ phần",
+                  "31/12/2024": "20.899.554",
+                  "31/12/2023": "20.899.554"
+                },
+                {
+                  "label": "Thặng dư vốn cổ phần",
+                  "31/12/2024": "34.111",
+                  "31/12/2023": "34.111"
+                },
+                {
+                  "label": "Vốn khác của chủ sở hữu",
+                  "31/12/2024": "499.081",
+                  "31/12/2023": "499.081"
+                },
+                {
+                  "label": "Chênh lệch giá trị hợp lý",
+                  "31/12/2024": "(15.048)",
+                  "31/12/2023": "(14.950)"
+                },
+                {
+                  "label": "Chênh lệch quy đổi tiền tệ",
+                  "31/12/2024": "295.165",
+                  "31/12/2023": "174.150"
+                },
+                {
+                  "label": "Các quỹ khác",
+                  "31/12/2024": "7.079.115",
+                  "31/12/2023": "6.163.736"
+                },
+                {
+                  "label": "Lợi nhuận chưa phân phối",
+                  "31/12/2024": "4.407.702",
+                  "31/12/2023": "4.636.059"
+                },
+                {
+                  "label": "Lợi ích cổ đông không kiểm soát",
+                  "31/12/2024": "3.966.250",
+                  "31/12/2023": "3.391.985"
+                },
+                {
+                  "label": "Tổng nợ phải trả và vốn chủ sở hữu",
+                  "31/12/2024": "56.993.245",
+                  "31/12/2023": "54.232.491"
+                }
+              ],
+              "metadata": {
+                "element_type": "table",
+                "layout_type": "table",
+                "table_extraction_method": "pymupdf.find_tables_text_aligned_columns",
+                "table_detection_strategy": "text",
+                "numeric_columns": [
+                  13,
+                  14
+                ],
+                "bbox": [
+                  28.3460693359375,
+                  23.139083862304688,
+                  1162.202880859375,
+                  758.0635375976562
+                ],
+                "bbox_coordinate_system": "pdf_points",
+                "document_id": "VNM-AR-2024-VI",
+                "filename": "vnm-ar-2024-vi.pdf",
+                "format": "PDF"
+              }
+            }
+          ],
+          "expected_table_regions": 2,
+          "detected_tables": 2,
+          "table_region_recall": 1.0,
+          "expected_field_count": 3,
+          "text_anchor_exact_match_count": 3,
+          "text_anchor_recall": 1.0,
+          "text_anchor_normalized_match_count": 3,
+          "text_anchor_normalized_recall": 1.0,
+          "table_anchor_exact_match_count": 3,
+          "table_anchor_recall": 1.0,
+          "table_anchor_normalized_match_count": 3,
+          "table_anchor_normalized_recall": 1.0,
+          "fields": [
+            {
+              "id": "cash-2024-2023",
+              "label": "Tiền và các khoản tương đương tiền",
+              "values": [
+                "2.225.944",
+                "2.912.027"
+              ],
+              "text_anchor_exact_match": true,
+              "text_anchor_normalized_match": true,
+              "table_anchor_exact_match": true,
+              "table_anchor_normalized_match": true
+            },
+            {
+              "id": "inventory-2024-2023",
+              "label": "Hàng tồn kho",
+              "values": [
+                "5.634.710",
+                "6.082.233"
+              ],
+              "text_anchor_exact_match": true,
+              "text_anchor_normalized_match": true,
+              "table_anchor_exact_match": true,
+              "table_anchor_normalized_match": true
+            },
+            {
+              "id": "total-assets-2024-2023",
+              "label": "Tổng tài sản",
+              "values": [
+                "56.993.245",
+                "54.232.491"
+              ],
+              "text_anchor_exact_match": true,
+              "text_anchor_normalized_match": true,
+              "table_anchor_exact_match": true,
+              "table_anchor_normalized_match": true
+            }
+          ]
+        },
+        {
+          "condition": "synthetic_raster_pdf_tesseract",
+          "text_extraction_methods": [
+            "tesseract"
+          ],
+          "chunk_count": 3,
+          "extracted_page_text": "180 Bao cao thuong niên Vinamilk 2024 Luôn cau tién Bao cao taichinh 181 Bao cao tai chinh hop nhat cho năm ket thuc ngay 31 thang 12 nam 2024 Lập theo Chuẩn mực Bão cão Tài chinh Quốc té (IFRS) Công ty Cổ phan Sữa Việt Nam va cac công ty con Bao cao tinh hinh tai chinh hop nhất taingay 31thang 12nam 2024 31/12/2024 31/12/2023 Triệu VND Triệu VND Tài sản ngắn hạn 37501520 35931145 Tiền và các khoản tương đương tiền 2225944 2.912.027 Các khoản đầu tư khác 23.260.089 20137243 Phải thu khách hàng và phải thu khác 6380777 6799642 Hàng tồn kho 5634710 6082233 Tài sản dài hạn 19.491.725 18301346 Các khoản đầu tư khác 750.966 228636 Phải thu khách hàng và phải thu khác. 368.084 437546 'Quyền sử dụng tài sản 1158.883 979.312 Nha xưởng, máy móc và thiết bị 11852.774 11514220 Tài sản sinh học 1488.268 1383074 Tài sản v hình và lợi thế thương mại 3106730 3087920 Bất động sản đầu tư 53618 55594 Đầu tư vốn được hạch toán theo 622224 6025591 phuong pháp vốn chủ sở hữu Tài sản thuế thu nhập hoãn lại 90178 12.453 Tổng taisan 56.993.245 54.232.491 Công ty Cổ phan Sữa Viet Nam va cac công ty con Bao huế thu nhập hoãn lại 90178 12.453 Tổng taisan 56.993.245 54.232.491 Công ty Cổ phan Sữa Viet Nam va cac công ty con Bao cao tinh hinh tai chính hop nhất talngay 31thang 12 năm 2024 (tiép theo) 31/12/2024 31/12/2023 Triệu VND Triệu VND No phải trả va vÕn chủ sở hữu Nợphải trả 19.827.315 18.448.765 Nợngắn hạn 18.500.425 17182.479 Vay ngan hạn 9115.435 827117 Phải trả người bán và phải trả khác 8130526 7278770 Nợ thuê tài sản 48.650 - Thuế thu nhập doanh nghiệp phải nộp 885059 803.305 Thuế phải nộp khác 129.419 164.574 Người mua trả tiền trước 191336 164713 Nợ dài hạn 1326.890 1266.286 Vay dài han 157904 238.476 Phải trả người bán và phải trả khác 723 1063 Nợ thuê tài sản 737077 588616 Dy phòng trợ cấp thôi việc 174701 168733 Thuế thu nhập hoãn lại phải trả 256.485 269.398 Vốn chủ sở hữu 37165.930 35.783.726 'Vốn chủ sở hữu của cổ đông Công ty 33199.680 32391741 Vốn cổ phần 20899.554 20.899.554 Thặng dư vốn cổ phần 3411 341 Vốn khác của chủ sở hữu 499,081 499.081 Chênh lệch giá trị hợp lý (15.048) (14.950) Chênh lệch quy đối tiền té 295165 174150 Các quỹ khác 7079315 6163736 Lợi nhuận nh lệch giá trị hợp lý (15.048) (14.950) Chênh lệch quy đối tiền té 295165 174150 Các quỹ khác 7079315 6163736 Lợi nhuận chưa phân phối 4.407702 4636059 Lợi ich cổ đông không kiém soat 3.966.250 3391985 Tổngnợ phải trả va vén chủsở hữu 56.993.245 54.232.491",
+          "extracted_tables": [],
+          "expected_table_regions": 2,
+          "detected_tables": 0,
+          "table_region_recall": 0.0,
+          "expected_field_count": 3,
+          "text_anchor_exact_match_count": 0,
+          "text_anchor_recall": 0.0,
+          "text_anchor_normalized_match_count": 3,
+          "text_anchor_normalized_recall": 1.0,
+          "table_anchor_exact_match_count": 0,
+          "table_anchor_recall": 0.0,
+          "table_anchor_normalized_match_count": 0,
+          "table_anchor_normalized_recall": 0.0,
+          "fields": [
+            {
+              "id": "cash-2024-2023",
+              "label": "Tiền và các khoản tương đương tiền",
+              "values": [
+                "2.225.944",
+                "2.912.027"
+              ],
+              "text_anchor_exact_match": false,
+              "text_anchor_normalized_match": true,
+              "table_anchor_exact_match": false,
+              "table_anchor_normalized_match": false
+            },
+            {
+              "id": "inventory-2024-2023",
+              "label": "Hàng tồn kho",
+              "values": [
+                "5.634.710",
+                "6.082.233"
+              ],
+              "text_anchor_exact_match": false,
+              "text_anchor_normalized_match": true,
+              "table_anchor_exact_match": false,
+              "table_anchor_normalized_match": false
+            },
+            {
+              "id": "total-assets-2024-2023",
+              "label": "Tổng tài sản",
+              "values": [
+                "56.993.245",
+                "54.232.491"
+              ],
+              "text_anchor_exact_match": false,
+              "text_anchor_normalized_match": true,
+              "table_anchor_exact_match": false,
+              "table_anchor_normalized_match": false
+            }
+          ]
+        },
+        {
+          "condition": "synthetic_raster_image_upload_tesseract",
+          "text_extraction_methods": [
+            "tesseract"
+          ],
+          "chunk_count": 3,
+          "extracted_page_text": "180 Bão cao thường niên Vinamilk 2024 Luôn cau tién Bão cao tai chính 181 — — - s = = ~ Bao cao tai chinh hop nhat cho năm ket thuc ngay 31 thang 12 nam 2024 Lap theo Chuẩn mực Bão cao Tai chinh Quốc té (IFRS) | Công ty Cổ phần Sữa Việt Nam va cac cong ty con Công ty Cổ phan Sữa Việt Nam va cac công ty con — — - = _ s = = — — - ¬ - . = = Bao cao tinh hình tai chinh hop nhat Bao cao tinh hinh tai chinh hợp nhat taingay 31thang 12 nam 2024 taingay 31thang 12 năm 2024 (tiép theo) 31/12/2024 31/12/2023 31/12/2024 31/12/2023 Triéu VND Triéu VND Triéu VND Triéu VND Tài sản ngắn hạn 37.501.520 35.931145 No phải trả va võn chủ sở hữu Tiền và các khoản tương đương tiền 2.225.944 2.912.027 Nợ phải trả 19.827.315 18.448.765 Các khoản đầu tư khác 23.260.089 20.137.243 Phải thu khách hàng và phải thu khác 6.380.777 6.799.642 Nợ ngắn hạn 18.500.425 17182.479 Hàng tồn kho 5.634.710 6.082.233 Vay ngắn hạn 9115.435 8.271117 Phải trả người bán và phải trả khác 8130.526 7778.770 Tài sản dài hạn 19.491.725 18.301.346 Nợ thuê tài sản 48.650 - Thuế thu nhập doanh nghiệp phải nộp 885.059 803.305 Các khoản sản dài hạn 19.491.725 18.301.346 Nợ thuê tài sản 48.650 - Thuế thu nhập doanh nghiệp phải nộp 885.059 803.305 Các khoản đầu tư khác 750.966 228.636 Thuế phải nộp khác 129.419 164.574 Phải thu khách hàng và phải thu khác 368.084 437.546 Người mua trả tiền trước 191.336 164.713 Quyền sử dụng tài sản 1158.883 979.312 Nhà xưởng, máy móc và thiết bị 11.852.774 11.514.220 No dai han 1.326.890 1.266.286 Tai san sinh hoc 1.488.268 1.383.074 Vay dai han 157.904 238.476 Tài sản vô hình và lợi thế thương mại 3.106.730 3.087.920 Phải trả người bán và phải trả khác 723 1.063 Bất động sản đầu tư 53.618 55.594 Nợ thuê tài sản 737077 588.616 Đầu tư vốn được hạch toán theo 622.224 602.591 Dự phòng trợ cấp thôi việc 174.701 168.733 phương pháp vốn chủ sở hữu Thuế thu nhập hoãn lại phải trả 256.485 269.398 Tài sản thuế thu nhập hoãn lại 90178 12.453 Ñ Vốn chủ sở hữu 37165.930 35.783.726 Tổng taisan 56.993.245 54.232.491 Vốn chủ sở hữu của cổ đông Công ty 33.199.680 32.391.741 Vốn cổ phần 20.899.554 20.899.554 Thặng dư vốn cổ phần 34111 34111 Vốn khác của chủ sở hữu 499.081 499.081 Chênh lệch giá trị ổ phần 20.899.554 20.899.554 Thặng dư vốn cổ phần 34111 34111 Vốn khác của chủ sở hữu 499.081 499.081 Chênh lệch giá trị hợp lý (15.048) (14.950) Chênh lệch quy đổi tiền tệ 295165 174.150 Các quỹ khác 7079115 6163.736 Lợi nhuận chưa phân phối 4.407.702 4.636.059 Lợi ích cổ đông không kiểm soát 3.966.250 3.391.985 Tổng no phải trả va võn chủ sở hữu 56.993.245 54.232.491",
+          "extracted_tables": [],
+          "expected_table_regions": 2,
+          "detected_tables": 0,
+          "table_region_recall": 0.0,
+          "expected_field_count": 3,
+          "text_anchor_exact_match_count": 2,
+          "text_anchor_recall": 0.6667,
+          "text_anchor_normalized_match_count": 3,
+          "text_anchor_normalized_recall": 1.0,
+          "table_anchor_exact_match_count": 0,
+          "table_anchor_recall": 0.0,
+          "table_anchor_normalized_match_count": 0,
+          "table_anchor_normalized_recall": 0.0,
+          "fields": [
+            {
+              "id": "cash-2024-2023",
+              "label": "Tiền và các khoản tương đương tiền",
+              "values": [
+                "2.225.944",
+                "2.912.027"
+              ],
+              "text_anchor_exact_match": true,
+              "text_anchor_normalized_match": true,
+              "table_anchor_exact_match": false,
+              "table_anchor_normalized_match": false
+            },
+            {
+              "id": "inventory-2024-2023",
+              "label": "Hàng tồn kho",
+              "values": [
+                "5.634.710",
+                "6.082.233"
+              ],
+              "text_anchor_exact_match": true,
+              "text_anchor_normalized_match": true,
+              "table_anchor_exact_match": false,
+              "table_anchor_normalized_match": false
+            },
+            {
+              "id": "total-assets-2024-2023",
+              "label": "Tổng tài sản",
+              "values": [
+                "56.993.245",
+                "54.232.491"
+              ],
+              "text_anchor_exact_match": false,
+              "text_anchor_normalized_match": true,
+              "table_anchor_exact_match": false,
+              "table_anchor_normalized_match": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

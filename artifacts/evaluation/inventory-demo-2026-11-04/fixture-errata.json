@@ -1,0 +1,7 @@
+{
+  "case": "P47",
+  "classification": "reference/evaluator ambiguity: authoring error",
+  "reason": "The Vietnamese stock comparison paraphrase points to I47 (unsupported inventory turnover), not I49 (two-snapshot stock comparison).",
+  "frozen_files_changed": false,
+  "handling": "Preserve all 60 raw cases and official scorer outputs. Exclude P47 from audited refusal/coverage denominators; separately check intent against the independently frozen I49 reference. The 50 primary independently authored requests remain unaffected."
+}

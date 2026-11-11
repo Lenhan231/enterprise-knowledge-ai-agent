@@ -1,0 +1,27 @@
+{
+  "created_at_utc": "2026-09-27T22:05:13.455783+00:00",
+  "mode": "dry_run",
+  "metadata_only": true,
+  "documents": [
+    {
+      "document_id": "VNM-CHARTER-2026-EN",
+      "stored_chunks": 140,
+      "parsed_chunks": 140,
+      "exact_content_match": true,
+      "status": "planned",
+      "mismatch": null,
+      "eligible_updates": 139
+    },
+    {
+      "document_id": "VNM-CGRULES-2026-EN",
+      "stored_chunks": 129,
+      "parsed_chunks": 129,
+      "exact_content_match": true,
+      "status": "planned",
+      "mismatch": null,
+      "eligible_updates": 128
+    }
+  ],
+  "eligible_updates": 267,
+  "applied_updates": 0
+}

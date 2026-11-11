@@ -1,0 +1,2 @@
+-- Retired source-specific provenance backfill. The verified Vinamilk observations
+-- it targeted were removed; keep this migration version as a no-op for history.

@@ -1,0 +1,16 @@
+{
+  "dataset_id": "vinamilk-unsupported-abstention-smoke-v1",
+  "label_method": "Manual source-coverage label cross-checked against the active public manifest; expected abstention was verified through the authenticated local POST /api/ask route.",
+  "cases": [
+    {
+      "id": "unsupported-document-retention-policy",
+      "question": "Find the company document retention standard",
+      "role": "finance_analyst",
+      "expected_agent": "knowledge",
+      "expected_document_id": null,
+      "relevant_document_ids": [],
+      "expected_key_facts": [],
+      "expect_insufficient": true
+    }
+  ]
+}

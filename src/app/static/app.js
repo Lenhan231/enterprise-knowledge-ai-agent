@@ -248,6 +248,7 @@ function renderKnowledgeDocuments() {
       <div class="knowledge-document-actions">
         ${doc.has_processing_output ? `<button class="secondary-button" type="button" data-review-elements="${escapeHtml(doc.document_id)}" aria-expanded="${reviewOpen ? "true" : "false"}">${reviewOpen ? "Hide element review" : "Review elements"}</button>` : ""}
         ${canRetryEmbedding ? `<button class="secondary-button" type="button" data-retry-embedding="${escapeHtml(doc.document_id)}">Retry embedding</button>` : ""}
+        ${doc.knowledge_base_active === false && doc.source_type === "user_upload" ? `<button class="danger-button" type="button" data-knowledge-delete="${escapeHtml(doc.document_id)}" data-title="${escapeHtml(doc.title)}">Delete permanently</button>` : ""}
         <button class="${doc.knowledge_base_active ? "danger-button" : "secondary-button"}" type="button" data-knowledge-toggle="${escapeHtml(doc.document_id)}" data-active="${doc.knowledge_base_active ? "true" : "false"}">${doc.knowledge_base_active ? "Remove from knowledge base" : "Restore to knowledge base"}</button>
       </div>
     </article>${reviewOpen ? renderKnowledgeProcessingReview(doc) : ""}</div>`;
@@ -1403,6 +1404,24 @@ $("#knowledge-documents-refresh").addEventListener("click", async () => {
   catch (error) { $("#knowledge-documents-status").textContent = error.message; }
 });
 $("#knowledge-documents-list").addEventListener("click", async (event) => {
+  const deleteButton = event.target.closest("[data-knowledge-delete]");
+  if (deleteButton) {
+    const documentId = deleteButton.dataset.knowledgeDelete;
+    const title = deleteButton.dataset.title;
+    if (!window.confirm(`Permanently delete “${title}”? This removes the original file, parser output, and indexed data. This cannot be undone.`)) return;
+    deleteButton.disabled = true;
+    try {
+      const result = await api(`/api/admin/knowledge-documents/${encodeURIComponent(documentId)}`, { method: "DELETE" });
+      await refreshKnowledgeDocuments();
+      $("#knowledge-documents-status").textContent = result.source_file_removed
+        ? `Permanently deleted “${title}” and its source file.`
+        : `Deleted “${title}” from the knowledge base, but private-file cleanup failed. Check application logs.`;
+    } catch (error) {
+      $("#knowledge-documents-status").textContent = error.message;
+      deleteButton.disabled = false;
+    }
+    return;
+  }
   if (event.target.closest("[data-close-knowledge-review]")) {
     activeKnowledgeReview = null;
     renderKnowledgeDocuments();

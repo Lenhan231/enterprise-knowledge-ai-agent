@@ -345,6 +345,37 @@ def set_knowledge_document_status(
             repository.close()
 
 
+@app.delete("/api/admin/knowledge-documents/{document_id}")
+def delete_removed_knowledge_document(
+    document_id: str,
+    request: Request,
+    user: dict = Depends(require_permission("manage_knowledge")),
+):
+    _require_same_origin(request)
+    repository = DocumentRepository()
+    try:
+        storage_path = repository.delete_removed_upload(document_id)
+        if storage_path is None:
+            raise HTTPException(409, "Only uploaded sources removed from AI retrieval can be deleted")
+    except HTTPException:
+        raise
+    except Exception as error:
+        logger.exception("Could not permanently delete knowledge source %s", document_id)
+        raise HTTPException(503, "Knowledge source could not be deleted") from error
+    finally:
+        repository.close()
+
+    source_file_removed = not storage_path
+    if storage_path:
+        try:
+            storage, bucket = _storage_client()
+            storage.storage.from_(bucket).remove([storage_path])
+            source_file_removed = True
+        except Exception:
+            logger.exception("Source file cleanup failed after deleting %s", document_id)
+    return {"document_id": document_id, "deleted": True, "source_file_removed": source_file_removed}
+
+
 @app.patch("/api/admin/knowledge-documents/{document_id}/access")
 def set_knowledge_document_access(
     document_id: str,

@@ -86,9 +86,23 @@ def overlaps_region(box: list[float], region: list[float], threshold: float = 0.
 
 
 def create_line_detector():
-    from rapidocr import RapidOCR
+    import logging
+    import torch
+    from rapidocr import EngineType, RapidOCR
 
-    return RapidOCR()
+    if torch.cuda.is_available():
+        logging.getLogger(__name__).info(
+            "RapidOCR line detection using PyTorch CUDA backend."
+        )
+        return RapidOCR(params={
+            "Det.engine_type": EngineType.TORCH,
+            "EngineConfig.torch.use_cuda": True,
+            "EngineConfig.torch.cuda_ep_cfg.device_id": 0,
+        })
+    logging.getLogger(__name__).info("RapidOCR line detection using CPU backend with max-edge resize.")
+    # Layout crops are already rendered at OCR scale. Upscaling their short edge
+    # to 736px makes a one-line region unnecessarily large for detection.
+    return RapidOCR(params={"Det.limit_type": "max"})
 
 
 def detect_line_boxes(detector, image: np.ndarray):
@@ -96,10 +110,57 @@ def detect_line_boxes(detector, image: np.ndarray):
     return getattr(result, "boxes", None)
 
 
-def crop_line(image: np.ndarray, points: np.ndarray) -> np.ndarray:
+def merge_line_fragments(boxes) -> list[tuple[np.ndarray, bool]]:
+    """Join horizontally adjacent detections that share the same text baseline."""
+    if boxes is None or len(boxes) == 0:
+        return []
+
+    bounds = []
+    for box in boxes:
+        points = np.asarray(box, dtype=np.float32)
+        bounds.append((points[:, 0].min(), points[:, 1].min(), points[:, 0].max(), points[:, 1].max()))
+
+    groups = [{index} for index in range(len(bounds))]
+    for left_index, first in enumerate(bounds):
+        first_height = max(1.0, first[3] - first[1])
+        for right_index in range(left_index + 1, len(bounds)):
+            second = bounds[right_index]
+            second_height = max(1.0, second[3] - second[1])
+            overlap = max(0.0, min(first[3], second[3]) - max(first[1], second[1]))
+            if overlap / min(first_height, second_height) < 0.55:
+                continue
+            gap = max(0.0, max(first[0], second[0]) - min(first[2], second[2]))
+            if gap > max(first_height, second_height):
+                continue
+            first_group = next(group for group in groups if left_index in group)
+            second_group = next(group for group in groups if right_index in group)
+            if first_group is not second_group:
+                first_group.update(second_group)
+                groups.remove(second_group)
+
+    merged = []
+    for group in groups:
+        points = np.concatenate([np.asarray(boxes[index], dtype=np.float32) for index in group])
+        left, top = points.min(axis=0)
+        right, bottom = points.max(axis=0)
+        quad = np.array([[left, top], [right, top], [right, bottom], [left, bottom]], dtype=np.float32)
+        merged.append((quad, len(group) > 1))
+    return sorted(merged, key=lambda item: (item[0][:, 1].min(), item[0][:, 0].min()))
+
+
+def crop_line(image: np.ndarray, points: np.ndarray, padding: int = 0) -> np.ndarray:
     quad = np.asarray(points, dtype=np.float32)
     top_left, top_right, bottom_right, bottom_left = quad
     width = max(int(np.linalg.norm(top_right - top_left)), int(np.linalg.norm(bottom_right - bottom_left)), 1)
     height = max(int(np.linalg.norm(bottom_left - top_left)), int(np.linalg.norm(bottom_right - top_right)), 1)
     target = np.array([[0, 0], [width - 1, 0], [width - 1, height - 1], [0, height - 1]], dtype=np.float32)
-    return cv2.warpPerspective(image, cv2.getPerspectiveTransform(quad, target), (width, height))
+    crop = cv2.warpPerspective(
+        image,
+        cv2.getPerspectiveTransform(quad, target),
+        (width, height),
+        borderMode=cv2.BORDER_CONSTANT,
+        borderValue=(255, 255, 255),
+    )
+    return cv2.copyMakeBorder(
+        crop, padding, padding, padding, padding, cv2.BORDER_CONSTANT, value=(255, 255, 255)
+    ) if padding else crop

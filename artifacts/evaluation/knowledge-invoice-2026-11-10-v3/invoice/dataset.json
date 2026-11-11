@@ -1,0 +1,142 @@
+[
+  {
+    "id": "I01",
+    "question": "How many approved invoices are available? Return invoice_count.",
+    "reference_sql": "SELECT COUNT(DISTINCT inv.invoice_id) AS invoice_count FROM commerce.invoices AS inv LIMIT 1",
+    "reference_rows": [
+      {
+        "invoice_count": 1
+      }
+    ]
+  },
+  {
+    "id": "I02",
+    "question": "List the latest 20 approved invoices with invoice_id, invoice_no, invoice_date and source_filename; order by invoice_date descending, then invoice_id.",
+    "reference_sql": "SELECT inv.invoice_id, inv.invoice_no, inv.invoice_date, inv.source_filename FROM commerce.invoices AS inv ORDER BY inv.invoice_date DESC NULLS FIRST, inv.invoice_id LIMIT 20",
+    "reference_rows": [
+      {
+        "invoice_id": "INV-44f38e1d7b2b4febaa9b3c15b8fce5b6",
+        "invoice_no": null,
+        "invoice_date": null,
+        "source_filename": "invoice_0009.pdf"
+      }
+    ]
+  },
+  {
+    "id": "I03",
+    "question": "Show total invoice amount by seller and currency. Return seller, currency, invoice_total; sort by seller and currency.",
+    "reference_sql": "SELECT inv.seller, inv.currency, SUM(inv.total_amount) AS invoice_total FROM commerce.invoices AS inv GROUP BY inv.seller, inv.currency ORDER BY inv.seller, inv.currency LIMIT 200",
+    "reference_rows": [
+      {
+        "seller": null,
+        "currency": null,
+        "invoice_total": null
+      }
+    ]
+  },
+  {
+    "id": "I04",
+    "question": "Show total invoice tax by currency. Return currency and invoice_tax.",
+    "reference_sql": "SELECT inv.currency, SUM(inv.tax_amount) AS invoice_tax FROM commerce.invoices AS inv GROUP BY inv.currency ORDER BY inv.currency LIMIT 200",
+    "reference_rows": [
+      {
+        "currency": null,
+        "invoice_tax": null
+      }
+    ]
+  },
+  {
+    "id": "I05",
+    "question": "Count approved invoices by buyer. Return buyer and invoice_count.",
+    "reference_sql": "SELECT inv.buyer, COUNT(DISTINCT inv.invoice_id) AS invoice_count FROM commerce.invoices AS inv GROUP BY inv.buyer ORDER BY inv.buyer LIMIT 200",
+    "reference_rows": [
+      {
+        "buyer": "công ty cổ phần kỹ thuật hưng thịnh",
+        "invoice_count": 1
+      }
+    ]
+  },
+  {
+    "id": "I06",
+    "question": "Show invoice totals by calendar month and currency. Return month, currency and invoice_total.",
+    "reference_sql": "SELECT DATE_TRUNC('month', inv.invoice_date) AS month, inv.currency, SUM(inv.total_amount) AS invoice_total FROM commerce.invoices AS inv GROUP BY DATE_TRUNC('month', inv.invoice_date), inv.currency ORDER BY 1, 2 LIMIT 200",
+    "reference_rows": [
+      {
+        "month": null,
+        "currency": null,
+        "invoice_total": null
+      }
+    ]
+  },
+  {
+    "id": "I07",
+    "question": "List the first 20 invoice items with invoice_id, line_no, description, unit, quantity, unit_price and amount, ordered by invoice_id and line_no.",
+    "reference_sql": "SELECT li.invoice_id, li.line_no, li.description, li.unit, li.quantity, li.unit_price, li.amount FROM commerce.invoice_items AS li ORDER BY li.invoice_id, li.line_no LIMIT 20",
+    "reference_rows": [
+      {
+        "invoice_id": "INV-44f38e1d7b2b4febaa9b3c15b8fce5b6",
+        "line_no": 1,
+        "description": "1 Tấm thạch cao chống ẩm - theo phiếu xuất kho 795/PXK, công trình táng 2",
+        "unit": "Thùng",
+        "quantity": null,
+        "unit_price": 583000.0,
+        "amount": 11077000.0
+      },
+      {
+        "invoice_id": "INV-44f38e1d7b2b4febaa9b3c15b8fce5b6",
+        "line_no": 2,
+        "description": "Khung nhôm định hình hệ 55 - theo phiếu xuất kho 650/PXK, công trình nhà thạng mục xưởng B",
+        "unit": null,
+        "quantity": null,
+        "unit_price": 1992000.0,
+        "amount": 57768000.0
+      },
+      {
+        "invoice_id": "INV-44f38e1d7b2b4febaa9b3c15b8fce5b6",
+        "line_no": 3,
+        "description": "3 Bulong inox M10 - theo phiếu xuất kho 461/PXK, công trình nhà xưởng B",
+        "unit": "Cái",
+        "quantity": null,
+        "unit_price": 1104000.0,
+        "amount": 34224000.0
+      },
+      {
+        "invoice_id": "INV-44f38e1d7b2b4febaa9b3c15b8fce5b6",
+        "line_no": 4,
+        "description": "sơn nước nội thất màu trắng , theo phiếu xuất kho 2 Th PXX công trịnh nhà",
+        "unit": "Cái",
+        "quantity": null,
+        "unit_price": 2321000.0,
+        "amount": 71951000.0
+      }
+    ]
+  },
+  {
+    "id": "I08",
+    "question": "Show the sum of invoice item amounts by seller and invoice currency. Return seller, currency and invoice_item_amount.",
+    "reference_sql": "SELECT inv.seller, inv.currency, SUM(li.amount) AS invoice_item_amount FROM commerce.invoice_items AS li JOIN commerce.invoices AS inv ON li.invoice_id = inv.invoice_id GROUP BY inv.seller, inv.currency ORDER BY inv.seller, inv.currency LIMIT 200",
+    "reference_rows": [
+      {
+        "seller": null,
+        "currency": null,
+        "invoice_item_amount": 175020000.0
+      }
+    ]
+  },
+  {
+    "id": "I09",
+    "question": "Count approved invoices with unknown currency. Return invoice_count.",
+    "reference_sql": "SELECT COUNT(DISTINCT inv.invoice_id) AS invoice_count FROM commerce.invoices AS inv WHERE inv.currency IS NULL LIMIT 1",
+    "reference_rows": [
+      {
+        "invoice_count": 1
+      }
+    ]
+  },
+  {
+    "id": "I10",
+    "question": "Find approved invoices whose invoice_no is BENCHMARK-NOT-EXIST-20261110. Return invoice_id and source_filename.",
+    "reference_sql": "SELECT inv.invoice_id, inv.source_filename FROM commerce.invoices AS inv WHERE inv.invoice_no = 'BENCHMARK-NOT-EXIST-20261110' ORDER BY inv.invoice_id LIMIT 200",
+    "reference_rows": []
+  }
+]

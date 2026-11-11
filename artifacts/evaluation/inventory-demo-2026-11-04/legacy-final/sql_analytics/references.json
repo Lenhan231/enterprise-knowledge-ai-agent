@@ -1,0 +1,1302 @@
+{
+  "S12": {
+    "expected_behavior": "Generate read-only PostgreSQL, use qualified tables and canonical joins; return metric, grain, date, and results without invented values.",
+    "supported": true,
+    "reference": {
+      "sql": "SELECT DATE_TRUNC('month',i.snapshot_date)::date AS month,SUM(i.units_sold) AS units_sold FROM commerce.inventory i WHERE i.snapshot_date >= DATE '2022-01-01' AND i.snapshot_date < DATE '2023-01-01' GROUP BY 1 ORDER BY 1",
+      "rows": [
+        {
+          "month": "2022-01-01",
+          "units_sold": 2305
+        },
+        {
+          "month": "2022-02-01",
+          "units_sold": 3270
+        },
+        {
+          "month": "2022-03-01",
+          "units_sold": 5096
+        },
+        {
+          "month": "2022-04-01",
+          "units_sold": 6360
+        },
+        {
+          "month": "2022-05-01",
+          "units_sold": 5509
+        },
+        {
+          "month": "2022-06-01",
+          "units_sold": 5759
+        },
+        {
+          "month": "2022-07-01",
+          "units_sold": 4123
+        },
+        {
+          "month": "2022-08-01",
+          "units_sold": 4772
+        },
+        {
+          "month": "2022-09-01",
+          "units_sold": 3360
+        },
+        {
+          "month": "2022-10-01",
+          "units_sold": 2908
+        },
+        {
+          "month": "2022-11-01",
+          "units_sold": 2332
+        },
+        {
+          "month": "2022-12-01",
+          "units_sold": 3565
+        }
+      ],
+      "returned_rows": 12,
+      "detail_ceiling": null
+    },
+    "notes": "Detail scope is capped at 200, ordered by the oracle. Equal-rank ties use product_id. Discount is per line; cancelled/canceled statuses excluded only when requested. S23 uses independently aggregated return_date and order_date windows, not canonical return_rate. S28 counts excess rows beyond the first per duplicate key. S10 averages December stored observations."
+  },
+  "S13": {
+    "expected_behavior": "Generate read-only PostgreSQL, use qualified tables and canonical joins; return metric, grain, date, and results without invented values.",
+    "supported": true,
+    "reference": {
+      "sql": "SELECT a.product_id,a.stock_on_hand AS november_stock,b.stock_on_hand AS december_stock,b.stock_on_hand-a.stock_on_hand AS stock_change FROM commerce.inventory a JOIN commerce.inventory b ON a.product_id=b.product_id WHERE a.snapshot_date=DATE '2022-11-30' AND b.snapshot_date=DATE '2022-12-31' ORDER BY a.product_id LIMIT 200",
+      "rows": [
+        {
+          "product_id": 1,
+          "november_stock": 3,
+          "december_stock": 3,
+          "stock_change": 0
+        },
+        {
+          "product_id": 3,
+          "november_stock": 151,
+          "december_stock": 151,
+          "stock_change": 0
+        },
+        {
+          "product_id": 8,
+          "november_stock": 101,
+          "december_stock": 101,
+          "stock_change": 0
+        },
+        {
+          "product_id": 9,
+          "november_stock": 82,
+          "december_stock": 83,
+          "stock_change": 1
+        },
+        {
+          "product_id": 17,
+          "november_stock": 28,
+          "december_stock": 28,
+          "stock_change": 0
+        },
+        {
+          "product_id": 19,
+          "november_stock": 9,
+          "december_stock": 9,
+          "stock_change": 0
+        },
+        {
+          "product_id": 26,
+          "november_stock": 239,
+          "december_stock": 240,
+          "stock_change": 1
+        },
+        {
+          "product_id": 29,
+          "november_stock": 9,
+          "december_stock": 9,
+          "stock_change": 0
+        },
+        {
+          "product_id": 45,
+          "november_stock": 9,
+          "december_stock": 9,
+          "stock_change": 0
+        },
+        {
+          "product_id": 66,
+          "november_stock": 3,
+          "december_stock": 3,
+          "stock_change": 0
+        },
+        {
+          "product_id": 67,
+          "november_stock": 3,
+          "december_stock": 3,
+          "stock_change": 0
+        },
+        {
+          "product_id": 74,
+          "november_stock": 11,
+          "december_stock": 11,
+          "stock_change": 0
+        },
+        {
+          "product_id": 109,
+          "november_stock": 47,
+          "december_stock": 48,
+          "stock_change": 1
+        },
+        {
+          "product_id": 115,
+          "november_stock": 284,
+          "december_stock": 284,
+          "stock_change": 0
+        },
+        {
+          "product_id": 150,
+          "november_stock": 11,
+          "december_stock": 11,
+          "stock_change": 0
+        },
+        {
+          "product_id": 165,
+          "november_stock": 20,
+          "december_stock": 21,
+          "stock_change": 1
+        },
+        {
+          "product_id": 183,
+          "november_stock": 81,
+          "december_stock": 82,
+          "stock_change": 1
+        },
+        {
+          "product_id": 197,
+          "november_stock": 9,
+          "december_stock": 9,
+          "stock_change": 0
+        },
+        {
+          "product_id": 198,
+          "november_stock": 15,
+          "december_stock": 16,
+          "stock_change": 1
+        },
+        {
+          "product_id": 200,
+          "november_stock": 49,
+          "december_stock": 49,
+          "stock_change": 0
+        },
+        {
+          "product_id": 201,
+          "november_stock": 56,
+          "december_stock": 56,
+          "stock_change": 0
+        },
+        {
+          "product_id": 202,
+          "november_stock": 132,
+          "december_stock": 133,
+          "stock_change": 1
+        },
+        {
+          "product_id": 204,
+          "november_stock": 24,
+          "december_stock": 24,
+          "stock_change": 0
+        },
+        {
+          "product_id": 207,
+          "november_stock": 35,
+          "december_stock": 35,
+          "stock_change": 0
+        },
+        {
+          "product_id": 231,
+          "november_stock": 9,
+          "december_stock": 9,
+          "stock_change": 0
+        },
+        {
+          "product_id": 236,
+          "november_stock": 21,
+          "december_stock": 21,
+          "stock_change": 0
+        },
+        {
+          "product_id": 252,
+          "november_stock": 34,
+          "december_stock": 34,
+          "stock_change": 0
+        },
+        {
+          "product_id": 292,
+          "november_stock": 30,
+          "december_stock": 30,
+          "stock_change": 0
+        },
+        {
+          "product_id": 295,
+          "november_stock": 23,
+          "december_stock": 24,
+          "stock_change": 1
+        },
+        {
+          "product_id": 336,
+          "november_stock": 9,
+          "december_stock": 9,
+          "stock_change": 0
+        },
+        {
+          "product_id": 362,
+          "november_stock": 50,
+          "december_stock": 50,
+          "stock_change": 0
+        },
+        {
+          "product_id": 387,
+          "november_stock": 6,
+          "december_stock": 6,
+          "stock_change": 0
+        },
+        {
+          "product_id": 398,
+          "november_stock": 10,
+          "december_stock": 10,
+          "stock_change": 0
+        },
+        {
+          "product_id": 402,
+          "november_stock": 71,
+          "december_stock": 75,
+          "stock_change": 4
+        },
+        {
+          "product_id": 403,
+          "november_stock": 16,
+          "december_stock": 17,
+          "stock_change": 1
+        },
+        {
+          "product_id": 407,
+          "november_stock": 384,
+          "december_stock": 391,
+          "stock_change": 7
+        },
+        {
+          "product_id": 408,
+          "november_stock": 39,
+          "december_stock": 43,
+          "stock_change": 4
+        },
+        {
+          "product_id": 415,
+          "november_stock": 180,
+          "december_stock": 180,
+          "stock_change": 0
+        },
+        {
+          "product_id": 421,
+          "november_stock": 11,
+          "december_stock": 12,
+          "stock_change": 1
+        },
+        {
+          "product_id": 428,
+          "november_stock": 117,
+          "december_stock": 121,
+          "stock_change": 4
+        },
+        {
+          "product_id": 431,
+          "november_stock": 90,
+          "december_stock": 92,
+          "stock_change": 2
+        },
+        {
+          "product_id": 444,
+          "november_stock": 29,
+          "december_stock": 30,
+          "stock_change": 1
+        },
+        {
+          "product_id": 449,
+          "november_stock": 1089,
+          "december_stock": 1115,
+          "stock_change": 26
+        },
+        {
+          "product_id": 451,
+          "november_stock": 215,
+          "december_stock": 221,
+          "stock_change": 6
+        },
+        {
+          "product_id": 452,
+          "november_stock": 19,
+          "december_stock": 22,
+          "stock_change": 3
+        },
+        {
+          "product_id": 458,
+          "november_stock": 23,
+          "december_stock": 24,
+          "stock_change": 1
+        },
+        {
+          "product_id": 461,
+          "november_stock": 216,
+          "december_stock": 220,
+          "stock_change": 4
+        },
+        {
+          "product_id": 462,
+          "november_stock": 29,
+          "december_stock": 29,
+          "stock_change": 0
+        },
+        {
+          "product_id": 470,
+          "november_stock": 218,
+          "december_stock": 229,
+          "stock_change": 11
+        },
+        {
+          "product_id": 471,
+          "november_stock": 110,
+          "december_stock": 112,
+          "stock_change": 2
+        },
+        {
+          "product_id": 476,
+          "november_stock": 47,
+          "december_stock": 47,
+          "stock_change": 0
+        },
+        {
+          "product_id": 483,
+          "november_stock": 11,
+          "december_stock": 12,
+          "stock_change": 1
+        },
+        {
+          "product_id": 489,
+          "november_stock": 130,
+          "december_stock": 130,
+          "stock_change": 0
+        },
+        {
+          "product_id": 505,
+          "november_stock": 14,
+          "december_stock": 16,
+          "stock_change": 2
+        },
+        {
+          "product_id": 506,
+          "november_stock": 1119,
+          "december_stock": 1128,
+          "stock_change": 9
+        },
+        {
+          "product_id": 511,
+          "november_stock": 86,
+          "december_stock": 87,
+          "stock_change": 1
+        },
+        {
+          "product_id": 537,
+          "november_stock": 25,
+          "december_stock": 25,
+          "stock_change": 0
+        },
+        {
+          "product_id": 545,
+          "november_stock": 136,
+          "december_stock": 139,
+          "stock_change": 3
+        },
+        {
+          "product_id": 549,
+          "november_stock": 228,
+          "december_stock": 229,
+          "stock_change": 1
+        },
+        {
+          "product_id": 555,
+          "november_stock": 110,
+          "december_stock": 111,
+          "stock_change": 1
+        },
+        {
+          "product_id": 563,
+          "november_stock": 92,
+          "december_stock": 95,
+          "stock_change": 3
+        },
+        {
+          "product_id": 567,
+          "november_stock": 207,
+          "december_stock": 207,
+          "stock_change": 0
+        },
+        {
+          "product_id": 570,
+          "november_stock": 48,
+          "december_stock": 49,
+          "stock_change": 1
+        },
+        {
+          "product_id": 585,
+          "november_stock": 341,
+          "december_stock": 344,
+          "stock_change": 3
+        },
+        {
+          "product_id": 589,
+          "november_stock": 143,
+          "december_stock": 145,
+          "stock_change": 2
+        },
+        {
+          "product_id": 604,
+          "november_stock": 2370,
+          "december_stock": 2370,
+          "stock_change": 0
+        },
+        {
+          "product_id": 614,
+          "november_stock": 47,
+          "december_stock": 49,
+          "stock_change": 2
+        },
+        {
+          "product_id": 615,
+          "november_stock": 529,
+          "december_stock": 529,
+          "stock_change": 0
+        },
+        {
+          "product_id": 640,
+          "november_stock": 56,
+          "december_stock": 56,
+          "stock_change": 0
+        },
+        {
+          "product_id": 649,
+          "november_stock": 11,
+          "december_stock": 11,
+          "stock_change": 0
+        },
+        {
+          "product_id": 651,
+          "november_stock": 149,
+          "december_stock": 153,
+          "stock_change": 4
+        },
+        {
+          "product_id": 653,
+          "november_stock": 86,
+          "december_stock": 88,
+          "stock_change": 2
+        },
+        {
+          "product_id": 654,
+          "november_stock": 11,
+          "december_stock": 11,
+          "stock_change": 0
+        },
+        {
+          "product_id": 656,
+          "november_stock": 135,
+          "december_stock": 136,
+          "stock_change": 1
+        },
+        {
+          "product_id": 667,
+          "november_stock": 37,
+          "december_stock": 37,
+          "stock_change": 0
+        },
+        {
+          "product_id": 668,
+          "november_stock": 7,
+          "december_stock": 11,
+          "stock_change": 4
+        },
+        {
+          "product_id": 674,
+          "november_stock": 653,
+          "december_stock": 653,
+          "stock_change": 0
+        },
+        {
+          "product_id": 688,
+          "november_stock": 109,
+          "december_stock": 111,
+          "stock_change": 2
+        },
+        {
+          "product_id": 690,
+          "november_stock": 668,
+          "december_stock": 670,
+          "stock_change": 2
+        },
+        {
+          "product_id": 702,
+          "november_stock": 356,
+          "december_stock": 356,
+          "stock_change": 0
+        },
+        {
+          "product_id": 711,
+          "november_stock": 122,
+          "december_stock": 129,
+          "stock_change": 7
+        },
+        {
+          "product_id": 719,
+          "november_stock": 15,
+          "december_stock": 38,
+          "stock_change": 23
+        },
+        {
+          "product_id": 720,
+          "november_stock": 14,
+          "december_stock": 36,
+          "stock_change": 22
+        },
+        {
+          "product_id": 733,
+          "november_stock": 1346,
+          "december_stock": 1346,
+          "stock_change": 0
+        },
+        {
+          "product_id": 734,
+          "november_stock": 1402,
+          "december_stock": 1402,
+          "stock_change": 0
+        },
+        {
+          "product_id": 735,
+          "november_stock": 728,
+          "december_stock": 729,
+          "stock_change": 1
+        },
+        {
+          "product_id": 736,
+          "november_stock": 732,
+          "december_stock": 734,
+          "stock_change": 2
+        },
+        {
+          "product_id": 759,
+          "november_stock": 1312,
+          "december_stock": 1313,
+          "stock_change": 1
+        },
+        {
+          "product_id": 760,
+          "november_stock": 1339,
+          "december_stock": 1340,
+          "stock_change": 1
+        },
+        {
+          "product_id": 761,
+          "november_stock": 1195,
+          "december_stock": 1196,
+          "stock_change": 1
+        },
+        {
+          "product_id": 762,
+          "november_stock": 1218,
+          "december_stock": 1221,
+          "stock_change": 3
+        },
+        {
+          "product_id": 763,
+          "november_stock": 739,
+          "december_stock": 739,
+          "stock_change": 0
+        },
+        {
+          "product_id": 764,
+          "november_stock": 690,
+          "december_stock": 690,
+          "stock_change": 0
+        },
+        {
+          "product_id": 777,
+          "november_stock": 774,
+          "december_stock": 780,
+          "stock_change": 6
+        },
+        {
+          "product_id": 778,
+          "november_stock": 821,
+          "december_stock": 826,
+          "stock_change": 5
+        },
+        {
+          "product_id": 779,
+          "november_stock": 688,
+          "december_stock": 688,
+          "stock_change": 0
+        },
+        {
+          "product_id": 780,
+          "november_stock": 697,
+          "december_stock": 698,
+          "stock_change": 1
+        },
+        {
+          "product_id": 781,
+          "november_stock": 738,
+          "december_stock": 743,
+          "stock_change": 5
+        },
+        {
+          "product_id": 782,
+          "november_stock": 720,
+          "december_stock": 724,
+          "stock_change": 4
+        },
+        {
+          "product_id": 791,
+          "november_stock": 2657,
+          "december_stock": 2673,
+          "stock_change": 16
+        },
+        {
+          "product_id": 792,
+          "november_stock": 2591,
+          "december_stock": 2617,
+          "stock_change": 26
+        },
+        {
+          "product_id": 793,
+          "november_stock": 1127,
+          "december_stock": 1133,
+          "stock_change": 6
+        },
+        {
+          "product_id": 794,
+          "november_stock": 1164,
+          "december_stock": 1169,
+          "stock_change": 5
+        },
+        {
+          "product_id": 807,
+          "november_stock": 97,
+          "december_stock": 98,
+          "stock_change": 1
+        },
+        {
+          "product_id": 808,
+          "november_stock": 507,
+          "december_stock": 511,
+          "stock_change": 4
+        },
+        {
+          "product_id": 809,
+          "november_stock": 206,
+          "december_stock": 209,
+          "stock_change": 3
+        },
+        {
+          "product_id": 816,
+          "november_stock": 316,
+          "december_stock": 319,
+          "stock_change": 3
+        },
+        {
+          "product_id": 819,
+          "november_stock": 453,
+          "december_stock": 453,
+          "stock_change": 0
+        },
+        {
+          "product_id": 822,
+          "november_stock": 41,
+          "december_stock": 43,
+          "stock_change": 2
+        },
+        {
+          "product_id": 826,
+          "november_stock": 1958,
+          "december_stock": 1960,
+          "stock_change": 2
+        },
+        {
+          "product_id": 839,
+          "november_stock": 53,
+          "december_stock": 53,
+          "stock_change": 0
+        },
+        {
+          "product_id": 899,
+          "november_stock": 13,
+          "december_stock": 13,
+          "stock_change": 0
+        },
+        {
+          "product_id": 907,
+          "november_stock": 1146,
+          "december_stock": 1146,
+          "stock_change": 0
+        },
+        {
+          "product_id": 908,
+          "november_stock": 194,
+          "december_stock": 200,
+          "stock_change": 6
+        },
+        {
+          "product_id": 927,
+          "november_stock": 1897,
+          "december_stock": 1897,
+          "stock_change": 0
+        },
+        {
+          "product_id": 939,
+          "november_stock": 454,
+          "december_stock": 454,
+          "stock_change": 0
+        },
+        {
+          "product_id": 942,
+          "november_stock": 23,
+          "december_stock": 23,
+          "stock_change": 0
+        },
+        {
+          "product_id": 945,
+          "november_stock": 181,
+          "december_stock": 181,
+          "stock_change": 0
+        },
+        {
+          "product_id": 963,
+          "november_stock": 85,
+          "december_stock": 86,
+          "stock_change": 1
+        },
+        {
+          "product_id": 974,
+          "november_stock": 39,
+          "december_stock": 39,
+          "stock_change": 0
+        },
+        {
+          "product_id": 981,
+          "november_stock": 1109,
+          "december_stock": 1110,
+          "stock_change": 1
+        },
+        {
+          "product_id": 993,
+          "november_stock": 1393,
+          "december_stock": 1394,
+          "stock_change": 1
+        },
+        {
+          "product_id": 1007,
+          "november_stock": 16,
+          "december_stock": 16,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1009,
+          "november_stock": 862,
+          "december_stock": 865,
+          "stock_change": 3
+        },
+        {
+          "product_id": 1013,
+          "november_stock": 163,
+          "december_stock": 165,
+          "stock_change": 2
+        },
+        {
+          "product_id": 1026,
+          "november_stock": 132,
+          "december_stock": 135,
+          "stock_change": 3
+        },
+        {
+          "product_id": 1043,
+          "november_stock": 116,
+          "december_stock": 116,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1049,
+          "november_stock": 115,
+          "december_stock": 116,
+          "stock_change": 1
+        },
+        {
+          "product_id": 1053,
+          "november_stock": 888,
+          "december_stock": 891,
+          "stock_change": 3
+        },
+        {
+          "product_id": 1059,
+          "november_stock": 145,
+          "december_stock": 147,
+          "stock_change": 2
+        },
+        {
+          "product_id": 1060,
+          "november_stock": 153,
+          "december_stock": 155,
+          "stock_change": 2
+        },
+        {
+          "product_id": 1085,
+          "november_stock": 1379,
+          "december_stock": 1390,
+          "stock_change": 11
+        },
+        {
+          "product_id": 1086,
+          "november_stock": 1366,
+          "december_stock": 1373,
+          "stock_change": 7
+        },
+        {
+          "product_id": 1103,
+          "november_stock": 97,
+          "december_stock": 99,
+          "stock_change": 2
+        },
+        {
+          "product_id": 1104,
+          "november_stock": 91,
+          "december_stock": 94,
+          "stock_change": 3
+        },
+        {
+          "product_id": 1113,
+          "november_stock": 69,
+          "december_stock": 69,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1114,
+          "november_stock": 275,
+          "december_stock": 275,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1115,
+          "november_stock": 450,
+          "december_stock": 457,
+          "stock_change": 7
+        },
+        {
+          "product_id": 1118,
+          "november_stock": 67,
+          "december_stock": 70,
+          "stock_change": 3
+        },
+        {
+          "product_id": 1120,
+          "november_stock": 150,
+          "december_stock": 151,
+          "stock_change": 1
+        },
+        {
+          "product_id": 1125,
+          "november_stock": 16,
+          "december_stock": 16,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1129,
+          "november_stock": 431,
+          "december_stock": 431,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1134,
+          "november_stock": 42,
+          "december_stock": 42,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1137,
+          "november_stock": 124,
+          "december_stock": 125,
+          "stock_change": 1
+        },
+        {
+          "product_id": 1140,
+          "november_stock": 64,
+          "december_stock": 64,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1141,
+          "november_stock": 36,
+          "december_stock": 36,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1171,
+          "november_stock": 542,
+          "december_stock": 543,
+          "stock_change": 1
+        },
+        {
+          "product_id": 1175,
+          "november_stock": 363,
+          "december_stock": 365,
+          "stock_change": 2
+        },
+        {
+          "product_id": 1176,
+          "november_stock": 3,
+          "december_stock": 4,
+          "stock_change": 1
+        },
+        {
+          "product_id": 1177,
+          "november_stock": 27,
+          "december_stock": 41,
+          "stock_change": 14
+        },
+        {
+          "product_id": 1179,
+          "november_stock": 47,
+          "december_stock": 47,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1180,
+          "november_stock": 211,
+          "december_stock": 213,
+          "stock_change": 2
+        },
+        {
+          "product_id": 1182,
+          "november_stock": 1912,
+          "december_stock": 1913,
+          "stock_change": 1
+        },
+        {
+          "product_id": 1183,
+          "november_stock": 204,
+          "december_stock": 204,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1194,
+          "november_stock": 3,
+          "december_stock": 3,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1212,
+          "november_stock": 332,
+          "december_stock": 334,
+          "stock_change": 2
+        },
+        {
+          "product_id": 1223,
+          "november_stock": 450,
+          "december_stock": 450,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1272,
+          "november_stock": 17,
+          "december_stock": 20,
+          "stock_change": 3
+        },
+        {
+          "product_id": 1280,
+          "november_stock": 6,
+          "december_stock": 6,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1301,
+          "november_stock": 4,
+          "december_stock": 4,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1305,
+          "november_stock": 7,
+          "december_stock": 7,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1357,
+          "november_stock": 13,
+          "december_stock": 13,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1358,
+          "november_stock": 13,
+          "december_stock": 13,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1375,
+          "november_stock": 20,
+          "december_stock": 21,
+          "stock_change": 1
+        },
+        {
+          "product_id": 1376,
+          "november_stock": 15,
+          "december_stock": 15,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1391,
+          "november_stock": 129,
+          "december_stock": 129,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1392,
+          "november_stock": 140,
+          "december_stock": 140,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1433,
+          "november_stock": 125,
+          "december_stock": 125,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1434,
+          "november_stock": 123,
+          "december_stock": 123,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1441,
+          "november_stock": 20,
+          "december_stock": 21,
+          "stock_change": 1
+        },
+        {
+          "product_id": 1442,
+          "november_stock": 18,
+          "december_stock": 19,
+          "stock_change": 1
+        },
+        {
+          "product_id": 1493,
+          "november_stock": 44,
+          "december_stock": 44,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1494,
+          "november_stock": 48,
+          "december_stock": 48,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1497,
+          "november_stock": 17,
+          "december_stock": 17,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1498,
+          "november_stock": 17,
+          "december_stock": 17,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1523,
+          "november_stock": 25,
+          "december_stock": 25,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1524,
+          "november_stock": 20,
+          "december_stock": 20,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1531,
+          "november_stock": 107,
+          "december_stock": 107,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1532,
+          "november_stock": 107,
+          "december_stock": 107,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1559,
+          "november_stock": 3,
+          "december_stock": 3,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1560,
+          "november_stock": 3,
+          "december_stock": 3,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1561,
+          "november_stock": 3,
+          "december_stock": 3,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1562,
+          "november_stock": 3,
+          "december_stock": 3,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1566,
+          "november_stock": 16,
+          "december_stock": 16,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1567,
+          "november_stock": 4,
+          "december_stock": 6,
+          "stock_change": 2
+        },
+        {
+          "product_id": 1576,
+          "november_stock": 27,
+          "december_stock": 28,
+          "stock_change": 1
+        },
+        {
+          "product_id": 1588,
+          "november_stock": 14,
+          "december_stock": 14,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1590,
+          "november_stock": 9,
+          "december_stock": 10,
+          "stock_change": 1
+        },
+        {
+          "product_id": 1592,
+          "november_stock": 9,
+          "december_stock": 9,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1597,
+          "november_stock": 59,
+          "december_stock": 60,
+          "stock_change": 1
+        },
+        {
+          "product_id": 1601,
+          "november_stock": 16,
+          "december_stock": 16,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1605,
+          "november_stock": 8,
+          "december_stock": 9,
+          "stock_change": 1
+        },
+        {
+          "product_id": 1607,
+          "november_stock": 18,
+          "december_stock": 18,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1608,
+          "november_stock": 4,
+          "december_stock": 4,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1615,
+          "november_stock": 3,
+          "december_stock": 3,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1646,
+          "november_stock": 5,
+          "december_stock": 5,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1650,
+          "november_stock": 69,
+          "december_stock": 69,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1651,
+          "november_stock": 3,
+          "december_stock": 3,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1657,
+          "november_stock": 12,
+          "december_stock": 12,
+          "stock_change": 0
+        },
+        {
+          "product_id": 1662,
+          "november_stock": 3,
+          "december_stock": 3,
+          "stock_change": 0
+        }
+      ],
+      "returned_rows": 200,
+      "detail_ceiling": 200
+    },
+    "notes": "Detail scope is capped at 200, ordered by the oracle. Equal-rank ties use product_id. Discount is per line; cancelled/canceled statuses excluded only when requested. S23 uses independently aggregated return_date and order_date windows, not canonical return_rate. S28 counts excess rows beyond the first per duplicate key. S10 averages December stored observations."
+  },
+  "S16": {
+    "expected_behavior": "Generate read-only PostgreSQL, use qualified tables and canonical joins; return metric, grain, date, and results without invented values.",
+    "supported": true,
+    "reference": {
+      "sql": "SELECT p.category,SUM(i.units_received) AS units_received FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date >= DATE '2022-01-01' AND i.snapshot_date < DATE '2023-01-01' GROUP BY p.category ORDER BY units_received DESC NULLS LAST,p.category",
+      "rows": [
+        {
+          "category": "Streetwear",
+          "units_received": 35844
+        },
+        {
+          "category": "Outdoor",
+          "units_received": 12862
+        },
+        {
+          "category": "GenZ",
+          "units_received": 4638
+        },
+        {
+          "category": "Casual",
+          "units_received": 3576
+        }
+      ],
+      "returned_rows": 4,
+      "detail_ceiling": null
+    },
+    "notes": "Detail scope is capped at 200, ordered by the oracle. Equal-rank ties use product_id. Discount is per line; cancelled/canceled statuses excluded only when requested. S23 uses independently aggregated return_date and order_date windows, not canonical return_rate. S28 counts excess rows beyond the first per duplicate key. S10 averages December stored observations."
+  }
+}

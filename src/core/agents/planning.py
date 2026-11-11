@@ -7,10 +7,10 @@ from core.models.agent_plan import AgentPlan
 from core.prompts.agents import PLANNING_PROMPT, PLANNING_REPAIR_PROMPT
 
 
-async def plan_request(request, provider, *, history=(), previous=None, report_headings=None):
+async def plan_request(request, provider, *, history=(), previous=None, report_headings=None, sql_schema=None):
     from core.analytics.text_to_sql import APPROVED_COLUMNS
     data = {'question': request.question, 'history': history, 'previous': previous,
-            'available_sql_schema': {table: sorted(columns) for table, columns in APPROVED_COLUMNS.items()}}
+            'available_sql_schema': {table: sorted(columns) for table, columns in (APPROVED_COLUMNS if sql_schema is None else sql_schema).items()}}
     if report_headings is not None:
         data['report_headings'] = report_headings
     prompt = PLANNING_PROMPT.format(workflow='report_sources' if report_headings is not None else 'chat',

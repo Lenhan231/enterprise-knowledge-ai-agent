@@ -1,0 +1,11 @@
+﻿services:
+  backend-api:
+    image: inventory-sql-only-backend:20261105
+    ports: !override
+      - "127.0.0.1:19000:8000"
+    environment:
+      SQL_INVENTORY_ONLY: "true"
+      AUTH_COOKIE_SECURE: "false"
+  proxy:
+    ports: !override
+      - "127.0.0.1:19080:80"

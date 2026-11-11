@@ -1,0 +1,40 @@
+{
+  "production_base": "b9ee699",
+  "initial_candidate": "d4def4e",
+  "final_candidate": "c37afeeddbaa1ec0979c1bc757aaf1d14698345e",
+  "unchanged_paths": [
+    "src",
+    "data/semantic",
+    "supabase/migrations",
+    "evaluation/run_inventory_agents_benchmark.py",
+    "evaluation/inventory_benchmark_metrics.py",
+    "evaluation/ragas_judge.py",
+    "artifacts/evaluation/agent-benchmarks-2026-11-02",
+    "pyproject.toml",
+    "uv.lock"
+  ],
+  "production_and_catalog_unchanged": true,
+  "candidate_patch_verified": true,
+  "all_application_manifests_verified": true,
+  "original_fixture_data_unchanged": true,
+  "old_and_final_fixture_hashes_verified": true,
+  "earlier_full_suite_baseline_source_equals_production_source": true,
+  "scoring_and_judge_unchanged": true,
+  "total_generations": 9,
+  "total_metric_records": 27,
+  "sql_provider_failures": 0,
+  "evaluator_errors": 0,
+  "source_sha256": {
+    "evaluation/check_cross_domain_fidelity.py": "ea0945a3621a8e9a95fccc20ad7a1ea3fbb4a4023bee2e35e33bf47a1d954f10",
+    "evaluation/sql_cross_domain_fidelity.patch": "2929501ca7e52eed715a067c126ee8a9e7064fc3b45d7de0bc16f349c01c4f8b",
+    "evaluation/run_sql_hybrid_followup.py": "8914373df158ca48d438268fb450c2cf643fbb56c5abd04017909b18fcc99673",
+    "tests/test_sql_cross_domain_fidelity.py": "b433047987405f4abc48cc4e337c6613fec7e77a5382a381dac2f744899e4ffe"
+  },
+  "review": {
+    "correctness": "Original 19 adversaries plus two separately declared temporal failures; final three-case live candidate and unchanged Ragas evaluation, with uncertainty retained.",
+    "security": "No authorization/schema/join/read-only boundary relaxed; all source date predicates independently verified; quoted identifiers covered.",
+    "maintainability": "88 additions and 14 deletions across three runtime modules. No agent, model, dependency or mandatory mapping stage.",
+    "limits": "S26 output intent and S27 rollup approval remain unresolved; full suite remains red. Finite fixtures do not prove all natural-language or output-label semantics."
+  },
+  "line_endings": "Historical source hashes verified against the recorded Git revision using Windows CRLF checkout bytes where required; canonical Git patch remains unchanged."
+}

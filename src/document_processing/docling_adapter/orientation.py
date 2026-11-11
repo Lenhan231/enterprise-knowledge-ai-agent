@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import logging
 import subprocess
 import tempfile
 from functools import lru_cache
@@ -14,6 +15,7 @@ from docling_core.types.doc import BoundingBox, CoordOrigin
 from docling.models.stages.ocr.tesseract_utils import parse_tesseract_orientation
 
 _orientation_lock = Lock()
+_log = logging.getLogger(__name__)
 
 
 @lru_cache(maxsize=1)
@@ -23,13 +25,29 @@ def _paddle_orientation_model():
     return DocImgOrientationClassification(model_name="PP-LCNet_x1_0_doc_ori", device="cpu")
 
 
+@lru_cache(maxsize=1)
+def _paddle_textline_orientation_model():
+    from paddleocr import TextLineOrientationClassification
+
+    return TextLineOrientationClassification(
+        model_name="PP-LCNet_x0_25_textline_ori", device="cpu"
+    )
+
+
 def detect_paddle_orientation(image: Image.Image) -> tuple[int, int, float]:
     """Return clockwise correction, predicted orientation, and confidence."""
     import numpy as np
 
     image_bgr = np.asarray(image.convert("RGB"))[:, :, ::-1].copy()
-    with _orientation_lock:
-        result = next(iter(_paddle_orientation_model().predict(image_bgr, batch_size=1)))
+    try:
+        with _orientation_lock:
+            result = next(iter(_paddle_orientation_model().predict(image_bgr, batch_size=1)))
+    except Exception:
+        _log.warning(
+            "Paddle page orientation inference failed; continuing without rotation correction.",
+            exc_info=True,
+        )
+        return 0, 0, 0.0
     payload = result.json
     if isinstance(payload, str):
         import json
@@ -38,6 +56,25 @@ def detect_paddle_orientation(image: Image.Image) -> tuple[int, int, float]:
     angle = int(result["label_names"][0])
     if angle not in (0, 90, 180, 270):
         raise ValueError(f"Unsupported orientation: {angle}")
+    return (-angle) % 360, angle, float(result["scores"][0])
+
+
+def detect_paddle_textline_orientation(image: Image.Image) -> tuple[int, int, float]:
+    """Return clockwise correction, predicted text-line orientation, and confidence."""
+    import numpy as np
+
+    image_bgr = np.asarray(image.convert("RGB"))[:, :, ::-1].copy()
+    with _orientation_lock:
+        result = next(iter(_paddle_textline_orientation_model().predict(image_bgr, batch_size=1)))
+    payload = result.json
+    if isinstance(payload, str):
+        import json
+        payload = json.loads(payload)
+    result = payload.get("res", payload)
+    label = result["label_names"][0]
+    angle = int(str(label).split("_", maxsplit=1)[0])
+    if angle not in (0, 180):
+        raise ValueError(f"Unsupported text-line orientation: {label}")
     return (-angle) % 360, angle, float(result["scores"][0])
 
 

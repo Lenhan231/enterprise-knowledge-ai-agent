@@ -1,0 +1,18 @@
+{
+  "candidate": {
+    "U01": "Necessary: warehouse dimension unavailable; no execution.",
+    "U02": "Necessary safe refusal: extra write statement; no execution.",
+    "S16": "Necessary scope decision under unchanged catalog, not missing source data; explicit monthly or single-snapshot alternative.",
+    "S29": "Necessary unsupported current-period refusal; latest observed 2022-12-31, not a missing metric.",
+    "S30": "Necessary: supplier dimension unavailable."
+  },
+  "baseline_fixed": {
+    "F01": "Unnecessary mandatory mapping for raw metadata fields.",
+    "F05": "Unnecessary company-level COGS interpretation for explicit raw product cogs.",
+    "N04": "Unnecessary clarification for complete Vietnamese metadata retrieval."
+  },
+  "remaining_original": {
+    "S13": "Implementation limitation: clear delta/intersection lacks verified contract. Explain capability gap rather than ask for business definition.",
+    "S15": "Uncertain: broad requested metrics plus stored/mean representation conflict. Needs explicit metric selection; current error is not sufficiently actionable."
+  }
+}

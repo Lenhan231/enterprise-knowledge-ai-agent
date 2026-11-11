@@ -4,13 +4,70 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
+from io import BytesIO
+import math
+import re
+import xml.etree.ElementTree as ET
 
 from document_processing.element_taxonomy import normalize_element_label
 
 SUPPORTED_FORMATS = frozenset({
     ".pdf", ".docx", ".pptx", ".xlsx", ".csv", ".txt", ".md",
-    ".png", ".jpg", ".jpeg", ".tif", ".tiff",
+    ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".svg", ".webp",
 })
+
+
+def render_webp(content: bytes) -> bytes:
+    """Convert a single WebP image to PNG for Docling and preview generation."""
+    from PIL import Image
+
+    try:
+        with Image.open(BytesIO(content)) as image:
+            if image.format != "WEBP" or getattr(image, "n_frames", 1) != 1:
+                raise ValueError("Expected a single-frame WebP image")
+            if image.width * image.height > 16_000_000:
+                raise ValueError("WebP image is too large")
+            output = BytesIO()
+            rgba = image.convert("RGBA")
+            background = Image.new("RGB", image.size, "white")
+            background.paste(rgba, mask=rgba.getchannel("A"))
+            background.save(output, format="PNG")
+            return output.getvalue()
+    except ValueError:
+        raise
+    except Exception as error:
+        raise ValueError("Could not open WebP image") from error
+
+
+def render_svg(content: bytes) -> bytes:
+    """Render a self-contained SVG as PNG without fetching external resources."""
+    try:
+        text = content.decode("utf-8-sig")
+        if re.search(r"<!\s*(?:DOCTYPE|ENTITY)|<\?xml-stylesheet", text, re.IGNORECASE):
+            raise ValueError("SVG document declarations are not supported")
+        root = ET.fromstring(text)
+        if root.tag != "{http://www.w3.org/2000/svg}svg" and root.tag != "svg":
+            raise ValueError("File is not an SVG")
+        for node in root.iter():
+            for name, value in node.attrib.items():
+                if name.rsplit("}", 1)[-1] == "href" and not value.strip().startswith("#"):
+                    raise ValueError("SVG external references are not supported")
+                if re.search(r"url\s*\(\s*['\"]?(?!#)", value, re.IGNORECASE):
+                    raise ValueError("SVG external references are not supported")
+            if node.tag.rsplit("}", 1)[-1] in {"script", "style", "foreignObject"}:
+                raise ValueError("SVG scripts, stylesheets and foreign objects are not supported")
+        import fitz
+        with fitz.open(stream=content, filetype="svg") as document:
+            page = document[0]
+            width, height = page.rect.width, page.rect.height
+            if not all(math.isfinite(v) and 0 < v <= 10000 for v in (width, height)):
+                raise ValueError("SVG dimensions are invalid")
+            scale = min(2.0, 4096 / width, 4096 / height)
+            return page.get_pixmap(matrix=fitz.Matrix(scale, scale), alpha=False).tobytes("png")
+    except ValueError:
+        raise
+    except Exception as error:
+        raise ValueError("Could not render SVG") from error
 
 class DocumentProcessor:
     """Parse a source file; original bytes and persistence belong to app/storage layers."""
@@ -25,7 +82,7 @@ class DocumentProcessor:
         if suffix not in self.SUPPORTED:
             raise ValueError(f"Unsupported document format: {suffix or 'unknown'}")
         intent = str(self.config.get("intent", "document")).strip().lower()
-        if intent not in {"document", "invoice"}:
+        if intent not in {"document", "invoice", "image_caption"}:
             raise ValueError(f"Unsupported document intent: {intent}")
         common = {
             **metadata,
@@ -34,12 +91,33 @@ class DocumentProcessor:
             "intent": intent,
         }
         if intent == "invoice":
-            from document_processing.invoice.processor import VinternInvoiceProcessor
+            from document_processing.docling_adapter.processor import DoclingProcessor
+            from document_processing.invoice_text_processor import InvoiceTextProcessor
 
-            engine = "vintern_invoice"
-            result = VinternInvoiceProcessor(self.config).process(
-                filename, content, common
+            engine = "docling_qwen_invoice_text"
+            processor_config = {**self.config, "parser_engine": "docling", "intent": "document"}
+            parser_content = render_svg(content) if suffix == ".svg" else render_webp(content) if suffix == ".webp" else content
+            parser_metadata = {**common, "format": "PNG"} if suffix in {".svg", ".webp"} else common
+            result = DoclingProcessor(processor_config).process(
+                parser_content, None, {"content": parser_content, "metadata": parser_metadata}
             )
+            extraction = InvoiceTextProcessor(self.config).process(
+                result.get("elements", []), result.get("tables", []),
+            )
+            result["invoice_extraction"] = extraction
+            result.setdefault("metadata", {}).update({
+                "pipeline_id": engine,
+                "parser_engine": "docling",
+                "invoice_model": extraction["model"],
+                "invoice_model_revision": extraction["revision"],
+                "invoice_schema_version": extraction["schema_version"],
+                "invoice_review_required": True,
+            })
+        elif intent == "image_caption":
+            from document_processing.vintern_processor import VinternProcessor
+
+            engine = "vintern_image_caption"
+            result = VinternProcessor(self.config).process(filename, content, common)
         else:
             engine = str(self.config.get("parser_engine", "docling"))
             if engine != "docling":
@@ -47,12 +125,14 @@ class DocumentProcessor:
             from document_processing.docling_adapter.processor import DoclingProcessor
 
             processor_config = {**self.config, "parser_engine": engine}
+            parser_content = render_svg(content) if suffix == ".svg" else render_webp(content) if suffix == ".webp" else content
+            parser_metadata = {**common, "format": "PNG"} if suffix in {".svg", ".webp"} else common
             result = DoclingProcessor(processor_config).process(
-                content, None, {"content": content, "metadata": common}
+                parser_content, None, {"content": parser_content, "metadata": parser_metadata}
             )
         elements = result.get("elements", [])
         tables = result.get("tables", [])
-        if suffix in {".png", ".jpg", ".jpeg"}:
+        if suffix in {".png", ".jpg", ".jpeg", ".svg", ".webp"}:
             for element in elements:
                 (element.get("metadata") or {}).pop("page_number", None)
             for table in tables:
@@ -66,8 +146,10 @@ class DocumentProcessor:
                 for row in table.get("rows", []) if isinstance(row, dict)
             ]
             table_metadata = table.setdefault("metadata", {})
+            if suffix in {".svg", ".webp"}:
+                table_metadata["format"] = suffix[1:].upper()
             table_metadata.update({key: value for key, value in common.items() if key not in table_metadata and key not in {"title", "uploaded_by"}})
-            table_metadata.update({"pipeline_id": engine, "parser_engine": engine})
+            table_metadata.update({"pipeline_id": engine, "parser_engine": "docling" if intent == "invoice" else engine})
             table_metadata.update({"element_type": "table", "layout_type": "table"})
             parser = table_metadata.get("parser") or table_metadata.get("table_extraction_method")
             parser = parser or "docling"
@@ -79,6 +161,8 @@ class DocumentProcessor:
 
         for element in elements:
             element_metadata = dict(element.get("metadata") or {})
+            if suffix in {".svg", ".webp"}:
+                element_metadata["format"] = suffix[1:].upper()
             element_metadata.pop("word_style", None)
             element_metadata.pop("word_style_id", None)
             element_metadata.update({
@@ -86,7 +170,7 @@ class DocumentProcessor:
                 if key not in element_metadata and key not in {"title", "uploaded_by"}
             })
             element_metadata["pipeline_id"] = engine
-            element_metadata["parser_engine"] = engine
+            element_metadata["parser_engine"] = "docling" if intent == "invoice" else engine
             parser = element_metadata.get("parser") or element_metadata.get("text_extraction_method")
             parser = parser or "docling"
             element_metadata["parser"] = parser
@@ -118,7 +202,7 @@ class DocumentProcessor:
             element["text"] = text
         result.setdefault("metadata", {}).update({
             "pipeline_id": engine,
-            "parser_engine": engine,
+            "parser_engine": "docling" if intent == "invoice" else engine,
             "filename": common["filename"],
             "format": common["format"],
             **{key: value for key, value in metadata.items() if key not in {"title", "uploaded_by"}},

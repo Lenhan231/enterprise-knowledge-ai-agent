@@ -1,0 +1,3 @@
+{"error_type": "RateLimitError", "status_code": 429, "provider_code": "rate_limit_exceeded", "token_budget_numbers": ["1000", "861"]}
+{"error_type": "RateLimitError", "status_code": 429, "provider_code": "rate_limit_exceeded", "token_budget_numbers": ["1000", "166"]}
+{"error_type": "RateLimitError", "status_code": 429, "provider_code": "rate_limit_exceeded", "token_budget_numbers": ["7000", "3100"]}

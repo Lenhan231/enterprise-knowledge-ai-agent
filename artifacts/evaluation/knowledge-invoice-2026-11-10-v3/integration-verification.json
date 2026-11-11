@@ -1,0 +1,220 @@
+{
+  "branch": "eval/knowledge-invoice-20261110",
+  "merge_commit": "f0d5d25",
+  "merge_parents": [
+    "43f4446053136409237e10dcdc82de80a830c60a",
+    "cae083ccd9baa660138f63bf514a32e8aa292641"
+  ],
+  "compared_main": "cae083ccd9baa660138f63bf514a32e8aa292641",
+  "compared_runtime_paths": [
+    "src/core/agents/knowledge_agent.py",
+    "src/core/rag",
+    "src/core/retrieval",
+    "src/core/agents/sql_analytics_agent.py",
+    "src/core/analytics",
+    "src/core/reports"
+  ],
+  "runtime_differences_from_main": [],
+  "report_invoice_and_integrity_tests": {
+    "run": 87,
+    "failures": 0,
+    "errors": 0
+  },
+  "knowledge_runtime_tests": {
+    "run": 85,
+    "failures": 3,
+    "errors": 0,
+    "existing_failure_ids": [
+      "test_claim_verification.ClaimVerificationTest.test_malformed_json_provider_error_and_timeout_never_pass",
+      "test_translated_hybrid.TranslatedHybridTest.test_sql_filters_are_present_in_all_three_searches",
+      "test_translated_hybrid_rerank.RerankTest.test_model_is_selected_by_env_and_unknown_names_fail_at_import"
+    ]
+  },
+  "broad_focused_integration": {
+    "tests": 347,
+    "failures": [
+      [
+        "test_sql_analytics.AnalyticsSqlSafetyTest.test_financial_analytics_must_keep_metric_and_year_dimensions",
+        "core.analytics.sql_safety.UnsafeAnalyticsQuery: Query must read one authorized analytics source\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\agent-evaluation-20261110\\tests\\test_sql_analytics.py\", line 71, in test_financial_analytics_must_keep_metric_and_year_dimensions\n    with self.assertRaisesRegex(UnsafeAnalyticsQuery, \"metric_name and fiscal_year\"):\nAssertionError: \"metric_name and fiscal_year\" does not match \"Query must read one authorized analytics source\"\n"
+      ],
+      [
+        "test_sql_single_pass_variant.AgentTest.test_ordinary_inventory_fields_do_not_require_metric_mapping",
+        "Traceback (most recent call last):\n  File \"C:\\Users\\Admin\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\Lib\\unittest\\async_case.py\", line 90, in _callTestMethod\n    if self._callMaybeAsync(method) is not None:\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Admin\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\Lib\\unittest\\async_case.py\", line 112, in _callMaybeAsync\n    return self._asyncioRunner.run(\n           ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Admin\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\Lib\\asyncio\\runners.py\", line 118, in run\n    return self._loop.run_until_complete(task)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Admin\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\Lib\\asyncio\\base_events.py\", line 654, in run_until_complete\n    return future.result()\n           ^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\agent-evaluation-20261110\\tests\\test_sql_single_pass_variant.py\", line 134, in test_ordinary_inventory_fields_do_not_require_metric_mapping\n    self.assertEqual(allowed,SINGLE or bool(os.environ.get('SQL_DETERMINISTIC_ROOT')),result.answer)\nAssertionError: True != False : No matching rows were found in the approved data sources.\n"
+      ],
+      [
+        "test_sql_three_case_followup.ComparisonAgentTest.test_comparison_runs_through_shared_agent",
+        "Traceback (most recent call last):\n  File \"C:\\Users\\Admin\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\Lib\\unittest\\async_case.py\", line 90, in _callTestMethod\n    if self._callMaybeAsync(method) is not None:\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Admin\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\Lib\\unittest\\async_case.py\", line 112, in _callMaybeAsync\n    return self._asyncioRunner.run(\n           ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Admin\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\Lib\\asyncio\\runners.py\", line 118, in run\n    return self._loop.run_until_complete(task)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Admin\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\Lib\\asyncio\\base_events.py\", line 654, in run_until_complete\n    return future.result()\n           ^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\agent-evaluation-20261110\\tests\\test_sql_three_case_followup.py\", line 83, in test_comparison_runs_through_shared_agent\n    self.assertEqual(result.metadata['snapshot_dates'], ['2022-11-30', '2022-12-31'])\nAssertionError: Lists differ: [] != ['2022-11-30', '2022-12-31']\n\nSecond list contains 2 additional elements.\nFirst extra element 0:\n'2022-11-30'\n\n- []\n+ ['2022-11-30', '2022-12-31']\n"
+      ],
+      [
+        "test_sql_three_case_followup.SnapshotContractsTest.test_comparison_keeps_intersection_direction_and_null_observations",
+        "Traceback (most recent call last):\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\agent-evaluation-20261110\\tests\\test_sql_three_case_followup.py\", line 29, in test_comparison_keeps_intersection_direction_and_null_observations\n    self.assertTrue(all(isinstance(value, date) for value in params[:-1]))\nAssertionError: False is not true\n"
+      ]
+    ],
+    "errors": [
+      [
+        "test_sql_analytics.AnalyticsSqlSafetyTest.test_accepts_aggregate_select_and_caps_limit",
+        "Traceback (most recent call last):\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\agent-evaluation-20261110\\tests\\test_sql_analytics.py\", line 21, in test_accepts_aggregate_select_and_caps_limit\n    normalized = validate_analytics_sql(sql)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\agent-evaluation-20261110\\src\\core\\analytics\\sql_safety.py\", line 34, in validate_analytics_sql\n    raise UnsafeAnalyticsQuery(\"Query must read one authorized analytics source\")\ncore.analytics.sql_safety.UnsafeAnalyticsQuery: Query must read one authorized analytics source\n"
+      ],
+      [
+        "test_sql_analytics.AnalyticsSqlSafetyTest.test_accepts_case_expressions_inside_allowlisted_aggregates",
+        "Traceback (most recent call last):\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\agent-evaluation-20261110\\tests\\test_sql_analytics.py\", line 32, in test_accepts_case_expressions_inside_allowlisted_aggregates\n    normalized = validate_analytics_sql(sql)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\agent-evaluation-20261110\\src\\core\\analytics\\sql_safety.py\", line 34, in validate_analytics_sql\n    raise UnsafeAnalyticsQuery(\"Query must read one authorized analytics source\")\ncore.analytics.sql_safety.UnsafeAnalyticsQuery: Query must read one authorized analytics source\n"
+      ],
+      [
+        "test_sql_analytics.AnalyticsSqlSafetyTest.test_agent_generates_sql_executes_it_and_returns_provenance",
+        "Traceback (most recent call last):\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\agent-evaluation-20261110\\tests\\test_sql_analytics.py\", line 101, in test_agent_generates_sql_executes_it_and_returns_provenance\n    agent = SQLAnalyticsAgent(repository, llm)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: SQLAnalyticsAgent.__init__() takes 2 positional arguments but 3 were given\n"
+      ],
+      [
+        "test_sql_analytics.AnalyticsSqlSafetyTest.test_document_analytics_cites_visible_documents_not_unrelated_metric_rows",
+        "Traceback (most recent call last):\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\agent-evaluation-20261110\\tests\\test_sql_analytics.py\", line 234, in test_document_analytics_cites_visible_documents_not_unrelated_metric_rows\n    result = SQLAnalyticsAgent(repository, llm).run(AgentRequest(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: SQLAnalyticsAgent.__init__() takes 2 positional arguments but 3 were given\n"
+      ],
+      [
+        "test_sql_analytics.AnalyticsSqlSafetyTest.test_empty_aggregate_result_with_null_evidence_is_reported_as_no_verified_data",
+        "Traceback (most recent call last):\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\agent-evaluation-20261110\\tests\\test_sql_analytics.py\", line 132, in test_empty_aggregate_result_with_null_evidence_is_reported_as_no_verified_data\n    result = SQLAnalyticsAgent(repository, llm).run(AgentRequest(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: SQLAnalyticsAgent.__init__() takes 2 positional arguments but 3 were given\n"
+      ],
+      [
+        "test_sql_analytics.AnalyticsSqlSafetyTest.test_metric_result_cites_only_matching_metric_and_year_within_same_document",
+        "Traceback (most recent call last):\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\agent-evaluation-20261110\\tests\\test_sql_analytics.py\", line 205, in test_metric_result_cites_only_matching_metric_and_year_within_same_document\n    result = SQLAnalyticsAgent(repository, llm).run(AgentRequest(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: SQLAnalyticsAgent.__init__() takes 2 positional arguments but 3 were given\n"
+      ],
+      [
+        "test_sql_analytics.AnalyticsSqlSafetyTest.test_repository_executes_inside_read_only_timeout_and_role_filtered_ctes",
+        "Traceback (most recent call last):\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\agent-evaluation-20261110\\tests\\test_sql_analytics.py\", line 156, in test_repository_executes_inside_read_only_timeout_and_role_filtered_ctes\n    cte_call = next(call for call in cursor.execute.call_args_list if \"WITH authorized_financial_metrics\" in call.args[0])\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nStopIteration\n"
+      ],
+      [
+        "unittest.loader._FailedTest.test_invoice_text_processor",
+        "ImportError: Failed to import test module: test_invoice_text_processor\nTraceback (most recent call last):\n  File \"C:\\Users\\Admin\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\Lib\\unittest\\loader.py\", line 419, in _find_test_path\n    module = self._get_module_from_name(name)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Admin\\AppData\\Roaming\\uv\\python\\cpython-3.11-windows-x86_64-none\\Lib\\unittest\\loader.py\", line 362, in _get_module_from_name\n    __import__(name)\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\agent-evaluation-20261110\\tests\\test_invoice_text_processor.py\", line 5, in <module>\n    from document_processing.invoice_text_processor import (\nImportError: cannot import name '_fields_from_tables' from 'document_processing.invoice_text_processor' (C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\agent-evaluation-20261110\\src\\document_processing\\invoice_text_processor.py)\n\n"
+      ]
+    ],
+    "skipped": [
+      [
+        "test_report_evidence_followup.ReportEvidenceFollowupTest.test_oversized_rows_become_attributable_passages_instead_of_all_disappearing",
+        "Isolated Report evidence experiment"
+      ],
+      [
+        "test_report_evidence_followup.ReportEvidenceFollowupTest.test_report_evidence_does_not_generate_a_redundant_summary",
+        "Isolated Report evidence experiment"
+      ],
+      [
+        "test_report_main_reconciliation.ReportMainReconciliationTest.test_confirmation_resubmission_stops_after_session_change_or_401",
+        "Isolated main integration"
+      ],
+      [
+        "test_sql_cross_domain_fidelity.CrossDomainContractGapTest.test_annual_period_cannot_hide_narrowing_date_expressions",
+        "Isolated cross-domain validation experiment"
+      ],
+      [
+        "test_sql_cross_domain_fidelity.CrossDomainContractGapTest.test_category_comparison_cannot_repeat_one_side_or_drop_categories",
+        "Isolated cross-domain validation experiment"
+      ],
+      [
+        "test_sql_cross_domain_fidelity.CrossDomainContractGapTest.test_order_alias_normalization_respects_quoted_names_and_ambiguity",
+        "Isolated cross-domain validation experiment"
+      ],
+      [
+        "test_sql_cross_domain_fidelity.CrossDomainContractGapTest.test_period_rollup_does_not_inherit_canonical_snapshot_approval",
+        "Isolated cross-domain validation experiment"
+      ],
+      [
+        "test_sql_cross_domain_fidelity.CrossDomainContractGapTest.test_presence_cannot_hide_an_outer_population_filter",
+        "Isolated cross-domain validation experiment"
+      ],
+      [
+        "test_sql_cross_domain_fidelity.CrossDomainContractGapTest.test_presence_has_stable_complete_observation_key_and_safety_ceiling",
+        "Isolated cross-domain validation experiment"
+      ],
+      [
+        "test_sql_cross_domain_fidelity.CrossDomainContractGapTest.test_presence_requires_correlation_and_complete_order_population",
+        "Isolated cross-domain validation experiment"
+      ],
+      [
+        "test_sql_cross_domain_fidelity.CrossDomainContractGapTest.test_ratio_cannot_hide_product_identity",
+        "Isolated cross-domain validation experiment"
+      ],
+      [
+        "test_sql_cross_domain_fidelity.CrossDomainContractGapTest.test_valid_aliases_key_order_and_redundant_distinct",
+        "Isolated cross-domain validation experiment"
+      ],
+      [
+        "test_sql_cross_domain_fidelity.CrossDomainContractGapTest.test_valid_complete_queries",
+        "Isolated cross-domain validation experiment"
+      ],
+      [
+        "test_sql_deterministic_hybrid.DeterministicHybridTest.test_bilingual_requests_preserve_every_slot_without_a_provider",
+        "Isolated deterministic experiment"
+      ],
+      [
+        "test_sql_deterministic_hybrid.DeterministicHybridTest.test_raw_rows_keep_nulls_duplicate_names_ties_and_snapshot_filters",
+        "Isolated deterministic experiment"
+      ],
+      [
+        "test_sql_deterministic_hybrid.DeterministicHybridTest.test_rbac_and_existing_generic_repair_remain_in_force",
+        "Isolated deterministic experiment"
+      ],
+      [
+        "test_sql_deterministic_hybrid.DeterministicHybridTest.test_report_planner_sees_catalog_ids_source_fields_and_valid_dimensions",
+        "Isolated deterministic experiment"
+      ],
+      [
+        "test_sql_deterministic_hybrid.DeterministicHybridTest.test_scalar_count_preserves_zero_and_snapshot_without_grouping",
+        "Isolated deterministic experiment"
+      ],
+      [
+        "test_sql_deterministic_hybrid.DeterministicHybridTest.test_unapproved_cross_snapshot_total_needs_clarification",
+        "Isolated deterministic experiment"
+      ],
+      [
+        "test_sql_deterministic_hybrid.DeterministicHybridTest.test_unsupported_tail_is_clarified_without_execution",
+        "Isolated deterministic experiment"
+      ],
+      [
+        "test_sql_hybrid_variant.HybridAgentTest.test_bad_direct_sql_is_rejected_after_one_repair",
+        "Isolated hybrid integration"
+      ],
+      [
+        "test_sql_hybrid_variant.HybridAgentTest.test_direct_repair_keeps_complete_field_contract",
+        "Isolated hybrid integration"
+      ],
+      [
+        "test_sql_hybrid_variant.HybridAgentTest.test_inventory_date_cannot_disappear",
+        "Isolated hybrid integration"
+      ],
+      [
+        "test_sql_hybrid_variant.HybridAgentTest.test_oversized_model_literal_is_validation_failure_and_can_be_repaired",
+        "Isolated hybrid integration"
+      ],
+      [
+        "test_invoice_publication.InvoicePublicationTest.test_approval_republication_and_reprocessing",
+        "Opt-in database test"
+      ],
+      [
+        "test_invoice_publication.InvoicePublicationTest.test_configured_repository_verifies_role_and_reads_invoices",
+        "Opt-in database test"
+      ],
+      [
+        "test_invoice_publication.InvoicePublicationTest.test_duplicate_file_cannot_be_published_under_another_id",
+        "Opt-in database test"
+      ],
+      [
+        "test_invoice_publication.InvoicePublicationTest.test_invalid_data_leaves_review_status_unchanged",
+        "Opt-in database test"
+      ],
+      [
+        "test_invoice_publication.InvoicePublicationTest.test_reader_policy_allows_all_uploaders_but_cannot_write_or_read_raw",
+        "Opt-in database test"
+      ],
+      [
+        "test_invoice_publication.InvoicePublicationTest.test_source_deletion_cascades",
+        "Opt-in database test"
+      ]
+    ]
+  },
+  "interpretation": "Production runtime matches main. Broad discovery also retains QuocAn experiment tests whose expectations differ from main; no green full-suite claim.",
+  "conflicts_resolved_from_main": [
+    "src/app/static/app.js",
+    "src/core/agents/sql_analytics_agent.py",
+    "src/core/analytics/join_validation.py",
+    "src/core/analytics/metric_mapping.py",
+    "src/core/analytics/metric_validation.py",
+    "src/core/analytics/text_to_sql.py"
+  ],
+  "retained_quocan_experiment_test": "tests/test_hybrid_field_contract.py"
+}

@@ -1,193 +1,60 @@
 # Document processing
 
-This package parses supported files into ordered elements and structured
-tables. Its ownership ends at normalized document-processing output; chunking
-and persistence are handled by separate modules in the application.
+This package converts supported files into parser output: ordered `elements`,
+structured `tables`, and provenance metadata. It does not own chunking,
+embeddings, retrieval, or application persistence.
 
-For supported formats and OCR settings, see the [processing guide](docs/document-processing.md).
-Shared provenance fields are listed in [`docs/metadata.md`](docs/metadata.md).
-See [`architect.md`](architect.md) for the current parser flow and invoice branch.
+Start here when tracing a document:
 
-## Flow
+1. [Architecture and request flow](docs/architecture.md)
+2. [Parser contract and callers](docs/document-processing.md)
+3. Follow the selected path: [Docling and OCR](docs/docling-pipeline.md) or
+   [Vintern invoice and image caption](docs/vintern-pipeline.md)
+4. Check [output metadata](docs/metadata.md), then the separate
+   [chunking pipeline](../core/chunking/README.md)
+
+## Current routes
 
 ```text
-DocumentProcessor.process(file)
-    ├── intent=document (default)
-    │     └── DoclingProcessor
-    │           ├── page OSD → rotate detector view, map boxes back to source coordinates
-    │           ├── PP-DocLayoutV3 → native layout_detections + Docling clusters
-    │           ├── OCR-region OSD → RapidOCR line detection → VietOCR; TableFormer → {elements, tables}
-    │           ├── chart + matched title → union crop at 3× → OpenParser/PaddleOCR-VL 1.6 table
-    │           │     └── Groq + existing VietOCR lines → text-cell spelling corrections
-    │           │           (direct Groq vision extraction if OpenParser key is unavailable)
-    │           └── result_mapper → {elements, tables}
-    └── intent=invoice
-          └── Vintern in isolated Transformers runtime → invoice_extraction
-    └── common cleanup + provenance
+DocumentProcessor.process
+  ├─ intent=document       → Docling → elements + tables
+  ├─ intent=invoice        → Vintern → invoice JSON draft + text element
+  └─ intent=image_caption  → Vintern → caption + text element
 
-application → core.chunking → persist chunks/tables
+parser output → application handoff → core/chunking → persistence / indexing
 ```
 
-Production upload and Upload Test call this parser package and the separate
-chunking module. Upload Test stores isolated results. This package does not
-handle chunking, tokenization, embeddings, or retrieval indexing.
+Invoice and image-caption are explicit Upload Test intents. The document
+parser does not automatically classify an upload as an invoice. The current
+invoice intent asks Vintern to read page images directly; it does not combine
+Vintern with Docling OCR.
 
-## Package map
+## Useful entry points
 
-| Path | Responsibility |
+| Need to find | Start at |
 | --- | --- |
-| `document_processor.py` | Dispatch supported files to Docling or invoice extraction; normalize output and provenance. |
-| `invoice/processor.py` | Render invoice pages and dispatch them to the isolated Vintern runtime. |
-| `invoice/vintern_worker.py` | Load Vintern and extract invoice fields page by page. |
-| `docling_adapter/processor.py` | Configure Docling stages, chart recognition, and scanned embedded-image routing. |
-| `docling_adapter/layout_model.py` | Adapt PP-DocLayoutV3 detections into Docling layout clusters. |
-| `docling_adapter/chart_recognition.py` | Recognize chart blocks in chart boxes, including a matched or shared title. |
-| `docling_adapter/digital_born/` | DOCX structure enrichment. |
-| `docling_adapter/scanned/` | OCR line detection and cleanup; Office embedded-image OCR. |
-| `docling_adapter/result_mapper.py` | Normalize OCR and structured results into shared elements and tables. |
-`pipeline_id` records the configured parser engine; `parser` identifies the
-component that produced an element or table. See [`docs/metadata.md`](docs/metadata.md).
+| Intent and file-format routing | `document_processor.py` |
+| Docling layout, OCR, tables, chart handling | `docling_adapter/processor.py` |
+| OCR line detection and printed/handwritten routing | `docling_adapter/scanned/` |
+| Docling output mapping | `docling_adapter/result_mapper.py` |
+| Invoice/caption preprocessing and output shaping | `vintern_processor.py` |
+| Vintern model loading and inference | `vintern_worker.py` |
+| Upload Test API | `src/app/upload_test.py` |
+| Production upload caller | `src/app/main.py` |
 
-The parser also returns raw `layout_detections` from PP-DocLayoutV3 with
-the model's class label, confidence, page bbox, and coordinate convention. This
-keeps all 25 detector classes inspectable even when Docling maps a class to a
-compatible internal label. The owner review UI can overlay these raw labels
-separately from normalized parser elements. A same-page geometry heuristic links
-figure/table title boxes to the closest horizontally aligned chart, figure, or
-table. The link is recorded on the detection; when OCR text is available, the
-title element and target metadata (and table context) also record the association
-without merging the boxes.
-PP-DocLayoutV3 uses `figure_title` for figure, table, and chart titles; it does
-not provide a separate `table_title` class.
-The shared element taxonomy has 12 labels; the layout benchmark keeps its
-separate five-label mapping.
+For local commands and image build notes, see [development](docs/development.md).
 
-OCR text elements assigned to the same raw PP-DocLayoutV3 `text` box are
-merged in reading order; text on separate lines stays on separate lines. Other
-layout labels, including tables, footer and number, are not merged this way.
+## CPU OCR performance
 
-Before PP-DocLayoutV3 runs, PaddleOCR `PP-LCNet_x1_0_doc_ori` checks each
-rendered page and rotates it when needed. Page previews and detected boxes use
-the corrected page orientation. VietOCR uses the same classifier on each OCR
-region before RapidOCR line detection. A region is rotated only if confidence is
-at least 0.7; quarter-turn predictions are ignored for horizontal crops because
-they can be wrong even at high confidence. VietOCR uses
-detected layout boxes, falling back to full-page OCR if none are detected; text
-outside detected boxes may be missed. Tesseract uses full-page OCR. Docling skips
-extracting native PDF text cells.
-The OCR engine remains configurable (`vietocr` or `tesseract`). OCR for
-embedded Office pictures and standalone images follows the `docling_ocr`
-setting. PDF images are not sent through a second embedded-image pass. The OCR
-route is recorded in `pdf_processing_route` in parser metadata.
+VietOCR's RapidOCR detector uses maximum-edge resizing on CPU. Layout crops
+are already rendered at OCR scale, so narrow text regions should not be
+expanded until their short edge reaches 736 pixels. The CUDA route keeps its
+existing detector configuration.
 
-For each PP-DocLayoutV3 chart region, the document path removes overlapping
-full-page OCR line results, then renders the page at 3× for chart extraction.
-The crop starts from the chart bbox; when a title detection has a unique,
-geometrically aligned match, the crop becomes the union of the title and chart
-bboxes. If one title spans multiple adjacent charts, one group crop covers the
-title and all matched charts. The parser preserves the original chart bboxes
-separately. It emits a distinct `chart` element; generic
-pictures remain `figure` elements and captions remain separate. Docling still
-receives its supported internal picture label for chart regions.
-Set `docling_chart_recognition=false` to keep chart regions without chart text.
-With `OPEN_PARSER_API_KEY`, the chart crop goes to OpenParser's PaddleOCR-VL 1.6
-endpoint for a structured table. When `GROQ_API_KEY` is set, Groq receives that
-table, the crop, and existing OCR lines; it can correct indexed text cells only.
-Numeric cells and the OpenParser table structure remain unchanged. If OpenParser
-is not configured or unavailable, Groq extracts a structured chart directly
-from the crop and OCR lines. This avoids loading PaddleOCR-VL locally in the
-document-processing container. Docker Compose forwards both API keys and the
-Groq model setting to that service.
+CPU pipelines default to 2 threads. `docling_num_threads` controls the budget
+for both PP-DocLayoutV3 and TableFormer; override it when profiling a different
+CPU allocation. CUDA retains the previous default of 4 CPU threads.
 
-## Invoice intent
-
-The local owner-store UI defaults to **General document · current pipeline**.
-Choose **Invoice · Vintern extraction** to extract draft fields directly from
-PDF/image pages. Results are stored under `invoice_extraction.pages`; a JSON
-summary is also written to `elements` for search and chunking. Every extraction
-is marked for human review because the notebook's fine-tuned checkpoint has not
-been validated on a held-out invoice set. This branch currently accepts PDF and
-image files only.
-
-The notebook pins Transformers 4.47, while the main app environment uses
-Transformers 5. Keep the model in a separate virtualenv:
-
-```sh
-uv venv .venv-vintern --python 3.11
-# CPU runtime; for CUDA, install the matching PyTorch wheel for the host instead.
-uv pip install --python .venv-vintern/bin/python \
-  --index-url https://download.pytorch.org/whl/cpu \
-  torch==2.3.1 torchvision==0.18.1
-uv pip install --python .venv-vintern/bin/python \
-  -r artifacts/evaluation/invoices/vintern-runtime-requirements.txt
-PYTHONPATH=src .venv/bin/streamlit run \
-  src/document_processing/testing_parser_streamlit.py \
-  --server.address 127.0.0.1 --server.port 8502
-```
-
-The app automatically uses `.venv-vintern/bin/python` when present. Set
-`DOCUMENT_PROCESSING_VINTERN_PYTHON` only when the isolated runtime is elsewhere.
-The default model is `5CD-AI/Vintern-1B-v2`. Set
-`DOCUMENT_PROCESSING_VINTERN_MODEL` to a local fine-tuned model directory or a
-different Hugging Face model id. The default model's custom code is pinned to
-revision `5ec005391798968cd62f41cb71b22c1cee0b13d8`; the worker allows its
-guarded optional Flash Attention import to fall back to standard attention, so
-the CPU runtime does not need `flash-attn`. PDF pages are rendered at 2× before inference.
-Pages are extracted independently; cross-page field merging and arithmetic
-validation are not implemented yet.
-
-## Module Docker image
-
-Build from the repository root:
-
-```sh
-docker build -f docker/Dockerfile.document-processing -t document-processing .
-docker run --rm document-processing
-```
-
-The image contains `document_processing`, Docling, PaddleOCR PP-DocLayoutV3,
-PaddleOCR-VL chart parsing,
-VietOCR, and Vietnamese/English Tesseract (available as an OCR engine). It
-does not install the full application's dependencies or include the FastAPI app,
-database credentials, or Streamlit. OCR defaults to VietOCR in this image;
-set `DOCUMENT_PROCESSING_OCR_ENGINE=tesseract` to select Tesseract instead.
-The default command checks imports; success prints
-`PASS: Docling, PP-DocLayoutV3, PaddleOCR-VL, VietOCR, and document_processing imports`
-and exits with code 0.
-This check does not run Docling inference on a real document.
-VietOCR 0.3.13 pins `gdown==4.4.0`, which imports `pkg_resources`; keep
-`setuptools<81` until that VietOCR dependency is upgraded.
-
-Override the command to use the parser from your own Python script:
-
-```sh
-docker run --rm -v "$PWD:/work" \
-  -v document-processing-cache:/root/.cache \
-  -v document-processing-paddlex-cache:/root/.paddlex \
-  document-processing python /work/your_script.py
-```
-
-Your script can call `DocumentProcessor().process(filename, content, metadata)`
-and save the parsed output as JSON for the separate chunking image.
-Docling and PaddleOCR model weights download when conversion first needs them;
-mount cache volumes at `/root/.cache` and `/root/.paddlex` to retain them between
-runs. This image has no HTTP server or exposed port.
-
-For the independent chunking image, see
-[`core/chunking/README.md`](../core/chunking/README.md#module-docker-image).
-
-## Local owner store UI
-
-Install the optional Streamlit UI and run it on loopback:
-
-```sh
-PYTHONPATH=src \
-  .venv/bin/streamlit run src/document_processing/testing_parser_streamlit.py \
-  --server.address 127.0.0.1 --server.port 8502
-```
-
-By default, source files and Docling JSON output are saved under
-`src/document_processing/.owner_store/`. Set `DOCUMENT_PROCESSING_STORE` to
-use another local folder. PDF uploads can select arbitrary pages, such as
-`2, 5, 9`, before Docling runs, which is useful for reviewing a few pages of a
-large document. Leaving the field blank processes the full PDF.
+Use the [parser latency command](docs/development.md#measure-parser-latency)
+to compare cold and warm runs with identical inputs and inspect any changes
+in text or table cells before accepting a speed improvement.

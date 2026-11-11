@@ -85,8 +85,9 @@ def _remap_selected_page_numbers(output: dict[str, Any], selected_pages: list[in
         metadata = table.get("metadata") or {}
         if metadata.get("page_number") is not None:
             metadata["page_number"] = original_page_number(metadata["page_number"])
-    for page in (output.get("invoice_extraction") or {}).get("pages", []):
-        page["page_number"] = original_page_number(page.get("page_number"))
+    for extraction_name in ("invoice_extraction", "image_caption_extraction"):
+        for page in (output.get(extraction_name) or {}).get("pages", []):
+            page["page_number"] = original_page_number(page.get("page_number"))
     for detection in output.get("layout_detections", []):
         detection["page_number"] = original_page_number(detection.get("page_number"))
     for key in ("page_previews", "page_sizes"):
@@ -209,6 +210,7 @@ def _parser_output_row_preview(
         "document_metadata": {
             **parser_metadata,
             **({"invoice_extraction": output["invoice_extraction"]} if output.get("invoice_extraction") else {}),
+            **({"image_caption_extraction": output["image_caption_extraction"]} if output.get("image_caption_extraction") else {}),
             "filename": filename,
             "source_sha256": source_sha256,
             "local_parser_run_id": selected_id,
@@ -454,12 +456,13 @@ st.markdown("Upload a file, review extracted content, and keep the results on th
 
 intent = st.radio(
     "Processing intent",
-    ["document", "invoice"],
+    ["document", "invoice", "image_caption"],
     index=0,
     horizontal=True,
     format_func={
         "document": "General document · current pipeline",
         "invoice": "Invoice · Vintern extraction",
+        "image_caption": "Image caption · Vintern",
     }.__getitem__,
     key="processing_intent",
 )
@@ -523,7 +526,7 @@ with settings_column:
             )
         else:
             st.caption(
-                "Vintern reads invoice pages directly and returns draft fields. "
+                "Vintern reads each page directly and returns invoice fields or a short image caption. "
                 "OCR and TableFormer settings do not apply in this mode."
             )
 
@@ -532,20 +535,21 @@ with upload_column:
         st.subheader("Add a document")
         st.caption(
             "Intent: invoice extraction · Vintern" if intent == "invoice"
+            else "Intent: image caption · Vintern" if intent == "image_caption"
             else "Intent: general document · current Docling pipeline"
         )
         allowed_suffixes = (
-            {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"}
-            if intent == "invoice"
+            {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".webp"}
+            if intent in {"invoice", "image_caption"}
             else SUPPORTED_FORMATS
         )
         st.caption(
             "PDF or image · maximum 50 MiB"
-            if intent == "invoice"
+            if intent in {"invoice", "image_caption"}
             else "PDF, Office, CSV, TXT, Markdown, or image · maximum 50 MiB"
         )
-        if intent == "invoice":
-            from document_processing.invoice.processor import resolve_vintern_python
+        if intent in {"invoice", "image_caption"}:
+            from document_processing.vintern_processor import resolve_vintern_python
 
             if resolve_vintern_python() is None:
                 st.warning(
@@ -589,6 +593,8 @@ with upload_column:
                     spinner = (
                         "Extracting invoice fields with Vintern…"
                         if intent == "invoice"
+                        else "Writing an image caption with Vintern…"
+                        if intent == "image_caption"
                         else "Processing document with Docling…"
                     )
                     with st.spinner(spinner):
@@ -703,8 +709,8 @@ else:
 
         run_dir = STORE_DIR / selected_id
         source_path = run_dir / "source"
-        page_tab, invoice_tab, raw_tab, tables_tab, handoff_tab, details_tab, supabase_tab = st.tabs(
-            ["Page review", "Invoice fields", "Raw text", "Tables", "Text elements", "Run details", "Supabase row preview"]
+        page_tab, extraction_tab, raw_tab, tables_tab, handoff_tab, details_tab, supabase_tab = st.tabs(
+            ["Page review", "Invoice / caption", "Raw text", "Tables", "Text elements", "Run details", "Supabase row preview"]
         )
         with page_tab:
             page_numbers = _page_numbers(run_dir) if source_path.is_file() else []
@@ -827,9 +833,17 @@ else:
                         )
                         st.markdown(f"**Element {index} · {element_type}**")
                         st.text(element.get("text") or "[Table reference]")
-        with invoice_tab:
+        with extraction_tab:
             extraction = selected_output.get("invoice_extraction")
-            if not extraction:
+            caption = selected_output.get("image_caption_extraction")
+            if caption:
+                st.caption(f"Model: {caption.get('model', 'unknown')} · status: {caption.get('status', 'unknown')}")
+                for page in caption.get("pages", []):
+                    st.subheader(f"Page {page.get('page_number', '?')}")
+                    st.write(page.get("caption") or "No caption was generated.")
+                    with st.expander("Raw model response"):
+                        st.code(page.get("raw_response", ""), language="text", wrap_lines=True)
+            elif not extraction:
                 st.info("This run used the general document pipeline, not invoice extraction.")
             else:
                 st.warning("Draft extraction: verify every field against the source invoice before use.")
@@ -925,9 +939,11 @@ else:
         with details_tab:
             run_config = selected_manifest.get("config") or {}
             output_metadata = selected_output.get("metadata") or {}
-            if run_config.get("intent", "document") == "invoice":
-                st.write("**Intent:** Invoice extraction")
-                st.write(f'**Pipeline:** {output_metadata.get("pipeline_id", "vintern_invoice")}')
+            if run_config.get("intent", "document") in {"invoice", "image_caption"}:
+                intent_label = "Invoice extraction" if run_config["intent"] == "invoice" else "Image caption"
+                pipeline_id = output_metadata.get("pipeline_id") or f"vintern_{run_config['intent']}"
+                st.write(f"**Intent:** {intent_label}")
+                st.write(f"**Pipeline:** {pipeline_id}")
             source_suffix = Path(selected_manifest["filename"]).suffix.lower()
             uses_pdf_pipeline = source_suffix in {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"}
             effective_ocr = output_metadata.get("ocr_enabled", run_config.get("docling_ocr", True))
@@ -986,4 +1002,26 @@ else:
                     file_name=selected_manifest["filename"],
                     mime="application/octet-stream",
                 )
-            st.json(selected_output.get("metadata", {}))
+            parser_metadata = selected_output.get("metadata", {})
+            routing_diagnostics = parser_metadata.get("ocr_routing_diagnostics", [])
+            orientation_diagnostics = parser_metadata.get("ocr_orientation_diagnostics", [])
+            if routing_diagnostics:
+                with st.expander(f"OCR diagnostics · {len(routing_diagnostics)} lines"):
+                    routing_log = "".join(
+                        json.dumps(item, ensure_ascii=False, separators=(",", ":")) + "\n"
+                        for item in routing_diagnostics
+                    )
+                    st.download_button(
+                        "Download OCR routing log (.jsonl)",
+                        routing_log,
+                        file_name=f'{Path(selected_manifest["filename"]).stem}.ocr-routing.jsonl',
+                        mime="application/x-ndjson",
+                        key=f"download-ocr-routing-{selected_id}",
+                    )
+                    st.dataframe(routing_diagnostics, use_container_width=True, hide_index=True)
+                    if orientation_diagnostics:
+                        st.caption("Layout-region orientation decisions")
+                        st.dataframe(
+                            orientation_diagnostics, use_container_width=True, hide_index=True
+                        )
+            st.json(parser_metadata)

@@ -26,7 +26,8 @@ class ReportReliabilityTest(unittest.IsolatedAsyncioTestCase):
         agent.source_router = MagicMock()
         agent.source_router.collect_sources = AsyncMock(return_value=AgentResult(
             answer=clarification, agent="hybrid", metadata={"ok": False, "clarification_required": True}))
-        result, output, _ = await agent.generate_from_template(request(True), source_mode="combined")
+        result, output, _ = await agent.generate_from_template(
+            request(True).model_copy(update={'question': 'Create a report'}), source_mode="combined")
         self.assertEqual(result.answer, clarification)
         self.assertTrue(result.metadata["clarification_required"])
         self.assertEqual(result.metadata["status"], "clarification_required")
@@ -89,10 +90,9 @@ class ReportReliabilityTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_sql_rows_are_citable_evidence(self):
         agent, knowledge, _, _ = self.agents()
-        result, _, _ = await agent.generate_from_template(
-            request(True), "a.md", b"# Summary", source_mode="analytics")
-        self.assertEqual(result.metadata["status"], "complete")
-        self.assertIn('"revenue": 100', result.evidence[0].content)
+        contexts, _, _, _ = await collect_sources(request(True), ['Summary'], 'analytics', knowledge, agent.analytics_agent)
+        self.assertIn('"revenue": 100', contexts['Summary'][0].content)
+        self.assertEqual(contexts['Summary'][0].citation_id, 'S1')
         knowledge.retrieve.assert_not_awaited()
 
     async def test_default_template_and_docx_generation(self):
@@ -124,7 +124,7 @@ class ReportReliabilityTest(unittest.IsolatedAsyncioTestCase):
             data={"tasks": {"s": {"agent": "sql", "status": "complete", "rows": [{"revenue": 100}]}}},
             metadata={"ok": False, "status": "partial", "limitations": ["Document retrieval unavailable"]}))
         result, payload, _ = await agent.generate_from_template(
-            request(True), "a.md", b"# Summary", source_mode="combined")
+            request(True).model_copy(update={'question': 'Create a report'}), "a.md", b"# Summary", source_mode="combined")
         self.assertEqual(result.metadata["status"], "partial")
         self.assertIn(b"Document retrieval unavailable", payload)
 

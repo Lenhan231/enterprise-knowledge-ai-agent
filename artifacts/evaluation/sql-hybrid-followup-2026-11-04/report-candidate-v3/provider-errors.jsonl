@@ -1,0 +1,6 @@
+{"error_type": "APIStatusError", "status_code": 413}
+{"error_type": "APIStatusError", "status_code": 413}
+{"error_type": "APIStatusError", "status_code": 413}
+{"error_type": "APIStatusError", "status_code": 413, "provider_code": "rate_limit_exceeded", "token_budget_numbers": ["7000", "9129"]}
+{"error_type": "APIStatusError", "status_code": 413, "provider_code": "rate_limit_exceeded", "token_budget_numbers": ["7000", "9130"]}
+{"error_type": "APIStatusError", "status_code": 413, "provider_code": "rate_limit_exceeded", "token_budget_numbers": ["7000", "9130"]}

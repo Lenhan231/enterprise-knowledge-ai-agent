@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css?v=upload-test-hover-20261102">
+  <link rel="stylesheet" href="/static/styles.css?v=knowledge-review-20261111">
   <script>
     (function() {
       const saved = localStorage.getItem("app_theme");
@@ -42,19 +42,21 @@
   </main>
 
   <div id="workspace" class="app-shell" hidden>
-    <aside class="workspace-sidebar" aria-label="Workspace sidebar">
+    <aside id="workspace-sidebar" class="workspace-sidebar" aria-label="Workspace sidebar">
+      <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-controls="workspace-sidebar" aria-expanded="true" aria-label="Collapse sidebar" title="Collapse sidebar"><span aria-hidden="true">‹</span></button>
       <a class="brand sidebar-brand" href="/" aria-label="Enterprise Knowledge home">
         <span class="brand-mark">EK</span>
         <span><strong>Enterprise Knowledge AI</strong><small>Commerce operations workspace</small></span>
       </a>
       <nav id="workspace-tabs" class="workspace-tabs" role="tablist" aria-label="Workspace navigation">
-        <button id="tab-button-knowledge" class="workspace-tab active" type="button" role="tab" aria-selected="true" aria-controls="tab-knowledge" data-tab-target="knowledge">Knowledge Q&amp;A</button>
-        <button id="tab-button-upload" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-upload" data-tab-target="upload" hidden>Upload Documents</button>
-        <button id="tab-button-processing" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-processing" data-tab-target="processing" hidden>Document Processing</button>
-        <button id="tab-button-ocr-lab" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-ocr-lab" data-tab-target="ocr-lab" hidden>Upload Test</button>
-        <button id="tab-button-knowledge-management" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-knowledge-management" data-tab-target="knowledge-management" hidden>Knowledge Management</button>
-        <button id="tab-button-access" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-access" data-tab-target="access" hidden>Access Control</button>
-        <button id="tab-button-monitoring" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-monitoring" data-tab-target="monitoring" hidden>Agent Monitoring</button>
+        <button id="tab-button-knowledge" class="workspace-tab active" type="button" role="tab" aria-selected="true" aria-controls="tab-knowledge" data-tab-target="knowledge" aria-label="Knowledge Q&amp;A" title="Knowledge Q&amp;A"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v12H8l-4 4V4Z"/></svg><span class="nav-label">Knowledge Q&amp;A</span></button>
+        <button id="tab-button-upload" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-upload" data-tab-target="upload" hidden aria-label="Upload Documents" title="Upload Documents"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5M4 16v5h16v-5"/></svg><span class="nav-label">Upload Documents</span></button>
+        <button id="tab-button-invoice-review" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-invoice-review" data-tab-target="invoice-review" hidden aria-label="Invoice Review" title="Invoice Review"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Zm3 5h6m-6 4h6"/></svg><span class="nav-label">Invoice Review</span></button>
+        <button id="tab-button-processing" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-processing" data-tab-target="processing" hidden aria-label="Document Processing" title="Document Processing"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4V4Zm4 4h8m-8 4h8m-8 4h4"/></svg><span class="nav-label">Document Processing</span></button>
+        <button id="tab-button-ocr-lab" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-ocr-lab" data-tab-target="ocr-lab" hidden aria-label="Upload Test" title="Upload Test"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M7 12h10"/></svg><span class="nav-label">Upload Test</span></button>
+        <button id="tab-button-knowledge-management" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-knowledge-management" data-tab-target="knowledge-management" hidden aria-label="Knowledge Management" title="Knowledge Management"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h7l2 2h9v13H3V5Z"/></svg><span class="nav-label">Knowledge Management</span></button>
+        <button id="tab-button-access" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-access" data-tab-target="access" hidden aria-label="Access Control" title="Access Control"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 10h12v11H6V10Zm3 0V6a3 3 0 0 1 6 0v4"/></svg><span class="nav-label">Access Control</span></button>
+        <button id="tab-button-monitoring" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-monitoring" data-tab-target="monitoring" hidden aria-label="Agent Monitoring" title="Agent Monitoring"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="nav-label">Agent Monitoring</span></button>
       </nav>
       <div class="topbar-status sidebar-account">
         <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle light and dark mode" title="Toggle theme">
@@ -119,8 +121,6 @@
         </article>
       </div>
     </section>
-
-    <div id="inventory-snapshot" hidden aria-live="polite"></div>
 
     <section class="stats" aria-label="Knowledge base coverage" hidden>
       <article class="stat-card">
@@ -238,7 +238,24 @@
             <h3><span>1</span> Document</h3>
             <div class="upload-step-fields">
               <div class="upload-field upload-field-wide">
-                <label for="upload-file">Document file</label>
+                <label for="upload-kind">Upload type</label>
+                <select id="upload-kind" name="upload_kind">
+                  <option value="document" selected>Knowledge document</option>
+                  <option value="invoice">Invoice extraction</option>
+                </select>
+                <small id="upload-kind-help" class="upload-field-hint">Knowledge documents are indexed for document Q&amp;A.</small>
+              </div>
+              <div id="invoice-model-field" class="upload-field upload-field-wide" hidden>
+                <label for="invoice-model">Extraction model</label>
+                <select id="invoice-model" name="model_provider">
+                  <option value="gemini" selected>Gemini 3.1 Flash-Lite</option>
+                  <option value="groq">GPT-OSS 120B · Groq</option>
+                  <option value="modal">Qwen3-0.6B fine-tuned · Modal GPU</option>
+                </select>
+                <small class="upload-field-hint">Choose which model creates the invoice JSON draft. OCR stays the same.</small>
+              </div>
+              <div class="upload-field upload-field-wide">
+                <label id="upload-file-label" for="upload-file">Document file</label>
                 <div id="upload-dropzone" class="upload-dropzone">
                   <p><strong>Drop one file here</strong> or choose it from your device.</p>
                   <input id="upload-file" name="file" type="file" accept=".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff" aria-describedby="upload-file-info" required>
@@ -247,14 +264,14 @@
                 </div>
               </div>
               <div class="upload-field upload-field-wide">
-                <label for="upload-title">Document title</label>
+                <label id="upload-title-label" for="upload-title">Document title</label>
                 <input id="upload-title" name="title" required maxlength="200" placeholder="Filled from the filename; you can edit it">
-                <small class="upload-field-hint">This title is shown in search results and the knowledge list.</small>
+                <small id="upload-title-help" class="upload-field-hint">This title is shown in search results and the knowledge list.</small>
               </div>
             </div>
           </section>
 
-          <fieldset class="upload-access-step">
+          <fieldset id="upload-access-step" class="upload-access-step">
             <legend><span>2</span> Access</legend>
             <small>Select who can retrieve this source in document Q&amp;A.</small>
             <div id="upload-role-options" class="upload-role-options"></div>
@@ -270,9 +287,25 @@
               <span></span>
             </div>
             <p id="upload-status" class="corpus-note" aria-live="polite"></p>
+            <pre id="upload-invoice-result" class="invoice-extraction-result" hidden></pre>
             <small id="upload-elapsed" class="upload-elapsed" aria-live="off" hidden></small>
           </div>
         </form>
+      </section>
+    </section>
+
+    <section id="tab-invoice-review" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-invoice-review" hidden>
+      <section class="candidate-review invoice-review-section">
+        <div class="section-heading">
+          <div><p class="eyebrow">HUMAN REVIEW</p><h2>Review extracted invoices</h2></div>
+          <button id="invoice-review-refresh" class="secondary-button" type="button">Refresh</button>
+        </div>
+        <p>Compare the extracted draft with the private source and OCR evidence. Save corrections before an admin approves the invoice for analytics.</p>
+        <p id="invoice-review-status" class="corpus-note" aria-live="polite"></p>
+        <div class="invoice-review-layout">
+          <div id="invoice-review-list" class="invoice-review-list"></div>
+          <div id="invoice-review-detail" class="invoice-review-detail"><p class="analysis-empty">Choose an invoice to review.</p></div>
+        </div>
       </section>
     </section>
 
@@ -337,15 +370,15 @@
     <section id="tab-ocr-lab" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-ocr-lab" hidden>
       <section class="candidate-review">
         <div class="section-heading">
-          <div><p class="eyebrow">ISOLATED UPLOAD TEST</p><h2>Run the Docling parser</h2></div>
+          <div><p class="eyebrow">ISOLATED UPLOAD TEST</p><h2>Run a document-processing pipeline</h2></div>
         </div>
-        <p>Upload Test runs Docling and saves ordered document-processing elements and structured tables for inspection.</p>
+        <p>Choose general document parsing, invoice extraction, or image captioning. Results are saved for inspection without creating a production document.</p>
         <form id="ocr-test-form" class="upload-form">
           <div class="ocr-test-field"><label for="ocr-test-file">Document to upload-test (up to 20 MiB; PDFs up to 50 pages)</label>
-          <input id="ocr-test-file" name="file" type="file" accept=".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff" required></div>
-          <div class="ocr-test-field"><label for="ocr-test-parser">Document parser</label>
-          <select id="ocr-test-parser" name="parser_engine"><option value="docling" selected>Docling</option></select></div>
-          <fieldset data-parser-settings="docling" hidden><legend>Docling tuning</legend>
+          <input id="ocr-test-file" name="file" type="file" accept=".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff,.svg,.webp" required></div>
+          <div class="ocr-test-field"><label for="ocr-test-parser">Processing type</label>
+          <select id="ocr-test-parser" name="intent"><option value="document" selected>Document · Docling</option><option value="invoice">Invoice · Docling OCR + Qwen text model</option><option value="image_caption">Image caption · Vintern</option></select></div>
+          <fieldset data-parser-settings="document" hidden><legend>Docling tuning</legend>
             <div class="ocr-test-field"><label for="ocr-test-docling-device">Device</label><select id="ocr-test-docling-device" name="docling_device"><option value="cpu" selected>CPU</option><option value="cuda">NVIDIA CUDA</option></select></div>
             <div class="ocr-test-field"><label for="ocr-test-docling-ocr">OCR</label><select id="ocr-test-docling-ocr" name="docling_ocr"><option value="true" selected>On · scanned pages</option><option value="false">Off · digital text only</option></select></div>
             <div class="ocr-test-field"><label for="ocr-test-docling-language">Tesseract language</label><select id="ocr-test-docling-language" name="docling_ocr_language"><option value="vie+eng" selected>Vietnamese + English</option><option value="eng">English only</option></select></div>
@@ -413,6 +446,6 @@
     </div>
     </main>
   </div>
-  <script src="/static/app.js?v=upload-test-hover-20261102" defer></script>
+  <script src="/static/app.js?v=knowledge-review-20261111" defer></script>
 </body>
 </html>

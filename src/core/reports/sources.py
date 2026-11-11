@@ -5,6 +5,7 @@ import json
 
 from core.agents.sql_analytics_agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
 from core.models.agents import Evidence
+from core.agents.runtime import remaining
 
 CONTEXT_CHARACTERS = 24_000
 
@@ -51,7 +52,7 @@ async def collect_sources(request, headings, source_mode, knowledge, analytics, 
                     continue
                 rows = group.get('rows', [])
                 row_count += len(rows)
-                selected = rows[:max(0, 100 - included_rows)]
+                selected = rows[:200]
                 included_rows += len(selected)
                 if selected:
                     sql_evidence.append(Evidence(source_type='database', source='Validated analytics rows',
@@ -59,7 +60,7 @@ async def collect_sources(request, headings, source_mode, knowledge, analytics, 
                         metadata={'sources': group.get('sources', []), 'task_id': task_id,
                                   'metrics': group.get('metrics', {}), 'limitations': group.get('limitations', [])}))
             if row_count > included_rows:
-                limitations.append('Analytics rows were limited to the first 100 returned rows.')
+                limitations.append('Analytics rows were limited to the first 200 returned rows per task.')
         except (PermissionError, ReportClarificationRequired):
             raise
         except Exception:
@@ -67,7 +68,10 @@ async def collect_sources(request, headings, source_mode, knowledge, analytics, 
             limitations.append('Orchestrated source collection is temporarily unavailable.')
     elif source_mode != "documents":
         try:
-            result = await asyncio.wait_for(analytics.run(request), timeout=60)
+            from core.agents.analytics_agent import AnalyticsAgent
+            raw_agent = analytics.sql_agent if isinstance(analytics, AnalyticsAgent) else analytics
+            timeout = remaining(60)
+            result = await asyncio.wait_for(raw_agent.run(request), timeout=timeout)
             if result.metadata.get("clarification_required"):
                 raise ReportClarificationRequired(result.answer)
             limitations.extend(result.metadata.get("limitations", []))
@@ -75,15 +79,15 @@ async def collect_sources(request, headings, source_mode, knowledge, analytics, 
                 limitations.append("Analytics did not return a complete result.")
             rows = result.data.get("rows", [])
             row_count = len(rows)
-            included_rows = min(row_count, 100)
+            included_rows = min(row_count, 200)
             if rows:
                 sql_evidence = [Evidence(source_type="database", source="Validated analytics rows",
-                    content=json.dumps(rows[:100], ensure_ascii=False, default=str),
+                    content=json.dumps(rows[:200], ensure_ascii=False, default=str),
                     metadata={"sources": [item.source for item in result.evidence],
                               "metrics": result.metadata.get('metrics', {}),
                               "limitations": result.metadata.get('limitations', [])})]
             if row_count > included_rows:
-                limitations.append("Analytics rows were limited to the first 100 returned rows.")
+                limitations.append("Analytics rows were limited to the first 200 returned rows.")
         except (PermissionError, ReportClarificationRequired):
             raise
         except Exception:
@@ -99,7 +103,8 @@ async def collect_sources(request, headings, source_mode, knowledge, analytics, 
         elif source_mode != "analytics":
             try:
                 scoped = request.model_copy(update={"question": f"{request.question}\nReport section: {heading}"})
-                items = await asyncio.wait_for(knowledge.retrieve(scoped), timeout=60)
+                timeout = remaining(60)
+                items = await asyncio.wait_for(knowledge.retrieve(scoped), timeout=timeout)
             except PermissionError:
                 raise
             except Exception:

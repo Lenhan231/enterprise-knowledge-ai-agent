@@ -2,6 +2,10 @@ const $ = (selector) => document.querySelector(selector);
 let activeTab = "knowledge";
 let currentUser = null;
 let knowledgeDocuments = [];
+let activeKnowledgeReview = null;
+let invoiceReviewItems = [];
+let activeInvoiceReview = null;
+let invoiceProgressGeneration = 0;
 let agentConversationId = crypto.randomUUID();
 let reportConversationId = crypto.randomUUID();
 let sessionTurns = [];
@@ -47,12 +51,12 @@ function selectWorkspaceTab(name) {
   const button = $(`[data-tab-target="${name}"]`);
   if (!button || button.hidden) return;
   activeTab = name;
+  $("#workspace-main").classList.toggle("invoice-review-active", name === "invoice-review");
   const isKnowledgeTab = name === "knowledge";
   $(".intro").hidden = !isKnowledgeTab;
   $(".agent-overview").hidden = !isKnowledgeTab
     || ["document_processing_owner", "document_uploader"].includes(currentUser?.role);
   $(".stats").hidden = !isKnowledgeTab || currentUser?.role === "document_processing_owner";
-  $("#inventory-snapshot").hidden = !isKnowledgeTab;
   document.querySelectorAll(".workspace-tab").forEach((tab) => {
     const selected = tab === button;
     tab.setAttribute("aria-selected", String(selected));
@@ -72,6 +76,7 @@ function syncWorkspaceTabs(user = currentUser) {
   const available = {
     knowledge: canAskDocuments,
     upload: canUpload,
+    "invoice-review": canUpload,
     processing: isProcessingOwner,
     "ocr-lab": isProcessingOwner,
     "knowledge-management": isAdmin,
@@ -130,6 +135,60 @@ function knowledgeDocumentIsRetrievable(doc) {
   return doc.knowledge_base_active && doc.processing_status === "ready" && Number(doc.chunk_count) > 0;
 }
 
+function renderKnowledgeProcessingReview(doc) {
+  if (activeKnowledgeReview?.status === "loading") {
+    return '<section class="knowledge-output-review"><p class="corpus-note">Loading parser evidence…</p></section>';
+  }
+  if (activeKnowledgeReview?.error) {
+    return `<section class="knowledge-output-review"><p class="error-message">${escapeHtml(activeKnowledgeReview.error)}</p></section>`;
+  }
+
+  const output = activeKnowledgeReview?.output;
+  if (!output) return "";
+  const sourceUrl = doc.source_type === "user_upload"
+    ? uploadedSourcePageUrl(doc.document_id)
+    : doc.synthetic_company_policy
+      ? `/api/admin/knowledge-documents/${encodeURIComponent(doc.document_id)}/source`
+      : "";
+  const format = String(doc.format || "").toLowerCase();
+  const sourcePreview = format === "pdf"
+    ? `<iframe class="knowledge-output-source" title="${escapeHtml(doc.title)} source" src="${escapeHtml(sourceUrl)}"></iframe>`
+    : ["png", "jpg", "jpeg", "tif", "tiff"].includes(format)
+      ? `<img class="knowledge-output-image" src="${escapeHtml(sourceUrl)}" alt="Source file: ${escapeHtml(doc.title)}">`
+      : `<p class="corpus-note">Inline preview is unavailable for ${escapeHtml(format.toUpperCase() || "this format")} files. <a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">Open original file</a></p>`;
+  const elements = Array.isArray(output.elements) ? output.elements : [];
+  const tables = Array.isArray(output.tables) ? output.tables : [];
+  const elementList = elements.map((element) => {
+    const metadata = element.metadata || {};
+    const page = metadata.page_number ?? element.page_number ?? "?";
+    const type = metadata.element_type || metadata.layout_type || element.element_type || "text";
+    const content = element.text ?? element.content ?? (element.table_ref != null ? `Table reference ${element.table_ref}` : "No text content");
+    return `<details class="knowledge-output-element">
+      <summary>Page ${escapeHtml(page)} · ${escapeHtml(type)} · ${formatNumber(String(content).length)} chars</summary>
+      <pre>${escapeHtml(content)}</pre>
+      <details class="knowledge-output-metadata"><summary>Element metadata</summary><pre>${escapeHtml(JSON.stringify(metadata, null, 2))}</pre></details>
+    </details>`;
+  }).join("");
+  const tableList = tables.map((table, index) => {
+    const rows = Array.isArray(table.rows) ? table.rows : [];
+    const columns = Array.isArray(table.columns) ? table.columns : (rows[0] && !Array.isArray(rows[0]) ? Object.keys(rows[0]) : []);
+    const header = columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("");
+    const body = rows.map((row) => `<tr>${columns.map((column, cellIndex) => `<td>${escapeHtml(Array.isArray(row) ? row[cellIndex] : row?.[column])}</td>`).join("")}</tr>`).join("");
+    const page = table.metadata?.page_number ?? table.page_number ?? "?";
+    return `<details class="knowledge-output-table"><summary>Table ${index + 1} · Page ${escapeHtml(page)} · ${formatNumber(rows.length)} rows</summary>
+      <div class="knowledge-output-table-scroll"><table><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table></div>
+    </details>`;
+  }).join("");
+
+  return `<section class="knowledge-output-review" aria-label="Parser output review">
+    <header><div><strong>Parser output</strong><span>${escapeHtml(output.pipeline_id || output.metadata?.pipeline_id || "Parser")} · ${formatNumber(elements.length)} elements · ${formatNumber(tables.length)} tables</span></div>
+      <button type="button" class="secondary-button" data-close-knowledge-review>Close review</button></header>
+    <div class="knowledge-output-columns"><div class="knowledge-output-source-pane">${sourcePreview}</div>
+      <div class="knowledge-output-evidence"><h3>Elements</h3>${elementList || '<p class="corpus-note">No parser elements were saved.</p>'}
+        <h3>Tables</h3>${tableList || '<p class="corpus-note">No tables were extracted.</p>'}</div></div>
+  </section>`;
+}
+
 function renderKnowledgeDocuments() {
   const query = $("#knowledge-documents-search").value.trim().toLocaleLowerCase();
   const selectedDomain = $("#knowledge-domain-filter").value;
@@ -170,7 +229,8 @@ function renderKnowledgeDocuments() {
         ? `<a href="${escapeHtml(uploadedSource)}" target="_blank" rel="noopener noreferrer">Open uploaded file</a>`
         : href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Open source</a>` : "";
     const canRetryEmbedding = doc.source_type === "user_upload" && doc.processing_status === "failed";
-    return `<article class="knowledge-document-row ${doc.knowledge_base_active ? "" : "is-removed"}">
+    const reviewOpen = activeKnowledgeReview?.document_id === doc.document_id;
+    return `<div class="knowledge-document-entry"><article class="knowledge-document-row ${doc.knowledge_base_active ? "" : "is-removed"}">
       <div class="knowledge-document-copy"><strong>${escapeHtml(doc.title)}</strong>
         <span class="knowledge-source-kind ${doc.synthetic_company_policy ? "is-synthetic" : ""}">${escapeHtml(sourceKind)}</span>
         <span>${escapeHtml(doc.source_publisher || "Unknown publisher")} · ${escapeHtml(doc.format || "File")} · ${formatNumber(doc.chunk_count)} passages</span>
@@ -185,12 +245,293 @@ function renderKnowledgeDocuments() {
         </details>
       </div>
       <div class="knowledge-document-actions">
+        ${doc.has_processing_output ? `<button class="secondary-button" type="button" data-review-elements="${escapeHtml(doc.document_id)}" aria-expanded="${reviewOpen ? "true" : "false"}">${reviewOpen ? "Hide element review" : "Review elements"}</button>` : ""}
         ${canRetryEmbedding ? `<button class="secondary-button" type="button" data-retry-embedding="${escapeHtml(doc.document_id)}">Retry embedding</button>` : ""}
+        ${doc.knowledge_base_active === false && doc.source_type === "user_upload" ? `<button class="danger-button" type="button" data-knowledge-delete="${escapeHtml(doc.document_id)}" data-title="${escapeHtml(doc.title)}">Delete permanently</button>` : ""}
         <button class="${doc.knowledge_base_active ? "danger-button" : "secondary-button"}" type="button" data-knowledge-toggle="${escapeHtml(doc.document_id)}" data-active="${doc.knowledge_base_active ? "true" : "false"}">${doc.knowledge_base_active ? "Remove from knowledge base" : "Restore to knowledge base"}</button>
       </div>
-    </article>`;
+    </article>${reviewOpen ? renderKnowledgeProcessingReview(doc) : ""}</div>`;
   }).join("") || '<p class="loading-card">No matching indexed sources.</p>';
 }
+
+const INVOICE_REVIEW_FIELDS = [
+  ["invoice_no", "Invoice number"], ["date", "Invoice date"], ["seller", "Seller"],
+  ["buyer", "Buyer"], ["subtotal", "Subtotal"], ["tax_amount", "Tax amount"],
+  ["total_amount", "Total amount"],
+];
+const INVOICE_ITEM_FIELDS = [
+  ["description", "Description"], ["quantity", "Quantity"], ["unit", "Unit"],
+  ["unit_price", "Unit price"], ["amount", "Amount"],
+];
+const invoiceReviewValue = (value) => value == null ? "" : String(value);
+const formatInvoiceDate = (value) => {
+  const raw = invoiceReviewValue(value).trim();
+  const match = raw.match(/^(?:(\d{4})-(\d{2})-(\d{2})|(\d{1,2})\/(\d{1,2})\/(\d{4})|(\d{1,2})\s+tháng\s+(\d{1,2})\s+năm\s+(\d{4}))$/i);
+  if (!match) return raw;
+  const [, isoYear, isoMonth, isoDay, slashDay, slashMonth, slashYear, viDay, viMonth, viYear] = match;
+  const day = Number(isoDay || slashDay || viDay);
+  const month = Number(isoMonth || slashMonth || viMonth);
+  const year = Number(isoYear || slashYear || viYear);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  if (parsed.getUTCFullYear() !== year || parsed.getUTCMonth() !== month - 1 || parsed.getUTCDate() !== day) return raw;
+  return `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${year}`;
+};
+
+let invoiceOpenGeneration = 0;
+
+function renderInvoiceReviewList() {
+  $("#invoice-review-list").innerHTML = invoiceReviewItems.map((invoice) => {
+    const data = invoice.invoice_data || {};
+    const selected = invoice.invoice_id === activeInvoiceReview?.invoice_id;
+    const status = invoice.processing_status || "unknown";
+    return `<button class="invoice-review-card ${selected ? "active" : ""}" type="button" data-invoice-review-id="${escapeHtml(invoice.invoice_id)}">
+      <strong>${escapeHtml(invoice.source_filename || invoice.invoice_id)}</strong>
+      <span>${escapeHtml(data.invoice_no || "Invoice number not extracted")} · ${escapeHtml(data.seller || "Seller not extracted")}</span>
+      <small><span class="invoice-status-badge is-${escapeHtml(({approved: "approved", review_required: "review", failed: "failed", processing: "processing", rejected: "rejected"})[status] || "unknown")}">${escapeHtml(({review_required: "Needs review", failed: "Extraction failed", processing: "Processing", approved: "Approved", rejected: "Rejected"})[status] || status)}</span> · ${escapeHtml(new Date(invoice.updated_at || invoice.created_at).toLocaleDateString())}</small>
+    </button>`;
+  }).join("") || '<p class="analysis-empty">No invoice drafts to review.</p>';
+}
+
+function renderInvoiceReviewDetail(invoice) {
+  invoiceProgressGeneration += 1;
+  activeInvoiceReview = invoice;
+  renderInvoiceReviewList();
+  const data = invoice.invoice_data || {};
+  const editable = invoice.processing_status === "review_required";
+  const canApprove = currentUser?.role === "admin" && editable;
+  const canReject = currentUser?.role === "admin" && editable;
+  const fields = INVOICE_REVIEW_FIELDS.map(([key, label]) => `<label>${escapeHtml(label)}<input name="${key}" value="${escapeHtml(key === "date" ? formatInvoiceDate(data[key]) : invoiceReviewValue(data[key]))}" ${editable ? "" : "readonly"}></label>`).join("");
+  const items = Array.isArray(data.items) ? data.items : [];
+  const itemRows = items.map((item, index) => `<fieldset class="invoice-review-item" data-item-index="${index}"><legend>Line item ${index + 1}</legend>
+    ${INVOICE_ITEM_FIELDS.map(([key, label]) => `<label>${escapeHtml(label)}${key === "description" ? `<textarea name="items.${index}.${key}" ${editable ? "" : "readonly"}>${escapeHtml(invoiceReviewValue(item?.[key]))}</textarea>` : `<input name="items.${index}.${key}" value="${escapeHtml(invoiceReviewValue(item?.[key]))}" ${editable ? "" : "readonly"}>`}</label>`).join("")}
+    ${editable ? `<button class="secondary-button" type="button" data-remove-invoice-item="${index}">Remove line</button>` : ""}
+  </fieldset>`).join("");
+  const elements = Array.isArray(invoice.ocr_elements) ? invoice.ocr_elements : [];
+  const evidence = elements.map((element) => `<details class="invoice-ocr-element"><summary>Page ${escapeHtml(element.page_number ?? "?")} · ${escapeHtml(element.label || element.type || "OCR text")}</summary><pre>${escapeHtml(element.text || element.content || JSON.stringify(element))}</pre></details>`).join("");
+  const source = invoice.source_available ? `<iframe class="invoice-review-source" title="Original invoice" src="/api/invoices/${encodeURIComponent(invoice.invoice_id)}/source"></iframe>` : '<p class="analysis-empty">Original file is unavailable.</p>';
+  const failed = invoice.processing_status === "failed";
+  const retry = failed && invoice.source_available ? `
+    <form id="invoice-retry-form" data-invoice-id="${escapeHtml(invoice.invoice_id)}">
+      <div class="invoice-review-actions">
+        <label for="invoice-retry-model">Extraction model</label>
+        <select id="invoice-retry-model" name="model_provider">${$("#invoice-model").innerHTML}</select>
+        <button class="primary-button" type="submit">Retry extraction</button>
+      </div>
+      <p class="corpus-note" data-invoice-retry-status role="status"></p>
+    </form>` : "";
+  const processing = invoice.processing_status === "processing";
+  const detail = $("#invoice-review-detail");
+  const existingSource = detail.querySelector(".invoice-review-source-wrap");
+  const keepSource = existingSource?.dataset.invoiceId === invoice.invoice_id && !!existingSource.querySelector("iframe") === !!invoice.source_available;
+  const previousWorkspace = keepSource ? existingSource.parentElement : null;
+  if (previousWorkspace) previousWorkspace.removeChild(previousWorkspace.querySelector(".invoice-review-editor"));
+  const rendered = document.createElement("div");
+  rendered.innerHTML = `
+    ${failed ? `<p role="status">Extraction failed${invoice.error_message ? `: ${escapeHtml(invoice.error_message)}` : "."}</p>` : ""}
+    ${retry}
+    ${processing ? `<div class="upload-status-wrap invoice-processing-progress" aria-busy="true">
+      <div class="upload-progress" role="progressbar" aria-label="Invoice extraction" aria-valuetext="OCR and extraction in progress"><span></span></div>
+      <p role="status" data-invoice-progress-status>Running OCR and extraction. Status updates automatically.</p>
+      <small class="upload-elapsed" data-invoice-progress-elapsed aria-live="off"></small>
+    </div>` : ""}
+    <div class="invoice-review-workspace">
+    <div class="invoice-review-source-wrap" data-invoice-id="${escapeHtml(invoice.invoice_id)}">${source}</div>
+    <div class="invoice-review-editor">
+    ${(failed || processing) && !Object.keys(data).length ? `<p class="analysis-empty">${failed ? "No extracted data. Retry extraction to create a draft." : "Your draft will appear here when extraction finishes."}</p>` : `<form id="invoice-review-form" data-invoice-id="${escapeHtml(invoice.invoice_id)}">
+      <div class="invoice-review-fields">${fields}</div><div id="invoice-review-items">${itemRows}</div>
+      ${editable ? `<div class="invoice-review-actions"><button class="secondary-button" type="button" data-add-invoice-item>Add line item</button><button class="primary-button" type="submit">Save corrections</button>${canApprove ? `<button class="primary-button" type="button" data-approve-invoice>Approve and publish</button>` : ""}${canReject ? `<button class="danger-button" type="button" data-reject-invoice>Reject invoice</button>` : ""}</div>` : `<p class="corpus-note">This invoice is ${escapeHtml(invoice.processing_status)} and read-only.</p>`}
+      <p class="corpus-note" data-invoice-edit-status aria-live="polite"></p>
+    </form>`}
+    ${elements.length || (invoice.ocr_tables || []).length ? `<details class="invoice-ocr-evidence"><summary>OCR evidence (${elements.length} elements, ${(invoice.ocr_tables || []).length} tables)</summary>${evidence || '<p>No OCR text was saved.</p>'}</details>` : ""}
+    </div></div>`;
+  if (keepSource) {
+    previousWorkspace.append(rendered.querySelector(".invoice-review-editor"));
+    for (const child of [...detail.children]) if (child !== previousWorkspace) child.remove();
+    while (rendered.firstElementChild && !rendered.firstElementChild.classList.contains("invoice-review-workspace")) detail.insertBefore(rendered.firstElementChild, previousWorkspace);
+  } else detail.replaceChildren(...rendered.childNodes);
+  if (retry) $("#invoice-retry-model").value = "groq";
+  if (processing) watchInvoiceProgress(invoice, invoiceProgressGeneration);
+}
+
+async function watchInvoiceProgress(invoice, progressGeneration) {
+  const session = sessionGeneration;
+  const parsedStart = Date.parse(invoice.updated_at || invoice.created_at);
+  const startedAt = Number.isFinite(parsedStart) ? parsedStart : Date.now();
+  let nextPollAt = Date.now() + 4000;
+  while (
+    progressGeneration === invoiceProgressGeneration
+    && session === sessionGeneration
+    && activeInvoiceReview?.invoice_id === invoice.invoice_id
+  ) {
+    const elapsed = $("#invoice-review-detail [data-invoice-progress-elapsed]");
+    if (!elapsed) return;
+    const seconds = Math.floor(Math.max(0, Date.now() - startedAt) / 1000);
+    elapsed.textContent = `Elapsed: ${Math.floor(seconds / 60)}m ${seconds % 60}s · Checking status every 4s`;
+    await new Promise((resolve) => window.setTimeout(resolve, 1000));
+    if (progressGeneration !== invoiceProgressGeneration || session !== sessionGeneration) return;
+    if (Date.now() < nextPollAt) continue;
+    nextPollAt = Date.now() + 4000;
+    let result;
+    try {
+      result = await api(`/api/invoices/${encodeURIComponent(invoice.invoice_id)}`, { cache: "no-store" });
+    } catch (error) {
+      if (progressGeneration !== invoiceProgressGeneration || session !== sessionGeneration) return;
+      $("#invoice-review-detail [data-invoice-progress-status]").textContent =
+        `Could not check status: ${error.message}. Reconnecting…`;
+      continue;
+    }
+    if (progressGeneration !== invoiceProgressGeneration || session !== sessionGeneration) return;
+    invoiceReviewItems = invoiceReviewItems.map((item) => item.invoice_id === result.invoice_id ? { ...item, ...result } : item);
+    if (result.processing_status !== "processing") {
+      renderInvoiceReviewDetail(result);
+      $("#invoice-review-status").textContent = result.processing_status === "review_required"
+        ? "Extraction finished. Review the invoice fields below."
+        : result.processing_status === "failed" ? "Extraction failed. You can retry with another model." : `Invoice status: ${result.processing_status}`;
+      return;
+    }
+    activeInvoiceReview = result;
+    $("#invoice-review-detail [data-invoice-progress-status]").textContent =
+      "Running OCR and extraction. Status updates automatically.";
+  }
+}
+
+async function refreshInvoiceReview(selectId = activeInvoiceReview?.invoice_id) {
+  $("#invoice-review-status").textContent = "Loading invoice drafts…";
+  const result = await api("/api/invoices");
+  invoiceReviewItems = result.invoices || [];
+  renderInvoiceReviewList();
+  const target = invoiceReviewItems.find((item) => item.invoice_id === selectId)
+    || invoiceReviewItems.find((item) => item.processing_status === "review_required");
+  if (target) await openInvoiceReview(target.invoice_id);
+  else {
+    activeInvoiceReview = null;
+    $("#invoice-review-detail").innerHTML = '<p class="analysis-empty">Choose an invoice to review.</p>';
+  }
+  $("#invoice-review-status").textContent = `${invoiceReviewItems.length} invoice${invoiceReviewItems.length === 1 ? "" : "s"} · drafts stay private until approved.`;
+}
+
+async function openInvoiceReview(invoiceId) {
+  const generation = ++invoiceOpenGeneration;
+  const session = sessionGeneration;
+  const invoice = await api(`/api/invoices/${encodeURIComponent(invoiceId)}`);
+  if (generation !== invoiceOpenGeneration || session !== sessionGeneration) return;
+  renderInvoiceReviewDetail(invoice);
+}
+
+async function retryInvoiceExtraction(form) {
+  const invoiceId = form.dataset.invoiceId;
+  const path = `/api/invoices/${encodeURIComponent(invoiceId)}`;
+  const generation = sessionGeneration;
+  const button = form.querySelector('button[type="submit"]');
+  const status = form.querySelector("[data-invoice-retry-status]");
+  const modelProvider = form.elements.namedItem("model_provider").value;
+  button.disabled = true;
+  status.textContent = "Starting extraction…";
+  try {
+    await api(`${path}/retry`, {
+      method: "POST",
+      body: JSON.stringify({ model_provider: modelProvider }),
+    });
+  } catch (error) {
+    status.textContent = error.message;
+    button.disabled = false;
+    return;
+  }
+
+  if (generation !== sessionGeneration) return;
+  const invoice = activeInvoiceReview?.invoice_id === invoiceId ? activeInvoiceReview
+    : invoiceReviewItems.find((item) => item.invoice_id === invoiceId);
+  if (invoice) {
+    const processingInvoice = { ...invoice, processing_status: "processing", error_message: null, updated_at: new Date().toISOString() };
+    invoiceReviewItems = invoiceReviewItems.map((item) => item.invoice_id === invoiceId ? processingInvoice : item);
+    if (activeInvoiceReview?.invoice_id === invoiceId) renderInvoiceReviewDetail(processingInvoice);
+    else renderInvoiceReviewList();
+  }
+}
+
+function invoiceReviewPayload(form) {
+  const data = Object.fromEntries(INVOICE_REVIEW_FIELDS.map(([key]) => [key, form.elements.namedItem(key).value.trim() || null]));
+  data.items = [...form.querySelectorAll(".invoice-review-item")].map((row) => Object.fromEntries(
+    INVOICE_ITEM_FIELDS.map(([key]) => [key, row.querySelector(`[name="items.${row.dataset.itemIndex}.${key}"]`).value.trim() || null]),
+  ));
+  return data;
+}
+
+async function saveInvoiceReview(form, approve = false) {
+  const status = form.querySelector("[data-invoice-edit-status]");
+  const invoiceId = form.dataset.invoiceId;
+  const button = approve ? form.querySelector("[data-approve-invoice]") : form.querySelector('[type="submit"]');
+  button.disabled = true;
+  status.textContent = approve ? "Approving invoice…" : "Saving corrections…";
+  try {
+    const invoiceData = invoiceReviewPayload(form);
+    await api(`/api/invoices/${encodeURIComponent(invoiceId)}${approve ? "/approve" : ""}`, {
+      method: approve ? "POST" : "PATCH", body: JSON.stringify({ invoice_data: invoiceData }),
+    });
+    await refreshInvoiceReview(invoiceId);
+    $("#invoice-review-status").textContent = approve ? "Invoice approved and published to analytics." : "Corrections saved.";
+  } catch (error) {
+    status.textContent = error.message;
+    button.disabled = false;
+  }
+}
+
+async function rejectInvoice(form) {
+  const invoiceId = form.dataset.invoiceId;
+  if (!window.confirm("Reject this invoice? It will remain available for review but will not be published to analytics.")) return;
+  const button = form.querySelector("[data-reject-invoice]");
+  const status = form.querySelector("[data-invoice-edit-status]");
+  button.disabled = true;
+  status.textContent = "Rejecting invoice…";
+  try {
+    await api(`/api/invoices/${encodeURIComponent(invoiceId)}/reject`, { method: "POST" });
+    await refreshInvoiceReview(invoiceId);
+    $("#invoice-review-status").textContent = "Invoice rejected and kept out of analytics.";
+  } catch (error) {
+    status.textContent = error.message;
+    button.disabled = false;
+  }
+}
+
+$("#invoice-review-refresh").addEventListener("click", () => refreshInvoiceReview().catch((error) => {
+  $("#invoice-review-status").textContent = `Could not load invoices: ${error.message}`;
+}));
+$("#invoice-review-list").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-invoice-review-id]");
+  if (button) openInvoiceReview(button.dataset.invoiceReviewId).catch((error) => {
+    $("#invoice-review-status").textContent = error.message;
+  });
+});
+$("#invoice-review-detail").addEventListener("submit", (event) => {
+  if (event.target.id === "invoice-retry-form") {
+    event.preventDefault();
+    retryInvoiceExtraction(event.target);
+    return;
+  }
+  if (event.target.id !== "invoice-review-form") return;
+  event.preventDefault();
+  saveInvoiceReview(event.target);
+});
+$("#invoice-review-detail").addEventListener("click", (event) => {
+  const form = event.target.closest("#invoice-review-form");
+  if (!form) return;
+  if (event.target.closest("[data-approve-invoice]")) return saveInvoiceReview(form, true);
+  if (event.target.closest("[data-reject-invoice]")) return rejectInvoice(form);
+  if (event.target.closest("[data-add-invoice-item]")) {
+    const currentData = invoiceReviewPayload(form);
+    currentData.items.push(Object.fromEntries(INVOICE_ITEM_FIELDS.map(([key]) => [key, null])));
+    activeInvoiceReview.invoice_data = currentData;
+    renderInvoiceReviewDetail(activeInvoiceReview);
+  }
+  const remove = event.target.closest("[data-remove-invoice-item]");
+  if (remove) {
+    const index = Number(remove.dataset.removeInvoiceItem);
+    const currentData = invoiceReviewPayload(form);
+    currentData.items.splice(index, 1);
+    activeInvoiceReview.invoice_data = currentData;
+    renderInvoiceReviewDetail(activeInvoiceReview);
+  }
+});
 
 async function refreshKnowledgeDocuments() {
   $("#knowledge-documents-status").textContent = "Loading indexed sources…";
@@ -263,7 +604,10 @@ async function loadOcrTestRuns() {
     const config = run.processor_config || {};
     const engine = config.parser_engine;
     const selected = config.parser_settings?.[engine] || config;
-    const parserSettings = `Docling · ${selected.docling_device || "cpu"} · OCR ${selected.docling_ocr ? "on" : "off"} (${selected.docling_ocr_language || "vi"}) · tables ${selected.docling_table_structure ? "on" : "off"} · ${selected.docling_num_threads || 4} threads`;
+    const intent = config.intent || "document";
+    const parserSettings = intent === "document"
+      ? `Document · Docling · ${selected.docling_device || "cpu"} · OCR ${selected.docling_ocr ? "on" : "off"} (${selected.docling_ocr_language || "vi"}) · tables ${selected.docling_table_structure ? "on" : "off"} · ${selected.docling_num_threads || 4} threads`
+      : intent === "invoice" ? "Invoice extraction · Docling OCR + Qwen text model" : "Image caption · Vintern";
     const settings = parserSettings;
     const previewSummary = run.page_count ? `${formatNumber(run.page_count)} page previews` : "no page previews";
     const processingSummary = `processing ${formatDuration(run.runtime_info?.processing_time_ms)}`;
@@ -273,6 +617,14 @@ async function loadOcrTestRuns() {
 
 function renderOcrTestDetails(run) {
   const previewPages = run.pages || [];
+  const invoiceExtraction = run.runtime_info?.invoice_extraction;
+  const invoiceOutput = invoiceExtraction ? `<section class="ocr-test-invoice">
+    <div class="candidate-heading"><strong>Invoice JSON draft</strong><span>${escapeHtml(invoiceExtraction.model || "Text model")} · ${invoiceExtraction.review_required ? "review required" : "status unknown"}</span></div>
+    <p class="corpus-note">Schema ${escapeHtml(invoiceExtraction.schema_version || "invoice.v1")} · inference ${formatDuration((invoiceExtraction.metrics?.inference_seconds || 0) * 1000)} · this draft is separate from the parser elements and table output.</p>
+    <pre>${escapeHtml(JSON.stringify(invoiceExtraction.fields ?? null, null, 2))}</pre>
+    ${invoiceExtraction.parse_error ? `<p class="corpus-note" data-state="warning">${escapeHtml(invoiceExtraction.parse_error)}. Raw model response is available below.</p>` : ""}
+    ${invoiceExtraction.raw_response ? `<details class="candidate-source"><summary>Raw model response</summary><pre>${escapeHtml(invoiceExtraction.raw_response)}</pre></details>` : ""}
+  </section>` : "";
   const singlePreviewPage = previewPages.length === 1 ? Number(previewPages[0]) : null;
   const elementPage = (element) => element.metadata?.page_number;
   const tablePage = (table) => table.page_number ?? table.metadata?.page_number;
@@ -417,6 +769,7 @@ function renderOcrTestDetails(run) {
     <div class="candidate-heading"><strong>${escapeHtml(run.source_filename)}</strong><span>${processingSummary} · ${run.page_count ? `${formatNumber(run.page_count)} page previews` : "No page previews"} · ${formatNumber(run.elements.length)} parser elements · ${formatNumber(run.tables.length)} tables</span></div>
     <p class="corpus-note">SHA-256: <code>${escapeHtml(run.source_sha256)}</code></p>
     <details class="candidate-source"><summary>Parser configuration and versions</summary><pre>${escapeHtml(JSON.stringify({processor_config:run.processor_config,runtime_info:run.runtime_info},null,2))}</pre></details>
+    ${invoiceOutput}
     <div class="ocr-test-pages">${pageContent}${unpagedOutput}</div>
   </article>`;
 }
@@ -478,14 +831,17 @@ async function openOcrTestRun(runId) {
 }
 
 function updateUploadTestParserSettings() {
-  const engine = $("#ocr-test-parser").value;
+  const intent = $("#ocr-test-parser").value;
   document.querySelectorAll("#ocr-test-form [data-parser-settings]").forEach((fieldset) => {
-    const active = fieldset.dataset.parserSettings === engine;
+    const active = fieldset.dataset.parserSettings === intent;
     fieldset.hidden = !active;
     fieldset.querySelectorAll("input, select, textarea").forEach((control) => {
       control.disabled = !active;
     });
   });
+  $("#ocr-test-file").accept = intent === "document"
+    ? ".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff,.svg,.webp"
+    : ".pdf,.png,.jpg,.jpeg,.tif,.tiff,.webp";
 }
 
 $("#ocr-test-parser").addEventListener("change", updateUploadTestParserSettings);
@@ -723,7 +1079,6 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
     ${routeDetails}
     ${tokenUsage}
     <div class="answer-text">${renderAnswerBody(data.answer)}</div>
-    ${renderAgentInventoryDashboard(data.data?.dashboard)}
     ${renderAgentRows(data.data)}
     ${renderDashboardVisualization(data.data?.visualization)}
     ${data.citation_validation_failed ? `<p class="error-message">The answer was withheld because it failed evidence validation.${data.decision_validation_failure ? ` <details><summary>Admin diagnostic</summary><code>${escapeHtml(data.decision_validation_failure)}</code>${data.decision_validation_numeric_tokens?.length ? `<p>Unsupported numeric claims: ${data.decision_validation_numeric_tokens.map(escapeHtml).join(", ")}</p>` : ""}</details>` : ""}</p>` : citations.length ? `
@@ -742,11 +1097,6 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
             : source.source_type === "commerce_sql" ? `SQL aggregate · ${(source.source_tables || []).join(", ")}`
               : source.source_type === "commerce_schema" ? `Schema coverage · ${(source.source_tables || []).join(", ")}`
               : Number.isInteger(source.chunk_index) ? `Passage ${source.chunk_index + 1}` : "Reference";
-          const relevanceScore = Number.isFinite(source.score) ? source.score * 100 : null;
-          const scoreClass = relevanceScore && relevanceScore >= 80 ? "high" : relevanceScore && relevanceScore >= 60 ? "med" : "low";
-          const relevanceBadge = relevanceScore !== null
-            ? `<span class="citation-relevance-meter ${scoreClass}">Relevance: ${relevanceScore.toFixed(1)}%</span>`
-            : "";
           const referenceScope = source.reference_applicability
             ? `<p class="citation-scope"><strong>Source scope:</strong> ${escapeHtml(source.reference_applicability)}</p>`
             : "";
@@ -782,7 +1132,6 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
               ${sqlTrace}
               <div class="citation-foot">
                 <span>${escapeHtml(publisher)}${source.evidence_class ? ` · ${escapeHtml(source.evidence_class.replaceAll("_", " "))}` : ""}</span>
-                ${relevanceBadge}
                 ${link}
               </div>
             </article>`;
@@ -807,40 +1156,6 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
   }
 
   if (shouldScroll) panel.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-function renderAgentInventoryDashboard(dashboard) {
-  if (dashboard?.outline_id !== "inventory_control") return "";
-  const kpis = dashboard.kpis || {};
-  const metrics = [["SKUs", kpis.sku_count], ["Stockout rate", kpis.stockout_rate == null ? null : `${Number(kpis.stockout_rate).toFixed(1)}%`],
-    ["Overstock rate", kpis.overstock_rate == null ? null : `${Number(kpis.overstock_rate).toFixed(1)}%`],
-    ["Mean fill rate", kpis.mean_fill_rate == null ? null : `${(Number(kpis.mean_fill_rate) * 100).toFixed(1)}%`]];
-  const exceptions = dashboard.exceptions || [];
-  const columns = ["product_name", "category", "stock_on_hand", "days_of_supply", "stockout_flag", "overstock_flag", "reorder_flag"];
-  const rows = exceptions.slice(0, 25).map((row) => `<tr>${columns.map((key) => `<td>${escapeHtml(row[key] ?? "—")}</td>`).join("")}</tr>`).join("");
-  return `<section class="agent-inventory-result"><div class="section-heading"><div><p class="eyebrow">LATEST SNAPSHOT · ${escapeHtml(dashboard.snapshot_date || "date unavailable")}</p><h3>${escapeHtml(dashboard.title || "Inventory Control & Exceptions")}</h3></div></div>
-    <div class="agent-result-kpis">${metrics.map(([label,value]) => `<article><span>${escapeHtml(label)}</span><strong>${escapeHtml(value ?? "Unavailable")}</strong></article>`).join("")}</div>
-    <h4>Flagged products</h4>${rows ? `<div class="commerce-table-wrap"><table><thead><tr>${columns.map((key) => `<th scope="col">${escapeHtml(key.replaceAll("_", " "))}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>` : `<p class="no-citations">No inventory exceptions were returned.</p>`}
-  </section>`;
-}
-
-async function loadInventorySnapshot() {
-  const panel = $("#inventory-snapshot");
-  panel.hidden = false;
-  panel.innerHTML = '<p class="analysis-empty">Loading latest inventory snapshot…</p>';
-  try {
-    const result = await api("/api/agents/chat", {
-      method: "POST",
-      body: JSON.stringify({
-        question: "Show the latest inventory snapshot and stock exceptions.",
-        agent_mode: "dashboard",
-      }),
-    });
-    const dashboard = renderAgentInventoryDashboard(result.data?.dashboard);
-    panel.innerHTML = dashboard || '<p class="analysis-empty">No inventory snapshot is available.</p>';
-  } catch (error) {
-    panel.innerHTML = `<p class="analysis-empty">Inventory snapshot unavailable: ${escapeHtml(error.message)}</p>`;
-  }
 }
 
 function renderAgentRows(data) {
@@ -1000,6 +1315,11 @@ async function loadWorkspace(user) {
       $("#knowledge-documents-status").textContent = `Could not load knowledge-base files: ${error.message}`;
     });
   }
+  if (["admin", "document_uploader", "document_processing_owner"].includes(user.role)) {
+    void refreshInvoiceReview().catch((error) => {
+      $("#invoice-review-status").textContent = `Could not load invoices: ${error.message}`;
+    });
+  }
   $("#access-matrix").replaceChildren();
   $("#connection-status").textContent = "Knowledge base connected";
   $("#user-badge").textContent = `${user.username} · ${user.role}`;
@@ -1009,7 +1329,6 @@ async function loadWorkspace(user) {
   $(".agent-overview").hidden = ["document_processing_owner", "document_uploader"].includes(user.role);
   $(".stats").hidden = user.role === "document_processing_owner";
   const canUseAnalytics = ["admin", "finance_analyst", "sustainability_analyst", "operations", "executive"].includes(user.role);
-  $("#inventory-snapshot").hidden = false;
   ["#analytics-agent-card", "#inventory-agent-card", "#report-agent-card", "#report-agent-form-section"].forEach((selector) => {
     $(selector).hidden = !canUseAnalytics;
   });
@@ -1023,8 +1342,6 @@ async function loadWorkspace(user) {
     try { renderCorpus(await api("/api/dashboard")); }
     catch (error) { $("#connection-status").textContent = `Knowledge base unavailable: ${error.message}`; }
   }
-  if (canUseAnalytics) void loadInventorySnapshot();
-  else $("#inventory-snapshot").innerHTML = '<p class="analysis-empty">Inventory snapshot requires analytics access.</p>';
   try {
     if (user.role === "admin") {
       const access = await api("/api/admin/access-matrix");
@@ -1080,6 +1397,53 @@ $("#knowledge-documents-refresh").addEventListener("click", async () => {
   catch (error) { $("#knowledge-documents-status").textContent = error.message; }
 });
 $("#knowledge-documents-list").addEventListener("click", async (event) => {
+  const deleteButton = event.target.closest("[data-knowledge-delete]");
+  if (deleteButton) {
+    const documentId = deleteButton.dataset.knowledgeDelete;
+    const title = deleteButton.dataset.title;
+    if (!window.confirm(`Permanently delete “${title}”? This removes the original file, parser output, and indexed data. This cannot be undone.`)) return;
+    deleteButton.disabled = true;
+    try {
+      const result = await api(`/api/admin/knowledge-documents/${encodeURIComponent(documentId)}`, { method: "DELETE" });
+      await refreshKnowledgeDocuments();
+      $("#knowledge-documents-status").textContent = result.source_file_removed
+        ? `Permanently deleted “${title}” and its source file.`
+        : `Deleted “${title}” from the knowledge base, but private-file cleanup failed. Check application logs.`;
+    } catch (error) {
+      $("#knowledge-documents-status").textContent = error.message;
+      deleteButton.disabled = false;
+    }
+    return;
+  }
+  if (event.target.closest("[data-close-knowledge-review]")) {
+    activeKnowledgeReview = null;
+    renderKnowledgeDocuments();
+    return;
+  }
+  const reviewButton = event.target.closest("[data-review-elements]");
+  if (reviewButton) {
+    const documentId = reviewButton.dataset.reviewElements;
+    if (activeKnowledgeReview?.document_id === documentId) {
+      activeKnowledgeReview = null;
+      renderKnowledgeDocuments();
+      return;
+    }
+    activeKnowledgeReview = { document_id: documentId, status: "loading" };
+    renderKnowledgeDocuments();
+    try {
+      const output = await api(`/api/admin/knowledge-documents/${encodeURIComponent(documentId)}/processing-output`);
+      if (activeKnowledgeReview?.document_id === documentId) {
+        activeKnowledgeReview = { document_id: documentId, output };
+        renderKnowledgeDocuments();
+      }
+    } catch (error) {
+      if (activeKnowledgeReview?.document_id === documentId) {
+        activeKnowledgeReview = { document_id: documentId, error: error.message };
+        renderKnowledgeDocuments();
+      }
+    }
+    return;
+  }
   const retryButton = event.target.closest("[data-retry-embedding]");
   if (retryButton) {
     const documentId = retryButton.dataset.retryEmbedding;
@@ -1179,11 +1543,28 @@ $("#ocr-test-form").addEventListener("submit", async (event) => {
   const form = event.currentTarget;
   const button = $("#ocr-test-button");
   button.disabled = true;
-  const parserEngine = form.elements.namedItem("parser_engine").value;
-  const parserLabel = "Docling";
-  $("#ocr-test-status").textContent = `Running ${parserLabel} with shared output cleanup…`;
+  const intent = form.elements.namedItem("intent").value;
+  const parserLabel = intent === "document" ? "Docling" : intent === "invoice" ? "Docling OCR + Qwen invoice extraction" : "Vintern image caption";
+  $("#ocr-test-status").textContent = `Running ${parserLabel}…`;
   try {
-    const result = await api("/api/upload-tests", {method:"POST", body:new FormData(form)});
+    let result = await api("/api/upload-tests", {method:"POST", body:new FormData(form)});
+    if (result.status === "processing") {
+      const runId = result.run_id;
+      const startedAt = Date.now();
+      while (result.status === "processing") {
+        await new Promise((resolve) => window.setTimeout(resolve, 3000));
+        result = await api(`/api/upload-tests/${encodeURIComponent(runId)}`);
+        if (result.status === "processing") {
+          const elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000);
+          const runningLabel = intent === "invoice"
+            ? "Docling OCR + Qwen invoice extraction"
+            : intent === "image_caption" ? "Vintern image caption" : "Docling";
+          $("#ocr-test-status").textContent = `${runningLabel} is still processing (${formatDuration(elapsedSeconds * 1000)})…`;
+        } else if (result.status === "failed") {
+          throw new Error(result.error || "Vintern processing failed");
+        }
+      }
+    }
     $("#ocr-test-status").textContent = `Saved isolated run ${result.run_id}: ${result.page_count} pages, ${result.element_count} parser elements, ${result.table_count} tables. No production document was created.`;
     await loadOcrTestRuns();
     await openOcrTestRun(result.run_id);
@@ -1348,6 +1729,47 @@ function updateReportFormatVisibility() {
 $("#report-agent-template").addEventListener("change", updateReportFormatVisibility);
 updateReportFormatVisibility();
 
+function confirmReportPlan(detail) {
+  return new Promise((resolve) => {
+    const dialog = document.createElement("dialog");
+    dialog.className = "report-plan-dialog";
+    dialog.setAttribute("aria-labelledby", "report-plan-title");
+    const title = document.createElement("h2");
+    title.id = "report-plan-title";
+    title.textContent = "Review report scope and structure";
+    dialog.append(title);
+    for (const reason of [...(detail.mismatch_reasons || []), ...(detail.unsupported_requirements || [])]) {
+      const paragraph = document.createElement("p");
+      paragraph.textContent = reason;
+      dialog.append(paragraph);
+    }
+    if (detail.suggested_structure?.length) {
+      const paragraph = document.createElement("p");
+      paragraph.textContent = "Suggested sections: " + detail.suggested_structure.map((section) => section.heading).join("; ");
+      dialog.append(paragraph);
+    }
+    const finish = (choice) => { dialog.close(); dialog.remove(); resolve(choice); };
+    const choices = detail.template_decision_required
+      ? [["Use suggested structure", "suggested"], ["Continue with uploaded template", "uploaded"]]
+      : [["Generate supported report", null]];
+    for (const [label, templateChoice] of choices) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = detail.scope_decision_required && templateChoice ? label + " (supported scope only)" : label;
+      button.addEventListener("click", () => finish({ templateChoice, acceptSupportedScope: Boolean(detail.scope_decision_required) }));
+      dialog.append(button);
+    }
+    const cancel = document.createElement("button");
+    cancel.type = "button";
+    cancel.textContent = "Cancel";
+    cancel.addEventListener("click", () => finish(null));
+    dialog.addEventListener("cancel", (event) => { event.preventDefault(); finish(null); });
+    dialog.append(cancel);
+    document.body.append(dialog);
+    dialog.showModal();
+  });
+}
+
 $("#report-agent-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const requestConversationId = reportConversationId;
@@ -1366,20 +1788,38 @@ $("#report-agent-form").addEventListener("submit", async (event) => {
   delete status.dataset.state;
   status.textContent = "Generating report from authorized sources...";
   try {
-    const response = await fetch("/api/agents/report", {
-      method: "POST", body: formData, credentials: "same-origin",
-      headers: { "ngrok-skip-browser-warning": "1" },
-    });
-    if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
-    if (response.status === 401) {
-      clearExpiredSession();
-      throw new Error("Sign in to continue");
+    let response;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      response = await fetch("/api/agents/report", {
+        method: "POST", body: formData, credentials: "same-origin",
+        headers: { "ngrok-skip-browser-warning": "1" },
+      });
+      if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
+      if (response.status === 401) {
+        clearExpiredSession();
+        throw new Error("Sign in to continue");
+      }
+      if (response.status !== 409) break;
+      const payload = await response.json();
+      if (!payload.detail?.confirmation_required) throw new Error("Unexpected report confirmation response.");
+      const choice = await confirmReportPlan(payload.detail);
+      if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
+      if (!choice) { status.textContent = "Report generation cancelled."; return; }
+      if (choice.templateChoice) formData.set("template_choice", choice.templateChoice);
+      if (choice.acceptSupportedScope) formData.set("accept_supported_scope", "true");
+      if (attempt === 2) throw new Error("The report plan changed repeatedly. Refine the request and try again.");
     }
+    if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
     if (!response.ok) {
       let detail = "Report request failed (HTTP " + response.status + ")";
       try {
         const payload = await response.json();
         const reportError = typeof payload.detail === "object" ? payload.detail : null;
+        if (reportError?.status === "unsupported") {
+          status.dataset.state = "warning";
+          status.textContent = (reportError.limitations || []).join("; ");
+          return;
+        }
         if (reportError?.status === "clarification_required") {
           status.dataset.state = "warning";
           status.textContent = `Clarification needed: ${reportError.clarification || reportError.detail || "Please refine the decision question."}`;
@@ -1406,6 +1846,14 @@ $("#report-agent-form").addEventListener("submit", async (event) => {
     status.textContent = reportStatus === "partial"
       ? "Partial report downloaded. Review its limitations before using it."
       : "Report generated and downloaded.";
+    try {
+      const summary = JSON.parse(response.headers.get("X-Report-Summary") || "null");
+      if (summary) {
+        status.textContent += ` Sections: ${summary.complete} complete, ${summary.unavailable} unavailable, ${summary.failed} failed. `
+          + `${summary.omitted_from_narrative} evidence items omitted from narrative; review detail tables and coverage.`;
+        if (summary.reasons?.length) status.textContent += " Reasons: " + summary.reasons.join("; ") + ".";
+      }
+    } catch {}
   } catch (error) {
     if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
     status.dataset.state = "error";
@@ -1426,14 +1874,38 @@ function updateUploadRoleSelection() {
 
 const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
 const SUPPORTED_UPLOAD_EXTENSIONS = new Set([".pdf", ".docx", ".pptx", ".xlsx", ".csv", ".txt", ".md", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]);
+const INVOICE_UPLOAD_EXTENSIONS = new Set([".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]);
 
-function validateUploadFile(file) {
+function validateUploadFile(file, invoiceMode = false) {
   if (!file) return "Choose a document to upload.";
   const extension = "." + file.name.split(".").pop().toLocaleLowerCase();
-  if (!SUPPORTED_UPLOAD_EXTENSIONS.has(extension)) return "This file type is not supported. Choose PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG or TIF.";
+  const supported = invoiceMode ? INVOICE_UPLOAD_EXTENSIONS : SUPPORTED_UPLOAD_EXTENSIONS;
+  if (!supported.has(extension)) return invoiceMode
+    ? "Invoice extraction supports PDF, PNG, JPG and TIF files."
+    : "This file type is not supported. Choose PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG or TIF.";
   if (file.size > MAX_UPLOAD_BYTES) return "The file is larger than the 50 MiB upload limit.";
   return "";
 }
+
+function updateUploadKind() {
+  const invoiceMode = $("#upload-kind").value === "invoice";
+  $("#upload-access-step").hidden = invoiceMode;
+  $("#invoice-model-field").hidden = !invoiceMode;
+  $("#upload-title").required = !invoiceMode;
+  $("#upload-title").closest(".upload-field").hidden = invoiceMode;
+  $("#upload-file-label").textContent = invoiceMode ? "Invoice file" : "Document file";
+  $("#upload-file").accept = invoiceMode
+    ? ".pdf,.png,.jpg,.jpeg,.tif,.tiff"
+    : ".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff";
+  $("#upload-kind-help").textContent = invoiceMode
+    ? "OCR and a text model create a reviewable invoice JSON draft in a separate invoice table."
+    : "Knowledge documents are indexed for document Q&A.";
+  const file = $("#upload-file").files[0];
+  if (file) $("#upload-file-info").textContent = validateUploadFile(file, invoiceMode)
+    || `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)} MiB.`;
+}
+
+$("#upload-kind").addEventListener("change", updateUploadKind);
 
 $("#upload-file").addEventListener("change", (event) => {
   const file = event.currentTarget.files[0];
@@ -1441,8 +1913,10 @@ $("#upload-file").addEventListener("change", (event) => {
   if (file && title.dataset.userEdited !== "true") {
     title.value = file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim();
   }
-  const error = validateUploadFile(file);
-  $("#upload-file-info").textContent = error || file.name + " · " + (file.size / 1024 / 1024).toFixed(1) + " MiB. The original stays private; review OCR output in Document Processing.";
+  const invoiceMode = $("#upload-kind").value === "invoice";
+  const error = validateUploadFile(file, invoiceMode);
+  $("#upload-file-info").textContent = error || file.name + " · " + (file.size / 1024 / 1024).toFixed(1) + " MiB. "
+    + (invoiceMode ? "The source stays private; the JSON draft is stored separately from documents." : "The original stays private; review OCR output in Document Processing.");
   $("#upload-file-info").setAttribute("role", error ? "alert" : "status");
 });
 
@@ -1482,10 +1956,11 @@ $("#upload-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
   const parserHandoff = event.submitter?.dataset.uploadMode === "parser-handoff";
+  const invoiceMode = $("#upload-kind").value === "invoice";
   const file = $("#upload-file").files[0];
   const roles = [...form.querySelectorAll('input[name="allowed_roles"]:checked')].map((input) => input.value);
-  const fileError = validateUploadFile(file);
-  if (fileError || !roles.length) {
+  const fileError = validateUploadFile(file, invoiceMode);
+  if (fileError || (!invoiceMode && !roles.length)) {
     const status = $("#upload-status");
     $("#upload-status-wrap").hidden = false;
     $("#upload-progress").hidden = true;
@@ -1495,18 +1970,24 @@ $("#upload-form").addEventListener("submit", async (event) => {
   }
   const body = new FormData();
   body.append("file", file);
-  for (const name of ["title"]) {
-    const value = form.elements[name].value.trim();
-    if (value) body.append(name, value);
+  if (invoiceMode) {
+    body.append("model_provider", $("#invoice-model").value);
+  } else {
+    for (const name of ["title"]) {
+      const value = form.elements[name].value.trim();
+      if (value) body.append(name, value);
+    }
+    body.append("document_type", "knowledge_document");
+    body.append("domain", "general_knowledge");
+    roles.forEach((role) => body.append("allowed_roles", role));
   }
-  body.append("document_type", "knowledge_document");
-  body.append("domain", "general_knowledge");
-  roles.forEach((role) => body.append("allowed_roles", role));
   const controls = [...form.querySelectorAll("input, select, textarea, button")];
   const controlsWereDisabled = controls.map((control) => control.disabled);
   controls.forEach((control) => { control.disabled = true; });
   form.setAttribute("aria-busy", "true");
   const status = $("#upload-status");
+  $("#upload-invoice-result").hidden = true;
+  $("#upload-invoice-result").textContent = "";
   const progress = $("#upload-progress");
   const elapsedLabel = $("#upload-elapsed");
   $("#upload-status-wrap").hidden = false;
@@ -1520,14 +2001,44 @@ $("#upload-form").addEventListener("submit", async (event) => {
       : `${Math.floor(elapsedSeconds / 60)}m ${String(elapsedSeconds % 60).padStart(2, "0")}s`);
   };
   status.dataset.state = "processing";
-  status.textContent = parserHandoff
+  status.textContent = invoiceMode
+    ? "Uploading invoice, running OCR and extracting a reviewable JSON draft. This is saved separately from the document corpus. Keep this tab open."
+    : parserHandoff
     ? "Uploading, extracting and saving parser output. Chunking and indexing run downstream. Keep this tab open."
     : "Uploading, extracting text/OCR, chunking and indexing. Keep this tab open.";
   updateProcessingTime();
   const processingTimer = window.setInterval(updateProcessingTime, 1000);
   let result;
   try {
-    result = await api(parserHandoff ? "/api/documents/parser-handoff" : "/api/documents/upload", { method: "POST", body, headers: {} });
+    result = await api(invoiceMode ? "/api/invoices/upload" : parserHandoff ? "/api/documents/parser-handoff" : "/api/documents/upload", { method: "POST", body, headers: {} });
+    if (invoiceMode) {
+      while (result.processing_status === "processing") {
+        const elapsedSeconds = Math.floor((Date.now() - processingStartedAt) / 1000);
+        status.textContent = `Invoice ${result.invoice_id} is running OCR and extraction (${formatDuration(elapsedSeconds * 1000)}). You can leave this tab open; the saved invoice remains available if you return later.`;
+        await new Promise((resolve) => window.setTimeout(resolve, 3000));
+        result = await api(`/api/invoices/${encodeURIComponent(result.invoice_id)}`);
+      }
+      if (result.processing_status === "failed") {
+        throw new Error(`Invoice ${result.invoice_id} was saved, but extraction failed: ${result.error_message || "check backend logs"}`);
+      }
+      status.dataset.state = "success";
+      progress.hidden = true;
+      elapsedLabel.hidden = true;
+      status.textContent = `Invoice ${result.invoice_id} saved for review in the invoice table. Model: ${result.extraction_model || "unknown"}.`;
+      $("#upload-invoice-result").textContent = JSON.stringify(result.invoice_data, null, 2);
+      $("#upload-invoice-result").hidden = false;
+      form.reset();
+      updateUploadKind();
+      updateUploadRoleSelection();
+      $("#upload-file-info").textContent = "Choose an invoice. Its JSON draft is stored separately from the document corpus.";
+      try {
+        await refreshInvoiceReview(result.invoice_id);
+        selectWorkspaceTab("invoice-review");
+      } catch (error) {
+        $("#invoice-review-status").textContent = `Invoice was saved, but the review queue could not refresh: ${error.message}`;
+      }
+      return;
+    }
     const referenceStatus = parserHandoff
       ? " Parser output is saved in public for the chunking worker; this document is not searchable yet."
       : " Indexed for document Q&A.";
@@ -1569,10 +2080,20 @@ $("#upload-form").addEventListener("submit", async (event) => {
   } catch (error) {
     progress.hidden = true;
     elapsedLabel.hidden = true;
-    status.dataset.state = result ? "warning" : "error";
-    status.textContent = result
-      ? `The file was processed successfully as ${result.document_id}, but the workspace could not refresh: ${error.message}`
-      : error.message;
+    if (invoiceMode) {
+      const invoiceId = result?.invoice_id;
+      status.dataset.state = invoiceId ? "warning" : "error";
+      status.textContent = result?.processing_status === "failed"
+        ? `Invoice ${invoiceId} was saved, but extraction failed: ${result.error_message || error.message}`
+        : invoiceId
+        ? `Invoice ${invoiceId} was saved, but its processing status could not be refreshed: ${error.message}`
+        : error.message;
+    } else {
+      status.dataset.state = result ? "warning" : "error";
+      status.textContent = result
+        ? `The file was processed successfully as ${result.document_id}, but the workspace could not refresh: ${error.message}`
+        : error.message;
+    }
   } finally {
     window.clearInterval(processingTimer);
     controls.forEach((control, index) => { control.disabled = controlsWereDisabled[index]; });
@@ -1600,3 +2121,19 @@ function setupThemeToggle() {
 setupThemeToggle();
 setupQuickPrompts();
 loadCorpus();
+
+// Keep this preference local to the browser; storage may be disabled.
+function setSidebarCollapsed(collapsed) {
+  $("#workspace").classList.toggle("sidebar-collapsed", collapsed);
+  const toggle = $("#sidebar-toggle");
+  toggle.setAttribute("aria-expanded", String(!collapsed));
+  toggle.setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
+  toggle.title = collapsed ? "Expand sidebar" : "Collapse sidebar";
+  toggle.firstElementChild.textContent = collapsed ? "›" : "‹";
+}
+try { setSidebarCollapsed(localStorage.getItem("sidebar_collapsed") === "true"); } catch {}
+$("#sidebar-toggle").addEventListener("click", () => {
+  const collapsed = !$("#workspace").classList.contains("sidebar-collapsed");
+  setSidebarCollapsed(collapsed);
+  try { localStorage.setItem("sidebar_collapsed", String(collapsed)); } catch {}
+});

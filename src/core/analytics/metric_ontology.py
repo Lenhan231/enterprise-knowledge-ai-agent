@@ -158,7 +158,7 @@ METRIC_ONTOLOGY = {
         "dimensions": ("order_date", "region"),
     },
     "return_rate": {
-        "aliases": ("return rate", "refund rate", "tỷ lệ trả hàng", "tỷ lệ hoàn hàng"),
+        "aliases": ("return rate", "refund rate", "tỷ lệ trả hàng", "tỷ lệ hoàn hàng", "tỉ lệ trả hàng", "tỉ lệ hoàn hàng"),
         "source": "commerce.returns + commerce.orders (+ commerce.geography khi lọc theo region)",
         "formula": "COUNT(DISTINCT returns.order_id)::numeric / NULLIF(COUNT(DISTINCT orders.order_id), 0)",
         "grain": "order",
@@ -217,6 +217,37 @@ METRIC_ONTOLOGY = {
 
 METRIC_ONTOLOGY.update(load_inventory_catalog())
 
+METRIC_ONTOLOGY.update({
+    'invoice_count': {
+        'aliases': ('invoice count', 'number of invoices', 'count invoices', 'số hóa đơn', 'số lượng hóa đơn'),
+        'source': 'commerce.invoices', 'domain': 'invoices',
+        'formula': 'COUNT(DISTINCT invoice_id)', 'grain': 'invoice',
+        'aggregation': 'count_distinct', 'unit': 'invoices',
+        'dimensions': ('invoice_date', 'buyer', 'seller', 'currency'),
+    },
+    'invoice_total': {
+        'aliases': ('total invoice amount', 'invoice total', 'invoice revenue', 'invoice spending', 'tổng tiền hóa đơn'),
+        'source': 'commerce.invoices', 'domain': 'invoices',
+        'formula': 'SUM(total_amount)', 'grain': 'invoice',
+        'aggregation': 'sum', 'unit': 'currency',
+        'dimensions': ('invoice_date', 'buyer', 'seller', 'currency'),
+    },
+    'invoice_tax': {
+        'aliases': ('invoice tax', 'total tax', 'tax amount', 'thuế hóa đơn', 'tổng tiền thuế'),
+        'source': 'commerce.invoices', 'domain': 'invoices',
+        'formula': 'SUM(tax_amount)', 'grain': 'invoice',
+        'aggregation': 'sum', 'unit': 'currency',
+        'dimensions': ('invoice_date', 'buyer', 'seller', 'currency'),
+    },
+    'invoice_item_amount': {
+        'aliases': ('invoice item amount', 'invoice line amount', 'thành tiền dòng hóa đơn'),
+        'source': 'commerce.invoice_items + commerce.invoices', 'domain': 'invoices',
+        'formula': 'SUM(amount)', 'grain': 'invoice_item',
+        'aggregation': 'sum', 'unit': 'currency',
+        'dimensions': ('invoice_date', 'buyer', 'seller', 'description', 'unit', 'currency'),
+    },
+})
+
 def get_metric_definition(metric_name: str) -> dict:
     """Trả về định nghĩa chuẩn; báo lỗi rõ ràng với metric không được hỗ trợ."""
     try:
@@ -234,9 +265,10 @@ def resolve_metric_names(text: str) -> set[str]:
     normalized = _normalize(text)
     matches: list[tuple[int, int, str]] = []
     for metric_name, definition in METRIC_ONTOLOGY.items():
-        for alias in definition["aliases"]:
+        for alias in (*definition["aliases"], metric_name):
             phrase = _normalize(alias)
-            pattern = re.compile(rf"(?<!\w){re.escape(phrase)}(?!\w)")
+            spelling = re.escape(phrase).replace(r'\ ', '[ _]')
+            pattern = re.compile(rf"(?<!\w){spelling}(?!\w)")
             matches.extend((match.start(), match.end(), metric_name) for match in pattern.finditer(normalized))
 
     selected: list[tuple[int, int, str]] = []

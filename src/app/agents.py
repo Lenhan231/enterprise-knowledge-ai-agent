@@ -184,6 +184,8 @@ async def generate_agent_report(
     http_request: Request, question: str = Form(...), template: UploadFile | None = File(None),
     source_mode: Literal["documents", "analytics", "orchestrated", "combined"] = Form("documents"),
     output_format: Literal["markdown", "docx"] | None = Form(None),
+    template_choice: Literal['uploaded', 'suggested'] | None = Form(None),
+    accept_supported_scope: bool = Form(False),
     conversation_id: str | None = Form(None, max_length=128),
     user: dict = Depends(require_permission("ask_documents")),
 ):
@@ -203,7 +205,8 @@ async def generate_agent_report(
         runtime = await _get_runtime(http_request.app)
         filename = Path(template.filename or "").name if template else None
         result, output, media_type = await runtime.report_agent.generate_from_template(
-            agent_request, filename, content, source_mode=source_mode, output_format=output_format)
+            agent_request, filename, content, source_mode=source_mode, output_format=output_format,
+            template_choice=template_choice, accept_supported_scope=accept_supported_scope)
         status = result.metadata.get("status", "complete" if result.metadata.get("ok", True) else "partial")
         error_type = None
         citation_count = len(result.evidence)

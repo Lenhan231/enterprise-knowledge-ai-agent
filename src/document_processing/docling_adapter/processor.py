@@ -85,6 +85,12 @@ class DoclingProcessor:
             source_format=source_format,
         )
         converter = get_converter(options)
+        for pipeline in converter.initialized_pipelines.values():
+            ocr_model = getattr(pipeline, "ocr_model", None)
+            if ocr_model is not None:
+                getattr(ocr_model, "routing_diagnostics", []).clear()
+                getattr(ocr_model, "orientation_diagnostics", []).clear()
+                getattr(ocr_model, "_orientation_counts", {}).clear()
 
         source_suffix = f".{source_format}" if source_format else ".pdf"
         source_bytes: bytes | None = None
@@ -105,6 +111,20 @@ class DoclingProcessor:
 
         if "FAILURE" in str(result.status).upper():
             raise RuntimeError(f"Docling conversion failed: {result.status}")
+        ocr_routing_diagnostics = [
+            diagnostic
+            for pipeline in converter.initialized_pipelines.values()
+            for diagnostic in getattr(
+                getattr(pipeline, "ocr_model", None), "routing_diagnostics", []
+            )
+        ]
+        ocr_orientation_diagnostics = [
+            diagnostic
+            for pipeline in converter.initialized_pipelines.values()
+            for diagnostic in getattr(
+                getattr(pipeline, "ocr_model", None), "orientation_diagnostics", []
+            )
+        ]
         try:
             docling_version = version("docling")
         except PackageNotFoundError:
@@ -180,6 +200,10 @@ class DoclingProcessor:
             str(page_number): int(correction)
             for page_number, correction in page_orientation_corrections.items()
         }
+        if ocr_routing_diagnostics:
+            mapped["metadata"]["ocr_routing_diagnostics"] = ocr_routing_diagnostics
+        if ocr_orientation_diagnostics:
+            mapped["metadata"]["ocr_orientation_diagnostics"] = ocr_orientation_diagnostics
         if source_format == "pdf":
             mapped["metadata"].update({
                 "pdf_processing_route": "layout_region_ocr" if ocr_engine == "vietocr" else "full_page_ocr",
@@ -260,7 +284,9 @@ class DoclingProcessor:
         return PdfPipelineOptions(
             accelerator_options=AcceleratorOptions(
                 device=device,
-                num_threads=int(self.config.get("docling_num_threads", 2)),
+                num_threads=int(self.config.get(
+                    "docling_num_threads", 2 if device == AcceleratorDevice.CPU else 4,
+                )),
             ),
             do_ocr=do_ocr,
             do_table_structure=bool(self.config.get("docling_table_structure", True)),

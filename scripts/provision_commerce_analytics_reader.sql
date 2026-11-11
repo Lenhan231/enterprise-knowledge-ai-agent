@@ -18,6 +18,14 @@ revoke all on all tables in schema commerce from commerce_analytics_reader;
 revoke create on schema commerce from commerce_analytics_reader;
 grant usage on schema commerce to commerce_analytics_reader;
 
+grant select (invoice_id, source_filename, invoice_no, invoice_date, buyer, seller,
+              subtotal, tax_amount, total_amount, currency)
+    on commerce.invoices to commerce_analytics_reader;
+grant select (invoice_id, line_no, description, unit, quantity, unit_price, amount)
+    on commerce.invoice_items to commerce_analytics_reader;
+-- shortcut: invoice_reader_temporary_all policies allow all readers until invoice RBAC is established.
+-- For a NOINHERIT login, grant membership WITH INHERIT TRUE (Postgres 16+).
+
 grant select (date, revenue, cogs)
     on commerce.sales to commerce_analytics_reader;
 grant select (order_id, order_date, customer_id, zip, order_status, payment_method, device_type, order_source)

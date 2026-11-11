@@ -1,0 +1,91 @@
+{
+  "method": "Replay stored interpretations through repaired compiler, SQLGlot, metric validation and the real read-only PostgreSQL repository. No fresh LLM generation; not Ragas benchmark scores.",
+  "results": [
+    {
+      "id": "I26",
+      "returned": 1,
+      "matches_shared_gold_fields": true,
+      "output_fields": [
+        "snapshot_date",
+        "observed_product_count"
+      ],
+      "missing_gold_fields": []
+    },
+    {
+      "id": "I27",
+      "returned": 1,
+      "matches_shared_gold_fields": true,
+      "output_fields": [
+        "snapshot_date",
+        "observed_product_count"
+      ],
+      "missing_gold_fields": []
+    },
+    {
+      "id": "I37",
+      "returned": 12,
+      "matches_shared_gold_fields": true,
+      "output_fields": [
+        "snapshot_date",
+        "units_received"
+      ],
+      "missing_gold_fields": []
+    },
+    {
+      "id": "I49",
+      "returned": 200,
+      "matches_shared_gold_fields": true,
+      "output_fields": [
+        "product_id",
+        "before_date",
+        "after_date",
+        "stock_before",
+        "stock_after",
+        "stock_delta"
+      ],
+      "missing_gold_fields": [
+        "product_name"
+      ]
+    },
+    {
+      "id": "I50",
+      "returned": 1,
+      "matches_shared_gold_fields": true,
+      "output_fields": [
+        "product_id",
+        "product_name",
+        "before_date",
+        "after_date",
+        "stock_before",
+        "stock_after",
+        "stock_delta"
+      ],
+      "missing_gold_fields": []
+    },
+    {
+      "id": "P27",
+      "returned": 1,
+      "matches_shared_gold_fields": true,
+      "output_fields": [
+        "snapshot_date",
+        "observed_product_count"
+      ],
+      "missing_gold_fields": []
+    },
+    {
+      "id": "P47",
+      "returned": 200,
+      "matches_shared_gold_fields": true,
+      "output_fields": [
+        "product_id",
+        "product_name",
+        "before_date",
+        "after_date",
+        "stock_before",
+        "stock_after",
+        "stock_delta"
+      ],
+      "missing_gold_fields": []
+    }
+  ]
+}

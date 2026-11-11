@@ -98,6 +98,51 @@ class DocumentRepository:
                           RETURNING document_id""", (active, document_id, active))
             return cursor.fetchone() is not None
 
+    def delete_removed_upload(self, document_id: str) -> str | None:
+        """Permanently delete a user upload only after it was removed from retrieval."""
+        with self.conn.transaction(), self.conn.cursor() as cursor:
+            cursor.execute(
+                """SELECT storage_path FROM public.documents
+                   WHERE document_id = %s
+                     AND source_type = 'user_upload'
+                     AND knowledge_base_active IS FALSE
+                   FOR UPDATE""",
+                (document_id,),
+            )
+            source = cursor.fetchone()
+            if source is None:
+                return None
+
+            cursor.execute(
+                """SELECT to_regclass('public.business_metric_evidence') IS NOT NULL AS has_metric_evidence,
+                          to_regclass('public.extracted_financial_metrics') IS NOT NULL AS has_financial_metrics"""
+            )
+            optional_tables = cursor.fetchone()
+            if optional_tables["has_metric_evidence"]:
+                cursor.execute(
+                    "DELETE FROM public.business_metric_evidence WHERE source_document_id = %s",
+                    (document_id,),
+                )
+            if optional_tables["has_financial_metrics"]:
+                cursor.execute(
+                    "DELETE FROM public.extracted_financial_metrics WHERE document_id = %s",
+                    (document_id,),
+                )
+            cursor.execute(
+                "DELETE FROM public.document_chunks WHERE metadata->>'document_id' = %s",
+                (document_id,),
+            )
+            cursor.execute(
+                """DELETE FROM public.documents
+                   WHERE document_id = %s AND source_type = 'user_upload'
+                     AND knowledge_base_active IS FALSE
+                   RETURNING document_id""",
+                (document_id,),
+            )
+            if cursor.fetchone() is None:
+                return None
+            return source["storage_path"] or ""
+
     def upsert_document(self, document: dict) -> None:
         with self.conn.cursor() as cursor:
             cursor.execute(

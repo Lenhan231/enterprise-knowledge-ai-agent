@@ -12,10 +12,12 @@ from typing import Literal
 
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.security import ACCESS_DENIED_MESSAGE, ROLE_PERMISSIONS, require_permission
-from core.latency import latency_events, snapshot
+from core.latency import latency_events, snapshot, stage_listener
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/agents", tags=["agents"])
@@ -177,6 +179,52 @@ async def agent_chat(
             if result is not None:
                 result.metadata["latency"] = timing
             logger.warning("agent_latency %s", json.dumps({"agent": agent_name, "status": status, **timing}))
+
+
+def _sse(kind: str, data) -> str:
+    return f"event: {kind}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+
+@router.post("/chat/stream")
+async def agent_chat_stream(
+    payload: AgentChatRequest, http_request: Request,
+    user: dict = Depends(require_permission("ask_documents")),
+):
+    """Same work as /chat; streams stage progress, then the answer only after verification (never draft tokens)."""
+    loop = asyncio.get_running_loop()
+    queue: asyncio.Queue = asyncio.Queue()
+
+    def notify(stage: str, state: str):
+        # Stages run on worker threads via asyncio.to_thread, so hand events back to the loop.
+        loop.call_soon_threadsafe(queue.put_nowait, _sse("stage", {"stage": stage, "state": state}))
+
+    async def run():
+        token = stage_listener.set(notify)
+        try:
+            result = await agent_chat(payload, http_request, user)
+            await asyncio.sleep(0)  # deliver stage events already scheduled before the result
+            queue.put_nowait(_sse("result", jsonable_encoder(result)))
+        except HTTPException as error:
+            await asyncio.sleep(0)
+            queue.put_nowait(_sse("error", {"status": error.status_code, "detail": error.detail}))
+        finally:
+            stage_listener.reset(token)
+            queue.put_nowait(None)
+
+    task = asyncio.create_task(run())
+
+    async def events():
+        try:
+            yield ": stream open\n\n"  # flushes headers so the browser knows streaming works
+            while (item := await queue.get()) is not None:
+                yield item
+        finally:
+            if not task.done():
+                task.cancel()
+
+    # X-Accel-Buffering stops Nginx from holding events until the response ends.
+    return StreamingResponse(events(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
 @router.post("/report")

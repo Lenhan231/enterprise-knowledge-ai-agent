@@ -2,6 +2,8 @@ const $ = (selector) => document.querySelector(selector);
 let activeTab = "knowledge";
 let currentUser = null;
 let knowledgeDocuments = [];
+let invoiceReviewItems = [];
+let activeInvoiceReview = null;
 let agentConversationId = crypto.randomUUID();
 let reportConversationId = crypto.randomUUID();
 let sessionTurns = [];
@@ -72,6 +74,7 @@ function syncWorkspaceTabs(user = currentUser) {
   const available = {
     knowledge: canAskDocuments,
     upload: canUpload,
+    "invoice-review": canUpload,
     processing: isProcessingOwner,
     "ocr-lab": isProcessingOwner,
     "knowledge-management": isAdmin,
@@ -191,6 +194,133 @@ function renderKnowledgeDocuments() {
     </article>`;
   }).join("") || '<p class="loading-card">No matching indexed sources.</p>';
 }
+
+const INVOICE_REVIEW_FIELDS = [
+  ["invoice_no", "Invoice number"], ["date", "Invoice date"], ["seller", "Seller"],
+  ["buyer", "Buyer"], ["subtotal", "Subtotal"], ["tax_amount", "Tax amount"],
+  ["total_amount", "Total amount"],
+];
+const INVOICE_ITEM_FIELDS = [
+  ["description", "Description"], ["quantity", "Quantity"], ["unit", "Unit"],
+  ["unit_price", "Unit price"], ["amount", "Amount"],
+];
+const invoiceReviewValue = (value) => value == null ? "" : String(value);
+
+function renderInvoiceReviewList() {
+  $("#invoice-review-list").innerHTML = invoiceReviewItems.map((invoice) => {
+    const data = invoice.invoice_data || {};
+    const selected = invoice.invoice_id === activeInvoiceReview?.invoice_id;
+    return `<button class="invoice-review-card ${selected ? "active" : ""}" type="button" data-invoice-review-id="${escapeHtml(invoice.invoice_id)}">
+      <strong>${escapeHtml(invoice.source_filename || invoice.invoice_id)}</strong>
+      <span>${escapeHtml(data.invoice_no || "Invoice number not extracted")} · ${escapeHtml(data.seller || "Seller not extracted")}</span>
+      <small>${escapeHtml(invoice.processing_status)} · ${escapeHtml(invoice.uploaded_by || "")} · ${escapeHtml(invoice.updated_at || invoice.created_at || "")}</small>
+    </button>`;
+  }).join("") || '<p class="analysis-empty">No invoice drafts to review.</p>';
+}
+
+function renderInvoiceReviewDetail(invoice) {
+  activeInvoiceReview = invoice;
+  renderInvoiceReviewList();
+  const data = invoice.invoice_data || {};
+  const editable = invoice.processing_status === "review_required";
+  const canApprove = currentUser?.role === "admin" && editable;
+  const fields = INVOICE_REVIEW_FIELDS.map(([key, label]) => `<label>${escapeHtml(label)}<input name="${key}" value="${escapeHtml(invoiceReviewValue(data[key]))}" ${editable ? "" : "readonly"}></label>`).join("");
+  const items = Array.isArray(data.items) ? data.items : [];
+  const itemRows = items.map((item, index) => `<fieldset class="invoice-review-item" data-item-index="${index}"><legend>Line item ${index + 1}</legend>
+    ${INVOICE_ITEM_FIELDS.map(([key, label]) => `<label>${escapeHtml(label)}${key === "description" ? `<textarea name="items.${index}.${key}" ${editable ? "" : "readonly"}>${escapeHtml(invoiceReviewValue(item?.[key]))}</textarea>` : `<input name="items.${index}.${key}" value="${escapeHtml(invoiceReviewValue(item?.[key]))}" ${editable ? "" : "readonly"}>`}</label>`).join("")}
+    ${editable ? `<button class="secondary-button" type="button" data-remove-invoice-item="${index}">Remove line</button>` : ""}
+  </fieldset>`).join("");
+  const elements = Array.isArray(invoice.ocr_elements) ? invoice.ocr_elements : [];
+  const evidence = elements.map((element) => `<details class="invoice-ocr-element"><summary>Page ${escapeHtml(element.page_number ?? "?")} · ${escapeHtml(element.label || element.type || "OCR text")}</summary><pre>${escapeHtml(element.text || element.content || JSON.stringify(element))}</pre></details>`).join("");
+  const source = invoice.source_available ? `<iframe class="invoice-review-source" title="Original invoice" src="/api/invoices/${encodeURIComponent(invoice.invoice_id)}/source"></iframe>` : '<p class="analysis-empty">Original file is unavailable.</p>';
+  $("#invoice-review-detail").innerHTML = `<div class="invoice-review-source-wrap">${source}</div>
+    <form id="invoice-review-form" data-invoice-id="${escapeHtml(invoice.invoice_id)}">
+      <div class="invoice-review-fields">${fields}</div><div id="invoice-review-items">${itemRows}</div>
+      ${editable ? `<div class="invoice-review-actions"><button class="secondary-button" type="button" data-add-invoice-item>Add line item</button><button class="primary-button" type="submit">Save corrections</button>${canApprove ? `<button class="primary-button" type="button" data-approve-invoice>Approve and publish</button>` : ""}</div>` : `<p class="corpus-note">This invoice is ${escapeHtml(invoice.processing_status)} and read-only.</p>`}
+      <p class="corpus-note" data-invoice-edit-status aria-live="polite"></p>
+    </form><details class="invoice-ocr-evidence"><summary>OCR evidence (${elements.length} elements, ${(invoice.ocr_tables || []).length} tables)</summary>${evidence || '<p>No OCR text was saved.</p>'}</details>`;
+}
+
+async function refreshInvoiceReview(selectId = activeInvoiceReview?.invoice_id) {
+  $("#invoice-review-status").textContent = "Loading invoice drafts…";
+  const result = await api("/api/invoices");
+  invoiceReviewItems = result.invoices || [];
+  renderInvoiceReviewList();
+  const target = invoiceReviewItems.find((item) => item.invoice_id === selectId)
+    || invoiceReviewItems.find((item) => item.processing_status === "review_required");
+  if (target) await openInvoiceReview(target.invoice_id);
+  else {
+    activeInvoiceReview = null;
+    $("#invoice-review-detail").innerHTML = '<p class="analysis-empty">Choose an invoice to review.</p>';
+  }
+  $("#invoice-review-status").textContent = `${invoiceReviewItems.length} invoice${invoiceReviewItems.length === 1 ? "" : "s"} · drafts stay private until approved.`;
+}
+
+async function openInvoiceReview(invoiceId) {
+  const invoice = await api(`/api/invoices/${encodeURIComponent(invoiceId)}`);
+  renderInvoiceReviewDetail(invoice);
+}
+
+function invoiceReviewPayload(form) {
+  const data = Object.fromEntries(INVOICE_REVIEW_FIELDS.map(([key]) => [key, form.elements.namedItem(key).value.trim() || null]));
+  data.items = [...form.querySelectorAll(".invoice-review-item")].map((row) => Object.fromEntries(
+    INVOICE_ITEM_FIELDS.map(([key]) => [key, row.querySelector(`[name="items.${row.dataset.itemIndex}.${key}"]`).value.trim() || null]),
+  ));
+  return data;
+}
+
+async function saveInvoiceReview(form, approve = false) {
+  const status = form.querySelector("[data-invoice-edit-status]");
+  const invoiceId = form.dataset.invoiceId;
+  const button = approve ? form.querySelector("[data-approve-invoice]") : form.querySelector('[type="submit"]');
+  button.disabled = true;
+  status.textContent = approve ? "Approving invoice…" : "Saving corrections…";
+  try {
+    const invoiceData = invoiceReviewPayload(form);
+    await api(`/api/invoices/${encodeURIComponent(invoiceId)}${approve ? "/approve" : ""}`, {
+      method: approve ? "POST" : "PATCH", body: JSON.stringify({ invoice_data: invoiceData }),
+    });
+    await refreshInvoiceReview(invoiceId);
+    $("#invoice-review-status").textContent = approve ? "Invoice approved and published to analytics." : "Corrections saved.";
+  } catch (error) {
+    status.textContent = error.message;
+    button.disabled = false;
+  }
+}
+
+$("#invoice-review-refresh").addEventListener("click", () => refreshInvoiceReview().catch((error) => {
+  $("#invoice-review-status").textContent = `Could not load invoices: ${error.message}`;
+}));
+$("#invoice-review-list").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-invoice-review-id]");
+  if (button) openInvoiceReview(button.dataset.invoiceReviewId).catch((error) => {
+    $("#invoice-review-status").textContent = error.message;
+  });
+});
+$("#invoice-review-detail").addEventListener("submit", (event) => {
+  if (event.target.id !== "invoice-review-form") return;
+  event.preventDefault();
+  saveInvoiceReview(event.target);
+});
+$("#invoice-review-detail").addEventListener("click", (event) => {
+  const form = event.target.closest("#invoice-review-form");
+  if (!form) return;
+  if (event.target.closest("[data-approve-invoice]")) return saveInvoiceReview(form, true);
+  if (event.target.closest("[data-add-invoice-item]")) {
+    const currentData = invoiceReviewPayload(form);
+    currentData.items.push(Object.fromEntries(INVOICE_ITEM_FIELDS.map(([key]) => [key, null])));
+    activeInvoiceReview.invoice_data = currentData;
+    renderInvoiceReviewDetail(activeInvoiceReview);
+  }
+  const remove = event.target.closest("[data-remove-invoice-item]");
+  if (remove) {
+    const index = Number(remove.dataset.removeInvoiceItem);
+    const currentData = invoiceReviewPayload(form);
+    currentData.items.splice(index, 1);
+    activeInvoiceReview.invoice_data = currentData;
+    renderInvoiceReviewDetail(activeInvoiceReview);
+  }
+});
 
 async function refreshKnowledgeDocuments() {
   $("#knowledge-documents-status").textContent = "Loading indexed sources…";
@@ -1009,6 +1139,11 @@ async function loadWorkspace(user) {
       $("#knowledge-documents-status").textContent = `Could not load knowledge-base files: ${error.message}`;
     });
   }
+  if (["admin", "document_uploader", "document_processing_owner"].includes(user.role)) {
+    void refreshInvoiceReview().catch((error) => {
+      $("#invoice-review-status").textContent = `Could not load invoices: ${error.message}`;
+    });
+  }
   $("#access-matrix").replaceChildren();
   $("#connection-status").textContent = "Knowledge base connected";
   $("#user-badge").textContent = `${user.username} · ${user.role}`;
@@ -1676,6 +1811,12 @@ $("#upload-form").addEventListener("submit", async (event) => {
       updateUploadKind();
       updateUploadRoleSelection();
       $("#upload-file-info").textContent = "Choose an invoice. Its JSON draft is stored separately from the document corpus.";
+      try {
+        await refreshInvoiceReview(result.invoice_id);
+        selectWorkspaceTab("invoice-review");
+      } catch (error) {
+        $("#invoice-review-status").textContent = `Invoice was saved, but the review queue could not refresh: ${error.message}`;
+      }
       return;
     }
     const referenceStatus = parserHandoff

@@ -82,7 +82,8 @@ class InvoiceRepository:
         with self.connection.cursor(row_factory=dict_row) as cursor:
             cursor.execute(
                 """SELECT invoice_id, source_filename, source_format, source_sha256,
-                          uploaded_by, processing_status, schema_version, invoice_data,
+                          storage_path, uploaded_by, processing_status, schema_version, invoice_data,
+                          ocr_elements, ocr_tables,
                           extraction_model, extraction_metadata, review_required,
                           error_message, created_at, updated_at
                    FROM public.invoice_extractions WHERE invoice_id = %s""",
@@ -90,7 +91,35 @@ class InvoiceRepository:
             )
             return cursor.fetchone()
 
-    def approve(self, invoice_id):
+    def list_invoices(self, username: str, *, include_all: bool = False, limit: int = 100) -> list[dict]:
+        with self.connection.cursor(row_factory=dict_row) as cursor:
+            cursor.execute(
+                """SELECT invoice_id, source_filename, source_format, uploaded_by,
+                          processing_status, schema_version, invoice_data,
+                          extraction_model, review_required, error_message, created_at, updated_at
+                   FROM public.invoice_extractions
+                   WHERE (%s OR uploaded_by = %s)
+                   ORDER BY created_at DESC LIMIT %s""",
+                (include_all, username, max(1, min(int(limit), 200))),
+            )
+            return cursor.fetchall()
+
+    def save_review(self, invoice_id: str, invoice_data: dict, reviewer: str) -> None:
+        with self.connection.transaction(), self.connection.cursor() as cursor:
+            cursor.execute(
+                """UPDATE public.invoice_extractions
+                   SET invoice_data = %s,
+                       extraction_metadata = COALESCE(extraction_metadata, '{}'::jsonb)
+                           || jsonb_build_object('human_review', jsonb_build_object(
+                               'saved_by', %s, 'saved_at', now())),
+                       updated_at = now()
+                   WHERE invoice_id = %s AND processing_status = 'review_required'""",
+                (Jsonb(invoice_data), reviewer, invoice_id),
+            )
+            if cursor.rowcount != 1:
+                raise ValueError("Only completed, unapproved invoices can be edited")
+
+    def approve(self, invoice_id, *, invoice_data: dict | None = None, reviewer: str | None = None):
         """Explicit administrative review action; never called by the SQL agent."""
         with self.connection.transaction(), self.connection.cursor(row_factory=dict_row) as cursor:
             cursor.execute('SELECT invoice_id, invoice_data, source_filename, source_sha256, '
@@ -103,9 +132,26 @@ class InvoiceRepository:
                 raise ValueError('Only invoice.v1 extractions are supported')
             if extraction['processing_status'] not in {'review_required', 'approved'}:
                 raise ValueError('Only completed extractions can be approved')
-            header, items = normalize_invoice(extraction['invoice_data'])
-            cursor.execute("UPDATE public.invoice_extractions SET processing_status = 'approved', "
-                           'review_required = false, updated_at = now() WHERE invoice_id = %s', (invoice_id,))
+            reviewed_data = invoice_data if invoice_data is not None else extraction['invoice_data']
+            header, items = normalize_invoice(reviewed_data)
+            if reviewer:
+                cursor.execute(
+                    """UPDATE public.invoice_extractions
+                       SET invoice_data = %s,
+                           extraction_metadata = COALESCE(extraction_metadata, '{}'::jsonb)
+                               || jsonb_build_object('human_review', jsonb_build_object(
+                                   'approved_by', %s, 'approved_at', now())),
+                           processing_status = 'approved', review_required = false, updated_at = now()
+                       WHERE invoice_id = %s""",
+                    (Jsonb(reviewed_data), reviewer, invoice_id),
+                )
+            else:
+                cursor.execute(
+                    """UPDATE public.invoice_extractions
+                       SET processing_status = 'approved', review_required = false, updated_at = now()
+                       WHERE invoice_id = %s""",
+                    (invoice_id,),
+                )
             # The invalidation trigger removes an earlier projection in this same transaction.
             cursor.execute('INSERT INTO commerce.invoices '
                            '(invoice_id, source_filename, source_sha256, invoice_no, invoice_date, '

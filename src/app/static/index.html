@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css?v=invoice-result-20261105">
+  <link rel="stylesheet" href="/static/styles.css?v=invoice-human-review-20261111">
   <script>
     (function() {
       const saved = localStorage.getItem("app_theme");
@@ -50,6 +50,7 @@
       <nav id="workspace-tabs" class="workspace-tabs" role="tablist" aria-label="Workspace navigation">
         <button id="tab-button-knowledge" class="workspace-tab active" type="button" role="tab" aria-selected="true" aria-controls="tab-knowledge" data-tab-target="knowledge">Knowledge Q&amp;A</button>
         <button id="tab-button-upload" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-upload" data-tab-target="upload" hidden>Upload Documents</button>
+        <button id="tab-button-invoice-review" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-invoice-review" data-tab-target="invoice-review" hidden>Invoice Review</button>
         <button id="tab-button-processing" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-processing" data-tab-target="processing" hidden>Document Processing</button>
         <button id="tab-button-ocr-lab" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-ocr-lab" data-tab-target="ocr-lab" hidden>Upload Test</button>
         <button id="tab-button-knowledge-management" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-knowledge-management" data-tab-target="knowledge-management" hidden>Knowledge Management</button>
@@ -293,6 +294,21 @@
       </section>
     </section>
 
+    <section id="tab-invoice-review" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-invoice-review" hidden>
+      <section class="candidate-review invoice-review-section">
+        <div class="section-heading">
+          <div><p class="eyebrow">HUMAN REVIEW</p><h2>Review extracted invoices</h2></div>
+          <button id="invoice-review-refresh" class="secondary-button" type="button">Refresh</button>
+        </div>
+        <p>Compare the extracted draft with the private source and OCR evidence. Save corrections before an admin approves the invoice for analytics.</p>
+        <p id="invoice-review-status" class="corpus-note" aria-live="polite"></p>
+        <div class="invoice-review-layout">
+          <div id="invoice-review-list" class="invoice-review-list"></div>
+          <div id="invoice-review-detail" class="invoice-review-detail"><p class="analysis-empty">Choose an invoice to review.</p></div>
+        </div>
+      </section>
+    </section>
+
     <!-- TAB: PROCESSING / PARSING & OCR -->
     <section id="tab-processing" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-processing" hidden>
       <p id="processing-upload-status" class="upload-result" role="status" aria-live="polite" hidden></p>
@@ -430,6 +446,6 @@
     </div>
     </main>
   </div>
-  <script src="/static/app.js?v=invoice-result-20261105" defer></script>
+  <script src="/static/app.js?v=invoice-human-review-20261111" defer></script>
 </body>
 </html>

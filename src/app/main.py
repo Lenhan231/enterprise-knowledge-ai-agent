@@ -173,6 +173,11 @@ class DocumentAccessRequest(BaseModel):
         return value
 
 
+class InvoiceReviewRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    invoice_data: dict
+
+
 @app.get("/", include_in_schema=False)
 def home():
     if os.getenv("BACKEND_ONLY") == "1":
@@ -781,9 +786,135 @@ def get_invoice(
             user.get("role") != "admin" and invoice["uploaded_by"] != user.get("sub")
         ):
             raise HTTPException(404, "Invoice not found")
+        invoice["source_available"] = bool(invoice.pop("storage_path", None))
         return invoice
     finally:
         repository.close()
+
+
+@app.get("/api/invoices")
+def list_invoices(user: dict = Depends(require_permission("upload_documents"))):
+    from core.database.invoice_repository import InvoiceRepository
+
+    repository = InvoiceRepository()
+    try:
+        return {"invoices": repository.list_invoices(
+            user["sub"], include_all=user.get("role") == "admin", limit=100,
+        )}
+    finally:
+        repository.close()
+
+
+def _invoice_for_user(repository, invoice_id: str, user: dict) -> dict:
+    invoice = repository.get_invoice(invoice_id)
+    if invoice is None or (
+        user.get("role") != "admin" and invoice["uploaded_by"] != user.get("sub")
+    ):
+        raise HTTPException(404, "Invoice not found")
+    return invoice
+
+
+def _validated_invoice_data(invoice_data: dict) -> dict:
+    from document_processing.invoice_text_processor import InvoiceFields
+
+    return InvoiceFields.model_validate(invoice_data).model_dump(mode="json")
+
+
+@app.patch("/api/invoices/{invoice_id}")
+def save_invoice_review(
+    invoice_id: str,
+    request: Request,
+    payload: InvoiceReviewRequest,
+    user: dict = Depends(require_permission("upload_documents")),
+):
+    _require_same_origin(request)
+    from core.database.invoice_repository import InvoiceRepository
+
+    try:
+        invoice_data = _validated_invoice_data(payload.invoice_data)
+    except Exception as error:
+        raise HTTPException(422, "Invoice fields do not match invoice.v1") from error
+    repository = InvoiceRepository()
+    try:
+        invoice = _invoice_for_user(repository, invoice_id, user)
+        if invoice["processing_status"] != "review_required":
+            raise HTTPException(409, "Only pending invoices can be edited")
+        try:
+            repository.save_review(invoice_id, invoice_data, user["sub"])
+        except ValueError as error:
+            raise HTTPException(409, str(error)) from error
+        return {"invoice_id": invoice_id, "processing_status": "review_required", "invoice_data": invoice_data}
+    finally:
+        repository.close()
+
+
+@app.post("/api/invoices/{invoice_id}/approve")
+def approve_invoice_review(
+    invoice_id: str,
+    request: Request,
+    payload: InvoiceReviewRequest,
+    user: dict = Depends(require_permission("manage_knowledge")),
+):
+    _require_same_origin(request)
+    from core.database.invoice_repository import InvoiceRepository
+
+    try:
+        invoice_data = _validated_invoice_data(payload.invoice_data)
+    except Exception as error:
+        raise HTTPException(422, "Invoice fields do not match invoice.v1") from error
+    repository = InvoiceRepository()
+    try:
+        invoice = _invoice_for_user(repository, invoice_id, user)
+        if invoice["processing_status"] != "review_required":
+            raise HTTPException(409, "Only pending invoices can be approved")
+        try:
+            item_count = repository.approve(
+                invoice_id, invoice_data=invoice_data, reviewer=user["sub"],
+            )
+        except (ValueError, LookupError) as error:
+            raise HTTPException(422, str(error)) from error
+        return {"invoice_id": invoice_id, "processing_status": "approved", "item_count": item_count}
+    finally:
+        repository.close()
+
+
+@app.get("/api/invoices/{invoice_id}/source")
+def invoice_source(
+    invoice_id: str,
+    user: dict = Depends(require_permission("upload_documents")),
+):
+    from core.database.invoice_repository import InvoiceRepository
+
+    repository = InvoiceRepository()
+    try:
+        invoice = _invoice_for_user(repository, invoice_id, user)
+        storage_path = invoice.get("storage_path")
+        filename = str(invoice.get("source_filename") or invoice_id)
+        source_format = str(invoice.get("source_format") or "").lower()
+    finally:
+        repository.close()
+    if not storage_path:
+        raise HTTPException(404, "Invoice source file is unavailable")
+    storage, bucket = _storage_client()
+    try:
+        content = storage.storage.from_(bucket).download(storage_path)
+    except Exception as error:
+        logger.exception("Could not open invoice source %s", invoice_id)
+        raise HTTPException(502, "The stored invoice file could not be opened") from error
+    media_type = {
+        "pdf": "application/pdf", "png": "image/png", "jpg": "image/jpeg",
+        "jpeg": "image/jpeg", "tif": "image/tiff", "tiff": "image/tiff",
+    }.get(source_format, "application/octet-stream")
+    safe_filename = quote(re.sub(r"[\r\n/\\]+", " ", filename)[:160], safe="")
+    return Response(
+        content=content,
+        media_type=media_type,
+        headers={
+            "Content-Disposition": f"inline; filename*=UTF-8''{safe_filename}",
+            "Cache-Control": "private, no-store",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
 
 
 @app.post("/api/admin/processing/{document_id}/retry-embedding")

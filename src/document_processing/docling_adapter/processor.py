@@ -284,7 +284,9 @@ class DoclingProcessor:
         return PdfPipelineOptions(
             accelerator_options=AcceleratorOptions(
                 device=device,
-                num_threads=int(self.config.get("docling_num_threads", 4)),
+                num_threads=int(self.config.get(
+                    "docling_num_threads", 2 if device == AcceleratorDevice.CPU else 4,
+                )),
             ),
             do_ocr=do_ocr,
             do_table_structure=bool(self.config.get("docling_table_structure", True)),

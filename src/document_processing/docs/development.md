@@ -90,3 +90,13 @@ RapidOCR 3.9.2, PyTorch 2.10.0 CPU):
   strip changed; that strip contains no financial data.
 - These are two CPU regression samples, not a corpus-wide accuracy benchmark.
   CUDA detection and the invoice LLM step were not changed.
+
+Follow-up CPU thread check on the same host: PP-DocLayoutV3's warm median
+for the synthetic invoice was 15.05s with Paddle's default 10 threads, 9.94s
+with 2 threads, and 14.57s with 4 threads. All 16 detected labels and boxes
+matched within 0.001 pixels. The parser now passes `docling_num_threads` to
+layout inference and defaults CPU pipelines to 2 threads (CUDA remains 4).
+With this budget, the financial scan took 94.15s versus the earlier 154.32s;
+its text, numeric values, and all 30 table rows were identical. These remain
+sample measurements on a shared CPU host; profile explicit thread overrides
+before changing the budget for other hardware.

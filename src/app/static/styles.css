@@ -658,3 +658,5 @@
   .sidebar-collapsed .nav-icon{width:18px;height:18px}
   .sidebar-collapsed .sidebar-account{gap:6px;padding-top:10px}
 }
+
+.citations .citation:not([hidden]){animation:answerFadeIn .35s cubic-bezier(.2,0,0,1)}

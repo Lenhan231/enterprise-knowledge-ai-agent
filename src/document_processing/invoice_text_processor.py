@@ -316,7 +316,7 @@ class InvoiceTextProcessor:
             or os.environ.get("DOCUMENT_PROCESSING_INVOICE_PROVIDER")
             or "modal"
         ).strip().lower()
-        if provider not in {"gemini", "modal", "local"}:
+        if provider not in {"gemini", "groq", "modal", "local"}:
             raise ValueError(f"Unsupported invoice extraction provider: {provider}")
 
         if provider == "gemini":
@@ -326,6 +326,11 @@ class InvoiceTextProcessor:
                 or "gemini-3.1-flash-lite"
             )
             revision = "Gemini API"
+            adapter_id = None
+            adapter_revision = None
+        elif provider == "groq":
+            model_id = "openai/gpt-oss-20b"
+            revision = "Groq API"
             adapter_id = None
             adapter_revision = None
         else:
@@ -373,6 +378,13 @@ class InvoiceTextProcessor:
                 api_key=os.environ.get("GEMINI_API") or os.environ.get("GEMINI_API_KEY") or "",
                 model_id=model_id,
                 timeout=min(timeout, 180),
+            )
+        elif provider == "groq":
+            worker_result = _infer_with_groq(
+                jobs,
+                api_key=os.environ.get("GROQ_API_KEY", ""),
+                model_id=model_id,
+                timeout=min(timeout, 60),
             )
         elif provider == "modal" and modal_url:
             if not modal_url.startswith("https://"):
@@ -490,6 +502,63 @@ class InvoiceTextProcessor:
                 "invalid_jobs": invalid_sources,
             },
         }
+
+
+def _infer_with_groq(
+    jobs: list[dict[str, Any]], *, api_key: str, model_id: str, timeout: int,
+) -> dict[str, Any]:
+    if not api_key:
+        raise RuntimeError("GROQ_API_KEY is required for Groq invoice extraction")
+
+    from openai import APIConnectionError, APIStatusError, OpenAI
+
+    started = time.perf_counter()
+    responses: list[str] = []
+    prompt_tokens = generated_tokens = 0
+    with OpenAI(
+        api_key=api_key,
+        base_url="https://api.groq.com/openai/v1",
+        timeout=timeout,
+        max_retries=1,
+    ) as client:
+        for job in jobs:
+            try:
+                result = client.chat.completions.create(
+                    model=model_id,
+                    messages=[{"role": "user", "content": job["prompt"]}],
+                    reasoning_effort="low",
+                    temperature=0,
+                    max_completion_tokens=int(job.get("max_new_tokens", 1024)) + 1024,
+                    response_format={"type": "json_object"},
+                )
+            except APIStatusError as error:
+                raise RuntimeError(
+                    f"Groq invoice API returned HTTP {error.status_code}"
+                ) from error
+            except APIConnectionError as error:
+                raise RuntimeError("Groq invoice API connection failed") from error
+            choice = result.choices[0] if result.choices else None
+            responses.append(
+                (choice.message.content or "") if choice and choice.finish_reason == "stop" else ""
+            )
+            if result.usage:
+                prompt_tokens += result.usage.prompt_tokens
+                generated_tokens += result.usage.completion_tokens
+
+    return {
+        "revision": "Groq API",
+        "responses": responses,
+        "metrics": {
+            "provider": "groq_api",
+            "device": "remote_api",
+            "dtype": "remote",
+            "load_seconds": 0,
+            "inference_seconds": round(time.perf_counter() - started, 2),
+            "prompt_tokens": prompt_tokens,
+            "generated_tokens": generated_tokens,
+            "request_count": len(jobs),
+        },
+    }
 
 
 def _infer_with_gemini(

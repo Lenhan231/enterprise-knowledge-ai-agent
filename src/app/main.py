@@ -667,6 +667,9 @@ def _process_invoice_upload(
                 label for marker, label in (
                     ("Gemini invoice API returned HTTP 503", "Gemini temporarily unavailable (HTTP 503)"),
                     ("Gemini invoice API returned HTTP 429", "Gemini rate limited (HTTP 429)"),
+                    ("Groq invoice API returned HTTP 429", "Groq rate limited (HTTP 429)"),
+                    ("Groq invoice API returned HTTP 503", "Groq temporarily unavailable (HTTP 503)"),
+                    ("GROQ_API_KEY is required", "Groq API key is not configured"),
                 ) if marker in failure
             ), type(error).__name__)
             repository.mark_failed(invoice_id, safe_failure)
@@ -687,8 +690,8 @@ async def upload_invoice(
     """OCR an invoice and save its reviewable JSON outside the document corpus."""
     _require_same_origin(request)
     model_provider = model_provider.strip().lower()
-    if model_provider not in {"gemini", "modal"}:
-        raise HTTPException(422, "Choose Gemini or the fine-tuned Qwen Modal model")
+    if model_provider not in {"gemini", "groq", "modal"}:
+        raise HTTPException(422, "Choose Gemini, Groq GPT-OSS 20B, or the fine-tuned Qwen Modal model")
     filename = Path((file.filename or "").replace("\\", "/")).name
     extension = Path(filename).suffix.lower()
     supported = {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"}

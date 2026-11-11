@@ -233,12 +233,28 @@ function renderInvoiceReviewDetail(invoice) {
   const elements = Array.isArray(invoice.ocr_elements) ? invoice.ocr_elements : [];
   const evidence = elements.map((element) => `<details class="invoice-ocr-element"><summary>Page ${escapeHtml(element.page_number ?? "?")} · ${escapeHtml(element.label || element.type || "OCR text")}</summary><pre>${escapeHtml(element.text || element.content || JSON.stringify(element))}</pre></details>`).join("");
   const source = invoice.source_available ? `<iframe class="invoice-review-source" title="Original invoice" src="/api/invoices/${encodeURIComponent(invoice.invoice_id)}/source"></iframe>` : '<p class="analysis-empty">Original file is unavailable.</p>';
-  $("#invoice-review-detail").innerHTML = `<div class="invoice-review-source-wrap">${source}</div>
+  const failed = invoice.processing_status === "failed";
+  const retry = failed && invoice.source_available ? `
+    <form id="invoice-retry-form" data-invoice-id="${escapeHtml(invoice.invoice_id)}">
+      <div class="invoice-review-actions">
+        <label for="invoice-retry-model">Extraction model</label>
+        <select id="invoice-retry-model" name="model_provider">${$("#invoice-model").innerHTML}</select>
+        <button class="primary-button" type="submit">Retry extraction</button>
+      </div>
+      <p class="corpus-note" data-invoice-retry-status role="status"></p>
+    </form>` : "";
+  const processing = invoice.processing_status === "processing";
+  $("#invoice-review-detail").innerHTML = `
+    ${failed ? `<p role="status">Extraction failed${invoice.error_message ? `: ${escapeHtml(invoice.error_message)}` : "."}</p>` : ""}
+    ${retry}
+    ${processing ? '<p role="status">Running OCR and extraction. Refresh to check progress.</p>' : ""}
+    <div class="invoice-review-source-wrap">${source}</div>
     <form id="invoice-review-form" data-invoice-id="${escapeHtml(invoice.invoice_id)}">
       <div class="invoice-review-fields">${fields}</div><div id="invoice-review-items">${itemRows}</div>
       ${editable ? `<div class="invoice-review-actions"><button class="secondary-button" type="button" data-add-invoice-item>Add line item</button><button class="primary-button" type="submit">Save corrections</button>${canApprove ? `<button class="primary-button" type="button" data-approve-invoice>Approve and publish</button>` : ""}</div>` : `<p class="corpus-note">This invoice is ${escapeHtml(invoice.processing_status)} and read-only.</p>`}
       <p class="corpus-note" data-invoice-edit-status aria-live="polite"></p>
     </form><details class="invoice-ocr-evidence"><summary>OCR evidence (${elements.length} elements, ${(invoice.ocr_tables || []).length} tables)</summary>${evidence || '<p>No OCR text was saved.</p>'}</details>`;
+  if (retry) $("#invoice-retry-model").value = "groq";
 }
 
 async function refreshInvoiceReview(selectId = activeInvoiceReview?.invoice_id) {
@@ -259,6 +275,61 @@ async function refreshInvoiceReview(selectId = activeInvoiceReview?.invoice_id) 
 async function openInvoiceReview(invoiceId) {
   const invoice = await api(`/api/invoices/${encodeURIComponent(invoiceId)}`);
   renderInvoiceReviewDetail(invoice);
+}
+
+async function retryInvoiceExtraction(form) {
+  const invoiceId = form.dataset.invoiceId;
+  const path = `/api/invoices/${encodeURIComponent(invoiceId)}`;
+  const generation = sessionGeneration;
+  const button = form.querySelector('button[type="submit"]');
+  const status = form.querySelector("[data-invoice-retry-status]");
+  const modelProvider = form.elements.namedItem("model_provider").value;
+  button.disabled = true;
+  status.textContent = "Starting extraction…";
+  try {
+    await api(`${path}/retry`, {
+      method: "POST",
+      body: JSON.stringify({ model_provider: modelProvider }),
+    });
+  } catch (error) {
+    status.textContent = error.message;
+    button.disabled = false;
+    return;
+  }
+
+  function updateInvoice(invoice) {
+    invoiceReviewItems = invoiceReviewItems.map((item) => item.invoice_id === invoiceId ? { ...item, ...invoice } : item);
+    if (activeInvoiceReview?.invoice_id === invoiceId) {
+      renderInvoiceReviewDetail(invoice);
+    } else {
+      renderInvoiceReviewList();
+    }
+  }
+
+  if (generation !== sessionGeneration) return;
+  const invoice = invoiceReviewItems.find((item) => item.invoice_id === invoiceId) || activeInvoiceReview;
+  if (invoice?.invoice_id === invoiceId) {
+    updateInvoice({ ...invoice, source_available: true, processing_status: "processing", error_message: null });
+  }
+  const deadline = Date.now() + 22 * 60 * 1000;
+  while (Date.now() < deadline) {
+    await new Promise((resolve) => window.setTimeout(resolve, 4000));
+    if (generation !== sessionGeneration) return;
+    let result;
+    try {
+      result = await api(path, { cache: "no-store" });
+    } catch (error) {
+      if (generation === sessionGeneration && activeInvoiceReview?.invoice_id === invoiceId) {
+        $("#invoice-review-status").textContent = `Could not check extraction status: ${error.message}. Use Refresh to check again.`;
+      }
+      return;
+    }
+    if (generation !== sessionGeneration) return;
+    if (result.processing_status !== "processing") {
+      updateInvoice(result);
+      return;
+    }
+  }
 }
 
 function invoiceReviewPayload(form) {
@@ -298,6 +369,11 @@ $("#invoice-review-list").addEventListener("click", (event) => {
   });
 });
 $("#invoice-review-detail").addEventListener("submit", (event) => {
+  if (event.target.id === "invoice-retry-form") {
+    event.preventDefault();
+    retryInvoiceExtraction(event.target);
+    return;
+  }
   if (event.target.id !== "invoice-review-form") return;
   event.preventDefault();
   saveInvoiceReview(event.target);

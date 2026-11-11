@@ -78,6 +78,16 @@ class InvoiceRepository:
                 (message[:1000], invoice_id),
             )
 
+    def start_retry(self, invoice_id: str) -> bool:
+        with self.connection.transaction(), self.connection.cursor() as cursor:
+            cursor.execute(
+                """UPDATE public.invoice_extractions
+                   SET processing_status = 'processing', error_message = NULL, updated_at = now()
+                   WHERE invoice_id = %s AND processing_status = 'failed'""",
+                (invoice_id,),
+            )
+            return cursor.rowcount == 1
+
     def get_invoice(self, invoice_id: str) -> dict | None:
         with self.connection.transaction(), self.connection.cursor(row_factory=dict_row) as cursor:
             cursor.execute(

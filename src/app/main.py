@@ -609,16 +609,24 @@ async def upload_document(
 def _process_invoice_upload(
     invoice_id: str,
     filename: str,
-    content: bytes,
+    content: bytes | None,
     uploaded_by: str,
     source_sha256: str,
     model_provider: str,
+    *,
+    storage_path: str | None = None,
 ) -> None:
     """Run invoice OCR after the upload response has been sent."""
     from core.database.invoice_repository import InvoiceRepository
 
     repository = InvoiceRepository()
     try:
+        if content is None:
+            try:
+                storage, bucket = _storage_client()
+                content = storage.storage.from_(bucket).download(storage_path)
+            except Exception as error:
+                raise RuntimeError("Stored invoice source could not be read") from error
         processing_url = os.environ.get("DOCUMENT_PROCESSING_URL")
         if not processing_url:
             raise RuntimeError("DOCUMENT_PROCESSING_URL is required")
@@ -670,6 +678,7 @@ def _process_invoice_upload(
                     ("Groq invoice API returned HTTP 429", "Groq rate limited (HTTP 429)"),
                     ("Groq invoice API returned HTTP 503", "Groq temporarily unavailable (HTTP 503)"),
                     ("GROQ_API_KEY is required", "Groq API key is not configured"),
+                    ("Stored invoice source could not be read", "Could not read the stored invoice file"),
                 ) if marker in failure
             ), type(error).__name__)
             repository.mark_failed(invoice_id, safe_failure)
@@ -815,6 +824,44 @@ def _invoice_for_user(repository, invoice_id: str, user: dict) -> dict:
     ):
         raise HTTPException(404, "Invoice not found")
     return invoice
+
+
+class InvoiceRetryRequest(BaseModel):
+    model_provider: Literal["gemini", "groq", "modal"]
+
+
+@app.post("/api/invoices/{invoice_id}/retry", status_code=202)
+def retry_invoice_extraction(
+    invoice_id: str,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    payload: InvoiceRetryRequest,
+    user: dict = Depends(require_permission("upload_documents")),
+):
+    _require_same_origin(request)
+    from core.database.invoice_repository import InvoiceRepository
+
+    repository = InvoiceRepository()
+    try:
+        invoice = _invoice_for_user(repository, invoice_id, user)
+        if not invoice["storage_path"]:
+            raise HTTPException(409, "The original invoice file is unavailable")
+        if not repository.start_retry(invoice_id):
+            raise HTTPException(409, "Only failed extractions can be retried. Refresh the invoice to see its status.")
+    finally:
+        repository.close()
+
+    background_tasks.add_task(
+        _process_invoice_upload,
+        invoice_id,
+        invoice["source_filename"],
+        None,
+        invoice["uploaded_by"],
+        invoice["source_sha256"],
+        payload.model_provider,
+        storage_path=invoice["storage_path"],
+    )
+    return {"invoice_id": invoice_id, "processing_status": "processing"}
 
 
 def _validated_invoice_data(invoice_data: dict) -> dict:

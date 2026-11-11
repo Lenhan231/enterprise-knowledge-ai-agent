@@ -320,12 +320,8 @@ def _groq_extraction_jobs(ocr_input: dict[str, Any]) -> list[dict[str, Any]]:
         "and separators. A prefix shared with Ký hiệu/Series does not invalidate an explicitly "
         "labeled invoice number. Ký hiệu/Series by itself is a separate field. Distinguish "
         "invoice number from tax IDs, contracts and delivery-note references.\n"
-        "date: return only the date value; omit labels such as 'Ngày' or 'Date'. seller: the "
-        "party identified as the issuer/supplier/seller (for example, người bán or đơn vị bán). "
-        "buyer: the party identified as customer/purchaser (for example, người mua or đơn vị mua). "
-        "Use the printed party labels and surrounding evidence; company names or position alone "
-        "do not determine seller/buyer. If the roles remain ambiguous, use null. A company name "
-        "or title cannot be invoice_no.\n"
+        "date: the issue date of this invoice. seller: the issuing supplier. buyer: the customer "
+        "identified by buyer/customer labels. A company name or title cannot be invoice_no.\n"
         "subtotal: the labeled goods/services total before tax. tax_amount: the labeled tax "
         "money amount, not the tax percentage. total_amount: the labeled final payable amount. "
         "Use the labels and cells to associate each amount, not amount size or reading order.\n"
@@ -606,7 +602,7 @@ def _infer_with_groq(
                 result = client.chat.completions.create(
                     model=model_id,
                     messages=[{"role": "user", "content": job["prompt"]}],
-                    reasoning_effort="low",
+                    reasoning_effort="medium",
                     temperature=0,
                     max_completion_tokens=int(job.get("max_new_tokens", 1024)) + 2048,
                     response_format={

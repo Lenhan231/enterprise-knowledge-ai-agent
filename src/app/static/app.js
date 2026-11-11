@@ -1252,8 +1252,9 @@ async function api(path, options = {}) {
 }
 
 // Reveals an already verified, fully rendered answer; markup and citation links stay intact
-// because only the text nodes are filled in. About 120 characters a second, 2–6 s in total;
-// `revealAfter` (the source cards) stays hidden until the text is complete. Skipped for reduced motion.
+// because only the text nodes are filled in. About 60 characters a second, 3–10 s in total;
+// `revealAfter` (the source panel, then each card) appears one by one after the text is complete.
+// Skipped for reduced motion.
 function typeOutText(element, revealAfter = []) {
   if (!element || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
@@ -1264,7 +1265,7 @@ function typeOutText(element, revealAfter = []) {
   for (const [node] of nodes) node.nodeValue = "";
   for (const item of revealAfter) item.hidden = true;
   element.setAttribute("aria-busy", "true");
-  const seconds = Math.min(6, Math.max(2, total / 120));
+  const seconds = Math.min(10, Math.max(3, total / 60));
   const perFrame = Math.max(1, Math.ceil(total / (seconds * 60)));
   let index = 0;
   let shown = 0;
@@ -1282,7 +1283,7 @@ function typeOutText(element, revealAfter = []) {
     else {
       for (const [node, text] of nodes) node.nodeValue = text;
       element.removeAttribute("aria-busy");
-      for (const item of revealAfter) item.hidden = false;
+      revealAfter.forEach((item, position) => setTimeout(() => { item.hidden = false; }, 500 + position * 400));
     }
   };
   requestAnimationFrame(step);
@@ -1783,7 +1784,8 @@ function renderSessionTranscript(shouldScroll = false) {
       renderAgentResult(turn.result, response, false);
       if (turn.typeOut) {
         turn.typeOut = false;
-        typeOutText(response.querySelector(".answer-text"), [...response.querySelectorAll(".citations")]);
+        typeOutText(response.querySelector(".answer-text"),
+          [...response.querySelectorAll(".citations, .citations .citation")]);
       }
     }
   }

@@ -265,6 +265,18 @@ const INVOICE_ITEM_FIELDS = [
   ["unit_price", "Unit price"], ["amount", "Amount"],
 ];
 const invoiceReviewValue = (value) => value == null ? "" : String(value);
+const formatInvoiceDate = (value) => {
+  const raw = invoiceReviewValue(value).trim();
+  const match = raw.match(/^(?:(\d{4})-(\d{2})-(\d{2})|(\d{1,2})\/(\d{1,2})\/(\d{4})|(\d{1,2})\s+tháng\s+(\d{1,2})\s+năm\s+(\d{4}))$/i);
+  if (!match) return raw;
+  const [, isoYear, isoMonth, isoDay, slashDay, slashMonth, slashYear, viDay, viMonth, viYear] = match;
+  const day = Number(isoDay || slashDay || viDay);
+  const month = Number(isoMonth || slashMonth || viMonth);
+  const year = Number(isoYear || slashYear || viYear);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  if (parsed.getUTCFullYear() !== year || parsed.getUTCMonth() !== month - 1 || parsed.getUTCDate() !== day) return raw;
+  return `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${year}`;
+};
 
 let invoiceOpenGeneration = 0;
 
@@ -288,7 +300,7 @@ function renderInvoiceReviewDetail(invoice) {
   const data = invoice.invoice_data || {};
   const editable = invoice.processing_status === "review_required";
   const canApprove = currentUser?.role === "admin" && editable;
-  const fields = INVOICE_REVIEW_FIELDS.map(([key, label]) => `<label>${escapeHtml(label)}<input name="${key}" value="${escapeHtml(invoiceReviewValue(data[key]))}" ${editable ? "" : "readonly"}></label>`).join("");
+  const fields = INVOICE_REVIEW_FIELDS.map(([key, label]) => `<label>${escapeHtml(label)}<input name="${key}" value="${escapeHtml(key === "date" ? formatInvoiceDate(data[key]) : invoiceReviewValue(data[key]))}" ${editable ? "" : "readonly"}></label>`).join("");
   const items = Array.isArray(data.items) ? data.items : [];
   const itemRows = items.map((item, index) => `<fieldset class="invoice-review-item" data-item-index="${index}"><legend>Line item ${index + 1}</legend>
     ${INVOICE_ITEM_FIELDS.map(([key, label]) => `<label>${escapeHtml(label)}${key === "description" ? `<textarea name="items.${index}.${key}" ${editable ? "" : "readonly"}>${escapeHtml(invoiceReviewValue(item?.[key]))}</textarea>` : `<input name="items.${index}.${key}" value="${escapeHtml(invoiceReviewValue(item?.[key]))}" ${editable ? "" : "readonly"}>`}</label>`).join("")}

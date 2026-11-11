@@ -43,3 +43,14 @@ Vintern with Docling OCR.
 | Production upload caller | `src/app/main.py` |
 
 For local commands and image build notes, see [development](docs/development.md).
+
+## CPU OCR performance
+
+VietOCR's RapidOCR detector uses maximum-edge resizing on CPU. Layout crops
+are already rendered at OCR scale, so narrow text regions should not be
+expanded until their short edge reaches 736 pixels. The CUDA route keeps its
+existing detector configuration.
+
+Use the [parser latency command](docs/development.md#measure-parser-latency)
+to compare cold and warm runs with identical inputs and inspect any changes
+in text or table cells before accepting a speed improvement.

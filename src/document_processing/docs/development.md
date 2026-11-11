@@ -65,3 +65,28 @@ should be mounted to persist downloads between local container runs.
 
 Do not use production or SSH as a local verification step. Use the explicit
 deployment workflow for a separately authorized production change.
+
+## Measure parser latency
+
+```sh
+PYTHONPATH=src .venv/bin/python scripts/processing/benchmark_parser.py input.pdf \
+  --repeats 2 --output /tmp/parser-speed.json
+```
+
+Run the same file and configuration on each revision. The first run includes
+model initialization; later runs reuse loaded converters. Compare both elapsed
+time and the content fingerprint, then inspect any changed text or table cells.
+A matching fingerprint covers text and table cells, not layout coordinates.
+
+CPU resize check on 2026-11-11 (SSH host with 6 CPUs; Docling 2.129.0,
+RapidOCR 3.9.2, PyTorch 2.10.0 CPU):
+
+- Synthetic `invoice_0432.pdf`, same process after loading models: previous
+  resize 96.07s; maximum-edge resize 78.35s and 84.56s (12–18% faster).
+  The 16 text elements and all numeric values were retained. One table word
+  changed from `Ổ cẩm` to the source label's `Ổ cắm`.
+- Long Hau 2008 financial scan, page 6: line detection 36.09s → 2.28s;
+  all cells in the 30-row table were identical. OCR noise in the binding-hole
+  strip changed; that strip contains no financial data.
+- These are two CPU regression samples, not a corpus-wide accuracy benchmark.
+  CUDA detection and the invoice LLM step were not changed.

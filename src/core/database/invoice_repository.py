@@ -79,7 +79,7 @@ class InvoiceRepository:
             )
 
     def get_invoice(self, invoice_id: str) -> dict | None:
-        with self.connection.cursor(row_factory=dict_row) as cursor:
+        with self.connection.transaction(), self.connection.cursor(row_factory=dict_row) as cursor:
             cursor.execute(
                 """SELECT invoice_id, source_filename, source_format, source_sha256,
                           storage_path, uploaded_by, processing_status, schema_version, invoice_data,
@@ -111,7 +111,7 @@ class InvoiceRepository:
                    SET invoice_data = %s,
                        extraction_metadata = COALESCE(extraction_metadata, '{}'::jsonb)
                            || jsonb_build_object('human_review', jsonb_build_object(
-                               'saved_by', %s, 'saved_at', now())),
+                               'saved_by', %s::text, 'saved_at', now())),
                        updated_at = now()
                    WHERE invoice_id = %s AND processing_status = 'review_required'""",
                 (Jsonb(invoice_data), reviewer, invoice_id),
@@ -132,6 +132,8 @@ class InvoiceRepository:
                 raise ValueError('Only invoice.v1 extractions are supported')
             if extraction['processing_status'] not in {'review_required', 'approved'}:
                 raise ValueError('Only completed extractions can be approved')
+            if reviewer is not None and extraction['processing_status'] != 'review_required':
+                raise ValueError('This invoice was already approved')
             reviewed_data = invoice_data if invoice_data is not None else extraction['invoice_data']
             header, items = normalize_invoice(reviewed_data)
             if reviewer:
@@ -140,7 +142,7 @@ class InvoiceRepository:
                        SET invoice_data = %s,
                            extraction_metadata = COALESCE(extraction_metadata, '{}'::jsonb)
                                || jsonb_build_object('human_review', jsonb_build_object(
-                                   'approved_by', %s, 'approved_at', now())),
+                                   'approved_by', %s::text, 'approved_at', now())),
                            processing_status = 'approved', review_required = false, updated_at = now()
                        WHERE invoice_id = %s""",
                     (Jsonb(reviewed_data), reviewer, invoice_id),

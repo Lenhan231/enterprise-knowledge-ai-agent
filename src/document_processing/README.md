@@ -51,6 +51,10 @@ are already rendered at OCR scale, so narrow text regions should not be
 expanded until their short edge reaches 736 pixels. The CUDA route keeps its
 existing detector configuration.
 
+CPU pipelines default to 2 threads. `docling_num_threads` controls the budget
+for both PP-DocLayoutV3 and TableFormer; override it when profiling a different
+CPU allocation. CUDA retains the previous default of 4 CPU threads.
+
 Use the [parser latency command](docs/development.md#measure-parser-latency)
 to compare cold and warm runs with identical inputs and inspect any changes
 in text or table cells before accepting a speed improvement.

@@ -133,6 +133,7 @@ class PPDocLayoutModel(BaseLayoutModel):
             device=device,
             threshold=options.score_threshold,
             enable_mkldnn=False,
+            cpu_threads=accelerator_options.num_threads,
         )
 
     @classmethod

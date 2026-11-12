@@ -675,3 +675,20 @@
 .feedback-btn.chosen{background:#e7effd;border-color:#2369d8}
 .feedback-btn:disabled:not(.chosen){opacity:.45}
 .feedback-btn.feedback-error{border-color:#a53d35}
+/* Keep the transcript in one continuous chat column instead of agent result cards. */
+#answer-panel.answer-panel{max-width:850px;margin:24px auto 0;padding:0;border:0}
+.chat-turn{margin:0 auto 28px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+.chat-turn-question{display:flex;justify-content:flex-end;margin:0 0 18px}
+.chat-turn-question>span{display:none}
+.chat-turn-question p{max-width:min(78%,680px);margin:0;padding:11px 16px;border-radius:20px;background:#eef2f7;color:#263747;font-size:14px;line-height:1.6}
+.chat-turn .answer-panel{margin:0;padding:0;border:0;background:transparent;box-shadow:none}
+.chat-turn .answer-header-wrap{margin:0 0 8px}
+.chat-turn .answer-heading{gap:9px}
+.chat-turn .answer-mark{width:28px;height:28px;border-radius:50%}
+.chat-turn .answer-heading .eyebrow{font-size:9px}
+.chat-turn .answer-heading h3{font-size:14px}
+.chat-turn .answer-text{margin:8px 0 14px;padding-left:37px}
+.chat-turn .citations,.chat-turn .analysis-caveat,.chat-turn .answer-provenance-note,
+.chat-turn .agent-diagnostics,.chat-turn .token-usage,.chat-turn .commerce-table-wrap,
+.chat-turn .answer-visualization,.chat-turn .answer-rows{margin-left:37px}
+@media(max-width:600px){#answer-panel.answer-panel{margin-top:18px}.chat-turn-question p{max-width:90%}.chat-turn .answer-text{padding-left:0}.chat-turn .citations,.chat-turn .analysis-caveat,.chat-turn .answer-provenance-note,.chat-turn .agent-diagnostics,.chat-turn .token-usage,.chat-turn .commerce-table-wrap,.chat-turn .answer-visualization,.chat-turn .answer-rows{margin-left:0}}

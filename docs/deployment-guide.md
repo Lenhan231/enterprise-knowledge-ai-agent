@@ -9,8 +9,9 @@ specific validation.
 1. Install Python 3.11 and `uv`; run `uv sync --locked --extra docling` from the repository.
 2. Copy `.env.example` to `.env` without replacing an existing secret-bearing
    `.env`. Set `SUPABASE_URL`, server-only secret key, database URL, Groq key/model,
-   embedding model, demo passwords and a random `AUTH_SECRET_KEY` of at least
-   32 characters. `DOCUMENT_CHUNKING_STRATEGY` defaults to `sentence`; set it
+   `OPENROUTER_API_KEY` for the SQL ambiguity check, embedding model, demo passwords
+   and a random `AUTH_SECRET_KEY` of at least 32 characters.
+   `DOCUMENT_CHUNKING_STRATEGY` defaults to `sentence`; set it
    to `fixed` only when building a controlled fixed-window comparison corpus.
 3. Apply the timestamped migrations in [`supabase/migrations/`](../supabase/migrations/)
    with the Supabase CLI. That directory is the single schema history; do not

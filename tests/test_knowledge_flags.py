@@ -58,6 +58,23 @@ class KnowledgeFlagTest(unittest.TestCase):
         self.assertIn("11. Nếu câu hỏi có nhiều ý", on)  # the two flags combine
         self.assertLess(on.index("2. Mọi câu và mọi gạch đầu dòng"), on.index("3. Không trích dẫn"))
 
+    def test_answer_model_and_verifier_get_the_accent_restored_question(self):
+        contexts = [{"source_id": "S1", "document_name": "policy.pdf", "chunk_index": 0, "content": "Nội dung.",
+                     "metadata": {"document_id": "D1"},
+                     "retrieval_details": {"normalized_query": "bàn giao công việc thì làm gì"}}]
+        for enabled in ("1", "0"):
+            with self.subTest(enabled=enabled), patch.dict(os.environ, {"QUERY_NORMALIZATION_ENABLED": enabled}), \
+                    patch("core.rag.rag_service.verify_answer") as verify:
+                from core.rag.claim_verification import VerificationOutcome
+                verify.return_value = VerificationOutcome(status="supported", reason="all_claims_supported")
+                llm = FakeLLM()
+                RAGService(FakeRetrieval(), llm).generate_from_contexts("ban giao cong viec thi lam gi", contexts,
+                                                                         verify_claims=True)
+                restored_in_prompt = "bàn giao công việc thì làm gì\n(Người dùng gõ: ban giao cong viec thi lam gi)"
+                self.assertEqual(restored_in_prompt in llm.calls[0], enabled == "1")
+                self.assertIn("ban giao cong viec thi lam gi", llm.calls[0])
+                self.assertEqual(verify.call_args.args[1].startswith("bàn giao"), enabled == "1")
+
     def test_context_budget_is_configurable(self):
         import importlib
         from core.rag import rag_service

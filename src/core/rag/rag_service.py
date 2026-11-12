@@ -255,6 +255,12 @@ class RAGService:
             template = template.replace("\n\nNguồn:\n", "\n" + COMPLETENESS_RULE + "\nNguồn:\n", 1)
         if os.getenv("KNOWLEDGE_STRICT_CITATION_RULE", "0") == "1":
             template = template.replace(CITATION_RULE, STRICT_CITATION_RULE, 1)
+        # With accent restoration on, retrieval already used the restored question; give the answer model and
+        # the verifier the same text, keeping the user's wording in case the restoration is off.
+        restored = next((c["retrieval_details"].get("normalized_query") for c in contexts
+                         if isinstance(c.get("retrieval_details"), dict)), None)
+        if os.getenv("QUERY_NORMALIZATION_ENABLED", "0") == "1" and restored and restored.strip() != question.strip():
+            question = f"{restored}\n(Người dùng gõ: {question})"
         prompt = template.format(
             context=_format_contexts(contexts)[:MAX_CONTEXT_CHARS],
             question=question,

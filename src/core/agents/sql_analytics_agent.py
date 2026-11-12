@@ -133,14 +133,22 @@ class SQLAnalyticsAgent(BaseAgent):
             'questions': {'intent': {
                 'type': 'choice',
                 'instructions': ('Is the requested result clear enough to write exactly one safe SQL query? '
-                                 'Choose ambiguous when two materially different metrics, entities, or scopes '
-                                 'are reasonably supported by the wording. Missing optional filters alone '
+                                 'Choose ambiguous when materially different metrics, entities, or scopes '
+                                 'are reasonably supported by the wording, or a required scope is missing. '
+                                 'Distinguish time grain from time period: "by each month" or a monthly trend '
+                                 'explicitly requests grouping by month, but "revenue for a month" without a '
+                                 'named month, date range, or explicit latest-available period lacks its time '
+                                 'scope and is ambiguous. Do not turn a missing period into GROUP BY, an '
+                                 'arbitrary date range, or a LIMIT. Treat "latest available month" as clear; '
+                                 'if "last month" could mean either the previous calendar month or latest '
+                                 'month in the data, ask for clarification. Missing optional filters alone '
                                  'do not make it ambiguous. Consider only the question and approved schema; '
                                  'do not judge SQL validity.'),
                 'criteria': {
-                    'clear': 'One reasonable metric, entity, and scope can be identified from the question.',
+                    'clear': ('One reasonable metric, entity, and required scope can be identified. A time '
+                              'grouping is clear only when the question asks for a series or grouping.'),
                     'ambiguous': ('At least two materially different interpretations are reasonable and would '
-                                  'produce different SQL results.'),
+                                  'produce different SQL results, or the metric requires a missing time period.'),
                 },
             }},
         }).encode()

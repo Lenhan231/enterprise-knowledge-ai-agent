@@ -104,5 +104,5 @@ Mã được push lên `main` tại commit `720b265` và triển khai trên Cont
 - [Notebook tái tạo bảng so sánh](reproduce_results.ipynb)
 - [Notebook fine-tune và benchmark](reproduce_finetune_and_benchmark.ipynb)
 - [Snapshot metrics và provenance](benchmark_metrics.json)
-- [Kết quả Groq 120B theo từng hóa đơn](../invoice-groq120b-v2/results.json)
-- [HTML xem từng trường và lỗi](../invoice-groq120b-v2/groq120b-review.html)
+- [Kết quả Groq 120B theo từng hóa đơn](../groq-gpt-oss-120b/results.json)
+- [So sánh prompt và baseline](../groq-gpt-oss-120b/comparison.md)

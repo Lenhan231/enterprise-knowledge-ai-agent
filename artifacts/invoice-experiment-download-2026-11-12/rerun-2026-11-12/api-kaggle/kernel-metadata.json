@@ -1,0 +1,19 @@
+{
+  "id": "ltrngnhn/invoice-qwen-50-rerun-2026-11-12",
+  "title": "Invoice Qwen 50 Rerun 2026 11 12",
+  "code_file": "invoice_api_rerun.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": "true",
+  "enable_gpu": "true",
+  "enable_tpu": "false",
+  "enable_internet": "true",
+  "dataset_sources": [
+    "ltrngnhn/invoice-synthetic-1000-sft-benchmark",
+    "ltrngnhn/qwen3-0-6b-invoice-lora-adapter-900",
+    "ltrngnhn/invoice-50-holdout-ocr-cache"
+  ],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}

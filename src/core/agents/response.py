@@ -43,6 +43,10 @@ def _shorthand_amounts(text):
     return amounts
 
 
+# List numbering ("1. ", "2) ", "Bước 3", "Step 3") is structure, not a fact to source.
+_LIST_MARKERS = re.compile(r'(?im)^[ \t]*(?:[-*•][ \t]*)?\d{1,2}[.)][ \t]|\b(?:bước|step)[ \t]+\d{1,2}\b')
+
+
 def _supported_numbers(answer, inputs, question):
     # Generated specialist prose is not an authority for facts in final synthesis.
     facts = [{'rows': item['data'].get('rows', []),
@@ -52,11 +56,18 @@ def _supported_numbers(answer, inputs, question):
     plain = _UNITS.sub('', answer)
     source_numbers = _number_options(source + ' ' + ' '.join(verified_results(plain)))
     allowed = set().union(*source_numbers, _shorthand_amounts(source)) if source_numbers else _shorthand_amounts(source)
-    return all(options & allowed for options in _number_options(re.sub(r'\[S\d+\]', '', answer)))
+    return all(options & allowed for options in _number_options(_LIST_MARKERS.sub('', re.sub(r'\[S\d+\]', '', answer))))
 
 
 async def assemble_response(request, plan, execution, provider):
     active = [execution.outcomes[t.id] for t in plan.tasks if t.id in execution.outcomes]
+    if len(plan.tasks) == 1 and plan.tasks[0].agent == 'knowledge' and active and active[0].result is not None:
+        # Auto writes nothing new here: the Knowledge answer was already checked claim by claim by its
+        # verifier, so pass it (verified, withheld or no match) and its metadata through unchanged.
+        result = active[0].result
+        return result.model_copy(update={'metadata': {
+            **result.metadata, 'selected_route': 'knowledge', 'task_trace': execution.trace,
+            'specialist_invocations': execution.invocations, 'planning_fallback': plan.fallback}})
     usable = [o for o in active if o.result and o.result.evidence and o.status in {'complete', 'partial'}]
     missing = [o for o in active if o.status != 'complete']
     status = 'complete' if len(active) == len(plan.tasks) and not missing else ('partial' if usable else 'failed')

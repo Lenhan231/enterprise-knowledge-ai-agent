@@ -1,0 +1,128 @@
+[
+  {
+    "path": "huggingface-release/config/tesseract.json",
+    "source": "https://huggingface.co/lenhanm1/enterprise-printed-ocr-vietocr-tesseract/blob/6deb1cb10ecbf240aead77525e80aa4c58adfb23/config/tesseract.json",
+    "bytes": 138,
+    "sha256": "1a4cfa416ca2a98d0173622c8f413e6629da38d4bedf859eb23c8ed696c8d357"
+  },
+  {
+    "path": "huggingface-release/config/vietocr.json",
+    "source": "https://huggingface.co/lenhanm1/enterprise-printed-ocr-vietocr-tesseract/blob/6deb1cb10ecbf240aead77525e80aa4c58adfb23/config/vietocr.json",
+    "bytes": 4223,
+    "sha256": "19d9384520b4aa7005efabde3091d18e1bc2b828d6ed47a4837fae8e7f52853f"
+  },
+  {
+    "path": "huggingface-release/metrics/benchmark-metrics.json",
+    "source": "https://huggingface.co/lenhanm1/enterprise-printed-ocr-vietocr-tesseract/blob/6deb1cb10ecbf240aead77525e80aa4c58adfb23/metrics/benchmark-metrics.json",
+    "bytes": 7401,
+    "sha256": "002cd4c3b038da0e0c243509a80fef35cfcbe06d717f19a54d82a57c63d92840"
+  },
+  {
+    "path": "huggingface-release/report.md",
+    "source": "https://huggingface.co/lenhanm1/enterprise-printed-ocr-vietocr-tesseract/blob/6deb1cb10ecbf240aead77525e80aa4c58adfb23/report.md",
+    "bytes": 4307,
+    "sha256": "8290c31607adeccdf60ba24c00784cb21e0f23a31dc45263c0b116a1ea1fe563"
+  },
+  {
+    "path": "huggingface-release/tesseract/vie_enterprise_print.traineddata",
+    "source": "https://huggingface.co/lenhanm1/enterprise-printed-ocr-vietocr-tesseract/blob/6deb1cb10ecbf240aead77525e80aa4c58adfb23/tesseract/vie_enterprise_print.traineddata",
+    "bytes": 12359067,
+    "sha256": "46a3042212e99352edae981ccafb5d4450c71399c4778c2122b9e6a34d0bd7fc"
+  },
+  {
+    "path": "huggingface-release/vietocr/vgg-seq2seq-enterprise-print.pth",
+    "source": "https://huggingface.co/lenhanm1/enterprise-printed-ocr-vietocr-tesseract/blob/6deb1cb10ecbf240aead77525e80aa4c58adfb23/vietocr/vgg-seq2seq-enterprise-print.pth",
+    "bytes": 89576961,
+    "sha256": "4236211643a4dc644860679f47e242461e0441c08a641a6b2d175ff876dcda55"
+  },
+  {
+    "path": "kaggle/benchmark-metrics.json",
+    "source": "Kaggle kernel output version 3: kaggle/benchmark-metrics.json",
+    "bytes": 7401,
+    "sha256": "002cd4c3b038da0e0c243509a80fef35cfcbe06d717f19a54d82a57c63d92840"
+  },
+  {
+    "path": "kaggle/dataset-and-kernel-notes.md",
+    "source": "Kaggle kernel output version 3: kaggle/dataset-and-kernel-notes.md",
+    "bytes": 477,
+    "sha256": "02d9db1a37aea17605a1d4524e544bb33621226b3570ee9e8a74850999f403a7"
+  },
+  {
+    "path": "kaggle/tesseract/finetune.ipynb",
+    "source": "Kaggle kernel output version 3: kaggle/tesseract/finetune.ipynb",
+    "bytes": 17118,
+    "sha256": "3a9527494b2e99df524b1dec062535b913739ecb84ba1c8b3fd4c4191c32580f"
+  },
+  {
+    "path": "kaggle/tesseract/kernel-metadata.json",
+    "source": "Kaggle kernel output version 3: kaggle/tesseract/kernel-metadata.json",
+    "bytes": 477,
+    "sha256": "a847f8d917bc78d3e52ca0349af667b513492e09f3c969b77a04f586a91af785"
+  },
+  {
+    "path": "kaggle/tesseract-output-v3/tesseract-metrics.json",
+    "source": "Kaggle kernel output version 3: kaggle/tesseract-output-v3/tesseract-metrics.json",
+    "bytes": 19939,
+    "sha256": "c16e1440a092ba500f020e0dbc9875ef239258c75b33e4b50cd53d2f3b273083"
+  },
+  {
+    "path": "kaggle/tesseract-output-v3/tesseract-run-metadata.json",
+    "source": "Kaggle kernel output version 3: kaggle/tesseract-output-v3/tesseract-run-metadata.json",
+    "bytes": 2041,
+    "sha256": "b53f33c93cbf099f038d49193abd40097485ea592463577177349707fe47fcd0"
+  },
+  {
+    "path": "kaggle/tesseract-output-v3/training-log.txt",
+    "source": "Kaggle kernel output version 3: kaggle/tesseract-output-v3/training-log.txt",
+    "bytes": 2700749,
+    "sha256": "ed148bab7f1136ddd07a52a6d6d36fcb024f5a37c6eaadae56f3f4f0ce478e91"
+  },
+  {
+    "path": "kaggle/tesseract-output-v3/vie_enterprise_print.traineddata",
+    "source": "Kaggle kernel output version 3: kaggle/tesseract-output-v3/vie_enterprise_print.traineddata",
+    "bytes": 12359067,
+    "sha256": "7ce66d2b1d99a96475eb70be3878435a9f3f106f0f7b9a8c734d47a749b406df"
+  },
+  {
+    "path": "kaggle/vietocr/finetune.ipynb",
+    "source": "Kaggle kernel output version 3: kaggle/vietocr/finetune.ipynb",
+    "bytes": 21855,
+    "sha256": "3f7afbe8afa23ac508c1009ea27cd5f168cd43d48f016853b57b61b79a5f9bfb"
+  },
+  {
+    "path": "kaggle/vietocr/kernel-metadata.json",
+    "source": "Kaggle kernel output version 3: kaggle/vietocr/kernel-metadata.json",
+    "bytes": 485,
+    "sha256": "8a332ebdffccad41bbfcd0ad0b03b07c6825955d4b5bc092b1cbf77ad19e84d6"
+  },
+  {
+    "path": "kaggle/vietocr-output-v3/training-log.txt",
+    "source": "Kaggle kernel output version 3: kaggle/vietocr-output-v3/training-log.txt",
+    "bytes": 1848,
+    "sha256": "c8c569bd0f022327699246f7929902422c2d7859df45774efe64cf7772ef056c"
+  },
+  {
+    "path": "kaggle/vietocr-output-v3/vietocr-config.json",
+    "source": "Kaggle kernel output version 3: kaggle/vietocr-output-v3/vietocr-config.json",
+    "bytes": 2202,
+    "sha256": "9666633039841592dfa9b7085e4214c6e620a43fb109aeab4d49e6a55a774972"
+  },
+  {
+    "path": "kaggle/vietocr-output-v3/vietocr-metrics.json",
+    "source": "Kaggle kernel output version 3: kaggle/vietocr-output-v3/vietocr-metrics.json",
+    "bytes": 22209,
+    "sha256": "1b9e247adeff7533653253babf3b810498a16386a4ea800e98060e0eed5a3873"
+  },
+  {
+    "path": "kaggle/vietocr-output-v3/vietocr-run-metadata.json",
+    "source": "Kaggle kernel output version 3: kaggle/vietocr-output-v3/vietocr-run-metadata.json",
+    "bytes": 2102,
+    "sha256": "c23c18d59127734bacdc82c95f0eef5b50bae9b28697f5678b697c39a22f473b"
+  },
+  {
+    "path": "kaggle/vietocr-output-v3/vietocr-vgg-seq2seq-enterprise-print.pth",
+    "source": "Kaggle kernel output version 3: kaggle/vietocr-output-v3/vietocr-vgg-seq2seq-enterprise-print.pth",
+    "bytes": 89576961,
+    "sha256": "fc76fb90a2a18d0e80052f41355136c382f1b64dc17e5c3778fe2403ed6c3935"
+  }
+]

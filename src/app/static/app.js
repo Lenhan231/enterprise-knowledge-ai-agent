@@ -1218,6 +1218,11 @@ async function refreshAgentMonitoring() {
     renderAgentMonitoring(await api("/api/admin/agent-monitoring"));
   } catch (error) {
     $("#monitoring-runs").innerHTML = `<p class="error-message">${escapeHtml(error.message)}</p>`;
+  }
+  try {
+    renderAnswerFeedback(await api("/api/admin/answer-feedback"));
+  } catch (error) {
+    $("#monitoring-feedback").innerHTML = `<p class="error-message">${escapeHtml(error.message)}</p>`;
   } finally {
     button.disabled = false;
   }
@@ -1247,6 +1252,48 @@ async function api(path, options = {}) {
     throw Object.assign(new Error(detail || "Request failed"), { status: response.status });
   }
   return data;
+}
+
+// Thumbs up/down next to Copy. A rating sends the question and the shown answer (see answer_feedback).
+function attachFeedback(panel, turn) {
+  const bar = panel.querySelector(".answer-actions-bar");
+  if (!bar || !turn.result?.answer) return;
+  const box = document.createElement("span");
+  box.className = "feedback-buttons";
+  box.innerHTML = ["up", "down"].map((rating) => `<button type="button" class="action-btn feedback-btn" data-rating="${rating}" aria-pressed="false" aria-label="${rating === "up" ? "Helpful" : "Not helpful"}" title="${rating === "up" ? "Helpful" : "Not helpful"}: sends this question and answer to the team for review">${rating === "up" ? "👍" : "👎"}</button>`).join("");
+  bar.append(box);
+  const mark = (rating) => box.querySelectorAll(".feedback-btn").forEach((button) => {
+    const chosen = button.dataset.rating === rating;
+    button.setAttribute("aria-pressed", String(chosen));
+    button.classList.toggle("chosen", chosen);
+    button.disabled = true;
+  });
+  if (turn.feedback) mark(turn.feedback);
+  box.addEventListener("click", async (event) => {
+    const button = event.target.closest(".feedback-btn");
+    if (!button || turn.feedback) return;
+    const rating = button.dataset.rating;
+    const comment = rating === "down" ? window.prompt("What was wrong or missing? (optional)") : null;
+    if (comment === null && rating === "down" && !window.confirm("Send 👎 without a comment?")) return;
+    try {
+      await api("/api/agents/feedback", { method: "POST", body: JSON.stringify({
+        rating, question: turn.question, answer: turn.result.answer, agent: turn.result.agent || "unknown",
+        comment: comment || null, claim_status: turn.result.metadata?.claim_verification?.status ?? null,
+      }) });
+      turn.feedback = rating;
+      mark(rating);
+      button.title = "Thanks, feedback saved";
+    } catch (error) {
+      button.title = `Feedback not saved: ${error.message}`;
+      button.classList.add("feedback-error");
+    }
+  });
+}
+
+function renderAnswerFeedback(data) {
+  const summary = data.summary || {};
+  const items = data.recent || [];
+  $("#monitoring-feedback").innerHTML = `<p class="monitoring-note">Last 30 days: 👍 ${formatNumber(summary.up ?? 0)} · 👎 ${formatNumber(summary.down ?? 0)}</p>${items.length ? `<div class="monitoring-table-wrap"><table class="monitoring-table"><thead><tr><th>Time</th><th>Rating</th><th>Role</th><th>Agent</th><th>Question</th><th>Comment</th><th>Claim check</th></tr></thead><tbody>${items.map((item) => `<tr><td>${escapeHtml(new Date(item.created_at).toLocaleString())}</td><td>${item.rating === "up" ? "👍" : "👎"}</td><td>${escapeHtml(item.actor_role)}</td><td>${escapeHtml(item.agent_name)}</td><td><details><summary>${escapeHtml(item.question.slice(0, 80))}</summary><p>${escapeHtml(item.answer)}</p></details></td><td>${escapeHtml(item.comment || "")}</td><td>${escapeHtml(item.claim_status || "")}</td></tr>`).join("")}</tbody></table></div>` : '<p class="analysis-empty">No feedback yet.</p>'}`;
 }
 
 // Fades the old stage message out and the new one in; a newer stage cancels a fade still running.
@@ -1855,6 +1902,7 @@ function renderSessionTranscript(shouldScroll = false) {
     else if (turn.state === "error") response.innerHTML = `<p class="error-message">${escapeHtml(turn.error)}. Please check service configuration or connection.</p>`;
     else if (turn.result) {
       renderAgentResult(turn.result, response, false);
+      attachFeedback(response, turn);
       if (turn.typeOut) {
         turn.typeOut = false;
         typeOutText(response.querySelector(".answer-text"),

@@ -1298,6 +1298,22 @@ def access_matrix(user: dict = Depends(require_permission("manage_access"))):
     }
 
 
+@app.get("/api/admin/answer-feedback")
+def answer_feedback_snapshot(user: dict = Depends(require_permission("view_agent_monitoring"))):
+    from core.database.answer_feedback_repository import AnswerFeedbackRepository
+
+    repository = None
+    try:
+        repository = AnswerFeedbackRepository()
+        return repository.snapshot()
+    except Exception as error:
+        logger.exception("Could not load answer feedback")
+        raise HTTPException(503, "Answer feedback is unavailable") from error
+    finally:
+        if repository is not None:
+            repository.close()
+
+
 @app.get("/api/admin/agent-monitoring")
 def agent_monitoring(user: dict = Depends(require_permission("view_agent_monitoring"))):
     from core.database.agent_run_repository import AgentRunRepository

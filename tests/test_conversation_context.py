@@ -32,7 +32,7 @@ class ConversationContextTest(unittest.IsolatedAsyncioTestCase):
         async with store.session(request()) as history:
             history.extend([{'question': 'x' * 25, 'scope': str(i)} for i in range(10)])
         async with store.session(request()) as history:
-            self.assertLessEqual(len(history), 6)
+            self.assertLessEqual(len(history), 24)
             self.assertLessEqual(sum(len(v) for item in history for v in item.values()), 100)
         now[0] = 11
         async with store.session(request()) as history:

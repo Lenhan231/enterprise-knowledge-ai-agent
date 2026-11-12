@@ -5,7 +5,9 @@ from __future__ import annotations
 import asyncio
 import inspect
 import json
+import os
 import re
+import urllib.request
 from collections.abc import Mapping
 from datetime import date
 from typing import Any
@@ -21,6 +23,7 @@ from core.analytics.text_to_sql import (
     approved_join_path,
     QueryPlan,
     relevant_schema_tables,
+    APPROVED_JOINS,
     SQLValidationError,
     build_sql_prompt,
     decode_query_plan,
@@ -31,7 +34,7 @@ from core.database.commerce_repository import CommerceRepository
 from core.llm.llm_interface import LLMInterface
 from core.models.agents import AgentResult, Evidence, VerifiedIdentity
 from core.latency import measure
-from core.agents.runtime import generate
+from core.agents.runtime import generate, run_sync
 
 
 class AnalyticsPermissionDenied(PermissionError):
@@ -68,6 +71,8 @@ def payload_to_agent_result(payload: Mapping[str, Any], *, agent: str = "analyti
 
 
 class SQLAnalyticsAgent(BaseAgent):
+    JEV_AMBIGUITY_THRESHOLD = 0.8
+
     def __init__(self, repository: CommerceRepository, *, llm: LLMInterface | None = None, inventory_only: bool | None = None) -> None:
         if inventory_only is None:
             inventory_only = inventory_scope_enabled()
@@ -83,6 +88,26 @@ class SQLAnalyticsAgent(BaseAgent):
     async def run_payload(self, request: Any) -> dict[str, Any]:
         self._authorize(request)
         context_info = {}
+        options = request.get('metadata', {}) if isinstance(request, Mapping) else getattr(request, 'metadata', {})
+        context = options.get('_sql_context') if isinstance(options, Mapping) else None
+        if not (isinstance(context, Mapping) and context.get('pending')):
+            try:
+                with measure('sql_ambiguity_check'):
+                    decision = await run_sync(self._check_ambiguity, self._query_text(request), _timeout=12)
+            except Exception as error:
+                return self._jev_failure(error)
+            if decision['probabilities']['ambiguous'] >= self.JEV_AMBIGUITY_THRESHOLD:
+                result = {
+                    'ok': False, 'operation': 'text_to_sql', 'rows': [],
+                    'answer': 'Có vài cách hiểu có thể dẫn đến kết quả khác nhau. Bạn muốn tính theo chỉ số nào?',
+                    'limitations': ['Chưa chạy truy vấn vì cách hiểu của câu hỏi cần được làm rõ.'],
+                    'query_status': 'clarification_required',
+                    'metadata': {'status': 'clarification_required', 'clarification_required': True,
+                                 '_sql_context_action': 'new', 'jev': decision},
+                }
+                result['metadata']['sql_scope'] = 'inventory' if self.inventory_only else 'approved_commerce'
+                result['metadata'].update(context_info, execution_status='clarification_required')
+                return result
         result = await self._run_payload(request,context_info)
         metadata = result.setdefault('metadata',{})
         metadata['sql_scope'] = 'inventory' if self.inventory_only else 'approved_commerce'
@@ -93,6 +118,54 @@ class SQLAnalyticsAgent(BaseAgent):
              'source_failed' if result.get('query_status') == 'error' else
              'validation_failed' if metadata.get('error_type') in {'SQLValidationError','MetricDefinitionError'} else 'planning_failed'))
         return result
+
+    def _check_ambiguity(self, question: str) -> dict[str, Any]:
+        api_key = os.getenv('OPENROUTER_API_KEY', '').strip()
+        if not api_key:
+            raise RuntimeError('OPENROUTER_API_KEY is not configured')
+        schema = {table: sorted(columns) for table, columns in self.table_columns.items()}
+        relationships = [sorted(f'{table}.{column}' for table, column in edge) for edge in APPROVED_JOINS]
+        request_body = json.dumps({
+            'model': 'typesafe/jev-1.14',
+            'state': {'question': question, 'approved_schema': schema,
+                      'approved_relationships': relationships},
+            'questions': {'intent': {
+                'type': 'choice',
+                'instructions': ('Is the requested result clear enough to write exactly one safe SQL query? '
+                                 'Choose ambiguous when two materially different metrics, entities, or scopes '
+                                 'are reasonably supported by the wording. Missing optional filters alone '
+                                 'do not make it ambiguous. Consider only the question and approved schema; '
+                                 'do not judge SQL validity.'),
+                'criteria': {
+                    'clear': 'One reasonable metric, entity, and scope can be identified from the question.',
+                    'ambiguous': ('At least two materially different interpretations are reasonable and would '
+                                  'produce different SQL results.'),
+                },
+            }},
+        }).encode()
+        req = urllib.request.Request(
+            'https://openrouter.ai/api/alpha/decisions', data=request_body,
+            headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'}, method='POST',
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            payload = json.loads(response.read())
+        answer = payload.get('answers', {}).get('intent', {})
+        probabilities = answer.get('probabilities', {})
+        clear, ambiguous = float(probabilities.get('clear', -1)), float(probabilities.get('ambiguous', -1))
+        if (answer.get('type') != 'choice' or answer.get('choice') not in {'clear', 'ambiguous'}
+                or not all(0 <= probability <= 1 for probability in (clear, ambiguous))):
+            raise ValueError('Jev returned an invalid ambiguity decision')
+        return {'choice': answer.get('choice'), 'probabilities': {'clear': clear, 'ambiguous': ambiguous},
+                'confidence': answer.get('confidence'), 'model': payload.get('model')}
+
+    @staticmethod
+    def _jev_failure(error: Exception) -> dict[str, Any]:
+        return {
+            'ok': False, 'operation': 'text_to_sql', 'rows': [], 'query_status': 'error',
+            'answer': 'Không thể kiểm tra độ rõ của câu hỏi lúc này, nên mình chưa chạy truy vấn. Vui lòng thử lại.',
+            'limitations': ['Jev ambiguity check did not complete; no database query was run.'],
+            'metadata': {'status': 'failed', 'error_type': type(error).__name__, '_sql_context_action': 'failed'},
+        }
 
     async def _run_payload(self, request: Any, context_info: dict) -> dict[str, Any]:
         question = self._query_text(request)

@@ -740,6 +740,22 @@
 .general-chat .chat-turn .feedback-buttons{gap:2px;margin-left:0}
 .general-chat .chat-turn .answer-actions-bar .action-btn{min-width:32px;height:30px;justify-content:center;padding:0 8px;border-color:transparent;background:transparent;color:#657587}
 .general-chat .chat-turn .answer-actions-bar .action-btn:hover{border-color:var(--line);background:var(--paper);color:var(--ink)}
+.agent-progress{display:flex;max-width:620px;align-items:flex-start;gap:12px;margin:4px 0 16px;padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
+.agent-progress-spinner{width:17px;height:17px;flex:none;margin-top:1px;border:2px solid #d7e3f2;border-top-color:var(--blue);border-radius:50%;animation:agentProgressSpin .8s linear infinite}
+.agent-progress-content{min-width:0;flex:1}
+.agent-progress .stage-status{display:block;color:var(--ink);font-size:12px;font-weight:600;line-height:1.5;animation:none}
+.agent-progress-steps{display:grid;gap:4px;margin:7px 0 0;padding:0;list-style:none}
+.agent-progress-steps:empty{display:none}
+.agent-progress-step{display:flex;align-items:baseline;gap:7px;color:var(--muted);font-size:10px;line-height:1.5}
+.agent-progress-step>span{width:12px;flex:none;color:#8392a3;text-align:center;font-weight:700}
+.agent-progress-step.is-started,.agent-progress-step.is-started>span{color:var(--blue)}
+.agent-progress-step.is-completed,.agent-progress-step.is-completed>span{color:#277b5b}
+.agent-progress-step.is-failed,.agent-progress-step.is-failed>span{color:#a53d35}
+@keyframes agentProgressSpin{to{transform:rotate(360deg)}}
+[data-theme="dark"] .agent-progress{border-color:var(--line);background:#101a26}
+[data-theme="dark"] .agent-progress-spinner{border-color:#2b4058;border-top-color:#77a9f5}
+[data-theme="dark"] .agent-progress-step.is-completed,[data-theme="dark"] .agent-progress-step.is-completed>span{color:#64c99a}
+@media(prefers-reduced-motion:reduce){.agent-progress-spinner{animation:none;border-top-color:var(--blue)}}
 .general-chat-composer{display:flex;align-items:flex-end;gap:9px;margin:6px 0 0;padding:9px 10px 9px 15px;border:1px solid #cdd9e7;border-radius:17px;background:var(--paper);box-shadow:0 3px 12px rgba(28,49,74,.055);transition:border-color .18s,box-shadow .18s}
 .general-chat-composer:focus-within{border-color:#89aeda;box-shadow:0 0 0 3px rgba(35,105,216,.09)}
 .general-chat-composer textarea{display:block;min-width:0;max-height:180px;min-height:27px;flex:1;resize:none;overflow:auto;border:0;outline:0;background:transparent;color:var(--ink);font:13px/1.55 "DM Sans",sans-serif}

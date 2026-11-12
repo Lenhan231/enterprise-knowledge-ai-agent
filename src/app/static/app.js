@@ -1444,17 +1444,19 @@ function typeOutText(element, revealAfter = []) {
 }
 
 const STAGE_STATUS = {
-  routing: "Routing your request to the right agent...",
-  knowledge_search_planning: "Planning the document search...",
-  query_translation: "Translating the question for bilingual search...",
-  embedding: "Searching the documents...",
-  database_retrieval: "Searching the documents...",
-  reranking: "Ranking the best passages...",
-  answer_generation: "Writing a cited answer...",
-  claim_verification: "Checking every claim against its source...",
-  sql_planning: "Planning the data query...",
-  sql_execution: "Running the data query...",
-  answer_synthesis: "Combining the results...",
+  routing: "Đang chọn agent phù hợp",
+  knowledge_search_planning: "Đang chuẩn bị tìm tài liệu",
+  query_translation: "Đang chuyển câu hỏi để tìm kiếm song ngữ",
+  embedding: "Đang tìm tài liệu liên quan",
+  database_retrieval: "Đang truy xuất dữ liệu",
+  retrieval_fusion: "Đang hợp nhất kết quả tìm kiếm",
+  reranking: "Đang xếp hạng nguồn phù hợp",
+  answer_generation: "Đang soạn câu trả lời có trích dẫn",
+  claim_verification: "Đang kiểm tra câu trả lời với nguồn",
+  sql_ambiguity_check: "Đang kiểm tra câu hỏi có mơ hồ không",
+  sql_planning: "Đang lập truy vấn SQL",
+  sql_execution: "Đang chạy truy vấn SQL",
+  answer_synthesis: "Đang tổng hợp kết quả",
 };
 
 // Streams stage progress; the answer arrives only after the claim verifier, never as draft tokens.
@@ -1498,7 +1500,7 @@ async function askAgentStream(body, signal, onStatus) {
       if (!kind || data === undefined) continue;
       const payload = JSON.parse(data);
       if (kind === "stage") {
-        if (payload.state === "started" && STAGE_STATUS[payload.stage]) onStatus(STAGE_STATUS[payload.stage]);
+        if (STAGE_STATUS[payload.stage]) onStatus(payload.stage, payload.state);
       } else if (kind === "result") {
         reader.cancel().catch(() => {});
         return payload;
@@ -1878,22 +1880,34 @@ async function loadCorpus() {
   }
 }
 
-function renderSkeletonAnswer(panel, statusMessage = "Retrieving passages and preparing cited answer…") {
+function renderSkeletonAnswer(panel, statusMessage = "Đang gửi yêu cầu…", progress = []) {
   panel.hidden = false;
   panel.innerHTML = `
-    <div class="answer-header-wrap">
-      <div class="answer-heading">
-        <span class="answer-mark">AI</span>
-        <div><span class="eyebrow">PROCESSING QUERY</span><h3 class="stage-status">${escapeHtml(statusMessage)}</h3></div>
+    <section class="agent-progress" role="status" aria-live="polite" aria-busy="true">
+      <span class="agent-progress-spinner" aria-hidden="true"></span>
+      <div class="agent-progress-content">
+        <strong class="stage-status">${escapeHtml(statusMessage)}</strong>
+        <ol class="agent-progress-steps">${renderProgressSteps(progress)}</ol>
       </div>
-    </div>
-    <div class="skeleton-loader">
-      <div class="skeleton-line medium"></div>
-      <div class="skeleton-line"></div>
-      <div class="skeleton-line short"></div>
-      <div class="skeleton-card"></div>
-    </div>
+    </section>
   `;
+}
+
+function renderProgressSteps(progress = []) {
+  return progress.slice(-4).map(({ stage, state }) => `
+    <li class="agent-progress-step is-${escapeHtml(state)}">
+      <span aria-hidden="true">${state === "completed" ? "✓" : state === "failed" ? "!" : "·"}</span>
+      ${escapeHtml(STAGE_STATUS[stage] || "Đang xử lý")}
+    </li>`).join("");
+}
+
+function updatePendingProgress(turn) {
+  const entry = document.querySelector(`[data-turn-id="${turn.id}"]`);
+  if (!entry) return;
+  const heading = entry.querySelector(".stage-status");
+  const steps = entry.querySelector(".agent-progress-steps");
+  if (heading) swapStageText(heading, turn.status || "Đang xử lý yêu cầu…");
+  if (steps) steps.innerHTML = renderProgressSteps(turn.progress);
 }
 
 function setupQuickPrompts() {
@@ -1945,7 +1959,7 @@ function renderChatTranscript(root, turns, shouldScroll) {
     response.className = "answer-panel chat-turn-response";
     entry.append(response);
     root.append(entry);
-    if (turn.state === "pending") renderSkeletonAnswer(response, turn.status || "Routing your request to the right agent...");
+    if (turn.state === "pending") renderSkeletonAnswer(response, turn.status || "Đang gửi yêu cầu…", turn.progress);
     else if (turn.state === "error") response.innerHTML = `<p class="error-message" role="alert">${escapeHtml(turn.error)}. Please check service configuration or connection.</p>`;
     else if (turn.result) {
       renderAgentResult(turn.result, response, false);
@@ -2002,16 +2016,26 @@ async function sendChatMessage({ question, mode, button, input, state, render })
       conversation_id: requestConversationId,
     });
     const signal = AbortSignal.timeout(135_000);
-    const showStage = (status) => {
-      turn.status = status;
-      const heading = document.querySelector(`[data-turn-id="${turn.id}"] .answer-heading h3`);
-      if (heading) swapStageText(heading, status);
+    const showStage = (stage, state) => {
+      turn.progress ||= [];
+      let step = turn.progress.find((item) => item.stage === stage);
+      if (!step) {
+        step = { stage, state };
+        turn.progress.push(step);
+      } else step.state = state;
+      const activeStep = [...turn.progress].reverse().find((item) => item.state === "started");
+      turn.status = activeStep ? STAGE_STATUS[activeStep.stage]
+        : state === "failed" ? "Một bước xử lý gặp lỗi"
+          : "Đang hoàn tất câu trả lời…";
+      updatePendingProgress(turn);
     };
     let data;
     try {
       data = await askAgentStream(body, signal, showStage);
     } catch (error) {
       if (!error.streamUnavailable) throw error;
+      turn.status = "Đang chờ agent xử lý yêu cầu…";
+      updatePendingProgress(turn);
       data = await api("/api/agents/chat", { method: "POST", body, signal });
     }
     if (state.getId() !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;

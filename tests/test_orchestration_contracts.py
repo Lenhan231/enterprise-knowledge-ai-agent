@@ -95,6 +95,35 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn('3', result.answer)
         self.assertIn('[S2]', result.answer)
 
+    async def test_single_knowledge_task_passes_its_verified_answer_through(self):
+        verified = source_result('knowledge', content='Employee updates handover arrangements.')
+        verified.answer = '1. Update the handover arrangements [S1].\n2. Name the replacement [S1].'
+        verified.metadata = {'ok': True, 'claim_verification': {'status': 'supported'}, 'search': {'passages_to_model': 8}}
+        result = await AgentRouter(None, FakeAgent(verified), FakeAgent(source_result('analytics', rows=[])),
+                                   llm=FakeProvider([task('k', 'knowledge', 'Handover')])).run(
+            AgentRequest(question='How do I hand over my work?', identity=IDENTITY))
+        self.assertEqual(result.answer, verified.answer)
+        self.assertNotIn('fallback', result.metadata)
+        self.assertEqual(result.metadata['search'], {'passages_to_model': 8})
+        self.assertEqual(result.metadata['selected_route'], 'knowledge')
+
+    async def test_single_knowledge_task_keeps_the_withheld_message_and_reason(self):
+        from core.rag.claim_verification import VERIFICATION_UNAVAILABLE_ANSWER
+        withheld = AgentResult(answer=VERIFICATION_UNAVAILABLE_ANSWER, agent='knowledge', metadata={
+            'ok': False, 'insufficient_context': False,
+            'claim_verification': {'status': 'rejected', 'reason': 'contradicted'}})
+        result = await AgentRouter(None, FakeAgent(withheld), FakeAgent(source_result('analytics', rows=[])),
+                                   llm=FakeProvider([task('k', 'knowledge', 'Hotel limit for 10 days')])).run(
+            AgentRequest(question='Hotel and meals for 10 days?', identity=IDENTITY))
+        self.assertEqual(result.answer, VERIFICATION_UNAVAILABLE_ANSWER)
+        self.assertEqual(result.metadata['claim_verification']['reason'], 'contradicted')
+        self.assertFalse(result.metadata['ok'])
+
+    def test_list_numbering_is_not_a_claimed_number_but_amounts_still_are(self):
+        inputs = [{'data': {}, 'evidence': [{'content': 'Up to 300.000 VND per meal.'}]}]
+        self.assertTrue(_supported_numbers('1. Meals up to 300.000 VND [S1].\n2) Keep receipts [S1].\nBước 3: submit [S1].', inputs, 'q'))
+        self.assertFalse(_supported_numbers('1. Meals up to 400.000 VND [S1].', inputs, 'q'))
+
     async def test_synchronous_worker_slot_lasts_until_thread_exits(self):
         release = threading.Event()
         started = threading.Event()

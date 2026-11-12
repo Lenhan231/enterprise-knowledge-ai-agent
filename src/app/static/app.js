@@ -1163,7 +1163,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
         }).join("")}
       </div>` : ""}
     <div class="answer-actions-bar">
-      <button type="button" class="action-btn copy-answer-btn" title="Copy response text" aria-label="Copy response">Copy</button>
+      <button type="button" class="action-btn copy-answer-btn" title="Copy response text" aria-label="Copy response">${ICONS.copy}<span class="action-label">Copy</span></button>
     </div>`;
 
   // Inline [S1] chips scroll to and highlight their source card.
@@ -1182,10 +1182,10 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
     copyBtn.addEventListener("click", async () => {
       try {
         await navigator.clipboard.writeText(data.answer);
-        copyBtn.textContent = "Copied!";
+        copyBtn.innerHTML = `${ICONS.check}<span class="action-label">Copied</span>`;
         copyBtn.classList.add("copied");
         setTimeout(() => {
-          copyBtn.textContent = "Copy";
+          copyBtn.innerHTML = `${ICONS.copy}<span class="action-label">Copy</span>`;
           copyBtn.classList.remove("copied");
         }, 2000);
       } catch {
@@ -1305,13 +1305,30 @@ async function api(path, options = {}) {
 }
 
 // Thumbs up/down next to Copy. A rating sends the question and the shown answer (see answer_feedback).
+const ICONS = {
+  copy: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6.5A2.5 2.5 0 0 0 13.5 4h-7A2.5 2.5 0 0 0 4 6.5v7A2.5 2.5 0 0 0 6.5 16H8"/></svg>',
+  check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+  up: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10v10H4.5A1.5 1.5 0 0 1 3 18.5v-7A1.5 1.5 0 0 1 4.5 10H7Zm0 0 4-7a2.5 2.5 0 0 1 2.5 2.5V9h5.2a2 2 0 0 1 2 2.4l-1.4 7A2 2 0 0 1 17.3 20H7"/></svg>',
+  down: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 14V4h2.5A1.5 1.5 0 0 1 21 5.5v7a1.5 1.5 0 0 1-1.5 1.5H17Zm0 0-4 7a2.5 2.5 0 0 1-2.5-2.5V15H5.3a2 2 0 0 1-2-2.4l1.4-7A2 2 0 0 1 6.7 4H17"/></svg>',
+};
+const FEEDBACK_REASONS = ["Wrong information", "Missing details", "Wrong or weak source", "Hard to understand"];
+
 function attachFeedback(panel, turn) {
   const bar = panel.querySelector(".answer-actions-bar");
   if (!bar || !turn.result?.answer) return;
   const box = document.createElement("span");
   box.className = "feedback-buttons";
-  box.innerHTML = ["up", "down"].map((rating) => `<button type="button" class="action-btn feedback-btn" data-rating="${rating}" aria-pressed="false" aria-label="${rating === "up" ? "Helpful" : "Not helpful"}" title="${rating === "up" ? "Helpful" : "Not helpful"}: sends this question and answer to the team for review">${rating === "up" ? "👍" : "👎"}</button>`).join("");
+  box.innerHTML = ["up", "down"].map((rating) => `<button type="button" class="action-btn feedback-btn" data-rating="${rating}" aria-pressed="false" aria-label="${rating === "up" ? "Helpful" : "Not helpful"}" title="${rating === "up" ? "Helpful" : "Not helpful"}: sends this question and answer to the team for review">${ICONS[rating]}</button>`).join("")
+    + '<span class="feedback-status" role="status" aria-live="polite"></span>';
   bar.append(box);
+  const status = box.querySelector(".feedback-status");
+  const say = (text, tone = "") => {
+    status.textContent = text;
+    status.dataset.tone = tone;
+    status.classList.remove("show");
+    void status.offsetWidth;
+    status.classList.add("show");
+  };
   const mark = (rating) => box.querySelectorAll(".feedback-btn").forEach((button) => {
     const chosen = button.dataset.rating === rating;
     button.setAttribute("aria-pressed", String(chosen));
@@ -1319,23 +1336,81 @@ function attachFeedback(panel, turn) {
     button.disabled = true;
   });
   if (turn.feedback) mark(turn.feedback);
+  const send = async (rating, comment) => {
+    await api("/api/agents/feedback", { method: "POST", body: JSON.stringify({
+      rating, question: turn.question, answer: turn.result.answer, agent: turn.result.agent || "unknown",
+      comment: comment || null, claim_status: turn.result.metadata?.claim_verification?.status ?? null,
+    }) });
+    turn.feedback = rating;
+    mark(rating);
+    say("Thanks, your feedback was sent to the team", "ok");
+  };
+
+  // Inline card for 👎: reason chips and an optional note; it opens and closes with a height animation.
+  const card = document.createElement("div");
+  card.className = "feedback-card";
+  card.hidden = true;
+  card.innerHTML = `<div class="feedback-card-inner"><form class="feedback-form">
+      <p class="feedback-title">What went wrong?</p>
+      <div class="feedback-reasons" role="group" aria-label="Reasons">${FEEDBACK_REASONS.map((reason) =>
+        `<button type="button" class="feedback-reason" aria-pressed="false">${escapeHtml(reason)}</button>`).join("")}</div>
+      <label class="visually-hidden" for="fb-${turn.id ?? Date.now()}">Details (optional)</label>
+      <textarea id="fb-${turn.id ?? Date.now()}" maxlength="900" rows="2" placeholder="Tell us what the answer should have said (optional)"></textarea>
+      <div class="feedback-form-actions">
+        <button type="button" class="secondary-button feedback-cancel">Cancel</button>
+        <button type="submit" class="primary-button feedback-send">Send feedback</button>
+      </div>
+    </form></div>`;
+  bar.after(card);
+  const open = (show) => {
+    if (show) {
+      card.hidden = false;
+      requestAnimationFrame(() => card.classList.add("open"));
+      card.querySelector("textarea").focus({ preventScroll: true });
+    } else {
+      card.classList.remove("open");
+      const done = () => { card.hidden = true; };
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ? done() : card.addEventListener("transitionend", done, { once: true });
+    }
+  };
+  card.querySelector(".feedback-reasons").addEventListener("click", (event) => {
+    const chip = event.target.closest(".feedback-reason");
+    if (chip) chip.setAttribute("aria-pressed", String(chip.getAttribute("aria-pressed") !== "true"));
+  });
+  card.querySelector(".feedback-cancel").addEventListener("click", () => {
+    open(false);
+    box.querySelector('[data-rating="down"]').focus();
+  });
+  card.querySelector(".feedback-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const sendButton = card.querySelector(".feedback-send");
+    const reasons = [...card.querySelectorAll('.feedback-reason[aria-pressed="true"]')].map((chip) => chip.textContent);
+    const note = card.querySelector("textarea").value.trim();
+    sendButton.disabled = true;
+    sendButton.textContent = "Sending…";
+    try {
+      await send("down", [reasons.join(", "), note].filter(Boolean).join(" — ").slice(0, 1000));
+      open(false);
+    } catch (error) {
+      say(`Not sent: ${error.message}`, "error");
+      sendButton.disabled = false;
+      sendButton.textContent = "Send feedback";
+    }
+  });
+
   box.addEventListener("click", async (event) => {
     const button = event.target.closest(".feedback-btn");
     if (!button || turn.feedback) return;
-    const rating = button.dataset.rating;
-    const comment = rating === "down" ? window.prompt("What was wrong or missing? (optional)") : null;
-    if (comment === null && rating === "down" && !window.confirm("Send 👎 without a comment?")) return;
+    if (button.dataset.rating === "down") {
+      const opening = card.hidden;
+      button.setAttribute("aria-expanded", String(opening));
+      open(opening);
+      return;
+    }
     try {
-      await api("/api/agents/feedback", { method: "POST", body: JSON.stringify({
-        rating, question: turn.question, answer: turn.result.answer, agent: turn.result.agent || "unknown",
-        comment: comment || null, claim_status: turn.result.metadata?.claim_verification?.status ?? null,
-      }) });
-      turn.feedback = rating;
-      mark(rating);
-      button.title = "Thanks, feedback saved";
+      await send("up", null);
     } catch (error) {
-      button.title = `Feedback not saved: ${error.message}`;
-      button.classList.add("feedback-error");
+      say(`Not sent: ${error.message}`, "error");
     }
   });
 }

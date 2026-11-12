@@ -98,20 +98,28 @@
 :root[data-theme="dark"] .theme-toggle .light-icon{opacity:1;transform:none}
 :root[data-theme="dark"] .theme-toggle .dark-icon{opacity:0;transform:rotate(90deg) scale(.5)}
 
-/* collapsed rail: every icon sits on the same centre line */
+/* Collapse/expand without jumps: both states share one geometry (same padding, row heights and icon x),
+   so only the column width animates; labels fade instead of being removed from layout. */
 @media(min-width:781px){
-  :root #workspace.app-shell{grid-template-columns:244px minmax(0,1fr)}
+  :root #workspace.app-shell{grid-template-columns:244px minmax(0,1fr);transition:grid-template-columns .34s var(--ease)}
   :root #workspace.app-shell.sidebar-collapsed{grid-template-columns:76px minmax(0,1fr)}
-  :root #workspace.app-shell{transition:grid-template-columns .3s var(--ease)}
-  :root .sidebar-collapsed .workspace-sidebar{align-items:center;padding:16px 12px}
-  :root .sidebar-collapsed .sidebar-toggle{align-self:center;margin:4px 0 0}
-  :root .sidebar-collapsed .sidebar-brand{justify-content:center;padding:0 0 14px}
-  :root .sidebar-collapsed .workspace-tabs{width:100%;justify-items:center}
-  :root .sidebar-collapsed .workspace-sidebar .workspace-tab{justify-content:center;width:44px;height:44px;min-height:0;padding:0}
-  :root .sidebar-collapsed .workspace-sidebar .workspace-tab.active::before{left:-12px}
-  :root .sidebar-collapsed .sidebar-account{align-items:center;width:100%}
-  :root .sidebar-collapsed #theme-toggle{width:40px;height:40px;padding:0}
-  :root .sidebar-collapsed #logout-button{width:40px;height:32px;padding:0;font-size:11px}
+  :root .workspace-sidebar,:root .sidebar-collapsed .workspace-sidebar{align-items:stretch;gap:16px;padding:20px 16px 18px;overflow:hidden}
+  :root .sidebar-toggle,:root .sidebar-collapsed .sidebar-toggle{align-self:flex-start;flex:none;margin:0 0 0 6px}
+  :root .sidebar-brand,:root .sidebar-collapsed .sidebar-brand{justify-content:flex-start;gap:12px;padding:0 0 16px 3px}
+  :root .brand-mark{flex:none}
+  :root .sidebar-brand>span:last-child,:root .sidebar-collapsed .sidebar-brand>span:last-child{display:block;flex:none;width:172px}
+  :root .sidebar-brand strong{font-size:13px;white-space:nowrap}
+  :root .sidebar-brand small{font-size:11.5px}
+  :root .workspace-tabs,:root .sidebar-collapsed .workspace-tabs{width:100%;justify-items:stretch}
+  :root .workspace-sidebar .workspace-tab,:root .sidebar-collapsed .workspace-sidebar .workspace-tab{justify-content:flex-start;width:100%;height:44px;min-height:0;padding:0 12px;white-space:nowrap}
+  :root .workspace-sidebar .workspace-tab.active::before{left:-16px}
+  :root .nav-label,:root .sidebar-collapsed .nav-label{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;transition:opacity .2s var(--ease) .1s}
+  :root .sidebar-brand>span:last-child{transition:opacity .2s var(--ease) .1s}
+  :root .sidebar-collapsed .nav-label,:root .sidebar-collapsed .sidebar-brand>span:last-child{opacity:0;transition-delay:0s;pointer-events:none}
+  :root .sidebar-account,:root .sidebar-collapsed .sidebar-account{align-items:flex-start;padding:14px 0 0}
+  :root #theme-toggle,:root .sidebar-collapsed #theme-toggle{flex:none;width:36px;height:36px;margin-left:4px;padding:0}
+  :root .sidebar-collapsed #logout-button{display:grid;place-items:center;width:36px;height:36px;margin-left:4px;padding:0;font-size:0}
+  :root .sidebar-collapsed #logout-button::before{content:"";width:18px;height:18px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l-4-4 4-4M6 12h10'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l-4-4 4-4M6 12h10'/%3E%3C/svg%3E") center/contain no-repeat}
 }
 
 /* ---------- page and hero ---------- */
@@ -159,6 +167,15 @@
 :root .run-status{padding:3px 9px;border-radius:999px;font:500 12px/1.3 var(--font);text-transform:none}
 :root .run-status.completed{background:var(--ok-soft);color:var(--ok-ink)}
 :root .run-status.failed{background:var(--danger-soft);color:var(--danger-ink)}
+
+/* ---------- access matrix, file picker ---------- */
+:root .admin-section{padding:24px}
+:root .access-matrix article{border-radius:var(--radius-card)}
+:root .access-matrix article strong{font-weight:600}
+:root .access-matrix article span{color:var(--muted);font-size:13px;line-height:1.55}
+:root input[type=file]{display:block;width:100%;height:auto;min-height:52px;padding:7px;border:1px dashed var(--line-strong);border-radius:var(--radius-control);background:var(--surface-2);line-height:36px;cursor:pointer}
+:root input[type=file]:hover{border-color:var(--accent-line);background:var(--accent-soft)}
+:root input[type=file]::file-selector-button{height:36px;margin:0 12px 0 0;padding:0 14px;vertical-align:middle;background:var(--surface)}
 
 /* ---------- answers ---------- */
 :root .answer-panel{border-radius:var(--radius-panel)}
@@ -211,7 +228,43 @@
 :root .general-chat .chat-turn .citation>p{font-size:13px}
 :root .general-chat .chat-turn .citations h4{font-size:13px;letter-spacing:0}
 :root .general-chat .chat-turn .answer-actions-bar .action-btn{min-height:32px;width:auto;min-width:32px;border-radius:9px}
-:root .feedback-btn{display:inline-grid;place-items:center;width:32px;height:32px;padding:0;line-height:1}
+/* answer actions: quiet icon row under the sources, aligned with the answer text */
+:root .answer-actions-bar{gap:4px;margin:22px 0 0;padding-top:12px;border-top:1px solid var(--line)}
+:root .chat-turn .answer-actions-bar{padding-left:37px;border-top:0}
+:root .general-chat .chat-turn .answer-actions-bar{margin-top:18px;padding-left:0}
+:root .answer-actions-bar .action-btn{min-height:34px;padding:0 10px;border-color:transparent;background:transparent;color:var(--muted);font-size:13px}
+:root .answer-actions-bar .action-btn:hover:not(:disabled){border-color:var(--line);background:var(--surface-2);color:var(--ink)}
+:root .action-btn svg{display:block;width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+:root .copy-answer-btn.copied{color:var(--ok-ink)}
+:root .copy-answer-btn.copied svg{animation:popIn .3s var(--ease)}
+:root .feedback-buttons,:root .general-chat .chat-turn .feedback-buttons{display:inline-flex;align-items:center;gap:2px;margin-left:2px}
+:root .feedback-btn,:root .answer-actions-bar .feedback-btn{display:grid;place-items:center;width:34px;min-width:34px;height:34px;padding:0}
+:root .feedback-btn.chosen,:root .answer-actions-bar .feedback-btn.chosen{border-color:transparent;background:var(--accent-soft);color:var(--accent-ink);opacity:1}
+:root .feedback-btn.chosen svg{fill:var(--accent-soft);animation:popIn .35s var(--ease)}
+:root .feedback-btn:disabled:not(.chosen){opacity:.35}
+:root .feedback-btn[aria-expanded="true"]{background:var(--surface-3);color:var(--ink)}
+:root .feedback-status{margin-left:8px;color:var(--muted);font-size:12.5px;opacity:0}
+:root .feedback-status.show{animation:statusIn .4s var(--ease) forwards}
+:root .feedback-status[data-tone="ok"]{color:var(--ok-ink)}
+:root .feedback-status[data-tone="error"]{color:var(--danger-ink)}
+@keyframes popIn{0%{transform:scale(.6)}60%{transform:scale(1.15)}100%{transform:none}}
+@keyframes statusIn{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}
+/* feedback card opens by animating its row from 0fr to 1fr, so the height follows the content */
+:root .feedback-card{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .32s var(--ease),opacity .24s var(--ease)}
+:root .feedback-card.open{grid-template-rows:1fr;opacity:1}
+:root .feedback-card[hidden]{display:none}
+:root .feedback-card-inner{min-height:0;overflow:hidden}
+:root .chat-turn .feedback-card{margin-left:37px}
+:root .general-chat .chat-turn .feedback-card{margin-left:0}
+:root .feedback-form{display:grid;gap:12px;max-width:560px;margin:10px 0 4px;padding:16px;border:1px solid var(--line);border-radius:var(--radius-card);background:var(--surface)}
+:root .feedback-title{margin:0;color:var(--ink);font:600 14.5px/1.3 var(--font)}
+:root .feedback-reasons{display:flex;flex-wrap:wrap;gap:6px}
+:root .feedback-reason{min-height:32px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink-2);font:500 13px/1 var(--font);cursor:pointer}
+:root .feedback-reason:hover{border-color:var(--accent-line)}
+:root .feedback-reason[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink)}
+:root .feedback-form textarea{width:100%;min-height:64px;padding:10px 12px;resize:vertical;font-size:14px;line-height:1.5}
+:root .feedback-form-actions{display:flex;justify-content:flex-end;gap:8px}
+:root .feedback-form-actions button{height:38px;min-height:38px;padding:0 16px;font-size:13.5px}
 
 /* ---------- motion: one entrance per change, nothing looping except progress ---------- */
 :root .tab-panel:not([hidden]){animation:panelIn .32s var(--ease) both}

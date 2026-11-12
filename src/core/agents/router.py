@@ -160,6 +160,13 @@ class AgentRouter:
         with measure('routing'):
             plan = await plan_request(state['request'], self._provider(), history=state['history'],
                                       report_headings=state.get('report_headings'), sql_schema=self.sql_schema)
+        tasks = plan.tasks
+        if (state.get('report_headings') is None and len(tasks) == 1 and tasks[0].agent == 'knowledge'
+                and not tasks[0].inputs and (not state['history'] or not plan.uses_context)):
+            # Knowledge translates and plans its own search; a planner paraphrase only adds variation.
+            # Follow-ups that need earlier turns keep the planner's resolved question.
+            plan = plan.model_copy(update={'tasks': [tasks[0].model_copy(
+                update={'question': state['request'].question})]})
         state['execution'].plan = plan
         if plan.clarification:
             return {'plan': plan, 'result': AgentResult(answer=plan.clarification, agent='agentic', metadata={

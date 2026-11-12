@@ -119,6 +119,40 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.metadata['claim_verification']['reason'], 'contradicted')
         self.assertFalse(result.metadata['ok'])
 
+    async def test_lone_knowledge_task_gets_the_users_own_question_unless_it_is_a_follow_up(self):
+        class Planner(FakeProvider):
+            uses_context = None
+
+            async def generate(self, prompt):
+                plan = {'objective': 'Handover', 'tasks': [task('k', 'knowledge', 'Search for handover policies')]}
+                if self.uses_context is not None:
+                    plan['uses_context'] = self.uses_context
+                return json.dumps(plan)
+
+        knowledge, planner = FakeAgent(source_result('knowledge')), Planner([])
+        router = AgentRouter(None, knowledge, FakeAgent(source_result('analytics', rows=[])), llm=planner)
+        ask = lambda question: router.run(AgentRequest(question=question, identity=IDENTITY, conversation_id='c1'))
+
+        await ask('How do I hand over my work?')                 # first turn: no history
+        planner.uses_context = False
+        await ask('What is the hotel limit per night?')          # later turn, stands alone
+        planner.uses_context = True
+        await ask('And in a major city?')                        # follow-up: needs the earlier turn
+        planner.uses_context = None
+        await ask('And for meals?')                              # flag missing: keep the planner's question
+
+        self.assertEqual([request.question for request in knowledge.requests], [
+            'How do I hand over my work?', 'What is the hotel limit per night?',
+            'Search for handover policies', 'Search for handover policies'])
+
+    async def test_knowledge_question_with_predecessor_inputs_is_not_replaced(self):
+        tasks = [task('s', 'sql', 'Top category'), task('k', 'knowledge', 'Policy for that category',
+                 depends_on=['s'], inputs=[{'task_id': 's', 'kind': 'rows'}])]
+        knowledge = FakeAgent(source_result('knowledge'))
+        await AgentRouter(None, knowledge, FakeAgent(source_result('analytics', rows=[{'category': 'Shoes'}])),
+                          llm=FakeProvider(tasks)).run(AgentRequest(question='Policy for the top category?', identity=IDENTITY))
+        self.assertTrue(knowledge.requests[0].question.startswith('Policy for that category'))
+
     def test_list_numbering_is_not_a_claimed_number_but_amounts_still_are(self):
         inputs = [{'data': {}, 'evidence': [{'content': 'Up to 300.000 VND per meal.'}]}]
         self.assertTrue(_supported_numbers('1. Meals up to 300.000 VND [S1].\n2) Keep receipts [S1].\nBước 3: submit [S1].', inputs, 'q'))

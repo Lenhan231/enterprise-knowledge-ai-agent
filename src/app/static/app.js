@@ -1273,6 +1273,24 @@ async function api(path, options = {}) {
   return data;
 }
 
+// Fades the old stage message out and the new one in; a newer stage cancels a fade still running.
+function swapStageText(heading, text) {
+  if (heading.textContent === text) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    heading.textContent = text;
+    return;
+  }
+  heading.getAnimations().filter((animation) => animation.id === "stage-swap").forEach((animation) => animation.cancel());
+  const out = heading.animate([{ opacity: 1, transform: "translateY(0)" }, { opacity: 0, transform: "translateY(-4px)" }],
+    { duration: 180, easing: "ease-in", fill: "forwards", id: "stage-swap" });
+  out.finished.then(() => {
+    heading.textContent = text;
+    out.cancel();
+    heading.animate([{ opacity: 0, transform: "translateY(4px)" }, { opacity: 1, transform: "translateY(0)" }],
+      { duration: 260, easing: "ease-out", id: "stage-swap" });
+  }).catch(() => { heading.textContent = text; });
+}
+
 const RUN_STAGE_LABELS = {
   routing: "Routing", knowledge_search_planning: "Search planning", query_translation: "Translation",
   embedding: "Query embedding", database_retrieval: "Database search", reranking: "Reranking",
@@ -1804,7 +1822,7 @@ function renderSkeletonAnswer(panel, statusMessage = "Retrieving passages and pr
     <div class="answer-header-wrap">
       <div class="answer-heading">
         <span class="answer-mark">AI</span>
-        <div><span class="eyebrow">PROCESSING QUERY</span><h3>${escapeHtml(statusMessage)}</h3></div>
+        <div><span class="eyebrow">PROCESSING QUERY</span><h3 class="stage-status">${escapeHtml(statusMessage)}</h3></div>
       </div>
     </div>
     <div class="skeleton-loader">
@@ -1899,7 +1917,7 @@ $("#ask-form").addEventListener("submit", async (event) => {
     const showStage = (status) => {
       turn.status = status;
       const heading = document.querySelector(`[data-turn-id="${turn.id}"] .answer-heading h3`);
-      if (heading) heading.textContent = status;
+      if (heading) swapStageText(heading, status);
     };
     let data;
     try {

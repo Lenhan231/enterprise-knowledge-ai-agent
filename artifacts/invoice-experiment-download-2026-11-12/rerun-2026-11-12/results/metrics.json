@@ -1,0 +1,291 @@
+{
+  "experiment": {
+    "train_invoices": 900,
+    "validation_invoices": 50,
+    "test_invoices": 50,
+    "training_seconds": 29437.4,
+    "base_model_revision_0.6b": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "base_model_revision_1.7b": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "source_commit": "535932f912949f860ef735df690c3bc60714f8cf",
+    "ocr": "cached established pilot output: Docling 2.129.0 + fine-tuned VietOCR vgg_transformer",
+    "training_evidence": "synthetic OCR-like header/table records reconstructed from labels",
+    "test_cohort": "established invoice-pilot-50, held out from training",
+    "sample_count": 50,
+    "ocr_cache_dataset": "ltrngnhn/invoice-50-holdout-ocr-cache",
+    "ocr_cache_sha256": "ece9017ab1674c35add0559fdec7679ae6f59bd9257bb50b3845e5cd010fa379",
+    "qwen_source_commit": "535932f912949f860ef735df690c3bc60714f8cf",
+    "provider_model_ids": {
+      "groq": "openai/gpt-oss-120b",
+      "gemini": "gemini-3.1-flash-lite"
+    },
+    "api_prompt_source": "InvoiceTextProcessor from main commit 535932f912949f860ef735df690c3bc60714f8cf",
+    "api_run_host": "local for Groq and Gemini after Kaggle secret access failed before provider requests"
+  },
+  "provider_status": {
+    "groq": "partial",
+    "gemini": "complete"
+  },
+  "models": {
+    "qwen3-0.6b-base": {
+      "sample_count": 50,
+      "ocr_success_count": 50,
+      "inference_success_count": 50,
+      "schema_valid_rate": 1.0,
+      "header_exact_match_rates": {
+        "invoice_no": 0.0,
+        "date": 0.32,
+        "seller": 0.9,
+        "buyer": 0.94,
+        "subtotal": 0.26,
+        "tax_amount": 0.92,
+        "total_amount": 0.82
+      },
+      "item_count_exact_rate": 0.08,
+      "item_row_exact_accuracy_macro_invoice": 0.0,
+      "item_row_exact_accuracy_pooled": 0.0,
+      "item_field_accuracy_macro_invoice": {
+        "description": 0.01714285714285714,
+        "quantity": 0.0,
+        "unit": 0.0,
+        "unit_price": 0.0,
+        "amount": 0.0
+      },
+      "mean_inference_seconds": 9.2434,
+      "whole_invoice_exact_rate": 0.0
+    },
+    "qwen3-0.6b-lora": {
+      "sample_count": 50,
+      "ocr_success_count": 50,
+      "inference_success_count": 50,
+      "schema_valid_rate": 1.0,
+      "header_exact_match_rates": {
+        "invoice_no": 0.16,
+        "date": 0.98,
+        "seller": 0.9,
+        "buyer": 0.96,
+        "subtotal": 0.44,
+        "tax_amount": 0.98,
+        "total_amount": 0.98
+      },
+      "item_count_exact_rate": 1.0,
+      "item_row_exact_accuracy_macro_invoice": 0.9136190476190477,
+      "item_row_exact_accuracy_pooled": 0.9103448275862069,
+      "item_field_accuracy_macro_invoice": {
+        "description": 0.9221190476190476,
+        "quantity": 0.998,
+        "unit": 0.9934999999999999,
+        "unit_price": 1.0,
+        "amount": 1.0
+      },
+      "mean_inference_seconds": 45.282000000000004,
+      "whole_invoice_exact_rate": 0.0
+    },
+    "qwen3-1.7b-base": {
+      "sample_count": 50,
+      "ocr_success_count": 50,
+      "inference_success_count": 50,
+      "schema_valid_rate": 1.0,
+      "header_exact_match_rates": {
+        "invoice_no": 1.0,
+        "date": 0.1,
+        "seller": 0.9,
+        "buyer": 0.94,
+        "subtotal": 0.28,
+        "tax_amount": 0.88,
+        "total_amount": 0.9
+      },
+      "item_count_exact_rate": 1.0,
+      "item_row_exact_accuracy_macro_invoice": 0.8761190476190477,
+      "item_row_exact_accuracy_pooled": 0.8620689655172413,
+      "item_field_accuracy_macro_invoice": {
+        "description": 0.9192619047619047,
+        "quantity": 0.9551428571428572,
+        "unit": 0.9934999999999999,
+        "unit_price": 1.0,
+        "amount": 1.0
+      },
+      "mean_inference_seconds": 29.5764,
+      "whole_invoice_exact_rate": 0.0
+    },
+    "groq": {
+      "sample_count": 45,
+      "success_count": 6,
+      "coverage": 0.13333333333333333,
+      "schema_valid_rate": 0.13333333333333333,
+      "parse_error_count": 0,
+      "field_conflict_count": 0,
+      "header_exact_match_rates": {
+        "invoice_no": 0.13333333333333333,
+        "date": 0.13333333333333333,
+        "seller": 0.1111111111111111,
+        "buyer": 0.13333333333333333,
+        "subtotal": 0.13333333333333333,
+        "tax_amount": 0.13333333333333333,
+        "total_amount": 0.13333333333333333
+      },
+      "item_count_exact_rate": 0.13333333333333333,
+      "item_row_exact_accuracy": 0.1171604938271605,
+      "item_field_accuracy": {
+        "description": 0.12160493827160494,
+        "quantity": 0.13333333333333333,
+        "unit": 0.1288888888888889,
+        "unit_price": 0.13333333333333333,
+        "amount": 0.13333333333333333
+      },
+      "description_cer": 0.8486939379004436,
+      "description_wer": 0.8493694535263895,
+      "whole_invoice_exact_rate": 0.022222222222222223,
+      "end_to_end_latency_seconds": {
+        "mean": 15.866666666666667,
+        "median": 15.605,
+        "p95": 24.66,
+        "model_inference_seconds_mean": 15.866666666666667
+      },
+      "usage": {
+        "prompt_tokens": 13322,
+        "generated_tokens": 9285,
+        "requests": 6
+      },
+      "by_quality": {
+        "clean": {
+          "sample_count": 14,
+          "coverage": 0.14285714285714285,
+          "whole_invoice_exact_rate": 0.0,
+          "item_field_accuracy": {
+            "description": 0.125,
+            "quantity": 0.14285714285714285,
+            "unit": 0.14285714285714285,
+            "unit_price": 0.14285714285714285,
+            "amount": 0.14285714285714285
+          }
+        },
+        "creased": {
+          "sample_count": 10,
+          "coverage": 0.2,
+          "whole_invoice_exact_rate": 0.0,
+          "item_field_accuracy": {
+            "description": 0.18888888888888888,
+            "quantity": 0.2,
+            "unit": 0.18,
+            "unit_price": 0.2,
+            "amount": 0.2
+          }
+        },
+        "difficult": {
+          "sample_count": 4,
+          "coverage": 0.25,
+          "whole_invoice_exact_rate": 0.0,
+          "item_field_accuracy": {
+            "description": 0.20833333333333334,
+            "quantity": 0.25,
+            "unit": 0.25,
+            "unit_price": 0.25,
+            "amount": 0.25
+          }
+        },
+        "mild": {
+          "sample_count": 17,
+          "coverage": 0.058823529411764705,
+          "whole_invoice_exact_rate": 0.058823529411764705,
+          "item_field_accuracy": {
+            "description": 0.058823529411764705,
+            "quantity": 0.058823529411764705,
+            "unit": 0.058823529411764705,
+            "unit_price": 0.058823529411764705,
+            "amount": 0.058823529411764705
+          }
+        }
+      }
+    },
+    "gemini": {
+      "sample_count": 50,
+      "success_count": 50,
+      "coverage": 1.0,
+      "schema_valid_rate": 1.0,
+      "parse_error_count": 0,
+      "field_conflict_count": 0,
+      "header_exact_match_rates": {
+        "invoice_no": 1.0,
+        "date": 1.0,
+        "seller": 0.9,
+        "buyer": 1.0,
+        "subtotal": 1.0,
+        "tax_amount": 1.0,
+        "total_amount": 1.0
+      },
+      "item_count_exact_rate": 1.0,
+      "item_row_exact_accuracy": 0.9107619047619048,
+      "item_field_accuracy": {
+        "description": 0.9192619047619047,
+        "quantity": 0.998,
+        "unit": 0.9934999999999999,
+        "unit_price": 1.0,
+        "amount": 1.0
+      },
+      "description_cer": 0.0033638572229489814,
+      "description_wer": 0.006858407079646018,
+      "whole_invoice_exact_rate": 0.5,
+      "end_to_end_latency_seconds": {
+        "mean": 9.1688,
+        "median": 8.36,
+        "p95": 16.19,
+        "model_inference_seconds_mean": 9.1676
+      },
+      "usage": {
+        "prompt_tokens": 202457,
+        "generated_tokens": 34494,
+        "requests": 100
+      },
+      "by_quality": {
+        "clean": {
+          "sample_count": 15,
+          "coverage": 1.0,
+          "whole_invoice_exact_rate": 0.6666666666666666,
+          "item_field_accuracy": {
+            "description": 0.9583333333333334,
+            "quantity": 0.9933333333333334,
+            "unit": 1.0,
+            "unit_price": 1.0,
+            "amount": 1.0
+          }
+        },
+        "creased": {
+          "sample_count": 11,
+          "coverage": 1.0,
+          "whole_invoice_exact_rate": 0.18181818181818182,
+          "item_field_accuracy": {
+            "description": 0.8511544011544011,
+            "quantity": 1.0,
+            "unit": 0.9704545454545456,
+            "unit_price": 1.0,
+            "amount": 1.0
+          }
+        },
+        "difficult": {
+          "sample_count": 4,
+          "coverage": 1.0,
+          "whole_invoice_exact_rate": 0.25,
+          "item_field_accuracy": {
+            "description": 0.8458333333333333,
+            "quantity": 1.0,
+            "unit": 1.0,
+            "unit_price": 1.0,
+            "amount": 1.0
+          }
+        },
+        "mild": {
+          "sample_count": 20,
+          "coverage": 1.0,
+          "whole_invoice_exact_rate": 0.6,
+          "item_field_accuracy": {
+            "description": 0.9421031746031746,
+            "quantity": 1.0,
+            "unit": 1.0,
+            "unit_price": 1.0,
+            "amount": 1.0
+          }
+        }
+      }
+    }
+  }
+}

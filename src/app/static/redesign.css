@@ -376,6 +376,59 @@
   :root #ask-button{flex:0 0 auto;width:auto}
 }
 
+
+/* ---------- liquid glass: only the navigation/control layer floats; content stays solid ---------- */
+:root{
+  --glass-tint:rgba(255,255,255,.5);--glass-tint-strong:rgba(255,255,255,.7);
+  --glass-rim:rgba(255,255,255,.85);--glass-edge:rgba(20,33,29,.10);
+  --glass-sheen:linear-gradient(180deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 42%);
+  --glass-shadow:0 1px 0 0 var(--glass-rim) inset,0 0 0 1px rgba(255,255,255,.35) inset,0 18px 40px -18px rgba(20,33,29,.28),0 2px 6px -2px rgba(20,33,29,.08);
+  --glass-blur:blur(22px) saturate(175%);
+  --field-jade:rgba(11,122,102,.2);--field-amber:rgba(183,114,15,.13);--field-jade-2:rgba(11,122,102,.1);
+}
+:root[data-theme="dark"]{
+  --glass-tint:rgba(22,36,31,.52);--glass-tint-strong:rgba(22,36,31,.68);
+  --glass-rim:rgba(255,255,255,.14);--glass-edge:rgba(255,255,255,.07);
+  --glass-sheen:linear-gradient(180deg,rgba(255,255,255,.09) 0%,rgba(255,255,255,0) 40%);
+  --glass-shadow:0 1px 0 0 var(--glass-rim) inset,0 0 0 1px rgba(255,255,255,.05) inset,0 22px 44px -18px rgba(0,0,0,.65);
+  --field-jade:rgba(111,194,171,.16);--field-amber:rgba(224,165,71,.09);--field-jade-2:rgba(111,194,171,.08);
+}
+/* soft colour fields behind the page, so the glass has something to bend */
+:root body{position:relative;isolation:isolate}
+:root body::before{content:"";position:fixed;inset:-10vmax;z-index:-1;pointer-events:none;
+  background:radial-gradient(38vmax 30vmax at 12% 8%,var(--field-jade),transparent 70%),
+             radial-gradient(34vmax 28vmax at 92% 88%,var(--field-amber),transparent 70%),
+             radial-gradient(30vmax 26vmax at 78% 22%,var(--field-jade-2),transparent 70%)}
+:root .app-shell{background:transparent}
+
+:root .workspace-sidebar,:root #ask-form,:root .general-chat-composer,:root .monitoring-tabs{
+  position:relative;background:var(--glass-tint);border-color:var(--glass-edge);box-shadow:var(--glass-shadow);
+  -webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+:root .workspace-sidebar{position:sticky;box-shadow:1px 0 0 0 var(--glass-rim) inset,-1px 0 0 0 var(--glass-edge) inset}
+/* specular highlight across the top of each glass control */
+:root #ask-form::before,:root .general-chat-composer::before,:root .monitoring-tabs::before{content:"";position:absolute;inset:0;border-radius:inherit;background:var(--glass-sheen);pointer-events:none}
+:root #ask-form>*,:root .general-chat-composer>*,:root .monitoring-tabs>*{position:relative}
+:root #ask-form:focus-within,:root .general-chat-composer:focus-within{background:var(--glass-tint-strong);border-color:var(--accent-line);box-shadow:var(--glass-shadow),0 0 0 4px var(--accent-soft)}
+:root .monitoring-tabs{background:var(--glass-tint);border-radius:14px}
+:root .monitoring-tab[aria-selected="true"]{background:var(--glass-tint-strong);box-shadow:0 1px 0 0 var(--glass-rim) inset,0 2px 8px -2px rgba(20,33,29,.18)}
+/* nav items read as glass chips when active */
+:root .workspace-sidebar .workspace-tab.active{background:color-mix(in srgb,var(--accent-soft) 75%,transparent);box-shadow:0 1px 0 0 var(--glass-rim) inset}
+:root .workspace-sidebar .workspace-tab:hover,:root button.side-row:hover{background:color-mix(in srgb,var(--surface-3) 70%,transparent)}
+/* the main button gets a glossy lens: a highlight that answers the pointer */
+:root #ask-button,:root .general-chat-composer button,:root .primary-button{position:relative;overflow:hidden;box-shadow:0 1px 0 0 rgba(255,255,255,.35) inset,0 6px 16px -8px color-mix(in srgb,var(--accent) 70%,transparent)}
+:root #ask-button::after,:root .general-chat-composer button::after,:root .primary-button::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,0) 55%);pointer-events:none}
+@media(max-width:780px){
+  :root .workspace-sidebar{box-shadow:0 -1px 0 0 var(--glass-edge) inset;border-bottom-color:transparent}
+}
+/* readers who ask for less transparency, and browsers without blur, get solid surfaces */
+@media(prefers-reduced-transparency:reduce){
+  :root .workspace-sidebar,:root #ask-form,:root .general-chat-composer,:root .monitoring-tabs{background:var(--surface);-webkit-backdrop-filter:none;backdrop-filter:none}
+  :root body::before{display:none}
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  :root .workspace-sidebar,:root #ask-form,:root .general-chat-composer,:root .monitoring-tabs{background:var(--surface)}
+}
+
 @media(prefers-reduced-motion:reduce){
   :root *,:root *::before,:root *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
   ::view-transition-new(root){animation:none}

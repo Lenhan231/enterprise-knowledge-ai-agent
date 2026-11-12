@@ -1013,7 +1013,8 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
   panel.hidden = false;
   const citations = Array.isArray(data.citations) ? data.citations : [];
   const usedEvidenceFallback = Boolean(data.answer_fallback_reason || data.fallback);
-  const responseTitle = ({partial: "Partial answer", clarification_required: "Clarification needed", failed: "Answer unavailable"})[data.status]
+  const responseTitle = data.failure_code === "sql_timeout" ? "Truy vấn mất quá lâu"
+    : ({partial: "Partial answer", clarification_required: "Clarification needed", failed: "Could not complete"})[data.status]
     || (data.ok === false ? "Answer unavailable" : usedEvidenceFallback ? "Evidence fallback" : "Synthesized answer");
   const domainLabels = {
     inventory_allocation: "Inventory allocation",
@@ -1189,8 +1190,12 @@ function renderAgentRows(data) {
     const validRows = (rows || []).filter((row) => row && typeof row === "object" && !Array.isArray(row));
     const columns = validRows.length ? Object.keys(validRows[0]).slice(0, 12) : [];
     const executed = value.query_status === "executed";
+    const statusLabel = executed ? "Đã chạy" : value.query_status === "error"
+      ? (value.failure_code === "sql_timeout" ? "Dừng do timeout" : "Lỗi khi chạy")
+      : value.query_status === "rejected" ? "Bị chặn trước khi chạy"
+        : value.query_status === "clarification_required" ? "Chờ bạn làm rõ" : value.query_status;
     const queryStatus = value.query_status
-      ? `<span class="query-status ${executed ? "is-executed" : "is-not-executed"}">${executed ? "Executed" : "Not executed · " + escapeHtml(value.query_status)}</span>`
+      ? `<span class="query-status ${executed ? "is-executed" : "is-not-executed"}">${escapeHtml(statusLabel)}</span>`
       : "";
     const canShowRows = value.query_status == null || executed;
     const table = canShowRows && validRows.length
@@ -1201,9 +1206,11 @@ function renderAgentRows(data) {
       ? `<p>Parameters: <code>${escapeHtml(JSON.stringify(value.parameters))}</code></p>`
       : "";
     const diagnostics = diagnosticSql || parameters
-      ? `<details><summary>${value.attempted_sql ? "Rejected query diagnostic" : executed ? "Executed query" : "Query details"}</summary>${diagnosticSql ? `<pre>${escapeHtml(diagnosticSql)}</pre>` : ""}${parameters}</details>`
+      ? `<details><summary>${value.query_status === "error" ? "Xem truy vấn lỗi" : value.query_status === "rejected" ? "Xem truy vấn bị chặn" : executed ? "Xem SQL đã chạy" : "Chi tiết truy vấn"}</summary>${diagnosticSql ? `<pre>${escapeHtml(diagnosticSql)}</pre>` : ""}${parameters}</details>`
       : "";
-    return `<section class="agent-data-result"><h4>${escapeHtml(label.replace(/^task:/, "Task "))} ${queryStatus}</h4>${table}${diagnostics}</section>`;
+    const jev = value.jev;
+    const jevNote = jev?.probabilities ? `<p class="jev-note">JEV · rõ ${Math.round((jev.probabilities.clear || 0) * 100)}% · mơ hồ ${Math.round((jev.probabilities.ambiguous || 0) * 100)}% · ngưỡng hỏi lại ${Math.round((jev.threshold || 0) * 100)}%</p>` : "";
+    return `<section class="agent-data-result"><h4>${escapeHtml(label.replace(/^task:/, "Task "))} ${queryStatus}</h4>${table}${jevNote}${diagnostics}</section>`;
   }).join("");
 }
 

@@ -96,6 +96,7 @@ class SQLAnalyticsAgent(BaseAgent):
                     decision = await run_sync(self._check_ambiguity, self._query_text(request), _timeout=12)
             except Exception as error:
                 return self._jev_failure(error)
+            context_info['jev'] = {**decision, 'threshold': self.JEV_AMBIGUITY_THRESHOLD}
             if decision['probabilities']['ambiguous'] >= self.JEV_AMBIGUITY_THRESHOLD:
                 result = {
                     'ok': False, 'operation': 'text_to_sql', 'rows': [],
@@ -103,7 +104,7 @@ class SQLAnalyticsAgent(BaseAgent):
                     'limitations': ['Chưa chạy truy vấn vì cách hiểu của câu hỏi cần được làm rõ.'],
                     'query_status': 'clarification_required',
                     'metadata': {'status': 'clarification_required', 'clarification_required': True,
-                                 '_sql_context_action': 'new', 'jev': decision},
+                                 '_sql_context_action': 'new', 'jev': context_info['jev']},
                 }
                 result['metadata']['sql_scope'] = 'inventory' if self.inventory_only else 'approved_commerce'
                 result['metadata'].update(context_info, execution_status='clarification_required')
@@ -426,11 +427,20 @@ class SQLAnalyticsAgent(BaseAgent):
 
     @staticmethod
     def _database_error(error: Exception, sql: str, parameters: tuple[Any, ...]) -> dict[str, Any]:
+        query_timeout = isinstance(error, TimeoutError) or getattr(error, 'sqlstate', None) == '57014'
+        failure_code = 'sql_timeout' if query_timeout else 'sql_execution_failed'
+        answer = (
+            'Truy vấn dữ liệu mất quá lâu nên đã được dừng trước khi có kết quả. Hãy thu hẹp khoảng thời gian '
+            'hoặc yêu cầu một phép tổng hợp cụ thể hơn.'
+            if query_timeout else
+            'Truy vấn dữ liệu chưa hoàn tất nên mình chưa thể đưa ra kết quả. Bạn có thể thử lại hoặc thu hẹp câu hỏi.'
+        )
         result = {
             "ok": False, "operation": "text_to_sql", "rows": [],
-            "answer": "The approved data query could not be completed. Please try again later.",
-            "limitations": ["Database query did not complete."],
-            "metadata": {"error_type": type(error).__name__},
+            "answer": answer,
+            "limitations": ["Truy vấn vượt quá thời gian cho phép." if query_timeout else
+                            "Truy vấn dữ liệu chưa hoàn tất."],
+            "metadata": {"status": "failed", "failure_code": failure_code, "error_type": type(error).__name__},
         }
         result.update(attempted_sql=sql, parameters=list(parameters), query_status="error")
         return result

@@ -74,6 +74,7 @@ async def assemble_response(request, plan, execution, provider):
     missing = [o for o in active if o.status != 'complete']
     status = 'complete' if len(active) == len(plan.tasks) and not missing else ('partial' if usable else 'failed')
     clarification = next((o for o in active if o.status == 'clarification_required'), None)
+    database_failure = next((o for o in active if o.result and o.result.data.get('query_status') == 'error'), None)
     if clarification:
         status = 'clarification_required'
     evidence, inputs, data, limitations = [], [], {}, []
@@ -88,6 +89,10 @@ async def assemble_response(request, plan, execution, provider):
             if outcome.result:
                 diagnostic = {key: value for key, value in outcome.result.data.items()
                               if key in {'sql', 'attempted_sql', 'parameters', 'query_status'}}
+                if outcome.result.metadata.get('failure_code'):
+                    diagnostic['failure_code'] = outcome.result.metadata['failure_code']
+                if outcome.result.metadata.get('jev'):
+                    diagnostic['jev'] = outcome.result.metadata['jev']
                 if diagnostic:
                     data[outcome.task.agent] = diagnostic
     for outcome in usable:
@@ -111,6 +116,9 @@ async def assemble_response(request, plan, execution, provider):
     answer = ''
     if clarification:
         answer = clarification.result.answer
+        fallback = False
+    elif database_failure and not usable:
+        answer = database_failure.result.answer
         fallback = False
     elif len(usable) == 1 and len(plan.tasks) == 1 and status == 'complete':
         answer = inputs[0]['answer']
@@ -163,18 +171,22 @@ async def assemble_response(request, plan, execution, provider):
                     blocks.append(f'Document evidence [{source["citation_id"]}]:\n> ' + excerpt.replace('\n', '\n> '))
         if clarification:
             answer = clarification.result.answer
+        elif database_failure:
+            answer = database_failure.result.answer
         elif blocks:
             answer = 'Evidence fallback — review the supported findings and gaps below.\n\n' + '\n\n'.join(blocks)
         elif status == 'clarification_required':
             answer = next(o.result.answer for o in active if o.status == 'clarification_required')
         else:
             answer = 'No supported answer could be completed. A task failed or its deadline/evidence budget was exhausted.'
-    if limitations and not clarification:
+    if limitations and not clarification and not database_failure:
         answer += '\n\nLimitations: ' + ' '.join(dict.fromkeys(limitations))
     agent_names = {task.agent for task in plan.tasks}
     route = 'hybrid' if len(agent_names) > 1 else ('analytics' if 'sql' in agent_names else 'knowledge')
-    return AgentResult(answer=answer, agent=route, evidence=evidence, data=data,
-                       metadata={'ok': status == 'complete', 'status': status, 'fallback': fallback,
-                                 'limitations': list(dict.fromkeys(limitations)), 'selected_route': route,
-                                 'task_trace': execution.trace, 'specialist_invocations': execution.invocations,
-                                 'planning_fallback': plan.fallback})
+    metadata = {'ok': status == 'complete', 'status': status, 'fallback': fallback,
+                'limitations': [] if database_failure else list(dict.fromkeys(limitations)), 'selected_route': route,
+                'task_trace': execution.trace, 'specialist_invocations': execution.invocations,
+                'planning_fallback': plan.fallback}
+    if database_failure:
+        metadata.update(database_failure.result.metadata)
+    return AgentResult(answer=answer, agent=route, evidence=evidence, data=data, metadata=metadata)

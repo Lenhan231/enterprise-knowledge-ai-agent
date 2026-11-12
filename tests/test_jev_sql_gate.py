@@ -43,6 +43,31 @@ class JevSqlGateTest(unittest.IsolatedAsyncioTestCase):
         jev.assert_not_called()
         run_sql.assert_awaited_once()
 
+    def test_database_timeout_has_actionable_vietnamese_error(self):
+        result = self.agent._database_error(TimeoutError(), 'SELECT 1', ())
+
+        self.assertEqual(result['metadata']['failure_code'], 'sql_timeout')
+        self.assertEqual(result['query_status'], 'error')
+        self.assertIn('thu hẹp', result['answer'])
+
+    async def test_sql_execution_error_survives_response_assembly(self):
+        plan = AgentPlan(objective='Answer the request', tasks=[
+            {'id': 'query', 'agent': 'sql', 'question': 'Count purchases'},
+        ])
+        task = plan.tasks[0]
+        outcomes = {'query': TaskOutcome(task, 'failed', AgentResult(
+            answer='Truy vấn dữ liệu mất quá lâu.', agent='analytics',
+            data={'query_status': 'error', 'attempted_sql': 'SELECT 1'},
+            metadata={'failure_code': 'sql_timeout', 'status': 'failed'},
+        ))}
+        execution = SimpleNamespace(outcomes=outcomes, trace=[], invocations=1)
+
+        result = await assemble_response(self.request, plan, execution, provider=None)
+
+        self.assertEqual(result.answer, 'Truy vấn dữ liệu mất quá lâu.')
+        self.assertEqual(result.metadata['failure_code'], 'sql_timeout')
+        self.assertEqual(result.metadata['limitations'], [])
+
     async def test_router_keeps_sql_clarification_when_knowledge_has_evidence(self):
         plan = AgentPlan(objective='Answer the request', tasks=[
             {'id': 'docs', 'agent': 'knowledge', 'question': 'Find related policy'},

@@ -190,7 +190,12 @@ class AgentRouter:
         execution = state['execution']
         failed = [execution.outcomes[t.id] for t in state['plan'].tasks if t.id in execution.outcomes
                   and execution.outcomes[t.id].status in {'failed', 'empty', 'clarification_required'}]
-        return {'revise': bool(failed and not any(o.status == 'clarification_required' for o in failed)
+        terminal_database_failure = any(
+            outcome.result and outcome.result.data.get('query_status') == 'error'
+            for outcome in failed
+        )
+        return {'revise': bool(failed and not terminal_database_failure
+                               and not any(o.status == 'clarification_required' for o in failed)
                                and state['revisions'] < 1 and execution.invocations < 6
                                and remaining() > 5)}
 

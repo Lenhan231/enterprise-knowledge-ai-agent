@@ -11,6 +11,8 @@ let invoiceProgressGeneration = 0;
 let agentConversationId = crypto.randomUUID();
 let reportConversationId = crypto.randomUUID();
 let sessionTurns = [];
+let generalConversationId = crypto.randomUUID();
+let generalTurns = [];
 let sessionGeneration = 0;
 let sessionSubject = null;
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
@@ -77,6 +79,7 @@ function syncWorkspaceTabs(user = currentUser) {
   const canUpload = ["document_uploader", "admin", "document_processing_owner"].includes(user?.role);
   const available = {
     knowledge: canAskDocuments,
+    "general-chat": canAskDocuments,
     upload: canUpload,
     "invoice-review": canUpload,
     processing: isProcessingOwner,
@@ -1088,9 +1091,6 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
         <span class="answer-mark">${usedEvidenceFallback ? "EV" : "AI"}</span>
         <div><span class="eyebrow">${escapeHtml(({knowledge:"KNOWLEDGE AGENT",analytics:"ANALYTICS AGENT",sql_analytics:"ANALYTICS AGENT",dashboard:"INVENTORY AGENT",report:"REPORT AGENT",agentic:"AUTOMATIC ROUTER",hybrid:"KNOWLEDGE + ANALYTICS"})[data.agent] || "AGENT RESPONSE")}</span><h3>${escapeHtml(responseTitle)}</h3></div>
       </div>
-      <div class="answer-actions-bar">
-        <button type="button" class="action-btn copy-answer-btn" title="Copy response text">Copy</button>
-      </div>
     </div>
     ${domainNote}
     ${decisionModeNote}
@@ -1159,7 +1159,10 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
               </div>
             </article>`;
         }).join("")}
-      </div>` : ""}`;
+      </div>` : ""}
+    <div class="answer-actions-bar">
+      <button type="button" class="action-btn copy-answer-btn" title="Copy response text" aria-label="Copy response">Copy</button>
+    </div>`;
 
   const copyBtn = panel.querySelector(".copy-answer-btn");
   if (copyBtn) {
@@ -1510,8 +1513,13 @@ function resetConversationState() {
   agentConversationId = crypto.randomUUID();
   reportConversationId = crypto.randomUUID();
   sessionTurns = [];
+  generalConversationId = crypto.randomUUID();
+  generalTurns = [];
   $("#answer-panel").replaceChildren();
   $("#answer-panel").hidden = true;
+  $("#general-chat-transcript").replaceChildren();
+  $("#general-chat-transcript").hidden = true;
+  $("#general-chat-welcome").hidden = false;
   $("#report-agent-question").value = "";
   $("#report-agent-template").value = "";
   updateReportFormatVisibility();
@@ -1917,10 +1925,18 @@ $(".agent-grid").addEventListener("click", (event) => {
 });
 
 function renderSessionTranscript(shouldScroll = false) {
-  const root = $("#answer-panel");
+  renderChatTranscript($("#answer-panel"), sessionTurns, shouldScroll);
+}
+
+function renderGeneralChatTranscript(shouldScroll = false) {
+  renderChatTranscript($("#general-chat-transcript"), generalTurns, shouldScroll);
+  $("#general-chat-welcome").hidden = generalTurns.length > 0;
+}
+
+function renderChatTranscript(root, turns, shouldScroll) {
   root.replaceChildren();
-  root.hidden = sessionTurns.length === 0;
-  for (const turn of sessionTurns) {
+  root.hidden = turns.length === 0;
+  for (const turn of turns) {
     const entry = document.createElement("article");
     entry.className = "chat-turn";
     entry.dataset.turnId = turn.id;
@@ -1930,7 +1946,7 @@ function renderSessionTranscript(shouldScroll = false) {
     entry.append(response);
     root.append(entry);
     if (turn.state === "pending") renderSkeletonAnswer(response, turn.status || "Routing your request to the right agent...");
-    else if (turn.state === "error") response.innerHTML = `<p class="error-message">${escapeHtml(turn.error)}. Please check service configuration or connection.</p>`;
+    else if (turn.state === "error") response.innerHTML = `<p class="error-message" role="alert">${escapeHtml(turn.error)}. Please check service configuration or connection.</p>`;
     else if (turn.result) {
       renderAgentResult(turn.result, response, false);
       attachFeedback(response, turn);
@@ -1945,27 +1961,44 @@ function renderSessionTranscript(shouldScroll = false) {
 }
 
 $("#new-conversation").addEventListener("click", () => {
-  resetConversationState();
+  agentConversationId = crypto.randomUUID();
+  sessionTurns = [];
+  $("#answer-panel").replaceChildren();
+  $("#answer-panel").hidden = true;
   $("#question").value = "";
 });
 
-$("#ask-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const requestConversationId = agentConversationId;
+$("#new-general-chat").addEventListener("click", () => {
+  generalConversationId = crypto.randomUUID();
+  generalTurns = [];
+  $("#general-chat-question").value = "";
+  resizeGeneralChatComposer();
+  renderGeneralChatTranscript();
+  $("#general-chat-question").focus();
+});
+
+async function sendChatMessage({ question, mode, button, input, state, render }) {
+  const requestConversationId = state.getId();
   const requestGeneration = sessionGeneration;
   const requestSubject = sessionSubject;
-  const button = $("#ask-button");
-  const question = $("#question").value.trim();
   if (!question) return;
-  const turn = { id: crypto.randomUUID(), mode: $("#agent-mode").value, question, state: "pending" };
-  sessionTurns.push(turn);
-  sessionTurns = sessionTurns.slice(-20);
-  renderSessionTranscript(true);
+  const turn = { id: crypto.randomUUID(), mode, question, state: "pending" };
+  state.turns.push(turn);
+  state.turns = state.turns.slice(-20);
+  input.value = "";
+  if (input.id === "general-chat-question") resizeGeneralChatComposer();
+  render(true);
+  const initialButton = button.innerHTML;
   button.disabled = true;
-  button.innerHTML = "<span>Working...</span>";
+  if (button.id === "general-chat-send") {
+    button.setAttribute("aria-busy", "true");
+    button.setAttribute("aria-label", "Đang gửi tin nhắn");
+  } else {
+    button.innerHTML = "<span>Working...</span>";
+  }
   try {
     const body = JSON.stringify({
-      question, agent_mode: $("#agent-mode").value, retrieval_method: "translated_hybrid_rerank",
+      question, agent_mode: mode, retrieval_method: "translated_hybrid_rerank",
       conversation_id: requestConversationId,
     });
     const signal = AbortSignal.timeout(135_000);
@@ -1981,20 +2014,64 @@ $("#ask-form").addEventListener("submit", async (event) => {
       if (!error.streamUnavailable) throw error;
       data = await api("/api/agents/chat", { method: "POST", body, signal });
     }
-    if (agentConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
+    if (state.getId() !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
     $("#connection-status").textContent = "Agent services connected";
     $(".status-dot").classList.add("connected");
     turn.result = data;
     turn.state = "complete";
     turn.typeOut = true;
   } catch (error) {
-    if (agentConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
+    if (state.getId() !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
     turn.error = error.name === "TimeoutError" ? "The request timed out. No answer was received; try again or choose a specialist" : error.message;
     turn.state = "error";
   } finally {
     button.disabled = false;
-    button.innerHTML = "<span>Ask agent</span>";
-    if (sessionTurns.includes(turn)) renderSessionTranscript(false);
+    if (button.id === "general-chat-send") {
+      button.removeAttribute("aria-busy");
+      button.setAttribute("aria-label", "Gửi tin nhắn");
+    } else button.innerHTML = initialButton;
+    if (state.turns.includes(turn)) render(false);
+  }
+}
+
+$("#ask-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  return sendChatMessage({
+    question: $("#question").value.trim(), mode: $("#agent-mode").value,
+    button: $("#ask-button"), input: $("#question"),
+    state: { getId: () => agentConversationId, get turns() { return sessionTurns; }, set turns(value) { sessionTurns = value; } }, render: renderSessionTranscript,
+  });
+});
+
+$("#general-chat-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const input = $("#general-chat-question");
+  sendChatMessage({
+    question: input.value.trim(), mode: "auto", button: $("#general-chat-send"), input,
+    state: { getId: () => generalConversationId, get turns() { return generalTurns; }, set turns(value) { generalTurns = value; } },
+    render: renderGeneralChatTranscript,
+  });
+});
+
+function resizeGeneralChatComposer() {
+  const input = $("#general-chat-question");
+  input.style.height = "auto";
+  input.style.height = `${Math.min(input.scrollHeight, 180)}px`;
+}
+
+$("#general-chat-question").addEventListener("input", resizeGeneralChatComposer);
+$("#general-chat-prompts").addEventListener("click", (event) => {
+  const prompt = event.target.closest("[data-general-chat-prompt]");
+  if (!prompt) return;
+  $("#general-chat-question").value = prompt.dataset.generalChatPrompt;
+  resizeGeneralChatComposer();
+  $("#general-chat-form").requestSubmit();
+});
+
+$("#general-chat-question").addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !event.shiftKey && !event.isComposing && event.keyCode !== 229) {
+    event.preventDefault();
+    $("#general-chat-form").requestSubmit();
   }
 });
 

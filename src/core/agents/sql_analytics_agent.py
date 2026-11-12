@@ -71,7 +71,7 @@ def payload_to_agent_result(payload: Mapping[str, Any], *, agent: str = "analyti
 
 
 class SQLAnalyticsAgent(BaseAgent):
-    JEV_AMBIGUITY_THRESHOLD = 0.8
+    JEV_MIN_CLEAR_CONFIDENCE = 0.8
 
     def __init__(self, repository: CommerceRepository, *, llm: LLMInterface | None = None, inventory_only: bool | None = None) -> None:
         if inventory_only is None:
@@ -96,11 +96,11 @@ class SQLAnalyticsAgent(BaseAgent):
                     decision = await run_sync(self._check_ambiguity, self._query_text(request), _timeout=12)
             except Exception as error:
                 return self._jev_failure(error)
-            context_info['jev'] = {**decision, 'threshold': self.JEV_AMBIGUITY_THRESHOLD}
-            if decision['probabilities']['ambiguous'] >= self.JEV_AMBIGUITY_THRESHOLD:
+            context_info['jev'] = {**decision, 'threshold': self.JEV_MIN_CLEAR_CONFIDENCE}
+            if decision['probabilities']['clear'] < self.JEV_MIN_CLEAR_CONFIDENCE:
                 result = {
                     'ok': False, 'operation': 'text_to_sql', 'rows': [],
-                    'answer': 'Có vài cách hiểu có thể dẫn đến kết quả khác nhau. Bạn muốn tính theo chỉ số nào?',
+                    'answer': 'Mình chưa đủ chắc cách hiểu câu hỏi để chạy truy vấn an toàn. Bạn muốn mình hiểu câu hỏi theo cách nào?',
                     'limitations': ['Chưa chạy truy vấn vì cách hiểu của câu hỏi cần được làm rõ.'],
                     'query_status': 'clarification_required',
                     'metadata': {'status': 'clarification_required', 'clarification_required': True,
@@ -427,13 +427,19 @@ class SQLAnalyticsAgent(BaseAgent):
 
     @staticmethod
     def _database_error(error: Exception, sql: str, parameters: tuple[Any, ...]) -> dict[str, Any]:
+        analytics_url_missing = isinstance(error, RuntimeError) and 'ANALYTICS_DATABASE_URL' in str(error)
         query_timeout = isinstance(error, TimeoutError) or getattr(error, 'sqlstate', None) == '57014'
-        failure_code = 'sql_timeout' if query_timeout else 'sql_execution_failed'
+        failure_code = ('analytics_not_configured' if analytics_url_missing else
+                        'sql_timeout' if query_timeout else 'sql_execution_failed')
         answer = (
+            'Chưa cấu hình tài khoản đọc dữ liệu cho SQL Agent (ANALYTICS_DATABASE_URL), nên truy vấn chưa chạy. '
+            'Hãy cấu hình kết nối analytics chỉ đọc rồi thử lại.'
+            if analytics_url_missing else
             'Truy vấn dữ liệu mất quá lâu nên đã được dừng trước khi có kết quả. Hãy thu hẹp khoảng thời gian '
             'hoặc yêu cầu một phép tổng hợp cụ thể hơn.'
             if query_timeout else
-            'Truy vấn dữ liệu chưa hoàn tất nên mình chưa thể đưa ra kết quả. Bạn có thể thử lại hoặc thu hẹp câu hỏi.'
+            'Câu hỏi đã được chuyển thành truy vấn SQL nhưng cơ sở dữ liệu không thực thi được. Chưa có kết quả '
+            'để trả lời. Hãy thử lại; nếu lỗi tiếp diễn, cần kiểm tra SQL, schema và quyền truy cập cơ sở dữ liệu.'
         )
         result = {
             "ok": False, "operation": "text_to_sql", "rows": [],

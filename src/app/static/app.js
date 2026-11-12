@@ -1194,7 +1194,7 @@ function renderAgentRows(data) {
     const columns = validRows.length ? Object.keys(validRows[0]).slice(0, 12) : [];
     const executed = value.query_status === "executed";
     const statusLabel = executed ? "Đã chạy" : value.query_status === "error"
-      ? (value.failure_code === "sql_timeout" ? "Dừng do timeout" : "Lỗi khi chạy")
+      ? (value.failure_code === "analytics_not_configured" ? "Thiếu cấu hình" : value.failure_code === "sql_timeout" ? "Dừng do timeout" : "Lỗi khi chạy")
       : value.query_status === "rejected" ? "Bị chặn trước khi chạy"
         : value.query_status === "clarification_required" ? "Chờ bạn làm rõ" : value.query_status;
     const queryStatus = value.query_status
@@ -1212,7 +1212,7 @@ function renderAgentRows(data) {
       ? `<details><summary>${value.query_status === "error" ? "Xem truy vấn lỗi" : value.query_status === "rejected" ? "Xem truy vấn bị chặn" : executed ? "Xem SQL đã chạy" : "Chi tiết truy vấn"}</summary>${diagnosticSql ? `<pre>${escapeHtml(diagnosticSql)}</pre>` : ""}${parameters}</details>`
       : "";
     const jev = value.jev;
-    const jevNote = jev?.probabilities ? `<p class="jev-note">JEV · rõ ${Math.round((jev.probabilities.clear || 0) * 100)}% · mơ hồ ${Math.round((jev.probabilities.ambiguous || 0) * 100)}% · ngưỡng hỏi lại ${Math.round((jev.threshold || 0) * 100)}%</p>` : "";
+    const jevNote = jev?.probabilities ? `<p class="jev-note">JEV · rõ ${Math.round((jev.probabilities.clear || 0) * 100)}% · mơ hồ ${Math.round((jev.probabilities.ambiguous || 0) * 100)}% · độ rõ tối thiểu để chạy ${Math.round((jev.threshold || 0) * 100)}%</p>` : "";
     return `<section class="agent-data-result"><h4>${escapeHtml(label.replace(/^task:/, "Task "))} ${queryStatus}</h4>${table}${jevNote}${diagnostics}</section>`;
   }).join("");
 }

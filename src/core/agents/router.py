@@ -79,6 +79,7 @@ class AgentRouter:
                         if result.metadata.get('status') in {'complete', 'partial', 'clarification_required'}:
                             scope = state['plan'].objective if state.get('plan') else request.question
                             history.append({'question': request.question[:2000], 'scope': scope[:2000],
+                                            'answer': result.answer[:1500],
                                             'clarification': result.answer[:500] if result.metadata.get('status') == 'clarification_required' else ''})
                         self.last_destination = result.metadata.get('selected_route', 'unrouted')
                         return result

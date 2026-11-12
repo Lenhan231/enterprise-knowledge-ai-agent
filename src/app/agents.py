@@ -181,6 +181,41 @@ async def agent_chat(
             logger.warning("agent_latency %s", json.dumps({"agent": agent_name, "status": status, **timing}))
 
 
+class AnswerFeedbackRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    rating: Literal["up", "down"]
+    question: str = Field(min_length=1, max_length=2_000)
+    answer: str = Field(min_length=1, max_length=20_000)
+    agent: str = Field(default="unknown", max_length=40)
+    comment: str | None = Field(default=None, max_length=1_000)
+    claim_status: str | None = Field(default=None, max_length=40)
+
+
+def _record_feedback(**values):
+    from core.database.answer_feedback_repository import AnswerFeedbackRepository
+
+    repository = AnswerFeedbackRepository()
+    try:
+        repository.record(**values)
+    finally:
+        repository.close()
+
+
+@router.post("/feedback")
+async def answer_feedback(payload: AnswerFeedbackRequest,
+                          user: dict = Depends(require_permission("ask_documents"))):
+    try:
+        await asyncio.to_thread(
+            _record_feedback, actor_role=user["role"], agent_name=payload.agent, rating=payload.rating,
+            question=payload.question, answer=payload.answer, comment=(payload.comment or "").strip() or None,
+            claim_status=payload.claim_status)
+    except Exception as error:
+        logger.exception("Could not record answer feedback")
+        raise HTTPException(503, "Feedback could not be saved") from error
+    return {"saved": True}
+
+
 def _sse(kind: str, data) -> str:
     return f"event: {kind}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 

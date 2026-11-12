@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css?v=knowledge-review-20261111">
+  <link rel="stylesheet" href="/static/styles.css?v=feedback-20261113">
   <script>
     (function() {
       const saved = localStorage.getItem("app_theme");
@@ -431,7 +431,7 @@
           <div>
             <p class="eyebrow">REAL-TIME SYSTEM OPERATIONS</p>
             <h2>Agent Performance &amp; Latency Monitoring</h2>
-            <p class="monitoring-note">Telemetry from the last 24 hours. Privacy preserved: user questions and generated text are not recorded.</p>
+            <p class="monitoring-note">Telemetry from the last 24 hours. Run telemetry does not record user questions or generated text; only answers a user rates (👍/👎) are stored with their question, for review.</p>
           </div>
           <button id="monitoring-refresh" class="secondary-button" type="button">
             <span>Refresh</span>
@@ -456,11 +456,20 @@
           </div>
           <div id="monitoring-runs" class="monitoring-runs" aria-live="polite"></div>
         </section>
+        <section class="analysis-section">
+          <div class="analysis-section-heading">
+            <div>
+              <p class="eyebrow">USER FEEDBACK</p>
+              <h3>Answer Ratings</h3>
+            </div>
+          </div>
+          <div id="monitoring-feedback" class="monitoring-runs" aria-live="polite"></div>
+        </section>
       </section>
     </section>
     </div>
     </main>
   </div>
-  <script src="/static/app.js?v=knowledge-review-20261111" defer></script>
+  <script src="/static/app.js?v=feedback-20261113" defer></script>
 </body>
 </html>

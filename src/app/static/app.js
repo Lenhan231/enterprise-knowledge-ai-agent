@@ -2078,7 +2078,7 @@ function updateUploadKind() {
     ? ".pdf,.png,.jpg,.jpeg,.tif,.tiff"
     : ".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff";
   $("#upload-kind-help").textContent = invoiceMode
-    ? "OCR and a text model create a reviewable invoice JSON draft in a separate invoice table."
+    ? "Upload an invoice for extraction and review in the invoice table."
     : "Knowledge documents are indexed for document Q&A.";
   const file = $("#upload-file").files[0];
   if (file) $("#upload-file-info").textContent = validateUploadFile(file, invoiceMode)
@@ -2096,7 +2096,7 @@ $("#upload-file").addEventListener("change", (event) => {
   const invoiceMode = $("#upload-kind").value === "invoice";
   const error = validateUploadFile(file, invoiceMode);
   $("#upload-file-info").textContent = error || file.name + " · " + (file.size / 1024 / 1024).toFixed(1) + " MiB. "
-    + (invoiceMode ? "The source stays private; the JSON draft is stored separately from documents." : "The original stays private; review OCR output in Document Processing.");
+    + (invoiceMode ? "The source stays private and is available in the invoice table after processing." : "The original stays private; review OCR output in Document Processing.");
   $("#upload-file-info").setAttribute("role", error ? "alert" : "status");
 });
 
@@ -2166,8 +2166,6 @@ $("#upload-form").addEventListener("submit", async (event) => {
   controls.forEach((control) => { control.disabled = true; });
   form.setAttribute("aria-busy", "true");
   const status = $("#upload-status");
-  $("#upload-invoice-result").hidden = true;
-  $("#upload-invoice-result").textContent = "";
   const progress = $("#upload-progress");
   const elapsedLabel = $("#upload-elapsed");
   $("#upload-status-wrap").hidden = false;
@@ -2182,7 +2180,7 @@ $("#upload-form").addEventListener("submit", async (event) => {
   };
   status.dataset.state = "processing";
   status.textContent = invoiceMode
-    ? "Uploading invoice, running OCR and extracting a reviewable JSON draft. This is saved separately from the document corpus. Keep this tab open."
+    ? "Uploading invoice and running OCR and extraction. Keep this tab open."
     : parserHandoff
     ? "Uploading, extracting and saving parser output. Chunking and indexing run downstream. Keep this tab open."
     : "Uploading, extracting text/OCR, chunking and indexing. Keep this tab open.";
@@ -2205,12 +2203,11 @@ $("#upload-form").addEventListener("submit", async (event) => {
       progress.hidden = true;
       elapsedLabel.hidden = true;
       status.textContent = `Invoice ${result.invoice_id} saved for review in the invoice table. Model: ${result.extraction_model || "unknown"}.`;
-      $("#upload-invoice-result").textContent = JSON.stringify(result.invoice_data, null, 2);
-      $("#upload-invoice-result").hidden = false;
       form.reset();
+      $("#upload-kind").value = "invoice";
       updateUploadKind();
       updateUploadRoleSelection();
-      $("#upload-file-info").textContent = "Choose an invoice. Its JSON draft is stored separately from the document corpus.";
+      $("#upload-file-info").textContent = "Choose another invoice to process.";
       try {
         await refreshInvoiceReview(result.invoice_id);
         selectWorkspaceTab("invoice-review");

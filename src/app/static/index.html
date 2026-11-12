@@ -252,7 +252,7 @@
                   <option value="groq">GPT-OSS 120B · Groq</option>
                   <option value="modal">Qwen3-0.6B fine-tuned · Modal GPU</option>
                 </select>
-                <small class="upload-field-hint">Choose which model creates the invoice JSON draft. OCR stays the same.</small>
+                <small class="upload-field-hint">Choose which model extracts invoice details. OCR stays the same.</small>
               </div>
               <div class="upload-field upload-field-wide">
                 <label id="upload-file-label" for="upload-file">Document file</label>
@@ -287,7 +287,6 @@
               <span></span>
             </div>
             <p id="upload-status" class="corpus-note" aria-live="polite"></p>
-            <pre id="upload-invoice-result" class="invoice-extraction-result" hidden></pre>
             <small id="upload-elapsed" class="upload-elapsed" aria-live="off" hidden></small>
           </div>
         </form>

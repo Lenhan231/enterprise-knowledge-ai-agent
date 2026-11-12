@@ -1,0 +1,28 @@
+{
+  "prompt": "Generate a question for the given answer and identify if the answer is noncommittal.\nGive noncommittal as 1 if the answer is noncommittal (evasive, vague, or ambiguous) and 0 if the answer is substantive.\nExamples of noncommittal answers: \"I don't know\", \"I'm not sure\", \"It depends\".\nPlease return the output in a JSON format that complies with the following schema as specified in JSON Schema:\n{\"description\": \"Structured output for answer relevance question generation.\", \"properties\": {\"question\": {\"description\": \"Question that can be answered from the response\", \"title\": \"Question\", \"type\": \"string\"}, \"noncommittal\": {\"description\": \"1 if the response is evasive/vague, 0 if it is substantive\", \"title\": \"Noncommittal\", \"type\": \"integer\"}}, \"required\": [\"question\", \"noncommittal\"], \"title\": \"AnswerRelevanceOutput\", \"type\": \"object\"}Do not use single quotes in your response but double quotes,properly escaped with a backslash.\n\n--------EXAMPLES-----------\nExample 1\nInput: {\n    \"response\": \"Albert Einstein was born in Germany.\"\n}\nOutput: {\n    \"question\": \"Where was Albert Einstein born?\",\n    \"noncommittal\": 0\n}\n\nExample 2\nInput: {\n    \"response\": \"The capital of France is Paris, a city known for its architecture and culture.\"\n}\nOutput: {\n    \"question\": \"What is the capital of France?\",\n    \"noncommittal\": 0\n}\n\nExample 3\nInput: {\n    \"response\": \"I don't know about the groundbreaking feature of the smartphone invented in 2023 as I am unaware of information beyond 2022.\"\n}\nOutput: {\n    \"question\": \"What was the groundbreaking feature of the smartphone invented in 2023?\",\n    \"noncommittal\": 1\n}\n-----------------------------\n\nNow perform the same with the following input\ninput: {\n    \"response\": \"Không, snapshot cuối năm 2022 không thể chứng minh hàng đang bán được trong năm 2026 [S1].\\n\\nCụ thể:\\n- Nguồn tồn có snapshot lịch sử từ 2012-07-31 đến 2022-12-31 và không được mô tả thành số dư trực tiếp năm 2026 [S1].\\n- Chỉ số tồn lịch sử hỗ trợ phân tích xu hướng nhưng không chứng minh khả dụng hôm nay [S4].\\n- Với câu hỏi về \\\"tồn hiện tại\\\", tác tử không được trình bày snapshot lịch sử như hàng đang khả dụng [S2].\"\n}\nOutput: ",
+  "schema": {
+    "description": "Structured output for answer relevance question generation.",
+    "properties": {
+      "question": {
+        "description": "Question that can be answered from the response",
+        "title": "Question",
+        "type": "string"
+      },
+      "noncommittal": {
+        "description": "1 if the response is evasive/vague, 0 if it is substantive",
+        "title": "Noncommittal",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "question",
+      "noncommittal"
+    ],
+    "title": "AnswerRelevanceOutput",
+    "type": "object"
+  },
+  "response": {
+    "question": "Snapshot cuối năm 2022 có thể chứng minh hàng đang bán được trong năm 2026 không?",
+    "noncommittal": 0
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "created_at_utc": "2026-09-27T10:52:45.943167+00:00",
+  "dataset": "vinamilk-ocr-human-reviewed-regions-v3",
+  "dataset_sha256": "31944ac8864b4ba9b59c78500ce0656a24989846b9ff4c80e3552df2b9ac824e",
+  "reference_method": "Manual transcription from rendered PDF regions; the included scan-page transcription was visually checked against the full-resolution source page.",
+  "reference_quality": "human_transcribed_visual_review",
+  "primary_metric_selection_eligible": false,
+  "limitations": "Four manually reviewed regions: Vietnamese financial infographic, English sustainability text, Vietnamese raster-embedded product artwork, and one English page from a scanned governance charter. The single scan crop does not establish broad scanned-document quality. There are no labeled table cells or layout structures; the three non-scan regions are retained for direct paired comparison with v2.",
+  "render_dpi": 180,
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Linux-6.12.90+-x86_64-with-glibc2.35",
+    "gpu": "Tesla T4",
+    "cuda_available": true
+  },
+  "ocr_configuration": {
+    "render_dpi": 180,
+    "tesseract_language": "vie+eng",
+    "tesseract_page_segmentation_mode": 3
+  },
+  "engines": {
+    "easyocr": {
+      "available": true,
+      "engine_version": "1.7.2",
+      "pages": [
+        {
+          "document_id": "VNM-AR-2024-VI",
+          "page": 12,
+          "language": "vi",
+          "source_pdf_sha256": "4c756bba77e39d192515f377caafa4f7105234b2c943eb164d0a0987ecedfc55",
+          "rendered_image_sha256": "d26843ac9dc52e506236c30885907059e78727e339e13102279e2259cd449122",
+          "reference_source": "manual_transcription",
+          "reference_characters": 201,
+          "reference_words": 49,
+          "hypothesis_characters": 184,
+          "character_edit_distance": 28,
+          "word_edit_distance": 29,
+          "cer": 0.139303,
+          "wer": 0.591837,
+          "latency_seconds": 2.064,
+          "error": null
+        },
+        {
+          "document_id": "VNM-SR-2024-EN",
+          "page": 3,
+          "language": "en",
+          "source_pdf_sha256": "018ba885f223c3d766a44d3d7aeb3536098ad33a6751d1a492d60271b30af8de",
+          "rendered_image_sha256": "fceaa3f9bff47457218dbd8d301a07b7aabd20a0980a753ac4a09a20b1b4aeac",
+          "reference_source": "manual_transcription",
+          "reference_characters": 641,
+          "reference_words": 92,
+          "hypothesis_characters": 641,
+          "character_edit_distance": 0,
+          "word_edit_distance": 0,
+          "cer": 0.0,
+          "wer": 0.0,
+          "latency_seconds": 0.512,
+          "error": null
+        },
+        {
+          "document_id": "VNM-AR-2020-VI",
+          "page": 22,
+          "language": "vi",
+          "source_pdf_sha256": "0abbd2bb78b4be637107b1975014a118c7eda9d79ebe4634d612337910b25f00",
+          "rendered_image_sha256": "7d1efe264c7a89f9fc74a0cb1d48dac98f0555e2037fed89622578d46c312757",
+          "reference_source": "manual_transcription",
+          "reference_characters": 160,
+          "reference_words": 32,
+          "hypothesis_characters": 156,
+          "character_edit_distance": 51,
+          "word_edit_distance": 20,
+          "cer": 0.31875,
+          "wer": 0.625,
+          "latency_seconds": 1.073,
+          "error": null
+        },
+        {
+          "document_id": "VNM-CHARTER-2026-EN",
+          "page": 4,
+          "language": "en",
+          "source_pdf_sha256": "2c49760156a72204756004be0b8fd1c8dc10e2ecd88abea78ea3fefbf0bf040f",
+          "rendered_image_sha256": "a70dae897031bfd8c9c1e1e79ed4e015263dd36200ae21953c09134ef3f297e8",
+          "reference_source": "manual_transcription",
+          "reference_characters": 453,
+          "reference_words": 71,
+          "hypothesis_characters": 441,
+          "character_edit_distance": 18,
+          "word_edit_distance": 8,
+          "cer": 0.039735,
+          "wer": 0.112676,
+          "latency_seconds": 0.355,
+          "error": null
+        }
+      ],
+      "model_initialization_seconds": 12.814,
+      "model_initialization_error": null,
+      "runtime_device": "cuda:0",
+      "aggregate": {
+        "valid_pages": 4,
+        "macro_mean_page_cer": 0.124447,
+        "micro_cer": 0.066667,
+        "macro_mean_page_wer": 0.332378,
+        "micro_wer": 0.233607,
+        "mean_latency_seconds": 1.001
+      },
+      "by_language": {
+        "en": {
+          "valid_pages": 2,
+          "macro_mean_page_cer": 0.019867,
+          "micro_cer": 0.016453,
+          "macro_mean_page_wer": 0.056338,
+          "micro_wer": 0.04908,
+          "mean_latency_seconds": 0.433
+        },
+        "vi": {
+          "valid_pages": 2,
+          "macro_mean_page_cer": 0.229026,
+          "micro_cer": 0.218837,
+          "macro_mean_page_wer": 0.608418,
+          "micro_wer": 0.604938,
+          "mean_latency_seconds": 1.569
+        }
+      }
+    }
+  }
+}

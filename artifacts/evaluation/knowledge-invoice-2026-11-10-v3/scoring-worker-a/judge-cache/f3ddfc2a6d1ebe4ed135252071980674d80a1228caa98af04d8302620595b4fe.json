@@ -1,0 +1,31 @@
+{
+  "prompt": "Given a question and an answer, analyze the complexity of each sentence in the answer. Break down each sentence into one or more fully understandable statements. Ensure that no pronouns are used in any statement.\nPlease return the output in a JSON format that complies with the following schema as specified in JSON Schema:\n{\"description\": \"Structured output for statement generation.\", \"properties\": {\"statements\": {\"description\": \"The generated statements from the answer\", \"items\": {\"type\": \"string\"}, \"title\": \"Statements\", \"type\": \"array\"}}, \"required\": [\"statements\"], \"title\": \"StatementGeneratorOutput\", \"type\": \"object\"}Do not use single quotes in your response but double quotes,properly escaped with a backslash.\n\n--------EXAMPLES-----------\nExample 1\nInput: {\n    \"question\": \"Who was Albert Einstein and what is he best known for?\",\n    \"answer\": \"He was a German-born theoretical physicist, widely acknowledged to be one of the greatest and most influential physicists of all time. He was best known for developing the theory of relativity, he also made important contributions to the development of the theory of quantum mechanics.\"\n}\nOutput: {\n    \"statements\": [\n        \"Albert Einstein was a German-born theoretical physicist.\",\n        \"Albert Einstein is recognized as one of the greatest and most influential physicists of all time.\",\n        \"Albert Einstein was best known for developing the theory of relativity.\",\n        \"Albert Einstein made important contributions to the development of the theory of quantum mechanics.\"\n    ]\n}\n-----------------------------\n\nNow perform the same with the following input\ninput: {\n    \"question\": \"Snapshot cuối năm 2022 có thể chứng minh hàng đang bán được trong năm 2026 không?\",\n    \"answer\": \"Không, snapshot cuối năm 2022 không thể chứng minh hàng đang bán được trong năm 2026 [S1].\\n\\nCụ thể:\\n- Nguồn tồn có snapshot lịch sử từ 2012-07-31 đến 2022-12-31 và không được mô tả thành số dư trực tiếp năm 2026 [S1].\\n- Chỉ số tồn lịch sử hỗ trợ phân tích xu hướng nhưng không chứng minh khả dụng hôm nay [S4].\\n- Với câu hỏi về \\\"tồn hiện tại\\\", tác tử không được trình bày snapshot lịch sử như hàng đang khả dụng [S2].\"\n}\nOutput: ",
+  "schema": {
+    "description": "Structured output for statement generation.",
+    "properties": {
+      "statements": {
+        "description": "The generated statements from the answer",
+        "items": {
+          "type": "string"
+        },
+        "title": "Statements",
+        "type": "array"
+      }
+    },
+    "required": [
+      "statements"
+    ],
+    "title": "StatementGeneratorOutput",
+    "type": "object"
+  },
+  "response": {
+    "statements": [
+      "Snapshot cuối năm 2022 không thể chứng minh hàng đang bán được trong năm 2026 [S1].",
+      "Nguồn tồn có snapshot lịch sử từ ngày 31 tháng 7 năm 2012 đến ngày 31 tháng 12 năm 2022 [S1].",
+      "Nguồn tồn không được mô tả thành số dư trực tiếp của năm 2026 [S1].",
+      "Chỉ số tồn lịch sử hỗ trợ phân tích xu hướng [S4].",
+      "Chỉ số tồn lịch sử không chứng minh hàng đang khả dụng vào hôm nay [S4].",
+      "Đối với câu hỏi về tồn hiện tại, tác tử không được trình bày snapshot lịch sử như hàng đang khả dụng [S2]."
+    ]
+  }
+}

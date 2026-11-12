@@ -1,0 +1,2127 @@
+{
+  "dataset": "shared-html-owner-reviewed",
+  "engine": "docling-vietocr",
+  "run_id": "docling-vietocr-egret-medium-kaggle-owner-reviewed-51-20261024",
+  "layer_scores": {
+    "pages": 51,
+    "ocr": {
+      "pages": 51,
+      "micro_cer": 0.12659449439597925,
+      "micro_wer_pyvi": 0.2323898279879046,
+      "micro_whitespace_error": 0.19269426610582244,
+      "character_edits": 13249,
+      "reference_characters": 104657,
+      "word_edits": 4688,
+      "reference_words": 20173,
+      "page_scores": [
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 13,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.036012296881862096,
+          "wer_pyvi": 0.06237424547283702,
+          "whitespace_error": 0.06432748538011696
+        },
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 14,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.06191780821917808,
+          "wer_pyvi": 0.06493506493506493,
+          "whitespace_error": 0.082687338501292
+        },
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 21,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.06022052586938083,
+          "wer_pyvi": 0.11206896551724138,
+          "whitespace_error": 0.10043668122270742
+        },
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 24,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.06278950077200206,
+          "wer_pyvi": 0.13990825688073394,
+          "whitespace_error": 0.13411764705882354
+        },
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 4,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.04396055875102712,
+          "wer_pyvi": 0.1111111111111111,
+          "whitespace_error": 0.09818181818181818
+        },
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 7,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.05683901723505684,
+          "wer_pyvi": 0.14990859232175502,
+          "whitespace_error": 0.12626262626262627
+        },
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 9,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.015138023152270703,
+          "wer_pyvi": 0.06683168316831684,
+          "whitespace_error": 0.04771784232365145
+        },
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 15,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.10027855153203342,
+          "wer_pyvi": 0.20388349514563106,
+          "whitespace_error": 0.17751479289940827
+        },
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 17,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.8289689034369886,
+          "wer_pyvi": 0.8464163822525598,
+          "whitespace_error": 0.86
+        },
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 6,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.022592791823561054,
+          "wer_pyvi": 0.06356968215158924,
+          "whitespace_error": 0.05324074074074074
+        },
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 8,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.17236142748671224,
+          "wer_pyvi": 0.1476510067114094,
+          "whitespace_error": 0.17785234899328858
+        },
+        {
+          "document_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b",
+          "source_page_number_1based": 26,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.14814814814814814,
+          "wer_pyvi": 0.22764227642276422,
+          "whitespace_error": 0.1806020066889632
+        },
+        {
+          "document_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b",
+          "source_page_number_1based": 25,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.07321652065081352,
+          "wer_pyvi": 0.1661631419939577,
+          "whitespace_error": 0.13988095238095238
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 4,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.1637396694214876,
+          "wer_pyvi": 0.28083989501312334,
+          "whitespace_error": 0.21495327102803738
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 5,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.05655296229802514,
+          "wer_pyvi": 0.20273972602739726,
+          "whitespace_error": 0.1028225806451613
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 7,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.0999184339314845,
+          "wer_pyvi": 0.2895377128953771,
+          "whitespace_error": 0.1807909604519774
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 8,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.03303185214313802,
+          "wer_pyvi": 0.14990512333965844,
+          "whitespace_error": 0.1267056530214425
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 9,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.1424317617866005,
+          "wer_pyvi": 0.22877358490566038,
+          "whitespace_error": 0.22276029055690072
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 10,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.11234089651355839,
+          "wer_pyvi": 0.15384615384615385,
+          "whitespace_error": 0.12465373961218837
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 11,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.11410118406889128,
+          "wer_pyvi": 0.22340425531914893,
+          "whitespace_error": 0.19753086419753085
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 12,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.16798029556650246,
+          "wer_pyvi": 0.29591836734693877,
+          "whitespace_error": 0.25925925925925924
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 13,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.0432937181663837,
+          "wer_pyvi": 0.15384615384615385,
+          "whitespace_error": 0.11923076923076924
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 14,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.1764962865880297,
+          "wer_pyvi": 0.29764453961456105,
+          "whitespace_error": 0.22580645161290322
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 15,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.07287093942054433,
+          "wer_pyvi": 0.17892976588628762,
+          "whitespace_error": 0.12661498708010335
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 16,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.0396590066716086,
+          "wer_pyvi": 0.1303370786516854,
+          "whitespace_error": 0.07462686567164178
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 17,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.04923599320882852,
+          "wer_pyvi": 0.12895377128953772,
+          "whitespace_error": 0.0872093023255814
+        },
+        {
+          "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+          "source_page_number_1based": 20,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.1409185803757829,
+          "wer_pyvi": 0.2430167597765363,
+          "whitespace_error": 0.2034313725490196
+        },
+        {
+          "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+          "source_page_number_1based": 1,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.03184713375796178,
+          "wer_pyvi": 0.10714285714285714,
+          "whitespace_error": 0.1111111111111111
+        },
+        {
+          "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+          "source_page_number_1based": 2,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.5263157894736842,
+          "wer_pyvi": 0.8461538461538461,
+          "whitespace_error": 0.6710526315789473
+        },
+        {
+          "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+          "source_page_number_1based": 3,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.027404085700049825,
+          "wer_pyvi": 0.06857142857142857,
+          "whitespace_error": 0.05263157894736842
+        },
+        {
+          "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+          "source_page_number_1based": 4,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.026727181038830056,
+          "wer_pyvi": 0.09935897435897435,
+          "whitespace_error": 0.053811659192825115
+        },
+        {
+          "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+          "source_page_number_1based": 5,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.6525974025974026,
+          "wer_pyvi": 0.735632183908046,
+          "whitespace_error": 0.7210626185958254
+        },
+        {
+          "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+          "source_page_number_1based": 7,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.19648666232921275,
+          "wer_pyvi": 0.23054755043227665,
+          "whitespace_error": 0.21714285714285714
+        },
+        {
+          "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+          "source_page_number_1based": 9,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.1596921596921597,
+          "wer_pyvi": 0.21184510250569477,
+          "whitespace_error": 0.210752688172043
+        },
+        {
+          "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+          "source_page_number_1based": 10,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.03902065799540933,
+          "wer_pyvi": 0.07535641547861507,
+          "whitespace_error": 0.06747404844290658
+        },
+        {
+          "document_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7",
+          "source_page_number_1based": 4,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.0772701635645798,
+          "wer_pyvi": 0.18394648829431437,
+          "whitespace_error": 0.13
+        },
+        {
+          "document_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7",
+          "source_page_number_1based": 10,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.14354187689202824,
+          "wer_pyvi": 0.3172043010752688,
+          "whitespace_error": 0.2156398104265403
+        },
+        {
+          "document_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7",
+          "source_page_number_1based": 11,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.07612208258527828,
+          "wer_pyvi": 0.24006622516556292,
+          "whitespace_error": 0.19031719532554256
+        },
+        {
+          "document_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7",
+          "source_page_number_1based": 12,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.13606010016694492,
+          "wer_pyvi": 0.26247689463955637,
+          "whitespace_error": 0.2570356472795497
+        },
+        {
+          "document_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7",
+          "source_page_number_1based": 13,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.1225296442687747,
+          "wer_pyvi": 0.2962962962962963,
+          "whitespace_error": 0.23877068557919623
+        },
+        {
+          "document_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7",
+          "source_page_number_1based": 14,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.15401929260450162,
+          "wer_pyvi": 0.4150641025641026,
+          "whitespace_error": 0.33075734157650694
+        },
+        {
+          "document_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7",
+          "source_page_number_1based": 24,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.09498997995991984,
+          "wer_pyvi": 0.2033195020746888,
+          "whitespace_error": 0.17996289424860853
+        },
+        {
+          "document_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7",
+          "source_page_number_1based": 35,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.1007380073800738,
+          "wer_pyvi": 0.30859375,
+          "whitespace_error": 0.27586206896551724
+        },
+        {
+          "document_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd",
+          "source_page_number_1based": 39,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.07234617985125084,
+          "wer_pyvi": 0.1575091575091575,
+          "whitespace_error": 0.11764705882352941
+        },
+        {
+          "document_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd",
+          "source_page_number_1based": 40,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.03807471264367816,
+          "wer_pyvi": 0.10126582278481013,
+          "whitespace_error": 0.06158833063209076
+        },
+        {
+          "document_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd",
+          "source_page_number_1based": 41,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.0855532786885246,
+          "wer_pyvi": 0.26345609065155806,
+          "whitespace_error": 0.12771084337349398
+        },
+        {
+          "document_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd",
+          "source_page_number_1based": 42,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.031007751937984496,
+          "wer_pyvi": 0.08333333333333333,
+          "whitespace_error": 0.06481481481481481
+        },
+        {
+          "document_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd",
+          "source_page_number_1based": 43,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.16791979949874686,
+          "wer_pyvi": 0.30855018587360594,
+          "whitespace_error": 0.2467948717948718
+        },
+        {
+          "document_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd",
+          "source_page_number_1based": 44,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.05196629213483146,
+          "wer_pyvi": 0.11796246648793565,
+          "whitespace_error": 0.0960591133004926
+        },
+        {
+          "document_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd",
+          "source_page_number_1based": 46,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.7791706846673095,
+          "wer_pyvi": 0.9168591224018475,
+          "whitespace_error": 0.918141592920354
+        },
+        {
+          "document_id": "UPLOAD-bao-cao-kiem-toan-2025-signed1-4195567125",
+          "source_page_number_1based": 1,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.6033519553072626,
+          "wer_pyvi": 1.037037037037037,
+          "whitespace_error": 0.6190476190476191
+        }
+      ]
+    },
+    "layout": {
+      "pages": 51,
+      "iou_threshold": 0.5,
+      "micro": {
+        "true_positive": 264,
+        "predicted_regions": 1093,
+        "reference_regions": 673,
+        "precision": 0.2415370539798719,
+        "recall": 0.3922734026745914,
+        "f1": 0.2989807474518686
+      },
+      "per_class": {
+        "title": {
+          "true_positive": 44,
+          "predicted_regions": 155,
+          "reference_regions": 94,
+          "precision": 0.2838709677419355,
+          "recall": 0.46808510638297873,
+          "f1": 0.3534136546184739
+        },
+        "title_table": {
+          "true_positive": 0,
+          "predicted_regions": 0,
+          "reference_regions": 28,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "text": {
+          "true_positive": 127,
+          "predicted_regions": 829,
+          "reference_regions": 323,
+          "precision": 0.15319662243667068,
+          "recall": 0.3931888544891641,
+          "f1": 0.2204861111111111
+        },
+        "table": {
+          "true_positive": 41,
+          "predicted_regions": 43,
+          "reference_regions": 60,
+          "precision": 0.9534883720930233,
+          "recall": 0.6833333333333333,
+          "f1": 0.7961165048543688
+        },
+        "figure": {
+          "true_positive": 52,
+          "predicted_regions": 66,
+          "reference_regions": 134,
+          "precision": 0.7878787878787878,
+          "recall": 0.3880597014925373,
+          "f1": 0.52
+        },
+        "seal": {
+          "true_positive": 0,
+          "predicted_regions": 0,
+          "reference_regions": 34,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        }
+      }
+    },
+    "table": {
+      "pages_with_reviewed_tables": 38,
+      "reference_tables": 60,
+      "predicted_tables": 43,
+      "matched_tables_iou50": 41,
+      "detection_precision": 0.9534883720930233,
+      "detection_recall": 0.6833333333333333,
+      "detection_f1": 0.7961165048543688,
+      "micro_cell_cer": 0.5252017085904129,
+      "micro_cell_wer_whitespace": 0.618692518021377,
+      "positional_cell_accuracy": 0.4640126548905879,
+      "exact_cell_body_precision": 0.5340687865022713,
+      "exact_cell_body_recall": 0.46248946333239677,
+      "exact_cell_body_f1": 0.49570847763890985,
+      "shape_exact_rate": 0.43333333333333335,
+      "exact_grid_rate": 0.03333333333333333,
+      "items": [
+        {
+          "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p13-t1",
+          "matched": true,
+          "bbox_iou": 0.9731936365471942,
+          "cell_cer": 0.016046213093709884,
+          "cell_wer_whitespace": 0.0718954248366013,
+          "cell_accuracy": 0.8666666666666667,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p14-t1",
+          "matched": true,
+          "bbox_iou": 0.9617621151924556,
+          "cell_cer": 0.8252595155709342,
+          "cell_wer_whitespace": 1.0724637681159421,
+          "cell_accuracy": 0.1391304347826087,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p21-t1",
+          "matched": true,
+          "bbox_iou": 0.966460049925504,
+          "cell_cer": 0.0,
+          "cell_wer_whitespace": 0.0,
+          "cell_accuracy": 1.0,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p21-t2",
+          "matched": true,
+          "bbox_iou": 0.9419598643570651,
+          "cell_cer": 0.034653465346534656,
+          "cell_wer_whitespace": 0.1111111111111111,
+          "cell_accuracy": 0.7333333333333333,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p21-t3",
+          "matched": true,
+          "bbox_iou": 0.9034564595752965,
+          "cell_cer": 0.0,
+          "cell_wer_whitespace": 0.0,
+          "cell_accuracy": 1.0,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p24-t1",
+          "matched": true,
+          "bbox_iou": 0.9826143578375156,
+          "cell_cer": 0.04684512428298279,
+          "cell_wer_whitespace": 0.24242424242424243,
+          "cell_accuracy": 0.5714285714285714,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p4-t1",
+          "matched": true,
+          "bbox_iou": 0.9850851104280963,
+          "cell_cer": 0.014285714285714285,
+          "cell_wer_whitespace": 0.026785714285714284,
+          "cell_accuracy": 0.9571428571428572,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p7-t1",
+          "matched": true,
+          "bbox_iou": 0.9477108511872625,
+          "cell_cer": 0.0,
+          "cell_wer_whitespace": 0.0,
+          "cell_accuracy": 1.0,
+          "shape_exact": true,
+          "exact_grid": true
+        },
+        {
+          "reference_id": "E2E-LONG-HAU-2008-p15-t1",
+          "matched": true,
+          "bbox_iou": 0.9829689380449871,
+          "cell_cer": 1.2525423728813558,
+          "cell_wer_whitespace": 1.2293577981651376,
+          "cell_accuracy": 0.011111111111111112,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-LONG-HAU-2008-p15-t2",
+          "matched": true,
+          "bbox_iou": 0.8559743279796278,
+          "cell_cer": 1.2476190476190476,
+          "cell_wer_whitespace": 1.375,
+          "cell_accuracy": 0.06666666666666667,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-LONG-HAU-2008-p15-t3",
+          "matched": true,
+          "bbox_iou": 0.9305602221499983,
+          "cell_cer": 0.9470899470899471,
+          "cell_wer_whitespace": 1.0625,
+          "cell_accuracy": 0.3,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-LONG-HAU-2008-p17-t1",
+          "matched": true,
+          "bbox_iou": 0.7820015900651524,
+          "cell_cer": 1.6430555555555555,
+          "cell_wer_whitespace": 1.3694267515923566,
+          "cell_accuracy": 0.09243697478991597,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-LONG-HAU-2008-p6-t1",
+          "matched": true,
+          "bbox_iou": 0.9649295608500574,
+          "cell_cer": 0.8071942446043165,
+          "cell_wer_whitespace": 1.0555555555555556,
+          "cell_accuracy": 0.13125,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-LONG-HAU-2008-p8-t1",
+          "matched": true,
+          "bbox_iou": 0.9513283065907687,
+          "cell_cer": 0.005773672055427252,
+          "cell_wer_whitespace": 0.02857142857142857,
+          "cell_accuracy": 0.9473684210526315,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p26-t1",
+          "matched": true,
+          "bbox_iou": 0.9656075562082205,
+          "cell_cer": 0.011527377521613832,
+          "cell_wer_whitespace": 0.047619047619047616,
+          "cell_accuracy": 0.8571428571428571,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p26-t2",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.08333333333333333,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p26-t3",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.06666666666666667,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p26-t4",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.08333333333333333,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p25-t1",
+          "matched": true,
+          "bbox_iou": 0.9633910756228535,
+          "cell_cer": 0.031746031746031744,
+          "cell_wer_whitespace": 0.1,
+          "cell_accuracy": 0.8333333333333334,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p25-t2",
+          "matched": true,
+          "bbox_iou": 0.9611889690502148,
+          "cell_cer": 0.016194331983805668,
+          "cell_wer_whitespace": 0.07547169811320754,
+          "cell_accuracy": 0.8095238095238095,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p25-t3",
+          "matched": true,
+          "bbox_iou": 0.9616496034684593,
+          "cell_cer": 0.02824858757062147,
+          "cell_wer_whitespace": 0.0958904109589041,
+          "cell_accuracy": 0.75,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p25-t4",
+          "matched": true,
+          "bbox_iou": 0.8837983426245293,
+          "cell_cer": 0.0,
+          "cell_wer_whitespace": 0.0,
+          "cell_accuracy": 1.0,
+          "shape_exact": true,
+          "exact_grid": true
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p4-t1",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.08823529411764706,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p4-t2",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.26666666666666666,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p4-t3",
+          "matched": true,
+          "bbox_iou": 0.9318508074730155,
+          "cell_cer": 0.5414201183431953,
+          "cell_wer_whitespace": 0.6075949367088608,
+          "cell_accuracy": 0.26666666666666666,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p5-t1",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.0,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p8-t1",
+          "matched": true,
+          "bbox_iou": 0.9849914297220663,
+          "cell_cer": 0.8485600794438928,
+          "cell_wer_whitespace": 1.0341880341880343,
+          "cell_accuracy": 0.12432432432432433,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p9-t1",
+          "matched": true,
+          "bbox_iou": 0.962891443498987,
+          "cell_cer": 0.0643231114435303,
+          "cell_wer_whitespace": 0.1853448275862069,
+          "cell_accuracy": 0.728,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p9-t2",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.0,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p10-t1",
+          "matched": true,
+          "bbox_iou": 0.9631906378189262,
+          "cell_cer": 0.038678485092667206,
+          "cell_wer_whitespace": 0.03669724770642202,
+          "cell_accuracy": 0.93,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p11-t1",
+          "matched": true,
+          "bbox_iou": 0.9796410701541682,
+          "cell_cer": 0.3216589861751152,
+          "cell_wer_whitespace": 0.4321608040201005,
+          "cell_accuracy": 0.6,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p12-t1",
+          "matched": true,
+          "bbox_iou": 0.9238226883749319,
+          "cell_cer": 0.008888888888888889,
+          "cell_wer_whitespace": 0.046511627906976744,
+          "cell_accuracy": 0.92,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p12-t2",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.08823529411764706,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p14-t1",
+          "matched": true,
+          "bbox_iou": 0.7920887574353374,
+          "cell_cer": 0.10069444444444445,
+          "cell_wer_whitespace": 0.09523809523809523,
+          "cell_accuracy": 0.95,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p20-t1",
+          "matched": true,
+          "bbox_iou": 0.9767585360885345,
+          "cell_cer": 0.04755043227665706,
+          "cell_wer_whitespace": 0.12244897959183673,
+          "cell_accuracy": 0.6666666666666666,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p20-t2",
+          "matched": true,
+          "bbox_iou": 0.9591427275269441,
+          "cell_cer": 1.6954732510288066,
+          "cell_wer_whitespace": 1.76,
+          "cell_accuracy": 0.2,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p2-t1",
+          "matched": true,
+          "bbox_iou": 0.971365776350109,
+          "cell_cer": 0.024390243902439025,
+          "cell_wer_whitespace": 0.14516129032258066,
+          "cell_accuracy": 0.8125,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p3-t1",
+          "matched": true,
+          "bbox_iou": 0.9224957754139859,
+          "cell_cer": 0.0784313725490196,
+          "cell_wer_whitespace": 0.12280701754385964,
+          "cell_accuracy": 0.375,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p3-t2",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.0,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p7-t1",
+          "matched": true,
+          "bbox_iou": 0.9586038495321946,
+          "cell_cer": 0.9606060606060606,
+          "cell_wer_whitespace": 1.1116504854368932,
+          "cell_accuracy": 0.125,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p9-t1",
+          "matched": true,
+          "bbox_iou": 0.9762857045549629,
+          "cell_cer": 0.21045751633986928,
+          "cell_wer_whitespace": 0.275974025974026,
+          "cell_accuracy": 0.75625,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p10-t1",
+          "matched": true,
+          "bbox_iou": 0.9658340290130054,
+          "cell_cer": 0.7473309608540926,
+          "cell_wer_whitespace": 0.8095238095238095,
+          "cell_accuracy": 0.125,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p4-t1",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.0,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p4-t2",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.0,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p11-t1",
+          "matched": true,
+          "bbox_iou": 0.9949375649788241,
+          "cell_cer": 0.08932882665379044,
+          "cell_wer_whitespace": 0.2794871794871795,
+          "cell_accuracy": 0.6487804878048781,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p12-t1",
+          "matched": true,
+          "bbox_iou": 0.9608745406021731,
+          "cell_cer": 0.9638989169675091,
+          "cell_wer_whitespace": 1.0823170731707317,
+          "cell_accuracy": 0.10857142857142857,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p13-t1",
+          "matched": true,
+          "bbox_iou": 0.9834699617503879,
+          "cell_cer": 1.5450104675505931,
+          "cell_wer_whitespace": 1.5454545454545454,
+          "cell_accuracy": 0.03333333333333333,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p14-t1",
+          "matched": true,
+          "bbox_iou": 0.9715462428159622,
+          "cell_cer": 0.0767880649407635,
+          "cell_wer_whitespace": 0.30528846153846156,
+          "cell_accuracy": 0.615,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p24-t1",
+          "matched": true,
+          "bbox_iou": 0.9597442572878894,
+          "cell_cer": 0.8272195640616693,
+          "cell_wer_whitespace": 0.9447513812154696,
+          "cell_accuracy": 0.24375,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p35-t1",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.041666666666666664,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p35-t2",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.041666666666666664,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p35-t3",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.030303030303030304,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p35-t4",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.05555555555555555,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p35-t5",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.0,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd-p39-t1",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.0,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd-p39-t2",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.0,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd-p42-t1",
+          "matched": true,
+          "bbox_iou": 0.9922318040536939,
+          "cell_cer": 0.015025041736227046,
+          "cell_wer_whitespace": 0.042105263157894736,
+          "cell_accuracy": 0.9391304347826087,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd-p43-t1",
+          "matched": true,
+          "bbox_iou": 0.9932697768825486,
+          "cell_cer": 0.01685891748003549,
+          "cell_wer_whitespace": 0.049723756906077346,
+          "cell_accuracy": 0.9142857142857143,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd-p44-t1",
+          "matched": true,
+          "bbox_iou": 0.9886229041658218,
+          "cell_cer": 0.005003573981415297,
+          "cell_wer_whitespace": 0.03211009174311927,
+          "cell_accuracy": 0.9481481481481482,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd-p46-t1",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.007407407407407408,
+          "shape_exact": false,
+          "exact_grid": false
+        }
+      ]
+    }
+  },
+  "end_to_end_scores": {
+    "pages": 38,
+    "ocr": {
+      "pages": 38,
+      "micro_cer": 0.12928128593900778,
+      "micro_wer_pyvi": 0.23169116673288306,
+      "micro_whitespace_error": 0.20182355840315427,
+      "character_edits": 9780,
+      "reference_characters": 75649,
+      "word_edits": 3499,
+      "reference_words": 15102,
+      "page_scores": [
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 13,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.036012296881862096,
+          "wer_pyvi": 0.06237424547283702,
+          "whitespace_error": 0.06432748538011696
+        },
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 14,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.06191780821917808,
+          "wer_pyvi": 0.06493506493506493,
+          "whitespace_error": 0.082687338501292
+        },
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 21,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.06022052586938083,
+          "wer_pyvi": 0.11206896551724138,
+          "whitespace_error": 0.10043668122270742
+        },
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 24,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.06278950077200206,
+          "wer_pyvi": 0.13990825688073394,
+          "whitespace_error": 0.13411764705882354
+        },
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 4,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.04396055875102712,
+          "wer_pyvi": 0.1111111111111111,
+          "whitespace_error": 0.09818181818181818
+        },
+        {
+          "document_id": "E2E-BAO-HO-LAO-DONG-2009",
+          "source_page_number_1based": 7,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.05683901723505684,
+          "wer_pyvi": 0.14990859232175502,
+          "whitespace_error": 0.12626262626262627
+        },
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 15,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.10027855153203342,
+          "wer_pyvi": 0.20388349514563106,
+          "whitespace_error": 0.17751479289940827
+        },
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 17,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.8289689034369886,
+          "wer_pyvi": 0.8464163822525598,
+          "whitespace_error": 0.86
+        },
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 6,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.022592791823561054,
+          "wer_pyvi": 0.06356968215158924,
+          "whitespace_error": 0.05324074074074074
+        },
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 8,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.17236142748671224,
+          "wer_pyvi": 0.1476510067114094,
+          "whitespace_error": 0.17785234899328858
+        },
+        {
+          "document_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b",
+          "source_page_number_1based": 26,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.14814814814814814,
+          "wer_pyvi": 0.22764227642276422,
+          "whitespace_error": 0.1806020066889632
+        },
+        {
+          "document_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b",
+          "source_page_number_1based": 25,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.07321652065081352,
+          "wer_pyvi": 0.1661631419939577,
+          "whitespace_error": 0.13988095238095238
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 4,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.1637396694214876,
+          "wer_pyvi": 0.28083989501312334,
+          "whitespace_error": 0.21495327102803738
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 5,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.05655296229802514,
+          "wer_pyvi": 0.20273972602739726,
+          "whitespace_error": 0.1028225806451613
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 8,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.03303185214313802,
+          "wer_pyvi": 0.14990512333965844,
+          "whitespace_error": 0.1267056530214425
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 9,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.1424317617866005,
+          "wer_pyvi": 0.22877358490566038,
+          "whitespace_error": 0.22276029055690072
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 10,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.11234089651355839,
+          "wer_pyvi": 0.15384615384615385,
+          "whitespace_error": 0.12465373961218837
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 11,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.11410118406889128,
+          "wer_pyvi": 0.22340425531914893,
+          "whitespace_error": 0.19753086419753085
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 12,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.16798029556650246,
+          "wer_pyvi": 0.29591836734693877,
+          "whitespace_error": 0.25925925925925924
+        },
+        {
+          "document_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad",
+          "source_page_number_1based": 14,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.1764962865880297,
+          "wer_pyvi": 0.29764453961456105,
+          "whitespace_error": 0.22580645161290322
+        },
+        {
+          "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+          "source_page_number_1based": 20,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.1409185803757829,
+          "wer_pyvi": 0.2430167597765363,
+          "whitespace_error": 0.2034313725490196
+        },
+        {
+          "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+          "source_page_number_1based": 2,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.5263157894736842,
+          "wer_pyvi": 0.8461538461538461,
+          "whitespace_error": 0.6710526315789473
+        },
+        {
+          "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+          "source_page_number_1based": 3,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.027404085700049825,
+          "wer_pyvi": 0.06857142857142857,
+          "whitespace_error": 0.05263157894736842
+        },
+        {
+          "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+          "source_page_number_1based": 7,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.19648666232921275,
+          "wer_pyvi": 0.23054755043227665,
+          "whitespace_error": 0.21714285714285714
+        },
+        {
+          "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+          "source_page_number_1based": 9,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.1596921596921597,
+          "wer_pyvi": 0.21184510250569477,
+          "whitespace_error": 0.210752688172043
+        },
+        {
+          "document_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2",
+          "source_page_number_1based": 10,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.03902065799540933,
+          "wer_pyvi": 0.07535641547861507,
+          "whitespace_error": 0.06747404844290658
+        },
+        {
+          "document_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7",
+          "source_page_number_1based": 4,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.0772701635645798,
+          "wer_pyvi": 0.18394648829431437,
+          "whitespace_error": 0.13
+        },
+        {
+          "document_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7",
+          "source_page_number_1based": 11,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.07612208258527828,
+          "wer_pyvi": 0.24006622516556292,
+          "whitespace_error": 0.19031719532554256
+        },
+        {
+          "document_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7",
+          "source_page_number_1based": 12,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.13606010016694492,
+          "wer_pyvi": 0.26247689463955637,
+          "whitespace_error": 0.2570356472795497
+        },
+        {
+          "document_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7",
+          "source_page_number_1based": 13,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.1225296442687747,
+          "wer_pyvi": 0.2962962962962963,
+          "whitespace_error": 0.23877068557919623
+        },
+        {
+          "document_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7",
+          "source_page_number_1based": 14,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.15401929260450162,
+          "wer_pyvi": 0.4150641025641026,
+          "whitespace_error": 0.33075734157650694
+        },
+        {
+          "document_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7",
+          "source_page_number_1based": 24,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.09498997995991984,
+          "wer_pyvi": 0.2033195020746888,
+          "whitespace_error": 0.17996289424860853
+        },
+        {
+          "document_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7",
+          "source_page_number_1based": 35,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.1007380073800738,
+          "wer_pyvi": 0.30859375,
+          "whitespace_error": 0.27586206896551724
+        },
+        {
+          "document_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd",
+          "source_page_number_1based": 39,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.07234617985125084,
+          "wer_pyvi": 0.1575091575091575,
+          "whitespace_error": 0.11764705882352941
+        },
+        {
+          "document_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd",
+          "source_page_number_1based": 42,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.031007751937984496,
+          "wer_pyvi": 0.08333333333333333,
+          "whitespace_error": 0.06481481481481481
+        },
+        {
+          "document_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd",
+          "source_page_number_1based": 43,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.16791979949874686,
+          "wer_pyvi": 0.30855018587360594,
+          "whitespace_error": 0.2467948717948718
+        },
+        {
+          "document_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd",
+          "source_page_number_1based": 44,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.05196629213483146,
+          "wer_pyvi": 0.11796246648793565,
+          "whitespace_error": 0.0960591133004926
+        },
+        {
+          "document_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd",
+          "source_page_number_1based": 46,
+          "text_order_rotation_clockwise": 0,
+          "cer": 0.7791706846673095,
+          "wer_pyvi": 0.9168591224018475,
+          "whitespace_error": 0.918141592920354
+        }
+      ]
+    },
+    "layout": {
+      "pages": 38,
+      "iou_threshold": 0.5,
+      "micro": {
+        "true_positive": 167,
+        "predicted_regions": 770,
+        "reference_regions": 477,
+        "precision": 0.21688311688311687,
+        "recall": 0.350104821802935,
+        "f1": 0.26784282277465915
+      },
+      "per_class": {
+        "title": {
+          "true_positive": 23,
+          "predicted_regions": 102,
+          "reference_regions": 60,
+          "precision": 0.22549019607843138,
+          "recall": 0.38333333333333336,
+          "f1": 0.28395061728395066
+        },
+        "title_table": {
+          "true_positive": 0,
+          "predicted_regions": 0,
+          "reference_regions": 28,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "text": {
+          "true_positive": 73,
+          "predicted_regions": 584,
+          "reference_regions": 212,
+          "precision": 0.125,
+          "recall": 0.3443396226415094,
+          "f1": 0.18341708542713567
+        },
+        "table": {
+          "true_positive": 41,
+          "predicted_regions": 43,
+          "reference_regions": 60,
+          "precision": 0.9534883720930233,
+          "recall": 0.6833333333333333,
+          "f1": 0.7961165048543688
+        },
+        "figure": {
+          "true_positive": 30,
+          "predicted_regions": 41,
+          "reference_regions": 92,
+          "precision": 0.7317073170731707,
+          "recall": 0.32608695652173914,
+          "f1": 0.45112781954887227
+        },
+        "seal": {
+          "true_positive": 0,
+          "predicted_regions": 0,
+          "reference_regions": 25,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0
+        }
+      }
+    },
+    "table": {
+      "pages_with_reviewed_tables": 38,
+      "reference_tables": 60,
+      "predicted_tables": 43,
+      "matched_tables_iou50": 41,
+      "detection_precision": 0.9534883720930233,
+      "detection_recall": 0.6833333333333333,
+      "detection_f1": 0.7961165048543688,
+      "micro_cell_cer": 0.5252017085904129,
+      "micro_cell_wer_whitespace": 0.618692518021377,
+      "positional_cell_accuracy": 0.4640126548905879,
+      "exact_cell_body_precision": 0.5340687865022713,
+      "exact_cell_body_recall": 0.46248946333239677,
+      "exact_cell_body_f1": 0.49570847763890985,
+      "shape_exact_rate": 0.43333333333333335,
+      "exact_grid_rate": 0.03333333333333333,
+      "items": [
+        {
+          "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p13-t1",
+          "matched": true,
+          "bbox_iou": 0.9731936365471942,
+          "cell_cer": 0.016046213093709884,
+          "cell_wer_whitespace": 0.0718954248366013,
+          "cell_accuracy": 0.8666666666666667,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p14-t1",
+          "matched": true,
+          "bbox_iou": 0.9617621151924556,
+          "cell_cer": 0.8252595155709342,
+          "cell_wer_whitespace": 1.0724637681159421,
+          "cell_accuracy": 0.1391304347826087,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p21-t1",
+          "matched": true,
+          "bbox_iou": 0.966460049925504,
+          "cell_cer": 0.0,
+          "cell_wer_whitespace": 0.0,
+          "cell_accuracy": 1.0,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p21-t2",
+          "matched": true,
+          "bbox_iou": 0.9419598643570651,
+          "cell_cer": 0.034653465346534656,
+          "cell_wer_whitespace": 0.1111111111111111,
+          "cell_accuracy": 0.7333333333333333,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p21-t3",
+          "matched": true,
+          "bbox_iou": 0.9034564595752965,
+          "cell_cer": 0.0,
+          "cell_wer_whitespace": 0.0,
+          "cell_accuracy": 1.0,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p24-t1",
+          "matched": true,
+          "bbox_iou": 0.9826143578375156,
+          "cell_cer": 0.04684512428298279,
+          "cell_wer_whitespace": 0.24242424242424243,
+          "cell_accuracy": 0.5714285714285714,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p4-t1",
+          "matched": true,
+          "bbox_iou": 0.9850851104280963,
+          "cell_cer": 0.014285714285714285,
+          "cell_wer_whitespace": 0.026785714285714284,
+          "cell_accuracy": 0.9571428571428572,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p7-t1",
+          "matched": true,
+          "bbox_iou": 0.9477108511872625,
+          "cell_cer": 0.0,
+          "cell_wer_whitespace": 0.0,
+          "cell_accuracy": 1.0,
+          "shape_exact": true,
+          "exact_grid": true
+        },
+        {
+          "reference_id": "E2E-LONG-HAU-2008-p15-t1",
+          "matched": true,
+          "bbox_iou": 0.9829689380449871,
+          "cell_cer": 1.2525423728813558,
+          "cell_wer_whitespace": 1.2293577981651376,
+          "cell_accuracy": 0.011111111111111112,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-LONG-HAU-2008-p15-t2",
+          "matched": true,
+          "bbox_iou": 0.8559743279796278,
+          "cell_cer": 1.2476190476190476,
+          "cell_wer_whitespace": 1.375,
+          "cell_accuracy": 0.06666666666666667,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-LONG-HAU-2008-p15-t3",
+          "matched": true,
+          "bbox_iou": 0.9305602221499983,
+          "cell_cer": 0.9470899470899471,
+          "cell_wer_whitespace": 1.0625,
+          "cell_accuracy": 0.3,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-LONG-HAU-2008-p17-t1",
+          "matched": true,
+          "bbox_iou": 0.7820015900651524,
+          "cell_cer": 1.6430555555555555,
+          "cell_wer_whitespace": 1.3694267515923566,
+          "cell_accuracy": 0.09243697478991597,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-LONG-HAU-2008-p6-t1",
+          "matched": true,
+          "bbox_iou": 0.9649295608500574,
+          "cell_cer": 0.8071942446043165,
+          "cell_wer_whitespace": 1.0555555555555556,
+          "cell_accuracy": 0.13125,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "E2E-LONG-HAU-2008-p8-t1",
+          "matched": true,
+          "bbox_iou": 0.9513283065907687,
+          "cell_cer": 0.005773672055427252,
+          "cell_wer_whitespace": 0.02857142857142857,
+          "cell_accuracy": 0.9473684210526315,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p26-t1",
+          "matched": true,
+          "bbox_iou": 0.9656075562082205,
+          "cell_cer": 0.011527377521613832,
+          "cell_wer_whitespace": 0.047619047619047616,
+          "cell_accuracy": 0.8571428571428571,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p26-t2",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.08333333333333333,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p26-t3",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.06666666666666667,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p26-t4",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.08333333333333333,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p25-t1",
+          "matched": true,
+          "bbox_iou": 0.9633910756228535,
+          "cell_cer": 0.031746031746031744,
+          "cell_wer_whitespace": 0.1,
+          "cell_accuracy": 0.8333333333333334,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p25-t2",
+          "matched": true,
+          "bbox_iou": 0.9611889690502148,
+          "cell_cer": 0.016194331983805668,
+          "cell_wer_whitespace": 0.07547169811320754,
+          "cell_accuracy": 0.8095238095238095,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p25-t3",
+          "matched": true,
+          "bbox_iou": 0.9616496034684593,
+          "cell_cer": 0.02824858757062147,
+          "cell_wer_whitespace": 0.0958904109589041,
+          "cell_accuracy": 0.75,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p25-t4",
+          "matched": true,
+          "bbox_iou": 0.8837983426245293,
+          "cell_cer": 0.0,
+          "cell_wer_whitespace": 0.0,
+          "cell_accuracy": 1.0,
+          "shape_exact": true,
+          "exact_grid": true
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p4-t1",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.08823529411764706,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p4-t2",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.26666666666666666,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p4-t3",
+          "matched": true,
+          "bbox_iou": 0.9318508074730155,
+          "cell_cer": 0.5414201183431953,
+          "cell_wer_whitespace": 0.6075949367088608,
+          "cell_accuracy": 0.26666666666666666,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p5-t1",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.0,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p8-t1",
+          "matched": true,
+          "bbox_iou": 0.9849914297220663,
+          "cell_cer": 0.8485600794438928,
+          "cell_wer_whitespace": 1.0341880341880343,
+          "cell_accuracy": 0.12432432432432433,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p9-t1",
+          "matched": true,
+          "bbox_iou": 0.962891443498987,
+          "cell_cer": 0.0643231114435303,
+          "cell_wer_whitespace": 0.1853448275862069,
+          "cell_accuracy": 0.728,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p9-t2",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.0,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p10-t1",
+          "matched": true,
+          "bbox_iou": 0.9631906378189262,
+          "cell_cer": 0.038678485092667206,
+          "cell_wer_whitespace": 0.03669724770642202,
+          "cell_accuracy": 0.93,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p11-t1",
+          "matched": true,
+          "bbox_iou": 0.9796410701541682,
+          "cell_cer": 0.3216589861751152,
+          "cell_wer_whitespace": 0.4321608040201005,
+          "cell_accuracy": 0.6,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p12-t1",
+          "matched": true,
+          "bbox_iou": 0.9238226883749319,
+          "cell_cer": 0.008888888888888889,
+          "cell_wer_whitespace": 0.046511627906976744,
+          "cell_accuracy": 0.92,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p12-t2",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.08823529411764706,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p14-t1",
+          "matched": true,
+          "bbox_iou": 0.7920887574353374,
+          "cell_cer": 0.10069444444444445,
+          "cell_wer_whitespace": 0.09523809523809523,
+          "cell_accuracy": 0.95,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p20-t1",
+          "matched": true,
+          "bbox_iou": 0.9767585360885345,
+          "cell_cer": 0.04755043227665706,
+          "cell_wer_whitespace": 0.12244897959183673,
+          "cell_accuracy": 0.6666666666666666,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p20-t2",
+          "matched": true,
+          "bbox_iou": 0.9591427275269441,
+          "cell_cer": 1.6954732510288066,
+          "cell_wer_whitespace": 1.76,
+          "cell_accuracy": 0.2,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p2-t1",
+          "matched": true,
+          "bbox_iou": 0.971365776350109,
+          "cell_cer": 0.024390243902439025,
+          "cell_wer_whitespace": 0.14516129032258066,
+          "cell_accuracy": 0.8125,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p3-t1",
+          "matched": true,
+          "bbox_iou": 0.9224957754139859,
+          "cell_cer": 0.0784313725490196,
+          "cell_wer_whitespace": 0.12280701754385964,
+          "cell_accuracy": 0.375,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p3-t2",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.0,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p7-t1",
+          "matched": true,
+          "bbox_iou": 0.9586038495321946,
+          "cell_cer": 0.9606060606060606,
+          "cell_wer_whitespace": 1.1116504854368932,
+          "cell_accuracy": 0.125,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p9-t1",
+          "matched": true,
+          "bbox_iou": 0.9762857045549629,
+          "cell_cer": 0.21045751633986928,
+          "cell_wer_whitespace": 0.275974025974026,
+          "cell_accuracy": 0.75625,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p10-t1",
+          "matched": true,
+          "bbox_iou": 0.9658340290130054,
+          "cell_cer": 0.7473309608540926,
+          "cell_wer_whitespace": 0.8095238095238095,
+          "cell_accuracy": 0.125,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p4-t1",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.0,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p4-t2",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.0,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p11-t1",
+          "matched": true,
+          "bbox_iou": 0.9949375649788241,
+          "cell_cer": 0.08932882665379044,
+          "cell_wer_whitespace": 0.2794871794871795,
+          "cell_accuracy": 0.6487804878048781,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p12-t1",
+          "matched": true,
+          "bbox_iou": 0.9608745406021731,
+          "cell_cer": 0.9638989169675091,
+          "cell_wer_whitespace": 1.0823170731707317,
+          "cell_accuracy": 0.10857142857142857,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p13-t1",
+          "matched": true,
+          "bbox_iou": 0.9834699617503879,
+          "cell_cer": 1.5450104675505931,
+          "cell_wer_whitespace": 1.5454545454545454,
+          "cell_accuracy": 0.03333333333333333,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p14-t1",
+          "matched": true,
+          "bbox_iou": 0.9715462428159622,
+          "cell_cer": 0.0767880649407635,
+          "cell_wer_whitespace": 0.30528846153846156,
+          "cell_accuracy": 0.615,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p24-t1",
+          "matched": true,
+          "bbox_iou": 0.9597442572878894,
+          "cell_cer": 0.8272195640616693,
+          "cell_wer_whitespace": 0.9447513812154696,
+          "cell_accuracy": 0.24375,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p35-t1",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.041666666666666664,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p35-t2",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.041666666666666664,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p35-t3",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.030303030303030304,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p35-t4",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.05555555555555555,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p35-t5",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.0,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd-p39-t1",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.0,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd-p39-t2",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.0,
+          "shape_exact": false,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd-p42-t1",
+          "matched": true,
+          "bbox_iou": 0.9922318040536939,
+          "cell_cer": 0.015025041736227046,
+          "cell_wer_whitespace": 0.042105263157894736,
+          "cell_accuracy": 0.9391304347826087,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd-p43-t1",
+          "matched": true,
+          "bbox_iou": 0.9932697768825486,
+          "cell_cer": 0.01685891748003549,
+          "cell_wer_whitespace": 0.049723756906077346,
+          "cell_accuracy": 0.9142857142857143,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd-p44-t1",
+          "matched": true,
+          "bbox_iou": 0.9886229041658218,
+          "cell_cer": 0.005003573981415297,
+          "cell_wer_whitespace": 0.03211009174311927,
+          "cell_accuracy": 0.9481481481481482,
+          "shape_exact": true,
+          "exact_grid": false
+        },
+        {
+          "reference_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd-p46-t1",
+          "matched": false,
+          "bbox_iou": 0.0,
+          "cell_cer": 1.0,
+          "cell_wer_whitespace": 1.0,
+          "cell_accuracy": 0.007407407407407408,
+          "shape_exact": false,
+          "exact_grid": false
+        }
+      ]
+    }
+  },
+  "coverage": {
+    "owner_reviewed_pages": 51,
+    "pages_with_reviewed_table_grids": 38,
+    "end_to_end_pages_with_ocr_layout_and_tables": 38,
+    "prediction_pages": 51,
+    "inference_successful_pages": 51
+  },
+  "runtime": {
+    "device": "Tesla T4",
+    "inference_wall_seconds": 1162.402,
+    "peak_process_rss_mib": null
+  },
+  "caveats": [
+    "Owner-reviewed working references from the shared HTML review flow.",
+    "OCR block sorting uses high-confidence per-page OCR OSD orientation when available; otherwise top-to-bottom, left-to-right.",
+    "Reading order is not separately scored because the current HTML references contain no reviewed reading_order sequence.",
+    "End-to-end cohort requires reviewed OCR, layout, and at least one reviewed table; it includes all reviewed tables per page."
+  ]
+}

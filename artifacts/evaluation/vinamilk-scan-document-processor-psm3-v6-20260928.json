@@ -1,0 +1,87 @@
+{
+  "created_at_utc": "2026-09-28T02:29:18.675613+00:00",
+  "dataset_id": "vinamilk-ocr-human-reviewed-regions-v6",
+  "dataset_sha256": "1415f14be07ba41484650f58577b7e9aefcd282a78d21f9bd62c6ad81efabf16",
+  "reference_quality": "human_transcribed_visual_review",
+  "reference_method": "Manual transcription from rendered PDF regions; v6 corrects two scan crops that clipped printed text at the horizontal edges; the Vietnamese balance-sheet rows were visually checked at full resolution.",
+  "protocol": "Copy each selected manually labeled region from the original PDF page, preserving its source content; run the existing DocumentProcessor PDF upload path (PyMuPDF/Tesseract fallback), then score chunk text against the manual reference.",
+  "limitations": "Production-parser OCR path only. Physical-scan status and layout type are reported per region. No table-cell or layout-structure labels, no paired OCR-engine comparison. Throughput includes parser/OCR invocation but excludes application embedding and database persistence.",
+  "render_dpi": 108.0,
+  "ocr_render_scale": 1.5,
+  "tesseract_page_segmentation_mode": 3,
+  "tesseract_language": "vie+eng",
+  "software": {
+    "python": "3.11.16",
+    "pymupdf": "1.27.2.3",
+    "tesseract": "tesseract 5.5.3"
+  },
+  "process_memory": {
+    "process_peak_rss_mb": 90.0,
+    "child_peak_rss_mb": 110.746
+  },
+  "aggregate": {
+    "ocr_pages": 2,
+    "micro_cer": 0.065744,
+    "micro_wer": 0.167155,
+    "mean_latency_seconds": 2.004,
+    "mean_pages_per_minute": 46.556
+  },
+  "results": [
+    {
+      "id": "charter-2026-introduction-scan-en",
+      "document_id": "VNM-CHARTER-2026-EN",
+      "source_page_number": 4,
+      "language": "en",
+      "layout_type": null,
+      "physical_scan": true,
+      "source_pdf_sha256": "2c49760156a72204756004be0b8fd1c8dc10e2ecd88abea78ea3fefbf0bf040f",
+      "cropped_pdf_sha256": "99b163a14dc172f6ee583add57faa80df5ee14915f906f061d42b70e75406d7c",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 3,
+      "ocr_render_scale": 1.5,
+      "ocr_used": true,
+      "chunk_count": 1,
+      "table_count": 0,
+      "reference_characters": 453,
+      "reference_words": 71,
+      "hypothesis_characters": 451,
+      "character_edit_distance": 4,
+      "word_edit_distance": 3,
+      "cer": 0.00883,
+      "wer": 0.042254,
+      "latency_seconds": 0.807,
+      "pages_per_minute": 74.367,
+      "extracted_text": "INTRODUCTION This Charter of Vietnam Dairy Products Joint-Stock Company (“Vinamilk” or “Company”), a joint stock company incorporated and operating under the Law on Enterprises, is the legal basis for the corporate governance, management, business, investment operations and otherwise of the Company. This Charter was approved by the Resolution No.: 01/NQ-CTS.DHDCD/2026 of the General Mecting of Shareholders on 22 April 2026 (hereinafter referred to as “the Charter”)."
+    },
+    {
+      "id": "governance-rules-2026-table-of-contents-scan-en",
+      "document_id": "VNM-CGRULES-2026-EN",
+      "source_page_number": 4,
+      "language": "en",
+      "layout_type": null,
+      "physical_scan": true,
+      "source_pdf_sha256": "74e12eb76f9a0b1fbee4e6c90c929c30263abad4c1e9fc48ccbcb44b84cca558",
+      "cropped_pdf_sha256": "5ae2adafeb6539baaf83aa8ae4079e7a9cf6e036f9ebc01a700e7153ca3df21d",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 3,
+      "ocr_render_scale": 1.5,
+      "ocr_used": true,
+      "chunk_count": 2,
+      "table_count": 0,
+      "reference_characters": 1570,
+      "reference_words": 270,
+      "hypothesis_characters": 1460,
+      "character_edit_distance": 129,
+      "word_edit_distance": 54,
+      "cer": 0.082166,
+      "wer": 0.2,
+      "latency_seconds": 3.201,
+      "pages_per_minute": 18.746,
+      "extracted_text": "11.8. - Minutes of the Board meeting... 11.9. Notification of the Resolutio CHAPTER IV.... AUDIT COMMITTEE Article 12. Rights and duties of the Audit Committee.. . Article 13. Candidacy and nomination of members of the Audit Committee... 13.1. Term of the Audit Committee. 13.2. Number and structure of the Audit Committee.... 13.3. Audit Committee member criteria. 13.4. Candidacy and nomination of the Audit Committee member... Article 14. Activities of the Audit Committee.. 14.1. - Financial Statement 14.22. - Intemal Audit Activities. 14.3. Services provided by Independent Auditors. 14.4. Intemal control and Risk management 14.5. Compliance.... CHAPTER V.. OTHER COMMITTEES OF THE BOARD.. Article 15. Other Board Committees.. Article 16. Nomination, candidacy, election, dismissal or removal of members of the Committees 16.1. Term of Committees... 16.2. - Number and Composition of the Committees 16.3. Criteria for Committees under the Board.. E N EC 16.4. - Method of Candidacy, Nomination and Election of Committee Members. Article 17. Roles and responsibilities of the Committee: 17.1.\nNomination Commite. 1722. Remuneration Committe..... 173. - Strategy Commitee... CHAPTER VL. 'CORPORATE GOVERNANCE OFFICER Article 18. Selection, appointment and removal of the Corporate Governance Officer 18.1. - Criteria for the Corporate Govemance Officer.... 18.2. Appointment of the Corporate Govemance Officer... 18.3. - Cases of removal or dismissal of the Corporate Governance Officer.... 18.4. .. Notification of appointment and removal of the Corporate Govemance Officer"
+    }
+  ]
+}

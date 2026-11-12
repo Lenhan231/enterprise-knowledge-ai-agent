@@ -1,0 +1,97 @@
+{
+  "vocab": "aAàÀảẢãÃáÁạẠăĂằẰẳẲẵẴắẮặẶâÂầẦẩẨẫẪấẤậẬbBcCdDđĐeEèÈẻẺẽẼéÉẹẸêÊềỀểỂễỄếẾệỆfFgGhHiIìÌỉỈĩĨíÍịỊjJkKlLmMnNoOòÒỏỎõÕóÓọỌôÔồỒổỔỗỖốỐộỘơƠờỜởỞỡỠớỚợỢpPqQrRsStTuUùÙủỦũŨúÚụỤưƯừỪửỬữỮứỨựỰvVwWxXyYỳỲỷỶỹỸýÝỵỴzZ0123456789!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ ",
+  "device": "cuda:0",
+  "seq_modeling": "seq2seq",
+  "transformer": {
+    "encoder_hidden": 256,
+    "decoder_hidden": 256,
+    "img_channel": 256,
+    "decoder_embedded": 256,
+    "dropout": 0.1
+  },
+  "optimizer": {
+    "max_lr": 0.0001,
+    "pct_start": 0.1
+  },
+  "trainer": {
+    "batch_size": 32,
+    "print_every": 100,
+    "valid_every": 1000000000,
+    "iters": 3000,
+    "export": "/kaggle/working/enterprise-printed-ocr/phase1-frozen-300.pth",
+    "checkpoint": "/kaggle/working/enterprise-printed-ocr/vietocr-checkpoint.pth",
+    "log": "/kaggle/working/enterprise-printed-ocr/vietocr-train.log",
+    "metrics": null
+  },
+  "dataset": {
+    "name": "data",
+    "data_root": "/kaggle/working/enterprise-printed-ocr/vietocr-data",
+    "train_annotation": "annotation_train.txt",
+    "valid_annotation": "annotation_validation.txt",
+    "image_height": 32,
+    "image_min_width": 32,
+    "image_max_width": 512
+  },
+  "dataloader": {
+    "num_workers": 3,
+    "pin_memory": true
+  },
+  "aug": {
+    "image_aug": true,
+    "masked_language_model": true
+  },
+  "predictor": {
+    "beamsearch": false
+  },
+  "quiet": false,
+  "pretrain": "https://vocr.vn/data/vietocr/vgg_seq2seq.pth",
+  "weights": "https://vocr.vn/data/vietocr/vgg_seq2seq.pth",
+  "backbone": "vgg19_bn",
+  "cnn": {
+    "ss": [
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "ks": [
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "hidden": 256
+  }
+}

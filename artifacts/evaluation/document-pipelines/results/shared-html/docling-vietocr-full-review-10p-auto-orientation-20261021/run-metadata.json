@@ -1,0 +1,1290 @@
+{
+  "dataset": "shared-html-owner-reviewed",
+  "engine": "docling-vietocr",
+  "run_id": "docling-vietocr-full-review-10p-auto-orientation-20261021",
+  "started_at_utc": "2026-10-21T15:14:09.046133+00:00",
+  "finished_at_utc": "2026-10-21T15:22:29.107154+00:00",
+  "device": "CPU",
+  "ocr": "Docling layout + Tesseract OSD per OCR crop + RapidOCR detection + VietOCR vgg_seq2seq greedy",
+  "layout_model": "Layout heron",
+  "table_structure": "Docling TableFormer accurate + per-crop Tesseract OSD; OCR cell matching",
+  "threads": 2,
+  "page_filter": null,
+  "page_count": 10,
+  "successful_pages": 10,
+  "failed_pages": 0,
+  "wall_seconds": 500.061,
+  "peak_process_rss_mib": 3927.9,
+  "prediction_generation_seconds": 500.061,
+  "reused_raw_outputs": false,
+  "raw_output_directory": "/home/lenhanm1/Thesis/enterprise-knowledge-ai-agent/artifacts/evaluation/document-pipelines/results/shared-html/docling-vietocr-full-review-10p-auto-orientation-20261021/raw_pages",
+  "predictions": "/home/lenhanm1/Thesis/enterprise-knowledge-ai-agent/artifacts/evaluation/document-pipelines/results/shared-html/docling-vietocr-full-review-10p-auto-orientation-20261021/predictions.jsonl",
+  "pages": [
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p13",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 52.871
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p24",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 32.448
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p15",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 66.052
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p17",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 29.056
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p3",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 58.147
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p4",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 41.952
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p6",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 57.526
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p7",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 40.877
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p8",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 57.599
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p9",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 50.301
+    }
+  ],
+  "table_orientation_detections": [
+    {
+      "page_id": "E2E-BAO-HO-LAO-DONG-2009-p13",
+      "table_index_1based": 1,
+      "bbox_scaled": [
+        188,
+        230,
+        1090,
+        1384
+      ],
+      "rotation_clockwise": 0,
+      "osd_confidence": 8.34,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "page_id": "E2E-BAO-HO-LAO-DONG-2009-p24",
+      "table_index_1based": 1,
+      "bbox_scaled": [
+        316,
+        366,
+        1546,
+        922
+      ],
+      "rotation_clockwise": 0,
+      "osd_confidence": 6.99,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "page_id": "E2E-LONG-HAU-2008-p15",
+      "table_index_1based": 1,
+      "bbox_scaled": [
+        264,
+        288,
+        1244,
+        942
+      ],
+      "rotation_clockwise": 0,
+      "osd_confidence": 9.64,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "page_id": "E2E-LONG-HAU-2008-p15",
+      "table_index_1based": 2,
+      "bbox_scaled": [
+        260,
+        1050,
+        1244,
+        1258
+      ],
+      "rotation_clockwise": 0,
+      "osd_confidence": 2.81,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "page_id": "E2E-LONG-HAU-2008-p15",
+      "table_index_1based": 3,
+      "bbox_scaled": [
+        260,
+        1442,
+        1244,
+        1716
+      ],
+      "rotation_clockwise": 0,
+      "osd_confidence": 4.03,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "page_id": "E2E-LONG-HAU-2008-p17",
+      "table_index_1based": 1,
+      "bbox_scaled": [
+        318,
+        136,
+        860,
+        1530
+      ],
+      "rotation_clockwise": 90,
+      "osd_confidence": 6.96,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "page_id": "E2E-LONG-HAU-2008-p3",
+      "table_index_1based": 1,
+      "bbox_scaled": [
+        178,
+        538,
+        1238,
+        634
+      ],
+      "rotation_clockwise": 0,
+      "osd_confidence": 3.93,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "page_id": "E2E-LONG-HAU-2008-p6",
+      "table_index_1based": 1,
+      "bbox_scaled": [
+        146,
+        236,
+        1044,
+        1334
+      ],
+      "rotation_clockwise": 0,
+      "osd_confidence": 10.41,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "page_id": "E2E-LONG-HAU-2008-p7",
+      "table_index_1based": 1,
+      "bbox_scaled": [
+        176,
+        284,
+        1248,
+        1258
+      ],
+      "rotation_clockwise": 0,
+      "osd_confidence": 7.28,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "page_id": "E2E-LONG-HAU-2008-p8",
+      "table_index_1based": 1,
+      "bbox_scaled": [
+        144,
+        236,
+        1042,
+        1236
+      ],
+      "rotation_clockwise": 0,
+      "osd_confidence": 8.82,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "page_id": "E2E-LONG-HAU-2008-p9",
+      "table_index_1based": 1,
+      "bbox_scaled": [
+        178,
+        260,
+        1252,
+        1636
+      ],
+      "rotation_clockwise": 0,
+      "osd_confidence": 6.18,
+      "minimum_osd_confidence": 5.0
+    }
+  ],
+  "layout_orientation_detections": [
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p13",
+      "osd_rotation_clockwise": 0,
+      "osd_confidence": 6.54,
+      "minimum_osd_confidence": 5.0,
+      "source_size": [
+        612,
+        842
+      ],
+      "osd_size": [
+        1308,
+        1801
+      ]
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p24",
+      "osd_rotation_clockwise": 0,
+      "osd_confidence": 8.17,
+      "minimum_osd_confidence": 5.0,
+      "source_size": [
+        844,
+        614
+      ],
+      "osd_size": [
+        1799,
+        1310
+      ]
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p15",
+      "osd_rotation_clockwise": 0,
+      "osd_confidence": 8.82,
+      "minimum_osd_confidence": 5.0,
+      "source_size": [
+        714,
+        1011
+      ],
+      "osd_size": [
+        1271,
+        1800
+      ]
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p17",
+      "osd_rotation_clockwise": 90,
+      "osd_confidence": 7.61,
+      "minimum_osd_confidence": 5.0,
+      "source_size": [
+        595,
+        842
+      ],
+      "osd_size": [
+        1273,
+        1800
+      ]
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p3",
+      "osd_rotation_clockwise": 0,
+      "osd_confidence": 5.63,
+      "minimum_osd_confidence": 5.0,
+      "source_size": [
+        714,
+        1011
+      ],
+      "osd_size": [
+        1271,
+        1800
+      ]
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p4",
+      "osd_rotation_clockwise": 0,
+      "osd_confidence": 8.22,
+      "minimum_osd_confidence": 5.0,
+      "source_size": [
+        714,
+        1011
+      ],
+      "osd_size": [
+        1271,
+        1800
+      ]
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p6",
+      "osd_rotation_clockwise": 0,
+      "osd_confidence": 10.09,
+      "minimum_osd_confidence": 5.0,
+      "source_size": [
+        595,
+        842
+      ],
+      "osd_size": [
+        1273,
+        1800
+      ]
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p7",
+      "osd_rotation_clockwise": 0,
+      "osd_confidence": 8.46,
+      "minimum_osd_confidence": 5.0,
+      "source_size": [
+        714,
+        1011
+      ],
+      "osd_size": [
+        1271,
+        1800
+      ]
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p8",
+      "osd_rotation_clockwise": 0,
+      "osd_confidence": 9.61,
+      "minimum_osd_confidence": 5.0,
+      "source_size": [
+        595,
+        842
+      ],
+      "osd_size": [
+        1273,
+        1800
+      ]
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p9",
+      "osd_rotation_clockwise": 0,
+      "osd_confidence": 4.27,
+      "minimum_osd_confidence": 5.0,
+      "source_size": [
+        714,
+        1011
+      ],
+      "osd_size": [
+        1271,
+        1800
+      ]
+    }
+  ],
+  "ocr_orientation_detections": [
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p13",
+      "ocr_region_index_1based": 1,
+      "bbox": [
+        86.0,
+        19.0,
+        554.0,
+        102.0
+      ],
+      "crop_size": [
+        1404,
+        249
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 4.65
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p13",
+      "ocr_region_index_1based": 2,
+      "bbox": [
+        85.0,
+        95.0,
+        555.0,
+        702.0
+      ],
+      "crop_size": [
+        1410,
+        1821
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 7.42
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p13",
+      "ocr_region_index_1based": 3,
+      "bbox": [
+        581.0,
+        484.0,
+        611.0,
+        599.0
+      ],
+      "crop_size": [
+        90,
+        345
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p13",
+      "ocr_region_index_1based": 4,
+      "bbox": [
+        85.0,
+        787.0,
+        542.0,
+        828.0
+      ],
+      "crop_size": [
+        1371,
+        123
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 1.85
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p24",
+      "ocr_region_index_1based": 1,
+      "bbox": [
+        12.0,
+        0.0,
+        843.0,
+        511.0
+      ],
+      "crop_size": [
+        2493,
+        1533
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 7.94
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p24",
+      "ocr_region_index_1based": 2,
+      "bbox": [
+        244.0,
+        561.0,
+        369.0,
+        610.0
+      ],
+      "crop_size": [
+        375,
+        147
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p15",
+      "ocr_region_index_1based": 1,
+      "bbox": [
+        0.0,
+        10.0,
+        36.0,
+        1002.0
+      ],
+      "crop_size": [
+        108,
+        2976
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p15",
+      "ocr_region_index_1based": 2,
+      "bbox": [
+        79.0,
+        32.0,
+        439.0,
+        113.0
+      ],
+      "crop_size": [
+        1080,
+        243
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 1.71
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p15",
+      "ocr_region_index_1based": 3,
+      "bbox": [
+        570.0,
+        38.0,
+        632.0,
+        68.0
+      ],
+      "crop_size": [
+        186,
+        90
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p15",
+      "ocr_region_index_1based": 4,
+      "bbox": [
+        79.0,
+        120.0,
+        632.0,
+        868.0
+      ],
+      "crop_size": [
+        1659,
+        2244
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 7.75
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p15",
+      "ocr_region_index_1based": 5,
+      "bbox": [
+        682.0,
+        552.0,
+        713.0,
+        659.0
+      ],
+      "crop_size": [
+        93,
+        321
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p15",
+      "ocr_region_index_1based": 6,
+      "bbox": [
+        340.0,
+        952.0,
+        372.0,
+        982.0
+      ],
+      "crop_size": [
+        96,
+        90
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p17",
+      "ocr_region_index_1based": 1,
+      "bbox": [
+        0.0,
+        3.0,
+        440.0,
+        841.0
+      ],
+      "crop_size": [
+        1320,
+        2514
+      ],
+      "osd_orientation_degrees": 270,
+      "correction_clockwise": 90,
+      "osd_confidence": 9.64
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p17",
+      "ocr_region_index_1based": 2,
+      "bbox": [
+        540.0,
+        418.0,
+        594.0,
+        569.0
+      ],
+      "crop_size": [
+        162,
+        453
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p3",
+      "ocr_region_index_1based": 1,
+      "bbox": [
+        0.0,
+        6.0,
+        35.0,
+        1005.0
+      ],
+      "crop_size": [
+        105,
+        2997
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p3",
+      "ocr_region_index_1based": 2,
+      "bbox": [
+        81.0,
+        32.0,
+        308.0,
+        100.0
+      ],
+      "crop_size": [
+        681,
+        204
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 0.57
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p3",
+      "ocr_region_index_1based": 3,
+      "bbox": [
+        81.0,
+        107.0,
+        635.0,
+        155.0
+      ],
+      "crop_size": [
+        1662,
+        144
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 2.28
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p3",
+      "ocr_region_index_1based": 4,
+      "bbox": [
+        80.0,
+        162.0,
+        635.0,
+        396.0
+      ],
+      "crop_size": [
+        1665,
+        702
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 5.08
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p3",
+      "ocr_region_index_1based": 5,
+      "bbox": [
+        81.0,
+        402.0,
+        635.0,
+        533.0
+      ],
+      "crop_size": [
+        1662,
+        393
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 6.84
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p3",
+      "ocr_region_index_1based": 6,
+      "bbox": [
+        81.0,
+        539.0,
+        633.0,
+        616.0
+      ],
+      "crop_size": [
+        1656,
+        231
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 5.52
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p3",
+      "ocr_region_index_1based": 7,
+      "bbox": [
+        80.0,
+        622.0,
+        538.0,
+        774.0
+      ],
+      "crop_size": [
+        1374,
+        456
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 6.3
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p3",
+      "ocr_region_index_1based": 8,
+      "bbox": [
+        81.0,
+        781.0,
+        632.0,
+        857.0
+      ],
+      "crop_size": [
+        1653,
+        228
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 2.71
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p3",
+      "ocr_region_index_1based": 9,
+      "bbox": [
+        344.0,
+        952.0,
+        369.0,
+        982.0
+      ],
+      "crop_size": [
+        75,
+        90
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p4",
+      "ocr_region_index_1based": 1,
+      "bbox": [
+        0.0,
+        6.0,
+        35.0,
+        1007.0
+      ],
+      "crop_size": [
+        105,
+        3003
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p4",
+      "ocr_region_index_1based": 2,
+      "bbox": [
+        79.0,
+        33.0,
+        364.0,
+        101.0
+      ],
+      "crop_size": [
+        855,
+        204
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 0.97
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p4",
+      "ocr_region_index_1based": 3,
+      "bbox": [
+        79.0,
+        106.0,
+        636.0,
+        449.0
+      ],
+      "crop_size": [
+        1671,
+        1029
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 9.02
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p4",
+      "ocr_region_index_1based": 4,
+      "bbox": [
+        80.0,
+        454.0,
+        634.0,
+        560.0
+      ],
+      "crop_size": [
+        1662,
+        318
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 6.73
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p4",
+      "ocr_region_index_1based": 5,
+      "bbox": [
+        47.0,
+        565.0,
+        375.0,
+        751.0
+      ],
+      "crop_size": [
+        984,
+        558
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 0.36
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p4",
+      "ocr_region_index_1based": 6,
+      "bbox": [
+        342.0,
+        953.0,
+        369.0,
+        983.0
+      ],
+      "crop_size": [
+        81,
+        90
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p6",
+      "ocr_region_index_1based": 1,
+      "bbox": [
+        0.0,
+        5.0,
+        32.0,
+        841.0
+      ],
+      "crop_size": [
+        96,
+        2508
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p6",
+      "ocr_region_index_1based": 2,
+      "bbox": [
+        65.0,
+        26.0,
+        257.0,
+        97.0
+      ],
+      "crop_size": [
+        576,
+        213
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 1.35
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p6",
+      "ocr_region_index_1based": 3,
+      "bbox": [
+        475.0,
+        31.0,
+        530.0,
+        60.0
+      ],
+      "crop_size": [
+        165,
+        87
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p6",
+      "ocr_region_index_1based": 4,
+      "bbox": [
+        64.0,
+        100.0,
+        532.0,
+        677.0
+      ],
+      "crop_size": [
+        1404,
+        1731
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 9.49
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p6",
+      "ocr_region_index_1based": 5,
+      "bbox": [
+        564.0,
+        447.0,
+        594.0,
+        546.0
+      ],
+      "crop_size": [
+        90,
+        297
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p6",
+      "ocr_region_index_1based": 6,
+      "bbox": [
+        284.0,
+        793.0,
+        310.0,
+        821.0
+      ],
+      "crop_size": [
+        78,
+        84
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p7",
+      "ocr_region_index_1based": 1,
+      "bbox": [
+        80.0,
+        33.0,
+        341.0,
+        114.0
+      ],
+      "crop_size": [
+        783,
+        243
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 1.59
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p7",
+      "ocr_region_index_1based": 2,
+      "bbox": [
+        571.0,
+        39.0,
+        634.0,
+        69.0
+      ],
+      "crop_size": [
+        189,
+        90
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p7",
+      "ocr_region_index_1based": 3,
+      "bbox": [
+        79.0,
+        122.0,
+        658.0,
+        805.0
+      ],
+      "crop_size": [
+        1737,
+        2049
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 5.76
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p7",
+      "ocr_region_index_1based": 4,
+      "bbox": [
+        690.0,
+        531.0,
+        713.0,
+        662.0
+      ],
+      "crop_size": [
+        69,
+        393
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p7",
+      "ocr_region_index_1based": 5,
+      "bbox": [
+        342.0,
+        953.0,
+        368.0,
+        983.0
+      ],
+      "crop_size": [
+        78,
+        90
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p8",
+      "ocr_region_index_1based": 1,
+      "bbox": [
+        0.0,
+        4.0,
+        31.0,
+        837.0
+      ],
+      "crop_size": [
+        93,
+        2499
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p8",
+      "ocr_region_index_1based": 2,
+      "bbox": [
+        65.0,
+        25.0,
+        340.0,
+        96.0
+      ],
+      "crop_size": [
+        825,
+        213
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 1.94
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p8",
+      "ocr_region_index_1based": 3,
+      "bbox": [
+        481.0,
+        33.0,
+        530.0,
+        60.0
+      ],
+      "crop_size": [
+        147,
+        81
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p8",
+      "ocr_region_index_1based": 4,
+      "bbox": [
+        61.0,
+        101.0,
+        540.0,
+        765.0
+      ],
+      "crop_size": [
+        1437,
+        1992
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 7.74
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p8",
+      "ocr_region_index_1based": 5,
+      "bbox": [
+        570.0,
+        440.0,
+        594.0,
+        561.0
+      ],
+      "crop_size": [
+        72,
+        363
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p8",
+      "ocr_region_index_1based": 6,
+      "bbox": [
+        281.0,
+        792.0,
+        307.0,
+        821.0
+      ],
+      "crop_size": [
+        78,
+        87
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p9",
+      "ocr_region_index_1based": 1,
+      "bbox": [
+        80.0,
+        32.0,
+        344.0,
+        113.0
+      ],
+      "crop_size": [
+        792,
+        243
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 0.98
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p9",
+      "ocr_region_index_1based": 2,
+      "bbox": [
+        572.0,
+        38.0,
+        635.0,
+        68.0
+      ],
+      "crop_size": [
+        189,
+        90
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p9",
+      "ocr_region_index_1based": 3,
+      "bbox": [
+        80.0,
+        112.0,
+        681.0,
+        982.0
+      ],
+      "crop_size": [
+        1803,
+        2610
+      ],
+      "osd_orientation_degrees": 0,
+      "correction_clockwise": 0,
+      "osd_confidence": 7.61
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p9",
+      "ocr_region_index_1based": 4,
+      "bbox": [
+        689.0,
+        528.0,
+        713.0,
+        673.0
+      ],
+      "crop_size": [
+        72,
+        435
+      ],
+      "osd_orientation_degrees": null,
+      "correction_clockwise": 0,
+      "osd_confidence": null
+    }
+  ],
+  "inference_wall_seconds": 500.061,
+  "inference_page_seconds": {
+    "E2E-BAO-HO-LAO-DONG-2009-p13": 52.871,
+    "E2E-BAO-HO-LAO-DONG-2009-p24": 32.448,
+    "E2E-LONG-HAU-2008-p15": 66.052,
+    "E2E-LONG-HAU-2008-p17": 29.056,
+    "E2E-LONG-HAU-2008-p3": 58.147,
+    "E2E-LONG-HAU-2008-p4": 41.952,
+    "E2E-LONG-HAU-2008-p6": 57.526,
+    "E2E-LONG-HAU-2008-p7": 40.877,
+    "E2E-LONG-HAU-2008-p8": 57.599,
+    "E2E-LONG-HAU-2008-p9": 50.301
+  },
+  "inference_successful_pages": 10,
+  "docling_version": "2.129.0",
+  "page_orientation_detections": [
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p13",
+      "rotation_clockwise": 0,
+      "osd_confidence": 8.52,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p24",
+      "rotation_clockwise": 0,
+      "osd_confidence": 5.92,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p15",
+      "rotation_clockwise": 0,
+      "osd_confidence": 10.41,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p17",
+      "rotation_clockwise": 90,
+      "osd_confidence": 9.3,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p3",
+      "rotation_clockwise": 0,
+      "osd_confidence": 6.9,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p4",
+      "rotation_clockwise": 0,
+      "osd_confidence": 4.21,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p6",
+      "rotation_clockwise": 0,
+      "osd_confidence": 7.93,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p7",
+      "rotation_clockwise": 0,
+      "osd_confidence": 6.6,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p8",
+      "rotation_clockwise": 0,
+      "osd_confidence": 9.29,
+      "minimum_osd_confidence": 5.0
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p9",
+      "rotation_clockwise": 0,
+      "osd_confidence": 5.04,
+      "minimum_osd_confidence": 5.0
+    }
+  ]
+}

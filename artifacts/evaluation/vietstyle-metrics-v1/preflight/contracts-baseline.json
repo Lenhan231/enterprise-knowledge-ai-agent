@@ -1,0 +1,14 @@
+{
+  "tests_run": 30,
+  "failures": [],
+  "errors": [],
+  "skipped": [],
+  "modules": [
+    "test_analytics_agents",
+    "test_bounded_execution",
+    "test_request_planning",
+    "test_report_grounding",
+    "test_report_delivery",
+    "test_report_templates"
+  ]
+}

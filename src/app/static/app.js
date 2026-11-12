@@ -1019,7 +1019,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
   const usedEvidenceFallback = Boolean(data.answer_fallback_reason || data.fallback);
   const responseTitle = data.failure_code === "sql_timeout" ? "Truy vấn mất quá lâu"
     : ({partial: "Partial answer", clarification_required: "Clarification needed", failed: "Could not complete"})[data.status]
-    || (data.ok === false ? "Answer unavailable" : usedEvidenceFallback ? "Evidence fallback" : "Synthesized answer");
+    || (data.ok === false ? "Answer unavailable" : usedEvidenceFallback ? "Evidence only" : "Answer");
   const domainLabels = {
     inventory_allocation: "Inventory allocation",
     promotion_planning: "Promotion planning",
@@ -1088,7 +1088,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
   const routeDetails = renderRunDetails(data);
   panel.innerHTML = `
     <div class="answer-header-wrap">
-      <div class="answer-heading">
+      <div class="answer-heading${data.status === "partial" || data.limitations?.length ? " is-partial" : ""}">
         <span class="answer-mark">${usedEvidenceFallback ? "EV" : "AI"}</span>
         <div><span class="eyebrow">${escapeHtml(({knowledge:"Knowledge agent",analytics:"Analytics agent",sql_analytics:"Analytics agent",dashboard:"Inventory agent",report:"Report agent",agentic:"Automatic router",hybrid:"Knowledge + analytics"})[data.agent] || "Agent response")}</span><h3>${escapeHtml(responseTitle)}</h3></div>
       </div>
@@ -1117,7 +1117,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
             || syntheticPolicySourcePageUrl(source)
             || validSourceUrl(source.source_url);
           const link = href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">View original</a>` : "";
-          const chunk = Number.isInteger(source.chunk_index) ? ` · Indexed chunk ${source.chunk_index}` : "";
+          const chunk = Number.isInteger(source.chunk_index) ? ` (chunk ${source.chunk_index})` : "";
           const location = source.page_number ? `Page ${source.page_number}${chunk}`
             : source.source_type === "commerce_sql" ? `SQL aggregate · ${(source.source_tables || []).join(", ")}`
               : source.source_type === "commerce_schema" ? `Schema coverage · ${(source.source_tables || []).join(", ")}`
@@ -1242,22 +1242,44 @@ function renderAgentResult(result, panel = $("#answer-panel"), shouldScroll = tr
 // "9.4 s" reads the same in every locale; "9.420 ms" looks like 9 ms where "." groups thousands.
 const formatSeconds = (ms) => `${(Number(ms) / 1000).toFixed(1)} s`;
 
+function selectMonitorTab(name, focus = false) {
+  document.querySelectorAll("[data-monitor-tab]").forEach((tab) => {
+    const selected = tab.dataset.monitorTab === name;
+    tab.setAttribute("aria-selected", String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+    if (selected && focus) tab.focus();
+  });
+  document.querySelectorAll("[data-monitor-panel]").forEach((panel) => { panel.hidden = panel.dataset.monitorPanel !== name; });
+}
+document.querySelector(".monitoring-tabs")?.addEventListener("click", (event) => {
+  const tab = event.target.closest("[data-monitor-tab]");
+  if (tab) selectMonitorTab(tab.dataset.monitorTab);
+});
+document.querySelector(".monitoring-tabs")?.addEventListener("keydown", (event) => {
+  if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+  const tabs = [...document.querySelectorAll("[data-monitor-tab]")];
+  const index = tabs.findIndex((tab) => tab.getAttribute("aria-selected") === "true");
+  const next = tabs[(index + (event.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+  selectMonitorTab(next.dataset.monitorTab, true);
+});
+
 function renderAgentMonitoring(data) {
   const summary = data.summary || {};
   const cards = [
-    ["Runs · 24 hours", summary.total_runs ?? 0],
+    ["Runs, last 24 h", summary.total_runs ?? 0],
     ["Success rate", summary.success_rate == null ? "—" : `${summary.success_rate}%`],
     ["Average latency", summary.average_elapsed_ms == null ? "—" : formatSeconds(summary.average_elapsed_ms)],
     ["P95 latency", summary.p95_elapsed_ms == null ? "—" : formatSeconds(summary.p95_elapsed_ms)],
-    ["Runs · last hour", summary.last_hour_runs ?? 0],
+    ["Runs, last hour", summary.last_hour_runs ?? 0],
   ];
   $("#monitoring-summary").innerHTML = cards.map(([label, value]) => `<article class="monitoring-stat"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></article>`).join("");
   const agents = data.by_agent || [];
   const maxRuns = Math.max(1, ...agents.map((agent) => Number(agent.total_runs) || 0));
   $("#monitoring-agents").innerHTML = agents.length ? agents.map((agent) => `
-    <div class="monitoring-agent"><div><strong>${escapeHtml(agent.agent_name)}</strong><span>${formatNumber(agent.completed_runs)} of ${formatNumber(agent.total_runs)} completed · avg ${agent.average_elapsed_ms == null ? "—" : formatSeconds(agent.average_elapsed_ms)}</span></div><i><b style="width:${Math.max(3, Number(agent.total_runs) / maxRuns * 100)}%"></b></i></div>
+    <div class="monitoring-agent"><div><strong>${escapeHtml(agent.agent_name)}</strong><span>${formatNumber(agent.completed_runs)} of ${formatNumber(agent.total_runs)} completed, ${agent.average_elapsed_ms == null ? "no timing" : `${formatSeconds(agent.average_elapsed_ms)} average`}</span></div><i><b style="width:${Math.max(3, Number(agent.total_runs) / maxRuns * 100)}%"></b></i></div>
   `).join("") : '<p class="analysis-empty">No agent runs have been recorded in the last 24 hours.</p>';
   const runs = data.recent_runs || [];
+  $("#monitor-count-runs").textContent = runs.length ? formatNumber(runs.length) : "";
   $("#monitoring-runs").innerHTML = runs.length ? `<div class="monitoring-table-wrap"><table class="monitoring-table"><thead><tr><th>Time</th><th>Role</th><th>Agent</th><th>Retrieval</th><th>Result</th><th>Latency</th><th>Sources</th></tr></thead><tbody>${runs.map((run) => `<tr><td>${escapeHtml(new Date(run.created_at).toLocaleString())}</td><td>${escapeHtml(run.actor_role)}</td><td>${escapeHtml(run.agent_name)}</td><td>${escapeHtml(run.retrieval_method)}</td><td><span class="run-status ${escapeHtml(run.status)}">${escapeHtml(run.status.replaceAll("_", " "))}</span>${run.error_type ? `<small>${escapeHtml(run.error_type)}</small>` : ""}</td><td>${formatSeconds(run.elapsed_ms)}</td><td>${formatNumber(run.citation_count)}</td></tr>`).join("")}</tbody></table></div>` : '<p class="analysis-empty">No requests recorded yet.</p>';
 }
 
@@ -1418,7 +1440,8 @@ function attachFeedback(panel, turn) {
 function renderAnswerFeedback(data) {
   const summary = data.summary || {};
   const items = data.recent || [];
-  $("#monitoring-feedback").innerHTML = `<p class="monitoring-note">Last 30 days: 👍 ${formatNumber(summary.up ?? 0)} · 👎 ${formatNumber(summary.down ?? 0)}</p>${items.length ? `<div class="monitoring-table-wrap"><table class="monitoring-table"><thead><tr><th>Time</th><th>Rating</th><th>Role</th><th>Agent</th><th>Question</th><th>Comment</th><th>Claim check</th></tr></thead><tbody>${items.map((item) => `<tr><td>${escapeHtml(new Date(item.created_at).toLocaleString())}</td><td>${item.rating === "up" ? "👍" : "👎"}</td><td>${escapeHtml(item.actor_role)}</td><td>${escapeHtml(item.agent_name)}</td><td><details><summary>${escapeHtml(item.question.slice(0, 80))}</summary><p>${escapeHtml(item.answer)}</p></details></td><td>${escapeHtml(item.comment || "")}</td><td>${escapeHtml(item.claim_status || "")}</td></tr>`).join("")}</tbody></table></div>` : '<p class="analysis-empty">No feedback yet.</p>'}`;
+  $("#monitor-count-feedback").textContent = formatNumber((summary.up ?? 0) + (summary.down ?? 0));
+  $("#monitoring-feedback").innerHTML = `<p class="rating-totals"><span>Last 30 days</span><span class="rating-pill up">${ICONS.up}${formatNumber(summary.up ?? 0)} helpful</span><span class="rating-pill down">${ICONS.down}${formatNumber(summary.down ?? 0)} not helpful</span></p>${items.length ? `<div class="monitoring-table-wrap"><table class="monitoring-table"><thead><tr><th>Time</th><th>Rating</th><th>Role</th><th>Agent</th><th>Question</th><th>Comment</th><th>Claim check</th></tr></thead><tbody>${items.map((item) => `<tr><td>${escapeHtml(new Date(item.created_at).toLocaleString())}</td><td><span class="rating-icon ${item.rating === "up" ? "up" : "down"}" title="${item.rating === "up" ? "Helpful" : "Not helpful"}">${ICONS[item.rating === "up" ? "up" : "down"]}</span></td><td>${escapeHtml(item.actor_role)}</td><td>${escapeHtml(item.agent_name)}</td><td><details><summary>${escapeHtml(item.question.slice(0, 80))}</summary><p>${escapeHtml(item.answer)}</p></details></td><td>${escapeHtml(item.comment || "")}</td><td>${escapeHtml(item.claim_status || "")}</td></tr>`).join("")}</tbody></table></div>` : '<p class="analysis-empty">No feedback yet.</p>'}`;
 }
 
 // Fades the old stage message out and the new one in; a newer stage cancels a fade still running.
@@ -1678,7 +1701,8 @@ async function loadWorkspace(user) {
   }
   $("#access-matrix").replaceChildren();
   $("#connection-status").textContent = "Knowledge base connected";
-  $("#user-badge").textContent = `${user.username} · ${user.role}`;
+  $("#user-badge").textContent = `${user.username} (${user.role})`;
+  $("#account-initial").textContent = (user.username || "?").charAt(0).toUpperCase();
   $("#user-badge").hidden = false;
   $("#logout-button").hidden = false;
   $(".intro").hidden = user.role === "document_processing_owner";
@@ -2025,6 +2049,7 @@ $(".agent-grid").addEventListener("click", (event) => {
     $("#ask-form").requestSubmit();
   } else if (event.target.closest("[data-open-report]")) {
     $("#report-agent-form-section").hidden = false;
+    $("#report-fold").open = true;
     $("#report-agent-question").focus();
   }
 });

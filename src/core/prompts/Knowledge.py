@@ -38,6 +38,17 @@ Câu hỏi:
 Trả lời bằng tiếng Việt:
 """.replace("__INSUFFICIENT_ANSWER__", INSUFFICIENT_ANSWER)
 
+# KNOWLEDGE_STRICT_CITATION_RULE=1 swaps rule 2 for this stricter text (rag_service). The claim checker rejects
+# any text after the last [S#] that is not a "sources do not cover ..." note, so an uncited closing line
+# withholds the whole answer.
+CITATION_RULE = """2. Mọi câu trả lời có nội dung phải kèm trích dẫn nội tuyến. Kết thúc từng câu
+   hoặc gạch đầu dòng chứa thông tin thực tế bằng một hay nhiều mã nguồn đúng
+   định dạng [S1]."""
+STRICT_CITATION_RULE = """2. Mọi câu và mọi gạch đầu dòng, kể cả câu mở đầu và câu cuối cùng, phải kết
+   thúc bằng một hay nhiều mã nguồn đúng định dạng [S1]. Không thêm câu kết, lời
+   khuyên, tóm tắt hay lời mời hỏi thêm không có trích dẫn. Ngoại lệ duy nhất: câu
+   nói rõ tài liệu chưa nêu phần nào của câu hỏi (quy tắc 4) không cần trích dẫn."""
+
 # KNOWLEDGE_COMPLETENESS_RULE=1 appends this after rule 10 (rag_service); off keeps the original prompt byte-identical.
 COMPLETENESS_RULE = """11. Nếu câu hỏi có nhiều ý hoặc nhiều câu hỏi nhỏ, trả lời đủ từng ý theo thứ
    tự. Với mỗi ý, nêu đủ các điều kiện, ngoại lệ, thời hạn và người hoặc bộ

@@ -47,6 +47,17 @@ class KnowledgeFlagTest(unittest.TestCase):
         self.assertEqual(top_k, 8)
 
 
+    def test_strict_citation_rule_replaces_rule_2_only_when_enabled(self):
+        from core.prompts.Knowledge import CITATION_RULE, STRICT_CITATION_RULE
+        off, _ = self.run_once({"KNOWLEDGE_STRICT_CITATION_RULE": "0"})
+        on, _ = self.run_once({"KNOWLEDGE_STRICT_CITATION_RULE": "1", "KNOWLEDGE_COMPLETENESS_RULE": "1"})
+        self.assertIn(CITATION_RULE, off)
+        self.assertNotIn(STRICT_CITATION_RULE, off)
+        self.assertIn(STRICT_CITATION_RULE, on)
+        self.assertNotIn(CITATION_RULE, on)
+        self.assertIn("11. Nếu câu hỏi có nhiều ý", on)  # the two flags combine
+        self.assertLess(on.index("2. Mọi câu và mọi gạch đầu dòng"), on.index("3. Không trích dẫn"))
+
     def test_context_budget_is_configurable(self):
         import importlib
         from core.rag import rag_service

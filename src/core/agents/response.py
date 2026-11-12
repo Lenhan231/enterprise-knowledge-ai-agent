@@ -65,7 +65,9 @@ async def assemble_response(request, plan, execution, provider):
         # Auto writes nothing new here: the Knowledge answer was already checked claim by claim by its
         # verifier, so pass it (verified, withheld or no match) and its metadata through unchanged.
         result = active[0].result
+        # 'status' keeps the turn in the conversation history; 'limitations' is read on the timeout path.
         return result.model_copy(update={'metadata': {
+            'status': 'complete' if result.metadata.get('ok', True) else 'failed', 'limitations': [],
             **result.metadata, 'selected_route': 'knowledge', 'task_trace': execution.trace,
             'specialist_invocations': execution.invocations, 'planning_fallback': plan.fallback}})
     usable = [o for o in active if o.result and o.result.evidence and o.status in {'complete', 'partial'}]

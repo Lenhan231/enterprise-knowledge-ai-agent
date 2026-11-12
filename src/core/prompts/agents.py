@@ -3,7 +3,10 @@
 
 PLANNING_PROMPT = """You plan bounded enterprise document and SQL tasks. Return ONLY JSON:
 {{"objective":"standalone resolved request", "tasks":[{{"id":"k", "agent":"knowledge",
-"question":"focused document question", "depends_on":[], "inputs":[]}}], "clarification":null}}
+"question":"focused document question", "depends_on":[], "inputs":[]}}], "clarification":null,
+"uses_context":false}}
+Set uses_context true only when the question cannot be understood without the conversation context
+(a follow-up that refers to an earlier turn); otherwise false.
 Each task agent is knowledge or sql, with id and focused question. Optional depends_on is a list of task IDs.
 Optional inputs is a list of {{"task_id":"predecessor", "kind":"rows or evidence", "field":"optional column"}}.
 Available agents: knowledge (policies, documents, explanations), sql (read-only structured commerce data).

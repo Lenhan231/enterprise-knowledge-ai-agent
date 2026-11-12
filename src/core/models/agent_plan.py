@@ -26,6 +26,8 @@ class AgentPlan(BaseModel):
     tasks: list[AgentTask] = Field(default_factory=list, max_length=4)
     clarification: str | None = Field(default=None, min_length=1, max_length=500)
     fallback: bool = False
+    # False when the planner says the question stands alone; default True keeps its resolved rewrite.
+    uses_context: bool = True
 
     @model_validator(mode='after')
     def validate_dependencies(self):

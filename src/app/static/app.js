@@ -5,6 +5,8 @@ let knowledgeDocuments = [];
 let activeKnowledgeReview = null;
 let invoiceReviewItems = [];
 let activeInvoiceReview = null;
+let invoiceReviewPage = 1;
+const INVOICE_REVIEW_PAGE_SIZE = 8;
 let invoiceProgressGeneration = 0;
 let agentConversationId = crypto.randomUUID();
 let reportConversationId = crypto.randomUUID();
@@ -280,7 +282,14 @@ const formatInvoiceDate = (value) => {
 let invoiceOpenGeneration = 0;
 
 function renderInvoiceReviewList() {
-  $("#invoice-review-list").innerHTML = invoiceReviewItems.map((invoice) => {
+  const statusFilter = $("#invoice-review-filter").value;
+  const filteredInvoices = statusFilter === "all"
+    ? invoiceReviewItems
+    : invoiceReviewItems.filter((invoice) => invoice.processing_status === statusFilter);
+  const pageCount = Math.max(1, Math.ceil(filteredInvoices.length / INVOICE_REVIEW_PAGE_SIZE));
+  invoiceReviewPage = Math.min(invoiceReviewPage, pageCount);
+  const start = (invoiceReviewPage - 1) * INVOICE_REVIEW_PAGE_SIZE;
+  $("#invoice-review-list").innerHTML = filteredInvoices.slice(start, start + INVOICE_REVIEW_PAGE_SIZE).map((invoice) => {
     const data = invoice.invoice_data || {};
     const selected = invoice.invoice_id === activeInvoiceReview?.invoice_id;
     const status = invoice.processing_status || "unknown";
@@ -289,7 +298,10 @@ function renderInvoiceReviewList() {
       <span>${escapeHtml(data.invoice_no || "Invoice number not extracted")} · ${escapeHtml(data.seller || "Seller not extracted")}</span>
       <small><span class="invoice-status-badge is-${escapeHtml(({approved: "approved", review_required: "review", failed: "failed", processing: "processing", rejected: "rejected"})[status] || "unknown")}">${escapeHtml(({review_required: "Needs review", failed: "Extraction failed", processing: "Processing", approved: "Approved", rejected: "Rejected"})[status] || status)}</span> · ${escapeHtml(new Date(invoice.updated_at || invoice.created_at).toLocaleDateString())}</small>
     </button>`;
-  }).join("") || '<p class="analysis-empty">No invoice drafts to review.</p>';
+  }).join("") || '<p class="analysis-empty">No invoices match this status.</p>';
+  $("#invoice-review-page").textContent = `${filteredInvoices.length ? start + 1 : 0}–${Math.min(start + INVOICE_REVIEW_PAGE_SIZE, filteredInvoices.length)} of ${filteredInvoices.length}`;
+  $("#invoice-review-prev").disabled = invoiceReviewPage === 1;
+  $("#invoice-review-next").disabled = invoiceReviewPage === pageCount;
 }
 
 function renderInvoiceReviewDetail(invoice) {
@@ -501,6 +513,18 @@ $("#invoice-review-list").addEventListener("click", (event) => {
   if (button) openInvoiceReview(button.dataset.invoiceReviewId).catch((error) => {
     $("#invoice-review-status").textContent = error.message;
   });
+});
+$("#invoice-review-filter").addEventListener("change", () => {
+  invoiceReviewPage = 1;
+  renderInvoiceReviewList();
+});
+$("#invoice-review-prev").addEventListener("click", () => {
+  invoiceReviewPage = Math.max(1, invoiceReviewPage - 1);
+  renderInvoiceReviewList();
+});
+$("#invoice-review-next").addEventListener("click", () => {
+  invoiceReviewPage += 1;
+  renderInvoiceReviewList();
 });
 $("#invoice-review-detail").addEventListener("submit", (event) => {
   if (event.target.id === "invoice-retry-form") {

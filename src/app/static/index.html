@@ -302,7 +302,23 @@
         <p>Compare the extracted draft with the private source and OCR evidence. Save corrections before an admin approves the invoice for analytics.</p>
         <p id="invoice-review-status" class="corpus-note" aria-live="polite"></p>
         <div class="invoice-review-layout">
-          <div id="invoice-review-list" class="invoice-review-list"></div>
+          <div class="invoice-review-queue">
+            <label class="invoice-review-filter-label" for="invoice-review-filter">Status</label>
+            <select id="invoice-review-filter" class="invoice-review-filter">
+              <option value="all">All statuses</option>
+              <option value="review_required">Needs review</option>
+              <option value="processing">Processing</option>
+              <option value="failed">Extraction failed</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+            <div id="invoice-review-list" class="invoice-review-list"></div>
+            <div class="invoice-review-pagination" aria-label="Invoice pages">
+              <button id="invoice-review-prev" class="secondary-button" type="button">Previous</button>
+              <span id="invoice-review-page" aria-live="polite"></span>
+              <button id="invoice-review-next" class="secondary-button" type="button">Next</button>
+            </div>
+          </div>
           <div id="invoice-review-detail" class="invoice-review-detail"><p class="analysis-empty">Choose an invoice to review.</p></div>
         </div>
       </section>

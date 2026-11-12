@@ -1,0 +1,19 @@
+{
+  "id": "ltrngnhn/qwen3-0-6b-invoice-lora-1000-benchmark",
+  "title": "Qwen3 0-6B Invoice LoRA 1000 Benchmark",
+  "code_file": "kaggle_qwen3_0_6b_invoice_finetune_benchmark.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": "true",
+  "enable_gpu": "true",
+  "enable_tpu": "false",
+  "enable_internet": "true",
+  "dataset_sources": [
+    "ltrngnhn/invoice-synthetic-1000-sft-benchmark",
+    "ltrngnhn/qwen3-0-6b-invoice-lora-adapter-900",
+    "ltrngnhn/invoice-50-holdout-ocr-cache"
+  ],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}

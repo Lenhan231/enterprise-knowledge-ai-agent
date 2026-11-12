@@ -1,0 +1,95 @@
+{
+  "qwen3-0.6b-base": {
+    "sample_count": 50,
+    "ocr_success_count": 50,
+    "inference_success_count": 50,
+    "schema_valid_rate": 1.0,
+    "header_exact_match_rates": {
+      "invoice_no": 0.0,
+      "date": 0.32,
+      "seller": 0.9,
+      "buyer": 0.94,
+      "subtotal": 0.26,
+      "tax_amount": 0.92,
+      "total_amount": 0.82
+    },
+    "item_count_exact_rate": 0.08,
+    "item_row_exact_accuracy_macro_invoice": 0.0,
+    "item_row_exact_accuracy_pooled": 0.0,
+    "item_field_accuracy_macro_invoice": {
+      "description": 0.01714285714285714,
+      "quantity": 0.0,
+      "unit": 0.0,
+      "unit_price": 0.0,
+      "amount": 0.0
+    },
+    "mean_inference_seconds": 9.3426,
+    "whole_invoice_exact_rate": 0.0
+  },
+  "qwen3-0.6b-lora": {
+    "sample_count": 50,
+    "ocr_success_count": 50,
+    "inference_success_count": 50,
+    "schema_valid_rate": 1.0,
+    "header_exact_match_rates": {
+      "invoice_no": 0.16,
+      "date": 0.98,
+      "seller": 0.9,
+      "buyer": 0.96,
+      "subtotal": 0.44,
+      "tax_amount": 0.98,
+      "total_amount": 0.98
+    },
+    "item_count_exact_rate": 1.0,
+    "item_row_exact_accuracy_macro_invoice": 0.9136190476190477,
+    "item_row_exact_accuracy_pooled": 0.9103448275862069,
+    "item_field_accuracy_macro_invoice": {
+      "description": 0.9221190476190476,
+      "quantity": 0.998,
+      "unit": 0.9934999999999999,
+      "unit_price": 1.0,
+      "amount": 1.0
+    },
+    "mean_inference_seconds": 45.2552,
+    "whole_invoice_exact_rate": 0.0
+  },
+  "qwen3-1.7b-base": {
+    "sample_count": 50,
+    "ocr_success_count": 50,
+    "inference_success_count": 50,
+    "schema_valid_rate": 1.0,
+    "header_exact_match_rates": {
+      "invoice_no": 1.0,
+      "date": 0.1,
+      "seller": 0.9,
+      "buyer": 0.94,
+      "subtotal": 0.28,
+      "tax_amount": 0.88,
+      "total_amount": 0.9
+    },
+    "item_count_exact_rate": 1.0,
+    "item_row_exact_accuracy_macro_invoice": 0.8761190476190477,
+    "item_row_exact_accuracy_pooled": 0.8620689655172413,
+    "item_field_accuracy_macro_invoice": {
+      "description": 0.9192619047619047,
+      "quantity": 0.9551428571428572,
+      "unit": 0.9934999999999999,
+      "unit_price": 1.0,
+      "amount": 1.0
+    },
+    "mean_inference_seconds": 29.6416,
+    "whole_invoice_exact_rate": 0.0
+  },
+  "experiment": {
+    "train_invoices": 900,
+    "validation_invoices": 50,
+    "test_invoices": 50,
+    "training_seconds": 29437.4,
+    "base_model_revision_0.6b": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "base_model_revision_1.7b": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "source_commit": "4b725d0996c22a9c4f2e16674d25aa7ed8f5e6a0",
+    "ocr": "cached established pilot output: Docling 2.129.0 + fine-tuned VietOCR vgg_transformer",
+    "training_evidence": "synthetic OCR-like header/table records reconstructed from labels",
+    "test_cohort": "established invoice-pilot-50, held out from training"
+  }
+}

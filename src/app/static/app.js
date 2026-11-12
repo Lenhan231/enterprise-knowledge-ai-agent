@@ -1358,14 +1358,28 @@ function attachFeedback(panel, turn) {
     button.disabled = true;
   });
   if (turn.feedback) mark(turn.feedback);
+  const unmark = () => box.querySelectorAll(".feedback-btn").forEach((button) => {
+    button.setAttribute("aria-pressed", "false");
+    button.classList.remove("chosen");
+    button.disabled = false;
+  });
+  // Optimistic: the choice shows at once and the database write happens in the background;
+  // if the write fails the choice is undone and the reason is shown, so nothing looks saved that isn't.
   const send = async (rating, comment) => {
-    await api("/api/agents/feedback", { method: "POST", body: JSON.stringify({
-      rating, question: turn.question, answer: turn.result.answer, agent: turn.result.agent || "unknown",
-      comment: comment || null, claim_status: turn.result.metadata?.claim_verification?.status ?? null,
-    }) });
     turn.feedback = rating;
     mark(rating);
-    say("Thanks, your feedback was sent to the team", "ok");
+    say("Thanks for the feedback", "ok");
+    try {
+      await api("/api/agents/feedback", { method: "POST", body: JSON.stringify({
+        rating, question: turn.question, answer: turn.result.answer, agent: turn.result.agent || "unknown",
+        comment: comment || null, claim_status: turn.result.metadata?.claim_verification?.status ?? null,
+      }) });
+    } catch (error) {
+      turn.feedback = null;
+      unmark();
+      say(`Not saved: ${error.message}. Try again.`, "error");
+      throw error;
+    }
   };
 
   // Inline card for 👎: reason chips and an optional note; it opens and closes with a height animation.
@@ -1405,18 +1419,13 @@ function attachFeedback(panel, turn) {
   });
   card.querySelector(".feedback-form").addEventListener("submit", async (event) => {
     event.preventDefault();
-    const sendButton = card.querySelector(".feedback-send");
     const reasons = [...card.querySelectorAll('.feedback-reason[aria-pressed="true"]')].map((chip) => chip.textContent);
     const note = card.querySelector("textarea").value.trim();
-    sendButton.disabled = true;
-    sendButton.textContent = "Sending…";
+    open(false);
     try {
       await send("down", [reasons.join(", "), note].filter(Boolean).join(" — ").slice(0, 1000));
-      open(false);
-    } catch (error) {
-      say(`Not sent: ${error.message}`, "error");
-      sendButton.disabled = false;
-      sendButton.textContent = "Send feedback";
+    } catch {
+      open(true);  // keep the typed note so the reader can resend
     }
   });
 
@@ -1429,11 +1438,7 @@ function attachFeedback(panel, turn) {
       open(opening);
       return;
     }
-    try {
-      await send("up", null);
-    } catch (error) {
-      say(`Not sent: ${error.message}`, "error");
-    }
+    send("up", null).catch(() => {});
   });
 }
 

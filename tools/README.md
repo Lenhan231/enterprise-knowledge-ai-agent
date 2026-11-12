@@ -78,7 +78,7 @@ The scan upload path can be smoke-tested with
 The native-Office parser-chunk comparison reuses archived Built-in, Docling,
 and PP-StructureV3 outputs across the 201-file set. Its streaming scorer needs
 the temporary `ijson` package and records the source run chosen for each file;
-see the [archived document-pipeline evaluations](https://github.com/Lenhan231/enterprise-knowledge-ai-agent/tree/7bdb6bde4d20f09916dfc5c666138f42c1b06aa0/artifacts/evaluation/document-pipelines).
+see [`office/results/parser-chunk-full-v1/report.md`](../artifacts/evaluation/document-pipelines/office/results/parser-chunk-full-v1/report.md).
 
 To create a private Kaggle bundle for any one labeled OCR dataset, pass its
 JSON path and a new dataset slug. The bundle includes only that dataset, its

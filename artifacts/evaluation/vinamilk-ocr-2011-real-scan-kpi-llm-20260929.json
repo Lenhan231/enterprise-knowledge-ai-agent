@@ -1,0 +1,373 @@
+{
+  "created_at_utc": "2026-09-28T21:14:02.514718+00:00",
+  "dataset_id": "VNM-2011-REAL-SCAN-KPI-UPLOAD-DIAGNOSTIC-V1",
+  "dataset_sha256": "d4e627e9e94bbb5ab531289c8250bcb02882faf1e813b1c6e5821956a9e0259b",
+  "reference_quality": "human_visually_reviewed_income_statement_transcription_officially_corroborated",
+  "reference_method": "The Vietnamese consolidated income-statement page was manually transcribed and visually reviewed. The labeled revenue and after-tax-profit figures were cross-checked against Vinamilk's official 2011 annual report.",
+  "limitations": "One real scanned Vietnamese income-statement page from one third-party preview packet. It is a diagnostic, not representative OCR or LLM model-selection evidence. Financial suggestions remain pending until admin review.",
+  "software": {
+    "python": "3.11.16",
+    "pymupdf": "1.27.2.3",
+    "tesseract": "tesseract 5.5.3",
+    "tesseract_traineddata_sha256": {
+      "vie": "164d9bed7e5a6444586d39434cc1adf4df976cfe23cffd6468e444c94703640a",
+      "eng": "daa0c97d651c19fba3b25e81317cd697e9908c8208090c94c3905381c23fc047"
+    }
+  },
+  "ocr_config": {
+    "language": "vie+eng",
+    "tesseract_psm": 11,
+    "tesseract_table_psm": {
+      "pdf": 3,
+      "image": 6
+    },
+    "render_scale": 1.5,
+    "table_render_scale": 2.5
+  },
+  "llm_model": "openai/gpt-oss-20b",
+  "results": [
+    {
+      "id": "real-scan-2011-income-statement-vi",
+      "document_id": "VNM-FS-2011-VI-SCAN-DIAGNOSTIC",
+      "file": "data/raw/vietnam_enterprises/vnm/vnm-financial-statements-2011-scan-preview.pdf",
+      "file_sha256": "80f38fbb18f729fab611ed84f699d06cde76fb2ab18f89dd953d2e589f39f0bc",
+      "native_single_page_pdf_sha256": "58a565139d858497858c597515264a249aa5d5be738b4d1d9fb75a1524d25b39",
+      "synthetic_raster_pdf_sha256": "da072d1ad88604a988647bfddb2f799f5a04d41b3ba888caeab6f2a52384cbe8",
+      "synthetic_raster_png_sha256": "9b857c3d51a6eb626b4ccfab7e45bae8382c6940b9dfd667d24b9558f2f320c0",
+      "official_url": "https://tai-lieu.com/tai-lieu/bao-cao-tai-chinh-hop-nhat-cho-nam-tai-chinh-ket-thuc-ngay-31-thang-12-nam-2011-cong-ty-co-phan-sua-viet-nam-17812/",
+      "page_index": 9,
+      "printed_pages": [
+        8
+      ],
+      "synthetic_raster_dpi": 180,
+      "ocr_config": {
+        "tesseract_psm": 11,
+        "tesseract_table_psm": {
+          "pdf": 3,
+          "image": 6
+        },
+        "render_scale": 1.5,
+        "table_render_scale": 2.5
+      },
+      "table_strategy_sweep": null,
+      "rule_candidate_extraction": {
+        "candidate_count": 1,
+        "labeled_metric_candidate_count": 0,
+        "correct_labeled_candidate_count": 0,
+        "anchor_precision": null,
+        "expected_field_count": 2,
+        "matched_field_count": 0,
+        "anchor_recall": 0.0,
+        "fields": [
+          {
+            "field_id": "total-consolidated-revenue-2011",
+            "candidate_found": false,
+            "candidate_count": 0,
+            "matched_candidate_count": 0,
+            "candidates": []
+          },
+          {
+            "field_id": "profit-after-tax-2011",
+            "candidate_found": false,
+            "candidate_count": 0,
+            "matched_candidate_count": 0,
+            "candidates": []
+          }
+        ]
+      },
+      "conditions": [
+        {
+          "condition": "real_scanned_source_pdf_upload",
+          "text_extraction_methods": [
+            "tesseract"
+          ],
+          "chunk_count": 3,
+          "expected_table_regions": null,
+          "detected_tables": 1,
+          "table_region_recall": null,
+          "expected_field_count": 2,
+          "text_anchor_exact_match_count": 1,
+          "text_anchor_recall": 0.5,
+          "text_anchor_normalized_match_count": 1,
+          "text_anchor_normalized_recall": 0.5,
+          "table_anchor_exact_match_count": 1,
+          "table_anchor_recall": 0.5,
+          "table_anchor_normalized_match_count": 1,
+          "table_anchor_normalized_recall": 0.5,
+          "table_values_ordered_match_count": 2,
+          "table_values_ordered_recall": 1.0,
+          "fields": [
+            {
+              "id": "total-consolidated-revenue-2011",
+              "label": "Doanh thu bán hàng và cung cấp dịch vụ",
+              "metric_names": [
+                "total_consolidated_revenue"
+              ],
+              "values": [
+                "22.070.557.490.766"
+              ],
+              "text_anchor_exact_match": false,
+              "text_anchor_normalized_match": false,
+              "table_anchor_exact_match": false,
+              "table_anchor_normalized_match": false,
+              "table_values_ordered_match": true
+            },
+            {
+              "id": "profit-after-tax-2011",
+              "label": "Lợi nhuận sau thuế thu nhập doanh nghiệp",
+              "metric_names": [
+                "profit_after_tax"
+              ],
+              "values": [
+                "4.218.181.708.937"
+              ],
+              "text_anchor_exact_match": true,
+              "text_anchor_normalized_match": true,
+              "table_anchor_exact_match": true,
+              "table_anchor_normalized_match": true,
+              "table_values_ordered_match": true
+            }
+          ],
+          "rule_candidate_extraction": {
+            "candidate_count": 1,
+            "labeled_metric_candidate_count": 0,
+            "correct_labeled_candidate_count": 0,
+            "anchor_precision": null,
+            "expected_field_count": 2,
+            "matched_field_count": 0,
+            "anchor_recall": 0.0,
+            "fields": [
+              {
+                "field_id": "total-consolidated-revenue-2011",
+                "candidate_found": false,
+                "candidate_count": 0,
+                "matched_candidate_count": 0,
+                "candidates": []
+              },
+              {
+                "field_id": "profit-after-tax-2011",
+                "candidate_found": false,
+                "candidate_count": 0,
+                "matched_candidate_count": 0,
+                "candidates": []
+              }
+            ]
+          },
+          "llm_candidate_extraction": {
+            "candidate_count": 0,
+            "labeled_metric_candidate_count": 0,
+            "correct_labeled_candidate_count": 0,
+            "anchor_precision": null,
+            "expected_field_count": 2,
+            "matched_field_count": 0,
+            "anchor_recall": 0.0,
+            "fields": [
+              {
+                "field_id": "total-consolidated-revenue-2011",
+                "candidate_found": false,
+                "candidate_count": 0,
+                "matched_candidate_count": 0,
+                "candidates": []
+              },
+              {
+                "field_id": "profit-after-tax-2011",
+                "candidate_found": false,
+                "candidate_count": 0,
+                "matched_candidate_count": 0,
+                "candidates": []
+              }
+            ],
+            "page_extraction": [
+              {
+                "page_number": 1,
+                "signals": {
+                  "financial_terms": [
+                    "báo cáo tài chính",
+                    "doanh thu",
+                    "lợi nhuận"
+                  ],
+                  "metric_labels": [
+                    "net_revenue",
+                    "profit_after_tax",
+                    "cost_of_goods_sold",
+                    "gross_profit"
+                  ],
+                  "primary_metric_labels": [
+                    "net_revenue",
+                    "profit_after_tax"
+                  ],
+                  "statement_terms": [
+                    "báo cáo tài chính"
+                  ],
+                  "summary_area_with_metric": true,
+                  "table_count": 1,
+                  "score": 30
+                },
+                "metrics_returned": null,
+                "metrics_accepted": 0,
+                "validation_rejections": {},
+                "status": "provider_error"
+              }
+            ]
+          }
+        },
+        {
+          "condition": "synthetic_raster_pdf_tesseract",
+          "text_extraction_methods": [
+            "tesseract"
+          ],
+          "chunk_count": 3,
+          "expected_table_regions": null,
+          "detected_tables": 1,
+          "table_region_recall": null,
+          "expected_field_count": 2,
+          "text_anchor_exact_match_count": 0,
+          "text_anchor_recall": 0.0,
+          "text_anchor_normalized_match_count": 1,
+          "text_anchor_normalized_recall": 0.5,
+          "table_anchor_exact_match_count": 1,
+          "table_anchor_recall": 0.5,
+          "table_anchor_normalized_match_count": 1,
+          "table_anchor_normalized_recall": 0.5,
+          "table_values_ordered_match_count": 2,
+          "table_values_ordered_recall": 1.0,
+          "fields": [
+            {
+              "id": "total-consolidated-revenue-2011",
+              "label": "Doanh thu bán hàng và cung cấp dịch vụ",
+              "metric_names": [
+                "total_consolidated_revenue"
+              ],
+              "values": [
+                "22.070.557.490.766"
+              ],
+              "text_anchor_exact_match": false,
+              "text_anchor_normalized_match": false,
+              "table_anchor_exact_match": false,
+              "table_anchor_normalized_match": false,
+              "table_values_ordered_match": true
+            },
+            {
+              "id": "profit-after-tax-2011",
+              "label": "Lợi nhuận sau thuế thu nhập doanh nghiệp",
+              "metric_names": [
+                "profit_after_tax"
+              ],
+              "values": [
+                "4.218.181.708.937"
+              ],
+              "text_anchor_exact_match": false,
+              "text_anchor_normalized_match": true,
+              "table_anchor_exact_match": true,
+              "table_anchor_normalized_match": true,
+              "table_values_ordered_match": true
+            }
+          ],
+          "rule_candidate_extraction": {
+            "candidate_count": 1,
+            "labeled_metric_candidate_count": 0,
+            "correct_labeled_candidate_count": 0,
+            "anchor_precision": null,
+            "expected_field_count": 2,
+            "matched_field_count": 0,
+            "anchor_recall": 0.0,
+            "fields": [
+              {
+                "field_id": "total-consolidated-revenue-2011",
+                "candidate_found": false,
+                "candidate_count": 0,
+                "matched_candidate_count": 0,
+                "candidates": []
+              },
+              {
+                "field_id": "profit-after-tax-2011",
+                "candidate_found": false,
+                "candidate_count": 0,
+                "matched_candidate_count": 0,
+                "candidates": []
+              }
+            ]
+          }
+        },
+        {
+          "condition": "synthetic_raster_image_upload_tesseract",
+          "text_extraction_methods": [
+            "tesseract"
+          ],
+          "chunk_count": 111,
+          "expected_table_regions": null,
+          "detected_tables": 1,
+          "table_region_recall": null,
+          "expected_field_count": 2,
+          "text_anchor_exact_match_count": 1,
+          "text_anchor_recall": 0.5,
+          "text_anchor_normalized_match_count": 1,
+          "text_anchor_normalized_recall": 0.5,
+          "table_anchor_exact_match_count": 1,
+          "table_anchor_recall": 0.5,
+          "table_anchor_normalized_match_count": 1,
+          "table_anchor_normalized_recall": 0.5,
+          "table_values_ordered_match_count": 2,
+          "table_values_ordered_recall": 1.0,
+          "fields": [
+            {
+              "id": "total-consolidated-revenue-2011",
+              "label": "Doanh thu bán hàng và cung cấp dịch vụ",
+              "metric_names": [
+                "total_consolidated_revenue"
+              ],
+              "values": [
+                "22.070.557.490.766"
+              ],
+              "text_anchor_exact_match": true,
+              "text_anchor_normalized_match": true,
+              "table_anchor_exact_match": false,
+              "table_anchor_normalized_match": false,
+              "table_values_ordered_match": true
+            },
+            {
+              "id": "profit-after-tax-2011",
+              "label": "Lợi nhuận sau thuế thu nhập doanh nghiệp",
+              "metric_names": [
+                "profit_after_tax"
+              ],
+              "values": [
+                "4.218.181.708.937"
+              ],
+              "text_anchor_exact_match": false,
+              "text_anchor_normalized_match": false,
+              "table_anchor_exact_match": true,
+              "table_anchor_normalized_match": true,
+              "table_values_ordered_match": true
+            }
+          ],
+          "rule_candidate_extraction": {
+            "candidate_count": 1,
+            "labeled_metric_candidate_count": 0,
+            "correct_labeled_candidate_count": 0,
+            "anchor_precision": null,
+            "expected_field_count": 2,
+            "matched_field_count": 0,
+            "anchor_recall": 0.0,
+            "fields": [
+              {
+                "field_id": "total-consolidated-revenue-2011",
+                "candidate_found": false,
+                "candidate_count": 0,
+                "matched_candidate_count": 0,
+                "candidates": []
+              },
+              {
+                "field_id": "profit-after-tax-2011",
+                "candidate_found": false,
+                "candidate_count": 0,
+                "matched_candidate_count": 0,
+                "candidates": []
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

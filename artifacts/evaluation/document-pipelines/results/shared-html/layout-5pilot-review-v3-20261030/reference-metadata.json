@@ -1,0 +1,41 @@
+{
+  "benchmark": "layout-5pilot-review-v3",
+  "created_at": "2026-10-30",
+  "pages": [
+    "E2E-BAO-HO-LAO-DONG-2009-p13",
+    "E2E-BAO-HO-LAO-DONG-2009-p24",
+    "E2E-LONG-HAU-2008-p6",
+    "E2E-LONG-HAU-2008-p8",
+    "E2E-LONG-HAU-2008-p17"
+  ],
+  "iou_threshold": 0.5,
+  "label_policy": {
+    "priority": [
+      "table",
+      "text",
+      "title"
+    ],
+    "secondary": [
+      "figure",
+      "page_furniture"
+    ]
+  },
+  "reference_source": "data/layout/reference.jsonl; preserved unchanged",
+  "visual_corrections": [
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p24",
+      "change": "split one broad title box into report title, supporting text, section heading, and subsection heading boxes based on visible blocks"
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p8",
+      "change": "split the left signoff text box into signer name/role and the separate date line"
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p24",
+      "change": "tightened five title/text boxes from broad rectangles to visible text block extents; kept all five labels unchanged"
+    }
+  ],
+  "status": "assistant_visual_review_for_requested_benchmark",
+  "scoring": "priority macro-F1 over table/text/title; figure/page_furniture scored and false positives listed separately; no inference postprocessing or heuristic",
+  "previous_version": "layout-5pilot-review-v2-20261030"
+}

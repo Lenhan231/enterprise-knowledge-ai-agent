@@ -1,0 +1,28 @@
+{
+  "prompt": "Generate a question for the given answer and identify if the answer is noncommittal.\nGive noncommittal as 1 if the answer is noncommittal (evasive, vague, or ambiguous) and 0 if the answer is substantive.\nExamples of noncommittal answers: \"I don't know\", \"I'm not sure\", \"It depends\".\nPlease return the output in a JSON format that complies with the following schema as specified in JSON Schema:\n{\"description\": \"Structured output for answer relevance question generation.\", \"properties\": {\"question\": {\"description\": \"Question that can be answered from the response\", \"title\": \"Question\", \"type\": \"string\"}, \"noncommittal\": {\"description\": \"1 if the response is evasive/vague, 0 if it is substantive\", \"title\": \"Noncommittal\", \"type\": \"integer\"}}, \"required\": [\"question\", \"noncommittal\"], \"title\": \"AnswerRelevanceOutput\", \"type\": \"object\"}Do not use single quotes in your response but double quotes,properly escaped with a backslash.\n\n--------EXAMPLES-----------\nExample 1\nInput: {\n    \"response\": \"Albert Einstein was born in Germany.\"\n}\nOutput: {\n    \"question\": \"Where was Albert Einstein born?\",\n    \"noncommittal\": 0\n}\n\nExample 2\nInput: {\n    \"response\": \"The capital of France is Paris, a city known for its architecture and culture.\"\n}\nOutput: {\n    \"question\": \"What is the capital of France?\",\n    \"noncommittal\": 0\n}\n\nExample 3\nInput: {\n    \"response\": \"I don't know about the groundbreaking feature of the smartphone invented in 2023 as I am unaware of information beyond 2022.\"\n}\nOutput: {\n    \"question\": \"What was the groundbreaking feature of the smartphone invented in 2023?\",\n    \"noncommittal\": 1\n}\n-----------------------------\n\nNow perform the same with the following input\ninput: {\n    \"response\": \"Không được sửa `commerce.inventory` để ghi nhận điều chỉnh vật lý sau kiểm kê [S1].\\n\\nCụ thể:\\n- Hệ thống `commerce.inventory` không có các trường về vị trí, ô kho, người đếm, phiên kiểm kê hoặc mã điều chỉnh, do đó việc thực hiện kiểm kê thuộc về hệ thống tồn nghiệp vụ [S1].\\n- `commerce.inventory` là bảng snapshot lịch sử và không có sổ điều chỉnh, đồng thời quy định không được ghi sửa tại đây [S2].\\n- Chính sách yêu cầu không cập nhật snapshot lịch sử để thể hiện điều chỉnh vật lý [S5].\"\n}\nOutput: ",
+  "schema": {
+    "description": "Structured output for answer relevance question generation.",
+    "properties": {
+      "question": {
+        "description": "Question that can be answered from the response",
+        "title": "Question",
+        "type": "string"
+      },
+      "noncommittal": {
+        "description": "1 if the response is evasive/vague, 0 if it is substantive",
+        "title": "Noncommittal",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "question",
+      "noncommittal"
+    ],
+    "title": "AnswerRelevanceOutput",
+    "type": "object"
+  },
+  "response": {
+    "question": "Có được phép sửa bảng `commerce.inventory` để ghi nhận điều chỉnh vật lý sau kiểm kê không?",
+    "noncommittal": 0
+  }
+}

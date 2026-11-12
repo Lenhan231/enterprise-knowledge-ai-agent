@@ -1,0 +1,682 @@
+{
+  "dataset": {
+    "dataset": "bilingual-enterprise-printed-lines",
+    "split_method": "whole enterprise PDF groups, including separate English train/validation/test sources",
+    "counts": {
+      "train": {
+        "rows": 6096,
+        "enterprise_printed": 4479,
+        "enterprise_english": 1617
+      },
+      "validation": {
+        "rows": 1489,
+        "enterprise_printed": 500,
+        "enterprise_english": 989
+      },
+      "test": {
+        "rows": 1299,
+        "enterprise_printed": 1239,
+        "enterprise_english": 60
+      }
+    },
+    "total_rows": 8884,
+    "duplicate_images_removed": 419,
+    "source_pdf_folder": {
+      "folder": "source-pdfs",
+      "document_count": 19,
+      "documents": [
+        {
+          "source": "40b95fae14",
+          "file": "source-pdfs/40b95fae14.pdf",
+          "split": "train",
+          "line_rows": {
+            "train": 102
+          },
+          "sha256": "40b95fae140728494b31c940a13b876571e84a849bf2ab416935c11299ef4aa5",
+          "page_count": 6
+        },
+        {
+          "source": "73147462f2",
+          "file": "source-pdfs/73147462f2.pdf",
+          "split": "train",
+          "line_rows": {
+            "train": 769
+          },
+          "sha256": "73147462f2b39db5efa971136a6d3468f248393bce500cc6568639a7b53b6fa4",
+          "page_count": 22
+        },
+        {
+          "source": "annual-audit-2025-short-20261109",
+          "file": "source-pdfs/annual-audit-2025-short-20261109.pdf",
+          "split": "validation",
+          "line_rows": {
+            "validation": 100
+          },
+          "sha256": "4195567125f2571b8833e8be155f67e11043350f34fe1c8f8e9177bc8c358b45",
+          "page_count": 44
+        },
+        {
+          "source": "annual-audit-2025-short-batch2-20261109",
+          "file": "source-pdfs/annual-audit-2025-short-batch2-20261109.pdf",
+          "split": "validation",
+          "line_rows": {
+            "validation": 200
+          },
+          "sha256": "4195567125f2571b8833e8be155f67e11043350f34fe1c8f8e9177bc8c358b45",
+          "page_count": 44
+        },
+        {
+          "source": "annual-audit-2025-short-batch3-tilt-20261109",
+          "file": "source-pdfs/annual-audit-2025-short-batch3-tilt-20261109.pdf",
+          "split": "validation",
+          "line_rows": {
+            "validation": 200
+          },
+          "sha256": "3f182d5ea779b0c2ae12f54711de2d0aad37725729d0d399bb1352dae907581e",
+          "page_count": 44
+        },
+        {
+          "source": "b3e7b0a7ca",
+          "file": "source-pdfs/b3e7b0a7ca.pdf",
+          "split": "train",
+          "line_rows": {
+            "train": 23
+          },
+          "sha256": "b3e7b0a7cae0bd1a03ef3493c45ce264f6aae40f45e14b96183ad13302277d46",
+          "page_count": 3
+        },
+        {
+          "source": "b9cd9ac10e",
+          "file": "source-pdfs/b9cd9ac10e.pdf",
+          "split": "train",
+          "line_rows": {
+            "train": 212
+          },
+          "sha256": "b9cd9ac10e3dc6e38486e591ad7d617435bbf58d77c3e70b5bce7b99bd715038",
+          "page_count": 36
+        },
+        {
+          "source": "bao-ho-lao-dong-low-quality-20261109",
+          "file": "source-pdfs/bao-ho-lao-dong-low-quality-20261109.pdf",
+          "split": "test",
+          "line_rows": {
+            "test": 467
+          },
+          "sha256": "1be902dc4beff1ab405fee343d7df80dfa44cdba2a34969a442f092617cb6cf3",
+          "page_count": 27
+        },
+        {
+          "source": "ed05f2d275",
+          "file": "source-pdfs/ed05f2d275.pdf",
+          "split": "train",
+          "line_rows": {
+            "train": 120
+          },
+          "sha256": "ed05f2d2755aee9be9b8fcb79d85a877527b51715820e6cf8cd145c005cd066c",
+          "page_count": 4
+        },
+        {
+          "source": "fac42c5841",
+          "file": "source-pdfs/fac42c5841.pdf",
+          "split": "train",
+          "line_rows": {
+            "train": 396
+          },
+          "sha256": "fac42c584111508408fc8865f233f5476b5cfbf5a39bb9dbc0bcaf3cf281379f",
+          "page_count": 26
+        },
+        {
+          "source": "hoa-sen-low-quality-20261108",
+          "file": "source-pdfs/hoa-sen-low-quality-20261108.pdf",
+          "split": "test",
+          "line_rows": {
+            "test": 493
+          },
+          "sha256": "b0cf4cf38c8dae490de4c4c5c98d8f555e93feff4c1dc117d99ad9df931399a8",
+          "page_count": 36
+        },
+        {
+          "source": "kinh-bac-low-quality-20261107",
+          "file": "source-pdfs/kinh-bac-low-quality-20261107.pdf",
+          "split": "train",
+          "line_rows": {
+            "train": 429
+          },
+          "sha256": "e07bb54da73fda3775d93caa3276c319ee37554d92aaa1e6cb245341fb7c403a",
+          "page_count": 44
+        },
+        {
+          "source": "printed-business-500-20261107",
+          "file": "source-pdfs/printed-business-500-20261107.pdf",
+          "split": "train",
+          "line_rows": {
+            "train": 479
+          },
+          "sha256": "a5f6272b6473a73a778d90b687e807bd4ea625dfa59c0e3654b1f7278f5ff89f",
+          "page_count": 17
+        },
+        {
+          "source": "ross-systems-manual-20261107",
+          "file": "source-pdfs/ross-systems-manual-20261107.pdf",
+          "split": "test",
+          "line_rows": {
+            "test": 60
+          },
+          "sha256": "4fc4359d37b3f0e2414fdd629c3904f8cc45a7ab000e7bc6e0a1059cca7cf386",
+          "page_count": 23
+        },
+        {
+          "source": "scan-optics-manual-20261107",
+          "file": "source-pdfs/scan-optics-manual-20261107.pdf",
+          "split": "train",
+          "line_rows": {
+            "train": 1617
+          },
+          "sha256": "a76d53a1b6356c52bc13525048487dc5654ec9ac61d38cbcfc7883f524f5b4e1",
+          "page_count": 60
+        },
+        {
+          "source": "ssi-low-quality-2010-20261108",
+          "file": "source-pdfs/ssi-low-quality-2010-20261108.pdf",
+          "split": "test",
+          "line_rows": {
+            "test": 279
+          },
+          "sha256": "29c5cd8408d200c753f8d0314970f63c0cec141b10e911f42e3068fe4806662f",
+          "page_count": 51
+        },
+        {
+          "source": "synthetic-english-ocr-1000-20261109",
+          "file": "source-pdfs/synthetic-english-ocr-1000-20261109.pdf",
+          "split": "validation",
+          "line_rows": {
+            "validation": 989
+          },
+          "sha256": "623da8d128f03d6e351b77b4863e2acb7889dc2485f6a517146536e6bf6f9031",
+          "page_count": 20
+        },
+        {
+          "source": "synthetic-invoice-500-20261107",
+          "file": "source-pdfs/synthetic-invoice-500-20261107.pdf",
+          "split": "train",
+          "line_rows": {
+            "train": 949
+          },
+          "sha256": "1241b60ed5fe258f26fdbc2d5fed08ffb4cb59abd68baee2267eb40fa644eac9",
+          "page_count": 84
+        },
+        {
+          "source": "synthetic-vietnamese-ocr-color-streaks-1000-20261109",
+          "file": "source-pdfs/synthetic-vietnamese-ocr-color-streaks-1000-20261109.pdf",
+          "split": "train",
+          "line_rows": {
+            "train": 1000
+          },
+          "sha256": "814d56f8afc2b5cd6b88c96e0ef2123ad365654768a545345cd019247dbba1e7",
+          "page_count": 20
+        }
+      ]
+    },
+    "crop_corrections": [
+      {
+        "source": "fac42c5841",
+        "source_image": "page-0009-line-0007-ITEM_AMOUNT.png",
+        "source_pdf_sha256": "fac42c584111508408fc8865f233f5476b5cfbf5a39bb9dbc0bcaf3cf281379f",
+        "source_crop_sha256": "d5903b43ec4553d1f87aa1ac1772ff3787ece088534fb7d6c9fc94682ce4b642",
+        "new_image": "images/enterprise_printed-7a54b615edd8f9b39ffa.png",
+        "new_image_sha256": "7a54b615edd8f9b39ffa9ec2fc2f800d027ee5aeb9d352007061c234f0e28f27",
+        "page": 9,
+        "render_dpi": 180,
+        "crop_xywh": [
+          850,
+          670,
+          150,
+          36
+        ]
+      },
+      {
+        "source": "fac42c5841",
+        "source_image": "page-0009-line-0011-ITEM_AMOUNT.png",
+        "source_pdf_sha256": "fac42c584111508408fc8865f233f5476b5cfbf5a39bb9dbc0bcaf3cf281379f",
+        "source_crop_sha256": "7ef608823caacc2833d7a6e2422a0400c23bb5ee58e7151ebee6d6b3faded830",
+        "new_image": "images/enterprise_printed-421963684f8fda5b5915.png",
+        "new_image_sha256": "421963684f8fda5b5915103cd652377330264d8ca2670fd4112d31b7d11d0b13",
+        "page": 9,
+        "render_dpi": 180,
+        "crop_xywh": [
+          850,
+          750,
+          150,
+          36
+        ]
+      },
+      {
+        "source": "fac42c5841",
+        "source_image": "page-0011-line-0011-ITEM_AMOUNT.png",
+        "source_pdf_sha256": "fac42c584111508408fc8865f233f5476b5cfbf5a39bb9dbc0bcaf3cf281379f",
+        "source_crop_sha256": "2c6b2d50698f9b1de760f7dde640407ad28de8c658cec3b1512c193f044769f8",
+        "new_image": "images/enterprise_printed-f84626b2599855cb588c.png",
+        "new_image_sha256": "f84626b2599855cb588c2690d25fe092c15276f419a591ff23e402e31c249ddb",
+        "page": 11,
+        "render_dpi": 180,
+        "crop_xywh": [
+          850,
+          750,
+          150,
+          36
+        ]
+      },
+      {
+        "source": "fac42c5841",
+        "source_image": "page-0011-line-0015-ITEM_AMOUNT.png",
+        "source_pdf_sha256": "fac42c584111508408fc8865f233f5476b5cfbf5a39bb9dbc0bcaf3cf281379f",
+        "source_crop_sha256": "03156758e8704668075a43bf1ce49b482b78e592023d334822bd082e3aa33f5f",
+        "new_image": "images/enterprise_printed-1453ccc6276b83bb478e.png",
+        "new_image_sha256": "1453ccc6276b83bb478e718720445967b64d78fb7f7fb8938d8a4ec88053bb4d",
+        "page": 11,
+        "render_dpi": 180,
+        "crop_xywh": [
+          850,
+          810,
+          150,
+          36
+        ]
+      },
+      {
+        "source": "fac42c5841",
+        "source_image": "page-0011-line-0019-ITEM_AMOUNT.png",
+        "source_pdf_sha256": "fac42c584111508408fc8865f233f5476b5cfbf5a39bb9dbc0bcaf3cf281379f",
+        "source_crop_sha256": "5e672b37edbd2c45568ebda08ed3fc0d6f7d95ae2057b430a7410456c3240eeb",
+        "new_image": "images/enterprise_printed-098991f8f3f5ae76b9ab.png",
+        "new_image_sha256": "098991f8f3f5ae76b9abbf9f0d8bb465b521d175168d32e5a9f2102dd1abe8ae",
+        "page": 11,
+        "render_dpi": 180,
+        "crop_xywh": [
+          850,
+          890,
+          150,
+          36
+        ]
+      },
+      {
+        "source": "fac42c5841",
+        "source_image": "page-0011-line-0020-TOTAL_COST.png",
+        "source_pdf_sha256": "fac42c584111508408fc8865f233f5476b5cfbf5a39bb9dbc0bcaf3cf281379f",
+        "source_crop_sha256": "effef857c5965faf74fe577f326a6b5dacbdd4cc4c5bd854f929f20edef2f018",
+        "new_image": "images/enterprise_printed-373adab7e1202618d92c.png",
+        "new_image_sha256": "373adab7e1202618d92ccfefd76a881af85dbc21072c56b7592b982bc87d263b",
+        "page": 11,
+        "render_dpi": 180,
+        "crop_xywh": [
+          810,
+          1100,
+          200,
+          42
+        ]
+      },
+      {
+        "source": "fac42c5841",
+        "source_image": "page-0014-line-0012-TOTAL_COST.png",
+        "source_pdf_sha256": "fac42c584111508408fc8865f233f5476b5cfbf5a39bb9dbc0bcaf3cf281379f",
+        "source_crop_sha256": "50385c4c8a9c60012818db111a0c06ce5487ba314b552c62b6045d478ca545f1",
+        "new_image": "images/enterprise_printed-0250b1813c5662932f6b.png",
+        "new_image_sha256": "0250b1813c5662932f6bd81cb51e30896d35adb37f11aea5fd3cafafbdc003a0",
+        "page": 14,
+        "render_dpi": 180,
+        "crop_xywh": [
+          810,
+          810,
+          200,
+          42
+        ]
+      },
+      {
+        "source": "bao-ho-lao-dong-low-quality-20261109",
+        "source_image": "page-0008-line-0038.png",
+        "source_pdf_sha256": "1be902dc4beff1ab405fee343d7df80dfa44cdba2a34969a442f092617cb6cf3",
+        "source_crop_sha256": "0402b0c91356cf0882e36997874872ae1a79d6b5f4d2d504c5655416dcf2dae9",
+        "new_image": "images/enterprise_printed-2aea3c2bb92073fd57aa.png",
+        "new_image_sha256": "2aea3c2bb92073fd57aa7e1fc2fcf45233233d7e78d8ddc6f9396168fbec3c7b",
+        "page": 8,
+        "render_dpi": 180,
+        "crop_xywh": [
+          860,
+          1390,
+          315,
+          48
+        ]
+      }
+    ],
+    "confirmed_transcript_corrections_applied": {
+      "train": 100,
+      "validation": 2,
+      "test": 10
+    },
+    "conflicting_duplicate_images_excluded": [
+      {
+        "image_sha256": "6e4ce15d43c4da807d692e893b4c27704ec3ddb6f98ffa2c05a32a9af8855575",
+        "sources": [
+          "9458c0249b",
+          "printed-business-500-20261107"
+        ]
+      },
+      {
+        "image_sha256": "369a34532f7871f0c17b0e362711789d60db574584d027203e63996a0fffc2e8",
+        "sources": [
+          "9458c0249b",
+          "printed-business-500-20261107"
+        ]
+      },
+      {
+        "image_sha256": "5869e5c20c9f88909b7dfcb85817c0bee814c0fe43372289314d129976a5be67",
+        "sources": [
+          "9458c0249b",
+          "printed-business-500-20261107"
+        ]
+      },
+      {
+        "image_sha256": "793fda3745b24ec66820393a7e16bcc5d5bb1c79bd53c87933a9da22efe88e90",
+        "sources": [
+          "9458c0249b",
+          "printed-business-500-20261107"
+        ]
+      },
+      {
+        "image_sha256": "950cc2a198ed38653464882050dfba8d35817eed9482ab560e4c310132f6d6fd",
+        "sources": [
+          "9458c0249b",
+          "printed-business-500-20261107"
+        ]
+      },
+      {
+        "image_sha256": "55402ce9c295fdc44b6d7ec17e658896443ffa6f00d67bbde6ade2c0ca368cdb",
+        "sources": [
+          "9458c0249b",
+          "printed-business-500-20261107"
+        ]
+      },
+      {
+        "image_sha256": "cd4c9d5ec39df0d6a246b475357c6993f86f67950d4118e8a74bf913efae5f40",
+        "sources": [
+          "9458c0249b",
+          "printed-business-500-20261107"
+        ]
+      },
+      {
+        "image_sha256": "4ac11f50c286c9bc99e03f210b4e518134f62f361cd29bca909efdf10a723d62",
+        "sources": [
+          "9458c0249b",
+          "printed-business-500-20261107"
+        ]
+      },
+      {
+        "image_sha256": "f7a41be5cc5ced606a3f5d896b1505f0aebd45f12e70a4d65f6372d408970646",
+        "sources": [
+          "9458c0249b",
+          "printed-business-500-20261107"
+        ]
+      },
+      {
+        "image_sha256": "fd0ca27b9195bb0956ca95861778b99d4129931fcb8d7cbdd36feacf9d2090b4",
+        "sources": [
+          "9458c0249b",
+          "printed-business-500-20261107"
+        ]
+      },
+      {
+        "image_sha256": "f530309a78c60ad36bf3f77e23f886d5047f7d49e89a0e4d3fb2e927e955da6a",
+        "sources": [
+          "9458c0249b",
+          "printed-business-500-20261107"
+        ]
+      },
+      {
+        "image_sha256": "4f28c3141b9746e13d58a3f8691781f9b4ed45374c8c299286e3e78602fecc52",
+        "sources": [
+          "9458c0249b",
+          "printed-business-500-20261107"
+        ]
+      },
+      {
+        "image_sha256": "36c6cb7bd32cfe32099272691ed9222e8f98f1e3581b7a2a506803279d31838d",
+        "sources": [
+          "9458c0249b",
+          "printed-business-500-20261107"
+        ]
+      },
+      {
+        "image_sha256": "6504c62ae43b6fc59e75b0db730274fe141a8456958ddeb30a94c72e651cebac",
+        "sources": [
+          "9458c0249b",
+          "printed-business-500-20261107"
+        ]
+      }
+    ],
+    "sources": {
+      "enterprise_english_train_sources": {
+        "scan-optics-manual-20261107": 1617
+      },
+      "enterprise_english_validation_sources": {
+        "synthetic-english-ocr-1000-20261109": 989
+      },
+      "enterprise_english_test_sources": {
+        "ross-systems-manual-20261107": 60
+      },
+      "enterprise_test_pdf_sources": {
+        "bao-ho-lao-dong-low-quality-20261109": 467,
+        "hoa-sen-low-quality-20261108": 493,
+        "ssi-low-quality-2010-20261108": 279
+      },
+      "enterprise_validation_pdf_sources": {
+        "annual-audit-2025-short-20261109": 100,
+        "annual-audit-2025-short-batch2-20261109": 200,
+        "annual-audit-2025-short-batch3-tilt-20261109": 200
+      }
+    },
+    "label_transform": {
+      "name": "strip-manually-added-table-border-pipes",
+      "description": "Replace each | marker and adjacent whitespace with one space; original source_text stays in manifests."
+    },
+    "notes": [
+      "English and Vietnamese printed sources are both included; English sources are split by complete source PDF.",
+      "All split groups are disjoint by enterprise source PDF."
+    ]
+  },
+  "label_corrections_applied": {
+    "train": 100,
+    "validation": 2,
+    "test": 10
+  },
+  "text_normalization": "NFC; collapse Unicode whitespace; canonicalize curly quotes and dash variants to ASCII; map bullets to *, trademark to TM, and fraction slash to /",
+  "architecture": "vgg_seq2seq",
+  "experiment_scope": "enterprise printed only; Vietnamese and English",
+  "freeze_cnn_steps": 300,
+  "unfreeze_cnn_steps": 1200,
+  "max_lr": 0.0001,
+  "batch_size": 32,
+  "selected_step": 1750,
+  "best_validation_macro_domain_wer": 0.3936591228350149,
+  "validation_history": [
+    {
+      "step": 300,
+      "domain_wer": {
+        "enterprise_printed": 0.28359550561797753,
+        "enterprise_english": 1.0398036121339647
+      },
+      "macro_validation_wer": 0.6616995588759711
+    },
+    {
+      "step": 500,
+      "domain_wer": {
+        "enterprise_printed": 0.36943820224719104,
+        "enterprise_english": 0.5756619323163248
+      },
+      "macro_validation_wer": 0.4725500672817579
+    },
+    {
+      "step": 750,
+      "domain_wer": {
+        "enterprise_printed": 0.34831460674157305,
+        "enterprise_english": 0.5444502893214098
+      },
+      "macro_validation_wer": 0.4463824480314914
+    },
+    {
+      "step": 1000,
+      "domain_wer": {
+        "enterprise_printed": 0.4934831460674157,
+        "enterprise_english": 0.5141153778712958
+      },
+      "macro_validation_wer": 0.5037992619693558
+    },
+    {
+      "step": 1250,
+      "domain_wer": {
+        "enterprise_printed": 0.34337078651685393,
+        "enterprise_english": 0.5021918288620024
+      },
+      "macro_validation_wer": 0.4227813076894282
+    },
+    {
+      "step": 1500,
+      "domain_wer": {
+        "enterprise_printed": 0.3249438202247191,
+        "enterprise_english": 0.4897422409258285
+      },
+      "macro_validation_wer": 0.4073430305752738
+    },
+    {
+      "step": 1750,
+      "domain_wer": {
+        "enterprise_printed": 0.3137078651685393,
+        "enterprise_english": 0.47361038050149046
+      },
+      "macro_validation_wer": 0.3936591228350149
+    },
+    {
+      "step": 2000,
+      "domain_wer": {
+        "enterprise_printed": 0.31595505617977526,
+        "enterprise_english": 0.49728213221111695
+      },
+      "macro_validation_wer": 0.4066185941954461
+    },
+    {
+      "step": 2250,
+      "domain_wer": {
+        "enterprise_printed": 0.3249438202247191,
+        "enterprise_english": 0.4827283885674207
+      },
+      "macro_validation_wer": 0.4038361043960699
+    }
+  ],
+  "printed_rows_before_vocab_filter": {
+    "train": 6096,
+    "validation": 1489,
+    "test": 1299
+  },
+  "train_rows_used": 6096,
+  "train_rows_oov_excluded": 0,
+  "validation_rows_used": 1489,
+  "validation_rows_oov_excluded": 0,
+  "test_rows_used": 1299,
+  "test_rows_oov_excluded": 0,
+  "validation_metrics": [
+    {
+      "system": "VietOCR fine-tuned / validation / all",
+      "n_lines": 1489,
+      "CER": 0.17199930819785542,
+      "WER": 0.42873360242179614,
+      "exact_match": 0.21893888515782403,
+      "raw_CER": 0.17202092701487376,
+      "raw_WER": 0.42885973763874874,
+      "raw_exact_match": 0.2182672934855608
+    },
+    {
+      "system": "VietOCR fine-tuned / validation / enterprise_printed",
+      "n_lines": 500,
+      "CER": 0.27902562480227777,
+      "WER": 0.3137078651685393,
+      "exact_match": 0.6,
+      "raw_CER": 0.2791310766635031,
+      "raw_WER": 0.3141573033707865,
+      "raw_exact_match": 0.598
+    },
+    {
+      "system": "VietOCR fine-tuned / validation / enterprise_english",
+      "n_lines": 989,
+      "CER": 0.14439942349006063,
+      "WER": 0.47361038050149046,
+      "exact_match": 0.0262891809908999,
+      "raw_CER": 0.14439942349006063,
+      "raw_WER": 0.47361038050149046,
+      "raw_exact_match": 0.0262891809908999
+    }
+  ],
+  "test_metrics": [
+    {
+      "system": "VietOCR pretrained / all",
+      "n_lines": 1299,
+      "CER": 0.055884681536487485,
+      "WER": 0.10121005274588893,
+      "exact_match": 0.5257890685142417,
+      "raw_CER": 0.056130388489994264,
+      "raw_WER": 0.10214086255041886,
+      "raw_exact_match": 0.5211701308698999
+    },
+    {
+      "system": "VietOCR pretrained / enterprise_printed",
+      "n_lines": 1239,
+      "CER": 0.056497013688451975,
+      "WER": 0.1012504007694774,
+      "exact_match": 0.5181598062953995,
+      "raw_CER": 0.05661132226445289,
+      "raw_WER": 0.10157101635139468,
+      "raw_exact_match": 0.5181598062953995
+    },
+    {
+      "system": "VietOCR pretrained / enterprise_english",
+      "n_lines": 60,
+      "CER": 0.042787286063569685,
+      "WER": 0.1,
+      "exact_match": 0.6833333333333333,
+      "raw_CER": 0.04584352078239609,
+      "raw_WER": 0.11923076923076924,
+      "raw_exact_match": 0.5833333333333334
+    },
+    {
+      "system": "VietOCR fine-tuned / all",
+      "n_lines": 1299,
+      "CER": 0.015575090775068934,
+      "WER": 0.0436239528389699,
+      "exact_match": 0.6836027713625866,
+      "raw_CER": 0.015957301591635043,
+      "raw_WER": 0.04511324852621781,
+      "raw_exact_match": 0.6720554272517321
+    },
+    {
+      "system": "VietOCR fine-tuned / enterprise_printed",
+      "n_lines": 1239,
+      "CER": 0.016031777784128256,
+      "WER": 0.04341134979159987,
+      "exact_match": 0.6779661016949152,
+      "raw_CER": 0.01628897208013031,
+      "raw_WER": 0.04430907342096826,
+      "raw_exact_match": 0.6731234866828087
+    },
+    {
+      "system": "VietOCR fine-tuned / enterprise_english",
+      "n_lines": 60,
+      "CER": 0.005806845965770171,
+      "WER": 0.05,
+      "exact_match": 0.8,
+      "raw_CER": 0.008863080684596576,
+      "raw_WER": 0.06923076923076923,
+      "raw_exact_match": 0.65
+    }
+  ],
+  "prediction_audit_files": [
+    "vietocr-validation-predictions.csv",
+    "vietocr-test-predictions.csv"
+  ]
+}

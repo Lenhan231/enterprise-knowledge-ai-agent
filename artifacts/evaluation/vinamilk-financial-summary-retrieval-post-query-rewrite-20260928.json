@@ -1,0 +1,102 @@
+{
+  "generated_at_utc": "2026-09-28T09:23:47.948893+00:00",
+  "question": "What were revenue and profit after tax in 2024?",
+  "retrieval_query": "What were revenue and profit after tax in 2024? Tổng doanh thu hợp nhất và lợi nhuận sau thuế hợp nhất",
+  "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+  "role": "finance_analyst",
+  "method": "hybrid",
+  "top_k": 10,
+  "results": [
+    {
+      "rank": 1,
+      "document_id": "VNM-AR-2024-VI",
+      "page_number": 15,
+      "retrieval_score": 0.0476434426229508,
+      "headline_revenue_label_found": false,
+      "headline_profit_label_found": true,
+      "excerpt": "Báo cáo thường niên Vinamilk 2024 28 29 Luôn cầu tiến Thông tin chung Tóm tắt thông tin tài chính 5 năm gần nhất Tổng tài sản (tỷ đồng) Lợi nhuận từ Hoạt động Kinh Doanh (tỷ đồng) Lợi nhuận trước thuế (tỷ đồng) Doanh thu thuần (tỷ đồng) Lợi nhuận khác (tỷ đồng) Lợi nhuận sau thuế (tỷ đồng) Tỉ lệ lợi"
+    },
+    {
+      "rank": 2,
+      "document_id": "VNM-AR-2024-VI",
+      "page_number": 48,
+      "retrieval_score": 0.0474095796676442,
+      "headline_revenue_label_found": false,
+      "headline_profit_label_found": false,
+      "excerpt": "g đó doanh thu thuần trong nước đạt 50.799 tỷ đồng trong năm 2024, tăng 0,4% và doanh thu thuần nước ngoài đạt 10.983 tỷ đồng, tăng 12,6%. Với kết quả này, Công ty đã ghi nhận tăng trưởng doanh thu ở cả mảng kinh doanh trong và ngoài nước với hai cột mốc quan trọng: gần như hoàn thành thay đổi bao b"
+    },
+    {
+      "rank": 3,
+      "document_id": "VNM-AR-2024-VI",
+      "page_number": 12,
+      "retrieval_score": 0.0454757462686567,
+      "headline_revenue_label_found": true,
+      "headline_profit_label_found": true,
+      "excerpt": "Báo cáo thường niên Vinamilk 2024 22 23 Luôn cầu tiến Thông tin chung Sức khỏe tài chính Tổng doanh thu hợp nhất năm 2024 Lợi nhuận sau thuế hợp nhất năm 2024 tỷ đồng tỷ đồng 9.453 61.824 Tổng tài sản tại ngày 31.12.2024 Tổng vốn chủ sở hữu tại ngày 31.12.2024 tỷ đồng tỷ đồng 55.049 36.174 Kết quả m"
+    },
+    {
+      "rank": 4,
+      "document_id": "VNM-AR-2024-VI",
+      "page_number": 92,
+      "retrieval_score": 0.0448585231193927,
+      "headline_revenue_label_found": false,
+      "headline_profit_label_found": false,
+      "excerpt": "kết quả hoạt động kinh doanh và thu nhập toàn diện khác hợp nhất cho năm kết thúc ngày 31 tháng 12 năm 2024 (tiếp theo) 2024 Triệu VND 2023 Triệu VND II. Báo cáo thu nhập toàn diện khác Các khoản mục sẽ không được phân loại lại vào báo cáo lãi lỗ Các khoản đầu tư vốn FVOCI – thay đổi thuần trong giá"
+    },
+    {
+      "rank": 5,
+      "document_id": "VNM-AR-2024-VI",
+      "page_number": 2,
+      "retrieval_score": 0.0447957839262187,
+      "headline_revenue_label_found": true,
+      "headline_profit_label_found": true,
+      "excerpt": "Báo cáo thường niên Vinamilk 2024 2 3 Luôn cầu tiến Mở đầu Kết quả nổi bật năm 2024 61.824 +2,2% 9.453 4.569 tỷ đồng tỷ đồng tỷ đồng Tổng doanh thu hợp nhất Lợi nhuận sau thuế hợp nhất Đóng góp vào Ngân sách Nhà nước so với cùng kỳ +4,8% so với cùng kỳ so với cùng kỳ +11,3% 48 1 125 Fortune 500 Sout"
+    },
+    {
+      "rank": 6,
+      "document_id": "VNM-AR-2024-VI",
+      "page_number": 92,
+      "retrieval_score": 0.0447330447330447,
+      "headline_revenue_label_found": false,
+      "headline_profit_label_found": false,
+      "excerpt": "Báo cáo thường niên Vinamilk 2024 182 183 Luôn cầu tiến Báo cáo tài chính Công ty Cổ phần Sữa Việt Nam và các công ty con Báo cáo kết quả hoạt động kinh doanh và thu nhập toàn diện khác hợp nhất cho năm kết thúc ngày 31 tháng 12 năm 2024 2024 Triệu VND 2023 Triệu VND I. Báo cáo lãi lỗ Doanh thu 52.5"
+    },
+    {
+      "rank": 7,
+      "document_id": "VNM-AR-2024-VI",
+      "page_number": 59,
+      "retrieval_score": 0.0427956989247312,
+      "headline_revenue_label_found": false,
+      "headline_profit_label_found": false,
+      "excerpt": "eo hướng vừa hiệu quả, vừa tiết kiệm. Nhờ đó, kết quả kinh doanh của Driwood rất tích cực. Doanh thu 2024 tăng trưởng 10% so với 2023. Lợi nhuận trước thuế 2024 ghi nhận 1 triệu USD, vượt kế hoạch đề ra. Hệ thống ERP mới của Driftwood cũng đã đi vào hoạt động ổn định trong năm. Chất lượng sản phẩm đ"
+    },
+    {
+      "rank": 8,
+      "document_id": "VNM-AR-2024-VI",
+      "page_number": 93,
+      "retrieval_score": 0.0407256571640133,
+      "headline_revenue_label_found": false,
+      "headline_profit_label_found": false,
+      "excerpt": "Báo cáo thường niên Vinamilk 2024 184 185 Luôn cầu tiến Báo cáo tài chính 2024 Triệu VND 2023 Triệu VND Lưu chuyển tiền từ hoạt động kinh doanh Lợi nhuận trước thuế 10.833.006 10.195.687 Điều chỉnh cho các khoản Khấu hao và phân bổ 2.163.203 2.088.980 Các khoản dự phòng 33.128 - (Lãi)/lỗ chênh lệch "
+    },
+    {
+      "rank": 9,
+      "document_id": "VNM-AR-2024-VI",
+      "page_number": 61,
+      "retrieval_score": 0.0400223380491437,
+      "headline_revenue_label_found": false,
+      "headline_profit_label_found": false,
+      "excerpt": "kết thúc họp ĐHĐCĐ thường niên. Tổng mức cổ tức của năm tài chính 2023 là 8.046 nghìn tỷ đồng, tương đương 101,4% lợi nhuận hợp nhất sau thế chưa phân phối phân bổ cho Chủ sở hữu và sau khi trích lập quỹ theo qui định của Công ty. A. Quyền và Đối xử công bằng với Cổ đông A.1 Quyền Cơ Bản Của Cổ đông"
+    },
+    {
+      "rank": 10,
+      "document_id": "VNM-AR-2024-VI",
+      "page_number": 6,
+      "retrieval_score": 0.0393162393162393,
+      "headline_revenue_label_found": true,
+      "headline_profit_label_found": true,
+      "excerpt": "Báo cáo thường niên Vinamilk 2024 10 11 Luôn cầu tiến Mở đầu Thông điệp Tổng Giám Đốc Vinamilk đã trải qua một năm đầy thử thách nhưng cũng rất đáng tự hào. Bối cảnh kinh tế vĩ mô biến động, sức mua trong nước giảm sút, thiên tai gây ra những khó khăn không nhỏ cho hoạt động sản xuất kinh doanh. Thế"
+    }
+  ],
+  "limitation": "Read-only retrieval diagnostic; no generation was invoked, so this does not verify the final answer."
+}

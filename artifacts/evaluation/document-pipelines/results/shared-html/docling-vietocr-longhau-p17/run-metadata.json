@@ -1,0 +1,34 @@
+{
+  "dataset": "shared-html-owner-reviewed",
+  "engine": "docling-vietocr",
+  "run_id": "docling-vietocr-longhau-p17",
+  "started_at_utc": "2026-10-21T13:15:21.112493+00:00",
+  "finished_at_utc": "2026-10-21T13:15:50.964880+00:00",
+  "device": "CPU",
+  "ocr": "Docling layout + RapidOCR detection + VietOCR vgg_seq2seq greedy",
+  "table_structure": "Docling TableFormer accurate",
+  "threads": 2,
+  "page_filter": "E2E-LONG-HAU-2008-p17",
+  "page_count": 1,
+  "successful_pages": 1,
+  "failed_pages": 0,
+  "wall_seconds": 29.852,
+  "peak_process_rss_mib": 2181.1,
+  "prediction_generation_seconds": 29.852,
+  "reused_raw_outputs": false,
+  "raw_output_directory": "/home/lenhanm1/Thesis/enterprise-knowledge-ai-agent/artifacts/evaluation/document-pipelines/results/shared-html/docling-vietocr-longhau-p17/raw_pages",
+  "predictions": "/home/lenhanm1/Thesis/enterprise-knowledge-ai-agent/artifacts/evaluation/document-pipelines/results/shared-html/docling-vietocr-longhau-p17/predictions.jsonl",
+  "pages": [
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p17",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 25.522
+    }
+  ],
+  "inference_wall_seconds": 29.852,
+  "inference_page_seconds": {
+    "E2E-LONG-HAU-2008-p17": 25.522
+  },
+  "inference_successful_pages": 1,
+  "docling_version": "2.129.0"
+}

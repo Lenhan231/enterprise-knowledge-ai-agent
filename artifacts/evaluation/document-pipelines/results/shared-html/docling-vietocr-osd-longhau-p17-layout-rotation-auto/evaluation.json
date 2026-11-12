@@ -1,0 +1,216 @@
+{
+  "dataset": "shared-html-owner-reviewed",
+  "engine": "docling-vietocr",
+  "run_id": "docling-vietocr-osd-longhau-p17-layout-rotation-auto",
+  "layer_scores": {
+    "pages": 1,
+    "ocr": {
+      "pages": 1,
+      "micro_cer": 0.4214402618657938,
+      "micro_wer_pyvi": 0.4300341296928328,
+      "micro_whitespace_error": 0.4666666666666667,
+      "character_edits": 515,
+      "reference_characters": 1222,
+      "word_edits": 126,
+      "reference_words": 293,
+      "page_scores": [
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 17,
+          "cer": 0.4214402618657938,
+          "wer_pyvi": 0.4300341296928328,
+          "whitespace_error": 0.4666666666666667
+        }
+      ]
+    },
+    "layout": {
+      "pages": 1,
+      "iou_threshold": 0.5,
+      "micro": {
+        "true_positive": 1,
+        "predicted_regions": 5,
+        "reference_regions": 4,
+        "precision": 0.2,
+        "recall": 0.25,
+        "f1": 0.22222222222222224
+      },
+      "per_class": {
+        "title": {
+          "true_positive": 0,
+          "predicted_regions": 2,
+          "reference_regions": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "text": {
+          "true_positive": 0,
+          "predicted_regions": 2,
+          "reference_regions": 2,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "table": {
+          "true_positive": 1,
+          "predicted_regions": 1,
+          "reference_regions": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "figure": {
+          "true_positive": 0,
+          "predicted_regions": 0,
+          "reference_regions": 0,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      }
+    },
+    "table": {
+      "pages_with_reviewed_tables": 1,
+      "reference_tables": 1,
+      "predicted_tables": 1,
+      "matched_tables_iou50": 1,
+      "detection_precision": 1.0,
+      "detection_recall": 1.0,
+      "detection_f1": 1.0,
+      "micro_cell_cer": 0.07303370786516854,
+      "micro_cell_wer_whitespace": 0.2903225806451613,
+      "positional_cell_accuracy": 0.6071428571428571,
+      "exact_cell_body_precision": 0.5904761904761905,
+      "exact_cell_body_recall": 0.5904761904761905,
+      "exact_cell_body_f1": 0.5904761904761905,
+      "shape_exact_rate": 1.0,
+      "exact_grid_rate": 0.0,
+      "items": [
+        {
+          "reference_id": "E2E-LONG-HAU-2008-p17-t1",
+          "matched": true,
+          "bbox_iou": 0.8263290916854711,
+          "cell_cer": 0.07303370786516854,
+          "cell_wer_whitespace": 0.2903225806451613,
+          "cell_accuracy": 0.6071428571428571,
+          "shape_exact": true,
+          "exact_grid": false
+        }
+      ]
+    }
+  },
+  "end_to_end_scores": {
+    "pages": 1,
+    "ocr": {
+      "pages": 1,
+      "micro_cer": 0.4214402618657938,
+      "micro_wer_pyvi": 0.4300341296928328,
+      "micro_whitespace_error": 0.4666666666666667,
+      "character_edits": 515,
+      "reference_characters": 1222,
+      "word_edits": 126,
+      "reference_words": 293,
+      "page_scores": [
+        {
+          "document_id": "E2E-LONG-HAU-2008",
+          "source_page_number_1based": 17,
+          "cer": 0.4214402618657938,
+          "wer_pyvi": 0.4300341296928328,
+          "whitespace_error": 0.4666666666666667
+        }
+      ]
+    },
+    "layout": {
+      "pages": 1,
+      "iou_threshold": 0.5,
+      "micro": {
+        "true_positive": 1,
+        "predicted_regions": 5,
+        "reference_regions": 4,
+        "precision": 0.2,
+        "recall": 0.25,
+        "f1": 0.22222222222222224
+      },
+      "per_class": {
+        "title": {
+          "true_positive": 0,
+          "predicted_regions": 2,
+          "reference_regions": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "text": {
+          "true_positive": 0,
+          "predicted_regions": 2,
+          "reference_regions": 2,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0
+        },
+        "table": {
+          "true_positive": 1,
+          "predicted_regions": 1,
+          "reference_regions": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "figure": {
+          "true_positive": 0,
+          "predicted_regions": 0,
+          "reference_regions": 0,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0
+        }
+      }
+    },
+    "table": {
+      "pages_with_reviewed_tables": 1,
+      "reference_tables": 1,
+      "predicted_tables": 1,
+      "matched_tables_iou50": 1,
+      "detection_precision": 1.0,
+      "detection_recall": 1.0,
+      "detection_f1": 1.0,
+      "micro_cell_cer": 0.07303370786516854,
+      "micro_cell_wer_whitespace": 0.2903225806451613,
+      "positional_cell_accuracy": 0.6071428571428571,
+      "exact_cell_body_precision": 0.5904761904761905,
+      "exact_cell_body_recall": 0.5904761904761905,
+      "exact_cell_body_f1": 0.5904761904761905,
+      "shape_exact_rate": 1.0,
+      "exact_grid_rate": 0.0,
+      "items": [
+        {
+          "reference_id": "E2E-LONG-HAU-2008-p17-t1",
+          "matched": true,
+          "bbox_iou": 0.8263290916854711,
+          "cell_cer": 0.07303370786516854,
+          "cell_wer_whitespace": 0.2903225806451613,
+          "cell_accuracy": 0.6071428571428571,
+          "shape_exact": true,
+          "exact_grid": false
+        }
+      ]
+    }
+  },
+  "coverage": {
+    "owner_reviewed_pages": 1,
+    "pages_with_reviewed_table_grids": 1,
+    "end_to_end_pages_with_ocr_layout_and_tables": 1,
+    "prediction_pages": 1,
+    "inference_successful_pages": 1
+  },
+  "runtime": {
+    "device": "CPU",
+    "inference_wall_seconds": 39.951,
+    "peak_process_rss_mib": 2177.6
+  },
+  "caveats": [
+    "Owner-reviewed working references from the shared HTML review flow.",
+    "Reading order is not scored because the current HTML references contain no reviewed reading_order sequence.",
+    "End-to-end cohort requires reviewed OCR, layout, and at least one reviewed table; it includes all reviewed tables per page."
+  ]
+}

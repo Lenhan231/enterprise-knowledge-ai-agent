@@ -1,0 +1,239 @@
+{
+  "main": {
+    "id": "11d57e578da863fb",
+    "type": "split",
+    "children": [
+      {
+        "id": "e0c737c75c57255e",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "e74cfdf74d01de60",
+            "type": "leaf",
+            "state": {
+              "type": "pdf",
+              "state": {
+                "file": "file:/home/lenhanm1/Thesis/enterprise-knowledge-ai-agent/data/raw/vietnam_enterprises/bao_ho_lao_dong/bao-ho-lao-dong-ar-2009-vn.pdf"
+              },
+              "icon": "lucide-file-text",
+              "title": "bao-ho-lao-dong-ar-2009-vn"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "94a124a2ccad5dd3",
+    "type": "split",
+    "children": [
+      {
+        "id": "9a7cb2f184177ac3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "093345fe377d6f45",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "50e9f626ce3995ec",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "bb8ab6ab7c6f1fff",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "right": {
+    "id": "566bc8fb7bf605b7",
+    "type": "split",
+    "children": [
+      {
+        "id": "37846f65797eb9dd",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "a766f2a51cdf132d",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "plan.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
+            }
+          },
+          {
+            "id": "026e77977112cb3c",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "plan.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
+            }
+          },
+          {
+            "id": "d95c72c66ef9b777",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "653c2aa4365b0c96",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "c1d4d756d329f641",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "plan.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "e74cfdf74d01de60",
+  "lastOpenFiles": [
+    "data/pages/UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p0026.pdf",
+    "data/raw/upload-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p0026.png",
+    "data/uploads/UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b.pdf",
+    "data/pages",
+    "data/uploads/UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b.pdf.tmp",
+    "data/uploads",
+    "data/__pycache__/promote_reviewed_export.cpython-314.pyc",
+    "data/__pycache__",
+    "data/raw/baoholaodong-p21.png",
+    "data/raw/baoholaodong-p14.png",
+    "data/raw/baoholaodong-p09.png",
+    "data/raw/baoholaodong-p07.png",
+    "data/raw/baoholaodong-p04.png",
+    "data/raw/longhau-p15.png",
+    "data/raw/longhau-p09.png",
+    "data/raw/longhau-p07.png",
+    "data/raw/longhau-p04.png",
+    "data/owner-reviewed-pilot-v1.json",
+    "data/end-to-end/v1/reference.jsonl",
+    "data/end-to-end/v1",
+    "data/table/v1/reference.jsonl",
+    "data/README.md",
+    "README.md",
+    "ocr/README.md",
+    "plan.md",
+    "end-to-end/evaluator/README.md",
+    "end-to-end/results/archive/initial-five-page-pilot-before-rerun/README.md",
+    "end-to-end/results/runs/README.md",
+    "end-to-end/results/README.md",
+    "end-to-end/results/canonical-pages-v1-docling-v3-reference-eval-v1/report.md",
+    "end-to-end/results/archive/initial-five-page-pilot-before-rerun/kaggle-docling-v3-five-page-reference-eval-v1/report.md",
+    "end-to-end/results/archive/initial-five-page-pilot-before-rerun/canonical-pages-v1-docling-v3-reference-eval-v1/report.md",
+    "end-to-end/kaggle/README.md",
+    "end-to-end/kaggle/datasets/document-pipeline-pages-v1/README.md",
+    "end-to-end/kaggle/datasets/tmp_jh4juzx/document-pipeline-pages-v1/README.md",
+    "end-to-end/data/review/pilot-notes.md",
+    "end-to-end/data/review/intake/README.md",
+    "end-to-end/data/review/README.md",
+    "end-to-end/data/README.md",
+    "end-to-end/data/references/owner-reviewed-v1/README.md",
+    "end-to-end/kaggle/datasets/tmpvf7i_07v/pilot-5-pages-v1/README.md",
+    "end-to-end/kaggle/datasets/pilot-5-pages-v1/README.md",
+    "end-to-end/data/review/intake/ai-assist-review.md",
+    "end-to-end/kaggle/docling-5-pages-v1/README.md",
+    "end-to-end/data/subsets/pilot-5-pages-v1/references/owner-reviewed-v1/README.md",
+    "end-to-end/data/subsets/pilot-5-pages-v1/review/README.md"
+  ]
+}

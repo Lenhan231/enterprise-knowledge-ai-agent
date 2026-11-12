@@ -1,0 +1,59 @@
+{
+  "created_at_utc": "2026-09-28T00:44:48.271526+00:00",
+  "dataset_id": "vinamilk-ocr-human-reviewed-regions-v6",
+  "dataset_sha256": "1415f14be07ba41484650f58577b7e9aefcd282a78d21f9bd62c6ad81efabf16",
+  "reference_quality": "human_transcribed_visual_review",
+  "reference_method": "Manual transcription from rendered PDF regions; v6 corrects two scan crops that clipped printed text at the horizontal edges; the Vietnamese balance-sheet rows were visually checked at full resolution.",
+  "protocol": "Copy each selected manually labeled region from the original PDF page, preserving its source content; run the existing DocumentProcessor PDF upload path (PyMuPDF/Tesseract fallback), then score chunk text against the manual reference.",
+  "limitations": "Production-parser OCR path only. Physical-scan status and layout type are reported per region. No table-cell or layout-structure labels, no paired OCR-engine comparison. Throughput includes parser/OCR invocation but excludes application embedding and database persistence.",
+  "render_dpi": 108.0,
+  "ocr_render_scale": 1.5,
+  "tesseract_page_segmentation_mode": 11,
+  "tesseract_language": "vie+eng",
+  "software": {
+    "python": "3.11.16",
+    "pymupdf": "1.27.2.3",
+    "tesseract": "tesseract 5.5.3"
+  },
+  "process_memory": {
+    "process_peak_rss_mb": 80.484,
+    "child_peak_rss_mb": 110.41
+  },
+  "aggregate": {
+    "ocr_pages": 1,
+    "micro_cer": 0.54375,
+    "micro_wer": 0.84375,
+    "mean_latency_seconds": 1.034,
+    "mean_pages_per_minute": 58.027
+  },
+  "results": [
+    {
+      "id": "annual-2020-product-poster-vi",
+      "document_id": "VNM-AR-2020-VI",
+      "source_page_number": 22,
+      "language": "vi",
+      "layout_type": null,
+      "physical_scan": false,
+      "source_pdf_sha256": "0abbd2bb78b4be637107b1975014a118c7eda9d79ebe4634d612337910b25f00",
+      "cropped_pdf_sha256": "74b3b66d250bbfa60c44d8934e120e8d2f4a10457a376622b1e860362c960ffd",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 11,
+      "ocr_render_scale": 1.5,
+      "ocr_used": true,
+      "chunk_count": 1,
+      "table_count": 0,
+      "reference_characters": 160,
+      "reference_words": 32,
+      "hypothesis_characters": 113,
+      "character_edit_distance": 87,
+      "word_edit_distance": 27,
+      "cer": 0.54375,
+      "wer": 0.84375,
+      "latency_seconds": 1.034,
+      "pages_per_minute": 58.027,
+      "extracted_text": "DINH DƯƠNG, VANE N TANG CƯỜNG ĐỀ KHANCEA s s 100 CAD 2 SỮA TƯƠI ỀữA TƯỞI TIỆT Tï ÍTĐƯỜNG' RÙNG Emeve.... Í - s i ffl ! Ău Á ."
+    }
+  ]
+}

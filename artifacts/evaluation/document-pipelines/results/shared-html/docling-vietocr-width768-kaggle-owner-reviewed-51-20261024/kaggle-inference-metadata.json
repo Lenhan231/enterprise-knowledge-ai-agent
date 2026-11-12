@@ -1,0 +1,271 @@
+{
+  "dataset": "letrongnhan/vietnamese-enterprise-e2e-hard-scans",
+  "input_manifest_sha256": "e74023390e9e7a72bb44112d0ed303cf2eea45d14d30405b67d5ade0b2b1aeb5",
+  "input_pages": 51,
+  "device": "Tesla T4",
+  "cuda_available": true,
+  "docling_version": "2.129.0",
+  "ocr": "RapidOCR 3.9.2 detection + VietOCR vgg_seq2seq greedy, image_max_width=768; Tesseract OSD per OCR crop",
+  "layout_model": "docling-project/docling-layout-heron",
+  "table_structure": "Docling TableFormer accurate + OCR cell matching",
+  "inference_wall_seconds": 1160.604,
+  "successful_pages": 51,
+  "failed_pages": 0,
+  "pages": [
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p4",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 52.207
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p7",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 12.537
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p9",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 28.076
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p13",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 19.77
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p14",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 20.649
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p21",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 11.612
+    },
+    {
+      "reference_id": "E2E-BAO-HO-LAO-DONG-2009-p24",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 11.016
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p6",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 35.906
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p8",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 32.032
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p15",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 30.698
+    },
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p17",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 14.608
+    },
+    {
+      "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p1",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 6.529
+    },
+    {
+      "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p2",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 12.831
+    },
+    {
+      "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p3",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 44.399
+    },
+    {
+      "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p4",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 32.317
+    },
+    {
+      "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p5",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 44.211
+    },
+    {
+      "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p7",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 18.554
+    },
+    {
+      "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p9",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 20.03
+    },
+    {
+      "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p10",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 42.109
+    },
+    {
+      "reference_id": "UPLOAD-2-bctc-da-kiem-toan-2008-v-73147462f2-p20",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 22.316
+    },
+    {
+      "reference_id": "UPLOAD-bao-cao-kiem-toan-2025-signed1-4195567125-p1",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 23.086
+    },
+    {
+      "reference_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p25",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 34.503
+    },
+    {
+      "reference_id": "UPLOAD-bao-ho-lao-dong-ar-2009-vn-1be902dc4b-p26",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 26.141
+    },
+    {
+      "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p4",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 11.214
+    },
+    {
+      "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p10",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 16.957
+    },
+    {
+      "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p11",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 15.839
+    },
+    {
+      "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p12",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 20.503
+    },
+    {
+      "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p13",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 18.826
+    },
+    {
+      "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p14",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 21.287
+    },
+    {
+      "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p24",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 16.11
+    },
+    {
+      "reference_id": "UPLOAD-kinh-bac-bctc-hop-nhat-2008-e07bb54da7-p35",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 29.519
+    },
+    {
+      "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p4",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 18.606
+    },
+    {
+      "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p5",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 30.241
+    },
+    {
+      "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p7",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 24.247
+    },
+    {
+      "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p8",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 17.465
+    },
+    {
+      "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p9",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 15.957
+    },
+    {
+      "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p10",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 20.251
+    },
+    {
+      "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p11",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 19.028
+    },
+    {
+      "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p12",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 19.107
+    },
+    {
+      "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p13",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 18.54
+    },
+    {
+      "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p14",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 15.548
+    },
+    {
+      "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p15",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 20.535
+    },
+    {
+      "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p16",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 26.968
+    },
+    {
+      "reference_id": "UPLOAD-phr-baocaotaichinh-2009-kiemtoan-congtyme-93ab59efad-p17",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 25.195
+    },
+    {
+      "reference_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd-p39",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 23.302
+    },
+    {
+      "reference_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd-p40",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 22.076
+    },
+    {
+      "reference_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd-p41",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 15.684
+    },
+    {
+      "reference_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd-p42",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 22.916
+    },
+    {
+      "reference_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd-p43",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 23.019
+    },
+    {
+      "reference_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd-p44",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 20.363
+    },
+    {
+      "reference_id": "UPLOAD-vinaconex-bctn-2008-83f4d849cd-p46",
+      "status": "ConversionStatus.SUCCESS",
+      "seconds": 15.128
+    }
+  ]
+}

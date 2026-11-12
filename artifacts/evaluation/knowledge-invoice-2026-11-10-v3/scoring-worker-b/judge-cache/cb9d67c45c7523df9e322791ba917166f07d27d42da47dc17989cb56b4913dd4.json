@@ -1,0 +1,36 @@
+{
+  "prompt": "Given a question and an answer, analyze the complexity of each sentence in the answer. Break down each sentence into one or more fully understandable statements. Ensure that no pronouns are used in any statement.\nPlease return the output in a JSON format that complies with the following schema as specified in JSON Schema:\n{\"description\": \"Structured output for statement generation.\", \"properties\": {\"statements\": {\"description\": \"The generated statements from the answer\", \"items\": {\"type\": \"string\"}, \"title\": \"Statements\", \"type\": \"array\"}}, \"required\": [\"statements\"], \"title\": \"StatementGeneratorOutput\", \"type\": \"object\"}Do not use single quotes in your response but double quotes,properly escaped with a backslash.\n\n--------EXAMPLES-----------\nExample 1\nInput: {\n    \"question\": \"Who was Albert Einstein and what is he best known for?\",\n    \"answer\": \"He was a German-born theoretical physicist, widely acknowledged to be one of the greatest and most influential physicists of all time. He was best known for developing the theory of relativity, he also made important contributions to the development of the theory of quantum mechanics.\"\n}\nOutput: {\n    \"statements\": [\n        \"Albert Einstein was a German-born theoretical physicist.\",\n        \"Albert Einstein is recognized as one of the greatest and most influential physicists of all time.\",\n        \"Albert Einstein was best known for developing the theory of relativity.\",\n        \"Albert Einstein made important contributions to the development of the theory of quantum mechanics.\"\n    ]\n}\n-----------------------------\n\nNow perform the same with the following input\ninput: {\n    \"question\": \"Có được sửa commerce.inventory để ghi nhận điều chỉnh vật lý sau kiểm kê không?\",\n    \"answer\": \"Không được sửa `commerce.inventory` để ghi nhận điều chỉnh vật lý sau kiểm kê [S1].\\n\\nCụ thể:\\n- Hệ thống `commerce.inventory` không có các trường về vị trí, ô kho, người đếm, phiên kiểm kê hoặc mã điều chỉnh, do đó việc thực hiện kiểm kê thuộc về hệ thống tồn nghiệp vụ [S1].\\n- `commerce.inventory` là bảng snapshot lịch sử và không có sổ điều chỉnh, đồng thời quy định không được ghi sửa tại đây [S2].\\n- Chính sách yêu cầu không cập nhật snapshot lịch sử để thể hiện điều chỉnh vật lý [S5].\"\n}\nOutput: ",
+  "schema": {
+    "description": "Structured output for statement generation.",
+    "properties": {
+      "statements": {
+        "description": "The generated statements from the answer",
+        "items": {
+          "type": "string"
+        },
+        "title": "Statements",
+        "type": "array"
+      }
+    },
+    "required": [
+      "statements"
+    ],
+    "title": "StatementGeneratorOutput",
+    "type": "object"
+  },
+  "response": {
+    "statements": [
+      "Không được sửa commerce.inventory để ghi nhận điều chỉnh vật lý sau kiểm kê.",
+      "Hệ thống commerce.inventory không có trường về vị trí.",
+      "Hệ thống commerce.inventory không có trường về ô kho.",
+      "Hệ thống commerce.inventory không có trường về người đếm.",
+      "Hệ thống commerce.inventory không có trường về phiên kiểm kê.",
+      "Hệ thống commerce.inventory không có trường về mã điều chỉnh.",
+      "Hoạt động kiểm kê thuộc về hệ thống tồn nghiệp vụ.",
+      "commerce.inventory là bảng snapshot lịch sử.",
+      "commerce.inventory không có sổ điều chỉnh.",
+      "Quy định không cho phép ghi sửa vào bảng commerce.inventory.",
+      "Chính sách yêu cầu không cập nhật snapshot lịch sử để thể hiện điều chỉnh vật lý."
+    ]
+  }
+}

@@ -1,0 +1,3021 @@
+{
+  "created_at_utc": "2026-09-28T21:48:36.613963+00:00",
+  "dataset_id": "vinamilk-ocr-cross-layout-vietnamese-financial-scans-v9",
+  "dataset_sha256": "1847715fa9c18e2410e3e728e0e15c89bfc861a02a1c71d0d0839cf6af300e1b",
+  "reference_quality": "mixed_human_visual_review_and_text_layer_assisted_transcription",
+  "reference_method": "V8 crops and scan page were manually transcribed and visually checked from source renders. The 2011 income statement was manually transcribed, visually reviewed and key figures cross-checked against the issuer annual report. The two 2011 balance sheets were transcribed with PDF text-layer assistance and visually checked.",
+  "protocol": "Copy each selected region from its source PDF page, rasterize it at 216 DPI to remove any embedded OCR text layer, then run the existing DocumentProcessor PDF upload path (PyMuPDF/Tesseract fallback) with separate page-text and numeric-table render scales. Score manually transcribed text and reviewed financial row/value anchors.",
+  "limitations": "Production-parser OCR path only. This supplemental set contains three pages from one third-party Vietnamese scan packet and manually reviewed financial anchors; it is diagnostic, not representative model-selection evidence or safe automatic financial publication. It scores label/value association but has no separately annotated cell coordinates or paired OCR-engine comparison. Throughput includes parser/OCR invocation but excludes application embedding and database persistence.",
+  "render_dpi": 108.0,
+  "ocr_render_scale": 1.5,
+  "table_ocr_render_dpi": 180.0,
+  "ocr_table_render_scale": 2.5,
+  "tesseract_page_segmentation_mode": 11,
+  "tesseract_table_segmentation_mode": 3,
+  "tesseract_language": "vie+eng",
+  "software": {
+    "python": "3.11.16",
+    "pymupdf": "1.27.2.3",
+    "tesseract": "tesseract 5.5.3"
+  },
+  "process_memory": {
+    "process_peak_rss_mb": 167.199,
+    "child_peak_rss_mb": 167.199
+  },
+  "aggregate": {
+    "ocr_pages": 14,
+    "text_scored_pages": 14,
+    "micro_cer": 0.120957,
+    "micro_wer": 0.245435,
+    "mean_latency_seconds": 1.835,
+    "mean_pages_per_minute": 47.413
+  },
+  "results": [
+    {
+      "id": "annual-2024-financial-infographic-vi",
+      "document_id": "VNM-AR-2024-VI",
+      "source_page_number": 12,
+      "language": "vi",
+      "layout_type": null,
+      "physical_scan": false,
+      "source_pdf_sha256": "4c756bba77e39d192515f377caafa4f7105234b2c943eb164d0a0987ecedfc55",
+      "cropped_pdf_sha256": "bf0731cc6d10c0077d7b5c79ddf6afcb3fded027b53dac5074aea9c728bc4de0",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 11,
+      "tesseract_table_segmentation_mode": 3,
+      "ocr_render_scale": 1.5,
+      "ocr_table_render_scale": 2.5,
+      "ocr_used": true,
+      "chunk_count": 1,
+      "table_count": 0,
+      "extracted_tables": [],
+      "table_anchor_score": null,
+      "text_reference_scored": true,
+      "reference_characters": 201,
+      "reference_words": 49,
+      "hypothesis_characters": 162,
+      "character_edit_distance": 54,
+      "word_edit_distance": 28,
+      "cer": 0.268657,
+      "wer": 0.571429,
+      "latency_seconds": 0.597,
+      "pages_per_minute": 100.568,
+      "extracted_text": "Tổng doanh thu hop nhat năm 2024 61.824.. Lợi nhuận sau thué hop nhat năm 2024 Tổng tai san tại ngăy 3112.2024 99.049._ Tong võn chủ sở hữu tại ngay 3112.2024 30174"
+    },
+    {
+      "id": "sustainability-2024-ceo-bullets-en",
+      "document_id": "VNM-SR-2024-EN",
+      "source_page_number": 3,
+      "language": "en",
+      "layout_type": null,
+      "physical_scan": false,
+      "source_pdf_sha256": "018ba885f223c3d766a44d3d7aeb3536098ad33a6751d1a492d60271b30af8de",
+      "cropped_pdf_sha256": "a90251af2dc8608ca79556cd6bdae98c4247f4b5c4fce16683af229fe6f7c445",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 11,
+      "tesseract_table_segmentation_mode": 3,
+      "ocr_render_scale": 1.5,
+      "ocr_table_render_scale": 2.5,
+      "ocr_used": true,
+      "chunk_count": 1,
+      "table_count": 0,
+      "extracted_tables": [],
+      "table_anchor_score": null,
+      "text_reference_scored": true,
+      "reference_characters": 641,
+      "reference_words": 92,
+      "hypothesis_characters": 627,
+      "character_edit_distance": 16,
+      "word_edit_distance": 17,
+      "cer": 0.024961,
+      "wer": 0.184783,
+      "latency_seconds": 0.732,
+      "pages_per_minute": 81.919,
+      "extracted_text": "This transformatlon goes beyond innovatin. It reflects our determination to take greater strides, enhance transparency, and drive sustainabiity, as evidenced by tangible results: . Three units (two factories and one farm) have achieved Carbon Neutralty Certificates according to PAS 2060 standards, making significant progress towards the Net Zero 2050 goal. Vinamiks corporate ESG data system enables transparent, real-time sustainabilty governance. 100% of Vinamiks factories and farms now implementa greenhouse gas emissionsinventory. Since 2013, all Vinamik factories have adhered o energy management systems ín ne with ISO '50001 standards."
+    },
+    {
+      "id": "annual-2020-product-poster-vi",
+      "document_id": "VNM-AR-2020-VI",
+      "source_page_number": 22,
+      "language": "vi",
+      "layout_type": null,
+      "physical_scan": false,
+      "source_pdf_sha256": "0abbd2bb78b4be637107b1975014a118c7eda9d79ebe4634d612337910b25f00",
+      "cropped_pdf_sha256": "90cfc087db5a8b827cb16b3b65401caa5fb4d6e5d92bc1132b6ceb31e6e4417a",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 11,
+      "tesseract_table_segmentation_mode": 3,
+      "ocr_render_scale": 1.5,
+      "ocr_table_render_scale": 2.5,
+      "ocr_used": true,
+      "chunk_count": 1,
+      "table_count": 0,
+      "extracted_tables": [],
+      "table_anchor_score": null,
+      "text_reference_scored": true,
+      "reference_characters": 160,
+      "reference_words": 32,
+      "hypothesis_characters": 91,
+      "character_edit_distance": 106,
+      "word_edit_distance": 29,
+      "cer": 0.6625,
+      "wer": 0.90625,
+      "latency_seconds": 1.076,
+      "pages_per_minute": 55.737,
+      "extracted_text": "DINH DƯƠNG, VANE N\\ Y 2 S, 100 GÁP 29 SỮA T ỞA TƯỞI TIỆT T RÙNG ƠI Wi ÍT ĐƯỒNG' i e o ì . - o d Ầít &"
+    },
+    {
+      "id": "charter-2026-introduction-scan-en",
+      "document_id": "VNM-CHARTER-2026-EN",
+      "source_page_number": 4,
+      "language": "en",
+      "layout_type": null,
+      "physical_scan": true,
+      "source_pdf_sha256": "2c49760156a72204756004be0b8fd1c8dc10e2ecd88abea78ea3fefbf0bf040f",
+      "cropped_pdf_sha256": "034b9f000a30eabef5848f6ea06417792b6a0abffaab9c607c1a3bdb7429516e",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 11,
+      "tesseract_table_segmentation_mode": 3,
+      "ocr_render_scale": 1.5,
+      "ocr_table_render_scale": 2.5,
+      "ocr_used": true,
+      "chunk_count": 1,
+      "table_count": 0,
+      "extracted_tables": [],
+      "table_anchor_score": null,
+      "text_reference_scored": true,
+      "reference_characters": 453,
+      "reference_words": 71,
+      "hypothesis_characters": 455,
+      "character_edit_distance": 6,
+      "word_edit_distance": 4,
+      "cer": 0.013245,
+      "wer": 0.056338,
+      "latency_seconds": 0.741,
+      "pages_per_minute": 80.921,
+      "extracted_text": "INTRODUCTION This Charter of Vietnam Dairy Products Joint-Stock Company (“Vinamilk™ or “Company”), a joint stock company incorporated and operating under the Law on Enterprises, is the legal basis for the corporate governance, management, business, investment operations and otherwise of the Company. This Charter was approved by the Resolution No.: 01/NQ-CTS.DHDCD/2026 of the General Mezting of Shareholders on 22™ April 2026 (hereinafter referred to as “the Charter”)."
+    },
+    {
+      "id": "governance-rules-2026-table-of-contents-scan-en",
+      "document_id": "VNM-CGRULES-2026-EN",
+      "source_page_number": 4,
+      "language": "en",
+      "layout_type": null,
+      "physical_scan": true,
+      "source_pdf_sha256": "74e12eb76f9a0b1fbee4e6c90c929c30263abad4c1e9fc48ccbcb44b84cca558",
+      "cropped_pdf_sha256": "c8ff512acc6d4764fbf0fef797231efca4dffb8c0ab544818df5767c260b7ccc",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 11,
+      "tesseract_table_segmentation_mode": 3,
+      "ocr_render_scale": 1.5,
+      "ocr_table_render_scale": 2.5,
+      "ocr_used": true,
+      "chunk_count": 2,
+      "table_count": 0,
+      "extracted_tables": [],
+      "table_anchor_score": null,
+      "text_reference_scored": true,
+      "reference_characters": 1570,
+      "reference_words": 270,
+      "hypothesis_characters": 1513,
+      "character_edit_distance": 74,
+      "word_edit_distance": 55,
+      "cer": 0.047134,
+      "wer": 0.203704,
+      "latency_seconds": 1.639,
+      "pages_per_minute": 36.599,
+      "extracted_text": "118. Minutes of the Board meetin; 29 119. Notification of the Resolutioi CHAPTER IV. 30 AUDIT COMMITTEE. Article 12. Rights and duties of the Audit Committee... 30 Article 13. Candidacy and nomination of members of the Audit Committee. 13.1 Term of the Audit Committee. 31 132 Number and structure of the Audit Committee... 31 133 Audit Committee member criteria. 31 13.4. Candidacy and nomination of the Audit Committee member 31 Article 14. Activities of the Audit Committee.. 14.1 Financial Statements 32 142 Intemal Audit Activities. 32 143. Services provided by Independent Auditors... 32 1444 Intemal control and Risk management 33 145 Compliance... CHAPTER V.. 33 'OTHER COMMITTEES OF THE BOARD... 33 Article 15. Other Board Committees..... 33 Article 16. Nomination, candidacy, election, dismissal or removal of members of the Committees 16.1 Term of Committees... 162 'Number and Composition of the Committees 33 16.3 Criteria for Committees under the Board.. 33 164 Method of Candidacy, Nomination and Election of Committee Members.. 34 Article 17.\nRoles and responsibilities of the Committee: 171 Nomination Committee.. 172. Remuneration Committee... 35 173. Strategy Committe... CHAPTER VL. CORPORATE GOVERNANCE OFFICER 36 Article 18. Selection, appointment and removal of the Corporate Governanee Officer. 18.1 Criteria for the Corporate Govemance Officer... 36 18.2 Appointment of the Corporate Govemance Offieer.... 37 183 Cases of removal or dismissal of the Corporate Governance Officer. 37 18.4. 37 Notification of appointment and removal of the Corporate Govemance Officer"
+    },
+    {
+      "id": "annual-2024-balance-sheet-table-vi",
+      "document_id": "VNM-AR-2024-VI",
+      "source_page_number": 91,
+      "language": "vi",
+      "layout_type": "financial_table",
+      "physical_scan": false,
+      "source_pdf_sha256": "4c756bba77e39d192515f377caafa4f7105234b2c943eb164d0a0987ecedfc55",
+      "cropped_pdf_sha256": "280def98a26607ecfbf3483af690375d9b364f83d2516cde123e9c4a909be846",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 11,
+      "tesseract_table_segmentation_mode": 3,
+      "ocr_render_scale": 1.5,
+      "ocr_table_render_scale": 2.5,
+      "ocr_used": true,
+      "chunk_count": 1,
+      "table_count": 0,
+      "extracted_tables": [],
+      "table_anchor_score": {
+        "expected_headers": [],
+        "extracted_headers": [],
+        "comparison": {
+          "labels": "accent-folded character similarity; matched at >= 0.6",
+          "headers": "digits-only period comparison",
+          "numeric_cells": "sign and digit sequence; punctuation ignored"
+        },
+        "exact_header_matches": 0,
+        "expected_anchor_rows": 16,
+        "matched_anchor_rows": 0,
+        "anchor_row_recall": 0.0,
+        "exact_numeric_cells": 0,
+        "total_numeric_cells": 32,
+        "exact_numeric_cell_accuracy": 0.0,
+        "matched_cell_locations": 0,
+        "annotated_cell_locations": 0,
+        "cell_location_recall": null,
+        "cell_location_comparison": "PDF-point bounding-box IoU >= 0.3",
+        "row_matches": [
+          {
+            "expected_label": "Tài sản ngắn hạn",
+            "extracted_label": null,
+            "label_similarity": 0.0,
+            "matched": false,
+            "expected_values": [
+              "37.501.520",
+              "35.931.145"
+            ],
+            "extracted_values": [],
+            "exact_value_matches": [],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Tiền và các khoản tương đương tiền",
+            "extracted_label": null,
+            "label_similarity": 0.0,
+            "matched": false,
+            "expected_values": [
+              "2.225.944",
+              "2.912.027"
+            ],
+            "extracted_values": [],
+            "exact_value_matches": [],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Các khoản đầu tư khác",
+            "extracted_label": null,
+            "label_similarity": 0.0,
+            "matched": false,
+            "expected_values": [
+              "23.260.089",
+              "20.137.243"
+            ],
+            "extracted_values": [],
+            "exact_value_matches": [],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Phải thu khách hàng và phải thu khác",
+            "extracted_label": null,
+            "label_similarity": 0.0,
+            "matched": false,
+            "expected_values": [
+              "6.380.777",
+              "6.799.642"
+            ],
+            "extracted_values": [],
+            "exact_value_matches": [],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Hàng tồn kho",
+            "extracted_label": null,
+            "label_similarity": 0.0,
+            "matched": false,
+            "expected_values": [
+              "5.634.710",
+              "6.082.233"
+            ],
+            "extracted_values": [],
+            "exact_value_matches": [],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Tài sản dài hạn",
+            "extracted_label": null,
+            "label_similarity": 0.0,
+            "matched": false,
+            "expected_values": [
+              "19.491.725",
+              "18.301.346"
+            ],
+            "extracted_values": [],
+            "exact_value_matches": [],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Các khoản đầu tư khác",
+            "extracted_label": null,
+            "label_similarity": 0.0,
+            "matched": false,
+            "expected_values": [
+              "750.966",
+              "228.636"
+            ],
+            "extracted_values": [],
+            "exact_value_matches": [],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Phải thu khách hàng và phải thu khác",
+            "extracted_label": null,
+            "label_similarity": 0.0,
+            "matched": false,
+            "expected_values": [
+              "368.084",
+              "437.546"
+            ],
+            "extracted_values": [],
+            "exact_value_matches": [],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Quyền sử dụng tài sản",
+            "extracted_label": null,
+            "label_similarity": 0.0,
+            "matched": false,
+            "expected_values": [
+              "1.158.883",
+              "979.312"
+            ],
+            "extracted_values": [],
+            "exact_value_matches": [],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Nhà xưởng, máy móc và thiết bị",
+            "extracted_label": null,
+            "label_similarity": 0.0,
+            "matched": false,
+            "expected_values": [
+              "11.852.774",
+              "11.514.220"
+            ],
+            "extracted_values": [],
+            "exact_value_matches": [],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Tài sản sinh học",
+            "extracted_label": null,
+            "label_similarity": 0.0,
+            "matched": false,
+            "expected_values": [
+              "1.488.268",
+              "1.383.074"
+            ],
+            "extracted_values": [],
+            "exact_value_matches": [],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Tài sản vô hình và lợi thế thương mại",
+            "extracted_label": null,
+            "label_similarity": 0.0,
+            "matched": false,
+            "expected_values": [
+              "3.106.730",
+              "3.087.920"
+            ],
+            "extracted_values": [],
+            "exact_value_matches": [],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Bất động sản đầu tư",
+            "extracted_label": null,
+            "label_similarity": 0.0,
+            "matched": false,
+            "expected_values": [
+              "53.618",
+              "55.594"
+            ],
+            "extracted_values": [],
+            "exact_value_matches": [],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Đầu tư vốn được hạch toán theo phương pháp vốn chủ sở hữu",
+            "extracted_label": null,
+            "label_similarity": 0.0,
+            "matched": false,
+            "expected_values": [
+              "622.224",
+              "602.591"
+            ],
+            "extracted_values": [],
+            "exact_value_matches": [],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Tài sản thuế thu nhập hoãn lại",
+            "extracted_label": null,
+            "label_similarity": 0.0,
+            "matched": false,
+            "expected_values": [
+              "90.178",
+              "12.453"
+            ],
+            "extracted_values": [],
+            "exact_value_matches": [],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Tổng tài sản",
+            "extracted_label": null,
+            "label_similarity": 0.0,
+            "matched": false,
+            "expected_values": [
+              "56.993.245",
+              "54.232.491"
+            ],
+            "extracted_values": [],
+            "exact_value_matches": [],
+            "cell_location_matches": {}
+          }
+        ]
+      },
+      "text_reference_scored": true,
+      "reference_characters": 773,
+      "reference_words": 192,
+      "hypothesis_characters": 751,
+      "character_edit_distance": 146,
+      "word_edit_distance": 70,
+      "cer": 0.188875,
+      "wer": 0.364583,
+      "latency_seconds": 0.852,
+      "pages_per_minute": 70.385,
+      "extracted_text": "31/12/2024 31/12/2023 Triệu VND Triệu VND Tài sản ngắn hạn 37.501.520 35.931145 Tiền và các khoản tương đương tiền 2225944 2.912.027 23.260.089 20137.243 Các khoản đầu tu khác Phải thu khách hàng và phải thu khac 63807777 6.799.642 Hàng tồn kho 5.634710 6.082.233 Tài sản dài hạn 19.491725 18.301.346 Các khoản đầu tu khác 750.966 228.636 368.084 437546 Phải thu khách hàng và phải thu khác 'Quyền sử dụng tài sản 1158.883 979312 Nha xưởng, máy móc va thiết bị 11852774 11514220 Tài sản sinh học 1488.268 1383.074 Tài sản vô hinh và lợi thế thương mai 3106730 3.087.920 Bất động sản đầu tư 53618 55.594 Đầu tư vốn được hạch toán theo 622224 6025591 phương pháp vốn chủ sở hữu Tài sản thuế thu nhập hoãn lai 90178 12.453 Tổng taisan 56.993.245 54.232.491"
+    },
+    {
+      "id": "charter-2026-board-duties-toc-scan-en",
+      "document_id": "VNM-CHARTER-2026-EN",
+      "source_page_number": 3,
+      "language": "en",
+      "layout_type": null,
+      "physical_scan": true,
+      "source_pdf_sha256": "2c49760156a72204756004be0b8fd1c8dc10e2ecd88abea78ea3fefbf0bf040f",
+      "cropped_pdf_sha256": "bb6411154f9a23e8bfcd628975b128a97f3b0930fbff10219930b94e13fc3e02",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 11,
+      "tesseract_table_segmentation_mode": 3,
+      "ocr_render_scale": 1.5,
+      "ocr_table_render_scale": 2.5,
+      "ocr_used": true,
+      "chunk_count": 1,
+      "table_count": 0,
+      "extracted_tables": [],
+      "table_anchor_score": null,
+      "text_reference_scored": true,
+      "reference_characters": 592,
+      "reference_words": 99,
+      "hypothesis_characters": 585,
+      "character_edit_distance": 23,
+      "word_edit_distance": 11,
+      "cer": 0.038851,
+      "wer": 0.111111,
+      "latency_seconds": 0.932,
+      "pages_per_minute": 64.358,
+      "extracted_text": "x DUTIES OF MEMBERS OF THE BOARD OF DIRECTORS, THE GENERAL DIRECTOR AND THE EXECUTIVE DIRECTORS... 34 34 Article 31. Responsibility to be prudent... 34 Article 32. Responsibility to be honest and avoid conflicts of interest.. Article 3. Responsibility for loss and compensation . 35 x RIGHT TO INVESTIGATE BOOKS AND RECORDS OF THE COMPANY. 36 36 Article 34. Right to investigate books and records... XL EMPLOYEES AND THE TRADE UMION. 37 Article 35. Employees and the Trade Union 37 xu. PROFIT DISTRIBUTION... 37 Article 36. Profit distribution.. 37 XIIL. BANK ACCOUNTS, RESERVE FUND, AL YEAR AND ACCOUNTING SYSTEM.. 38"
+    },
+    {
+      "id": "charter-2026-definitions-scan-en",
+      "document_id": "VNM-CHARTER-2026-EN",
+      "source_page_number": 5,
+      "language": "en",
+      "layout_type": null,
+      "physical_scan": true,
+      "source_pdf_sha256": "2c49760156a72204756004be0b8fd1c8dc10e2ecd88abea78ea3fefbf0bf040f",
+      "cropped_pdf_sha256": "1f26de9cc276eb22bec184ca058e7ae73cf9f5b00d1c8e046b6213bdf579fed1",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 11,
+      "tesseract_table_segmentation_mode": 3,
+      "ocr_render_scale": 1.5,
+      "ocr_table_render_scale": 2.5,
+      "ocr_used": true,
+      "chunk_count": 1,
+      "table_count": 0,
+      "extracted_tables": [],
+      "table_anchor_score": null,
+      "text_reference_scored": true,
+      "reference_characters": 901,
+      "reference_words": 159,
+      "hypothesis_characters": 890,
+      "character_edit_distance": 39,
+      "word_edit_distance": 20,
+      "cer": 0.043285,
+      "wer": 0.125786,
+      "latency_seconds": 2.332,
+      "pages_per_minute": 25.733,
+      "extracted_text": "o DEFINILIVN U 1550 LIV ä NH G N N NH Article 1. Interpretation of terms 1 In the Charter, the following terms shall be construed as follows: a “The Company” defined in this Charter shall be “CÔNG TY CO PHAN SỮA VIỆT NAM e English name of the company shall be: VIETNAM DAIRY PRODUCTS JOINT-STOCK COMPANY; and abbreviated as VINAMILK. “Area of Business\" means the geographic scope in which the production and business operations of the Company shall be carried out, including areas within and outside the territory of Vietnam. “Charter Capitaf` means the total aggregate par value of outstanding shares of the 'Company and as mentioned in Article 6 of this Charter. “The Law on Enterprises” means the Law on Enterprises No. 59/2020/QH14 passed by the National Assembly of Socialist Republic of Vietnam on June 17®, 2020 taking effect as from January 1%, 2021, and as may be amended and supplemented from time to time."
+    },
+    {
+      "id": "governance-rules-2026-board-meeting-toc-scan-en",
+      "document_id": "VNM-CGRULES-2026-EN",
+      "source_page_number": 3,
+      "language": "en",
+      "layout_type": null,
+      "physical_scan": true,
+      "source_pdf_sha256": "74e12eb76f9a0b1fbee4e6c90c929c30263abad4c1e9fc48ccbcb44b84cca558",
+      "cropped_pdf_sha256": "24b60b77bcc9936fbbc32036063f0d1dc6a1fa40460db98cd156be7a7c584a08",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 11,
+      "tesseract_table_segmentation_mode": 3,
+      "ocr_render_scale": 1.5,
+      "ocr_table_render_scale": 2.5,
+      "ocr_used": true,
+      "chunk_count": 2,
+      "table_count": 0,
+      "extracted_tables": [],
+      "table_anchor_score": null,
+      "text_reference_scored": true,
+      "reference_characters": 1174,
+      "reference_words": 211,
+      "hypothesis_characters": 1153,
+      "character_edit_distance": 28,
+      "word_edit_distance": 27,
+      "cer": 0.02385,
+      "wer": 0.127962,
+      "latency_seconds": 1.377,
+      "pages_per_minute": 43.559,
+      "extracted_text": "BOARD OF DIRECTORS.. 21 Article 8. Roles, rights and duties of the Board, and Responsibilities of Board Members ... 21 Article 9. Nomination, candidacy, election, dismissal or removal of members of the Board. . 2 9.1 Term and number of the Board members.... 22 9.2. Structure, criteria and conditions for the Board members. 2 93 Nomination and candidacy for the Board members . 23 94. Method of Introducing Candidates for the Board members.. 24 9.5 Disclosure of information on candidates for the Board members.... 24 9.6. Method of electing the Board Member... 25 9.7. Removal, Dismissal and additional of the Board membe 25 9.8. Announcement on the election, removal or dismissal Board members 26 9.9. Election, dismissal or removal of the Chairperson of the Board... 26 Article 10. Remuneration and other benefits of the Board members... 26 Artick 11. Order and procedures for organizing the Board meeting 27 111 Number of Meetings.. 27 112 27 Cases requiring Extraordinary the Board meetingÁ 13 Notice of the Board mesting.... 2 114 Conditions for conducting the Board meeting....\n27 11 Voting method.... 28 116. Conditions for adoption the Board Resolution . 28 117 Authorization for attendance at the Board meeting."
+    },
+    {
+      "id": "governance-rules-2026-ceo-toc-scan-en",
+      "document_id": "VNM-CGRULES-2026-EN",
+      "source_page_number": 5,
+      "language": "en",
+      "layout_type": null,
+      "physical_scan": true,
+      "source_pdf_sha256": "74e12eb76f9a0b1fbee4e6c90c929c30263abad4c1e9fc48ccbcb44b84cca558",
+      "cropped_pdf_sha256": "5ff70fda4b20bc09790f576cd020b3f8274d9bdcfa68d0a469f4a6b269ca07bf",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 11,
+      "tesseract_table_segmentation_mode": 3,
+      "ocr_render_scale": 1.5,
+      "ocr_table_render_scale": 2.5,
+      "ocr_used": true,
+      "chunk_count": 2,
+      "table_count": 0,
+      "extracted_tables": [],
+      "table_anchor_score": null,
+      "text_reference_scored": true,
+      "reference_characters": 1515,
+      "reference_words": 263,
+      "hypothesis_characters": 1496,
+      "character_edit_distance": 39,
+      "word_edit_distance": 31,
+      "cer": 0.025743,
+      "wer": 0.117871,
+      "latency_seconds": 2.145,
+      "pages_per_minute": 27.971,
+      "extracted_text": "18.5 Rights and Duties of the Corporate Governance Officer. 38 CHAPTER VH.... 38 CHIEF EXECUTIVE DIRECTOR.. 38 Article 19, Roles, responsibilities, rights and obligations of the CEO 38 Article 20. Appointment, Removal, Contract Execution and Termination of the CEO ... 39 20.1 Temm, Criteria and Conditions of the CEO. 39 20.2 Nomination, Removal and Dismissal of the CEO. 39 203. Appointment and Execution of the Labor Contract with the CEO. 40 20.4. Termination of the Labor Contract with the CEO. 40 20.5. Notification of Appointment, Removal, Contract Execution and Termination of the CEO 40 CHAPTER VII 40 OTHER ACTIVITIES..... 40 Article 21. Coordination between the Board and the CEO. 40 21.1 Mecting Procedures and Agenda between the Board and the CEO 40 212 Notification of Resolutions and Decisions of the Board to the CEO .. 40 213 Cases in which the CEO requests the cnnv:nmg otBoard me…ụs or seeks the Board's opinions 40 214. Report of the CEO to the Board on the perromnoe 9f assigned duties and authoritie 41 215.\n41 UUpdate on the implementation of Resolutions and other delegated matters. 21.6. Matters subject o ieporting, information provision and notification to the Board. 41 21.7. Coordination in control, management and oversight between the Board and the CEO. 41 Article 22. Annual evaluation, rewards and disciplinary actions applicable to Board members, the CEO and Executive Directors. 42 22.1 Performance evaluation. 42 222 Rewards. 43 223 Disciplinary actions 43 CHAPTER IX.. ¬ 44 EFFECTIVENESS 44 Article 23. Effectivene: .44"
+    },
+    {
+      "id": "governance-rules-2026-general-provisions-scan-en",
+      "document_id": "VNM-CGRULES-2026-EN",
+      "source_page_number": 7,
+      "language": "en",
+      "layout_type": "prose_and_headings",
+      "physical_scan": true,
+      "source_pdf_sha256": "74e12eb76f9a0b1fbee4e6c90c929c30263abad4c1e9fc48ccbcb44b84cca558",
+      "cropped_pdf_sha256": "f2d062d73776ec1a1e05be2158ecfc78af20e9c4eceaa74c5495c5b0ed8d11aa",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 11,
+      "tesseract_table_segmentation_mode": 3,
+      "ocr_render_scale": 1.5,
+      "ocr_table_render_scale": 2.5,
+      "ocr_used": true,
+      "chunk_count": 3,
+      "table_count": 0,
+      "extracted_tables": [],
+      "table_anchor_score": null,
+      "text_reference_scored": true,
+      "reference_characters": 2091,
+      "reference_words": 320,
+      "hypothesis_characters": 2074,
+      "character_edit_distance": 23,
+      "word_edit_distance": 17,
+      "cer": 0.011,
+      "wer": 0.053125,
+      "latency_seconds": 2.295,
+      "pages_per_minute": 26.148,
+      "extracted_text": "CHAPTERI GENERAL PROVISIONS Article 1. Scope of regulation and subjects of application 1.1. Seope of Regulation - This intemal corporate govemance regulation (\"Regultion”) sets out the prineiples, mechanisms and procedures of corporate govemance aimed at protecting the lawful rights and interests of shareholders, and ensuring that corporate govenance is conducted in a transparent, effective manner and in compliance with applicable laws. This Regulation serves as a basis for shareholders and relevant stakeholders to assess the Company’s corporate governance practices. This Regulation applies to: Board members, the Chief Executive Director (\"CEO”), Executive Directors, the Company Secretary, the Corporate Governance Officer, and other relevant individuals and departments. This Regulation governs matters relating to: a. Roles, rights and obligations of the General Meeting of Shareholders (“the GMS”), the Board, the CEO and Committees under the Board; b.\nProcedures and formalities for meetings of the GMS and meetings of the Board; c Nomination, candidacy, election, removal and dismissal of Board members, the CEO and members of Committees; Coordination of activities between the Board and the CEO; Provisions relating to annual evaluation, rewards and disciplinary actions applicable to Board members, the CEO and Executive Directors; and Other activities as provided for in the Charter and other applicable provisions of law. 12. Subjects of application This Regulation shall apply to Board members, the CEO, Executive Directors, the Company Secretary, the Corporate Govemance Officer, and other relevant individuals and departments, Article 2. Explanation of terms Unless otherwise provided by the context, terms defined in the Company’s Charter shall have the same meanings when used in this Regulation. CHAPTER I GENERAL MEETING OF SHAREHOLDER Article 3. Roles, rights and obligations of the GMS a) The GMS is the highest decision-making authority of the Company, comprising all shareholders with voting rights.\nThe rights and obligations of the GMS are specifically provided for in Article 12 of the Company’s Charter."
+    },
+    {
+      "id": "income-statement-scan-2011-vi",
+      "document_id": "VNM-FS-2011-VI-SCAN-DIAGNOSTIC",
+      "source_page_number": 10,
+      "language": "vi",
+      "layout_type": "financial_table",
+      "physical_scan": true,
+      "source_pdf_sha256": "80f38fbb18f729fab611ed84f699d06cde76fb2ab18f89dd953d2e589f39f0bc",
+      "cropped_pdf_sha256": "6de4ebc94cae8d93a482acd9f52959269f19c2d5b17a3de5f02e5f9a60c8a611",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 11,
+      "tesseract_table_segmentation_mode": 3,
+      "ocr_render_scale": 1.5,
+      "ocr_table_render_scale": 2.5,
+      "ocr_used": true,
+      "chunk_count": 3,
+      "table_count": 1,
+      "extracted_tables": [
+        {
+          "page_number": 1,
+          "table_index": 0,
+          "columns": [
+            "label",
+            "31/12/2011",
+            "31/12/2010"
+          ],
+          "rows": [
+            {
+              "label": "Doanh thu bán hàng và cung cép dich vy",
+              "31/12/2011": "22.070.557.490.766",
+              "31/12/2010": "16.081.466.183.586"
+            },
+            {
+              "label": "Các khoản giảm trừ doanh thu",
+              "31/12/2011": "(443.128.597.657)",
+              "31/12/2010": "(328.600.184.161)"
+            },
+            {
+              "label": "Doanh thu thuần về bán hàng và cung cấp dịchvụ . 23(a)",
+              "31/12/2011": "21.627.428.893.109",
+              "31/12/2010": "15.752.865.999.425"
+            },
+            {
+              "label": "Giá vốn hàng bán",
+              "31/12/2011": "(15.039.305.378.364)",
+              "31/12/2010": "(10.579.208.129.197)"
+            },
+            {
+              "label": "Lợi nhuận gộp về bán hàng và cung cấp dịch vy",
+              "31/12/2011": "6.588.123.514.745",
+              "31/12/2010": "5.173.657.870.228"
+            },
+            {
+              "label": "Doanh thu hoạt động tai chính 23(b)",
+              "31/12/2011": "680.232.453.133",
+              "31/12/2010": "448.530.127.237"
+            },
+            {
+              "label": "Chi phí tài chính",
+              "31/12/2011": "(246.429.909.362)",
+              "31/12/2010": "(153.198.613.988)"
+            },
+            {
+              "label": "Chi phí bán hàng",
+              "31/12/2011": "(1.811.914.247.629)",
+              "31/12/2010": "(1.438.185.805.872)"
+            },
+            {
+              "label": "Chi phí quản ly doanh nghiệp",
+              "31/12/2011": "(459.431.997.199)",
+              "31/12/2010": "(388.147.124.772)"
+            },
+            {
+              "label": "Lợi nhuận từ hoạt động kinh doanh",
+              "31/12/2011": "4.750.579.813.688",
+              "31/12/2010": "3.642.656.452.833"
+            },
+            {
+              "label": "Thu nhập khác số thuần",
+              "31/12/2011": "237.226.032.153",
+              "31/12/2010": "608.785.500.303"
+            },
+            {
+              "label": "Phần I8 trong liên doanh, liên kết",
+              "31/12/2011": "(8.813.950.770)",
+              "31/12/2010": "(234.529.528)"
+            },
+            {
+              "label": "Tổng lợi nhuận kế toán trước thuế",
+              "31/12/2011": "4.978.991.895.071",
+              "31/12/2010": "4.251.207.423.608"
+            },
+            {
+              "label": "Chi phí thuế thu nhập doanh nghiép hiện hành",
+              "31/12/2011": "(778.588.561.106)",
+              "31/12/2010": "(645.058.588.114)"
+            },
+            {
+              "label": "Chi phí thuế thu nhập doanh nghiệp hoãn lại",
+              "31/12/2011": "17.778.374.972",
+              "31/12/2010": "9.344.103.477"
+            },
+            {
+              "label": "Lỗ phân bỏ cho cỏ đông thiểu số",
+              "31/12/2011": "-",
+              "31/12/2010": "693.010.209"
+            },
+            {
+              "label": "Lợi nhuận sau thué thu nhập doanh nghiệp",
+              "31/12/2011": "4.218.181.708.937",
+              "31/12/2010": "3.616.185.949.180"
+            }
+          ],
+          "metadata": {
+            "element_type": "table",
+            "layout_type": "table",
+            "table_extraction_method": "tesseract.tsv_aligned_columns",
+            "table_detection_strategy": "ocr_word_boxes",
+            "ocr": {
+              "engine": "tesseract",
+              "language": "vie+eng",
+              "table_psm": 3,
+              "render_scale": 2.5
+            },
+            "column_alignment": "right",
+            "bbox": [
+              120.75940860215054,
+              152.36376604850216,
+              575.8064516129032,
+              563.8659058487875
+            ],
+            "bbox_coordinate_system": "pdf_points",
+            "row_cell_bboxes": [
+              {
+                "label": [
+                  121.95900537634408,
+                  189.5549215406562,
+                  294.3010752688172,
+                  200.35235378031385
+                ],
+                "31/12/2011": [
+                  395.866935483871,
+                  189.95482643842132,
+                  476.2399193548387,
+                  201.95197337137424
+                ],
+                "31/12/2010": [
+                  494.6337365591398,
+                  191.9543509272468,
+                  573.0073924731182,
+                  199.15263908701854
+                ]
+              },
+              {
+                "label": [
+                  133.55510752688173,
+                  216.34854969091776,
+                  252.71505376344086,
+                  225.9462672372801
+                ],
+                "31/12/2011": [
+                  405.46370967741933,
+                  215.94864479315265,
+                  477.8393817204301,
+                  228.34569662387068
+                ],
+                "31/12/2010": [
+                  503.4307795698925,
+                  217.94816928197815,
+                  575.8064516129032,
+                  226.7460770328103
+                ]
+              },
+              {
+                "label": [
+                  121.55913978494624,
+                  239.5430337612934,
+                  363.0779569892473,
+                  253.53970518307182
+                ],
+                "31/12/2011": [
+                  395.866935483871,
+                  243.54208273894437,
+                  474.64045698924735,
+                  250.74037089871612
+                ],
+                "31/12/2010": [
+                  494.23387096774195,
+                  243.94198763670948,
+                  573.0073924731183,
+                  251.14027579648123
+                ]
+              },
+              {
+                "label": [
+                  121.55913978494624,
+                  266.73656680932004,
+                  195.13440860215053,
+                  277.5339990489777
+                ],
+                "31/12/2011": [
+                  392.6680107526882,
+                  269.5359010936757,
+                  477.43951612903226,
+                  278.33380884450787
+                ],
+                "31/12/2010": [
+                  491.03494623655916,
+                  269.5359010936757,
+                  575.4065860215054,
+                  278.7337137422729
+                ]
+              },
+              {
+                "label": [
+                  121.55913978494624,
+                  293.1302900618165,
+                  324.29099462365593,
+                  303.92772230147415
+                ],
+                "31/12/2011": [
+                  400.6653225806452,
+                  292.33048026628626,
+                  474.64045698924735,
+                  306.32715168806465
+                ],
+                "31/12/2010": [
+                  498.6323924731183,
+                  295.52971944840704,
+                  572.6075268817204,
+                  302.7280076081788
+                ]
+              },
+              {
+                "label": [
+                  133.15524193548387,
+                  320.7237280076082,
+                  362.67809139784947,
+                  329.9215406562055
+                ],
+                "31/12/2011": [
+                  407.4630376344086,
+                  319.5240133143129,
+                  474.6404569892473,
+                  331.9210651450309
+                ],
+                "31/12/2010": [
+                  505.82997311827955,
+                  321.5235378031384,
+                  572.6075268817204,
+                  328.7218259629102
+                ]
+              },
+              {
+                "label": [
+                  132.75537634408602,
+                  333.5206847360913,
+                  196.3340053763441,
+                  342.3185924869235
+                ],
+                "31/12/2011": [
+                  405.0638440860215,
+                  332.72087494056115,
+                  477.43951612903226,
+                  345.11792677127914
+                ],
+                "31/12/2010": [
+                  503.4307795698925,
+                  334.32049453162153,
+                  575.4065860215054,
+                  343.1184022824537
+                ]
+              },
+              {
+                "label": [
+                  132.75537634408602,
+                  346.71754636233953,
+                  199.93279569892474,
+                  355.5154541131717
+                ],
+                "31/12/2011": [
+                  397.46639784946234,
+                  347.51735615786976,
+                  477.0396505376344,
+                  356.3152639087019
+                ],
+                "31/12/2010": [
+                  495.8333333333333,
+                  347.51735615786976,
+                  575.4065860215054,
+                  356.3152639087019
+                ]
+              },
+              {
+                "label": [
+                  132.75537634408602,
+                  359.51450309082264,
+                  247.91666666666669,
+                  369.11222063718503
+                ],
+                "31/12/2011": [
+                  405.0638440860215,
+                  360.31431288635287,
+                  477.03965053763443,
+                  369.5121255349501
+                ],
+                "31/12/2010": [
+                  503.03091397849465,
+                  360.714217784118,
+                  575.0067204301075,
+                  369.51212553495014
+                ]
+              },
+              {
+                "label": [
+                  121.15927419354838,
+                  385.9082263433191,
+                  270.70900537634407,
+                  395.10603899191636
+                ],
+                "31/12/2011": [
+                  399.86559139784947,
+                  386.7080361388493,
+                  474.24059139784947,
+                  393.9063242986211
+                ],
+                "31/12/2010": [
+                  498.6323924731183,
+                  387.10794103661436,
+                  572.2076612903226,
+                  393.90632429862103
+                ]
+              },
+              {
+                "label": [
+                  120.75940860215054,
+                  410.30242510699003,
+                  229.92271505376345,
+                  420.6999524488826
+                ],
+                "31/12/2011": [
+                  407.4630376344086,
+                  412.70185449358064,
+                  474.24059139784947,
+                  419.9001426533524
+                ],
+                "31/12/2010": [
+                  505.82997311827955,
+                  412.70185449358064,
+                  572.2076612903226,
+                  420.3000475511175
+                ]
+              },
+              {
+                "label": [
+                  121.15927419354838,
+                  435.8963385639563,
+                  260.3125,
+                  446.6937708036139
+                ],
+                "31/12/2011": [
+                  414.26075268817203,
+                  438.695672848312,
+                  477.03965053763443,
+                  447.49358059914414
+                ],
+                "31/12/2010": [
+                  520.2251344086021,
+                  439.0955777460771,
+                  575.0067204301075,
+                  447.49358059914414
+                ]
+              },
+              {
+                "label": [
+                  120.75940860215054,
+                  461.89015691868764,
+                  266.31048387096774,
+                  472.2876842605802
+                ],
+                "31/12/2011": [
+                  399.86559139784947,
+                  464.2895863052782,
+                  473.04099462365593,
+                  471.48787446504997
+                ],
+                "31/12/2010": [
+                  497.83266129032256,
+                  464.6894912030433,
+                  572.2076612903226,
+                  471.8877793628151
+                ]
+              },
+              {
+                "label": [
+                  120.75940860215054,
+                  487.48407037565386,
+                  321.8918010752688,
+                  498.2815026153115
+                ],
+                "31/12/2011": [
+                  404.2641129032258,
+                  486.2843556823586,
+                  477.03965053763443,
+                  500.28102710413697
+                ],
+                "31/12/2010": [
+                  502.63104838709677,
+                  490.2834046600095,
+                  575.0067204301075,
+                  499.0813124108417
+                ]
+              },
+              {
+                "label": [
+                  120.75940860215054,
+                  500.28102710413697,
+                  313.494623655914,
+                  511.4783642415597
+                ],
+                "31/12/2011": [
+                  412.66129032258067,
+                  503.0803613884927,
+                  473.84072580645164,
+                  510.27864954826447
+                ],
+                "31/12/2010": [
+                  515.426747311828,
+                  503.0803613884927,
+                  572.2076612903226,
+                  510.27864954826447
+                ]
+              },
+              {
+                "label": [
+                  120.75940860215054,
+                  526.6747503566335,
+                  259.5127688172043,
+                  537.4721825962911
+                ],
+                "31/12/2011": [
+                  471.4415322580645,
+                  532.6733238231099,
+                  473.8407258064516,
+                  533.8730385164051
+                ],
+                "31/12/2010": [
+                  523.0241935483871,
+                  529.074179743224,
+                  571.8077956989247,
+                  536.2724679029958
+                ]
+              },
+              {
+                "label": [
+                  120.75940860215054,
+                  552.6685687113647,
+                  302.69825268817203,
+                  563.8659058487875
+                ],
+                "31/12/2011": [
+                  399.4657258064516,
+                  555.0679980979553,
+                  473.8407258064516,
+                  562.2662862577271
+                ],
+                "31/12/2010": [
+                  497.83266129032256,
+                  555.0679980979553,
+                  571.8077956989247,
+                  562.6661911554921
+                ]
+              }
+            ],
+            "document_id": "VNM-FS-2011-VI-SCAN-DIAGNOSTIC",
+            "filename": "vnm-financial-statements-2011-scan-preview.pdf",
+            "format": "PDF"
+          }
+        }
+      ],
+      "table_anchor_score": {
+        "expected_headers": [
+          "31/12/2011",
+          "31/12/2010"
+        ],
+        "extracted_headers": [
+          "31/12/2011",
+          "31/12/2010"
+        ],
+        "comparison": {
+          "labels": "accent-folded character similarity; matched at >= 0.6",
+          "headers": "digits-only period comparison",
+          "numeric_cells": "sign and digit sequence; punctuation ignored"
+        },
+        "exact_header_matches": 2,
+        "expected_anchor_rows": 7,
+        "matched_anchor_rows": 7,
+        "anchor_row_recall": 1.0,
+        "exact_numeric_cells": 14,
+        "total_numeric_cells": 14,
+        "exact_numeric_cell_accuracy": 1.0,
+        "matched_cell_locations": 0,
+        "annotated_cell_locations": 0,
+        "cell_location_recall": null,
+        "cell_location_comparison": "PDF-point bounding-box IoU >= 0.3",
+        "row_matches": [
+          {
+            "expected_label": "Doanh thu bán hàng và cung cấp dịch vụ",
+            "extracted_label": "Doanh thu bán hàng và cung cép dich vy",
+            "label_similarity": 0.9474,
+            "matched": true,
+            "expected_values": [
+              "22.070.557.490.766",
+              "16.081.466.183.586"
+            ],
+            "extracted_values": [
+              "22.070.557.490.766",
+              "16.081.466.183.586"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Các khoản giảm trừ doanh thu",
+            "extracted_label": "Các khoản giảm trừ doanh thu",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "(443.128.597.657)",
+              "(328.600.184.161)"
+            ],
+            "extracted_values": [
+              "(443.128.597.657)",
+              "(328.600.184.161)"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Lợi nhuận gộp về bán hàng và cung cấp dịch vụ",
+            "extracted_label": "Lợi nhuận gộp về bán hàng và cung cấp dịch vy",
+            "label_similarity": 0.9778,
+            "matched": true,
+            "expected_values": [
+              "6.588.123.514.745",
+              "5.173.657.870.228"
+            ],
+            "extracted_values": [
+              "6.588.123.514.745",
+              "5.173.657.870.228"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Lợi nhuận từ hoạt động kinh doanh",
+            "extracted_label": "Lợi nhuận từ hoạt động kinh doanh",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "4.750.579.813.688",
+              "3.642.656.452.833"
+            ],
+            "extracted_values": [
+              "4.750.579.813.688",
+              "3.642.656.452.833"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Tổng lợi nhuận kế toán trước thuế",
+            "extracted_label": "Tổng lợi nhuận kế toán trước thuế",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "4.978.991.895.071",
+              "4.251.207.423.608"
+            ],
+            "extracted_values": [
+              "4.978.991.895.071",
+              "4.251.207.423.608"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Lỗ phân bổ cho cổ đông thiểu số",
+            "extracted_label": "Lỗ phân bỏ cho cỏ đông thiểu số",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "-",
+              "693.010.209"
+            ],
+            "extracted_values": [
+              "-",
+              "693.010.209"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ],
+            "cell_location_matches": {}
+          },
+          {
+            "expected_label": "Lợi nhuận sau thuế thu nhập doanh nghiệp",
+            "extracted_label": "Lợi nhuận sau thué thu nhập doanh nghiệp",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "4.218.181.708.937",
+              "3.616.185.949.180"
+            ],
+            "extracted_values": [
+              "4.218.181.708.937",
+              "3.616.185.949.180"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ],
+            "cell_location_matches": {}
+          }
+        ]
+      },
+      "text_reference_scored": true,
+      "reference_characters": 1287,
+      "reference_words": 309,
+      "hypothesis_characters": 1806,
+      "character_edit_distance": 571,
+      "word_edit_distance": 180,
+      "cer": 0.443667,
+      "wer": 0.582524,
+      "latency_seconds": 4.16,
+      "pages_per_minute": 14.424,
+      "extracted_text": "CONG TY CÓ PHÀN SỮA VIET NAM Mẫu số B 02 - DN/HN ý BÁO CÁO KET QUA HOẠT ĐỘNG KINH DOANH HỢP NHAT 3 Năm tài chính kết thúc ngày * Mã 31122011 Thuyết 31422010 o số minh VNĐ VNĐ và o1 Doanh thu bán hàng và cung cép dịch vy 22.070.557.490.768 16.081.466.183.586 02 Các khoản giảm trừ doanh thu (443.128.597 657) (328.600.184.161) 10 Doanh thu thuin về bán hàng và cung cấp dich vy 23(a) 21.627.428.893.109 15.752.865.999.425 1 Gi vén hàng bán 2 (15.039.305.378.364) (10.579.208.129.197) 20 Lợi nhuận gộp vé bán hàng và cung cấp dịch vy 6.588.123.514.745 5.173.657.870.228 21 Doanh thu hoạt động tài chinh 23() 680.232.453.133 448.530.127.237 22 Chi phí tai chính 25 (246.429.909.362) (153.198.513.988) 2 Chỉ phí bán hàng (1.811.914247 629) (1.438.185.805.872) 2 Chi phí quản lý doanh nghiệp 27 (459.431.997.199) (388.147.124.772) 30 Lợi nhuận từ hoạt động kinh doanh 4.750.579.813.688 3.642.656.452.833 40 Thu nhập khác - số thuin 28 237.226.032.153 608.785.500.303 a1 Phin lỗ trong liên doanh, liên két (8.813.950.770) (234.529.528) 5 Tổng lợi nhuận ké toán trước thuế 4.978.991.895.071\n1 Phin lỗ trong liên doanh, liên két (8.813.950.770) (234.529.528) 5 Tổng lợi nhuận ké toán trước thuế 4.978.991.895.071 4.251.207.423.608 51 Chi phí thuế thu nhập doanh nghiệp - hiện hanh 29 (778.588.561.106) (645.058.588.114) 52 Chỉ phí thuế thu nhập doanh nghiệp - hoãn lại 29,12 17.778.374.972 9.344.103.477 5 L8 phân b cho c đông thidu số.\n693.010.209 60 Lợi nhuận sau thuế thu nhập doanh nghiệp. 4.218.181.708.937 3.616.185.949.180 o0 s 70 Lãi cơ bản trên cổ phiều (đồng) 30 ÔNg ¥ 834 T Ổ PR (| SỮA VIỆT N, \\& VINAMIL 1 7 / Š ỉ 7 TR G cề /’/ (/ Lê Thành Liêm Ngô Thị Thu Trang Mai Kiều Liên Giam đc Điều hành Tài chính Kế toán trưởng Téng Giám đốc Ngày 28 tháng 2 năm 2012 Các thuyết minh từ trang 11 đền trang 48 là một phản cầu thanh các báo cáo tài chính hợp nhắt này. 8 Tai-Lieu.com"
+    },
+    {
+      "id": "balance-sheet-current-assets-scan-2011-vi",
+      "document_id": "VNM-FS-2011-VI-SCAN-DIAGNOSTIC",
+      "source_page_number": 7,
+      "language": "vi",
+      "layout_type": "financial_table",
+      "physical_scan": true,
+      "source_pdf_sha256": "80f38fbb18f729fab611ed84f699d06cde76fb2ab18f89dd953d2e589f39f0bc",
+      "cropped_pdf_sha256": "ae80ce5a637ebf1f1e20557861cfaad7e4e88325d705603f464da6fc8cf4e27c",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 11,
+      "tesseract_table_segmentation_mode": 3,
+      "ocr_render_scale": 1.5,
+      "ocr_table_render_scale": 2.5,
+      "ocr_used": true,
+      "chunk_count": 4,
+      "table_count": 1,
+      "extracted_tables": [
+        {
+          "page_number": 1,
+          "table_index": 0,
+          "columns": [
+            "label",
+            "2011",
+            "2010"
+          ],
+          "rows": [
+            {
+              "label": "TÀI SẢN NGAN HẠN",
+              "2011": "9.467.682.996.094",
+              "2010": "5.919.802.789.330"
+            },
+            {
+              "label": "Tiền và các khoản tương đương tiền",
+              "2011": "3.156.515.396.990",
+              "2010": "613.472.368.080"
+            },
+            {
+              "label": "Tiền",
+              "2011": "790.515.396.990",
+              "2010": "249.472.368.080"
+            },
+            {
+              "label": "Các khoản tương đương tiền",
+              "2011": "2.366.000.000.000",
+              "2010": "364.000.000.000"
+            },
+            {
+              "label": "Các khoản đầu tư tài chính ngắn hạn",
+              "2011": "736.033.188.192",
+              "2010": "1.742.259.762.292"
+            },
+            {
+              "label": "Đầu tư ngắn hạn",
+              "2011": "815.277.431.792",
+              "2010": "1.812.917.431.792"
+            },
+            {
+              "label": "Dự phòng giảm giá đầu tư ngắn hạn",
+              "2011": "(79.244.243.600)",
+              "2010": "(70.657.669.500)"
+            },
+            {
+              "label": "Các khoản phải thu ngắn hạn",
+              "2011": "2.169.205.076.812",
+              "2010": "1.124.862.162.625"
+            },
+            {
+              "label": "Phải thu khách hàng",
+              "2011": "1.143.168.467.855",
+              "2010": "587.457.894.727"
+            },
+            {
+              "label": "Trả trước cho người bán",
+              "2011": "795.149.182.591",
+              "2010": "354.095.973.554"
+            },
+            {
+              "label": "Các khoản phải thu khác",
+              "2011": "232.805.433.796",
+              "2010": "183.904.850.455"
+            },
+            {
+              "label": "Dự phòng phải thu ngắn hạn khó đòi",
+              "2011": "(1.918.007.430)",
+              "2010": "(596.556.111)"
+            },
+            {
+              "label": "Hàng tồn kho",
+              "2011": "3.272.495.674.110",
+              "2010": "2.351.354.229.902"
+            },
+            {
+              "label": "Hàng tồn kho",
+              "2011": "3.277.429.580.780",
+              "2010": "2.355.487.444.817"
+            },
+            {
+              "label": "Dự phòng giảm giá hàng tồn kho",
+              "2011": "(4.933.906.670)",
+              "2010": "(4.133.214.915)"
+            },
+            {
+              "label": "Tài sản ngắn hạn khác",
+              "2011": "133.433.659.990",
+              "2010": "87.854.266.431"
+            },
+            {
+              "label": "Chi phí trả trước ngắn hạn",
+              "2011": "56.909.099.519",
+              "2010": "38.595.473.073"
+            },
+            {
+              "label": "Thuế Giá trị Gia tăng được khấu trừ",
+              "2011": "74.772.661.634",
+              "2010": "16.933.368.421"
+            },
+            {
+              "label": "Tài sản ngắn hạn khác",
+              "2011": "1.751.898.837",
+              "2010": "32.325.424.937"
+            }
+          ],
+          "metadata": {
+            "element_type": "table",
+            "layout_type": "table",
+            "table_extraction_method": "tesseract.tsv_aligned_columns",
+            "table_detection_strategy": "ocr_word_boxes",
+            "ocr": {
+              "engine": "tesseract",
+              "language": "vie+eng",
+              "table_psm": 3,
+              "render_scale": 2.5
+            },
+            "column_alignment": "right",
+            "bbox": [
+              121.95900537634408,
+              149.56443176414646,
+              568.2090053763441,
+              549.0694246314789
+            ],
+            "bbox_coordinate_system": "pdf_points",
+            "row_cell_bboxes": [
+              {
+                "label": [
+                  121.95900537634408,
+                  193.1540656205421,
+                  217.5268817204301,
+                  203.95149786019974
+                ],
+                "2011": [
+                  381.4717741935484,
+                  194.7536852116025,
+                  464.24395161290323,
+                  202.35187826913935
+                ],
+                "2010": [
+                  482.6377688172043,
+                  194.7536852116025,
+                  565.0100806451612,
+                  202.35187826913935
+                ]
+              },
+              {
+                "label": [
+                  121.95900537634408,
+                  223.1469329529244,
+                  295.90053763440864,
+                  233.94436519258204
+                ],
+                "2011": [
+                  381.4717741935484,
+                  224.7465525439848,
+                  464.24395161290323,
+                  232.34474560152165
+                ],
+                "2010": [
+                  490.6350806451613,
+                  224.7465525439848,
+                  565.0100806451612,
+                  232.34474560152165
+                ]
+              },
+              {
+                "label": [
+                  128.75672043010752,
+                  237.943414170233,
+                  147.55040322580643,
+                  247.14122681883026
+                ],
+                "2011": [
+                  389.86895161290323,
+                  239.9429386590585,
+                  464.24395161290323,
+                  247.14122681883026
+                ],
+                "2010": [
+                  491.03494623655916,
+                  239.9429386590585,
+                  565.0100806451613,
+                  247.14122681883026
+                ]
+              },
+              {
+                "label": [
+                  129.15658602150538,
+                  253.13980028530673,
+                  257.1135752688172,
+                  263.9372325249644
+                ],
+                "2011": [
+                  381.4717741935484,
+                  254.73941987636712,
+                  464.24395161290323,
+                  261.9377080361389
+                ],
+                "2010": [
+                  491.03494623655916,
+                  254.73941987636712,
+                  565.0100806451613,
+                  262.337612933904
+                ]
+              },
+              {
+                "label": [
+                  122.35887096774194,
+                  283.13266761768904,
+                  296.7002688172043,
+                  293.93009985734665
+                ],
+                "2011": [
+                  389.86895161290323,
+                  284.7322872087494,
+                  464.24395161290323,
+                  292.33048026628626
+                ],
+                "2010": [
+                  483.0376344086022,
+                  284.7322872087494,
+                  565.0100806451613,
+                  292.33048026628626
+                ]
+              },
+              {
+                "label": [
+                  128.35685483870967,
+                  297.92914883499765,
+                  202.73185483870967,
+                  309.12648597242037
+                ],
+                "2011": [
+                  389.86895161290323,
+                  299.92867332382315,
+                  463.8440860215054,
+                  307.1269614835949
+                ],
+                "2010": [
+                  483.4375,
+                  299.92867332382315,
+                  565.0100806451613,
+                  307.1269614835949
+                ]
+              },
+              {
+                "label": [
+                  129.15658602150538,
+                  313.12553495007137,
+                  289.1028225806452,
+                  323.922967189729
+                ],
+                "2011": [
+                  392.2681451612903,
+                  314.72515454113176,
+                  467.442876344086,
+                  323.922967189729
+                ],
+                "2010": [
+                  493.43413978494624,
+                  314.72515454113176,
+                  568.2090053763441,
+                  323.922967189729
+                ]
+              },
+              {
+                "label": [
+                  122.35887096774194,
+                  343.11840228245364,
+                  260.7123655913978,
+                  353.91583452211125
+                ],
+                "2011": [
+                  381.4717741935484,
+                  344.71802187351403,
+                  464.24395161290323,
+                  352.31621493105087
+                ],
+                "2010": [
+                  483.0376344086022,
+                  344.71802187351403,
+                  565.0100806451613,
+                  352.31621493105087
+                ]
+              },
+              {
+                "label": [
+                  129.15658602150538,
+                  359.51450309082264,
+                  219.1263440860215,
+                  369.112220637185
+                ],
+                "2011": [
+                  382.27150537634407,
+                  359.91440798858775,
+                  464.2439516129032,
+                  367.11269614835953
+                ],
+                "2010": [
+                  491.03494623655916,
+                  359.91440798858775,
+                  565.4099462365591,
+                  367.11269614835953
+                ]
+              },
+              {
+                "label": [
+                  128.75672043010752,
+                  374.31098430813125,
+                  237.52016129032256,
+                  383.9087018544936
+                ],
+                "2011": [
+                  389.86895161290323,
+                  374.71088920589636,
+                  462.64448924731187,
+                  382.3090822634332
+                ],
+                "2010": [
+                  491.03494623655916,
+                  374.71088920589636,
+                  565.0100806451613,
+                  382.3090822634332
+                ]
+              },
+              {
+                "label": [
+                  129.15658602150538,
+                  389.507370423205,
+                  238.3198924731183,
+                  399.1050879695673
+                ],
+                "2011": [
+                  389.86895161290323,
+                  389.9072753209701,
+                  464.24395161290323,
+                  397.10556348074186
+                ],
+                "2010": [
+                  491.434811827957,
+                  389.9072753209701,
+                  565.0100806451613,
+                  397.10556348074186
+                ]
+              },
+              {
+                "label": [
+                  129.15658602150538,
+                  403.1041369472183,
+                  290.3024193548387,
+                  413.9015691868759
+                ],
+                "2011": [
+                  397.8662634408602,
+                  404.7037565382787,
+                  467.442876344086,
+                  413.9015691868759
+                ],
+                "2010": [
+                  507.429435483871,
+                  404.7037565382787,
+                  568.2090053763441,
+                  413.9015691868759
+                ]
+              },
+              {
+                "label": [
+                  122.35887096774194,
+                  433.0970042796006,
+                  185.1377688172043,
+                  444.2943414170233
+                ],
+                "2011": [
+                  381.4717741935484,
+                  434.69662387066097,
+                  464.24395161290323,
+                  442.2948169281978
+                ],
+                "2010": [
+                  482.6377688172043,
+                  434.69662387066097,
+                  565.0100806451612,
+                  442.2948169281978
+                ]
+              },
+              {
+                "label": [
+                  128.75672043010752,
+                  447.8934854969092,
+                  187.13709677419354,
+                  459.0908226343319
+                ],
+                "2011": [
+                  381.4717741935484,
+                  449.8930099857347,
+                  464.24395161290323,
+                  457.09129814550647
+                ],
+                "2010": [
+                  482.6377688172043,
+                  449.8930099857347,
+                  565.4099462365591,
+                  457.09129814550647
+                ]
+              },
+              {
+                "label": [
+                  128.75672043010752,
+                  463.0898716119829,
+                  273.508064516129,
+                  474.28720874940564
+                ],
+                "2011": [
+                  397.8662634408602,
+                  464.6894912030433,
+                  467.442876344086,
+                  473.8873038516405
+                ],
+                "2010": [
+                  499.03225806451616,
+                  464.6894912030433,
+                  568.2090053763441,
+                  474.28720874940564
+                ]
+              },
+              {
+                "label": [
+                  121.95900537634408,
+                  493.08273894436525,
+                  228.7231182795699,
+                  504.28007608178797
+                ],
+                "2011": [
+                  390.26881720430106,
+                  494.68235853542564,
+                  464.2439516129032,
+                  502.28055159296247
+                ],
+                "2010": [
+                  496.2331989247312,
+                  494.68235853542564,
+                  563.8104838709678,
+                  502.28055159296247
+                ]
+              },
+              {
+                "label": [
+                  129.15658602150538,
+                  507.87922016167386,
+                  245.51747311827958,
+                  519.0765572990966
+                ],
+                "2011": [
+                  395.4670698924731,
+                  509.8787446504993,
+                  464.2439516129032,
+                  517.077032810271
+                ],
+                "2010": [
+                  496.633064516129,
+                  509.8787446504993,
+                  565.0100806451612,
+                  517.4769377080362
+                ]
+              },
+              {
+                "label": [
+                  128.75672043010752,
+                  523.0756062767475,
+                  287.9032258064516,
+                  534.2729434141703
+                ],
+                "2011": [
+                  395.4670698924731,
+                  524.675225867808,
+                  464.2439516129032,
+                  532.2734189253448
+                ],
+                "2010": [
+                  497.0329301075269,
+                  524.675225867808,
+                  563.4106182795699,
+                  532.2734189253448
+                ]
+              },
+              {
+                "label": [
+                  128.75672043010752,
+                  537.8720874940561,
+                  229.5228494623656,
+                  549.0694246314789
+                ],
+                "2011": [
+                  401.8649193548387,
+                  539.8716119828816,
+                  464.24395161290323,
+                  547.0699001426534
+                ],
+                "2010": [
+                  496.633064516129,
+                  539.8716119828816,
+                  565.4099462365591,
+                  547.4698050404185
+                ]
+              }
+            ],
+            "document_id": "VNM-FS-2011-VI-SCAN-DIAGNOSTIC",
+            "filename": "vnm-financial-statements-2011-scan-preview.pdf",
+            "format": "PDF"
+          }
+        }
+      ],
+      "table_anchor_score": {
+        "expected_headers": [
+          "2011",
+          "2010"
+        ],
+        "extracted_headers": [
+          "2011",
+          "2010"
+        ],
+        "comparison": {
+          "labels": "accent-folded character similarity; matched at >= 0.6",
+          "headers": "digits-only period comparison",
+          "numeric_cells": "sign and digit sequence; punctuation ignored"
+        },
+        "exact_header_matches": 2,
+        "expected_anchor_rows": 4,
+        "matched_anchor_rows": 4,
+        "anchor_row_recall": 1.0,
+        "exact_numeric_cells": 8,
+        "total_numeric_cells": 8,
+        "exact_numeric_cell_accuracy": 1.0,
+        "matched_cell_locations": 8,
+        "annotated_cell_locations": 8,
+        "cell_location_recall": 1.0,
+        "cell_location_comparison": "PDF-point bounding-box IoU >= 0.3",
+        "row_matches": [
+          {
+            "expected_label": "TÀI SẢN NGẮN HẠN",
+            "extracted_label": "TÀI SẢN NGAN HẠN",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "9.467.682.996.094",
+              "5.919.802.789.330"
+            ],
+            "extracted_values": [
+              "9.467.682.996.094",
+              "5.919.802.789.330"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ],
+            "cell_location_matches": {
+              "2011": {
+                "matched": true,
+                "iou": 0.6793,
+                "expected_bbox_pdf_points": [
+                  381.24,
+                  192.946,
+                  464.532,
+                  204.062
+                ],
+                "extracted_bbox_pdf_points": [
+                  381.4717741935484,
+                  194.7536852116025,
+                  464.24395161290323,
+                  202.35187826913935
+                ]
+              },
+              "2010": {
+                "matched": true,
+                "iou": 0.676,
+                "expected_bbox_pdf_points": [
+                  482.28,
+                  192.946,
+                  565.571,
+                  204.062
+                ],
+                "extracted_bbox_pdf_points": [
+                  482.6377688172043,
+                  194.7536852116025,
+                  565.0100806451612,
+                  202.35187826913935
+                ]
+              }
+            }
+          },
+          {
+            "expected_label": "Tiền và các khoản tương đương tiền",
+            "extracted_label": "Tiền và các khoản tương đương tiền",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "3.156.515.396.990",
+              "613.472.368.080"
+            ],
+            "extracted_values": [
+              "3.156.515.396.990",
+              "613.472.368.080"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ],
+            "cell_location_matches": {
+              "2011": {
+                "matched": true,
+                "iou": 0.6793,
+                "expected_bbox_pdf_points": [
+                  381.24,
+                  222.946,
+                  464.532,
+                  234.062
+                ],
+                "extracted_bbox_pdf_points": [
+                  381.4717741935484,
+                  224.7465525439848,
+                  464.24395161290323,
+                  232.34474560152165
+                ]
+              },
+              "2010": {
+                "matched": true,
+                "iou": 0.6777,
+                "expected_bbox_pdf_points": [
+                  490.56,
+                  222.946,
+                  565.574,
+                  234.062
+                ],
+                "extracted_bbox_pdf_points": [
+                  490.6350806451613,
+                  224.7465525439848,
+                  565.0100806451612,
+                  232.34474560152165
+                ]
+              }
+            }
+          },
+          {
+            "expected_label": "Các khoản đầu tư tài chính ngắn hạn",
+            "extracted_label": "Các khoản đầu tư tài chính ngắn hạn",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "736.033.188.192",
+              "1.742.259.762.292"
+            ],
+            "extracted_values": [
+              "736.033.188.192",
+              "1.742.259.762.292"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ],
+            "cell_location_matches": {
+              "2011": {
+                "matched": true,
+                "iou": 0.6777,
+                "expected_bbox_pdf_points": [
+                  389.52,
+                  282.946,
+                  464.534,
+                  294.062
+                ],
+                "extracted_bbox_pdf_points": [
+                  389.86895161290323,
+                  284.7322872087494,
+                  464.24395161290323,
+                  292.33048026628626
+                ]
+              },
+              "2010": {
+                "matched": true,
+                "iou": 0.6727,
+                "expected_bbox_pdf_points": [
+                  482.28,
+                  282.946,
+                  565.571,
+                  294.062
+                ],
+                "extracted_bbox_pdf_points": [
+                  483.0376344086022,
+                  284.7322872087494,
+                  565.0100806451613,
+                  292.33048026628626
+                ]
+              }
+            }
+          },
+          {
+            "expected_label": "Các khoản phải thu ngắn hạn",
+            "extracted_label": "Các khoản phải thu ngắn hạn",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "2.169.205.076.812",
+              "1.124.862.162.625"
+            ],
+            "extracted_values": [
+              "2.169.205.076.812",
+              "1.124.862.162.625"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ],
+            "cell_location_matches": {
+              "2011": {
+                "matched": true,
+                "iou": 0.6793,
+                "expected_bbox_pdf_points": [
+                  381.24,
+                  342.946,
+                  464.532,
+                  354.062
+                ],
+                "extracted_bbox_pdf_points": [
+                  381.4717741935484,
+                  344.71802187351403,
+                  464.24395161290323,
+                  352.31621493105087
+                ]
+              },
+              "2010": {
+                "matched": true,
+                "iou": 0.6727,
+                "expected_bbox_pdf_points": [
+                  482.28,
+                  342.946,
+                  565.571,
+                  354.062
+                ],
+                "extracted_bbox_pdf_points": [
+                  483.0376344086022,
+                  344.71802187351403,
+                  565.0100806451613,
+                  352.31621493105087
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "text_reference_scored": true,
+      "reference_characters": 1425,
+      "reference_words": 354,
+      "hypothesis_characters": 1534,
+      "character_edit_distance": 297,
+      "word_edit_distance": 101,
+      "cer": 0.208421,
+      "wer": 0.285311,
+      "latency_seconds": 3.128,
+      "pages_per_minute": 19.179,
+      "extracted_text": "CONG TY CO PHÀN SỮA VIET NAM Mẫu số B 01-DN/HN BANG CÂN ĐÓI KÉ TOAN HỢP NHAT .\nTại ngày 31 tháng 12 Mã Thuyết 2011 2010 số TÀI SẢN minh VNĐ VNĐ 100 TÀI SẢN NGAN HẠN 9.467.682.996.094 5.919.802.789.330 110 Tiền và các khoản tương đương tiền 3.156.515.396.990 613.472.368.080 1 Tiền 790.515.396.990 249.472.368.080 12 2.366.000.000.000 364.000.000.000 'Các khoản tương đương tién 120 Các khoản đầu tư tài chính ngắn hạn 4(a) 736.033.188.192 1.742.259.762.292 121 Đầu tư ngắn hạn 815.277.431.792 1.812.917.431.792 129 Dự phòng giảm giá đầu tư ngắn hạn (79.244.243.600) (70.657.669.500) 130 Các khoản phải thu ngắn hạn 2.169.205.076.812 1.124.862.162.625 131 Phai thu khach hang 1.143.168.467.855 587.457.894.727 132 Trả trước cho người bán 795.149.182.591 354.095.973.554 135 Các khoản phải thu khac 232.805.433.796 183.904.850.455 139 Dy phòng phải thu ngắn han khó doi (1.918.007.430) (596.556.111) 140 Hàng tồn kho 3.272.495.674.110 2.351.354.229.902 141 3.277.429.580.780 2.355.487.444.817 Hang tồn kho 149 Dy phòng giảm giá hang tồn kho (4.933.906.670) (4.133.214.915) 150 Tài san ngắn han khac 133.433.659.990 87.854.266.431 151 Chi phí trả trước ngắn han 8(a) 56.909.099.519\n133.214.915) 150 Tài san ngắn han khac 133.433.659.990 87.854.266.431 151 Chi phí trả trước ngắn han 8(a) 56.909.099.519 38.595.473.073 152 74.772.661.634 16.933.368.421 Thué Giá trị Gia tăng được khéu trir 158 Tài sản ngắn hạn khác 1.751.898.837 32.325.424.937 Các thuyết minh từ trang 11 đền trang 48 là một phần cầu thanh các báo cáo tài chinh hợp nhét này.\n5 Tai-Lieu.com"
+    },
+    {
+      "id": "balance-sheet-noncurrent-assets-scan-2011-vi",
+      "document_id": "VNM-FS-2011-VI-SCAN-DIAGNOSTIC",
+      "source_page_number": 8,
+      "language": "vi",
+      "layout_type": "financial_table",
+      "physical_scan": true,
+      "source_pdf_sha256": "80f38fbb18f729fab611ed84f699d06cde76fb2ab18f89dd953d2e589f39f0bc",
+      "cropped_pdf_sha256": "1a79c6c06d9b4f8fd2fbec815a467c532e89184d17bc6e650a8f01f244b1e620",
+      "text_extraction_methods": [
+        "tesseract"
+      ],
+      "tesseract_page_segmentation_mode": 11,
+      "tesseract_table_segmentation_mode": 3,
+      "ocr_render_scale": 1.5,
+      "ocr_table_render_scale": 2.5,
+      "ocr_used": true,
+      "chunk_count": 3,
+      "table_count": 1,
+      "extracted_tables": [
+        {
+          "page_number": 1,
+          "table_index": 0,
+          "columns": [
+            "label",
+            "2011",
+            "2010"
+          ],
+          "rows": [
+            {
+              "label": "TÀI SAN DÀI HẠN",
+              "2011": "6.114.988.554.657",
+              "2010": "4.853.229.506.530"
+            },
+            {
+              "label": "Tài sản có định",
+              "2011": "5.044.762.028.869",
+              "2010": "3.428.571.795.589"
+            },
+            {
+              "label": "Tài sản có định hữu hình",
+              "2011": "3.493.628.542.454",
+              "2010": "2.589.894.051.885"
+            },
+            {
+              "label": "Nguyên giá",
+              "2011": "5.301.826.836.260",
+              "2010": "4.113.300.629.871"
+            },
+            {
+              "label": "Giá trị hao mòn lũy ké",
+              "2011": "(1.808.198.293.806)",
+              "2010": "(1.523.406.577.986)"
+            },
+            {
+              "label": "Tài sản có định vô hình 9(b)",
+              "2011": "256.046.089.531",
+              "2010": "173.395.289.975"
+            },
+            {
+              "label": "Nguyên giá",
+              "2011": "383.409.370.867",
+              "2010": "263.171.406.266"
+            },
+            {
+              "label": "Giá trị hao mòn Ity ké",
+              "2011": "(127.363.281.336)",
+              "2010": "(89.776.116.291)"
+            },
+            {
+              "label": "Chi phí xây dựng cơ bản dở dang 9(c)",
+              "2011": "1.295.087.396.884",
+              "2010": "665.282.453.729"
+            },
+            {
+              "label": "Bắt động sản đầu tư",
+              "2011": "100.671.287.539",
+              "2010": "100.817.545.211"
+            },
+            {
+              "label": "Nguyên giá",
+              "2011": "117.666.487.460",
+              "2010": "104.059.758.223"
+            },
+            {
+              "label": "Giá trị hao mòn lũy ké",
+              "2011": "(16.995.199.921)",
+              "2010": "(3.242.213.012)"
+            },
+            {
+              "label": "Các khoản đầu tư tài chính dài hạn",
+              "2011": "846.713.756.424",
+              "2010": "1.141.798.415.275"
+            },
+            {
+              "label": "Đầu tư vào công ty liên kết, liên doanh",
+              "2011": "205.418.475.253",
+              "2010": "214.232.426.023"
+            },
+            {
+              "label": "Đầu tư dài han khác",
+              "2011": "783.646.073.800",
+              "2010": "1.036.146.073.800"
+            },
+            {
+              "label": "Dự phòng giảm giá đầu tư dài hạn",
+              "2011": "(142.350.792.629)",
+              "2010": "(108.580.084.548)"
+            },
+            {
+              "label": "Lợi thế thương mại",
+              "2011": "15.503.335.522",
+              "2010": "19.556.808.664"
+            },
+            {
+              "label": "Tài sản dài hạn khác",
+              "2011": "107.338.146.303",
+              "2010": "162.461.317.098"
+            },
+            {
+              "label": "Chi phí trả trước dài hạn 8(b)",
+              "2011": "25.598.314.795",
+              "2010": "97.740.813.322"
+            },
+            {
+              "label": "Tài sản thuế thu nhập hoãn lại",
+              "2011": "80.643.411.508",
+              "2010": "62.865.036.536"
+            },
+            {
+              "label": "Tài sản dài hạn khác",
+              "2011": "1.096.420.000",
+              "2010": "1.855.467.240"
+            },
+            {
+              "label": "TONG TÀI SAN",
+              "2011": "15.582.671.550.751",
+              "2010": "10.773.032.295.860"
+            }
+          ],
+          "metadata": {
+            "element_type": "table",
+            "layout_type": "table",
+            "table_extraction_method": "tesseract.tsv_aligned_columns",
+            "table_detection_strategy": "ocr_word_boxes",
+            "ocr": {
+              "engine": "tesseract",
+              "language": "vie+eng",
+              "table_psm": 3,
+              "render_scale": 2.5
+            },
+            "column_alignment": "right",
+            "bbox": [
+              126.35752688172043,
+              161.1616737993343,
+              568.2090053763441,
+              693.4350927246791
+            ],
+            "bbox_coordinate_system": "pdf_points",
+            "row_cell_bboxes": [
+              {
+                "label": [
+                  126.35752688172043,
+                  204.35140275796482,
+                  209.92943548387098,
+                  215.14883499762246
+                ],
+                "2011": [
+                  379.47244623655916,
+                  205.9510223490252,
+                  462.244623655914,
+                  213.54921540656207
+                ],
+                "2010": [
+                  482.23790322580646,
+                  205.9510223490252,
+                  565.0100806451613,
+                  213.54921540656207
+                ]
+              },
+              {
+                "label": [
+                  126.35752688172043,
+                  279.53352353780315,
+                  198.33333333333334,
+                  290.33095577746076
+                ],
+                "2011": [
+                  379.47244623655916,
+                  281.13314312886354,
+                  462.244623655914,
+                  288.73133618640037
+                ],
+                "2010": [
+                  482.6377688172043,
+                  281.13314312886354,
+                  565.0100806451612,
+                  288.73133618640037
+                ]
+              },
+              {
+                "label": [
+                  132.35551075268816,
+                  294.33000475511176,
+                  241.91868279569894,
+                  305.1274369947694
+                ],
+                "2011": [
+                  379.872311827957,
+                  296.32952924393726,
+                  462.244623655914,
+                  303.52781740370904
+                ],
+                "2010": [
+                  482.6377688172043,
+                  295.92962434617215,
+                  565.0100806451612,
+                  303.527817403709
+                ]
+              },
+              {
+                "label": [
+                  144.35147849462365,
+                  311.12601046124587,
+                  193.93481182795696,
+                  320.7237280076082
+                ],
+                "2011": [
+                  379.872311827957,
+                  311.12601046124587,
+                  462.244623655914,
+                  318.7242035187827
+                ],
+                "2010": [
+                  482.23790322580646,
+                  311.12601046124587,
+                  563.4106182795699,
+                  318.7242035187827
+                ]
+              },
+              {
+                "label": [
+                  143.9516129032258,
+                  324.3228720874941,
+                  240.31922043010752,
+                  335.5202092249168
+                ],
+                "2011": [
+                  376.6733870967742,
+                  325.9224916785545,
+                  465.84341397849465,
+                  335.5202092249168
+                ],
+                "2010": [
+                  479.4388440860215,
+                  325.9224916785545,
+                  568.2090053763441,
+                  335.5202092249168
+                ]
+              },
+              {
+                "label": [
+                  132.35551075268816,
+                  354.3157394198764,
+                  350.2822580645161,
+                  365.51307655729914
+                ],
+                "2011": [
+                  387.869623655914,
+                  356.31526390870187,
+                  460.64516129032256,
+                  363.51355206847364
+                ],
+                "2010": [
+                  491.434811827957,
+                  355.9153590109368,
+                  565.0100806451613,
+                  363.51355206847364
+                ]
+              },
+              {
+                "label": [
+                  144.35147849462365,
+                  371.1117451260105,
+                  193.93481182795696,
+                  380.7094626723728
+                ],
+                "2011": [
+                  387.869623655914,
+                  371.1117451260105,
+                  462.244623655914,
+                  378.7099381835473
+                ],
+                "2010": [
+                  491.03494623655916,
+                  371.1117451260105,
+                  565.0100806451613,
+                  378.7099381835473
+                ]
+              },
+              {
+                "label": [
+                  143.9516129032258,
+                  384.3086067522587,
+                  240.31922043010752,
+                  395.5059438896814
+                ],
+                "2011": [
+                  385.070564516129,
+                  385.9082263433191,
+                  465.8434139784946,
+                  395.5059438896814
+                ],
+                "2010": [
+                  493.43413978494624,
+                  385.9082263433191,
+                  568.2090053763441,
+                  395.5059438896814
+                ]
+              },
+              {
+                "label": [
+                  132.75537634408602,
+                  415.9010936757014,
+                  349.8823924731183,
+                  425.49881122206375
+                ],
+                "2011": [
+                  380.2721774193548,
+                  416.30099857346653,
+                  462.244623655914,
+                  423.4992867332383
+                ],
+                "2010": [
+                  491.03494623655916,
+                  415.9010936757014,
+                  565.0100806451613,
+                  423.49928673323825
+                ]
+              },
+              {
+                "label": [
+                  127.15725806451613,
+                  444.29434141702336,
+                  223.52486559139786,
+                  455.4916785544461
+                ],
+                "2011": [
+                  388.2694892473118,
+                  445.89396100808375,
+                  462.244623655914,
+                  453.4921540656206
+                ],
+                "2010": [
+                  491.03494623655916,
+                  445.89396100808375,
+                  563.8104838709678,
+                  453.4921540656206
+                ]
+              },
+              {
+                "label": [
+                  132.75537634408602,
+                  461.0903471231574,
+                  182.33870967741936,
+                  470.68806466951975
+                ],
+                "2011": [
+                  388.6693548387097,
+                  461.0903471231574,
+                  462.244623655914,
+                  468.68854018069425
+                ],
+                "2010": [
+                  491.434811827957,
+                  461.0903471231574,
+                  565.0100806451613,
+                  468.68854018069425
+                ]
+              },
+              {
+                "label": [
+                  132.75537634408602,
+                  474.28720874940564,
+                  229.12298387096774,
+                  485.48454588682836
+                ],
+                "2011": [
+                  390.26881720430106,
+                  475.886828340466,
+                  465.8434139784946,
+                  485.48454588682836
+                ],
+                "2010": [
+                  499.03225806451616,
+                  475.886828340466,
+                  568.2090053763441,
+                  485.48454588682836
+                ]
+              },
+              {
+                "label": [
+                  126.75739247311827,
+                  504.28007608178797,
+                  291.9018817204301,
+                  515.4774132192107
+                ],
+                "2011": [
+                  387.869623655914,
+                  505.87969567284836,
+                  462.244623655914,
+                  513.4778887303852
+                ],
+                "2010": [
+                  482.6377688172043,
+                  505.87969567284836,
+                  565.0100806451612,
+                  513.4778887303852
+                ]
+              },
+              {
+                "label": [
+                  132.75537634408602,
+                  519.4764621968617,
+                  302.6982526881721,
+                  530.2738944365193
+                ],
+                "2011": [
+                  387.869623655914,
+                  521.076081787922,
+                  462.244623655914,
+                  528.2743699476938
+                ],
+                "2010": [
+                  491.03494623655916,
+                  521.076081787922,
+                  565.0100806451613,
+                  528.6742748454589
+                ]
+              },
+              {
+                "label": [
+                  132.75537634408602,
+                  534.2729434141703,
+                  222.72513440860217,
+                  545.0703756538279
+                ],
+                "2011": [
+                  388.2694892473118,
+                  536.2724679029958,
+                  462.244623655914,
+                  543.4707560627676
+                ],
+                "2010": [
+                  483.0376344086022,
+                  536.2724679029958,
+                  565.0100806451613,
+                  543.4707560627676
+                ]
+              },
+              {
+                "label": [
+                  133.55510752688173,
+                  549.469329529244,
+                  284.304435483871,
+                  560.2667617689017
+                ],
+                "2011": [
+                  385.070564516129,
+                  551.0689491203044,
+                  465.8434139784946,
+                  560.2667617689017
+                ],
+                "2010": [
+                  487.8360215053763,
+                  551.0689491203044,
+                  568.2090053763441,
+                  560.2667617689017
+                ]
+              },
+              {
+                "label": [
+                  127.15725806451613,
+                  579.4621968616262,
+                  217.92674731182797,
+                  590.259629101284
+                ],
+                "2011": [
+                  393.8676075268817,
+                  581.0618164526867,
+                  462.244623655914,
+                  588.6600095102235
+                ],
+                "2010": [
+                  496.633064516129,
+                  581.0618164526867,
+                  565.0100806451612,
+                  588.6600095102235
+                ]
+              },
+              {
+                "label": [
+                  126.35752688172043,
+                  611.054683785069,
+                  223.52486559139786,
+                  620.2524964336662
+                ],
+                "2011": [
+                  388.2694892473118,
+                  611.054683785069,
+                  462.244623655914,
+                  618.6528768426058
+                ],
+                "2010": [
+                  491.03494623655916,
+                  611.054683785069,
+                  565.0100806451613,
+                  618.6528768426058
+                ]
+              },
+              {
+                "label": [
+                  132.75537634408602,
+                  625.8511650023776,
+                  350.2822580645161,
+                  635.44888254874
+                ],
+                "2011": [
+                  393.46774193548384,
+                  626.2510699001427,
+                  462.244623655914,
+                  633.4493580599145
+                ],
+                "2010": [
+                  496.2331989247312,
+                  626.2510699001427,
+                  565.0100806451613,
+                  633.4493580599145
+                ]
+              },
+              {
+                "label": [
+                  132.35551075268816,
+                  639.4479315263909,
+                  266.31048387096774,
+                  650.2453637660486
+                ],
+                "2011": [
+                  393.46774193548384,
+                  641.0475511174513,
+                  462.244623655914,
+                  648.6457441749882
+                ],
+                "2010": [
+                  496.2331989247312,
+                  641.0475511174513,
+                  565.0100806451613,
+                  648.6457441749882
+                ]
+              },
+              {
+                "label": [
+                  132.35551075268816,
+                  655.84403233476,
+                  224.32459677419357,
+                  665.0418449833571
+                ],
+                "2011": [
+                  399.86559139784947,
+                  656.243937232525,
+                  462.244623655914,
+                  663.4422253922968
+                ],
+                "2010": [
+                  502.63104838709677,
+                  656.243937232525,
+                  565.0100806451613,
+                  663.4422253922968
+                ]
+              },
+              {
+                "label": [
+                  126.35752688172043,
+                  684.2372800760818,
+                  197.1337365591398,
+                  693.4350927246791
+                ],
+                "2011": [
+                  374.2741935483871,
+                  686.2368045649073,
+                  461.0450268817204,
+                  693.4350927246791
+                ],
+                "2010": [
+                  477.03965053763443,
+                  686.2368045649073,
+                  565.0100806451613,
+                  693.4350927246791
+                ]
+              }
+            ],
+            "document_id": "VNM-FS-2011-VI-SCAN-DIAGNOSTIC",
+            "filename": "vnm-financial-statements-2011-scan-preview.pdf",
+            "format": "PDF"
+          }
+        }
+      ],
+      "table_anchor_score": {
+        "expected_headers": [
+          "2011",
+          "2010"
+        ],
+        "extracted_headers": [
+          "2011",
+          "2010"
+        ],
+        "comparison": {
+          "labels": "accent-folded character similarity; matched at >= 0.6",
+          "headers": "digits-only period comparison",
+          "numeric_cells": "sign and digit sequence; punctuation ignored"
+        },
+        "exact_header_matches": 2,
+        "expected_anchor_rows": 6,
+        "matched_anchor_rows": 6,
+        "anchor_row_recall": 1.0,
+        "exact_numeric_cells": 12,
+        "total_numeric_cells": 12,
+        "exact_numeric_cell_accuracy": 1.0,
+        "matched_cell_locations": 12,
+        "annotated_cell_locations": 12,
+        "cell_location_recall": 1.0,
+        "cell_location_comparison": "PDF-point bounding-box IoU >= 0.3",
+        "row_matches": [
+          {
+            "expected_label": "TÀI SẢN DÀI HẠN",
+            "extracted_label": "TÀI SAN DÀI HẠN",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "6.114.988.554.657",
+              "4.853.229.506.530"
+            ],
+            "extracted_values": [
+              "6.114.988.554.657",
+              "4.853.229.506.530"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ],
+            "cell_location_matches": {
+              "2011": {
+                "matched": true,
+                "iou": 0.6793,
+                "expected_bbox_pdf_points": [
+                  379.32,
+                  204.466,
+                  462.612,
+                  215.582
+                ],
+                "extracted_bbox_pdf_points": [
+                  379.47244623655916,
+                  205.9510223490252,
+                  462.244623655914,
+                  213.54921540656207
+                ]
+              },
+              "2010": {
+                "matched": true,
+                "iou": 0.6793,
+                "expected_bbox_pdf_points": [
+                  482.16,
+                  204.466,
+                  565.451,
+                  215.582
+                ],
+                "extracted_bbox_pdf_points": [
+                  482.23790322580646,
+                  205.9510223490252,
+                  565.0100806451613,
+                  213.54921540656207
+                ]
+              }
+            }
+          },
+          {
+            "expected_label": "Tài sản cố định",
+            "extracted_label": "Tài sản có định",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "5.044.762.028.869",
+              "3.428.571.795.589"
+            ],
+            "extracted_values": [
+              "5.044.762.028.869",
+              "3.428.571.795.589"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ],
+            "cell_location_matches": {
+              "2011": {
+                "matched": true,
+                "iou": 0.6793,
+                "expected_bbox_pdf_points": [
+                  379.32,
+                  279.466,
+                  462.612,
+                  290.582
+                ],
+                "extracted_bbox_pdf_points": [
+                  379.47244623655916,
+                  281.13314312886354,
+                  462.244623655914,
+                  288.73133618640037
+                ]
+              },
+              "2010": {
+                "matched": true,
+                "iou": 0.676,
+                "expected_bbox_pdf_points": [
+                  482.16,
+                  279.466,
+                  565.451,
+                  290.582
+                ],
+                "extracted_bbox_pdf_points": [
+                  482.6377688172043,
+                  281.13314312886354,
+                  565.0100806451612,
+                  288.73133618640037
+                ]
+              }
+            }
+          },
+          {
+            "expected_label": "Bất động sản đầu tư",
+            "extracted_label": "Bắt động sản đầu tư",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "100.671.287.539",
+              "100.817.545.211"
+            ],
+            "extracted_values": [
+              "100.671.287.539",
+              "100.817.545.211"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ],
+            "cell_location_matches": {
+              "2011": {
+                "matched": true,
+                "iou": 0.6741,
+                "expected_bbox_pdf_points": [
+                  387.6,
+                  444.466,
+                  462.614,
+                  455.582
+                ],
+                "extracted_bbox_pdf_points": [
+                  388.2694892473118,
+                  445.89396100808375,
+                  462.244623655914,
+                  453.4921540656206
+                ]
+              },
+              "2010": {
+                "matched": true,
+                "iou": 0.6631,
+                "expected_bbox_pdf_points": [
+                  490.44,
+                  444.466,
+                  565.454,
+                  455.582
+                ],
+                "extracted_bbox_pdf_points": [
+                  491.03494623655916,
+                  445.89396100808375,
+                  563.8104838709678,
+                  453.4921540656206
+                ]
+              }
+            }
+          },
+          {
+            "expected_label": "Các khoản đầu tư tài chính dài hạn",
+            "extracted_label": "Các khoản đầu tư tài chính dài hạn",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "846.713.756.424",
+              "1.141.798.415.275"
+            ],
+            "extracted_values": [
+              "846.713.756.424",
+              "1.141.798.415.275"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ],
+            "cell_location_matches": {
+              "2011": {
+                "matched": true,
+                "iou": 0.6777,
+                "expected_bbox_pdf_points": [
+                  387.6,
+                  504.466,
+                  462.614,
+                  515.582
+                ],
+                "extracted_bbox_pdf_points": [
+                  387.869623655914,
+                  505.87969567284836,
+                  462.244623655914,
+                  513.4778887303852
+                ]
+              },
+              "2010": {
+                "matched": true,
+                "iou": 0.676,
+                "expected_bbox_pdf_points": [
+                  482.16,
+                  504.466,
+                  565.451,
+                  515.582
+                ],
+                "extracted_bbox_pdf_points": [
+                  482.6377688172043,
+                  505.87969567284836,
+                  565.0100806451612,
+                  513.4778887303852
+                ]
+              }
+            }
+          },
+          {
+            "expected_label": "Lợi thế thương mại",
+            "extracted_label": "Lợi thế thương mại",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "15.503.335.522",
+              "19.556.808.664"
+            ],
+            "extracted_values": [
+              "15.503.335.522",
+              "19.556.808.664"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ],
+            "cell_location_matches": {
+              "2011": {
+                "matched": true,
+                "iou": 0.6737,
+                "expected_bbox_pdf_points": [
+                  393.12,
+                  579.466,
+                  462.492,
+                  590.582
+                ],
+                "extracted_bbox_pdf_points": [
+                  393.8676075268817,
+                  581.0618164526867,
+                  462.244623655914,
+                  588.6600095102235
+                ]
+              },
+              "2010": {
+                "matched": true,
+                "iou": 0.6737,
+                "expected_bbox_pdf_points": [
+                  495.96,
+                  579.466,
+                  565.332,
+                  590.582
+                ],
+                "extracted_bbox_pdf_points": [
+                  496.633064516129,
+                  581.0618164526867,
+                  565.0100806451612,
+                  588.6600095102235
+                ]
+              }
+            }
+          },
+          {
+            "expected_label": "TỔNG TÀI SẢN",
+            "extracted_label": "TONG TÀI SAN",
+            "label_similarity": 1.0,
+            "matched": true,
+            "expected_values": [
+              "15.582.671.550.751",
+              "10.773.032.295.860"
+            ],
+            "extracted_values": [
+              "15.582.671.550.751",
+              "10.773.032.295.860"
+            ],
+            "exact_value_matches": [
+              true,
+              true
+            ],
+            "cell_location_matches": {
+              "2011": {
+                "matched": true,
+                "iou": 0.6318,
+                "expected_bbox_pdf_points": [
+                  373.8,
+                  684.466,
+                  462.731,
+                  695.582
+                ],
+                "extracted_bbox_pdf_points": [
+                  374.2741935483871,
+                  686.2368045649073,
+                  461.0450268817204,
+                  693.4350927246791
+                ]
+              },
+              "2010": {
+                "matched": true,
+                "iou": 0.6406,
+                "expected_bbox_pdf_points": [
+                  476.4,
+                  684.466,
+                  565.331,
+                  695.582
+                ],
+                "extracted_bbox_pdf_points": [
+                  477.03965053763443,
+                  686.2368045649073,
+                  565.0100806451613,
+                  693.4350927246791
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "text_reference_scored": true,
+      "reference_characters": 1685,
+      "reference_words": 427,
+      "hypothesis_characters": 1797,
+      "character_edit_distance": 328,
+      "word_edit_distance": 109,
+      "cer": 0.194659,
+      "wer": 0.255269,
+      "latency_seconds": 3.684,
+      "pages_per_minute": 16.285,
+      "extracted_text": "CONG TY CO PHÀN SỮA VIET NAM Mẫu số B 01-DN/HN BANG CÂN ĐÓI KÉ TOAN HỢP NHAT (tiếp theo) Tại ngày 31 tháng 12 2011 2010 Thuyết Mã số TÀI SAN (tiếp theo) minh VND VNĐ 200 TÀI SẢN DÀI HẠN 6.114.988.554.657 4.853.229.506.530 210 23.624.693 Các khoản phải thu dai hạn 218 Phải thu dài hạn khác 23.624.693 220 T ản có định 5.044.762.028.869 3.428.571.795.589 221 Tài sản cồ dinh hữu hinh 9(a) 3.493.628.542.454 2.589.894.051.885 222 5.301.826.836.260 4.113.300.629.871 Nguyên giá 223 Giá trị hao mòn lũy ké (1.808.198.293.806) (1.523.406.577.986) 227 Tài sản có định vô hình 9(b) 256.046.089.531 173.395.289.975 228 Nguyên giá 383.409.370.867 263.171.406.266 229 Giá trị hao mòn lũy ké (127.363.281.336) (89.776.116.291) 230 Chi phí xây dựng cơ bản dở dang 9(e) 1.295.087.396.884 665.282.453.729 240 Bắt động sản đầu tư 10 100.671.287.539 100.817.545.211 241 Nguyên giá 117.666.487.460 104.059.758.223 242 Giá trị hao mòn lũy ké (16.995.199.921) (3.242.213.012) 250 846.713.756.424 1.141.798.415.275 Các khoản đầu tư tai chính dài hạn 4(b) 252 Đầu tư vào cong ty liên kết, liên doanh 205.418.475.253\n24 1.141.798.415.275 Các khoản đầu tư tai chính dài hạn 4(b) 252 Đầu tư vào cong ty liên kết, liên doanh 205.418.475.253 214.232.426.023 258 Đầu tư dai han khác 783.646.073.800 1.036.146.073.800 259 Dự phòng giảm giá đầu tư dai hạn (142.350.792.629) (108.580.084.548) 260 1 15.503.335.522 19.556.808.664 Lợi thé thương mai 270 T an dài han khac 107.338.146.303 162.461.317.098 271 Chi phí trả trước dài hạn 8(b) 25.598.314.795 97.740.813.322 272 Tài sản thuế thu nhập hoãn lại 12 80.643.411.508 62.865.036.536 278 1.096.420.000 1.855.467.240 Tài sản dài hạn khác 280 TONG TÀI SAN 15.582.671.550.751 10.773.032.295.860 Các thuyết minh từ trang 11 đền trang 48 là một phần cầu thành các báo cáo tài chính hợp nhét này.\n6 Tai-Lieu.com"
+    }
+  ]
+}

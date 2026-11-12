@@ -1,0 +1,22 @@
+{
+  "pages": 1,
+  "micro_cer": 0.2855973813420622,
+  "micro_wer_pyvi": 0.5187713310580204,
+  "micro_wer_whitespace": 0.5266666666666666,
+  "character_edits": 349,
+  "reference_characters": 1222,
+  "wer_pyvi_edits": 152,
+  "reference_pyvi_words": 293,
+  "wer_whitespace_edits": 158,
+  "reference_whitespace_words": 300,
+  "pages_detail": [
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p17",
+      "status": "ok",
+      "line_count": 72,
+      "cer": 0.2855973813420622,
+      "wer_pyvi": 0.5187713310580204,
+      "wer_whitespace": 0.5266666666666666
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "lowest_fill",
+  "elapsed_ms": 6852.17,
+  "generation_calls": 2,
+  "executed": true,
+  "clarification": false,
+  "current_semantics": true,
+  "sql_validation": true,
+  "generated_sql": true,
+  "calculation": true,
+  "metric_correct": true
+}

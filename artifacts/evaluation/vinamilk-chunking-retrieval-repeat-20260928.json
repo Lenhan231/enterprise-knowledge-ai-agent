@@ -1,0 +1,863 @@
+{
+  "created_at_utc": "2026-09-27T23:28:44.977005+00:00",
+  "benchmark": "fixed-vs-sentence-aware dense retrieval; read-only live baseline plus in-memory alternate chunks",
+  "company": "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
+  "role": "finance_analyst",
+  "document_ids": [
+    "VNM-AR-2020-VI",
+    "VNM-AR-2021-VI",
+    "VNM-AR-2022-VI",
+    "VNM-AR-2023-EN",
+    "VNM-AR-2024-VI"
+  ],
+  "case_ids": [
+    "finance-revenue-profit-2020-vi",
+    "finance-revenue-profit-2021-vi",
+    "finance-revenue-profit-2022-vi",
+    "finance-revenue-profit-2023-en",
+    "finance-revenue-profit-2024-en"
+  ],
+  "case_file": "data/evaluation/vinamilk_retrieval_cases.json",
+  "case_file_sha256": "554f9837ed9ad6e3941e0edf38a88ac4d8614e2d138bb4d0c188374f21270b1a",
+  "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "max_sequence_length": 512,
+  "top_k": 30,
+  "label_transfer": {
+    "method": "same page and fraction of reviewed reference trigram set present in a sentence-aware candidate",
+    "minimum_reference_trigram_coverage": 0.5,
+    "limitations": "The fixed labels were manually reviewed; sentence-strategy labels are transferred heuristically and require independent human review. Scores are diagnostic, not a final chunking selection."
+  },
+  "database_snapshot": {
+    "authorized_fixed_chunks": 1912,
+    "authorized_documents": 5,
+    "vector_dimensions": [
+      384,
+      384
+    ],
+    "embedding_models": [
+      "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    ]
+  },
+  "corpus_parse_seconds": 44.12,
+  "alternate_embedding_seconds": 80.49,
+  "candidate_sha256": {
+    "fixed": "76abebedb551af46e15328f072d22a68e36c831dbd4dc48c513ea72c2d117db4",
+    "sentence": "356d222a15ac8343c2b6d1cd77c30c27fd364ff9e1e9a0e928613861c797ff28"
+  },
+  "environment": {
+    "python": "3.11.16",
+    "device": "cpu",
+    "gpu_available": false,
+    "peak_rss_mb": 1894.2
+  },
+  "strategies": {
+    "fixed": {
+      "chunk_count": 1912,
+      "document_count": 5,
+      "aggregate_document": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "aggregate_passage": {
+        "precision@1": 0.2,
+        "precision@3": 0.0667,
+        "precision@5": 0.04,
+        "recall@1": 0.1,
+        "recall@3": 0.1,
+        "recall@5": 0.1,
+        "mrr": 0.2715,
+        "ndcg@1": 0.2,
+        "ndcg@3": 0.1226,
+        "ndcg@5": 0.1226
+      },
+      "case_count": 5
+    },
+    "sentence": {
+      "chunk_count": 1979,
+      "document_count": 5,
+      "aggregate_document": {
+        "precision@1": 1.0,
+        "precision@3": 0.3333,
+        "precision@5": 0.2,
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ndcg@1": 1.0,
+        "ndcg@3": 1.0,
+        "ndcg@5": 1.0
+      },
+      "aggregate_passage": {
+        "precision@1": 0.2,
+        "precision@3": 0.0667,
+        "precision@5": 0.04,
+        "recall@1": 0.1,
+        "recall@3": 0.1,
+        "recall@5": 0.1,
+        "mrr": 0.2731,
+        "ndcg@1": 0.2,
+        "ndcg@3": 0.1226,
+        "ndcg@5": 0.1226
+      },
+      "case_count": 5
+    }
+  },
+  "results": {
+    "fixed": [
+      {
+        "id": "finance-revenue-profit-2020-vi",
+        "relevant_passage_count": 2,
+        "relevant_document_ids": [
+          "VNM-AR-2020-VI"
+        ],
+        "ranked_document_ids": [
+          "VNM-AR-2020-VI"
+        ],
+        "document_metrics": {
+          "precision@1": 1.0,
+          "precision@3": 0.3333333333333333,
+          "precision@5": 0.2,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "ndcg@1": 1.0,
+          "ndcg@3": 1.0,
+          "ndcg@5": 1.0
+        },
+        "passage_metrics": {
+          "precision@1": 1.0,
+          "precision@3": 0.3333333333333333,
+          "precision@5": 0.2,
+          "recall@1": 0.5,
+          "recall@3": 0.5,
+          "recall@5": 0.5,
+          "mrr": 1.0,
+          "ndcg@1": 1.0,
+          "ndcg@3": 0.6131471927654584,
+          "ndcg@5": 0.6131471927654584
+        },
+        "top_passages": [
+          {
+            "chunk_id": "VNM-AR-2020-VI::chunk::14",
+            "document_id": "VNM-AR-2020-VI",
+            "page_number": 8,
+            "similarity": 0.740697
+          },
+          {
+            "chunk_id": "VNM-AR-2020-VI::chunk::323",
+            "document_id": "VNM-AR-2020-VI",
+            "page_number": 93,
+            "similarity": 0.686829
+          },
+          {
+            "chunk_id": "VNM-AR-2020-VI::chunk::10",
+            "document_id": "VNM-AR-2020-VI",
+            "page_number": 7,
+            "similarity": 0.682571
+          },
+          {
+            "chunk_id": "VNM-AR-2020-VI::chunk::19",
+            "document_id": "VNM-AR-2020-VI",
+            "page_number": 9,
+            "similarity": 0.639888
+          },
+          {
+            "chunk_id": "VNM-AR-2020-VI::chunk::334",
+            "document_id": "VNM-AR-2020-VI",
+            "page_number": 97,
+            "similarity": 0.627384
+          }
+        ]
+      },
+      {
+        "id": "finance-revenue-profit-2021-vi",
+        "relevant_passage_count": 2,
+        "relevant_document_ids": [
+          "VNM-AR-2021-VI"
+        ],
+        "ranked_document_ids": [
+          "VNM-AR-2021-VI"
+        ],
+        "document_metrics": {
+          "precision@1": 1.0,
+          "precision@3": 0.3333333333333333,
+          "precision@5": 0.2,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "ndcg@1": 1.0,
+          "ndcg@3": 1.0,
+          "ndcg@5": 1.0
+        },
+        "passage_metrics": {
+          "precision@1": 0.0,
+          "precision@3": 0.0,
+          "precision@5": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.07142857142857142,
+          "ndcg@1": 0.0,
+          "ndcg@3": 0.0,
+          "ndcg@5": 0.0
+        },
+        "top_passages": [
+          {
+            "chunk_id": "VNM-AR-2021-VI::chunk::129",
+            "document_id": "VNM-AR-2021-VI",
+            "page_number": 49,
+            "similarity": 0.720613
+          },
+          {
+            "chunk_id": "VNM-AR-2021-VI::chunk::137",
+            "document_id": "VNM-AR-2021-VI",
+            "page_number": 52,
+            "similarity": 0.70713
+          },
+          {
+            "chunk_id": "VNM-AR-2021-VI::chunk::3",
+            "document_id": "VNM-AR-2021-VI",
+            "page_number": 4,
+            "similarity": 0.68528
+          },
+          {
+            "chunk_id": "VNM-AR-2021-VI::chunk::133",
+            "document_id": "VNM-AR-2021-VI",
+            "page_number": 50,
+            "similarity": 0.68087
+          },
+          {
+            "chunk_id": "VNM-AR-2021-VI::chunk::13",
+            "document_id": "VNM-AR-2021-VI",
+            "page_number": 8,
+            "similarity": 0.677635
+          }
+        ]
+      },
+      {
+        "id": "finance-revenue-profit-2022-vi",
+        "relevant_passage_count": 2,
+        "relevant_document_ids": [
+          "VNM-AR-2022-VI"
+        ],
+        "ranked_document_ids": [
+          "VNM-AR-2022-VI"
+        ],
+        "document_metrics": {
+          "precision@1": 1.0,
+          "precision@3": 0.3333333333333333,
+          "precision@5": 0.2,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "ndcg@1": 1.0,
+          "ndcg@3": 1.0,
+          "ndcg@5": 1.0
+        },
+        "passage_metrics": {
+          "precision@1": 0.0,
+          "precision@3": 0.0,
+          "precision@5": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.05,
+          "ndcg@1": 0.0,
+          "ndcg@3": 0.0,
+          "ndcg@5": 0.0
+        },
+        "top_passages": [
+          {
+            "chunk_id": "VNM-AR-2022-VI::chunk::202",
+            "document_id": "VNM-AR-2022-VI",
+            "page_number": 92,
+            "similarity": 0.820994
+          },
+          {
+            "chunk_id": "VNM-AR-2022-VI::chunk::10",
+            "document_id": "VNM-AR-2022-VI",
+            "page_number": 6,
+            "similarity": 0.779224
+          },
+          {
+            "chunk_id": "VNM-AR-2022-VI::chunk::356",
+            "document_id": "VNM-AR-2022-VI",
+            "page_number": 159,
+            "similarity": 0.696558
+          },
+          {
+            "chunk_id": "VNM-AR-2022-VI::chunk::369",
+            "document_id": "VNM-AR-2022-VI",
+            "page_number": 167,
+            "similarity": 0.682029
+          },
+          {
+            "chunk_id": "VNM-AR-2022-VI::chunk::129",
+            "document_id": "VNM-AR-2022-VI",
+            "page_number": 59,
+            "similarity": 0.654793
+          }
+        ]
+      },
+      {
+        "id": "finance-revenue-profit-2023-en",
+        "relevant_passage_count": 3,
+        "relevant_document_ids": [
+          "VNM-AR-2023-EN"
+        ],
+        "ranked_document_ids": [
+          "VNM-AR-2023-EN"
+        ],
+        "document_metrics": {
+          "precision@1": 1.0,
+          "precision@3": 0.3333333333333333,
+          "precision@5": 0.2,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "ndcg@1": 1.0,
+          "ndcg@3": 1.0,
+          "ndcg@5": 1.0
+        },
+        "passage_metrics": {
+          "precision@1": 0.0,
+          "precision@3": 0.0,
+          "precision@5": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.1111111111111111,
+          "ndcg@1": 0.0,
+          "ndcg@3": 0.0,
+          "ndcg@5": 0.0
+        },
+        "top_passages": [
+          {
+            "chunk_id": "VNM-AR-2023-EN::chunk::149",
+            "document_id": "VNM-AR-2023-EN",
+            "page_number": 68,
+            "similarity": 0.748707
+          },
+          {
+            "chunk_id": "VNM-AR-2023-EN::chunk::17",
+            "document_id": "VNM-AR-2023-EN",
+            "page_number": 9,
+            "similarity": 0.678389
+          },
+          {
+            "chunk_id": "VNM-AR-2023-EN::chunk::212",
+            "document_id": "VNM-AR-2023-EN",
+            "page_number": 94,
+            "similarity": 0.668675
+          },
+          {
+            "chunk_id": "VNM-AR-2023-EN::chunk::366",
+            "document_id": "VNM-AR-2023-EN",
+            "page_number": 160,
+            "similarity": 0.64688
+          },
+          {
+            "chunk_id": "VNM-AR-2023-EN::chunk::143",
+            "document_id": "VNM-AR-2023-EN",
+            "page_number": 66,
+            "similarity": 0.630339
+          }
+        ]
+      },
+      {
+        "id": "finance-revenue-profit-2024-en",
+        "relevant_passage_count": 2,
+        "relevant_document_ids": [
+          "VNM-AR-2024-VI"
+        ],
+        "ranked_document_ids": [
+          "VNM-AR-2024-VI"
+        ],
+        "document_metrics": {
+          "precision@1": 1.0,
+          "precision@3": 0.3333333333333333,
+          "precision@5": 0.2,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "ndcg@1": 1.0,
+          "ndcg@3": 1.0,
+          "ndcg@5": 1.0
+        },
+        "passage_metrics": {
+          "precision@1": 0.0,
+          "precision@3": 0.0,
+          "precision@5": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.125,
+          "ndcg@1": 0.0,
+          "ndcg@3": 0.0,
+          "ndcg@5": 0.0
+        },
+        "top_passages": [
+          {
+            "chunk_id": "VNM-AR-2024-VI::chunk::35",
+            "document_id": "VNM-AR-2024-VI",
+            "page_number": 15,
+            "similarity": 0.769197
+          },
+          {
+            "chunk_id": "VNM-AR-2024-VI::chunk::154",
+            "document_id": "VNM-AR-2024-VI",
+            "page_number": 47,
+            "similarity": 0.685802
+          },
+          {
+            "chunk_id": "VNM-AR-2024-VI::chunk::166",
+            "document_id": "VNM-AR-2024-VI",
+            "page_number": 50,
+            "similarity": 0.683785
+          },
+          {
+            "chunk_id": "VNM-AR-2024-VI::chunk::387",
+            "document_id": "VNM-AR-2024-VI",
+            "page_number": 93,
+            "similarity": 0.681627
+          },
+          {
+            "chunk_id": "VNM-AR-2024-VI::chunk::234",
+            "document_id": "VNM-AR-2024-VI",
+            "page_number": 65,
+            "similarity": 0.673096
+          }
+        ]
+      }
+    ],
+    "sentence": [
+      {
+        "id": "finance-revenue-profit-2020-vi",
+        "relevant_passage_count": 2,
+        "relevant_document_ids": [
+          "VNM-AR-2020-VI"
+        ],
+        "ranked_document_ids": [
+          "VNM-AR-2020-VI"
+        ],
+        "document_metrics": {
+          "precision@1": 1.0,
+          "precision@3": 0.3333333333333333,
+          "precision@5": 0.2,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "ndcg@1": 1.0,
+          "ndcg@3": 1.0,
+          "ndcg@5": 1.0
+        },
+        "passage_metrics": {
+          "precision@1": 1.0,
+          "precision@3": 0.3333333333333333,
+          "precision@5": 0.2,
+          "recall@1": 0.5,
+          "recall@3": 0.5,
+          "recall@5": 0.5,
+          "mrr": 1.0,
+          "ndcg@1": 1.0,
+          "ndcg@3": 0.6131471927654584,
+          "ndcg@5": 0.6131471927654584
+        },
+        "top_passages": [
+          {
+            "chunk_id": "VNM-AR-2020-VI::chunk::13",
+            "document_id": "VNM-AR-2020-VI",
+            "page_number": 8,
+            "similarity": 0.712629
+          },
+          {
+            "chunk_id": "VNM-AR-2020-VI::chunk::10",
+            "document_id": "VNM-AR-2020-VI",
+            "page_number": 7,
+            "similarity": 0.678952
+          },
+          {
+            "chunk_id": "VNM-AR-2020-VI::chunk::18",
+            "document_id": "VNM-AR-2020-VI",
+            "page_number": 9,
+            "similarity": 0.639888
+          },
+          {
+            "chunk_id": "VNM-AR-2020-VI::chunk::3",
+            "document_id": "VNM-AR-2020-VI",
+            "page_number": 3,
+            "similarity": 0.631917
+          },
+          {
+            "chunk_id": "VNM-AR-2020-VI::chunk::354",
+            "document_id": "VNM-AR-2020-VI",
+            "page_number": 97,
+            "similarity": 0.627384
+          }
+        ],
+        "label_transfer": {
+          "VNM-AR-2020-VI::chunk::1": [
+            [
+              "VNM-AR-2020-VI::chunk::1",
+              1.0
+            ]
+          ],
+          "VNM-AR-2020-VI::chunk::14": [
+            [
+              "VNM-AR-2020-VI::chunk::13",
+              0.8022
+            ]
+          ]
+        }
+      },
+      {
+        "id": "finance-revenue-profit-2021-vi",
+        "relevant_passage_count": 2,
+        "relevant_document_ids": [
+          "VNM-AR-2021-VI"
+        ],
+        "ranked_document_ids": [
+          "VNM-AR-2021-VI"
+        ],
+        "document_metrics": {
+          "precision@1": 1.0,
+          "precision@3": 0.3333333333333333,
+          "precision@5": 0.2,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "ndcg@1": 1.0,
+          "ndcg@3": 1.0,
+          "ndcg@5": 1.0
+        },
+        "passage_metrics": {
+          "precision@1": 0.0,
+          "precision@3": 0.0,
+          "precision@5": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.07692307692307693,
+          "ndcg@1": 0.0,
+          "ndcg@3": 0.0,
+          "ndcg@5": 0.0
+        },
+        "top_passages": [
+          {
+            "chunk_id": "VNM-AR-2021-VI::chunk::130",
+            "document_id": "VNM-AR-2021-VI",
+            "page_number": 49,
+            "similarity": 0.720613
+          },
+          {
+            "chunk_id": "VNM-AR-2021-VI::chunk::138",
+            "document_id": "VNM-AR-2021-VI",
+            "page_number": 52,
+            "similarity": 0.70713
+          },
+          {
+            "chunk_id": "VNM-AR-2021-VI::chunk::13",
+            "document_id": "VNM-AR-2021-VI",
+            "page_number": 8,
+            "similarity": 0.687615
+          },
+          {
+            "chunk_id": "VNM-AR-2021-VI::chunk::143",
+            "document_id": "VNM-AR-2021-VI",
+            "page_number": 53,
+            "similarity": 0.686559
+          },
+          {
+            "chunk_id": "VNM-AR-2021-VI::chunk::3",
+            "document_id": "VNM-AR-2021-VI",
+            "page_number": 4,
+            "similarity": 0.68528
+          }
+        ],
+        "label_transfer": {
+          "VNM-AR-2021-VI::chunk::2": [
+            [
+              "VNM-AR-2021-VI::chunk::2",
+              1.0
+            ]
+          ],
+          "VNM-AR-2021-VI::chunk::21": [
+            [
+              "VNM-AR-2021-VI::chunk::21",
+              1.0
+            ]
+          ]
+        }
+      },
+      {
+        "id": "finance-revenue-profit-2022-vi",
+        "relevant_passage_count": 2,
+        "relevant_document_ids": [
+          "VNM-AR-2022-VI"
+        ],
+        "ranked_document_ids": [
+          "VNM-AR-2022-VI"
+        ],
+        "document_metrics": {
+          "precision@1": 1.0,
+          "precision@3": 0.3333333333333333,
+          "precision@5": 0.2,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "ndcg@1": 1.0,
+          "ndcg@3": 1.0,
+          "ndcg@5": 1.0
+        },
+        "passage_metrics": {
+          "precision@1": 0.0,
+          "precision@3": 0.0,
+          "precision@5": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.05263157894736842,
+          "ndcg@1": 0.0,
+          "ndcg@3": 0.0,
+          "ndcg@5": 0.0
+        },
+        "top_passages": [
+          {
+            "chunk_id": "VNM-AR-2022-VI::chunk::7",
+            "document_id": "VNM-AR-2022-VI",
+            "page_number": 5,
+            "similarity": 0.769926
+          },
+          {
+            "chunk_id": "VNM-AR-2022-VI::chunk::10",
+            "document_id": "VNM-AR-2022-VI",
+            "page_number": 6,
+            "similarity": 0.759647
+          },
+          {
+            "chunk_id": "VNM-AR-2022-VI::chunk::200",
+            "document_id": "VNM-AR-2022-VI",
+            "page_number": 92,
+            "similarity": 0.735134
+          },
+          {
+            "chunk_id": "VNM-AR-2022-VI::chunk::362",
+            "document_id": "VNM-AR-2022-VI",
+            "page_number": 159,
+            "similarity": 0.696558
+          },
+          {
+            "chunk_id": "VNM-AR-2022-VI::chunk::376",
+            "document_id": "VNM-AR-2022-VI",
+            "page_number": 167,
+            "similarity": 0.682029
+          }
+        ],
+        "label_transfer": {
+          "VNM-AR-2022-VI::chunk::31": [
+            [
+              "VNM-AR-2022-VI::chunk::30",
+              1.0
+            ]
+          ],
+          "VNM-AR-2022-VI::chunk::32": [
+            [
+              "VNM-AR-2022-VI::chunk::31",
+              1.0
+            ]
+          ]
+        }
+      },
+      {
+        "id": "finance-revenue-profit-2023-en",
+        "relevant_passage_count": 3,
+        "relevant_document_ids": [
+          "VNM-AR-2023-EN"
+        ],
+        "ranked_document_ids": [
+          "VNM-AR-2023-EN"
+        ],
+        "document_metrics": {
+          "precision@1": 1.0,
+          "precision@3": 0.3333333333333333,
+          "precision@5": 0.2,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "ndcg@1": 1.0,
+          "ndcg@3": 1.0,
+          "ndcg@5": 1.0
+        },
+        "passage_metrics": {
+          "precision@1": 0.0,
+          "precision@3": 0.0,
+          "precision@5": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.1111111111111111,
+          "ndcg@1": 0.0,
+          "ndcg@3": 0.0,
+          "ndcg@5": 0.0
+        },
+        "top_passages": [
+          {
+            "chunk_id": "VNM-AR-2023-EN::chunk::147",
+            "document_id": "VNM-AR-2023-EN",
+            "page_number": 68,
+            "similarity": 0.748707
+          },
+          {
+            "chunk_id": "VNM-AR-2023-EN::chunk::210",
+            "document_id": "VNM-AR-2023-EN",
+            "page_number": 94,
+            "similarity": 0.705411
+          },
+          {
+            "chunk_id": "VNM-AR-2023-EN::chunk::16",
+            "document_id": "VNM-AR-2023-EN",
+            "page_number": 9,
+            "similarity": 0.678389
+          },
+          {
+            "chunk_id": "VNM-AR-2023-EN::chunk::141",
+            "document_id": "VNM-AR-2023-EN",
+            "page_number": 66,
+            "similarity": 0.630339
+          },
+          {
+            "chunk_id": "VNM-AR-2023-EN::chunk::394",
+            "document_id": "VNM-AR-2023-EN",
+            "page_number": 167,
+            "similarity": 0.627902
+          }
+        ],
+        "label_transfer": {
+          "VNM-AR-2023-EN::chunk::262": [
+            [
+              "VNM-AR-2023-EN::chunk::263",
+              1.0
+            ]
+          ],
+          "VNM-AR-2023-EN::chunk::263": [
+            [
+              "VNM-AR-2023-EN::chunk::264",
+              0.7606
+            ]
+          ],
+          "VNM-AR-2023-EN::chunk::264": [
+            [
+              "VNM-AR-2023-EN::chunk::266",
+              1.0
+            ]
+          ]
+        }
+      },
+      {
+        "id": "finance-revenue-profit-2024-en",
+        "relevant_passage_count": 2,
+        "relevant_document_ids": [
+          "VNM-AR-2024-VI"
+        ],
+        "ranked_document_ids": [
+          "VNM-AR-2024-VI"
+        ],
+        "document_metrics": {
+          "precision@1": 1.0,
+          "precision@3": 0.3333333333333333,
+          "precision@5": 0.2,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "mrr": 1.0,
+          "ndcg@1": 1.0,
+          "ndcg@3": 1.0,
+          "ndcg@5": 1.0
+        },
+        "passage_metrics": {
+          "precision@1": 0.0,
+          "precision@3": 0.0,
+          "precision@5": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "mrr": 0.125,
+          "ndcg@1": 0.0,
+          "ndcg@3": 0.0,
+          "ndcg@5": 0.0
+        },
+        "top_passages": [
+          {
+            "chunk_id": "VNM-AR-2024-VI::chunk::205",
+            "document_id": "VNM-AR-2024-VI",
+            "page_number": 61,
+            "similarity": 0.707816
+          },
+          {
+            "chunk_id": "VNM-AR-2024-VI::chunk::34",
+            "document_id": "VNM-AR-2024-VI",
+            "page_number": 15,
+            "similarity": 0.706801
+          },
+          {
+            "chunk_id": "VNM-AR-2024-VI::chunk::395",
+            "document_id": "VNM-AR-2024-VI",
+            "page_number": 92,
+            "similarity": 0.695703
+          },
+          {
+            "chunk_id": "VNM-AR-2024-VI::chunk::155",
+            "document_id": "VNM-AR-2024-VI",
+            "page_number": 47,
+            "similarity": 0.685802
+          },
+          {
+            "chunk_id": "VNM-AR-2024-VI::chunk::167",
+            "document_id": "VNM-AR-2024-VI",
+            "page_number": 50,
+            "similarity": 0.683785
+          }
+        ],
+        "label_transfer": {
+          "VNM-AR-2024-VI::chunk::27": [
+            [
+              "VNM-AR-2024-VI::chunk::26",
+              0.8802
+            ]
+          ],
+          "VNM-AR-2024-VI::chunk::9": [
+            [
+              "VNM-AR-2024-VI::chunk::9",
+              0.7222
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  "limitations": "Only five finance questions and their five annual reports were compared. Dense retrieval only; no BM25/hybrid/reranker/QA comparison. Current database vectors are the fixed baseline and alternate chunks/vectors were computed in memory; this script performs no persistent writes. Exact-year ordering matches the application's fiscal-year boost. Transferred sentence passage judgments are heuristic.",
+  "source_sha256": {
+    "VNM-AR-2020-VI": "0abbd2bb78b4be637107b1975014a118c7eda9d79ebe4634d612337910b25f00",
+    "VNM-AR-2021-VI": "83849d0fc12189be67828c7c0bd54464df4231b1ee712120f6905e291dadfb5b",
+    "VNM-AR-2022-VI": "9c6ab7380c5f8a5a81e6b7c99692b34d3da02dd32b919b402c90612dd39434db",
+    "VNM-AR-2023-EN": "2657fc85faa2e719e8be462e92119782de5b5b30a2e854f24271d73f3581d5d0",
+    "VNM-AR-2024-VI": "4c756bba77e39d192515f377caafa4f7105234b2c943eb164d0a0987ecedfc55"
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "source": "FA26AI69 read-only aggregate SELECTs, 2026-10-31; evaluation only",
+  "queries": {
+    "lowest_stock": "SELECT i.snapshot_date,i.stock_on_hand AS value FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id=p.product_id WHERE i.snapshot_date=(SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) ORDER BY 2,p.product_name LIMIT 10",
+    "category_stock": "SELECT i.snapshot_date,p.category,SUM(i.stock_on_hand) AS value FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id=p.product_id WHERE i.snapshot_date=(SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date,p.category LIMIT 200",
+    "top_category": "SELECT i.snapshot_date,p.category,SUM(i.stock_on_hand) AS value FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id=p.product_id WHERE i.snapshot_date=(SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) GROUP BY i.snapshot_date,p.category ORDER BY 3 DESC LIMIT 1",
+    "lowest_fill": "SELECT i.snapshot_date,i.fill_rate FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id=p.product_id WHERE i.snapshot_date=(SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) ORDER BY 2,p.product_name LIMIT 10",
+    "history": "SELECT i.snapshot_date,SUM(i.stock_on_hand) AS value FROM commerce.inventory AS i WHERE i.snapshot_date>='2022-01-01' AND i.snapshot_date<'2023-01-01' GROUP BY i.snapshot_date ORDER BY 1 LIMIT 200"
+  },
+  "cases": {
+    "lowest_stock": [
+      {
+        "snapshot_date": "2022-12-31",
+        "value": 3
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "value": 3
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "value": 3
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "value": 3
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "value": 3
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "value": 3
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "value": 3
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "value": 3
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "value": 3
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "value": 3
+      }
+    ],
+    "category_stock": [
+      {
+        "snapshot_date": "2022-12-31",
+        "category": "GenZ",
+        "value": 5126
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "category": "Casual",
+        "value": 4095
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "category": "Outdoor",
+        "value": 49929
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "category": "Streetwear",
+        "value": 45085
+      }
+    ],
+    "top_category": [
+      {
+        "snapshot_date": "2022-12-31",
+        "category": "Outdoor",
+        "value": 49929
+      }
+    ],
+    "lowest_fill": [
+      {
+        "snapshot_date": "2022-12-31",
+        "fill_rate": "0.1667"
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "fill_rate": "0.2"
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "fill_rate": "0.4333"
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "fill_rate": "0.6333"
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "fill_rate": "0.8333"
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "fill_rate": "0.8667"
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "fill_rate": "0.9"
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "fill_rate": "0.9333"
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "fill_rate": "0.9333"
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "fill_rate": "0.9333"
+      }
+    ],
+    "history": [
+      {
+        "snapshot_date": "2022-01-31",
+        "value": 100332
+      },
+      {
+        "snapshot_date": "2022-02-28",
+        "value": 106405
+      },
+      {
+        "snapshot_date": "2022-03-31",
+        "value": 111674
+      },
+      {
+        "snapshot_date": "2022-04-30",
+        "value": 116977
+      },
+      {
+        "snapshot_date": "2022-05-31",
+        "value": 116939
+      },
+      {
+        "snapshot_date": "2022-06-30",
+        "value": 109700
+      },
+      {
+        "snapshot_date": "2022-07-31",
+        "value": 102083
+      },
+      {
+        "snapshot_date": "2022-08-31",
+        "value": 104884
+      },
+      {
+        "snapshot_date": "2022-09-30",
+        "value": 107309
+      },
+      {
+        "snapshot_date": "2022-10-31",
+        "value": 104255
+      },
+      {
+        "snapshot_date": "2022-11-30",
+        "value": 95003
+      },
+      {
+        "snapshot_date": "2022-12-31",
+        "value": 104235
+      }
+    ]
+  }
+}

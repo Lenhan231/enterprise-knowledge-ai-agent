@@ -1,0 +1,32 @@
+{
+  "dataset": "shared-html-owner-reviewed",
+  "run_id": "vietocr-html-longhau-p17-rotate90",
+  "engine": "RapidOCR detection-only + VietOCR vgg_seq2seq greedy",
+  "device": "cpu",
+  "max_width": 512,
+  "rotation_degrees_clockwise": 90,
+  "page_filter": "E2E-LONG-HAU-2008-p17",
+  "page_count": 1,
+  "successful_pages": 1,
+  "failed_pages": 0,
+  "model_initialization_seconds": 1.51,
+  "detection_seconds": 2.81,
+  "recognition_seconds": 7.121,
+  "finished_at_utc": "2026-10-21T12:52:32.143025+00:00",
+  "packages": {
+    "vietocr": "0.3.13",
+    "rapidocr": "3.9.2",
+    "torch": "2.14.0",
+    "onnxruntime": "1.31.0"
+  },
+  "pages": [
+    {
+      "reference_id": "E2E-LONG-HAU-2008-p17",
+      "status": "ok",
+      "seconds": 10.012,
+      "line_count": 72
+    }
+  ],
+  "predictions": "/home/lenhanm1/Thesis/enterprise-knowledge-ai-agent/artifacts/evaluation/document-pipelines/results/shared-html/vietocr-html-longhau-p17-rotate90/predictions.jsonl",
+  "evaluation": "/home/lenhanm1/Thesis/enterprise-knowledge-ai-agent/artifacts/evaluation/document-pipelines/results/shared-html/vietocr-html-longhau-p17-rotate90/evaluation.json"
+}

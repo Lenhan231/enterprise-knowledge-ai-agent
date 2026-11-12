@@ -1,0 +1,36 @@
+{
+  "created_at_utc": "2026-09-28T07:31:50Z",
+  "purpose": "Isolated local-versus-hosted embedding resource and vector-parity smoke",
+  "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "query_sha256": "275db173a31720ec45328eb9f4e415c42e9756aaf88e03af8af9737c7c3d4014",
+  "query": "Lợi nhuận sau thuế hợp nhất của Vinamilk năm 2024 là bao nhiêu?",
+  "input_count": 1,
+  "embedding_dimension": 384,
+  "runs": {
+    "huggingface_inference": {
+      "elapsed_seconds": 7.014,
+      "peak_process_rss_mib": 576.2,
+      "vector_sha256": "323327d5bb3cd378448f316dff1819754ce3fe519d1bf62f1e6b06c88213f13d"
+    },
+    "local": {
+      "elapsed_seconds": 10.56,
+      "peak_process_rss_mib": 1485.8,
+      "vector_sha256": "12e31f60969fb79a2bc44a6d2b8e6310980959e22faa95e19d21185617dfb645"
+    }
+  },
+  "comparison": {
+    "cosine_similarity": 0.9999999999998066,
+    "max_absolute_component_difference": 4.917383193969727e-7,
+    "hosted_peak_rss_reduction_mib": 909.6,
+    "hosted_peak_rss_reduction_percent": 61.2
+  },
+  "environment": {
+    "python": "3.11.16",
+    "hosted_backend": "Hugging Face Inference API",
+    "local_backend": "Sentence Transformers",
+    "device": "CPU",
+    "embedding_key_present": true,
+    "database_writes": false
+  },
+  "limitations": "One public query, one cold isolated process per backend, one run each. Peak RSS includes Python, framework imports, backend initialization and the request. Elapsed times mix local cold model loading and remote provider/network latency and are not steady-state or statistically comparable. This does not measure the live Uvicorn process under representative concurrent load or end-to-end retrieval quality."
+}

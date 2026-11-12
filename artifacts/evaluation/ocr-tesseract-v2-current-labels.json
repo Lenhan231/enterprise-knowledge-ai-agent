@@ -1,0 +1,108 @@
+{
+  "created_at_utc": "2026-09-27T07:09:32.202523+00:00",
+  "dataset": "vinamilk-ocr-human-reviewed-regions-v2",
+  "dataset_sha256": "3a7c747104689ceea630d41891e11cd2ba5ebf34e96688b6fcfe86d0a8f83846",
+  "reference_method": "Manual transcription from rendered PDF regions; every included reference was visually checked against its source page.",
+  "reference_quality": "human_transcribed_visual_review",
+  "primary_metric_selection_eligible": false,
+  "limitations": "Only three manually reviewed crops are included: a raster-embedded Vietnamese product poster (not a physical scan), a Vietnamese financial infographic, and English sustainability text. This small, mixed-language sample is useful for a pilot comparison but is not representative enough for model selection; no physical scans, handwriting, table-cell, or layout-structure labels are included.",
+  "render_dpi": 180,
+  "environment": {
+    "python": "3.11.16",
+    "platform": "Linux-7.2.6-arch2-1-x86_64-with-glibc2.44",
+    "gpu": "CPU; CUDA unavailable",
+    "cuda_available": false
+  },
+  "ocr_configuration": {
+    "render_dpi": 180,
+    "tesseract_language": "vie+eng",
+    "tesseract_page_segmentation_mode": 3
+  },
+  "engines": {
+    "tesseract": {
+      "available": true,
+      "engine_version": "tesseract 5.5.3",
+      "pages": [
+        {
+          "document_id": "VNM-AR-2024-VI",
+          "page": 12,
+          "language": "vi",
+          "source_pdf_sha256": "4c756bba77e39d192515f377caafa4f7105234b2c943eb164d0a0987ecedfc55",
+          "rendered_image_sha256": "d26843ac9dc52e506236c30885907059e78727e339e13102279e2259cd449122",
+          "reference_source": "manual_transcription",
+          "reference_characters": 201,
+          "reference_words": 49,
+          "hypothesis_characters": 170,
+          "character_edit_distance": 54,
+          "word_edit_distance": 31,
+          "cer": 0.268657,
+          "wer": 0.632653,
+          "latency_seconds": 0.748,
+          "error": null
+        },
+        {
+          "document_id": "VNM-SR-2024-EN",
+          "page": 3,
+          "language": "en",
+          "source_pdf_sha256": "018ba885f223c3d766a44d3d7aeb3536098ad33a6751d1a492d60271b30af8de",
+          "rendered_image_sha256": "fceaa3f9bff47457218dbd8d301a07b7aabd20a0980a753ac4a09a20b1b4aeac",
+          "reference_source": "manual_transcription",
+          "reference_characters": 641,
+          "reference_words": 92,
+          "hypothesis_characters": 639,
+          "character_edit_distance": 3,
+          "word_edit_distance": 5,
+          "cer": 0.00468,
+          "wer": 0.054348,
+          "latency_seconds": 0.886,
+          "error": null
+        },
+        {
+          "document_id": "VNM-AR-2020-VI",
+          "page": 22,
+          "language": "vi",
+          "source_pdf_sha256": "0abbd2bb78b4be637107b1975014a118c7eda9d79ebe4634d612337910b25f00",
+          "rendered_image_sha256": "7d1efe264c7a89f9fc74a0cb1d48dac98f0555e2037fed89622578d46c312757",
+          "reference_source": "manual_transcription",
+          "reference_characters": 160,
+          "reference_words": 32,
+          "hypothesis_characters": 71,
+          "character_edit_distance": 107,
+          "word_edit_distance": 30,
+          "cer": 0.66875,
+          "wer": 0.9375,
+          "latency_seconds": 0.931,
+          "error": null
+        }
+      ],
+      "model_initialization_seconds": null,
+      "model_initialization_error": null,
+      "aggregate": {
+        "valid_pages": 3,
+        "macro_mean_page_cer": 0.314029,
+        "micro_cer": 0.163673,
+        "macro_mean_page_wer": 0.5415,
+        "micro_wer": 0.381503,
+        "mean_latency_seconds": 0.855
+      },
+      "by_language": {
+        "en": {
+          "valid_pages": 1,
+          "macro_mean_page_cer": 0.00468,
+          "micro_cer": 0.00468,
+          "macro_mean_page_wer": 0.054348,
+          "micro_wer": 0.054348,
+          "mean_latency_seconds": 0.886
+        },
+        "vi": {
+          "valid_pages": 2,
+          "macro_mean_page_cer": 0.468703,
+          "micro_cer": 0.445983,
+          "macro_mean_page_wer": 0.785076,
+          "micro_wer": 0.753086,
+          "mean_latency_seconds": 0.84
+        }
+      }
+    }
+  }
+}

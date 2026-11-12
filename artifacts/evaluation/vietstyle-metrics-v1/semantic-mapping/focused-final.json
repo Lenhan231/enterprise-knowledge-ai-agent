@@ -1,0 +1,29 @@
+{
+  "tests_run": 164,
+  "failures": [
+    "test_orchestration_clients.WebConversationTest.test_inflight_answer_cannot_cross_a_conversation_reset"
+  ],
+  "errors": [],
+  "skipped": [],
+  "modules": [
+    "test_sql_generation",
+    "test_sql_metric_definitions",
+    "test_sql_join_duplication",
+    "test_report_agent",
+    "test_report_reliability",
+    "test_report_orchestration",
+    "test_report_provider",
+    "test_orchestration_contracts",
+    "test_orchestration_clients",
+    "test_analytics_agents",
+    "test_bounded_execution",
+    "test_request_planning",
+    "test_report_grounding",
+    "test_report_delivery",
+    "test_report_templates",
+    "test_inventory_metric_dictionary",
+    "test_metric_mapping",
+    "test_app_chat",
+    "test_supabase_analytics_smoke"
+  ]
+}

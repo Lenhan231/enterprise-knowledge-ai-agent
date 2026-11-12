@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css?v=redesign-20261112a">
-  <link rel="stylesheet" href="/static/redesign.css?v=redesign-20261112a">
+  <link rel="stylesheet" href="/static/styles.css?v=redesign-20261112b">
+  <link rel="stylesheet" href="/static/redesign.css?v=redesign-20261112b">
   <script>
     (function() {
       const saved = localStorage.getItem("app_theme");
@@ -61,26 +61,25 @@
         <button id="tab-button-monitoring" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-monitoring" data-tab-target="monitoring" hidden aria-label="Agent Monitoring" title="Agent Monitoring"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="nav-label">Agent Monitoring</span></button>
       </nav>
       <div class="topbar-status sidebar-account">
-        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle light and dark mode" title="Toggle theme">
-          <span class="theme-icon light-icon" aria-hidden="true">Light</span>
-          <span class="theme-icon dark-icon" aria-hidden="true">Dark</span>
+        <button id="theme-toggle" class="theme-toggle side-row" type="button" aria-label="Toggle light and dark mode" title="Toggle theme">
+          <span class="side-icon"><span class="theme-icon light-icon" aria-hidden="true"></span><span class="theme-icon dark-icon" aria-hidden="true"></span></span>
+          <span class="nav-label"><span class="theme-label-light">Light mode</span><span class="theme-label-dark">Dark mode</span></span>
         </button>
-        <span class="status-dot"></span>
-        <span id="connection-status">Sign in required</span>
-        <span id="user-badge" hidden></span>
-        <button id="logout-button" class="logout-btn" hidden>Sign out</button>
+        <div class="account-row side-row" title="Signed-in account">
+          <span class="side-icon account-avatar" aria-hidden="true"><span id="account-initial">?</span><span class="status-dot"></span></span>
+          <span class="nav-label account-text"><span id="user-badge" hidden></span><span id="connection-status">Sign in required</span></span>
+        </div>
+        <button id="logout-button" class="logout-btn side-row" hidden title="Sign out"><span class="side-icon logout-icon" aria-hidden="true"></span><span class="nav-label">Sign out</span></button>
       </div>
     </aside>
     <main id="workspace-main" class="page">
     <section class="intro">
       <div>
-        <p class="eyebrow">Four specialist agents in one workspace</p>
-        <h1>Commerce intelligence,<br><span>from evidence to action.</span></h1>
-        <p class="intro-copy">Ask the knowledge agent for sourced guidance, the analytics agent for business metrics, the inventory agent for stock exceptions, or the report agent for a decision-ready summary.</p>
+        <h1>Ask your company documents</h1>
+        <p class="intro-copy">Answers quote the passage they come from, and every claim is checked against it before you see it.</p>
       </div>
       <div class="corpus-scope">
-        <span>ENTERPRISE SCOPE</span>
-        <strong>Commerce demo · synthetic data</strong>
+        <strong>Demo data (synthetic)</strong>
       </div>
     </section>
 
@@ -127,28 +126,28 @@
     <section class="stats" aria-label="Knowledge base coverage" hidden>
       <article class="stat-card">
         <div>
-          <span class="stat-label">Enterprises</span>
+          <span class="stat-label">domains</span>
           <strong id="company-name">—</strong>
           <span class="stat-note">Visible in your role scope</span>
         </div>
       </article>
       <article class="stat-card">
         <div>
-          <span class="stat-label">Indexed Documents</span>
+          <span class="stat-label">documents</span>
           <strong id="document-count">—</strong>
           <span class="stat-note">Role-visible searchable sources</span>
         </div>
       </article>
       <article class="stat-card">
         <div>
-          <span class="stat-label">Passages</span>
+          <span class="stat-label">passages</span>
           <strong id="chunk-count">—</strong>
           <span class="stat-note">Available for document retrieval</span>
         </div>
       </article>
       <article class="stat-card source-stat">
         <div>
-          <span class="stat-label">Processing</span>
+          <span class="stat-label">processing</span>
           <strong id="processing-count">—</strong>
           <span class="stat-note">Uploaded / OCR / chunking</span>
         </div>
@@ -187,46 +186,42 @@
     <!-- TAB 1: KNOWLEDGE / Q&A -->
     <section id="tab-knowledge" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-knowledge">
       <section class="ask-panel" aria-labelledby="ask-title">
-        <div class="ask-heading">
-          <div>
-            <p class="eyebrow">Answers cite the exact passage they come from</p>
-            <h2 id="ask-title">What would you like to know?</h2>
-          </div>
-          <span class="grounded-badge">Cited source grounding</span>
-        </div>
+        <h2 id="ask-title" class="visually-hidden">Ask a question</h2>
         <form id="ask-form">
           <label class="visually-hidden" for="question">Search or ask a question about company documents</label>
           <div class="textarea-wrapper">
-          <textarea id="question" minlength="3" maxlength="2000" required placeholder="Example: What evidence should be checked before transferring inventory?"></textarea>
-          </div>
-          <div class="quick-prompts" id="quick-prompts">
-            <span class="quick-prompt-label">Quick prompts:</span>
-            <button type="button" class="quick-chip" data-prompt="What evidence should be checked before transferring inventory when stockout and overstock flags overlap?">Inventory guidance</button>
-            <button type="button" class="quick-chip" data-prompt="How can an experiment distinguish incremental promotion sales from attributed sales?">Campaign measurement</button>
-            <button type="button" class="quick-chip" data-prompt="Which factors should a retailer compare before choosing an ecommerce delivery service?">Delivery planning</button>
+          <textarea id="question" minlength="3" maxlength="2000" required placeholder="Ask about a policy, a process or the sales data…"></textarea>
           </div>
           <div class="ask-controls">
-            <span id="question-hint">Use precise questions for exact passage retrieval and primary source citations.</span>
+            <span id="question-hint" class="visually-hidden">Press Ask to send. Answers cite their sources.</span>
             <div class="ask-actions">
               <label class="agent-mode-control" for="agent-mode">Route to
                 <select id="agent-mode" name="agent_mode">
                   <option value="auto" selected>Auto</option>
-                  <option value="knowledge">Knowledge</option>
-                  <option value="sql">Analytics</option>
+                  <option value="knowledge">Documents only</option>
+                  <option value="sql">Sales data</option>
                 </select>
               </label>
               <button id="new-conversation" type="button">New conversation</button>
               <button id="ask-button" type="submit" class="submit-query-btn">
-                <span>Ask agent</span>
+                <span>Ask</span>
               </button>
             </div>
           </div>
         </form>
+        <div class="quick-prompts" id="quick-prompts">
+            <span class="quick-prompt-label visually-hidden">Example questions</span>
+            <button type="button" class="quick-chip" data-prompt="Khi nghỉ việc tôi cần bàn giao những gì?">Bàn giao khi nghỉ việc</button>
+            <button type="button" class="quick-chip" data-prompt="Đi công tác thì được thanh toán khách sạn tối đa bao nhiêu một đêm?">Hạn mức khách sạn công tác</button>
+            <button type="button" class="quick-chip" data-prompt="What evidence should be checked before transferring inventory when stockout and overstock flags overlap?">Inventory transfer checks</button>
+          </div>
         <div id="answer-panel" class="answer-panel" hidden aria-live="polite"></div>
       </section>
 
+      <details id="report-fold" class="report-fold">
+        <summary><span class="report-fold-title">Generate a report</span><span class="report-fold-note">Turn documents and sales data into a structured brief, as Markdown or DOCX</span></summary>
       <section id="report-agent-form-section" class="report-agent-panel" aria-labelledby="report-agent-form-title" hidden>
-        <div class="section-heading"><div><p class="eyebrow">Report agent</p><h2 id="report-agent-form-title">Generate an evidence-backed report</h2></div></div>
+        <h2 id="report-agent-form-title" class="visually-hidden">Generate an evidence-backed report</h2>
         <form id="report-agent-form" class="review-form">
           <label for="report-agent-question">Decision question</label>
           <textarea id="report-agent-question" name="question" minlength="3" maxlength="2000" required placeholder="What decision should this report support?"></textarea>
@@ -250,6 +245,7 @@
           <p id="report-agent-status" class="corpus-note" role="status" aria-live="polite"></p>
         </form>
       </section>
+      </details>
 
     </section>
 
@@ -460,37 +456,39 @@
         <div class="section-heading">
           <div>
             <p class="eyebrow">Last 24 hours</p>
-            <h2>Agent Performance &amp; Latency Monitoring</h2>
-            <p class="monitoring-note">Telemetry from the last 24 hours. Run telemetry does not record user questions or generated text; only answers a user rates (👍/👎) are stored with their question, for review.</p>
+            <h2>Agent monitoring</h2>
+            <p class="monitoring-note">Run telemetry does not record questions or answers. Only answers that a user rates are stored with their question, for review.</p>
           </div>
           <button id="monitoring-refresh" class="secondary-button" type="button">
             <span>Refresh</span>
           </button>
         </div>
         <div id="monitoring-summary" class="monitoring-summary" aria-live="polite"></div>
-        <section class="analysis-section">
+        <div class="monitoring-tabs" role="tablist" aria-label="Monitoring sections">
+          <button type="button" role="tab" class="monitoring-tab" aria-selected="true" aria-controls="monitor-panel-agents" data-monitor-tab="agents">By agent</button>
+          <button type="button" role="tab" class="monitoring-tab" aria-selected="false" aria-controls="monitor-panel-runs" data-monitor-tab="runs" tabindex="-1">Recent runs <span id="monitor-count-runs" class="monitoring-tab-count"></span></button>
+          <button type="button" role="tab" class="monitoring-tab" aria-selected="false" aria-controls="monitor-panel-feedback" data-monitor-tab="feedback" tabindex="-1">Answer ratings <span id="monitor-count-feedback" class="monitoring-tab-count"></span></button>
+        </div>
+        <section id="monitor-panel-agents" class="analysis-section" role="tabpanel" data-monitor-panel="agents">
           <div class="analysis-section-heading">
             <div>
-              <p class="eyebrow">Routed workload</p>
-              <h3>Executions by Agent</h3>
+              <h3>Runs by agent</h3>
             </div>
           </div>
           <div id="monitoring-agents" class="monitoring-agents"></div>
         </section>
-        <section class="analysis-section">
+        <section id="monitor-panel-runs" class="analysis-section" role="tabpanel" data-monitor-panel="runs" hidden>
           <div class="analysis-section-heading">
             <div>
-              <p class="eyebrow">Recent executions</p>
-              <h3>Last 100 Runs</h3>
+              <h3>Last 100 runs</h3>
             </div>
           </div>
           <div id="monitoring-runs" class="monitoring-runs" aria-live="polite"></div>
         </section>
-        <section class="analysis-section">
+        <section id="monitor-panel-feedback" class="analysis-section" role="tabpanel" data-monitor-panel="feedback" hidden>
           <div class="analysis-section-heading">
             <div>
-              <p class="eyebrow">User feedback</p>
-              <h3>Answer Ratings</h3>
+              <h3>Answer ratings</h3>
             </div>
           </div>
           <div id="monitoring-feedback" class="monitoring-runs" aria-live="polite"></div>
@@ -500,6 +498,6 @@
     </div>
     </main>
   </div>
-  <script src="/static/app.js?v=redesign-20261112a" defer></script>
+  <script src="/static/app.js?v=redesign-20261112b" defer></script>
 </body>
 </html>

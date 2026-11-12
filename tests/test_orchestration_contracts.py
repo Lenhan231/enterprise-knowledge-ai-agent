@@ -145,6 +145,19 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
             'How do I hand over my work?', 'What is the hotel limit per night?',
             'Search for handover policies', 'Search for handover policies'])
 
+    async def test_documents_only_plan_with_several_knowledge_tasks_becomes_one_pass_through_task(self):
+        tasks = [task('b', 'knowledge', 'Who approves 80 million (Appendix B)?'),
+                 task('c', 'knowledge', 'When can a PO be issued (Appendix C)?')]
+        verified = source_result('knowledge')
+        verified.answer = '1. Department head, Procurement and Finance [S1].\n2. Only after approval [S1].'
+        knowledge = FakeAgent(verified)
+        question = 'Theo Phụ lục B và C, 80 triệu cần ai duyệt và PO phát hành khi nào?'
+        result = await AgentRouter(None, knowledge, FakeAgent(source_result('analytics', rows=[])),
+                                   llm=FakeProvider(tasks)).run(AgentRequest(question=question, identity=IDENTITY))
+        self.assertEqual([request.question for request in knowledge.requests], [question])
+        self.assertEqual(result.answer, verified.answer)
+        self.assertNotIn('fallback', result.metadata)
+
     async def test_knowledge_question_with_predecessor_inputs_is_not_replaced(self):
         tasks = [task('s', 'sql', 'Top category'), task('k', 'knowledge', 'Policy for that category',
                  depends_on=['s'], inputs=[{'task_id': 's', 'kind': 'rows'}])]

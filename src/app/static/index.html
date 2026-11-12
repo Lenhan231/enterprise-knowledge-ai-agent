@@ -3,12 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f3f6fa">
+  <meta name="theme-color" content="#f2f5f4">
   <title>Commerce Intelligence · Operations</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css?v=general-chat-20261112d">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css?v=redesign-20261112a">
+  <link rel="stylesheet" href="/static/redesign.css?v=redesign-20261112a">
   <script>
     (function() {
       const saved = localStorage.getItem("app_theme");
@@ -29,7 +30,7 @@
 
   <main id="login-view" class="login-view">
     <form id="login-form" class="login-card">
-      <p class="eyebrow">SECURE ENTERPRISE ACCESS</p>
+      <p class="eyebrow">Secure enterprise access</p>
       <h1>Sign in to your knowledge workspace</h1>
       <label for="username">Username</label>
       <input id="username" name="username" autocomplete="username" placeholder="e.g. admin, analyst, document-processing-owner" required>
@@ -73,7 +74,7 @@
     <main id="workspace-main" class="page">
     <section class="intro">
       <div>
-        <p class="eyebrow">FOUR SPECIALIST AGENTS · ONE WORKSPACE</p>
+        <p class="eyebrow">Four specialist agents in one workspace</p>
         <h1>Commerce intelligence,<br><span>from evidence to action.</span></h1>
         <p class="intro-copy">Ask the knowledge agent for sourced guidance, the analytics agent for business metrics, the inventory agent for stock exceptions, or the report agent for a decision-ready summary.</p>
       </div>
@@ -86,7 +87,7 @@
     <section class="agent-overview" aria-labelledby="agent-overview-title">
       <div class="section-heading">
         <div>
-          <p class="eyebrow">YOUR AGENT TEAM</p>
+          <p class="eyebrow">Your agent team</p>
           <h2 id="agent-overview-title">Choose the right specialist</h2>
         </div>
         <span class="agent-team-badge"><span aria-hidden="true"></span> 4 agents available</span>
@@ -158,7 +159,7 @@
     <section id="tab-general-chat" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-general-chat" hidden>
       <section class="general-chat" aria-labelledby="general-chat-title">
         <header class="general-chat-heading">
-          <div class="general-chat-heading-copy"><p class="eyebrow">ENTERPRISE AI</p><h2 id="general-chat-title">General Chat</h2></div>
+          <div class="general-chat-heading-copy"><p class="eyebrow">Enterprise AI</p><h2 id="general-chat-title">General Chat</h2></div>
           <button id="new-general-chat" type="button" class="general-chat-new"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>New chat</span></button>
         </header>
         <div class="general-chat-content">
@@ -188,7 +189,7 @@
       <section class="ask-panel" aria-labelledby="ask-title">
         <div class="ask-heading">
           <div>
-            <p class="eyebrow">SOURCE-GROUNDED RETRIEVAL (HYBRID RAG)</p>
+            <p class="eyebrow">Answers cite the exact passage they come from</p>
             <h2 id="ask-title">What would you like to know?</h2>
           </div>
           <span class="grounded-badge">Cited source grounding</span>
@@ -225,7 +226,7 @@
       </section>
 
       <section id="report-agent-form-section" class="report-agent-panel" aria-labelledby="report-agent-form-title" hidden>
-        <div class="section-heading"><div><p class="eyebrow">REPORT AGENT</p><h2 id="report-agent-form-title">Generate an evidence-backed report</h2></div></div>
+        <div class="section-heading"><div><p class="eyebrow">Report agent</p><h2 id="report-agent-form-title">Generate an evidence-backed report</h2></div></div>
         <form id="report-agent-form" class="review-form">
           <label for="report-agent-question">Decision question</label>
           <textarea id="report-agent-question" name="question" minlength="3" maxlength="2000" required placeholder="What decision should this report support?"></textarea>
@@ -257,7 +258,7 @@
       <section id="upload-section" class="upload-section" hidden>
         <div class="section-heading">
           <div>
-            <p class="eyebrow">KNOWLEDGE SOURCES</p>
+            <p class="eyebrow">Knowledge sources</p>
             <h2>Upload a knowledge source</h2>
             <p class="corpus-note">Add a document for Q&amp;A, assign its readers, and optionally route it as guidance for a Commerce decision domain.</p>
           </div>
@@ -325,7 +326,7 @@
     <section id="tab-invoice-review" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-invoice-review" hidden>
       <section class="candidate-review invoice-review-section">
         <div class="section-heading">
-          <div><p class="eyebrow">HUMAN REVIEW</p><h2>Review extracted invoices</h2></div>
+          <div><p class="eyebrow">Human review</p><h2>Review extracted invoices</h2></div>
           <button id="invoice-review-refresh" class="secondary-button" type="button">Refresh</button>
         </div>
         <p>Compare the extracted draft with the private source and OCR evidence. Save corrections before an admin approves the invoice for analytics.</p>
@@ -359,7 +360,7 @@
       <section id="parsed-chunk-inspector" class="candidate-review" hidden>
         <div class="section-heading">
           <div>
-            <p class="eyebrow">PARSER &amp; OCR OUTPUT</p>
+            <p class="eyebrow">Parser and OCR output</p>
             <h2>Inspect parsed document passages</h2>
           </div>
         </div>
@@ -381,7 +382,7 @@
     <section id="tab-knowledge-management" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-knowledge-management" hidden>
       <section class="candidate-review knowledge-management-section">
         <div class="section-heading">
-          <div><p class="eyebrow">ADMINISTRATION</p><h2>Knowledge-base files</h2></div>
+          <div><p class="eyebrow">Administration</p><h2>Knowledge-base files</h2></div>
           <button id="knowledge-documents-refresh" class="secondary-button" type="button">Refresh</button>
         </div>
         <p>Manage which roles can retrieve each file. Remove or restore a source from AI retrieval without deleting its original file or parser output.</p>
@@ -414,7 +415,7 @@
     <section id="tab-ocr-lab" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-ocr-lab" hidden>
       <section class="candidate-review">
         <div class="section-heading">
-          <div><p class="eyebrow">ISOLATED UPLOAD TEST</p><h2>Run a document-processing pipeline</h2></div>
+          <div><p class="eyebrow">Isolated upload test</p><h2>Run a document-processing pipeline</h2></div>
         </div>
         <p>Choose general document parsing, invoice extraction, or image captioning. Results are saved for inspection without creating a production document.</p>
         <form id="ocr-test-form" class="upload-form">
@@ -443,7 +444,7 @@
       <section id="admin-section" class="admin-section" hidden>
         <div class="section-heading">
           <div>
-            <p class="eyebrow">ROLE-BASED ACCESS CONTROL (RBAC)</p>
+            <p class="eyebrow">Role-based access control</p>
             <h2>Role permissions matrix</h2>
             <p class="corpus-note">This matrix shows workspace capabilities by role. To choose who can read an individual document, manage its reader roles in Knowledge Management.</p>
           </div>
@@ -458,7 +459,7 @@
       <section id="monitoring-section" class="monitoring-section" hidden>
         <div class="section-heading">
           <div>
-            <p class="eyebrow">REAL-TIME SYSTEM OPERATIONS</p>
+            <p class="eyebrow">Last 24 hours</p>
             <h2>Agent Performance &amp; Latency Monitoring</h2>
             <p class="monitoring-note">Telemetry from the last 24 hours. Run telemetry does not record user questions or generated text; only answers a user rates (👍/👎) are stored with their question, for review.</p>
           </div>
@@ -470,7 +471,7 @@
         <section class="analysis-section">
           <div class="analysis-section-heading">
             <div>
-              <p class="eyebrow">ROUTED WORKLOAD</p>
+              <p class="eyebrow">Routed workload</p>
               <h3>Executions by Agent</h3>
             </div>
           </div>
@@ -479,7 +480,7 @@
         <section class="analysis-section">
           <div class="analysis-section-heading">
             <div>
-              <p class="eyebrow">RECENT EXECUTIONS</p>
+              <p class="eyebrow">Recent executions</p>
               <h3>Last 100 Runs</h3>
             </div>
           </div>
@@ -488,7 +489,7 @@
         <section class="analysis-section">
           <div class="analysis-section-heading">
             <div>
-              <p class="eyebrow">USER FEEDBACK</p>
+              <p class="eyebrow">User feedback</p>
               <h3>Answer Ratings</h3>
             </div>
           </div>
@@ -499,6 +500,6 @@
     </div>
     </main>
   </div>
-  <script src="/static/app.js?v=general-chat-20261112d" defer></script>
+  <script src="/static/app.js?v=redesign-20261112a" defer></script>
 </body>
 </html>

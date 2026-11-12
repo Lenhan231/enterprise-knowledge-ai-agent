@@ -182,3 +182,33 @@ class TranslatedHybridTest(unittest.IsolatedAsyncioTestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class RestoredDenseSearchTest(unittest.TestCase):
+    def run_search(self, restored_vn, embed):
+        from core.retrieval.methods import translated_hybrid
+        translator = MagicMock()
+        translator.translate.return_value = {"en": "hand over work", "vn": restored_vn}
+        repo = MagicMock()
+        repo.similarity_search.side_effect = lambda vector, limit, **kw: (
+            [chunk("RAW", 1)] if kw["method"] == "dense" and kw["query"] == "ban giao" else
+            [chunk("RESTORED", 2)] if kw["method"] == "dense" else [])
+        chunks, details = translated_hybrid.search(repo, [0.1], RetrievalRequest(query="ban giao", top_k=5),
+                                                   lambda: translator, embed=embed)
+        return {c.document_id for c in chunks}, details, repo
+
+    def test_restored_question_gets_its_own_dense_search_fused_with_the_raw_one(self):
+        embed = MagicMock(return_value=[0.2])
+        documents, details, repo = self.run_search("bàn giao", embed)
+        embed.assert_called_once_with("bàn giao")
+        self.assertEqual(documents, {"RAW", "RESTORED"})
+        self.assertTrue(details["restored_dense_search"])
+        dense_queries = [c.kwargs["query"] for c in repo.similarity_search.call_args_list if c.kwargs["method"] == "dense"]
+        self.assertEqual(sorted(dense_queries), ["ban giao", "bàn giao"])
+
+    def test_no_extra_search_when_nothing_was_restored(self):
+        embed = MagicMock()
+        documents, details, _ = self.run_search("ban giao", embed)
+        embed.assert_not_called()
+        self.assertEqual(documents, {"RAW"})
+        self.assertNotIn("restored_dense_search", details)

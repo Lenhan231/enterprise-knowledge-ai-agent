@@ -107,6 +107,7 @@ class RetrievalService:
                 self.repository, query_embedding, candidate_request, self._get_translator,
                 query_language=query_language, document_languages=document_languages,
                 dense_weight=dense_weight, bm25_weight=bm25_weight, rrf_k=rrf_k, **options,
+                embed=self.embedding_service.embed_query if self.embedding_service is not None else None,
             )
         elif method == "parent":
             chunks, parent_contexts = parent.search(

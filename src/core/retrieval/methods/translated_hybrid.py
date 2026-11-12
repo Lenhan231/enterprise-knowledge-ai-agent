@@ -20,7 +20,7 @@ def fuse(rankings, weights, k=60):
 
 def search(repository, vector, request, get_translator, *, company=None, roles=None,
            document_ids=None, document_languages=None, query_language="auto", metadata_filter=None,
-           dense_weight=1.0, bm25_weight=2.0, rrf_k=60):
+           dense_weight=1.0, bm25_weight=2.0, rrf_k=60, embed=None):
     if query_language not in {"auto", "en", "vn"}:
         raise ValueError("query_language must be auto, en or vn")
     if len(request.query) > 4000:
@@ -40,7 +40,7 @@ def search(repository, vector, request, get_translator, *, company=None, roles=N
         filters["metadata_filter"] = metadata_filter
     candidate_k = request.top_k * 10
     # The three searches overlap each other and the translation call; each pays a ~0.4 s DB round trip.
-    with ThreadPoolExecutor(max_workers=3) as pool:
+    with ThreadPoolExecutor(max_workers=4) as pool:
         dense_future = pool.submit(
             repository.similarity_search, vector, candidate_k, query=request.query, method="dense", **filters)
         details = {"language_aware": document_languages is not None,
@@ -64,6 +64,13 @@ def search(repository, vector, request, get_translator, *, company=None, roles=N
         details["lexical_queries"] = queries
         if request.query not in queries.values():
             details["normalized_query"] = queries["vn"]  # diacritics restored by the translator
+        restored_future = None
+        if embed is not None and details.get("normalized_query"):
+            # The raw-text dense search started before the restored question existed; unaccented Vietnamese
+            # embeds poorly, so add a dense search on the restored text and fuse it with the raw one below.
+            restored = details["normalized_query"]
+            restored_future = pool.submit(lambda: repository.similarity_search(
+                embed(restored), candidate_k, query=restored, method="dense", **filters))
         scopes, lexical_futures = {}, []
         for lang in ("en", "vn"):
             scope = document_ids
@@ -79,6 +86,7 @@ def search(repository, vector, request, get_translator, *, company=None, roles=N
         with measure("database_retrieval"):
             dense = dense_future.result()
             lexical_results = [future.result() for future in lexical_futures]
+            restored_dense = restored_future.result() if restored_future is not None else None
     indexed = {}
     def ids(chunks):
         ranking = []
@@ -88,6 +96,9 @@ def search(repository, vector, request, get_translator, *, company=None, roles=N
             ranking.append(key)
         return ranking
     dense_ids = ids(dense)
+    if restored_dense is not None:
+        dense_ids, _ = fuse([dense_ids, ids(restored_dense)], [1.0, 1.0], rrf_k)
+        details["restored_dense_search"] = True
     lexical = [ids(chunks) for chunks in lexical_results]
     details["lexical_document_scopes"] = scopes
     lexical_ids, _ = fuse(lexical, [1.0, 1.0], rrf_k)

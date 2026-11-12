@@ -47,6 +47,25 @@ Mentor questions (backend/frontend streaming; dropped connection; buffer overflo
 
 Tests: the full suite has 810 passed, with the same 39 failures and 25 errors as main. Run it as `PYTHONPATH=src uv run --with pytest pytest tests`.
 
+## 3b. Auto mode fix (7e82f10 on main), after the report freeze
+
+**The report is frozen (12 Nov).** This change is **not** in the report's results. Treat it as a future-work item that is already implemented but not yet evaluated.
+
+- **What changed.**
+  - When Auto sends a question only to Knowledge, `assemble_response()` in `src/core/agents/response.py` passes the Knowledge result through unchanged: a verified answer, the Vietnamese withheld message, or no match, with its `claim_verification` and `search` metadata.
+  - The number guard (`_supported_numbers`) now ignores list numbering ("1. ", "2) ", "Bước 3"). It still checks amounts in SQL and mixed answers.
+- **Why.**
+  - Verified Knowledge answers with numbered lists were thrown away as "Evidence fallback", because the list numbers 1, 2, 3 were treated as unsourced facts.
+  - Withheld answers showed a generic English message, "No supported answer could be completed…".
+- **Not measured.** Auto-mode accuracy in the report (about 12 points below Knowledge mode on the dev set) describes the old behaviour. To claim an improvement later, re-run the E2E arm on the dev set; do not use the locked test sets for this.
+- **How to say it at the defense.** "After the evaluation we found that Auto mode's number guard rejected verified answers that contained numbered lists. We fixed it so Auto relies on the Knowledge claim verifier for Knowledge-only questions; re-measuring Auto mode is future work."
+- The same applies to the other changes made after the freeze:
+  - streaming stage progress, the typing effect and the richer run details: product features, not evaluated results;
+  - the 2-thread reranker cap: measured on 10 Nov, already in the report.
+- **Further future work found while testing the live system.** When the verifier rejects only part of an answer, return the supported part with a "cannot conclude" note instead of withholding everything. Two examples, both to tune on the dev set:
+  - "bàn giao khi nghỉ việc": the policy covers handover only for leave;
+  - "khách sạn + ăn uống 10 ngày": the daily limits are correct, but the total depends on assumed nights and meals.
+
 ## 4. Mentor's Review 3 checklist: status
 
 | Item | Status | Evidence / gap |

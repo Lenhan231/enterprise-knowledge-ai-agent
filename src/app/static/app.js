@@ -980,7 +980,8 @@ function renderAnswerBody(answer) {
   let paragraph = [];
   const inline = (value) => escapeHtml(value)
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/`([^`]+)`/g, "<code>$1</code>");
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\[(S\d+)\]/g, '<a class="cite-ref" href="#" data-cite="$1" aria-label="Source $1">$1</a>');
   const cells = (line) => line.trim().replace(/^\|/, "").replace(/\|$/, "")
     .split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, "|"));
   const isRow = (line) => /^\s*\|.*\|\s*$/.test(line);
@@ -1089,7 +1090,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
     <div class="answer-header-wrap">
       <div class="answer-heading">
         <span class="answer-mark">${usedEvidenceFallback ? "EV" : "AI"}</span>
-        <div><span class="eyebrow">${escapeHtml(({knowledge:"KNOWLEDGE AGENT",analytics:"ANALYTICS AGENT",sql_analytics:"ANALYTICS AGENT",dashboard:"INVENTORY AGENT",report:"REPORT AGENT",agentic:"AUTOMATIC ROUTER",hybrid:"KNOWLEDGE + ANALYTICS"})[data.agent] || "AGENT RESPONSE")}</span><h3>${escapeHtml(responseTitle)}</h3></div>
+        <div><span class="eyebrow">${escapeHtml(({knowledge:"Knowledge agent",analytics:"Analytics agent",sql_analytics:"Analytics agent",dashboard:"Inventory agent",report:"Report agent",agentic:"Automatic router",hybrid:"Knowledge + analytics"})[data.agent] || "Agent response")}</span><h3>${escapeHtml(responseTitle)}</h3></div>
       </div>
     </div>
     ${domainNote}
@@ -1101,6 +1102,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
     ${sqlScope}
     ${routeDetails}
     ${tokenUsage}
+    ${data.claim_verification?.status === "supported" && citations.length ? `<p class="answer-verified">Every claim checked against its cited source${data.claim_verification.claim_count ? ` · ${formatNumber(data.claim_verification.claim_count)} claims` : ""}</p>` : ""}
     <div class="answer-text">${renderAnswerBody(data.answer)}</div>
     ${renderAgentRows(data.data)}
     ${renderDashboardVisualization(data.data?.visualization)}
@@ -1142,9 +1144,9 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
             : `<p>${escapeHtml(source.excerpt)}</p>`;
           const publisher = source.source_publisher || source.company || "Verified source";
           return `
-            <article class="citation">
+            <article class="citation" data-cite-id="${escapeHtml(source.id)}">
               <div class="citation-title">
-                <span class="citation-id">[${escapeHtml(source.id)}]</span>
+                <span class="citation-id">${escapeHtml(source.id)}</span>
                 <strong>${escapeHtml(source.title)}</strong>
                 <span>${escapeHtml(location)}</span>
               </div>
@@ -1164,6 +1166,17 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
       <button type="button" class="action-btn copy-answer-btn" title="Copy response text" aria-label="Copy response">Copy</button>
     </div>`;
 
+  // Inline [S1] chips scroll to and highlight their source card.
+  panel.querySelectorAll(".cite-ref").forEach((ref) => ref.addEventListener("click", (event) => {
+    event.preventDefault();
+    const card = panel.querySelector(`.citation[data-cite-id="${CSS.escape(ref.dataset.cite)}"]`);
+    if (!card || card.hidden) return;
+    card.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
+    card.classList.remove("is-highlighted");
+    void card.offsetWidth;
+    card.classList.add("is-highlighted");
+    setTimeout(() => card.classList.remove("is-highlighted"), 1600);
+  }));
   const copyBtn = panel.querySelector(".copy-answer-btn");
   if (copyBtn) {
     copyBtn.addEventListener("click", async () => {
@@ -1226,23 +1239,26 @@ function renderAgentResult(result, panel = $("#answer-panel"), shouldScroll = tr
   renderAnswer({ ...result, ...result.metadata, metadata: result.metadata, citations }, panel, shouldScroll);
 }
 
+// "9.4 s" reads the same in every locale; "9.420 ms" looks like 9 ms where "." groups thousands.
+const formatSeconds = (ms) => `${(Number(ms) / 1000).toFixed(1)} s`;
+
 function renderAgentMonitoring(data) {
   const summary = data.summary || {};
   const cards = [
     ["Runs · 24 hours", summary.total_runs ?? 0],
     ["Success rate", summary.success_rate == null ? "—" : `${summary.success_rate}%`],
-    ["Average latency", summary.average_elapsed_ms == null ? "—" : `${formatNumber(summary.average_elapsed_ms)} ms`],
-    ["P95 latency", summary.p95_elapsed_ms == null ? "—" : `${formatNumber(summary.p95_elapsed_ms)} ms`],
+    ["Average latency", summary.average_elapsed_ms == null ? "—" : formatSeconds(summary.average_elapsed_ms)],
+    ["P95 latency", summary.p95_elapsed_ms == null ? "—" : formatSeconds(summary.p95_elapsed_ms)],
     ["Runs · last hour", summary.last_hour_runs ?? 0],
   ];
   $("#monitoring-summary").innerHTML = cards.map(([label, value]) => `<article class="monitoring-stat"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></article>`).join("");
   const agents = data.by_agent || [];
   const maxRuns = Math.max(1, ...agents.map((agent) => Number(agent.total_runs) || 0));
   $("#monitoring-agents").innerHTML = agents.length ? agents.map((agent) => `
-    <div class="monitoring-agent"><div><strong>${escapeHtml(agent.agent_name)}</strong><span>${formatNumber(agent.completed_runs)} of ${formatNumber(agent.total_runs)} completed · avg ${agent.average_elapsed_ms == null ? "—" : `${formatNumber(agent.average_elapsed_ms)} ms`}</span></div><i><b style="width:${Math.max(3, Number(agent.total_runs) / maxRuns * 100)}%"></b></i></div>
+    <div class="monitoring-agent"><div><strong>${escapeHtml(agent.agent_name)}</strong><span>${formatNumber(agent.completed_runs)} of ${formatNumber(agent.total_runs)} completed · avg ${agent.average_elapsed_ms == null ? "—" : formatSeconds(agent.average_elapsed_ms)}</span></div><i><b style="width:${Math.max(3, Number(agent.total_runs) / maxRuns * 100)}%"></b></i></div>
   `).join("") : '<p class="analysis-empty">No agent runs have been recorded in the last 24 hours.</p>';
   const runs = data.recent_runs || [];
-  $("#monitoring-runs").innerHTML = runs.length ? `<div class="monitoring-table-wrap"><table class="monitoring-table"><thead><tr><th>Time</th><th>Role</th><th>Agent</th><th>Retrieval</th><th>Result</th><th>Latency</th><th>Sources</th></tr></thead><tbody>${runs.map((run) => `<tr><td>${escapeHtml(new Date(run.created_at).toLocaleString())}</td><td>${escapeHtml(run.actor_role)}</td><td>${escapeHtml(run.agent_name)}</td><td>${escapeHtml(run.retrieval_method)}</td><td><span class="run-status ${escapeHtml(run.status)}">${escapeHtml(run.status.replaceAll("_", " "))}</span>${run.error_type ? `<small>${escapeHtml(run.error_type)}</small>` : ""}</td><td>${formatNumber(run.elapsed_ms)} ms</td><td>${formatNumber(run.citation_count)}</td></tr>`).join("")}</tbody></table></div>` : '<p class="analysis-empty">No requests recorded yet.</p>';
+  $("#monitoring-runs").innerHTML = runs.length ? `<div class="monitoring-table-wrap"><table class="monitoring-table"><thead><tr><th>Time</th><th>Role</th><th>Agent</th><th>Retrieval</th><th>Result</th><th>Latency</th><th>Sources</th></tr></thead><tbody>${runs.map((run) => `<tr><td>${escapeHtml(new Date(run.created_at).toLocaleString())}</td><td>${escapeHtml(run.actor_role)}</td><td>${escapeHtml(run.agent_name)}</td><td>${escapeHtml(run.retrieval_method)}</td><td><span class="run-status ${escapeHtml(run.status)}">${escapeHtml(run.status.replaceAll("_", " "))}</span>${run.error_type ? `<small>${escapeHtml(run.error_type)}</small>` : ""}</td><td>${formatSeconds(run.elapsed_ms)}</td><td>${formatNumber(run.citation_count)}</td></tr>`).join("")}</tbody></table></div>` : '<p class="analysis-empty">No requests recorded yet.</p>';
 }
 
 async function refreshAgentMonitoring() {
@@ -2482,11 +2498,20 @@ function setupThemeToggle() {
   button.addEventListener("click", () => {
     const isDark = document.documentElement.getAttribute("data-theme") === "dark";
     const nextTheme = isDark ? "light" : "dark";
-    if (nextTheme === "dark") {
-      document.documentElement.setAttribute("data-theme", "dark");
-    } else {
-      document.documentElement.removeAttribute("data-theme");
-    }
+    const apply = () => {
+      if (nextTheme === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+      } else {
+        document.documentElement.removeAttribute("data-theme");
+      }
+    };
+    // The new theme spreads out in a circle from the toggle; plain swap without View Transitions or with reduced motion.
+    if (document.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const box = button.getBoundingClientRect();
+      document.documentElement.style.setProperty("--reveal-x", `${box.left + box.width / 2}px`);
+      document.documentElement.style.setProperty("--reveal-y", `${box.top + box.height / 2}px`);
+      document.startViewTransition(apply);
+    } else apply();
     try {
       localStorage.setItem("app_theme", nextTheme);
     } catch {}

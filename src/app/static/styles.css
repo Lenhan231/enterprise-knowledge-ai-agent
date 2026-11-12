@@ -670,3 +670,8 @@
 .stage-status::after{content:"";display:inline-block;width:6px;height:6px;margin-left:8px;border-radius:50%;background:currentColor;vertical-align:middle;animation:stagePulse 1.2s ease-in-out infinite}
 @keyframes stagePulse{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
 @media (prefers-reduced-motion: reduce){.stage-status::after{animation:none;opacity:.6}}
+.feedback-buttons{display:inline-flex;gap:4px;margin-left:6px}
+.feedback-btn{min-width:34px}
+.feedback-btn.chosen{background:#e7effd;border-color:#2369d8}
+.feedback-btn:disabled:not(.chosen){opacity:.45}
+.feedback-btn.feedback-error{border-color:#a53d35}

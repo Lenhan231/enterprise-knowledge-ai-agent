@@ -1,0 +1,152 @@
+{
+  "metadata": {
+    "cohort_size": 50,
+    "ocr_sha256": "d1b9f1231cab317e4132341385b73f5644287d9a4f5101c8d30498a00713feb0",
+    "ocr_repo": "6deb1cb10ecbf240aead77525e80aa4c58adfb23",
+    "ocr_config": "vgg_seq2seq; image_max_width=512; greedy",
+    "ocr_model": "lenhanm1/enterprise-printed-ocr-vietocr-tesseract",
+    "test_data": "Synthetic Vietnamese invoice PDFs; the established stratified 50-file cohort is excluded from fine-tuning.",
+    "scoring": "Whole invoice exact requires valid schema, all seven header fields, exact item count and every row field; values are normalized per each source benchmark scorer. Comparisons across older benchmark generations may have minor scoring-pipeline differences.",
+    "deployment_commit": "720b265",
+    "benchmark_source_commit_original": "36f3ed6a283351df001cb811918b889255f74f6d",
+    "benchmark_source_commit_after_rebase": "cc7c148",
+    "deployed_processor_sha256": "3a49392fa8a1ac989d71d615496632d2b265f9fdb17e2b6b835663a5b20d1569"
+  },
+  "comparison": [
+    {
+      "model": "Qwen3-0.6B fine-tuned (Modal)",
+      "sample_count": 50,
+      "whole_invoice_exact": 0.1,
+      "item_row_exact": 0.9607857142857142,
+      "mean_seconds": 22.3294,
+      "latency_kind": "cached OCR excluded; API/inference and recorded waits",
+      "source": "invoice-pilot-50-new-vietocr/model_results.json"
+    },
+    {
+      "model": "Qwen3-1.7B base",
+      "sample_count": 50,
+      "whole_invoice_exact": 0.44,
+      "item_row_exact": 0.9065000000000001,
+      "mean_seconds": 28.3814,
+      "latency_kind": "cached OCR excluded",
+      "source": "invoice-pilot-50-new-vietocr/model_results.json"
+    },
+    {
+      "model": "gemini-3.5-flash-lite",
+      "sample_count": 50,
+      "whole_invoice_exact": 0.76,
+      "item_row_exact": 0.9607857142857142,
+      "mean_seconds": 17.4498,
+      "latency_kind": "cached OCR excluded; API/inference and pacing",
+      "source": "invoice-pilot-50-new-vietocr/model_results.json"
+    },
+    {
+      "model": "Groq GPT-OSS 20B; original split prompt",
+      "sample_count": 50,
+      "whole_invoice_exact": 0.5,
+      "item_row_exact": 0.9607857142857142,
+      "mean_seconds": 32.6124,
+      "latency_kind": "cached OCR excluded; includes quota pacing/retries",
+      "requests": 100,
+      "estimated_cost_usd": 0.023545049999999998,
+      "source": "kaggle-invoice-50-groq20b/output/groq20b-invoice-50/groq20b_results.json"
+    },
+    {
+      "model": "Groq GPT-OSS 120B; complete-evidence prompt v2",
+      "sample_count": 50,
+      "whole_invoice_exact": 0.74,
+      "item_row_exact": 0.9607857142857142,
+      "mean_seconds": 27.6864,
+      "p95_seconds": 56.31,
+      "latency_kind": "cached OCR excluded; includes quota pacing/retries",
+      "requests": 50,
+      "estimated_cost_usd": 0.0560235,
+      "source": "invoice-groq120b-v2/results.json"
+    },
+    {
+      "model": "Groq Qwen3.8-27B; earlier prompt",
+      "sample_count": 22,
+      "whole_invoice_exact": 0.5454545454545454,
+      "item_row_exact": 0.9204545454545454,
+      "mean_seconds": 2.1722727272727274,
+      "latency_kind": "per-request API time; excludes quota backoff; partial cohort",
+      "requests": null,
+      "estimated_cost_usd": 0.118164,
+      "source": "kaggle-invoice-finetuned-pilot/output-50-groq/invoice-pilot-results-22/metrics.json"
+    }
+  ],
+  "fine_tune": {
+    "dataset_id": "ltrngnhn/invoice-synthetic-1000-sft-benchmark",
+    "title": "1000 Synthetic Vietnamese Invoice SFT and Holdout",
+    "split": {
+      "train_invoices": 900,
+      "validation_invoices": 50,
+      "test_invoices": 50,
+      "train_prompt_target_pairs": 1800,
+      "validation_prompt_target_pairs": 100
+    },
+    "training_evidence": "Synthetic OCR-like header and table evidence reconstructed from labels (two tasks per train invoice); clean evidence, not OCR-error-augmented.",
+    "base_model": "Qwen/Qwen3-0.6B",
+    "base_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "method": "LoRA; rank 16, alpha 32, dropout 0.05; q/k/v/o and gate/up/down projections; frozen base; prompt tokens masked from loss.",
+    "training": {
+      "epochs": 3,
+      "steps": 339,
+      "learning_rate": 0.0001,
+      "batch_size_per_device": 1,
+      "gradient_accumulation_steps": 8,
+      "max_length": 2048,
+      "fp16": true,
+      "gradient_checkpointing": true,
+      "optimizer": "AdamW",
+      "scheduler": "cosine",
+      "warmup_ratio": 0.05,
+      "seed": 20261108,
+      "runtime_seconds": 29437.423,
+      "best_eval_loss": 1.0850759281311184e-05,
+      "train_loss": 0.00038373769908438775,
+      "device": "Kaggle Tesla T4"
+    },
+    "benchmark": {
+      "sample_count": 50,
+      "whole_invoice_exact": 0.0,
+      "item_row_exact_pooled": 0.9103448275862069,
+      "mean_inference_seconds": 45.2552,
+      "note": "The SFT run own production-shaped scorer gave 0% whole-invoice exact; a separate 50-case model comparison reports 10% for the Modal-served 0.6B adapter under that benchmark’s scoring and prompt version. These are separate runs/scorers and are kept distinct."
+    },
+    "base_vs_finetune": {
+      "base_0.6b_whole_invoice_exact": 0.0,
+      "base_1.7b_whole_invoice_exact": 0.0,
+      "fine_tuned_0.6b_whole_invoice_exact": 0.0
+    }
+  },
+  "ocr": {
+    "pipeline": "Docling 2.129.0 + fine-tuned VietOCR vgg_seq2seq; image_max_width=512; greedy decoding.",
+    "model": "lenhanm1/enterprise-printed-ocr-vietocr-tesseract",
+    "revision": "6deb1cb10ecbf240aead77525e80aa4c58adfb23",
+    "device": "Kaggle CUDA",
+    "success": "50/50",
+    "total_seconds": 739.98,
+    "cache_sha256": "d1b9f1231cab317e4132341385b73f5644287d9a4f5101c8d30498a00713feb0"
+  },
+  "groq_prompt_v3_partial": {
+    "model": "openai/gpt-oss-120b",
+    "prompt": "v3 party-label/date-only changes; reasoning_effort=low",
+    "attempted": 50,
+    "completed_successfully": 17,
+    "http_429_failures": 33,
+    "same_first17_v2_whole_invoice_exact": 0.8235294117647058,
+    "v3_first17_whole_invoice_exact": 0.6470588235294118,
+    "v2_first17_mean_seconds_including_quota_wait": 26.501176470588234,
+    "v3_first17_mean_seconds_including_quota_wait": 24.411176470588234,
+    "disposition": "Incomplete and not selected; prompt and reasoning changed together, so this partial run does not isolate their effects."
+  },
+  "hashes": {
+    "sft_dataset_zip_sha256": "49df93911bd857267de0866415f8e34e204fe282a38249a3790a50e19f8bc1b7",
+    "sft_manifest_sha256": "4a9fc7e5341ce04d8bd049474f0a1ba170d7505a1b6541e72801af1014115b8e",
+    "sft_ground_truth_sha256": "e00c5cb10b634622ac5f7b6d3e24c260e2a37ce723f6cf78e4c502f3f930da1c",
+    "training_notebook_sha256": "c4b5d22eb808f2437ef6bb9e0ba6a9cfd79dec4911081c50d56152ef9036f535",
+    "reproduce_finetune_and_benchmark_ipynb_sha256": "22d42c4fb26cabcb34c1cb6f8b91385a658a82f075e59d66a5cef29d3eabd3c7",
+    "reproduce_results_ipynb_sha256": "b02e8bbb8f8d3f46a6c97c62dc5801fbd5fbb8692d9a4d1464a175719b5117fa"
+  }
+}

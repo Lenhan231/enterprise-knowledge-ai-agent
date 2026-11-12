@@ -1,0 +1,2 @@
+1000 synthetic single-page Vietnamese invoice PDFs with invoice.v1 labels.
+Split: 900 train / 50 validation / 50 test. The 50 test cases are the previously established stratified invoice-pilot-50 set and are excluded from training. All data is synthetic demonstration material, not authentic tax documents. Training OCR evidence is reconstructed from these labels for a controlled same-template SFT experiment; test benchmark uses real OCR on held-out PDFs.

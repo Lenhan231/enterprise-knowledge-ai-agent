@@ -13,7 +13,8 @@ let handler, resolve, rendered = 0;
 const nodes = {};
 const context = {agentConversationId:'old', sessionGeneration:1, sessionSubject:'user', console,
   crypto:{randomUUID:()=> 'turn-id'},
-  AbortSignal:{timeout:()=>({})}, askAgentStream:() => new Promise(done => resolve=done),
+  AbortSignal:{timeout:()=>({})}, AbortController, DOMException, setTimeout, clearTimeout, setInterval, clearInterval,
+  askAgentStream:() => new Promise(done => resolve=done),
   renderSessionTranscript:() => {if(context.sessionTurns.some(turn=>turn.result)) rendered++;},
   sessionTurns:[],
   $: selector => nodes[selector] ||= {value:selector === '#question' ? 'Count products' : '',

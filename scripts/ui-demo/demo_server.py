@@ -49,7 +49,7 @@ def _invoice(i, name, seller, no, status, total, days):
 INVOICES = [_invoice(1, "HD-0012-bao-bi-minh-phat.pdf", "Công ty Bao bì Minh Phát", "0012", "review_required", 8220000, 12),
             _invoice(2, "HD-0458-van-tai-sao-viet.pdf", "Vận tải Sao Việt", "0458", "review_required", 15400000, 11),
             _invoice(3, "scan-hoa-don-1103.jpg", "", "", "processing", 0, 13),
-            _invoice(4, "HD-0091-in-an-tan-long.pdf", "In ấn Tân Long", "0091", "approved", 4300000, 8),
+            _invoice(4, "invoice_0854.png", "In ấn Tân Long", "0091", "approved", 4300000, 8),
             _invoice(5, "hoa-don-mo.png", "", "", "failed", 0, 7)]
 INVOICE_SOURCE = """<!doctype html><meta charset="utf-8"><body style="font:14px/1.5 Georgia,serif;margin:28px;color:#222">
 <p style="font:12px sans-serif;color:#888">Synthetic demo invoice</p><h2 style="margin:0">HÓA ĐƠN GIÁ TRỊ GIA TĂNG</h2><p>Số: 0012 · Ngày 12/11/2026</p>
@@ -57,6 +57,19 @@ INVOICE_SOURCE = """<!doctype html><meta charset="utf-8"><body style="font:14px/
 <table border="1" cellpadding="6" style="border-collapse:collapse;width:100%"><tr><th>Hàng hóa</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr>
 <tr><td>Thùng carton 3 lớp 40×30×30</td><td>500</td><td>12.000</td><td>6.000.000</td></tr><tr><td>Băng keo đóng hàng 5 cm</td><td>120</td><td>18.500</td><td>2.220.000</td></tr></table>
 <p style="text-align:right">Cộng: 8.220.000 · Thuế GTGT 10%: 822.000<br><b>Tổng cộng: 9.042.000</b></p></body>"""
+INVOICE_IMAGE = """<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="1754" viewBox="0 0 1240 1754" font-family="Arial, sans-serif">
+<rect width="1240" height="1754" fill="#fff"/><text x="90" y="80" font-size="22" fill="#999">Synthetic demo invoice (scan)</text>
+<text x="90" y="170" font-size="54" font-weight="700" fill="#1f5f4a">HÓA ĐƠN BÁN HÀNG</text>
+<text x="1150" y="170" font-size="34" text-anchor="end">Ngày: 2026-11-13</text><text x="1150" y="225" font-size="30" text-anchor="end" fill="#666">Khách hàng: KH-41029</text>
+<rect x="90" y="300" width="1060" height="70" rx="10" fill="#e6f2ec"/>
+<text x="110" y="347" font-size="28" fill="#1f5f4a">SẢN PHẨM</text><text x="700" y="347" font-size="28" fill="#1f5f4a">SL</text><text x="880" y="347" font-size="28" fill="#1f5f4a">ĐƠN GIÁ</text><text x="1130" y="347" font-size="28" text-anchor="end" fill="#1f5f4a">THÀNH TIỀN</text>
+<text x="110" y="440" font-size="30">VietMode RP-34 · SKU 1442</text><text x="700" y="440" font-size="30">8</text><text x="880" y="440" font-size="30">5.598,43</text><text x="1130" y="440" font-size="30" text-anchor="end">38.069,32</text>
+<line x1="90" y1="500" x2="1150" y2="500" stroke="#ddd" stroke-width="2"/>
+<text x="600" y="600" font-size="30" fill="#666">Tạm tính trước giảm giá</text><text x="1150" y="600" font-size="40" font-weight="700" text-anchor="end">38.069,32 VND</text>
+<text x="600" y="680" font-size="30" fill="#666">Thuế GTGT (8%)</text><text x="1150" y="680" font-size="34" text-anchor="end">3.045,55 VND</text>
+<line x1="600" y1="730" x2="1150" y2="730" stroke="#bbb" stroke-width="2"/>
+<text x="600" y="810" font-size="40" font-weight="700" fill="#1f5f4a">TỔNG CỘNG</text><text x="1150" y="810" font-size="46" font-weight="700" text-anchor="end" fill="#1f5f4a">41.114,87 VND</text>
+<text x="90" y="1650" font-size="22" fill="#999">VIETSTYLE · VS-788316</text></svg>"""
 KNOWLEDGE_DOCS = [
     {"document_id": "vs-policy-v1", "title": "VietStyle Enterprise Operating Policy v1.0", "synthetic_company_policy": True, "source_publisher": "VietStyle (synthetic)",
      "format": "PDF", "chunk_count": 412, "processing_status": "ready", "knowledge_base_active": True, "knowledge_domains": ["inventory_allocation", "promotion_planning"],
@@ -137,8 +150,11 @@ class Handler(SimpleHTTPRequestHandler):
         if path == "/api/auth/me" and "demo_logout=1" in (self.headers.get("Cookie") or ""):
             return self.send_json({"detail": "Not signed in"}, 401)
         if path.startswith("/api/invoices/") and path.endswith("/source"):
-            raw = INVOICE_SOURCE.encode()
-            self.send_response(200); self.send_header("Content-Type", "text/html; charset=utf-8"); self.end_headers()
+            found = next((i for i in INVOICES if i["invoice_id"] == path.split("/")[3]), {})
+            is_image = found.get("source_filename", "").lower().endswith((".png", ".jpg", ".jpeg"))
+            raw = (INVOICE_IMAGE if is_image else INVOICE_SOURCE).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "image/svg+xml" if is_image else "text/html; charset=utf-8"); self.end_headers()
             return self.wfile.write(raw)
         if path.startswith("/api/invoices/"):
             found = next((i for i in INVOICES if i["invoice_id"] == path.rsplit("/", 1)[1]), None)

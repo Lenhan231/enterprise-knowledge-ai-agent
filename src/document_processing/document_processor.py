@@ -13,6 +13,7 @@ import re
 import xml.etree.ElementTree as ET
 
 from document_processing.element_taxonomy import normalize_element_label
+from document_processing.invoice_ocr_cache import invoice_docling_cache
 
 SUPPORTED_FORMATS = frozenset({
     ".pdf", ".docx", ".pptx", ".xlsx", ".csv", ".txt", ".md",
@@ -102,18 +103,43 @@ class DocumentProcessor:
             processor_config = {**self.config, "parser_engine": "docling", "intent": "document"}
             parser_content = render_svg(content) if suffix == ".svg" else render_webp(content) if suffix == ".webp" else content
             parser_metadata = {**common, "format": "PNG"} if suffix in {".svg", ".webp"} else common
-            docling_started = time.perf_counter()
-            result = DoclingProcessor(processor_config).process(
-                parser_content, None, {"content": parser_content, "metadata": parser_metadata}
-            )
+            cache_key = invoice_docling_cache.key(parser_content, suffix[1:], processor_config)
+            cache_started = time.perf_counter()
+            result = invoice_docling_cache.get(cache_key)
+            cache_hit = result is not None
             _LOGGER.info(
                 "DOCUMENT_PROCESS_COMPONENT %s",
                 json.dumps({
                     "invoice_id": metadata.get("invoice_id"),
-                    "component": "invoice_docling_result",
-                    "elapsed_ms": round((time.perf_counter() - docling_started) * 1000, 2),
+                    "component": "invoice_docling_cache_lookup",
+                    "cache_hit": cache_hit,
+                    "elapsed_ms": round((time.perf_counter() - cache_started) * 1000, 2),
                 }, separators=(",", ":")),
             )
+            if not cache_hit:
+                docling_started = time.perf_counter()
+                result = DoclingProcessor(processor_config).process(
+                    parser_content, None, {"content": parser_content, "metadata": parser_metadata}
+                )
+                _LOGGER.info(
+                    "DOCUMENT_PROCESS_COMPONENT %s",
+                    json.dumps({
+                        "invoice_id": metadata.get("invoice_id"),
+                        "component": "invoice_docling_result",
+                        "elapsed_ms": round((time.perf_counter() - docling_started) * 1000, 2),
+                    }, separators=(",", ":")),
+                )
+                cache_started = time.perf_counter()
+                cache_stored = invoice_docling_cache.put(cache_key, result)
+                _LOGGER.info(
+                    "DOCUMENT_PROCESS_COMPONENT %s",
+                    json.dumps({
+                        "invoice_id": metadata.get("invoice_id"),
+                        "component": "invoice_docling_cache_store",
+                        "cache_stored": cache_stored,
+                        "elapsed_ms": round((time.perf_counter() - cache_started) * 1000, 2),
+                    }, separators=(",", ":")),
+                )
             extraction_started = time.perf_counter()
             extraction = InvoiceTextProcessor(self.config).process(
                 result.get("elements", []), result.get("tables", []),

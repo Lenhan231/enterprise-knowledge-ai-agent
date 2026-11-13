@@ -1,0 +1,330 @@
+---
+name: Enterprise Knowledge AI Agent
+description: A calm ink-and-jade workspace where the only strong colour is the mark of a verified answer.
+colors:
+  jade: "#0b7a66"
+  jade-ink: "#075c4d"
+  jade-mist: "#e2f2ed"
+  jade-line: "#b3dbcf"
+  on-jade: "#ffffff"
+  verified: "#14866a"
+  verified-ink: "#0b6450"
+  verified-mist: "#e2f4ec"
+  verified-line: "#a9dcc6"
+  amber: "#b7720f"
+  amber-ink: "#83510a"
+  amber-mist: "#fdf3e1"
+  amber-line: "#f0d6a6"
+  brick: "#bf3a2c"
+  brick-ink: "#972c21"
+  brick-mist: "#fcebe8"
+  brick-line: "#f3c3bc"
+  sage-paper: "#f2f5f4"
+  surface: "#ffffff"
+  surface-sunk: "#f7f9f8"
+  surface-deep: "#ebf0ee"
+  hairline: "#dfe6e3"
+  hairline-strong: "#c3cec9"
+  ink: "#14211d"
+  ink-soft: "#2f3e39"
+  muted: "#5d6d67"
+  faint: "#63736d"
+typography:
+  display:
+    fontFamily: "Be Vietnam Pro, system-ui, sans-serif"
+    fontSize: "clamp(28px, 3.2vw, 37px)"
+    fontWeight: 600
+    lineHeight: 1.15
+    letterSpacing: "-0.025em"
+  headline:
+    fontFamily: "Be Vietnam Pro, system-ui, sans-serif"
+    fontSize: "21px"
+    fontWeight: 650
+    lineHeight: 1.3
+    letterSpacing: "-0.02em"
+  title:
+    fontFamily: "Be Vietnam Pro, system-ui, sans-serif"
+    fontSize: "17px"
+    fontWeight: 600
+    lineHeight: 1.3
+  body:
+    fontFamily: "Be Vietnam Pro, system-ui, sans-serif"
+    fontSize: "15px"
+    fontWeight: 400
+    lineHeight: 1.6
+  answer:
+    fontFamily: "Be Vietnam Pro, system-ui, sans-serif"
+    fontSize: "15.5px"
+    fontWeight: 400
+    lineHeight: 1.75
+  label:
+    fontFamily: "Be Vietnam Pro, system-ui, sans-serif"
+    fontSize: "12.5px"
+    fontWeight: 500
+    lineHeight: 1.4
+    letterSpacing: "0"
+  figure:
+    fontFamily: "Be Vietnam Pro, system-ui, sans-serif"
+    fontSize: "30px"
+    fontWeight: 650
+    lineHeight: 1.1
+    letterSpacing: "-0.02em"
+    fontFeature: "tnum"
+  mono:
+    fontFamily: "JetBrains Mono, ui-monospace, monospace"
+    fontSize: "13px"
+rounded:
+  cite: "6px"
+  nav: "10px"
+  control: "11px"
+  card: "14px"
+  panel: "18px"
+  composer: "20px"
+  pill: "999px"
+spacing:
+  hair: "2px"
+  xs: "4px"
+  sm: "8px"
+  md: "12px"
+  lg: "16px"
+  xl: "24px"
+components:
+  button-primary:
+    backgroundColor: "{colors.jade}"
+    textColor: "{colors.on-jade}"
+    typography: "{typography.label}"
+    rounded: "{rounded.control}"
+    padding: "0 18px"
+    height: "42px"
+  button-primary-hover:
+    backgroundColor: "{colors.jade-ink}"
+    textColor: "{colors.on-jade}"
+  button-secondary:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink-soft}"
+    rounded: "{rounded.control}"
+    padding: "0 14px"
+    height: "38px"
+  button-secondary-hover:
+    backgroundColor: "{colors.jade-mist}"
+    textColor: "{colors.jade-ink}"
+  input:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.control}"
+  chip:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink-soft}"
+    rounded: "{rounded.pill}"
+    padding: "0 13px"
+    height: "34px"
+  chip-hover:
+    backgroundColor: "{colors.jade-mist}"
+    textColor: "{colors.jade-ink}"
+  nav-tab:
+    textColor: "{colors.muted}"
+    rounded: "{rounded.nav}"
+    padding: "0 12px"
+    height: "40px"
+  nav-tab-active:
+    backgroundColor: "{colors.jade-mist}"
+    textColor: "{colors.jade-ink}"
+  cite-ref:
+    backgroundColor: "{colors.jade-mist}"
+    textColor: "{colors.jade-ink}"
+    rounded: "{rounded.cite}"
+    height: "18px"
+  verified-seal:
+    backgroundColor: "{colors.verified-mist}"
+    textColor: "{colors.verified-ink}"
+    rounded: "{rounded.pill}"
+    padding: "5px 12px 5px 6px"
+  card:
+    backgroundColor: "{colors.surface}"
+    rounded: "{rounded.card}"
+  panel:
+    backgroundColor: "{colors.surface}"
+    rounded: "{rounded.panel}"
+    padding: "24px"
+---
+
+# Design System: Enterprise Knowledge AI Agent
+
+## Overview
+
+**Creative North Star: "The Jade Seal"**
+
+The workspace is quiet on purpose. Surfaces are near-white on a faintly sage paper, text is a deep green-black ink, and almost nothing carries colour. The one strong colour, jade, is reserved for what the product promises: an answer whose every claim was checked against its sources. When an answer passes verification it receives a small jade seal ("Every claim checked"), and its citations appear as jade chips that jump to the cited passage. Everything else in the interface stays out of the way, so the seal and the evidence are what the eye finds.
+
+Density is calm and exact rather than sparse or crowded. General Chat is the one place to ask questions: a conversation column whose composer carries a "Route to" choice (Auto, Documents only, Sales data). Knowledge Q&A is the report page: a short hero that points to General Chat, then the report generator; tools such as monitoring, access control and invoice review use the same hairline-bordered cards and tables without decoration. A thin layer of frosted glass sits only on the controls that float over the page (the sidebar, the question composer, the monitoring tabs), above soft jade and amber colour fields, so the controls feel lifted while the content they hold stays solid and readable.
+
+The system rejects three looks explicitly: the generic AI-chatbot style (purple or blue gradients, sparkle icons, glowing chat bubbles), busy admin dashboards (KPI walls, heavy shadows, colour-coded everything), and the product's own pre-12-Nov navy-and-blue design.
+
+**Key Characteristics:**
+- Ink and jade: one accent family, used only for verification, citations, focus and the primary action.
+- Amber means a gap or a partial answer; brick red appears only for errors.
+- One typeface (Be Vietnam Pro) for everything; it renders Vietnamese diacritics cleanly. JetBrains Mono only for code.
+- Flat, hairline-bordered surfaces; depth comes from glass on the control layer, not from shadows on content.
+- Motion only answers an action: the seal settles in, folds open, the theme switches with a circular reveal.
+- Two equal themes: light and dark are a token swap, never a separate design.
+
+## Colors
+
+A cool, low-chroma sage neutral world with a single jade accent family and two semantic signals.
+
+### Primary
+- **Jade** (`jade`): the primary action button, focus outline, the active navigation marker and the hover state of citation chips. The colour of "verified and trusted".
+- **Deep Jade** (`jade-ink`): text and icons on jade-tinted backgrounds (active nav item, citation chips, hovered secondary buttons) and the primary button's hover fill.
+- **Jade Mist** (`jade-mist`) and **Jade Line** (`jade-line`): the tinted background and border of anything jade-marked at rest: citation chips, the active nav row, hovered chips, the composer's focus ring.
+
+### Secondary
+- **Verified Green** (`verified`, `verified-ink`, `verified-mist`, `verified-line`): the verified-answer seal, completed run statuses, positive ratings and the connected status dot. Shares the jade hue; in dark mode the two families are identical.
+
+### Tertiary
+- **Amber** (`amber`, `amber-ink`, `amber-mist`, `amber-line`): gaps and partial answers (the answer mark of a partial answer, analysis caveats, negative ratings, the disconnected status dot). Also tints one of the background colour fields.
+- **Brick** (`brick`, `brick-ink`, `brick-mist`, `brick-line`): errors and failed runs, and destructive actions only.
+
+### Neutral
+- **Sage Paper** (`sage-paper`): the page background behind everything.
+- **Surface** (`surface`): cards, panels, inputs, secondary buttons.
+- **Sunk Surface** (`surface-sunk`): table headers, selects inside the composer, hovered table rows, file inputs.
+- **Deep Surface** (`surface-deep`): hovered nav rows, inactive tab tracks, skeleton loaders, meter tracks.
+- **Hairline** (`hairline`) and **Strong Hairline** (`hairline-strong`): every border; the strong one for dashed drop zones and scrollbars.
+- **Ink** (`ink`): headings, answer text, primary text. **Soft Ink** (`ink-soft`): secondary text and button labels. **Muted** (`muted`): supporting text, labels, nav items at rest. **Faint** (`faint`): placeholders and minor notes only.
+
+### Named Rules
+**The One Seal Rule.** Jade marks what is verified, cited, focused or the primary action. If an element is none of those, it is not jade.
+
+**The Signal Rule.** Jade means verified, amber means a gap or partial result, red means an error. No colour is used decoratively, and a status always says its meaning in words too.
+
+**The Token Swap Rule.** Every colour comes from a token. Dark mode replaces token values (see the sidecar); it never adds component-specific overrides.
+
+## Typography
+
+**Display Font:** Be Vietnam Pro (with system-ui, sans-serif)
+**Body Font:** Be Vietnam Pro (with system-ui, sans-serif)
+**Label/Mono Font:** JetBrains Mono (with ui-monospace, monospace), for code and technical identifiers only
+
+**Character:** a single humanist sans designed for Vietnamese, used across five weights (400–650). Hierarchy comes from size and weight, never from a second display face, uppercase or letter-spacing tricks.
+
+### Hierarchy
+- **Display** (600, clamp(28px, 3.2vw, 37px), 1.15, -0.025em): the page hero ("What would you like to know?").
+- **Headline** (650, 21px, 1.3, -0.02em): section headings; monitoring uses 24px.
+- **Title** (600, 16–17px, 1.3–1.35): card titles, the answer heading, fold titles.
+- **Body** (400, 15px, 1.6): interface text; the question field is 16px. Hero copy is limited to 62ch.
+- **Answer** (400, 15.5px, 1.75): verified answer text, set looser for reading Vietnamese with diacritics.
+- **Label** (500, 12.5–13.5px, 1.3–1.4, no tracking, sentence case): eyebrows, chips, table headers, metadata.
+- **Figure** (650, 26–30px, tabular numbers): stat and monitoring numbers.
+
+### Named Rules
+**The Sentence Case Rule.** No all-caps labels and no letter-spaced eyebrows. Labels are sentence case at 12.5px, weight 500, in Muted.
+
+**The One Family Rule.** Be Vietnam Pro carries every role. A new screen does not introduce a second sans or a display serif.
+
+## Layout
+
+The app is a sidebar workspace: a left sidebar of navigation rows (40px tall, 10px rounded, 19px icons) that collapses without the icons moving, and a content area on Sage Paper. General Chat (the default page after sign-in) is a transcript above a docked composer; Knowledge Q&A is a centred single column of at most 880px holding the report generator; tool pages (monitoring, access control, invoice review, processing) use full-width panels with 24px padding. Older content pages keep a 1120px maximum width.
+
+Spacing is small-stepped: 2px between nav rows, 4–8px inside controls and chip rows, 12–16px inside cards, 22–30px between page blocks (for example 30px above the answer panel). Tables use tabular numbers and hairline rules.
+
+Responsive behaviour: the main breakpoint is 780px, where the sidebar becomes a bar and the glass rim moves to its bottom edge; further adjustments happen at 740px, 600px and 440px. The phone layout is tested at 390px width.
+
+### Named Rules
+**The Question-First Rule.** In General Chat the composer is the most elevated element on the page; supporting statistics shrink to one inline line, and nothing else floats.
+
+**The One-Chat Rule.** There is one chat. Choosing documents or sales data is a "Route to" setting in that chat, never a second chat box on another page. On phones the composer wraps: the text box takes the full width (at least 56px tall) and the Route to choice and Send sit below it.
+
+## Elevation & Depth
+
+Content is flat. Cards, panels, tables and citations sit on hairline borders with at most a whisper shadow, and in dark mode content shadows are removed entirely. Depth belongs to the control layer: the sidebar, the question composer, the general-chat composer and the monitoring tabs are frosted glass (22px blur, 175% saturation) over three soft radial colour fields (two jade, one amber) fixed behind the page, with an inset rim highlight and a top sheen. The primary button carries a small glossy lens. When the reader asks for reduced transparency, or the browser lacks backdrop blur, all glass becomes solid Surface and the colour fields disappear.
+
+### Shadow Vocabulary
+- **Whisper** (`box-shadow: 0 1px 2px rgba(20,33,29,.04)`): panels and the login card at rest; none in dark mode.
+- **Float** (`box-shadow: 0 10px 30px -12px rgba(20,33,29,.22), 0 2px 6px rgba(20,33,29,.05)`): the question composer.
+- **Glass** (inset rim plus a soft drop; exact value in the sidecar): every glass control.
+- **Focus ring** (`box-shadow: 0 0 0 3px` Jade Mist, 4px on the composer): focused fields and highlighted citations.
+
+### Named Rules
+**The Solid Content Rule.** Glass is only for navigation and controls. Answers, citations, tables and forms are always solid and fully opaque.
+
+## Shapes
+
+Soft, consistent corners that grow with the size of the container: 6px for inline citation chips, 10px for nav rows and small toggles, 11px for buttons and fields, 14px for cards, citations and tables, 18px for panels, 20px for the question composer, and full pills for quick chips, badges, statuses and the verified seal. Borders are single 1px hairlines; dashed borders mark drop zones only. Circles appear only for status dots and the seal's check mark.
+
+## Components
+
+The feel is calm and exact: soft corners, hairlines, no ornament; precision comes from alignment and colour discipline.
+
+### Buttons
+- **Shape:** gently rounded (11px).
+- **Primary:** Jade fill, white label (600, 14px), 42px tall, 18px side padding, with a subtle glossy lens highlight. Used for the main action of a view (Ask, Generate report).
+- **Hover / Focus:** fill deepens to Deep Jade; a 2px Jade focus outline offset by 2px; every button scales to 0.97 while pressed. Transitions run 0.12–0.16s on the standard ease.
+- **Secondary:** Surface fill, hairline border, Soft Ink label (500, 13.5px), 38px tall; on hover it takes Jade Mist fill, Jade Line border and Deep Jade text. "New conversation" is a ghost variant with a transparent border.
+- **Disabled:** 55% opacity with a progress cursor while a request runs.
+
+### Chips
+- **Quick prompts:** 34px pills with a hairline border, Surface fill and Soft Ink text; hover tints them jade.
+- **Badges and statuses:** small pills; completed runs use Verified Mist and Verified Ink, failed runs use Brick Mist and Brick Ink, ratings use Verified or Amber.
+
+### Cards / Containers
+- **Corner Style:** 14px for cards and citations, 18px for panels.
+- **Background:** Surface on Sage Paper.
+- **Shadow Strategy:** flat (see Elevation & Depth).
+- **Border:** 1px Hairline; a highlighted citation switches to a Jade border with a 3px Jade Mist ring.
+- **Internal Padding:** 16–24px.
+
+### Inputs / Fields
+- **Style:** Surface fill, 1px Hairline border, 11px corners, 14px text, Faint placeholders; selects use a custom chevron.
+- **Focus:** the border turns Jade and a 3px Jade Mist ring appears; no outline glow beyond that.
+- **File inputs:** a dashed Strong Hairline drop zone on Sunk Surface that tints jade on hover.
+
+### Navigation
+- **Sidebar rows:** 40px tall, 10px corners, Muted label (500, 14px) with a 19px line icon. Hover fills Deep Surface; the active row takes Jade Mist with Deep Jade text (600) and a 3px jade marker bar that grows in from its centre.
+- **Monitoring sub-tabs:** a glass segmented control (4px inset track, 34px tabs, 9px corners); the selected tab becomes a lighter glass chip.
+- **Phone:** below 780px the sidebar becomes a bar with its glass rim on the bottom edge.
+
+### Verified Answer Seal (signature)
+A pill reading "Every claim checked": Verified Mist fill, Verified Line border, Verified Ink text (500, 13px), led by a 20px solid Verified circle with a white check mark (dark ink check in dark mode). It settles in with a 0.5s scale-and-fade when the verified answer appears. Partial answers never get the seal; their answer mark turns Amber instead.
+
+### Citation Chip
+Inline source references in answer text (S1, S2 …): an 18px-tall chip with 6px corners, Jade Mist fill and Deep Jade text (600, 11px). Hover or focus inverts it to Jade with white text, and clicking jumps to and highlights the cited source card.
+
+### Answer Outcome Pill
+The seal's siblings, in the same position directly under the answer title and with the same pill anatomy, in Amber: "Withheld: <reason from the claim check>" (exclamation glyph), "Not covered by the documents you can access" and "Partial answer: some parts are not covered" (dash glyph). The title changes to "Answer withheld" or "Not in your documents". Withheld and not-covered answers carry a secondary "Rephrase the question" button that puts the question back in the composer. A withheld answer is the check doing its job, so it is never styled as an error.
+
+### Answer Progress Stepper
+Shown while an answer is prepared (10–20 s): a solid card with a steady headline ("Working on your answer"), elapsed seconds with "usually 10–20 s" (or "taking longer than usual" after 25 s), a Stop button, and a fixed list of plain-language steps: choosing the agent, searching in Vietnamese and English, ranking passages, querying sales data (only when used), writing a cited answer, checking every claim. Markers are 18px circles: hairline when waiting, a pulsing Jade dot when active, a Verified tick when done (it settles in once), dashed when skipped, Brick with a cross when failed. Only the step name is announced to screen readers; the clock and list stay silent. Stopping leaves a muted "You stopped this answer" note.
+
+### Answer Anatomy
+Top to bottom: title, outcome (seal or pill), answer text with citation chips, "Sources (n)", then Run details and token usage folded shut, then the rating and copy bar. Copy is left out when the answer was withheld or not covered.
+
+### Source Card
+Each source shows its file name and page, then the passage clamped to two lines with a "Show full passage" text button (the button is removed when the passage already fits). Publisher and evidence class appear only when the data has them; there is no "Verified source" placeholder. Clicking a citation chip opens and highlights its card.
+
+### Service Notice
+When search statistics cannot load, the header status reads "Search unavailable" and a whole tinted Amber notice appears at the top of the chat with a Retry button. It is an alert, not a modal, and it never blocks typing.
+
+### Undo Strip
+"New conversation" clears the chat at once and shows a slim strip with an Undo button for 8 seconds; Undo restores the previous conversation. There is no confirm dialog.
+
+## Do's and Don'ts
+
+### Do:
+- **Do** reserve Jade for verified answers, citations, focus and the single primary action of a view.
+- **Do** pair every status colour with words ("Every claim checked", "Partial answer", "Failed").
+- **Do** take every colour from a token so dark mode stays a pure token swap.
+- **Do** keep content solid and put glass only on the sidebar, composers and tab controls, with a solid fallback for reduced transparency.
+- **Do** animate only in response to an action (seal, folds, theme reveal, nav marker) and switch all motion off for reduced motion.
+- **Do** use tabular numbers (`font-variant-numeric: tabular-nums`) for every figure in stats and tables.
+- **Do** draw monitoring bars in Muted ink; a bar is a quantity, not a verdict, so it never takes Jade.
+- **Do** show people the plain names of roles, permissions, agents and checks ("Finance analyst", "Ask documents"), never internal ids.
+
+### Don't:
+- **Don't** use purple or blue gradients, sparkle icons or glowing chat bubbles; this is not a generic AI-chatbot look.
+- **Don't** build KPI walls, add heavy shadows or colour-code everything; it is not a busy admin dashboard.
+- **Don't** bring back the old navy (#14283d) and blue (#2369d8) palette; those names survive only as aliases to the jade tokens.
+- **Don't** use all-caps labels, letter-spaced eyebrows or decorative numbering.
+- **Don't** use red for anything but errors and destructive actions, or amber for anything but gaps and partial results.
+- **Don't** set essential text in Faint; it is for placeholders and minor notes only (it holds 4.5:1 on Surface, Sage Paper and Sunk Surface, but not on Deep Surface).
+- **Don't** put a coloured stripe on one side of a card, callout or note; notes are whole tinted boxes with one hairline border. A quote bar on a real blockquote is the one exception.
+- **Don't** set text below 12.5px (12px for code); the older stylesheet's 9–11px sizes are overridden by a floor in redesign.css.

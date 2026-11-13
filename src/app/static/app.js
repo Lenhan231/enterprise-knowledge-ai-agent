@@ -1,5 +1,5 @@
 const $ = (selector) => document.querySelector(selector);
-let activeTab = "knowledge";
+let activeTab = "general-chat";
 let currentUser = null;
 let knowledgeDocuments = [];
 let activeKnowledgeReview = null;
@@ -78,6 +78,7 @@ function syncWorkspaceTabs(user = currentUser) {
   const canAskDocuments = !isProcessingOwner && user?.role !== "document_uploader";
   const canUpload = ["document_uploader", "admin", "document_processing_owner"].includes(user?.role);
   const available = {
+    // General Chat is the one chat (with Route to); Knowledge Q&A keeps the report generator, its old chat box stays hidden.
     knowledge: canAskDocuments,
     "general-chat": canAskDocuments,
     upload: canUpload,
@@ -92,7 +93,7 @@ function syncWorkspaceTabs(user = currentUser) {
     button.hidden = !available[button.dataset.tabTarget];
   });
   if (!available[activeTab]) {
-    activeTab = isProcessingOwner ? "processing" : available.knowledge ? "knowledge" : available.upload ? "upload" : "knowledge";
+    activeTab = isProcessingOwner ? "processing" : available["general-chat"] ? "general-chat" : available.upload ? "upload" : "general-chat";
   }
   selectWorkspaceTab(activeTab);
 }
@@ -638,7 +639,7 @@ async function loadOcrTestRuns() {
     const settings = parserSettings;
     const previewSummary = run.page_count ? `${formatNumber(run.page_count)} page previews` : "no page previews";
     const processingSummary = `processing ${formatDuration(run.runtime_info?.processing_time_ms)}`;
-    return `<button type="button" class="ocr-run-button" data-ocr-run-id="${escapeHtml(run.run_id)}"><strong>${escapeHtml(run.source_filename)}</strong><span>${escapeHtml(new Date(run.created_at).toLocaleString())} · ${processingSummary} · ${previewSummary} · ${formatNumber(run.element_count)} parser elements · ${formatNumber(run.table_count)} tables · ${escapeHtml(settings)}</span></button>`;
+    return `<button type="button" class="ocr-run-button" data-ocr-run-id="${escapeHtml(run.run_id)}"><strong>${escapeHtml(run.source_filename)}</strong><span>${escapeHtml(formatDateTime(run.created_at))} · ${processingSummary} · ${previewSummary} · ${formatNumber(run.element_count)} parser elements · ${formatNumber(run.table_count)} tables · ${escapeHtml(settings)}</span></button>`;
   }).join("") || '<p class="loading-card">No upload tests yet. Upload a supported document above to create one.</p>';
 }
 
@@ -874,8 +875,42 @@ function updateUploadTestParserSettings() {
 $("#ocr-test-parser").addEventListener("change", updateUploadTestParserSettings);
 updateUploadTestParserSettings();
 
+// The chrome is English, so numbers group with commas: "3.180" reads as 3.18 to an English reader.
 function formatNumber(value) {
-  return new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 3 }).format(value);
+  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 3 }).format(value);
+}
+
+// "12 Nov 2026, 16:20" cannot be misread the way 11/12/2026 is (day-first in VN, month-first in US).
+const DATE_TIME_FORMAT = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+function formatDateTime(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? String(value ?? "") : DATE_TIME_FORMAT.format(date);
+}
+
+// People read names, not identifiers; unknown keys fall back to a readable form of the key.
+const ROLE_NAMES = {
+  ...Object.fromEntries(Object.entries(UPLOAD_ROLE_LABELS).map(([key, [label]]) => [key, label])),
+  document_uploader: "Document uploader", document_processing_owner: "Document processing owner", tester: "Tester",
+};
+const PERMISSION_NAMES = {
+  view_corpus: "See the document list", ask_documents: "Ask about documents", view_analytics: "Use analytics",
+  run_sql_analytics: "Query sales data", upload_documents: "Upload documents", classify_documents: "Classify documents",
+  manage_access: "Manage access", manage_knowledge: "Manage the knowledge base", view_agent_monitoring: "See agent monitoring",
+  list_processing_documents: "See document processing", process_documents: "Process documents", inspect_parsing: "Inspect parsing",
+  review_invoices: "Review invoices", run_upload_tests: "Run upload tests", review_upload_tests: "Review upload tests",
+};
+const AGENT_NAMES = {
+  knowledge: "Knowledge", sql: "Analytics", sql_analytics: "Analytics", analytics: "Analytics", auto: "Auto", agentic: "Auto",
+  hybrid: "Knowledge + analytics", dashboard: "Dashboard", report: "Report", general: "General chat",
+};
+const RETRIEVAL_NAMES = {
+  translated_hybrid_rerank: "Bilingual search + rerank", translated_hybrid: "Bilingual search", hybrid: "Hybrid search",
+  dense: "Semantic search", bm25: "Keyword search", parent: "Parent passages", "-": "—", "": "—",
+};
+const CLAIM_CHECK_NAMES = { supported: "Passed", insufficient: "Withheld", contradicted: "Withheld", unavailable: "Not checked" };
+function displayName(names, key) {
+  if (key == null) return "—";
+  return names[key] ?? String(key).replace(/_/g, " ").replace(/^\w/, (letter) => letter.toUpperCase());
 }
 
 function formatDuration(milliseconds) {
@@ -1013,12 +1048,69 @@ function renderAnswerBody(answer) {
   return blocks.join("");
 }
 
+// How an answer measured up: verified (the seal), withheld by the claim check, not covered, or partial.
+// Withholding is the product keeping its promise, so it reads as amber information, never as an error.
+function answerOutcome(data, citations) {
+  const check = data.claim_verification;
+  const pill = (kind, text) => `<p class="answer-status ${kind}">${escapeHtml(text)}</p>`;
+  const rephrase = '<div class="answer-next"><button type="button" class="secondary-button answer-rephrase">Rephrase the question</button></div>';
+  if (check?.status === "supported" && citations.length) {
+    return { badge: `<p class="answer-verified">Every claim checked against its cited source${check.claim_count ? ` · ${formatNumber(check.claim_count)} claims` : ""}</p>`, next: "" };
+  }
+  if (data.citation_validation_failed || (check && check.status !== "supported")) {
+    const reason = VERIFICATION_REASONS[check?.reason] || "the answer could not be matched to its sources";
+    return { title: "Answer withheld", gap: true, badge: pill("is-withheld", `Withheld: ${reason}`), next: rephrase };
+  }
+  if (data.insufficient_context) {
+    return { title: "Not in your documents", gap: true, badge: pill("is-gap", "Not covered by the documents you can access"), next: rephrase };
+  }
+  if (data.status === "partial") return { gap: true, badge: pill("is-gap", "Partial answer: some parts are not covered"), next: "" };
+  return { badge: "", next: "" };
+}
+
+// Source cards show two lines of their passage until opened, so the answer outweighs its sources.
+// The toggle only stays where the two-line clamp actually hides text (measured once the card is visible).
+function pruneCitationToggles(root) {
+  root?.querySelectorAll?.(".citation:not(.is-open) .citation-toggle").forEach((toggle) => {
+    const passage = toggle.closest(".citation").querySelector(":scope > p");
+    if (!passage || !passage.offsetParent) return;
+    if (passage.scrollHeight <= passage.clientHeight + 1) toggle.remove();
+  });
+}
+
+function setCitationOpen(card, open) {
+  card.classList.toggle("is-open", open);
+  const toggle = card.querySelector(".citation-toggle");
+  if (!toggle) return;
+  toggle.setAttribute("aria-expanded", String(open));
+  toggle.textContent = open ? "Show less" : "Show full passage";
+}
+
+// A broken knowledge base is said plainly in the conversation, with Retry, not only in the sidebar footer.
+async function loadCorpusStats() {
+  try {
+    renderCorpus(await api("/api/dashboard"));
+    $("#service-notice").hidden = true;
+  } catch (error) {
+    $("#connection-status").textContent = "Search unavailable";
+    $("#connection-status").title = error.message;
+    $("#service-notice").hidden = false;
+  }
+}
+$("#service-retry").addEventListener("click", async (event) => {
+  event.currentTarget.disabled = true;
+  await loadCorpusStats();
+  event.currentTarget.disabled = false;
+});
+
 function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
   panel.hidden = false;
   const citations = Array.isArray(data.citations) ? data.citations : [];
   const usedEvidenceFallback = Boolean(data.answer_fallback_reason || data.fallback);
-  const responseTitle = data.failure_code === "sql_timeout" ? "Truy vấn mất quá lâu"
-    : ({partial: "Partial answer", clarification_required: "Clarification needed", failed: "Could not complete"})[data.status]
+  const outcome = answerOutcome(data, citations);
+  const responseTitle = data.failure_code === "sql_timeout" ? "The data query took too long"
+    : outcome.title
+    || ({partial: "Partial answer", clarification_required: "Clarification needed", failed: "Could not complete"})[data.status]
     || (data.ok === false ? "Answer unavailable" : usedEvidenceFallback ? "Evidence only" : "Answer");
   const domainLabels = {
     inventory_allocation: "Inventory allocation",
@@ -1088,11 +1180,12 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
   const routeDetails = renderRunDetails(data);
   panel.innerHTML = `
     <div class="answer-header-wrap">
-      <div class="answer-heading${data.status === "partial" || data.limitations?.length ? " is-partial" : ""}">
+      <div class="answer-heading${outcome.gap || data.status === "partial" || data.limitations?.length ? " is-partial" : ""}">
         <span class="answer-mark">${usedEvidenceFallback ? "EV" : "AI"}</span>
         <div><span class="eyebrow">${escapeHtml(({knowledge:"Knowledge agent",analytics:"Analytics agent",sql_analytics:"Analytics agent",dashboard:"Inventory agent",report:"Report agent",agentic:"Automatic router",hybrid:"Knowledge + analytics"})[data.agent] || "Agent response")}</span><h3>${escapeHtml(responseTitle)}</h3></div>
       </div>
     </div>
+    ${outcome.badge}
     ${domainNote}
     ${decisionModeNote}
     ${referenceRetrievalNote}
@@ -1100,16 +1193,14 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
     ${limitations}
     ${fallbackNotice}
     ${sqlScope}
-    ${routeDetails}
-    ${tokenUsage}
-    ${data.claim_verification?.status === "supported" && citations.length ? `<p class="answer-verified">Every claim checked against its cited source${data.claim_verification.claim_count ? ` · ${formatNumber(data.claim_verification.claim_count)} claims` : ""}</p>` : ""}
     <div class="answer-text">${renderAnswerBody(data.answer)}</div>
+    ${outcome.next}
     ${renderAgentRows(data.data)}
     ${renderDashboardVisualization(data.data?.visualization)}
-    ${data.citation_validation_failed ? `<p class="error-message">The answer was withheld because it failed evidence validation.${data.decision_validation_failure ? ` <details><summary>Admin diagnostic</summary><code>${escapeHtml(data.decision_validation_failure)}</code>${data.decision_validation_numeric_tokens?.length ? `<p>Unsupported numeric claims: ${data.decision_validation_numeric_tokens.map(escapeHtml).join(", ")}</p>` : ""}</details>` : ""}</p>` : citations.length ? `
+    ${data.citation_validation_failed ? (data.decision_validation_failure ? `<details class="answer-diagnostic"><summary>Admin diagnostic</summary><code>${escapeHtml(data.decision_validation_failure)}</code>${data.decision_validation_numeric_tokens?.length ? `<p>Unsupported numeric claims: ${data.decision_validation_numeric_tokens.map(escapeHtml).join(", ")}</p>` : ""}</details>` : "") : citations.length ? `
       <div class="citations">
         <div class="citation-header-row">
-          <h4>Cited Sources (${citations.length})</h4>
+          <h4>Sources (${citations.length})</h4>
           <span class="citation-count-badge">${citations.length} source${citations.length === 1 ? "" : "s"}</span>
         </div>
         ${citations.map((source) => {
@@ -1117,7 +1208,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
             || syntheticPolicySourcePageUrl(source)
             || validSourceUrl(source.source_url);
           const link = href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">View original</a>` : "";
-          const chunk = Number.isInteger(source.chunk_index) ? ` (chunk ${source.chunk_index})` : "";
+          const chunk = Number.isInteger(source.chunk_index) ? ` · passage ${source.chunk_index}` : "";
           const location = source.page_number ? `Page ${source.page_number}${chunk}`
             : source.source_type === "commerce_sql" ? `SQL aggregate · ${(source.source_tables || []).join(", ")}`
               : source.source_type === "commerce_schema" ? `Schema coverage · ${(source.source_tables || []).join(", ")}`
@@ -1142,7 +1233,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
             && Array.isArray(source.commerce_observations) && source.commerce_observations.length
             ? ""
             : `<p>${escapeHtml(source.excerpt)}</p>`;
-          const publisher = source.source_publisher || source.company || "Verified source";
+          const publisher = source.source_publisher || source.company || "";
           return `
             <article class="citation" data-cite-id="${escapeHtml(source.id)}">
               <div class="citation-title">
@@ -1156,14 +1247,17 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
               ${observationTrace}
               ${sqlTrace}
               <div class="citation-foot">
-                <span>${escapeHtml(publisher)}${source.evidence_class ? ` · ${escapeHtml(source.evidence_class.replaceAll("_", " "))}` : ""}</span>
+                ${publisher || source.evidence_class ? `<span>${escapeHtml([publisher, source.evidence_class?.replaceAll("_", " ")].filter(Boolean).join(" · "))}</span>` : ""}
+                ${sourceExcerpt ? `<button type="button" class="citation-toggle" aria-expanded="false">Show full passage</button>` : ""}
                 ${link}
               </div>
             </article>`;
         }).join("")}
       </div>` : ""}
+    ${routeDetails}
+    ${tokenUsage}
     <div class="answer-actions-bar">
-      <button type="button" class="action-btn copy-answer-btn" title="Copy response text" aria-label="Copy response">${ICONS.copy}<span class="action-label">Copy</span></button>
+      ${outcome.next ? "" : `<button type="button" class="action-btn copy-answer-btn" title="Copy response text" aria-label="Copy response">${ICONS.copy}<span class="action-label">Copy</span></button>`}
     </div>`;
 
   // Inline [S1] chips scroll to and highlight their source card.
@@ -1171,11 +1265,17 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
     event.preventDefault();
     const card = panel.querySelector(`.citation[data-cite-id="${CSS.escape(ref.dataset.cite)}"]`);
     if (!card || card.hidden) return;
+    setCitationOpen(card, true);
     card.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
     card.classList.remove("is-highlighted");
     void card.offsetWidth;
     card.classList.add("is-highlighted");
     setTimeout(() => card.classList.remove("is-highlighted"), 1600);
+  }));
+  requestAnimationFrame(() => pruneCitationToggles(panel));
+  panel.querySelectorAll(".citation-toggle").forEach((toggle) => toggle.addEventListener("click", () => {
+    const card = toggle.closest(".citation");
+    setCitationOpen(card, !card.classList.contains("is-open"));
   }));
   const copyBtn = panel.querySelector(".copy-answer-btn");
   if (copyBtn) {
@@ -1222,7 +1322,7 @@ function renderAgentRows(data) {
       ? `<p>Parameters: <code>${escapeHtml(JSON.stringify(value.parameters))}</code></p>`
       : "";
     const diagnostics = diagnosticSql || parameters
-      ? `<details><summary>${value.query_status === "error" ? "Xem truy vấn lỗi" : value.query_status === "rejected" ? "Xem truy vấn bị chặn" : executed ? "Xem SQL đã chạy" : "Chi tiết truy vấn"}</summary>${diagnosticSql ? `<pre>${escapeHtml(diagnosticSql)}</pre>` : ""}${parameters}</details>`
+      ? `<details><summary>${value.query_status === "error" ? "Show the failed query" : value.query_status === "rejected" ? "Show the blocked query" : executed ? "Show the SQL that ran" : "Query details"}</summary>${diagnosticSql ? `<pre>${escapeHtml(diagnosticSql)}</pre>` : ""}${parameters}</details>`
       : "";
     const jev = value.jev;
     const jevNote = jev?.probabilities ? `<p class="jev-note">JEV · rõ ${Math.round((jev.probabilities.clear || 0) * 100)}% · mơ hồ ${Math.round((jev.probabilities.ambiguous || 0) * 100)}% · độ rõ tối thiểu để chạy ${Math.round((jev.threshold || 0) * 100)}%</p>` : "";
@@ -1276,11 +1376,11 @@ function renderAgentMonitoring(data) {
   const agents = data.by_agent || [];
   const maxRuns = Math.max(1, ...agents.map((agent) => Number(agent.total_runs) || 0));
   $("#monitoring-agents").innerHTML = agents.length ? agents.map((agent) => `
-    <div class="monitoring-agent"><div><strong>${escapeHtml(agent.agent_name)}</strong><span>${formatNumber(agent.completed_runs)} of ${formatNumber(agent.total_runs)} completed, ${agent.average_elapsed_ms == null ? "no timing" : `${formatSeconds(agent.average_elapsed_ms)} average`}</span></div><i><b style="width:${Math.max(3, Number(agent.total_runs) / maxRuns * 100)}%"></b></i></div>
+    <div class="monitoring-agent"><div><strong>${escapeHtml(displayName(AGENT_NAMES, agent.agent_name))}</strong><span>${formatNumber(agent.completed_runs)} of ${formatNumber(agent.total_runs)} completed, ${agent.average_elapsed_ms == null ? "no timing" : `${formatSeconds(agent.average_elapsed_ms)} average`}</span></div><i><b style="width:${Math.max(3, Number(agent.total_runs) / maxRuns * 100)}%"></b></i></div>
   `).join("") : '<p class="analysis-empty">No agent runs have been recorded in the last 24 hours.</p>';
   const runs = data.recent_runs || [];
   $("#monitor-count-runs").textContent = runs.length ? formatNumber(runs.length) : "";
-  $("#monitoring-runs").innerHTML = runs.length ? `<div class="monitoring-table-wrap"><table class="monitoring-table"><thead><tr><th>Time</th><th>Role</th><th>Agent</th><th>Retrieval</th><th>Result</th><th>Latency</th><th>Sources</th></tr></thead><tbody>${runs.map((run) => `<tr><td>${escapeHtml(new Date(run.created_at).toLocaleString())}</td><td>${escapeHtml(run.actor_role)}</td><td>${escapeHtml(run.agent_name)}</td><td>${escapeHtml(run.retrieval_method)}</td><td><span class="run-status ${escapeHtml(run.status)}">${escapeHtml(run.status.replaceAll("_", " "))}</span>${run.error_type ? `<small>${escapeHtml(run.error_type)}</small>` : ""}</td><td>${formatSeconds(run.elapsed_ms)}</td><td>${formatNumber(run.citation_count)}</td></tr>`).join("")}</tbody></table></div>` : '<p class="analysis-empty">No requests recorded yet.</p>';
+  $("#monitoring-runs").innerHTML = runs.length ? `<div class="monitoring-table-wrap"><table class="monitoring-table"><thead><tr><th>Time</th><th>Role</th><th>Agent</th><th>Retrieval</th><th>Result</th><th>Latency</th><th>Sources</th></tr></thead><tbody>${runs.map((run) => `<tr><td>${escapeHtml(formatDateTime(run.created_at))}</td><td>${escapeHtml(displayName(ROLE_NAMES, run.actor_role))}</td><td>${escapeHtml(displayName(AGENT_NAMES, run.agent_name))}</td><td>${escapeHtml(displayName(RETRIEVAL_NAMES, run.retrieval_method))}</td><td><span class="run-status ${escapeHtml(run.status)}">${escapeHtml(run.status.replaceAll("_", " "))}</span>${run.error_type ? `<small>${escapeHtml(run.error_type)}</small>` : ""}</td><td>${formatSeconds(run.elapsed_ms)}</td><td>${formatNumber(run.citation_count)}</td></tr>`).join("")}</tbody></table></div>` : '<p class="analysis-empty">No requests recorded yet.</p>';
 }
 
 async function refreshAgentMonitoring() {
@@ -1446,7 +1546,7 @@ function renderAnswerFeedback(data) {
   const summary = data.summary || {};
   const items = data.recent || [];
   $("#monitor-count-feedback").textContent = formatNumber((summary.up ?? 0) + (summary.down ?? 0));
-  $("#monitoring-feedback").innerHTML = `<p class="rating-totals"><span>Last 30 days</span><span class="rating-pill up">${ICONS.up}${formatNumber(summary.up ?? 0)} helpful</span><span class="rating-pill down">${ICONS.down}${formatNumber(summary.down ?? 0)} not helpful</span></p>${items.length ? `<div class="monitoring-table-wrap"><table class="monitoring-table"><thead><tr><th>Time</th><th>Rating</th><th>Role</th><th>Agent</th><th>Question</th><th>Comment</th><th>Claim check</th></tr></thead><tbody>${items.map((item) => `<tr><td>${escapeHtml(new Date(item.created_at).toLocaleString())}</td><td><span class="rating-icon ${item.rating === "up" ? "up" : "down"}" title="${item.rating === "up" ? "Helpful" : "Not helpful"}">${ICONS[item.rating === "up" ? "up" : "down"]}</span></td><td>${escapeHtml(item.actor_role)}</td><td>${escapeHtml(item.agent_name)}</td><td><details><summary>${escapeHtml(item.question.slice(0, 80))}</summary><p>${escapeHtml(item.answer)}</p></details></td><td>${escapeHtml(item.comment || "")}</td><td>${escapeHtml(item.claim_status || "")}</td></tr>`).join("")}</tbody></table></div>` : '<p class="analysis-empty">No feedback yet.</p>'}`;
+  $("#monitoring-feedback").innerHTML = `<p class="rating-totals"><span>Last 30 days</span><span class="rating-pill up">${ICONS.up}${formatNumber(summary.up ?? 0)} helpful</span><span class="rating-pill down">${ICONS.down}${formatNumber(summary.down ?? 0)} not helpful</span></p>${items.length ? `<div class="monitoring-table-wrap"><table class="monitoring-table"><thead><tr><th>Time</th><th>Rating</th><th>Role</th><th>Agent</th><th>Question</th><th>Comment</th><th>Claim check</th></tr></thead><tbody>${items.map((item) => `<tr><td>${escapeHtml(formatDateTime(item.created_at))}</td><td><span class="rating-icon ${item.rating === "up" ? "up" : "down"}" title="${item.rating === "up" ? "Helpful" : "Not helpful"}">${ICONS[item.rating === "up" ? "up" : "down"]}<span class="visually-hidden">${item.rating === "up" ? "Helpful" : "Not helpful"}</span></span></td><td>${escapeHtml(displayName(ROLE_NAMES, item.actor_role))}</td><td>${escapeHtml(displayName(AGENT_NAMES, item.agent_name))}</td><td><details><summary>${escapeHtml(item.question.slice(0, 80))}</summary><p>${escapeHtml(item.answer)}</p></details></td><td>${escapeHtml(item.comment || "")}</td><td>${escapeHtml(item.claim_status ? displayName(CLAIM_CHECK_NAMES, item.claim_status) : "")}</td></tr>`).join("")}</tbody></table></div>` : '<p class="analysis-empty">No feedback yet.</p>'}`;
 }
 
 // Fades the old stage message out and the new one in; a newer stage cancels a fade still running.
@@ -1556,7 +1656,7 @@ function typeOutText(element, revealAfter = []) {
     else {
       for (const [node, text] of nodes) node.nodeValue = text;
       element.removeAttribute("aria-busy");
-      revealAfter.forEach((item, position) => setTimeout(() => { item.hidden = false; }, 500 + position * 400));
+      revealAfter.forEach((item, position) => setTimeout(() => { item.hidden = false; requestAnimationFrame(() => pruneCitationToggles(item.closest(".answer-panel") || item)); }, 500 + position * 400));
     }
   };
   requestAnimationFrame(step);
@@ -1724,13 +1824,12 @@ async function loadWorkspace(user) {
     $("#agent-mode").value = "knowledge";
   }
   if (user.role !== "document_processing_owner") {
-    try { renderCorpus(await api("/api/dashboard")); }
-    catch (error) { $("#connection-status").textContent = `Knowledge base unavailable: ${error.message}`; }
+    await loadCorpusStats();
   }
   try {
     if (user.role === "admin") {
       const access = await api("/api/admin/access-matrix");
-      $("#access-matrix").innerHTML = access.roles.map((role) => `<article><strong>${escapeHtml(role.role)}</strong><span>${role.permissions.map(escapeHtml).join(" · ")}</span></article>`).join("");
+      $("#access-matrix").innerHTML = access.roles.map((role) => `<article><strong>${escapeHtml(displayName(ROLE_NAMES, role.role))}</strong><span>${role.permissions.map((permission) => escapeHtml(displayName(PERMISSION_NAMES, permission))).join(" · ")}</span></article>`).join("");
       $("#admin-section").hidden = false;
       $("#monitoring-section").hidden = false;
       await refreshAgentMonitoring();
@@ -1987,7 +2086,7 @@ $("#logout-button").addEventListener("click", async () => {
   $("#login-brand-sidebar").hidden = false;
   $("#user-badge").hidden = true;
   $("#logout-button").hidden = true;
-  activeTab = "knowledge";
+  activeTab = "general-chat";
   syncWorkspaceTabs();
 });
 
@@ -2000,35 +2099,138 @@ async function loadCorpus() {
   }
 }
 
-function renderSkeletonAnswer(panel, statusMessage = "Đang gửi yêu cầu…", progress = []) {
+// The fixed pipeline a user sees while waiting. Raw server stages map onto these steps, so the list
+// keeps its shape from the first second instead of growing line by line.
+const PROGRESS_PHASES = [
+  { label: "Choosing the right agent", stages: ["routing"], modes: ["auto"] },
+  { label: "Searching your documents in Vietnamese and English",
+    stages: ["knowledge_search_planning", "query_translation", "embedding", "database_retrieval", "retrieval_fusion"],
+    modes: ["auto", "knowledge"] },
+  { label: "Ranking the best passages", stages: ["reranking"], modes: ["auto", "knowledge"] },
+  { label: "Querying the sales data", stages: ["sql_ambiguity_check", "sql_planning", "sql_execution"], modes: ["sql"], whenSeen: true },
+  { label: "Writing a cited answer", stages: ["answer_generation", "answer_synthesis"], modes: ["auto", "knowledge", "sql"] },
+  { label: "Checking every claim against its source", stages: ["claim_verification"], modes: ["auto", "knowledge"] },
+];
+const PHASE_STATE_TEXT = { done: "done", active: "in progress", failed: "failed", skipped: "skipped", pending: "waiting" };
+
+function progressPhases(progress = [], mode = "auto") {
+  const flow = ["auto", "knowledge", "sql"].includes(mode) ? mode : "auto";
+  const seen = new Map(progress.map((item) => [item.stage, item.state]));
+  const phases = PROGRESS_PHASES.filter((phase) => phase.modes.includes(flow)
+    || (phase.whenSeen && phase.stages.some((stage) => seen.has(stage))));
+  const reached = phases.map((phase) => phase.stages.filter((stage) => seen.has(stage)).map((stage) => seen.get(stage)));
+  const furthest = reached.reduce((last, states, index) => (states.length ? index : last), -1);
+  return phases.map((phase, index) => {
+    const states = reached[index];
+    let state = "pending";
+    if (states.includes("failed")) state = "failed";
+    else if (index < furthest) state = states.length ? "done" : "skipped";
+    else if (index === furthest) state = states.every((value) => value === "completed") ? "done" : "active";
+    return { label: phase.label, state };
+  });
+}
+
+// The visible headline stays steady (the list already shows the step); the live text names the step.
+function progressHeadline(phases, note) {
+  if (note) return note;
+  if (phases.some((phase) => phase.state === "failed")) return "A step failed; finishing what it can";
+  if (phases.length && phases.every((phase) => phase.state === "done" || phase.state === "skipped")) return "Finishing the answer";
+  return phases.some((phase) => phase.state !== "pending") ? "Working on your answer" : "Sending your question";
+}
+
+function progressAnnouncement(phases, note) {
+  return phases.find((phase) => phase.state === "active")?.label || progressHeadline(phases, note);
+}
+
+function elapsedNote(startedAt) {
+  const seconds = Math.max(0, Math.floor((Date.now() - (startedAt || Date.now())) / 1000));
+  return `${seconds} s · ${seconds > 25 ? "taking longer than usual" : "usually 10–20 s"}`;
+}
+
+// The headline is the only live text; the step list and the per-second clock stay silent for screen readers.
+function renderSkeletonAnswer(panel, turn) {
+  const phases = progressPhases(turn.progress, turn.mode);
   panel.hidden = false;
   panel.innerHTML = `
-    <section class="agent-progress" role="status" aria-live="polite" aria-busy="true">
-      <span class="agent-progress-spinner" aria-hidden="true"></span>
-      <div class="agent-progress-content">
-        <strong class="stage-status">${escapeHtml(statusMessage)}</strong>
-        <ol class="agent-progress-steps">${renderProgressSteps(progress)}</ol>
+    <section class="agent-progress" aria-busy="true">
+      <div class="agent-progress-head">
+        <strong class="stage-status">${escapeHtml(progressHeadline(phases, turn.note))}</strong>
+        <span class="visually-hidden agent-progress-live" role="status">${escapeHtml(progressAnnouncement(phases, turn.note))}</span>
+        <span class="agent-progress-time" aria-hidden="true">${escapeHtml(elapsedNote(turn.startedAt))}</span>
+        ${turn.abort ? '<button type="button" class="secondary-button agent-progress-stop">Stop</button>' : ""}
       </div>
+      <ol class="agent-progress-steps" aria-live="off" aria-label="Answer progress">${renderProgressSteps(phases)}</ol>
     </section>
   `;
 }
 
-function renderProgressSteps(progress = []) {
-  return progress.slice(-4).map(({ stage, state }) => `
-    <li class="agent-progress-step is-${escapeHtml(state)}">
-      <span aria-hidden="true">${state === "completed" ? "✓" : state === "failed" ? "!" : "·"}</span>
-      ${escapeHtml(STAGE_STATUS[stage] || "Đang xử lý")}
+function renderProgressSteps(phases) {
+  return phases.map((phase) => `
+    <li class="agent-progress-step is-${phase.state}"${phase.state === "active" ? ' aria-current="step"' : ""}>
+      <span class="agent-progress-marker" aria-hidden="true"></span>
+      <span class="agent-progress-label">${escapeHtml(phase.label)}<span class="visually-hidden">, ${PHASE_STATE_TEXT[phase.state]}</span></span>
     </li>`).join("");
 }
 
+// Steps change state in place, so a finished step's tick animates once rather than on every event.
 function updatePendingProgress(turn) {
   const entry = document.querySelector(`[data-turn-id="${turn.id}"]`);
   if (!entry) return;
+  const phases = progressPhases(turn.progress, turn.mode);
   const heading = entry.querySelector(".stage-status");
   const steps = entry.querySelector(".agent-progress-steps");
-  if (heading) swapStageText(heading, turn.status || "Đang xử lý yêu cầu…");
-  if (steps) steps.innerHTML = renderProgressSteps(turn.progress);
+  const live = entry.querySelector(".agent-progress-live");
+  if (heading) swapStageText(heading, progressHeadline(phases, turn.note));
+  if (live && live.textContent !== progressAnnouncement(phases, turn.note)) live.textContent = progressAnnouncement(phases, turn.note);
+  if (!steps) return;
+  if (steps.children.length !== phases.length) {
+    steps.innerHTML = renderProgressSteps(phases);
+    return;
+  }
+  phases.forEach((phase, index) => {
+    const item = steps.children[index];
+    const className = `agent-progress-step is-${phase.state}`;
+    if (item.className === className) return;
+    item.className = className;
+    item.toggleAttribute("aria-current", phase.state === "active");
+    if (phase.state === "active") item.setAttribute("aria-current", "step");
+    const hint = item.querySelector(".visually-hidden");
+    if (hint) hint.textContent = `, ${PHASE_STATE_TEXT[phase.state]}`;
+  });
 }
+
+function updatePendingElapsed(turn) {
+  const clock = document.querySelector(`[data-turn-id="${turn.id}"] .agent-progress-time`);
+  if (clock) clock.textContent = elapsedNote(turn.startedAt);
+}
+
+// Stop ends the wait in the browser; a request the server already accepted may still finish there.
+document.addEventListener("click", (event) => {
+  const stop = event.target.closest(".agent-progress-stop");
+  if (!stop) return;
+  const id = stop.closest("[data-turn-id]")?.dataset.turnId;
+  const turn = [...sessionTurns, ...generalTurns].find((item) => item.id === id);
+  if (!turn?.abort) return;
+  turn.stopped = true;
+  stop.disabled = true;
+  turn.abort.abort(new DOMException("Stopped by the user", "AbortError"));
+});
+
+// A withheld or uncovered answer offers the next step: the same question back in the box to narrow it.
+document.addEventListener("click", (event) => {
+  const button = event.target.closest(".answer-rephrase");
+  if (!button) return;
+  const id = button.closest("[data-turn-id]")?.dataset.turnId;
+  const turn = [...sessionTurns, ...generalTurns].find((item) => item.id === id);
+  const inChat = Boolean(button.closest("#general-chat-transcript"));
+  const input = inChat ? $("#general-chat-question") : $("#question");
+  if (!input) return;
+  if (turn?.question) input.value = turn.question;
+  if (inChat) resizeGeneralChatComposer();
+  input.scrollIntoView({ behavior: "smooth", block: "center" });
+  input.focus({ preventScroll: true });
+  input.setSelectionRange(input.value.length, input.value.length);
+});
 
 function setupQuickPrompts() {
   const container = $("#quick-prompts");
@@ -2075,12 +2277,13 @@ function renderChatTranscript(root, turns, shouldScroll) {
     const entry = document.createElement("article");
     entry.className = "chat-turn";
     entry.dataset.turnId = turn.id;
-    entry.innerHTML = `<div class="chat-turn-question"><span>${escapeHtml(({auto:"AUTO",knowledge:"KNOWLEDGE",sql:"ANALYTICS"})[turn.mode] || turn.mode.toUpperCase())}</span><p>${escapeHtml(turn.question)}</p></div>`;
+    entry.innerHTML = `<div class="chat-turn-question"><span>${escapeHtml(displayName({ auto: "Auto", knowledge: "Knowledge", sql: "Analytics" }, turn.mode))}</span><p>${escapeHtml(turn.question)}</p></div>`;
     const response = document.createElement("div");
     response.className = "answer-panel chat-turn-response";
     entry.append(response);
     root.append(entry);
-    if (turn.state === "pending") renderSkeletonAnswer(response, turn.status || "Đang gửi yêu cầu…", turn.progress);
+    if (turn.state === "pending") renderSkeletonAnswer(response, turn);
+    else if (turn.state === "stopped") response.innerHTML = '<p class="answer-stopped">You stopped this answer. Ask again whenever you are ready.</p>';
     else if (turn.state === "error") response.innerHTML = `<p class="error-message" role="alert">${escapeHtml(turn.error)}. Please check service configuration or connection.</p>`;
     else if (turn.result) {
       renderAgentResult(turn.result, response, false);
@@ -2103,7 +2306,23 @@ $("#new-conversation").addEventListener("click", () => {
   $("#question").value = "";
 });
 
+let clearedChat = null;
+let clearedChatTimer = null;
+$("#chat-undo-button").addEventListener("click", () => {
+  if (!clearedChat) return;
+  ({ id: generalConversationId, turns: generalTurns } = clearedChat);
+  clearedChat = null;
+  clearTimeout(clearedChatTimer);
+  $("#chat-undo").hidden = true;
+  renderGeneralChatTranscript();
+});
 $("#new-general-chat").addEventListener("click", () => {
+  if (generalTurns.length && !generalTurns.some((turn) => turn.state === "pending")) {
+    clearedChat = { id: generalConversationId, turns: generalTurns };
+    $("#chat-undo").hidden = false;
+    clearTimeout(clearedChatTimer);
+    clearedChatTimer = setTimeout(() => { clearedChat = null; $("#chat-undo").hidden = true; }, 8000);
+  }
   generalConversationId = crypto.randomUUID();
   generalTurns = [];
   $("#general-chat-question").value = "";
@@ -2117,7 +2336,7 @@ async function sendChatMessage({ question, mode, button, input, state, render })
   const requestGeneration = sessionGeneration;
   const requestSubject = sessionSubject;
   if (!question) return;
-  const turn = { id: crypto.randomUUID(), mode, question, state: "pending" };
+  const turn = { id: crypto.randomUUID(), mode, question, state: "pending", startedAt: Date.now(), abort: new AbortController() };
   state.turns.push(turn);
   state.turns = state.turns.slice(-20);
   input.value = "";
@@ -2127,27 +2346,23 @@ async function sendChatMessage({ question, mode, button, input, state, render })
   button.disabled = true;
   if (button.id === "general-chat-send") {
     button.setAttribute("aria-busy", "true");
-    button.setAttribute("aria-label", "Đang gửi tin nhắn");
+    button.setAttribute("aria-label", "Sending…");
   } else {
-    button.innerHTML = "<span>Working...</span>";
+    button.innerHTML = "<span>Working…</span>";
   }
+  const timeout = setTimeout(() => turn.abort?.abort(new DOMException("The request timed out", "TimeoutError")), 135_000);
+  const ticker = setInterval(() => updatePendingElapsed(turn), 1000);
   try {
     const body = JSON.stringify({
       question, agent_mode: mode, retrieval_method: "translated_hybrid_rerank",
       conversation_id: requestConversationId,
     });
-    const signal = AbortSignal.timeout(135_000);
+    const signal = turn.abort.signal;
     const showStage = (stage, state) => {
       turn.progress ||= [];
-      let step = turn.progress.find((item) => item.stage === stage);
-      if (!step) {
-        step = { stage, state };
-        turn.progress.push(step);
-      } else step.state = state;
-      const activeStep = [...turn.progress].reverse().find((item) => item.state === "started");
-      turn.status = activeStep ? STAGE_STATUS[activeStep.stage]
-        : state === "failed" ? "Một bước xử lý gặp lỗi"
-          : "Đang hoàn tất câu trả lời…";
+      const step = turn.progress.find((item) => item.stage === stage);
+      if (step) step.state = state;
+      else turn.progress.push({ stage, state });
       updatePendingProgress(turn);
     };
     let data;
@@ -2155,29 +2370,55 @@ async function sendChatMessage({ question, mode, button, input, state, render })
       data = await askAgentStream(body, signal, showStage);
     } catch (error) {
       if (!error.streamUnavailable) throw error;
-      turn.status = "Đang chờ agent xử lý yêu cầu…";
+      turn.note = "Waiting for the agent to finish";
       updatePendingProgress(turn);
       data = await api("/api/agents/chat", { method: "POST", body, signal });
     }
     if (state.getId() !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
-    $("#connection-status").textContent = "Agent services connected";
+    $("#connection-status").textContent = "Services connected";
     $(".status-dot").classList.add("connected");
     turn.result = data;
     turn.state = "complete";
     turn.typeOut = true;
   } catch (error) {
     if (state.getId() !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
-    turn.error = error.name === "TimeoutError" ? "The request timed out. No answer was received; try again or choose a specialist" : error.message;
-    turn.state = "error";
+    if (turn.stopped) turn.state = "stopped";
+    else {
+      turn.error = error.name === "TimeoutError" ? "The request timed out. No answer was received; try again or choose a specialist" : error.message;
+      turn.state = "error";
+    }
   } finally {
+    clearTimeout(timeout);
+    clearInterval(ticker);
+    turn.abort = null;
     button.disabled = false;
     if (button.id === "general-chat-send") {
       button.removeAttribute("aria-busy");
-      button.setAttribute("aria-label", "Gửi tin nhắn");
+      button.setAttribute("aria-label", "Send message");
     } else button.innerHTML = initialButton;
     if (state.turns.includes(turn)) render(false);
+    announceTurn(turn);
   }
 }
+
+// One short status line per answer (the panel itself is not a live region, so sources are not read out in bulk).
+function announceTurn(turn) {
+  const announcer = $("#answer-announcer");
+  if (!announcer) return;
+  const entry = document.querySelector(`[data-turn-id="${turn.id}"]`);
+  const outcome = entry?.querySelector(".answer-verified, .answer-status")?.textContent;
+  const sources = entry?.querySelectorAll(".citation").length || 0;
+  announcer.textContent = turn.state === "stopped" ? "Answer stopped"
+    : turn.state === "error" ? "The answer could not be completed"
+      : `Answer ready${outcome ? `. ${outcome}` : ""}${sources ? `. ${sources} source${sources === 1 ? "" : "s"}` : ""}`;
+}
+
+// Enter sends, as in a chat; Shift + Enter keeps a new line, and IME composition is left alone.
+$("#question").addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" || event.shiftKey || event.isComposing) return;
+  event.preventDefault();
+  if (!$("#ask-button").disabled) $("#ask-form").requestSubmit();
+});
 
 $("#ask-form").addEventListener("submit", (event) => {
   event.preventDefault();
@@ -2192,7 +2433,7 @@ $("#general-chat-form").addEventListener("submit", (event) => {
   event.preventDefault();
   const input = $("#general-chat-question");
   sendChatMessage({
-    question: input.value.trim(), mode: "auto", button: $("#general-chat-send"), input,
+    question: input.value.trim(), mode: $("#general-chat-mode").value, button: $("#general-chat-send"), input,
     state: { getId: () => generalConversationId, get turns() { return generalTurns; }, set turns(value) { generalTurns = value; } },
     render: renderGeneralChatTranscript,
   });

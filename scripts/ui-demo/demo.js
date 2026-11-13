@@ -7,9 +7,9 @@
   window.addEventListener("load", async () => {
     await wait(() => !document.querySelector("#workspace")?.hidden);
     if (q.get("shot") === "answer") {
-      document.querySelector("#tab-button-knowledge").click();
-      document.querySelector("#question").value = "Khi nghỉ việc tôi cần bàn giao những gì?";
-      document.querySelector("#ask-button").click();
+      document.querySelector("#tab-button-general-chat").click();
+      document.querySelector("#general-chat-question").value = "Khi nghỉ việc tôi cần bàn giao những gì?";
+      document.querySelector("#general-chat-form").requestSubmit();
     }
     if (q.get("shot") === "chat-empty") document.querySelector("#tab-button-general-chat").click();
     if (q.get("shot") === "chat") {
@@ -19,7 +19,7 @@
     }
     if (q.get("shot") === "access") document.querySelector("#tab-button-access").click();
     if (q.get("shot") === "collapsed") document.querySelector("#sidebar-toggle").click();
-    if (q.get("shot") === "home") document.querySelector("#tab-button-knowledge").click();
+    if (q.get("shot") === "home") document.querySelector("#tab-button-general-chat").click();
     if (q.get("shot") === "feedback") {
       document.querySelector("#tab-button-general-chat").click();
       document.querySelector("#general-chat-question").value = "Khi nghỉ việc tôi cần bàn giao những gì?";

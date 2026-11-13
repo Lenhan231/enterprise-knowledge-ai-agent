@@ -1,0 +1,505 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-13T13:10:53.115Z",
+  "title": "Design System: Enterprise Knowledge AI Agent",
+  "source": "src/app/static/redesign.css on main 9a5d157 (loads after styles.css; styles.css colours are tokens)",
+  "extensions": {
+    "colorMeta": {
+      "jade": {
+        "role": "primary",
+        "displayName": "Jade",
+        "cssVar": "--accent",
+        "dark": "#6fc2ab",
+        "tonalRamp": [
+          "oklch(22% 0.04 172)",
+          "oklch(32% 0.06 172)",
+          "oklch(42% 0.08 172)",
+          "oklch(51% 0.09 172)",
+          "oklch(62% 0.08 172)",
+          "oklch(74% 0.06 172)",
+          "oklch(86% 0.04 172)",
+          "oklch(95% 0.02 172)"
+        ]
+      },
+      "jade-ink": {
+        "role": "primary",
+        "displayName": "Deep Jade",
+        "cssVar": "--accent-ink",
+        "dark": "#9ad6c4"
+      },
+      "jade-mist": {
+        "role": "primary",
+        "displayName": "Jade Mist",
+        "cssVar": "--accent-soft",
+        "dark": "#143229"
+      },
+      "jade-line": {
+        "role": "primary",
+        "displayName": "Jade Line",
+        "cssVar": "--accent-line",
+        "dark": "#235246"
+      },
+      "on-jade": {
+        "role": "primary",
+        "displayName": "On Jade",
+        "cssVar": "--on-accent",
+        "dark": "#06201a"
+      },
+      "verified": {
+        "role": "secondary",
+        "displayName": "Verified Green",
+        "cssVar": "--ok",
+        "dark": "#6fc2ab",
+        "tonalRamp": [
+          "oklch(22% 0.04 165)",
+          "oklch(32% 0.06 165)",
+          "oklch(43% 0.08 165)",
+          "oklch(53% 0.10 165)",
+          "oklch(64% 0.09 165)",
+          "oklch(76% 0.07 165)",
+          "oklch(87% 0.04 165)",
+          "oklch(96% 0.02 165)"
+        ]
+      },
+      "verified-ink": {
+        "role": "secondary",
+        "displayName": "Verified Ink",
+        "cssVar": "--ok-ink",
+        "dark": "#9ad6c4"
+      },
+      "verified-mist": {
+        "role": "secondary",
+        "displayName": "Verified Mist",
+        "cssVar": "--ok-soft",
+        "dark": "#143229"
+      },
+      "verified-line": {
+        "role": "secondary",
+        "displayName": "Verified Line",
+        "cssVar": "--ok-line",
+        "dark": "#235246"
+      },
+      "amber": {
+        "role": "tertiary",
+        "displayName": "Gap Amber",
+        "cssVar": "--warn",
+        "dark": "#e0a547",
+        "tonalRamp": [
+          "oklch(25% 0.05 70)",
+          "oklch(36% 0.08 70)",
+          "oklch(48% 0.11 70)",
+          "oklch(58% 0.13 70)",
+          "oklch(68% 0.13 70)",
+          "oklch(78% 0.10 75)",
+          "oklch(88% 0.06 80)",
+          "oklch(97% 0.02 85)"
+        ]
+      },
+      "amber-ink": {
+        "role": "tertiary",
+        "displayName": "Amber Ink",
+        "cssVar": "--warn-ink",
+        "dark": "#f0c57d"
+      },
+      "amber-mist": {
+        "role": "tertiary",
+        "displayName": "Amber Mist",
+        "cssVar": "--warn-soft",
+        "dark": "#2c2414"
+      },
+      "amber-line": {
+        "role": "tertiary",
+        "displayName": "Amber Line",
+        "cssVar": "--warn-line",
+        "dark": "#56431f"
+      },
+      "brick": {
+        "role": "error",
+        "displayName": "Error Brick",
+        "cssVar": "--danger",
+        "dark": "#ef7a6c",
+        "tonalRamp": [
+          "oklch(24% 0.06 30)",
+          "oklch(35% 0.10 30)",
+          "oklch(46% 0.14 30)",
+          "oklch(55% 0.16 30)",
+          "oklch(66% 0.14 30)",
+          "oklch(77% 0.10 30)",
+          "oklch(88% 0.05 30)",
+          "oklch(96% 0.02 30)"
+        ]
+      },
+      "brick-ink": {
+        "role": "error",
+        "displayName": "Brick Ink",
+        "cssVar": "--danger-ink",
+        "dark": "#f7a99f"
+      },
+      "brick-mist": {
+        "role": "error",
+        "displayName": "Brick Mist",
+        "cssVar": "--danger-soft",
+        "dark": "#2f1915"
+      },
+      "brick-line": {
+        "role": "error",
+        "displayName": "Brick Line",
+        "cssVar": "--danger-line",
+        "dark": "#5c2b24"
+      },
+      "sage-paper": {
+        "role": "neutral",
+        "displayName": "Sage Paper",
+        "cssVar": "--bg",
+        "dark": "#0f1916",
+        "tonalRamp": [
+          "oklch(18% 0.01 165)",
+          "oklch(28% 0.012 165)",
+          "oklch(40% 0.014 165)",
+          "oklch(52% 0.014 165)",
+          "oklch(64% 0.012 165)",
+          "oklch(78% 0.01 165)",
+          "oklch(90% 0.008 165)",
+          "oklch(96.5% 0.005 165)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "cssVar": "--surface",
+        "dark": "#14201c"
+      },
+      "surface-sunk": {
+        "role": "neutral",
+        "displayName": "Sunk Surface",
+        "cssVar": "--surface-2",
+        "dark": "#182621"
+      },
+      "surface-deep": {
+        "role": "neutral",
+        "displayName": "Deep Surface",
+        "cssVar": "--surface-3",
+        "dark": "#1e2f29"
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "cssVar": "--line",
+        "dark": "#253832"
+      },
+      "hairline-strong": {
+        "role": "neutral",
+        "displayName": "Strong Hairline",
+        "cssVar": "--line-strong",
+        "dark": "#36504a"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "cssVar": "--ink",
+        "dark": "#e3ede9"
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Soft Ink",
+        "cssVar": "--ink-2",
+        "dark": "#c4d3cd"
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "cssVar": "--muted",
+        "dark": "#93a69f"
+      },
+      "faint": {
+        "role": "neutral",
+        "displayName": "Faint",
+        "cssVar": "--faint",
+        "dark": "#7b8e87"
+      }
+    },
+    "legacyAliases": {
+      "--navy": "var(--ink)",
+      "--paper": "var(--surface-2)",
+      "--blue": "var(--accent)",
+      "--green": "var(--ok)",
+      "--blue-soft": "var(--accent-soft)"
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Page hero headline only (Knowledge Q&A: 'What would you like to know?')."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section headings; monitoring uses 24px."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card titles, answer heading, fold titles (16-17px)."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Interface text; question field 16px; hero copy max 62ch."
+      },
+      "answer": {
+        "displayName": "Answer",
+        "purpose": "Verified answer text, loose leading for Vietnamese diacritics."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Eyebrows, chips, table headers, metadata; sentence case, no tracking."
+      },
+      "figure": {
+        "displayName": "Figure",
+        "purpose": "Stat and monitoring numbers with tabular figures (26-30px)."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Code and technical identifiers only."
+      }
+    },
+    "shadows": [
+      {
+        "name": "whisper",
+        "value": "0 1px 2px rgba(20,33,29,.04)",
+        "dark": "none",
+        "purpose": "Panels and the login card at rest."
+      },
+      {
+        "name": "float",
+        "value": "0 10px 30px -12px rgba(20,33,29,.22), 0 2px 6px rgba(20,33,29,.05)",
+        "dark": "0 14px 36px -14px rgba(0,0,0,.6)",
+        "purpose": "The question composer (before glass is applied)."
+      },
+      {
+        "name": "glass",
+        "value": "0 1px 0 0 rgba(255,255,255,.85) inset, 0 0 0 1px rgba(255,255,255,.35) inset, 0 18px 40px -18px rgba(20,33,29,.28), 0 2px 6px -2px rgba(20,33,29,.08)",
+        "dark": "0 1px 0 0 rgba(255,255,255,.14) inset, 0 0 0 1px rgba(255,255,255,.05) inset, 0 22px 44px -18px rgba(0,0,0,.65)",
+        "purpose": "Sidebar, composers and monitoring tabs."
+      },
+      {
+        "name": "focus-ring",
+        "value": "0 0 0 3px var(--accent-soft)",
+        "purpose": "Focused fields and highlighted citations (4px on the composer)."
+      },
+      {
+        "name": "primary-lens",
+        "value": "0 1px 0 0 rgba(255,255,255,.35) inset, 0 6px 16px -8px color-mix(in srgb, var(--accent) 70%, transparent)",
+        "purpose": "Glossy lens on the primary button."
+      }
+    ],
+    "glass": {
+      "blur": "blur(22px) saturate(175%)",
+      "tint": {
+        "light": "rgba(255,255,255,.5)",
+        "dark": "rgba(22,36,31,.52)"
+      },
+      "tintStrong": {
+        "light": "rgba(255,255,255,.7)",
+        "dark": "rgba(22,36,31,.68)"
+      },
+      "sheen": {
+        "light": "linear-gradient(180deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 42%)",
+        "dark": "linear-gradient(180deg,rgba(255,255,255,.09) 0%,rgba(255,255,255,0) 40%)"
+      },
+      "colourFields": "Three fixed radial gradients behind the page: jade at 12% 8%, amber at 92% 88%, soft jade at 78% 22%.",
+      "fallback": "prefers-reduced-transparency or no backdrop-filter support: solid var(--surface), colour fields hidden."
+    },
+    "motion": [
+      {
+        "name": "ease-standard",
+        "value": "cubic-bezier(.2,.7,.2,1)",
+        "purpose": "All state transitions."
+      },
+      {
+        "name": "control-transition",
+        "value": "0.16s",
+        "purpose": "Colour, border and shadow changes on buttons, links and fields; press scale(.97) at 0.12s."
+      },
+      {
+        "name": "seal-in",
+        "value": "0.5s scale(.92)->1 with fade",
+        "purpose": "Verified seal appearing with an answer."
+      },
+      {
+        "name": "fold-in",
+        "value": "0.22-0.28s translateY(-4px)->0 with fade",
+        "purpose": "Report fold and monitoring panels opening."
+      },
+      {
+        "name": "nav-mark",
+        "value": "0.3s scaleY(0)->1",
+        "purpose": "Active nav marker bar."
+      },
+      {
+        "name": "theme-reveal",
+        "value": "0.55s circular clip-path from the toggle (View Transitions)",
+        "purpose": "Light/dark switch."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "all durations 0.01ms",
+        "purpose": "prefers-reduced-motion: reduce."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone-narrow",
+        "value": "440px"
+      },
+      {
+        "name": "phone",
+        "value": "600px"
+      },
+      {
+        "name": "tablet",
+        "value": "740px"
+      },
+      {
+        "name": "sidebar-bar",
+        "value": "780px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single main action of a view (Ask, Generate report).",
+      "html": "<button class=\"ds-btn-primary\">Ask</button>",
+      "css": ".ds-btn-primary{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 18px;border:1px solid var(--accent,#0b7a66);border-radius:11px;background:var(--accent,#0b7a66);color:var(--on-accent,#fff);font:600 14px/1 'Be Vietnam Pro',system-ui,sans-serif;cursor:pointer;box-shadow:0 1px 0 0 rgba(255,255,255,.35) inset,0 6px 16px -8px rgba(11,122,102,.7);transition:background-color .16s cubic-bezier(.2,.7,.2,1),border-color .16s cubic-bezier(.2,.7,.2,1),transform .12s cubic-bezier(.2,.7,.2,1)}.ds-btn-primary::after{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,0) 55%);pointer-events:none}.ds-btn-primary:hover{background:var(--accent-ink,#075c4d);border-color:var(--accent-ink,#075c4d)}.ds-btn-primary:focus-visible{outline:2px solid var(--accent,#0b7a66);outline-offset:2px}.ds-btn-primary:active{transform:scale(.97)}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Supporting actions; tints jade on hover.",
+      "html": "<button class=\"ds-btn-secondary\">Copy</button>",
+      "css": ".ds-btn-secondary{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:0 14px;border:1px solid var(--line,#dfe6e3);border-radius:11px;background:var(--surface,#fff);color:var(--ink-2,#2f3e39);font:500 13.5px/1 'Be Vietnam Pro',system-ui,sans-serif;cursor:pointer;transition:background-color .16s cubic-bezier(.2,.7,.2,1),border-color .16s cubic-bezier(.2,.7,.2,1),color .16s cubic-bezier(.2,.7,.2,1),transform .12s cubic-bezier(.2,.7,.2,1)}.ds-btn-secondary:hover{border-color:var(--accent-line,#b3dbcf);background:var(--accent-soft,#e2f2ed);color:var(--accent-ink,#075c4d)}.ds-btn-secondary:focus-visible{outline:2px solid var(--accent,#0b7a66);outline-offset:2px}.ds-btn-secondary:active{transform:scale(.97)}"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Hairline field with a jade focus ring.",
+      "html": "<input class=\"ds-input\" placeholder=\"Tìm tài liệu…\">",
+      "css": ".ds-input{min-height:40px;padding:0 12px;border:1px solid var(--line,#dfe6e3);border-radius:11px;background:var(--surface,#fff);color:var(--ink,#14211d);font:400 14px 'Be Vietnam Pro',system-ui,sans-serif;transition:border-color .16s cubic-bezier(.2,.7,.2,1),box-shadow .16s cubic-bezier(.2,.7,.2,1)}.ds-input::placeholder{color:var(--faint,#8b9993)}.ds-input:focus{outline:none;border-color:var(--accent,#0b7a66);box-shadow:0 0 0 3px var(--accent-soft,#e2f2ed)}"
+    },
+    {
+      "name": "Sidebar Nav Row",
+      "kind": "nav",
+      "refersTo": "nav-tab-active",
+      "description": "Workspace navigation; active row in jade mist with a growing marker bar.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-row is-active\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"19\" height=\"19\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\"/></svg>Knowledge Q&amp;A</a><a class=\"ds-nav-row\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"19\" height=\"19\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 3v18h18\"/><path d=\"m7 14 4-4 4 4 5-6\"/></svg>Agent Monitoring</a></nav>",
+      "css": ".ds-nav{display:flex;flex-direction:column;gap:2px;padding:10px;width:240px;background:var(--surface,#fff)}.ds-nav-row{position:relative;display:flex;align-items:center;gap:11px;min-height:40px;padding:0 12px;border-radius:10px;color:var(--muted,#5d6d67);font:500 14px/1.25 'Be Vietnam Pro',system-ui,sans-serif;text-decoration:none;transition:background-color .16s cubic-bezier(.2,.7,.2,1),color .16s cubic-bezier(.2,.7,.2,1)}.ds-nav-row:hover{background:var(--surface-3,#ebf0ee);color:var(--ink,#14211d)}.ds-nav-row:focus-visible{outline:2px solid var(--accent,#0b7a66);outline-offset:2px}.ds-nav-row.is-active{background:var(--accent-soft,#e2f2ed);color:var(--accent-ink,#075c4d);font-weight:600}.ds-nav-row.is-active::before{content:'';position:absolute;left:-10px;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:var(--accent,#0b7a66)}"
+    },
+    {
+      "name": "Quick Prompt Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Suggested questions under the composer.",
+      "html": "<button class=\"ds-chip\">Hạn mức khách sạn mỗi đêm?</button>",
+      "css": ".ds-chip{min-height:34px;padding:0 13px;border:1px solid var(--line,#dfe6e3);border-radius:999px;background:var(--surface,#fff);color:var(--ink-2,#2f3e39);font:500 13px/1 'Be Vietnam Pro',system-ui,sans-serif;cursor:pointer;transition:background-color .16s cubic-bezier(.2,.7,.2,1),border-color .16s cubic-bezier(.2,.7,.2,1),color .16s cubic-bezier(.2,.7,.2,1)}.ds-chip:hover{border-color:var(--accent-line,#b3dbcf);background:var(--accent-soft,#e2f2ed);color:var(--accent-ink,#075c4d)}.ds-chip:focus-visible{outline:2px solid var(--accent,#0b7a66);outline-offset:2px}"
+    },
+    {
+      "name": "Verified Answer Seal",
+      "kind": "custom",
+      "refersTo": "verified-seal",
+      "description": "Signature element: shown only on answers whose every claim passed verification.",
+      "html": "<span class=\"ds-seal\">Every claim checked</span>",
+      "css": ".ds-seal{display:inline-flex;align-items:center;gap:8px;padding:5px 12px 5px 6px;border:1px solid var(--ok-line,#a9dcc6);border-radius:999px;background:var(--ok-soft,#e2f4ec);color:var(--ok-ink,#0b6450);font:500 13px/1.3 'Be Vietnam Pro',system-ui,sans-serif;animation:ds-seal-in .5s cubic-bezier(.2,.7,.2,1) both}.ds-seal::before{content:'';flex:none;width:20px;height:20px;border-radius:50%;background:var(--ok,#14866a) url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12.5 4 4 8-9'/%3E%3C/svg%3E\") center/12px no-repeat}@keyframes ds-seal-in{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}@media (prefers-reduced-motion:reduce){.ds-seal{animation:none}}"
+    },
+    {
+      "name": "Citation Chip",
+      "kind": "custom",
+      "refersTo": "cite-ref",
+      "description": "Inline source reference in answer text; jumps to the cited passage.",
+      "html": "<p class=\"ds-answer\">Khoản mua sắm 80 triệu cần Trưởng bộ phận, Mua sắm và Tài chính duyệt <a class=\"ds-cite\" href=\"#\">S1</a>.</p>",
+      "css": ".ds-answer{max-width:62ch;color:var(--ink,#14211d);font:400 15.5px/1.75 'Be Vietnam Pro',system-ui,sans-serif}.ds-cite{display:inline-grid;place-items:center;min-width:22px;height:18px;margin:0 1px;padding:0 5px;border-radius:6px;background:var(--accent-soft,#e2f2ed);color:var(--accent-ink,#075c4d);font:600 11px/1 'Be Vietnam Pro',system-ui,sans-serif;vertical-align:2px;text-decoration:none;transition:background-color .15s,color .15s}.ds-cite:hover,.ds-cite:focus-visible{background:var(--accent,#0b7a66);color:var(--on-accent,#fff);outline:none}"
+    },
+    {
+      "name": "Source Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "A cited source under an answer: file name and page, passage clamped to two lines with a Show full passage toggle; highlighted when its chip is clicked. Publisher and evidence class only when present.",
+      "html": "<article class=\"ds-source\"><div class=\"ds-source-head\"><span class=\"ds-source-id\">S1</span><strong>VietStyle Operating Policy v1.0</strong><span>Page 19</span></div><p class=\"ds-source-text\">Khoản mua sắm trên 50.000.000 VND cần phê duyệt của Trưởng bộ phận, Mua sắm và Tài chính…</p><button class=\"ds-source-toggle\" type=\"button\" aria-expanded=\"false\">Show full passage</button></article>",
+      "css": ".ds-source{display:flex;flex-direction:column;gap:8px;max-width:520px;padding:16px;border:1px solid var(--line,#dfe6e3);border-radius:14px;background:var(--surface,#fff);transition:border-color .2s cubic-bezier(.2,.7,.2,1),box-shadow .2s cubic-bezier(.2,.7,.2,1)}.ds-source:hover,.ds-source:focus-within{border-color:var(--accent,#0b7a66);box-shadow:0 0 0 3px var(--accent-soft,#e2f2ed)}.ds-source-head{display:flex;align-items:center;gap:8px;font:400 12.5px 'Be Vietnam Pro',system-ui,sans-serif;color:var(--muted,#5d6d67)}.ds-source-head strong{color:var(--ink,#14211d);font-weight:600;font-size:14px}.ds-source-id{display:inline-grid;place-items:center;min-width:26px;height:20px;padding:0 6px;border-radius:6px;background:var(--accent-soft,#e2f2ed);color:var(--accent-ink,#075c4d);font:600 11.5px/1 'Be Vietnam Pro',system-ui,sans-serif}.ds-source p{margin:0;color:var(--ink-2,#2f3e39);font:400 13.5px/1.6 'Be Vietnam Pro',system-ui,sans-serif}.ds-source-text{margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.ds-source-toggle{align-self:flex-start;padding:0;border:0;background:none;color:var(--accent-strong,#075c4d);font:500 13px 'Be Vietnam Pro',sans-serif;cursor:pointer}.ds-source-toggle:hover{text-decoration:underline}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Jade Seal",
+    "overview": "The workspace is quiet on purpose. Surfaces are near-white on a faintly sage paper, text is a deep green-black ink, and almost nothing carries colour. The one strong colour, jade, is reserved for what the product promises: an answer whose every claim was checked against its sources. When an answer passes verification it receives a small jade seal (\"Every claim checked\"), and its citations appear as jade chips that jump to the cited passage. Everything else in the interface stays out of the way, so the seal and the evidence are what the eye finds.\n\nDensity is calm and exact rather than sparse or crowded. General Chat is the one place to ask questions, with a Route to choice in its composer; Knowledge Q&A is the report page; tools such as monitoring, access control and invoice review use the same hairline-bordered cards and tables without decoration. A thin layer of frosted glass sits only on the controls that float over the page (the sidebar, the question composer, the monitoring tabs), above soft jade and amber colour fields, so the controls feel lifted while the content they hold stays solid and readable.\n\nThe system rejects three looks explicitly: the generic AI-chatbot style (purple or blue gradients, sparkle icons, glowing chat bubbles), busy admin dashboards (KPI walls, heavy shadows, colour-coded everything), and the product's own pre-12-Nov navy-and-blue design.",
+    "keyCharacteristics": [
+      "Ink and jade: one accent family, used only for verification, citations, focus and the primary action.",
+      "Amber means a gap or a partial answer; brick red appears only for errors.",
+      "One typeface (Be Vietnam Pro) for everything; it renders Vietnamese diacritics cleanly. JetBrains Mono only for code.",
+      "Flat, hairline-bordered surfaces; depth comes from glass on the control layer, not from shadows on content.",
+      "Motion only answers an action: the seal settles in, folds open, the theme switches with a circular reveal.",
+      "Two equal themes: light and dark are a token swap, never a separate design."
+    ],
+    "rules": [
+      {
+        "name": "The One Seal Rule",
+        "body": "Jade marks what is verified, cited, focused or the primary action. If an element is none of those, it is not jade.",
+        "section": "colors"
+      },
+      {
+        "name": "The Signal Rule",
+        "body": "Jade means verified, amber means a gap or partial result, red means an error. No colour is used decoratively, and a status always says its meaning in words too.",
+        "section": "colors"
+      },
+      {
+        "name": "The Token Swap Rule",
+        "body": "Every colour comes from a token. Dark mode replaces token values (see the sidecar); it never adds component-specific overrides.",
+        "section": "colors"
+      },
+      {
+        "name": "The Sentence Case Rule",
+        "body": "No all-caps labels and no letter-spaced eyebrows. Labels are sentence case at 12.5px, weight 500, in Muted.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Family Rule",
+        "body": "Be Vietnam Pro carries every role. A new screen does not introduce a second sans or a display serif.",
+        "section": "typography"
+      },
+      {
+        "name": "The Question-First Rule",
+        "body": "In General Chat the composer is the most elevated element on the page; supporting statistics shrink to one inline line, and nothing else floats.",
+        "section": "layout"
+      },
+      {
+        "name": "The Solid Content Rule",
+        "body": "Glass is only for navigation and controls. Answers, citations, tables and forms are always solid and fully opaque.",
+        "section": "elevation"
+      },
+      {
+        "name": "The One-Chat Rule",
+        "body": "There is one chat. Choosing documents or sales data is a Route to setting in that chat, never a second chat box on another page. On phones the text box takes the full width (at least 56px tall) and Route to and Send sit below it.",
+        "section": "layout"
+      }
+    ],
+    "dos": [
+      "Do reserve Jade for verified answers, citations, focus and the single primary action of a view.",
+      "Do pair every status colour with words (\"Every claim checked\", \"Partial answer\", \"Failed\").",
+      "Do take every colour from a token so dark mode stays a pure token swap.",
+      "Do keep content solid and put glass only on the sidebar, composers and tab controls, with a solid fallback for reduced transparency.",
+      "Do animate only in response to an action (seal, folds, theme reveal, nav marker) and switch all motion off for reduced motion.",
+      "Do use tabular numbers (font-variant-numeric: tabular-nums) for every figure in stats and tables.",
+      "Do draw monitoring bars in Muted ink; a bar is a quantity, not a verdict, so it never takes Jade.",
+      "Do show people the plain names of roles, permissions, agents and checks, never internal ids."
+    ],
+    "donts": [
+      "Don't use purple or blue gradients, sparkle icons or glowing chat bubbles; this is not a generic AI-chatbot look.",
+      "Don't build KPI walls, add heavy shadows or colour-code everything; it is not a busy admin dashboard.",
+      "Don't bring back the old navy (#14283d) and blue (#2369d8) palette; those names survive only as aliases to the jade tokens.",
+      "Don't use all-caps labels, letter-spaced eyebrows or decorative numbering.",
+      "Don't use red for anything but errors and destructive actions, or amber for anything but gaps and partial results.",
+      "Don't set essential text in Faint; it is for placeholders and minor notes only (it holds 4.5:1 on Surface, Sage Paper and Sunk Surface, but not on Deep Surface).",
+      "Don't put a coloured stripe on one side of a card, callout or note; notes are whole tinted boxes with one hairline border. A quote bar on a real blockquote is the one exception.",
+      "Don't set text below 12.5px (12px for code); the older stylesheet's 9-11px sizes are overridden by a floor in redesign.css."
+    ]
+  }
+}

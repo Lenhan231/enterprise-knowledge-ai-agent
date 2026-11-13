@@ -6,7 +6,8 @@
   --mono:"JetBrains Mono",ui-monospace,monospace;
   --bg:#f2f5f4;--surface:#fff;--surface-2:#f7f9f8;--surface-3:#ebf0ee;
   --line:#dfe6e3;--line-strong:#c3cec9;
-  --ink:#14211d;--ink-2:#2f3e39;--muted:#5d6d67;--faint:#8b9993;
+  /* faint stays a step lighter than muted but holds 4.5:1 on white, the page and sunk surfaces */
+  --ink:#14211d;--ink-2:#2f3e39;--muted:#5d6d67;--faint:#63736d;
   --accent:#0b7a66;--accent-ink:#075c4d;--accent-soft:#e2f2ed;--accent-line:#b3dbcf;--on-accent:#fff;
   --ok:#14866a;--ok-ink:#0b6450;--ok-soft:#e2f4ec;--ok-line:#a9dcc6;
   --warn:#b7720f;--warn-ink:#83510a;--warn-soft:#fdf3e1;--warn-line:#f0d6a6;
@@ -23,7 +24,7 @@
 :root[data-theme="dark"]{
   --bg:#0f1916;--surface:#14201c;--surface-2:#182621;--surface-3:#1e2f29;
   --line:#253832;--line-strong:#36504a;
-  --ink:#e3ede9;--ink-2:#c4d3cd;--muted:#93a69f;--faint:#677a73;
+  --ink:#e3ede9;--ink-2:#c4d3cd;--muted:#93a69f;--faint:#7b8e87;
   --accent:#6fc2ab;--accent-ink:#9ad6c4;--accent-soft:#143229;--accent-line:#235246;--on-accent:#06201a;
   --ok:#6fc2ab;--ok-ink:#9ad6c4;--ok-soft:#143229;--ok-line:#235246;
   --warn:#e0a547;--warn-ink:#f0c57d;--warn-soft:#2c2414;--warn-line:#56431f;
@@ -158,7 +159,8 @@
 :root .monitoring-stat span{color:var(--muted);font-size:13px}
 :root .monitoring-stat strong{color:var(--ink);font:650 26px/1.15 var(--font);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 :root .monitoring-agent i{height:8px;border-radius:999px;background:var(--surface-3)}
-:root .monitoring-agent i b{border-radius:999px;background:var(--accent)}
+/* run volume is not verification, so the bars are neutral ink, not jade (One Seal Rule) */
+:root .monitoring-agent i b{border-radius:999px;background:var(--muted)}
 :root .monitoring-agent strong{font-weight:600}
 :root .monitoring-agent span{color:var(--muted);font-size:13px}
 :root .quick-chip{min-height:34px;padding:0 13px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink-2);font:500 13px/1 var(--font)}
@@ -181,7 +183,7 @@
 /* ---------- access matrix, file picker ---------- */
 :root .admin-section{padding:24px}
 :root .access-matrix article{border-radius:var(--radius-card)}
-:root .access-matrix article strong{font-weight:600}
+:root .access-matrix article strong{font-weight:600;text-transform:none}
 :root .access-matrix article span{color:var(--muted);font-size:13px;line-height:1.55}
 :root input[type=file]{display:block;width:100%;height:auto;min-height:52px;padding:7px;border:1px dashed var(--line-strong);border-radius:var(--radius-control);background:var(--surface-2);line-height:36px;cursor:pointer}
 :root input[type=file]:hover{border-color:var(--accent-line);background:var(--accent-soft)}
@@ -201,6 +203,18 @@
 :root .answer-verified::before{content:"";flex:none;width:20px;height:20px;border-radius:50%;background:var(--ok) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12.5 4 4 8-9'/%3E%3C/svg%3E") center/12px no-repeat}
 :root[data-theme="dark"] .answer-verified::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306201a' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12.5 4 4 8-9'/%3E%3C/svg%3E")}
 @keyframes sealIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+/* the other outcomes share the seal's anatomy in amber: a withheld or uncovered answer is the
+   check doing its job, so it is information with a next step, not an error */
+:root .answer-status{display:inline-flex;align-items:center;gap:8px;margin:4px 0 14px;padding:5px 12px 5px 6px;border:1px solid var(--warn-line);border-radius:999px;background:var(--warn-soft);color:var(--warn-ink);font:500 13px/1.3 var(--font);animation:sealIn .5s var(--ease) both}
+:root .answer-status::before{content:"";flex:none;width:20px;height:20px;border-radius:50%;background:var(--warn) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M12 7v6M12 17h.01'/%3E%3C/svg%3E") center/12px no-repeat}
+:root .answer-status.is-gap::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M7 12h10'/%3E%3C/svg%3E")}
+:root[data-theme="dark"] .answer-status::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306201a' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M12 7v6M12 17h.01'/%3E%3C/svg%3E")}
+:root[data-theme="dark"] .answer-status.is-gap::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306201a' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M7 12h10'/%3E%3C/svg%3E")}
+:root .answer-next{display:flex;flex-wrap:wrap;gap:8px;margin:-4px 0 18px}
+:root .chat-turn .answer-next{padding-left:37px}
+:root .general-chat .chat-turn .answer-next{padding-left:0}
+:root .answer-diagnostic{margin:0 0 16px;color:var(--muted);font-size:13px}
+:root .answer-diagnostic code{display:block;margin-top:6px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12.5px}
 :root .citations h4{color:var(--muted);font:500 13px/1.3 var(--font);letter-spacing:0;text-transform:none}
 :root .citation-count-badge{display:none}
 :root .citation{border:1px solid var(--line);border-radius:var(--radius-card);background:var(--surface);transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
@@ -211,16 +225,75 @@
 :root .citation>p{color:var(--ink-2);font-size:13.5px;line-height:1.6}
 :root .citation-foot{color:var(--faint);font-size:12px}
 :root .citation-foot a{color:var(--accent-ink);font-weight:500}
+/* sources stay compact (two lines of the passage) until a chip or the toggle opens them */
+:root .citation>p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+:root .citation.is-open>p{display:block;-webkit-line-clamp:unset;overflow:visible}
+:root .citation-foot{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
+:root .citation-toggle{padding:0;border:0;background:none;color:var(--accent-ink);font:500 12.5px/1.4 var(--font);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+:root .citation-toggle:hover{color:var(--accent)}
+/* chips at the label floor; no right margin, so a following full stop sits close */
+:root .cite-ref{min-width:24px;height:20px;margin:0 0 0 2px;font-size:12.5px}
+:root .sidebar-brand small,:root .agent-diagnostics small{font-size:12.5px}
 :root .agent-diagnostics summary,:root .token-usage summary{color:var(--muted);font-size:13px;cursor:pointer}
 :root .agent-diagnostics{font-size:13px;color:var(--ink-2)}
 :root .skeleton-line,:root .skeleton-card{background:linear-gradient(90deg,var(--surface-3) 0%,var(--surface-2) 45%,var(--surface-3) 90%);background-size:220% 100%;animation:shimmer 1.4s linear infinite}
 @keyframes shimmer{from{background-position:120% 0}to{background-position:-100% 0}}
 :root .stage-status{color:var(--ink-2)}
+/* waiting: one fixed stepper per answer; earlier steps tick when a later one starts, and the slow
+   step is named for what it is (checking every claim), so the wait reads as care rather than lag */
+:root .agent-progress{display:grid;gap:14px;max-width:640px;margin:4px 0 16px;padding:18px 20px;border:1px solid var(--line);border-radius:var(--radius-card);background:var(--surface)}
+:root .agent-progress-spinner{display:none}
+:root .agent-progress-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
+:root .agent-progress .stage-status{flex:1 1 240px;min-width:0;color:var(--ink);font:600 15px/1.4 var(--font);animation:none}
+:root .agent-progress-time{color:var(--muted);font-size:13px;line-height:1.4;font-variant-numeric:tabular-nums;white-space:nowrap}
+:root .agent-progress-stop{min-height:32px;padding:0 12px;font-size:13px}
+:root .agent-progress-steps{display:grid;gap:9px;margin:0;padding:0;list-style:none}
+:root .agent-progress-step{display:flex;align-items:center;gap:11px;color:var(--muted);font:400 13.5px/1.4 var(--font)}
+:root .agent-progress-step>span{width:auto;color:inherit;font-weight:inherit;text-align:left}
+:root .agent-progress-step>.agent-progress-label{flex:1 1 auto;min-width:0;white-space:normal;overflow-wrap:anywhere}
+:root .agent-progress-step>.agent-progress-marker{position:relative;flex:none;width:18px;height:18px;border:1.5px solid var(--line-strong);border-radius:50%;background:var(--surface)}
+:root .agent-progress-step.is-active{color:var(--ink);font-weight:600}
+:root .agent-progress-step.is-active>.agent-progress-marker{border-color:var(--accent)}
+:root .agent-progress-step.is-active>.agent-progress-marker::after{content:"";position:absolute;inset:3.5px;border-radius:50%;background:var(--accent);animation:stepPulse 1.4s var(--ease) infinite}
+:root .agent-progress-step.is-done{color:var(--ink-2)}
+:root .agent-progress-step.is-done>.agent-progress-marker{border-color:var(--ok);background:var(--ok);animation:stepDone .28s var(--ease)}
+:root .agent-progress-step.is-done>.agent-progress-marker::after,:root .agent-progress-step.is-failed>.agent-progress-marker::after{content:"";position:absolute;inset:0;background:var(--on-accent);-webkit-mask:var(--step-glyph) center/11px no-repeat;mask:var(--step-glyph) center/11px no-repeat}
+:root .agent-progress-step.is-done>.agent-progress-marker{--step-glyph:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E")}
+:root .agent-progress-step.is-skipped>.agent-progress-marker{border-style:dashed}
+:root .agent-progress-step.is-failed{color:var(--danger-ink)}
+:root .agent-progress-step.is-failed>.agent-progress-marker{border-color:var(--danger);background:var(--danger);--step-glyph:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round'%3E%3Cpath d='M7 7l10 10M17 7 7 17'/%3E%3C/svg%3E")}
+@keyframes stepPulse{0%,100%{opacity:.45;transform:scale(.7)}50%{opacity:1;transform:scale(1)}}
+@keyframes stepDone{from{transform:scale(.7)}to{transform:none}}
+:root .answer-stopped{margin:4px 0 16px;color:var(--muted);font-size:14px}
 :root .error-message{color:var(--danger-ink)}
 
 /* ---------- general chat ---------- */
 :root .general-chat-heading{border-bottom-color:var(--line)}
 :root .general-chat-heading h2{font:650 20px/1.3 var(--font)}
+:root .general-chat-subtitle{max-width:62ch;margin:4px 0 0;color:var(--muted);font-size:14px;line-height:1.5}
+/* General Chat is the one chat; Knowledge Q&A keeps only the report generator */
+:root .ask-panel[hidden]{display:none}
+/* an outage is stated in the conversation (amber: a gap, not an error of the user's) */
+:root .service-notice{flex:none;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin:14px 0 0;padding:12px 16px;border:1px solid var(--warn-line);border-radius:var(--radius-card);background:var(--warn-soft);color:var(--warn-ink);font-size:14px;line-height:1.45}
+:root .service-notice[hidden]{display:none}
+:root .service-notice p{margin:0}
+:root .service-notice .secondary-button{min-height:34px}
+:root .chat-undo{flex:none;margin:12px 0 0;color:var(--muted);font-size:14px}
+:root .chat-undo[hidden]{display:none}
+:root .chat-undo button{padding:0;border:0;background:none;color:var(--accent-ink);font:600 14px var(--font);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+/* report form selects keep the shared chevron (the older rule's background shorthand removed it) */
+:root .report-agent-panel .review-form select{padding:0 34px 0 12px;background:var(--surface-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237b8a84' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center/12px;appearance:none;-webkit-appearance:none}
+:root .section-heading>.secondary-button{flex:none;white-space:nowrap}
+:root .general-chat-mode{display:flex;flex:none;align-items:center;gap:8px;color:var(--muted);font:500 13px/1 var(--font);white-space:nowrap}
+:root .general-chat-mode select{min-height:36px;padding:0 32px 0 12px;border:1px solid var(--line);border-radius:10px;background-color:var(--surface-2);font-size:13.5px}
+:root .general-chat,:root .general-chat-composer{min-width:0}
+:root .general-chat-new{flex:none;white-space:nowrap}
+/* on a phone the composer wraps: the message on its own row, Route to and Send beneath it */
+@media(max-width:600px){
+  :root .general-chat-composer{flex-wrap:wrap}
+  :root .general-chat .general-chat-composer textarea{flex:1 1 100%;min-width:0;min-height:56px}
+  :root .general-chat-mode{margin-right:auto}
+}
 :root .general-chat-mark{width:52px;height:52px;border:1px solid var(--accent-line);border-radius:16px;background:var(--accent-soft);color:var(--accent-ink)}
 :root .general-chat-welcome h3{font:650 27px/1.25 var(--font);letter-spacing:-.025em}
 :root .general-chat-welcome>p{font-size:15px;max-width:46ch}
@@ -320,7 +393,14 @@
 
 /* amber marks a gap: partial answers and their limits */
 :root .answer-heading.is-partial .answer-mark{background:var(--warn-soft);color:var(--warn-ink)}
-:root .analysis-caveat{border:1px solid var(--warn-line);border-left:3px solid var(--warn);border-radius:10px;background:var(--warn-soft);color:var(--warn-ink)}
+:root .analysis-caveat{border:1px solid var(--warn-line);border-radius:10px;background:var(--warn-soft);color:var(--warn-ink)}
+/* notes and results are whole tinted boxes with one hairline, never a one-sided accent stripe */
+:root .citation-scope{border:1px solid var(--line);border-radius:8px;background:var(--surface-2)}
+:root .citation-ocr-note,:root .ocr-diagnostic{border:1px solid var(--warn-line);border-radius:10px}
+:root .upload-result{border:1px solid var(--ok-line);border-radius:10px;background:var(--ok-soft);color:var(--ok-ink)}
+:root .upload-result[data-state="warning"]{border-color:var(--warn-line);background:var(--warn-soft);color:var(--warn-ink)}
+:root .upload-result[data-state="error"]{border-color:var(--danger-line);background:var(--danger-soft);color:var(--danger-ink)}
+:root .invoice-review-detail>p[role=status]{border:1px solid var(--danger-line);border-radius:10px;background:var(--danger-soft);color:var(--danger-ink)}
 
 /* ---------- monitoring sub-tabs ---------- */
 :root .monitoring-tabs{position:sticky;top:0;z-index:5;display:inline-flex;gap:2px;margin:18px 0 4px;padding:4px;border:1px solid var(--line);border-radius:13px;background:var(--surface-3)}
@@ -337,6 +417,98 @@
 :root .rating-pill.down,:root .rating-icon.down{background:var(--warn-soft);color:var(--warn-ink)}
 :root .rating-icon{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:8px}
 :root .rating-pill svg,:root .rating-icon svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- legibility floor: styles.css still sets 9-11px on these live selectors; DESIGN.md labels
+   start at 12.5px, and stacked Vietnamese diacritics blur below that. :root outranks the older rules. ---------- */
+:root .ask-controls>span,
+:root .citation-title>span:last-child,
+:root .document-link,
+:root .corpus-note,
+:root .corpus-scope span,
+:root .login-card small,
+:root .topbar-status button,
+:root .topbar-status #user-badge,
+:root .access-matrix span,
+:root .upload-role-options label,
+:root .upload-form fieldset label,
+:root .candidate-row span,
+:root .candidate-row small,
+:root .candidate-row blockquote,
+:root .review-form button,
+:root .analysis-section-heading>span,
+:root .analysis-empty span,
+:root .analysis-caveat,
+:root .candidate-heading>div>span,
+:root .candidate-source,
+:root .candidate-source blockquote,
+:root .review-form label,
+:root .monitoring-note,
+:root .monitoring-agent>div,
+:root .extracted-table,
+:root .extracted-table th,
+:root .ocr-run-button span,
+:root .ocr-test-table h5 span,
+:root .ocr-test-empty,
+:root .knowledge-management-section>p,
+:root .knowledge-search-label,
+:root .knowledge-filters label,
+:root .knowledge-filters select,
+:root .knowledge-source-kind,
+:root .knowledge-document-copy span,
+:root .knowledge-document-copy small,
+:root .knowledge-document-copy a,
+:root .knowledge-access-editor,
+:root .knowledge-access-options label,
+:root .knowledge-document-actions>button,
+:root .knowledge-output-review>header span,
+:root .knowledge-output-evidence h3,
+:root .knowledge-output-element summary,
+:root .knowledge-output-table summary,
+:root .knowledge-output-metadata,
+:root .knowledge-output-table table,
+:root .chart-note,
+:root .quick-prompt-label,
+:root .ocr-context-list,
+:root .upload-form fieldset small,
+:root .upload-role-option strong,
+:root .upload-role-option small,
+:root .upload-step h3 span,
+:root .upload-access-step legend span,
+:root .upload-field-hint,
+:root .upload-form>.upload-access-step>.upload-role-selection,
+:root .token-usage,
+:root .token-usage small,
+:root .upload-elapsed,
+:root .upload-dropzone small,
+:root .upload-dropzone>.corpus-note,
+:root .sidebar-account #connection-status,
+:root .ocr-diagnostic,
+:root .report-agent-help,
+:root .chat-turn-question>span,
+:root .query-status,
+:root .invoice-review-card span,
+:root .invoice-review-card small,
+:root .invoice-review-card .invoice-status-badge,
+:root .invoice-processing-progress .upload-elapsed,
+:root .invoice-review-fields label,
+:root .invoice-review-item label,
+:root .invoice-review-item legend,
+:root .invoice-ocr-element summary,
+:root .invoice-review-filter-label,
+:root .invoice-review-pagination button,
+:root .invoice-review-pagination span,
+:root .chat-turn .answer-heading .eyebrow,
+:root .chat-turn .jev-note,
+:root .general-chat-heading .eyebrow,
+:root .general-chat .chat-turn .agent-data-result h4{font-size:12.5px}
+:root .knowledge-document-copy code,
+:root .knowledge-output-element pre,
+:root .knowledge-output-metadata pre,
+:root #parsed-chunk-list pre,
+:root .citation-sql-trace pre,
+:root .invoice-ocr-element pre,
+:root .chat-turn .agent-data-result details pre,
+:root .general-chat .chat-turn .agent-data-result details pre{font-size:12px}
 
 /* ---------- motion: only in answer to an action, plus the answer's own reveal ---------- */
 :root .tab-panel:not([hidden]),:root .chat-turn,:root .chat-turn-question p{animation:none}

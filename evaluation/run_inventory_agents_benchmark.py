@@ -182,7 +182,7 @@ async def generate(groups, identifiers, *, retry_provider_errors=False):
     tertiary_alias=install_tertiary_alias(os.environ)
     from core.agents.main import _LazyKnowledgeAgent, _FallbackClassifier
     from core.agents.analytics_agent import AnalyticsAgent
-    from core.agents.dashboard_agent import InventoryDashboardAgent
+    from core.agents.dashboard_agent import DashboardAgent
     from core.agents.router import AgentRouter
     from core.agents.report_agent import ReportAgent
     from core.agents.sql_analytics_agent import SQLAnalyticsAgent
@@ -230,7 +230,7 @@ async def generate(groups, identifiers, *, retry_provider_errors=False):
     sql = SQLAnalyticsAgent(repo, llm=llm)
     report = ReportAgent(knowledge, sql, llm=llm)
     report.source_router=AgentRouter(_FallbackClassifier(),knowledge,AnalyticsAgent(sql),
-        dashboard_agent=InventoryDashboardAgent(repo),report_agent=report,llm=llm)
+        dashboard_agent=DashboardAgent(sql),report_agent=report,llm=llm)
     identity = VerifiedIdentity(subject='agent-benchmark', permissions={'analytics:read','documents:read'}, document_roles={'admin'})
     manifest = json.loads((OUT/'manifest.json').read_text())
     manifest.update(agent_model=llm.model_name, agent_temperature=llm.temperature,

@@ -1,5 +1,7 @@
 # Active initiative: Unified Agent Orchestration
 
+Dashboard revamp (2026-11-13): [dashboard-agent-revamp-plan.md](dashboard-agent-revamp-plan.md). Implemented locally; [verification and remaining acceptance limits](../docs/technical/dashboard-agent.md).
+
 The capability map and five module specs were approved on 2026-10-29.
 The technical plan was approved on 2026-10-29:
 [agent-orchestration-plan.md](agent-orchestration-plan.md).

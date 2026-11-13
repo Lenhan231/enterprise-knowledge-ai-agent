@@ -295,6 +295,7 @@
 .market-kpi-card summary,.market-glossary summary,.market-source-values summary{cursor:pointer;font-weight:600}
 .market-kpi-card details p{margin:7px 0;line-height:1.5}
 .market-kpi-card blockquote{margin:7px 0 0;padding:8px 9px;border-left:2px solid var(--accent-line);background:var(--surface-2);color:var(--ink-2);font-size:9px;line-height:1.5}
+.chart-scroll{max-width:100%;overflow-x:auto;padding-bottom:8px}.chart-scroll:focus-visible{outline:2px solid var(--accent);outline-offset:3px}.chart-legend{display:flex;flex-wrap:wrap;gap:8px 16px;padding:8px 0;list-style:none;color:var(--ink);font-size:12px}.chart-legend li{display:flex;align-items:center;gap:6px;overflow-wrap:anywhere}.chart-swatch{display:inline-block;width:10px;height:10px;border-radius:2px;flex-shrink:0}.chart-donut{display:flex;align-items:center;flex-wrap:wrap;gap:16px}.chart-donut svg{max-width:320px;flex:1 1 200px}.chart-donut .chart-legend{flex:1 1 180px;flex-direction:column}.answer-visualization{min-width:0}.answer-visualization>h3{overflow-wrap:anywhere}
 .market-chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin-top:12px}
 .market-chart-card{min-width:0;padding:15px;border:1px solid var(--line);border-radius:9px;background:var(--paper)}
 .market-chart-card h5{margin:0;color:var(--navy);font:700 13px "Be Vietnam Pro",sans-serif}

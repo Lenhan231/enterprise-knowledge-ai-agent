@@ -103,7 +103,7 @@ class BoundedExecutionTest(unittest.IsolatedAsyncioTestCase):
         llm = FakeProvider([])
         router = AgentRouter(None, None, None, report_agent=report, dashboard_agent=dashboard, llm=llm)
         for mode in ['report', 'dashboard']:
-            result = await router.run_mode(AgentRequest(question='standalone'), mode)
+            result = await router.run_mode(AgentRequest(question='standalone', identity=IDENTITY), mode)
             self.assertEqual(result.answer, mode)
         self.assertFalse(llm.prompts)
 

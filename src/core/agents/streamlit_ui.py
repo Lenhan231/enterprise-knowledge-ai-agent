@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 import os
+from pathlib import Path
+import sys
 import uuid
 from collections.abc import Mapping
 from urllib.error import HTTPError, URLError
@@ -12,10 +14,13 @@ from urllib.request import build_opener, HTTPCookieProcessor
 from http.cookiejar import CookieJar
 from typing import Any
 
+# Streamlit executes this file directly rather than as a module under src.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
 
 AGENT_MODES = {
     "Auto (Knowledge + SQL)": "auto", "Knowledge": "knowledge", "SQL": "sql",
-    "Inventory Dashboard": "dashboard", "Report": "report",
+    "Dashboard": "dashboard", "Report": "report",
 }
 
 
@@ -130,11 +135,11 @@ def display_result(st: Any, result: Mapping[str, Any], *, key_prefix: str | None
         st.caption("Status: " + metadata["status"].replace("_", " ") +
                    (" · evidence fallback" if metadata.get("fallback") else ""))
     st.markdown(result.get("answer", "No answer returned."))
-    dashboard = (result.get("data") or {}).get("dashboard")
-    if isinstance(dashboard, Mapping) and dashboard.get("outline_id") == "inventory_control":
-        _display_inventory_dashboard(st, dashboard, key_prefix=key_prefix)
-    else:
-        _display_data(st, result.get("data") or {}, key_prefix=key_prefix)
+    data = result.get('data') or {}
+    chart = data.get('visualization')
+    if isinstance(chart, Mapping):
+        _display_chart(st, chart, key_prefix=key_prefix)
+    _display_data(st, {key: value for key, value in data.items() if key != 'visualization'}, key_prefix=key_prefix)
     evidence = result.get("evidence") or []
     if evidence:
         with st.expander("Sources"):
@@ -151,40 +156,51 @@ def display_result(st: Any, result: Mapping[str, Any], *, key_prefix: str | None
                          **({'key':key_prefix+':trace'} if key_prefix else {}))
 
 
-def _display_inventory_dashboard(st: Any, dashboard: Mapping[str, Any], *, key_prefix: str | None = None) -> None:
-    st.subheader(dashboard.get("title", "Inventory Control & Exceptions"))
-    st.caption(f"Latest available snapshot: {dashboard.get('snapshot_date', 'unknown')}")
-    kpis = dashboard.get("kpis") or {}
-    labels = (
-        ("SKUs", "sku_count"), ("Stockout rate", "stockout_rate"),
-        ("Overstock rate", "overstock_rate"), ("Mean fill rate", "mean_fill_rate"),
-        ("Overstock flagged with days of supply", "high_days_of_supply_count"),
-    )
-    columns = st.columns(len(labels))
-    for column, (label, key) in zip(columns, labels):
-        value = kpis.get(key)
-        if key.endswith("rate"):
-            value = f"{float(value):.1f}%" if value is not None else "Unavailable"
-        elif key == "mean_fill_rate":
-            value = f"{float(value):.1%}" if value is not None else "Unavailable"
-        column.metric(label, value if value is not None else "Unavailable")
-    stockout = dashboard.get("stockout_by_category") or []
-    flags = dashboard.get("inventory_flags") or []
-    if stockout:
-        st.subheader("Stockout rate by category")
-        st.bar_chart(stockout, x="category", y="stockout_rate")
-    if flags:
-        st.subheader("Inventory flags by category")
-        st.bar_chart(flags, x="category", y=[
-            "stockout_flag_count", "overstock_flag_count", "both_flags_count",
-        ])
-    exceptions = dashboard.get("exceptions") or []
-    st.subheader("Inventory exceptions")
-    if exceptions:
-        st.dataframe(exceptions, use_container_width=True, hide_index=True,
-                     **({'key':key_prefix+':exceptions'} if key_prefix else {}))
+def _display_chart(st: Any, chart: Mapping[str, Any], *, key_prefix: str | None = None) -> None:
+    from core.models.agents import ChartSpec
+    try:
+        spec = ChartSpec.model_validate(chart)
+    except ValueError:
+        st.caption('This chart could not be displayed. Review the result table.')
+        return
+    st.subheader(spec.title)
+    values = [{'category': category, 'series': series.name, 'value': value}
+              for series in spec.series for category, value in zip(spec.categories, series.values)]
+    encoding = {
+        'color': {'field': 'series', 'type': 'nominal', 'title': 'Measure'},
+        'tooltip': [{'field': 'category', 'title': spec.x_label},
+                    {'field': 'series', 'title': 'Measure'}, {'field': 'value', 'title': spec.unit}],
+    }
+    if spec.type == 'donut':
+        mark = {'type': 'arc', 'innerRadius': 65}
+        encoding.update(theta={'field': 'value', 'type': 'quantitative'},
+                        color={'field': 'category', 'type': 'nominal', 'title': spec.x_label})
     else:
-        st.caption("No flagged inventory exceptions in this snapshot.")
+        mark = {'type': spec.type}
+        if spec.type == 'line':
+            mark.update(point=True, invalid='break-paths-show-domains')
+        encoding.update(x={'field': 'category', 'type': 'ordinal', 'title': spec.x_label, 'sort': spec.categories},
+                        y={'field': 'value', 'type': 'quantitative', 'title': spec.y_label, 'scale': {'zero': True}})
+        if spec.type == 'line' and spec.temporal:
+            encoding['x'] = {'field': 'category', 'type': 'temporal', 'title': spec.x_label}
+        if spec.type == 'bar':
+            encoding['xOffset'] = {'field': 'series'}
+    st.vega_lite_chart(spec={'data': {'values': values}, 'mark': mark, 'encoding': encoding},
+                       width='stretch', alt=spec.title,
+                       **({'key': key_prefix + ':chart'} if key_prefix else {}))
+    scope = spec.scope
+    notes = ['Units: ' + spec.unit]
+    if scope.get('sources'):
+        notes.append('Sources: ' + ', '.join(scope['sources']))
+    dates = list((scope.get('dates') or {}).values()) + scope.get('snapshot_dates', [])
+    if dates:
+        notes.append('Observed dates: ' + ', '.join(dict.fromkeys(dates)))
+    period = scope.get('time') or {}
+    if period:
+        notes.append('Period: ' + ' to '.join(str(period[key]) for key in ('start', 'end') if period.get(key)))
+    for item in scope.get('filters', []):
+        notes.append(f"{item['field']} {item['operator']} {item.get('value')}")
+    st.caption(' | '.join(notes))
 
 
 def _display_data(st: Any, value: Any, label: str = "Results", *, key_prefix: str | None = None) -> None:
@@ -271,7 +287,8 @@ def main() -> None:
         format_func=lambda mode: {'orchestrated': 'Auto (Knowledge + SQL)',
                                   'documents': 'Documents only', 'analytics': 'Analytics only'}[mode],key='report_source:'+report_id) if is_report else "documents"
     output_format = st.selectbox("Output format", ["markdown", "docx"],key='report_format:'+report_id) if is_report and report_template is None else None
-    category = st.text_input("Inventory category (optional)",key='category:'+st.session_state['conversation_id']) if AGENT_MODES[mode_label] == "dashboard" else ""
+    if AGENT_MODES[mode_label] == 'dashboard':
+        st.caption('Ask for a line, bar, or donut chart. Examples: monthly revenue in 2022; stockout count by category at 2022-12-31; donut of session share by traffic source in 2022.')
     confirmation_key = 'report_confirmation:'+report_id
     report_inputs = (question, report_template.name if report_template else None,
                      report_template.getvalue() if report_template else None, source_mode, output_format)
@@ -354,8 +371,7 @@ def main() -> None:
             st.markdown(question.strip())
         try:
             with st.chat_message('assistant'), st.spinner('Working...'):
-                metadata = {"category": category.strip()} if category.strip() else None
-                turn['result'] = submit_chat(question.strip(),AGENT_MODES[mode_label],metadata=metadata,
+                turn['result'] = submit_chat(question.strip(),AGENT_MODES[mode_label],
                     opener=opener,agent_prefix=prefix,conversation_id=conversation_id)
         except (RuntimeError,ValueError) as error:
             turn['error'] = str(error)

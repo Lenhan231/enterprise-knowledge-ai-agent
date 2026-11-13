@@ -17,6 +17,22 @@ SNAPSHOT = 'Show the historical inventory snapshot metrics for DragonWear MA-08 
 
 
 class SnapshotContractsTest(unittest.TestCase):
+    def test_repeated_snapshot_date_in_clarification_is_one_date_scope(self):
+        question = ('stockout count by category at 2022-12-31\nClarification reply: '
+                    'Show a bar chart counting products where stockout_flag is true, '
+                    'grouped by category, at snapshot_date 2022-12-31.')
+        mapping = decode_metric_mapping(json.dumps(dict(
+            metrics=['observed_product_count'], dimensions=['category'],
+            filters=[dict(field='stockout_indicator', operator='eq', value=True)],
+            time=dict(mode='snapshot', start='2022-12-31'))), question)
+        sql, parameters = compile_inventory_query(mapping)
+        plan = decode_query_plan(json.dumps({'sql': sql, 'parameters': parameters}, default=str))
+        validate_mapped_sql(plan, mapping, question=question)
+        with self.assertRaises(MetricDefinitionError):
+            validate_mapped_sql(plan, mapping, question=question.replace('2022-12-31', '2022-11-30'))
+        with self.assertRaises(MetricDefinitionError):
+            validate_mapped_sql(plan, mapping, question=question.replace('2022-12-31', '2022-11-30', 1))
+
     def comparison(self):
         return decode_metric_mapping(json.dumps(dict(metrics=['stock_on_hand'], dimensions=['product_id'],
             representation='product', time=dict(mode='comparison', start='2022-11-30', end='2022-12-31'))), CHANGE)

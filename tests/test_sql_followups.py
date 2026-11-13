@@ -125,7 +125,7 @@ class SQLConversationTest(unittest.IsolatedAsyncioTestCase):
             return AgentResult(answer='done',agent='analytics')
         agent.run=run
         router=AgentRouter(None,agent,agent,dashboard_agent=agent,report_agent=agent)
-        for mode in ('sql','knowledge','dashboard','report'):
+        for mode in ('sql','knowledge','report'):
             await router.run_mode(self.request('Question',conversation=None if mode=='sql' else 'session',permissions={'analytics:read','documents:read'}),mode)
         self.assertTrue(all('_sql_context' not in item for item in seen))
         self.assertEqual(len(router.sql_conversations.entries),0)

@@ -304,7 +304,7 @@ def _validate_inventory_time(scopes, parameters, question):
                 lower.append(parsed + timedelta(days=int(operator is exp.GT)))
             else:
                 upper.append(parsed + timedelta(days=int(operator is exp.LTE)))
-    requested = re.findall(r'\b\d{4}-\d{2}-\d{2}\b', question)
+    requested = sorted(set(re.findall(r'\b\d{4}-\d{2}-\d{2}\b', question)))
     period = inventory_time_scope(question)
     if period and period[0] == 'range' and not requested:
         start, end = date.fromisoformat(period[1]), date.fromisoformat(period[2])

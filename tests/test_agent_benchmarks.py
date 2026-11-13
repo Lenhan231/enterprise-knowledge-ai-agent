@@ -147,11 +147,12 @@ class AgentBenchmarkAssetsTest(unittest.TestCase):
         self.assertEqual(len(fixtures), 5)
         self.assertTrue(all(case["template_fixture_id"] in fixtures for case in cases))
 
-    def test_inventory_dashboard_contract_is_present(self):
-        outlines = self.load("dashboard_static_outlines.json")["outlines"]
-        inventory = next(item for item in outlines if item["id"] == "inventory_control")
-        self.assertIn("exception_table", {item["id"] for item in inventory["sections"]})
-        self.assertEqual(inventory["filters"][0]["source"], "commerce.inventory.snapshot_date")
+    def test_sql_dashboard_contract_covers_three_chart_types(self):
+        contract = self.load('dashboard_static_outlines.json')
+        self.assertEqual(contract['schema_version'], '2.0')
+        self.assertEqual(set(contract['chart_types']), {'line', 'bar', 'donut'})
+        self.assertEqual({case['chart_type'] for case in contract['cases']}, set(contract['chart_types']))
+        self.assertTrue(all(case['source'].startswith('commerce.') for case in contract['cases']))
 
 
 if __name__ == "__main__":

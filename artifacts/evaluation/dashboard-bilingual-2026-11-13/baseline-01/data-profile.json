@@ -1,0 +1,13 @@
+{
+  "inventory": [
+    {
+      "latest_inventory": "2022-12-31",
+      "inventory_rows": 60247
+    }
+  ],
+  "discounts": [
+    {
+      "null_discount_rows": 0
+    }
+  ]
+}

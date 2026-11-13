@@ -96,38 +96,52 @@ class StreamlitClientTest(unittest.TestCase):
             return _BinaryResponse(b'# Report', 'text/markdown')
         submit_report('Report', source_mode='orchestrated', conversation_id='report-session', opener=opener)
 
-    def test_dashboard_mode_is_selectable_and_renders_inventory_charts(self):
+    def test_dashboard_mode_renders_all_chart_types_and_source_table(self):
         class FakeStreamlit:
             def __init__(self):
-                self.headings = []
-                self.metrics = []
-                self.charts = []
-                self.tables = []
-                self.captions = []
-
-            def subheader(self, value): self.headings.append(value)
-            def caption(self, value): self.captions.append(value)
-            def metric(self, *args): self.metrics.append(args)
-            def columns(self, count): return [self] * count
-            def bar_chart(self, data, **kwargs): self.charts.append((data, kwargs))
+                self.charts, self.tables = [], []
+            def subheader(self, value): pass
+            def caption(self, value): pass
+            def markdown(self, value): pass
+            def vega_lite_chart(self, **kwargs): self.charts.append(kwargs)
             def dataframe(self, rows, **kwargs): self.tables.append(rows)
-            def markdown(self, _value): pass
 
-        self.assertEqual(AGENT_MODES["Inventory Dashboard"], "dashboard")
-        st = FakeStreamlit()
-        display_result(st, {"answer": "snapshot", "data": {"dashboard": {
-            "outline_id": "inventory_control", "title": "Inventory Control & Exceptions",
-            "snapshot_date": "2022-12-31", "kpis": {"sku_count": 10},
-            "stockout_by_category": [{"category": "A", "stockout_rate": 2.0}],
-            "inventory_flags": [{"category": "A", "stockout_flag_count": 1,
-                                  "overstock_flag_count": 3, "both_flags_count": 0}],
-            "exceptions": [{"product_id": "P1"}],
-        }}, "evidence": [], "metadata": {}})
+        self.assertEqual(AGENT_MODES['Dashboard'], 'dashboard')
+        for kind, mark in [('line', 'line'), ('bar', 'bar'), ('donut', 'arc')]:
+            st = FakeStreamlit()
+            rows = [{'category': 'A', 'sessions': 10}, {'category': 'B', 'sessions': 20}]
+            chart = {'type': kind, 'title': 'Sessions', 'categories': ['A', 'B'],
+                     'series': [{'name': 'Sessions', 'values': [10, 20]}], 'unit': 'sessions',
+                     'x_label': 'Source', 'y_label': 'Sessions', 'temporal': False, 'scope': {}}
+            display_result(st, {'answer': 'done', 'data': {'rows': rows, 'visualization': chart}}, key_prefix='turn')
+            self.assertEqual(len(st.charts), 1)
+            self.assertEqual(st.charts[0]['spec']['mark']['type'], mark)
+            self.assertEqual(st.tables, [rows])
+            self.assertEqual(st.charts[0]['key'], 'turn:chart')
+            self.assertEqual(len(st.charts[0]['spec']['data']['values']), 2)
 
-        self.assertIn("Inventory Control & Exceptions", st.headings)
-        self.assertTrue(st.metrics)
-        self.assertEqual(len(st.charts), 2)
-        self.assertEqual(st.tables, [[{"product_id": "P1"}]])
+    def test_dashboard_chat_runs_in_streamlit_with_real_chart_and_table(self):
+        from streamlit.testing.v1 import AppTest
+        import streamlit as st
+        from unittest.mock import MagicMock, patch
+        response = MagicMock()
+        chart = {'type': 'donut', 'title': 'Sessions during 2022', 'categories': ['A', 'B'],
+                 'series': [{'name': 'Sessions', 'values': [10, 20]}], 'unit': 'sessions',
+                 'x_label': 'Source', 'y_label': 'Sessions', 'scope': {}}
+        response.__enter__.return_value.read.return_value = json.dumps({
+            'answer': 'done', 'agent': 'dashboard', 'data': {
+                'rows': [{'source': 'A', 'sessions': 10}], 'visualization': chart}}).encode()
+        with patch.dict('os.environ', {'API_AGENT_PREFIX': '/api'}), \
+                patch('urllib.request.urlopen', return_value=response) as submit, \
+                patch.object(st, 'vega_lite_chart', wraps=st.vega_lite_chart) as render:
+            app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / 'src/core/agents/streamlit_ui.py'),
+                                    default_timeout=15).run()
+            app.selectbox(key='agent_mode').select('Dashboard').run()
+            app.chat_input[0].set_value('Donut of session share during 2022').run()
+            self.assertFalse(app.exception)
+            self.assertEqual(json.loads(submit.call_args.args[0].data)['agent_mode'], 'dashboard')
+            self.assertTrue(app.dataframe)
+            self.assertTrue(render.called)
 
     def test_submit_chat_sends_selected_mode_to_fastapi(self):
         requests = []

@@ -58,7 +58,7 @@ async def _get_runtime(application):
         if runtime is not None:
             return runtime
         from core.agents.analytics_agent import AnalyticsAgent
-        from core.agents.dashboard_agent import InventoryDashboardAgent
+        from core.agents.dashboard_agent import DashboardAgent
         from core.agents.main import _FallbackClassifier, _LazyKnowledgeAgent
         from core.agents.report_agent import ReportAgent
         from core.agents.router import AgentRouter
@@ -71,7 +71,7 @@ async def _get_runtime(application):
         analytics = AnalyticsAgent(SQLAnalyticsAgent(repository))
         runtime = AgentRouter(
             _FallbackClassifier(), knowledge, analytics,
-            dashboard_agent=InventoryDashboardAgent(repository),
+            dashboard_agent=DashboardAgent(analytics.sql_agent),
             report_agent=ReportAgent(knowledge, analytics.sql_agent),
         )
         runtime.report_agent.source_router = runtime

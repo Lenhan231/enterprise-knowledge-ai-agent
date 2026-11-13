@@ -927,51 +927,84 @@ function renderCommerceEvidence(rows, group) {
   return `<details class="citation-observations"><summary>Inspect structured SQL observations · ${rows.length} rows</summary><div class="commerce-table-wrap"><table aria-label="${escapeHtml(group || "Commerce SQL observations")}"><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table></div></details>`;
 }
 
-function renderDashboardVisualization(visualization) {
-  if (visualization?.type !== "line" || !Array.isArray(visualization.categories) || visualization.categories.length < 2) return "";
-  const categories = visualization.categories;
-  const series = (visualization.series || []).filter((item) =>
-    typeof item.name === "string" && Array.isArray(item.values) && item.values.length === categories.length
-      && item.values.filter(Number.isFinite).length >= 2
-  );
-  if (!series.length) return "";
-  const width = 680;
-  const height = 270;
-  const left = 70;
-  const right = 22;
-  const top = 24;
-  const bottom = 42;
-  const plotWidth = width - left - right;
-  const plotHeight = height - top - bottom;
-  const colors = ["#2463b5", "#da8a2d", "#24866b", "#8758a8"];
-  const charts = series.map((item, seriesIndex) => {
-    const values = item.values.map((value) => Number.isFinite(value) ? value : null);
-    const observedMax = Math.max(...values.filter((value) => value !== null), 0) || 1;
-    const max = visualization.unit === "%" ? Math.max(100, observedMax) : observedMax * 1.1;
-    const x = (index) => left + (categories.length === 1 ? plotWidth / 2 : index * plotWidth / (categories.length - 1));
-    const y = (value) => top + plotHeight - value / max * plotHeight;
-    const segments = [];
-    let segment = [];
-    values.forEach((value, index) => {
-      if (value === null) {
-        if (segment.length > 1) segments.push(segment);
-        segment = [];
-      } else segment.push(`${segment.length ? "L" : "M"}${x(index).toFixed(1)},${y(value).toFixed(1)}`);
-    });
-    if (segment.length > 1) segments.push(segment);
-    const grid = [0, 0.5, 1].map((fraction) => {
-      const yPos = top + plotHeight - fraction * plotHeight;
-      return `<g><line x1="${left}" y1="${yPos}" x2="${width - right}" y2="${yPos}" class="chart-gridline"/><text x="${left - 9}" y="${yPos + 4}" text-anchor="end" class="chart-axis-label">${escapeHtml(formatNumber(max * fraction))}</text></g>`;
+function renderDashboardVisualization(chart) {
+  if (!["line", "bar", "donut"].includes(chart?.type) || !Array.isArray(chart.categories)
+      || !chart.categories.length || chart.categories.length > 200 || !Array.isArray(chart.series)
+      || !chart.series.length || chart.series.length > 4) return "";
+  const {categories, series} = chart;
+  if (series.some(item => typeof item.name !== "string" || !Array.isArray(item.values)
+      || item.values.length !== categories.length || item.values.some(value => value !== null && !Number.isFinite(value)))) return "";
+  const observed = series.flatMap(item => item.values).filter(Number.isFinite);
+  if (!observed.length) return "";
+  const colors = ["#2463b5", "#da8a2d", "#24866b", "#8758a8", "#b44356", "#587a34"];
+  const unit = chart.unit || "Source units";
+  const title = chart.title || "SQL result chart";
+  const tooltip = (category, item, value) => `<title>${escapeHtml(category)} | ${escapeHtml(item.name)}: ${escapeHtml(formatNumber(value))} ${escapeHtml(unit)}</title>`;
+  let svg = "";
+  let legend = "";
+  if (chart.type === "donut") {
+    const values = series[0].values;
+    const total = values.reduce((sum, value) => sum + value, 0);
+    if (series.length !== 1 || values.some(value => value === null || value < 0) || !Number.isFinite(total) || total <= 0) return "";
+    let offset = 0;
+    const slices = values.map((value, index) => {
+      const share = value / total * 100;
+      const slice = `<circle cx="160" cy="125" r="78" fill="none" stroke="${colors[index % colors.length]}" stroke-width="42" pathLength="100" stroke-dasharray="${share} ${100 - share}" stroke-dashoffset="${-offset}" transform="rotate(-90 160 125)">${tooltip(categories[index], series[0], value)}</circle>`;
+      offset += share;
+      return slice;
     }).join("");
-    const points = values.map((value, index) => value === null ? "" :
-      `<circle cx="${x(index)}" cy="${y(value)}" r="4" fill="${colors[seriesIndex % colors.length]}"><title>FY ${escapeHtml(categories[index])}: ${escapeHtml(formatFinancialValue(value))} ${escapeHtml(visualization.unit)}</title></circle>`
-    ).join("");
-    const xLabels = categories.map((category, index) =>
-      `<text x="${x(index)}" y="${height - 13}" text-anchor="middle" class="chart-axis-label">${escapeHtml(category)}</text>`
-    ).join("");
-    return `<article class="answer-chart"><h4>${escapeHtml(item.name)} · ${escapeHtml(visualization.unit)}</h4><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(item.name)} by fiscal year">${grid}<line x1="${left}" y1="${top}" x2="${left}" y2="${top + plotHeight}" class="chart-axis"/>${segments.map((path) => `<path d="${path.join(" ")}" fill="none" stroke="${colors[seriesIndex % colors.length]}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`).join("")}${points}${xLabels}</svg></article>`;
-  }).join("");
-  return `<section class="answer-visualization"><h3>${escapeHtml(visualization.title || "Verified data trend")}</h3>${charts}<p class="chart-note">Chart values come from the cited database observations. Review the source and scope in the response above.</p></section>`;
+    svg = `<svg viewBox="0 0 320 250" role="img" aria-label="${escapeHtml(title)}">${slices}<text x="160" y="130" text-anchor="middle" class="chart-axis-label">${escapeHtml(formatNumber(total))} total</text></svg>`;
+    legend = `<ul class="chart-legend">${categories.map((category, index) => `<li><span class="chart-swatch" style="background:${colors[index % colors.length]}"></span>${escapeHtml(category)}: ${escapeHtml(formatNumber(values[index]))} (${(values[index] / total * 100).toFixed(1)}%)</li>`).join("")}</ul>`;
+  } else {
+    const width = chart.type === "bar" ? Math.max(680, categories.length * 64) : 680;
+    const height = 320, left = 80, right = 24, top = 24, bottom = 70;
+    const plotWidth = width - left - right, plotHeight = height - top - bottom;
+    const low = Math.min(0, ...observed), high = Math.max(0, ...observed);
+    const span = high - low || 1;
+    const minimum = low < 0 ? low - span * .08 : 0;
+    const maximum = high > 0 ? high + span * .08 : (low === 0 ? 1 : 0);
+    const y = value => top + (maximum - value) / (maximum - minimum) * plotHeight;
+    const times = chart.temporal && chart.type === "line" ? categories.map(value => Date.parse(value)) : [];
+    const hasTimeScale = times.length && times.every(Number.isFinite) && times.at(-1) > times[0];
+    const x = index => left + (chart.type === "bar" ? (index + .5) / categories.length
+      : hasTimeScale ? (times[index] - times[0]) / (times.at(-1) - times[0])
+        : categories.length === 1 ? .5 : index / (categories.length - 1)) * plotWidth;
+    const ticks = [0, .5, 1].map(fraction => {
+      const value = minimum + (maximum - minimum) * fraction;
+      return `<line x1="${left}" y1="${y(value)}" x2="${width - right}" y2="${y(value)}" class="chart-gridline"/><text x="${left - 8}" y="${y(value) + 4}" text-anchor="end" class="chart-axis-label">${escapeHtml(formatNumber(value))}</text>`;
+    }).join("");
+    const marks = series.map((item, seriesIndex) => {
+      const color = colors[seriesIndex % colors.length];
+      if (chart.type === "bar") {
+        const groupWidth = plotWidth / categories.length * .8;
+        const barWidth = groupWidth / series.length;
+        return item.values.map((value, index) => value === null ? "" : `<rect x="${x(index) - groupWidth / 2 + seriesIndex * barWidth}" y="${Math.min(y(0), y(value))}" width="${Math.max(1, barWidth - 2)}" height="${Math.abs(y(value) - y(0))}" fill="${color}">${tooltip(categories[index], item, value)}</rect>`).join("");
+      }
+      const paths = [];
+      let segment = [];
+      item.values.forEach((value, index) => {
+        if (value === null) {
+          if (segment.length) paths.push(segment.join(" "));
+          segment = [];
+        } else segment.push(`${segment.length ? "L" : "M"}${x(index)},${y(value)}`);
+      });
+      if (segment.length) paths.push(segment.join(" "));
+      return paths.map(path => `<path d="${path}" fill="none" stroke="${color}" stroke-width="3"/>`).join("")
+        + item.values.map((value, index) => value === null ? "" : `<circle cx="${x(index)}" cy="${y(value)}" r="4" fill="${color}">${tooltip(categories[index], item, value)}</circle>`).join("");
+    }).join("");
+    const stride = chart.type === "line" ? Math.max(1, Math.ceil(categories.length / 8)) : 1;
+    const labels = categories.map((category, index) => index % stride && index !== categories.length - 1 ? "" : `<text x="${x(index)}" y="${height - bottom + 22}" text-anchor="middle" class="chart-axis-label"><title>${escapeHtml(category)}</title>${escapeHtml(String(category).length > 16 ? String(category).slice(0, 14) + "..." : category)}</text>`).join("");
+    svg = `<div class="chart-scroll" tabindex="0" role="region" aria-label="${escapeHtml(title)} chart; scroll for more categories"><svg viewBox="0 0 ${width} ${height}" style="min-width:${width}px" role="img" aria-label="${escapeHtml(title)}">${ticks}<line x1="${left}" y1="${y(0)}" x2="${width - right}" y2="${y(0)}" class="chart-axis"/>${marks}${labels}<text x="${width / 2}" y="${height - 12}" text-anchor="middle" class="chart-axis-label">${escapeHtml(chart.x_label || "Category")}</text></svg></div>`;
+    legend = `<ul class="chart-legend">${series.map((item, index) => `<li><span class="chart-swatch" style="background:${colors[index % colors.length]}"></span>${escapeHtml(item.name)}</li>`).join("")}</ul>`;
+  }
+  const scope = chart.scope || {};
+  const period = scope.time || {};
+  const dates = [...Object.values(scope.dates || {}), ...(scope.snapshot_dates || [])];
+  const scopeText = [period.start && `Period: ${period.start}${period.end ? ` to ${period.end}` : ""}`,
+    dates.length && `Observed dates: ${[...new Set(dates)].join(", ")}`,
+    ...(scope.filters || []).map(item => `${item.field} ${item.operator} ${item.value}`),
+    scope.sources?.length && `Sources: ${scope.sources.join(", ")}`].filter(Boolean).join(" | ");
+  return `<section class="answer-visualization"><h3>${escapeHtml(title)}</h3><p class="chart-note">Units: ${escapeHtml(unit)}</p><article class="answer-chart ${chart.type === "donut" ? "chart-donut" : ""}">${svg}${legend}</article><p class="chart-note">${escapeHtml(scopeText)} | Values come from the SQL observations in the result table.</p></section>`;
 }
 
 function renderAnswerBody(answer) {
@@ -1090,7 +1123,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
     <div class="answer-header-wrap">
       <div class="answer-heading${data.status === "partial" || data.limitations?.length ? " is-partial" : ""}">
         <span class="answer-mark">${usedEvidenceFallback ? "EV" : "AI"}</span>
-        <div><span class="eyebrow">${escapeHtml(({knowledge:"Knowledge agent",analytics:"Analytics agent",sql_analytics:"Analytics agent",dashboard:"Inventory agent",report:"Report agent",agentic:"Automatic router",hybrid:"Knowledge + analytics"})[data.agent] || "Agent response")}</span><h3>${escapeHtml(responseTitle)}</h3></div>
+        <div><span class="eyebrow">${escapeHtml(({knowledge:"Knowledge agent",analytics:"Analytics agent",sql_analytics:"Analytics agent",dashboard:"Dashboard agent",report:"Report agent",agentic:"Automatic router",hybrid:"Knowledge + analytics"})[data.agent] || "Agent response")}</span><h3>${escapeHtml(responseTitle)}</h3></div>
       </div>
     </div>
     ${domainNote}
@@ -1215,7 +1248,7 @@ function renderAgentRows(data) {
       : "";
     const canShowRows = value.query_status == null || executed;
     const table = canShowRows && validRows.length
-      ? `<div class="commerce-table-wrap"><table><thead><tr>${columns.map((key) => `<th scope="col">${escapeHtml(key.replaceAll("_", " "))}</th>`).join("")}</tr></thead><tbody>${validRows.slice(0, 50).map((row) => `<tr>${columns.map((key) => `<td>${escapeHtml(row[key] ?? "—")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`
+      ? `<div class="commerce-table-wrap"><table><thead><tr>${columns.map((key) => `<th scope="col">${escapeHtml(key.replaceAll("_", " "))}</th>`).join("")}</tr></thead><tbody>${validRows.slice(0, data?.visualization ? 200 : 50).map((row) => `<tr>${columns.map((key) => `<td>${escapeHtml(row[key] ?? "—")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`
       : executed && Array.isArray(rows) ? '<p class="no-citations">The query ran and returned no rows.</p>' : "";
     const diagnosticSql = value.attempted_sql || value.sql;
     const parameters = Array.isArray(value.parameters) && value.parameters.length

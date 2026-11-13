@@ -14,7 +14,7 @@ from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from core.agents.analytics_agent import AnalyticsAgent
-from core.agents.dashboard_agent import InventoryDashboardAgent
+from core.agents.dashboard_agent import DashboardAgent
 from core.agents.intent_classifier import IntentClassifier
 from core.agents.knowledge_agent import KnowledgeAgent
 from core.agents.report_agent import ReportAgent
@@ -121,7 +121,7 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
             runtime_report_agent = runtime_report_agent or ReportAgent(knowledge, analytics_agent.sql_agent, llm=llm)
             runtime_agent = AgentRouter(
                 classifier or _FallbackClassifier(), knowledge, analytics_agent,
-                dashboard_agent=InventoryDashboardAgent(repository),
+                dashboard_agent=DashboardAgent(analytics_agent.sql_agent),
                 report_agent=runtime_report_agent,
             )
             if isinstance(runtime_report_agent, ReportAgent):

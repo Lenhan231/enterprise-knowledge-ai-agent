@@ -1,0 +1,2 @@
+# Preserve frozen evidence bytes and existing source formatting for recorded hashes.
+* -text -whitespace

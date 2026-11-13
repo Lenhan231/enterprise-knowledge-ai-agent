@@ -845,6 +845,7 @@ async def upload_invoice(
 @app.get("/api/invoices/{invoice_id}")
 def get_invoice(
     invoice_id: str,
+    include_evidence: bool = True,
     user: dict = Depends(require_permission("upload_documents")),
 ):
     """Return the uploader's invoice draft; admins can review any invoice."""
@@ -852,13 +853,33 @@ def get_invoice(
 
     repository = InvoiceRepository()
     try:
-        invoice = repository.get_invoice(invoice_id)
+        invoice = repository.get_invoice(invoice_id, include_evidence=include_evidence)
         if invoice is None or (
             user.get("role") != "admin" and invoice["uploaded_by"] != user.get("sub")
         ):
             raise HTTPException(404, "Invoice not found")
         invoice["source_available"] = bool(invoice.pop("storage_path", None))
         return invoice
+    finally:
+        repository.close()
+
+
+@app.get("/api/invoices/{invoice_id}/evidence")
+def get_invoice_evidence(
+    invoice_id: str,
+    user: dict = Depends(require_permission("upload_documents")),
+):
+    from core.database.invoice_repository import InvoiceRepository
+
+    repository = InvoiceRepository()
+    try:
+        evidence = repository.get_invoice_evidence(invoice_id)
+        if evidence is None or (
+            user.get("role") != "admin" and evidence["uploaded_by"] != user.get("sub")
+        ):
+            raise HTTPException(404, "Invoice not found")
+        evidence.pop("uploaded_by", None)
+        return evidence
     finally:
         repository.close()
 
@@ -877,7 +898,7 @@ def list_invoices(user: dict = Depends(require_permission("upload_documents"))):
 
 
 def _invoice_for_user(repository, invoice_id: str, user: dict) -> dict:
-    invoice = repository.get_invoice(invoice_id)
+    invoice = repository.get_invoice(invoice_id, include_evidence=False)
     if invoice is None or (
         user.get("role") != "admin" and invoice["uploaded_by"] != user.get("sub")
     ):
@@ -1019,7 +1040,11 @@ def invoice_source(
 
     repository = InvoiceRepository()
     try:
-        invoice = _invoice_for_user(repository, invoice_id, user)
+        invoice = repository.get_invoice_source(invoice_id)
+        if invoice is None or (
+            user.get("role") != "admin" and invoice["uploaded_by"] != user.get("sub")
+        ):
+            raise HTTPException(404, "Invoice not found")
         storage_path = invoice.get("storage_path")
         filename = str(invoice.get("source_filename") or invoice_id)
         source_format = str(invoice.get("source_format") or "").lower()

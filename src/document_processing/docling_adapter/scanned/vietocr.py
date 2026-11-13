@@ -270,6 +270,7 @@ class VietOcrModel(BaseOcrModel):
                 )
                 cells: list[TextCell] = []
                 cell_region_indices: list[int] = []
+                page_lines = []
                 for ocr_rect, region_label in ocr_regions:
                     if ocr_rect.area() == 0:
                         continue
@@ -365,85 +366,93 @@ class VietOcrModel(BaseOcrModel):
                                                line_confidence))
                     component_seconds["line_crop_orientation"] += time.perf_counter() - line_orientation_started
                     line_count += len(prepared_lines)
-                    recognition_started = time.perf_counter()
-                    recognized_lines = self._recognize_lines(
-                        [prepared[3] for prepared in prepared_lines]
+                    page_lines.extend(
+                        (prepared, ocr_rect, region_label, doc_orientation, region_index,
+                         vertical_padding, image_size)
+                        for prepared in prepared_lines
                     )
-                    component_seconds["vietocr_recognition"] += time.perf_counter() - recognition_started
-                    recognition_batches += self._last_recognition_batches
-                    geometry_started = time.perf_counter()
-                    for prepared, (text, route) in zip(prepared_lines, recognized_lines):
-                        (index, quad, merged_fragments, line, line_orientation_correction,
-                         line_orientation, line_confidence) = prepared
-                        page_quad = quad.copy()
-                        page_quad[:, 1] -= vertical_padding
-                        page_quad[:, 0] = np.clip(page_quad[:, 0], 0, image_size[0] - 1)
-                        page_quad[:, 1] = np.clip(page_quad[:, 1], 0, image_size[1] - 1)
-                        left, top = page_quad.min(axis=0)
-                        right, bottom = page_quad.max(axis=0)
-                        box = BoundingBox(
-                            l=float(left), t=float(top), r=float(right), b=float(bottom),
-                            coord_origin=CoordOrigin.TOPLEFT,
+
+                recognition_started = time.perf_counter()
+                recognized_lines = self._recognize_lines(
+                    [item[0][3] for item in page_lines]
+                )
+                component_seconds["vietocr_recognition"] += time.perf_counter() - recognition_started
+                recognition_batches += self._last_recognition_batches
+                geometry_started = time.perf_counter()
+                for item, (text, route) in zip(page_lines, recognized_lines):
+                    (prepared, ocr_rect, region_label, doc_orientation, region_index,
+                     vertical_padding, image_size) = item
+                    (index, quad, merged_fragments, line, line_orientation_correction,
+                     line_orientation, line_confidence) = prepared
+                    page_quad = quad.copy()
+                    page_quad[:, 1] -= vertical_padding
+                    page_quad[:, 0] = np.clip(page_quad[:, 0], 0, image_size[0] - 1)
+                    page_quad[:, 1] = np.clip(page_quad[:, 1], 0, image_size[1] - 1)
+                    left, top = page_quad.min(axis=0)
+                    right, bottom = page_quad.max(axis=0)
+                    box = BoundingBox(
+                        l=float(left), t=float(top), r=float(right), b=float(bottom),
+                        coord_origin=CoordOrigin.TOPLEFT,
+                    )
+                    rect = tesseract_box_to_bounding_rectangle(
+                        box,
+                        original_offset=ocr_rect,
+                        scale=self.scale,
+                        orientation=doc_orientation,
+                        im_size=image_size,
+                    )
+                    rect_x = [rect.r_x0, rect.r_x1, rect.r_x2, rect.r_x3]
+                    rect_y = [rect.r_y0, rect.r_y1, rect.r_y2, rect.r_y3]
+                    diagnostic = {
+                        "page_number": page_number,
+                        "ocr_region_index_1based": region_index,
+                        "line_index_1based": index + 1,
+                        "route": route,
+                        "recognized_text_present": bool(text),
+                        "merged_fragments": bool(merged_fragments),
+                        "bbox": [
+                            float(min(rect_x)), float(min(rect_y)),
+                            float(max(rect_x)), float(max(rect_y)),
+                        ],
+                        "bbox_coordinate_system": "docling_page_coordinate",
+                        "bbox_coordinate_origin": "TOPLEFT",
+                    }
+                    self._save_crop_debug(line, diagnostic, text, region_label)
+                    self.routing_diagnostics.append(diagnostic)
+                    _LOGGER.info("OCR_LINE_ROUTE %s", json.dumps(diagnostic, separators=(",", ":")))
+                    line_orientation_diagnostic = {
+                        "scope": "text_line",
+                        "page_number": page_number,
+                        "layout_label": region_label,
+                        "ocr_region_index_1based": region_index,
+                        "line_index_1based": index + 1,
+                        "textline_orientation_degrees": line_orientation,
+                        "textline_orientation_confidence": line_confidence,
+                        "textline_orientation_model": "PP-LCNet_x0_25_textline_ori",
+                        "correction_clockwise": line_orientation_correction,
+                        "bbox": diagnostic["bbox"],
+                        "bbox_coordinate_system": diagnostic["bbox_coordinate_system"],
+                        "bbox_coordinate_origin": diagnostic["bbox_coordinate_origin"],
+                    }
+                    self.orientation_diagnostics.append(line_orientation_diagnostic)
+                    _LOGGER.info(
+                        "OCR_LINE_ORIENTATION %s",
+                        json.dumps(line_orientation_diagnostic, separators=(",", ":")),
+                    )
+                    if not text:
+                        continue
+                    cells.append(
+                        TextCell(
+                            index=index,
+                            text=text,
+                            orig=text,
+                            confidence=1.0,
+                            from_ocr=True,
+                            rect=rect,
                         )
-                        rect = tesseract_box_to_bounding_rectangle(
-                            box,
-                            original_offset=ocr_rect,
-                            scale=self.scale,
-                            orientation=doc_orientation,
-                            im_size=image_size,
-                        )
-                        rect_x = [rect.r_x0, rect.r_x1, rect.r_x2, rect.r_x3]
-                        rect_y = [rect.r_y0, rect.r_y1, rect.r_y2, rect.r_y3]
-                        diagnostic = {
-                            "page_number": page_number,
-                            "ocr_region_index_1based": region_index,
-                            "line_index_1based": index + 1,
-                            "route": route,
-                            "recognized_text_present": bool(text),
-                            "merged_fragments": bool(merged_fragments),
-                            "bbox": [
-                                float(min(rect_x)), float(min(rect_y)),
-                                float(max(rect_x)), float(max(rect_y)),
-                            ],
-                            "bbox_coordinate_system": "docling_page_coordinate",
-                            "bbox_coordinate_origin": "TOPLEFT",
-                        }
-                        self._save_crop_debug(line, diagnostic, text, region_label)
-                        self.routing_diagnostics.append(diagnostic)
-                        _LOGGER.info("OCR_LINE_ROUTE %s", json.dumps(diagnostic, separators=(",", ":")))
-                        line_orientation_diagnostic = {
-                            "scope": "text_line",
-                            "page_number": page_number,
-                            "layout_label": region_label,
-                            "ocr_region_index_1based": region_index,
-                            "line_index_1based": index + 1,
-                            "textline_orientation_degrees": line_orientation,
-                            "textline_orientation_confidence": line_confidence,
-                            "textline_orientation_model": "PP-LCNet_x0_25_textline_ori",
-                            "correction_clockwise": line_orientation_correction,
-                            "bbox": diagnostic["bbox"],
-                            "bbox_coordinate_system": diagnostic["bbox_coordinate_system"],
-                            "bbox_coordinate_origin": diagnostic["bbox_coordinate_origin"],
-                        }
-                        self.orientation_diagnostics.append(line_orientation_diagnostic)
-                        _LOGGER.info(
-                            "OCR_LINE_ORIENTATION %s",
-                            json.dumps(line_orientation_diagnostic, separators=(",", ":")),
-                        )
-                        if not text:
-                            continue
-                        cells.append(
-                            TextCell(
-                                index=index,
-                                text=text,
-                                orig=text,
-                                confidence=1.0,
-                                from_ocr=True,
-                                rect=rect,
-                            )
-                        )
-                        cell_region_indices.append(region_index)
-                    component_seconds["line_geometry_postprocess"] += time.perf_counter() - geometry_started
+                    )
+                    cell_region_indices.append(region_index)
+                component_seconds["line_geometry_postprocess"] += time.perf_counter() - geometry_started
                 cells = self._deduplicate_overlapping_cells(cells, cell_region_indices)
                 self.post_process_cells(cells, page, conv_res)
             component_ms = {

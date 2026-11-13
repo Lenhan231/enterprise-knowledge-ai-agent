@@ -203,6 +203,25 @@ def login(request: Request, payload: LoginRequest):
     return response
 
 
+@app.get("/api/health/db")
+def database_health(user: dict = Depends(require_roles(*ROLE_PERMISSIONS.keys()))):
+    """Time one connect + select 1, the cost a real request pays; the web page uses it to pick the faster backend.
+    Signed-in only, so it cannot be used to open database connections anonymously."""
+    from core.database.connection_limit import close_database_connection, connect_database
+
+    started = time.perf_counter()
+    try:
+        connection = connect_database()
+        try:
+            connection.execute("select 1")
+        finally:
+            close_database_connection(connection)
+    except Exception as error:
+        logger.warning("Database health check failed: %s", type(error).__name__)
+        raise HTTPException(503, "Database unreachable") from error
+    return {"database_ms": round((time.perf_counter() - started) * 1000)}
+
+
 @app.get("/api/auth/me")
 def who_am_i(user: dict = Depends(require_roles(*ROLE_PERMISSIONS.keys()))):
     return {"username": user["sub"], "role": user["role"]}

@@ -334,7 +334,7 @@ async function fetchInvoiceSource(invoiceId, session) {
   if (pending) return pending;
 
   const request = (async () => {
-    const response = await fetch(`/api/invoices/${encodeURIComponent(invoiceId)}/source`, {
+    const response = await backendFetch(`/api/invoices/${encodeURIComponent(invoiceId)}/source`, {
       credentials: "same-origin",
       headers: { "ngrok-skip-browser-warning": "1" },
     });
@@ -1651,11 +1651,57 @@ async function refreshAgentMonitoring() {
   }
 }
 
+// Two backends behind Vercel: /api is the primary (NGROK_URL), /api-fallback the second one (FALLBACK_URL).
+// Signed in, the page times a real database round trip on both every few minutes and uses the faster one,
+// preferring the primary unless the other is clearly faster. A request that cannot reach its backend at all
+// (the proxy or tunnel answers instead of the app, which always answers JSON) moves once to the other backend.
+const API_BASES = ["/api", "/api-fallback"];
+let apiBase = "/api";
+let backendTimer = null;
+
+function backendUnreachable(response, method) {
+  const type = response.headers.get("content-type") || "";
+  if (type.includes("json") || type.includes("event-stream")) return false;
+  // 502/530 and ngrok's offline 404 mean the request never reached the app; 503/504 might have, so only GETs move.
+  return [502, 530, 404].includes(response.status) || (method === "GET" && [503, 504].includes(response.status));
+}
+
+async function backendFetch(path, init = {}) {
+  const method = (init.method || "GET").toUpperCase();
+  const at = (base) => fetch(path.replace(/^\/api(?=\/)/, base), init);
+  const other = () => API_BASES.find((base) => base !== apiBase);
+  try {
+    const response = await at(apiBase);
+    if (!path.startsWith("/api/") || !backendUnreachable(response, method)) return response;
+  } catch (error) {
+    if (error.name === "AbortError" || error.name === "TimeoutError" || method !== "GET" || !path.startsWith("/api/")) throw error;
+  }
+  apiBase = other();
+  return at(apiBase);
+}
+
+async function chooseBackend() {
+  const time = async (base) => {
+    const started = performance.now();
+    try {
+      const response = await fetch(`${base}/health/db`, { credentials: "same-origin", cache: "no-store",
+        headers: { "ngrok-skip-browser-warning": "1" }, signal: AbortSignal.timeout(10_000) });
+      return response.ok ? performance.now() - started : Infinity;
+    } catch {
+      return Infinity;
+    }
+  };
+  const [primary, fallback] = await Promise.all(API_BASES.map(time));
+  if (primary === Infinity && fallback === Infinity) return;
+  // shortcut: one sample per check; switches only when the other is >40% faster, upgrade to a rolling median if it flaps.
+  apiBase = fallback < primary * 0.6 ? "/api-fallback" : "/api";
+}
+
 async function api(path, options = {}) {
   const headers = { ...(options.headers || {}) };
   if (!(options.body instanceof FormData)) headers["Content-Type"] = "application/json";
   headers["ngrok-skip-browser-warning"] = "1";
-  const response = await fetch(path, { credentials: "same-origin", ...options, headers });
+  const response = await backendFetch(path, { credentials: "same-origin", ...options, headers });
   if (response.status === 401 && path !== "/api/auth/login") {
     clearExpiredSession();
     throw new Error("Sign in to continue");
@@ -1935,7 +1981,7 @@ async function askAgentStream(body, signal, onStatus) {
   const unavailable = (message) => Object.assign(new Error(message), { streamUnavailable: true });
   let response;
   try {
-    response = await fetch("/api/agents/chat/stream", {
+    response = await backendFetch("/api/agents/chat/stream", {
       method: "POST", credentials: "same-origin", body, signal,
       headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "1" },
     });
@@ -2014,6 +2060,8 @@ function clearExpiredSession() {
 }
 
 async function loadWorkspace(user) {
+  chooseBackend();
+  backendTimer ||= setInterval(chooseBackend, 180_000);
   if (sessionSubject !== user.username) {
     sessionGeneration += 1;
     clearInvoiceReviewCaches();
@@ -2845,7 +2893,7 @@ $("#report-agent-form").addEventListener("submit", async (event) => {
   try {
     let response;
     for (let attempt = 0; attempt < 3; attempt++) {
-      response = await fetch("/api/agents/report", {
+      response = await backendFetch("/api/agents/report", {
         method: "POST", body: formData, credentials: "same-origin",
         headers: { "ngrok-skip-browser-warning": "1" },
       });

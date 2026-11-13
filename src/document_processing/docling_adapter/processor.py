@@ -133,6 +133,9 @@ class DoclingProcessor:
                     getattr(ocr_model, "orientation_diagnostics", []).clear()
                     getattr(ocr_model, "_orientation_counts", {}).clear()
                     ocr_model.current_reference_id = invoice_id
+                layout_model = getattr(pipeline, "layout_model", None)
+                if layout_model is not None:
+                    layout_model.current_reference_id = invoice_id
 
         source_suffix = f".{source_format}" if source_format else ".pdf"
         source_bytes: bytes | None = None

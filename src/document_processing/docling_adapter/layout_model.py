@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from typing import ClassVar, Sequence
 
 from pydantic import Field
@@ -127,6 +128,7 @@ class PPDocLayoutModel(BaseLayoutModel):
         self.chart_regions: list[dict[str, object]] = []
         self.layout_detections: list[dict[str, object]] = []
         self.page_orientation_corrections: dict[int, int] = {}
+        self.current_reference_id: str | None = None
         # PaddlePaddle 3.3.1 CPU oneDNN fails on this model's PIR attributes.
         self.model = LayoutDetection(
             model_name="PP-DocLayoutV3",
@@ -155,11 +157,25 @@ class PPDocLayoutModel(BaseLayoutModel):
 
         predictions: list[LayoutPrediction] = []
         for page in pages:
+            page_started = time.perf_counter()
+            timings_ms: dict[str, float] = {}
+            stage_started = time.perf_counter()
             image = page.get_image(scale=1.0)
+            timings_ms["page_render"] = round((time.perf_counter() - stage_started) * 1000, 2)
             if image is None or page.size is None:
                 predictions.append(LayoutPrediction())
+                _log.info("DOCLING_LAYOUT_COMPONENT_TIMING %s", json.dumps({
+                    "invoice_id": self.current_reference_id,
+                    "page_number": int(page.page_no),
+                    "box_count": 0,
+                    "timings_ms": {
+                        **timings_ms,
+                        "total": round((time.perf_counter() - page_started) * 1000, 2),
+                    },
+                }, separators=(",", ":")))
                 continue
 
+            stage_started = time.perf_counter()
             try:
                 correction, _, _ = detect_paddle_orientation(image)
             except Exception:
@@ -173,25 +189,42 @@ class PPDocLayoutModel(BaseLayoutModel):
                     exc_info=True,
                 )
                 correction = 0
+            timings_ms["page_orientation"] = round((time.perf_counter() - stage_started) * 1000, 2)
             self.page_orientation_corrections[int(page.page_no)] = correction
             if correction:
+                stage_started = time.perf_counter()
                 page._backend = OrientedPageBackend(page._backend, correction)
                 page.size = page._backend.get_size()
                 page._image_cache.clear()
                 image = page.get_image(scale=1.0)
+                timings_ms["page_rotation"] = round((time.perf_counter() - stage_started) * 1000, 2)
             layout_image = image
             # PaddleX accepts NumPy image inputs in OpenCV's BGR channel order.
+            stage_started = time.perf_counter()
             image_bgr = np.asarray(layout_image.convert("RGB"))[:, :, ::-1].copy()
+            timings_ms["model_input_prepare"] = round((time.perf_counter() - stage_started) * 1000, 2)
+            stage_started = time.perf_counter()
             result = next(iter(self.model.predict(
                 input=image_bgr,
                 batch_size=1,
                 threshold=self.options.score_threshold,
                 layout_nms=True,
             )), None)
+            timings_ms["layout_model_inference"] = round((time.perf_counter() - stage_started) * 1000, 2)
             if result is None:
                 predictions.append(LayoutPrediction())
+                _log.info("DOCLING_LAYOUT_COMPONENT_TIMING %s", json.dumps({
+                    "invoice_id": self.current_reference_id,
+                    "page_number": int(page.page_no),
+                    "box_count": 0,
+                    "timings_ms": {
+                        **timings_ms,
+                        "total": round((time.perf_counter() - page_started) * 1000, 2),
+                    },
+                }, separators=(",", ":")))
                 continue
 
+            stage_started = time.perf_counter()
             payload = result.json
             if isinstance(payload, str):
                 payload = json.loads(payload)
@@ -242,6 +275,14 @@ class PPDocLayoutModel(BaseLayoutModel):
                     cells=[],
                 ))
             predictions.append(LayoutPrediction(clusters=clusters))
+            timings_ms["detection_mapping"] = round((time.perf_counter() - stage_started) * 1000, 2)
+            timings_ms["total"] = round((time.perf_counter() - page_started) * 1000, 2)
+            _log.info("DOCLING_LAYOUT_COMPONENT_TIMING %s", json.dumps({
+                "invoice_id": self.current_reference_id,
+                "page_number": int(page.page_no),
+                "box_count": len(raw.get("boxes", [])),
+                "timings_ms": timings_ms,
+            }, separators=(",", ":")))
         return predictions
 
 

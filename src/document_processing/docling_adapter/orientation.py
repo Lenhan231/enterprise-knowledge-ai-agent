@@ -34,6 +34,11 @@ def _paddle_textline_orientation_model():
     )
 
 
+def preload_paddle_page_orientation_model() -> None:
+    """Load the lazy page-orientation classifier before the first document request."""
+    _paddle_orientation_model()
+
+
 def detect_paddle_orientation(image: Image.Image) -> tuple[int, int, float]:
     """Return clockwise correction, predicted orientation, and confidence."""
     import numpy as np

@@ -9,7 +9,10 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from document_processing.docling_adapter.result_mapper import _get_page_image, _merge_text_layout_elements
-from document_processing.docling_adapter.orientation import detect_paddle_orientation
+from document_processing.docling_adapter.orientation import (
+    detect_paddle_orientation,
+    preload_paddle_page_orientation_model,
+)
 from document_processing.docling_adapter.scanned.postprocessing import (
     clean_ocr_elements,
     recover_empty_cell_dashes,
@@ -18,6 +21,11 @@ from document_processing.docling_adapter.scanned.vietocr import VietOcrModel
 
 
 class VietOcrPostprocessingTest(unittest.TestCase):
+    def test_preload_initializes_cached_page_orientation_model(self):
+        with patch("document_processing.docling_adapter.orientation._paddle_orientation_model") as page_model:
+            preload_paddle_page_orientation_model()
+        page_model.assert_called_once_with()
+
     def test_vietocr_recognizes_bounded_batches_in_order(self):
         from document_processing.docling_adapter.scanned import vietocr as vietocr_module
 

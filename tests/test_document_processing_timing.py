@@ -1,12 +1,29 @@
 import unittest
 from types import SimpleNamespace
+from unittest.mock import Mock, patch
 
 from docling.datamodel.settings import DebugSettings, scoped, settings
 
+from document_processing.docling_adapter.processor import DoclingProcessor
 from document_processing.docling_adapter.processor import _summarize_docling_timings
 
 
 class DoclingTimingSummaryTest(unittest.TestCase):
+    def test_preload_warms_page_orientation_after_pipeline_initialization(self):
+        processor = DoclingProcessor({})
+        processor._pipeline_options = Mock(return_value=object())
+        converter = Mock()
+
+        with (
+            patch("document_processing.docling_adapter.processor.get_converter", return_value=converter) as get_converter,
+            patch("document_processing.docling_adapter.orientation.preload_paddle_page_orientation_model") as warm_orientation,
+        ):
+            processor.preload()
+
+        self.assertEqual(get_converter.call_count, 3)
+        self.assertEqual(converter.initialize_pipeline.call_count, 3)
+        warm_orientation.assert_called_once_with()
+
     def test_pipeline_profile_setting_is_scoped_and_restored(self):
         original = settings.debug.profile_pipeline_timings
 

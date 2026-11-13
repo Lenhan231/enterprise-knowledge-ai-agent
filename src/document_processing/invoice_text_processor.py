@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import hashlib
 import hmac
+import logging
 import os
 from pathlib import Path
 import re
@@ -53,6 +54,7 @@ TABLE_SCHEMA = {
     "total_amount": SCHEMA["total_amount"],
 }
 _MAX_EVIDENCE_CHARS = 12_000
+_LOGGER = logging.getLogger(__name__)
 _TABLE_CHUNK_CHARS = 2_400
 
 
@@ -378,8 +380,12 @@ class InvoiceTextProcessor:
 
     def process(
         self, elements: list[dict[str, Any]], tables: list[dict[str, Any]],
+        *, reference_id: str | None = None,
     ) -> dict[str, Any]:
+        total_started = time.perf_counter()
+        stage_started = time.perf_counter()
         ocr_input = _prepare_extraction_input(elements, tables)
+        input_preparation_ms = (time.perf_counter() - stage_started) * 1000
         if not ocr_input["elements"] and not ocr_input["tables"]:
             raise ValueError("No OCR elements or tables were extracted from the invoice")
 
@@ -430,6 +436,7 @@ class InvoiceTextProcessor:
                 or os.environ.get("DOCUMENT_PROCESSING_INVOICE_ADAPTER_REVISION")
                 or (ADAPTER_REVISION if adapter_id == ADAPTER_ID else "main")
             )
+        stage_started = time.perf_counter()
         jobs = _groq_extraction_jobs(ocr_input) if provider == "groq" else _extraction_jobs(ocr_input)
         request_payload = {
             "model_id": model_id,
@@ -448,92 +455,111 @@ class InvoiceTextProcessor:
             or os.environ.get("DOCUMENT_PROCESSING_INVOICE_MODAL_URL")
             or ""
         ).strip()
-        if provider == "gemini":
-            worker_result = _infer_with_gemini(
-                jobs,
-                api_key=os.environ.get("GEMINI_API") or os.environ.get("GEMINI_API_KEY") or "",
-                model_id=model_id,
-                timeout=min(timeout, 180),
-            )
-        elif provider == "groq":
-            worker_result = _infer_with_groq(
-                jobs,
-                api_key=os.environ.get("GROQ_API_KEY", ""),
-                model_id=model_id,
-                timeout=min(timeout, 60),
-            )
-        elif provider == "modal" and modal_url:
-            if not modal_url.startswith("https://"):
-                raise ValueError("DOCUMENT_PROCESSING_INVOICE_MODAL_URL must use HTTPS")
-            token = os.environ.get("HF_INVOICE_LLM_TOKEN", "")
-            if not token:
-                raise RuntimeError("HF_INVOICE_LLM_TOKEN is required to authenticate with Modal")
-            canonical = json.dumps(
-                request_payload, ensure_ascii=False, separators=(",", ":"),
-            ).encode("utf-8")
-            signed_payload = {
-                **request_payload,
-                "auth_signature": hmac.new(
-                    token.encode("utf-8"), canonical, hashlib.sha256,
-                ).hexdigest(),
-            }
-            request = Request(
-                modal_url,
-                data=json.dumps(signed_payload, ensure_ascii=False).encode("utf-8"),
-                headers={"Content-Type": "application/json"},
-                method="POST",
-            )
-            try:
-                with urlopen(request, timeout=timeout) as response:
-                    worker_result = json.loads(response.read().decode("utf-8"))
-            except HTTPError as error:
-                detail = error.read(1000).decode("utf-8", errors="replace")
-                raise RuntimeError(
-                    f"Modal invoice endpoint returned HTTP {error.code}: {detail}"
-                ) from error
-            except (URLError, TimeoutError, json.JSONDecodeError) as error:
-                raise RuntimeError(f"Modal invoice endpoint request failed: {error}") from error
-        else:
-            from document_processing.vintern_processor import resolve_vintern_python
-
-            python_path = resolve_vintern_python(self.config)
-            if python_path is None or not python_path.is_file():
-                raise RuntimeError(
-                    "Invoice text extraction needs the isolated Transformers runtime; "
-                    "set DOCUMENT_PROCESSING_VINTERN_PYTHON."
+        job_build_ms = (time.perf_counter() - stage_started) * 1000
+        inference_started = time.perf_counter()
+        try:
+            if provider == "gemini":
+                worker_result = _infer_with_gemini(
+                    jobs,
+                    api_key=os.environ.get("GEMINI_API") or os.environ.get("GEMINI_API_KEY") or "",
+                    model_id=model_id,
+                    timeout=min(timeout, 180),
                 )
-            with tempfile.TemporaryDirectory(prefix="invoice-text-") as temp_dir:
-                request_path = Path(temp_dir) / "request.json"
-                response_path = Path(temp_dir) / "response.json"
-                request_path.write_text(
-                    json.dumps(request_payload, ensure_ascii=False), encoding="utf-8",
+            elif provider == "groq":
+                worker_result = _infer_with_groq(
+                    jobs,
+                    api_key=os.environ.get("GROQ_API_KEY", ""),
+                    model_id=model_id,
+                    timeout=min(timeout, 60),
                 )
-                env = os.environ.copy()
-                source_root = str(Path(__file__).resolve().parents[1])
-                env["PYTHONPATH"] = os.pathsep.join(
-                    filter(None, [source_root, env.get("PYTHONPATH", "")])
+            elif provider == "modal" and modal_url:
+                if not modal_url.startswith("https://"):
+                    raise ValueError("DOCUMENT_PROCESSING_INVOICE_MODAL_URL must use HTTPS")
+                token = os.environ.get("HF_INVOICE_LLM_TOKEN", "")
+                if not token:
+                    raise RuntimeError("HF_INVOICE_LLM_TOKEN is required to authenticate with Modal")
+                canonical = json.dumps(
+                    request_payload, ensure_ascii=False, separators=(",", ":"),
+                ).encode("utf-8")
+                signed_payload = {
+                    **request_payload,
+                    "auth_signature": hmac.new(
+                        token.encode("utf-8"), canonical, hashlib.sha256,
+                    ).hexdigest(),
+                }
+                request = Request(
+                    modal_url,
+                    data=json.dumps(signed_payload, ensure_ascii=False).encode("utf-8"),
+                    headers={"Content-Type": "application/json"},
+                    method="POST",
                 )
                 try:
-                    completed = subprocess.run(
-                        [str(python_path), "-m", "document_processing.invoice_text_worker",
-                         str(request_path), str(response_path)],
-                        capture_output=True, text=True, env=env, timeout=timeout, check=False,
-                    )
-                except subprocess.TimeoutExpired as error:
+                    with urlopen(request, timeout=timeout) as response:
+                        worker_result = json.loads(response.read().decode("utf-8"))
+                except HTTPError as error:
+                    detail = error.read(1000).decode("utf-8", errors="replace")
                     raise RuntimeError(
-                        f"Invoice text worker exceeded the {timeout}s timeout"
+                        f"Modal invoice endpoint returned HTTP {error.code}: {detail}"
                     ) from error
-                if completed.returncode != 0:
-                    details = (completed.stderr or completed.stdout).strip()[-3000:]
-                    raise RuntimeError(
-                        "Invoice text model failed in its isolated runtime. "
-                        f"{details or f'Worker exited with code {completed.returncode}.'}"
-                    )
-                try:
-                    worker_result = json.loads(response_path.read_text(encoding="utf-8"))
-                except (OSError, json.JSONDecodeError) as error:
-                    raise RuntimeError("Invoice text worker returned invalid output") from error
+                except (URLError, TimeoutError, json.JSONDecodeError) as error:
+                    raise RuntimeError(f"Modal invoice endpoint request failed: {error}") from error
+            else:
+                from document_processing.vintern_processor import resolve_vintern_python
 
+                python_path = resolve_vintern_python(self.config)
+                if python_path is None or not python_path.is_file():
+                    raise RuntimeError(
+                        "Invoice text extraction needs the isolated Transformers runtime; "
+                        "set DOCUMENT_PROCESSING_VINTERN_PYTHON."
+                    )
+                with tempfile.TemporaryDirectory(prefix="invoice-text-") as temp_dir:
+                    request_path = Path(temp_dir) / "request.json"
+                    response_path = Path(temp_dir) / "response.json"
+                    request_path.write_text(
+                        json.dumps(request_payload, ensure_ascii=False), encoding="utf-8",
+                    )
+                    env = os.environ.copy()
+                    source_root = str(Path(__file__).resolve().parents[1])
+                    env["PYTHONPATH"] = os.pathsep.join(
+                        filter(None, [source_root, env.get("PYTHONPATH", "")])
+                    )
+                    try:
+                        completed = subprocess.run(
+                            [str(python_path), "-m", "document_processing.invoice_text_worker",
+                             str(request_path), str(response_path)],
+                            capture_output=True, text=True, env=env, timeout=timeout, check=False,
+                        )
+                    except subprocess.TimeoutExpired as error:
+                        raise RuntimeError(
+                            f"Invoice text worker exceeded the {timeout}s timeout"
+                        ) from error
+                    if completed.returncode != 0:
+                        details = (completed.stderr or completed.stdout).strip()[-3000:]
+                        raise RuntimeError(
+                            "Invoice text model failed in its isolated runtime. "
+                            f"{details or f'Worker exited with code {completed.returncode}.'}"
+                        )
+                    try:
+                        worker_result = json.loads(response_path.read_text(encoding="utf-8"))
+                    except (OSError, json.JSONDecodeError) as error:
+                        raise RuntimeError("Invoice text worker returned invalid output") from error
+        finally:
+            _LOGGER.info(
+                "INVOICE_EXTRACTION_COMPONENT %s",
+                json.dumps(
+                    {
+                        "invoice_id": reference_id,
+                        "component": "provider_inference",
+                        "provider": provider,
+                        "model": model_id,
+                        "job_count": len(jobs),
+                        "elapsed_ms": round((time.perf_counter() - inference_started) * 1000, 2),
+                    },
+                    separators=(",", ":"),
+                ),
+            )
+
+        response_started = time.perf_counter()
         responses = worker_result.get("responses", [])
         parsed_jobs: list[tuple[dict[str, Any], dict[str, Any]]] = []
         invalid_sources = []
@@ -560,7 +586,7 @@ class InvoiceTextProcessor:
             parse_error = "Invalid JSON/schema from: " + ", ".join(invalid_sources)
         elif not parsed_jobs:
             parse_error = "Model response did not match invoice.v1"
-        return {
+        output = {
             "model": model_id,
             "revision": worker_result.get("revision", revision),
             "adapter": worker_result.get("adapter", adapter_id),
@@ -578,6 +604,24 @@ class InvoiceTextProcessor:
                 "invalid_jobs": invalid_sources,
             },
         }
+        _LOGGER.info(
+            "INVOICE_EXTRACTION_COMPONENTS %s",
+            json.dumps(
+                {
+                    "invoice_id": reference_id,
+                    "provider": provider,
+                    "model": model_id,
+                    "job_count": len(jobs),
+                    "input_preparation_ms": round(input_preparation_ms, 2),
+                    "job_build_ms": round(job_build_ms, 2),
+                    "response_parse_merge_ms": round((time.perf_counter() - response_started) * 1000, 2),
+                    "total_ms": round((time.perf_counter() - total_started) * 1000, 2),
+                    "provider_reported_inference_seconds": (worker_result.get("metrics") or {}).get("inference_seconds"),
+                },
+                separators=(",", ":"),
+            ),
+        )
+        return output
 
 
 def _infer_with_groq(

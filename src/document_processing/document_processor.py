@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
+import logging
+import time
 from typing import Any
 from io import BytesIO
 import math
@@ -15,6 +18,7 @@ SUPPORTED_FORMATS = frozenset({
     ".pdf", ".docx", ".pptx", ".xlsx", ".csv", ".txt", ".md",
     ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".svg", ".webp",
 })
+_LOGGER = logging.getLogger(__name__)
 
 
 def render_webp(content: bytes) -> bytes:
@@ -98,11 +102,30 @@ class DocumentProcessor:
             processor_config = {**self.config, "parser_engine": "docling", "intent": "document"}
             parser_content = render_svg(content) if suffix == ".svg" else render_webp(content) if suffix == ".webp" else content
             parser_metadata = {**common, "format": "PNG"} if suffix in {".svg", ".webp"} else common
+            docling_started = time.perf_counter()
             result = DoclingProcessor(processor_config).process(
                 parser_content, None, {"content": parser_content, "metadata": parser_metadata}
             )
+            _LOGGER.info(
+                "DOCUMENT_PROCESS_COMPONENT %s",
+                json.dumps({
+                    "invoice_id": metadata.get("invoice_id"),
+                    "component": "invoice_docling_result",
+                    "elapsed_ms": round((time.perf_counter() - docling_started) * 1000, 2),
+                }, separators=(",", ":")),
+            )
+            extraction_started = time.perf_counter()
             extraction = InvoiceTextProcessor(self.config).process(
                 result.get("elements", []), result.get("tables", []),
+                reference_id=metadata.get("invoice_id"),
+            )
+            _LOGGER.info(
+                "DOCUMENT_PROCESS_COMPONENT %s",
+                json.dumps({
+                    "invoice_id": metadata.get("invoice_id"),
+                    "component": "invoice_extraction_result",
+                    "elapsed_ms": round((time.perf_counter() - extraction_started) * 1000, 2),
+                }, separators=(",", ":")),
             )
             result["invoice_extraction"] = extraction
             result.setdefault("metadata", {}).update({
@@ -130,6 +153,7 @@ class DocumentProcessor:
             result = DoclingProcessor(processor_config).process(
                 parser_content, None, {"content": parser_content, "metadata": parser_metadata}
             )
+        normalization_started = time.perf_counter()
         elements = result.get("elements", [])
         tables = result.get("tables", [])
         if suffix in {".png", ".jpg", ".jpeg", ".svg", ".webp"}:
@@ -209,6 +233,17 @@ class DocumentProcessor:
         })
         result["elements"] = elements
         result["tables"] = tables
+        if intent == "invoice":
+            _LOGGER.info(
+                "DOCUMENT_PROCESS_COMPONENT %s",
+                json.dumps({
+                    "invoice_id": metadata.get("invoice_id"),
+                    "component": "result_normalization",
+                    "element_count": len(elements),
+                    "table_count": len(tables),
+                    "elapsed_ms": round((time.perf_counter() - normalization_started) * 1000, 2),
+                }, separators=(",", ":")),
+            )
         return result
 
     @staticmethod

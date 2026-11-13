@@ -18,6 +18,37 @@ from document_processing.docling_adapter.scanned.vietocr import VietOcrModel
 
 
 class VietOcrPostprocessingTest(unittest.TestCase):
+    def test_vietocr_recognizes_bounded_batches_in_order(self):
+        from document_processing.docling_adapter.scanned import vietocr as vietocr_module
+
+        model = VietOcrModel.__new__(VietOcrModel)
+        batch_sizes = []
+
+        def predict_batch(images):
+            batch_sizes.append(len(images))
+            return [f"text-{len(batch_sizes)}-{index}" for index in range(len(images))]
+
+        model.recognizer = SimpleNamespace(predict_batch=predict_batch)
+        lines = [np.zeros((4, 8, 3), dtype=np.uint8) for _ in range(
+            vietocr_module._VIETOCR_BATCH_SIZE + 2
+        )]
+
+        results = model._recognize_lines(lines)
+
+        self.assertEqual(batch_sizes, [vietocr_module._VIETOCR_BATCH_SIZE, 2])
+        self.assertEqual([route for _text, route in results], ["default"] * len(lines))
+        self.assertEqual(results[0][0], "text-1-0")
+        self.assertEqual(results[-1][0], "text-2-1")
+
+    def test_vietocr_batch_recognition_falls_back_to_single_predictions(self):
+        model = VietOcrModel.__new__(VietOcrModel)
+        model.recognizer = SimpleNamespace(predict=lambda _image: "  recognized  ")
+        lines = [np.zeros((4, 8, 3), dtype=np.uint8) for _ in range(2)]
+
+        self.assertEqual(model._recognize_lines(lines), [
+            ("recognized", "default"), ("recognized", "default")
+        ])
+
     def test_merges_only_ocr_fragments_inside_raw_text_region(self):
         def element(text, bbox, page=1):
             return {"text": text, "metadata": {"page_number": page, "bbox": bbox,

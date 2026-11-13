@@ -1,6 +1,7 @@
 import json
 import unittest
-from threading import Barrier
+from threading import Barrier, Event
+from time import perf_counter
 from unittest.mock import patch
 
 from document_processing.document_processor import DocumentProcessor
@@ -60,6 +61,36 @@ class InvoiceTextProcessorTest(unittest.TestCase):
         self.assertEqual(result["metrics"]["prompt_tokens"], 20)
         self.assertEqual(result["metrics"]["generated_tokens"], 4)
         self.assertIn("request_inference_seconds", result["metrics"])
+
+    def test_gemini_job_failure_does_not_wait_for_in_flight_sibling(self):
+        both_requests_started = Barrier(2)
+        release_slow_request = Event()
+
+        def fake_urlopen(request, timeout):
+            prompt = request.data.decode("utf-8")
+            both_requests_started.wait(timeout=2)
+            if '"text": "slow"' in prompt:
+                release_slow_request.wait(timeout=2)
+                raise RuntimeError("fake sibling request finished")
+            raise RuntimeError("fake Gemini timeout")
+
+        started = perf_counter()
+        try:
+            with patch("document_processing.invoice_text_processor.urlopen", side_effect=fake_urlopen):
+                with self.assertRaisesRegex(RuntimeError, "fake Gemini timeout"):
+                    _infer_with_gemini(
+                        [
+                            {"prompt": "fast failure", "max_new_tokens": 256},
+                            {"prompt": "slow", "max_new_tokens": 1024},
+                        ],
+                        api_key="test-key",
+                        model_id="gemini-test",
+                        timeout=3,
+                    )
+            elapsed = perf_counter() - started
+            self.assertLess(elapsed, 0.5)
+        finally:
+            release_slow_request.set()
 
     def test_schema_is_compact_and_rejects_tax_id_fields(self):
         self.assertEqual(

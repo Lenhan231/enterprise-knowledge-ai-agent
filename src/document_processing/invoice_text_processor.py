@@ -12,7 +12,7 @@ import re
 import subprocess
 import tempfile
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed, wait
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote
@@ -767,7 +767,6 @@ def _infer_with_gemini(
         except Exception:
             for future in future_indexes:
                 future.cancel()
-            wait(future_indexes)
             raise
 
     completed = [result for result in results if result is not None]

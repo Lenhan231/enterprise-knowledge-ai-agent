@@ -30,6 +30,13 @@ and total values. The merge accepts totals from OCR text or table evidence;
 an item's `amount` is never copied into `total_amount` without a matching total
 label in the source.
 
+If extraction fails after Docling completes, the document-processing process
+keeps that Docling result in a bounded, process-local cache for 15 minutes. A
+retry of the same file with the same parser settings can reuse OCR and table
+results while still calling the selected extraction provider. The cache holds
+up to four results, with an 8 MiB total limit and a 2 MiB per-result limit; it
+does not survive a service restart.
+
 For GPU inference, deploy `modal_invoice_endpoint.py` from the repository root
 with `modal deploy src/document_processing/modal_invoice_endpoint.py`. The
 Modal Secret `invoice-hf-token` must expose `HF_INVOICE_LLM_TOKEN`. Set the

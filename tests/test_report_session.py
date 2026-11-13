@@ -17,6 +17,7 @@ async function check(statusCode,changeSession) {
   const context={reportConversationId:'report',sessionGeneration:1,sessionSubject:'user',
     $:key=>nodes[key]||=( {value:'inventory',files:[],dataset:{},addEventListener(event,fn){handler=fn;}} ),
     FormData:class {append(){} set(){}},
+    backendFetch:(...args)=>context.fetch(...args),
     fetch:async()=>{fetches++;return {status:statusCode,ok:false,json:async()=>({detail:{confirmation_required:true}})};},
     confirmReportPlan:async()=>{if(changeSession)context.sessionGeneration++;return {templateChoice:'suggested'};},
     clearExpiredSession(){cleared++;},

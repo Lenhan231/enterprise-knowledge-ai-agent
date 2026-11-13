@@ -1,0 +1,108 @@
+"""Original-query dense search plus automatically translated EN/VI BM25 fusion."""
+from concurrent.futures import ThreadPoolExecutor
+from math import isfinite
+from time import perf_counter
+
+from openai import APIError
+
+from core.retrieval.retrieval import make_chunk_id
+from core.latency import measure
+
+
+@measure("retrieval_fusion")
+def fuse(rankings, weights, k=60):
+    scores = {}
+    for ranking, weight in zip(rankings, weights):
+        for rank, chunk_id in enumerate(dict.fromkeys(ranking), 1):
+            scores[chunk_id] = scores.get(chunk_id, 0.0) + weight / (k + rank)
+    return sorted(scores, key=lambda chunk_id: (-scores[chunk_id], chunk_id)), scores
+
+
+def search(repository, vector, request, get_translator, *, company=None, roles=None,
+           document_ids=None, document_languages=None, query_language="auto", metadata_filter=None,
+           dense_weight=1.0, bm25_weight=2.0, rrf_k=60, embed=None):
+    if query_language not in {"auto", "en", "vn"}:
+        raise ValueError("query_language must be auto, en or vn")
+    if len(request.query) > 4000:
+        raise ValueError("Translated queries are limited to 4000 characters")
+    if (not isfinite(dense_weight) or not isfinite(bm25_weight)
+            or min(dense_weight, bm25_weight) < 0 or dense_weight + bm25_weight == 0
+            or not isfinite(rrf_k) or rrf_k <= 0):
+        raise ValueError("Fusion needs finite nonnegative weights and a positive rrf_k")
+    if document_languages is not None:
+        if (document_ids is None or not isinstance(document_languages, dict)
+                or any(document_languages.get(doc) not in {"en", "vn"} for doc in document_ids)):
+            raise ValueError("Language-aware retrieval needs a verified en/vn mapping for every scoped document")
+    filters = {"company": company, "roles": roles}
+    if document_ids is not None:
+        filters["document_ids"] = document_ids
+    if metadata_filter:
+        filters["metadata_filter"] = metadata_filter
+    candidate_k = request.top_k * 10
+    # The three searches overlap each other and the translation call; each pays a ~0.4 s DB round trip.
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        dense_future = pool.submit(
+            repository.similarity_search, vector, candidate_k, query=request.query, method="dense", **filters)
+        details = {"language_aware": document_languages is not None,
+                   "document_ids": document_ids, "candidate_k": candidate_k,
+                   "dense_weight": dense_weight, "bm25_weight": bm25_weight, "rrf_k": rrf_k,
+                   "lexical_queries": None, "dense_fallback": False,
+                   "translation_error": None, "effective_method": "translated_hybrid"}
+        started = perf_counter()
+        try:
+            with measure("query_translation"):
+                translator = get_translator()
+                details["translation_model"] = getattr(translator.llm, "model_name", None)
+                queries = translator.translate(request.query, query_language)
+        except (APIError, ValueError, RuntimeError) as error:
+            details.update(dense_fallback=True, translation_error=type(error).__name__,
+                           effective_method="dense")
+            with measure("database_retrieval"):
+                return dense_future.result()[:request.top_k], details
+        finally:
+            details["translation_latency_ms"] = (perf_counter() - started) * 1000
+        details["lexical_queries"] = queries
+        if request.query not in queries.values():
+            details["normalized_query"] = queries["vn"]  # diacritics restored by the translator
+        restored_future = None
+        if embed is not None and details.get("normalized_query"):
+            # The raw-text dense search started before the restored question existed; unaccented Vietnamese
+            # embeds poorly, so add a dense search on the restored text and fuse it with the raw one below.
+            restored = details["normalized_query"]
+            restored_future = pool.submit(lambda: repository.similarity_search(
+                embed(restored), candidate_k, query=restored, method="dense", **filters))
+        scopes, lexical_futures = {}, []
+        for lang in ("en", "vn"):
+            scope = document_ids
+            if document_languages is not None:
+                scope = [doc for doc in document_ids if document_languages[doc] == lang]
+            scopes[lang] = scope
+            options = dict(filters)
+            if scope is not None:
+                options["document_ids"] = scope
+            lexical_futures.append(pool.submit(
+                repository.similarity_search, None, candidate_k, query=queries[lang], method="bm25", **options))
+        # Only the DB wait left after translation; the searches themselves run outside the request context.
+        with measure("database_retrieval"):
+            dense = dense_future.result()
+            lexical_results = [future.result() for future in lexical_futures]
+            restored_dense = restored_future.result() if restored_future is not None else None
+    indexed = {}
+    def ids(chunks):
+        ranking = []
+        for chunk in chunks:
+            key = make_chunk_id(chunk.document_id, chunk.chunk_index)
+            indexed[key] = chunk
+            ranking.append(key)
+        return ranking
+    dense_ids = ids(dense)
+    if restored_dense is not None:
+        dense_ids, _ = fuse([dense_ids, ids(restored_dense)], [1.0, 1.0], rrf_k)
+        details["restored_dense_search"] = True
+    lexical = [ids(chunks) for chunks in lexical_results]
+    details["lexical_document_scopes"] = scopes
+    lexical_ids, _ = fuse(lexical, [1.0, 1.0], rrf_k)
+    ranking, scores = fuse([dense_ids, lexical_ids[:candidate_k]],
+                           [dense_weight, bm25_weight], rrf_k)
+    return [indexed[key].model_copy(update={"retrieval_score": scores[key]})
+            for key in ranking[:request.top_k]], details

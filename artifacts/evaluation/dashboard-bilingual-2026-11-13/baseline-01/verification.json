@@ -1,0 +1,17 @@
+{
+  "unique_prompts": 50,
+  "records": 50,
+  "application_source_unchanged": true,
+  "changed_source_paths": [],
+  "question_set_sha256": "9143996790b6e98bd6baeb9e93a1e571eebe92a4f19584aa8e9c22c13cccd50b",
+  "scorer_self_check": "passed",
+  "cleanup_warning": "All 50 attempts were saved; repository.close raised TimeoutError after completion. Scoring was completed separately.",
+  "source_files_checked": 162,
+  "ignored_runtime_cache_files": 39,
+  "supplied_verified_answers_match": [
+    "B01",
+    "B02",
+    "B04",
+    "B11"
+  ]
+}

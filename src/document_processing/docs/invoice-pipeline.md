@@ -37,9 +37,9 @@ results while still calling the selected extraction provider. The cache holds
 up to four results, with an 8 MiB total limit and a 2 MiB per-result limit; it
 does not survive a service restart.
 
-The OCR pass classifies text-line orientation in batches of up to 16 crops per
-page. It preserves crop order and applies the same orientation confidence and
-rotation rules as single-crop inference.
+The OCR pass classifies text-line orientation and recognizes VietOCR text in
+batches of up to 16 line crops per page. Both preserve crop order; orientation
+uses the same confidence and rotation rules as single-crop inference.
 
 For GPU inference, deploy `modal_invoice_endpoint.py` from the repository root
 with `modal deploy src/document_processing/modal_invoice_endpoint.py`. The

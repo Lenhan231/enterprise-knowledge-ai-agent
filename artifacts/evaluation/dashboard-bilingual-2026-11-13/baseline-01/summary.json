@@ -1,0 +1,129 @@
+{
+  "overall": {
+    "prompts": 50,
+    "baseline_passes": 15,
+    "expected_behavior_passes": 16,
+    "executed": 16,
+    "value_matches": 15,
+    "charts": {
+      "line": 2,
+      "bar": 4
+    },
+    "grounded_charts": 6,
+    "median_ms": 12003.49,
+    "p95_ms": 13553.98
+  },
+  "by_language": {
+    "english": {
+      "prompts": 25,
+      "baseline_passes": 6,
+      "expected_behavior_passes": 7,
+      "executed": 7,
+      "value_matches": 6,
+      "charts": {
+        "line": 1,
+        "bar": 2
+      },
+      "grounded_charts": 3,
+      "median_ms": 12006.2,
+      "p95_ms": 24073.47
+    },
+    "vietnamese": {
+      "prompts": 25,
+      "baseline_passes": 9,
+      "expected_behavior_passes": 9,
+      "executed": 9,
+      "value_matches": 9,
+      "charts": {
+        "line": 1,
+        "bar": 2
+      },
+      "grounded_charts": 3,
+      "median_ms": 12002.69,
+      "p95_ms": 12011.02
+    }
+  },
+  "by_difficulty": {
+    "Advanced": {
+      "prompts": 12,
+      "baseline_passes": 0,
+      "expected_behavior_passes": 0,
+      "executed": 0,
+      "value_matches": 0,
+      "charts": {},
+      "grounded_charts": 0,
+      "median_ms": 12008.615000000002,
+      "p95_ms": 12020.07
+    },
+    "Basic": {
+      "prompts": 10,
+      "baseline_passes": 7,
+      "expected_behavior_passes": 7,
+      "executed": 7,
+      "value_matches": 7,
+      "charts": {},
+      "grounded_charts": 0,
+      "median_ms": 3029.67,
+      "p95_ms": 5441.45
+    },
+    "Clarification": {
+      "prompts": 2,
+      "baseline_passes": 0,
+      "expected_behavior_passes": 0,
+      "executed": 0,
+      "value_matches": 0,
+      "charts": {},
+      "grounded_charts": 0,
+      "median_ms": 12002.515,
+      "p95_ms": 12009.82
+    },
+    "Expert": {
+      "prompts": 6,
+      "baseline_passes": 0,
+      "expected_behavior_passes": 0,
+      "executed": 0,
+      "value_matches": 0,
+      "charts": {},
+      "grounded_charts": 0,
+      "median_ms": 12006.310000000001,
+      "p95_ms": 12016.09
+    },
+    "Intermediate": {
+      "prompts": 18,
+      "baseline_passes": 8,
+      "expected_behavior_passes": 9,
+      "executed": 9,
+      "value_matches": 8,
+      "charts": {
+        "line": 2,
+        "bar": 4
+      },
+      "grounded_charts": 6,
+      "median_ms": 12004.08,
+      "p95_ms": 24197.65
+    },
+    "Unsupported": {
+      "prompts": 2,
+      "baseline_passes": 0,
+      "expected_behavior_passes": 0,
+      "executed": 0,
+      "value_matches": 0,
+      "charts": {},
+      "grounded_charts": 0,
+      "median_ms": 12009.08,
+      "p95_ms": 12015.67
+    }
+  },
+  "chart_statuses": {
+    "table_only": 10,
+    "unavailable": 34,
+    "rendered": 6
+  },
+  "failed_phases": {
+    "ambiguity_decision": 4,
+    "ambiguity_service": 29,
+    "result_mismatch": 1,
+    "planning_clarification": 1
+  },
+  "reference_errors": {}
+}

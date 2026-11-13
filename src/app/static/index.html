@@ -3,12 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f3f6fa">
+  <meta name="theme-color" content="#f2f5f4">
   <title>Commerce Intelligence · Operations</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css?v=feedback-20261113b">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css?v=redesign-20261113a">
+  <link rel="stylesheet" href="/static/redesign.css?v=redesign-20261113a">
   <script>
     (function() {
       const saved = localStorage.getItem("app_theme");
@@ -29,7 +30,7 @@
 
   <main id="login-view" class="login-view">
     <form id="login-form" class="login-card">
-      <p class="eyebrow">SECURE ENTERPRISE ACCESS</p>
+      <p class="eyebrow">Secure enterprise access</p>
       <h1>Sign in to your knowledge workspace</h1>
       <label for="username">Username</label>
       <input id="username" name="username" autocomplete="username" placeholder="e.g. admin, analyst, document-processing-owner" required>
@@ -49,6 +50,7 @@
         <span><strong>Enterprise Knowledge AI</strong><small>Commerce operations workspace</small></span>
       </a>
       <nav id="workspace-tabs" class="workspace-tabs" role="tablist" aria-label="Workspace navigation">
+        <button id="tab-button-general-chat" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-general-chat" data-tab-target="general-chat" aria-label="General Chat" title="General Chat"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4V5Z"/><path d="M8 9h8m-8 3h5"/></svg><span class="nav-label">General Chat</span></button>
         <button id="tab-button-knowledge" class="workspace-tab active" type="button" role="tab" aria-selected="true" aria-controls="tab-knowledge" data-tab-target="knowledge" aria-label="Knowledge Q&amp;A" title="Knowledge Q&amp;A"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v12H8l-4 4V4Z"/></svg><span class="nav-label">Knowledge Q&amp;A</span></button>
         <button id="tab-button-upload" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-upload" data-tab-target="upload" hidden aria-label="Upload Documents" title="Upload Documents"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5M4 16v5h16v-5"/></svg><span class="nav-label">Upload Documents</span></button>
         <button id="tab-button-invoice-review" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-invoice-review" data-tab-target="invoice-review" hidden aria-label="Invoice Review" title="Invoice Review"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Zm3 5h6m-6 4h6"/></svg><span class="nav-label">Invoice Review</span></button>
@@ -59,33 +61,32 @@
         <button id="tab-button-monitoring" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-monitoring" data-tab-target="monitoring" hidden aria-label="Agent Monitoring" title="Agent Monitoring"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="nav-label">Agent Monitoring</span></button>
       </nav>
       <div class="topbar-status sidebar-account">
-        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle light and dark mode" title="Toggle theme">
-          <span class="theme-icon light-icon" aria-hidden="true">Light</span>
-          <span class="theme-icon dark-icon" aria-hidden="true">Dark</span>
+        <button id="theme-toggle" class="theme-toggle side-row" type="button" aria-label="Toggle light and dark mode" title="Toggle theme">
+          <span class="side-icon"><span class="theme-icon light-icon" aria-hidden="true"></span><span class="theme-icon dark-icon" aria-hidden="true"></span></span>
+          <span class="nav-label"><span class="theme-label-light">Light mode</span><span class="theme-label-dark">Dark mode</span></span>
         </button>
-        <span class="status-dot"></span>
-        <span id="connection-status">Sign in required</span>
-        <span id="user-badge" hidden></span>
-        <button id="logout-button" class="logout-btn" hidden>Sign out</button>
+        <div class="account-row side-row" title="Signed-in account">
+          <span class="side-icon account-avatar" aria-hidden="true"><span id="account-initial">?</span><span class="status-dot"></span></span>
+          <span class="nav-label account-text"><span id="user-badge" hidden></span><span id="connection-status">Sign in required</span></span>
+        </div>
+        <button id="logout-button" class="logout-btn side-row" hidden title="Sign out"><span class="side-icon logout-icon" aria-hidden="true"></span><span class="nav-label">Sign out</span></button>
       </div>
     </aside>
     <main id="workspace-main" class="page">
     <section class="intro">
       <div>
-        <p class="eyebrow">FOUR SPECIALIST AGENTS · ONE WORKSPACE</p>
-        <h1>Commerce intelligence,<br><span>from evidence to action.</span></h1>
-        <p class="intro-copy">Ask the knowledge agent for sourced guidance, the analytics agent for business metrics, the inventory agent for stock exceptions, or the report agent for a decision-ready summary.</p>
+        <h1>Ask your company documents</h1>
+        <p class="intro-copy">Answers quote the passage they come from, and every claim is checked against it before you see it.</p>
       </div>
       <div class="corpus-scope">
-        <span>ENTERPRISE SCOPE</span>
-        <strong>Commerce demo · synthetic data</strong>
+        <strong>Demo data (synthetic)</strong>
       </div>
     </section>
 
     <section class="agent-overview" aria-labelledby="agent-overview-title">
       <div class="section-heading">
         <div>
-          <p class="eyebrow">YOUR AGENT TEAM</p>
+          <p class="eyebrow">Your agent team</p>
           <h2 id="agent-overview-title">Choose the right specialist</h2>
         </div>
         <span class="agent-team-badge"><span aria-hidden="true"></span> 4 agents available</span>
@@ -125,28 +126,28 @@
     <section class="stats" aria-label="Knowledge base coverage" hidden>
       <article class="stat-card">
         <div>
-          <span class="stat-label">Enterprises</span>
+          <span class="stat-label">domains</span>
           <strong id="company-name">—</strong>
           <span class="stat-note">Visible in your role scope</span>
         </div>
       </article>
       <article class="stat-card">
         <div>
-          <span class="stat-label">Indexed Documents</span>
+          <span class="stat-label">documents</span>
           <strong id="document-count">—</strong>
           <span class="stat-note">Role-visible searchable sources</span>
         </div>
       </article>
       <article class="stat-card">
         <div>
-          <span class="stat-label">Passages</span>
+          <span class="stat-label">passages</span>
           <strong id="chunk-count">—</strong>
           <span class="stat-note">Available for document retrieval</span>
         </div>
       </article>
       <article class="stat-card source-stat">
         <div>
-          <span class="stat-label">Processing</span>
+          <span class="stat-label">processing</span>
           <strong id="processing-count">—</strong>
           <span class="stat-note">Uploaded / OCR / chunking</span>
         </div>
@@ -154,49 +155,73 @@
     </section>
 
     <div class="workspace-content">
+    <section id="tab-general-chat" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-general-chat" hidden>
+      <section class="general-chat" aria-labelledby="general-chat-title">
+        <header class="general-chat-heading">
+          <div class="general-chat-heading-copy"><p class="eyebrow">Enterprise AI</p><h2 id="general-chat-title">General Chat</h2></div>
+          <button id="new-general-chat" type="button" class="general-chat-new"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>New chat</span></button>
+        </header>
+        <div class="general-chat-content">
+          <div id="general-chat-welcome" class="general-chat-welcome">
+            <span class="general-chat-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 4v24M4 16h24M7.5 7.5l17 17m0-17-17 17"/></svg></span>
+            <h3>Hôm nay bạn muốn tìm gì?</h3>
+            <p>Hỏi tự nhiên về tài liệu, khách hàng hoặc hoạt động kinh doanh.</p>
+            <div id="general-chat-prompts" class="general-chat-prompts" role="group" aria-label="Gợi ý câu hỏi">
+              <button type="button" data-general-chat-prompt="Hiện có bao nhiêu khách hàng trong dữ liệu?">Đếm khách hàng</button>
+              <button type="button" data-general-chat-prompt="Khách hàng nào có nhiều đơn hàng nhất?">Tìm khách hàng mua nhiều</button>
+              <button type="button" data-general-chat-prompt="Tìm hướng dẫn chuyển hàng khi nơi gửi dư hàng và nơi nhận thiếu hàng.">Tra hướng dẫn tồn kho</button>
+            </div>
+          </div>
+          <div id="general-chat-transcript" class="general-chat-transcript" aria-live="polite" aria-relevant="additions text" hidden></div>
+        </div>
+        <form id="general-chat-form" class="general-chat-composer">
+          <label class="visually-hidden" for="general-chat-question">Message General Chat</label>
+          <textarea id="general-chat-question" minlength="3" maxlength="2000" required placeholder="Nhắn tin cho agent…" rows="1" aria-describedby="general-chat-note"></textarea>
+          <button id="general-chat-send" type="submit" aria-label="Gửi tin nhắn" title="Gửi tin nhắn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12 20 4l-5 16-3-7-8-1Zm8 1 8-9"/></svg></button>
+        </form>
+        <p id="general-chat-note" class="general-chat-note">Enter để gửi · Shift + Enter để xuống dòng · Câu trả lời theo quyền truy cập của bạn</p>
+      </section>
+    </section>
+
     <!-- TAB 1: KNOWLEDGE / Q&A -->
     <section id="tab-knowledge" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-knowledge">
       <section class="ask-panel" aria-labelledby="ask-title">
-        <div class="ask-heading">
-          <div>
-            <p class="eyebrow">SOURCE-GROUNDED RETRIEVAL (HYBRID RAG)</p>
-            <h2 id="ask-title">What would you like to know?</h2>
-          </div>
-          <span class="grounded-badge">Cited source grounding</span>
-        </div>
+        <h2 id="ask-title" class="visually-hidden">Ask a question</h2>
         <form id="ask-form">
           <label class="visually-hidden" for="question">Search or ask a question about company documents</label>
           <div class="textarea-wrapper">
-          <textarea id="question" minlength="3" maxlength="2000" required placeholder="Example: What evidence should be checked before transferring inventory?"></textarea>
-          </div>
-          <div class="quick-prompts" id="quick-prompts">
-            <span class="quick-prompt-label">Quick prompts:</span>
-            <button type="button" class="quick-chip" data-prompt="What evidence should be checked before transferring inventory when stockout and overstock flags overlap?">Inventory guidance</button>
-            <button type="button" class="quick-chip" data-prompt="How can an experiment distinguish incremental promotion sales from attributed sales?">Campaign measurement</button>
-            <button type="button" class="quick-chip" data-prompt="Which factors should a retailer compare before choosing an ecommerce delivery service?">Delivery planning</button>
+          <textarea id="question" minlength="3" maxlength="2000" required placeholder="Ask about a policy, a process or the sales data…"></textarea>
           </div>
           <div class="ask-controls">
-            <span id="question-hint">Use precise questions for exact passage retrieval and primary source citations.</span>
+            <span id="question-hint" class="visually-hidden">Press Ask to send. Answers cite their sources.</span>
             <div class="ask-actions">
               <label class="agent-mode-control" for="agent-mode">Route to
                 <select id="agent-mode" name="agent_mode">
                   <option value="auto" selected>Auto</option>
-                  <option value="knowledge">Knowledge</option>
-                  <option value="sql">Analytics</option>
+                  <option value="knowledge">Documents only</option>
+                  <option value="sql">Sales data</option>
                 </select>
               </label>
               <button id="new-conversation" type="button">New conversation</button>
               <button id="ask-button" type="submit" class="submit-query-btn">
-                <span>Ask agent</span>
+                <span>Ask</span>
               </button>
             </div>
           </div>
         </form>
+        <div class="quick-prompts" id="quick-prompts">
+            <span class="quick-prompt-label visually-hidden">Example questions</span>
+            <button type="button" class="quick-chip" data-prompt="Khi nghỉ việc tôi cần bàn giao những gì?">Bàn giao khi nghỉ việc</button>
+            <button type="button" class="quick-chip" data-prompt="Đi công tác thì được thanh toán khách sạn tối đa bao nhiêu một đêm?">Hạn mức khách sạn công tác</button>
+            <button type="button" class="quick-chip" data-prompt="What evidence should be checked before transferring inventory when stockout and overstock flags overlap?">Inventory transfer checks</button>
+          </div>
         <div id="answer-panel" class="answer-panel" hidden aria-live="polite"></div>
       </section>
 
+      <details id="report-fold" class="report-fold">
+        <summary><span class="report-fold-title">Generate a report</span><span class="report-fold-note">Turn documents and sales data into a structured brief, as Markdown or DOCX</span></summary>
       <section id="report-agent-form-section" class="report-agent-panel" aria-labelledby="report-agent-form-title" hidden>
-        <div class="section-heading"><div><p class="eyebrow">REPORT AGENT</p><h2 id="report-agent-form-title">Generate an evidence-backed report</h2></div></div>
+        <h2 id="report-agent-form-title" class="visually-hidden">Generate an evidence-backed report</h2>
         <form id="report-agent-form" class="review-form">
           <label for="report-agent-question">Decision question</label>
           <textarea id="report-agent-question" name="question" minlength="3" maxlength="2000" required placeholder="What decision should this report support?"></textarea>
@@ -220,6 +245,7 @@
           <p id="report-agent-status" class="corpus-note" role="status" aria-live="polite"></p>
         </form>
       </section>
+      </details>
 
     </section>
 
@@ -228,7 +254,7 @@
       <section id="upload-section" class="upload-section" hidden>
         <div class="section-heading">
           <div>
-            <p class="eyebrow">KNOWLEDGE SOURCES</p>
+            <p class="eyebrow">Knowledge sources</p>
             <h2>Upload a knowledge source</h2>
             <p class="corpus-note">Add a document for Q&amp;A, assign its readers, and optionally route it as guidance for a Commerce decision domain.</p>
           </div>
@@ -252,7 +278,7 @@
                   <option value="groq">GPT-OSS 120B · Groq</option>
                   <option value="modal">Qwen3-0.6B fine-tuned · Modal GPU</option>
                 </select>
-                <small class="upload-field-hint">Choose which model creates the invoice JSON draft. OCR stays the same.</small>
+                <small class="upload-field-hint">Choose which model extracts invoice details. OCR stays the same.</small>
               </div>
               <div class="upload-field upload-field-wide">
                 <label id="upload-file-label" for="upload-file">Document file</label>
@@ -287,7 +313,6 @@
               <span></span>
             </div>
             <p id="upload-status" class="corpus-note" aria-live="polite"></p>
-            <pre id="upload-invoice-result" class="invoice-extraction-result" hidden></pre>
             <small id="upload-elapsed" class="upload-elapsed" aria-live="off" hidden></small>
           </div>
         </form>
@@ -297,13 +322,29 @@
     <section id="tab-invoice-review" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-invoice-review" hidden>
       <section class="candidate-review invoice-review-section">
         <div class="section-heading">
-          <div><p class="eyebrow">HUMAN REVIEW</p><h2>Review extracted invoices</h2></div>
+          <div><p class="eyebrow">Human review</p><h2>Review extracted invoices</h2></div>
           <button id="invoice-review-refresh" class="secondary-button" type="button">Refresh</button>
         </div>
         <p>Compare the extracted draft with the private source and OCR evidence. Save corrections before an admin approves the invoice for analytics.</p>
         <p id="invoice-review-status" class="corpus-note" aria-live="polite"></p>
         <div class="invoice-review-layout">
-          <div id="invoice-review-list" class="invoice-review-list"></div>
+          <div class="invoice-review-queue">
+            <label class="invoice-review-filter-label" for="invoice-review-filter">Status</label>
+            <select id="invoice-review-filter" class="invoice-review-filter">
+              <option value="all">All statuses</option>
+              <option value="review_required">Needs review</option>
+              <option value="processing">Processing</option>
+              <option value="failed">Extraction failed</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+            <div id="invoice-review-list" class="invoice-review-list"></div>
+            <div class="invoice-review-pagination" aria-label="Invoice pages">
+              <button id="invoice-review-prev" class="secondary-button" type="button">Previous</button>
+              <span id="invoice-review-page" aria-live="polite"></span>
+              <button id="invoice-review-next" class="secondary-button" type="button">Next</button>
+            </div>
+          </div>
           <div id="invoice-review-detail" class="invoice-review-detail"><p class="analysis-empty">Choose an invoice to review.</p></div>
         </div>
       </section>
@@ -315,7 +356,7 @@
       <section id="parsed-chunk-inspector" class="candidate-review" hidden>
         <div class="section-heading">
           <div>
-            <p class="eyebrow">PARSER &amp; OCR OUTPUT</p>
+            <p class="eyebrow">Parser and OCR output</p>
             <h2>Inspect parsed document passages</h2>
           </div>
         </div>
@@ -337,7 +378,7 @@
     <section id="tab-knowledge-management" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-knowledge-management" hidden>
       <section class="candidate-review knowledge-management-section">
         <div class="section-heading">
-          <div><p class="eyebrow">ADMINISTRATION</p><h2>Knowledge-base files</h2></div>
+          <div><p class="eyebrow">Administration</p><h2>Knowledge-base files</h2></div>
           <button id="knowledge-documents-refresh" class="secondary-button" type="button">Refresh</button>
         </div>
         <p>Manage which roles can retrieve each file. Remove or restore a source from AI retrieval without deleting its original file or parser output.</p>
@@ -370,7 +411,7 @@
     <section id="tab-ocr-lab" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-ocr-lab" hidden>
       <section class="candidate-review">
         <div class="section-heading">
-          <div><p class="eyebrow">ISOLATED UPLOAD TEST</p><h2>Run a document-processing pipeline</h2></div>
+          <div><p class="eyebrow">Isolated upload test</p><h2>Run a document-processing pipeline</h2></div>
         </div>
         <p>Choose general document parsing, invoice extraction, or image captioning. Results are saved for inspection without creating a production document.</p>
         <form id="ocr-test-form" class="upload-form">
@@ -399,7 +440,7 @@
       <section id="admin-section" class="admin-section" hidden>
         <div class="section-heading">
           <div>
-            <p class="eyebrow">ROLE-BASED ACCESS CONTROL (RBAC)</p>
+            <p class="eyebrow">Role-based access control</p>
             <h2>Role permissions matrix</h2>
             <p class="corpus-note">This matrix shows workspace capabilities by role. To choose who can read an individual document, manage its reader roles in Knowledge Management.</p>
           </div>
@@ -414,38 +455,40 @@
       <section id="monitoring-section" class="monitoring-section" hidden>
         <div class="section-heading">
           <div>
-            <p class="eyebrow">REAL-TIME SYSTEM OPERATIONS</p>
-            <h2>Agent Performance &amp; Latency Monitoring</h2>
-            <p class="monitoring-note">Telemetry from the last 24 hours. Run telemetry does not record user questions or generated text; only answers a user rates (👍/👎) are stored with their question, for review.</p>
+            <p class="eyebrow">Last 24 hours</p>
+            <h2>Agent monitoring</h2>
+            <p class="monitoring-note">Run telemetry does not record questions or answers. Only answers that a user rates are stored with their question, for review.</p>
           </div>
           <button id="monitoring-refresh" class="secondary-button" type="button">
             <span>Refresh</span>
           </button>
         </div>
         <div id="monitoring-summary" class="monitoring-summary" aria-live="polite"></div>
-        <section class="analysis-section">
+        <div class="monitoring-tabs" role="tablist" aria-label="Monitoring sections">
+          <button type="button" role="tab" class="monitoring-tab" aria-selected="true" aria-controls="monitor-panel-agents" data-monitor-tab="agents">By agent</button>
+          <button type="button" role="tab" class="monitoring-tab" aria-selected="false" aria-controls="monitor-panel-runs" data-monitor-tab="runs" tabindex="-1">Recent runs <span id="monitor-count-runs" class="monitoring-tab-count"></span></button>
+          <button type="button" role="tab" class="monitoring-tab" aria-selected="false" aria-controls="monitor-panel-feedback" data-monitor-tab="feedback" tabindex="-1">Answer ratings <span id="monitor-count-feedback" class="monitoring-tab-count"></span></button>
+        </div>
+        <section id="monitor-panel-agents" class="analysis-section" role="tabpanel" data-monitor-panel="agents">
           <div class="analysis-section-heading">
             <div>
-              <p class="eyebrow">ROUTED WORKLOAD</p>
-              <h3>Executions by Agent</h3>
+              <h3>Runs by agent</h3>
             </div>
           </div>
           <div id="monitoring-agents" class="monitoring-agents"></div>
         </section>
-        <section class="analysis-section">
+        <section id="monitor-panel-runs" class="analysis-section" role="tabpanel" data-monitor-panel="runs" hidden>
           <div class="analysis-section-heading">
             <div>
-              <p class="eyebrow">RECENT EXECUTIONS</p>
-              <h3>Last 100 Runs</h3>
+              <h3>Last 100 runs</h3>
             </div>
           </div>
           <div id="monitoring-runs" class="monitoring-runs" aria-live="polite"></div>
         </section>
-        <section class="analysis-section">
+        <section id="monitor-panel-feedback" class="analysis-section" role="tabpanel" data-monitor-panel="feedback" hidden>
           <div class="analysis-section-heading">
             <div>
-              <p class="eyebrow">USER FEEDBACK</p>
-              <h3>Answer Ratings</h3>
+              <h3>Answer ratings</h3>
             </div>
           </div>
           <div id="monitoring-feedback" class="monitoring-runs" aria-live="polite"></div>
@@ -455,6 +498,6 @@
     </div>
     </main>
   </div>
-  <script src="/static/app.js?v=feedback-20261113b" defer></script>
+  <script src="/static/app.js?v=redesign-20261113a" defer></script>
 </body>
 </html>

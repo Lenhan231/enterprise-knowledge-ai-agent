@@ -5,7 +5,9 @@ from __future__ import annotations
 import asyncio
 import inspect
 import json
+import os
 import re
+import urllib.request
 from collections.abc import Mapping
 from datetime import date
 from typing import Any
@@ -21,6 +23,7 @@ from core.analytics.text_to_sql import (
     approved_join_path,
     QueryPlan,
     relevant_schema_tables,
+    APPROVED_JOINS,
     SQLValidationError,
     build_sql_prompt,
     decode_query_plan,
@@ -31,7 +34,7 @@ from core.database.commerce_repository import CommerceRepository
 from core.llm.llm_interface import LLMInterface
 from core.models.agents import AgentResult, Evidence, VerifiedIdentity
 from core.latency import measure
-from core.agents.runtime import generate
+from core.agents.runtime import generate, run_sync
 
 
 class AnalyticsPermissionDenied(PermissionError):
@@ -68,6 +71,8 @@ def payload_to_agent_result(payload: Mapping[str, Any], *, agent: str = "analyti
 
 
 class SQLAnalyticsAgent(BaseAgent):
+    JEV_MIN_CLEAR_CONFIDENCE = 0.8
+
     def __init__(self, repository: CommerceRepository, *, llm: LLMInterface | None = None, inventory_only: bool | None = None) -> None:
         if inventory_only is None:
             inventory_only = inventory_scope_enabled()
@@ -83,6 +88,27 @@ class SQLAnalyticsAgent(BaseAgent):
     async def run_payload(self, request: Any) -> dict[str, Any]:
         self._authorize(request)
         context_info = {}
+        options = request.get('metadata', {}) if isinstance(request, Mapping) else getattr(request, 'metadata', {})
+        context = options.get('_sql_context') if isinstance(options, Mapping) else None
+        if not (isinstance(context, Mapping) and context.get('pending')):
+            try:
+                with measure('sql_ambiguity_check'):
+                    decision = await run_sync(self._check_ambiguity, self._query_text(request), _timeout=12)
+            except Exception as error:
+                return self._jev_failure(error)
+            context_info['jev'] = {**decision, 'threshold': self.JEV_MIN_CLEAR_CONFIDENCE}
+            if decision['probabilities']['clear'] < self.JEV_MIN_CLEAR_CONFIDENCE:
+                result = {
+                    'ok': False, 'operation': 'text_to_sql', 'rows': [],
+                    'answer': 'Mình chưa đủ chắc cách hiểu câu hỏi để chạy truy vấn an toàn. Bạn muốn mình hiểu câu hỏi theo cách nào?',
+                    'limitations': ['Chưa chạy truy vấn vì cách hiểu của câu hỏi cần được làm rõ.'],
+                    'query_status': 'clarification_required',
+                    'metadata': {'status': 'clarification_required', 'clarification_required': True,
+                                 '_sql_context_action': 'new', 'jev': context_info['jev']},
+                }
+                result['metadata']['sql_scope'] = 'inventory' if self.inventory_only else 'approved_commerce'
+                result['metadata'].update(context_info, execution_status='clarification_required')
+                return result
         result = await self._run_payload(request,context_info)
         metadata = result.setdefault('metadata',{})
         metadata['sql_scope'] = 'inventory' if self.inventory_only else 'approved_commerce'
@@ -93,6 +119,62 @@ class SQLAnalyticsAgent(BaseAgent):
              'source_failed' if result.get('query_status') == 'error' else
              'validation_failed' if metadata.get('error_type') in {'SQLValidationError','MetricDefinitionError'} else 'planning_failed'))
         return result
+
+    def _check_ambiguity(self, question: str) -> dict[str, Any]:
+        api_key = os.getenv('OPENROUTER_API_KEY', '').strip()
+        if not api_key:
+            raise RuntimeError('OPENROUTER_API_KEY is not configured')
+        schema = {table: sorted(columns) for table, columns in self.table_columns.items()}
+        relationships = [sorted(f'{table}.{column}' for table, column in edge) for edge in APPROVED_JOINS]
+        request_body = json.dumps({
+            'model': 'typesafe/jev-1.14',
+            'state': {'question': question, 'approved_schema': schema,
+                      'approved_relationships': relationships},
+            'questions': {'intent': {
+                'type': 'choice',
+                'instructions': ('Is the requested result clear enough to write exactly one safe SQL query? '
+                                 'Choose ambiguous when materially different metrics, entities, or scopes '
+                                 'are reasonably supported by the wording, or a required scope is missing. '
+                                 'Distinguish time grain from time period: "by each month" or a monthly trend '
+                                 'explicitly requests grouping by month, but "revenue for a month" without a '
+                                 'named month, date range, or explicit latest-available period lacks its time '
+                                 'scope and is ambiguous. Do not turn a missing period into GROUP BY, an '
+                                 'arbitrary date range, or a LIMIT. Treat "latest available month" as clear; '
+                                 'if "last month" could mean either the previous calendar month or latest '
+                                 'month in the data, ask for clarification. Missing optional filters alone '
+                                 'do not make it ambiguous. Consider only the question and approved schema; '
+                                 'do not judge SQL validity.'),
+                'criteria': {
+                    'clear': ('One reasonable metric, entity, and required scope can be identified. A time '
+                              'grouping is clear only when the question asks for a series or grouping.'),
+                    'ambiguous': ('At least two materially different interpretations are reasonable and would '
+                                  'produce different SQL results, or the metric requires a missing time period.'),
+                },
+            }},
+        }).encode()
+        req = urllib.request.Request(
+            'https://openrouter.ai/api/alpha/decisions', data=request_body,
+            headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'}, method='POST',
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            payload = json.loads(response.read())
+        answer = payload.get('answers', {}).get('intent', {})
+        probabilities = answer.get('probabilities', {})
+        clear, ambiguous = float(probabilities.get('clear', -1)), float(probabilities.get('ambiguous', -1))
+        if (answer.get('type') != 'choice' or answer.get('choice') not in {'clear', 'ambiguous'}
+                or not all(0 <= probability <= 1 for probability in (clear, ambiguous))):
+            raise ValueError('Jev returned an invalid ambiguity decision')
+        return {'choice': answer.get('choice'), 'probabilities': {'clear': clear, 'ambiguous': ambiguous},
+                'confidence': answer.get('confidence'), 'model': payload.get('model')}
+
+    @staticmethod
+    def _jev_failure(error: Exception) -> dict[str, Any]:
+        return {
+            'ok': False, 'operation': 'text_to_sql', 'rows': [], 'query_status': 'error',
+            'answer': 'Không thể kiểm tra độ rõ của câu hỏi lúc này, nên mình chưa chạy truy vấn. Vui lòng thử lại.',
+            'limitations': ['Jev ambiguity check did not complete; no database query was run.'],
+            'metadata': {'status': 'failed', 'error_type': type(error).__name__, '_sql_context_action': 'failed'},
+        }
 
     async def _run_payload(self, request: Any, context_info: dict) -> dict[str, Any]:
         question = self._query_text(request)
@@ -353,11 +435,26 @@ class SQLAnalyticsAgent(BaseAgent):
 
     @staticmethod
     def _database_error(error: Exception, sql: str, parameters: tuple[Any, ...]) -> dict[str, Any]:
+        analytics_url_missing = isinstance(error, RuntimeError) and 'ANALYTICS_DATABASE_URL' in str(error)
+        query_timeout = isinstance(error, TimeoutError) or getattr(error, 'sqlstate', None) == '57014'
+        failure_code = ('analytics_not_configured' if analytics_url_missing else
+                        'sql_timeout' if query_timeout else 'sql_execution_failed')
+        answer = (
+            'Chưa cấu hình tài khoản đọc dữ liệu cho SQL Agent (ANALYTICS_DATABASE_URL), nên truy vấn chưa chạy. '
+            'Hãy cấu hình kết nối analytics chỉ đọc rồi thử lại.'
+            if analytics_url_missing else
+            'Truy vấn dữ liệu mất quá lâu nên đã được dừng trước khi có kết quả. Hãy thu hẹp khoảng thời gian '
+            'hoặc yêu cầu một phép tổng hợp cụ thể hơn.'
+            if query_timeout else
+            'Câu hỏi đã được chuyển thành truy vấn SQL nhưng cơ sở dữ liệu không thực thi được. Chưa có kết quả '
+            'để trả lời. Hãy thử lại; nếu lỗi tiếp diễn, cần kiểm tra SQL, schema và quyền truy cập cơ sở dữ liệu.'
+        )
         result = {
             "ok": False, "operation": "text_to_sql", "rows": [],
-            "answer": "The approved data query could not be completed. Please try again later.",
-            "limitations": ["Database query did not complete."],
-            "metadata": {"error_type": type(error).__name__},
+            "answer": answer,
+            "limitations": ["Truy vấn vượt quá thời gian cho phép." if query_timeout else
+                            "Truy vấn dữ liệu chưa hoàn tất."],
+            "metadata": {"status": "failed", "failure_code": failure_code, "error_type": type(error).__name__},
         }
         result.update(attempted_sql=sql, parameters=list(parameters), query_status="error")
         return result

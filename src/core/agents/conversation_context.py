@@ -18,9 +18,10 @@ class _Conversation:
 
 
 class ConversationStore:
-    def __init__(self, *, capacity=100, ttl=1800, max_chars=12_000, clock=time.monotonic):
+    def __init__(self, *, capacity=100, ttl=1800, max_turns=24, max_chars=16_000, clock=time.monotonic):
         self.entries = OrderedDict()
-        self.capacity, self.ttl, self.max_chars, self.clock = capacity, ttl, max_chars, clock
+        self.capacity, self.ttl, self.max_turns, self.max_chars, self.clock = (
+            capacity, ttl, max_turns, max_chars, clock)
 
     @asynccontextmanager
     async def session(self, request):
@@ -54,7 +55,7 @@ class ConversationStore:
         finally:
             entry.users -= 1
             entry.touched = self.clock()
-            entry.history[:] = entry.history[-6:]
+            entry.history[:] = entry.history[-self.max_turns:]
             while entry.history and sum(len(v) for turn in entry.history for v in turn.values()) > self.max_chars:
                 entry.history.pop(0)
             self.entries.move_to_end(key)

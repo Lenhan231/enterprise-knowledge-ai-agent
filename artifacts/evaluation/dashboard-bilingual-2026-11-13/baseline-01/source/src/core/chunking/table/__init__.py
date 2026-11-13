@@ -1,0 +1,1 @@
+"""Table-aware chunking helpers."""

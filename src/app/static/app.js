@@ -5,10 +5,14 @@ let knowledgeDocuments = [];
 let activeKnowledgeReview = null;
 let invoiceReviewItems = [];
 let activeInvoiceReview = null;
+let invoiceReviewPage = 1;
+const INVOICE_REVIEW_PAGE_SIZE = 8;
 let invoiceProgressGeneration = 0;
 let agentConversationId = crypto.randomUUID();
 let reportConversationId = crypto.randomUUID();
 let sessionTurns = [];
+let generalConversationId = crypto.randomUUID();
+let generalTurns = [];
 let sessionGeneration = 0;
 let sessionSubject = null;
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
@@ -75,6 +79,7 @@ function syncWorkspaceTabs(user = currentUser) {
   const canUpload = ["document_uploader", "admin", "document_processing_owner"].includes(user?.role);
   const available = {
     knowledge: canAskDocuments,
+    "general-chat": canAskDocuments,
     upload: canUpload,
     "invoice-review": canUpload,
     processing: isProcessingOwner,
@@ -280,7 +285,14 @@ const formatInvoiceDate = (value) => {
 let invoiceOpenGeneration = 0;
 
 function renderInvoiceReviewList() {
-  $("#invoice-review-list").innerHTML = invoiceReviewItems.map((invoice) => {
+  const statusFilter = $("#invoice-review-filter").value;
+  const filteredInvoices = statusFilter === "all"
+    ? invoiceReviewItems
+    : invoiceReviewItems.filter((invoice) => invoice.processing_status === statusFilter);
+  const pageCount = Math.max(1, Math.ceil(filteredInvoices.length / INVOICE_REVIEW_PAGE_SIZE));
+  invoiceReviewPage = Math.min(invoiceReviewPage, pageCount);
+  const start = (invoiceReviewPage - 1) * INVOICE_REVIEW_PAGE_SIZE;
+  $("#invoice-review-list").innerHTML = filteredInvoices.slice(start, start + INVOICE_REVIEW_PAGE_SIZE).map((invoice) => {
     const data = invoice.invoice_data || {};
     const selected = invoice.invoice_id === activeInvoiceReview?.invoice_id;
     const status = invoice.processing_status || "unknown";
@@ -289,7 +301,10 @@ function renderInvoiceReviewList() {
       <span>${escapeHtml(data.invoice_no || "Invoice number not extracted")} · ${escapeHtml(data.seller || "Seller not extracted")}</span>
       <small><span class="invoice-status-badge is-${escapeHtml(({approved: "approved", review_required: "review", failed: "failed", processing: "processing", rejected: "rejected"})[status] || "unknown")}">${escapeHtml(({review_required: "Needs review", failed: "Extraction failed", processing: "Processing", approved: "Approved", rejected: "Rejected"})[status] || status)}</span> · ${escapeHtml(new Date(invoice.updated_at || invoice.created_at).toLocaleDateString())}</small>
     </button>`;
-  }).join("") || '<p class="analysis-empty">No invoice drafts to review.</p>';
+  }).join("") || '<p class="analysis-empty">No invoices match this status.</p>';
+  $("#invoice-review-page").textContent = `${filteredInvoices.length ? start + 1 : 0}–${Math.min(start + INVOICE_REVIEW_PAGE_SIZE, filteredInvoices.length)} of ${filteredInvoices.length}`;
+  $("#invoice-review-prev").disabled = invoiceReviewPage === 1;
+  $("#invoice-review-next").disabled = invoiceReviewPage === pageCount;
 }
 
 function renderInvoiceReviewDetail(invoice) {
@@ -501,6 +516,18 @@ $("#invoice-review-list").addEventListener("click", (event) => {
   if (button) openInvoiceReview(button.dataset.invoiceReviewId).catch((error) => {
     $("#invoice-review-status").textContent = error.message;
   });
+});
+$("#invoice-review-filter").addEventListener("change", () => {
+  invoiceReviewPage = 1;
+  renderInvoiceReviewList();
+});
+$("#invoice-review-prev").addEventListener("click", () => {
+  invoiceReviewPage = Math.max(1, invoiceReviewPage - 1);
+  renderInvoiceReviewList();
+});
+$("#invoice-review-next").addEventListener("click", () => {
+  invoiceReviewPage += 1;
+  renderInvoiceReviewList();
 });
 $("#invoice-review-detail").addEventListener("submit", (event) => {
   if (event.target.id === "invoice-retry-form") {
@@ -953,7 +980,8 @@ function renderAnswerBody(answer) {
   let paragraph = [];
   const inline = (value) => escapeHtml(value)
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/`([^`]+)`/g, "<code>$1</code>");
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\[(S\d+)\]/g, '<a class="cite-ref" href="#" data-cite="$1" aria-label="Source $1">$1</a>');
   const cells = (line) => line.trim().replace(/^\|/, "").replace(/\|$/, "")
     .split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, "|"));
   const isRow = (line) => /^\s*\|.*\|\s*$/.test(line);
@@ -989,8 +1017,9 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
   panel.hidden = false;
   const citations = Array.isArray(data.citations) ? data.citations : [];
   const usedEvidenceFallback = Boolean(data.answer_fallback_reason || data.fallback);
-  const responseTitle = ({partial: "Partial answer", clarification_required: "Clarification needed", failed: "Answer unavailable"})[data.status]
-    || (data.ok === false ? "Answer unavailable" : usedEvidenceFallback ? "Evidence fallback" : "Synthesized answer");
+  const responseTitle = data.failure_code === "sql_timeout" ? "Truy vấn mất quá lâu"
+    : ({partial: "Partial answer", clarification_required: "Clarification needed", failed: "Could not complete"})[data.status]
+    || (data.ok === false ? "Answer unavailable" : usedEvidenceFallback ? "Evidence only" : "Answer");
   const domainLabels = {
     inventory_allocation: "Inventory allocation",
     promotion_planning: "Promotion planning",
@@ -1059,12 +1088,9 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
   const routeDetails = renderRunDetails(data);
   panel.innerHTML = `
     <div class="answer-header-wrap">
-      <div class="answer-heading">
+      <div class="answer-heading${data.status === "partial" || data.limitations?.length ? " is-partial" : ""}">
         <span class="answer-mark">${usedEvidenceFallback ? "EV" : "AI"}</span>
-        <div><span class="eyebrow">${escapeHtml(({knowledge:"KNOWLEDGE AGENT",analytics:"ANALYTICS AGENT",sql_analytics:"ANALYTICS AGENT",dashboard:"INVENTORY AGENT",report:"REPORT AGENT",agentic:"AUTOMATIC ROUTER",hybrid:"KNOWLEDGE + ANALYTICS"})[data.agent] || "AGENT RESPONSE")}</span><h3>${escapeHtml(responseTitle)}</h3></div>
-      </div>
-      <div class="answer-actions-bar">
-        <button type="button" class="action-btn copy-answer-btn" title="Copy response text">Copy</button>
+        <div><span class="eyebrow">${escapeHtml(({knowledge:"Knowledge agent",analytics:"Analytics agent",sql_analytics:"Analytics agent",dashboard:"Inventory agent",report:"Report agent",agentic:"Automatic router",hybrid:"Knowledge + analytics"})[data.agent] || "Agent response")}</span><h3>${escapeHtml(responseTitle)}</h3></div>
       </div>
     </div>
     ${domainNote}
@@ -1076,6 +1102,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
     ${sqlScope}
     ${routeDetails}
     ${tokenUsage}
+    ${data.claim_verification?.status === "supported" && citations.length ? `<p class="answer-verified">Every claim checked against its cited source${data.claim_verification.claim_count ? ` · ${formatNumber(data.claim_verification.claim_count)} claims` : ""}</p>` : ""}
     <div class="answer-text">${renderAnswerBody(data.answer)}</div>
     ${renderAgentRows(data.data)}
     ${renderDashboardVisualization(data.data?.visualization)}
@@ -1090,7 +1117,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
             || syntheticPolicySourcePageUrl(source)
             || validSourceUrl(source.source_url);
           const link = href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">View original</a>` : "";
-          const chunk = Number.isInteger(source.chunk_index) ? ` · Indexed chunk ${source.chunk_index}` : "";
+          const chunk = Number.isInteger(source.chunk_index) ? ` (chunk ${source.chunk_index})` : "";
           const location = source.page_number ? `Page ${source.page_number}${chunk}`
             : source.source_type === "commerce_sql" ? `SQL aggregate · ${(source.source_tables || []).join(", ")}`
               : source.source_type === "commerce_schema" ? `Schema coverage · ${(source.source_tables || []).join(", ")}`
@@ -1117,9 +1144,9 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
             : `<p>${escapeHtml(source.excerpt)}</p>`;
           const publisher = source.source_publisher || source.company || "Verified source";
           return `
-            <article class="citation">
+            <article class="citation" data-cite-id="${escapeHtml(source.id)}">
               <div class="citation-title">
-                <span class="citation-id">[${escapeHtml(source.id)}]</span>
+                <span class="citation-id">${escapeHtml(source.id)}</span>
                 <strong>${escapeHtml(source.title)}</strong>
                 <span>${escapeHtml(location)}</span>
               </div>
@@ -1134,17 +1161,31 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
               </div>
             </article>`;
         }).join("")}
-      </div>` : ""}`;
+      </div>` : ""}
+    <div class="answer-actions-bar">
+      <button type="button" class="action-btn copy-answer-btn" title="Copy response text" aria-label="Copy response">${ICONS.copy}<span class="action-label">Copy</span></button>
+    </div>`;
 
+  // Inline [S1] chips scroll to and highlight their source card.
+  panel.querySelectorAll(".cite-ref").forEach((ref) => ref.addEventListener("click", (event) => {
+    event.preventDefault();
+    const card = panel.querySelector(`.citation[data-cite-id="${CSS.escape(ref.dataset.cite)}"]`);
+    if (!card || card.hidden) return;
+    card.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
+    card.classList.remove("is-highlighted");
+    void card.offsetWidth;
+    card.classList.add("is-highlighted");
+    setTimeout(() => card.classList.remove("is-highlighted"), 1600);
+  }));
   const copyBtn = panel.querySelector(".copy-answer-btn");
   if (copyBtn) {
     copyBtn.addEventListener("click", async () => {
       try {
         await navigator.clipboard.writeText(data.answer);
-        copyBtn.textContent = "Copied!";
+        copyBtn.innerHTML = `${ICONS.check}<span class="action-label">Copied</span>`;
         copyBtn.classList.add("copied");
         setTimeout(() => {
-          copyBtn.textContent = "Copy";
+          copyBtn.innerHTML = `${ICONS.copy}<span class="action-label">Copy</span>`;
           copyBtn.classList.remove("copied");
         }, 2000);
       } catch {
@@ -1165,8 +1206,12 @@ function renderAgentRows(data) {
     const validRows = (rows || []).filter((row) => row && typeof row === "object" && !Array.isArray(row));
     const columns = validRows.length ? Object.keys(validRows[0]).slice(0, 12) : [];
     const executed = value.query_status === "executed";
+    const statusLabel = executed ? "Đã chạy" : value.query_status === "error"
+      ? (value.failure_code === "analytics_not_configured" ? "Thiếu cấu hình" : value.failure_code === "sql_timeout" ? "Dừng do timeout" : "Lỗi khi chạy")
+      : value.query_status === "rejected" ? "Bị chặn trước khi chạy"
+        : value.query_status === "clarification_required" ? "Chờ bạn làm rõ" : value.query_status;
     const queryStatus = value.query_status
-      ? `<span class="query-status ${executed ? "is-executed" : "is-not-executed"}">${executed ? "Executed" : "Not executed · " + escapeHtml(value.query_status)}</span>`
+      ? `<span class="query-status ${executed ? "is-executed" : "is-not-executed"}">${escapeHtml(statusLabel)}</span>`
       : "";
     const canShowRows = value.query_status == null || executed;
     const table = canShowRows && validRows.length
@@ -1177,9 +1222,11 @@ function renderAgentRows(data) {
       ? `<p>Parameters: <code>${escapeHtml(JSON.stringify(value.parameters))}</code></p>`
       : "";
     const diagnostics = diagnosticSql || parameters
-      ? `<details><summary>${value.attempted_sql ? "Rejected query diagnostic" : executed ? "Executed query" : "Query details"}</summary>${diagnosticSql ? `<pre>${escapeHtml(diagnosticSql)}</pre>` : ""}${parameters}</details>`
+      ? `<details><summary>${value.query_status === "error" ? "Xem truy vấn lỗi" : value.query_status === "rejected" ? "Xem truy vấn bị chặn" : executed ? "Xem SQL đã chạy" : "Chi tiết truy vấn"}</summary>${diagnosticSql ? `<pre>${escapeHtml(diagnosticSql)}</pre>` : ""}${parameters}</details>`
       : "";
-    return `<section class="agent-data-result"><h4>${escapeHtml(label.replace(/^task:/, "Task "))} ${queryStatus}</h4>${table}${diagnostics}</section>`;
+    const jev = value.jev;
+    const jevNote = jev?.probabilities ? `<p class="jev-note">JEV · rõ ${Math.round((jev.probabilities.clear || 0) * 100)}% · mơ hồ ${Math.round((jev.probabilities.ambiguous || 0) * 100)}% · độ rõ tối thiểu để chạy ${Math.round((jev.threshold || 0) * 100)}%</p>` : "";
+    return `<section class="agent-data-result"><h4>${escapeHtml(label.replace(/^task:/, "Task "))} ${queryStatus}</h4>${table}${jevNote}${diagnostics}</section>`;
   }).join("");
 }
 
@@ -1192,23 +1239,48 @@ function renderAgentResult(result, panel = $("#answer-panel"), shouldScroll = tr
   renderAnswer({ ...result, ...result.metadata, metadata: result.metadata, citations }, panel, shouldScroll);
 }
 
+// "9.4 s" reads the same in every locale; "9.420 ms" looks like 9 ms where "." groups thousands.
+const formatSeconds = (ms) => `${(Number(ms) / 1000).toFixed(1)} s`;
+
+function selectMonitorTab(name, focus = false) {
+  document.querySelectorAll("[data-monitor-tab]").forEach((tab) => {
+    const selected = tab.dataset.monitorTab === name;
+    tab.setAttribute("aria-selected", String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+    if (selected && focus) tab.focus();
+  });
+  document.querySelectorAll("[data-monitor-panel]").forEach((panel) => { panel.hidden = panel.dataset.monitorPanel !== name; });
+}
+document.querySelector(".monitoring-tabs")?.addEventListener("click", (event) => {
+  const tab = event.target.closest("[data-monitor-tab]");
+  if (tab) selectMonitorTab(tab.dataset.monitorTab);
+});
+document.querySelector(".monitoring-tabs")?.addEventListener("keydown", (event) => {
+  if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+  const tabs = [...document.querySelectorAll("[data-monitor-tab]")];
+  const index = tabs.findIndex((tab) => tab.getAttribute("aria-selected") === "true");
+  const next = tabs[(index + (event.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+  selectMonitorTab(next.dataset.monitorTab, true);
+});
+
 function renderAgentMonitoring(data) {
   const summary = data.summary || {};
   const cards = [
-    ["Runs · 24 hours", summary.total_runs ?? 0],
+    ["Runs, last 24 h", summary.total_runs ?? 0],
     ["Success rate", summary.success_rate == null ? "—" : `${summary.success_rate}%`],
-    ["Average latency", summary.average_elapsed_ms == null ? "—" : `${formatNumber(summary.average_elapsed_ms)} ms`],
-    ["P95 latency", summary.p95_elapsed_ms == null ? "—" : `${formatNumber(summary.p95_elapsed_ms)} ms`],
-    ["Runs · last hour", summary.last_hour_runs ?? 0],
+    ["Average latency", summary.average_elapsed_ms == null ? "—" : formatSeconds(summary.average_elapsed_ms)],
+    ["P95 latency", summary.p95_elapsed_ms == null ? "—" : formatSeconds(summary.p95_elapsed_ms)],
+    ["Runs, last hour", summary.last_hour_runs ?? 0],
   ];
   $("#monitoring-summary").innerHTML = cards.map(([label, value]) => `<article class="monitoring-stat"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></article>`).join("");
   const agents = data.by_agent || [];
   const maxRuns = Math.max(1, ...agents.map((agent) => Number(agent.total_runs) || 0));
   $("#monitoring-agents").innerHTML = agents.length ? agents.map((agent) => `
-    <div class="monitoring-agent"><div><strong>${escapeHtml(agent.agent_name)}</strong><span>${formatNumber(agent.completed_runs)} of ${formatNumber(agent.total_runs)} completed · avg ${agent.average_elapsed_ms == null ? "—" : `${formatNumber(agent.average_elapsed_ms)} ms`}</span></div><i><b style="width:${Math.max(3, Number(agent.total_runs) / maxRuns * 100)}%"></b></i></div>
+    <div class="monitoring-agent"><div><strong>${escapeHtml(agent.agent_name)}</strong><span>${formatNumber(agent.completed_runs)} of ${formatNumber(agent.total_runs)} completed, ${agent.average_elapsed_ms == null ? "no timing" : `${formatSeconds(agent.average_elapsed_ms)} average`}</span></div><i><b style="width:${Math.max(3, Number(agent.total_runs) / maxRuns * 100)}%"></b></i></div>
   `).join("") : '<p class="analysis-empty">No agent runs have been recorded in the last 24 hours.</p>';
   const runs = data.recent_runs || [];
-  $("#monitoring-runs").innerHTML = runs.length ? `<div class="monitoring-table-wrap"><table class="monitoring-table"><thead><tr><th>Time</th><th>Role</th><th>Agent</th><th>Retrieval</th><th>Result</th><th>Latency</th><th>Sources</th></tr></thead><tbody>${runs.map((run) => `<tr><td>${escapeHtml(new Date(run.created_at).toLocaleString())}</td><td>${escapeHtml(run.actor_role)}</td><td>${escapeHtml(run.agent_name)}</td><td>${escapeHtml(run.retrieval_method)}</td><td><span class="run-status ${escapeHtml(run.status)}">${escapeHtml(run.status.replaceAll("_", " "))}</span>${run.error_type ? `<small>${escapeHtml(run.error_type)}</small>` : ""}</td><td>${formatNumber(run.elapsed_ms)} ms</td><td>${formatNumber(run.citation_count)}</td></tr>`).join("")}</tbody></table></div>` : '<p class="analysis-empty">No requests recorded yet.</p>';
+  $("#monitor-count-runs").textContent = runs.length ? formatNumber(runs.length) : "";
+  $("#monitoring-runs").innerHTML = runs.length ? `<div class="monitoring-table-wrap"><table class="monitoring-table"><thead><tr><th>Time</th><th>Role</th><th>Agent</th><th>Retrieval</th><th>Result</th><th>Latency</th><th>Sources</th></tr></thead><tbody>${runs.map((run) => `<tr><td>${escapeHtml(new Date(run.created_at).toLocaleString())}</td><td>${escapeHtml(run.actor_role)}</td><td>${escapeHtml(run.agent_name)}</td><td>${escapeHtml(run.retrieval_method)}</td><td><span class="run-status ${escapeHtml(run.status)}">${escapeHtml(run.status.replaceAll("_", " "))}</span>${run.error_type ? `<small>${escapeHtml(run.error_type)}</small>` : ""}</td><td>${formatSeconds(run.elapsed_ms)}</td><td>${formatNumber(run.citation_count)}</td></tr>`).join("")}</tbody></table></div>` : '<p class="analysis-empty">No requests recorded yet.</p>';
 }
 
 async function refreshAgentMonitoring() {
@@ -1255,13 +1327,30 @@ async function api(path, options = {}) {
 }
 
 // Thumbs up/down next to Copy. A rating sends the question and the shown answer (see answer_feedback).
+const ICONS = {
+  copy: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6.5A2.5 2.5 0 0 0 13.5 4h-7A2.5 2.5 0 0 0 4 6.5v7A2.5 2.5 0 0 0 6.5 16H8"/></svg>',
+  check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+  up: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10v10H4.5A1.5 1.5 0 0 1 3 18.5v-7A1.5 1.5 0 0 1 4.5 10H7Zm0 0 4-7a2.5 2.5 0 0 1 2.5 2.5V9h5.2a2 2 0 0 1 2 2.4l-1.4 7A2 2 0 0 1 17.3 20H7"/></svg>',
+  down: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 14V4h2.5A1.5 1.5 0 0 1 21 5.5v7a1.5 1.5 0 0 1-1.5 1.5H17Zm0 0-4 7a2.5 2.5 0 0 1-2.5-2.5V15H5.3a2 2 0 0 1-2-2.4l1.4-7A2 2 0 0 1 6.7 4H17"/></svg>',
+};
+const FEEDBACK_REASONS = ["Wrong information", "Missing details", "Wrong or weak source", "Hard to understand"];
+
 function attachFeedback(panel, turn) {
   const bar = panel.querySelector(".answer-actions-bar");
   if (!bar || !turn.result?.answer) return;
   const box = document.createElement("span");
   box.className = "feedback-buttons";
-  box.innerHTML = ["up", "down"].map((rating) => `<button type="button" class="action-btn feedback-btn" data-rating="${rating}" aria-pressed="false" aria-label="${rating === "up" ? "Helpful" : "Not helpful"}" title="${rating === "up" ? "Helpful" : "Not helpful"}: sends this question and answer to the team for review">${rating === "up" ? "👍" : "👎"}</button>`).join("");
+  box.innerHTML = ["up", "down"].map((rating) => `<button type="button" class="action-btn feedback-btn" data-rating="${rating}" aria-pressed="false" aria-label="${rating === "up" ? "Helpful" : "Not helpful"}" title="${rating === "up" ? "Helpful" : "Not helpful"}: sends this question and answer to the team for review">${ICONS[rating]}</button>`).join("")
+    + '<span class="feedback-status" role="status" aria-live="polite"></span>';
   bar.append(box);
+  const status = box.querySelector(".feedback-status");
+  const say = (text, tone = "") => {
+    status.textContent = text;
+    status.dataset.tone = tone;
+    status.classList.remove("show");
+    void status.offsetWidth;
+    status.classList.add("show");
+  };
   const mark = (rating) => box.querySelectorAll(".feedback-btn").forEach((button) => {
     const chosen = button.dataset.rating === rating;
     button.setAttribute("aria-pressed", String(chosen));
@@ -1269,31 +1358,95 @@ function attachFeedback(panel, turn) {
     button.disabled = true;
   });
   if (turn.feedback) mark(turn.feedback);
-  box.addEventListener("click", async (event) => {
-    const button = event.target.closest(".feedback-btn");
-    if (!button || turn.feedback) return;
-    const rating = button.dataset.rating;
-    const comment = rating === "down" ? window.prompt("What was wrong or missing? (optional)") : null;
-    if (comment === null && rating === "down" && !window.confirm("Send 👎 without a comment?")) return;
+  const unmark = () => box.querySelectorAll(".feedback-btn").forEach((button) => {
+    button.setAttribute("aria-pressed", "false");
+    button.classList.remove("chosen");
+    button.disabled = false;
+  });
+  // Optimistic: the choice shows at once and the database write happens in the background;
+  // if the write fails the choice is undone and the reason is shown, so nothing looks saved that isn't.
+  const send = async (rating, comment) => {
+    turn.feedback = rating;
+    mark(rating);
+    say("Thanks for the feedback", "ok");
     try {
       await api("/api/agents/feedback", { method: "POST", body: JSON.stringify({
         rating, question: turn.question, answer: turn.result.answer, agent: turn.result.agent || "unknown",
         comment: comment || null, claim_status: turn.result.metadata?.claim_verification?.status ?? null,
       }) });
-      turn.feedback = rating;
-      mark(rating);
-      button.title = "Thanks, feedback saved";
     } catch (error) {
-      button.title = `Feedback not saved: ${error.message}`;
-      button.classList.add("feedback-error");
+      turn.feedback = null;
+      unmark();
+      say(`Not saved: ${error.message}. Try again.`, "error");
+      throw error;
     }
+  };
+
+  // Inline card for 👎: reason chips and an optional note; it opens and closes with a height animation.
+  const card = document.createElement("div");
+  card.className = "feedback-card";
+  card.hidden = true;
+  card.innerHTML = `<div class="feedback-card-inner"><form class="feedback-form">
+      <p class="feedback-title">What went wrong?</p>
+      <div class="feedback-reasons" role="group" aria-label="Reasons">${FEEDBACK_REASONS.map((reason) =>
+        `<button type="button" class="feedback-reason" aria-pressed="false">${escapeHtml(reason)}</button>`).join("")}</div>
+      <label class="visually-hidden" for="fb-${turn.id ?? Date.now()}">Details (optional)</label>
+      <textarea id="fb-${turn.id ?? Date.now()}" maxlength="900" rows="2" placeholder="Tell us what the answer should have said (optional)"></textarea>
+      <div class="feedback-form-actions">
+        <button type="button" class="secondary-button feedback-cancel">Cancel</button>
+        <button type="submit" class="primary-button feedback-send">Send feedback</button>
+      </div>
+    </form></div>`;
+  bar.after(card);
+  const open = (show) => {
+    if (show) {
+      card.hidden = false;
+      requestAnimationFrame(() => card.classList.add("open"));
+      card.querySelector("textarea").focus({ preventScroll: true });
+    } else {
+      card.classList.remove("open");
+      const done = () => { card.hidden = true; };
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ? done() : card.addEventListener("transitionend", done, { once: true });
+    }
+  };
+  card.querySelector(".feedback-reasons").addEventListener("click", (event) => {
+    const chip = event.target.closest(".feedback-reason");
+    if (chip) chip.setAttribute("aria-pressed", String(chip.getAttribute("aria-pressed") !== "true"));
+  });
+  card.querySelector(".feedback-cancel").addEventListener("click", () => {
+    open(false);
+    box.querySelector('[data-rating="down"]').focus();
+  });
+  card.querySelector(".feedback-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const reasons = [...card.querySelectorAll('.feedback-reason[aria-pressed="true"]')].map((chip) => chip.textContent);
+    const note = card.querySelector("textarea").value.trim();
+    open(false);
+    try {
+      await send("down", [reasons.join(", "), note].filter(Boolean).join(" — ").slice(0, 1000));
+    } catch {
+      open(true);  // keep the typed note so the reader can resend
+    }
+  });
+
+  box.addEventListener("click", async (event) => {
+    const button = event.target.closest(".feedback-btn");
+    if (!button || turn.feedback) return;
+    if (button.dataset.rating === "down") {
+      const opening = card.hidden;
+      button.setAttribute("aria-expanded", String(opening));
+      open(opening);
+      return;
+    }
+    send("up", null).catch(() => {});
   });
 }
 
 function renderAnswerFeedback(data) {
   const summary = data.summary || {};
   const items = data.recent || [];
-  $("#monitoring-feedback").innerHTML = `<p class="monitoring-note">Last 30 days: 👍 ${formatNumber(summary.up ?? 0)} · 👎 ${formatNumber(summary.down ?? 0)}</p>${items.length ? `<div class="monitoring-table-wrap"><table class="monitoring-table"><thead><tr><th>Time</th><th>Rating</th><th>Role</th><th>Agent</th><th>Question</th><th>Comment</th><th>Claim check</th></tr></thead><tbody>${items.map((item) => `<tr><td>${escapeHtml(new Date(item.created_at).toLocaleString())}</td><td>${item.rating === "up" ? "👍" : "👎"}</td><td>${escapeHtml(item.actor_role)}</td><td>${escapeHtml(item.agent_name)}</td><td><details><summary>${escapeHtml(item.question.slice(0, 80))}</summary><p>${escapeHtml(item.answer)}</p></details></td><td>${escapeHtml(item.comment || "")}</td><td>${escapeHtml(item.claim_status || "")}</td></tr>`).join("")}</tbody></table></div>` : '<p class="analysis-empty">No feedback yet.</p>'}`;
+  $("#monitor-count-feedback").textContent = formatNumber((summary.up ?? 0) + (summary.down ?? 0));
+  $("#monitoring-feedback").innerHTML = `<p class="rating-totals"><span>Last 30 days</span><span class="rating-pill up">${ICONS.up}${formatNumber(summary.up ?? 0)} helpful</span><span class="rating-pill down">${ICONS.down}${formatNumber(summary.down ?? 0)} not helpful</span></p>${items.length ? `<div class="monitoring-table-wrap"><table class="monitoring-table"><thead><tr><th>Time</th><th>Rating</th><th>Role</th><th>Agent</th><th>Question</th><th>Comment</th><th>Claim check</th></tr></thead><tbody>${items.map((item) => `<tr><td>${escapeHtml(new Date(item.created_at).toLocaleString())}</td><td><span class="rating-icon ${item.rating === "up" ? "up" : "down"}" title="${item.rating === "up" ? "Helpful" : "Not helpful"}">${ICONS[item.rating === "up" ? "up" : "down"]}</span></td><td>${escapeHtml(item.actor_role)}</td><td>${escapeHtml(item.agent_name)}</td><td><details><summary>${escapeHtml(item.question.slice(0, 80))}</summary><p>${escapeHtml(item.answer)}</p></details></td><td>${escapeHtml(item.comment || "")}</td><td>${escapeHtml(item.claim_status || "")}</td></tr>`).join("")}</tbody></table></div>` : '<p class="analysis-empty">No feedback yet.</p>'}`;
 }
 
 // Fades the old stage message out and the new one in; a newer stage cancels a fade still running.
@@ -1410,17 +1563,19 @@ function typeOutText(element, revealAfter = []) {
 }
 
 const STAGE_STATUS = {
-  routing: "Routing your request to the right agent...",
-  knowledge_search_planning: "Planning the document search...",
-  query_translation: "Translating the question for bilingual search...",
-  embedding: "Searching the documents...",
-  database_retrieval: "Searching the documents...",
-  reranking: "Ranking the best passages...",
-  answer_generation: "Writing a cited answer...",
-  claim_verification: "Checking every claim against its source...",
-  sql_planning: "Planning the data query...",
-  sql_execution: "Running the data query...",
-  answer_synthesis: "Combining the results...",
+  routing: "Đang chọn agent phù hợp",
+  knowledge_search_planning: "Đang chuẩn bị tìm tài liệu",
+  query_translation: "Đang chuyển câu hỏi để tìm kiếm song ngữ",
+  embedding: "Đang tìm tài liệu liên quan",
+  database_retrieval: "Đang truy xuất dữ liệu",
+  retrieval_fusion: "Đang hợp nhất kết quả tìm kiếm",
+  reranking: "Đang xếp hạng nguồn phù hợp",
+  answer_generation: "Đang soạn câu trả lời có trích dẫn",
+  claim_verification: "Đang kiểm tra câu trả lời với nguồn",
+  sql_ambiguity_check: "Đang kiểm tra câu hỏi có mơ hồ không",
+  sql_planning: "Đang lập truy vấn SQL",
+  sql_execution: "Đang chạy truy vấn SQL",
+  answer_synthesis: "Đang tổng hợp kết quả",
 };
 
 // Streams stage progress; the answer arrives only after the claim verifier, never as draft tokens.
@@ -1464,7 +1619,7 @@ async function askAgentStream(body, signal, onStatus) {
       if (!kind || data === undefined) continue;
       const payload = JSON.parse(data);
       if (kind === "stage") {
-        if (payload.state === "started" && STAGE_STATUS[payload.stage]) onStatus(STAGE_STATUS[payload.stage]);
+        if (STAGE_STATUS[payload.stage]) onStatus(payload.stage, payload.state);
       } else if (kind === "result") {
         reader.cancel().catch(() => {});
         return payload;
@@ -1479,8 +1634,13 @@ function resetConversationState() {
   agentConversationId = crypto.randomUUID();
   reportConversationId = crypto.randomUUID();
   sessionTurns = [];
+  generalConversationId = crypto.randomUUID();
+  generalTurns = [];
   $("#answer-panel").replaceChildren();
   $("#answer-panel").hidden = true;
+  $("#general-chat-transcript").replaceChildren();
+  $("#general-chat-transcript").hidden = true;
+  $("#general-chat-welcome").hidden = false;
   $("#report-agent-question").value = "";
   $("#report-agent-template").value = "";
   updateReportFormatVisibility();
@@ -1546,7 +1706,8 @@ async function loadWorkspace(user) {
   }
   $("#access-matrix").replaceChildren();
   $("#connection-status").textContent = "Knowledge base connected";
-  $("#user-badge").textContent = `${user.username} · ${user.role}`;
+  $("#user-badge").textContent = `${user.username} (${user.role})`;
+  $("#account-initial").textContent = (user.username || "?").charAt(0).toUpperCase();
   $("#user-badge").hidden = false;
   $("#logout-button").hidden = false;
   $(".intro").hidden = user.role === "document_processing_owner";
@@ -1839,22 +2000,34 @@ async function loadCorpus() {
   }
 }
 
-function renderSkeletonAnswer(panel, statusMessage = "Retrieving passages and preparing cited answer…") {
+function renderSkeletonAnswer(panel, statusMessage = "Đang gửi yêu cầu…", progress = []) {
   panel.hidden = false;
   panel.innerHTML = `
-    <div class="answer-header-wrap">
-      <div class="answer-heading">
-        <span class="answer-mark">AI</span>
-        <div><span class="eyebrow">PROCESSING QUERY</span><h3 class="stage-status">${escapeHtml(statusMessage)}</h3></div>
+    <section class="agent-progress" role="status" aria-live="polite" aria-busy="true">
+      <span class="agent-progress-spinner" aria-hidden="true"></span>
+      <div class="agent-progress-content">
+        <strong class="stage-status">${escapeHtml(statusMessage)}</strong>
+        <ol class="agent-progress-steps">${renderProgressSteps(progress)}</ol>
       </div>
-    </div>
-    <div class="skeleton-loader">
-      <div class="skeleton-line medium"></div>
-      <div class="skeleton-line"></div>
-      <div class="skeleton-line short"></div>
-      <div class="skeleton-card"></div>
-    </div>
+    </section>
   `;
+}
+
+function renderProgressSteps(progress = []) {
+  return progress.slice(-4).map(({ stage, state }) => `
+    <li class="agent-progress-step is-${escapeHtml(state)}">
+      <span aria-hidden="true">${state === "completed" ? "✓" : state === "failed" ? "!" : "·"}</span>
+      ${escapeHtml(STAGE_STATUS[stage] || "Đang xử lý")}
+    </li>`).join("");
+}
+
+function updatePendingProgress(turn) {
+  const entry = document.querySelector(`[data-turn-id="${turn.id}"]`);
+  if (!entry) return;
+  const heading = entry.querySelector(".stage-status");
+  const steps = entry.querySelector(".agent-progress-steps");
+  if (heading) swapStageText(heading, turn.status || "Đang xử lý yêu cầu…");
+  if (steps) steps.innerHTML = renderProgressSteps(turn.progress);
 }
 
 function setupQuickPrompts() {
@@ -1881,15 +2054,24 @@ $(".agent-grid").addEventListener("click", (event) => {
     $("#ask-form").requestSubmit();
   } else if (event.target.closest("[data-open-report]")) {
     $("#report-agent-form-section").hidden = false;
+    $("#report-fold").open = true;
     $("#report-agent-question").focus();
   }
 });
 
 function renderSessionTranscript(shouldScroll = false) {
-  const root = $("#answer-panel");
+  renderChatTranscript($("#answer-panel"), sessionTurns, shouldScroll);
+}
+
+function renderGeneralChatTranscript(shouldScroll = false) {
+  renderChatTranscript($("#general-chat-transcript"), generalTurns, shouldScroll);
+  $("#general-chat-welcome").hidden = generalTurns.length > 0;
+}
+
+function renderChatTranscript(root, turns, shouldScroll) {
   root.replaceChildren();
-  root.hidden = sessionTurns.length === 0;
-  for (const turn of sessionTurns) {
+  root.hidden = turns.length === 0;
+  for (const turn of turns) {
     const entry = document.createElement("article");
     entry.className = "chat-turn";
     entry.dataset.turnId = turn.id;
@@ -1898,8 +2080,8 @@ function renderSessionTranscript(shouldScroll = false) {
     response.className = "answer-panel chat-turn-response";
     entry.append(response);
     root.append(entry);
-    if (turn.state === "pending") renderSkeletonAnswer(response, turn.status || "Routing your request to the right agent...");
-    else if (turn.state === "error") response.innerHTML = `<p class="error-message">${escapeHtml(turn.error)}. Please check service configuration or connection.</p>`;
+    if (turn.state === "pending") renderSkeletonAnswer(response, turn.status || "Đang gửi yêu cầu…", turn.progress);
+    else if (turn.state === "error") response.innerHTML = `<p class="error-message" role="alert">${escapeHtml(turn.error)}. Please check service configuration or connection.</p>`;
     else if (turn.result) {
       renderAgentResult(turn.result, response, false);
       attachFeedback(response, turn);
@@ -1914,56 +2096,127 @@ function renderSessionTranscript(shouldScroll = false) {
 }
 
 $("#new-conversation").addEventListener("click", () => {
-  resetConversationState();
+  agentConversationId = crypto.randomUUID();
+  sessionTurns = [];
+  $("#answer-panel").replaceChildren();
+  $("#answer-panel").hidden = true;
   $("#question").value = "";
 });
 
-$("#ask-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const requestConversationId = agentConversationId;
+$("#new-general-chat").addEventListener("click", () => {
+  generalConversationId = crypto.randomUUID();
+  generalTurns = [];
+  $("#general-chat-question").value = "";
+  resizeGeneralChatComposer();
+  renderGeneralChatTranscript();
+  $("#general-chat-question").focus();
+});
+
+async function sendChatMessage({ question, mode, button, input, state, render }) {
+  const requestConversationId = state.getId();
   const requestGeneration = sessionGeneration;
   const requestSubject = sessionSubject;
-  const button = $("#ask-button");
-  const question = $("#question").value.trim();
   if (!question) return;
-  const turn = { id: crypto.randomUUID(), mode: $("#agent-mode").value, question, state: "pending" };
-  sessionTurns.push(turn);
-  sessionTurns = sessionTurns.slice(-20);
-  renderSessionTranscript(true);
+  const turn = { id: crypto.randomUUID(), mode, question, state: "pending" };
+  state.turns.push(turn);
+  state.turns = state.turns.slice(-20);
+  input.value = "";
+  if (input.id === "general-chat-question") resizeGeneralChatComposer();
+  render(true);
+  const initialButton = button.innerHTML;
   button.disabled = true;
-  button.innerHTML = "<span>Working...</span>";
+  if (button.id === "general-chat-send") {
+    button.setAttribute("aria-busy", "true");
+    button.setAttribute("aria-label", "Đang gửi tin nhắn");
+  } else {
+    button.innerHTML = "<span>Working...</span>";
+  }
   try {
     const body = JSON.stringify({
-      question, agent_mode: $("#agent-mode").value, retrieval_method: "translated_hybrid_rerank",
+      question, agent_mode: mode, retrieval_method: "translated_hybrid_rerank",
       conversation_id: requestConversationId,
     });
     const signal = AbortSignal.timeout(135_000);
-    const showStage = (status) => {
-      turn.status = status;
-      const heading = document.querySelector(`[data-turn-id="${turn.id}"] .answer-heading h3`);
-      if (heading) swapStageText(heading, status);
+    const showStage = (stage, state) => {
+      turn.progress ||= [];
+      let step = turn.progress.find((item) => item.stage === stage);
+      if (!step) {
+        step = { stage, state };
+        turn.progress.push(step);
+      } else step.state = state;
+      const activeStep = [...turn.progress].reverse().find((item) => item.state === "started");
+      turn.status = activeStep ? STAGE_STATUS[activeStep.stage]
+        : state === "failed" ? "Một bước xử lý gặp lỗi"
+          : "Đang hoàn tất câu trả lời…";
+      updatePendingProgress(turn);
     };
     let data;
     try {
       data = await askAgentStream(body, signal, showStage);
     } catch (error) {
       if (!error.streamUnavailable) throw error;
+      turn.status = "Đang chờ agent xử lý yêu cầu…";
+      updatePendingProgress(turn);
       data = await api("/api/agents/chat", { method: "POST", body, signal });
     }
-    if (agentConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
+    if (state.getId() !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
     $("#connection-status").textContent = "Agent services connected";
     $(".status-dot").classList.add("connected");
     turn.result = data;
     turn.state = "complete";
     turn.typeOut = true;
   } catch (error) {
-    if (agentConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
+    if (state.getId() !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
     turn.error = error.name === "TimeoutError" ? "The request timed out. No answer was received; try again or choose a specialist" : error.message;
     turn.state = "error";
   } finally {
     button.disabled = false;
-    button.innerHTML = "<span>Ask agent</span>";
-    if (sessionTurns.includes(turn)) renderSessionTranscript(false);
+    if (button.id === "general-chat-send") {
+      button.removeAttribute("aria-busy");
+      button.setAttribute("aria-label", "Gửi tin nhắn");
+    } else button.innerHTML = initialButton;
+    if (state.turns.includes(turn)) render(false);
+  }
+}
+
+$("#ask-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  return sendChatMessage({
+    question: $("#question").value.trim(), mode: $("#agent-mode").value,
+    button: $("#ask-button"), input: $("#question"),
+    state: { getId: () => agentConversationId, get turns() { return sessionTurns; }, set turns(value) { sessionTurns = value; } }, render: renderSessionTranscript,
+  });
+});
+
+$("#general-chat-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const input = $("#general-chat-question");
+  sendChatMessage({
+    question: input.value.trim(), mode: "auto", button: $("#general-chat-send"), input,
+    state: { getId: () => generalConversationId, get turns() { return generalTurns; }, set turns(value) { generalTurns = value; } },
+    render: renderGeneralChatTranscript,
+  });
+});
+
+function resizeGeneralChatComposer() {
+  const input = $("#general-chat-question");
+  input.style.height = "auto";
+  input.style.height = `${Math.min(input.scrollHeight, 180)}px`;
+}
+
+$("#general-chat-question").addEventListener("input", resizeGeneralChatComposer);
+$("#general-chat-prompts").addEventListener("click", (event) => {
+  const prompt = event.target.closest("[data-general-chat-prompt]");
+  if (!prompt) return;
+  $("#general-chat-question").value = prompt.dataset.generalChatPrompt;
+  resizeGeneralChatComposer();
+  $("#general-chat-form").requestSubmit();
+});
+
+$("#general-chat-question").addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !event.shiftKey && !event.isComposing && event.keyCode !== 229) {
+    event.preventDefault();
+    $("#general-chat-form").requestSubmit();
   }
 });
 
@@ -2144,7 +2397,7 @@ function updateUploadKind() {
     ? ".pdf,.png,.jpg,.jpeg,.tif,.tiff"
     : ".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff";
   $("#upload-kind-help").textContent = invoiceMode
-    ? "OCR and a text model create a reviewable invoice JSON draft in a separate invoice table."
+    ? "Upload an invoice for extraction and review in the invoice table."
     : "Knowledge documents are indexed for document Q&A.";
   const file = $("#upload-file").files[0];
   if (file) $("#upload-file-info").textContent = validateUploadFile(file, invoiceMode)
@@ -2162,7 +2415,7 @@ $("#upload-file").addEventListener("change", (event) => {
   const invoiceMode = $("#upload-kind").value === "invoice";
   const error = validateUploadFile(file, invoiceMode);
   $("#upload-file-info").textContent = error || file.name + " · " + (file.size / 1024 / 1024).toFixed(1) + " MiB. "
-    + (invoiceMode ? "The source stays private; the JSON draft is stored separately from documents." : "The original stays private; review OCR output in Document Processing.");
+    + (invoiceMode ? "The source stays private and is available in the invoice table after processing." : "The original stays private; review OCR output in Document Processing.");
   $("#upload-file-info").setAttribute("role", error ? "alert" : "status");
 });
 
@@ -2232,8 +2485,6 @@ $("#upload-form").addEventListener("submit", async (event) => {
   controls.forEach((control) => { control.disabled = true; });
   form.setAttribute("aria-busy", "true");
   const status = $("#upload-status");
-  $("#upload-invoice-result").hidden = true;
-  $("#upload-invoice-result").textContent = "";
   const progress = $("#upload-progress");
   const elapsedLabel = $("#upload-elapsed");
   $("#upload-status-wrap").hidden = false;
@@ -2248,7 +2499,7 @@ $("#upload-form").addEventListener("submit", async (event) => {
   };
   status.dataset.state = "processing";
   status.textContent = invoiceMode
-    ? "Uploading invoice, running OCR and extracting a reviewable JSON draft. This is saved separately from the document corpus. Keep this tab open."
+    ? "Uploading invoice and running OCR and extraction. Keep this tab open."
     : parserHandoff
     ? "Uploading, extracting and saving parser output. Chunking and indexing run downstream. Keep this tab open."
     : "Uploading, extracting text/OCR, chunking and indexing. Keep this tab open.";
@@ -2271,12 +2522,11 @@ $("#upload-form").addEventListener("submit", async (event) => {
       progress.hidden = true;
       elapsedLabel.hidden = true;
       status.textContent = `Invoice ${result.invoice_id} saved for review in the invoice table. Model: ${result.extraction_model || "unknown"}.`;
-      $("#upload-invoice-result").textContent = JSON.stringify(result.invoice_data, null, 2);
-      $("#upload-invoice-result").hidden = false;
       form.reset();
+      $("#upload-kind").value = "invoice";
       updateUploadKind();
       updateUploadRoleSelection();
-      $("#upload-file-info").textContent = "Choose an invoice. Its JSON draft is stored separately from the document corpus.";
+      $("#upload-file-info").textContent = "Choose another invoice to process.";
       try {
         await refreshInvoiceReview(result.invoice_id);
         selectWorkspaceTab("invoice-review");
@@ -2353,11 +2603,20 @@ function setupThemeToggle() {
   button.addEventListener("click", () => {
     const isDark = document.documentElement.getAttribute("data-theme") === "dark";
     const nextTheme = isDark ? "light" : "dark";
-    if (nextTheme === "dark") {
-      document.documentElement.setAttribute("data-theme", "dark");
-    } else {
-      document.documentElement.removeAttribute("data-theme");
-    }
+    const apply = () => {
+      if (nextTheme === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+      } else {
+        document.documentElement.removeAttribute("data-theme");
+      }
+    };
+    // The new theme spreads out in a circle from the toggle; plain swap without View Transitions or with reduced motion.
+    if (document.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const box = button.getBoundingClientRect();
+      document.documentElement.style.setProperty("--reveal-x", `${box.left + box.width / 2}px`);
+      document.documentElement.style.setProperty("--reveal-y", `${box.top + box.height / 2}px`);
+      document.startViewTransition(apply);
+    } else apply();
     try {
       localStorage.setItem("app_theme", nextTheme);
     } catch {}

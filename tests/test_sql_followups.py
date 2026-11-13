@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import sys
 import unittest
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
 from core.analytics.metric_mapping import decode_sql_turn
@@ -85,6 +85,14 @@ class SQLPatchTest(unittest.TestCase):
 
 
 class SQLConversationTest(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        self.jev = patch.object(SQLAnalyticsAgent, '_check_ambiguity', return_value={
+            'choice': 'clear', 'probabilities': {'clear': 0.95, 'ambiguous': 0.05},
+            'confidence': 0.95, 'model': 'test',
+        })
+        self.jev.start()
+        self.addCleanup(self.jev.stop)
+
     async def test_expiry_identity_permission_changes_and_restart_clear_scope(self):
         agent=Mock();seen=[]
         async def run(request):

@@ -18,7 +18,7 @@ except ImportError:  # Keep imports usable before the optional DB dependency is 
     asyncpg = None  # type: ignore[assignment]
 
 
-DEFAULT_TIMEOUT_MS = 5_000
+DEFAULT_TIMEOUT_MS = 7_500
 
 
 class LazyCommerceRepository:

@@ -79,6 +79,7 @@ class AgentRouter:
                         if result.metadata.get('status') in {'complete', 'partial', 'clarification_required'}:
                             scope = state['plan'].objective if state.get('plan') else request.question
                             history.append({'question': request.question[:2000], 'scope': scope[:2000],
+                                            'answer': result.answer[:1500],
                                             'clarification': result.answer[:500] if result.metadata.get('status') == 'clarification_required' else ''})
                         self.last_destination = result.metadata.get('selected_route', 'unrouted')
                         return result
@@ -140,6 +141,8 @@ class AgentRouter:
                     action = result.metadata.pop('_sql_context_action','new')
                     if result.data.get('query_status') == 'executed':
                         state = SQLConversationState.model_validate({'accepted':result.metadata.get('semantic_interpretation')})
+                    elif action == 'failed':
+                        pass
                     elif state.pending and action != 'new':
                         combined = state.pending.question+'\nClarification reply: '+request.question
                         if len(combined) <= 2000:
@@ -188,7 +191,13 @@ class AgentRouter:
         execution = state['execution']
         failed = [execution.outcomes[t.id] for t in state['plan'].tasks if t.id in execution.outcomes
                   and execution.outcomes[t.id].status in {'failed', 'empty', 'clarification_required'}]
-        return {'revise': bool(failed and state['revisions'] < 1 and execution.invocations < 6
+        terminal_database_failure = any(
+            outcome.result and outcome.result.data.get('query_status') == 'error'
+            for outcome in failed
+        )
+        return {'revise': bool(failed and not terminal_database_failure
+                               and not any(o.status == 'clarification_required' for o in failed)
+                               and state['revisions'] < 1 and execution.invocations < 6
                                and remaining() > 5)}
 
     async def _revise(self, state):

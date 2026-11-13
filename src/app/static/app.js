@@ -361,6 +361,82 @@ async function fetchInvoiceSource(invoiceId, session) {
   }
 }
 
+// Image invoices open fitted to the pane; zoom with the buttons, Ctrl + wheel or + / − keys, drag to pan.
+function mountInvoiceImageViewer(wrapper, url) {
+  wrapper.querySelector(".invoice-zoom")?.remove();
+  const viewer = document.createElement("div");
+  viewer.className = "invoice-zoom";
+  viewer.innerHTML = `<div class="invoice-zoom-bar" role="toolbar" aria-label="Zoom the original invoice">
+      <button type="button" data-zoom="out" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>
+      <output aria-live="polite">100%</output>
+      <button type="button" data-zoom="in" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button type="button" data-zoom="fit" class="invoice-zoom-fit">Fit</button>
+      <button type="button" data-zoom="actual" class="invoice-zoom-fit">100%</button>
+    </div>
+    <div class="invoice-zoom-stage" tabindex="0" aria-label="Original invoice image"><img alt="Original invoice" draggable="false"></div>`;
+  wrapper.prepend(viewer);
+  const stage = viewer.querySelector(".invoice-zoom-stage");
+  const image = viewer.querySelector("img");
+  const label = viewer.querySelector("output");
+  let scale = 1;
+  let fitScale = 1;
+  const apply = (next, anchor = null) => {
+    const previous = scale;
+    scale = Math.min(6, Math.max(0.1, next));
+    image.style.width = `${Math.round(image.naturalWidth * scale)}px`;
+    label.textContent = `${Math.round(scale * 100)}%`;
+    viewer.querySelector("[data-zoom=fit]").setAttribute("aria-pressed", String(Math.abs(scale - fitScale) < 0.005));
+    if (anchor) {
+      const ratio = scale / previous;
+      stage.scrollLeft = (stage.scrollLeft + anchor.x) * ratio - anchor.x;
+      stage.scrollTop = (stage.scrollTop + anchor.y) * ratio - anchor.y;
+    }
+  };
+  const fit = () => {
+    if (!image.naturalWidth) return;
+    fitScale = Math.min((stage.clientWidth - 24) / image.naturalWidth, (stage.clientHeight - 24) / image.naturalHeight, 1.5);
+    apply(fitScale);
+    stage.scrollTo(0, 0);
+  };
+  image.addEventListener("load", fit, { once: true });
+  image.src = url;
+  viewer.querySelector(".invoice-zoom-bar").addEventListener("click", (event) => {
+    const action = event.target.closest("[data-zoom]")?.dataset.zoom;
+    const centre = { x: stage.clientWidth / 2, y: stage.clientHeight / 2 };
+    if (action === "in") apply(scale * 1.25, centre);
+    if (action === "out") apply(scale / 1.25, centre);
+    if (action === "fit") fit();
+    if (action === "actual") apply(1, centre);
+  });
+  stage.addEventListener("wheel", (event) => {
+    if (!event.ctrlKey && !event.metaKey) return;
+    event.preventDefault();
+    const box = stage.getBoundingClientRect();
+    apply(scale * (event.deltaY < 0 ? 1.12 : 1 / 1.12), { x: event.clientX - box.left, y: event.clientY - box.top });
+  }, { passive: false });
+  stage.addEventListener("keydown", (event) => {
+    const centre = { x: stage.clientWidth / 2, y: stage.clientHeight / 2 };
+    if (event.key === "+" || event.key === "=") { event.preventDefault(); apply(scale * 1.25, centre); }
+    if (event.key === "-") { event.preventDefault(); apply(scale / 1.25, centre); }
+    if (event.key === "0") { event.preventDefault(); fit(); }
+  });
+  let drag = null;
+  stage.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0) return;
+    drag = { x: event.clientX, y: event.clientY, left: stage.scrollLeft, top: stage.scrollTop };
+    stage.setPointerCapture(event.pointerId);
+    stage.classList.add("is-panning");
+  });
+  stage.addEventListener("pointermove", (event) => {
+    if (!drag) return;
+    stage.scrollLeft = drag.left - (event.clientX - drag.x);
+    stage.scrollTop = drag.top - (event.clientY - drag.y);
+  });
+  const endDrag = () => { drag = null; stage.classList.remove("is-panning"); };
+  stage.addEventListener("pointerup", endDrag);
+  stage.addEventListener("pointercancel", endDrag);
+}
+
 function attachInvoiceSource(invoice, session, sourcePromise = null) {
   if (!invoice.source_available) return;
   const invoiceId = invoice.invoice_id;
@@ -377,8 +453,11 @@ function attachInvoiceSource(invoice, session, sourcePromise = null) {
   pendingSource.then((result) => {
     if (session !== sessionGeneration || activeInvoiceReview?.invoice_id !== invoiceId || !wrapper.isConnected) return;
     if (result.url) {
-      frame.src = result.url;
-      frame.hidden = false;
+      if (/\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(invoice.source_filename || "")) mountInvoiceImageViewer(wrapper, result.url);
+      else {
+        frame.src = `${result.url}#zoom=page-fit`;
+        frame.hidden = false;
+      }
       status.remove();
     } else {
       status.textContent = result.error?.message || "Original file is unavailable.";
@@ -1068,7 +1147,7 @@ const PERMISSION_NAMES = {
   review_invoices: "Review invoices", run_upload_tests: "Run upload tests", review_upload_tests: "Review upload tests",
 };
 const AGENT_NAMES = {
-  knowledge: "Knowledge", sql: "Analytics", sql_analytics: "Analytics", analytics: "Analytics", auto: "Auto", agentic: "Auto",
+  knowledge: "Knowledge", sql: "Analytics", sql_analytics: "Analytics", analytics: "Analytics", auto: "Auto", agentic: "Auto (planner)",
   hybrid: "Knowledge + analytics", dashboard: "Dashboard", report: "Report", general: "General chat",
 };
 const RETRIEVAL_NAMES = {
@@ -1548,7 +1627,7 @@ function renderAgentMonitoring(data) {
   const agents = data.by_agent || [];
   const maxRuns = Math.max(1, ...agents.map((agent) => Number(agent.total_runs) || 0));
   $("#monitoring-agents").innerHTML = agents.length ? agents.map((agent) => `
-    <div class="monitoring-agent"><div><strong>${escapeHtml(displayName(AGENT_NAMES, agent.agent_name))}</strong><span>${formatNumber(agent.completed_runs)} of ${formatNumber(agent.total_runs)} completed, ${agent.average_elapsed_ms == null ? "no timing" : `${formatSeconds(agent.average_elapsed_ms)} average`}</span></div><i><b style="width:${Math.max(3, Number(agent.total_runs) / maxRuns * 100)}%"></b></i></div>
+    <div class="monitoring-agent"><div><strong>${escapeHtml(displayName(AGENT_NAMES, agent.agent_name))}</strong><span>${formatNumber(agent.completed_runs)} of ${formatNumber(agent.total_runs)} completed, ${agent.average_elapsed_ms == null ? "no timing" : `${formatSeconds(agent.average_elapsed_ms)} average`}</span></div><i role="img" aria-label="${formatNumber(agent.completed_runs)} completed and ${formatNumber(Math.max(0, agent.total_runs - agent.completed_runs))} failed or unfinished, out of ${formatNumber(agent.total_runs)} runs"><span class="bar-fill" style="width:${Math.max(3, Number(agent.total_runs) / maxRuns * 100)}%"><b class="is-done" style="width:${agent.total_runs ? Number(agent.completed_runs) / Number(agent.total_runs) * 100 : 0}%"></b><b class="is-other"></b></span></i></div>
   `).join("") : '<p class="analysis-empty">No agent runs have been recorded in the last 24 hours.</p>';
   const runs = data.recent_runs || [];
   $("#monitor-count-runs").textContent = runs.length ? formatNumber(runs.length) : "";

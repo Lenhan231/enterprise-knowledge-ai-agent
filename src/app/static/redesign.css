@@ -697,6 +697,9 @@
 :root .invoice-review-layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:20px;align-items:start}
 :root .invoice-review-queue{display:grid;gap:10px;position:sticky;top:16px}
 :root .invoice-review-list{display:flex;flex-direction:column;gap:0;margin:0;border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+/* The queue is pinned while the invoice scrolls, so it must fit the window (also when zoomed in): the list scrolls inside it. */
+:root .invoice-review-queue{grid-template-rows:minmax(0,1fr) auto;max-height:calc(100dvh - 32px)}
+:root .invoice-review-list{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
 :root .invoice-review-list .invoice-review-card{display:grid;gap:3px;width:100%;margin:0;padding:12px 14px;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none;text-align:left;cursor:pointer;transition:background .16s var(--ease)}
 :root .invoice-review-list .invoice-review-card:first-child{border-top:0}
 :root .invoice-review-list .invoice-review-card:hover{background:var(--surface-2)}

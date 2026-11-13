@@ -1667,15 +1667,21 @@ async function loadApiFile(path) {
 
 document.addEventListener("click", async (event) => {
   const link = event.target.closest?.('a[href^="/api/"]');
-  if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  if (!link || link.target !== "_blank" || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  const path = link.getAttribute("href");
+  const tab = window.open("about:blank", "_blank");  // opened now, while the click still counts
+  if (!tab) {
+    // A popup blocker refused the tab: let the browser open the link itself, on the backend in use. Never this tab.
+    link.setAttribute("href", path.replace(/^\/api(?=\/)/, apiBase));
+    setTimeout(() => link.setAttribute("href", path));
+    return;
+  }
   event.preventDefault();
-  const tab = link.target === "_blank" ? window.open("about:blank", "_blank") : null;  // opened now, while the click still counts
-  if (tab) tab.opener = null;
+  tab.opener = null;
   try {
-    const url = await loadApiFile(link.getAttribute("href"));
-    if (tab) tab.location.replace(url); else location.assign(url);
+    tab.location.replace(await loadApiFile(path));
   } catch (error) {
-    if (tab) tab.document.body.textContent = error.message;
+    tab.document.body.textContent = error.message;
   }
 });
 

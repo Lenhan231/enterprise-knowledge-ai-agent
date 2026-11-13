@@ -39,7 +39,7 @@ _TEXT_LAYOUT_LABELS = {
     "text", "title", "section_header", "caption", "footnote", "list_item",
     "page_header", "page_footer", "code", "key_value_region",
 }
-_VIETOCR_BATCH_SIZE = 8
+_VIETOCR_BATCH_SIZE = 16
 _TEXTLINE_ORIENTATION_BATCH_SIZE = 16
 
 

@@ -1,0 +1,313 @@
+{
+  "project": "FA26AI69",
+  "verified_on": "2026-11-13",
+  "questions": [
+    {
+      "id": "B01",
+      "difficulty": "Basic",
+      "english": "How many products are listed in the product catalog?",
+      "vietnamese": "Có bao nhiêu sản phẩm trong danh mục sản phẩm?",
+      "source_tables": [
+        "commerce.products"
+      ],
+      "evaluation_criteria": "COUNT(*)",
+      "verified_answer": "2412",
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B02",
+      "difficulty": "Basic",
+      "english": "How many products belong to each category? Sort from most to least.",
+      "vietnamese": "Mỗi danh mục có bao nhiêu sản phẩm? Sắp xếp từ nhiều đến ít.",
+      "source_tables": [
+        "commerce.products"
+      ],
+      "evaluation_criteria": "GROUP BY category; COUNT(*)",
+      "verified_answer": "Streetwear=1320; Outdoor=743; Casual=201; GenZ=148",
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B03",
+      "difficulty": "Basic",
+      "english": "How many orders were placed during 2022?",
+      "vietnamese": "Có bao nhiêu đơn hàng được đặt trong năm 2022?",
+      "source_tables": [
+        "commerce.orders"
+      ],
+      "evaluation_criteria": "COUNT(*) WHERE order_date >= 2022-01-01 AND order_date < 2023-01-01",
+      "verified_answer": null,
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B04",
+      "difficulty": "Basic",
+      "english": "How many delivered orders are recorded across the entire order history?",
+      "vietnamese": "Có bao nhiêu đơn hàng có trạng thái delivered trong toàn bộ lịch sử?",
+      "source_tables": [
+        "commerce.orders"
+      ],
+      "evaluation_criteria": "COUNT(*) WHERE order_status='delivered'",
+      "verified_answer": "516716",
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B05",
+      "difficulty": "Basic",
+      "english": "What was the total recorded sales revenue in December 2022?",
+      "vietnamese": "Tổng doanh thu ghi nhận từ bảng sales trong tháng 12/2022 là bao nhiêu?",
+      "source_tables": [
+        "commerce.sales"
+      ],
+      "evaluation_criteria": "SUM(revenue); date in 2022-12; do not infer currency",
+      "verified_answer": null,
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B06",
+      "difficulty": "Intermediate",
+      "english": "Show monthly sales revenue for all 12 months of 2022, ordered chronologically.",
+      "vietnamese": "Hiển thị doanh thu bán hàng theo từng tháng trong cả 12 tháng năm 2022, theo thứ tự thời gian.",
+      "source_tables": [
+        "commerce.sales"
+      ],
+      "evaluation_criteria": "DATE_TRUNC month; SUM(revenue); chronological",
+      "verified_answer": null,
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B07",
+      "difficulty": "Intermediate",
+      "english": "For 2022, calculate total sales revenue, total COGS, and gross profit (revenue minus COGS).",
+      "vietnamese": "Trong năm 2022, tính tổng doanh thu, tổng giá vốn và lợi nhuận gộp (doanh thu trừ giá vốn).",
+      "source_tables": [
+        "commerce.sales"
+      ],
+      "evaluation_criteria": "SUM revenue, SUM cogs, SUM(revenue-cogs)",
+      "verified_answer": null,
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B08",
+      "difficulty": "Intermediate",
+      "english": "Count orders by order status in 2022, including statuses with zero orders only if they appear in the data.",
+      "vietnamese": "Đếm số đơn hàng theo từng trạng thái trong năm 2022; chỉ hiển thị trạng thái có trong dữ liệu.",
+      "source_tables": [
+        "commerce.orders"
+      ],
+      "evaluation_criteria": "GROUP BY order_status; year filter",
+      "verified_answer": null,
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B09",
+      "difficulty": "Intermediate",
+      "english": "What are the top five cities by number of orders placed in 2022? Use the customer city.",
+      "vietnamese": "Năm 2022, năm thành phố nào có số đơn hàng nhiều nhất? Dùng thành phố của khách hàng.",
+      "source_tables": [
+        "commerce.orders",
+        "commerce.customers"
+      ],
+      "evaluation_criteria": "JOIN orders.customer_id=customers.customer_id; GROUP BY customers.city; top 5",
+      "verified_answer": null,
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B10",
+      "difficulty": "Intermediate",
+      "english": "Calculate the number of orders by payment method in 2022. Use the payment method recorded on orders.",
+      "vietnamese": "Tính số đơn hàng theo từng phương thức thanh toán năm 2022. Dùng phương thức thanh toán lưu trong bảng orders.",
+      "source_tables": [
+        "commerce.orders"
+      ],
+      "evaluation_criteria": "GROUP BY orders.payment_method; COUNT orders",
+      "verified_answer": null,
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B11",
+      "difficulty": "Intermediate",
+      "english": "For the inventory snapshot on 2022-12-31, how many product records have stockout_flag = true in each category?",
+      "vietnamese": "Tại ngày chốt tồn kho 31/12/2022, mỗi danh mục có bao nhiêu bản ghi sản phẩm với stockout_flag = true?",
+      "source_tables": [
+        "commerce.inventory"
+      ],
+      "evaluation_criteria": "snapshot_date=2022-12-31; stockout_flag IS TRUE; GROUP BY category",
+      "verified_answer": "Casual=31; GenZ=25; Outdoor=95; Streetwear=134",
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B12",
+      "difficulty": "Intermediate",
+      "english": "On 2022-12-31, list the 10 inventory products with the lowest stock_on_hand, breaking ties by product_id ascending.",
+      "vietnamese": "Ngày 31/12/2022, liệt kê 10 sản phẩm có stock_on_hand thấp nhất, nếu bằng nhau thì xếp theo product_id tăng dần.",
+      "source_tables": [
+        "commerce.inventory"
+      ],
+      "evaluation_criteria": "ORDER BY stock_on_hand ASC,product_id ASC LIMIT 10",
+      "verified_answer": null,
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B13",
+      "difficulty": "Intermediate",
+      "english": "What were the total sessions from each web traffic source in 2022?",
+      "vietnamese": "Tổng số phiên truy cập theo từng nguồn traffic trong năm 2022 là bao nhiêu?",
+      "source_tables": [
+        "commerce.web_traffic"
+      ],
+      "evaluation_criteria": "SUM(sessions) GROUP BY traffic_source, year filter",
+      "verified_answer": null,
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B14",
+      "difficulty": "Intermediate",
+      "english": "Which month of 2022 had the largest total number of page views? Return the month and value.",
+      "vietnamese": "Tháng nào trong năm 2022 có tổng page_views cao nhất? Trả về tháng và giá trị.",
+      "source_tables": [
+        "commerce.web_traffic"
+      ],
+      "evaluation_criteria": "SUM(page_views) by month; DESC with deterministic tie handling",
+      "verified_answer": null,
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B15",
+      "difficulty": "Advanced",
+      "english": "For each product category, calculate the total quantity sold in order items from orders placed in 2022. Sort descending.",
+      "vietnamese": "Với mỗi danh mục sản phẩm, tính tổng số lượng đã bán trong order_items của các đơn đặt năm 2022, sắp xếp giảm dần.",
+      "source_tables": [
+        "commerce.orders",
+        "commerce.order_items",
+        "commerce.products"
+      ],
+      "evaluation_criteria": "JOIN order_items.order_id=orders.order_id and order_items.product_id=products.product_id; SUM(quantity)",
+      "verified_answer": null,
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B16",
+      "difficulty": "Advanced",
+      "english": "Find the top 10 products by net order-item value in 2022, defined as SUM(quantity * unit_price - discount_amount).",
+      "vietnamese": "Tìm 10 sản phẩm có giá trị dòng đơn hàng ròng cao nhất năm 2022, định nghĩa SUM(quantity * unit_price - discount_amount).",
+      "source_tables": [
+        "commerce.orders",
+        "commerce.order_items",
+        "commerce.products"
+      ],
+      "evaluation_criteria": "JOIN; SUM expression; confirm discount null semantics; deterministic order",
+      "verified_answer": null,
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B17",
+      "difficulty": "Advanced",
+      "english": "Count distinct customers who placed at least two orders during 2022.",
+      "vietnamese": "Đếm số khách hàng khác nhau đã đặt ít nhất hai đơn hàng trong năm 2022.",
+      "source_tables": [
+        "commerce.orders"
+      ],
+      "evaluation_criteria": "GROUP BY customer_id HAVING COUNT(DISTINCT order_id)>=2; count customers",
+      "verified_answer": null,
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B18",
+      "difficulty": "Advanced",
+      "english": "For each month of 2022, calculate the count of returned items recorded in returns, using return_date and SUM(return_quantity).",
+      "vietnamese": "Với từng tháng năm 2022, tính số lượng sản phẩm được trả, dựa vào return_date và SUM(return_quantity).",
+      "source_tables": [
+        "commerce.returns"
+      ],
+      "evaluation_criteria": "GROUP BY return_date month; SUM(return_quantity)",
+      "verified_answer": null,
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B19",
+      "difficulty": "Advanced",
+      "english": "Calculate the average review rating per product category for reviews dated in 2022, and report the number of reviews per category.",
+      "vietnamese": "Tính điểm đánh giá trung bình theo danh mục sản phẩm cho các review trong năm 2022 và số review của từng danh mục.",
+      "source_tables": [
+        "commerce.reviews",
+        "commerce.products"
+      ],
+      "evaluation_criteria": "JOIN product_id; AVG(rating); COUNT(review_id)",
+      "verified_answer": null,
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B20",
+      "difficulty": "Advanced",
+      "english": "For each 2022 order status, calculate its percentage of all 2022 orders, rounded to two decimal places.",
+      "vietnamese": "Với mỗi trạng thái đơn hàng năm 2022, tính tỷ trọng phần trăm trên tổng đơn năm 2022, làm tròn hai chữ số thập phân.",
+      "source_tables": [
+        "commerce.orders"
+      ],
+      "evaluation_criteria": "COUNT(*) / total orders 2022 * 100, guard zero, ROUND(...,2)",
+      "verified_answer": null,
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B21",
+      "difficulty": "Expert",
+      "english": "For 2022, find the five customers with the highest total discounted order-item value, defined as SUM(quantity * unit_price - discount_amount) across their orders. Return customer_id and total.",
+      "vietnamese": "Trong năm 2022, tìm 5 khách hàng có tổng giá trị dòng đơn hàng sau giảm giá cao nhất, tính bằng SUM(quantity * unit_price - discount_amount) trên các đơn của họ. Trả về customer_id và tổng giá trị.",
+      "source_tables": [
+        "commerce.orders",
+        "commerce.order_items"
+      ],
+      "evaluation_criteria": "JOIN; SUM value; GROUP BY customer_id; ORDER BY value DESC customer_id ASC",
+      "verified_answer": null,
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B22",
+      "difficulty": "Expert",
+      "english": "For each month of 2022, calculate month-over-month percentage change in sales revenue. The first month should have NULL growth because no previous month is included.",
+      "vietnamese": "Tính tỷ lệ tăng trưởng doanh thu so với tháng trước cho từng tháng năm 2022. Tháng đầu phải có tăng trưởng NULL vì không xét tháng trước đó.",
+      "source_tables": [
+        "commerce.sales"
+      ],
+      "evaluation_criteria": "monthly SUM; LAG window; NULLIF previous 0; January NULL",
+      "verified_answer": null,
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B23",
+      "difficulty": "Expert",
+      "english": "At the 2022-12-31 inventory snapshot, how many distinct products have both stockout_flag = true and reorder_flag = true, by category?",
+      "vietnamese": "Tại ngày chốt kho 31/12/2022, mỗi danh mục có bao nhiêu sản phẩm khác nhau đồng thời có stockout_flag = true và reorder_flag = true?",
+      "source_tables": [
+        "commerce.inventory"
+      ],
+      "evaluation_criteria": "COUNT(DISTINCT product_id), both flags IS TRUE, GROUP BY category",
+      "verified_answer": null,
+      "expected_behavior": "execute_read_only_sql"
+    },
+    {
+      "id": "B24",
+      "difficulty": "Clarification",
+      "english": "What was the total stockout in 2022?",
+      "vietnamese": "Tổng stockout trong năm 2022 là bao nhiêu?",
+      "source_tables": [
+        "commerce.inventory"
+      ],
+      "evaluation_criteria": "CLARIFY: does stockout mean stockout_flag count, stockout_days sum, or distinct products? What snapshot or aggregation?",
+      "verified_answer": "Clarification required",
+      "expected_behavior": "clarify"
+    },
+    {
+      "id": "B25",
+      "difficulty": "Unsupported",
+      "english": "How many products are currently in stock as of today, November 13, 2026?",
+      "vietnamese": "Tính đến hôm nay, ngày 13/11/2026, có bao nhiêu sản phẩm đang còn hàng?",
+      "source_tables": [
+        "commerce.inventory"
+      ],
+      "evaluation_criteria": "NO CURRENT DATA: latest snapshot verified 2022-12-31; must disclose limitation and avoid presenting historical count as current",
+      "verified_answer": "Unsupported current-data request",
+      "expected_behavior": "report_unavailable"
+    }
+  ]
+}

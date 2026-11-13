@@ -698,16 +698,24 @@ def _process_invoice_upload(
     from core.database.invoice_repository import InvoiceRepository
 
     repository = InvoiceRepository()
+    process_started = time.perf_counter()
     try:
         if content is None:
             try:
+                stage_started = time.perf_counter()
                 storage, bucket = _storage_client()
                 content = storage.storage.from_(bucket).download(storage_path)
+                logger.info("INVOICE_UPLOAD_COMPONENT %s", json.dumps({
+                    "component": "source_download", "invoice_id": invoice_id,
+                    "elapsed_ms": round((time.perf_counter() - stage_started) * 1000, 2),
+                    "content_bytes": len(content),
+                }, separators=(",", ":")))
             except Exception as error:
                 raise RuntimeError("Stored invoice source could not be read") from error
         processing_url = os.environ.get("DOCUMENT_PROCESSING_URL")
         if not processing_url:
             raise RuntimeError("DOCUMENT_PROCESSING_URL is required")
+        stage_started = time.perf_counter()
         parsed = post_internal_service(processing_url, "/parse", {
             "filename": filename,
             "content": base64.b64encode(content).decode("ascii"),
@@ -727,10 +735,15 @@ def _process_invoice_upload(
                 "docling_table_structure": True,
             },
         }, timeout=int(os.getenv("DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS", "600")))
+        logger.info("INVOICE_UPLOAD_COMPONENT %s", json.dumps({
+            "component": "document_processing_request", "invoice_id": invoice_id,
+            "elapsed_ms": round((time.perf_counter() - stage_started) * 1000, 2),
+        }, separators=(",", ":")))
         extraction = parsed.get("invoice_extraction") or {}
         if extraction.get("status") != "review_required":
             raise RuntimeError("Invoice parser returned no reviewable extraction")
         invoice_data = extraction.get("fields")
+        stage_started = time.perf_counter()
         repository.save_result(
             invoice_id,
             invoice_data=invoice_data if isinstance(invoice_data, dict) else {},
@@ -745,6 +758,10 @@ def _process_invoice_upload(
             },
             error_message=extraction.get("parse_error"),
         )
+        logger.info("INVOICE_UPLOAD_COMPONENT %s", json.dumps({
+            "component": "save_result", "invoice_id": invoice_id,
+            "elapsed_ms": round((time.perf_counter() - stage_started) * 1000, 2),
+        }, separators=(",", ":")))
     except Exception as error:
         logger.exception("Invoice extraction failed for %s", invoice_id)
         try:
@@ -763,6 +780,10 @@ def _process_invoice_upload(
         except Exception:
             logger.exception("Failed to record invoice failure %s", invoice_id)
     finally:
+        logger.info("INVOICE_UPLOAD_COMPONENT %s", json.dumps({
+            "component": "background_processing_total", "invoice_id": invoice_id,
+            "elapsed_ms": round((time.perf_counter() - process_started) * 1000, 2),
+        }, separators=(",", ":")))
         repository.close()
 
 
@@ -805,7 +826,9 @@ async def upload_invoice(
     uploaded = False
     repository = None
     registered = False
+    upload_started = time.perf_counter()
     try:
+        stage_started = time.perf_counter()
         storage.storage.from_(bucket).upload(
             storage_path, content,
             {"content-type": {
@@ -815,9 +838,15 @@ async def upload_invoice(
             }[extension], "upsert": "false"},
         )
         uploaded = True
+        logger.info("INVOICE_UPLOAD_COMPONENT %s", json.dumps({
+            "component": "storage_upload", "invoice_id": invoice_id,
+            "elapsed_ms": round((time.perf_counter() - stage_started) * 1000, 2),
+            "content_bytes": len(content),
+        }, separators=(",", ":")))
         from core.database.invoice_repository import InvoiceRepository
 
         repository = InvoiceRepository()
+        stage_started = time.perf_counter()
         repository.create_upload({
             "invoice_id": invoice_id,
             "source_filename": filename,
@@ -827,6 +856,10 @@ async def upload_invoice(
             "uploaded_by": user["sub"],
         })
         registered = True
+        logger.info("INVOICE_UPLOAD_COMPONENT %s", json.dumps({
+            "component": "create_upload_record", "invoice_id": invoice_id,
+            "elapsed_ms": round((time.perf_counter() - stage_started) * 1000, 2),
+        }, separators=(",", ":")))
 
         background_tasks.add_task(
             _process_invoice_upload,
@@ -857,6 +890,10 @@ async def upload_invoice(
                 logger.exception("Failed cleaning unregistered invoice source %s", invoice_id)
         raise HTTPException(503, f"Invoice processing failed for {invoice_id}") from error
     finally:
+        logger.info("INVOICE_UPLOAD_COMPONENT %s", json.dumps({
+            "component": "upload_request_total", "invoice_id": invoice_id,
+            "elapsed_ms": round((time.perf_counter() - upload_started) * 1000, 2),
+        }, separators=(",", ":")))
         if repository is not None:
             repository.close()
 

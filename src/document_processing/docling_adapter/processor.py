@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
+import json
+import logging
 import os
 import tempfile
+import time
 from io import BytesIO
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
@@ -19,6 +23,39 @@ _OFFICE_FORMATS = {
     "xlsx", "xlsm", "xltx", "xltm",
     "pptx", "pptm", "potx", "potm", "ppsx", "ppsm",
 }
+
+logger = logging.getLogger(__name__)
+
+
+@contextmanager
+def _timed_component(component: str, **context: Any):
+    started = time.perf_counter()
+    try:
+        yield
+    finally:
+        logger.info(
+            "DOCUMENT_PROCESS_COMPONENT %s",
+            json.dumps(
+                {"component": component, "elapsed_ms": round((time.perf_counter() - started) * 1000, 2), **context},
+                separators=(",", ":"),
+            ),
+        )
+
+
+def _summarize_docling_timings(timings: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    summary = {}
+    for name, item in timings.items():
+        durations = [float(value) for value in getattr(item, "times", [])]
+        if not durations:
+            continue
+        scope = getattr(item, "scope", "")
+        summary[name] = {
+            "scope": str(getattr(scope, "value", scope)),
+            "count": int(getattr(item, "count", len(durations))),
+            "total_ms": round(sum(durations) * 1000, 2),
+            "intervals_ms": [round(value * 1000, 2) for value in durations],
+        }
+    return summary
 
 
 class DoclingProcessor:
@@ -51,12 +88,15 @@ class DoclingProcessor:
                 "Docling is unavailable; install it with `uv sync --extra docling`."
             ) from error
 
-        source_format = str(document.get("metadata", {}).get("format", "PDF")).lower()
+        metadata = document.get("metadata", {})
+        source_format = str(metadata.get("format", "PDF")).lower()
+        invoice_id = metadata.get("invoice_id")
         input_path = Path(file_path) if file_path else None
-        if input_path is not None and input_path.is_file():
-            payload = None
-        else:
-            payload = source if isinstance(source, bytes) else Path(source).read_bytes()
+        with _timed_component("source_read", invoice_id=invoice_id, source_format=source_format):
+            if input_path is not None and input_path.is_file():
+                payload = None
+            else:
+                payload = source if isinstance(source, bytes) else Path(source).read_bytes()
 
         requested_ocr = bool(self.config.get("docling_ocr", True))
         # PDFs always use OCR and discard backend text cells. The UI toggle controls
@@ -78,36 +118,49 @@ class DoclingProcessor:
                 self.config.get("docling_layout_score_threshold", 0.25)
             ),
         }
-        options = self._pipeline_options(
-            do_ocr,
-            scan_embedded_images,
-            bool(self.config.get("docling_page_images", False)),
-            source_format=source_format,
-        )
-        converter = get_converter(options)
-        for pipeline in converter.initialized_pipelines.values():
-            ocr_model = getattr(pipeline, "ocr_model", None)
-            if ocr_model is not None:
-                getattr(ocr_model, "routing_diagnostics", []).clear()
-                getattr(ocr_model, "orientation_diagnostics", []).clear()
-                getattr(ocr_model, "_orientation_counts", {}).clear()
+        with _timed_component("converter_setup", invoice_id=invoice_id, source_format=source_format):
+            options = self._pipeline_options(
+                do_ocr,
+                scan_embedded_images,
+                bool(self.config.get("docling_page_images", False)),
+                source_format=source_format,
+            )
+            converter = get_converter(options)
+            for pipeline in converter.initialized_pipelines.values():
+                ocr_model = getattr(pipeline, "ocr_model", None)
+                if ocr_model is not None:
+                    getattr(ocr_model, "routing_diagnostics", []).clear()
+                    getattr(ocr_model, "orientation_diagnostics", []).clear()
+                    getattr(ocr_model, "_orientation_counts", {}).clear()
+                    ocr_model.current_reference_id = invoice_id
 
         source_suffix = f".{source_format}" if source_format else ".pdf"
         source_bytes: bytes | None = None
         try:
-            if input_path is not None and input_path.is_file():
-                result = converter.convert(input_path)
-                if source_format == "docx":
-                    source_bytes = input_path.read_bytes()
-            else:
-                if source_format == "docx":
-                    source_bytes = payload
-                with tempfile.NamedTemporaryFile(suffix=source_suffix) as temporary:
-                    temporary.write(payload)
-                    temporary.flush()
-                    result = converter.convert(temporary.name)
+            from docling.datamodel.settings import DebugSettings, scoped
+
+            with _timed_component("docling_convert", invoice_id=invoice_id, source_format=source_format):
+                with scoped(debug=DebugSettings(profile_pipeline_timings=True)):
+                    if input_path is not None and input_path.is_file():
+                        result = converter.convert(input_path)
+                        if source_format == "docx":
+                            source_bytes = input_path.read_bytes()
+                    else:
+                        if source_format == "docx":
+                            source_bytes = payload
+                        with tempfile.NamedTemporaryFile(suffix=source_suffix) as temporary:
+                            temporary.write(payload)
+                            temporary.flush()
+                            result = converter.convert(temporary.name)
         except Exception as error:
             raise RuntimeError(f"Docling conversion failed: {type(error).__name__}: {error}") from error
+
+        profile = _summarize_docling_timings(getattr(result, "timings", {}))
+        if profile:
+            logger.info(
+                "DOCLING_PIPELINE_PROFILE %s",
+                json.dumps({"invoice_id": invoice_id, "source_format": source_format, "components": profile}, separators=(",", ":")),
+            )
 
         if "FAILURE" in str(result.status).upper():
             raise RuntimeError(f"Docling conversion failed: {result.status}")
@@ -156,42 +209,45 @@ class DoclingProcessor:
             for page_number, page in result.document.pages.items()
         }
         associate_chart_title_regions(chart_regions, layout_detections, page_sizes)
-        embedded_image_results = process_embedded_images(
-            result=result,
-            source_format=source_format,
-            formats_to_scan=_OFFICE_FORMATS,
-            picture_item_type=PictureItem,
-            pipeline_options=options,
-            input_format=InputFormat,
-            pdf_format_option=PdfFormatOption,
-            document_converter=DocumentConverter,
-            processor_config=processor_config,
-            table_item_type=TableItem,
-            ocr_enabled=scan_embedded_images,
-            docling_version=docling_version,
-        )
-        chart_recognition_results = recognize_chart_regions(
-            result.document,
-            processor_config,
-            chart_regions,
-            page_source=(input_path if input_path is not None and input_path.is_file() else payload),
-            source_format=source_format,
-            page_orientation_corrections=page_orientation_corrections,
-        )
+        with _timed_component("embedded_image_processing", invoice_id=invoice_id, source_format=source_format):
+            embedded_image_results = process_embedded_images(
+                result=result,
+                source_format=source_format,
+                formats_to_scan=_OFFICE_FORMATS,
+                picture_item_type=PictureItem,
+                pipeline_options=options,
+                input_format=InputFormat,
+                pdf_format_option=PdfFormatOption,
+                document_converter=DocumentConverter,
+                processor_config=processor_config,
+                table_item_type=TableItem,
+                ocr_enabled=scan_embedded_images,
+                docling_version=docling_version,
+            )
+        with _timed_component("chart_recognition", invoice_id=invoice_id, source_format=source_format):
+            chart_recognition_results = recognize_chart_regions(
+                result.document,
+                processor_config,
+                chart_regions,
+                page_source=(input_path if input_path is not None and input_path.is_file() else payload),
+                source_format=source_format,
+                page_orientation_corrections=page_orientation_corrections,
+            )
 
-        mapped = map_result(
-            result,
-            processor_config,
-            TableItem,
-            do_ocr,
-            docling_version,
-            source_format,
-            source_bytes,
-            embedded_image_results,
-            chart_regions=chart_regions,
-            chart_recognition_results=chart_recognition_results,
-            layout_detections=layout_detections,
-        )
+        with _timed_component("result_mapping", invoice_id=invoice_id, source_format=source_format):
+            mapped = map_result(
+                result,
+                processor_config,
+                TableItem,
+                do_ocr,
+                docling_version,
+                source_format,
+                source_bytes,
+                embedded_image_results,
+                chart_regions=chart_regions,
+                chart_recognition_results=chart_recognition_results,
+                layout_detections=layout_detections,
+            )
         mapped["page_sizes"] = {
             str(page_number): {"width": width, "height": height}
             for page_number, (width, height) in page_sizes.items()
@@ -213,21 +269,22 @@ class DoclingProcessor:
         elif source_format in _OFFICE_FORMATS:
             mapped["metadata"]["embedded_image_ocr_enabled"] = scan_embedded_images
         if self.config.get("docling_page_images", False):
-            page_previews = {}
-            page_sizes = {}
-            for page_number, page in result.document.pages.items():
-                image = getattr(page, "image", None)
-                pil_image = getattr(image, "pil_image", None)
-                if pil_image is not None:
-                    buffer = BytesIO()
-                    pil_image.save(buffer, format="PNG")
-                    page_previews[str(page_number)] = buffer.getvalue()
-                size = getattr(page, "size", None)
-                if size is not None:
-                    page_sizes[str(page_number)] = {
-                        "width": float(size.width),
-                        "height": float(size.height),
-                    }
+            with _timed_component("page_preview_encoding", invoice_id=invoice_id, source_format=source_format):
+                page_previews = {}
+                page_sizes = {}
+                for page_number, page in result.document.pages.items():
+                    image = getattr(page, "image", None)
+                    pil_image = getattr(image, "pil_image", None)
+                    if pil_image is not None:
+                        buffer = BytesIO()
+                        pil_image.save(buffer, format="PNG")
+                        page_previews[str(page_number)] = buffer.getvalue()
+                    size = getattr(page, "size", None)
+                    if size is not None:
+                        page_sizes[str(page_number)] = {
+                            "width": float(size.width),
+                            "height": float(size.height),
+                        }
             mapped["page_previews"] = page_previews
             mapped["page_sizes"] = page_sizes
         return mapped

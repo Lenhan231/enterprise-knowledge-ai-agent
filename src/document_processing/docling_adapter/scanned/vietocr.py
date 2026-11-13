@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import re
+import time
 import unicodedata
 from pathlib import Path
 from typing import ClassVar, Type
@@ -38,6 +39,7 @@ _TEXT_LAYOUT_LABELS = {
     "text", "title", "section_header", "caption", "footnote", "list_item",
     "page_header", "page_footer", "code", "key_value_region",
 }
+_VIETOCR_BATCH_SIZE = 8
 
 
 class VietOcrOptions(OcrOptions):
@@ -116,11 +118,33 @@ class VietOcrModel(BaseOcrModel):
         self.orientation_diagnostics: list[dict] = []
         self.routing_diagnostics: list[dict] = []
         self._orientation_counts: dict[int, int] = {}
+        self._last_recognition_batches = 0
         self.current_reference_id: str | None = None
 
     def _recognize_line(self, line: np.ndarray) -> tuple[str, str]:
         image = Image.fromarray(cv2.cvtColor(line, cv2.COLOR_BGR2RGB))
         return str(self.recognizer.predict(image) or "").strip(), "default"
+
+    def _recognize_lines(self, lines: list[np.ndarray]) -> list[tuple[str, str]]:
+        """Recognize bounded batches while preserving the detector's line order."""
+        predict_batch = getattr(self.recognizer, "predict_batch", None)
+        if not callable(predict_batch):
+            self._last_recognition_batches = len(lines)
+            return [self._recognize_line(line) for line in lines]
+
+        results: list[tuple[str, str]] = []
+        self._last_recognition_batches = 0
+        for start in range(0, len(lines), _VIETOCR_BATCH_SIZE):
+            images = [
+                Image.fromarray(cv2.cvtColor(line, cv2.COLOR_BGR2RGB))
+                for line in lines[start : start + _VIETOCR_BATCH_SIZE]
+            ]
+            predictions = predict_batch(images)
+            if len(predictions) != len(images):
+                raise ValueError("VietOCR batch result count does not match input count")
+            results.extend((str(text or "").strip(), "default") for text in predictions)
+            self._last_recognition_batches += 1
+        return results
 
     @staticmethod
     def _save_crop_debug(line: np.ndarray, diagnostic: dict, text: str, layout_label: str) -> None:
@@ -210,8 +234,19 @@ class VietOcrModel(BaseOcrModel):
                 continue
 
             page_number = int(page.page_no)
+            page_started = time.perf_counter()
+            component_seconds = {
+                "region_crop_orientation": 0.0,
+                "line_detection_merge": 0.0,
+                "line_crop_orientation": 0.0,
+                "vietocr_recognition": 0.0,
+                "line_geometry_postprocess": 0.0,
+            }
+            line_count = 0
+            recognition_batches = 0
 
             with TimeRecorder(conv_res, "ocr"):
+                region_discovery_started = time.perf_counter()
                 layout = page.predictions.layout
                 if layout is not None and layout.clusters:
                     ocr_regions = [
@@ -223,6 +258,7 @@ class VietOcrModel(BaseOcrModel):
                     ]
                 else:
                     ocr_regions = [(rect, "page") for rect in self.get_ocr_rects(page)]
+                component_seconds["region_discovery"] = time.perf_counter() - region_discovery_started
                 print(
                     "OCR regions before line detection:",
                     page_number,
@@ -237,6 +273,7 @@ class VietOcrModel(BaseOcrModel):
                 for ocr_rect, region_label in ocr_regions:
                     if ocr_rect.area() == 0:
                         continue
+                    region_started = time.perf_counter()
                     crop = page._backend.get_page_image(
                         scale=self.scale, cropbox=ocr_rect
                     )
@@ -273,7 +310,9 @@ class VietOcrModel(BaseOcrModel):
                         crop = rotate_for_reading(crop, doc_orientation)
                     image_size = crop.size
                     image = cv2.cvtColor(np.asarray(crop), cv2.COLOR_RGB2BGR)
+                    component_seconds["region_crop_orientation"] += time.perf_counter() - region_started
                     detection_image = image
+                    detection_started = time.perf_counter()
                     boxes = detect_line_boxes(self.detector, detection_image)
                     vertical_padding = 0
                     if boxes is None or len(boxes) == 0:
@@ -299,8 +338,12 @@ class VietOcrModel(BaseOcrModel):
                     else:
                         boxes = merge_line_fragments(boxes)
                     if boxes is None or len(boxes) == 0:
+                        component_seconds["line_detection_merge"] += time.perf_counter() - detection_started
                         continue
+                    component_seconds["line_detection_merge"] += time.perf_counter() - detection_started
 
+                    prepared_lines = []
+                    line_orientation_started = time.perf_counter()
                     for index, (quad, merged_fragments) in enumerate(boxes):
                         quad = np.asarray(quad, dtype=np.float32)
                         line = crop_line(
@@ -317,7 +360,21 @@ class VietOcrModel(BaseOcrModel):
                             line_orientation_correction = 0
                         if line_orientation_correction == 180:
                             line = cv2.rotate(line, cv2.ROTATE_180)
-                        text, route = self._recognize_line(line)
+                        prepared_lines.append((index, quad, merged_fragments, line,
+                                               line_orientation_correction, line_orientation,
+                                               line_confidence))
+                    component_seconds["line_crop_orientation"] += time.perf_counter() - line_orientation_started
+                    line_count += len(prepared_lines)
+                    recognition_started = time.perf_counter()
+                    recognized_lines = self._recognize_lines(
+                        [prepared[3] for prepared in prepared_lines]
+                    )
+                    component_seconds["vietocr_recognition"] += time.perf_counter() - recognition_started
+                    recognition_batches += self._last_recognition_batches
+                    geometry_started = time.perf_counter()
+                    for prepared, (text, route) in zip(prepared_lines, recognized_lines):
+                        (index, quad, merged_fragments, line, line_orientation_correction,
+                         line_orientation, line_confidence) = prepared
                         page_quad = quad.copy()
                         page_quad[:, 1] -= vertical_padding
                         page_quad[:, 0] = np.clip(page_quad[:, 0], 0, image_size[0] - 1)
@@ -386,8 +443,28 @@ class VietOcrModel(BaseOcrModel):
                             )
                         )
                         cell_region_indices.append(region_index)
+                    component_seconds["line_geometry_postprocess"] += time.perf_counter() - geometry_started
                 cells = self._deduplicate_overlapping_cells(cells, cell_region_indices)
                 self.post_process_cells(cells, page, conv_res)
+            component_ms = {
+                key: round(value * 1000, 2)
+                for key, value in component_seconds.items()
+            }
+            component_ms["ocr_wall"] = round((time.perf_counter() - page_started) * 1000, 2)
+            _LOGGER.info(
+                "OCR_COMPONENT_TIMING %s",
+                json.dumps(
+                    {
+                        "invoice_id": self.current_reference_id,
+                        "page_number": page_number,
+                        "region_count": len(ocr_regions),
+                        "line_count": line_count,
+                        "recognition_batches": recognition_batches,
+                        "timings_ms": component_ms,
+                    },
+                    separators=(",", ":"),
+                ),
+            )
             yield page
 
 

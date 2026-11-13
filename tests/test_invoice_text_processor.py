@@ -5,8 +5,7 @@ from document_processing.document_processor import DocumentProcessor
 from document_processing.invoice_text_processor import (
     InvoiceFields,
     SCHEMA,
-    _fields_from_tables,
-    _fields_from_labeled_elements,
+    _extraction_jobs,
     _parse_json_response,
     _prepare_extraction_input,
 )
@@ -39,7 +38,7 @@ class InvoiceTextProcessorTest(unittest.TestCase):
         self.assertEqual(parsed["tax_amount"], "9440000")
         self.assertIsNone(parsed["subtotal"])
 
-    def test_invoice_input_separates_guide_items_and_totals(self):
+    def test_invoice_input_preserves_rows_for_header_and_table_jobs(self):
         columns = ["STT", "Tên hàng hóa, dịch vụ", "ĐVT", "Số lượng", "Đơn giá", "Thành tiền"]
         guide = dict(zip(columns, ["1", "2", "3", "4", "5", "6?4x5"]))
         noisy_guide = dict(zip(columns, ["1", "tư.", "ở.", "40 đ.", "5.", "6 - 45."]))
@@ -49,26 +48,27 @@ class InvoiceTextProcessorTest(unittest.TestCase):
         total = dict(zip(columns, ["", "", "Tổng tiền thanh toán:", "", "", "127.440.000"]))
         source_rows = [guide, noisy_guide, actual, subtotal, tax, total]
         prepared = _prepare_extraction_input([], [{"columns": columns, "rows": source_rows}])
-        table = prepared["tables"][0]
-        self.assertEqual(table["item_rows"], [{
-            "description": "Sửa chữa văn phòng", "quantity": None, "unit": None,
-            "unit_price": None, "amount": "118.000.000",
-        }])
-        self.assertEqual(_fields_from_tables(prepared["tables"]), {
-            "items": table["item_rows"], "subtotal": "118.000.000",
-            "tax_amount": "9.440.000", "total_amount": "127.440.000",
-        })
+        jobs = _extraction_jobs(prepared)
+
+        self.assertEqual([job["kind"] for job in jobs], ["table"])
+        self.assertIn("Tên hàng hóa, dịch vụ", jobs[0]["prompt"])
+        self.assertIn("118.000.000", jobs[0]["prompt"])
+        self.assertIn("9.440.000", jobs[0]["prompt"])
+        self.assertIn("127.440.000", jobs[0]["prompt"])
         self.assertEqual(source_rows, [guide, noisy_guide, actual, subtotal, tax, total])
 
-    def test_invoice_names_use_explicit_ocr_labels(self):
-        fields = _fields_from_labeled_elements([
-            {"type": "title", "text": "CÔNG TY TNHH ĐẦU TƯ XÂY DỰNG THƯƠNG MẠI GIA PHÁT HUY"},
-            {"type": "text", "text": "Tên đơn vị: CÔNG TY TNHH NHÔM KÍNH BÌNH MINH"},
-        ])
-        self.assertEqual(fields, {
-            "seller": "CÔNG TY TNHH ĐẦU TƯ XÂY DỰNG THƯƠNG MẠI GIA PHÁT HUY",
-            "buyer": "CÔNG TY TNHH NHÔM KÍNH BÌNH MINH",
-        })
+    def test_invoice_party_labels_and_text_are_retained_as_evidence(self):
+        elements = [
+            {"element_type": "title", "text": "CÔNG TY TNHH ĐẦU TƯ XÂY DỰNG THƯƠNG MẠI GIA PHÁT HUY"},
+            {"element_type": "text", "text": "Tên đơn vị: CÔNG TY TNHH NHÔM KÍNH BÌNH MINH"},
+        ]
+        jobs = _extraction_jobs(_prepare_extraction_input(elements, []))
+
+        self.assertEqual(len(jobs), 1)
+        self.assertEqual(jobs[0]["kind"], "document")
+        self.assertIn('"element_type": "title"', jobs[0]["prompt"])
+        self.assertIn("CÔNG TY TNHH ĐẦU TƯ XÂY DỰNG THƯƠNG MẠI GIA PHÁT HUY", jobs[0]["prompt"])
+        self.assertIn("Tên đơn vị: CÔNG TY TNHH NHÔM KÍNH BÌNH MINH", jobs[0]["prompt"])
 
     def test_invoice_dispatches_docling_then_text_extraction(self):
         docling_output = {
@@ -89,6 +89,7 @@ class InvoiceTextProcessorTest(unittest.TestCase):
 
         self.assertEqual(parse.call_count, 1)
         self.assertEqual(extract.call_args.args, (docling_output["elements"], docling_output["tables"]))
+        self.assertEqual(extract.call_args.kwargs, {"reference_id": None})
         self.assertEqual(result["invoice_extraction"], extraction)
         self.assertEqual(result["metadata"]["parser_engine"], "docling")
         self.assertEqual(result["metadata"]["pipeline_id"], "docling_qwen_invoice_text")

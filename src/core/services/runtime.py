@@ -1,9 +1,11 @@
 """Private, single-purpose model and parser runtimes selected by SERVICE_KIND."""
 import base64
 import binascii
+import json
 import logging
 import os
 import secrets
+import time
 from contextlib import asynccontextmanager
 from threading import Lock
 
@@ -98,16 +100,50 @@ class Parse(BaseModel):
 def parse(body: Parse):
     if os.getenv("SERVICE_KIND") != "document-processing":
         raise HTTPException(404)
+    request_started = time.perf_counter()
+    timings_ms = {}
+    invoice_id = body.metadata.get("invoice_id")
+    source_format = str(body.metadata.get("format") or body.filename.rsplit(".", 1)[-1]).lower()
+    result_status = "failed"
     try:
+        stage_started = time.perf_counter()
         content = base64.b64decode(body.content, validate=True)
+        timings_ms["base64_decode"] = round((time.perf_counter() - stage_started) * 1000, 2)
         if len(content) > 50 * 1024 * 1024:
             raise HTTPException(413, "Document exceeds 50 MiB")
         from document_processing.document_processor import DocumentProcessor
-        with LOCK:
-            result = DocumentProcessor(body.config).process(body.filename, content, body.metadata)
+        lock_started = time.perf_counter()
+        LOCK.acquire()
+        timings_ms["queue_lock_wait"] = round((time.perf_counter() - lock_started) * 1000, 2)
+        try:
+            stage_started = time.perf_counter()
+            try:
+                result = DocumentProcessor(body.config).process(body.filename, content, body.metadata)
+            finally:
+                timings_ms["document_processor"] = round((time.perf_counter() - stage_started) * 1000, 2)
+        finally:
+            LOCK.release()
         if "page_previews" in result:
+            stage_started = time.perf_counter()
             result["page_previews"] = {key: base64.b64encode(value).decode("ascii")
                                        for key, value in result["page_previews"].items()}
+            timings_ms["preview_base64_encode"] = round((time.perf_counter() - stage_started) * 1000, 2)
+        result_status = "completed"
         return result
     except (ValueError, binascii.Error) as error:
         raise HTTPException(422, "Invalid document") from error
+    finally:
+        logger.info(
+            "DOCUMENT_PARSE_REQUEST_TIMING %s",
+            json.dumps(
+                {
+                    "invoice_id": invoice_id,
+                    "filename_extension": source_format,
+                    "content_bytes": len(content) if "content" in locals() else None,
+                    "status": result_status,
+                    "timings_ms": timings_ms,
+                    "total_ms": round((time.perf_counter() - request_started) * 1000, 2),
+                },
+                separators=(",", ":"),
+            ),
+        )

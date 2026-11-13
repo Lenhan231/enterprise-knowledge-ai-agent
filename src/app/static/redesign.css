@@ -6,7 +6,8 @@
   --mono:"JetBrains Mono",ui-monospace,monospace;
   --bg:#f2f5f4;--surface:#fff;--surface-2:#f7f9f8;--surface-3:#ebf0ee;
   --line:#dfe6e3;--line-strong:#c3cec9;
-  --ink:#14211d;--ink-2:#2f3e39;--muted:#5d6d67;--faint:#8b9993;
+  /* faint stays a step lighter than muted but holds 4.5:1 on white, the page and sunk surfaces */
+  --ink:#14211d;--ink-2:#2f3e39;--muted:#5d6d67;--faint:#63736d;
   --accent:#0b7a66;--accent-ink:#075c4d;--accent-soft:#e2f2ed;--accent-line:#b3dbcf;--on-accent:#fff;
   --ok:#14866a;--ok-ink:#0b6450;--ok-soft:#e2f4ec;--ok-line:#a9dcc6;
   --warn:#b7720f;--warn-ink:#83510a;--warn-soft:#fdf3e1;--warn-line:#f0d6a6;
@@ -23,7 +24,7 @@
 :root[data-theme="dark"]{
   --bg:#0f1916;--surface:#14201c;--surface-2:#182621;--surface-3:#1e2f29;
   --line:#253832;--line-strong:#36504a;
-  --ink:#e3ede9;--ink-2:#c4d3cd;--muted:#93a69f;--faint:#677a73;
+  --ink:#e3ede9;--ink-2:#c4d3cd;--muted:#93a69f;--faint:#7b8e87;
   --accent:#6fc2ab;--accent-ink:#9ad6c4;--accent-soft:#143229;--accent-line:#235246;--on-accent:#06201a;
   --ok:#6fc2ab;--ok-ink:#9ad6c4;--ok-soft:#143229;--ok-line:#235246;
   --warn:#e0a547;--warn-ink:#f0c57d;--warn-soft:#2c2414;--warn-line:#56431f;
@@ -158,7 +159,8 @@
 :root .monitoring-stat span{color:var(--muted);font-size:13px}
 :root .monitoring-stat strong{color:var(--ink);font:650 26px/1.15 var(--font);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 :root .monitoring-agent i{height:8px;border-radius:999px;background:var(--surface-3)}
-:root .monitoring-agent i b{border-radius:999px;background:var(--accent)}
+/* run volume is not verification, so the bars are neutral ink, not jade (One Seal Rule) */
+:root .monitoring-agent i b{border-radius:999px;background:linear-gradient(90deg,var(--accent-line),var(--accent))}
 :root .monitoring-agent strong{font-weight:600}
 :root .monitoring-agent span{color:var(--muted);font-size:13px}
 :root .quick-chip{min-height:34px;padding:0 13px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink-2);font:500 13px/1 var(--font)}
@@ -181,7 +183,7 @@
 /* ---------- access matrix, file picker ---------- */
 :root .admin-section{padding:24px}
 :root .access-matrix article{border-radius:var(--radius-card)}
-:root .access-matrix article strong{font-weight:600}
+:root .access-matrix article strong{font-weight:600;text-transform:none}
 :root .access-matrix article span{color:var(--muted);font-size:13px;line-height:1.55}
 :root input[type=file]{display:block;width:100%;height:auto;min-height:52px;padding:7px;border:1px dashed var(--line-strong);border-radius:var(--radius-control);background:var(--surface-2);line-height:36px;cursor:pointer}
 :root input[type=file]:hover{border-color:var(--accent-line);background:var(--accent-soft)}
@@ -201,6 +203,18 @@
 :root .answer-verified::before{content:"";flex:none;width:20px;height:20px;border-radius:50%;background:var(--ok) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12.5 4 4 8-9'/%3E%3C/svg%3E") center/12px no-repeat}
 :root[data-theme="dark"] .answer-verified::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306201a' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12.5 4 4 8-9'/%3E%3C/svg%3E")}
 @keyframes sealIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+/* the other outcomes share the seal's anatomy in amber: a withheld or uncovered answer is the
+   check doing its job, so it is information with a next step, not an error */
+:root .answer-status{display:inline-flex;align-items:center;gap:8px;margin:4px 0 14px;padding:5px 12px 5px 6px;border:1px solid var(--warn-line);border-radius:999px;background:var(--warn-soft);color:var(--warn-ink);font:500 13px/1.3 var(--font);animation:sealIn .5s var(--ease) both}
+:root .answer-status::before{content:"";flex:none;width:20px;height:20px;border-radius:50%;background:var(--warn) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M12 7v6M12 17h.01'/%3E%3C/svg%3E") center/12px no-repeat}
+:root .answer-status.is-gap::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M7 12h10'/%3E%3C/svg%3E")}
+:root[data-theme="dark"] .answer-status::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306201a' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M12 7v6M12 17h.01'/%3E%3C/svg%3E")}
+:root[data-theme="dark"] .answer-status.is-gap::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306201a' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M7 12h10'/%3E%3C/svg%3E")}
+:root .answer-next{display:flex;flex-wrap:wrap;gap:8px;margin:-4px 0 18px}
+:root .chat-turn .answer-next{padding-left:37px}
+:root .general-chat .chat-turn .answer-next{padding-left:0}
+:root .answer-diagnostic{margin:0 0 16px;color:var(--muted);font-size:13px}
+:root .answer-diagnostic code{display:block;margin-top:6px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12.5px}
 :root .citations h4{color:var(--muted);font:500 13px/1.3 var(--font);letter-spacing:0;text-transform:none}
 :root .citation-count-badge{display:none}
 :root .citation{border:1px solid var(--line);border-radius:var(--radius-card);background:var(--surface);transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
@@ -211,20 +225,78 @@
 :root .citation>p{color:var(--ink-2);font-size:13.5px;line-height:1.6}
 :root .citation-foot{color:var(--faint);font-size:12px}
 :root .citation-foot a{color:var(--accent-ink);font-weight:500}
+/* sources stay compact (two lines of the passage) until a chip or the toggle opens them */
+:root .citation>p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+:root .citation.is-open>p{display:block;-webkit-line-clamp:unset;overflow:visible}
+:root .citation-foot{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
+:root .citation-toggle{padding:0;border:0;background:none;color:var(--accent-ink);font:500 12.5px/1.4 var(--font);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+:root .citation-toggle:hover{color:var(--accent)}
+/* chips at the label floor; no right margin, so a following full stop sits close */
+:root .cite-ref{min-width:24px;height:20px;margin:0 0 0 2px;font-size:12.5px}
+:root .sidebar-brand small,:root .agent-diagnostics small{font-size:12.5px}
 :root .agent-diagnostics summary,:root .token-usage summary{color:var(--muted);font-size:13px;cursor:pointer}
 :root .agent-diagnostics{font-size:13px;color:var(--ink-2)}
 :root .skeleton-line,:root .skeleton-card{background:linear-gradient(90deg,var(--surface-3) 0%,var(--surface-2) 45%,var(--surface-3) 90%);background-size:220% 100%;animation:shimmer 1.4s linear infinite}
 @keyframes shimmer{from{background-position:120% 0}to{background-position:-100% 0}}
 :root .stage-status{color:var(--ink-2)}
+/* waiting: one fixed stepper per answer; earlier steps tick when a later one starts, and the slow
+   step is named for what it is (checking every claim), so the wait reads as care rather than lag */
+:root .agent-progress{display:grid;gap:14px;max-width:640px;margin:4px 0 16px;padding:18px 20px;border:1px solid var(--line);border-radius:var(--radius-card);background:var(--surface)}
+:root .agent-progress-spinner{display:none}
+:root .agent-progress-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
+:root .agent-progress .stage-status{flex:1 1 240px;min-width:0;color:var(--ink);font:600 15px/1.4 var(--font);animation:none}
+:root .agent-progress-time{color:var(--muted);font-size:13px;line-height:1.4;font-variant-numeric:tabular-nums;white-space:nowrap}
+:root .agent-progress-stop{min-height:32px;padding:0 12px;font-size:13px}
+:root .agent-progress-steps{display:grid;gap:9px;margin:0;padding:0;list-style:none}
+:root .agent-progress-step{display:flex;align-items:center;gap:11px;color:var(--muted);font:400 13.5px/1.4 var(--font)}
+:root .agent-progress-step>span{width:auto;color:inherit;font-weight:inherit;text-align:left}
+:root .agent-progress-step>.agent-progress-label{flex:1 1 auto;min-width:0;white-space:normal;overflow-wrap:anywhere}
+:root .agent-progress-step>.agent-progress-marker{position:relative;flex:none;width:18px;height:18px;border:1.5px solid var(--line-strong);border-radius:50%;background:var(--surface)}
+:root .agent-progress-step.is-active{color:var(--ink);font-weight:600}
+:root .agent-progress-step.is-active>.agent-progress-marker{border-color:var(--accent)}
+:root .agent-progress-step.is-active>.agent-progress-marker::after{content:"";position:absolute;inset:3.5px;border-radius:50%;background:var(--accent);animation:stepPulse 1.4s var(--ease) infinite}
+:root .agent-progress-step.is-done{color:var(--ink-2)}
+:root .agent-progress-step.is-done>.agent-progress-marker{border-color:var(--ok);background:var(--ok);animation:stepDone .28s var(--ease)}
+:root .agent-progress-step.is-done>.agent-progress-marker::after,:root .agent-progress-step.is-failed>.agent-progress-marker::after{content:"";position:absolute;inset:0;background:var(--on-accent);-webkit-mask:var(--step-glyph) center/11px no-repeat;mask:var(--step-glyph) center/11px no-repeat}
+:root .agent-progress-step.is-done>.agent-progress-marker{--step-glyph:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E")}
+:root .agent-progress-step.is-skipped>.agent-progress-marker{border-style:dashed}
+:root .agent-progress-step.is-failed{color:var(--danger-ink)}
+:root .agent-progress-step.is-failed>.agent-progress-marker{border-color:var(--danger);background:var(--danger);--step-glyph:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round'%3E%3Cpath d='M7 7l10 10M17 7 7 17'/%3E%3C/svg%3E")}
+@keyframes stepPulse{0%,100%{opacity:.45;transform:scale(.7)}50%{opacity:1;transform:scale(1)}}
+@keyframes stepDone{from{transform:scale(.7)}to{transform:none}}
+:root .answer-stopped{margin:4px 0 16px;color:var(--muted);font-size:14px}
 :root .error-message{color:var(--danger-ink)}
 
 /* ---------- general chat ---------- */
 :root .general-chat-heading{border-bottom-color:var(--line)}
 :root .general-chat-heading h2{font:650 20px/1.3 var(--font)}
+:root .general-chat-subtitle{max-width:62ch;margin:4px 0 0;color:var(--muted);font-size:14px;line-height:1.5}
+/* General Chat is the one chat; Knowledge Q&A keeps only the report generator */
+:root .ask-panel[hidden]{display:none}
+/* an outage is stated in the conversation (amber: a gap, not an error of the user's) */
+:root .service-notice{flex:none;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin:14px 0 0;padding:12px 16px;border:1px solid var(--warn-line);border-radius:var(--radius-card);background:var(--warn-soft);color:var(--warn-ink);font-size:14px;line-height:1.45}
+:root .service-notice[hidden]{display:none}
+:root .service-notice p{margin:0}
+:root .service-notice .secondary-button{min-height:34px}
+:root .chat-undo{flex:none;margin:12px 0 0;color:var(--muted);font-size:14px}
+:root .chat-undo[hidden]{display:none}
+:root .chat-undo button{padding:0;border:0;background:none;color:var(--accent-ink);font:600 14px var(--font);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+/* report form selects keep the shared chevron (the older rule's background shorthand removed it) */
+:root .report-agent-panel .review-form select{padding:0 34px 0 12px;background:var(--surface-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237b8a84' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center/12px;appearance:none;-webkit-appearance:none}
+:root .section-heading>.secondary-button{flex:none;white-space:nowrap}
+:root .general-chat-mode{display:flex;flex:none;align-items:center;gap:8px;color:var(--muted);font:500 13px/1 var(--font);white-space:nowrap}
+:root .general-chat-mode select{min-height:36px;padding:0 32px 0 12px;border:1px solid var(--line);border-radius:10px;background-color:var(--surface-2);font-size:13.5px}
+:root .general-chat,:root .general-chat-composer{min-width:0}
+:root .general-chat-new{flex:none;white-space:nowrap}
+/* on a phone the composer wraps: the message on its own row, Route to and Send beneath it */
+@media(max-width:600px){
+  :root .general-chat-composer{flex-wrap:wrap}
+  :root .general-chat .general-chat-composer textarea{flex:1 1 100%;min-width:0;min-height:56px}
+  :root .general-chat-mode{margin-right:auto}
+}
 :root .general-chat-mark{width:52px;height:52px;border:1px solid var(--accent-line);border-radius:16px;background:var(--accent-soft);color:var(--accent-ink)}
 :root .general-chat-welcome h3{font:650 27px/1.25 var(--font);letter-spacing:-.025em}
 :root .general-chat-welcome>p{font-size:15px;max-width:46ch}
-:root .general-chat-prompts button{min-height:40px;padding:0 15px;border-radius:999px;background:var(--surface);font:500 13.5px/1.2 var(--font)}
 :root .general-chat-composer{border:1px solid var(--line);border-radius:20px;background:var(--surface);box-shadow:var(--shadow-float);transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
 :root .general-chat-composer:focus-within{border-color:var(--accent-line);box-shadow:var(--shadow-float),0 0 0 4px var(--accent-soft)}
 :root .general-chat-composer{align-items:flex-end;padding:8px 8px 8px 18px}
@@ -320,7 +392,14 @@
 
 /* amber marks a gap: partial answers and their limits */
 :root .answer-heading.is-partial .answer-mark{background:var(--warn-soft);color:var(--warn-ink)}
-:root .analysis-caveat{border:1px solid var(--warn-line);border-left:3px solid var(--warn);border-radius:10px;background:var(--warn-soft);color:var(--warn-ink)}
+:root .analysis-caveat{border:1px solid var(--warn-line);border-radius:10px;background:var(--warn-soft);color:var(--warn-ink)}
+/* notes and results are whole tinted boxes with one hairline, never a one-sided accent stripe */
+:root .citation-scope{border:1px solid var(--line);border-radius:8px;background:var(--surface-2)}
+:root .citation-ocr-note,:root .ocr-diagnostic{border:1px solid var(--warn-line);border-radius:10px}
+:root .upload-result{border:1px solid var(--ok-line);border-radius:10px;background:var(--ok-soft);color:var(--ok-ink)}
+:root .upload-result[data-state="warning"]{border-color:var(--warn-line);background:var(--warn-soft);color:var(--warn-ink)}
+:root .upload-result[data-state="error"]{border-color:var(--danger-line);background:var(--danger-soft);color:var(--danger-ink)}
+:root .invoice-review-detail>p[role=status]{border:1px solid var(--danger-line);border-radius:10px;background:var(--danger-soft);color:var(--danger-ink)}
 
 /* ---------- monitoring sub-tabs ---------- */
 :root .monitoring-tabs{position:sticky;top:0;z-index:5;display:inline-flex;gap:2px;margin:18px 0 4px;padding:4px;border:1px solid var(--line);border-radius:13px;background:var(--surface-3)}
@@ -337,6 +416,98 @@
 :root .rating-pill.down,:root .rating-icon.down{background:var(--warn-soft);color:var(--warn-ink)}
 :root .rating-icon{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:8px}
 :root .rating-pill svg,:root .rating-icon svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- legibility floor: styles.css still sets 9-11px on these live selectors; DESIGN.md labels
+   start at 12.5px, and stacked Vietnamese diacritics blur below that. :root outranks the older rules. ---------- */
+:root .ask-controls>span,
+:root .citation-title>span:last-child,
+:root .document-link,
+:root .corpus-note,
+:root .corpus-scope span,
+:root .login-card small,
+:root .topbar-status button,
+:root .topbar-status #user-badge,
+:root .access-matrix span,
+:root .upload-role-options label,
+:root .upload-form fieldset label,
+:root .candidate-row span,
+:root .candidate-row small,
+:root .candidate-row blockquote,
+:root .review-form button,
+:root .analysis-section-heading>span,
+:root .analysis-empty span,
+:root .analysis-caveat,
+:root .candidate-heading>div>span,
+:root .candidate-source,
+:root .candidate-source blockquote,
+:root .review-form label,
+:root .monitoring-note,
+:root .monitoring-agent>div,
+:root .extracted-table,
+:root .extracted-table th,
+:root .ocr-run-button span,
+:root .ocr-test-table h5 span,
+:root .ocr-test-empty,
+:root .knowledge-management-section>p,
+:root .knowledge-search-label,
+:root .knowledge-filters label,
+:root .knowledge-filters select,
+:root .knowledge-source-kind,
+:root .knowledge-document-copy span,
+:root .knowledge-document-copy small,
+:root .knowledge-document-copy a,
+:root .knowledge-access-editor,
+:root .knowledge-access-options label,
+:root .knowledge-document-actions>button,
+:root .knowledge-output-review>header span,
+:root .knowledge-output-evidence h3,
+:root .knowledge-output-element summary,
+:root .knowledge-output-table summary,
+:root .knowledge-output-metadata,
+:root .knowledge-output-table table,
+:root .chart-note,
+:root .quick-prompt-label,
+:root .ocr-context-list,
+:root .upload-form fieldset small,
+:root .upload-role-option strong,
+:root .upload-role-option small,
+:root .upload-step h3 span,
+:root .upload-access-step legend span,
+:root .upload-field-hint,
+:root .upload-form>.upload-access-step>.upload-role-selection,
+:root .token-usage,
+:root .token-usage small,
+:root .upload-elapsed,
+:root .upload-dropzone small,
+:root .upload-dropzone>.corpus-note,
+:root .sidebar-account #connection-status,
+:root .ocr-diagnostic,
+:root .report-agent-help,
+:root .chat-turn-question>span,
+:root .query-status,
+:root .invoice-review-card span,
+:root .invoice-review-card small,
+:root .invoice-review-card .invoice-status-badge,
+:root .invoice-processing-progress .upload-elapsed,
+:root .invoice-review-fields label,
+:root .invoice-review-item label,
+:root .invoice-review-item legend,
+:root .invoice-ocr-element summary,
+:root .invoice-review-filter-label,
+:root .invoice-review-pagination button,
+:root .invoice-review-pagination span,
+:root .chat-turn .answer-heading .eyebrow,
+:root .chat-turn .jev-note,
+:root .general-chat-heading .eyebrow,
+:root .general-chat .chat-turn .agent-data-result h4{font-size:12.5px}
+:root .knowledge-document-copy code,
+:root .knowledge-output-element pre,
+:root .knowledge-output-metadata pre,
+:root #parsed-chunk-list pre,
+:root .citation-sql-trace pre,
+:root .invoice-ocr-element pre,
+:root .chat-turn .agent-data-result details pre,
+:root .general-chat .chat-turn .agent-data-result details pre{font-size:12px}
 
 /* ---------- motion: only in answer to an action, plus the answer's own reveal ---------- */
 :root .tab-panel:not([hidden]),:root .chat-turn,:root .chat-turn-question p{animation:none}
@@ -433,3 +604,316 @@
   :root *,:root *::before,:root *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
   ::view-transition-new(root){animation:none}
 }
+
+/* ---------- General Chat · Ledger: each answer reads as a short cited document ---------- */
+:root{--serif:"Source Serif 4",Georgia,"Times New Roman",serif;--ledger-gutter:68px}
+:root .cite-glue{white-space:nowrap}
+:root .answer-seal{display:none}
+:root .answer-seal svg{display:block;width:100%;height:100%;overflow:visible}
+:root .answer-seal .seal-outer{fill:var(--surface);stroke:var(--ok);stroke-width:2.5}
+:root .answer-seal .seal-inner{fill:var(--ok-soft);stroke:var(--ok);stroke-width:1;stroke-dasharray:2 4}
+:root .answer-seal .seal-check{fill:none;stroke:var(--ok);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:46;animation:sealCheck .45s .3s var(--ease) both}
+@keyframes sealStamp{0%{opacity:0;transform:scale(1.3) rotate(-22deg)}60%{opacity:1;transform:scale(.95) rotate(-5deg)}100%{opacity:1;transform:scale(1) rotate(-8deg)}}
+@keyframes sealCheck{from{stroke-dashoffset:46}to{stroke-dashoffset:0}}
+
+/* question becomes the heading, the answer hangs off a gutter that holds the seal */
+:root .general-chat .chat-turn{margin-bottom:44px}
+:root .general-chat .chat-turn-question{justify-content:flex-start;padding-left:var(--ledger-gutter)}
+:root .general-chat .chat-turn-question>span{display:none}
+:root .general-chat .chat-turn-question p{max-width:64ch;padding:0;border-radius:0;background:transparent;color:var(--ink);font:600 21px/1.35 var(--font);letter-spacing:-.015em}
+:root .general-chat .chat-turn-response{position:relative;margin-top:6px;padding-left:var(--ledger-gutter)}
+:root .general-chat .chat-turn .answer-verified{margin:0 0 12px;padding:0;border:0;background:none;color:var(--ok-ink);font-size:13px;animation:none}
+:root .general-chat .chat-turn .answer-verified::before{display:none}
+:root .general-chat .chat-turn .answer-seal{display:block;position:absolute;left:0;top:-4px;width:54px;height:54px;transform:rotate(-8deg);animation:sealStamp .6s var(--ease) both}
+
+/* answer text in the reading serif, citations as small raised marks */
+:root .general-chat .chat-turn .answer-text{max-width:64ch;color:var(--ink);font:400 18px/1.72 var(--serif)}
+:root .general-chat .chat-turn .answer-text p{margin:0 0 .7em}
+:root .general-chat .chat-turn .answer-text strong{font-weight:600}
+:root .general-chat .chat-turn .answer-text .cite-ref{min-width:0;height:auto;margin:0 0 0 1px;padding:0 2px;border-radius:4px;background:transparent;color:var(--accent-ink);font:600 12.5px/1 var(--font);vertical-align:super}
+:root .general-chat .chat-turn .answer-text .cite-ref:hover,
+:root .general-chat .chat-turn .answer-text .cite-ref:focus-visible,
+:root .general-chat .chat-turn .answer-text .cite-ref.is-pointed{background:var(--accent);color:var(--on-accent)}
+
+/* sources as numbered footnotes under a rule */
+:root .general-chat .chat-turn .citations{max-width:64ch;margin-top:22px;padding:14px 0 0;border:0;border-top:1px solid var(--ink);border-radius:0;background:none}
+:root .general-chat .chat-turn .citation-header-row{margin-bottom:4px}
+:root .general-chat .chat-turn .citations h4{color:var(--ink);font-weight:600}
+:root .general-chat .chat-turn .citation-count-badge{display:none}
+:root .general-chat .chat-turn .citation{position:relative;margin:0;padding:12px 0 12px 40px;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+:root .general-chat .chat-turn .citation:first-of-type{border-top:0}
+:root .general-chat .chat-turn .citation-title{display:block}
+:root .general-chat .chat-turn .citation-title .citation-id{position:absolute;left:0;top:13px;padding:0;background:transparent;color:var(--accent-ink);font:600 13px/1.4 var(--font)}
+:root .general-chat .chat-turn .citation-title strong{font-size:14px}
+:root .general-chat .chat-turn .citation-title span:last-child{margin-left:10px;color:var(--muted);font-size:12.5px}
+:root .general-chat .chat-turn .citation>p{margin-top:6px;color:var(--ink-2);font:400 15px/1.6 var(--serif)}
+:root .general-chat .chat-turn .citation.is-highlighted{background:transparent;box-shadow:none}
+:root .general-chat .chat-turn .citation.is-highlighted .citation-id{color:var(--accent)}
+:root .general-chat .chat-turn .citation.is-cited>p{display:block;-webkit-line-clamp:unset;overflow:visible}
+:root .cited-sentence{margin:0 -2px;padding:1px 2px;border-radius:4px;background:color-mix(in srgb,var(--accent) 20%,transparent);color:var(--ink);-webkit-box-decoration-break:clone;box-decoration-break:clone}
+:root .general-chat .chat-turn .agent-diagnostics,:root .general-chat .chat-turn .answer-actions-bar,:root .general-chat .chat-turn .feedback-card{max-width:64ch}
+
+/* welcome: a short list of real questions, grouped by what they ask about */
+:root .chat-library{width:min(600px,100%);margin:26px auto 0;text-align:left}
+:root .chat-library-head{margin:0 0 8px;color:var(--muted);font-size:14px}
+:root .chat-library-head strong{color:var(--ink);font-weight:600}
+:root .chat-library-list{margin:0;padding:0;list-style:none;border-bottom:1px solid var(--line)}
+:root .chat-library-list li{display:grid;grid-template-columns:120px minmax(0,1fr);align-items:center;gap:12px;border-top:1px solid var(--line)}
+:root .chat-library-area{color:var(--muted);font-size:13px;font-weight:500}
+:root .chat-library-list button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;min-height:0;margin:4px 0;padding:9px 12px;border:0;border-radius:10px;background:transparent;color:var(--ink);text-align:left;cursor:pointer;transition:background .16s var(--ease)}
+:root .chat-library-list button:hover,:root .chat-library-list button:focus-visible{background:var(--accent-soft)}
+:root .chat-library-list button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+:root .chat-library-list button:hover .chat-library-q{color:var(--accent-ink)}
+:root .chat-library-q{font:400 16.5px/1.4 var(--serif)}
+:root .chat-library-en{color:var(--muted);font-size:13px}
+:root .general-chat-welcome h3{font:600 34px/1.2 var(--serif);letter-spacing:-.01em}
+
+@media(max-width:600px){
+  :root .general-chat .chat-turn-question,:root .general-chat .chat-turn-response{padding-left:0}
+  :root .general-chat .chat-turn-question p{font-size:19px}
+  :root .general-chat .chat-turn .answer-seal{position:static;width:44px;height:44px;margin:0 0 10px}
+  :root .general-chat .chat-turn .answer-text{font-size:17px}
+  :root .general-chat-welcome h3{font-size:27px}
+  :root .chat-library-list li{grid-template-columns:1fr;gap:0;padding-top:8px}
+  :root .chat-library-area{padding:0 12px}
+}
+
+/* ---------- Tool pages: one frame for upload, invoices, knowledge files, access, monitoring, processing ---------- */
+:root .tab-panel>.upload-section,:root .tab-panel>.candidate-review,:root .tab-panel>.admin-section,:root .tab-panel>.monitoring-section{max-width:none;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+:root .tab-panel>section>.section-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin:0 0 22px;padding:0;border:0}
+:root .tab-panel>section>.section-heading h2{margin:0;color:var(--ink);font:650 26px/1.2 var(--font);letter-spacing:-.02em}
+:root .tab-panel>section>.section-heading .tool-intro,:root .tab-panel>section>.section-heading .corpus-note,:root .tab-panel>section>.section-heading .monitoring-note{max-width:72ch;margin:6px 0 0;color:var(--muted);font-size:15px;line-height:1.55;text-align:left}
+:root .tab-panel>section>.section-heading>.secondary-button{flex:none;margin-top:2px}
+:root .tab-panel>section>p:not([class]){max-width:72ch;margin:-12px 0 22px;color:var(--muted);font-size:15px;line-height:1.55}
+:root .tool-toolbar{display:flex;align-items:flex-end;flex-wrap:wrap;gap:12px 14px;margin:0 0 16px}
+:root .tool-toolbar label{display:grid;gap:6px;margin:0;color:var(--muted);font:500 12.5px/1.3 var(--font)}
+:root .tool-count{margin:0;padding-bottom:10px;color:var(--muted);font-size:13.5px;text-align:left}
+
+/* invoices: queue on the left, the draft beside its source on the right */
+:root .tool-toolbar .invoice-review-filter-label{align-self:center}
+:root .tool-toolbar .invoice-review-filter{width:200px;margin:0}
+:root .invoice-review-section .tool-toolbar{align-items:center}
+:root .invoice-review-section .tool-count{padding:0}
+:root .invoice-review-layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:20px;align-items:start}
+:root .invoice-review-queue{display:grid;gap:10px;position:sticky;top:16px}
+:root .invoice-review-list{display:flex;flex-direction:column;gap:0;margin:0;border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+:root .invoice-review-list .invoice-review-card{display:grid;gap:3px;width:100%;margin:0;padding:12px 14px;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none;text-align:left;cursor:pointer;transition:background .16s var(--ease)}
+:root .invoice-review-list .invoice-review-card:first-child{border-top:0}
+:root .invoice-review-list .invoice-review-card:hover{background:var(--surface-2)}
+:root .invoice-review-list .invoice-review-card.active{background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent-line)}
+:root .invoice-review-card strong{overflow:hidden;color:var(--ink);font:600 14px/1.35 var(--font);white-space:nowrap;text-overflow:ellipsis}
+:root .invoice-review-card>span{overflow:hidden;color:var(--muted);font-size:13px;white-space:nowrap;text-overflow:ellipsis}
+:root .invoice-review-card small{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px;color:var(--muted);font-size:12.5px}
+:root .invoice-review-list>.analysis-empty{margin:0;padding:18px;border:0;background:none;color:var(--muted)}
+:root .invoice-review-pagination{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0}
+:root .invoice-review-pagination .secondary-button{min-height:34px;padding:0 12px;font-size:13px}
+:root .invoice-review-pagination span{color:var(--muted);font-size:13px}
+:root .invoice-review-detail{min-width:0}
+:root .invoice-review-detail>.analysis-empty{margin:0;padding:28px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--muted)}
+:root .invoice-review-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+:root .invoice-review-source-wrap{overflow:hidden;border:1px solid var(--line);border-radius:14px;background:var(--surface);position:sticky;top:16px}
+:root .invoice-review-source{display:block;width:100%;height:min(72vh,720px);border:0;background:#fff}
+:root .invoice-review-editor{padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+:root .invoice-review-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}
+:root .invoice-review-fields label,:root .invoice-review-item label{display:grid;gap:6px;margin:0;color:var(--muted);font:500 12.5px/1.3 var(--font)}
+:root .invoice-review-fields input,:root .invoice-review-item input,:root .invoice-review-item textarea{width:100%;margin:0}
+:root .invoice-review-item{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:16px 0 0;padding:12px 14px 14px;border:1px solid var(--line);border-radius:12px}
+:root .invoice-review-item legend{padding:0 6px;color:var(--ink);font:600 13px/1 var(--font)}
+:root .invoice-review-item label:first-of-type{grid-column:1/-1}
+:root .invoice-review-item textarea{min-height:44px}
+:root .invoice-review-item [data-remove-invoice-item]{grid-column:1/-1;justify-self:start;min-height:32px;padding:0 12px;font-size:13px}
+:root .invoice-review-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+:root .invoice-review-actions [data-reject-invoice]{margin-left:auto}
+
+/* knowledge files: filters in one row, files as hairline rows in one surface */
+:root .knowledge-filters.tool-toolbar label.knowledge-search-label{flex:1 1 320px}
+:root .knowledge-filters.tool-toolbar select{min-width:200px}
+:root .knowledge-filters.tool-toolbar input,:root .knowledge-filters.tool-toolbar select{width:100%;margin:0}
+:root .knowledge-management-section>.tool-count{margin:0 0 10px;padding:0}
+:root .knowledge-documents-list{display:block;border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+:root .knowledge-documents-list>.loading-card{margin:0;border:0;border-radius:0}
+:root .knowledge-document-entry+.knowledge-document-entry{border-top:1px solid var(--line)}
+:root .knowledge-documents-list .knowledge-document-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:start;margin:0;padding:16px 18px;border:0;border-radius:0;background:transparent;box-shadow:none}
+:root .knowledge-document-row.is-removed .knowledge-document-copy>strong{color:var(--muted)}
+:root .knowledge-document-copy{display:grid;gap:6px;min-width:0}
+:root .knowledge-document-copy>strong{color:var(--ink);font:600 15px/1.35 var(--font)}
+:root .knowledge-document-copy>span:not(.knowledge-doc-badges){color:var(--muted);font-size:13.5px}
+:root .knowledge-document-copy>small{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;font-size:13px}
+:root .knowledge-document-copy>small code{padding:0;background:none;color:var(--faint);font:12px var(--mono)}
+:root .knowledge-doc-badges{display:flex;flex-wrap:wrap;gap:6px}
+:root .knowledge-state,:root .knowledge-doc-badges .knowledge-source-kind{display:inline-flex;align-items:center;gap:6px;margin:0;padding:2px 10px;border:0;border-radius:999px;font:500 12.5px/1.6 var(--font)}
+:root .knowledge-state::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+:root .knowledge-state.is-ok{background:var(--ok-soft);color:var(--ok-ink)}
+:root .knowledge-state.is-warn{background:var(--warn-soft);color:var(--warn-ink)}
+:root .knowledge-state.is-off{background:var(--surface-3);color:var(--muted)}
+:root .knowledge-doc-badges .knowledge-source-kind{background:var(--surface-3);color:var(--ink-2)}
+:root .knowledge-access-editor summary{color:var(--accent-ink);font-size:13px;cursor:pointer}
+:root .knowledge-document-actions{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:flex-end;gap:8px}
+:root .knowledge-document-actions button{width:auto;min-height:34px;padding:0 12px;font-size:13px;white-space:nowrap}
+
+/* access: a real matrix, roles down, permissions across */
+:root .admin-section .access-matrix{display:block;margin:0}
+:root .access-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+:root .access-table{width:100%;border-collapse:collapse;font-size:13.5px}
+:root .access-table thead th{padding:14px 10px 12px;border-bottom:1px solid var(--line);background:var(--surface-2);color:var(--muted);font:500 12.5px/1.3 var(--font);text-align:center;vertical-align:bottom}
+:root .access-table thead th:first-child{padding-left:18px;text-align:left}
+:root .access-table tbody th{padding:12px 18px;color:var(--ink);font-weight:600;text-align:left;white-space:nowrap}
+:root .access-table td{padding:10px;text-align:center}
+:root .access-table tbody tr+tr>*{border-top:1px solid var(--line)}
+:root .access-table tbody tr:hover>*{background:var(--surface-2)}
+:root .access-table td.is-allowed svg{display:inline-block;width:24px;height:24px;padding:4px;border-radius:50%;background:var(--ok-soft);fill:none;stroke:var(--ok);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}
+:root .access-table td.is-denied{color:var(--line-strong)}
+
+/* monitoring: one strip of figures, bars that grow in when the page opens */
+:root .monitoring-section .monitoring-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;overflow:hidden;margin:0 0 22px;border:1px solid var(--line);border-radius:14px;background:var(--line)}
+:root .monitoring-section .monitoring-stat{margin:0;padding:16px 20px;border:0;border-radius:0;background:var(--surface);box-shadow:none}
+:root .monitoring-agent i b{transform-origin:left center;animation:barGrow .8s var(--ease) both}
+:root .monitoring-agent:nth-child(2) i b{animation-delay:.08s}
+:root .monitoring-agent:nth-child(3) i b{animation-delay:.16s}
+:root .monitoring-agent:nth-child(n+4) i b{animation-delay:.24s}
+@keyframes barGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+@media(max-width:1100px){
+  :root .invoice-review-workspace{grid-template-columns:1fr}
+  :root .invoice-review-source-wrap{position:static}
+  :root .invoice-review-source{height:420px}
+}
+@media(max-width:780px){
+  :root .invoice-review-layout{grid-template-columns:1fr}
+  :root .invoice-review-queue{position:static}
+  :root .knowledge-documents-list .knowledge-document-row{grid-template-columns:1fr}
+  :root .knowledge-document-actions{justify-content:flex-start}
+  :root .tab-panel>section>.section-heading{flex-wrap:wrap}
+}
+:root #workspace-main.page.invoice-review-active{max-width:1560px;padding:40px 40px 48px}
+:root .invoice-review-fields label:nth-child(3),:root .invoice-review-fields label:nth-child(4){grid-column:1/-1}
+:root .invoice-review-item{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(min-width:1500px){:root .invoice-review-item{grid-template-columns:repeat(4,minmax(0,1fr))}}
+:root .knowledge-document-actions .danger-button{border-color:var(--line);background:var(--surface);color:var(--danger-ink)}
+:root .knowledge-document-actions .danger-button:hover:not(:disabled){border-color:var(--danger-line);background:var(--danger-soft)}
+:root .knowledge-document-copy .knowledge-doc-badges .knowledge-source-kind{font-size:12.5px}
+:root .knowledge-document-copy .knowledge-doc-badges .knowledge-source-kind.is-synthetic{background:var(--warn-soft);color:var(--warn-ink)}
+:root .upload-form .upload-access-step{position:relative;margin:0;padding:52px 16px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2)}
+:root .upload-form .upload-access-step>legend{position:absolute;top:14px;left:16px;margin:0;padding:0}
+:root .invoice-review-section .invoice-review-source-wrap{height:auto;min-height:0;margin:0;background:#fff}
+:root .access-table tbody th,:root .access-table thead th:first-child{position:sticky;left:0;z-index:1;background:var(--surface)}
+:root .access-table thead th:first-child{background:var(--surface-2)}
+:root .knowledge-document-actions>[data-knowledge-toggle][data-active]{border-color:var(--line);border-radius:var(--radius-control);background:var(--surface)}
+:root .knowledge-document-actions>[data-knowledge-toggle][data-active="true"]{color:var(--danger-ink)}
+:root .knowledge-document-actions>[data-knowledge-toggle][data-active="true"]:hover{border-color:var(--danger-line);background:var(--danger-soft)}
+:root .knowledge-document-actions>[data-knowledge-toggle][data-active="false"]{color:var(--ink-2)}
+:root .knowledge-document-actions>[data-knowledge-toggle][data-active="false"]:hover{border-color:var(--accent-line);background:var(--accent-soft);color:var(--accent-ink)}
+
+/* knowledge rows: one fixed action column, equal-width buttons, safe action on top */
+:root .knowledge-documents-list .knowledge-document-row{grid-template-columns:minmax(0,1fr) 232px}
+:root .knowledge-document-actions{display:grid;grid-template-columns:1fr;align-content:start;gap:8px}
+:root .knowledge-document-actions button{width:100%;justify-content:center;text-align:center}
+@media(max-width:780px){
+  :root .knowledge-documents-list .knowledge-document-row{grid-template-columns:1fr}
+  :root .knowledge-document-actions{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+}
+
+/* ---------- Motion: each answers an action, all switched off by reduced motion ---------- */
+@keyframes riseIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes tickIn{0%{opacity:0;transform:scale(.4)}70%{opacity:1;transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes livePulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,currentColor 45%,transparent)}100%{box-shadow:0 0 0 6px transparent}}
+/* lists settle in row by row when a page opens */
+:root .is-fresh .knowledge-document-entry,:root .is-fresh .invoice-review-card,:root .is-fresh .access-table tbody tr{animation:riseIn .42s var(--ease) both}
+:root .is-fresh .knowledge-document-entry:nth-child(2),:root .is-fresh .invoice-review-card:nth-child(2),:root .is-fresh .access-table tbody tr:nth-child(2){animation-delay:.04s}
+:root .is-fresh .knowledge-document-entry:nth-child(3),:root .is-fresh .invoice-review-card:nth-child(3),:root .is-fresh .access-table tbody tr:nth-child(3){animation-delay:.08s}
+:root .is-fresh .knowledge-document-entry:nth-child(4),:root .is-fresh .invoice-review-card:nth-child(4),:root .is-fresh .access-table tbody tr:nth-child(4){animation-delay:.12s}
+:root .is-fresh .knowledge-document-entry:nth-child(n+5),:root .is-fresh .invoice-review-card:nth-child(n+5),:root .is-fresh .access-table tbody tr:nth-child(n+5){animation-delay:.16s}
+/* access ticks pop in after their row */
+:root .is-fresh .access-table td.is-allowed svg{animation:tickIn .38s .18s var(--ease) both}
+/* a file that is still processing shows a live dot */
+:root .knowledge-state.is-live::before{animation:livePulse 1.4s ease-out infinite}
+/* switching invoices: the draft and its source fade in together */
+:root .invoice-review-detail.is-entering>*{animation:riseIn .32s var(--ease) both}
+/* invoice row hover nudges, the selected row stays put */
+:root .invoice-review-list .invoice-review-card:not(.active):hover strong{color:var(--accent-ink)}
+
+/* ---------- Dropdowns: the open list follows the jade palette where the browser allows it ---------- */
+@supports (appearance: base-select) {
+  :root select:not([multiple]):not([size]),:root select:not([multiple]):not([size])::picker(select){appearance:base-select}
+  :root select:not([multiple]):not([size]){display:inline-flex;align-items:center;cursor:pointer}
+  :root select::picker-icon{display:none}
+  :root select:open{border-color:var(--accent-line);box-shadow:0 0 0 3px var(--accent-soft)}
+  :root select::picker(select){margin-block:6px;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);box-shadow:var(--shadow-float);opacity:0;translate:0 -4px;transition:opacity .16s var(--ease),translate .16s var(--ease),display .16s allow-discrete,overlay .16s allow-discrete}
+  :root select:open::picker(select){opacity:1;translate:0 0}
+  @starting-style{:root select:open::picker(select){opacity:0;translate:0 -4px}}
+  :root select option{display:flex;align-items:center;gap:8px;min-height:36px;padding:7px 12px;border-radius:8px;background:transparent;color:var(--ink);font:400 14px/1.3 var(--font);cursor:pointer}
+  :root select option:hover,:root select option:focus-visible{outline:none;background:var(--surface-2);color:var(--ink)}
+  :root select option:checked{background:var(--accent-soft);color:var(--accent-ink);font-weight:600}
+  :root select option::checkmark{order:1;margin-left:auto;color:var(--accent)}
+  :root select option:disabled{color:var(--faint);cursor:default}
+}
+:root .general-chat-mode select{min-width:140px}
+:root .knowledge-documents-list .knowledge-document-row{width:100%;max-width:none}
+/* login: the logo sits top-left on the page; the sign-in card is centred on the whole screen */
+:root .login-brand-sidebar{position:absolute;inset:24px auto auto 28px;width:auto;min-height:0;padding:0;border:0;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+:root[data-theme="dark"] .login-brand-sidebar{background:none}
+:root .brand strong{white-space:nowrap}
+:root #login-view.login-view{min-height:100vh;margin-left:0;padding:96px 20px 40px}
+:root .login-card{animation:riseIn .5s var(--ease) both}
+:root .login-card h1{margin-top:0}
+@media(max-width:780px){:root .login-brand-sidebar{position:absolute;inset:18px auto auto 18px;min-height:0;padding:0;border:0}:root #login-view.login-view{min-height:100vh;padding-top:84px}}
+
+/* ---------- Sidebar width: a draggable edge on desktop ---------- */
+:root #workspace{--sidebar-w:272px;position:relative}
+.sidebar-resizer{display:none}
+@media(min-width:781px){
+  :root #workspace.app-shell{grid-template-columns:var(--sidebar-w) minmax(0,1fr)}
+  :root #workspace.app-shell.is-resizing{transition:none;cursor:col-resize;user-select:none}
+  :root .sidebar-resizer{display:block;position:absolute;top:0;bottom:0;left:calc(var(--sidebar-w) - 5px);z-index:30;width:10px;cursor:col-resize;touch-action:none}
+  :root .sidebar-resizer::after{content:"";position:absolute;top:0;bottom:0;left:4px;width:2px;background:transparent;transition:background .16s var(--ease)}
+  :root .sidebar-resizer:hover::after,:root .is-resizing .sidebar-resizer::after{background:var(--accent-line)}
+  :root .sidebar-resizer:focus-visible{outline:none}
+  :root .sidebar-resizer:focus-visible::after{background:var(--accent)}
+  :root .sidebar-collapsed .sidebar-resizer{display:none}
+}
+
+/* ---------- In-app confirmation dialog ---------- */
+:root .app-dialog{width:min(440px,calc(100vw - 32px));margin:auto;padding:0;border:1px solid var(--line);border-radius:18px;background:var(--surface);color:var(--ink);box-shadow:0 24px 60px -20px rgb(20 33 29 / .35),0 2px 8px rgb(20 33 29 / .08);opacity:0;scale:.97;transition:opacity .18s var(--ease),scale .18s var(--ease),display .18s allow-discrete,overlay .18s allow-discrete}
+:root .app-dialog[open]{opacity:1;scale:1}
+@starting-style{:root .app-dialog[open]{opacity:0;scale:.97}}
+:root .app-dialog::backdrop{background:rgb(15 25 22 / .32);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);opacity:0;transition:opacity .18s var(--ease),display .18s allow-discrete,overlay .18s allow-discrete}
+:root .app-dialog[open]::backdrop{opacity:1}
+@starting-style{:root .app-dialog[open]::backdrop{opacity:0}}
+:root[data-theme="dark"] .app-dialog{box-shadow:0 24px 60px -20px rgb(0 0 0 / .7)}
+:root .app-dialog form{padding:24px 24px 20px}
+:root .app-dialog h2{margin:0;color:var(--ink);font:650 19px/1.3 var(--font);letter-spacing:-.01em}
+:root .app-dialog p{margin:8px 0 0;color:var(--muted);font-size:14.5px;line-height:1.55}
+:root .app-dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:22px}
+:root .app-dialog-actions button{min-height:40px;padding:0 16px}
+:root .app-dialog .danger-button{border:1px solid var(--danger);background:var(--danger);color:#fff}
+:root .app-dialog .danger-button:hover{background:var(--danger-ink);border-color:var(--danger-ink)}
+:root[data-theme="dark"] .app-dialog .danger-button{color:#2a0f0b}
+
+/* ---------- Logo: a faceless girl with long blonde hair in a green-lined robe ---------- */
+:root .brand-mark{overflow:hidden;padding:0;background:var(--accent-soft);border:1px solid var(--accent-line)}
+:root .brand-figure{display:block;width:100%;height:100%}
+:root .brand-figure .bf-hair-back{fill:#d9ad4f}
+:root .brand-figure .bf-hair{fill:#ecc768}
+:root .brand-figure .bf-hair-shine{fill:none;stroke:#f8e3a6;stroke-width:1.6;stroke-linecap:round}
+:root .brand-figure .bf-skin{fill:#f2cfb0}
+:root .brand-figure .bf-robe{fill:#1c2321}
+:root .brand-figure .bf-lining{fill:#1f6b4a}
+:root .brand-figure .bf-shirt{fill:#f4f6f5}
+:root .brand-figure .bf-tie{fill:#1f6b4a}
+:root .brand-figure .bf-tie-stripe{fill:none;stroke:#c3cbc8;stroke-width:1.1}
+:root .brand-figure .bf-hair-back{fill:#c9973f}
+:root .brand-figure .bf-hair{fill:#e8c063}
+:root .brand-figure .bf-hair-light{fill:#f6dc95}
+:root .brand-figure .bf-hair-strand{fill:none;stroke:#c99a42;stroke-width:.9;stroke-linecap:round}
+:root .brand-figure .bf-hair-shine{stroke:#fbe9b4}
+:root .brand-figure .bf-hair-back{fill:#cfa64e}
+:root .brand-figure .bf-hair{fill:#efd486}
+:root .brand-figure .bf-hair-strand{fill:none;stroke:#cda553;stroke-width:.8;stroke-linecap:round}
+:root .brand-figure .bf-hair-shine{fill:none;stroke:#fcf1cc;stroke-width:1.5;stroke-linecap:round}
+:root .brand-figure .bf-robe{fill:#3b2b23}
+:root .brand-figure .bf-lining{fill:#2f7a52}
+:root .brand-figure .bf-sweater{fill:#8e938f}
+:root .brand-figure .bf-sweater-trim{fill:none;stroke:#2f7a52;stroke-width:1.1;stroke-linejoin:round}
+:root .brand-figure .bf-shirt{fill:#e8ebe9}
+:root .brand-figure .bf-tie{fill:#2f6b4c}
+:root .brand-figure .bf-earring{fill:none;stroke:#2b2b2b;stroke-width:.8}

@@ -805,9 +805,16 @@ async def upload_invoice(
     supported = {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"}
     if not filename or extension not in supported:
         raise HTTPException(415, "Invoice upload supports PDF, PNG, JPG and TIFF files")
+    stage_started = time.perf_counter()
     content = await file.read(50 * 1024 * 1024 + 1)
+    logger.info("INVOICE_UPLOAD_COMPONENT %s", json.dumps({
+        "component": "request_file_read", "filename_extension": extension,
+        "elapsed_ms": round((time.perf_counter() - stage_started) * 1000, 2),
+        "content_bytes": len(content),
+    }, separators=(",", ":")))
     if len(content) > 50 * 1024 * 1024:
         raise HTTPException(413, "Maximum file size is 50 MiB")
+    stage_started = time.perf_counter()
     signatures = {
         ".pdf": content.startswith(b"%PDF-"),
         ".png": content.startswith(b"\x89PNG\r\n\x1a\n"),
@@ -818,10 +825,20 @@ async def upload_invoice(
     }
     if not signatures[extension]:
         raise HTTPException(415, "File content does not match its extension")
+    logger.info("INVOICE_UPLOAD_COMPONENT %s", json.dumps({
+        "component": "file_validation", "filename_extension": extension,
+        "elapsed_ms": round((time.perf_counter() - stage_started) * 1000, 2),
+    }, separators=(",", ":")))
 
     invoice_id = f"INV-{uuid.uuid4().hex}"
     storage_path = f"invoices/{invoice_id}/{filename}"
+    stage_started = time.perf_counter()
     source_sha256 = hashlib.sha256(content).hexdigest()
+    logger.info("INVOICE_UPLOAD_COMPONENT %s", json.dumps({
+        "component": "source_sha256", "invoice_id": invoice_id,
+        "elapsed_ms": round((time.perf_counter() - stage_started) * 1000, 2),
+        "content_bytes": len(content),
+    }, separators=(",", ":")))
     storage, bucket = _storage_client()
     uploaded = False
     repository = None

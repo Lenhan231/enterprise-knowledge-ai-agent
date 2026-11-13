@@ -917,3 +917,31 @@
 :root .brand-figure .bf-shirt{fill:#e8ebe9}
 :root .brand-figure .bf-tie{fill:#2f6b4c}
 :root .brand-figure .bf-earring{fill:none;stroke:#2b2b2b;stroke-width:.8}
+
+/* ---------- Invoice image viewer: opens fitted, zoom and pan ---------- */
+:root .invoice-zoom{display:flex;flex-direction:column;height:min(72vh,720px);background:var(--surface-2)}
+:root .invoice-zoom-bar{display:flex;align-items:center;gap:4px;padding:8px 10px;border-bottom:1px solid var(--line);background:var(--surface)}
+:root .invoice-zoom-bar button{display:inline-grid;place-items:center;min-width:32px;height:32px;padding:0 8px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink-2);font:500 13px/1 var(--font);cursor:pointer;transition:background .14s var(--ease),border-color .14s var(--ease)}
+:root .invoice-zoom-bar button:hover{border-color:var(--accent-line);background:var(--accent-soft);color:var(--accent-ink)}
+:root .invoice-zoom-bar button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+:root .invoice-zoom-bar button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+:root .invoice-zoom-bar output{min-width:48px;color:var(--ink);font:600 13px/1 var(--font);font-variant-numeric:tabular-nums;text-align:center}
+:root .invoice-zoom-bar .invoice-zoom-fit:first-of-type{margin-left:auto}
+:root .invoice-zoom-stage{flex:1;min-height:0;overflow:auto;padding:12px;cursor:grab;outline:none;text-align:center}
+:root .invoice-zoom-stage:focus-visible{box-shadow:inset 0 0 0 2px var(--accent)}
+:root .invoice-zoom-stage.is-panning{cursor:grabbing;user-select:none}
+:root .invoice-zoom-stage img{display:inline-block;max-width:none;height:auto;border-radius:6px;background:#fff;box-shadow:0 1px 3px rgb(20 33 29 / .12);vertical-align:top}
+
+/* ---------- Monitoring bars: length is run volume, the jade part is what completed ---------- */
+:root .monitoring-agent i{display:flex;overflow:hidden}
+:root .monitoring-agent i .bar-fill{display:flex;height:100%;overflow:hidden;border-radius:999px;transform-origin:left center;animation:barGrow .8s var(--ease) both}
+:root .monitoring-agent i b.is-done{flex:none;height:100%;border-radius:0;background:linear-gradient(90deg,var(--accent-line),var(--accent));animation:none}
+:root .monitoring-agent i b.is-other{flex:1;height:100%;border-radius:0;background:var(--warn-line);animation:none}
+:root .monitoring-agent:nth-child(2) i .bar-fill{animation-delay:.08s}
+:root .monitoring-agent:nth-child(3) i .bar-fill{animation-delay:.16s}
+:root .monitoring-agent:nth-child(n+4) i .bar-fill{animation-delay:.24s}
+:root .bar-legend{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:4px 0 0;color:var(--muted);font-size:13px}
+:root .bar-key{display:inline-block;width:14px;height:8px;margin-left:8px;border-radius:999px;vertical-align:middle}
+:root .bar-key.is-done{background:var(--accent)}
+:root .bar-key.is-other{background:var(--warn-line)}
+:root .invoice-zoom-bar button[aria-pressed="true"]{border-color:var(--accent-line);background:var(--accent-soft);color:var(--accent-ink)}

@@ -297,7 +297,6 @@
 :root .general-chat-mark{width:52px;height:52px;border:1px solid var(--accent-line);border-radius:16px;background:var(--accent-soft);color:var(--accent-ink)}
 :root .general-chat-welcome h3{font:650 27px/1.25 var(--font);letter-spacing:-.025em}
 :root .general-chat-welcome>p{font-size:15px;max-width:46ch}
-:root .general-chat-prompts button{min-height:40px;padding:0 15px;border-radius:999px;background:var(--surface);font:500 13.5px/1.2 var(--font)}
 :root .general-chat-composer{border:1px solid var(--line);border-radius:20px;background:var(--surface);box-shadow:var(--shadow-float);transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
 :root .general-chat-composer:focus-within{border-color:var(--accent-line);box-shadow:var(--shadow-float),0 0 0 4px var(--accent-soft)}
 :root .general-chat-composer{align-items:flex-end;padding:8px 8px 8px 18px}
@@ -604,4 +603,77 @@
 @media(prefers-reduced-motion:reduce){
   :root *,:root *::before,:root *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
   ::view-transition-new(root){animation:none}
+}
+
+/* ---------- General Chat · Ledger: each answer reads as a short cited document ---------- */
+:root{--serif:"Source Serif 4",Georgia,"Times New Roman",serif;--ledger-gutter:68px}
+:root .cite-glue{white-space:nowrap}
+:root .answer-seal{display:none}
+:root .answer-seal svg{display:block;width:100%;height:100%;overflow:visible}
+:root .answer-seal .seal-outer{fill:var(--surface);stroke:var(--ok);stroke-width:2.5}
+:root .answer-seal .seal-inner{fill:var(--ok-soft);stroke:var(--ok);stroke-width:1;stroke-dasharray:2 4}
+:root .answer-seal .seal-check{fill:none;stroke:var(--ok);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:46;animation:sealCheck .45s .3s var(--ease) both}
+@keyframes sealStamp{0%{opacity:0;transform:scale(1.3) rotate(-22deg)}60%{opacity:1;transform:scale(.95) rotate(-5deg)}100%{opacity:1;transform:scale(1) rotate(-8deg)}}
+@keyframes sealCheck{from{stroke-dashoffset:46}to{stroke-dashoffset:0}}
+
+/* question becomes the heading, the answer hangs off a gutter that holds the seal */
+:root .general-chat .chat-turn{margin-bottom:44px}
+:root .general-chat .chat-turn-question{justify-content:flex-start;padding-left:var(--ledger-gutter)}
+:root .general-chat .chat-turn-question>span{display:none}
+:root .general-chat .chat-turn-question p{max-width:64ch;padding:0;border-radius:0;background:transparent;color:var(--ink);font:600 21px/1.35 var(--font);letter-spacing:-.015em}
+:root .general-chat .chat-turn-response{position:relative;margin-top:6px;padding-left:var(--ledger-gutter)}
+:root .general-chat .chat-turn .answer-verified{margin:0 0 12px;padding:0;border:0;background:none;color:var(--ok-ink);font-size:13px;animation:none}
+:root .general-chat .chat-turn .answer-verified::before{display:none}
+:root .general-chat .chat-turn .answer-seal{display:block;position:absolute;left:0;top:-4px;width:54px;height:54px;transform:rotate(-8deg);animation:sealStamp .6s var(--ease) both}
+
+/* answer text in the reading serif, citations as small raised marks */
+:root .general-chat .chat-turn .answer-text{max-width:64ch;color:var(--ink);font:400 18px/1.72 var(--serif)}
+:root .general-chat .chat-turn .answer-text p{margin:0 0 .7em}
+:root .general-chat .chat-turn .answer-text strong{font-weight:600}
+:root .general-chat .chat-turn .answer-text .cite-ref{min-width:0;height:auto;margin:0 0 0 1px;padding:0 2px;border-radius:4px;background:transparent;color:var(--accent-ink);font:600 12.5px/1 var(--font);vertical-align:super}
+:root .general-chat .chat-turn .answer-text .cite-ref:hover,
+:root .general-chat .chat-turn .answer-text .cite-ref:focus-visible,
+:root .general-chat .chat-turn .answer-text .cite-ref.is-pointed{background:var(--accent);color:var(--on-accent)}
+
+/* sources as numbered footnotes under a rule */
+:root .general-chat .chat-turn .citations{max-width:64ch;margin-top:22px;padding:14px 0 0;border:0;border-top:1px solid var(--ink);border-radius:0;background:none}
+:root .general-chat .chat-turn .citation-header-row{margin-bottom:4px}
+:root .general-chat .chat-turn .citations h4{color:var(--ink);font-weight:600}
+:root .general-chat .chat-turn .citation-count-badge{display:none}
+:root .general-chat .chat-turn .citation{position:relative;margin:0;padding:12px 0 12px 40px;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+:root .general-chat .chat-turn .citation:first-of-type{border-top:0}
+:root .general-chat .chat-turn .citation-title{display:block}
+:root .general-chat .chat-turn .citation-title .citation-id{position:absolute;left:0;top:13px;padding:0;background:transparent;color:var(--accent-ink);font:600 13px/1.4 var(--font)}
+:root .general-chat .chat-turn .citation-title strong{font-size:14px}
+:root .general-chat .chat-turn .citation-title span:last-child{margin-left:10px;color:var(--muted);font-size:12.5px}
+:root .general-chat .chat-turn .citation>p{margin-top:6px;color:var(--ink-2);font:400 15px/1.6 var(--serif)}
+:root .general-chat .chat-turn .citation.is-highlighted{background:transparent;box-shadow:none}
+:root .general-chat .chat-turn .citation.is-highlighted .citation-id{color:var(--accent)}
+:root .general-chat .chat-turn .citation.is-cited>p{display:block;-webkit-line-clamp:unset;overflow:visible}
+:root .cited-sentence{margin:0 -2px;padding:1px 2px;border-radius:4px;background:color-mix(in srgb,var(--accent) 20%,transparent);color:var(--ink);-webkit-box-decoration-break:clone;box-decoration-break:clone}
+:root .general-chat .chat-turn .agent-diagnostics,:root .general-chat .chat-turn .answer-actions-bar,:root .general-chat .chat-turn .feedback-card{max-width:64ch}
+
+/* welcome: a short list of real questions, grouped by what they ask about */
+:root .chat-library{width:min(600px,100%);margin:26px auto 0;text-align:left}
+:root .chat-library-head{margin:0 0 8px;color:var(--muted);font-size:14px}
+:root .chat-library-head strong{color:var(--ink);font-weight:600}
+:root .chat-library-list{margin:0;padding:0;list-style:none;border-bottom:1px solid var(--line)}
+:root .chat-library-list li{display:grid;grid-template-columns:120px minmax(0,1fr);align-items:center;gap:12px;border-top:1px solid var(--line)}
+:root .chat-library-area{color:var(--muted);font-size:13px;font-weight:500}
+:root .chat-library-list button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;min-height:0;margin:4px 0;padding:9px 12px;border:0;border-radius:10px;background:transparent;color:var(--ink);text-align:left;cursor:pointer;transition:background .16s var(--ease)}
+:root .chat-library-list button:hover,:root .chat-library-list button:focus-visible{background:var(--accent-soft)}
+:root .chat-library-list button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+:root .chat-library-list button:hover .chat-library-q{color:var(--accent-ink)}
+:root .chat-library-q{font:400 16.5px/1.4 var(--serif)}
+:root .chat-library-en{color:var(--muted);font-size:13px}
+:root .general-chat-welcome h3{font:600 34px/1.2 var(--serif);letter-spacing:-.01em}
+
+@media(max-width:600px){
+  :root .general-chat .chat-turn-question,:root .general-chat .chat-turn-response{padding-left:0}
+  :root .general-chat .chat-turn-question p{font-size:19px}
+  :root .general-chat .chat-turn .answer-seal{position:static;width:44px;height:44px;margin:0 0 10px}
+  :root .general-chat .chat-turn .answer-text{font-size:17px}
+  :root .general-chat-welcome h3{font-size:27px}
+  :root .chat-library-list li{grid-template-columns:1fr;gap:0;padding-top:8px}
+  :root .chat-library-area{padding:0 12px}
 }

@@ -680,9 +680,6 @@
 .general-chat-mark svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round}
 .general-chat-welcome h3{margin:16px 0 5px;color:var(--navy);font:650 22px/1.3 "Be Vietnam Pro",sans-serif;letter-spacing:-.5px}
 .general-chat-welcome>p{max-width:420px;margin:0;color:var(--muted);font-size:12px;line-height:1.6}
-.general-chat-prompts{display:flex;max-width:620px;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:22px}
-.general-chat-prompts button{min-height:36px;padding:7px 11px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink-2);font:500 11px/1.35 "Be Vietnam Pro",sans-serif;cursor:pointer;transition:border-color .18s,background .18s,color .18s}
-.general-chat-prompts button:hover{border-color:var(--accent-line);background:var(--surface-2);color:var(--accent-ink)}
 .general-chat-transcript{min-height:0;flex:1;overflow:auto;overscroll-behavior:contain;padding:22px 4px 14px;scrollbar-color:var(--accent-line) transparent;scrollbar-width:thin}
 .general-chat-transcript[hidden]{display:none}
 .general-chat .chat-turn{max-width:790px;margin:0 auto 28px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
@@ -732,8 +729,6 @@
 .general-chat-composer button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .general-chat-note{margin:7px 0 0;color:var(--muted);font-size:10px;line-height:1.4;text-align:center}
 [data-theme="dark"] .general-chat-mark{border-color:var(--accent-line);background:var(--accent-soft);color:var(--accent-ink)}
-[data-theme="dark"] .general-chat-prompts button{background:var(--surface-2);color:var(--ink)}
-[data-theme="dark"] .general-chat-prompts button:hover{background:var(--accent-soft);color:var(--accent-ink)}
 [data-theme="dark"] .general-chat .chat-turn-question p{border-color:var(--line);background:var(--surface-2);color:var(--ink)}
 [data-theme="dark"] .general-chat .chat-turn .answer-text{color:var(--ink)}
 [data-theme="dark"] .general-chat .chat-turn .agent-data-result{border-color:var(--line);background:var(--surface-2)}

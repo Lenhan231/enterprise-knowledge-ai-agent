@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-13T13:10:53.115Z",
+  "generatedAt": "2026-11-13T13:39:20.148Z",
   "title": "Design System: Enterprise Knowledge AI Agent",
   "source": "src/app/static/redesign.css on main 9a5d157 (loads after styles.css; styles.css colours are tokens)",
   "extensions": {
@@ -407,7 +407,7 @@
       "name": "Verified Answer Seal",
       "kind": "custom",
       "refersTo": "verified-seal",
-      "description": "Signature element: shown only on answers whose every claim passed verification.",
+      "description": "A 54px round stamp in the answer gutter (Verified ring, dashed inner ring, self-drawing check) that lands once; a plain Verified Ink line beside it says Every claim checked · N claims.",
       "html": "<span class=\"ds-seal\">Every claim checked</span>",
       "css": ".ds-seal{display:inline-flex;align-items:center;gap:8px;padding:5px 12px 5px 6px;border:1px solid var(--ok-line,#a9dcc6);border-radius:999px;background:var(--ok-soft,#e2f4ec);color:var(--ok-ink,#0b6450);font:500 13px/1.3 'Be Vietnam Pro',system-ui,sans-serif;animation:ds-seal-in .5s cubic-bezier(.2,.7,.2,1) both}.ds-seal::before{content:'';flex:none;width:20px;height:20px;border-radius:50%;background:var(--ok,#14866a) url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12.5 4 4 8-9'/%3E%3C/svg%3E\") center/12px no-repeat}@keyframes ds-seal-in{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}@media (prefers-reduced-motion:reduce){.ds-seal{animation:none}}"
     },
@@ -415,7 +415,7 @@
       "name": "Citation Chip",
       "kind": "custom",
       "refersTo": "cite-ref",
-      "description": "Inline source reference in answer text; jumps to the cited passage.",
+      "description": "Raised superscript mark (Deep Jade, 600, 12.5px) hugging the word before it; hover fills it Jade and highlights the matching sentence in the cited passage.",
       "html": "<p class=\"ds-answer\">Khoản mua sắm 80 triệu cần Trưởng bộ phận, Mua sắm và Tài chính duyệt <a class=\"ds-cite\" href=\"#\">S1</a>.</p>",
       "css": ".ds-answer{max-width:62ch;color:var(--ink,#14211d);font:400 15.5px/1.75 'Be Vietnam Pro',system-ui,sans-serif}.ds-cite{display:inline-grid;place-items:center;min-width:22px;height:18px;margin:0 1px;padding:0 5px;border-radius:6px;background:var(--accent-soft,#e2f2ed);color:var(--accent-ink,#075c4d);font:600 11px/1 'Be Vietnam Pro',system-ui,sans-serif;vertical-align:2px;text-decoration:none;transition:background-color .15s,color .15s}.ds-cite:hover,.ds-cite:focus-visible{background:var(--accent,#0b7a66);color:var(--on-accent,#fff);outline:none}"
     },
@@ -423,7 +423,7 @@
       "name": "Source Card",
       "kind": "card",
       "refersTo": "card",
-      "description": "A cited source under an answer: file name and page, passage clamped to two lines with a Show full passage toggle; highlighted when its chip is clicked. Publisher and evidence class only when present.",
+      "description": "A footnote under an Ink rule: id in the gutter, file name and page, passage in Source Serif 4 clamped to two lines with Show full passage; hairline-separated, no card chrome.",
       "html": "<article class=\"ds-source\"><div class=\"ds-source-head\"><span class=\"ds-source-id\">S1</span><strong>VietStyle Operating Policy v1.0</strong><span>Page 19</span></div><p class=\"ds-source-text\">Khoản mua sắm trên 50.000.000 VND cần phê duyệt của Trưởng bộ phận, Mua sắm và Tài chính…</p><button class=\"ds-source-toggle\" type=\"button\" aria-expanded=\"false\">Show full passage</button></article>",
       "css": ".ds-source{display:flex;flex-direction:column;gap:8px;max-width:520px;padding:16px;border:1px solid var(--line,#dfe6e3);border-radius:14px;background:var(--surface,#fff);transition:border-color .2s cubic-bezier(.2,.7,.2,1),box-shadow .2s cubic-bezier(.2,.7,.2,1)}.ds-source:hover,.ds-source:focus-within{border-color:var(--accent,#0b7a66);box-shadow:0 0 0 3px var(--accent-soft,#e2f2ed)}.ds-source-head{display:flex;align-items:center;gap:8px;font:400 12.5px 'Be Vietnam Pro',system-ui,sans-serif;color:var(--muted,#5d6d67)}.ds-source-head strong{color:var(--ink,#14211d);font-weight:600;font-size:14px}.ds-source-id{display:inline-grid;place-items:center;min-width:26px;height:20px;padding:0 6px;border-radius:6px;background:var(--accent-soft,#e2f2ed);color:var(--accent-ink,#075c4d);font:600 11.5px/1 'Be Vietnam Pro',system-ui,sans-serif}.ds-source p{margin:0;color:var(--ink-2,#2f3e39);font:400 13.5px/1.6 'Be Vietnam Pro',system-ui,sans-serif}.ds-source-text{margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.ds-source-toggle{align-self:flex-start;padding:0;border:0;background:none;color:var(--accent-strong,#075c4d);font:500 13px 'Be Vietnam Pro',sans-serif;cursor:pointer}.ds-source-toggle:hover{text-decoration:underline}"
     }
@@ -461,8 +461,8 @@
         "section": "typography"
       },
       {
-        "name": "The One Family Rule",
-        "body": "Be Vietnam Pro carries every role. A new screen does not introduce a second sans or a display serif.",
+        "name": "The Two Voices Rule",
+        "body": "Be Vietnam Pro is the product speaking (labels, controls, headings, the question); Source Serif 4 is the documents speaking (answers, passages, example questions and the welcome heading). No third family, and the serif never appears on controls or tables.",
         "section": "typography"
       },
       {

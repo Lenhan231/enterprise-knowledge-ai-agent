@@ -53,10 +53,10 @@ typography:
     fontWeight: 400
     lineHeight: 1.6
   answer:
-    fontFamily: "Be Vietnam Pro, system-ui, sans-serif"
-    fontSize: "15.5px"
+    fontFamily: "Source Serif 4, Georgia, serif"
+    fontSize: "18px"
     fontWeight: 400
-    lineHeight: 1.75
+    lineHeight: 1.72
   label:
     fontFamily: "Be Vietnam Pro, system-ui, sans-serif"
     fontSize: "12.5px"
@@ -154,7 +154,7 @@ components:
 
 **Creative North Star: "The Jade Seal"**
 
-The workspace is quiet on purpose. Surfaces are near-white on a faintly sage paper, text is a deep green-black ink, and almost nothing carries colour. The one strong colour, jade, is reserved for what the product promises: an answer whose every claim was checked against its sources. When an answer passes verification it receives a small jade seal ("Every claim checked"), and its citations appear as jade chips that jump to the cited passage. Everything else in the interface stays out of the way, so the seal and the evidence are what the eye finds.
+The workspace is quiet on purpose. Surfaces are near-white on a faintly sage paper, text is a deep green-black ink, and almost nothing carries colour. The one strong colour, jade, is reserved for what the product promises: an answer whose every claim was checked against its sources. When an answer passes verification a round jade stamp lands beside it, the answer reads like a short cited document in a text serif, and its citations are small jade marks that light up the exact sentence they rely on. Everything else in the interface stays out of the way, so the seal and the evidence are what the eye finds.
 
 Density is calm and exact rather than sparse or crowded. General Chat is the one place to ask questions: a conversation column whose composer carries a "Route to" choice (Auto, Documents only, Sales data). Knowledge Q&A is the report page: a short hero that points to General Chat, then the report generator; tools such as monitoring, access control and invoice review use the same hairline-bordered cards and tables without decoration. A thin layer of frosted glass sits only on the controls that float over the page (the sidebar, the question composer, the monitoring tabs), above soft jade and amber colour fields, so the controls feel lifted while the content they hold stays solid and readable.
 
@@ -163,7 +163,7 @@ The system rejects three looks explicitly: the generic AI-chatbot style (purple 
 **Key Characteristics:**
 - Ink and jade: one accent family, used only for verification, citations, focus and the primary action.
 - Amber means a gap or a partial answer; brick red appears only for errors.
-- One typeface (Be Vietnam Pro) for everything; it renders Vietnamese diacritics cleanly. JetBrains Mono only for code.
+- Two voices: Be Vietnam Pro for the interface, Source Serif 4 for what the documents say (answer text, source passages, example questions). Both render Vietnamese diacritics cleanly. JetBrains Mono only for code.
 - Flat, hairline-bordered surfaces; depth comes from glass on the control layer, not from shadows on content.
 - Motion only answers an action: the seal settles in, folds open, the theme switches with a circular reveal.
 - Two equal themes: light and dark are a token swap, never a separate design.
@@ -203,23 +203,24 @@ A cool, low-chroma sage neutral world with a single jade accent family and two s
 
 **Display Font:** Be Vietnam Pro (with system-ui, sans-serif)
 **Body Font:** Be Vietnam Pro (with system-ui, sans-serif)
+**Reading Font:** Source Serif 4 (with Georgia, serif), for answer text, source passages and the welcome questions only
 **Label/Mono Font:** JetBrains Mono (with ui-monospace, monospace), for code and technical identifiers only
 
-**Character:** a single humanist sans designed for Vietnamese, used across five weights (400–650). Hierarchy comes from size and weight, never from a second display face, uppercase or letter-spacing tricks.
+**Character:** a humanist sans designed for Vietnamese carries the interface across five weights (400–650); a text serif carries the evidence, so an answer reads like a short cited document rather than a chat bubble. Hierarchy comes from size and weight, never from uppercase or letter-spacing tricks.
 
 ### Hierarchy
 - **Display** (600, clamp(28px, 3.2vw, 37px), 1.15, -0.025em): the page hero ("What would you like to know?").
 - **Headline** (650, 21px, 1.3, -0.02em): section headings; monitoring uses 24px.
 - **Title** (600, 16–17px, 1.3–1.35): card titles, the answer heading, fold titles.
 - **Body** (400, 15px, 1.6): interface text; the question field is 16px. Hero copy is limited to 62ch.
-- **Answer** (400, 15.5px, 1.75): verified answer text, set looser for reading Vietnamese with diacritics.
+- **Answer** (Source Serif 4, 400, 18px, 1.72, at most 64ch): answer text in General Chat, set loose for Vietnamese diacritics; 17px on phones. Source passages use the same serif at 15px.
 - **Label** (500, 12.5–13.5px, 1.3–1.4, no tracking, sentence case): eyebrows, chips, table headers, metadata.
 - **Figure** (650, 26–30px, tabular numbers): stat and monitoring numbers.
 
 ### Named Rules
 **The Sentence Case Rule.** No all-caps labels and no letter-spaced eyebrows. Labels are sentence case at 12.5px, weight 500, in Muted.
 
-**The One Family Rule.** Be Vietnam Pro carries every role. A new screen does not introduce a second sans or a display serif.
+**The Two Voices Rule.** Be Vietnam Pro is the product speaking (labels, controls, headings, the question); Source Serif 4 is the documents speaking (answers, passages, example questions and the welcome heading). No third family, and the serif never appears on controls or tables.
 
 ## Layout
 
@@ -230,7 +231,7 @@ Spacing is small-stepped: 2px between nav rows, 4–8px inside controls and chip
 Responsive behaviour: the main breakpoint is 780px, where the sidebar becomes a bar and the glass rim moves to its bottom edge; further adjustments happen at 740px, 600px and 440px. The phone layout is tested at 390px width.
 
 ### Named Rules
-**The Question-First Rule.** In General Chat the composer is the most elevated element on the page; supporting statistics shrink to one inline line, and nothing else floats.
+**The Question-First Rule.** In General Chat each question becomes the heading of its answer (600, 21px), and the composer is the most elevated element on the page; supporting statistics shrink to one inline line, and nothing else floats.
 
 **The One-Chat Rule.** There is one chat. Choosing documents or sales data is a "Route to" setting in that chat, never a second chat box on another page. On phones the composer wraps: the text box takes the full width (at least 56px tall) and the Route to choice and Send sit below it.
 
@@ -284,10 +285,10 @@ The feel is calm and exact: soft corners, hairlines, no ornament; precision come
 - **Phone:** below 780px the sidebar becomes a bar with its glass rim on the bottom edge.
 
 ### Verified Answer Seal (signature)
-A pill reading "Every claim checked": Verified Mist fill, Verified Line border, Verified Ink text (500, 13px), led by a 20px solid Verified circle with a white check mark (dark ink check in dark mode). It settles in with a 0.5s scale-and-fade when the verified answer appears. Partial answers never get the seal; their answer mark turns Amber instead.
+A round stamp, 54px, in the left gutter beside a verified answer: a Verified ring on Surface, a dashed inner ring on Verified Mist, and a check that draws itself in. It lands once with a 0.6s stamp (scale down from 1.3 while turning to its resting -8°). Beside it a plain Verified Ink line says "Every claim checked against its cited source · N claims"; the words carry the meaning, the stamp is decoration (aria-hidden). On phones the stamp sits above the answer at 44px. Partial, withheld and not-covered answers never get the stamp; they keep their Amber outcome pill.
 
-### Citation Chip
-Inline source references in answer text (S1, S2 …): an 18px-tall chip with 6px corners, Jade Mist fill and Deep Jade text (600, 11px). Hover or focus inverts it to Jade with white text, and clicking jumps to and highlights the cited source card.
+### Citation Mark
+Inline source references in answer text (S1, S2 …) are small raised marks (Deep Jade, 600, 12.5px, superscript) that hug the word before them and keep the following punctuation on the same line. Hover or focus fills the mark with Jade and marks the matching sentence of the cited passage with a soft jade highlight; clicking scrolls to and opens that source.
 
 ### Answer Outcome Pill
 The seal's siblings, in the same position directly under the answer title and with the same pill anatomy, in Amber: "Withheld: <reason from the claim check>" (exclamation glyph), "Not covered by the documents you can access" and "Partial answer: some parts are not covered" (dash glyph). The title changes to "Answer withheld" or "Not in your documents". Withheld and not-covered answers carry a secondary "Rephrase the question" button that puts the question back in the composer. A withheld answer is the check doing its job, so it is never styled as an error.
@@ -298,8 +299,11 @@ Shown while an answer is prepared (10–20 s): a solid card with a steady headli
 ### Answer Anatomy
 Top to bottom: title, outcome (seal or pill), answer text with citation chips, "Sources (n)", then Run details and token usage folded shut, then the rating and copy bar. Copy is left out when the answer was withheld or not covered.
 
-### Source Card
-Each source shows its file name and page, then the passage clamped to two lines with a "Show full passage" text button (the button is removed when the passage already fits). Publisher and evidence class appear only when the data has them; there is no "Verified source" placeholder. Clicking a citation chip opens and highlights its card.
+### Source Footnote
+Under a full-width Ink rule, "Sources (n)" lists each source as a footnote: the id in the gutter (Deep Jade, 600), the file name and page on one line, then the passage in the serif, clamped to two lines with a "Show full passage" text button (removed when the passage already fits). Footnotes are separated by hairlines; there are no cards. Publisher and evidence class appear only when the data has them.
+
+### Welcome Questions
+An empty chat shows the live document count ("42 documents and the sales data are ready to ask") and four real questions, one per area (Purchasing, Business travel, Inventory, Sales data): the area label in Muted on the left, the Vietnamese question in the serif with its English gist beneath. Rows are hairline-separated and tint Jade Mist on hover; choosing one asks it.
 
 ### Service Notice
 When search statistics cannot load, the header status reads "Search unavailable" and a whole tinted Amber notice appears at the top of the chat with a Retry button. It is an alert, not a modal, and it never blocks typing.

@@ -121,6 +121,7 @@ function renderCorpus(data) {
   const inFlight = data.documents.filter((doc) => !["ready", "parsed"].includes(doc.processing_status)).length;
   $("#processing-count").textContent = formatNumber(inFlight);
   $("#connection-status").textContent = "Agent workspace";
+  if (data.document_count) $("#chat-library-head").innerHTML = `<strong>${formatNumber(data.document_count)} documents</strong> and the sales data are ready to ask. Try one of these:`;
   document.querySelector(".status-dot").classList.add("connected");
 }
 
@@ -1009,6 +1010,9 @@ function renderDashboardVisualization(visualization) {
   return `<section class="answer-visualization"><h3>${escapeHtml(visualization.title || "Verified data trend")}</h3>${charts}<p class="chart-note">Chart values come from the cited database observations. Review the source and scope in the response above.</p></section>`;
 }
 
+// The verified seal: a stamped ring with a check that draws itself in.
+const SEAL_MARK = '<span class="answer-seal" aria-hidden="true"><svg viewBox="0 0 100 100"><circle class="seal-outer" cx="50" cy="50" r="46"/><circle class="seal-inner" cx="50" cy="50" r="38"/><path class="seal-check" d="M35 51 l10 10 l20 -22"/></svg></span>';
+
 function renderAnswerBody(answer) {
   const lines = String(answer || "").split(/\r?\n/);
   const blocks = [];
@@ -1016,7 +1020,7 @@ function renderAnswerBody(answer) {
   const inline = (value) => escapeHtml(value)
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/`([^`]+)`/g, "<code>$1</code>")
-    .replace(/\[(S\d+)\]/g, '<a class="cite-ref" href="#" data-cite="$1" aria-label="Source $1">$1</a>');
+    .replace(/\s*\[(S\d+)\]([.,;:!?)]?)/g, '<span class="cite-glue"><a class="cite-ref" href="#" data-cite="$1" aria-label="Source $1">$1</a>$2</span>');
   const cells = (line) => line.trim().replace(/^\|/, "").replace(/\|$/, "")
     .split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, "|"));
   const isRow = (line) => /^\s*\|.*\|\s*$/.test(line);
@@ -1055,7 +1059,7 @@ function answerOutcome(data, citations) {
   const pill = (kind, text) => `<p class="answer-status ${kind}">${escapeHtml(text)}</p>`;
   const rephrase = '<div class="answer-next"><button type="button" class="secondary-button answer-rephrase">Rephrase the question</button></div>';
   if (check?.status === "supported" && citations.length) {
-    return { badge: `<p class="answer-verified">Every claim checked against its cited source${check.claim_count ? ` · ${formatNumber(check.claim_count)} claims` : ""}</p>`, next: "" };
+    return { badge: `<p class="answer-verified">${SEAL_MARK}Every claim checked against its cited source${check.claim_count ? ` · ${formatNumber(check.claim_count)} claims` : ""}</p>`, next: "" };
   }
   if (data.citation_validation_failed || (check && check.status !== "supported")) {
     const reason = VERIFICATION_REASONS[check?.reason] || "the answer could not be matched to its sources";
@@ -2268,6 +2272,57 @@ function renderSessionTranscript(shouldScroll = false) {
 function renderGeneralChatTranscript(shouldScroll = false) {
   renderChatTranscript($("#general-chat-transcript"), generalTurns, shouldScroll);
   $("#general-chat-welcome").hidden = generalTurns.length > 0;
+}
+
+// Pointing at a citation marks the sentence of its source passage that best matches the claim.
+const citeWords = (text) => text.toLowerCase().normalize("NFC").match(/[\p{L}\p{N}]+/gu) || [];
+function citedClaim(ref) {
+  let text = "";
+  let node = ref.closest(".cite-glue") || ref;
+  for (node = node.previousSibling; node && node.nodeName !== "BR" && !node.classList?.contains("cite-glue"); node = node.previousSibling) {
+    text = (node.textContent || "") + text;
+  }
+  return text;
+}
+function clearCitedSentence(turn) {
+  turn.querySelectorAll(".citation.is-cited").forEach((card) => {
+    card.classList.remove("is-cited");
+    const passage = card.querySelector(":scope > p");
+    if (passage?.dataset.plain !== undefined) { passage.textContent = passage.dataset.plain; delete passage.dataset.plain; }
+  });
+  turn.querySelectorAll(".cite-ref.is-pointed").forEach((ref) => ref.classList.remove("is-pointed"));
+}
+function markCitedSentence(ref) {
+  const turn = ref.closest(".chat-turn");
+  const card = turn?.querySelector(`.citation[data-cite-id="${CSS.escape(ref.dataset.cite)}"]`);
+  const passage = card?.querySelector(":scope > p");
+  if (!passage || card.closest("[hidden]")) return;
+  clearCitedSentence(turn);
+  const plain = passage.textContent;
+  const sentences = plain.match(/[^.;!?]+[.;!?]*\s*/g) || [plain];
+  const claim = new Set(citeWords(citedClaim(ref)));
+  let best = 0;
+  let bestScore = 0;
+  sentences.forEach((sentence, index) => {
+    const words = citeWords(sentence);
+    const score = words.filter((word) => claim.has(word)).length / Math.sqrt(words.length || 1);
+    if (score > bestScore) { bestScore = score; best = index; }
+  });
+  if (!bestScore) return;
+  passage.dataset.plain = plain;
+  passage.innerHTML = sentences.map((sentence, index) => index === best ? `<mark class="cited-sentence">${escapeHtml(sentence)}</mark>` : escapeHtml(sentence)).join("");
+  card.classList.add("is-cited");
+  ref.classList.add("is-pointed");
+}
+for (const [on, off] of [["mouseover", "mouseout"], ["focusin", "focusout"]]) {
+  $("#general-chat-transcript").addEventListener(on, (event) => {
+    const ref = event.target.closest(".cite-ref");
+    if (ref) markCitedSentence(ref);
+  });
+  $("#general-chat-transcript").addEventListener(off, (event) => {
+    const ref = event.target.closest(".cite-ref");
+    if (ref && !ref.contains(event.relatedTarget)) clearCitedSentence(ref.closest(".chat-turn"));
+  });
 }
 
 function renderChatTranscript(root, turns, shouldScroll) {

@@ -7,9 +7,9 @@
   <title>Enterprise Knowledge AI Agent</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css?v=redesign-20261113a">
-  <link rel="stylesheet" href="/static/redesign.css?v=redesign-20261113a">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css?v=redesign-20261113b">
+  <link rel="stylesheet" href="/static/redesign.css?v=redesign-20261113b">
   <script>
     (function() {
       const saved = localStorage.getItem("app_theme");
@@ -170,10 +170,14 @@
           <div id="general-chat-welcome" class="general-chat-welcome">
             <h3>Start a conversation</h3>
             <p>Ask in Vietnamese or English. Answers use only the documents and data your role can access, and every claim is checked before you see it.</p>
-            <div id="general-chat-prompts" class="general-chat-prompts" role="group" aria-label="Suggested questions">
-              <button type="button" data-general-chat-prompt="Hiện có bao nhiêu khách hàng trong dữ liệu?">Đếm khách hàng</button>
-              <button type="button" data-general-chat-prompt="Khách hàng nào có nhiều đơn hàng nhất?">Tìm khách hàng mua nhiều</button>
-              <button type="button" data-general-chat-prompt="Tìm hướng dẫn chuyển hàng khi nơi gửi dư hàng và nơi nhận thiếu hàng.">Tra hướng dẫn tồn kho</button>
+            <div class="chat-library">
+              <p id="chat-library-head" class="chat-library-head">Try one of these</p>
+              <ul id="general-chat-prompts" class="chat-library-list" aria-labelledby="chat-library-head">
+                <li><span class="chat-library-area">Purchasing</span><button type="button" data-general-chat-prompt="Khoản mua 80tr cần ai duyệt?"><span class="chat-library-q" lang="vi">Khoản mua 80tr cần ai duyệt?</span><span class="chat-library-en">Who approves an 80-million-VND purchase</span></button></li>
+                <li><span class="chat-library-area">Business travel</span><button type="button" data-general-chat-prompt="Đi công tác được thanh toán khách sạn tối đa bao nhiêu một đêm?"><span class="chat-library-q" lang="vi">Đi công tác được thanh toán khách sạn tối đa bao nhiêu một đêm?</span><span class="chat-library-en">Hotel limit per night on a business trip</span></button></li>
+                <li><span class="chat-library-area">Inventory</span><button type="button" data-general-chat-prompt="Tìm hướng dẫn chuyển hàng khi nơi gửi dư hàng và nơi nhận thiếu hàng."><span class="chat-library-q" lang="vi">Tìm hướng dẫn chuyển hàng khi nơi gửi dư hàng và nơi nhận thiếu hàng.</span><span class="chat-library-en">Moving stock from a store with too much to one with too little</span></button></li>
+                <li><span class="chat-library-area">Sales data</span><button type="button" data-general-chat-prompt="Khách hàng nào có nhiều đơn hàng nhất?"><span class="chat-library-q" lang="vi">Khách hàng nào có nhiều đơn hàng nhất?</span><span class="chat-library-en">Customers with the most orders · synthetic data</span></button></li>
+              </ul>
             </div>
           </div>
           <div id="general-chat-transcript" class="general-chat-transcript" hidden></div>
@@ -511,6 +515,6 @@
     </div>
     </main>
   </div>
-  <script src="/static/app.js?v=redesign-20261113a" defer></script>
+  <script src="/static/app.js?v=redesign-20261113b" defer></script>
 </body>
 </html>

@@ -1,0 +1,46 @@
+{
+  "created_at": "2026-10-18T10:14:45.254100+00:00",
+  "source": "public.document_parser_chunks",
+  "read_only_database": true,
+  "parser_chunks": 532,
+  "document_ids": [
+    "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+    "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+    "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+    "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+    "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b"
+  ],
+  "parser_corpus_sha256": "284501a33c514642cd092b9d0b59dbf63cc80950a729088cc7dd226b626c41c3",
+  "documents": [
+    {
+      "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+      "title": "03 Policy Rules Registry",
+      "parser_chunks": 12
+    },
+    {
+      "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+      "title": "04 Inventory Control and Reorder Planner",
+      "parser_chunks": 485
+    },
+    {
+      "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+      "title": "02 SOP Cycle Count and Stock Adjustment",
+      "parser_chunks": 9
+    },
+    {
+      "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+      "title": "01 Inventory Management Policy Manual",
+      "parser_chunks": 18
+    },
+    {
+      "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+      "title": "05 Inventory Policy Training Deck",
+      "parser_chunks": 8
+    }
+  ],
+  "vietstyle-cases.json_sha256": "4f62e9502f25bd2cf7d5f3c2c04511ae70e675fb1f74c8fb60b6fbc908d5df83",
+  "VietStyle_RAG_Benchmark_20_Questions.csv_sha256": "435ad4e78edd255ec08f7054e68ed4325fec77776eef762aadb0495ab215a8ba",
+  "question_count": 20,
+  "all_parser_language_labels_missing": true,
+  "production_indexed_chunks_at_snapshot": 0
+}

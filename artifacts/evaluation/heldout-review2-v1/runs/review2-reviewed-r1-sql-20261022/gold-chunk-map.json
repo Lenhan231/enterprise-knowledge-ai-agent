@@ -1,0 +1,344 @@
+[
+  {
+    "intent_id": "H01",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::2"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H01",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::2"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H02",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::3",
+      "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::1"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H02",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::3",
+      "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::1"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H03",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::7"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H03",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::8"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H04",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::15"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H04",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::16"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H05",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H05",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::11"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H06",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::13"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H06",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::13"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H07",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::14"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H07",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::14"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H08",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::15"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H08",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::15"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H09",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::433"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H09",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::433"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H10",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+      "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H10",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+      "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H11",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::9",
+      "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::10"
+    ],
+    "multi_chunk_checked": true
+  },
+  {
+    "intent_id": "H11",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::9",
+      "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::10"
+    ],
+    "multi_chunk_checked": true
+  },
+  {
+    "intent_id": "H12",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::435",
+      "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::436"
+    ],
+    "multi_chunk_checked": true
+  },
+  {
+    "intent_id": "H12",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::435",
+      "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::436"
+    ],
+    "multi_chunk_checked": true
+  },
+  {
+    "intent_id": "H13",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b::chunk::8",
+      "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::7",
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13"
+    ],
+    "multi_chunk_checked": true
+  },
+  {
+    "intent_id": "H13",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14",
+      "LOCAL-EN-V1-03_Policy_Rules_Registry_EN.csv::chunk::8",
+      "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::7"
+    ],
+    "multi_chunk_checked": true
+  },
+  {
+    "intent_id": "H14",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::11",
+      "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::12"
+    ],
+    "multi_chunk_checked": true
+  },
+  {
+    "intent_id": "H14",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::11",
+      "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::12"
+    ],
+    "multi_chunk_checked": true
+  },
+  {
+    "intent_id": "H15",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::0",
+      "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::433",
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::3",
+      "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::1"
+    ],
+    "multi_chunk_checked": true
+  },
+  {
+    "intent_id": "H15",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::3",
+      "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::0",
+      "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::433",
+      "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::1"
+    ],
+    "multi_chunk_checked": true
+  },
+  {
+    "intent_id": "H16",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::3"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H16",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::3"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H17",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::11"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H17",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::12"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H18",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::9",
+      "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::6"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H18",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::10",
+      "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::6"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H19",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::11"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H19",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::12"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H20",
+    "target_language": "vi",
+    "relevant_chunks": [
+      "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::4"
+    ],
+    "multi_chunk_checked": false
+  },
+  {
+    "intent_id": "H20",
+    "target_language": "en",
+    "relevant_chunks": [
+      "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::5"
+    ],
+    "multi_chunk_checked": false
+  }
+]

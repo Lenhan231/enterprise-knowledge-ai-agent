@@ -61,3 +61,7 @@ Kết quả chỉ đo quyết định planner. Không thể lấy tỷ lệ đú
 Sau review và khi Huy yêu cầu commit/deploy: thử lại V3/V4/V6, xác nhận số retrieval/rerank lần lượt 1/1/2, kiểm tra nội dung và nguồn không mất điều kiện; sau đó lặp bài ON trên cùng sáu câu, cùng quyền và trạng thái tài liệu. Kỳ vọng giảm chi phí ở V3/V4 nhưng chưa có số giây mới để báo cáo. V6 phải giữ đủ bằng chứng, không chỉ giữ số truy vấn là hai.
 
 Rủi ro còn lại: planner không nhìn tài liệu nên phải dự đoán phạm vi bằng chứng; prompt có thể tách sai hoặc gom sai. Vẫn phát sinh một lần gọi planner cho câu đơn, vẫn chịu quota/deadline của provider. Công tắc 0 quay về luồng không planner như trước. Không cần embedding lại.
+
+## Xác minh VPS từ kết quả Huy gửi
+
+Sau build: một vòng EN 6/6 HTTP 200 và server ok; V3/V4 có một retrieval/rerank, V6 có hai. Nội dung ba ca chính được đối chiếu: đúng mức duyệt, điều kiện báo giá/ngoại lệ đã duyệt, điều kiện số lượng, điều kiện phát hành PO. E2E V3 23,53 giây; V4 23,12; V6 44,48. So tham khảo prompt cũ có median ba lượt V3 40,33; V4 43,33; V6 39,63. Bản mới chỉ một lượt nên chưa kết luận giảm latency đại diện hay độ ổn định. Chi tiết trong docs/handoff/knowledge-planner-20261102.vi.md. Đây là xác minh từ output người vận hành cung cấp, không phải assistant trực tiếp chạy VPS.

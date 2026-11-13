@@ -1,0 +1,23 @@
+{
+  "status": "passed",
+  "cases": 48,
+  "paired_intents": 12,
+  "required_components_per_direction": 28,
+  "parser_spans": 72,
+  "original_anchor_alternative_checks": 30,
+  "component_isolation_checks": 56,
+  "tamper_checks": 3,
+  "manifest_sha256": "c8f9dae06fd70e9e897912aa4a0a7488e98993c88af2b182a1406db72c51f6f3",
+  "inference_run": false
+}
+{
+  "cases": 48,
+  "unique_queries": 24,
+  "corpus_chunks": 1063,
+  "changed_corpus_inputs": {
+    "plain": 0,
+    "parent-plain": 13,
+    "narrative-parent": 6
+  },
+  "inference_run": false
+}

@@ -1,0 +1,75 @@
+{
+  "verified": true,
+  "reports": [
+    {
+      "language": "en",
+      "scope": {
+        "document_ids": [
+          "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "UPLOAD-5149fb823530440da1a2f09704c695d6"
+        ],
+        "roles": [
+          "admin"
+        ],
+        "chunks": 249
+      },
+      "cases_sha256": "27e45ee2ed267aefae24286e85b275d99f1e5432b4843d2cfd1a16b6c20dcd74",
+      "scoped_corpus_sha256": "2d894fb2a63095586eb0f7abba9781a3a9ba1273446a38943363777622a6f83e",
+      "metrics": {
+        "dense": {
+          "recall_at_k": 0.3958,
+          "precision_at_k": 0.0417,
+          "mrr": 0.2606,
+          "ndcg_at_k": 0.2865
+        },
+        "hybrid": {
+          "recall_at_k": 0.4583,
+          "precision_at_k": 0.05,
+          "mrr": 0.2583,
+          "ndcg_at_k": 0.3036
+        },
+        "bm25": {
+          "recall_at_k": 0.4583,
+          "precision_at_k": 0.05,
+          "mrr": 0.3935,
+          "ndcg_at_k": 0.3989
+        }
+      }
+    },
+    {
+      "language": "vn",
+      "scope": {
+        "document_ids": [
+          "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+          "UPLOAD-5149fb823530440da1a2f09704c695d6"
+        ],
+        "roles": [
+          "admin"
+        ],
+        "chunks": 249
+      },
+      "cases_sha256": "70ea62225f174ac0a874dda2a3d4c3bfaf7fc683b9d57851e5a2fceadc5d8259",
+      "scoped_corpus_sha256": "2d894fb2a63095586eb0f7abba9781a3a9ba1273446a38943363777622a6f83e",
+      "metrics": {
+        "dense": {
+          "recall_at_k": 0.4375,
+          "precision_at_k": 0.0458,
+          "mrr": 0.2174,
+          "ndcg_at_k": 0.2675
+        },
+        "hybrid": {
+          "recall_at_k": 0.3125,
+          "precision_at_k": 0.0333,
+          "mrr": 0.2182,
+          "ndcg_at_k": 0.2348
+        },
+        "bm25": {
+          "recall_at_k": 0.3542,
+          "precision_at_k": 0.0375,
+          "mrr": 0.2465,
+          "ndcg_at_k": 0.2726
+        }
+      }
+    }
+  ]
+}

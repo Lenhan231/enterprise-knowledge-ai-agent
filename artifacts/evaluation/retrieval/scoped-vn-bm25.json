@@ -1,0 +1,700 @@
+{
+  "created_at": "2026-10-15T15:51:02.549917+00:00",
+  "runner_sha256": "eca9531ede5e1b3386998b9483a7028cf27e9148b7ebe36b5eb6714e05f84b10",
+  "retrieval_code_sha256": {
+    "src/core/retrieval/__init__.py": "4bd1ee4bbba78588a44a2f92dc47e1b3efc3f3f4e9e74564deb9884e7475e669",
+    "src/core/retrieval/methods/__init__.py": "83010410982e279677a2199074bc9f7d2b73d2574d19469d54da9a233d82c672",
+    "src/core/retrieval/methods/bm25.py": "44e51a51b8c1dff50f8940633923675603e1654c8675d62dd79fdc548fd67a8a",
+    "src/core/retrieval/methods/common.py": "cdfaff974db003c056853934b6a9c85c68d4b74eba30e85318d31c77d2b8f2a0",
+    "src/core/retrieval/methods/dense.py": "1e8ef748c33f7ec20fedeb96109337b5f81ef191ba067d3ea4d723f171833898",
+    "src/core/retrieval/methods/hybrid.py": "a43164e8b26b503535dc23a69390271c2c64d509135bfd2ac372c8a02533b64a",
+    "src/core/retrieval/methods/parent.py": "131ed76ee9be5225cf938eb5cf79470ebca22a111bf8423460885a51d8f8ddf0",
+    "src/core/retrieval/retrieval.py": "dfc618ac4c06bdca8ac2a4144725db4c0100cce988852a06444be3eaafd034da",
+    "src/core/retrieval/retrieval_service.py": "9d8a9e5ec26a291772f28ac1d6ffe5fc6e34213c89d5d4c58a3e3d5381a04604"
+  },
+  "git_commit": "751469c1dafc573aa28c7b52e49bf7c4a447ccb7",
+  "scope": {
+    "document_ids": [
+      "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+      "UPLOAD-5149fb823530440da1a2f09704c695d6"
+    ],
+    "roles": [
+      "admin"
+    ],
+    "chunks": 249
+  },
+  "cases_sha256": "70ea62225f174ac0a874dda2a3d4c3bfaf7fc683b9d57851e5a2fceadc5d8259",
+  "scoped_corpus_sha256": "2d894fb2a63095586eb0f7abba9781a3a9ba1273446a38943363777622a6f83e",
+  "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "embedding_device": "cpu",
+  "top_k": 10,
+  "dense_weight": 1.0,
+  "bm25_weight": 2.0,
+  "rrf_k": 60,
+  "case_count": 24,
+  "methods": [
+    "bm25"
+  ],
+  "limitations": "Scoped exact-chunk benchmark, not mixed-corpus search or answer quality. Search latency excludes query embedding and model load. Source cases copied unchanged from QuocAn 3ea4f43.",
+  "results": [
+    {
+      "id": "Q01",
+      "question": "Sứ mệnh và tầm nhìn của Tổng Công ty Phân bón và Hóa chất Dầu khí (PVFCCo) được xác định như thế nào?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::4"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::3",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35"
+      ],
+      "search_latency_ms": 375.78434700003527,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q02",
+      "question": "Mã cổ phiếu của PVFCCo là gì và có bao nhiêu cổ phiếu được niêm yết vào ngày 05/11/2007?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48"
+      ],
+      "search_latency_ms": 368.75364399998034,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q03",
+      "question": "PVFCCo hoạt động trong những lĩnh vực kinh doanh chính nào theo Báo cáo thường niên 2008?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50"
+      ],
+      "search_latency_ms": 363.55519900007494,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q04",
+      "question": "Năm 2008, PVFCCo đã nhập khẩu và phân phối bao nhiêu tấn phân bón nhập khẩu vào thị trường nội địa?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::45",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::44",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33"
+      ],
+      "search_latency_ms": 367.7533749998929,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q05",
+      "question": "Dự án thu hồi CO₂ tại Nhà máy Đạm Phú Mỹ dự kiến làm tăng công suất sản xuất urê thêm bao nhiêu tấn mỗi năm?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::23",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::42"
+      ],
+      "search_latency_ms": 364.7144990000015,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q06",
+      "question": "Tổng doanh thu, lợi nhuận trước thuế và số thuế nộp của PVFCCo năm 2008 là bao nhiêu?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::20",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50"
+      ],
+      "search_latency_ms": 670.298806999881,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q07",
+      "question": "So sánh tổng doanh thu của PVFCCo giữa năm 2007 và 2008.",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::47",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28"
+      ],
+      "search_latency_ms": 365.6067310000708,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q08",
+      "question": "Kế hoạch sản lượng sản xuất urê và nhập khẩu phân bón của PVFCCo trong năm 2009 là bao nhiêu?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::44",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::45",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31"
+      ],
+      "search_latency_ms": 362.63973599989185,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q09",
+      "question": "Các chỉ tiêu doanh thu, lợi nhuận trước thuế và thuế nộp ngân sách mà PVFCCo đặt ra cho năm 2009 là gì?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::20",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::24",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::23",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27"
+      ],
+      "search_latency_ms": 363.4053670000412,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q10",
+      "question": "Nhà máy Đạm Phú Mỹ nằm ở đâu và công suất thiết kế sản xuất amoniac, urê mỗi ngày là bao nhiêu?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::40",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32"
+      ],
+      "search_latency_ms": 362.6896619998661,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q11",
+      "question": "PVFCCo đã triển khai những giải pháp kỹ thuật nào nhằm cải thiện chất lượng urê và hiệu quả vận hành nhà máy?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8"
+      ],
+      "search_latency_ms": 367.6427089999379,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q12",
+      "question": "Tỷ số thanh toán hiện hành và tỷ số thanh toán nhanh của PVFCCo năm 2008 là bao nhiêu?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::49",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7"
+      ],
+      "search_latency_ms": 368.1687589999001,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q13",
+      "question": "Công ty Cổ phần Long Hậu được thành lập theo giấy chứng nhận đăng ký kinh doanh số bao nhiêu và được cấp ngày nào?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::26",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41"
+      ],
+      "search_latency_ms": 367.79399800002466,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q14",
+      "question": "Đơn vị kiểm toán nào thực hiện kiểm toán báo cáo tài chính riêng năm 2008 của Long Hậu?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2"
+      ],
+      "search_latency_ms": 370.38022299998374,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q15",
+      "question": "Báo cáo kiểm toán độc lập của Long Hậu năm 2008 được ký vào ngày nào?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::9"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::3",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55"
+      ],
+      "search_latency_ms": 370.5567899999096,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q16",
+      "question": "Tổng tài sản của Long Hậu tại ngày 31/12/2008 và đầu năm 2008 là bao nhiêu?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::14"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27"
+      ],
+      "search_latency_ms": 368.4000760001709,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q17",
+      "question": "Giá trị hàng tồn kho của Long Hậu tại cuối năm và đầu năm 2008 thay đổi như thế nào?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::12"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::12",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::13",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4"
+      ],
+      "search_latency_ms": 367.82563100018706,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.5,
+        "ndcg_at_k": 0.6309297535714575
+      }
+    },
+    {
+      "id": "Q18",
+      "question": "Doanh thu thuần của Long Hậu trong năm 2008 là bao nhiêu và tăng bao nhiêu so với năm trước?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::20"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::20",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2"
+      ],
+      "search_latency_ms": 369.38264700006584,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.25,
+        "ndcg_at_k": 0.43067655807339306
+      }
+    },
+    {
+      "id": "Q19",
+      "question": "Tổng lợi nhuận kế toán trước thuế năm 2008 của Long Hậu là bao nhiêu so với năm 2007?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::49",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30"
+      ],
+      "search_latency_ms": 381.80868000017654,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.5,
+        "ndcg_at_k": 0.6309297535714575
+      }
+    },
+    {
+      "id": "Q20",
+      "question": "Theo thuyết minh báo cáo tài chính, Long Hậu xác định giá trị hàng tồn kho liên quan đến chi phí phát triển khu công nghiệp theo nguyên tắc nào?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::39",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::12",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1"
+      ],
+      "search_latency_ms": 390.853978999985,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q21",
+      "question": "Long Hậu áp dụng phương pháp khấu hao nào và thời gian khấu hao ước tính cho các loại tài sản cố định là bao lâu?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::6",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53"
+      ],
+      "search_latency_ms": 388.36347500000556,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q22",
+      "question": "Lợi nhuận thuộc cổ đông phổ thông và lãi cơ bản trên mỗi cổ phiếu của Long Hậu năm 2008 là bao nhiêu?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::32",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::46",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5"
+      ],
+      "search_latency_ms": 390.99895300000753,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.5,
+        "ndcg_at_k": 0.6309297535714575
+      }
+    },
+    {
+      "id": "Q23",
+      "question": "Báo cáo thường niên 2008 của PVFCCo và báo cáo tài chính riêng năm 2008 của Long Hậu thuộc hai doanh nghiệp nào?",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::0",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8"
+      ],
+      "search_latency_ms": 391.36436599983426,
+      "metrics": {
+        "recall_at_k": 0.5,
+        "precision_at_k": 0.1,
+        "mrr": 0.16666666666666666,
+        "ndcg_at_k": 0.21840743681816419
+      }
+    },
+    {
+      "id": "Q24",
+      "question": "So sánh lợi nhuận trước thuế năm 2008 của PVFCCo và Long Hậu, nêu rõ số liệu và đơn vị tiền tệ được sử dụng trong từng báo cáo.",
+      "method": "bm25",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51"
+      ],
+      "search_latency_ms": 391.1633839998103,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    }
+  ],
+  "summary": {
+    "bm25": {
+      "recall_at_k": 0.3542,
+      "precision_at_k": 0.0375,
+      "mrr": 0.2465,
+      "ndcg_at_k": 0.2726
+    }
+  }
+}

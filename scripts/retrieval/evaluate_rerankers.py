@@ -8,7 +8,10 @@ import hashlib
 import json
 import os
 import platform
-import resource
+try:
+    import resource
+except ImportError:
+    resource = None
 import sys
 import time
 from datetime import datetime, timezone
@@ -72,7 +75,9 @@ def _aggregate(results: list[dict], key: str) -> dict[str, float]:
     }
 
 
-def _peak_rss_mb() -> float:
+def _peak_rss_mb() -> float | None:
+    if resource is None:
+        return None
     value = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     return round(value / (1024 if sys.platform != "darwin" else 1024 * 1024), 1)
 

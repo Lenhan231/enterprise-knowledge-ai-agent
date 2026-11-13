@@ -1,0 +1,321 @@
+{
+  "quocan_commit": "67f815761714d01c330d1f53bc2d7dda208d8173",
+  "artifact_sha256": {
+    "artifacts/benchmark/long_hau_2008_q01-24_latest_retrieval.json": "8114375ba70fc55ee78f388d378613cced3fdd441ba78ef3affc36fd2a03e681",
+    "artifacts/benchmark/vietstyle_q01-20_latest_retrieval.json": "e46fefec7fd33c6b22237178cf39608fa705d6ea90901c68365c461d8e4628d3",
+    "artifacts/benchmark/vietstyle_q01-05_huy.json": "b0fc4baf7f157e683e1ecb9616cc43383434c9afeb100930acbfa4eea442d16a",
+    "artifacts/benchmark/long_hau_2008_huy_retrieval.json": "f7de3445d6a879bcc755302e9092d3f85362b4e44240dfbf9bcc0758b4e82fc2"
+  },
+  "finance_summary": {
+    "question_count": 24,
+    "generation_completed": 45,
+    "average_retrieval_latency_ms": 1269.34,
+    "average_response_time_ms": 10479.87,
+    "observed_throughput_requests_per_second": 0.0514,
+    "retrieval_metrics_mean": {
+      "recall_at_k": 0.2292,
+      "precision_at_k": 0.025,
+      "mrr": 0.1935,
+      "ndcg_at_k": 0.1907
+    },
+    "gpu_utilization": null,
+    "scalability": null
+  },
+  "finance_generation_status": {
+    "gpt_oss_20b": {
+      "completed": 15,
+      "error:RateLimitError": 9
+    },
+    "gemini_flash": {
+      "completed": 6,
+      "error:RateLimitError": 18
+    },
+    "qwen3": {
+      "completed": 24
+    }
+  },
+  "vietstyle_summary": {
+    "question_count": 20,
+    "mean_source_recall_at_10": 0.8333,
+    "generation_completed": 19
+  },
+  "vietstyle_returned_contexts": 200,
+  "vietstyle_outside_listed_scope_contexts": 79,
+  "vietstyle_queries_with_outside_scope": 18,
+  "vietstyle_cases": [
+    {
+      "id": "Q01",
+      "source_recall": 0.0,
+      "outside_listed_scope_chunks": 7,
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "README.txt",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "found_sources": []
+    },
+    {
+      "id": "Q02",
+      "source_recall": 1.0,
+      "outside_listed_scope_chunks": 4,
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "found_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ]
+    },
+    {
+      "id": "Q03",
+      "source_recall": 1.0,
+      "outside_listed_scope_chunks": 0,
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "found_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ]
+    },
+    {
+      "id": "Q04",
+      "source_recall": 1.0,
+      "outside_listed_scope_chunks": 5,
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "found_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ]
+    },
+    {
+      "id": "Q05",
+      "source_recall": 0.5,
+      "outside_listed_scope_chunks": 4,
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "found_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ]
+    },
+    {
+      "id": "Q06",
+      "source_recall": 1.0,
+      "outside_listed_scope_chunks": 5,
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "found_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ]
+    },
+    {
+      "id": "Q07",
+      "source_recall": 1.0,
+      "outside_listed_scope_chunks": 3,
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "found_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ]
+    },
+    {
+      "id": "Q08",
+      "source_recall": 1.0,
+      "outside_listed_scope_chunks": 3,
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "found_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ]
+    },
+    {
+      "id": "Q09",
+      "source_recall": 1.0,
+      "outside_listed_scope_chunks": 4,
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "found_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ]
+    },
+    {
+      "id": "Q10",
+      "source_recall": 1.0,
+      "outside_listed_scope_chunks": 3,
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "found_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ]
+    },
+    {
+      "id": "Q11",
+      "source_recall": 0.5,
+      "outside_listed_scope_chunks": 4,
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "found_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ]
+    },
+    {
+      "id": "Q12",
+      "source_recall": 1.0,
+      "outside_listed_scope_chunks": 5,
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "found_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "03_Policy_Rules_Registry.csv"
+      ]
+    },
+    {
+      "id": "Q13",
+      "source_recall": 1.0,
+      "outside_listed_scope_chunks": 3,
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "found_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ]
+    },
+    {
+      "id": "Q14",
+      "source_recall": 0.6666666666666666,
+      "outside_listed_scope_chunks": 1,
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "found_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ]
+    },
+    {
+      "id": "Q15",
+      "source_recall": 1.0,
+      "outside_listed_scope_chunks": 9,
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "found_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ]
+    },
+    {
+      "id": "Q16",
+      "source_recall": 0.6666666666666666,
+      "outside_listed_scope_chunks": 2,
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "found_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ]
+    },
+    {
+      "id": "Q17",
+      "source_recall": 1.0,
+      "outside_listed_scope_chunks": 8,
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "found_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "03_Policy_Rules_Registry.csv"
+      ]
+    },
+    {
+      "id": "Q18",
+      "source_recall": 0.6666666666666666,
+      "outside_listed_scope_chunks": 0,
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "README.txt"
+      ],
+      "found_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ]
+    },
+    {
+      "id": "Q19",
+      "source_recall": 0.6666666666666666,
+      "outside_listed_scope_chunks": 5,
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "README.txt"
+      ],
+      "found_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ]
+    },
+    {
+      "id": "Q20",
+      "source_recall": 1.0,
+      "outside_listed_scope_chunks": 4,
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "found_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ]
+    }
+  ],
+  "vietstyle_generation_status": {
+    "completed": 19,
+    "error": 1
+  },
+  "pilot_summary": {
+    "dense_mean_source_recall_at_10": 0.8333,
+    "huy_hybrid_mean_source_recall_at_10": 0.9333,
+    "huy_translated_hybrid_mean_source_recall_at_10": 0.8333
+  },
+  "latest_first5_source_recall": 0.7,
+  "latest_scope_recall_ceiling_if_only_README_missing": 0.95,
+  "limitations": "Artifact/code audit, not a new live rerun. No corpus hashes or exact per-run commits recorded for the new reports; cannot prove all data and runtime settings identical. No API or database calls."
+}

@@ -1,0 +1,133 @@
+{
+  "reviewer": "assistant",
+  "status": "source_review_completed_with_findings_not_human_signoff",
+  "dataset_manifest_sha256": "f0404b207ed981250e59a22eb31af224eb2461d7e7be7629d1793fed42ea3c46",
+  "retrieval_model_inference": false,
+  "external_api_calls": false,
+  "frozen_inputs_changed": false,
+  "h10_correct_table_only_label_diagnostic": [
+    {
+      "intent_id": "H10",
+      "target_language": "vi",
+      "synthetic_input": "correct approval-table chunk only; not a retrieval prediction",
+      "chunk_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+      "metrics": {
+        "precision_at_10": 0.1,
+        "recall_at_10": 0.5,
+        "mrr_at_10": 1.0,
+        "ndcg_at_10": 0.6131471927654584,
+        "full_evidence_at_10": 1.0,
+        "component_coverage_at_10": 1.0,
+        "required_met": 2,
+        "required_total": 2,
+        "missing_components": []
+      }
+    },
+    {
+      "intent_id": "H10",
+      "target_language": "en",
+      "synthetic_input": "correct approval-table chunk only; not a retrieval prediction",
+      "chunk_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14",
+      "metrics": {
+        "precision_at_10": 0.1,
+        "recall_at_10": 1.0,
+        "mrr_at_10": 1.0,
+        "ndcg_at_10": 1.0,
+        "full_evidence_at_10": 1.0,
+        "component_coverage_at_10": 1.0,
+        "required_met": 2,
+        "required_total": 2,
+        "missing_components": []
+      }
+    }
+  ],
+  "numeric_cross_language_identity": [
+    {
+      "intent_id": "H06",
+      "has_identical_evidence_chunk_across_languages": true,
+      "identical_chunk_contents": 1
+    },
+    {
+      "intent_id": "H07",
+      "has_identical_evidence_chunk_across_languages": true,
+      "identical_chunk_contents": 1
+    },
+    {
+      "intent_id": "H08",
+      "has_identical_evidence_chunk_across_languages": true,
+      "identical_chunk_contents": 1
+    },
+    {
+      "intent_id": "H09",
+      "has_identical_evidence_chunk_across_languages": false,
+      "identical_chunk_contents": 0
+    },
+    {
+      "intent_id": "H11",
+      "has_identical_evidence_chunk_across_languages": true,
+      "identical_chunk_contents": 2
+    },
+    {
+      "intent_id": "H12",
+      "has_identical_evidence_chunk_across_languages": true,
+      "identical_chunk_contents": 2
+    },
+    {
+      "intent_id": "H14",
+      "has_identical_evidence_chunk_across_languages": true,
+      "identical_chunk_contents": 2
+    },
+    {
+      "intent_id": "H15",
+      "has_identical_evidence_chunk_across_languages": false,
+      "identical_chunk_contents": 0
+    }
+  ],
+  "source_intents_vi": {
+    "01_Inventory_Management_Policy_Manual.docx": [
+      "H01",
+      "H02",
+      "H03",
+      "H04",
+      "H05",
+      "H10",
+      "H13",
+      "H15",
+      "H16",
+      "H17",
+      "H18",
+      "H19",
+      "H20"
+    ],
+    "05_Inventory_Policy_Training_Deck.pptx": [
+      "H02",
+      "H15",
+      "H18"
+    ],
+    "04_Inventory_Control_and_Reorder_Planner.xlsx": [
+      "H06",
+      "H07",
+      "H08",
+      "H09",
+      "H11",
+      "H12",
+      "H13",
+      "H14",
+      "H15"
+    ],
+    "03_Policy_Rules_Registry.csv": [
+      "H13"
+    ]
+  },
+  "oracle_checks": {
+    "intent_language_pairs": 40,
+    "two_chunk_cases": 10
+  },
+  "priority_findings": [
+    "H10 invalid generic timing alternative and direct overlap with old Q20 optional exception evidence",
+    "H19 phrasing can imply exact reason-code values not present in source",
+    "Eight numeric/table-join questions retain identical English field labels and answer rows across corpora; six have wholly identical evidence chunks, two have translated notes elsewhere in the chunk.",
+    "H13 normal approval flow reused from old Q20; supplier facts are new",
+    "No required evidence in SOP PDF; source coverage incomplete"
+  ]
+}

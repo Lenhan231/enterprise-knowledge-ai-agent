@@ -1,0 +1,1620 @@
+[
+  {
+    "id": "H01",
+    "category": "narrative",
+    "question": {
+      "vi": "Theo phần mục đích của Manual, chính sách tồn kho phải cân bằng bốn yếu tố nào?",
+      "en": "According to the Manual purpose section, which four factors should the inventory policy balance?"
+    },
+    "reference_answer_vi": "Mức sẵn hàng, chi phí lưu kho, vốn bị chiếm dụng và độ chính xác dữ liệu.",
+    "requirements": [
+      {
+        "id": "availability",
+        "description_vi": "Sẵn hàng",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "mức độ sẵn hàng"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "product availability"
+            }
+          ]
+        }
+      },
+      {
+        "id": "holding",
+        "description_vi": "Chi phí lưu kho",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "chi phí lưu kho"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "holding costs"
+            }
+          ]
+        }
+      },
+      {
+        "id": "capital",
+        "description_vi": "Vốn bị chiếm dụng",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "vốn bị chiếm dụng"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "tied-up capital"
+            }
+          ]
+        }
+      },
+      {
+        "id": "accuracy",
+        "description_vi": "Độ chính xác dữ liệu",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "độ chính xác của dữ liệu"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "data accuracy"
+            }
+          ]
+        }
+      }
+    ],
+    "related_development_topics": [],
+    "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+  },
+  {
+    "id": "H02",
+    "category": "narrative",
+    "question": {
+      "vi": "Phần mô tả dataset liệt kê những nhóm hàng nào đang được quan sát?",
+      "en": "Which product categories are listed as observed in the dataset description?"
+    },
+    "reference_answer_vi": "Streetwear, Outdoor, Casual, GenZ.",
+    "requirements": [
+      {
+        "id": "streetwear",
+        "description_vi": "Streetwear",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "Streetwear",
+              "contains": "Dataset có 2,412"
+            },
+            {
+              "file_prefix": "05_",
+              "quote": "Streetwear",
+              "contains": "Nhóm hàng"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "Streetwear",
+              "contains": "The dataset contains 2,412"
+            },
+            {
+              "file_prefix": "05_",
+              "quote": "Streetwear",
+              "contains": "Product categories"
+            }
+          ]
+        }
+      },
+      {
+        "id": "outdoor",
+        "description_vi": "Outdoor",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "Outdoor",
+              "contains": "Dataset có 2,412"
+            },
+            {
+              "file_prefix": "05_",
+              "quote": "Outdoor",
+              "contains": "Nhóm hàng"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "Outdoor",
+              "contains": "The dataset contains 2,412"
+            },
+            {
+              "file_prefix": "05_",
+              "quote": "Outdoor",
+              "contains": "Product categories"
+            }
+          ]
+        }
+      },
+      {
+        "id": "casual",
+        "description_vi": "Casual",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "Casual",
+              "contains": "Dataset có 2,412"
+            },
+            {
+              "file_prefix": "05_",
+              "quote": "Casual",
+              "contains": "Nhóm hàng"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "Casual",
+              "contains": "The dataset contains 2,412"
+            },
+            {
+              "file_prefix": "05_",
+              "quote": "Casual",
+              "contains": "Product categories"
+            }
+          ]
+        }
+      },
+      {
+        "id": "genz",
+        "description_vi": "GenZ",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "GenZ",
+              "contains": "Dataset có 2,412"
+            },
+            {
+              "file_prefix": "05_",
+              "quote": "GenZ",
+              "contains": "Nhóm hàng"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "GenZ",
+              "contains": "The dataset contains 2,412"
+            },
+            {
+              "file_prefix": "05_",
+              "quote": "GenZ",
+              "contains": "Product categories"
+            }
+          ]
+        }
+      }
+    ],
+    "related_development_topics": [],
+    "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+  },
+  {
+    "id": "H03",
+    "category": "narrative",
+    "question": {
+      "vi": "Nếu lịch sử nhu cầu chưa đủ tin cậy để phân nhóm ABC, tài liệu cho phép làm gì và phải rà soát lại sau bao nhiêu chu kỳ?",
+      "en": "When demand history is not reliable enough for ABC classification, what temporary approach is allowed and after how many cycles must it be reviewed?"
+    },
+    "reference_answer_vi": "Dùng nhóm tạm và rà soát sau 3 chu kỳ.",
+    "requirements": [
+      {
+        "id": "provisional",
+        "description_vi": "Dùng nhóm tạm",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "dùng nhóm tạm"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "use provisional classes"
+            }
+          ]
+        }
+      },
+      {
+        "id": "review",
+        "description_vi": "Rà soát sau 3 chu kỳ",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "rà soát sau 3 chu kỳ"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "review after three cycles"
+            }
+          ]
+        }
+      }
+    ],
+    "related_development_topics": [
+      "Q03: ABC topic, but new insufficient-history rule"
+    ],
+    "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+  },
+  {
+    "id": "H04",
+    "category": "narrative",
+    "question": {
+      "vi": "Mục Hồ sơ bắt buộc và lưu trữ của Manual yêu cầu giữ những nhóm hồ sơ nào?",
+      "en": "Which record groups must be retained under the Manual Required Records and Retention section?"
+    },
+    "reference_answer_vi": "PR/PO và phê duyệt; hồ sơ nhận hàng; hồ sơ kiểm kê/điều chỉnh; hàng trả về và QA; KPI/exception/parameter changes/audit trail.",
+    "requirements": [
+      {
+        "id": "purchase",
+        "description_vi": "Mua hàng",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "Purchase request / PO và phê duyệt."
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "Purchase requests / POs and approvals."
+            }
+          ]
+        }
+      },
+      {
+        "id": "receiving",
+        "description_vi": "Nhận hàng",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "Biên bản nhận hàng, ảnh ngoại lệ, chứng từ nhà cung cấp."
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "Receiving reports, exception photos, and supplier documents."
+            }
+          ]
+        }
+      },
+      {
+        "id": "count",
+        "description_vi": "Kiểm kê",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "Phiếu kiểm kê, chênh lệch, nguyên nhân và phê duyệt điều chỉnh."
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "Count sheets, variances, causes, and adjustment approvals."
+            }
+          ]
+        }
+      },
+      {
+        "id": "returns",
+        "description_vi": "Trả hàng",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "Hồ sơ hàng trả về, kết quả QA và disposition."
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "Return records, QA results, and disposition."
+            }
+          ]
+        }
+      },
+      {
+        "id": "kpi",
+        "description_vi": "Báo cáo và lịch sử",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "Báo cáo KPI, exception log, thay đổi tham số và audit trail."
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "KPI reports, exception logs, parameter changes, and audit trails."
+            }
+          ]
+        }
+      }
+    ],
+    "related_development_topics": [
+      "Q15: records topic; new complete retention inventory"
+    ],
+    "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+  },
+  {
+    "id": "H05",
+    "category": "narrative",
+    "question": {
+      "vi": "Trong xử lý hàng chậm luân chuyển, ba nguyên nhân nào khiến giảm giá không được dùng làm biện pháp mặc định?",
+      "en": "For slow-moving inventory, which three root causes mean discounting must not be the default response?"
+    },
+    "reference_answer_vi": "Không mặc định giảm giá nếu nguyên nhân là sai dữ liệu, sai phân bổ size hoặc đơn hàng đang bị giữ.",
+    "requirements": [
+      {
+        "id": "restriction",
+        "description_vi": "Không mặc định giảm giá",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "Không dùng giảm giá làm biện pháp mặc định"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "Do not default to discounting"
+            }
+          ]
+        }
+      },
+      {
+        "id": "data",
+        "description_vi": "Sai dữ liệu",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "sai dữ liệu"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "bad data"
+            }
+          ]
+        }
+      },
+      {
+        "id": "size",
+        "description_vi": "Sai phân bổ size",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "sai phân bổ size"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "incorrect size allocation"
+            }
+          ]
+        }
+      },
+      {
+        "id": "held",
+        "description_vi": "Đơn bị giữ",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "đơn hàng đang bị giữ"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "held orders"
+            }
+          ]
+        }
+      }
+    ],
+    "related_development_topics": [
+      "Q07: slow-stock topic, new non-discounting causes"
+    ],
+    "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+  },
+  {
+    "id": "H06",
+    "category": "table_numeric",
+    "question": {
+      "vi": "Trong sheet Inventory Control của snapshot mẫu, Product ID 17 (DragonWear MA-17) có size, màu và On-hand Units là gì?",
+      "en": "In the sample Inventory Control sheet, what are the size, color, and On-hand Units for Product ID 17 (DragonWear MA-17)?"
+    },
+    "reference_answer_vi": "Size M, màu silver, 28 đơn vị tồn theo snapshot mẫu.",
+    "requirements": [
+      {
+        "id": "size",
+        "description_vi": "Product 17: Size = M",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "Size: M",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 17 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "Size: M",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 17 |"
+            }
+          ]
+        }
+      },
+      {
+        "id": "color",
+        "description_vi": "Product 17: Color = silver",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "Color: silver",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 17 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "Color: silver",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 17 |"
+            }
+          ]
+        }
+      },
+      {
+        "id": "onhand",
+        "description_vi": "Product 17: On-hand Units = 28",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "On-hand Units: 28",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 17 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "On-hand Units: 28",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 17 |"
+            }
+          ]
+        }
+      }
+    ],
+    "related_development_topics": [],
+    "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+  },
+  {
+    "id": "H07",
+    "category": "table_numeric",
+    "question": {
+      "vi": "Đọc dòng Product ID 18 (DragonWear MA-18) trong Inventory Control: Stockout Days và Fill Rate ghi bao nhiêu?",
+      "en": "Read the Inventory Control row for Product ID 18 (DragonWear MA-18): what Stockout Days and Fill Rate values are recorded?"
+    },
+    "reference_answer_vi": "Stockout Days = 2; Fill Rate = 0.9333 (93.33%); giá trị lịch sử, không phải hiện hành.",
+    "requirements": [
+      {
+        "id": "days",
+        "description_vi": "Product 18: Stockout Days = 2",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "Stockout Days: 2",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 18 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "Stockout Days: 2",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 18 |"
+            }
+          ]
+        }
+      },
+      {
+        "id": "fill",
+        "description_vi": "Product 18: Fill Rate = 0.9333",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "Fill Rate: 0.9333",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 18 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "Fill Rate: 0.9333",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 18 |"
+            }
+          ]
+        }
+      }
+    ],
+    "related_development_topics": [],
+    "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+  },
+  {
+    "id": "H08",
+    "category": "table_numeric",
+    "question": {
+      "vi": "Trong Inventory Control, Product ID 19 có Units Sold (Latest) và Avg Monthly Demand (3 snapshots) bao nhiêu?",
+      "en": "In Inventory Control, what Units Sold (Latest) and Avg Monthly Demand (3 snapshots) are recorded for Product ID 19?"
+    },
+    "reference_answer_vi": "Units Sold Latest = 3; Avg Monthly Demand = 2.333333333333333 (xấp xỉ 2.3333).",
+    "requirements": [
+      {
+        "id": "sold",
+        "description_vi": "Product 19: Units Sold (Latest) = 3",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "Units Sold (Latest): 3",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 19 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "Units Sold (Latest): 3",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 19 |"
+            }
+          ]
+        }
+      },
+      {
+        "id": "average",
+        "description_vi": "Product 19: Avg Monthly Demand (3 snapshots) = 2.333333333333333",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "Avg Monthly Demand (3 snapshots): 2.333333333333333",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 19 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "Avg Monthly Demand (3 snapshots): 2.333333333333333",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 19 |"
+            }
+          ]
+        }
+      }
+    ],
+    "related_development_topics": [],
+    "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+  },
+  {
+    "id": "H09",
+    "category": "table_numeric",
+    "question": {
+      "vi": "Theo KPI Summary của workbook, nhóm GenZ có bao nhiêu SKU, On-hand Units và Units Sold (Latest)?",
+      "en": "According to the workbook KPI Summary, how many SKUs, On-hand Units, and Units Sold (Latest) are recorded for GenZ?"
+    },
+    "reference_answer_vi": "44 SKU; 5126 On-hand Units; 199 Units Sold Latest.",
+    "requirements": [
+      {
+        "id": "skus",
+        "description_vi": "GenZ: SKU Count = 44",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "SKU Count: 44",
+              "sheet": "KPI Summary",
+              "row_contains": "Category: GenZ |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "SKU Count: 44",
+              "sheet": "KPI Summary",
+              "row_contains": "Category: GenZ |"
+            }
+          ]
+        }
+      },
+      {
+        "id": "onhand",
+        "description_vi": "GenZ: On-hand Units = 5126",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "On-hand Units: 5126",
+              "sheet": "KPI Summary",
+              "row_contains": "Category: GenZ |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "On-hand Units: 5126",
+              "sheet": "KPI Summary",
+              "row_contains": "Category: GenZ |"
+            }
+          ]
+        }
+      },
+      {
+        "id": "sold",
+        "description_vi": "GenZ: Units Sold (Latest) = 199",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "Units Sold (Latest): 199",
+              "sheet": "KPI Summary",
+              "row_contains": "Category: GenZ |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "Units Sold (Latest): 199",
+              "sheet": "KPI Summary",
+              "row_contains": "Category: GenZ |"
+            }
+          ]
+        }
+      }
+    ],
+    "related_development_topics": [],
+    "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+  },
+  {
+    "id": "H10",
+    "category": "table_numeric",
+    "question": {
+      "vi": "Theo bảng ngưỡng xử lý của SOP kiểm kê, nếu không có chênh lệch thì cần làm gì và ai là người duyệt?",
+      "en": "According to the cycle-count SOP handling-threshold table, when there is no variance, what actions are required and who is the approver?"
+    },
+    "reference_answer_vi": "Đóng phiếu; lưu audit trail; người duyệt: Warehouse Supervisor.",
+    "requirements": [
+      {
+        "id": "close_ticket",
+        "description_vi": "Đóng phiếu",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "02_",
+              "quote": "Đóng phiếu",
+              "contains": "Không chênh lệch"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "02_",
+              "quote": "Close the ticket",
+              "contains": "No variance"
+            }
+          ]
+        }
+      },
+      {
+        "id": "audit_trail",
+        "description_vi": "Lưu audit trail",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "02_",
+              "quote": "lưu audit trail",
+              "contains": "Không chênh lệch"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "02_",
+              "quote": "retain the audit trail",
+              "contains": "No variance"
+            },
+            {
+              "file_prefix": "02_",
+              "quote": "retain the audit\ntrail",
+              "contains": "No variance"
+            }
+          ]
+        }
+      },
+      {
+        "id": "approver",
+        "description_vi": "Warehouse Supervisor duyệt",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "02_",
+              "quote": "Warehouse Supervisor",
+              "contains": "Không chênh lệch"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "02_",
+              "quote": "Warehouse Supervisor",
+              "contains": "No variance"
+            },
+            {
+              "file_prefix": "02_",
+              "quote": "Warehouse\nSupervisor",
+              "contains": "No variance"
+            }
+          ]
+        }
+      }
+    ],
+    "related_development_topics": [
+      "Q13: count-workflow topic; new explicit no-variance table row, not the recurring/high-value branch in F12."
+    ],
+    "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+  },
+  {
+    "id": "H11",
+    "category": "multi_chunk",
+    "question": {
+      "vi": "So sánh hai dòng Inventory Control của Product ID 1 và Product ID 3: mỗi sản phẩm có size, màu và On-hand Units nào?",
+      "en": "Compare the Inventory Control rows for Product ID 1 and Product ID 3: what size, color, and On-hand Units does each product have?"
+    },
+    "reference_answer_vi": "ID1: M/black/3; ID3: XL/blue/151.",
+    "requirements": [
+      {
+        "id": "p1_size",
+        "description_vi": "Product 1: Size = M",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "Size: M",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 1 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "Size: M",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 1 |"
+            }
+          ]
+        }
+      },
+      {
+        "id": "p1_color",
+        "description_vi": "Product 1: Color = black",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "Color: black",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 1 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "Color: black",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 1 |"
+            }
+          ]
+        }
+      },
+      {
+        "id": "p1_on-hand_units",
+        "description_vi": "Product 1: On-hand Units = 3",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "On-hand Units: 3",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 1 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "On-hand Units: 3",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 1 |"
+            }
+          ]
+        }
+      },
+      {
+        "id": "p3_size",
+        "description_vi": "Product 3: Size = XL",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "Size: XL",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 3 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "Size: XL",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 3 |"
+            }
+          ]
+        }
+      },
+      {
+        "id": "p3_color",
+        "description_vi": "Product 3: Color = blue",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "Color: blue",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 3 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "Color: blue",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 3 |"
+            }
+          ]
+        }
+      },
+      {
+        "id": "p3_on-hand_units",
+        "description_vi": "Product 3: On-hand Units = 151",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "On-hand Units: 151",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 3 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "On-hand Units: 151",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 3 |"
+            }
+          ]
+        }
+      }
+    ],
+    "related_development_topics": [],
+    "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+  },
+  {
+    "id": "H12",
+    "category": "multi_chunk",
+    "question": {
+      "vi": "Trong Exception Log, Product ID 2212 và 927 có Calculated DOS và Review Status lần lượt là gì?",
+      "en": "In the Exception Log, what are the Calculated DOS and Review Status values for Product IDs 2212 and 927 respectively?"
+    },
+    "reference_answer_vi": "2212: DOS25440; 927: DOS6323.333333333334; cả hai có Review Status CONFLICT - VERIFY BEFORE PO.",
+    "requirements": [
+      {
+        "id": "p2212_dos",
+        "description_vi": "Product 2212: Calculated DOS = 25440",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "Calculated DOS: 25440",
+              "sheet": "Exception Log",
+              "row_contains": "Product ID: 2212 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "Calculated DOS: 25440",
+              "sheet": "Exception Log",
+              "row_contains": "Product ID: 2212 |"
+            }
+          ]
+        }
+      },
+      {
+        "id": "p2212_status",
+        "description_vi": "Product 2212: Review Status = CONFLICT - VERIFY BEFORE PO",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "Review Status: CONFLICT - VERIFY BEFORE PO",
+              "sheet": "Exception Log",
+              "row_contains": "Product ID: 2212 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "Review Status: CONFLICT - VERIFY BEFORE PO",
+              "sheet": "Exception Log",
+              "row_contains": "Product ID: 2212 |"
+            }
+          ]
+        }
+      },
+      {
+        "id": "p927_dos",
+        "description_vi": "Product 927: Calculated DOS = 6323.333333333334",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "Calculated DOS: 6323.333333333334",
+              "sheet": "Exception Log",
+              "row_contains": "Product ID: 927 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "Calculated DOS: 6323.333333333334",
+              "sheet": "Exception Log",
+              "row_contains": "Product ID: 927 |"
+            }
+          ]
+        }
+      },
+      {
+        "id": "p927_status",
+        "description_vi": "Product 927: Review Status = CONFLICT - VERIFY BEFORE PO",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "Review Status: CONFLICT - VERIFY BEFORE PO",
+              "sheet": "Exception Log",
+              "row_contains": "Product ID: 927 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "Review Status: CONFLICT - VERIFY BEFORE PO",
+              "sheet": "Exception Log",
+              "row_contains": "Product ID: 927 |"
+            }
+          ]
+        }
+      }
+    ],
+    "related_development_topics": [],
+    "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+  },
+  {
+    "id": "H13",
+    "category": "multi_chunk",
+    "question": {
+      "vi": "Khi chuẩn bị PO trong ngân sách và đúng tham số đã duyệt, Planner chuyển cho ai duyệt? Hồ sơ nhà cung cấp phải duy trì những thông tin nào và cập nhật theo tần suất nào?",
+      "en": "When preparing a PO within budget and approved parameters, whom does the Planner submit it to for approval? Which supplier information must be maintained, and how often must it be updated?"
+    },
+    "reference_answer_vi": "Planner → Procurement Manager; duy trì lead time thực tế, MOQ, lịch giao, tỷ lệ giao đủ/đúng hạn; mỗi lần nhận/hằng tháng.",
+    "requirements": [
+      {
+        "id": "route",
+        "description_vi": "PO trong ngân sách",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "Planner → Procurement Manager"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "Planner → Procurement Manager"
+            }
+          ]
+        }
+      },
+      {
+        "id": "supplier_metrics",
+        "description_vi": "Chỉ tiêu nhà cung cấp",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "03_",
+              "quote": "Duy trì lead time thực tế, MOQ, lịch giao, tỷ lệ giao đủ/đúng hạn",
+              "contains": "INV-POL-009"
+            },
+            {
+              "file_prefix": "04_",
+              "quote": "Duy trì lead time thực tế, MOQ, lịch giao, tỷ lệ giao đủ/đúng hạn",
+              "sheet": "Policy Matrix",
+              "row_contains": "INV-POL-009"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "03_",
+              "quote": "Maintain actual lead times, MOQ, delivery schedules, and fill/on-time delivery rates",
+              "contains": "INV-POL-009"
+            },
+            {
+              "file_prefix": "04_",
+              "quote": "Maintain actual lead times, MOQ, delivery schedules, and fill/on-time delivery rates",
+              "sheet": "Policy Matrix",
+              "row_contains": "INV-POL-009"
+            }
+          ]
+        }
+      },
+      {
+        "id": "frequency",
+        "description_vi": "Lịch cập nhật",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "03_",
+              "quote": "Mỗi lần nhận / hàng tháng",
+              "contains": "INV-POL-009"
+            },
+            {
+              "file_prefix": "04_",
+              "quote": "Mỗi lần nhận / hàng tháng",
+              "sheet": "Policy Matrix",
+              "row_contains": "INV-POL-009"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "03_",
+              "quote": "Each receipt / monthly",
+              "contains": "INV-POL-009"
+            },
+            {
+              "file_prefix": "04_",
+              "quote": "Each receipt / monthly",
+              "sheet": "Policy Matrix",
+              "row_contains": "INV-POL-009"
+            }
+          ]
+        }
+      }
+    ],
+    "related_development_topics": [
+      "Q20: normal Planner-to-Procurement approval flow reused; supplier metrics and update-frequency requirements are new."
+    ],
+    "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+  },
+  {
+    "id": "H14",
+    "category": "multi_chunk",
+    "question": {
+      "vi": "Đối chiếu Product ID 8 và 9 trong Inventory Control: On-hand Units và Units Sold (Latest) của từng sản phẩm là bao nhiêu?",
+      "en": "Compare Product IDs 8 and 9 in Inventory Control: what are the On-hand Units and Units Sold (Latest) for each product?"
+    },
+    "reference_answer_vi": "ID8: On-hand101/Sold1; ID9: On-hand83/Sold6.",
+    "requirements": [
+      {
+        "id": "p8_onhand",
+        "description_vi": "Product 8: On-hand Units = 101",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "On-hand Units: 101",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 8 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "On-hand Units: 101",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 8 |"
+            }
+          ]
+        }
+      },
+      {
+        "id": "p8_sold",
+        "description_vi": "Product 8: Units Sold (Latest) = 1",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "Units Sold (Latest): 1",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 8 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "Units Sold (Latest): 1",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 8 |"
+            }
+          ]
+        }
+      },
+      {
+        "id": "p9_onhand",
+        "description_vi": "Product 9: On-hand Units = 83",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "On-hand Units: 83",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 9 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "On-hand Units: 83",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 9 |"
+            }
+          ]
+        }
+      },
+      {
+        "id": "p9_sold",
+        "description_vi": "Product 9: Units Sold (Latest) = 6",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "Units Sold (Latest): 6",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 9 |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "Units Sold (Latest): 6",
+              "sheet": "Inventory Control",
+              "row_contains": "Product ID: 9 |"
+            }
+          ]
+        }
+      }
+    ],
+    "related_development_topics": [],
+    "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+  },
+  {
+    "id": "H15",
+    "category": "multi_chunk",
+    "question": {
+      "vi": "Theo KPI Summary, Streetwear có bao nhiêu SKU và On-hand Units; đối chiếu với mô tả dữ liệu, toàn bộ products.csv có bao nhiêu SKU?",
+      "en": "According to KPI Summary, how many SKUs and On-hand Units are listed for Streetwear, and how many SKUs are in the full products.csv master according to the data description?"
+    },
+    "reference_answer_vi": "Streetwear196SKU/45085units; product master2412SKU. Không nhầm hai phạm vi.",
+    "requirements": [
+      {
+        "id": "category_skus",
+        "description_vi": "Streetwear: SKU Count = 196",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "SKU Count: 196",
+              "sheet": "KPI Summary",
+              "row_contains": "Category: Streetwear |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "SKU Count: 196",
+              "sheet": "KPI Summary",
+              "row_contains": "Category: Streetwear |"
+            }
+          ]
+        }
+      },
+      {
+        "id": "category_onhand",
+        "description_vi": "Streetwear: On-hand Units = 45085",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "04_",
+              "quote": "On-hand Units: 45085",
+              "sheet": "KPI Summary",
+              "row_contains": "Category: Streetwear |"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "04_",
+              "quote": "On-hand Units: 45085",
+              "sheet": "KPI Summary",
+              "row_contains": "Category: Streetwear |"
+            }
+          ]
+        }
+      },
+      {
+        "id": "master",
+        "description_vi": "Quy mô product master",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "2,412 SKU trong products.csv"
+            },
+            {
+              "file_prefix": "04_",
+              "quote": "2,412 SKU trong products.csv",
+              "sheet": "README"
+            },
+            {
+              "file_prefix": "05_",
+              "quote": "2,412 SKU trong product master"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "2,412 SKUs in products.csv"
+            },
+            {
+              "file_prefix": "04_",
+              "quote": "2,412 SKU",
+              "sheet": "README"
+            },
+            {
+              "file_prefix": "05_",
+              "quote": "2,412 SKUs in product master"
+            }
+          ]
+        }
+      }
+    ],
+    "related_development_topics": [],
+    "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+  },
+  {
+    "id": "H16",
+    "category": "paraphrase_terminology",
+    "question": {
+      "vi": "Nếu gom nhật ký trả hàng, đơn bán, ưu đãi và vận chuyển thành một nguồn, có thể dùng nó thay sổ tồn chính thức không, hay chỉ phục vụ mục đích gì?",
+      "en": "If returns, order, promotion, and delivery logs are combined, can they replace the authoritative inventory book, or what purpose may they serve instead?"
+    },
+    "reference_answer_vi": "Chỉ hỗ trợ phân tích nguyên nhân; không thay thế inventory ledger.",
+    "requirements": [
+      {
+        "id": "analysis",
+        "description_vi": "Phân tích nguyên nhân",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "phân tích nguyên nhân",
+              "contains": "Dataset có 2,412"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "support root-cause analysis",
+              "contains": "The dataset contains 2,412"
+            }
+          ]
+        }
+      },
+      {
+        "id": "ledger",
+        "description_vi": "Không thay sổ cái",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "không thay thế sổ cái tồn kho"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "do not replace the inventory ledger"
+            }
+          ]
+        }
+      }
+    ],
+    "related_development_topics": [],
+    "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+  },
+  {
+    "id": "H17",
+    "category": "paraphrase_terminology",
+    "question": {
+      "vi": "Hàng đến có vẻ đủ số thùng rồi; để xác nhận giao đúng đơn, kho còn phải đối chiếu những thông tin nào theo Manual?",
+      "en": "A delivery appears to contain the expected number of cartons; to confirm that the right order arrived, what details must the warehouse reconcile under the Manual?"
+    },
+    "reference_answer_vi": "Đối chiếu PO, SKU, size, màu, số lượng, tình trạng bao bì, chứng từ giao hàng.",
+    "requirements": [
+      {
+        "id": "reconcile",
+        "description_vi": "Các trường đối chiếu nhận hàng",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "Đối chiếu PO, SKU, size, màu, số lượng, tình trạng bao bì và chứng từ giao hàng."
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "Match the PO, SKU, size, color, quantity, packaging condition, and delivery documents."
+            }
+          ]
+        }
+      }
+    ],
+    "related_development_topics": [
+      "F01: receiving topic; new pre-receipt reconciliation fields"
+    ],
+    "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+  },
+  {
+    "id": "H18",
+    "category": "paraphrase_terminology",
+    "question": {
+      "vi": "Doanh nghiệp không muốn bê nguyên các KPI mẫu vào vận hành. Theo tài liệu, ba yếu tố kinh doanh nào phải dùng để hiệu chỉnh các mục tiêu này?",
+      "en": "The business does not want to copy the sample KPI targets unchanged into operations. Which three business factors should be used to calibrate those targets?"
+    },
+    "reference_answer_vi": "Mức dịch vụ, margin và chiến lược tồn kho.",
+    "requirements": [
+      {
+        "id": "service",
+        "description_vi": "Mức dịch vụ",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "mức dịch vụ",
+              "contains": "Các mục tiêu KPI"
+            },
+            {
+              "file_prefix": "05_",
+              "quote": "mức dịch vụ",
+              "contains": "KPI là ngưỡng"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "service levels",
+              "contains": "These KPI targets"
+            },
+            {
+              "file_prefix": "05_",
+              "quote": "service levels",
+              "contains": "KPIs are simulated"
+            }
+          ]
+        }
+      },
+      {
+        "id": "margin",
+        "description_vi": "Margin",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "margin",
+              "contains": "Các mục tiêu KPI"
+            },
+            {
+              "file_prefix": "05_",
+              "quote": "margin",
+              "contains": "KPI là ngưỡng"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "margins",
+              "contains": "These KPI targets"
+            },
+            {
+              "file_prefix": "05_",
+              "quote": "margin",
+              "contains": "KPIs are simulated"
+            }
+          ]
+        }
+      },
+      {
+        "id": "strategy",
+        "description_vi": "Chiến lược tồn kho",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "chiến lược tồn kho"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "inventory strategy"
+            }
+          ]
+        }
+      }
+    ],
+    "related_development_topics": [
+      "Q05: KPI topic; new calibration dimensions"
+    ],
+    "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+  },
+  {
+    "id": "H19",
+    "category": "paraphrase_terminology",
+    "question": {
+      "vi": "Khách trả hàng vì sai cỡ hoặc giao chậm. Theo tài liệu, có cần gắn mã lý do trả hàng không, và thông tin này phải phản hồi tới những bộ phận nào?",
+      "en": "A customer returns an item because it did not fit or arrived late. Under the policy, must a return-reason code be assigned, and which departments should receive that feedback?"
+    },
+    "reference_answer_vi": "Gắn return-reason code; phản hồi Merchandising, QA, Logistics.",
+    "requirements": [
+      {
+        "id": "reason_code",
+        "description_vi": "Mã lý do trả hàng",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "Gắn mã nguyên nhân trả hàng"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "Assign return-reason codes"
+            }
+          ]
+        }
+      },
+      {
+        "id": "destinations",
+        "description_vi": "Các bộ phận nhận phản hồi",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "Merchandising, QA và Logistics"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "Merchandising, QA, and Logistics"
+            }
+          ]
+        }
+      }
+    ],
+    "related_development_topics": [
+      "Q04/Q16: returns topic; new reason-coding feedback destinations"
+    ],
+    "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+  },
+  {
+    "id": "H20",
+    "category": "paraphrase_terminology",
+    "question": {
+      "vi": "Trong bảng vai trò của Manual, ai chịu trách nhiệm tổ chức phân quyền, giải nghĩa các trường dữ liệu, quản lý nhật ký và kiểm soát AI?",
+      "en": "In the Manual roles table, who is responsible for access permissions, the meaning of data fields, logging, and AI controls?"
+    },
+    "reference_answer_vi": "System / Data Owner.",
+    "requirements": [
+      {
+        "id": "owner",
+        "description_vi": "Chủ sở hữu hệ thống/dữ liệu",
+        "selectors": {
+          "vi": [
+            {
+              "file_prefix": "01_",
+              "quote": "System / Data Owner",
+              "row_contains": "System / Data Owner"
+            }
+          ],
+          "en": [
+            {
+              "file_prefix": "01_",
+              "quote": "System / Data Owner",
+              "row_contains": "System / Data Owner"
+            }
+          ]
+        }
+      }
+    ],
+    "related_development_topics": [
+      "Q02/Q14: roles topic; new data-governance owner"
+    ],
+    "authoring": "Assistant authored from frozen sources before any new-question retrieval/translation/model inference."
+  }
+]

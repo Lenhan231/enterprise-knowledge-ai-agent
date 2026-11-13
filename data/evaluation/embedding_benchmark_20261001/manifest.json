@@ -1,0 +1,56 @@
+{
+  "baseline_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "embedding_backend": "local",
+  "chunk_count": 4750,
+  "document_count": 25,
+  "case_count": 12,
+  "files": {
+    "corpus.jsonl": {
+      "source": "data\\evaluation\\vinamilk_public_embedding_corpus.jsonl",
+      "sha256": "e83d3b0385e981e9132a96d89cfdce5c1b26a0419d178d1f5c494b448eb9825a"
+    },
+    "cases.json": {
+      "source": "data\\evaluation\\vinamilk_retrieval_cases.json",
+      "sha256": "e10ff96fc26aec1b0040c3c1e846fe9e5bae0a2ab49426abd37f3a7578b77e25"
+    }
+  },
+  "evaluation": "document-level max chunk cosine, role-filtered, full frozen corpus; no parsing or chunking",
+  "device": "cpu",
+  "batch_size": 8,
+  "git_commit": "a0fc63e0712e1ee4f7be51e1d87a96cf69e82562",
+  "vietnamese_case_ids": [
+    "finance-revenue-profit-2020-vi",
+    "finance-revenue-profit-2021-vi",
+    "finance-revenue-profit-2022-vi",
+    "finance-revenue-profit-2024-en",
+    "product-nutrition-adm-low-sugar-vi"
+  ],
+  "cpu_threads": 4,
+  "python": "3.11.15",
+  "sequence_limit": "min(model native limit, 512); baseline 256; original chunks unchanged",
+  "regression": {
+    "tests": 487,
+    "skipped": 10,
+    "exit_code": 0,
+    "command": "python -X utf8 -m unittest discover -s tests -q",
+    "test_only_auth_secret": true
+  },
+  "packages": {
+    "torch": "2.14.0",
+    "transformers": "5.17.0",
+    "sentence-transformers": "6.0.1",
+    "numpy": "2.4.6",
+    "huggingface-hub": "1.31.0"
+  },
+  "evaluator_sha256": "4615b1d37596be7de8deb211026ae995bd8442be3a5cf9f6843d1dae2036a633",
+  "run_plan": {
+    "baseline": "laptop CPU, complete",
+    "bge-m3": "laptop CPU, complete",
+    "qwen3-embedding": "GPU PC, user to run",
+    "e5-large-v2": "GPU PC, user to run"
+  },
+  "gpu_handoff": {
+    "gpu": "RTX 2060",
+    "os": "Windows with WSL 2"
+  }
+}

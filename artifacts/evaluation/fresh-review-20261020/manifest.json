@@ -1,0 +1,16 @@
+{
+  "status": "draft_pending_human_review",
+  "paired_intents": 12,
+  "unique_question_texts": 24,
+  "directional_cases": 48,
+  "corpus_path": "artifacts/evaluation/vietstyle-bilingual-20261019/dense-evidence-benchmark-v1/indexed-corpus.jsonl",
+  "corpus_sha256": "2495bcd44dd8a583bb2d161e9ea6b3bef08544628cd719276e1de70479a38786",
+  "original_benchmark_modified": false,
+  "inference_run": false,
+  "files": {
+    "cases.json": "e97e2779dba18587ad9cdf968e019a9d1c8ce1936efb53393898be8c78e45851",
+    "evidence-draft.json": "7747409f92e69cc545699799ffebeee4ab66d438e206326a3164906b6b5cd865",
+    "review.csv": "5fb7c1df2beab798b45b58dbb2f750def13bc5324d01631e375084b94674efa4",
+    "REVIEW.md": "0630d0eb6dbe0a3137bede0eb7840d5582bad13fc9e624029e97f79de50a7b91"
+  }
+}

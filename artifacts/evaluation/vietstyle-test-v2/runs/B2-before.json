@@ -1,0 +1,3963 @@
+{
+ "dataset_id": "vietstyle-test-v2",
+ "dataset_status": "reviewed-r2",
+ "dataset_sha256": "82299af40be4875672309e96d14348a5b3929552f45ca16118f4004196843f61",
+ "arm": "B2",
+ "configuration": {
+  "method": "translated_hybrid_rerank",
+  "verify": true,
+  "reranker": "mmarco-mMiniLM",
+  "groq_model_env": "qwen/qwen3.8-27b",
+  "role": "employee",
+  "note": "test-v2 before; flags off",
+  "rbac_role": "finance_analyst",
+  "old_prompt_sha256": null
+ },
+ "created_at_utc": "2026-11-06T17:44:05.369749+00:00",
+ "results": [
+  {
+   "id": "Q01",
+   "type": "lookup",
+   "answer": "Nếu ứng dụng hiện tại chưa hỗ trợ quy trình, nhân viên phải dùng biểu mẫu được kiểm soát đã được phê duyệt và lưu mã tham chiếu trong kho được phép [S1].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1"
+   ],
+   "prompt_sha256": "f8d439f14bd5309299fb2433c0437252f37cf6625f9c9235a2599cd454a5f046",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 1,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 3,
+     "chunk_index": 19,
+     "score": 0.20576906204223633
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 3,
+     "chunk_index": 25,
+     "score": -0.4048236012458801
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 2,
+     "chunk_index": 11,
+     "score": -1.1479101181030273
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 5,
+     "chunk_index": 57,
+     "score": -1.7436100244522095
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 2,
+     "chunk_index": 11,
+     "score": -2.2918615341186523
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Nếu phần mềm hiện tại chưa hỗ trợ một quy trình nghiệp vụ thì nhân viên phải ghi nhận giao dịch đó bằng cách nào?",
+     "en": "If the current software does not support a business process, how must the employee record that transaction?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 2182.842103065923,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 856.6874529933557,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 133,
+    "database_retrieval": 7021,
+    "retrieval_fusion": 1,
+    "query_translation": 2183,
+    "reranking": 857,
+    "answer_generation": 478,
+    "retrieval_total": 10210,
+    "claim_verification": 386
+   },
+   "elapsed_ms": 11074.5
+  },
+  {
+   "id": "Q02",
+   "type": "lookup",
+   "answer": "Khi nhân sự không đủ để phân tách nhiệm vụ, chính sách yêu cầu phải có rà soát độc lập sau thực hiện, được lập hồ sơ trước khi đóng vụ việc [S5].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S5"
+   ],
+   "prompt_sha256": "2ef5a321907ef244361bcf372969fe7a55c9ab0adf902b579b04c1a27a9f0d9d",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 1,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 34,
+     "chunk_index": 489,
+     "score": -0.21289364993572235
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 48,
+     "chunk_index": 700,
+     "score": -0.26506221294403076
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 9,
+     "chunk_index": 113,
+     "score": -0.9062867760658264
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 49,
+     "chunk_index": 677,
+     "score": -1.0937644243240356
+    },
+    {
+     "source_id": "S5",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 5,
+     "chunk_index": 58,
+     "score": -1.5019663572311401
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Bộ phận quá ít người nên không thể tách người đề nghị và người thực hiện. Khi đó chính sách yêu cầu kiểm soát bù gì?",
+     "en": "The department has too few people, so the requester and the executor cannot be separated. In that case, what compensating control does the policy require?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 388.0137139931321,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1211.7157930042595,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 400,
+    "database_retrieval": 2198,
+    "retrieval_fusion": 1,
+    "query_translation": 388,
+    "reranking": 1212,
+    "answer_generation": 450,
+    "retrieval_total": 4208,
+    "claim_verification": 431
+   },
+   "elapsed_ms": 5090.1
+  },
+  {
+   "id": "Q03",
+   "type": "lookup",
+   "answer": "Để đổi ngày nghỉ phép đã được duyệt sang ngày khác, quy trình bắt buộc là thực hiện việc sửa đổi hoặc hủy yêu cầu cũ rồi nộp yêu cầu mới, đồng thời phải bảo toàn lịch sử quyết định ban đầu [S5].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S5"
+   ],
+   "prompt_sha256": "9db18094c9a137235777cd508b5cbd580e9eb56c8cfc60bc79ff05a25e7c7a83",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 1,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 9,
+     "chunk_index": 109,
+     "score": -2.390028715133667
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 13,
+     "chunk_index": 166,
+     "score": -2.769392728805542
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 8,
+     "chunk_index": 102,
+     "score": -2.888622522354126
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 6,
+     "chunk_index": 63,
+     "score": -2.9025022983551025
+    },
+    {
+     "source_id": "S5",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 9,
+     "chunk_index": 114,
+     "score": -3.0919110774993896
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Nghỉ phép đã được duyệt rồi nhưng tôi muốn đổi sang ngày khác thì làm thế nào?",
+     "en": "The leave has already been approved, but I want to change it to another day. How should I do that?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 356.431990978308,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1483.2544469973072,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 127,
+    "database_retrieval": 2140,
+    "retrieval_fusion": 1,
+    "query_translation": 356,
+    "reranking": 1483,
+    "answer_generation": 482,
+    "retrieval_total": 4118,
+    "claim_verification": 386
+   },
+   "elapsed_ms": 4987.3
+  },
+  {
+   "id": "Q04",
+   "type": "lookup",
+   "answer": "Nếu một giao dịch không khớp với hàng nào trong ma trận phê duyệt, quy tắc bắt buộc yêu cầu phải dừng và chuyển cấp thay vì chọn hàng thuận tiện [S1].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1"
+   ],
+   "prompt_sha256": "c71b6af3ea1e71dbcae2c0fa2ffefc994b3fc272e660c0f8e51d6fc22f48808f",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 1,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 49,
+     "chunk_index": 673,
+     "score": 4.6150288581848145
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 21,
+     "chunk_index": 290,
+     "score": 0.20314213633537292
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 49,
+     "chunk_index": 714,
+     "score": -1.41359543800354
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 2,
+     "score": -1.4577140808105469
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 13,
+     "score": -1.6612282991409302
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Nếu một giao dịch không khớp với hàng nào trong ma trận phê duyệt thì phải xử lý thế nào?",
+     "en": "If a transaction does not match any item in the approval matrix, how should it be handled?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 340.3165879426524,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1934.730823035352,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 122,
+    "database_retrieval": 2145,
+    "retrieval_fusion": 1,
+    "query_translation": 340,
+    "reranking": 1935,
+    "answer_generation": 446,
+    "retrieval_total": 4553,
+    "claim_verification": 442
+   },
+   "elapsed_ms": 5441.6
+  },
+  {
+   "id": "Q05",
+   "type": "lookup",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "3005662eb4c7ea5b9b57aec79fd9b668890fbdbf0dc4fcd5cf3836d5010e46af",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 19,
+     "chunk_index": 261,
+     "score": -1.865351676940918
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 20,
+     "chunk_index": 268,
+     "score": -2.447491407394409
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 19,
+     "chunk_index": 247,
+     "score": -2.5901949405670166
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 24,
+     "chunk_index": 323,
+     "score": -2.8260767459869385
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 35,
+     "chunk_index": 472,
+     "score": -3.1813876628875732
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Nhà cung cấp chỉ báo giá qua điện thoại thì báo giá đó có được dùng không?",
+     "en": "If a supplier only provides a quote over the phone, is that quote valid?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 357.4664960615337,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1111.2365380395204,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 104,
+    "database_retrieval": 1924,
+    "retrieval_fusion": 1,
+    "query_translation": 357,
+    "reranking": 1111,
+    "answer_generation": 644,
+    "retrieval_total": 3508
+   },
+   "elapsed_ms": 4152.6
+  },
+  {
+   "id": "Q06",
+   "type": "lookup",
+   "answer": "Chưa thể kiểm chứng đầy đủ câu trả lời với các nguồn được trích dẫn. Vui lòng thử lại hoặc hỏi rõ hơn.",
+   "insufficient_context": false,
+   "source_ids": [],
+   "prompt_sha256": "1900ae61746c819134346ed6c02ee7e7de853678b376ac9afac8db5d1f01b88f",
+   "verification": {
+    "status": "unavailable",
+    "reason": "ValidationError",
+    "claim_count": 0,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 33,
+     "chunk_index": 439,
+     "score": 2.437535524368286
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 33,
+     "chunk_index": 466,
+     "score": 2.2091805934906006
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 33,
+     "chunk_index": 467,
+     "score": 1.0162017345428467
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 1,
+     "score": -0.5894892811775208
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 33,
+     "chunk_index": 438,
+     "score": -1.9853273630142212
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Khi chuẩn bị kiểm kê chu kỳ, người đếm có được biết trước số lượng dự kiến không, và hàng xuất nhập trong lúc đếm xử lý ra sao?",
+     "en": "When preparing for a cycle count, is the counter allowed to know the expected quantity in advance, and how are goods received or shipped during the count handled?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 369.0778979798779,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1726.0225829668343,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 213,
+    "database_retrieval": 2160,
+    "retrieval_fusion": 1,
+    "query_translation": 369,
+    "reranking": 1726,
+    "answer_generation": 655,
+    "retrieval_total": 4478,
+    "claim_verification": 2188
+   },
+   "elapsed_ms": 7321.1
+  },
+  {
+   "id": "Q07",
+   "type": "lookup",
+   "answer": "Nếu chưa xác lập được toàn vẹn dữ liệu, quy trình bị ảnh hưởng phải được giữ ở chế độ chỉ đọc hoặc tạm ngừng [S2].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S2"
+   ],
+   "prompt_sha256": "ff389a9fd81cfcd40d8f05b84c5275b8c3213f963ccfcea87f1181bd1733f5ef",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 1,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 45,
+     "chunk_index": 661,
+     "score": 2.05314564704895
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 45,
+     "chunk_index": 621,
+     "score": -1.1811643838882446
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 4,
+     "chunk_index": 35,
+     "score": -2.5463199615478516
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 6,
+     "chunk_index": 68,
+     "score": -2.7098498344421387
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 45,
+     "chunk_index": 663,
+     "score": -2.746770143508911
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Sau sự cố, nếu chưa xác lập được toàn vẹn dữ liệu thì quy trình bị ảnh hưởng phải vận hành thế nào?",
+     "en": "After the incident, if data integrity has not yet been established, how must the affected process operate?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 458.09755695518106,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 990.031934925355,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 104,
+    "database_retrieval": 1890,
+    "retrieval_fusion": 1,
+    "query_translation": 458,
+    "reranking": 990,
+    "answer_generation": 433,
+    "retrieval_total": 3459,
+    "claim_verification": 441
+   },
+   "elapsed_ms": 4333.8
+  },
+  {
+   "id": "Q08",
+   "type": "threshold",
+   "answer": "Với tổng cam kết 4.800.000 VND, khoản mua này thuộc mức \"Đến 5.000.000 VND\" [S2].\nTheo quy định, mức cam kết này yêu cầu phê duyệt bắt buộc từ Quản lý trực tiếp [S2].\nĐiều kiện bổ sung cần đáp ứng là có một báo giá có hồ sơ và ngân sách đã được xác nhận [S2].\nDo đó, bạn chưa thể đặt mua ngay lập tức mà cần đảm bảo ngân sách đã được xác nhận và có sự phê duyệt của Quản lý trực tiếp [S2].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S2"
+   ],
+   "prompt_sha256": "92e82c1435ad721965e47e1930fb022e030430d92d075ca62b3b0e47318e46b9",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 4,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 53,
+     "chunk_index": 781,
+     "score": -1.8849377632141113
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 53,
+     "chunk_index": 730,
+     "score": -2.237558603286743
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 20,
+     "chunk_index": 261,
+     "score": -2.2684857845306396
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 20,
+     "chunk_index": 272,
+     "score": -3.0318634510040283
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 4,
+     "chunk_index": 34,
+     "score": -3.475811243057251
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Một khoản mua tổng cam kết 4.800.000 VND, nhà cung cấp đã gửi một báo giá. Vậy tôi đã có thể đặt mua luôn chưa?",
+     "en": "A total purchase commitment of 4,800,000 VND, the supplier has sent a quotation. So can I place the order now?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 358.8948189280927,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1200.0110379885882,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 128,
+    "database_retrieval": 2486,
+    "retrieval_fusion": 1,
+    "query_translation": 359,
+    "reranking": 1200,
+    "answer_generation": 1029,
+    "retrieval_total": 4184,
+    "claim_verification": 776
+   },
+   "elapsed_ms": 5989.8
+  },
+  {
+   "id": "Q09",
+   "type": "threshold",
+   "answer": "Theo quy định, một khoản mua có tổng cam kết 90 triệu đồng (nằm trong khoảng 50.000.001-200.000.000 VND) yêu cầu sự phê duyệt bắt buộc từ Trưởng bộ phận, Mua sắm và Tài chính [S2]. Do đó, việc Trưởng bộ phận đồng thời phụ trách Mua sắm muốn tự mình hoàn tất toàn bộ phê duyệt mà không có người duyệt khác là không được phép, vì thiếu sự phê duyệt của vai trò Tài chính [S2]. Các vai trò phải duyệt cho mức cam kết này bao gồm Trưởng bộ phận, Mua sắm và Tài chính [S2].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S2"
+   ],
+   "prompt_sha256": "595e8f84bd1bc43a35b3750bc0f5e29c6111557c6820fb15ae6127d23f15dab2",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 3,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 53,
+     "chunk_index": 781,
+     "score": -1.6537041664123535
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 53,
+     "chunk_index": 730,
+     "score": -1.8599499464035034
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 21,
+     "chunk_index": 274,
+     "score": -2.959289789199829
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 21,
+     "chunk_index": 286,
+     "score": -3.549934148788452
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 18,
+     "chunk_index": 240,
+     "score": -4.515327453613281
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Một khoản mua có tổng cam kết 90 triệu đồng. Trưởng bộ phận đồng thời phụ trách Mua sắm muốn tự mình hoàn tất toàn bộ phê duyệt, không có người duyệt khác. Có được không và những vai trò nào phải duyệt?",
+     "en": "A purchase with a total commitment of 90 million VND. The department head, who is also in charge of Procurement, wants to complete the entire approval process by themselves, without any other approver. Is this allowed, and which roles must approve?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 451.37025509029627,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1881.9897950161248,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 230,
+    "database_retrieval": 2158,
+    "retrieval_fusion": 1,
+    "query_translation": 451,
+    "reranking": 1882,
+    "answer_generation": 674,
+    "retrieval_total": 4748,
+    "claim_verification": 679
+   },
+   "elapsed_ms": 6102.8
+  },
+  {
+   "id": "Q10",
+   "type": "threshold",
+   "answer": "Theo quy tắc bắt buộc, trừ khi hợp đồng hoặc kế hoạch công tác đã duyệt đặt hạn thấp hơn, ăn uống tại địa phương được hoàn tối đa 300.000 VND/người/bữa [S1]. Vì kế hoạch công tác nội địa đã duyệt trong trường hợp này đặt hạn ăn uống tại địa phương là 250.000 VND/người/bữa (thấp hơn mức tối đa chung), nên mức hoàn tối đa cho mỗi người sẽ là 250.000 VND [S1].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1"
+   ],
+   "prompt_sha256": "45bfef7499dddc2bc1030a7b2fd89d585317220e6b6c87ebffd517e9a13ff59e",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 2,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 14,
+     "chunk_index": 179,
+     "score": 6.671438694000244
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 14,
+     "chunk_index": 182,
+     "score": 4.053737640380859
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 11,
+     "chunk_index": 138,
+     "score": 0.004262542352080345
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 14,
+     "chunk_index": 178,
+     "score": -0.04273250699043274
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 48,
+     "chunk_index": 658,
+     "score": -0.12352502346038818
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Kế hoạch công tác nội địa đã duyệt đặt hạn ăn uống tại địa phương là 250.000 VND/người/bữa, không có ngoại lệ. Một bữa ăn công việc hết 300.000 VND/người thì được hoàn tối đa bao nhiêu cho mỗi người?",
+     "en": "The approved domestic business travel plan sets the local meal limit at 250,000 VND/person/meal, with no exceptions. If a business meal costs 300,000 VND/person, what is the maximum reimbursement per person?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 457.522590062581,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1624.9281619675457,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 122,
+    "database_retrieval": 1871,
+    "retrieval_fusion": 1,
+    "query_translation": 458,
+    "reranking": 1625,
+    "answer_generation": 599,
+    "retrieval_total": 4085,
+    "claim_verification": 768
+   },
+   "elapsed_ms": 5451.4
+  },
+  {
+   "id": "Q11",
+   "type": "threshold",
+   "answer": "Có, được hoàn đủ tiền phòng vì mức giá 2.300.000 VND/đêm thấp hơn hạn mức tối đa 2.500.000 VND/phòng/đêm áp dụng cho lưu trú công tác qua đêm tại thành phố lớn được chỉ định [S1][S2].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1",
+    "S2"
+   ],
+   "prompt_sha256": "94ce573997d4bfaa848bd453d78a84c834746f4a06d1d7b507381f3bb346df31",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 1,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 14,
+     "chunk_index": 182,
+     "score": 2.8146450519561768
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 14,
+     "chunk_index": 179,
+     "score": 2.5183498859405518
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 13,
+     "chunk_index": 166,
+     "score": -0.14361383020877838
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 14,
+     "chunk_index": 178,
+     "score": -1.7988042831420898
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 20,
+     "chunk_index": 272,
+     "score": -2.840876817703247
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Một phòng khách sạn cho chuyến công tác nội địa đã duyệt có giá 2.300.000 VND/đêm tại thành phố lớn được chỉ định. Không có hạn thấp hơn và hồ sơ chi phí hợp lệ. Có được hoàn đủ tiền phòng không?",
+     "en": "A hotel room for an approved domestic business trip costs 2,300,000 VND/night in a designated major city. There is no lower limit and the expense documentation is valid. Is the full room cost reimbursable?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 396.80885802954435,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1063.1821400020272,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 109,
+    "database_retrieval": 2168,
+    "retrieval_fusion": 1,
+    "query_translation": 397,
+    "reranking": 1063,
+    "answer_generation": 522,
+    "retrieval_total": 3749,
+    "claim_verification": 501
+   },
+   "elapsed_ms": 4772.4
+  },
+  {
+   "id": "Q12",
+   "type": "calculation",
+   "answer": "Theo quy định, ăn uống tại địa phương được hoàn tối đa 300.000 VND/người/bữa [S2].\nVới ba người, tổng số tiền được hoàn tối đa là 3 × 300.000 = 900.000 VND [S2].\nPhần chi phí vượt quá hạn mức là 1.050.000 - 900.000 = 150.000 VND [S2].\nCác nguồn tài liệu được cung cấp chỉ nêu rõ hạn mức hoàn và quy tắc bắt buộc, nhưng không chứa thông tin về các điều kiện cụ thể để được hoàn phần chi phí vượt quá hạn mức này [S1][S2][S3][S5].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S2",
+    "S1",
+    "S3",
+    "S5"
+   ],
+   "prompt_sha256": "9723c062e4ba2fe0e16ed469319df6e199be13c95c72922b88d650885db82fca",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 4,
+    "arithmetic_checked": 2
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 14,
+     "chunk_index": 182,
+     "score": -1.501343011856079
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 14,
+     "chunk_index": 179,
+     "score": -1.9177552461624146
+    },
+    {
+     "source_id": "S3",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 14,
+     "chunk_index": 181,
+     "score": -7.119265556335449
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 53,
+     "chunk_index": 730,
+     "score": -7.670022487640381
+    },
+    {
+     "source_id": "S5",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 14,
+     "chunk_index": 178,
+     "score": -7.698776721954346
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Ba người ăn một bữa công việc tại địa phương, mỗi người chi 350.000 VND, tổng hóa đơn hợp lệ 1.050.000 VND. Không có hạn thấp hơn hay ngoại lệ đã duyệt. Được hoàn tối đa bao nhiêu, phần vượt là bao nhiêu và muốn hoàn phần vượt thì cần điều kiện gì?",
+     "en": "Three people had a business meal locally, each spending 350,000 VND, with a total valid invoice of 1,050,000 VND. There are no lower limits or approved exceptions. What is the maximum reimbursement amount, what is the excess amount, and what conditions are required to reimburse the excess?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 478.8845489965752,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1349.7604789445177,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 111,
+    "database_retrieval": 1904,
+    "retrieval_fusion": 1,
+    "query_translation": 479,
+    "reranking": 1350,
+    "answer_generation": 1171,
+    "retrieval_total": 3854,
+    "claim_verification": 709
+   },
+   "elapsed_ms": 5734.9
+  },
+  {
+   "id": "Q13",
+   "type": "calculation",
+   "answer": "Theo quy định, lưu trú công tác qua đêm ở địa điểm nội địa thông thường được hoàn tối đa 1.800.000 VND/phòng/đêm và tại thành phố lớn được chỉ định là 2.500.000 VND/phòng/đêm [S1].\n\nVới 2 đêm ở địa điểm thông thường có giá thực tế 1.600.000 VND/phòng/đêm (thấp hơn hạn mức 1.800.000 VND), số tiền được hoàn là 1.600.000 VND/đêm [S1].\nVới 1 đêm ở thành phố lớn được chỉ định có giá thực tế 2.800.000 VND/phòng/đêm (cao hơn hạn mức 2.500.000 VND), số tiền được hoàn bị giới hạn ở mức tối đa là 2.500.000 VND [S1].\n\nTổng tiền phòng được hoàn tối đa được tính như sau:\n(2 × 1.600.000) + 2.500.000 = 3.200.000 + 2.500.000 = 5.700.000 VND [S1].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1"
+   ],
+   "prompt_sha256": "81784363f83be7ac521d786eeb170f38ced94644d8d7dbea9ab57ffc58d49326",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 4,
+    "arithmetic_checked": 1
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 14,
+     "chunk_index": 179,
+     "score": 1.6434028148651123
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 13,
+     "chunk_index": 166,
+     "score": 1.53316068649292
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 14,
+     "chunk_index": 182,
+     "score": -0.6371572613716125
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 20,
+     "chunk_index": 272,
+     "score": -1.112603783607483
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 53,
+     "chunk_index": 729,
+     "score": -1.3444360494613647
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Chuyến công tác nội địa đã duyệt dùng một phòng mỗi đêm: 2 đêm ở địa điểm thông thường giá 1.600.000 VND/phòng/đêm và 1 đêm ở thành phố lớn được chỉ định giá 2.800.000 VND/phòng/đêm. Hồ sơ hợp lệ, không có hạn thấp hơn hay ngoại lệ. Tổng tiền phòng được hoàn tối đa bao nhiêu?",
+     "en": "An approved domestic business trip used one room per night: 2 nights at a standard location at 1,600,000 VND/room/night and 1 night at a designated major city at 2,800,000 VND/room/night. The file is valid, with no lower limits or exceptions. What is the maximum total room cost reimbursable?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 484.57780794706196,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1532.703567063436,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 179,
+    "database_retrieval": 2201,
+    "retrieval_fusion": 1,
+    "query_translation": 485,
+    "reranking": 1533,
+    "answer_generation": 1276,
+    "retrieval_total": 4411,
+    "claim_verification": 735
+   },
+   "elapsed_ms": 6423.1
+  },
+  {
+   "id": "Q14",
+   "type": "calculation",
+   "answer": "Tổng cam kết được tính bằng chi phí mua hàng cộng với phí vận chuyển: 12 × 3.500.000 VND = 42.000.000 VND; 42.000.000 VND + 800.000 VND = 42.800.000 VND [S2].\nVới mức tổng cam kết 42.800.000 VND, thuộc khoảng từ 5.000.001 đến 50.000.000 VND, người phê duyệt bắt buộc là Trưởng bộ phận [S2].\nĐiều kiện bổ sung yêu cầu cần ít nhất hai báo giá tương đương nếu thị trường cho phép [S2].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S2"
+   ],
+   "prompt_sha256": "579cb52c5785f57fe342f89ab5cd72835f87bd61ed9e6928220eac0493b706e3",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 3,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 14,
+     "chunk_index": 177,
+     "score": -4.472242832183838
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 53,
+     "chunk_index": 730,
+     "score": -5.301112651824951
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 53,
+     "chunk_index": 781,
+     "score": -6.122231960296631
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 21,
+     "chunk_index": 274,
+     "score": -6.325196743011475
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 11,
+     "score": -6.47562837600708
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Mua 12 màn hình, mỗi cái 3.500.000 VND đã gồm thuế, cộng phí vận chuyển 800.000 VND trong cùng một cam kết; không có chi phí, tùy chọn hay gia hạn khác. Tổng cam kết là bao nhiêu, ai duyệt và cần mấy báo giá?",
+     "en": "Purchase 12 screens, each at 3,500,000 VND tax included, plus a shipping fee of 800,000 VND within the same commitment; no other costs, options, or extensions. What is the total commitment, who approves it, and how many quotes are required?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 467.4710800172761,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1584.3586280243471,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 245,
+    "database_retrieval": 1916,
+    "retrieval_fusion": 1,
+    "query_translation": 467,
+    "reranking": 1584,
+    "answer_generation": 778,
+    "retrieval_total": 4224,
+    "claim_verification": 1023
+   },
+   "elapsed_ms": 6025.0
+  },
+  {
+   "id": "Q15",
+   "type": "calculation",
+   "answer": "Tổng cam kết dự kiến là 72.000.000 VND, được tính bằng 3 năm (1 năm ban đầu + 2 năm gia hạn) nhân với 24.000.000 VND/năm [S2].\n\nVề yêu cầu phê duyệt, tài liệu quy định cần phê duyệt lại phạm vi vật chất hoặc mức tăng giá trước khi có cam kết bổ sung [S4]. Tuy nhiên, các nguồn được cung cấp không nêu rõ cụ thể \"những ai\" (chức danh hoặc bộ phận) có thẩm quyền phê duyệt, do đó thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời đầy đủ phần về người phê duyệt [S4].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S2",
+    "S4"
+   ],
+   "prompt_sha256": "86d4e83bea8ff9db114b890811b3f448617346081466944f82ea99fd19c539c0",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 3,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 24,
+     "chunk_index": 325,
+     "score": -5.948665142059326
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 21,
+     "chunk_index": 275,
+     "score": -5.9859843254089355
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 26,
+     "chunk_index": 341,
+     "score": -6.245838165283203
+    },
+    {
+     "source_id": "S4",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 21,
+     "chunk_index": 289,
+     "score": -6.297525405883789
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 42,
+     "chunk_index": 573,
+     "score": -6.549675464630127
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Hợp đồng phần mềm ban đầu 1 năm, dự kiến gia hạn thêm 2 năm đã biết, giá mỗi năm 24 triệu đồng đã gồm thuế và mọi phí; không có cam kết khác. Tổng cam kết dự kiến là bao nhiêu và cần những ai duyệt?",
+     "en": "The initial software contract is for 1 year, with a known expected extension of 2 years, at a price of 24 million VND per year, inclusive of tax and all fees; there are no other commitments. What is the total expected commitment and who needs to approve it?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 480.5197980022058,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1470.4807510133833,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 151,
+    "database_retrieval": 1934,
+    "retrieval_fusion": 1,
+    "query_translation": 480,
+    "reranking": 1471,
+    "answer_generation": 662,
+    "retrieval_total": 4050,
+    "claim_verification": 494
+   },
+   "elapsed_ms": 5206.4
+  },
+  {
+   "id": "Q16",
+   "type": "calculation",
+   "answer": "Chưa thể kiểm chứng đầy đủ câu trả lời với các nguồn được trích dẫn. Vui lòng thử lại hoặc hỏi rõ hơn.",
+   "insufficient_context": false,
+   "source_ids": [],
+   "prompt_sha256": "84db75355b6fb7057cde522079a1babd8fe19dac5a9c65e905b5886a6120c97d",
+   "verification": {
+    "status": "unavailable",
+    "reason": "unverified_arithmetic",
+    "claim_count": 0,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 53,
+     "chunk_index": 730,
+     "score": -3.426868438720703
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 20,
+     "chunk_index": 261,
+     "score": -3.554192543029785
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 53,
+     "chunk_index": 781,
+     "score": -4.023640155792236
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 20,
+     "chunk_index": 272,
+     "score": -4.428615570068359
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 21,
+     "chunk_index": 274,
+     "score": -4.432175159454346
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Báo giá 45.000.000 VND chưa gồm VAT 10%; không có vận chuyển, tùy chọn, gia hạn hoặc chi phí khác. Tổng cam kết gồm thuế là bao nhiêu và cần ai duyệt?",
+     "en": "Quotation of 45,000,000 VND excluding 10% VAT; no shipping, options, extensions, or other costs. What is the total committed amount including tax, and who needs to approve it?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 401.94074902683496,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1147.1624310361221,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 121,
+    "database_retrieval": 1869,
+    "retrieval_fusion": 0,
+    "query_translation": 402,
+    "reranking": 1147,
+    "answer_generation": 768,
+    "retrieval_total": 3551,
+    "claim_verification": 1
+   },
+   "elapsed_ms": 4320.0
+  },
+  {
+   "id": "Q17",
+   "type": "multi_part",
+   "answer": "Khi kiểm tra đơn nghỉ phép, ngày kết thúc không được trước ngày bắt đầu [S1]. Các đợt nghỉ đã duyệt của cùng một nhân viên không được trùng cùng thời gian làm việc, trừ khi có điều chỉnh được ghi rõ [S1]. Đối với đơn thiếu thông tin, hệ thống sẽ trả yêu cầu chưa đủ và nêu rõ thông tin còn thiếu [S1].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1"
+   ],
+   "prompt_sha256": "a973047ad7105c8c6a5ac58a1281d111fc864f364f531da0c5e7f2db63126e7e",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 3,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 8,
+     "chunk_index": 102,
+     "score": 2.2247321605682373
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 53,
+     "chunk_index": 737,
+     "score": -0.7653912901878357
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 8,
+     "chunk_index": 94,
+     "score": -1.1784849166870117
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 8,
+     "chunk_index": 99,
+     "score": -1.4441699981689453
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 9,
+     "chunk_index": 111,
+     "score": -1.67413330078125
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Khi kiểm tra đơn nghỉ phép, ngày cuối phải so với ngày đầu thế nào, các đợt nghỉ đã duyệt có được trùng không, và đơn thiếu thông tin được xử lý ra sao?",
+     "en": "When reviewing a leave request, how must the end date compare to the start date, can approved leave periods overlap, and how are requests with missing information handled?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 360.5196139542386,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1727.2562111029401,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 115,
+    "database_retrieval": 1937,
+    "retrieval_fusion": 1,
+    "query_translation": 361,
+    "reranking": 1727,
+    "answer_generation": 1207,
+    "retrieval_total": 4150,
+    "claim_verification": 959
+   },
+   "elapsed_ms": 6316.5
+  },
+  {
+   "id": "Q18",
+   "type": "multi_part",
+   "answer": "Khi muốn mua một mặt hàng chưa có trong danh mục sản phẩm, bạn không được tự tạo mã sản phẩm (ID) mới [S5]. Thay vào đó, bạn phải tạo một yêu cầu bổ sung danh mục có kiểm soát [S5].\n\nCác yêu cầu kiểm soát liên quan đến việc ghi nhận sự kiện mua sắm bao gồm:\n- Số lượng phải là số dương và dự toán không được âm [S4].\n- Sự kiện mua sắm phải được ghi trong hệ thống ERP/hệ thống mua sắm đã được duyệt hoặc sổ được kiểm soát, vì cơ sở dữ liệu hiện tại chưa có bảng nhà cung cấp, yêu cầu mua hoặc đơn đặt hàng (PO) [S2].\n- Bảng `commerce.products` chỉ đóng vai trò là tham chiếu danh mục, không phải nơi ghi nhận sự kiện mua sắm [S2].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S5",
+    "S4",
+    "S2"
+   ],
+   "prompt_sha256": "2037a54fea05a238ea091747689494e3c59b6f1636886bdbe0544f0128e6f419",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 5,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 18,
+     "chunk_index": 248,
+     "score": -0.39543601870536804
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 17,
+     "chunk_index": 227,
+     "score": -0.5952848196029663
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 17,
+     "chunk_index": 234,
+     "score": -1.1154109239578247
+    },
+    {
+     "source_id": "S4",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 18,
+     "chunk_index": 238,
+     "score": -1.5926458835601807
+    },
+    {
+     "source_id": "S5",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 18,
+     "chunk_index": 239,
+     "score": -2.010793685913086
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Muốn mua một mặt hàng chưa có trong danh mục sản phẩm: yêu cầu mua phải giải thích gì, và tôi có được tự tạo mã sản phẩm mới không?",
+     "en": "To purchase an item not yet in the product catalog: what must be explained in the purchase request, and am I allowed to create a new product code myself?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 411.0904400004074,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1516.9478739844635,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 457,
+    "database_retrieval": 2137,
+    "retrieval_fusion": 1,
+    "query_translation": 411,
+    "reranking": 1517,
+    "answer_generation": 724,
+    "retrieval_total": 4533,
+    "claim_verification": 929
+   },
+   "elapsed_ms": 6185.6
+  },
+  {
+   "id": "Q19",
+   "type": "multi_part",
+   "answer": "Khi xin quyền truy cập một hệ thống, yêu cầu phải nêu rõ: người yêu cầu, người duyệt, vai trò, tài nguyên, thời điểm cấp, hết hạn, bằng chứng thực hiện và kết quả rà [S3].\n\nVề quy trình thực hiện, chủ dữ liệu sẽ duyệt và chủ hệ thống thực hiện việc cấp quyền [S2].\n\nNgoài ra, việc cấp quyền phải tuân thủ quy tắc chỉ cấp quyền tối thiểu cần cho vai trò, tập dữ liệu và thời hạn đã duyệt [S1].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S3",
+    "S2",
+    "S1"
+   ],
+   "prompt_sha256": "ed4e3d375ff5be4522ae9345a96409f1f420127fe1dcdd465f445e02fd46d2bd",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 3,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 39,
+     "chunk_index": 524,
+     "score": -0.33146971464157104
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 39,
+     "chunk_index": 527,
+     "score": -1.351182222366333
+    },
+    {
+     "source_id": "S3",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 39,
+     "chunk_index": 531,
+     "score": -1.3766283988952637
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 9,
+     "chunk_index": 115,
+     "score": -1.982624888420105
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 51,
+     "chunk_index": 704,
+     "score": -1.9864287376403809
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Xin quyền truy cập một hệ thống thì yêu cầu phải nêu những gì, ai duyệt và ai thực hiện cấp quyền?",
+     "en": "What must be stated in a request to access a system, who approves it, and who implements the permission grant?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 370.3360640211031,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 3124.3982539745048,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 122,
+    "database_retrieval": 2039,
+    "retrieval_fusion": 1,
+    "query_translation": 370,
+    "reranking": 3124,
+    "answer_generation": 579,
+    "retrieval_total": 5671,
+    "claim_verification": 715
+   },
+   "elapsed_ms": 6966.2
+  },
+  {
+   "id": "Q20",
+   "type": "out_of_scope",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "855a60be858fe56d1b6d2d4e961edad8e61832160857e9d5e12e0e2cb7c73f72",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 7,
+     "chunk_index": 79,
+     "score": 2.383157968521118
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 7,
+     "chunk_index": 82,
+     "score": 0.9079764485359192
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 10,
+     "score": -1.0988826751708984
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 2,
+     "score": -1.3400661945343018
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": -1.8946982622146606
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Nhân viên VietStyle được làm việc từ xa mấy ngày mỗi tuần?",
+     "en": "How many days per week are VietStyle employees allowed to work remotely?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 351.13530093804,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1794.4516629213467,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 125,
+    "database_retrieval": 1906,
+    "retrieval_fusion": 1,
+    "query_translation": 351,
+    "reranking": 1795,
+    "answer_generation": 439,
+    "retrieval_total": 4191
+   },
+   "elapsed_ms": 4630.1
+  },
+  {
+   "id": "Q21",
+   "type": "out_of_scope",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "9088096d76c2e522e25fe8f2218e1b7c1d4d492d910a49036bb5ab3bb0a85293",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 13,
+     "chunk_index": 166,
+     "score": -2.336909532546997
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 7,
+     "chunk_index": 82,
+     "score": -3.264422655105591
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 25,
+     "chunk_index": 332,
+     "score": -3.4850621223449707
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 44,
+     "chunk_index": 600,
+     "score": -3.8030641078948975
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 8,
+     "chunk_index": 97,
+     "score": -3.914109945297241
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Đi làm muộn bao nhiêu phút thì bị trừ lương?",
+     "en": "How many minutes late for work results in a salary deduction?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 339.74981191568077,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1048.148473026231,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 220,
+    "database_retrieval": 1343,
+    "retrieval_fusion": 0,
+    "query_translation": 340,
+    "reranking": 1048,
+    "answer_generation": 722,
+    "retrieval_total": 2967
+   },
+   "elapsed_ms": 3688.9
+  },
+  {
+   "id": "Q22",
+   "type": "out_of_scope",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "c6a5c5ba34dc6302434a914b61622fe11454051a5e4b41ce2c5a674694ce8423",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": 0.45982006192207336
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 3,
+     "chunk_index": 15,
+     "score": -0.03455233573913574
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 17,
+     "chunk_index": 220,
+     "score": -0.3157513737678528
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 1,
+     "score": -0.6264766454696655
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+     "document_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": -2.071370840072632
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "VietStyle có chương trình cho nhân viên mua cổ phần ưu đãi không?",
+     "en": "Does VietStyle have a program for employees to buy shares at a discount?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 321.3224950013682,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1745.330234989524,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 207,
+    "database_retrieval": 1892,
+    "retrieval_fusion": 1,
+    "query_translation": 321,
+    "reranking": 1745,
+    "answer_generation": 448,
+    "retrieval_total": 4176
+   },
+   "elapsed_ms": 4625.0
+  },
+  {
+   "id": "Q23",
+   "type": "out_of_scope",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "7de492f9dd9e30d85cd907b68ae895e6cb44ce426ebd4ebfc079536793c19003",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 14,
+     "chunk_index": 179,
+     "score": -1.9050078392028809
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 13,
+     "chunk_index": 166,
+     "score": -3.11579966545105
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 14,
+     "chunk_index": 181,
+     "score": -6.49894380569458
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 14,
+     "chunk_index": 183,
+     "score": -6.86187219619751
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 8,
+     "chunk_index": 97,
+     "score": -6.889415264129639
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Hạn mức tiền taxi khi đi công tác là bao nhiêu một ngày?",
+     "en": "What is the daily taxi expense limit for business trips?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 325.18931897357106,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 918.0398690514266,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 116,
+    "database_retrieval": 1902,
+    "retrieval_fusion": 1,
+    "query_translation": 325,
+    "reranking": 918,
+    "answer_generation": 409,
+    "retrieval_total": 3274
+   },
+   "elapsed_ms": 3683.9
+  },
+  {
+   "id": "Q24",
+   "type": "cannot_conclude",
+   "answer": "Chưa thể kiểm chứng đầy đủ câu trả lời với các nguồn được trích dẫn. Vui lòng thử lại hoặc hỏi rõ hơn.",
+   "insufficient_context": false,
+   "source_ids": [],
+   "prompt_sha256": "26aeaec645f36ff39b8482956858e555a24a9af931e890a064fb737bbb063200",
+   "verification": {
+    "status": "unavailable",
+    "reason": "ValueError",
+    "claim_count": 0,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 4,
+     "score": -1.883840799331665
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 3,
+     "score": -2.0774378776550293
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 14,
+     "score": -2.2418792247772217
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 38,
+     "chunk_index": 509,
+     "score": -2.676560878753662
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "03_Policy_Rules_Registry.csv",
+     "document_id": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+     "page_number": null,
+     "chunk_index": 2,
+     "score": -2.8667333126068115
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Sau đối chiếu, chủ dữ liệu đã xác nhận các chỉ số của cùng một snapshot tồn kho mâu thuẫn nhau. Trước khi dùng snapshot này để cam kết mua, phải gắn nhãn gì và xử lý thế nào?",
+     "en": "After reconciliation, the data owner confirmed that the metrics of the same inventory snapshot are contradictory. Before using this snapshot to commit to a purchase, what label must be applied and how should it be handled?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 402.52329292707145,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 2443.7756750267,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 154,
+    "database_retrieval": 1912,
+    "retrieval_fusion": 1,
+    "query_translation": 403,
+    "reranking": 2444,
+    "answer_generation": 947,
+    "retrieval_total": 4927,
+    "claim_verification": 2651
+   },
+   "elapsed_ms": 8525.5
+  },
+  {
+   "id": "Q25",
+   "type": "cannot_conclude",
+   "answer": "Chưa thể kiểm chứng đầy đủ câu trả lời với các nguồn được trích dẫn. Vui lòng thử lại hoặc hỏi rõ hơn.",
+   "insufficient_context": false,
+   "source_ids": [],
+   "prompt_sha256": "9963d84da7bd26ecce2fe15369f78561f657936138f10b29d16a92b5347b7b11",
+   "verification": {
+    "status": "rejected",
+    "reason": "insufficient",
+    "claim_count": 3,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 22,
+     "chunk_index": 294,
+     "score": -2.5144267082214355
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 19,
+     "chunk_index": 254,
+     "score": -2.5394961833953857
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 24,
+     "chunk_index": 329,
+     "score": -2.7839200496673584
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 19,
+     "chunk_index": 256,
+     "score": -2.8557322025299072
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 19,
+     "chunk_index": 247,
+     "score": -3.5686285495758057
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Log truy cập cho thấy kế toán đã mở hồ sơ thanh toán của nhà cung cấp lúc 9 giờ. Có thể dùng log này làm bằng chứng khoản thanh toán đã được thực hiện không?",
+     "en": "The access log shows that the accountant opened the supplier's payment file at 9 o'clock. Can this log be used as evidence that the payment was made?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 412.418146035634,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1369.1866740118712,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 113,
+    "database_retrieval": 1904,
+    "retrieval_fusion": 1,
+    "query_translation": 412,
+    "reranking": 1369,
+    "answer_generation": 651,
+    "retrieval_total": 3811,
+    "claim_verification": 765
+   },
+   "elapsed_ms": 5227.1
+  },
+  {
+   "id": "Q26",
+   "type": "trap",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "748f33ff3b7cb8b5350c4ef669ac660a158e95df8a5ef048143ecb200ef39eab",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 47,
+     "chunk_index": 651,
+     "score": -1.7726964950561523
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 4,
+     "chunk_index": 35,
+     "score": -2.3091962337493896
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 48,
+     "chunk_index": 701,
+     "score": -2.334172487258911
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 35,
+     "chunk_index": 473,
+     "score": -2.352794885635376
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 48,
+     "chunk_index": 665,
+     "score": -2.484041452407837
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Ngoại lệ của tôi đã được cấp có thẩm quyền duyệt, vậy tôi được bỏ qua luôn yêu cầu của pháp luật và nghĩa vụ hợp đồng trong phạm vi ngoại lệ, đúng không?",
+     "en": "My exception has been approved by the competent authority, so I am exempt from the legal requirements and contractual obligations within the scope of the exception, right?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 396.8730060150847,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 734.3635639408603,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 110,
+    "database_retrieval": 1900,
+    "retrieval_fusion": 1,
+    "query_translation": 397,
+    "reranking": 734,
+    "answer_generation": 397,
+    "retrieval_total": 3156
+   },
+   "elapsed_ms": 3553.8
+  },
+  {
+   "id": "Q27",
+   "type": "trap",
+   "answer": "Không được, vì bảng điểm nhà cung cấp không được phép chứa các cáo buộc chưa xác minh [S1]. Quy định này cũng được xác nhận trong tài liệu tiếng Việt, nêu rõ rằng bảng điểm không chứa cáo buộc chưa xác minh hoặc dữ liệu cá nhân [S2].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1",
+    "S2"
+   ],
+   "prompt_sha256": "f372c4f72eb191445a1dec4a0cb02c238979bea6831026eede1518d9c3e0df73",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 2,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 26,
+     "chunk_index": 367,
+     "score": 1.2735272645950317
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 26,
+     "chunk_index": 349,
+     "score": -0.6217375993728638
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 24,
+     "chunk_index": 329,
+     "score": -1.1609102487564087
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 53,
+     "chunk_index": 732,
+     "score": -1.5576046705245972
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 22,
+     "chunk_index": 291,
+     "score": -1.9912060499191284
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Tôi nghe một lời tố cáo chưa xác minh về nhà cung cấp và muốn ghi ngay vào bảng điểm đánh giá nhà cung cấp để cảnh báo mọi người. Có được không?",
+     "en": "I heard an unverified allegation about a supplier and want to immediately record it in the supplier scorecard to warn everyone. Is that allowed?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 467.90782699827105,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1203.6838080966845,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 97,
+    "database_retrieval": 1878,
+    "retrieval_fusion": 1,
+    "query_translation": 468,
+    "reranking": 1204,
+    "answer_generation": 483,
+    "retrieval_total": 3658,
+    "claim_verification": 549
+   },
+   "elapsed_ms": 4691.6
+  },
+  {
+   "id": "Q28",
+   "type": "rbac",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "53a1e72ae62f2d3c94ef3c820623ace78137610950e90a3be6b81b3897c09c98",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 0,
+     "score": -1.082988977432251
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 3,
+     "score": -1.2734864950180054
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 1,
+     "score": -1.2853361368179321
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 448,
+     "score": -1.667738676071167
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 447,
+     "score": -1.7420077323913574
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Theo tài liệu VietStyle, bảng danh mục sản phẩm commerce.products có bao nhiêu hàng?",
+     "en": "According to the VietStyle documentation, how many rows does the commerce.products product catalog table have?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 327.08950398955494,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 6040.911001036875,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 105,
+    "database_retrieval": 1761,
+    "retrieval_fusion": 1,
+    "query_translation": 327,
+    "reranking": 6041,
+    "answer_generation": 550,
+    "retrieval_total": 8244
+   },
+   "elapsed_ms": 8795.0
+  },
+  {
+   "id": "Q29",
+   "type": "rbac",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "de61d1be0f5a9588500b4e4aeaac3002ad208d1fe2e84307be0af7dbbab59b6b",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 1,
+     "chunk_index": 0,
+     "score": 4.177628993988037
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 2,
+     "chunk_index": 1,
+     "score": 2.2480242252349854
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 0,
+     "score": 1.909600019454956
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "document_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+     "page_number": 3,
+     "chunk_index": 5,
+     "score": -0.7341556549072266
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 26,
+     "score": -0.9510965943336487
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Theo tài liệu VietStyle, cấp chi tiết của bảng tồn kho commerce.inventory là gì?",
+     "en": "According to the VietStyle documentation, what is the detail level of the commerce.inventory inventory table?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 387.0102019282058,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 10516.784726991318,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 380,
+    "database_retrieval": 2020,
+    "retrieval_fusion": 1,
+    "query_translation": 387,
+    "reranking": 10517,
+    "answer_generation": 483,
+    "retrieval_total": 13317
+   },
+   "elapsed_ms": 13802.2
+  },
+  {
+   "id": "Q30",
+   "type": "english",
+   "answer": "Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.",
+   "insufficient_context": true,
+   "source_ids": [],
+   "prompt_sha256": "39e6a114d4deb0d13552e925029c32b13c8b077de2716e2f62f86aa95b82130f",
+   "verification": null,
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 8,
+     "chunk_index": 102,
+     "score": 0.8947155475616455
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 10,
+     "chunk_index": 123,
+     "score": 0.5169785618782043
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 10,
+     "chunk_index": 121,
+     "score": 0.4956853985786438
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 9,
+     "chunk_index": 107,
+     "score": 0.15550769865512848
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 8,
+     "chunk_index": 99,
+     "score": -2.019991159439087
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "en": "When an employee returns from approved leave, what must be reviewed?",
+     "vn": "Khi một nhân viên quay lại làm việc sau kỳ nghỉ được phê duyệt, điều gì cần được xem xét?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 361.5711920429021,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1352.1381359314546,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 127,
+    "database_retrieval": 1909,
+    "retrieval_fusion": 2,
+    "query_translation": 362,
+    "reranking": 1352,
+    "answer_generation": 666,
+    "retrieval_total": 3772
+   },
+   "elapsed_ms": 4438.9
+  },
+  {
+   "id": "Q31",
+   "type": "english",
+   "answer": "Không, một đề xuất do tác tử AI soạn thảo không thể được trình bày như một giao dịch đã hoàn thành, vì đề xuất của trợ lý AI không phải là một sự phê duyệt hay giao dịch [S1] [S2].\n\nHơn nữa, các khuyến nghị phải được ghi nhận là khuyến nghị cho đến khi hệ thống có thẩm quyền ghi nhận giao dịch [S5].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1",
+    "S2",
+    "S5"
+   ],
+   "prompt_sha256": "b78c24fb41657c311a77042e4e4c4ba0ba450235e22cd7429e629863517d9538",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 2,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 3,
+     "chunk_index": 23,
+     "score": 6.764025688171387
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 3,
+     "chunk_index": 23,
+     "score": 4.911482334136963
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 46,
+     "chunk_index": 629,
+     "score": 1.6281166076660156
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 46,
+     "chunk_index": 669,
+     "score": -0.2235371172428131
+    },
+    {
+     "source_id": "S5",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 51,
+     "chunk_index": 704,
+     "score": -1.7518720626831055
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "en": "Can a recommendation drafted by the AI agent be presented as a completed transaction?",
+     "vn": "Một khuyến nghị được soạn thảo bởi tác nhân AI có thể được trình bày như một giao dịch đã hoàn tất không?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 339.56798899453133,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1903.4108760533854,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 114,
+    "database_retrieval": 1902,
+    "retrieval_fusion": 1,
+    "query_translation": 340,
+    "reranking": 1904,
+    "answer_generation": 524,
+    "retrieval_total": 4274,
+    "claim_verification": 599
+   },
+   "elapsed_ms": 5397.7
+  },
+  {
+   "id": "Q32",
+   "type": "mixed",
+   "answer": "Item bị stockout nhiều lần (repeated stockouts) cần được escalate cho các chủ sở hữu về Kho hàng và Thương mại (Inventory and Commercial owners) [S1].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1"
+   ],
+   "prompt_sha256": "f38cf023ab6ea614bb13a5697512901bc7d2044a8e95baaf48a584cfe0af97bd",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 1,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 31,
+     "chunk_index": 439,
+     "score": 3.1931240558624268
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 53,
+     "chunk_index": 787,
+     "score": -4.44639778137207
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 42,
+     "chunk_index": 605,
+     "score": -4.964787006378174
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 38,
+     "chunk_index": 544,
+     "score": -5.005143165588379
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 31,
+     "chunk_index": 434,
+     "score": -5.21203088760376
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Item bị stockout nhiều lần thì escalate cho ai?",
+     "en": "If an item is stocked out multiple times, who should it be escalated to?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 351.86797997448593,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1588.2639990886673,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 284,
+    "database_retrieval": 1920,
+    "retrieval_fusion": 1,
+    "query_translation": 352,
+    "reranking": 1588,
+    "answer_generation": 464,
+    "retrieval_total": 4157,
+    "claim_verification": 369
+   },
+   "elapsed_ms": 4991.2
+  },
+  {
+   "id": "Q33",
+   "type": "mixed",
+   "answer": "Không được thanh toán ngay; trường hợp này phải được giữ lại để rà soát và giữ thanh toán cho đến khi được giải quyết [S2][S4][S5].\n\nCụ thể, các bước xử lý và quy định liên quan như sau:\n*   Số hóa đơn trùng hoặc số tiền/ngày lặp phải được giữ để rà soát [S2][S5].\n*   Đối với hóa đơn bị nghi ngờ trùng lặp, hệ thống sẽ giữ thanh toán cho đến khi vấn đề được giải quyết [S4].\n*   Việc thanh toán yêu cầu bằng chứng xác nhận rằng hóa đơn của nhà cung cấp tương ứng với cam kết được ủy quyền và hàng hóa hoặc dịch vụ đã nhận [S3].\n*   Quy tắc kiểm soát bắt buộc là đối chiếu ba bên giữa đơn đặt hàng (PO) đã phát hành, biên bản nhận hàng được chấp nhận và hóa đơn của nhà cung cấp (đối với dịch vụ, cần có xác nhận chấp nhận dịch vụ thay vì biên bản nhận hàng) [S1].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S2",
+    "S4",
+    "S5",
+    "S3",
+    "S1"
+   ],
+   "prompt_sha256": "f8e3123816784cc4a148d8630c54fb68b12a2cb9e942af2757850d7801843818",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 5,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 24,
+     "chunk_index": 330,
+     "score": -0.5428867340087891
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 24,
+     "chunk_index": 336,
+     "score": -1.9300053119659424
+    },
+    {
+     "source_id": "S3",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 24,
+     "chunk_index": 329,
+     "score": -1.9421709775924683
+    },
+    {
+     "source_id": "S4",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 53,
+     "chunk_index": 785,
+     "score": -3.0794286727905273
+    },
+    {
+     "source_id": "S5",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 24,
+     "chunk_index": 320,
+     "score": -3.3330001831054688
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Một invoice của cùng supplier có số trùng với invoice cũ đã ghi nhận. Có thanh toán ngay được không và phải xử lý thế nào?",
+     "en": "An invoice from the same supplier has a duplicate number with a previously recorded invoice. Can it be paid immediately, and how should it be handled?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 364.8281020577997,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 2282.274215016514,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 269,
+    "database_retrieval": 1919,
+    "retrieval_fusion": 1,
+    "query_translation": 365,
+    "reranking": 2282,
+    "answer_generation": 814,
+    "retrieval_total": 4849,
+    "claim_verification": 954
+   },
+   "elapsed_ms": 6617.6
+  },
+  {
+   "id": "Q34",
+   "type": "mixed",
+   "answer": "Để join bảng `payments` với `order_items` nhằm phân tích theo dòng sản phẩm, cần lưu ý các điểm sau về cấp chi tiết và rủi ro:\n\n1.  **Cấp chi tiết (Grain) khác nhau:**\n    *   Bảng `payments` có cấp chi tiết là `order_id` (cấp đơn hàng) [S1].\n    *   Bảng `order_items` có cấp chi tiết là `order_item_id` (cấp dòng bán hàng) [S1].\n    *   Do đó, `payments` là dữ liệu thanh toán cấp đơn hàng, trong khi `order_items` là dữ liệu cấp dòng [S3].\n\n2.  **Rủi ro và yêu cầu kiểm soát:**\n    *   Cần tránh nối dữ liệu thanh toán cấp đơn hàng (`payments`) vào dữ liệu cấp dòng (`order_items`) mà không kiểm soát sự trùng lặp [S2].\n    *   Không được nối các giá trị cấp đơn hàng vào cấp dòng bán hàng mà thiếu kiểm soát trùng [S5].\n    *   Việc này nhằm ngăn chặn rủi ro đếm tiền sai do một đơn hàng có thể có nhiều dòng sản phẩm nhưng chỉ có một bản ghi thanh toán, dẫn đến việc giá trị thanh toán bị nhân lên theo số dòng nếu không xử lý đúng [S4].\n\nTóm lại, khi thực hiện join, phải đảm bảo kiểm soát trùng lặp để tránh gán sai giá trị thanh toán cấp đơn hàng vào từng dòng sản phẩm riêng lẻ [S2][S4].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1",
+    "S3",
+    "S2",
+    "S5",
+    "S4"
+   ],
+   "prompt_sha256": "84efbcc412d92efa4bbe111ddd3f36ab0af734b01f9f8116a686ec33ea5b7ab3",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 7,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 38,
+     "chunk_index": 518,
+     "score": 1.4866727590560913
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 38,
+     "chunk_index": 515,
+     "score": -0.01998056098818779
+    },
+    {
+     "source_id": "S3",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 53,
+     "chunk_index": 777,
+     "score": -0.26040565967559814
+    },
+    {
+     "source_id": "S4",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 38,
+     "chunk_index": 551,
+     "score": -0.6552640795707703
+    },
+    {
+     "source_id": "S5",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 53,
+     "chunk_index": 726,
+     "score": -1.8767520189285278
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Muốn join payments với order_items để phân tích theo dòng sản phẩm, cần lưu ý cấp chi tiết và rủi ro đếm tiền thế nào?",
+     "en": "To join payments with order_items for product line analysis, what should be noted regarding the level of detail and the risk of double-counting?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 364.2381720710546,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1495.9155099932104,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 129,
+    "database_retrieval": 1936,
+    "retrieval_fusion": 5,
+    "query_translation": 364,
+    "reranking": 1496,
+    "answer_generation": 1011,
+    "retrieval_total": 3942,
+    "claim_verification": 1351
+   },
+   "elapsed_ms": 6305.6
+  },
+  {
+   "id": "Q35",
+   "type": "no_diacritics",
+   "answer": "Theo các nguồn được cung cấp, việc mua sắm khẩn cấp (mua khan) chỉ được áp dụng trong các trường hợp sau:\n\n*   Lý do tương thích thực sự (genuine compatibility) [S4].\n*   Lý do sở hữu trí tuệ (intellectual-property) [S4].\n*   Trường hợp khẩn cấp (emergency) [S4].\n*   Lý do khả năng sẵn có trên thị trường (market-availability) [S4].\n\nNgoài ra, nguồn tài liệu cũng nêu rõ rằng tính khẩn cấp không loại bỏ nhu cầu về hồ sơ; việc mua sắm khẩn cấp phải được lập hồ sơ và xem xét [S5].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S4",
+    "S5"
+   ],
+   "prompt_sha256": "e7cf03549970093e6ea2e52450ecce5c965237dae37e01deec85c2578e52e4c9",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 5,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 17,
+     "chunk_index": 219,
+     "score": -4.628613471984863
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 21,
+     "chunk_index": 282,
+     "score": -5.0415544509887695
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 17,
+     "chunk_index": 220,
+     "score": -5.878489971160889
+    },
+    {
+     "source_id": "S4",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 20,
+     "chunk_index": 276,
+     "score": -6.0464396476745605
+    },
+    {
+     "source_id": "S5",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 17,
+     "chunk_index": 231,
+     "score": -6.118791103363037
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "mua khan thi chi duoc dung trong truong hop nao",
+     "en": "In which cases is emergency procurement allowed?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 323.28023004811257,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1516.5804569842294,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 161,
+    "database_retrieval": 1636,
+    "retrieval_fusion": 1,
+    "query_translation": 323,
+    "reranking": 1517,
+    "answer_generation": 668,
+    "retrieval_total": 3652,
+    "claim_verification": 597
+   },
+   "elapsed_ms": 4918.2
+  },
+  {
+   "id": "Q36",
+   "type": "typo",
+   "answer": "Nếu chưa nối được sản phẩm khách hỏi thành đúng một product_id, hệ thống sẽ trả trạng thái chưa xác định sản phẩm và yêu cầu làm rõ [S5].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S5"
+   ],
+   "prompt_sha256": "e1e941b14e27e30f988e2e029da618b4b8c098fea2d1b31cc46b348424e33c26",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 1,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 18,
+     "chunk_index": 238,
+     "score": -0.9983299970626831
+    },
+    {
+     "source_id": "S2",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 28,
+     "chunk_index": 376,
+     "score": -1.1497002840042114
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 28,
+     "chunk_index": 372,
+     "score": -1.2792848348617554
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 53,
+     "chunk_index": 776,
+     "score": -2.1461338996887207
+    },
+    {
+     "source_id": "S5",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 28,
+     "chunk_index": 375,
+     "score": -2.236149311065674
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "nếu ko xác đinh đươc sản phẫm khách hỏi là product_id nào thì làm sao",
+     "en": "If it is not possible to determine which product_id the customer is asking about, what should be done?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 387.72094901651144,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1948.0371390236542,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 111,
+    "database_retrieval": 1919,
+    "retrieval_fusion": 1,
+    "query_translation": 388,
+    "reranking": 1948,
+    "answer_generation": 437,
+    "retrieval_total": 4380,
+    "claim_verification": 5782
+   },
+   "elapsed_ms": 10600.0
+  },
+  {
+   "id": "Q37",
+   "type": "follow_up",
+   "skipped": "multi_turn_needs_router"
+  },
+  {
+   "id": "Q38",
+   "type": "follow_up",
+   "skipped": "multi_turn_needs_router"
+  },
+  {
+   "id": "Q39",
+   "type": "ambiguous",
+   "answer": "Tần suất rà soát được quy định là ít nhất hằng năm [S1]. Ngoài ra, việc rà soát cũng phải được thực hiện sau các sự kiện cụ thể như sự cố trọng yếu, thay đổi pháp luật, lược đồ hoặc lỗi kiểm soát [S1]. Đối với sự phù hợp hệ thống và dữ liệu, điều kiện rà soát bao gồm hằng năm, sự cố trọng yếu, hoặc khi có thay đổi quy trình hoặc hệ thống [S2].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S1",
+    "S2"
+   ],
+   "prompt_sha256": "de39fcea030536533d8d7f982f29eccf0b01b7cf435abec3b236cb6dbaf9447c",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 3,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 6,
+     "chunk_index": 72,
+     "score": -0.9333837628364563
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 3,
+     "chunk_index": 27,
+     "score": -2.112149477005005
+    },
+    {
+     "source_id": "S3",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 7,
+     "score": -3.6727776527404785
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 8,
+     "chunk_index": 94,
+     "score": -4.165794849395752
+    },
+    {
+     "source_id": "S5",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 5,
+     "chunk_index": 58,
+     "score": -4.674412250518799
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Phải rà soát bao lâu một lần?",
+     "en": "How often should it be reviewed?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 350.84685299079865,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 1058.6558469804004,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 99,
+    "database_retrieval": 1993,
+    "retrieval_fusion": 1,
+    "query_translation": 351,
+    "reranking": 1059,
+    "answer_generation": 602,
+    "retrieval_total": 3512,
+    "claim_verification": 686
+   },
+   "elapsed_ms": 4800.2
+  },
+  {
+   "id": "Q40",
+   "type": "long_paste",
+   "answer": "Dựa trên các nguồn tài liệu được cung cấp, cách bàn giao và ghi lịch của Hà cần được điều chỉnh như sau:\n\n1.  **Về việc bàn giao công việc (đơn gấp, hàng trả, cam kết nhà cung cấp, sự cố):**\n    *   Việc chỉ nhắn chung \"ai rảnh thì xử lý\" và không ghi người thay hay hạn cụ thể là không phù hợp, vì chính sách yêu cầu sự vắng mặt được phê duyệt phải được phối hợp để bảo vệ các cam kết với khách hàng, tính liên tục của hoạt động vận hành [S5].\n    *   Đối với hàng trả về từ khách, chính sách quy định hành động bắt buộc là phải cách ly đến khi QA phân loại (A-grade bán lại; B-grade sửa/đóng gói lại; C-grade hỏng/thiếu phụ kiện xử lý riêng) và thời gian thực hiện (SLA) là trong 2 ngày làm việc [S2]. Do đó, việc bàn giao cần đảm bảo quy trình này được thực hiện đúng hạn và đúng người phụ trách (Returns QA + Warehouse) [S2].\n    *   Đối với cam kết với nhà cung cấp, cần đảm bảo các kiểm tra về danh tính, hướng dẫn thanh toán, tư cách pháp lý và rủi ro đã được hoàn thành trước khi sử dụng nhà cung cấp đó [S3].\n    *   Đối với các đơn hàng và sự cố, cần đảm bảo tính liên tục của hoạt động vận hành theo yêu cầu chung về phối hợp khi vắng mặt [S5].\n\n2.  **Về việc đăng lịch và lý do vắng mặt:**\n    *   Việc đăng hồ sơ khám thai lên lịch nhóm là không phù hợp, vì chính sách yêu cầu phải bảo vệ quyền riêng tư của nhân viên khi phối hợp các sự vắng mặt đã được phê duyệt [S5].\n\n**Lưu ý:** Các nguồn tài liệu được cung cấp không chứa thông tin cụ thể về quy trình xử lý \"sự cố được giao\" (incident management) hay quy định chi tiết về việc ghi tên người thay thế cụ thể trong hệ thống lịch, mà chỉ nêu nguyên tắc chung về bảo vệ cam kết khách hàng, tính liên tục vận hành và quyền riêng tư [S5].",
+   "insufficient_context": false,
+   "source_ids": [
+    "S5",
+    "S2",
+    "S3"
+   ],
+   "prompt_sha256": "969f59e81660188d47718cbfb30ba5b153758d316823db95bde0e60112443445",
+   "verification": {
+    "status": "supported",
+    "reason": "all_claims_supported",
+    "claim_count": 7,
+    "arithmetic_checked": 0
+   },
+   "contexts": [
+    {
+     "source_id": "S1",
+     "cited": false,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+     "page_number": 53,
+     "chunk_index": 726,
+     "score": -5.861331462860107
+    },
+    {
+     "source_id": "S2",
+     "cited": true,
+     "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "document_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+     "page_number": null,
+     "chunk_index": 6,
+     "score": -5.960559368133545
+    },
+    {
+     "source_id": "S3",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 19,
+     "chunk_index": 256,
+     "score": -5.987926006317139
+    },
+    {
+     "source_id": "S4",
+     "cited": false,
+     "document_name": "01_Inventory_Management_Policy_Manual.docx",
+     "document_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+     "page_number": null,
+     "chunk_index": 5,
+     "score": -6.35905647277832
+    },
+    {
+     "source_id": "S5",
+     "cited": true,
+     "document_name": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+     "page_number": 10,
+     "chunk_index": 121,
+     "score": -6.391515731811523
+    }
+   ],
+   "retrieval_details": {
+    "language_aware": false,
+    "document_ids": null,
+    "candidate_k": 300,
+    "dense_weight": 1.0,
+    "bm25_weight": 2.0,
+    "rrf_k": 60,
+    "lexical_queries": {
+     "vn": "Chào chị, em là Hà bên chăm sóc khách hàng. Tuần sau em nghỉ phép 4 ngày và đơn đã được duyệt. Em vẫn còn vài đơn gấp, hàng trả đang mở, một cam kết với nhà cung cấp và một sự cố được giao. Em định chỉ nhắn chung rằng ai rảnh thì xử lý, không ghi người thay hay hạn cụ thể. Trên lịch nhóm em định đăng cả hồ sơ khám thai để mọi người hiểu lý do vắng mặt. Em cần sửa cách bàn giao và ghi lịch như thế nào cho đúng chính sách?",
+     "en": "Hello, I am Ha from customer care. Next week I will be on leave for 4 days and the request has been approved. I still have a few urgent orders, open returns, one commitment with a supplier, and one incident assigned to me. I plan to just send a general message saying whoever is free should handle it, without specifying a substitute or a specific deadline. On the team calendar, I plan to post my prenatal checkup records so everyone understands the reason for my absence. How should I correct the handover and calendar entry to comply with policy?"
+    },
+    "dense_fallback": false,
+    "translation_error": null,
+    "effective_method": "translated_hybrid_rerank",
+    "translation_model": "qwen/qwen3.8-27b",
+    "translation_latency_ms": 532.1537959389389,
+    "lexical_document_scopes": {
+     "en": null,
+     "vn": null
+    },
+    "candidate_method": "translated_hybrid",
+    "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+    "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+    "reranker_candidate_count": 30,
+    "reranker_max_pair_tokens": 512,
+    "reranker_score_type": "raw_logit",
+    "reranker_applied": true,
+    "reranker_quantize": "",
+    "reranker_latency_ms": 5023.870998993516,
+    "embedding_model": "intfloat/multilingual-e5-base"
+   },
+   "stages_ms": {
+    "embedding": 166,
+    "database_retrieval": 1927,
+    "retrieval_fusion": 1,
+    "query_translation": 532,
+    "reranking": 5024,
+    "answer_generation": 1682,
+    "retrieval_total": 7660,
+    "claim_verification": 1200
+   },
+   "elapsed_ms": 10545.6
+  }
+ ]
+}

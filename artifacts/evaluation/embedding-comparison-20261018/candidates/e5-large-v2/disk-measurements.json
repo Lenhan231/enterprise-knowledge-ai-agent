@@ -1,0 +1,14 @@
+{
+    "dxcache_change_mib":  1.0625,
+    "before":  {
+                   "time":  "2026-10-18T23:29:46.8242256+07:00",
+                   "dxcache_bytes":  1986560,
+                   "c_free_bytes":  117219606528
+               },
+    "c_free_change_mib":  -0.93359375,
+    "after":  {
+                  "time":  "2026-10-18T23:32:14.0298044+07:00",
+                  "dxcache_bytes":  3100672,
+                  "c_free_bytes":  117218627584
+              }
+}

@@ -1,0 +1,1358 @@
+{
+  "created_at": "2026-10-15T15:36:21.945637+00:00",
+  "runner_sha256": "eca9531ede5e1b3386998b9483a7028cf27e9148b7ebe36b5eb6714e05f84b10",
+  "retrieval_code_sha256": {
+    "src/core/retrieval/__init__.py": "4bd1ee4bbba78588a44a2f92dc47e1b3efc3f3f4e9e74564deb9884e7475e669",
+    "src/core/retrieval/methods/__init__.py": "83010410982e279677a2199074bc9f7d2b73d2574d19469d54da9a233d82c672",
+    "src/core/retrieval/methods/bm25.py": "44e51a51b8c1dff50f8940633923675603e1654c8675d62dd79fdc548fd67a8a",
+    "src/core/retrieval/methods/common.py": "cdfaff974db003c056853934b6a9c85c68d4b74eba30e85318d31c77d2b8f2a0",
+    "src/core/retrieval/methods/dense.py": "1e8ef748c33f7ec20fedeb96109337b5f81ef191ba067d3ea4d723f171833898",
+    "src/core/retrieval/methods/hybrid.py": "a43164e8b26b503535dc23a69390271c2c64d509135bfd2ac372c8a02533b64a",
+    "src/core/retrieval/methods/parent.py": "131ed76ee9be5225cf938eb5cf79470ebca22a111bf8423460885a51d8f8ddf0",
+    "src/core/retrieval/retrieval.py": "dfc618ac4c06bdca8ac2a4144725db4c0100cce988852a06444be3eaafd034da",
+    "src/core/retrieval/retrieval_service.py": "9d8a9e5ec26a291772f28ac1d6ffe5fc6e34213c89d5d4c58a3e3d5381a04604"
+  },
+  "git_commit": "751469c1dafc573aa28c7b52e49bf7c4a447ccb7",
+  "scope": {
+    "document_ids": [
+      "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1",
+      "UPLOAD-5149fb823530440da1a2f09704c695d6"
+    ],
+    "roles": [
+      "admin"
+    ],
+    "chunks": 249
+  },
+  "cases_sha256": "27e45ee2ed267aefae24286e85b275d99f1e5432b4843d2cfd1a16b6c20dcd74",
+  "scoped_corpus_sha256": "2d894fb2a63095586eb0f7abba9781a3a9ba1273446a38943363777622a6f83e",
+  "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "embedding_device": "cuda",
+  "top_k": 10,
+  "dense_weight": 1.0,
+  "bm25_weight": 2.0,
+  "rrf_k": 60,
+  "case_count": 24,
+  "methods": [
+    "dense",
+    "hybrid"
+  ],
+  "limitations": "Scoped exact-chunk benchmark, not mixed-corpus search or answer quality. Search latency excludes query embedding and model load. Source cases copied unchanged from QuocAn 3ea4f43.",
+  "results": [
+    {
+      "id": "Q01",
+      "question": "What are the mission and vision of PetroVietnam Fertilizer and Chemicals Corporation (PVFCCo)?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::4"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::9",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::21",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::66",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::44",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::99",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::106",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::3"
+      ],
+      "search_latency_ms": 621.3718050000239,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q01",
+      "question": "What are the mission and vision of PetroVietnam Fertilizer and Chemicals Corporation (PVFCCo)?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::4"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::9",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::4",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::21",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::39",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::66",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::44"
+      ],
+      "search_latency_ms": 375.789248999979,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.16666666666666666,
+        "ndcg_at_k": 0.3562071871080222
+      }
+    },
+    {
+      "id": "Q02",
+      "question": "What is PVFCCo's stock ticker, and how many shares were listed on November 5, 2007?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::95",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::39",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::32",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82"
+      ],
+      "search_latency_ms": 307.8698319999944,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q02",
+      "question": "What is PVFCCo's stock ticker, and how many shares were listed on November 5, 2007?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::95",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::12",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::96",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::39",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::141",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36"
+      ],
+      "search_latency_ms": 361.1011290000192,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q03",
+      "question": "What were PVFCCo's main business sectors according to the 2008 Annual Report?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::10",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46"
+      ],
+      "search_latency_ms": 306.9768479999766,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q03",
+      "question": "What were PVFCCo's main business sectors according to the 2008 Annual Report?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::77",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::7"
+      ],
+      "search_latency_ms": 362.3313489999873,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q04",
+      "question": "In 2008, how many tons of imported fertilizer did PVFCCo import and distribute in the domestic market?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::50",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56"
+      ],
+      "search_latency_ms": 306.9953589999841,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q04",
+      "question": "In 2008, how many tons of imported fertilizer did PVFCCo import and distribute in the domestic market?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::50",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54"
+      ],
+      "search_latency_ms": 358.825803000002,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q05",
+      "question": "By how many tons per year was the urea production capacity expected to increase through the CO2 recovery project at the Phu My Fertilizer Plant?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::189",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::180",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::20"
+      ],
+      "search_latency_ms": 306.66037900004994,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q05",
+      "question": "By how many tons per year was the urea production capacity expected to increase through the CO2 recovery project at the Phu My Fertilizer Plant?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::16",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::189"
+      ],
+      "search_latency_ms": 359.0629619999959,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.3333333333333333,
+        "ndcg_at_k": 0.5
+      }
+    },
+    {
+      "id": "Q06",
+      "question": "What were PVFCCo's total revenue, profit before tax, and tax payment in 2008?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61"
+      ],
+      "search_latency_ms": 605.4913699999815,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.1111111111111111,
+        "ndcg_at_k": 0.3010299956639812
+      }
+    },
+    {
+      "id": "Q06",
+      "question": "What were PVFCCo's total revenue, profit before tax, and tax payment in 2008?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::30",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::137",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::92",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58"
+      ],
+      "search_latency_ms": 657.162019999987,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q07",
+      "question": "Compare PVFCCo's total revenue in 2007 and 2008.",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::7",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54"
+      ],
+      "search_latency_ms": 306.2478989999704,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q07",
+      "question": "Compare PVFCCo's total revenue in 2007 and 2008.",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::177",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56"
+      ],
+      "search_latency_ms": 357.81868699996267,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.25,
+        "ndcg_at_k": 0.43067655807339306
+      }
+    },
+    {
+      "id": "Q08",
+      "question": "What were PVFCCo's planned urea production and fertilizer imports for 2009?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48"
+      ],
+      "search_latency_ms": 306.2677739999913,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q08",
+      "question": "What were PVFCCo's planned urea production and fertilizer imports for 2009?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::52",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82"
+      ],
+      "search_latency_ms": 363.7723329999858,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.2,
+        "ndcg_at_k": 0.38685280723454163
+      }
+    },
+    {
+      "id": "Q09",
+      "question": "What revenue, profit-before-tax, and state-budget tax-payment targets did PVFCCo set for 2009?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152"
+      ],
+      "search_latency_ms": 305.95304899998155,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.1111111111111111,
+        "ndcg_at_k": 0.3010299956639812
+      }
+    },
+    {
+      "id": "Q09",
+      "question": "What revenue, profit-before-tax, and state-budget tax-payment targets did PVFCCo set for 2009?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::19",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::30",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::77",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::137",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::7",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49"
+      ],
+      "search_latency_ms": 358.120380999992,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.5,
+        "ndcg_at_k": 0.6309297535714575
+      }
+    },
+    {
+      "id": "Q10",
+      "question": "Where was the Phu My Fertilizer Plant located, and what were its designed daily ammonia and urea production capacities?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::106",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::99",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::66",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::21",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::9",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::44",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::158"
+      ],
+      "search_latency_ms": 306.08277800001815,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q10",
+      "question": "Where was the Phu My Fertilizer Plant located, and what were its designed daily ammonia and urea production capacities?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::23",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::16",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::63",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41"
+      ],
+      "search_latency_ms": 357.9755080000382,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q11",
+      "question": "What technical solutions did PVFCCo implement to improve urea quality and plant operating efficiency?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::60",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::15",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54"
+      ],
+      "search_latency_ms": 306.22115300002406,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q11",
+      "question": "What technical solutions did PVFCCo implement to improve urea quality and plant operating efficiency?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::26"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::25",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::14",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::5",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::29"
+      ],
+      "search_latency_ms": 357.7146729999754,
+      "metrics": {
+        "recall_at_k": 0.5,
+        "precision_at_k": 0.1,
+        "mrr": 0.25,
+        "ndcg_at_k": 0.2640681225725909
+      }
+    },
+    {
+      "id": "Q12",
+      "question": "What were PVFCCo's current ratio and quick ratio in 2008?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::6",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::41",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::51"
+      ],
+      "search_latency_ms": 306.25374100003455,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q12",
+      "question": "What were PVFCCo's current ratio and quick ratio in 2008?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::59",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::57",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42"
+      ],
+      "search_latency_ms": 361.2063230000331,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.3333333333333333,
+        "ndcg_at_k": 0.5
+      }
+    },
+    {
+      "id": "Q13",
+      "question": "Under what business registration certificate number was Long Hau Joint Stock Company established, and on what date was it issued?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::141",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::188",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::10",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41"
+      ],
+      "search_latency_ms": 306.26233200001707,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0
+      }
+    },
+    {
+      "id": "Q13",
+      "question": "Under what business registration certificate number was Long Hau Joint Stock Company established, and on what date was it issued?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::25"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::141",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::12",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::13",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::11",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::36",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::115",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::38",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::90"
+      ],
+      "search_latency_ms": 360.85701599995446,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q14",
+      "question": "Which audit firm audited Long Hau's separate financial statements for 2008?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::114",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::42",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::45",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::8"
+      ],
+      "search_latency_ms": 317.8024130000381,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q14",
+      "question": "Which audit firm audited Long Hau's separate financial statements for 2008?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::7"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::114",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::87",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::113",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::111",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::108",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::110",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::143"
+      ],
+      "search_latency_ms": 389.3357700000024,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q15",
+      "question": "On what date was Long Hau's independent audit report for 2008 signed?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::9"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30"
+      ],
+      "search_latency_ms": 333.89843200001224,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q15",
+      "question": "On what date was Long Hau's independent audit report for 2008 signed?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::9"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::74",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::114",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::87",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::108",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::72",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::188",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::53",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::113",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0"
+      ],
+      "search_latency_ms": 376.5948580000327,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q16",
+      "question": "What were Long Hau's total assets at December 31, 2008 and at the beginning of 2008?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::14"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::43",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::2"
+      ],
+      "search_latency_ms": 315.715823000005,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q16",
+      "question": "What were Long Hau's total assets at December 31, 2008 and at the beginning of 2008?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::14"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::143",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::122",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::118",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::116",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::37",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48"
+      ],
+      "search_latency_ms": 368.90641000002233,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q17",
+      "question": "How did Long Hau's inventory value change between the end of 2008 and the beginning of 2008?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::12"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::48",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30"
+      ],
+      "search_latency_ms": 315.6963659999974,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q17",
+      "question": "How did Long Hau's inventory value change between the end of 2008 and the beginning of 2008?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::12"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::4",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::140",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::122",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::146",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::126",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::139",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41"
+      ],
+      "search_latency_ms": 368.32144599998173,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q18",
+      "question": "What was Long Hau's net revenue in 2008, and by how much did it increase compared with the previous year?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::20"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::34",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27"
+      ],
+      "search_latency_ms": 315.8562849999953,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q18",
+      "question": "What was Long Hau's net revenue in 2008, and by how much did it increase compared with the previous year?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::20"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::190",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::89",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::149",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::30",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::135"
+      ],
+      "search_latency_ms": 368.8445980000097,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q19",
+      "question": "What was Long Hau's total accounting profit before tax in 2008 compared with 2007?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::137",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35"
+      ],
+      "search_latency_ms": 315.8609879999972,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q19",
+      "question": "What was Long Hau's total accounting profit before tax in 2008 compared with 2007?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::91",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::137",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::135",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::30"
+      ],
+      "search_latency_ms": 369.40861499999755,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q20",
+      "question": "According to the notes to the financial statements, what principle did Long Hau use to determine the value of inventory related to industrial-park development costs?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::33",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::149",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::30",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::148"
+      ],
+      "search_latency_ms": 315.79981900000575,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.2,
+        "ndcg_at_k": 0.38685280723454163
+      }
+    },
+    {
+      "id": "Q20",
+      "question": "According to the notes to the financial statements, what principle did Long Hau use to determine the value of inventory related to industrial-park development costs?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::28"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::169",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::146",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::150",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::148",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::188",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::144",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::56",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::113"
+      ],
+      "search_latency_ms": 367.75964600002453,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q21",
+      "question": "What depreciation method did Long Hau use, and what estimated depreciation periods applied to its types of fixed assets?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::149",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::148",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::146",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1"
+      ],
+      "search_latency_ms": 316.40748500001337,
+      "metrics": {
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.1,
+        "mrr": 0.3333333333333333,
+        "ndcg_at_k": 0.5
+      }
+    },
+    {
+      "id": "Q21",
+      "question": "What depreciation method did Long Hau use, and what estimated depreciation periods applied to its types of fixed assets?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::29"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::146",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::147",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::148",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::117",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::149",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::150",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::154",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::169",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::151"
+      ],
+      "search_latency_ms": 368.8694519999558,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q22",
+      "question": "What were Long Hau's profit attributable to ordinary shareholders and basic earnings per share in 2008?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::41",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::183",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::22"
+      ],
+      "search_latency_ms": 316.1389809999946,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q22",
+      "question": "What were Long Hau's profit attributable to ordinary shareholders and basic earnings per share in 2008?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::55"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::183",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::176",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::186",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::27",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::172",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::97",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::133",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::171"
+      ],
+      "search_latency_ms": 383.6078280000379,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q23",
+      "question": "Which two companies did the 2008 PVFCCo Annual Report and Long Hau's 2008 separate financial statements belong to?",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::0",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::22",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::10",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::82",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::48",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::90",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::46"
+      ],
+      "search_latency_ms": 333.5642030000372,
+      "metrics": {
+        "recall_at_k": 0.5,
+        "precision_at_k": 0.1,
+        "mrr": 0.5,
+        "ndcg_at_k": 0.38685280723454163
+      }
+    },
+    {
+      "id": "Q23",
+      "question": "Which two companies did the 2008 PVFCCo Annual Report and Long Hau's 2008 separate financial statements belong to?",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::0",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::0"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::22",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::2",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::110",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::54",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::42",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::88",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::58",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::87",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::113"
+      ],
+      "search_latency_ms": 389.68088499996156,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q24",
+      "question": "Compare PVFCCo's and Long Hau's profit before tax in 2008, stating the figures and currency units used in each report.",
+      "method": "dense",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::1",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::53",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::31",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::35",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::51",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::54",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::36",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::5",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::50"
+      ],
+      "search_latency_ms": 333.86843900001395,
+      "metrics": {
+        "recall_at_k": 0.0,
+        "precision_at_k": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_k": 0.0
+      }
+    },
+    {
+      "id": "Q24",
+      "question": "Compare PVFCCo's and Long Hau's profit before tax in 2008, stating the figures and currency units used in each report.",
+      "method": "hybrid",
+      "gold_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-5149fb823530440da1a2f09704c695d6::chunk::21"
+      ],
+      "ranked_chunk_ids": [
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::152",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::49",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::91",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::61",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::55",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::17",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::137",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::64",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::130",
+        "UPLOAD-11e62199551047c0a1ddcd5e6684a1c1::chunk::135"
+      ],
+      "search_latency_ms": 389.5020609999733,
+      "metrics": {
+        "recall_at_k": 0.5,
+        "precision_at_k": 0.1,
+        "mrr": 0.16666666666666666,
+        "ndcg_at_k": 0.21840743681816419
+      }
+    }
+  ],
+  "summary": {
+    "dense": {
+      "recall_at_k": 0.3958,
+      "precision_at_k": 0.0417,
+      "mrr": 0.2606,
+      "ndcg_at_k": 0.2865
+    },
+    "hybrid": {
+      "recall_at_k": 0.4583,
+      "precision_at_k": 0.05,
+      "mrr": 0.2583,
+      "ndcg_at_k": 0.3036
+    }
+  }
+}

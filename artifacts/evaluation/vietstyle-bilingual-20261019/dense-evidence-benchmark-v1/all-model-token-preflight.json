@@ -1,0 +1,20 @@
+{
+  "multilingual-e5-base": {
+    "revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+    "max_passage_tokens": 476,
+    "max_query_tokens": 48,
+    "truncated_inputs": 0
+  },
+  "bge-m3": {
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "max_passage_tokens": 474,
+    "max_query_tokens": 45,
+    "truncated_inputs": 0
+  },
+  "qwen3-embedding-0.6b": {
+    "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+    "max_passage_tokens": 425,
+    "max_query_tokens": 60,
+    "truncated_inputs": 0
+  }
+}

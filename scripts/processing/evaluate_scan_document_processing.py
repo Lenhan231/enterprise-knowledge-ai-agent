@@ -22,7 +22,8 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT))
 
-from core.document_processing.processors.document_processor import DocumentProcessor  # noqa: E402
+from core.document_processing.document_processor import DocumentProcessor
+from core.document_processing.chunking.processor import ChunkingProcessor  # noqa: E402
 from scripts.processing.evaluate_ocr import edit_distance, error_rate, normalize, peak_memory_mb  # noqa: E402
 
 
@@ -195,16 +196,18 @@ def evaluate_region(
 ) -> dict:
     cropped_pdf = rasterize_for_ocr(crop_pdf_page(source_pdf, spec["page"], spec["clip_rect"]))
     started = time.perf_counter()
-    parsed = DocumentProcessor({
+    processor = DocumentProcessor({
         "tesseract_psm": tesseract_psm,
         "tesseract_table_psm": tesseract_table_psm,
         "ocr_render_scale": render_scale,
         "ocr_table_render_scale": table_render_scale,
-    }).process(
+    })
+    parsed = processor.process(
         Path(spec["file"]).name,
         cropped_pdf,
         {"document_id": spec["document_id"]},
     )
+    parsed = ChunkingProcessor(processor.config).process(parsed)
     elapsed = time.perf_counter() - started
     chunks = sorted(parsed["chunks"], key=lambda item: item["metadata"]["chunk_index"])
     extracted_text = "\n".join(chunk["text"] for chunk in chunks)

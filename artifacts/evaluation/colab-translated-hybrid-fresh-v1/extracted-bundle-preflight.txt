@@ -1,0 +1,31 @@
+{
+  "status": "passed",
+  "cases": 48,
+  "paired_intents": 12,
+  "required_components_per_direction": 28,
+  "parser_spans": 72,
+  "original_anchor_alternative_checks": 30,
+  "component_isolation_checks": 56,
+  "tamper_checks": 3,
+  "manifest_sha256": "c8f9dae06fd70e9e897912aa4a0a7488e98993c88af2b182a1406db72c51f6f3",
+  "inference_run": false
+}
+{
+  "status": "passed",
+  "case_rankings_verified": 144,
+  "scores_verified": 4320,
+  "dense_pools_replayed": 48,
+  "independent_character_coverage": "passed",
+  "exact_rendering_and_score_lineage": "passed",
+  "results_sha256": "424bb73bf8d08f5f51db01c4d6df88a3b245eb252d159a3fdb3e26e10a5a9251",
+  "limits": "Offline replay validates artifacts, not independent inference or answer correctness."
+}
+{
+  "status": "passed",
+  "cases": 48,
+  "reranker_candidates": 30,
+  "branch_candidates": 300,
+  "translation_model": "openai/gpt-oss-20b",
+  "translation_failures": 0,
+  "inference_run": false
+}

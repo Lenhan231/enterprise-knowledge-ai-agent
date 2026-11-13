@@ -1,0 +1,23 @@
+{
+  "dataset_id": "bao-an-operations-vi-v1",
+  "created": "2026-10-23",
+  "synthetic": true,
+  "language": "vi",
+  "page_count": 50,
+  "question_label_status": "draft_pending_independent_review",
+  "no_inference": true,
+  "files": {
+    "bao-an-operations.vi.pdf": "66b3241b49e874ba555cf496a741d0bd6464f9dc07adf4b073f9f7de7ac1ae68",
+    "handbook.vi.md": "18392fd28b6a7d45fa11ea94fc8e9994a908a80adeb9755dee0a89f0e7b593e9",
+    "questions.draft.json": "b699098d700f70310280dc09ce9ce43180a7c068b277449a1c8f191805fd4b26",
+    "README.md": "49d20ddca9746570051777d8542ecdd4d50d12775996274f4801369fc3861bb5",
+    "review.csv": "887dcbfd1d9643b6440c66879dc8e09dd42c9f3c80d859493b9c6175e3fbbc18",
+    "REVIEW.md": "01b4b39de304dcb4e607c64cc347b54ef1a936fe4496625fe4a0157357e3394b",
+    "source.json": "bad8bac8a99beb5d348afc01730227c7fb11d4d9b9986da71e7d53877bdd1bef",
+    "validation.json": "ce9413dd07a62ba09cf617476ec7724ef6e61970628edc815a101e40862c1898"
+  },
+  "builder_sources": {
+    "scripts/evaluation/generate_operations_handbook.py": "9df82b54f706a8d288a414458d844c04f1980295cc0a71856d790740e00a15c1",
+    "scripts/evaluation/operations_handbook_content.py": "58edb708635e0e3b2f9050f86daf9a29d4bb647bb7ffbce7d33286099156e6eb"
+  }
+}

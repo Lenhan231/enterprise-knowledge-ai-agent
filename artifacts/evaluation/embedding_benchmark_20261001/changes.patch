@@ -1,0 +1,388 @@
+diff --git a/scripts/chunking/evaluate_chunking_retrieval.py b/scripts/chunking/evaluate_chunking_retrieval.py
+index 02dc655..647eacf 100644
+--- a/scripts/chunking/evaluate_chunking_retrieval.py
++++ b/scripts/chunking/evaluate_chunking_retrieval.py
+@@ -8,7 +8,10 @@ import hashlib
+ import json
+ import os
+ import re
+-import resource
++try:
++    import resource
++except ImportError:
++    resource = None
+ import sys
+ import tempfile
+ import time
+@@ -107,7 +110,9 @@ def _rank_chunks(chunks: list[dict], query_vector: np.ndarray, fiscal_year: str
+     return [dict(item[2], similarity=item[1]) for item in ranked]
+ 
+ 
+-def _peak_rss_mb() -> float:
++def _peak_rss_mb() -> float | None:
++    if resource is None:
++        return None
+     value = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+     return round(value / (1024 if sys.platform != "darwin" else 1024 * 1024), 1)
+ 
+diff --git a/scripts/operations/evaluate_api_load.py b/scripts/operations/evaluate_api_load.py
+index 877d24f..bd59e50 100644
+--- a/scripts/operations/evaluate_api_load.py
++++ b/scripts/operations/evaluate_api_load.py
+@@ -8,7 +8,10 @@ import asyncio
+ import json
+ import os
+ import platform
+-import resource
++try:
++    import resource
++except ImportError:
++    resource = None
+ import statistics
+ import sys
+ import time
+@@ -150,7 +153,7 @@ async def main_async(args) -> int:
+         "environment": {
+             "python": platform.python_version(),
+             "platform": platform.platform(),
+-            "peak_rss_mb": round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024, 1),
++            "peak_rss_mb": round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024, 1) if resource is not None else None,
+             "database_max_connections_per_process": int(
+                 os.getenv("DATABASE_MAX_CONNECTIONS_PER_PROCESS", "10")
+             ),
+diff --git a/scripts/processing/evaluate_ocr.py b/scripts/processing/evaluate_ocr.py
+index f1ab520..9da21ca 100644
+--- a/scripts/processing/evaluate_ocr.py
++++ b/scripts/processing/evaluate_ocr.py
+@@ -9,7 +9,10 @@ import importlib.metadata
+ import hashlib
+ import json
+ import platform
+-import resource
++try:
++    import resource
++except ImportError:
++    resource = None
+ import re
+ import shutil
+ import subprocess
+@@ -140,6 +143,8 @@ def summarize_pages(rows: list[dict]) -> dict:
+ 
+ def peak_memory_mb() -> dict[str, float | None]:
+     """Return process and child-process high-water RSS in MiB."""
++    if resource is None:
++        return {"process_peak_rss_mb": None, "child_peak_rss_mb": None}
+     scale = 1024 if platform.system() == "Linux" else 1024 * 1024
+     result = {}
+     for label, scope in (("process_peak_rss_mb", resource.RUSAGE_SELF), ("child_peak_rss_mb", resource.RUSAGE_CHILDREN)):
+diff --git a/scripts/retrieval/check_apple_retrieval.py b/scripts/retrieval/check_apple_retrieval.py
+index 5a2a6c9..185fffc 100644
+--- a/scripts/retrieval/check_apple_retrieval.py
++++ b/scripts/retrieval/check_apple_retrieval.py
+@@ -11,7 +11,7 @@ import sys
+ from datetime import datetime, timezone
+ from pathlib import Path
+ 
+-REPO_ROOT = Path(__file__).resolve().parents[1]
++REPO_ROOT = Path(__file__).resolve().parents[2]
+ sys.path.insert(0, str(REPO_ROOT / "src"))
+ 
+ from core.retrieval.retrieval import (  # noqa: E402
+@@ -125,7 +125,7 @@ def evaluate_cases(retrieval, cases: list[dict]) -> tuple[list[dict], dict]:
+     rows = []
+     for case in validate_cases(cases):
+         response = retrieval.retrieve(
+-            RetrievalRequest(query=case["question"], top_k=TOP_K)
++            RetrievalRequest(query=case["question"], top_k=TOP_K), method="dense"
+         )
+         rows.append(evaluate_response(response, case["expected_document_ids"]))
+ 
+@@ -184,7 +184,7 @@ def build_artifact(
+         ).strip(),
+         "embedding_model": embedding_model,
+         "top_k": TOP_K,
+-        "fixture": str(fixture),
++        "fixture": fixture.as_posix(),
+         "summary": {
+             "queries": summary["queries"],
+             **{f"hit_at_{k}": summary["hit"][k] for k in K_VALUES},
+diff --git a/scripts/retrieval/evaluate_embeddings.py b/scripts/retrieval/evaluate_embeddings.py
+index a4bc0b2..c936ff0 100644
+--- a/scripts/retrieval/evaluate_embeddings.py
++++ b/scripts/retrieval/evaluate_embeddings.py
+@@ -8,7 +8,10 @@ import hashlib
+ import json
+ import os
+ import platform
+-import resource
++try:
++    import resource
++except ImportError:
++    resource = None
+ import sys
+ import time
+ from collections import defaultdict
+@@ -49,7 +52,9 @@ MODELS = {
+ }
+ 
+ 
+-def _rss_peak_mb() -> float:
++def _rss_peak_mb() -> float | None:
++    if resource is None:
++        return None  # Windows does not expose POSIX getrusage.
+     value = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+     return round(value / (1024 if sys.platform != "darwin" else 1024 * 1024), 1)
+ 
+@@ -117,7 +122,8 @@ def _load_public_corpus(path: Path, manifest_ids: set[str]) -> list[dict]:
+ 
+ def main() -> int:
+     parser = argparse.ArgumentParser(description=__doc__)
+-    parser.add_argument("--model", required=True, choices=sorted(MODELS))
++    parser.add_argument("--model", required=True, choices=["baseline", *sorted(MODELS)])
++    parser.add_argument("--model-id", help="Explicit configured model ID for the baseline")
+     parser.add_argument("--cases", type=Path, default=REPO_ROOT / "data/evaluation/vinamilk_retrieval_cases.json")
+     parser.add_argument("--corpus", type=Path, help="Optional public-manifest JSONL; avoids live database credentials")
+     parser.add_argument("--output", type=Path)
+@@ -168,7 +174,14 @@ def main() -> int:
+         ).encode("utf-8")
+     ).hexdigest()
+ 
+-    spec = MODELS[args.model]
++    if args.model == "baseline":
++        if not args.model_id:
++            parser.error("--model-id is required for the baseline")
++        spec = {"model_id": args.model_id, "query_prefix": "", "passage_prefix": "", "instruction": None}
++    else:
++        if args.model_id:
++            parser.error("--model-id is only supported for the baseline")
++        spec = MODELS[args.model]
+     from sentence_transformers import SentenceTransformer
+     import torch
+ 
+@@ -176,7 +189,7 @@ def main() -> int:
+         parser.error("CUDA was requested but is unavailable")
+     load_started = time.perf_counter()
+     model = SentenceTransformer(spec["model_id"], device=args.device)
+-    model.max_seq_length = 512
++    model.max_seq_length = min(model.max_seq_length, 512)
+     if args.device == "cuda":
+         torch.cuda.reset_peak_memory_stats()
+     model_load_seconds = time.perf_counter() - load_started
+diff --git a/scripts/retrieval/evaluate_rerankers.py b/scripts/retrieval/evaluate_rerankers.py
+index 7d56555..1c278c2 100644
+--- a/scripts/retrieval/evaluate_rerankers.py
++++ b/scripts/retrieval/evaluate_rerankers.py
+@@ -8,7 +8,10 @@ import hashlib
+ import json
+ import os
+ import platform
+-import resource
++try:
++    import resource
++except ImportError:
++    resource = None
+ import sys
+ import time
+ from datetime import datetime, timezone
+@@ -72,7 +75,9 @@ def _aggregate(results: list[dict], key: str) -> dict[str, float]:
+     }
+ 
+ 
+-def _peak_rss_mb() -> float:
++def _peak_rss_mb() -> float | None:
++    if resource is None:
++        return None
+     value = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+     return round(value / (1024 if sys.platform != "darwin" else 1024 * 1024), 1)
+ 
+diff --git a/tests/test_dense_retrieval_evaluation.py b/tests/test_dense_retrieval_evaluation.py
+index d343274..27d5569 100644
+--- a/tests/test_dense_retrieval_evaluation.py
++++ b/tests/test_dense_retrieval_evaluation.py
+@@ -7,7 +7,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
+ sys.path.insert(0, str(REPO_ROOT))
+ sys.path.insert(0, str(REPO_ROOT / "src"))
+ 
+-from scripts.check_apple_retrieval import (  # noqa: E402
++from scripts.retrieval.check_apple_retrieval import (  # noqa: E402
+     TOP_K,
+     build_artifact,
+     evaluate_cases,
+@@ -60,7 +60,9 @@ class FakeRetrieval:
+         self.responses = responses
+         self.requests = []
+ 
+-    def retrieve(self, request):
++    def retrieve(self, request, method="hybrid"):
++        if method != "dense":
++            raise AssertionError("The dense evaluator must select dense retrieval")
+         self.requests.append(request)
+         return self.responses[request.query]
+ 
+diff --git a/tests/test_embedding_evaluation.py b/tests/test_embedding_evaluation.py
+index 7687de0..f6b4476 100644
+--- a/tests/test_embedding_evaluation.py
++++ b/tests/test_embedding_evaluation.py
+@@ -80,12 +80,15 @@ class EmbeddingEvaluationTest(unittest.TestCase):
+                 patch.dict(os.environ, {"DATABASE_URL": ""}),
+                 patch.object(evaluate_embeddings, "REPO_ROOT", Path(__file__).resolve().parents[1]),
+                 patch.object(sys, "argv", [
+-                    "scripts.retrieval.evaluate_embeddings.py", "--model", "bge-m3", "--cases", str(cases_fixture),
++                    "scripts.retrieval.evaluate_embeddings.py", "--model", "baseline",
++                    "--model-id", "sentence-transformers/all-MiniLM-L6-v2", "--cases", str(cases_fixture),
+                     "--corpus", str(corpus_path), "--device", "cpu", "--output", str(output_path),
+                 ]),
+             ):
+                 self.assertEqual(evaluate_embeddings.main(), 0)
+             report = json.loads(output_path.read_text(encoding="utf-8"))
++            self.assertEqual(report["model_key"], "baseline")
++            self.assertEqual(report["model_id"], "sentence-transformers/all-MiniLM-L6-v2")
+             self.assertEqual(report["corpus_source"], "public_manifest_jsonl")
+             self.assertEqual(report["environment"]["gpu_name"], None)
+             self.assertEqual(report["aggregate"]["recall@1"], 1.0)
+diff --git a/tests/test_ocr_evaluation.py b/tests/test_ocr_evaluation.py
+index c8ba93b..d58eed6 100644
+--- a/tests/test_ocr_evaluation.py
++++ b/tests/test_ocr_evaluation.py
+@@ -200,7 +200,10 @@ class OCREvaluationTest(unittest.TestCase):
+         memory = evaluate_ocr.peak_memory_mb()
+         self.assertIn("process_peak_rss_mb", memory)
+         self.assertIn("child_peak_rss_mb", memory)
+-        self.assertGreater(memory["process_peak_rss_mb"], 0)
++        if memory["process_peak_rss_mb"] is None:
++            self.assertIsNone(memory["child_peak_rss_mb"])
++        else:
++            self.assertGreater(memory["process_peak_rss_mb"], 0)
+ 
+     def test_paddle_v2_output_is_adapted(self):
+         class PaddleV2:
+diff --git a/tests/test_pdf_upload_processing.py b/tests/test_pdf_upload_processing.py
+index 013c7a9..79d3a35 100644
+--- a/tests/test_pdf_upload_processing.py
++++ b/tests/test_pdf_upload_processing.py
+@@ -36,7 +36,10 @@ class PDFUploadProcessingTest(unittest.TestCase):
+ 
+     def test_real_vinamilk_balance_sheet_upload_extracts_native_text_table(self):
+         root = Path(__file__).resolve().parents[1]
+-        source = (root / "data/raw/vietnam_enterprises/vnm/vnm-ar-2024-vi.pdf").read_bytes()
++        source_path = root / "data/raw/vietnam_enterprises/vnm/vnm-ar-2024-vi.pdf"
++        if not source_path.exists():
++            self.skipTest("Optional source PDF is not available in this checkout")
++        source = source_path.read_bytes()
+         ground_truth = json.loads(
+             (root / "data/evaluation/vinamilk_ocr_ground_truth_v8.json").read_text()
+         )
+diff --git a/tests/test_qa_human_review.py b/tests/test_qa_human_review.py
+index 9f48891..39e6110 100644
+--- a/tests/test_qa_human_review.py
++++ b/tests/test_qa_human_review.py
+@@ -1,4 +1,5 @@
+ import json
++import os
+ import stat
+ import sys
+ import tempfile
+@@ -52,7 +53,8 @@ class BlindQAReviewTest(unittest.TestCase):
+             write_run(run_b, "model-secret-b")
+             packet_a, packet_b, key = root / "review-a.json", root / "review-b.json", root / "private-key.json"
+             prepare_review([run_a, run_b], packet_a, key, seed=7)
+-            self.assertEqual(stat.S_IMODE(key.stat().st_mode), 0o600)
++            if os.name != "nt":
++                self.assertEqual(stat.S_IMODE(key.stat().st_mode), 0o600)
+             packet_text = packet_a.read_text(encoding="utf-8")
+             self.assertNotIn("model-secret-a", packet_text)
+             self.assertNotIn("model-secret-b", packet_text)
+diff --git a/tests/test_rag.py b/tests/test_rag.py
+index 77583a4..9ff991d 100644
+--- a/tests/test_rag.py
++++ b/tests/test_rag.py
+@@ -15,12 +15,7 @@ from core.rag.rag_service import (
+     _cache_response,
+     _get_cached_response,
+ )
+-from core.retrieval.retrieval import (
+-    RankedChunk,
+-    RetrievalResponse,
+-    SourceLocation,
+-    make_chunk_id,
+-)
++from core.retrieval.retrieval import RankedChunk, RetrievalResponse, SourceLocation, make_chunk_id
+ 
+ 
+ class FakeRetrieval:
+@@ -28,12 +23,24 @@ class FakeRetrieval:
+         self.contexts = contexts
+         self.calls = []
+ 
+-    def retrieve(self, request):
+-        return RetrievalResponse(
+-            query=request.query,
+-            latency_ms=1,
+-            results=self.contexts[:request.top_k],
+-        )
++    def retrieve(self, request, company=None, roles=None, method="hybrid"):
++        self.calls.append((request, company, roles, method))
++        results = []
++        for rank, item in enumerate(self.contexts[:request.top_k], 1):
++            document_id = item["metadata"]["document_id"]
++            chunk_index = item["chunk_index"]
++            results.append(RankedChunk(
++                rank=rank,
++                chunk_id=make_chunk_id(document_id, chunk_index),
++                document_id=document_id,
++                text=item["content"],
++                score=item["retrieval_score"],
++                source=item["document_name"],
++                location=SourceLocation(chunk_index=chunk_index, page_number=item["metadata"].get("page_number"), section_title=item["metadata"].get("section_title")),
++                metadata=item["metadata"],
++                retrieval_method=item["retrieval_method"],
++            ))
++        return RetrievalResponse(query=request.query, latency_ms=0, results=results)
+ 
+     def close(self):
+         pass
+@@ -50,25 +57,19 @@ class FakeLLM:
+ 
+ 
+ def context(document_id="DOC-1"):
+-    return RankedChunk(
+-        rank=1,
+-        chunk_id=make_chunk_id(document_id, 7),
+-        document_id=document_id,
+-        text="Employees may report policy concerns.",
+-        score=0.81,
+-        source="policy.pdf",
+-        location=SourceLocation(
+-            chunk_index=7,
+-            page_number=12,
+-            section_title="Reporting Concerns",
+-        ),
+-        metadata={
++    return {
++        "document_name": "policy.pdf",
++        "chunk_index": 7,
++        "content": "Employees may report policy concerns.",
++        "metadata": {
+             "document_id": document_id,
+             "source_document": "policy.pdf",
+             "page_number": 12,
+             "section_title": "Reporting Concerns",
+         },
+-    )
++        "retrieval_score": 0.81,
++        "retrieval_method": "hybrid",
++    }
+ 
+ 
+ class RAGServiceTest(unittest.TestCase):
+@@ -293,9 +294,8 @@ class RAGServiceTest(unittest.TestCase):
+         self.assertEqual(first.prompt_sha256, second.prompt_sha256)
+ 
+     def test_multiple_sources(self):
+-        second = context("DOC-2").model_copy(update={"rank": 2})
+         result = RAGService(
+-            FakeRetrieval([context("DOC-1"), second]),
++            FakeRetrieval([context("DOC-1"), context("DOC-2")]),
+             FakeLLM("The requirements are described in [S1] and [S2]."),
+         ).generate_answer("What are the requirements?", roles=["employee"])
+ 

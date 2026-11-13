@@ -1,0 +1,2203 @@
+{
+  "configuration": {
+    "status": "completed",
+    "candidate": "bge-m3",
+    "model_id": "BAAI/bge-m3",
+    "query_prefix": "",
+    "passage_prefix": "",
+    "instruction": null,
+    "device": "cuda",
+    "dtype": "float32",
+    "batch_size": 2,
+    "max_sequence_length": 512,
+    "normalize_embeddings": true,
+    "chunks": 525,
+    "questions": 48,
+    "corpus_sha256": "b8e46d0776b602ace3d74efbc7cb14cfa554377294219a1f1615f7fa15f890e4",
+    "cases_sha256": "1464440db4666e5873f3ca3c0fd2b70886624e718a54caff1769849a419d35f5",
+    "row_order_sha256": "c4f0fb901c91bd17da8639ea13e11323b9e746991fab2aa2113b451c169b35bb",
+    "runner_sha256": "d7a26402e6b322850995850b7ac38f5d62bc79f46a27a7fa5d4ff8b9616d7075",
+    "created_at": "2026-10-18T17:00:53.461130+00:00",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "max_passage_tokens": 232,
+    "max_query_tokens": 35,
+    "truncated_inputs": 0,
+    "model_load_seconds": 3.420527269001468,
+    "gpu_name": "NVIDIA GeForce RTX 2060",
+    "dimensions": 1024,
+    "corpus_embedding_seconds": 8.67110760599462,
+    "vectors_file_sha256": "41603c1869f66537e6f766fd1b7871771ed99fddf0049d335ebf5d469b3c2e2e"
+  },
+  "summary": {
+    "mean_source_recall_at_10": 1.0,
+    "full_source_recall_cases": 48,
+    "mean_local_retrieval_latency_ms": 31.383047479418263,
+    "median_local_retrieval_latency_ms": 29.902172998845344,
+    "peak_gpu_allocated_mib": 2196.46728515625,
+    "by_direction": {
+      "en->en": {
+        "cases": 12,
+        "mean_evidence_page_recall_at_10": 0.4166666666666667,
+        "mrr_at_10": 0.3194444444444444,
+        "full_evidence_page_cases": 5
+      },
+      "en->mixed": {
+        "cases": 2,
+        "mean_evidence_page_recall_at_10": 0.0,
+        "mrr_at_10": 0.0,
+        "full_evidence_page_cases": 0
+      },
+      "en->vi": {
+        "cases": 10,
+        "mean_evidence_page_recall_at_10": 0.8,
+        "mrr_at_10": 0.2861111111111111,
+        "full_evidence_page_cases": 8
+      },
+      "vi->en": {
+        "cases": 12,
+        "mean_evidence_page_recall_at_10": 0.4166666666666667,
+        "mrr_at_10": 0.3611111111111111,
+        "full_evidence_page_cases": 5
+      },
+      "vi->mixed": {
+        "cases": 2,
+        "mean_evidence_page_recall_at_10": 0.25,
+        "mrr_at_10": 0.125,
+        "full_evidence_page_cases": 0
+      },
+      "vi->vi": {
+        "cases": 10,
+        "mean_evidence_page_recall_at_10": 0.8,
+        "mrr_at_10": 0.4942857142857143,
+        "full_evidence_page_cases": 8
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "Q01-vi",
+      "question": "Sứ mệnh và tầm nhìn của Tổng Công ty Phân bón và Hóa chất Dầu khí (PVFCCo) được xác định như thế nào?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::9",
+        "annual_report::chunk::10",
+        "annual_report::chunk::111",
+        "annual_report::chunk::12",
+        "annual_report::chunk::66",
+        "annual_report::chunk::15",
+        "annual_report::chunk::85",
+        "annual_report::chunk::64",
+        "annual_report::chunk::83",
+        "annual_report::chunk::54"
+      ],
+      "direction": "vi->en",
+      "gold_pages": [
+        "annual_report::page::5"
+      ],
+      "ranked_pages": [
+        "annual_report::page::6",
+        "annual_report::page::6",
+        "annual_report::page::36",
+        "annual_report::page::7",
+        "annual_report::page::24",
+        "annual_report::page::7",
+        "annual_report::page::27",
+        "annual_report::page::24",
+        "annual_report::page::27",
+        "annual_report::page::22"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 28.015794006932992
+    },
+    {
+      "id": "Q01-en",
+      "question": "What are the mission and vision of PetroVietnam Fertilizer and Chemicals Corporation (PVFCCo)?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::53",
+        "annual_report::chunk::64",
+        "annual_report::chunk::18",
+        "annual_report::chunk::111",
+        "annual_report::chunk::119",
+        "annual_report::chunk::83",
+        "annual_report::chunk::60",
+        "annual_report::chunk::99",
+        "annual_report::chunk::153",
+        "annual_report::chunk::34"
+      ],
+      "direction": "en->en",
+      "gold_pages": [
+        "annual_report::page::5"
+      ],
+      "ranked_pages": [
+        "annual_report::page::22",
+        "annual_report::page::24",
+        "annual_report::page::10",
+        "annual_report::page::36",
+        "annual_report::page::38",
+        "annual_report::page::27",
+        "annual_report::page::23",
+        "annual_report::page::34",
+        "annual_report::page::48",
+        "annual_report::page::13"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 35.883914002624806
+    },
+    {
+      "id": "Q02-vi",
+      "question": "Mã cổ phiếu của PVFCCo là gì và có bao nhiêu cổ phiếu được niêm yết vào ngày 05/11/2007?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::25",
+        "annual_report::chunk::83",
+        "annual_report::chunk::132",
+        "annual_report::chunk::57",
+        "annual_report::chunk::24",
+        "annual_report::chunk::131",
+        "annual_report::chunk::65",
+        "annual_report::chunk::211",
+        "annual_report::chunk::119",
+        "annual_report::chunk::202"
+      ],
+      "direction": "vi->en",
+      "gold_pages": [
+        "annual_report::page::11"
+      ],
+      "ranked_pages": [
+        "annual_report::page::11",
+        "annual_report::page::27",
+        "annual_report::page::41",
+        "annual_report::page::22",
+        "annual_report::page::11",
+        "annual_report::page::41",
+        "annual_report::page::24",
+        "annual_report::page::65",
+        "annual_report::page::38",
+        "annual_report::page::63"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 1.0,
+      "local_retrieval_latency_ms": 38.23423600260867
+    },
+    {
+      "id": "Q02-en",
+      "question": "What is PVFCCo's stock ticker, and how many shares were listed on November 5, 2007?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::25",
+        "annual_report::chunk::132",
+        "annual_report::chunk::83",
+        "annual_report::chunk::9",
+        "annual_report::chunk::131",
+        "annual_report::chunk::57",
+        "annual_report::chunk::190",
+        "annual_report::chunk::172",
+        "annual_report::chunk::65",
+        "annual_report::chunk::170"
+      ],
+      "direction": "en->en",
+      "gold_pages": [
+        "annual_report::page::11"
+      ],
+      "ranked_pages": [
+        "annual_report::page::11",
+        "annual_report::page::41",
+        "annual_report::page::27",
+        "annual_report::page::6",
+        "annual_report::page::41",
+        "annual_report::page::22",
+        "annual_report::page::61",
+        "annual_report::page::55",
+        "annual_report::page::24",
+        "annual_report::page::55"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 1.0,
+      "local_retrieval_latency_ms": 34.194453997770324
+    },
+    {
+      "id": "Q03-vi",
+      "question": "PVFCCo hoạt động trong những lĩnh vực kinh doanh chính nào theo Báo cáo thường niên 2008?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::56",
+        "annual_report::chunk::9",
+        "annual_report::chunk::94",
+        "annual_report::chunk::119",
+        "annual_report::chunk::64",
+        "annual_report::chunk::108",
+        "annual_report::chunk::127",
+        "annual_report::chunk::191",
+        "annual_report::chunk::138",
+        "annual_report::chunk::30"
+      ],
+      "direction": "vi->en",
+      "gold_pages": [
+        "annual_report::page::12"
+      ],
+      "ranked_pages": [
+        "annual_report::page::22",
+        "annual_report::page::6",
+        "annual_report::page::31",
+        "annual_report::page::38",
+        "annual_report::page::24",
+        "annual_report::page::35",
+        "annual_report::page::40",
+        "annual_report::page::61",
+        "annual_report::page::43",
+        "annual_report::page::13"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 24.341996999282856
+    },
+    {
+      "id": "Q03-en",
+      "question": "What were PVFCCo's main business sectors according to the 2008 Annual Report?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::108",
+        "annual_report::chunk::9",
+        "annual_report::chunk::94",
+        "annual_report::chunk::119",
+        "annual_report::chunk::99",
+        "annual_report::chunk::103",
+        "annual_report::chunk::191",
+        "annual_report::chunk::127",
+        "annual_report::chunk::12",
+        "annual_report::chunk::56"
+      ],
+      "direction": "en->en",
+      "gold_pages": [
+        "annual_report::page::12"
+      ],
+      "ranked_pages": [
+        "annual_report::page::35",
+        "annual_report::page::6",
+        "annual_report::page::31",
+        "annual_report::page::38",
+        "annual_report::page::34",
+        "annual_report::page::35",
+        "annual_report::page::61",
+        "annual_report::page::40",
+        "annual_report::page::7",
+        "annual_report::page::22"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 26.26601399970241
+    },
+    {
+      "id": "Q04-vi",
+      "question": "Năm 2008, PVFCCo đã nhập khẩu và phân phối bao nhiêu tấn phân bón nhập khẩu vào thị trường nội địa?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::30",
+        "annual_report::chunk::31",
+        "annual_report::chunk::8",
+        "annual_report::chunk::136",
+        "annual_report::chunk::129",
+        "annual_report::chunk::106",
+        "annual_report::chunk::127",
+        "annual_report::chunk::103",
+        "annual_report::chunk::101",
+        "annual_report::chunk::119"
+      ],
+      "direction": "vi->en",
+      "gold_pages": [
+        "annual_report::page::13"
+      ],
+      "ranked_pages": [
+        "annual_report::page::13",
+        "annual_report::page::13",
+        "annual_report::page::6",
+        "annual_report::page::42",
+        "annual_report::page::40",
+        "annual_report::page::35",
+        "annual_report::page::40",
+        "annual_report::page::35",
+        "annual_report::page::34",
+        "annual_report::page::38"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 1.0,
+      "local_retrieval_latency_ms": 24.23870599886868
+    },
+    {
+      "id": "Q04-en",
+      "question": "In 2008, how many tons of imported fertilizer did PVFCCo import and distribute in the domestic market?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::30",
+        "annual_report::chunk::31",
+        "annual_report::chunk::8",
+        "annual_report::chunk::136",
+        "annual_report::chunk::129",
+        "annual_report::chunk::127",
+        "annual_report::chunk::106",
+        "annual_report::chunk::101",
+        "annual_report::chunk::103",
+        "annual_report::chunk::121"
+      ],
+      "direction": "en->en",
+      "gold_pages": [
+        "annual_report::page::13"
+      ],
+      "ranked_pages": [
+        "annual_report::page::13",
+        "annual_report::page::13",
+        "annual_report::page::6",
+        "annual_report::page::42",
+        "annual_report::page::40",
+        "annual_report::page::40",
+        "annual_report::page::35",
+        "annual_report::page::34",
+        "annual_report::page::35",
+        "annual_report::page::38"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 1.0,
+      "local_retrieval_latency_ms": 26.818557998922188
+    },
+    {
+      "id": "Q05-vi",
+      "question": "Dự án thu hồi CO₂ tại Nhà máy Đạm Phú Mỹ dự kiến làm tăng công suất sản xuất urê thêm bao nhiêu tấn mỗi năm?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::32",
+        "annual_report::chunk::192",
+        "annual_report::chunk::180",
+        "annual_report::chunk::31",
+        "annual_report::chunk::342",
+        "annual_report::chunk::10",
+        "annual_report::chunk::144",
+        "annual_report::chunk::107",
+        "annual_report::chunk::35",
+        "annual_report::chunk::135"
+      ],
+      "direction": "vi->en",
+      "gold_pages": [
+        "annual_report::page::13"
+      ],
+      "ranked_pages": [
+        "annual_report::page::13",
+        "annual_report::page::61",
+        "annual_report::page::58",
+        "annual_report::page::13",
+        "annual_report::page::94",
+        "annual_report::page::6",
+        "annual_report::page::44",
+        "annual_report::page::35",
+        "annual_report::page::13",
+        "annual_report::page::42"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 1.0,
+      "local_retrieval_latency_ms": 32.55781199550256
+    },
+    {
+      "id": "Q05-en",
+      "question": "By how many tons per year was the urea production capacity expected to increase through the CO2 recovery project at the Phu My Fertilizer Plant?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::32",
+        "annual_report::chunk::180",
+        "annual_report::chunk::29",
+        "annual_report::chunk::35",
+        "annual_report::chunk::90",
+        "annual_report::chunk::8",
+        "annual_report::chunk::134",
+        "annual_report::chunk::135",
+        "annual_report::chunk::107",
+        "annual_report::chunk::342"
+      ],
+      "direction": "en->en",
+      "gold_pages": [
+        "annual_report::page::13"
+      ],
+      "ranked_pages": [
+        "annual_report::page::13",
+        "annual_report::page::58",
+        "annual_report::page::12",
+        "annual_report::page::13",
+        "annual_report::page::30",
+        "annual_report::page::6",
+        "annual_report::page::42",
+        "annual_report::page::42",
+        "annual_report::page::35",
+        "annual_report::page::94"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 1.0,
+      "local_retrieval_latency_ms": 27.29100400028983
+    },
+    {
+      "id": "Q06-vi",
+      "question": "Tổng doanh thu, lợi nhuận trước thuế và số thuế nộp của PVFCCo năm 2008 là bao nhiêu?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::108",
+        "annual_report::chunk::132",
+        "annual_report::chunk::106",
+        "annual_report::chunk::191",
+        "annual_report::chunk::131",
+        "annual_report::chunk::9",
+        "annual_report::chunk::25",
+        "annual_report::chunk::83",
+        "annual_report::chunk::172",
+        "annual_report::chunk::119"
+      ],
+      "direction": "vi->en",
+      "gold_pages": [
+        "annual_report::page::14"
+      ],
+      "ranked_pages": [
+        "annual_report::page::35",
+        "annual_report::page::41",
+        "annual_report::page::35",
+        "annual_report::page::61",
+        "annual_report::page::41",
+        "annual_report::page::6",
+        "annual_report::page::11",
+        "annual_report::page::27",
+        "annual_report::page::55",
+        "annual_report::page::38"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 31.128174996410962
+    },
+    {
+      "id": "Q06-en",
+      "question": "What were PVFCCo's total revenue, profit before tax, and tax payment in 2008?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::108",
+        "annual_report::chunk::132",
+        "annual_report::chunk::191",
+        "annual_report::chunk::131",
+        "annual_report::chunk::106",
+        "annual_report::chunk::9",
+        "annual_report::chunk::83",
+        "annual_report::chunk::190",
+        "annual_report::chunk::25",
+        "annual_report::chunk::172"
+      ],
+      "direction": "en->en",
+      "gold_pages": [
+        "annual_report::page::14"
+      ],
+      "ranked_pages": [
+        "annual_report::page::35",
+        "annual_report::page::41",
+        "annual_report::page::61",
+        "annual_report::page::41",
+        "annual_report::page::35",
+        "annual_report::page::6",
+        "annual_report::page::27",
+        "annual_report::page::61",
+        "annual_report::page::11",
+        "annual_report::page::55"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 29.830782994395122
+    },
+    {
+      "id": "Q07-vi",
+      "question": "So sánh tổng doanh thu của PVFCCo giữa năm 2007 và 2008.",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::108",
+        "annual_report::chunk::191",
+        "annual_report::chunk::132",
+        "annual_report::chunk::127",
+        "annual_report::chunk::172",
+        "annual_report::chunk::106",
+        "annual_report::chunk::99",
+        "annual_report::chunk::190",
+        "annual_report::chunk::170",
+        "annual_report::chunk::126"
+      ],
+      "direction": "vi->en",
+      "gold_pages": [
+        "annual_report::page::14"
+      ],
+      "ranked_pages": [
+        "annual_report::page::35",
+        "annual_report::page::61",
+        "annual_report::page::41",
+        "annual_report::page::40",
+        "annual_report::page::55",
+        "annual_report::page::35",
+        "annual_report::page::34",
+        "annual_report::page::61",
+        "annual_report::page::55",
+        "annual_report::page::40"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 23.584208996908274
+    },
+    {
+      "id": "Q07-en",
+      "question": "Compare PVFCCo's total revenue in 2007 and 2008.",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::108",
+        "annual_report::chunk::132",
+        "annual_report::chunk::172",
+        "annual_report::chunk::191",
+        "annual_report::chunk::190",
+        "annual_report::chunk::170",
+        "annual_report::chunk::99",
+        "annual_report::chunk::106",
+        "annual_report::chunk::127",
+        "annual_report::chunk::9"
+      ],
+      "direction": "en->en",
+      "gold_pages": [
+        "annual_report::page::14"
+      ],
+      "ranked_pages": [
+        "annual_report::page::35",
+        "annual_report::page::41",
+        "annual_report::page::55",
+        "annual_report::page::61",
+        "annual_report::page::61",
+        "annual_report::page::55",
+        "annual_report::page::34",
+        "annual_report::page::35",
+        "annual_report::page::40",
+        "annual_report::page::6"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 45.18249400280183
+    },
+    {
+      "id": "Q08-vi",
+      "question": "Kế hoạch sản lượng sản xuất urê và nhập khẩu phân bón của PVFCCo trong năm 2009 là bao nhiêu?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::31",
+        "annual_report::chunk::113",
+        "annual_report::chunk::10",
+        "annual_report::chunk::8",
+        "annual_report::chunk::9",
+        "annual_report::chunk::111",
+        "annual_report::chunk::100",
+        "annual_report::chunk::136",
+        "annual_report::chunk::106",
+        "annual_report::chunk::101"
+      ],
+      "direction": "vi->en",
+      "gold_pages": [
+        "annual_report::page::6"
+      ],
+      "ranked_pages": [
+        "annual_report::page::13",
+        "annual_report::page::36",
+        "annual_report::page::6",
+        "annual_report::page::6",
+        "annual_report::page::6",
+        "annual_report::page::36",
+        "annual_report::page::34",
+        "annual_report::page::42",
+        "annual_report::page::35",
+        "annual_report::page::34"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 0.3333333333333333,
+      "local_retrieval_latency_ms": 40.265684998303186
+    },
+    {
+      "id": "Q08-en",
+      "question": "What were PVFCCo's planned urea production and fertilizer imports for 2009?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::31",
+        "annual_report::chunk::113",
+        "annual_report::chunk::10",
+        "annual_report::chunk::8",
+        "annual_report::chunk::100",
+        "annual_report::chunk::101",
+        "annual_report::chunk::136",
+        "annual_report::chunk::111",
+        "annual_report::chunk::106",
+        "annual_report::chunk::116"
+      ],
+      "direction": "en->en",
+      "gold_pages": [
+        "annual_report::page::6"
+      ],
+      "ranked_pages": [
+        "annual_report::page::13",
+        "annual_report::page::36",
+        "annual_report::page::6",
+        "annual_report::page::6",
+        "annual_report::page::34",
+        "annual_report::page::34",
+        "annual_report::page::42",
+        "annual_report::page::36",
+        "annual_report::page::35",
+        "annual_report::page::36"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 0.3333333333333333,
+      "local_retrieval_latency_ms": 26.44115500152111
+    },
+    {
+      "id": "Q09-vi",
+      "question": "Các chỉ tiêu doanh thu, lợi nhuận trước thuế và thuế nộp ngân sách mà PVFCCo đặt ra cho năm 2009 là gì?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::9",
+        "annual_report::chunk::12",
+        "annual_report::chunk::15",
+        "annual_report::chunk::108",
+        "annual_report::chunk::13",
+        "annual_report::chunk::190",
+        "annual_report::chunk::113",
+        "annual_report::chunk::116",
+        "annual_report::chunk::121",
+        "annual_report::chunk::170"
+      ],
+      "direction": "vi->en",
+      "gold_pages": [
+        "annual_report::page::16"
+      ],
+      "ranked_pages": [
+        "annual_report::page::6",
+        "annual_report::page::7",
+        "annual_report::page::7",
+        "annual_report::page::35",
+        "annual_report::page::7",
+        "annual_report::page::61",
+        "annual_report::page::36",
+        "annual_report::page::36",
+        "annual_report::page::38",
+        "annual_report::page::55"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 25.992950999352615
+    },
+    {
+      "id": "Q09-en",
+      "question": "What revenue, profit-before-tax, and state-budget tax-payment targets did PVFCCo set for 2009?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::9",
+        "annual_report::chunk::108",
+        "annual_report::chunk::12",
+        "annual_report::chunk::15",
+        "annual_report::chunk::13",
+        "annual_report::chunk::190",
+        "annual_report::chunk::126",
+        "annual_report::chunk::170",
+        "annual_report::chunk::116",
+        "annual_report::chunk::94"
+      ],
+      "direction": "en->en",
+      "gold_pages": [
+        "annual_report::page::16"
+      ],
+      "ranked_pages": [
+        "annual_report::page::6",
+        "annual_report::page::35",
+        "annual_report::page::7",
+        "annual_report::page::7",
+        "annual_report::page::7",
+        "annual_report::page::61",
+        "annual_report::page::40",
+        "annual_report::page::55",
+        "annual_report::page::36",
+        "annual_report::page::31"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 30.96912799810525
+    },
+    {
+      "id": "Q10-vi",
+      "question": "Nhà máy Đạm Phú Mỹ nằm ở đâu và công suất thiết kế sản xuất amoniac, urê mỗi ngày là bao nhiêu?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::46",
+        "annual_report::chunk::192",
+        "annual_report::chunk::135",
+        "annual_report::chunk::29",
+        "annual_report::chunk::35",
+        "annual_report::chunk::28",
+        "annual_report::chunk::47",
+        "annual_report::chunk::45",
+        "annual_report::chunk::90",
+        "annual_report::chunk::144"
+      ],
+      "direction": "vi->en",
+      "gold_pages": [
+        "annual_report::page::20"
+      ],
+      "ranked_pages": [
+        "annual_report::page::20",
+        "annual_report::page::61",
+        "annual_report::page::42",
+        "annual_report::page::12",
+        "annual_report::page::13",
+        "annual_report::page::12",
+        "annual_report::page::20",
+        "annual_report::page::20",
+        "annual_report::page::30",
+        "annual_report::page::44"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 1.0,
+      "local_retrieval_latency_ms": 37.33735200512456
+    },
+    {
+      "id": "Q10-en",
+      "question": "Where was the Phu My Fertilizer Plant located, and what were its designed daily ammonia and urea production capacities?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::29",
+        "annual_report::chunk::45",
+        "annual_report::chunk::90",
+        "annual_report::chunk::135",
+        "annual_report::chunk::35",
+        "annual_report::chunk::47",
+        "annual_report::chunk::134",
+        "annual_report::chunk::32",
+        "annual_report::chunk::8",
+        "annual_report::chunk::19"
+      ],
+      "direction": "en->en",
+      "gold_pages": [
+        "annual_report::page::20"
+      ],
+      "ranked_pages": [
+        "annual_report::page::12",
+        "annual_report::page::20",
+        "annual_report::page::30",
+        "annual_report::page::42",
+        "annual_report::page::13",
+        "annual_report::page::20",
+        "annual_report::page::42",
+        "annual_report::page::13",
+        "annual_report::page::6",
+        "annual_report::page::10"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 0.5,
+      "local_retrieval_latency_ms": 39.588842999364715
+    },
+    {
+      "id": "Q11-vi",
+      "question": "PVFCCo đã triển khai những giải pháp kỹ thuật nào nhằm cải thiện chất lượng urê và hiệu quả vận hành nhà máy?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::10",
+        "annual_report::chunk::31",
+        "annual_report::chunk::134",
+        "annual_report::chunk::135",
+        "annual_report::chunk::113",
+        "annual_report::chunk::101",
+        "annual_report::chunk::111",
+        "annual_report::chunk::137",
+        "annual_report::chunk::77",
+        "annual_report::chunk::180"
+      ],
+      "direction": "vi->en",
+      "gold_pages": [
+        "annual_report::page::21"
+      ],
+      "ranked_pages": [
+        "annual_report::page::6",
+        "annual_report::page::13",
+        "annual_report::page::42",
+        "annual_report::page::42",
+        "annual_report::page::36",
+        "annual_report::page::34",
+        "annual_report::page::36",
+        "annual_report::page::42",
+        "annual_report::page::26",
+        "annual_report::page::58"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 24.897686002077535
+    },
+    {
+      "id": "Q11-en",
+      "question": "What technical solutions did PVFCCo implement to improve urea quality and plant operating efficiency?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::135",
+        "annual_report::chunk::31",
+        "annual_report::chunk::134",
+        "annual_report::chunk::10",
+        "annual_report::chunk::113",
+        "annual_report::chunk::106",
+        "annual_report::chunk::136",
+        "annual_report::chunk::137",
+        "annual_report::chunk::180",
+        "annual_report::chunk::101"
+      ],
+      "direction": "en->en",
+      "gold_pages": [
+        "annual_report::page::21"
+      ],
+      "ranked_pages": [
+        "annual_report::page::42",
+        "annual_report::page::13",
+        "annual_report::page::42",
+        "annual_report::page::6",
+        "annual_report::page::36",
+        "annual_report::page::35",
+        "annual_report::page::42",
+        "annual_report::page::42",
+        "annual_report::page::58",
+        "annual_report::page::34"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 26.51095900364453
+    },
+    {
+      "id": "Q12-vi",
+      "question": "Tỷ số thanh toán hiện hành và tỷ số thanh toán nhanh của PVFCCo năm 2008 là bao nhiêu?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::132",
+        "annual_report::chunk::172",
+        "annual_report::chunk::191",
+        "annual_report::chunk::190",
+        "annual_report::chunk::138",
+        "annual_report::chunk::131",
+        "annual_report::chunk::83",
+        "annual_report::chunk::108",
+        "annual_report::chunk::25",
+        "annual_report::chunk::9"
+      ],
+      "direction": "vi->en",
+      "gold_pages": [
+        "annual_report::page::39"
+      ],
+      "ranked_pages": [
+        "annual_report::page::41",
+        "annual_report::page::55",
+        "annual_report::page::61",
+        "annual_report::page::61",
+        "annual_report::page::43",
+        "annual_report::page::41",
+        "annual_report::page::27",
+        "annual_report::page::35",
+        "annual_report::page::11",
+        "annual_report::page::6"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 29.004520001763012
+    },
+    {
+      "id": "Q12-en",
+      "question": "What were PVFCCo's current ratio and quick ratio in 2008?",
+      "expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::132",
+        "annual_report::chunk::129",
+        "annual_report::chunk::131",
+        "annual_report::chunk::190",
+        "annual_report::chunk::191",
+        "annual_report::chunk::108",
+        "annual_report::chunk::127",
+        "annual_report::chunk::25",
+        "annual_report::chunk::106",
+        "annual_report::chunk::83"
+      ],
+      "direction": "en->en",
+      "gold_pages": [
+        "annual_report::page::39"
+      ],
+      "ranked_pages": [
+        "annual_report::page::41",
+        "annual_report::page::40",
+        "annual_report::page::41",
+        "annual_report::page::61",
+        "annual_report::page::61",
+        "annual_report::page::35",
+        "annual_report::page::40",
+        "annual_report::page::11",
+        "annual_report::page::35",
+        "annual_report::page::27"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 32.9173179998179
+    },
+    {
+      "id": "Q13-vi",
+      "question": "Công ty Cổ phần Long Hậu được thành lập theo giấy chứng nhận đăng ký kinh doanh số bao nhiêu và được cấp ngày nào?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::4",
+        "long_hau_fs::chunk::62",
+        "long_hau_fs::chunk::104",
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::122",
+        "long_hau_fs::chunk::48",
+        "long_hau_fs::chunk::5",
+        "long_hau_fs::chunk::63",
+        "long_hau_fs::chunk::141",
+        "long_hau_fs::chunk::89"
+      ],
+      "direction": "vi->vi",
+      "gold_pages": [
+        "long_hau_fs::page::10"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::10",
+        "long_hau_fs::page::13",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::15",
+        "long_hau_fs::page::8",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::10",
+        "long_hau_fs::page::18",
+        "long_hau_fs::page::12"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 0.5,
+      "local_retrieval_latency_ms": 31.553755994536914
+    },
+    {
+      "id": "Q13-en",
+      "question": "Under what business registration certificate number was Long Hau Joint Stock Company established, and on what date was it issued?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::4",
+        "long_hau_fs::chunk::62",
+        "long_hau_fs::chunk::148",
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::89",
+        "long_hau_fs::chunk::104",
+        "long_hau_fs::chunk::5",
+        "annual_report::chunk::23",
+        "long_hau_fs::chunk::141",
+        "long_hau_fs::chunk::6"
+      ],
+      "direction": "en->vi",
+      "gold_pages": [
+        "long_hau_fs::page::10"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::10",
+        "long_hau_fs::page::19",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::12",
+        "long_hau_fs::page::13",
+        "long_hau_fs::page::3",
+        "annual_report::page::11",
+        "long_hau_fs::page::18",
+        "long_hau_fs::page::3"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 0.5,
+      "local_retrieval_latency_ms": 50.59784300101455
+    },
+    {
+      "id": "Q14-vi",
+      "question": "Đơn vị kiểm toán nào thực hiện kiểm toán báo cáo tài chính riêng năm 2008 của Long Hậu?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::24",
+        "long_hau_fs::chunk::104",
+        "long_hau_fs::chunk::4",
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::62",
+        "long_hau_fs::chunk::0",
+        "long_hau_fs::chunk::48",
+        "long_hau_fs::chunk::148",
+        "long_hau_fs::chunk::89",
+        "long_hau_fs::chunk::141"
+      ],
+      "direction": "vi->vi",
+      "gold_pages": [
+        "long_hau_fs::page::5"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::5",
+        "long_hau_fs::page::13",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::10",
+        "long_hau_fs::page::1",
+        "long_hau_fs::page::8",
+        "long_hau_fs::page::19",
+        "long_hau_fs::page::12",
+        "long_hau_fs::page::18"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 1.0,
+      "local_retrieval_latency_ms": 50.27959200378973
+    },
+    {
+      "id": "Q14-en",
+      "question": "Which audit firm audited Long Hau's separate financial statements for 2008?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::0",
+        "long_hau_fs::chunk::148",
+        "long_hau_fs::chunk::104",
+        "long_hau_fs::chunk::24",
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::62",
+        "long_hau_fs::chunk::4",
+        "long_hau_fs::chunk::89",
+        "long_hau_fs::chunk::141",
+        "long_hau_fs::chunk::48"
+      ],
+      "direction": "en->vi",
+      "gold_pages": [
+        "long_hau_fs::page::5"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::1",
+        "long_hau_fs::page::19",
+        "long_hau_fs::page::13",
+        "long_hau_fs::page::5",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::10",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::12",
+        "long_hau_fs::page::18",
+        "long_hau_fs::page::8"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 0.25,
+      "local_retrieval_latency_ms": 31.38549000141211
+    },
+    {
+      "id": "Q15-vi",
+      "question": "Báo cáo kiểm toán độc lập của Long Hậu năm 2008 được ký vào ngày nào?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::24",
+        "long_hau_fs::chunk::104",
+        "long_hau_fs::chunk::4",
+        "long_hau_fs::chunk::148",
+        "long_hau_fs::chunk::62",
+        "long_hau_fs::chunk::75",
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::0",
+        "long_hau_fs::chunk::141",
+        "long_hau_fs::chunk::89"
+      ],
+      "direction": "vi->vi",
+      "gold_pages": [
+        "long_hau_fs::page::5"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::5",
+        "long_hau_fs::page::13",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::19",
+        "long_hau_fs::page::10",
+        "long_hau_fs::page::11",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::1",
+        "long_hau_fs::page::18",
+        "long_hau_fs::page::12"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 1.0,
+      "local_retrieval_latency_ms": 37.26530399580952
+    },
+    {
+      "id": "Q15-en",
+      "question": "On what date was Long Hau's independent audit report for 2008 signed?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::0",
+        "long_hau_fs::chunk::148",
+        "long_hau_fs::chunk::24",
+        "long_hau_fs::chunk::4",
+        "long_hau_fs::chunk::104",
+        "long_hau_fs::chunk::62",
+        "long_hau_fs::chunk::141",
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::75",
+        "long_hau_fs::chunk::174"
+      ],
+      "direction": "en->vi",
+      "gold_pages": [
+        "long_hau_fs::page::5"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::1",
+        "long_hau_fs::page::19",
+        "long_hau_fs::page::5",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::13",
+        "long_hau_fs::page::10",
+        "long_hau_fs::page::18",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::11",
+        "long_hau_fs::page::22"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 0.3333333333333333,
+      "local_retrieval_latency_ms": 37.74407599848928
+    },
+    {
+      "id": "Q16-vi",
+      "question": "Tổng tài sản của Long Hậu tại ngày 31/12/2008 và đầu năm 2008 là bao nhiêu?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::8",
+        "long_hau_fs::chunk::104",
+        "long_hau_fs::chunk::121",
+        "long_hau_fs::chunk::62",
+        "long_hau_fs::chunk::148",
+        "long_hau_fs::chunk::48",
+        "long_hau_fs::chunk::89",
+        "long_hau_fs::chunk::141",
+        "long_hau_fs::chunk::75"
+      ],
+      "direction": "vi->vi",
+      "gold_pages": [
+        "long_hau_fs::page::6"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::13",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::10",
+        "long_hau_fs::page::19",
+        "long_hau_fs::page::8",
+        "long_hau_fs::page::12",
+        "long_hau_fs::page::18",
+        "long_hau_fs::page::11"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 42.042239001602866
+    },
+    {
+      "id": "Q16-en",
+      "question": "What were Long Hau's total assets at December 31, 2008 and at the beginning of 2008?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::148",
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::174",
+        "long_hau_fs::chunk::62",
+        "long_hau_fs::chunk::104",
+        "long_hau_fs::chunk::89",
+        "long_hau_fs::chunk::8",
+        "long_hau_fs::chunk::128",
+        "long_hau_fs::chunk::141",
+        "long_hau_fs::chunk::75"
+      ],
+      "direction": "en->vi",
+      "gold_pages": [
+        "long_hau_fs::page::6"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::19",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::22",
+        "long_hau_fs::page::10",
+        "long_hau_fs::page::13",
+        "long_hau_fs::page::12",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::16",
+        "long_hau_fs::page::18",
+        "long_hau_fs::page::11"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 38.5766000035801
+    },
+    {
+      "id": "Q17-vi",
+      "question": "Giá trị hàng tồn kho của Long Hậu tại cuối năm và đầu năm 2008 thay đổi như thế nào?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::148",
+        "long_hau_fs::chunk::48",
+        "long_hau_fs::chunk::62",
+        "long_hau_fs::chunk::104",
+        "long_hau_fs::chunk::89",
+        "long_hau_fs::chunk::166",
+        "long_hau_fs::chunk::8",
+        "long_hau_fs::chunk::4",
+        "long_hau_fs::chunk::75"
+      ],
+      "direction": "vi->vi",
+      "gold_pages": [
+        "long_hau_fs::page::6"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::19",
+        "long_hau_fs::page::8",
+        "long_hau_fs::page::10",
+        "long_hau_fs::page::13",
+        "long_hau_fs::page::12",
+        "long_hau_fs::page::21",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::11"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 37.97296900302172
+    },
+    {
+      "id": "Q17-en",
+      "question": "How did Long Hau's inventory value change between the end of 2008 and the beginning of 2008?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::148",
+        "long_hau_fs::chunk::48",
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::89",
+        "long_hau_fs::chunk::62",
+        "long_hau_fs::chunk::174",
+        "long_hau_fs::chunk::128",
+        "long_hau_fs::chunk::104",
+        "long_hau_fs::chunk::166",
+        "long_hau_fs::chunk::41"
+      ],
+      "direction": "en->vi",
+      "gold_pages": [
+        "long_hau_fs::page::6"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::19",
+        "long_hau_fs::page::8",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::12",
+        "long_hau_fs::page::10",
+        "long_hau_fs::page::22",
+        "long_hau_fs::page::16",
+        "long_hau_fs::page::13",
+        "long_hau_fs::page::21",
+        "long_hau_fs::page::7"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 30.353189999004826
+    },
+    {
+      "id": "Q18-vi",
+      "question": "Doanh thu thuần của Long Hậu trong năm 2008 là bao nhiêu và tăng bao nhiêu so với năm trước?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::104",
+        "long_hau_fs::chunk::8",
+        "long_hau_fs::chunk::62",
+        "long_hau_fs::chunk::48",
+        "long_hau_fs::chunk::148",
+        "long_hau_fs::chunk::4",
+        "long_hau_fs::chunk::121",
+        "long_hau_fs::chunk::75",
+        "long_hau_fs::chunk::89"
+      ],
+      "direction": "vi->vi",
+      "gold_pages": [
+        "long_hau_fs::page::8"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::13",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::10",
+        "long_hau_fs::page::8",
+        "long_hau_fs::page::19",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::11",
+        "long_hau_fs::page::12"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 0.2,
+      "local_retrieval_latency_ms": 23.734542999591213
+    },
+    {
+      "id": "Q18-en",
+      "question": "What was Long Hau's net revenue in 2008, and by how much did it increase compared with the previous year?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::148",
+        "long_hau_fs::chunk::174",
+        "long_hau_fs::chunk::104",
+        "long_hau_fs::chunk::62",
+        "long_hau_fs::chunk::48",
+        "long_hau_fs::chunk::8",
+        "long_hau_fs::chunk::75",
+        "long_hau_fs::chunk::89",
+        "long_hau_fs::chunk::4"
+      ],
+      "direction": "en->vi",
+      "gold_pages": [
+        "long_hau_fs::page::8"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::19",
+        "long_hau_fs::page::22",
+        "long_hau_fs::page::13",
+        "long_hau_fs::page::10",
+        "long_hau_fs::page::8",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::11",
+        "long_hau_fs::page::12",
+        "long_hau_fs::page::3"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 0.16666666666666666,
+      "local_retrieval_latency_ms": 26.761219000036363
+    },
+    {
+      "id": "Q19-vi",
+      "question": "Tổng lợi nhuận kế toán trước thuế năm 2008 của Long Hậu là bao nhiêu so với năm 2007?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::8",
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::104",
+        "long_hau_fs::chunk::148",
+        "long_hau_fs::chunk::62",
+        "long_hau_fs::chunk::89",
+        "long_hau_fs::chunk::48",
+        "long_hau_fs::chunk::166",
+        "long_hau_fs::chunk::121",
+        "long_hau_fs::chunk::75"
+      ],
+      "direction": "vi->vi",
+      "gold_pages": [
+        "long_hau_fs::page::8"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::13",
+        "long_hau_fs::page::19",
+        "long_hau_fs::page::10",
+        "long_hau_fs::page::12",
+        "long_hau_fs::page::8",
+        "long_hau_fs::page::21",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::11"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 0.14285714285714285,
+      "local_retrieval_latency_ms": 27.259589005552698
+    },
+    {
+      "id": "Q19-en",
+      "question": "What was Long Hau's total accounting profit before tax in 2008 compared with 2007?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::148",
+        "long_hau_fs::chunk::174",
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::8",
+        "long_hau_fs::chunk::104",
+        "long_hau_fs::chunk::62",
+        "long_hau_fs::chunk::89",
+        "long_hau_fs::chunk::166",
+        "long_hau_fs::chunk::48",
+        "long_hau_fs::chunk::75"
+      ],
+      "direction": "en->vi",
+      "gold_pages": [
+        "long_hau_fs::page::8"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::19",
+        "long_hau_fs::page::22",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::13",
+        "long_hau_fs::page::10",
+        "long_hau_fs::page::12",
+        "long_hau_fs::page::21",
+        "long_hau_fs::page::8",
+        "long_hau_fs::page::11"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 0.1111111111111111,
+      "local_retrieval_latency_ms": 22.67601999483304
+    },
+    {
+      "id": "Q20-vi",
+      "question": "Theo thuyết minh báo cáo tài chính, Long Hậu xác định giá trị hàng tồn kho liên quan đến chi phí phát triển khu công nghiệp theo nguyên tắc nào?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::80",
+        "long_hau_fs::chunk::120",
+        "long_hau_fs::chunk::148",
+        "long_hau_fs::chunk::89",
+        "long_hau_fs::chunk::37",
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::104",
+        "long_hau_fs::chunk::4",
+        "long_hau_fs::chunk::122",
+        "long_hau_fs::chunk::62"
+      ],
+      "direction": "vi->vi",
+      "gold_pages": [
+        "long_hau_fs::page::11"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::11",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::19",
+        "long_hau_fs::page::12",
+        "long_hau_fs::page::6",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::13",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::15",
+        "long_hau_fs::page::10"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 1.0,
+      "local_retrieval_latency_ms": 24.808563000988215
+    },
+    {
+      "id": "Q20-en",
+      "question": "According to the notes to the financial statements, what principle did Long Hau use to determine the value of inventory related to industrial-park development costs?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::148",
+        "long_hau_fs::chunk::120",
+        "long_hau_fs::chunk::80",
+        "long_hau_fs::chunk::89",
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::174",
+        "annual_report::chunk::286",
+        "long_hau_fs::chunk::62",
+        "annual_report::chunk::179",
+        "long_hau_fs::chunk::166"
+      ],
+      "direction": "en->vi",
+      "gold_pages": [
+        "long_hau_fs::page::11"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::19",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::11",
+        "long_hau_fs::page::12",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::22",
+        "annual_report::page::83",
+        "long_hau_fs::page::10",
+        "annual_report::page::58",
+        "long_hau_fs::page::21"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 0.3333333333333333,
+      "local_retrieval_latency_ms": 29.531047999626026
+    },
+    {
+      "id": "Q21-vi",
+      "question": "Long Hậu áp dụng phương pháp khấu hao nào và thời gian khấu hao ước tính cho các loại tài sản cố định là bao lâu?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::85",
+        "long_hau_fs::chunk::84",
+        "long_hau_fs::chunk::89",
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::148",
+        "long_hau_fs::chunk::8",
+        "long_hau_fs::chunk::104",
+        "long_hau_fs::chunk::62",
+        "long_hau_fs::chunk::166",
+        "annual_report::chunk::282"
+      ],
+      "direction": "vi->vi",
+      "gold_pages": [
+        "long_hau_fs::page::11"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::11",
+        "long_hau_fs::page::11",
+        "long_hau_fs::page::12",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::19",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::13",
+        "long_hau_fs::page::10",
+        "long_hau_fs::page::21",
+        "annual_report::page::82"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 1.0,
+      "local_retrieval_latency_ms": 20.563571000820957
+    },
+    {
+      "id": "Q21-en",
+      "question": "What depreciation method did Long Hau use, and what estimated depreciation periods applied to its types of fixed assets?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::282",
+        "long_hau_fs::chunk::148",
+        "annual_report::chunk::286",
+        "annual_report::chunk::246",
+        "annual_report::chunk::284",
+        "long_hau_fs::chunk::85",
+        "annual_report::chunk::285",
+        "long_hau_fs::chunk::117",
+        "annual_report::chunk::290",
+        "long_hau_fs::chunk::89"
+      ],
+      "direction": "en->vi",
+      "gold_pages": [
+        "long_hau_fs::page::11"
+      ],
+      "ranked_pages": [
+        "annual_report::page::82",
+        "long_hau_fs::page::19",
+        "annual_report::page::83",
+        "annual_report::page::77",
+        "annual_report::page::83",
+        "long_hau_fs::page::11",
+        "annual_report::page::83",
+        "long_hau_fs::page::14",
+        "annual_report::page::83",
+        "long_hau_fs::page::12"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 0.16666666666666666,
+      "local_retrieval_latency_ms": 21.97577599872602
+    },
+    {
+      "id": "Q22-vi",
+      "question": "Lợi nhuận thuộc cổ đông phổ thông và lãi cơ bản trên mỗi cổ phiếu của Long Hậu năm 2008 là bao nhiêu?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::8",
+        "long_hau_fs::chunk::104",
+        "long_hau_fs::chunk::48",
+        "long_hau_fs::chunk::62",
+        "long_hau_fs::chunk::89",
+        "long_hau_fs::chunk::4",
+        "long_hau_fs::chunk::148",
+        "long_hau_fs::chunk::121",
+        "long_hau_fs::chunk::174"
+      ],
+      "direction": "vi->vi",
+      "gold_pages": [
+        "long_hau_fs::page::22"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::13",
+        "long_hau_fs::page::8",
+        "long_hau_fs::page::10",
+        "long_hau_fs::page::12",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::19",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::22"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 0.1,
+      "local_retrieval_latency_ms": 38.87104999739677
+    },
+    {
+      "id": "Q22-en",
+      "question": "What were Long Hau's profit attributable to ordinary shareholders and basic earnings per share in 2008?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::174",
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::62",
+        "long_hau_fs::chunk::148",
+        "long_hau_fs::chunk::48",
+        "long_hau_fs::chunk::104",
+        "long_hau_fs::chunk::89",
+        "long_hau_fs::chunk::8",
+        "long_hau_fs::chunk::4",
+        "long_hau_fs::chunk::166"
+      ],
+      "direction": "en->vi",
+      "gold_pages": [
+        "long_hau_fs::page::22"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::22",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::10",
+        "long_hau_fs::page::19",
+        "long_hau_fs::page::8",
+        "long_hau_fs::page::13",
+        "long_hau_fs::page::12",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::21"
+      ],
+      "evidence_page_recall_at_10": 1.0,
+      "evidence_page_reciprocal_rank_at_10": 1.0,
+      "local_retrieval_latency_ms": 29.219890006061178
+    },
+    {
+      "id": "Q23-vi",
+      "question": "Báo cáo thường niên 2008 của PVFCCo và báo cáo tài chính riêng năm 2008 của Long Hậu thuộc hai doanh nghiệp nào?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf",
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf",
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::104",
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::48",
+        "long_hau_fs::chunk::62",
+        "long_hau_fs::chunk::4",
+        "long_hau_fs::chunk::24",
+        "long_hau_fs::chunk::75",
+        "annual_report::chunk::191",
+        "long_hau_fs::chunk::89",
+        "long_hau_fs::chunk::148"
+      ],
+      "direction": "vi->mixed",
+      "gold_pages": [
+        "annual_report::page::1",
+        "long_hau_fs::page::1"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::13",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::8",
+        "long_hau_fs::page::10",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::5",
+        "long_hau_fs::page::11",
+        "annual_report::page::61",
+        "long_hau_fs::page::12",
+        "long_hau_fs::page::19"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 30.212011995899957
+    },
+    {
+      "id": "Q23-en",
+      "question": "Which two companies did the 2008 PVFCCo Annual Report and Long Hau's 2008 separate financial statements belong to?",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf",
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf",
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::103",
+        "annual_report::chunk::190",
+        "annual_report::chunk::221",
+        "long_hau_fs::chunk::104",
+        "annual_report::chunk::191",
+        "long_hau_fs::chunk::117",
+        "annual_report::chunk::99",
+        "annual_report::chunk::94",
+        "long_hau_fs::chunk::148",
+        "long_hau_fs::chunk::89"
+      ],
+      "direction": "en->mixed",
+      "gold_pages": [
+        "annual_report::page::1",
+        "long_hau_fs::page::1"
+      ],
+      "ranked_pages": [
+        "annual_report::page::35",
+        "annual_report::page::61",
+        "annual_report::page::71",
+        "long_hau_fs::page::13",
+        "annual_report::page::61",
+        "long_hau_fs::page::14",
+        "annual_report::page::34",
+        "annual_report::page::31",
+        "long_hau_fs::page::19",
+        "long_hau_fs::page::12"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 26.42738100257702
+    },
+    {
+      "id": "Q24-vi",
+      "question": "So sánh lợi nhuận trước thuế năm 2008 của PVFCCo và Long Hậu, nêu rõ số liệu và đơn vị tiền tệ được sử dụng trong từng báo cáo.",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf",
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf",
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "long_hau_fs::chunk::104",
+        "long_hau_fs::chunk::117",
+        "long_hau_fs::chunk::148",
+        "long_hau_fs::chunk::48",
+        "long_hau_fs::chunk::166",
+        "annual_report::chunk::191",
+        "annual_report::chunk::108",
+        "long_hau_fs::chunk::75",
+        "long_hau_fs::chunk::8",
+        "long_hau_fs::chunk::89"
+      ],
+      "direction": "vi->mixed",
+      "gold_pages": [
+        "annual_report::page::14",
+        "long_hau_fs::page::8"
+      ],
+      "ranked_pages": [
+        "long_hau_fs::page::13",
+        "long_hau_fs::page::14",
+        "long_hau_fs::page::19",
+        "long_hau_fs::page::8",
+        "long_hau_fs::page::21",
+        "annual_report::page::61",
+        "annual_report::page::35",
+        "long_hau_fs::page::11",
+        "long_hau_fs::page::3",
+        "long_hau_fs::page::12"
+      ],
+      "evidence_page_recall_at_10": 0.5,
+      "evidence_page_reciprocal_rank_at_10": 0.25,
+      "local_retrieval_latency_ms": 25.10724800231401
+    },
+    {
+      "id": "Q24-en",
+      "question": "Compare PVFCCo's and Long Hau's profit before tax in 2008, stating the figures and currency units used in each report.",
+      "expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf",
+        "AnnualReport_2008.pdf"
+      ],
+      "found_expected_sources": [
+        "2.BCTC da kiem toan 2008 (V).pdf",
+        "AnnualReport_2008.pdf"
+      ],
+      "missing_expected_sources": [],
+      "unavailable_expected_sources": [],
+      "source_recall_at_10": 1.0,
+      "ranked_chunk_ids": [
+        "annual_report::chunk::108",
+        "annual_report::chunk::191",
+        "annual_report::chunk::138",
+        "annual_report::chunk::132",
+        "annual_report::chunk::190",
+        "annual_report::chunk::172",
+        "long_hau_fs::chunk::148",
+        "annual_report::chunk::8",
+        "annual_report::chunk::188",
+        "annual_report::chunk::170"
+      ],
+      "direction": "en->mixed",
+      "gold_pages": [
+        "annual_report::page::14",
+        "long_hau_fs::page::8"
+      ],
+      "ranked_pages": [
+        "annual_report::page::35",
+        "annual_report::page::61",
+        "annual_report::page::43",
+        "annual_report::page::41",
+        "annual_report::page::61",
+        "annual_report::page::55",
+        "long_hau_fs::page::19",
+        "annual_report::page::6",
+        "annual_report::page::60",
+        "annual_report::page::55"
+      ],
+      "evidence_page_recall_at_10": 0.0,
+      "evidence_page_reciprocal_rank_at_10": 0.0,
+      "local_retrieval_latency_ms": 29.973563003295567
+    }
+  ],
+  "limitations": "Optional gold_pages scores measure evidence-page coverage among top ten chunks (duplicates count once); source-file scores measure file coverage. Neither measures exact-passage relevance or answer accuracy. Same frozen text/questions, with model-required input formatting. Missing README.txt stays in denominator. Local normalized cosine ranking; ties preserve frozen row order. Local timing excludes database/network and cannot be compared directly to the saved DB baseline timing. No database/inference API access. Model downloads may use Hugging Face metadata/weight HTTP endpoints; document text remains local."
+}

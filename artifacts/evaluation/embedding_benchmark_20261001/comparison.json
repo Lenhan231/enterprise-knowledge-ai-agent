@@ -1,0 +1,241 @@
+{
+  "input_hashes_verified": true,
+  "manifest": {
+    "baseline_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "embedding_backend": "local",
+    "chunk_count": 4750,
+    "document_count": 25,
+    "case_count": 12,
+    "files": {
+      "corpus.jsonl": {
+        "source": "data\\evaluation\\vinamilk_public_embedding_corpus.jsonl",
+        "sha256": "e83d3b0385e981e9132a96d89cfdce5c1b26a0419d178d1f5c494b448eb9825a"
+      },
+      "cases.json": {
+        "source": "data\\evaluation\\vinamilk_retrieval_cases.json",
+        "sha256": "e10ff96fc26aec1b0040c3c1e846fe9e5bae0a2ab49426abd37f3a7578b77e25"
+      }
+    },
+    "evaluation": "document-level max chunk cosine, role-filtered, full frozen corpus; no parsing or chunking",
+    "device": "cpu",
+    "batch_size": 8,
+    "git_commit": "a0fc63e0712e1ee4f7be51e1d87a96cf69e82562",
+    "vietnamese_case_ids": [
+      "finance-revenue-profit-2020-vi",
+      "finance-revenue-profit-2021-vi",
+      "finance-revenue-profit-2022-vi",
+      "finance-revenue-profit-2024-en",
+      "product-nutrition-adm-low-sugar-vi"
+    ],
+    "cpu_threads": 4,
+    "python": "3.11.15",
+    "sequence_limit": "min(model native limit, 512); baseline 256; original chunks unchanged",
+    "regression": {
+      "tests": 487,
+      "skipped": 10,
+      "exit_code": 0,
+      "command": "python -X utf8 -m unittest discover -s tests -q",
+      "test_only_auth_secret": true
+    },
+    "packages": {
+      "torch": "2.14.0",
+      "transformers": "5.17.0",
+      "sentence-transformers": "6.0.1",
+      "numpy": "2.4.6",
+      "huggingface-hub": "1.31.0"
+    },
+    "evaluator_sha256": "4615b1d37596be7de8deb211026ae995bd8442be3a5cf9f6843d1dae2036a633",
+    "run_plan": {
+      "baseline": "laptop CPU, complete",
+      "bge-m3": "laptop CPU, complete",
+      "qwen3-embedding": "GPU PC, user to run",
+      "e5-large-v2": "GPU PC, user to run"
+    },
+    "gpu_handoff": {
+      "gpu": "RTX 2060",
+      "os": "Windows with WSL 2"
+    }
+  },
+  "models": [
+    {
+      "key": "baseline",
+      "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+      "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+      "sequence_limit": 256,
+      "aggregate": {
+        "precision@1": 0.6667,
+        "precision@3": 0.25,
+        "precision@5": 0.1833,
+        "recall@1": 0.6667,
+        "recall@3": 0.75,
+        "recall@5": 0.9167,
+        "mrr": 0.7597,
+        "ndcg@1": 0.6667,
+        "ndcg@3": 0.7192,
+        "ndcg@5": 0.7874
+      },
+      "environment": {
+        "python": "3.11.15",
+        "platform": "Windows-10-10.0.26200-SP0",
+        "device": "cpu",
+        "gpu_available": false,
+        "gpu_name": null,
+        "peak_gpu_memory_allocated_mb": null,
+        "peak_gpu_memory_reserved_mb": null,
+        "peak_rss_mb": null
+      },
+      "vietnamese_aggregate": {
+        "precision@1": 0.6,
+        "precision@3": 0.2,
+        "precision@5": 0.2,
+        "recall@1": 0.6,
+        "recall@3": 0.6,
+        "recall@5": 1.0,
+        "mrr": 0.69,
+        "ndcg@1": 0.6,
+        "ndcg@3": 0.6,
+        "ndcg@5": 0.7635
+      },
+      "timing_seconds": {
+        "model_load": 19.76,
+        "corpus_embeddings": 229.69,
+        "mean_query": 0.0172
+      }
+    },
+    {
+      "key": "bge-m3",
+      "model_id": "BAAI/bge-m3",
+      "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+      "sequence_limit": 512,
+      "aggregate": {
+        "precision@1": 0.75,
+        "precision@3": 0.2778,
+        "precision@5": 0.1833,
+        "recall@1": 0.75,
+        "recall@3": 0.8333,
+        "recall@5": 0.9167,
+        "mrr": 0.8176,
+        "ndcg@1": 0.75,
+        "ndcg@3": 0.8026,
+        "ndcg@5": 0.8348
+      },
+      "environment": {
+        "python": "3.11.15",
+        "platform": "Windows-10-10.0.26200-SP0",
+        "device": "cpu",
+        "gpu_available": false,
+        "gpu_name": null,
+        "peak_gpu_memory_allocated_mb": null,
+        "peak_gpu_memory_reserved_mb": null,
+        "peak_rss_mb": null
+      },
+      "vietnamese_aggregate": {
+        "precision@1": 0.8,
+        "precision@3": 0.3333,
+        "precision@5": 0.2,
+        "recall@1": 0.8,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 0.9,
+        "ndcg@1": 0.8,
+        "ndcg@3": 0.9262,
+        "ndcg@5": 0.9262
+      },
+      "timing_seconds": {
+        "model_load": 86.92,
+        "corpus_embeddings": 5233.79,
+        "mean_query": 0.1431
+      }
+    },
+    {
+      "key": "qwen3-embedding",
+      "model_id": "Qwen/Qwen3-Embedding-0.6B",
+      "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+      "sequence_limit": 512,
+      "aggregate": {
+        "precision@1": 0.75,
+        "precision@3": 0.2778,
+        "precision@5": 0.1833,
+        "recall@1": 0.75,
+        "recall@3": 0.8333,
+        "recall@5": 0.9167,
+        "mrr": 0.8028,
+        "ndcg@1": 0.75,
+        "ndcg@3": 0.7917,
+        "ndcg@5": 0.8239
+      },
+      "environment": {
+        "python": "3.11.15",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+        "device": "cuda",
+        "gpu_available": true,
+        "gpu_name": "NVIDIA GeForce RTX 2060",
+        "peak_gpu_memory_allocated_mb": 2095.6,
+        "peak_gpu_memory_reserved_mb": 2202.0,
+        "peak_rss_mb": 2142.9
+      },
+      "vietnamese_aggregate": {
+        "precision@1": 0.8,
+        "precision@3": 0.3333,
+        "precision@5": 0.2,
+        "recall@1": 0.8,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 0.8667,
+        "ndcg@1": 0.8,
+        "ndcg@3": 0.9,
+        "ndcg@5": 0.9
+      },
+      "timing_seconds": {
+        "model_load": 21.17,
+        "corpus_embeddings": 892.7,
+        "mean_query": 0.0708
+      }
+    },
+    {
+      "key": "e5-large-v2",
+      "model_id": "intfloat/e5-large-v2",
+      "revision": "f169b11e22de13617baa190a028a32f3493550b6",
+      "sequence_limit": 512,
+      "aggregate": {
+        "precision@1": 0.6667,
+        "precision@3": 0.3056,
+        "precision@5": 0.1833,
+        "recall@1": 0.6667,
+        "recall@3": 0.9167,
+        "recall@5": 0.9167,
+        "mrr": 0.7583,
+        "ndcg@1": 0.6667,
+        "ndcg@3": 0.7917,
+        "ndcg@5": 0.7917
+      },
+      "environment": {
+        "python": "3.11.15",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+        "device": "cuda",
+        "gpu_available": true,
+        "gpu_name": "NVIDIA GeForce RTX 2060",
+        "peak_gpu_memory_allocated_mb": 1481.6,
+        "peak_gpu_memory_reserved_mb": 1584.0,
+        "peak_rss_mb": 2221.0
+      },
+      "vietnamese_aggregate": {
+        "precision@1": 0.6,
+        "precision@3": 0.3333,
+        "precision@5": 0.2,
+        "recall@1": 0.6,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 0.7333,
+        "ndcg@1": 0.6,
+        "ndcg@3": 0.8,
+        "ndcg@5": 0.8
+      },
+      "timing_seconds": {
+        "model_load": 24.06,
+        "corpus_embeddings": 341.22,
+        "mean_query": 0.0309
+      }
+    }
+  ]
+}

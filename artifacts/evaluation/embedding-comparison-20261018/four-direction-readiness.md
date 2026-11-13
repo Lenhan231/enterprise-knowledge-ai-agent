@@ -1,0 +1,11 @@
+# Four-direction embedding benchmark readiness — 2026-10-18
+
+Read-only live database audit: exactly five ready VietStyle documents, 532 indexed chunks (12 CSV, 485 XLSX, 9 PDF, 18 DOCX, 8 PPTX). All frozen chunk metadata language values are missing. Inspected content samples are primarily Vietnamese with English terminology; no separately verified English document set in this current benchmark. This is sample inspection, not automatic language classification of every row.
+
+Existing paired cases: data/evaluation/long_hau_2008_cases.json and long_hau_2008_cases_en.json contain 24 questions each. All 24 IDs and evidence lists match across languages. Twelve intents use only annual_report, ten only long_hau_fs, two require both documents.
+
+Original PDFs remain in data/raw/benchmark_data/: AnnualReport_2008.pdf (96 pages, English first-page text confirmed) and 2.BCTC da kiem toan 2008 (V).pdf (22 pages, no text extracted from first page; requires OCR or reuse of verified processed text). Prior scoped-language-aware-20261016 report records annual_report as English and long_hau_fs as Vietnamese. This audit did not visually reverify all scanned pages. Neither old document ID is present in the live database.
+
+Plan: create a separate frozen local corpus for the two reports, without changing Supabase. Prefer original verified processed chunk text if a complete snapshot exists; otherwise extract/OCR again and validate evidence, because old chunk indices/page labels cannot be assumed to survive reprocessing. Keep original bilingual questions, no automatic query translation during model comparison. Evaluate 12 EN-document-only intents in VI->EN and EN->EN; 10 VN-document-only intents in VI->VI and EN->VI. Score two mixed-document intents separately (four query cases), rather than pretending they have one target language. Direction sizes are unequal: report per-direction metrics and counts; macro versus pooled aggregation must be explicit. Different topics/documents confound pure language comparisons, so regard this as a practical pilot, not an isolated causal language experiment.
+
+Current VietStyle model results measure source-file coverage. The old financial cases include chunk/page evidence. Keep those metrics and datasets separate; do not directly compare the percentages.

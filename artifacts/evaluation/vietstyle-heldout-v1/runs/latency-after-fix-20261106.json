@@ -1,0 +1,4125 @@
+{
+  "created_at_utc": "2026-11-06T07:29:25.617382+00:00",
+  "base_url": "http://127.0.0.1:8000",
+  "mode": "knowledge",
+  "retrieval_method": "translated_hybrid_rerank",
+  "role": "admin",
+  "configuration": {
+    "concurrency": 1,
+    "passes": 2,
+    "cases_per_pass": 6,
+    "timeout_seconds": 180,
+    "pause_seconds": 15.0,
+    "multiquery_env": "1",
+    "claim_verification_env": "1"
+  },
+  "boundaries": {
+    "http_e2e": "Client HTTP request through authentication, routing, agents and telemetry; login excluded",
+    "request_total_ms": "Handler wall time before persistence of the agent event; authentication excluded",
+    "response_ready_ms": "Handler through telemetry persistence; excludes authentication and HTTP serialization/transport",
+    "stages": "Wall times; null means skipped. Nested stages overlap; parallel agent durations must not be added to infer E2E",
+    "first_pass": "First pass after restart; models preloaded. Only the first relevant request is first inference, not all ten",
+    "warm_pass": "Same questions and order; includes the existing query-translation cache",
+    "quality": "application_ok is the server flag, not correctness; inspect saved answers and citations manually",
+    "repeatability": "Repeated warm questions, not independent intents or a concurrent load test; first_pass is not necessarily cold"
+  },
+  "results": [
+    {
+      "phase": "first_pass",
+      "case_id": "V1",
+      "expected_route": "knowledge",
+      "question": "Theo Ph\u1ee5 l\u1ee5c B, kho\u1ea3n mua s\u1eafm 80 tri\u1ec7u \u0111\u1ed3ng c\u1ea7n nh\u1eefng b\u00ean n\u00e0o ph\u00ea duy\u1ec7t v\u00e0 c\u1ea7n bao nhi\u00eau b\u00e1o gi\u00e1?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 1,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 658.0870100297034,
+          "embedding": 107.62964899186045,
+          "database_retrieval": 1824.552244041115,
+          "retrieval_fusion": 0.6355700315907598,
+          "query_translation": 365.1983509771526,
+          "reranking": 2735.916976002045,
+          "answer_generation": 747.2241380019113,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 5045.777358929627,
+          "agent_workflow": 7003.4708640305325,
+          "telemetry_persistence": null,
+          "claim_verification": 551.1707980185747
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 658.0870100297034,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 107.62964899186045,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 365.1983509771526,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1824.552244041115,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.3467639908194542,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.28880604077130556,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 2735.916976002045,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 5045.777358929627,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 747.2241380019113,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 551.1707980185747,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 7003.4708640305325,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 7003.5977070219815,
+        "response_ready_ms": 7003.724358044565
+      },
+      "answer_characters": 439,
+      "error": null,
+      "answer": "Theo Ph\u1ee5 l\u1ee5c B, kho\u1ea3n mua s\u1eafm 80 tri\u1ec7u \u0111\u1ed3ng (VND 80,000,000) thu\u1ed9c ph\u1ea1m vi t\u1eeb VND 50,000,001 \u0111\u1ebfn VND 200,000,000 [S1].\n\nC\u00e1c b\u00ean c\u1ea7n ph\u00ea duy\u1ec7t l\u00e0: Tr\u01b0\u1edfng ph\u00f2ng ban (Department head), B\u1ed9 ph\u1eadn Mua h\u00e0ng (Procurement) v\u00e0 B\u1ed9 ph\u1eadn T\u00e0i ch\u00ednh (Finance) [S1].\n\nS\u1ed1 l\u01b0\u1ee3ng b\u00e1o gi\u00e1 c\u1ea7n thi\u1ebft l\u00e0: T\u1ed1i thi\u1ec3u ba b\u00e1o gi\u00e1 b\u1eb1ng v\u0103n b\u1ea3n (at least three written quotes) ho\u1eb7c l\u00fd do duy nh\u1ea5t ngu\u1ed3n cung c\u1ea5p \u0111\u00e3 \u0111\u01b0\u1ee3c ph\u00ea duy\u1ec7t (approved sole-source rationale) [S1].",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Appendix B - Approval limits and operational decision table\nColumns: Total commitment | Required approval | Additional condition\nRow 1: Total commitment: Up to VND 5,000,000 | Required approval: Line manager | Additional condition: One documented quote; budget confirmed.\nRow 2: Total commitment: VND 5,000,001-50,000,000 | Required approval: Department head | Additional condition: At least two comparable quotes where market permits.\nRow 3: Total commitment: VND 50,000,001-200,000,000 | Required approval: Department head + Procurement + Finance | Additional condition: At least three written quotes or approved sole-source rationale.\nRow 4: Total commitment: Above VND 200,000,000 | Required approval: Executive Operations Council + Finance | Additional condition: Documented sourcing evaluation and risk review.",
+          "metadata": {
+            "bbox": [
+              50.561825234483145,
+              557.7113366172055,
+              544.3709370377287,
+              672.8796672334107
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 781,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 53,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 1,
+            "token_count": 204,
+            "element_type": "table",
+            "section_path": [
+              "Appendix B - Approval limits and operational decision table"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Appendix B - Approval limits and operational decision table",
+            "table_row_end": 4,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 1,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 825,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 1,
+            "table_fragment_index": 0,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -0.28645122051239014,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Theo Ph\u1ee5 l\u1ee5c B, kho\u1ea3n mua s\u1eafm 80 tri\u1ec7u \u0111\u1ed3ng c\u1ea7n nh\u1eefng b\u00ean n\u00e0o ph\u00ea duy\u1ec7t v\u00e0 c\u1ea7n bao nhi\u00eau b\u00e1o gi\u00e1?",
+                "en": "According to Appendix B, which parties need to approve the 80 million VND purchase, and how many quotations are required?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 365.21508696023375,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 2735.311150085181,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 3,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 7011.71
+    },
+    {
+      "phase": "first_pass",
+      "case_id": "V2",
+      "expected_route": "knowledge",
+      "question": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 50 tri\u1ec7u v\u00e0 50.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 b\u00e1o gi\u00e1?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 3,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 413.9400739222765,
+          "embedding": 232.35023394227028,
+          "database_retrieval": 1851.8985660048202,
+          "retrieval_fusion": 0.8263600757345557,
+          "query_translation": 374.3668260285631,
+          "reranking": 2543.1824879487976,
+          "answer_generation": 1018.4715159703046,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 5022.192706936039,
+          "agent_workflow": 7298.641741042957,
+          "telemetry_persistence": null,
+          "claim_verification": 840.8998309168965
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 413.9400739222765,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 232.35023394227028,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 374.3668260285631,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1851.8985660048202,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.5062660202383995,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.3200940554961562,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 2543.1824879487976,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 5022.192706936039,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 1018.4715159703046,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 840.8998309168965,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 7298.641741042957,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 7298.77678595949,
+        "response_ready_ms": 7299.409241997637
+      },
+      "answer_characters": 991,
+      "error": null,
+      "answer": "\u0110\u1ed1i v\u1edbi kho\u1ea3n mua s\u1eafm c\u00f3 gi\u00e1 tr\u1ecb \u0111\u00fang 50.000.000 VND, ng\u01b0\u1eddi ph\u00ea duy\u1ec7t l\u00e0 Tr\u01b0\u1edfng ph\u00f2ng (Department head) v\u00e0 \u0111i\u1ec1u ki\u1ec7n b\u1ed5 sung l\u00e0 ph\u1ea3i c\u00f3 \u00edt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng khi th\u1ecb tr\u01b0\u1eddng cho ph\u00e9p [S1]. Quy \u0111\u1ecbnh n\u00e0y c\u0169ng \u0111\u01b0\u1ee3c x\u00e1c nh\u1eadn trong ph\u1ea7n ma tr\u1eadn ph\u00ea duy\u1ec7t, n\u01a1i m\u1ee9c t\u1eeb 5.000.001 \u0111\u1ebfn 50.000.000 VND thu\u1ed9c th\u1ea9m quy\u1ec1n c\u1ee7a Tr\u01b0\u1edfng ph\u00f2ng [S3], v\u00e0 y\u00eau c\u1ea7u v\u1ec1 b\u00e1o gi\u00e1 cho m\u1ee9c n\u00e0y l\u00e0 t\u00ecm ki\u1ebfm \u00edt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng [S2].\n\n\u0110\u1ed1i v\u1edbi kho\u1ea3n mua s\u1eafm c\u00f3 gi\u00e1 tr\u1ecb 50.000.001 VND, ng\u01b0\u1eddi ph\u00ea duy\u1ec7t bao g\u1ed3m Tr\u01b0\u1edfng ph\u00f2ng, B\u1ed9 ph\u1eadn Mua h\u00e0ng v\u00e0 B\u1ed9 ph\u1eadn T\u00e0i ch\u00ednh (Department head + Procurement + Finance) [S1]. \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung cho m\u1ee9c n\u00e0y l\u00e0 ph\u1ea3i c\u00f3 \u00edt nh\u1ea5t ba b\u00e1o gi\u00e1 b\u1eb1ng v\u0103n b\u1ea3n ho\u1eb7c l\u00fd do duy nh\u1ea5t ngu\u1ed3n cung \u0111\u01b0\u1ee3c ph\u00ea duy\u1ec7t [S1]. Quy \u0111\u1ecbnh v\u1ec1 th\u1ea9m quy\u1ec1n ph\u00ea duy\u1ec7t cho m\u1ee9c t\u1eeb 50.000.001 \u0111\u1ebfn 200.000.000 VND c\u0169ng x\u00e1c nh\u1eadn c\u1ea7n s\u1ef1 tham gia c\u1ee7a Tr\u01b0\u1edfng ph\u00f2ng c\u00f9ng Mua h\u00e0ng v\u00e0 T\u00e0i ch\u00ednh [S3], v\u00e0 y\u00eau c\u1ea7u b\u00e1o gi\u00e1 l\u00e0 t\u00ecm ki\u1ebfm \u00edt nh\u1ea5t ba b\u00e1o gi\u00e1 b\u1eb1ng v\u0103n b\u1ea3n ho\u1eb7c l\u00fd do duy nh\u1ea5t ngu\u1ed3n cung \u0111\u01b0\u1ee3c ghi nh\u1eadn [S2].",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Appendix B - Approval limits and operational decision table\nColumns: Total commitment | Required approval | Additional condition\nRow 1: Total commitment: Up to VND 5,000,000 | Required approval: Line manager | Additional condition: One documented quote; budget confirmed.\nRow 2: Total commitment: VND 5,000,001-50,000,000 | Required approval: Department head | Additional condition: At least two comparable quotes where market permits.\nRow 3: Total commitment: VND 50,000,001-200,000,000 | Required approval: Department head + Procurement + Finance | Additional condition: At least three written quotes or approved sole-source rationale.\nRow 4: Total commitment: Above VND 200,000,000 | Required approval: Executive Operations Council + Finance | Additional condition: Documented sourcing evaluation and risk review.",
+          "metadata": {
+            "bbox": [
+              50.561825234483145,
+              557.7113366172055,
+              544.3709370377287,
+              672.8796672334107
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 781,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 53,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 1,
+            "token_count": 204,
+            "element_type": "table",
+            "section_path": [
+              "Appendix B - Approval limits and operational decision table"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Appendix B - Approval limits and operational decision table",
+            "table_row_end": 4,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 1,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 825,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 1,
+            "table_fragment_index": 0,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -0.3366585373878479,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 50 tri\u1ec7u v\u00e0 50.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 b\u00e1o gi\u00e1?",
+                "en": "How do a purchase of exactly 50 million and 50,000,001 dong differ in terms of approval and quotation?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 374.3757290067151,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 2543.075486086309,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        },
+        {
+          "citation_id": "S2",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Competitive sourcing and quote evaluation\nMandatory rule. For estimated commitments up to VND 5,000,000, one documented quote may be used. From VND 5,000,001 to VND 50,000,000, seek at least two comparable quotes where the market permits. Above VND 50,000,000, seek at least three written quotes or a documented sole-source justification.",
+          "metadata": {
+            "bbox": [
+              51.95,
+              86.61876377952797,
+              535.3760000000001,
+              98.6359611602577
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 272,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "text",
+            "page_number": 20,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "token_count": 85,
+            "element_type": "text",
+            "section_path": [
+              "Competitive sourcing and quote evaluation"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "text",
+            "document_type": "knowledge_document",
+            "heading_level": 1,
+            "parser_engine": "docling",
+            "section_title": "Competitive sourcing and quote evaluation",
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 347,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -1.6304956674575806,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 50 tri\u1ec7u v\u00e0 50.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 b\u00e1o gi\u00e1?",
+                "en": "How do a purchase of exactly 50 million and 50,000,001 dong differ in terms of approval and quotation?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 374.3757290067151,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 2543.075486086309,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        },
+        {
+          "citation_id": "S3",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Approval matrix and monetary thresholds\nMandatory rule. The default delegated authority for a single commitment is: up to VND 5,000,000-line manager; VND 5,000,001-50,000,000-department head; VND 50,000,001-200,000,000-department head plus Procurement and Finance; above VND 200,000,000-Executive Operations Council plus Finance.",
+          "metadata": {
+            "bbox": [
+              51.95,
+              86.61876377952797,
+              450.8840000000001,
+              98.6359611602577
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 286,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "text",
+            "page_number": 21,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "token_count": 87,
+            "element_type": "text",
+            "section_path": [
+              "Approval matrix and monetary thresholds"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "text",
+            "document_type": "knowledge_document",
+            "heading_level": 1,
+            "parser_engine": "docling",
+            "section_title": "Approval matrix and monetary thresholds",
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 338,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -1.7094221115112305,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 50 tri\u1ec7u v\u00e0 50.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 b\u00e1o gi\u00e1?",
+                "en": "How do a purchase of exactly 50 million and 50,000,001 dong differ in terms of approval and quotation?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 374.3757290067151,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 2543.075486086309,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 7,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 7323.7
+    },
+    {
+      "phase": "first_pass",
+      "case_id": "V3",
+      "expected_route": "knowledge",
+      "question": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 5 tri\u1ec7u v\u00e0 5.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 \u0111i\u1ec1u ki\u1ec7n b\u1ed5 sung?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 2,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 395.5579650355503,
+          "embedding": 445.5626669805497,
+          "database_retrieval": 1889.5613610511646,
+          "retrieval_fusion": 0.6647140253335238,
+          "query_translation": 398.7895109457895,
+          "reranking": 5370.749337947927,
+          "answer_generation": 1087.9425680032,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 8119.887084001675,
+          "agent_workflow": 10382.728537078947,
+          "telemetry_persistence": null,
+          "claim_verification": 775.9539879625663
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 395.5579650355503,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 445.5626669805497,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 398.7895109457895,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1889.5613610511646,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.38400001358240843,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.2807140117511153,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 5370.749337947927,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 8119.887084001675,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 1087.9425680032,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 775.9539879625663,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 10382.728537078947,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 10382.843850995414,
+        "response_ready_ms": 10382.982579991221
+      },
+      "answer_characters": 995,
+      "error": null,
+      "answer": "Kho\u1ea3n mua s\u1eafm c\u00f3 t\u1ed5ng cam k\u1ebft l\u00ean \u0111\u1ebfn 5.000.000 VND v\u00e0 kho\u1ea3n t\u1eeb 5.000.001 \u0111\u1ebfn 50.000.000 VND c\u00f3 s\u1ef1 kh\u00e1c bi\u1ec7t v\u1ec1 c\u1ea5p \u0111\u1ed9 ph\u00ea duy\u1ec7t v\u00e0 \u0111i\u1ec1u ki\u1ec7n b\u1ed5 sung nh\u01b0 sau:\n\n*   **Kho\u1ea3n mua s\u1eafm l\u00ean \u0111\u1ebfn 5.000.000 VND:**\n    *   **Ph\u00ea duy\u1ec7t:** Y\u00eau c\u1ea7u ph\u00ea duy\u1ec7t t\u1eeb Qu\u1ea3n l\u00fd tr\u1ef1c ti\u1ebfp (Line manager) [S1].\n    *   **\u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung:** C\u1ea7n m\u1ed9t b\u00e1o gi\u00e1 \u0111\u01b0\u1ee3c ghi nh\u1eadn (One documented quote) v\u00e0 ng\u00e2n s\u00e1ch \u0111\u00e3 \u0111\u01b0\u1ee3c x\u00e1c nh\u1eadn (budget confirmed) [S1].\n    *   **Quy t\u1eafc b\u1eaft bu\u1ed9c:** C\u00f3 th\u1ec3 s\u1eed d\u1ee5ng m\u1ed9t b\u00e1o gi\u00e1 \u0111\u01b0\u1ee3c ghi nh\u1eadn cho c\u00e1c cam k\u1ebft \u01b0\u1edbc t\u00ednh l\u00ean \u0111\u1ebfn 5.000.000 VND [S2].\n\n*   **Kho\u1ea3n mua s\u1eafm t\u1eeb 5.000.001 \u0111\u1ebfn 50.000.000 VND:**\n    *   **Ph\u00ea duy\u1ec7t:** Y\u00eau c\u1ea7u ph\u00ea duy\u1ec7t t\u1eeb Tr\u01b0\u1edfng ph\u00f2ng ban (Department head) [S1].\n    *   **\u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung:** C\u1ea7n \u00edt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng khi th\u1ecb tr\u01b0\u1eddng cho ph\u00e9p (At least two comparable quotes where market permits) [S1].\n    *   **Quy t\u1eafc b\u1eaft bu\u1ed9c:** C\u1ea7n t\u00ecm ki\u1ebfm \u00edt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng khi th\u1ecb tr\u01b0\u1eddng cho ph\u00e9p cho c\u00e1c cam k\u1ebft t\u1eeb 5.000.001 \u0111\u1ebfn 50.000.000 VND [S2].",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Appendix B - Approval limits and operational decision table\nColumns: Total commitment | Required approval | Additional condition\nRow 1: Total commitment: Up to VND 5,000,000 | Required approval: Line manager | Additional condition: One documented quote; budget confirmed.\nRow 2: Total commitment: VND 5,000,001-50,000,000 | Required approval: Department head | Additional condition: At least two comparable quotes where market permits.\nRow 3: Total commitment: VND 50,000,001-200,000,000 | Required approval: Department head + Procurement + Finance | Additional condition: At least three written quotes or approved sole-source rationale.\nRow 4: Total commitment: Above VND 200,000,000 | Required approval: Executive Operations Council + Finance | Additional condition: Documented sourcing evaluation and risk review.",
+          "metadata": {
+            "bbox": [
+              50.561825234483145,
+              557.7113366172055,
+              544.3709370377287,
+              672.8796672334107
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 781,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 53,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 1,
+            "token_count": 204,
+            "element_type": "table",
+            "section_path": [
+              "Appendix B - Approval limits and operational decision table"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Appendix B - Approval limits and operational decision table",
+            "table_row_end": 4,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 1,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 825,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 1,
+            "table_fragment_index": 0,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": 0.042272716760635376,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 5 tri\u1ec7u v\u00e0 5.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 \u0111i\u1ec1u ki\u1ec7n b\u1ed5 sung?",
+                "en": "How do a purchase of exactly 5 million and 5,000,001 dong differ in terms of approval and additional conditions?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 398.8058570539579,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 5370.6339340424165,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        },
+        {
+          "citation_id": "S2",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Competitive sourcing and quote evaluation\nMandatory rule. For estimated commitments up to VND 5,000,000, one documented quote may be used. From VND 5,000,001 to VND 50,000,000, seek at least two comparable quotes where the market permits. Above VND 50,000,000, seek at least three written quotes or a documented sole-source justification.",
+          "metadata": {
+            "bbox": [
+              51.95,
+              86.61876377952797,
+              535.3760000000001,
+              98.6359611602577
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 272,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "text",
+            "page_number": 20,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "token_count": 85,
+            "element_type": "text",
+            "section_path": [
+              "Competitive sourcing and quote evaluation"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "text",
+            "document_type": "knowledge_document",
+            "heading_level": 1,
+            "parser_engine": "docling",
+            "section_title": "Competitive sourcing and quote evaluation",
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 347,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -1.018326759338379,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 5 tri\u1ec7u v\u00e0 5.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 \u0111i\u1ec1u ki\u1ec7n b\u1ed5 sung?",
+                "en": "How do a purchase of exactly 5 million and 5,000,001 dong differ in terms of approval and additional conditions?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 398.8058570539579,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 5370.6339340424165,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 6,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 10395.35
+    },
+    {
+      "phase": "first_pass",
+      "case_id": "V4",
+      "expected_route": "knowledge",
+      "question": "Theo Ph\u1ee5 l\u1ee5c C, s\u1ed1 l\u01b0\u1ee3ng b\u1eb1ng 0 c\u00f3 \u0111\u1ea1t \u0111i\u1ec1u ki\u1ec7n c\u1ee7a y\u00eau c\u1ea7u mua s\u1eafm kh\u00f4ng? C\u00f2n ph\u1ea3i ki\u1ec3m tra g\u00ec kh\u00e1c?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 1,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 395.58591006789356,
+          "embedding": 142.06346101127565,
+          "database_retrieval": 1941.224045935087,
+          "retrieval_fusion": 0.8857900975272059,
+          "query_translation": 378.3905319869518,
+          "reranking": 4745.0689459219575,
+          "answer_generation": 648.351042997092,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 7223.044466925785,
+          "agent_workflow": 8748.737988062203,
+          "telemetry_persistence": null,
+          "claim_verification": 479.83124596066773
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 395.58591006789356,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 142.06346101127565,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 378.3905319869518,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1941.224045935087,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.45811303425580263,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.4276770632714033,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 4745.0689459219575,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 7223.044466925785,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 648.351042997092,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 479.83124596066773,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 8748.737988062203,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 8748.84524103254,
+        "response_ready_ms": 8748.926684027538
+      },
+      "answer_characters": 405,
+      "error": null,
+      "answer": "Theo Ph\u1ee5 l\u1ee5c C, s\u1ed1 l\u01b0\u1ee3ng b\u1eb1ng 0 kh\u00f4ng \u0111\u1ea1t \u0111i\u1ec1u ki\u1ec7n c\u1ee7a y\u00eau c\u1ea7u mua s\u1eafm (Purchase requisition) v\u00ec \u0111i\u1ec1u ki\u1ec7n ch\u1eb7n (block condition) y\u00eau c\u1ea7u s\u1ed1 l\u01b0\u1ee3ng ph\u1ea3i l\u1edbn h\u01a1n 0 [S1].\n\nNgo\u00e0i ra, \u0111\u1ed1i v\u1edbi y\u00eau c\u1ea7u mua s\u1eafm, c\u00f2n ph\u1ea3i ki\u1ec3m tra c\u00e1c \u0111i\u1ec1u ki\u1ec7n ch\u1eb7n kh\u00e1c bao g\u1ed3m: kh\u00f4ng c\u00f3 y\u00eau c\u1ea7u m\u1edf tr\u00f9ng l\u1eb7p (no duplicate open request) v\u00e0 ph\u1ea3i ghi l\u1ea1i con \u0111\u01b0\u1eddng ng\u00e2n s\u00e1ch v\u00e0 ngu\u1ed3n cung (budget and sourcing path recorded) [S1].",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Appendix C - Standard forms and minimum validation\nColumns: Form | Minimum fields | Validation / block conditions\nRow 1: Form: Leave request | Minimum fields: Employee reference; leave category; start/end dates; full/partial day; handover; submitted timestamp. | Validation / block conditions: End date >= start date; overlap reviewed; protected leave routed to HR.\nRow 2: Form: Expense claim | Minimum fields: Claimant; transaction date; category; amount; currency; purpose; cost center; receipt reference. | Validation / block conditions: Amount >= 0; currency explicit; duplicate/evidence checks complete; authorized approval before payment.\nRow 3: Form: Purchase requisition | Minimum fields: Requester; department; reason; product/specification; quantity; estimate; currency; budget owner. | Validation / block conditions: Quantity > 0; no duplicate open request; budget and sourcing path recorded.",
+          "metadata": {
+            "bbox": [
+              50.62337207537161,
+              70.6450771954145,
+              544.110377440916,
+              301.267101453295
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 790,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 54,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 0,
+            "token_count": 237,
+            "element_type": "table",
+            "section_path": [
+              "Appendix C - Standard forms and minimum validation"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Appendix C - Standard forms and minimum validation",
+            "table_row_end": 3,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 1,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 912,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 3,
+            "table_fragment_index": 0,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": 3.5331461429595947,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Theo Ph\u1ee5 l\u1ee5c C, s\u1ed1 l\u01b0\u1ee3ng b\u1eb1ng 0 c\u00f3 \u0111\u1ea1t \u0111i\u1ec1u ki\u1ec7n c\u1ee7a y\u00eau c\u1ea7u mua s\u1eafm kh\u00f4ng? C\u00f2n ph\u1ea3i ki\u1ec3m tra g\u00ec kh\u00e1c?",
+                "en": "According to Appendix C, does a quantity of 0 meet the conditions of the procurement requirement? What else needs to be checked?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 378.40150902047753,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 4744.970766012557,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 2,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 8756.59
+    },
+    {
+      "phase": "first_pass",
+      "case_id": "V5",
+      "expected_route": "knowledge",
+      "question": "Bi\u00ean b\u1ea3n nh\u1eadn h\u00e0ng c\u00f3 l\u01b0\u1ee3ng giao 100, ch\u1ea5p nh\u1eadn 90, t\u1eeb ch\u1ed1i 15 c\u00f3 h\u1ee3p l\u1ec7 v\u1ec1 s\u1ed1 l\u01b0\u1ee3ng kh\u00f4ng? V\u00ec sao?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 1,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 412.4359739944339,
+          "embedding": 425.3616019850597,
+          "database_retrieval": 1623.3244609320536,
+          "retrieval_fusion": 0.6099030142650008,
+          "query_translation": 414.2340120160952,
+          "reranking": 2537.458084989339,
+          "answer_generation": 612.2390310047194,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 5017.049615969881,
+          "agent_workflow": 6568.369947024621,
+          "telemetry_persistence": null,
+          "claim_verification": 524.7006870340556
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 412.4359739944339,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 425.3616019850597,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 414.2340120160952,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1623.3244609320536,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.2406539861112833,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.3692490281537175,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 2537.458084989339,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 5017.049615969881,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 612.2390310047194,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 524.7006870340556,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 6568.369947024621,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 6568.515247083269,
+        "response_ready_ms": 6568.727317033336
+      },
+      "answer_characters": 314,
+      "error": null,
+      "answer": "Bi\u00ean b\u1ea3n nh\u1eadn h\u00e0ng v\u1edbi l\u01b0\u1ee3ng giao 100, ch\u1ea5p nh\u1eadn 90 v\u00e0 t\u1eeb ch\u1ed1i 15 **kh\u00f4ng h\u1ee3p l\u1ec7** v\u1ec1 s\u1ed1 l\u01b0\u1ee3ng [S2].\n\nL\u00fd do l\u00e0 v\u00ec t\u1ed5ng s\u1ed1 l\u01b0\u1ee3ng ch\u1ea5p nh\u1eadn v\u00e0 t\u1eeb ch\u1ed1i (90 + 15 = 105) \u0111\u00e3 v\u01b0\u1ee3t qu\u00e1 s\u1ed1 l\u01b0\u1ee3ng giao (100), trong khi quy \u0111\u1ecbnh y\u00eau c\u1ea7u t\u1ed5ng s\u1ed1 l\u01b0\u1ee3ng ch\u1ea5p nh\u1eadn c\u1ed9ng v\u1edbi s\u1ed1 l\u01b0\u1ee3ng t\u1eeb ch\u1ed1i kh\u00f4ng \u0111\u01b0\u1ee3c v\u01b0\u1ee3t qu\u00e1 s\u1ed1 l\u01b0\u1ee3ng giao [S2].",
+      "evidence": [
+        {
+          "citation_id": "S2",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Control requirements\n\uf0b7 Accepted plus rejected quantity cannot exceed delivered quantity.",
+          "metadata": {
+            "bbox": [
+              57.7,
+              253.318763779528,
+              352.379,
+              265.558763779528
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 506,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "text",
+            "page_number": 35,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "token_count": 20,
+            "element_type": "text",
+            "section_path": [
+              "Control requirements"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "list_item",
+            "document_type": "knowledge_document",
+            "heading_level": 1,
+            "parser_engine": "docling",
+            "section_title": "Control requirements",
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 97,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -2.6346004009246826,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Bi\u00ean b\u1ea3n nh\u1eadn h\u00e0ng c\u00f3 l\u01b0\u1ee3ng giao 100, ch\u1ea5p nh\u1eadn 90, t\u1eeb ch\u1ed1i 15 c\u00f3 h\u1ee3p l\u1ec7 v\u1ec1 s\u1ed1 l\u01b0\u1ee3ng kh\u00f4ng? V\u00ec sao?",
+                "en": "Is a goods receipt note with a delivered quantity of 100, accepted 90, and rejected 15 valid in terms of quantity? Why?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 414.25108700059354,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 2537.3452939093113,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 2,
+        "arithmetic_checked": 1
+      },
+      "http_elapsed_ms": 6577.0
+    },
+    {
+      "phase": "first_pass",
+      "case_id": "V6",
+      "expected_route": "knowledge",
+      "question": "Theo Ph\u1ee5 l\u1ee5c B v\u00e0 C, kho\u1ea3n mua s\u1eafm 80 tri\u1ec7u c\u1ea7n ai duy\u1ec7t, \u0111i\u1ec1u ki\u1ec7n b\u00e1o gi\u00e1 l\u00e0 g\u00ec v\u00e0 \u0111\u01a1n mua h\u00e0ng ch\u1ec9 \u0111\u01b0\u1ee3c ph\u00e1t h\u00e0nh khi n\u00e0o?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 3,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 431.0172999976203,
+          "embedding": 324.3163439910859,
+          "database_retrieval": 3516.3949980633333,
+          "retrieval_fusion": 2.4827930610626936,
+          "query_translation": 742.9103229660541,
+          "reranking": 4064.7894490975887,
+          "answer_generation": 851.0374460602179,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 8680.188532918692,
+          "agent_workflow": 10868.020794005133,
+          "telemetry_persistence": null,
+          "claim_verification": 903.8778529502451
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 431.0172999976203,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 250.55226299446076,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 405.4925049422309,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1647.5045760162175,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.2169380895793438,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.34207699354737997,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 2317.9522790014744,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 4636.182038928382,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 73.76408099662513,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 337.4178180238232,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1868.8904220471159,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.8558949921280146,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 1.0678829858079553,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 1746.8371700961143,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 4044.0064939903095,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 851.0374460602179,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 903.8778529502451,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 10868.020794005133,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 10868.133253068663,
+        "response_ready_ms": 10868.377392995171
+      },
+      "answer_characters": 620,
+      "error": null,
+      "answer": "Theo Ph\u1ee5 l\u1ee5c B, kho\u1ea3n mua s\u1eafm c\u00f3 t\u1ed5ng cam k\u1ebft 80 tri\u1ec7u VND (n\u1eb1m trong kho\u1ea3ng t\u1eeb VND 50.000.001 \u0111\u1ebfn 200.000.000) y\u00eau c\u1ea7u s\u1ef1 ph\u00ea duy\u1ec7t c\u1ee7a Tr\u01b0\u1edfng ph\u00f2ng ban + B\u1ed9 ph\u1eadn Mua h\u00e0ng + T\u00e0i ch\u00ednh [S1].\n\u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung cho m\u1ee9c cam k\u1ebft n\u00e0y l\u00e0 ph\u1ea3i c\u00f3 \u00edt nh\u1ea5t ba b\u00e1o gi\u00e1 b\u1eb1ng v\u0103n b\u1ea3n ho\u1eb7c l\u00fd do duy nh\u1ea5t ngu\u1ed3n cung \u0111\u00e3 \u0111\u01b0\u1ee3c ph\u00ea duy\u1ec7t [S1].\n\u0110\u01a1n mua h\u00e0ng ch\u1ec9 \u0111\u01b0\u1ee3c ph\u00e1t h\u00e0nh sau khi c\u00e1c ki\u1ec3m tra v\u1ec1 y\u00eau c\u1ea7u mua h\u00e0ng, nh\u00e0 cung c\u1ea5p, ngu\u1ed3n cung, ng\u00e2n s\u00e1ch v\u00e0 ph\u00ea duy\u1ec7t \u0111\u00e3 ho\u00e0n t\u1ea5t [S2].\nNgo\u00e0i ra, theo Ph\u1ee5 l\u1ee5c C, \u0111\u01a1n mua h\u00e0ng ch\u1ec9 \u0111\u01b0\u1ee3c ph\u00e1t h\u00e0nh sau khi c\u00f3 ph\u00ea duy\u1ec7t, t\u1ed5ng gi\u00e1 tr\u1ecb kh\u1edbp v\u1edbi th\u1ea9m quy\u1ec1n v\u00e0 c\u00e1c s\u1eeda \u0111\u1ed5i \u0111\u01b0\u1ee3c phi\u00ean b\u1ea3n h\u00f3a [S3].",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Appendix B - Approval limits and operational decision table\nColumns: Total commitment | Required approval | Additional condition\nRow 1: Total commitment: Up to VND 5,000,000 | Required approval: Line manager | Additional condition: One documented quote; budget confirmed.\nRow 2: Total commitment: VND 5,000,001-50,000,000 | Required approval: Department head | Additional condition: At least two comparable quotes where market permits.\nRow 3: Total commitment: VND 50,000,001-200,000,000 | Required approval: Department head + Procurement + Finance | Additional condition: At least three written quotes or approved sole-source rationale.\nRow 4: Total commitment: Above VND 200,000,000 | Required approval: Executive Operations Council + Finance | Additional condition: Documented sourcing evaluation and risk review.",
+          "metadata": {
+            "bbox": [
+              50.561825234483145,
+              557.7113366172055,
+              544.3709370377287,
+              672.8796672334107
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 781,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 53,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 1,
+            "token_count": 204,
+            "element_type": "table",
+            "section_path": [
+              "Appendix B - Approval limits and operational decision table"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Appendix B - Approval limits and operational decision table",
+            "table_row_end": 4,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 1,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 825,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 1,
+            "table_fragment_index": 0,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -2.132727861404419,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Theo Ph\u1ee5 l\u1ee5c B v\u00e0 C, kho\u1ea3n mua s\u1eafm 80 tri\u1ec7u c\u1ea7n ai duy\u1ec7t v\u00e0 \u0111i\u1ec1u ki\u1ec7n b\u00e1o gi\u00e1 l\u00e0 g\u00ec?",
+                "en": "According to Appendices B and C, who needs to approve the 80 million purchase, and what are the quotation conditions?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 405.5134759983048,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 2317.869573016651,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        },
+        {
+          "citation_id": "S2",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Purchase order creation and release\nMandatory rule. A PO may be released only after the requisition, supplier, sourcing, budget and approval checks are complete.",
+          "metadata": {
+            "bbox": [
+              51.95,
+              86.61876377952797,
+              538.7149999999999,
+              111.33596116025774
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 300,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "text",
+            "page_number": 22,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "token_count": 38,
+            "element_type": "text",
+            "section_path": [
+              "Purchase order creation and release"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "text",
+            "document_type": "knowledge_document",
+            "heading_level": 1,
+            "parser_engine": "docling",
+            "section_title": "Purchase order creation and release",
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 170,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -0.44345375895500183,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Theo Ph\u1ee5 l\u1ee5c B v\u00e0 C, \u0111\u01a1n mua h\u00e0ng ch\u1ec9 \u0111\u01b0\u1ee3c ph\u00e1t h\u00e0nh khi n\u00e0o?",
+                "en": "According to Appendices B and C, when is a purchase order only issued?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 337.4338729772717,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 1746.745903044939,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        },
+        {
+          "citation_id": "S3",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Appendix C - Standard forms and minimum validation\nColumns: Form | Minimum fields | Validation / block conditions\nRow 4: Form: Purchase order | Minimum fields: PO number; supplier; issue date; currency; line items; quantity; unit price; delivery/payment terms. | Validation / block conditions: Released only after approval; total matches authority; amendments versioned.\nRow 5: Form: Receiving record | Minimum fields: PO/line; delivery note; delivered/accepted/rejected quantities; inspection; receiver. | Validation / block conditions: Accepted + rejected <= delivered; PO valid; nonconforming goods quarantined.\nRow 6: Form: Security incident | Minimum fields: Incident ID; reporter; detected time; severity; affected asset; containment; owner. | Validation / block conditions: Severity assigned; evidence preserved; critical/high incidents escalated immediately.",
+          "metadata": {
+            "bbox": [
+              50.62337207537161,
+              70.6450771954145,
+              544.110377440916,
+              301.267101453295
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 791,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 54,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 0,
+            "token_count": 233,
+            "element_type": "table",
+            "section_path": [
+              "Appendix C - Standard forms and minimum validation"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Appendix C - Standard forms and minimum validation",
+            "table_row_end": 6,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 4,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 875,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 3,
+            "table_fragment_index": 1,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -2.156057834625244,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Theo Ph\u1ee5 l\u1ee5c B v\u00e0 C, kho\u1ea3n mua s\u1eafm 80 tri\u1ec7u c\u1ea7n ai duy\u1ec7t v\u00e0 \u0111i\u1ec1u ki\u1ec7n b\u00e1o gi\u00e1 l\u00e0 g\u00ec?",
+                "en": "According to Appendices B and C, who needs to approve the 80 million purchase, and what are the quotation conditions?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 405.5134759983048,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 2317.869573016651,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 4,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 10879.09
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "V1",
+      "expected_route": "knowledge",
+      "question": "Theo Ph\u1ee5 l\u1ee5c B, kho\u1ea3n mua s\u1eafm 80 tri\u1ec7u \u0111\u1ed3ng c\u1ea7n nh\u1eefng b\u00ean n\u00e0o ph\u00ea duy\u1ec7t v\u00e0 c\u1ea7n bao nhi\u00eau b\u00e1o gi\u00e1?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 1,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 366.48453294765204,
+          "embedding": 176.01205699611455,
+          "database_retrieval": 1894.4166949950159,
+          "retrieval_fusion": 3.8878488121554255,
+          "query_translation": 0.010564923286437988,
+          "reranking": 3581.286658067256,
+          "answer_generation": 794.6983530418947,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 5675.4431169247255,
+          "agent_workflow": 7396.666563930921,
+          "telemetry_persistence": null,
+          "claim_verification": 558.3482530200854
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 366.48453294765204,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 176.01205699611455,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.010564923286437988,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1894.4166949950159,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.379173900000751,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 3.5086749121546745,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 3581.286658067256,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 5675.4431169247255,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 794.6983530418947,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 558.3482530200854,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 7396.666563930921,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 7396.786054014228,
+        "response_ready_ms": 7397.6001649862155
+      },
+      "answer_characters": 439,
+      "error": null,
+      "answer": "Theo Ph\u1ee5 l\u1ee5c B, kho\u1ea3n mua s\u1eafm 80 tri\u1ec7u \u0111\u1ed3ng (VND 80,000,000) thu\u1ed9c ph\u1ea1m vi t\u1eeb VND 50,000,001 \u0111\u1ebfn VND 200,000,000 [S1].\n\nC\u00e1c b\u00ean c\u1ea7n ph\u00ea duy\u1ec7t l\u00e0: Tr\u01b0\u1edfng ph\u00f2ng ban (Department head), B\u1ed9 ph\u1eadn Mua h\u00e0ng (Procurement) v\u00e0 B\u1ed9 ph\u1eadn T\u00e0i ch\u00ednh (Finance) [S1].\n\nS\u1ed1 l\u01b0\u1ee3ng b\u00e1o gi\u00e1 c\u1ea7n thi\u1ebft l\u00e0: T\u1ed1i thi\u1ec3u ba b\u00e1o gi\u00e1 b\u1eb1ng v\u0103n b\u1ea3n (at least three written quotes) ho\u1eb7c l\u00fd do duy nh\u1ea5t ngu\u1ed3n cung c\u1ea5p \u0111\u00e3 \u0111\u01b0\u1ee3c ph\u00ea duy\u1ec7t (approved sole-source rationale) [S1].",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Appendix B - Approval limits and operational decision table\nColumns: Total commitment | Required approval | Additional condition\nRow 1: Total commitment: Up to VND 5,000,000 | Required approval: Line manager | Additional condition: One documented quote; budget confirmed.\nRow 2: Total commitment: VND 5,000,001-50,000,000 | Required approval: Department head | Additional condition: At least two comparable quotes where market permits.\nRow 3: Total commitment: VND 50,000,001-200,000,000 | Required approval: Department head + Procurement + Finance | Additional condition: At least three written quotes or approved sole-source rationale.\nRow 4: Total commitment: Above VND 200,000,000 | Required approval: Executive Operations Council + Finance | Additional condition: Documented sourcing evaluation and risk review.",
+          "metadata": {
+            "bbox": [
+              50.561825234483145,
+              557.7113366172055,
+              544.3709370377287,
+              672.8796672334107
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 781,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 53,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 1,
+            "token_count": 204,
+            "element_type": "table",
+            "section_path": [
+              "Appendix B - Approval limits and operational decision table"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Appendix B - Approval limits and operational decision table",
+            "table_row_end": 4,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 1,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 825,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 1,
+            "table_fragment_index": 0,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -0.28645122051239014,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Theo Ph\u1ee5 l\u1ee5c B, kho\u1ea3n mua s\u1eafm 80 tri\u1ec7u \u0111\u1ed3ng c\u1ea7n nh\u1eefng b\u00ean n\u00e0o ph\u00ea duy\u1ec7t v\u00e0 c\u1ea7n bao nhi\u00eau b\u00e1o gi\u00e1?",
+                "en": "According to Appendix B, which parties need to approve the 80 million VND purchase, and how many quotations are required?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 0.025858054868876934,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 3581.1499509727582,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 3,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 7406.94
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "V2",
+      "expected_route": "knowledge",
+      "question": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 50 tri\u1ec7u v\u00e0 50.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 b\u00e1o gi\u00e1?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 3,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 383.68247996550053,
+          "embedding": 137.92844698764384,
+          "database_retrieval": 1844.7597699705511,
+          "retrieval_fusion": 0.6983060156926513,
+          "query_translation": 0.013821059837937355,
+          "reranking": 3391.779091907665,
+          "answer_generation": 1006.7689450224862,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 5386.2968439934775,
+          "agent_workflow": 7670.443344977684,
+          "telemetry_persistence": null,
+          "claim_verification": 886.8342209607363
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 383.68247996550053,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 137.92844698764384,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.013821059837937355,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1844.7597699705511,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.383450067602098,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.3148559480905533,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 3391.779091907665,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 5386.2968439934775,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 1006.7689450224862,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 886.8342209607363,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 7670.443344977684,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 7670.632331050001,
+        "response_ready_ms": 7670.741586014628
+      },
+      "answer_characters": 991,
+      "error": null,
+      "answer": "\u0110\u1ed1i v\u1edbi kho\u1ea3n mua s\u1eafm c\u00f3 gi\u00e1 tr\u1ecb \u0111\u00fang 50.000.000 VND, ng\u01b0\u1eddi ph\u00ea duy\u1ec7t l\u00e0 Tr\u01b0\u1edfng ph\u00f2ng (Department head) v\u00e0 \u0111i\u1ec1u ki\u1ec7n b\u1ed5 sung l\u00e0 ph\u1ea3i c\u00f3 \u00edt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng khi th\u1ecb tr\u01b0\u1eddng cho ph\u00e9p [S1]. Quy \u0111\u1ecbnh n\u00e0y c\u0169ng \u0111\u01b0\u1ee3c x\u00e1c nh\u1eadn trong ph\u1ea7n ma tr\u1eadn ph\u00ea duy\u1ec7t, n\u01a1i m\u1ee9c t\u1eeb 5.000.001 \u0111\u1ebfn 50.000.000 VND thu\u1ed9c th\u1ea9m quy\u1ec1n c\u1ee7a Tr\u01b0\u1edfng ph\u00f2ng [S3], v\u00e0 y\u00eau c\u1ea7u v\u1ec1 b\u00e1o gi\u00e1 cho m\u1ee9c n\u00e0y l\u00e0 t\u00ecm ki\u1ebfm \u00edt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng [S2].\n\n\u0110\u1ed1i v\u1edbi kho\u1ea3n mua s\u1eafm c\u00f3 gi\u00e1 tr\u1ecb 50.000.001 VND, ng\u01b0\u1eddi ph\u00ea duy\u1ec7t bao g\u1ed3m Tr\u01b0\u1edfng ph\u00f2ng, B\u1ed9 ph\u1eadn Mua h\u00e0ng v\u00e0 B\u1ed9 ph\u1eadn T\u00e0i ch\u00ednh (Department head + Procurement + Finance) [S1]. \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung cho m\u1ee9c n\u00e0y l\u00e0 ph\u1ea3i c\u00f3 \u00edt nh\u1ea5t ba b\u00e1o gi\u00e1 b\u1eb1ng v\u0103n b\u1ea3n ho\u1eb7c l\u00fd do duy nh\u1ea5t ngu\u1ed3n cung \u0111\u01b0\u1ee3c ph\u00ea duy\u1ec7t [S1]. Quy \u0111\u1ecbnh v\u1ec1 th\u1ea9m quy\u1ec1n ph\u00ea duy\u1ec7t cho m\u1ee9c t\u1eeb 50.000.001 \u0111\u1ebfn 200.000.000 VND c\u0169ng x\u00e1c nh\u1eadn c\u1ea7n s\u1ef1 tham gia c\u1ee7a Tr\u01b0\u1edfng ph\u00f2ng c\u00f9ng Mua h\u00e0ng v\u00e0 T\u00e0i ch\u00ednh [S3], v\u00e0 y\u00eau c\u1ea7u b\u00e1o gi\u00e1 l\u00e0 t\u00ecm ki\u1ebfm \u00edt nh\u1ea5t ba b\u00e1o gi\u00e1 b\u1eb1ng v\u0103n b\u1ea3n ho\u1eb7c l\u00fd do duy nh\u1ea5t ngu\u1ed3n cung \u0111\u01b0\u1ee3c ghi nh\u1eadn [S2].",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Appendix B - Approval limits and operational decision table\nColumns: Total commitment | Required approval | Additional condition\nRow 1: Total commitment: Up to VND 5,000,000 | Required approval: Line manager | Additional condition: One documented quote; budget confirmed.\nRow 2: Total commitment: VND 5,000,001-50,000,000 | Required approval: Department head | Additional condition: At least two comparable quotes where market permits.\nRow 3: Total commitment: VND 50,000,001-200,000,000 | Required approval: Department head + Procurement + Finance | Additional condition: At least three written quotes or approved sole-source rationale.\nRow 4: Total commitment: Above VND 200,000,000 | Required approval: Executive Operations Council + Finance | Additional condition: Documented sourcing evaluation and risk review.",
+          "metadata": {
+            "bbox": [
+              50.561825234483145,
+              557.7113366172055,
+              544.3709370377287,
+              672.8796672334107
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 781,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 53,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 1,
+            "token_count": 204,
+            "element_type": "table",
+            "section_path": [
+              "Appendix B - Approval limits and operational decision table"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Appendix B - Approval limits and operational decision table",
+            "table_row_end": 4,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 1,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 825,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 1,
+            "table_fragment_index": 0,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -0.3366585373878479,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 50 tri\u1ec7u v\u00e0 50.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 b\u00e1o gi\u00e1?",
+                "en": "How do a purchase of exactly 50 million and 50,000,001 dong differ in terms of approval and quotation?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 0.03860809374600649,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 3391.705590998754,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        },
+        {
+          "citation_id": "S2",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Competitive sourcing and quote evaluation\nMandatory rule. For estimated commitments up to VND 5,000,000, one documented quote may be used. From VND 5,000,001 to VND 50,000,000, seek at least two comparable quotes where the market permits. Above VND 50,000,000, seek at least three written quotes or a documented sole-source justification.",
+          "metadata": {
+            "bbox": [
+              51.95,
+              86.61876377952797,
+              535.3760000000001,
+              98.6359611602577
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 272,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "text",
+            "page_number": 20,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "token_count": 85,
+            "element_type": "text",
+            "section_path": [
+              "Competitive sourcing and quote evaluation"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "text",
+            "document_type": "knowledge_document",
+            "heading_level": 1,
+            "parser_engine": "docling",
+            "section_title": "Competitive sourcing and quote evaluation",
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 347,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -1.6304956674575806,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 50 tri\u1ec7u v\u00e0 50.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 b\u00e1o gi\u00e1?",
+                "en": "How do a purchase of exactly 50 million and 50,000,001 dong differ in terms of approval and quotation?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 0.03860809374600649,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 3391.705590998754,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        },
+        {
+          "citation_id": "S3",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Approval matrix and monetary thresholds\nMandatory rule. The default delegated authority for a single commitment is: up to VND 5,000,000-line manager; VND 5,000,001-50,000,000-department head; VND 50,000,001-200,000,000-department head plus Procurement and Finance; above VND 200,000,000-Executive Operations Council plus Finance.",
+          "metadata": {
+            "bbox": [
+              51.95,
+              86.61876377952797,
+              450.8840000000001,
+              98.6359611602577
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 286,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "text",
+            "page_number": 21,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "token_count": 87,
+            "element_type": "text",
+            "section_path": [
+              "Approval matrix and monetary thresholds"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "text",
+            "document_type": "knowledge_document",
+            "heading_level": 1,
+            "parser_engine": "docling",
+            "section_title": "Approval matrix and monetary thresholds",
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 338,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -1.7094221115112305,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 50 tri\u1ec7u v\u00e0 50.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 b\u00e1o gi\u00e1?",
+                "en": "How do a purchase of exactly 50 million and 50,000,001 dong differ in terms of approval and quotation?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 0.03860809374600649,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 3391.705590998754,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 7,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 7685.57
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "V3",
+      "expected_route": "knowledge",
+      "question": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 5 tri\u1ec7u v\u00e0 5.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 \u0111i\u1ec1u ki\u1ec7n b\u1ed5 sung?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 2,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 393.77459906972945,
+          "embedding": 311.01377704180777,
+          "database_retrieval": 1937.0618460234255,
+          "retrieval_fusion": 1.0723309824243188,
+          "query_translation": 0.01772597897797823,
+          "reranking": 1680.0665609771386,
+          "answer_generation": 1138.4236849844456,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 3945.1666169334203,
+          "agent_workflow": 6273.641559993848,
+          "telemetry_persistence": null,
+          "claim_verification": 793.6151829781011
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 393.77459906972945,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 311.01377704180777,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.01772597897797823,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1937.0618460234255,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.6819210248067975,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.3904099576175213,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 1680.0665609771386,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 3945.1666169334203,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 1138.4236849844456,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 793.6151829781011,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 6273.641559993848,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 6273.755801958032,
+        "response_ready_ms": 6274.497182923369
+      },
+      "answer_characters": 995,
+      "error": null,
+      "answer": "Kho\u1ea3n mua s\u1eafm c\u00f3 t\u1ed5ng cam k\u1ebft l\u00ean \u0111\u1ebfn 5.000.000 VND v\u00e0 kho\u1ea3n t\u1eeb 5.000.001 \u0111\u1ebfn 50.000.000 VND c\u00f3 s\u1ef1 kh\u00e1c bi\u1ec7t v\u1ec1 c\u1ea5p \u0111\u1ed9 ph\u00ea duy\u1ec7t v\u00e0 \u0111i\u1ec1u ki\u1ec7n b\u1ed5 sung nh\u01b0 sau:\n\n*   **Kho\u1ea3n mua s\u1eafm l\u00ean \u0111\u1ebfn 5.000.000 VND:**\n    *   **Ph\u00ea duy\u1ec7t:** Y\u00eau c\u1ea7u ph\u00ea duy\u1ec7t t\u1eeb Qu\u1ea3n l\u00fd tr\u1ef1c ti\u1ebfp (Line manager) [S1].\n    *   **\u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung:** C\u1ea7n m\u1ed9t b\u00e1o gi\u00e1 \u0111\u01b0\u1ee3c ghi nh\u1eadn (One documented quote) v\u00e0 ng\u00e2n s\u00e1ch \u0111\u00e3 \u0111\u01b0\u1ee3c x\u00e1c nh\u1eadn (budget confirmed) [S1].\n    *   **Quy t\u1eafc b\u1eaft bu\u1ed9c:** C\u00f3 th\u1ec3 s\u1eed d\u1ee5ng m\u1ed9t b\u00e1o gi\u00e1 \u0111\u01b0\u1ee3c ghi nh\u1eadn cho c\u00e1c cam k\u1ebft \u01b0\u1edbc t\u00ednh l\u00ean \u0111\u1ebfn 5.000.000 VND [S2].\n\n*   **Kho\u1ea3n mua s\u1eafm t\u1eeb 5.000.001 \u0111\u1ebfn 50.000.000 VND:**\n    *   **Ph\u00ea duy\u1ec7t:** Y\u00eau c\u1ea7u ph\u00ea duy\u1ec7t t\u1eeb Tr\u01b0\u1edfng ph\u00f2ng ban (Department head) [S1].\n    *   **\u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung:** C\u1ea7n \u00edt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng khi th\u1ecb tr\u01b0\u1eddng cho ph\u00e9p (At least two comparable quotes where market permits) [S1].\n    *   **Quy t\u1eafc b\u1eaft bu\u1ed9c:** C\u1ea7n t\u00ecm ki\u1ebfm \u00edt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng khi th\u1ecb tr\u01b0\u1eddng cho ph\u00e9p cho c\u00e1c cam k\u1ebft t\u1eeb 5.000.001 \u0111\u1ebfn 50.000.000 VND [S2].",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Appendix B - Approval limits and operational decision table\nColumns: Total commitment | Required approval | Additional condition\nRow 1: Total commitment: Up to VND 5,000,000 | Required approval: Line manager | Additional condition: One documented quote; budget confirmed.\nRow 2: Total commitment: VND 5,000,001-50,000,000 | Required approval: Department head | Additional condition: At least two comparable quotes where market permits.\nRow 3: Total commitment: VND 50,000,001-200,000,000 | Required approval: Department head + Procurement + Finance | Additional condition: At least three written quotes or approved sole-source rationale.\nRow 4: Total commitment: Above VND 200,000,000 | Required approval: Executive Operations Council + Finance | Additional condition: Documented sourcing evaluation and risk review.",
+          "metadata": {
+            "bbox": [
+              50.561825234483145,
+              557.7113366172055,
+              544.3709370377287,
+              672.8796672334107
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 781,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 53,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 1,
+            "token_count": 204,
+            "element_type": "table",
+            "section_path": [
+              "Appendix B - Approval limits and operational decision table"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Appendix B - Approval limits and operational decision table",
+            "table_row_end": 4,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 1,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 825,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 1,
+            "table_fragment_index": 0,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": 0.042272716760635376,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 5 tri\u1ec7u v\u00e0 5.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 \u0111i\u1ec1u ki\u1ec7n b\u1ed5 sung?",
+                "en": "How do a purchase of exactly 5 million and 5,000,001 dong differ in terms of approval and additional conditions?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 0.14544103760272264,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 1679.9584380351007,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        },
+        {
+          "citation_id": "S2",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Competitive sourcing and quote evaluation\nMandatory rule. For estimated commitments up to VND 5,000,000, one documented quote may be used. From VND 5,000,001 to VND 50,000,000, seek at least two comparable quotes where the market permits. Above VND 50,000,000, seek at least three written quotes or a documented sole-source justification.",
+          "metadata": {
+            "bbox": [
+              51.95,
+              86.61876377952797,
+              535.3760000000001,
+              98.6359611602577
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 272,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "text",
+            "page_number": 20,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "token_count": 85,
+            "element_type": "text",
+            "section_path": [
+              "Competitive sourcing and quote evaluation"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "text",
+            "document_type": "knowledge_document",
+            "heading_level": 1,
+            "parser_engine": "docling",
+            "section_title": "Competitive sourcing and quote evaluation",
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 347,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -1.018326759338379,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 5 tri\u1ec7u v\u00e0 5.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 \u0111i\u1ec1u ki\u1ec7n b\u1ed5 sung?",
+                "en": "How do a purchase of exactly 5 million and 5,000,001 dong differ in terms of approval and additional conditions?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 0.14544103760272264,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 1679.9584380351007,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 6,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 6292.64
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "V4",
+      "expected_route": "knowledge",
+      "question": "Theo Ph\u1ee5 l\u1ee5c C, s\u1ed1 l\u01b0\u1ee3ng b\u1eb1ng 0 c\u00f3 \u0111\u1ea1t \u0111i\u1ec1u ki\u1ec7n c\u1ee7a y\u00eau c\u1ea7u mua s\u1eafm kh\u00f4ng? C\u00f2n ph\u1ea3i ki\u1ec3m tra g\u00ec kh\u00e1c?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 1,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 432.90396500378847,
+          "embedding": 77.1455520298332,
+          "database_retrieval": 1948.2801130507141,
+          "retrieval_fusion": 0.7298429263755679,
+          "query_translation": 0.014360994100570679,
+          "reranking": 2077.8871559305117,
+          "answer_generation": 653.4323500236496,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 4116.043719928712,
+          "agent_workflow": 5655.197693966329,
+          "telemetry_persistence": null,
+          "claim_verification": 450.3742739325389
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 432.90396500378847,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 77.1455520298332,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.014360994100570679,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1948.2801130507141,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.4583619302138686,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.2714809961616993,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 2077.8871559305117,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 4116.043719928712,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 653.4323500236496,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 450.3742739325389,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 5655.197693966329,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 5655.317506985739,
+        "response_ready_ms": 5655.446861987002
+      },
+      "answer_characters": 405,
+      "error": null,
+      "answer": "Theo Ph\u1ee5 l\u1ee5c C, s\u1ed1 l\u01b0\u1ee3ng b\u1eb1ng 0 kh\u00f4ng \u0111\u1ea1t \u0111i\u1ec1u ki\u1ec7n c\u1ee7a y\u00eau c\u1ea7u mua s\u1eafm (Purchase requisition) v\u00ec \u0111i\u1ec1u ki\u1ec7n ch\u1eb7n (block condition) y\u00eau c\u1ea7u s\u1ed1 l\u01b0\u1ee3ng ph\u1ea3i l\u1edbn h\u01a1n 0 [S1].\n\nNgo\u00e0i ra, \u0111\u1ed1i v\u1edbi y\u00eau c\u1ea7u mua s\u1eafm, c\u00f2n ph\u1ea3i ki\u1ec3m tra c\u00e1c \u0111i\u1ec1u ki\u1ec7n ch\u1eb7n kh\u00e1c bao g\u1ed3m: kh\u00f4ng c\u00f3 y\u00eau c\u1ea7u m\u1edf tr\u00f9ng l\u1eb7p (no duplicate open request) v\u00e0 ph\u1ea3i ghi l\u1ea1i con \u0111\u01b0\u1eddng ng\u00e2n s\u00e1ch v\u00e0 ngu\u1ed3n cung (budget and sourcing path recorded) [S1].",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Appendix C - Standard forms and minimum validation\nColumns: Form | Minimum fields | Validation / block conditions\nRow 1: Form: Leave request | Minimum fields: Employee reference; leave category; start/end dates; full/partial day; handover; submitted timestamp. | Validation / block conditions: End date >= start date; overlap reviewed; protected leave routed to HR.\nRow 2: Form: Expense claim | Minimum fields: Claimant; transaction date; category; amount; currency; purpose; cost center; receipt reference. | Validation / block conditions: Amount >= 0; currency explicit; duplicate/evidence checks complete; authorized approval before payment.\nRow 3: Form: Purchase requisition | Minimum fields: Requester; department; reason; product/specification; quantity; estimate; currency; budget owner. | Validation / block conditions: Quantity > 0; no duplicate open request; budget and sourcing path recorded.",
+          "metadata": {
+            "bbox": [
+              50.62337207537161,
+              70.6450771954145,
+              544.110377440916,
+              301.267101453295
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 790,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 54,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 0,
+            "token_count": 237,
+            "element_type": "table",
+            "section_path": [
+              "Appendix C - Standard forms and minimum validation"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Appendix C - Standard forms and minimum validation",
+            "table_row_end": 3,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 1,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 912,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 3,
+            "table_fragment_index": 0,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": 3.5331461429595947,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Theo Ph\u1ee5 l\u1ee5c C, s\u1ed1 l\u01b0\u1ee3ng b\u1eb1ng 0 c\u00f3 \u0111\u1ea1t \u0111i\u1ec1u ki\u1ec7n c\u1ee7a y\u00eau c\u1ea7u mua s\u1eafm kh\u00f4ng? C\u00f2n ph\u1ea3i ki\u1ec3m tra g\u00ec kh\u00e1c?",
+                "en": "According to Appendix C, does a quantity of 0 meet the conditions of the procurement requirement? What else needs to be checked?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 0.03850902430713177,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 2077.794185024686,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 2,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 5668.78
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "V5",
+      "expected_route": "knowledge",
+      "question": "Bi\u00ean b\u1ea3n nh\u1eadn h\u00e0ng c\u00f3 l\u01b0\u1ee3ng giao 100, ch\u1ea5p nh\u1eadn 90, t\u1eeb ch\u1ed1i 15 c\u00f3 h\u1ee3p l\u1ec7 v\u1ec1 s\u1ed1 l\u01b0\u1ee3ng kh\u00f4ng? V\u00ec sao?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 1,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 426.0458139469847,
+          "embedding": 440.39316894486547,
+          "database_retrieval": 1679.3833180563524,
+          "retrieval_fusion": 0.5461249966174364,
+          "query_translation": 0.011697993613779545,
+          "reranking": 3111.1084640724584,
+          "answer_generation": 600.9249080670998,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 5240.763828041963,
+          "agent_workflow": 6794.531392981298,
+          "telemetry_persistence": null,
+          "claim_verification": 525.4278860520571
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 426.0458139469847,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 440.39316894486547,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.011697993613779545,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1679.3833180563524,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.237609026953578,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.3085159696638584,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 3111.1084640724584,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 5240.763828041963,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 600.9249080670998,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 525.4278860520571,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 6794.531392981298,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 6794.640798936598,
+        "response_ready_ms": 6795.0804139254615
+      },
+      "answer_characters": 314,
+      "error": null,
+      "answer": "Bi\u00ean b\u1ea3n nh\u1eadn h\u00e0ng v\u1edbi l\u01b0\u1ee3ng giao 100, ch\u1ea5p nh\u1eadn 90 v\u00e0 t\u1eeb ch\u1ed1i 15 **kh\u00f4ng h\u1ee3p l\u1ec7** v\u1ec1 s\u1ed1 l\u01b0\u1ee3ng [S2].\n\nL\u00fd do l\u00e0 v\u00ec t\u1ed5ng s\u1ed1 l\u01b0\u1ee3ng ch\u1ea5p nh\u1eadn v\u00e0 t\u1eeb ch\u1ed1i (90 + 15 = 105) \u0111\u00e3 v\u01b0\u1ee3t qu\u00e1 s\u1ed1 l\u01b0\u1ee3ng giao (100), trong khi quy \u0111\u1ecbnh y\u00eau c\u1ea7u t\u1ed5ng s\u1ed1 l\u01b0\u1ee3ng ch\u1ea5p nh\u1eadn c\u1ed9ng v\u1edbi s\u1ed1 l\u01b0\u1ee3ng t\u1eeb ch\u1ed1i kh\u00f4ng \u0111\u01b0\u1ee3c v\u01b0\u1ee3t qu\u00e1 s\u1ed1 l\u01b0\u1ee3ng giao [S2].",
+      "evidence": [
+        {
+          "citation_id": "S2",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Control requirements\n\uf0b7 Accepted plus rejected quantity cannot exceed delivered quantity.",
+          "metadata": {
+            "bbox": [
+              57.7,
+              253.318763779528,
+              352.379,
+              265.558763779528
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 506,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "text",
+            "page_number": 35,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "token_count": 20,
+            "element_type": "text",
+            "section_path": [
+              "Control requirements"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "list_item",
+            "document_type": "knowledge_document",
+            "heading_level": 1,
+            "parser_engine": "docling",
+            "section_title": "Control requirements",
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 97,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -2.6346004009246826,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Bi\u00ean b\u1ea3n nh\u1eadn h\u00e0ng c\u00f3 l\u01b0\u1ee3ng giao 100, ch\u1ea5p nh\u1eadn 90, t\u1eeb ch\u1ed1i 15 c\u00f3 h\u1ee3p l\u1ec7 v\u1ec1 s\u1ed1 l\u01b0\u1ee3ng kh\u00f4ng? V\u00ec sao?",
+                "en": "Is a goods receipt note with a delivered quantity of 100, accepted 90, and rejected 15 valid in terms of quantity? Why?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 0.03149895928800106,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 3111.0221619019285,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 2,
+        "arithmetic_checked": 1
+      },
+      "http_elapsed_ms": 6803.16
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "V6",
+      "expected_route": "knowledge",
+      "question": "Theo Ph\u1ee5 l\u1ee5c B v\u00e0 C, kho\u1ea3n mua s\u1eafm 80 tri\u1ec7u c\u1ea7n ai duy\u1ec7t, \u0111i\u1ec1u ki\u1ec7n b\u00e1o gi\u00e1 l\u00e0 g\u00ec v\u00e0 \u0111\u01a1n mua h\u00e0ng ch\u1ec9 \u0111\u01b0\u1ee3c ph\u00e1t h\u00e0nh khi n\u00e0o?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 3,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 451.71237306203693,
+          "embedding": 624.2624880978838,
+          "database_retrieval": 3632.8343470813707,
+          "retrieval_fusion": 1.4376749750226736,
+          "query_translation": 0.023214961402118206,
+          "reranking": 5251.660111011006,
+          "answer_generation": 837.1762700844556,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 9539.050661143847,
+          "agent_workflow": 11816.525010974146,
+          "telemetry_persistence": null,
+          "claim_verification": 986.6302789887413
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 451.71237306203693,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 544.6373120648786,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.01396099105477333,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1679.1101510170847,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.2258019521832466,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.41026005055755377,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 2797.8836559923366,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 5035.30910005793,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 79.62517603300512,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.009253970347344875,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1953.724196064286,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.5013589980080724,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.30025397427380085,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 2453.7764550186694,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 4503.741561085917,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 837.1762700844556,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 986.6302789887413,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 11816.525010974146,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 11816.64541293867,
+        "response_ready_ms": 11816.741268965416
+      },
+      "answer_characters": 620,
+      "error": null,
+      "answer": "Theo Ph\u1ee5 l\u1ee5c B, kho\u1ea3n mua s\u1eafm c\u00f3 t\u1ed5ng cam k\u1ebft 80 tri\u1ec7u VND (n\u1eb1m trong kho\u1ea3ng t\u1eeb VND 50.000.001 \u0111\u1ebfn 200.000.000) y\u00eau c\u1ea7u s\u1ef1 ph\u00ea duy\u1ec7t c\u1ee7a Tr\u01b0\u1edfng ph\u00f2ng ban + B\u1ed9 ph\u1eadn Mua h\u00e0ng + T\u00e0i ch\u00ednh [S1].\n\u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung cho m\u1ee9c cam k\u1ebft n\u00e0y l\u00e0 ph\u1ea3i c\u00f3 \u00edt nh\u1ea5t ba b\u00e1o gi\u00e1 b\u1eb1ng v\u0103n b\u1ea3n ho\u1eb7c l\u00fd do duy nh\u1ea5t ngu\u1ed3n cung \u0111\u00e3 \u0111\u01b0\u1ee3c ph\u00ea duy\u1ec7t [S1].\n\u0110\u01a1n mua h\u00e0ng ch\u1ec9 \u0111\u01b0\u1ee3c ph\u00e1t h\u00e0nh sau khi c\u00e1c ki\u1ec3m tra v\u1ec1 y\u00eau c\u1ea7u mua h\u00e0ng, nh\u00e0 cung c\u1ea5p, ngu\u1ed3n cung, ng\u00e2n s\u00e1ch v\u00e0 ph\u00ea duy\u1ec7t \u0111\u00e3 ho\u00e0n t\u1ea5t [S2].\nNgo\u00e0i ra, theo Ph\u1ee5 l\u1ee5c C, \u0111\u01a1n mua h\u00e0ng ch\u1ec9 \u0111\u01b0\u1ee3c ph\u00e1t h\u00e0nh sau khi c\u00f3 ph\u00ea duy\u1ec7t, t\u1ed5ng gi\u00e1 tr\u1ecb kh\u1edbp v\u1edbi th\u1ea9m quy\u1ec1n v\u00e0 c\u00e1c s\u1eeda \u0111\u1ed5i \u0111\u01b0\u1ee3c phi\u00ean b\u1ea3n h\u00f3a [S3].",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Appendix B - Approval limits and operational decision table\nColumns: Total commitment | Required approval | Additional condition\nRow 1: Total commitment: Up to VND 5,000,000 | Required approval: Line manager | Additional condition: One documented quote; budget confirmed.\nRow 2: Total commitment: VND 5,000,001-50,000,000 | Required approval: Department head | Additional condition: At least two comparable quotes where market permits.\nRow 3: Total commitment: VND 50,000,001-200,000,000 | Required approval: Department head + Procurement + Finance | Additional condition: At least three written quotes or approved sole-source rationale.\nRow 4: Total commitment: Above VND 200,000,000 | Required approval: Executive Operations Council + Finance | Additional condition: Documented sourcing evaluation and risk review.",
+          "metadata": {
+            "bbox": [
+              50.561825234483145,
+              557.7113366172055,
+              544.3709370377287,
+              672.8796672334107
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 781,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 53,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 1,
+            "token_count": 204,
+            "element_type": "table",
+            "section_path": [
+              "Appendix B - Approval limits and operational decision table"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Appendix B - Approval limits and operational decision table",
+            "table_row_end": 4,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 1,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 825,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 1,
+            "table_fragment_index": 0,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -2.132727861404419,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Theo Ph\u1ee5 l\u1ee5c B v\u00e0 C, kho\u1ea3n mua s\u1eafm 80 tri\u1ec7u c\u1ea7n ai duy\u1ec7t v\u00e0 \u0111i\u1ec1u ki\u1ec7n b\u00e1o gi\u00e1 l\u00e0 g\u00ec?",
+                "en": "According to Appendices B and C, who needs to approve the 80 million purchase, and what are the quotation conditions?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 0.032590003684163094,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 2797.7589659858495,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        },
+        {
+          "citation_id": "S2",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Purchase order creation and release\nMandatory rule. A PO may be released only after the requisition, supplier, sourcing, budget and approval checks are complete.",
+          "metadata": {
+            "bbox": [
+              51.95,
+              86.61876377952797,
+              538.7149999999999,
+              111.33596116025774
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 300,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "text",
+            "page_number": 22,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "token_count": 38,
+            "element_type": "text",
+            "section_path": [
+              "Purchase order creation and release"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "text",
+            "document_type": "knowledge_document",
+            "heading_level": 1,
+            "parser_engine": "docling",
+            "section_title": "Purchase order creation and release",
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 170,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -0.44345375895500183,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Theo Ph\u1ee5 l\u1ee5c B v\u00e0 C, \u0111\u01a1n mua h\u00e0ng ch\u1ec9 \u0111\u01b0\u1ee3c ph\u00e1t h\u00e0nh khi n\u00e0o?",
+                "en": "According to Appendices B and C, when is a purchase order only issued?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 0.020781997591257095,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 2453.676764969714,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        },
+        {
+          "citation_id": "S3",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+          "content": "Section: Appendix C - Standard forms and minimum validation\nColumns: Form | Minimum fields | Validation / block conditions\nRow 4: Form: Purchase order | Minimum fields: PO number; supplier; issue date; currency; line items; quantity; unit price; delivery/payment terms. | Validation / block conditions: Released only after approval; total matches authority; amendments versioned.\nRow 5: Form: Receiving record | Minimum fields: PO/line; delivery note; delivered/accepted/rejected quantities; inspection; receiver. | Validation / block conditions: Accepted + rejected <= delivered; PO valid; nonconforming goods quarantined.\nRow 6: Form: Security incident | Minimum fields: Incident ID; reporter; detected time; severity; affected asset; containment; owner. | Validation / block conditions: Severity assigned; evidence preserved; critical/high incidents escalated immediately.",
+          "metadata": {
+            "bbox": [
+              50.62337207537161,
+              70.6450771954145,
+              544.110377440916,
+              301.267101453295
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+            "source_url": null,
+            "chunk_index": 791,
+            "document_id": "UPLOAD-12f3d0901de9444fba9ad23005a0f54e",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 54,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 0,
+            "token_count": 233,
+            "element_type": "table",
+            "section_path": [
+              "Appendix C - Standard forms and minimum validation"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Appendix C - Standard forms and minimum validation",
+            "table_row_end": 6,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 4,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 875,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 3,
+            "table_fragment_index": 1,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -2.156057834625244,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Theo Ph\u1ee5 l\u1ee5c B v\u00e0 C, kho\u1ea3n mua s\u1eafm 80 tri\u1ec7u c\u1ea7n ai duy\u1ec7t v\u00e0 \u0111i\u1ec1u ki\u1ec7n b\u00e1o gi\u00e1 l\u00e0 g\u00ec?",
+                "en": "According to Appendices B and C, who needs to approve the 80 million purchase, and what are the quotation conditions?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 0.032590003684163094,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 2797.7589659858495,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 4,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 11826.07
+    }
+  ],
+  "resource_samples": [],
+  "elapsed_seconds": 276.85,
+  "summary": {
+    "first_pass": {
+      "requests": 6,
+      "http_200": 6,
+      "application_ok": 6,
+      "errors": 0,
+      "http_e2e": {
+        "n": 6,
+        "median_ms": 8040.15,
+        "min_ms": 6577.0,
+        "max_ms": 10879.09
+      },
+      "stages": {
+        "agent_workflow": {
+          "n": 6,
+          "median_ms": 8023.69,
+          "min_ms": 6568.37,
+          "max_ms": 10868.02
+        },
+        "answer_generation": {
+          "n": 6,
+          "median_ms": 799.13,
+          "min_ms": 612.24,
+          "max_ms": 1087.94
+        },
+        "answer_synthesis": {
+          "n": 0
+        },
+        "claim_verification": {
+          "n": 6,
+          "median_ms": 663.56,
+          "min_ms": 479.83,
+          "max_ms": 903.88
+        },
+        "database_retrieval": {
+          "n": 6,
+          "median_ms": 1870.73,
+          "min_ms": 1623.32,
+          "max_ms": 3516.39
+        },
+        "embedding": {
+          "n": 6,
+          "median_ms": 278.33,
+          "min_ms": 107.63,
+          "max_ms": 445.56
+        },
+        "knowledge_search_planning": {
+          "n": 6,
+          "median_ms": 413.19,
+          "min_ms": 395.56,
+          "max_ms": 658.09
+        },
+        "query_translation": {
+          "n": 6,
+          "median_ms": 388.59,
+          "min_ms": 365.2,
+          "max_ms": 742.91
+        },
+        "reranking": {
+          "n": 6,
+          "median_ms": 3400.35,
+          "min_ms": 2537.46,
+          "max_ms": 5370.75
+        },
+        "retrieval_fusion": {
+          "n": 6,
+          "median_ms": 0.75,
+          "min_ms": 0.61,
+          "max_ms": 2.48
+        },
+        "retrieval_total": {
+          "n": 6,
+          "median_ms": 6134.41,
+          "min_ms": 5017.05,
+          "max_ms": 8680.19
+        },
+        "routing": {
+          "n": 0
+        },
+        "sql_execution": {
+          "n": 0
+        },
+        "sql_planning": {
+          "n": 0
+        },
+        "telemetry_persistence": {
+          "n": 0
+        }
+      }
+    },
+    "warm_pass": {
+      "requests": 6,
+      "http_200": 6,
+      "application_ok": 6,
+      "errors": 0,
+      "http_e2e": {
+        "n": 6,
+        "median_ms": 7105.05,
+        "min_ms": 5668.78,
+        "max_ms": 11826.07
+      },
+      "stages": {
+        "agent_workflow": {
+          "n": 6,
+          "median_ms": 7095.6,
+          "min_ms": 5655.2,
+          "max_ms": 11816.53
+        },
+        "answer_generation": {
+          "n": 6,
+          "median_ms": 815.94,
+          "min_ms": 600.92,
+          "max_ms": 1138.42
+        },
+        "answer_synthesis": {
+          "n": 0
+        },
+        "claim_verification": {
+          "n": 6,
+          "median_ms": 675.98,
+          "min_ms": 450.37,
+          "max_ms": 986.63
+        },
+        "database_retrieval": {
+          "n": 6,
+          "median_ms": 1915.74,
+          "min_ms": 1679.38,
+          "max_ms": 3632.83
+        },
+        "embedding": {
+          "n": 6,
+          "median_ms": 243.51,
+          "min_ms": 77.15,
+          "max_ms": 624.26
+        },
+        "knowledge_search_planning": {
+          "n": 6,
+          "median_ms": 409.91,
+          "min_ms": 366.48,
+          "max_ms": 451.71
+        },
+        "query_translation": {
+          "n": 6,
+          "median_ms": 0.01,
+          "min_ms": 0.01,
+          "max_ms": 0.02
+        },
+        "reranking": {
+          "n": 6,
+          "median_ms": 3251.44,
+          "min_ms": 1680.07,
+          "max_ms": 5251.66
+        },
+        "retrieval_fusion": {
+          "n": 6,
+          "median_ms": 0.9,
+          "min_ms": 0.55,
+          "max_ms": 3.89
+        },
+        "retrieval_total": {
+          "n": 6,
+          "median_ms": 5313.53,
+          "min_ms": 3945.17,
+          "max_ms": 9539.05
+        },
+        "routing": {
+          "n": 0
+        },
+        "sql_execution": {
+          "n": 0
+        },
+        "sql_planning": {
+          "n": 0
+        },
+        "telemetry_persistence": {
+          "n": 0
+        }
+      }
+    }
+  },
+  "by_case": {
+    "V1": {
+      "requests": 2,
+      "http_200": 2,
+      "application_ok": 2,
+      "errors": 0,
+      "http_e2e": {
+        "n": 2,
+        "median_ms": 7209.32,
+        "min_ms": 7011.71,
+        "max_ms": 7406.94
+      },
+      "stages": {
+        "agent_workflow": {
+          "n": 2,
+          "median_ms": 7200.07,
+          "min_ms": 7003.47,
+          "max_ms": 7396.67
+        },
+        "answer_generation": {
+          "n": 2,
+          "median_ms": 770.96,
+          "min_ms": 747.22,
+          "max_ms": 794.7
+        },
+        "answer_synthesis": {
+          "n": 0
+        },
+        "claim_verification": {
+          "n": 2,
+          "median_ms": 554.76,
+          "min_ms": 551.17,
+          "max_ms": 558.35
+        },
+        "database_retrieval": {
+          "n": 2,
+          "median_ms": 1859.48,
+          "min_ms": 1824.55,
+          "max_ms": 1894.42
+        },
+        "embedding": {
+          "n": 2,
+          "median_ms": 141.82,
+          "min_ms": 107.63,
+          "max_ms": 176.01
+        },
+        "knowledge_search_planning": {
+          "n": 2,
+          "median_ms": 512.29,
+          "min_ms": 366.48,
+          "max_ms": 658.09
+        },
+        "query_translation": {
+          "n": 2,
+          "median_ms": 182.6,
+          "min_ms": 0.01,
+          "max_ms": 365.2
+        },
+        "reranking": {
+          "n": 2,
+          "median_ms": 3158.6,
+          "min_ms": 2735.92,
+          "max_ms": 3581.29
+        },
+        "retrieval_fusion": {
+          "n": 2,
+          "median_ms": 2.26,
+          "min_ms": 0.64,
+          "max_ms": 3.89
+        },
+        "retrieval_total": {
+          "n": 2,
+          "median_ms": 5360.61,
+          "min_ms": 5045.78,
+          "max_ms": 5675.44
+        },
+        "routing": {
+          "n": 0
+        },
+        "sql_execution": {
+          "n": 0
+        },
+        "sql_planning": {
+          "n": 0
+        },
+        "telemetry_persistence": {
+          "n": 0
+        }
+      }
+    },
+    "V2": {
+      "requests": 2,
+      "http_200": 2,
+      "application_ok": 2,
+      "errors": 0,
+      "http_e2e": {
+        "n": 2,
+        "median_ms": 7504.64,
+        "min_ms": 7323.7,
+        "max_ms": 7685.57
+      },
+      "stages": {
+        "agent_workflow": {
+          "n": 2,
+          "median_ms": 7484.54,
+          "min_ms": 7298.64,
+          "max_ms": 7670.44
+        },
+        "answer_generation": {
+          "n": 2,
+          "median_ms": 1012.62,
+          "min_ms": 1006.77,
+          "max_ms": 1018.47
+        },
+        "answer_synthesis": {
+          "n": 0
+        },
+        "claim_verification": {
+          "n": 2,
+          "median_ms": 863.87,
+          "min_ms": 840.9,
+          "max_ms": 886.83
+        },
+        "database_retrieval": {
+          "n": 2,
+          "median_ms": 1848.33,
+          "min_ms": 1844.76,
+          "max_ms": 1851.9
+        },
+        "embedding": {
+          "n": 2,
+          "median_ms": 185.14,
+          "min_ms": 137.93,
+          "max_ms": 232.35
+        },
+        "knowledge_search_planning": {
+          "n": 2,
+          "median_ms": 398.81,
+          "min_ms": 383.68,
+          "max_ms": 413.94
+        },
+        "query_translation": {
+          "n": 2,
+          "median_ms": 187.19,
+          "min_ms": 0.01,
+          "max_ms": 374.37
+        },
+        "reranking": {
+          "n": 2,
+          "median_ms": 2967.48,
+          "min_ms": 2543.18,
+          "max_ms": 3391.78
+        },
+        "retrieval_fusion": {
+          "n": 2,
+          "median_ms": 0.76,
+          "min_ms": 0.7,
+          "max_ms": 0.83
+        },
+        "retrieval_total": {
+          "n": 2,
+          "median_ms": 5204.24,
+          "min_ms": 5022.19,
+          "max_ms": 5386.3
+        },
+        "routing": {
+          "n": 0
+        },
+        "sql_execution": {
+          "n": 0
+        },
+        "sql_planning": {
+          "n": 0
+        },
+        "telemetry_persistence": {
+          "n": 0
+        }
+      }
+    },
+    "V3": {
+      "requests": 2,
+      "http_200": 2,
+      "application_ok": 2,
+      "errors": 0,
+      "http_e2e": {
+        "n": 2,
+        "median_ms": 8344.0,
+        "min_ms": 6292.64,
+        "max_ms": 10395.35
+      },
+      "stages": {
+        "agent_workflow": {
+          "n": 2,
+          "median_ms": 8328.19,
+          "min_ms": 6273.64,
+          "max_ms": 10382.73
+        },
+        "answer_generation": {
+          "n": 2,
+          "median_ms": 1113.18,
+          "min_ms": 1087.94,
+          "max_ms": 1138.42
+        },
+        "answer_synthesis": {
+          "n": 0
+        },
+        "claim_verification": {
+          "n": 2,
+          "median_ms": 784.78,
+          "min_ms": 775.95,
+          "max_ms": 793.62
+        },
+        "database_retrieval": {
+          "n": 2,
+          "median_ms": 1913.31,
+          "min_ms": 1889.56,
+          "max_ms": 1937.06
+        },
+        "embedding": {
+          "n": 2,
+          "median_ms": 378.29,
+          "min_ms": 311.01,
+          "max_ms": 445.56
+        },
+        "knowledge_search_planning": {
+          "n": 2,
+          "median_ms": 394.67,
+          "min_ms": 393.77,
+          "max_ms": 395.56
+        },
+        "query_translation": {
+          "n": 2,
+          "median_ms": 199.4,
+          "min_ms": 0.02,
+          "max_ms": 398.79
+        },
+        "reranking": {
+          "n": 2,
+          "median_ms": 3525.41,
+          "min_ms": 1680.07,
+          "max_ms": 5370.75
+        },
+        "retrieval_fusion": {
+          "n": 2,
+          "median_ms": 0.87,
+          "min_ms": 0.66,
+          "max_ms": 1.07
+        },
+        "retrieval_total": {
+          "n": 2,
+          "median_ms": 6032.53,
+          "min_ms": 3945.17,
+          "max_ms": 8119.89
+        },
+        "routing": {
+          "n": 0
+        },
+        "sql_execution": {
+          "n": 0
+        },
+        "sql_planning": {
+          "n": 0
+        },
+        "telemetry_persistence": {
+          "n": 0
+        }
+      }
+    },
+    "V4": {
+      "requests": 2,
+      "http_200": 2,
+      "application_ok": 2,
+      "errors": 0,
+      "http_e2e": {
+        "n": 2,
+        "median_ms": 7212.68,
+        "min_ms": 5668.78,
+        "max_ms": 8756.59
+      },
+      "stages": {
+        "agent_workflow": {
+          "n": 2,
+          "median_ms": 7201.97,
+          "min_ms": 5655.2,
+          "max_ms": 8748.74
+        },
+        "answer_generation": {
+          "n": 2,
+          "median_ms": 650.89,
+          "min_ms": 648.35,
+          "max_ms": 653.43
+        },
+        "answer_synthesis": {
+          "n": 0
+        },
+        "claim_verification": {
+          "n": 2,
+          "median_ms": 465.1,
+          "min_ms": 450.37,
+          "max_ms": 479.83
+        },
+        "database_retrieval": {
+          "n": 2,
+          "median_ms": 1944.75,
+          "min_ms": 1941.22,
+          "max_ms": 1948.28
+        },
+        "embedding": {
+          "n": 2,
+          "median_ms": 109.6,
+          "min_ms": 77.15,
+          "max_ms": 142.06
+        },
+        "knowledge_search_planning": {
+          "n": 2,
+          "median_ms": 414.24,
+          "min_ms": 395.59,
+          "max_ms": 432.9
+        },
+        "query_translation": {
+          "n": 2,
+          "median_ms": 189.2,
+          "min_ms": 0.01,
+          "max_ms": 378.39
+        },
+        "reranking": {
+          "n": 2,
+          "median_ms": 3411.48,
+          "min_ms": 2077.89,
+          "max_ms": 4745.07
+        },
+        "retrieval_fusion": {
+          "n": 2,
+          "median_ms": 0.81,
+          "min_ms": 0.73,
+          "max_ms": 0.89
+        },
+        "retrieval_total": {
+          "n": 2,
+          "median_ms": 5669.54,
+          "min_ms": 4116.04,
+          "max_ms": 7223.04
+        },
+        "routing": {
+          "n": 0
+        },
+        "sql_execution": {
+          "n": 0
+        },
+        "sql_planning": {
+          "n": 0
+        },
+        "telemetry_persistence": {
+          "n": 0
+        }
+      }
+    },
+    "V5": {
+      "requests": 2,
+      "http_200": 2,
+      "application_ok": 2,
+      "errors": 0,
+      "http_e2e": {
+        "n": 2,
+        "median_ms": 6690.08,
+        "min_ms": 6577.0,
+        "max_ms": 6803.16
+      },
+      "stages": {
+        "agent_workflow": {
+          "n": 2,
+          "median_ms": 6681.45,
+          "min_ms": 6568.37,
+          "max_ms": 6794.53
+        },
+        "answer_generation": {
+          "n": 2,
+          "median_ms": 606.58,
+          "min_ms": 600.92,
+          "max_ms": 612.24
+        },
+        "answer_synthesis": {
+          "n": 0
+        },
+        "claim_verification": {
+          "n": 2,
+          "median_ms": 525.06,
+          "min_ms": 524.7,
+          "max_ms": 525.43
+        },
+        "database_retrieval": {
+          "n": 2,
+          "median_ms": 1651.35,
+          "min_ms": 1623.32,
+          "max_ms": 1679.38
+        },
+        "embedding": {
+          "n": 2,
+          "median_ms": 432.88,
+          "min_ms": 425.36,
+          "max_ms": 440.39
+        },
+        "knowledge_search_planning": {
+          "n": 2,
+          "median_ms": 419.24,
+          "min_ms": 412.44,
+          "max_ms": 426.05
+        },
+        "query_translation": {
+          "n": 2,
+          "median_ms": 207.12,
+          "min_ms": 0.01,
+          "max_ms": 414.23
+        },
+        "reranking": {
+          "n": 2,
+          "median_ms": 2824.28,
+          "min_ms": 2537.46,
+          "max_ms": 3111.11
+        },
+        "retrieval_fusion": {
+          "n": 2,
+          "median_ms": 0.58,
+          "min_ms": 0.55,
+          "max_ms": 0.61
+        },
+        "retrieval_total": {
+          "n": 2,
+          "median_ms": 5128.91,
+          "min_ms": 5017.05,
+          "max_ms": 5240.76
+        },
+        "routing": {
+          "n": 0
+        },
+        "sql_execution": {
+          "n": 0
+        },
+        "sql_planning": {
+          "n": 0
+        },
+        "telemetry_persistence": {
+          "n": 0
+        }
+      }
+    },
+    "V6": {
+      "requests": 2,
+      "http_200": 2,
+      "application_ok": 2,
+      "errors": 0,
+      "http_e2e": {
+        "n": 2,
+        "median_ms": 11352.58,
+        "min_ms": 10879.09,
+        "max_ms": 11826.07
+      },
+      "stages": {
+        "agent_workflow": {
+          "n": 2,
+          "median_ms": 11342.27,
+          "min_ms": 10868.02,
+          "max_ms": 11816.53
+        },
+        "answer_generation": {
+          "n": 2,
+          "median_ms": 844.11,
+          "min_ms": 837.18,
+          "max_ms": 851.04
+        },
+        "answer_synthesis": {
+          "n": 0
+        },
+        "claim_verification": {
+          "n": 2,
+          "median_ms": 945.25,
+          "min_ms": 903.88,
+          "max_ms": 986.63
+        },
+        "database_retrieval": {
+          "n": 2,
+          "median_ms": 3574.61,
+          "min_ms": 3516.39,
+          "max_ms": 3632.83
+        },
+        "embedding": {
+          "n": 2,
+          "median_ms": 474.29,
+          "min_ms": 324.32,
+          "max_ms": 624.26
+        },
+        "knowledge_search_planning": {
+          "n": 2,
+          "median_ms": 441.36,
+          "min_ms": 431.02,
+          "max_ms": 451.71
+        },
+        "query_translation": {
+          "n": 2,
+          "median_ms": 371.47,
+          "min_ms": 0.02,
+          "max_ms": 742.91
+        },
+        "reranking": {
+          "n": 2,
+          "median_ms": 4658.22,
+          "min_ms": 4064.79,
+          "max_ms": 5251.66
+        },
+        "retrieval_fusion": {
+          "n": 2,
+          "median_ms": 1.96,
+          "min_ms": 1.44,
+          "max_ms": 2.48
+        },
+        "retrieval_total": {
+          "n": 2,
+          "median_ms": 9109.62,
+          "min_ms": 8680.19,
+          "max_ms": 9539.05
+        },
+        "routing": {
+          "n": 0
+        },
+        "sql_execution": {
+          "n": 0
+        },
+        "sql_planning": {
+          "n": 0
+        },
+        "telemetry_persistence": {
+          "n": 0
+        }
+      }
+    }
+  },
+  "limitations": "Timing smoke, not a quality or load benchmark. No OCR/upload work occurs during chat. Provider/network variance and translation caching affect results. Resource peaks are sampled container-wide, not attributed to E5."
+}

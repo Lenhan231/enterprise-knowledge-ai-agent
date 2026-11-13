@@ -1,0 +1,32 @@
+{
+  "dataset_id": "fresh-reviewed-v1",
+  "status": "frozen_user_approved",
+  "review_date": "2026-10-21",
+  "review_provenance": "Assistant prepared/reviewed; user approved proposals and authorized freeze in chat. Not independently certified.",
+  "counts": {
+    "paired_intents": 12,
+    "question_texts": 24,
+    "directional_cases": 48,
+    "required_components": 28,
+    "spans": 72
+  },
+  "hash_encoding": "UTF-8 file bytes, CRLF normalized to LF; original content-string hashes remain exact",
+  "files": {
+    "changes.json": "aedc4d7fb5e6acb5d3dc405633da0a96e2b107c54aaf1c427ec3f4a3cd97a808",
+    ".gitattributes": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+    "evidence.json": "d3a9a25271b415313956d8760e6423e1e3bad9486fcc225008e20649314814ae",
+    "REVIEW.md": "15fbba930c1ea8c7373deb9af0c765b9a02c32280ffa88d2868fb91f6f476840",
+    "cases.json": "413af9d10b54b86fe7b1637e217d84e9af0e1731efb2788a68ce15403496678f",
+    "README.md": "eb459892ff9fa2c197032b3fcbb26a39a6c4cde1559d1894434cccc1b91754f2"
+  },
+  "inputs": {
+    "artifacts/evaluation/fresh-review-20261020/cases.json": "c0e4e6d7ee78200adf8c4d7ed59aee1efaddac7d37a2705971decaf8c4038ed7",
+    "artifacts/evaluation/fresh-review-20261020/evidence-draft.json": "99b2e9a6066224d3d1685f232debb2cf9ac125dc4faa8459a4b9b9c46dbd1660",
+    "artifacts/evaluation/fresh-review-20261020/manifest.json": "ceae898a84516c816aad564252db6afa29d425f950391c7c879df44fabfe7df1",
+    "artifacts/evaluation/fresh-review-assessment-20261021/evidence-proposals.json": "22170578c632d9dfd84f0c1bf9f48af502d534546d61bd8dae64bd2b74adeb3f",
+    "artifacts/evaluation/vietstyle-bilingual-20261019/dense-evidence-benchmark-v1/indexed-corpus.jsonl": "b8f5aba0da18a0725ae17762bf083d9101b740f9b86d3a928674225e51db51e5",
+    "artifacts/evaluation/embedding-comparison-20261018/parser-corpus.jsonl": "284501a33c514642cd092b9d0b59dbf63cc80950a729088cc7dd226b626c41c3",
+    "artifacts/evaluation/vietstyle-bilingual-20261019/corrected-english-parser-corpus.jsonl": "2be61cc3a9bf014c5090b256c98f7433acb67f44e003c312773a3242f035cd58"
+  },
+  "inference_run": false
+}

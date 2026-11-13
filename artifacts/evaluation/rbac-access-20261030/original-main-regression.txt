@@ -1,0 +1,109 @@
+test_admin_cannot_bypass_empty_acl_or_inactive_or_unready_documents (test_retrieval_access.RetrievalAccessTest.test_admin_cannot_bypass_empty_acl_or_inactive_or_unready_documents) ... FAIL
+test_company_and_document_scope_remain_effective (test_retrieval_access.RetrievalAccessTest.test_company_and_document_scope_remain_effective) ... FAIL
+test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection (test_retrieval_access.RetrievalAccessTest.test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection) ... 
+  test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection (test_retrieval_access.RetrievalAccessTest.test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection) (update='knowledge_base_active = false') ... FAIL
+  test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection (test_retrieval_access.RetrievalAccessTest.test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection) (update="allowed_roles = '{}'::text[]") ... FAIL
+  test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection (test_retrieval_access.RetrievalAccessTest.test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection) (update="allowed_roles = ARRAY['executive']") ... FAIL
+  test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection (test_retrieval_access.RetrievalAccessTest.test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection) (update="processing_status = 'failed'") ... FAIL
+test_empty_user_roles_do_not_grant_document_access (test_retrieval_access.RetrievalAccessTest.test_empty_user_roles_do_not_grant_document_access) ... FAIL
+test_only_active_ready_role_visible_documents_reach_candidates_and_context (test_retrieval_access.RetrievalAccessTest.test_only_active_ready_role_visible_documents_reach_candidates_and_context) ... FAIL
+
+======================================================================
+FAIL: test_admin_cannot_bypass_empty_acl_or_inactive_or_unready_documents (test_retrieval_access.RetrievalAccessTest.test_admin_cannot_bypass_empty_acl_or_inactive_or_unready_documents)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/enterprise-main-review-20261030/tests/test_retrieval_access.py", line 93, in test_admin_cannot_bypass_empty_acl_or_inactive_or_unready_documents
+    self.assertEqual(self.search_ids(["admin"]), {"allowed"})
+AssertionError: Items in the first set but not the second:
+'disabled'
+'empty'
+
+======================================================================
+FAIL: test_company_and_document_scope_remain_effective (test_retrieval_access.RetrievalAccessTest.test_company_and_document_scope_remain_effective)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/enterprise-main-review-20261030/tests/test_retrieval_access.py", line 113, in test_company_and_document_scope_remain_effective
+    self.assertEqual(set(contexts), {("allowed", 0)})
+AssertionError: Items in the first set but not the second:
+('other-company', 0)
+
+======================================================================
+FAIL: test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection (test_retrieval_access.RetrievalAccessTest.test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection) (update='knowledge_base_active = false')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/enterprise-main-review-20261030/tests/test_retrieval_access.py", line 124, in test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection
+    self.assertEqual(self.repository.expand_parent_contexts(candidates, roles=["employee"]), {})
+AssertionError: {('allowed', 0): {'text': 'policy evidence[119 chars]ow'}} != {}
++ {}
+- {('allowed', 0): {'chunk_indices': [0, 1],
+-                   'parent_chunk_count': 2,
+-                   'parent_context_type': 'page_window',
+-                   'text': 'policy evidence allowed\npolicy evidence allowed'}}
+
+======================================================================
+FAIL: test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection (test_retrieval_access.RetrievalAccessTest.test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection) (update="allowed_roles = '{}'::text[]")
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/enterprise-main-review-20261030/tests/test_retrieval_access.py", line 124, in test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection
+    self.assertEqual(self.repository.expand_parent_contexts(candidates, roles=["employee"]), {})
+AssertionError: {('allowed', 0): {'text': 'policy evidence[91 chars]ow'}} != {}
++ {}
+- {('allowed', 0): {'chunk_indices': [0],
+-                   'parent_chunk_count': 1,
+-                   'parent_context_type': 'page_window',
+-                   'text': 'policy evidence allowed'}}
+
+======================================================================
+FAIL: test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection (test_retrieval_access.RetrievalAccessTest.test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection) (update="allowed_roles = ARRAY['executive']")
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/enterprise-main-review-20261030/tests/test_retrieval_access.py", line 124, in test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection
+    self.assertEqual(self.repository.expand_parent_contexts(candidates, roles=["employee"]), {})
+AssertionError: {('allowed', 0): {'text': 'policy evidence[91 chars]ow'}} != {}
++ {}
+- {('allowed', 0): {'chunk_indices': [0],
+-                   'parent_chunk_count': 1,
+-                   'parent_context_type': 'page_window',
+-                   'text': 'policy evidence allowed'}}
+
+======================================================================
+FAIL: test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection (test_retrieval_access.RetrievalAccessTest.test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection) (update="processing_status = 'failed'")
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/enterprise-main-review-20261030/tests/test_retrieval_access.py", line 124, in test_disabled_or_revoked_anchor_is_not_restored_after_candidate_selection
+    self.assertEqual(self.repository.expand_parent_contexts(candidates, roles=["employee"]), {})
+AssertionError: {('allowed', 0): {'text': 'policy evidence[91 chars]ow'}} != {}
++ {}
+- {('allowed', 0): {'chunk_indices': [0],
+-                   'parent_chunk_count': 1,
+-                   'parent_context_type': 'page_window',
+-                   'text': 'policy evidence allowed'}}
+
+======================================================================
+FAIL: test_empty_user_roles_do_not_grant_document_access (test_retrieval_access.RetrievalAccessTest.test_empty_user_roles_do_not_grant_document_access)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/enterprise-main-review-20261030/tests/test_retrieval_access.py", line 102, in test_empty_user_roles_do_not_grant_document_access
+    self.assertEqual(self.repository.expand_parent_contexts([self.anchor("allowed")], roles=[]), {})
+AssertionError: {('allowed', 0): {'text': 'Previously retr[97 chars]ow'}} != {}
++ {}
+- {('allowed', 0): {'chunk_indices': [0],
+-                   'parent_chunk_count': 1,
+-                   'parent_context_type': 'page_window',
+-                   'text': 'Previously retrieved evidence'}}
+
+======================================================================
+FAIL: test_only_active_ready_role_visible_documents_reach_candidates_and_context (test_retrieval_access.RetrievalAccessTest.test_only_active_ready_role_visible_documents_reach_candidates_and_context)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/enterprise-main-review-20261030/tests/test_retrieval_access.py", line 82, in test_only_active_ready_role_visible_documents_reach_candidates_and_context
+    self.assertEqual(self.search_ids(["employee"]), {"allowed"})
+AssertionError: Items in the first set but not the second:
+'disabled'
+'unknown-active'
+'unknown-status'
+
+----------------------------------------------------------------------
+Ran 5 tests in 5.949s
+
+FAILED (failures=8)

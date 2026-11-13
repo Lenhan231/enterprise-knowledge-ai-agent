@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-30",
+  "branch": "Huy",
+  "main_baseline": "beac2f3c58426ddcaff3a3c95daf5b93154656aa",
+  "merge_commit": "f17b195",
+  "checks": {
+    "selected_unit_tests": {
+      "run": 41,
+      "passed": 41,
+      "log": "unit-tests.txt"
+    },
+    "local_postgresql_integration": {
+      "run": 5,
+      "passed": 5,
+      "server_version": "PostgreSQL 16.15",
+      "database_encoding": "UTF8",
+      "transport": "isolated local Unix socket; TCP disabled",
+      "log": "postgres-tests.txt"
+    },
+    "regression_on_original_main": {
+      "run": 5,
+      "result": "failed as expected; unittest reports 8 failures including subtests",
+      "log": "original-main-regression.txt"
+    }
+  },
+  "unit_command": "PYTHONPATH=src:tests HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 .venv/bin/python -m unittest test_document_chunks_repository test_e5_production test_retrieval_service.RetrievalServiceTest.test_parent_mode_drops_candidates_rejected_during_context_expansion test_retrieval_service.RetrievalServiceTest.test_parent_mode_ranks_children_then_returns_acl_scoped_context test_bounded_execution test_orchestration_contracts",
+  "integration_command": "PYTHONPATH=src:tests RETRIEVAL_TEST_DATABASE_URL=<local-test-server> .venv/bin/python -m unittest -v test_retrieval_access",
+  "boundaries": [
+    "No production database/VPS writes",
+    "No model downloads or inference",
+    "PostgreSQL integration covers BM25 shared eligibility and parent expansion; no vector extension or model execution",
+    "Full repository suite and Docker build not run",
+    "Admin bypass remains for nonempty ACLs; roles=None remains an internal unscoped contract"
+  ],
+  "sha256": {
+    "src/core/retrieval/methods/common.py": "ac73ffe1dec13127beafcaed699d33f1a768b8938d0bb1b2410dbb86b528e5d5",
+    "src/core/database/document_chunks_repository.py": "ffbf1dbb28b28912a6217b28a4a15bb69b85149f95c944e1c45232fec38d89c4",
+    "src/core/retrieval/methods/parent.py": "9df61b597be4a9f68fcf91873a4626262374c946210ca1587200b92021a4f61a",
+    "tests/test_retrieval_access.py": "1bba727776eb2e74c909be46966b2ba36f869c1e6eebf9a696a34a2285a578e9",
+    "tests/test_document_chunks_repository.py": "0586ec61cbdcc5670fd2d7388758380f665bf17df5372fc6f5dfc725db9f8852",
+    "tests/test_retrieval_service.py": "b5d005ba797ce37ef1a971e898c6f39d66eebc24200ec82261854d8f4b89bb97",
+    "tests/test_e5_production.py": "f1de844c21cbf7aeb25552b7a5faab39c4c9f19d9a6991a57370b4df491c186d"
+  }
+}

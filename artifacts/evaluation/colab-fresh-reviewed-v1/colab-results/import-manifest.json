@@ -1,0 +1,19 @@
+{
+  "source": "C:/Users/Admin/Downloads/fresh_reviewed_results",
+  "action": "copied, original download retained",
+  "downloaded_file_hashes": {
+    "candidate-pools.json": "d31dbdfe6bac31eda370c6fe6c144bc277ceb0e16f81e8d00a2f0801c770d9e1",
+    "config.json": "686793dfc6f01c42b0e55395ee0c1877d00bc22ae6f5a7d6f7523dc752234642",
+    "narrative-parent-scores.npy": "6485618dd4389481c16147b7fd4a1dc6965fa1122071f913afd1c6b377cc661e",
+    "parent-plain-scores.npy": "b1f85eb06584c37bc77a8dfeccb813b49a532c81ccc83044cfadd122551e99b7",
+    "plain-scores.npy": "6206fbe49d4b8b3270b2d157e9b5b606f4b843af8ebbe5bcebe09bd4cf8192d0",
+    "query-inputs.json": "56173a71509616d54eb4e439d8747d2f38b1a25bb59e2b2fe489b25937189081",
+    "query-vectors.npy": "9ab182b6b401fd7d8f173fd7d8f3f48f09bc69430da14f2844841aba35e3d3d6",
+    "rendered-inputs.json": "39a50a7344bf3b7c457f92b0feea483981d09c2aaba43955ad1f7aef14cd99ce",
+    "results.json": "424bb73bf8d08f5f51db01c4d6df88a3b245eb252d159a3fdb3e26e10a5a9251",
+    "verification.json": "abbe6793a199357b922dc622b61dcaa17a084a6c2eb4e40458ee830d46eb563f"
+  },
+  "all_source_bytes_matched_on_import": true,
+  "local_replay": "passed against exact matching input ZIP",
+  "results_sha256": "424bb73bf8d08f5f51db01c4d6df88a3b245eb252d159a3fdb3e26e10a5a9251"
+}

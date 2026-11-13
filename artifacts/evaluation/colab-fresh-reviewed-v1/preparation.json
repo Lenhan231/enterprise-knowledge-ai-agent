@@ -1,0 +1,12 @@
+{
+  "status": "prepared_not_run",
+  "zip_sha256": "42d698b24c61b8c1ad1cf1108c1e4c832be0d3d0295101e35e325fa7ad5b65fa",
+  "zip_bytes": 3479688,
+  "bundle_files": 30,
+  "notebook_code_syntax": "passed",
+  "zip_crc": "passed",
+  "models_downloaded_locally": false,
+  "inference_run": false,
+  "extracted_bundle_preflight": "passed",
+  "offline_synthetic_replay_and_tamper_rejection": "passed"
+}

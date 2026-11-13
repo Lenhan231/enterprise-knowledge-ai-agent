@@ -1,0 +1,549 @@
+{
+  "source_commit": "279be53",
+  "status": "assistant_reviewed_pending_human",
+  "offset_basis": "frozen indexed chunk content; not parser-source offsets",
+  "not_evaluator_ready": true,
+  "note": "Unfrozen evidence proposals, not exhaustive certified gold. Split required answer details into components before scoring; each alternative is an OR bundle. Original draft unchanged.",
+  "evidence": {
+    "F01-vi": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::11",
+              "document_name": "01_Inventory_Management_Policy_Manual.docx",
+              "language": "vi",
+              "chunk_content_sha256": "a76f5062756dafb6111fbd949690b76b3303060355190c899d158e809728001a",
+              "start_char": 120,
+              "end_char": 225,
+              "quote": "Ghi nhận thiếu / thừa / hư hỏng trước khi xác nhận nhận hàng; ảnh chụp và biên bản bắt buộc cho ngoại lệ."
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        }
+      ]
+    },
+    "F01-en": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::12",
+              "document_name": "01_Inventory_Management_Policy_Manual_EN.docx",
+              "language": "en",
+              "chunk_content_sha256": "06da0d2f5f8a013642737da009e1c85ee17b233d3df151dd1b8e90670a59e61b",
+              "start_char": 125,
+              "end_char": 248,
+              "quote": "Record shortages, overages, or damage before confirming receipt; photos and an incident report are required for exceptions."
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        }
+      ]
+    },
+    "F02-vi": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::12",
+              "document_name": "01_Inventory_Management_Policy_Manual.docx",
+              "language": "vi",
+              "chunk_content_sha256": "17f8c486cd99ffc9aee57e5f8e45c04ea7616c87d494c01173acd7b0246ade32",
+              "start_char": 365,
+              "end_char": 464,
+              "quote": "Sau campaign, đối chiếu forecast với sell-through, tồn còn lại và return rate để cập nhật kế hoạch."
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        },
+        {
+          "spans": [
+            {
+              "chunk_id": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b::chunk::6",
+              "document_name": "05_Inventory_Policy_Training_Deck.pptx",
+              "language": "vi",
+              "chunk_content_sha256": "26ed88c226b384dee06d645f37f993322bc88f1d31a3caf975c617452f00be13",
+              "start_char": 248,
+              "end_char": 358,
+              "quote": "Sau campaign • Sell-through / tồn còn lại • Return rate và lý do trả • Sai số forecast và hành động điều chỉnh"
+            }
+          ],
+          "reason": "Training deck covers sell-through, remaining stock, return rate and forecast correction; extra supported details are acceptable."
+        }
+      ]
+    },
+    "F02-en": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::13",
+              "document_name": "01_Inventory_Management_Policy_Manual_EN.docx",
+              "language": "en",
+              "chunk_content_sha256": "d81e65151db7ac176643768c2cd49d23c81b90b6667a4fa16fff8ae012c06735",
+              "start_char": 397,
+              "end_char": 509,
+              "quote": "After the campaign, compare the forecast with sell-through, remaining stock, and return rate to update the plan."
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        },
+        {
+          "spans": [
+            {
+              "chunk_id": "LOCAL-EN-V1-05_Inventory_Policy_Training_Deck_EN.pptx::chunk::6",
+              "document_name": "05_Inventory_Policy_Training_Deck_EN.pptx",
+              "language": "en",
+              "chunk_content_sha256": "d15dc29993ef6b6d5042eda618312a1be7dccc035a8d0fc8196bdb0c962e6ccf",
+              "start_char": 268,
+              "end_char": 388,
+              "quote": "After campaign • Sell-through / remaining stock • Return rate and return reasons • Forecast error and corrective actions"
+            }
+          ],
+          "reason": "Training deck covers sell-through, remaining stock, return rate and forecast correction; extra supported details are acceptable."
+        }
+      ]
+    },
+    "F03-vi": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::5",
+              "document_name": "01_Inventory_Management_Policy_Manual.docx",
+              "language": "vi",
+              "chunk_content_sha256": "ab1f735edbe0c2bd9436d4c9a3adb33cd044142e5d5ac9fdd6672c153b0d6346",
+              "start_char": 891,
+              "end_char": 969,
+              "quote": "Mọi PO khẩn cấp phải ghi rõ nguyên nhân, ảnh hưởng dịch vụ và người phê duyệt."
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        }
+      ]
+    },
+    "F03-en": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::6",
+              "document_name": "01_Inventory_Management_Policy_Manual_EN.docx",
+              "language": "en",
+              "chunk_content_sha256": "d77a7d770fc4abf9e97142485d7705549cb908bea12aeb143a99c470b4bbfea7",
+              "start_char": 939,
+              "end_char": 1013,
+              "quote": "Every emergency PO must document the reason, service impact, and approver."
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        }
+      ]
+    },
+    "F04-vi": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::10",
+              "document_name": "01_Inventory_Management_Policy_Manual.docx",
+              "language": "vi",
+              "chunk_content_sha256": "3f64918bd74f3950f0ec683760f9ed915cc388295c9dc77ea0f9fa03cc55111b",
+              "start_char": 254,
+              "end_char": 361,
+              "quote": "Trên 240 ngày: Inventory Manager và Finance đánh giá dự phòng giảm giá trị / loại bỏ theo quy định kế toán."
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        }
+      ]
+    },
+    "F04-en": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::11",
+              "document_name": "01_Inventory_Management_Policy_Manual_EN.docx",
+              "language": "en",
+              "chunk_content_sha256": "f00e6cc1d42345870b30fc5d3bf6f0a57a6e88df40eb7af7892a2c2d1e8f51b1",
+              "start_char": 274,
+              "end_char": 387,
+              "quote": "Over 240 days: the Inventory Manager and Finance assess inventory write-downs or disposal under accounting rules."
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        }
+      ]
+    },
+    "F05-vi": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::17",
+              "document_name": "01_Inventory_Management_Policy_Manual.docx",
+              "language": "vi",
+              "chunk_content_sha256": "79a339f7414d6ff4d0bdd70791bbf3ffc553f05b53c2b57b3a82702233a1b083",
+              "start_char": 216,
+              "end_char": 350,
+              "quote": "Nhu cầu bình quân trong workbook lấy từ tối đa 3 snapshot gần nhất có sẵn cho SKU; các snapshot không nhất thiết là 3 tháng liên tiếp."
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        },
+        {
+          "spans": [
+            {
+              "chunk_id": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20::chunk::0",
+              "document_name": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+              "language": "vi",
+              "chunk_content_sha256": "0c8903f74b29c2d07c6e81772044132f01b1cc390cfb017ae6f4ef3e63ca05d3",
+              "start_char": 453,
+              "end_char": 621,
+              "quote": "Row 4: Mục: Cách tính nhu cầu | Nội dung: Avg monthly demand = trung bình units_sold của tối đa 3 snapshot gần nhất có sẵn cho SKU. Có thể không phải 3 tháng liên tiếp."
+            }
+          ],
+          "reason": "Workbook README states the same three-available-snapshot and nonconsecutive-month rule."
+        }
+      ]
+    },
+    "F05-en": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::18",
+              "document_name": "01_Inventory_Management_Policy_Manual_EN.docx",
+              "language": "en",
+              "chunk_content_sha256": "33634181452c3ef398a8f681f10fefd044e2f5730ce629b34f8e22f98932c26a",
+              "start_char": 217,
+              "end_char": 368,
+              "quote": "Average demand in the workbook uses up to the three most recent available snapshots for each SKU; the snapshots are not necessarily consecutive months."
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        },
+        {
+          "spans": [
+            {
+              "chunk_id": "LOCAL-EN-V1-04_Inventory_Control_and_Reorder_Planner_EN.xlsx::chunk::0",
+              "document_name": "04_Inventory_Control_and_Reorder_Planner_EN.xlsx",
+              "language": "en",
+              "chunk_content_sha256": "3b20cce6c36b6dc75a8329c9282d44dd42ae244a7a774a0a9cfda384ce4ca298",
+              "start_char": 465,
+              "end_char": 646,
+              "quote": "Row 4: Item: Demand calculation | Content: Avg monthly demand = average units_sold across up to 3 most recent available snapshots for the SKU. These may not be 3 consecutive months."
+            }
+          ],
+          "reason": "Workbook README states the same three-available-snapshot and nonconsecutive-month rule."
+        }
+      ]
+    },
+    "F06-vi": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::16",
+              "document_name": "01_Inventory_Management_Policy_Manual.docx",
+              "language": "vi",
+              "chunk_content_sha256": "ed738ff4b1b1a0dcd6031e5e710e7ec231994acb79c42a6eaeddff9ee641d836",
+              "start_char": 200,
+              "end_char": 299,
+              "quote": "Khi triển khai RAG, mỗi chunk nên giữ policy_id, owner, trigger, action, SLA và approval cùng nhau."
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        }
+      ]
+    },
+    "F06-en": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::17",
+              "document_name": "01_Inventory_Management_Policy_Manual_EN.docx",
+              "language": "en",
+              "chunk_content_sha256": "b725ce34d9671c8187e5fa85ee2e655ab3446763ad4e6f3e25c0ba52c0efb648",
+              "start_char": 210,
+              "end_char": 304,
+              "quote": "For RAG, each chunk should keep policy_id, owner, trigger, action, SLA, and approval together."
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        }
+      ]
+    },
+    "F07-vi": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::1",
+              "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+              "language": "vi",
+              "chunk_content_sha256": "ac99f42772a634ba7041c304a64409aa28de7996ae169578e24256db54670a54",
+              "start_char": 926,
+              "end_char": 1043,
+              "quote": "Warehouse Supervisor phân công người đếm; người đếm không được xem số lượng hệ thống nếu tổ chức áp dụng blind count."
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        }
+      ]
+    },
+    "F07-en": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::1",
+              "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+              "language": "en",
+              "chunk_content_sha256": "e1dd76e9f4413fd1111ad992b09e9b06d2dd24d9f5803ad158cabdf0da0a346a",
+              "start_char": 932,
+              "end_char": 1043,
+              "quote": "The Warehouse Supervisor assigns counters; counters must not see system quantities when blind counting is used."
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        }
+      ]
+    },
+    "F08-vi": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::2",
+              "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+              "language": "vi",
+              "chunk_content_sha256": "9b2ef8e748e5c80a3e8f47a8bd39e5b7237f6dadc2c64ec9f074f87b4b3d4437",
+              "start_char": 287,
+              "end_char": 363,
+              "quote": "Đếm theo SKU + size + color + vị trí; không gộp các biến thể gần giống nhau."
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        }
+      ]
+    },
+    "F08-en": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::2",
+              "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+              "language": "en",
+              "chunk_content_sha256": "2adae7a4490dd20531b78acbf0dc78a916bd67aa314f4d2151c385ab49c34c45",
+              "start_char": 300,
+              "end_char": 372,
+              "quote": "Count by SKU + size + color + location; do not combine similar variants."
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        }
+      ]
+    },
+    "F09-vi": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+              "document_name": "01_Inventory_Management_Policy_Manual.docx",
+              "language": "vi",
+              "chunk_content_sha256": "9da79266447c3ddf5557d053c60aa4a399c775fcd682a8081997715ff734e8cb",
+              "start_char": 443,
+              "end_char": 603,
+              "quote": "Row 3: Loại quyết định: Điều chỉnh tồn nhỏ, có đủ bằng chứng | Luồng phê duyệt: Người đếm ≠ người nhập → Warehouse Supervisor | Thời điểm: Trong 1 ngày làm việc"
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        }
+      ]
+    },
+    "F09-en": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14",
+              "document_name": "01_Inventory_Management_Policy_Manual_EN.docx",
+              "language": "en",
+              "chunk_content_sha256": "ae785d214af0e972f19ef52215a31bcf8ad7b5d14bc86632a67b148cec9c61b4",
+              "start_char": 417,
+              "end_char": 590,
+              "quote": "Row 3: Decision Type: Small inventory adjustment with sufficient evidence | Approval Flow: Counter ≠ data-entry person → Warehouse Supervisor | Timing: Within 1 business day"
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        }
+      ]
+    },
+    "F10-vi": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::13",
+              "document_name": "01_Inventory_Management_Policy_Manual.docx",
+              "language": "vi",
+              "chunk_content_sha256": "9da79266447c3ddf5557d053c60aa4a399c775fcd682a8081997715ff734e8cb",
+              "start_char": 791,
+              "end_char": 941,
+              "quote": "Row 5: Loại quyết định: Thanh lý / scrap / ghi giảm giá trị | Luồng phê duyệt: QA + Inventory Manager + Finance | Thời điểm: Theo thẩm quyền tài chính"
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        }
+      ]
+    },
+    "F10-en": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::14",
+              "document_name": "01_Inventory_Management_Policy_Manual_EN.docx",
+              "language": "en",
+              "chunk_content_sha256": "ae785d214af0e972f19ef52215a31bcf8ad7b5d14bc86632a67b148cec9c61b4",
+              "start_char": 776,
+              "end_char": 920,
+              "quote": "Row 5: Decision Type: Disposal / scrap / write-down | Approval Flow: QA + Inventory Manager + Finance | Timing: According to financial authority"
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        }
+      ]
+    },
+    "F11-vi": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e::chunk::6",
+              "document_name": "01_Inventory_Management_Policy_Manual.docx",
+              "language": "vi",
+              "chunk_content_sha256": "e7d68323fce9b76afd478cf8c302c6ea9a2dc8e93886b9ce2c4c20f8a7c2e69d",
+              "start_char": 266,
+              "end_char": 408,
+              "quote": "Row 2: Nhóm: B | Tiêu chí tham chiếu: Nhóm tiếp theo đóng góp xấp xỉ 15% | Tần suất: Hằng tháng | SLA điều tra: Điều tra trong 2 ngày làm việc"
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        }
+      ]
+    },
+    "F11-en": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "LOCAL-EN-V1-01_Inventory_Management_Policy_Manual_EN.docx::chunk::7",
+              "document_name": "01_Inventory_Management_Policy_Manual_EN.docx",
+              "language": "en",
+              "chunk_content_sha256": "67d202ad45bd866c5750929669578e381d79b7566a079589cbd17670a58d5635",
+              "start_char": 302,
+              "end_char": 458,
+              "quote": "Row 2: Class: B | Reference Criteria: Next group contributing approximately 15% | Frequency: Monthly | Investigation SLA: Investigate within 2 business days"
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        }
+      ]
+    },
+    "F12-vi": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::3",
+              "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+              "language": "vi",
+              "chunk_content_sha256": "6c7c1da4d637951b11280f6b3ee503b3827dd2422401eb47a2bc4ec69852ac42",
+              "start_char": 300,
+              "end_char": 434,
+              "quote": "Chênh lệch lặp lại, giá trị lớn hoặc vượt ngưỡng nội bộ Giữ giao dịch liên quan; điều tra nguyên nhân gốc Inventory Manager + Finance "
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        },
+        {
+          "spans": [
+            {
+              "chunk_id": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2::chunk::7",
+              "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+              "language": "vi",
+              "chunk_content_sha256": "abcf8c515666a70630b2ef312d44f69f9ca549a3ff170c5a16ae749d3c81c3d1",
+              "start_char": 357,
+              "end_char": 547,
+              "quote": "Row 3: Tình huống: Chênh lệch lặp lại, giá trị lớn\nhoặc vượt ngưỡng nội bộ | Hành động tối thiểu: Giữ giao dịch liên quan; điều tra nguyên nhân gốc | Người duyệt: Inventory Manager +\nFinance"
+            }
+          ],
+          "reason": "Separately extracted table duplicates the complete SOP action and approver row. Accept either extraction, not both as requirements."
+        }
+      ]
+    },
+    "F12-en": {
+      "status": "assistant_reviewed_pending_human",
+      "alternatives": [
+        {
+          "spans": [
+            {
+              "chunk_id": "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::3",
+              "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+              "language": "en",
+              "chunk_content_sha256": "06e7507a257cedd9b50e3d0deda7c920f7fcab507cfaa4a277400c1504b06d0e",
+              "start_char": 616,
+              "end_char": 769,
+              "quote": "Recurring, high-value variance or a variance above internal thresholds Hold related transactions; investigate the root cause Inventory Manager + Finance "
+            }
+          ],
+          "reason": "Original support; narrowed to the answer-bearing sentence where appropriate."
+        },
+        {
+          "spans": [
+            {
+              "chunk_id": "LOCAL-EN-V1-02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf::chunk::6",
+              "document_name": "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+              "language": "en",
+              "chunk_content_sha256": "252e01dd5df005b664c89e07c0cfc1e3e122eadfe9befabb0745d55f804abe59",
+              "start_char": 477,
+              "end_char": 685,
+              "quote": "Row 5: Situation: Recurring, high-value variance or\na variance above internal\nthresholds | None: | Minimum action: Hold related transactions;\ninvestigate the root cause | Approver: Inventory Manager\n+ Finance"
+            }
+          ],
+          "reason": "Separately extracted table duplicates the complete SOP action and approver row. Accept either extraction, not both as requirements."
+        }
+      ]
+    }
+  }
+}

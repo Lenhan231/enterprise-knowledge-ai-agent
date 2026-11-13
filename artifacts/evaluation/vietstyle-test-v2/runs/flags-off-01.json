@@ -1,0 +1,3663 @@
+{
+  "created_at_utc": "2026-11-10T09:12:48.630986+00:00",
+  "base_url": "http://127.0.0.1:8000",
+  "mode": "knowledge",
+  "retrieval_method": "translated_hybrid_rerank",
+  "role": "admin",
+  "configuration": {
+    "concurrency": 1,
+    "passes": 2,
+    "cases_per_pass": 6,
+    "timeout_seconds": 180,
+    "pause_seconds": 15.0,
+    "multiquery_env": "1",
+    "claim_verification_env": "1"
+  },
+  "boundaries": {
+    "http_e2e": "Client HTTP request through authentication, routing, agents and telemetry; login excluded",
+    "request_total_ms": "Handler wall time before persistence of the agent event; authentication excluded",
+    "response_ready_ms": "Handler through telemetry persistence; excludes authentication and HTTP serialization/transport",
+    "stages": "Wall times; null means skipped. Nested stages overlap; parallel agent durations must not be added to infer E2E",
+    "first_pass": "First pass after restart; models preloaded. Only the first relevant request is first inference, not all ten",
+    "warm_pass": "Same questions and order; includes the existing query-translation cache",
+    "quality": "application_ok is the server flag, not correctness; inspect saved answers and citations manually",
+    "repeatability": "Repeated warm questions, not independent intents or a concurrent load test; first_pass is not necessarily cold"
+  },
+  "results": [
+    {
+      "phase": "first_pass",
+      "case_id": "V1",
+      "expected_route": "knowledge",
+      "question": "Theo Ph\u1ee5 l\u1ee5c B, kho\u1ea3n mua s\u1eafm 80 tri\u1ec7u \u0111\u1ed3ng c\u1ea7n nh\u1eefng b\u00ean n\u00e0o ph\u00ea duy\u1ec7t v\u00e0 c\u1ea7n bao nhi\u00eau b\u00e1o gi\u00e1?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 1,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 2568.7888199463487,
+          "embedding": 978.2916090916842,
+          "database_retrieval": 9802.801301004365,
+          "retrieval_fusion": 0.6902508903294802,
+          "query_translation": 459.70681100152433,
+          "reranking": 6378.427342046052,
+          "answer_generation": 816.359548131004,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 17648.22231302969,
+          "agent_workflow": 26859.598678071052,
+          "telemetry_persistence": null,
+          "claim_verification": 904.1696900967509
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 2568.7888199463487,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 978.2916090916842,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 459.70681100152433,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 9802.801301004365,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.3651208244264126,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.3251300659030676,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 6378.427342046052,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 17648.22231302969,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 816.359548131004,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 904.1696900967509,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 26859.598678071052,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 29841.836240841076,
+        "response_ready_ms": 29847.254022955894
+      },
+      "answer_characters": 299,
+      "error": null,
+      "answer": "Theo Ph\u1ee5 l\u1ee5c B, kho\u1ea3n mua s\u1eafm 80.000.000 VND thu\u1ed9c m\u1ee9c t\u1ed5ng cam k\u1ebft t\u1eeb 50.000.001 \u0111\u1ebfn 200.000.000 VND [S1].\n\n*   C\u00e1c b\u00ean c\u1ea7n ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c l\u00e0: Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn, Mua s\u1eafm v\u00e0 T\u00e0i ch\u00ednh [S1].\n*   \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung v\u1ec1 b\u00e1o gi\u00e1 l\u00e0: C\u1ea7n \u00edt nh\u1ea5t ba b\u00e1o gi\u00e1 v\u0103n b\u1ea3n ho\u1eb7c l\u00fd do ch\u1ec9 \u0111\u1ecbnh ngu\u1ed3n \u0111\u00e3 duy\u1ec7t [S1].",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+          "content": "Section: Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh\nColumns: T\u1ed5ng cam k\u1ebft | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung\nRow 1: T\u1ed5ng cam k\u1ebft: \u0110\u1ebfn 5.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Qu\u1ea3n l\u00fd tr\u1ef1c ti\u1ebfp | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: M\u1ed9t b\u00e1o gi\u00e1 c\u00f3 h\u1ed3 s\u01a1; ng\u00e2n s\u00e1ch x\u00e1c nh\u1eadn.\nRow 2: T\u1ed5ng cam k\u1ebft: 5.000.001-50.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u00cdt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng n\u1ebfu th\u1ecb tr\u01b0\u1eddng cho ph\u00e9p.\nRow 3: T\u1ed5ng cam k\u1ebft: 50.000.001-200.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn + Mua s\u1eafm + T\u00e0i ch\u00ednh | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u00cdt nh\u1ea5t ba b\u00e1o gi\u00e1 v\u0103n b\u1ea3n ho\u1eb7c l\u00fd do ch\u1ec9 \u0111\u1ecbnh ngu\u1ed3n \u0111\u00e3 duy\u1ec7t.\nRow 4: T\u1ed5ng cam k\u1ebft: Tr\u00ean 200.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: H\u1ed9i \u0111\u1ed3ng \u0110i\u1ec1u h\u00e0nh V\u1eadn h\u00e0nh + T\u00e0i ch\u00ednh | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u0110\u00e1nh gi\u00e1 ngu\u1ed3n cung v\u00e0 r\u00e0 r\u1ee7i ro \u0111\u01b0\u1ee3c l\u1eadp h\u1ed3 s\u01a1.",
+          "metadata": {
+            "bbox": [
+              50.71791813280759,
+              477.4510147870351,
+              544.6367662918808,
+              572.5703992540083
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+            "source_url": null,
+            "chunk_index": 730,
+            "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 53,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 1,
+            "token_count": 226,
+            "element_type": "table",
+            "section_path": [
+              "Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh",
+            "table_row_end": 4,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 1,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 797,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 1,
+            "table_fragment_index": 0,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": 0.9445206522941589,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Theo Ph\u1ee5 l\u1ee5c B, kho\u1ea3n mua s\u1eafm 80 tri\u1ec7u \u0111\u1ed3ng c\u1ea7n nh\u1eefng b\u00ean n\u00e0o ph\u00ea duy\u1ec7t v\u00e0 c\u1ea7n bao nhi\u00eau b\u00e1o gi\u00e1?",
+                "en": "According to Appendix B, which parties need to approve the 80 million VND purchase, and how many quotations are required?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 459.72912409342825,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 6378.347201040015,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 3,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 29875.07
+    },
+    {
+      "phase": "first_pass",
+      "case_id": "V2",
+      "expected_route": "knowledge",
+      "question": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 50 tri\u1ec7u v\u00e0 50.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 b\u00e1o gi\u00e1?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 3,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 392.9403298534453,
+          "embedding": 821.2703929748386,
+          "database_retrieval": 2596.484670881182,
+          "retrieval_fusion": 16.943811206147075,
+          "query_translation": 382.69243482500315,
+          "reranking": 18696.573697961867,
+          "answer_generation": 1208.2861438393593,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 22558.061135932803,
+          "agent_workflow": 24857.86621598527,
+          "telemetry_persistence": null,
+          "claim_verification": 687.775608850643
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 392.9403298534453,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 821.2703929748386,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 382.69243482500315,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 2596.484670881182,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 13.508959207683802,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 3.434851998463273,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 18696.573697961867,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 22558.061135932803,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 1208.2861438393593,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 687.775608850643,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 24857.86621598527,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 24858.01421990618,
+        "response_ready_ms": 24858.103774953634
+      },
+      "answer_characters": 578,
+      "error": null,
+      "answer": "Kho\u1ea3n mua s\u1eafm c\u00f3 t\u1ed5ng cam k\u1ebft 50.000.000 VND v\u00e0 50.000.001 VND kh\u00e1c nhau v\u1ec1 th\u1ea9m quy\u1ec1n ph\u00ea duy\u1ec7t v\u00e0 y\u00eau c\u1ea7u b\u00e1o gi\u00e1 nh\u01b0 sau:\n\n*   **\u0110\u1ed1i v\u1edbi kho\u1ea3n mua s\u1eafm 50.000.000 VND:**\n    *   **Ph\u00ea duy\u1ec7t:** Do Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn ph\u00ea duy\u1ec7t [S1][S2].\n    *   **B\u00e1o gi\u00e1:** C\u1ea7n \u00edt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng n\u1ebfu th\u1ecb tr\u01b0\u1eddng cho ph\u00e9p [S1][S4].\n\n*   **\u0110\u1ed1i v\u1edbi kho\u1ea3n mua s\u1eafm 50.000.001 VND:**\n    *   **Ph\u00ea duy\u1ec7t:** C\u1ea7n s\u1ef1 ph\u00ea duy\u1ec7t c\u1ee7a Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn c\u00f9ng Mua s\u1eafm v\u00e0 T\u00e0i ch\u00ednh [S1][S2].\n    *   **B\u00e1o gi\u00e1:** C\u1ea7n \u00edt nh\u1ea5t ba b\u00e1o gi\u00e1 b\u1eb1ng v\u0103n b\u1ea3n ho\u1eb7c gi\u1ea3i tr\u00ecnh ch\u1ec9 \u0111\u1ecbnh ngu\u1ed3n \u0111\u01b0\u1ee3c l\u1eadp h\u1ed3 s\u01a1 [S1][S4].",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+          "content": "Section: Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh\nColumns: T\u1ed5ng cam k\u1ebft | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung\nRow 1: T\u1ed5ng cam k\u1ebft: \u0110\u1ebfn 5.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Qu\u1ea3n l\u00fd tr\u1ef1c ti\u1ebfp | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: M\u1ed9t b\u00e1o gi\u00e1 c\u00f3 h\u1ed3 s\u01a1; ng\u00e2n s\u00e1ch x\u00e1c nh\u1eadn.\nRow 2: T\u1ed5ng cam k\u1ebft: 5.000.001-50.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u00cdt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng n\u1ebfu th\u1ecb tr\u01b0\u1eddng cho ph\u00e9p.\nRow 3: T\u1ed5ng cam k\u1ebft: 50.000.001-200.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn + Mua s\u1eafm + T\u00e0i ch\u00ednh | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u00cdt nh\u1ea5t ba b\u00e1o gi\u00e1 v\u0103n b\u1ea3n ho\u1eb7c l\u00fd do ch\u1ec9 \u0111\u1ecbnh ngu\u1ed3n \u0111\u00e3 duy\u1ec7t.\nRow 4: T\u1ed5ng cam k\u1ebft: Tr\u00ean 200.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: H\u1ed9i \u0111\u1ed3ng \u0110i\u1ec1u h\u00e0nh V\u1eadn h\u00e0nh + T\u00e0i ch\u00ednh | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u0110\u00e1nh gi\u00e1 ngu\u1ed3n cung v\u00e0 r\u00e0 r\u1ee7i ro \u0111\u01b0\u1ee3c l\u1eadp h\u1ed3 s\u01a1.",
+          "metadata": {
+            "bbox": [
+              50.71791813280759,
+              477.4510147870351,
+              544.6367662918808,
+              572.5703992540083
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+            "source_url": null,
+            "chunk_index": 730,
+            "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 53,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 1,
+            "token_count": 226,
+            "element_type": "table",
+            "section_path": [
+              "Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh",
+            "table_row_end": 4,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 1,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 797,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 1,
+            "table_fragment_index": 0,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": 1.354542851448059,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 50 tri\u1ec7u v\u00e0 50.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 b\u00e1o gi\u00e1?",
+                "en": "How do a purchase of exactly 50 million and 50,000,001 dong differ in terms of approval and quotation?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 382.71334604360163,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 18696.472895797342,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        },
+        {
+          "citation_id": "S2",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+          "content": "Section: Ma tr\u1eadn ph\u00ea duy\u1ec7t v\u00e0 ng\u01b0\u1ee1ng ti\u1ec1n\nQuy t\u1eafc b\u1eaft bu\u1ed9c. Th\u1ea9m quy\u1ec1n m\u1eb7c \u0111\u1ecbnh cho m\u1ed9t cam k\u1ebft: \u0111\u1ebfn 5.000.000 VND-qu\u1ea3n l\u00fd tr\u1ef1c ti\u1ebfp; 5.000.001-50.000.000 VND-tr\u01b0\u1edfng b\u1ed9 ph\u1eadn; 50.000.001-200.000.000 VND-tr\u01b0\u1edfng b\u1ed9 ph\u1eadn c\u00f9ng Mua s\u1eafm v\u00e0 T\u00e0i ch\u00ednh; tr\u00ean 200.000.000 VND-H\u1ed9i \u0111\u1ed3ng \u0110i\u1ec1u h\u00e0nh V\u1eadn h\u00e0nh c\u00f9ng T\u00e0i ch\u00ednh.",
+          "metadata": {
+            "bbox": [
+              51.84,
+              85.52899999999988,
+              308.16400000000004,
+              96.51799999999992
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+            "source_url": null,
+            "chunk_index": 274,
+            "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+            "fiscal_year": null,
+            "layout_type": "text",
+            "page_number": 21,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "token_count": 85,
+            "element_type": "text",
+            "section_path": [
+              "Ma tr\u1eadn ph\u00ea duy\u1ec7t v\u00e0 ng\u01b0\u1ee1ng ti\u1ec1n"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "text",
+            "document_type": "knowledge_document",
+            "heading_level": 1,
+            "parser_engine": "docling",
+            "section_title": "Ma tr\u1eadn ph\u00ea duy\u1ec7t v\u00e0 ng\u01b0\u1ee1ng ti\u1ec1n",
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 308,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": 0.618845522403717,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 50 tri\u1ec7u v\u00e0 50.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 b\u00e1o gi\u00e1?",
+                "en": "How do a purchase of exactly 50 million and 50,000,001 dong differ in terms of approval and quotation?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 382.71334604360163,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 18696.472895797342,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        },
+        {
+          "citation_id": "S4",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+          "content": "Section: T\u00ecm ngu\u1ed3n c\u1ea1nh tranh v\u00e0 \u0111\u00e1nh gi\u00e1 b\u00e1o gi\u00e1\nQuy t\u1eafc b\u1eaft bu\u1ed9c. Cam k\u1ebft d\u1ef1 to\u00e1n \u0111\u1ebfn 5.000.000 VND c\u00f3 th\u1ec3 d\u00f9ng m\u1ed9t b\u00e1o gi\u00e1 \u0111\u01b0\u1ee3c l\u1eadp h\u1ed3 s\u01a1. T\u1eeb 5.000.001 \u0111\u1ebfn 50.000.000 VND c\u1ea7n t\u00ecm \u00edt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng n\u1ebfu th\u1ecb tr\u01b0\u1eddng cho ph\u00e9p. Tr\u00ean 50.000.000 VND c\u1ea7n \u00edt nh\u1ea5t ba b\u00e1o gi\u00e1 b\u1eb1ng v\u0103n b\u1ea3n ho\u1eb7c gi\u1ea3i tr\u00ecnh ch\u1ec9 \u0111\u1ecbnh ngu\u1ed3n \u0111\u01b0\u1ee3c l\u1eadp h\u1ed3 s\u01a1.",
+          "metadata": {
+            "bbox": [
+              51.84,
+              85.52899999999988,
+              377.623,
+              96.51799999999992
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+            "source_url": null,
+            "chunk_index": 261,
+            "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+            "fiscal_year": null,
+            "layout_type": "text",
+            "page_number": 20,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "token_count": 86,
+            "element_type": "text",
+            "section_path": [
+              "T\u00ecm ngu\u1ed3n c\u1ea1nh tranh v\u00e0 \u0111\u00e1nh gi\u00e1 b\u00e1o gi\u00e1"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "text",
+            "document_type": "knowledge_document",
+            "heading_level": 1,
+            "parser_engine": "docling",
+            "section_title": "T\u00ecm ngu\u1ed3n c\u1ea1nh tranh v\u00e0 \u0111\u00e1nh gi\u00e1 b\u00e1o gi\u00e1",
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 341,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -0.9279547929763794,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 50 tri\u1ec7u v\u00e0 50.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 b\u00e1o gi\u00e1?",
+                "en": "How do a purchase of exactly 50 million and 50,000,001 dong differ in terms of approval and quotation?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 382.71334604360163,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 18696.472895797342,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 4,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 24872.3
+    },
+    {
+      "phase": "first_pass",
+      "case_id": "V3",
+      "expected_route": "knowledge",
+      "question": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 5 tri\u1ec7u v\u00e0 5.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 \u0111i\u1ec1u ki\u1ec7n b\u1ed5 sung?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 1,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 413.93762291409075,
+          "embedding": 1126.315066125244,
+          "database_retrieval": 2604.642080143094,
+          "retrieval_fusion": 0.588397728279233,
+          "query_translation": 396.9637609552592,
+          "reranking": 10011.727079050615,
+          "answer_generation": 709.4788439571857,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 14171.632522018626,
+          "agent_workflow": 15896.114818984643,
+          "telemetry_persistence": null,
+          "claim_verification": 597.3095041699708
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 413.93762291409075,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 1126.315066125244,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 396.9637609552592,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 2604.642080143094,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.3570588305592537,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.2313388977199793,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 10011.727079050615,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 14171.632522018626,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 709.4788439571857,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 597.3095041699708,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 15896.114818984643,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 15896.2595469784,
+        "response_ready_ms": 15896.367220208049
+      },
+      "answer_characters": 445,
+      "error": null,
+      "answer": "Kho\u1ea3n mua s\u1eafm c\u00f3 t\u1ed5ng cam k\u1ebft \u0111\u1ebfn 5.000.000 VND (bao g\u1ed3m \u0111\u00fang 5 tri\u1ec7u) y\u00eau c\u1ea7u ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c t\u1eeb Qu\u1ea3n l\u00fd tr\u1ef1c ti\u1ebfp, v\u1edbi \u0111i\u1ec1u ki\u1ec7n b\u1ed5 sung l\u00e0 c\u1ea7n m\u1ed9t b\u00e1o gi\u00e1 c\u00f3 h\u1ed3 s\u01a1 v\u00e0 ng\u00e2n s\u00e1ch \u0111\u00e3 \u0111\u01b0\u1ee3c x\u00e1c nh\u1eadn [S1].\n\nNg\u01b0\u1ee3c l\u1ea1i, kho\u1ea3n mua s\u1eafm c\u00f3 t\u1ed5ng cam k\u1ebft t\u1eeb 5.000.001 VND \u0111\u1ebfn 50.000.000 VND (bao g\u1ed3m 5.000.001 \u0111\u1ed3ng) y\u00eau c\u1ea7u ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c t\u1eeb Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn, v\u1edbi \u0111i\u1ec1u ki\u1ec7n b\u1ed5 sung l\u00e0 c\u1ea7n \u00edt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng n\u1ebfu th\u1ecb tr\u01b0\u1eddng cho ph\u00e9p [S1].",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+          "content": "Section: Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh\nColumns: T\u1ed5ng cam k\u1ebft | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung\nRow 1: T\u1ed5ng cam k\u1ebft: \u0110\u1ebfn 5.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Qu\u1ea3n l\u00fd tr\u1ef1c ti\u1ebfp | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: M\u1ed9t b\u00e1o gi\u00e1 c\u00f3 h\u1ed3 s\u01a1; ng\u00e2n s\u00e1ch x\u00e1c nh\u1eadn.\nRow 2: T\u1ed5ng cam k\u1ebft: 5.000.001-50.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u00cdt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng n\u1ebfu th\u1ecb tr\u01b0\u1eddng cho ph\u00e9p.\nRow 3: T\u1ed5ng cam k\u1ebft: 50.000.001-200.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn + Mua s\u1eafm + T\u00e0i ch\u00ednh | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u00cdt nh\u1ea5t ba b\u00e1o gi\u00e1 v\u0103n b\u1ea3n ho\u1eb7c l\u00fd do ch\u1ec9 \u0111\u1ecbnh ngu\u1ed3n \u0111\u00e3 duy\u1ec7t.\nRow 4: T\u1ed5ng cam k\u1ebft: Tr\u00ean 200.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: H\u1ed9i \u0111\u1ed3ng \u0110i\u1ec1u h\u00e0nh V\u1eadn h\u00e0nh + T\u00e0i ch\u00ednh | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u0110\u00e1nh gi\u00e1 ngu\u1ed3n cung v\u00e0 r\u00e0 r\u1ee7i ro \u0111\u01b0\u1ee3c l\u1eadp h\u1ed3 s\u01a1.",
+          "metadata": {
+            "bbox": [
+              50.71791813280759,
+              477.4510147870351,
+              544.6367662918808,
+              572.5703992540083
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+            "source_url": null,
+            "chunk_index": 730,
+            "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 53,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 1,
+            "token_count": 226,
+            "element_type": "table",
+            "section_path": [
+              "Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh",
+            "table_row_end": 4,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 1,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 797,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 1,
+            "table_fragment_index": 0,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": 3.0893750190734863,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 5 tri\u1ec7u v\u00e0 5.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 \u0111i\u1ec1u ki\u1ec7n b\u1ed5 sung?",
+                "en": "How do a purchase of exactly 5 million and 5,000,001 dong differ in terms of approval and additional conditions?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 396.9821878708899,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 10011.646408122033,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 2,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 15910.79
+    },
+    {
+      "phase": "first_pass",
+      "case_id": "V4",
+      "expected_route": "knowledge",
+      "question": "Theo Ph\u1ee5 l\u1ee5c C, s\u1ed1 l\u01b0\u1ee3ng b\u1eb1ng 0 c\u00f3 \u0111\u1ea1t \u0111i\u1ec1u ki\u1ec7n c\u1ee7a y\u00eau c\u1ea7u mua s\u1eafm kh\u00f4ng? C\u00f2n ph\u1ea3i ki\u1ec3m tra g\u00ec kh\u00e1c?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 1,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 380.18173491582274,
+          "embedding": 1013.060410041362,
+          "database_retrieval": 2660.1896081119776,
+          "retrieval_fusion": 0.5608468782156706,
+          "query_translation": 429.3610209133476,
+          "reranking": 6538.212910993025,
+          "answer_generation": 540.3221671003848,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 10679.721254156902,
+          "agent_workflow": 12088.759016012773,
+          "telemetry_persistence": null,
+          "claim_verification": 484.2100159730762
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 380.18173491582274,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 1013.060410041362,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 429.3610209133476,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 2660.1896081119776,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.3416859544813633,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.2191609237343073,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 6538.212910993025,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 10679.721254156902,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 540.3221671003848,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 484.2100159730762,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 12088.759016012773,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 12088.889664039016,
+        "response_ready_ms": 12089.017275953665
+      },
+      "answer_characters": 248,
+      "error": null,
+      "answer": "Theo Ph\u1ee5 l\u1ee5c C, s\u1ed1 l\u01b0\u1ee3ng b\u1eb1ng 0 kh\u00f4ng \u0111\u1ea1t \u0111i\u1ec1u ki\u1ec7n c\u1ee7a y\u00eau c\u1ea7u mua s\u1eafm v\u00ec \u0111i\u1ec1u ki\u1ec7n ch\u1eb7n y\u00eau c\u1ea7u s\u1ed1 l\u01b0\u1ee3ng ph\u1ea3i l\u1edbn h\u01a1n 0 [S1]. Ngo\u00e0i ra, c\u00f2n ph\u1ea3i ki\u1ec3m tra c\u00e1c \u0111i\u1ec1u ki\u1ec7n kh\u00e1c bao g\u1ed3m: kh\u00f4ng tr\u00f9ng y\u00eau c\u1ea7u m\u1edf v\u00e0 ghi ng\u00e2n s\u00e1ch v\u00e0 tuy\u1ebfn t\u00ecm ngu\u1ed3n [S1].",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+          "content": "Section: Ph\u1ee5 l\u1ee5c C - Bi\u1ec3u m\u1eabu chu\u1ea9n v\u00e0 ki\u1ec3m tra t\u1ed1i thi\u1ec3u\nColumns: Bi\u1ec3u m\u1eabu | Tr\u01b0\u1eddng t\u1ed1i thi\u1ec3u | Ki\u1ec3m tra / \u0111i\u1ec1u ki\u1ec7n ch\u1eb7n\nRow 1: Bi\u1ec3u m\u1eabu: Y\u00eau c\u1ea7u ngh\u1ec9 ph\u00e9p | Tr\u01b0\u1eddng t\u1ed1i thi\u1ec3u: M\u00e3 nh\u00e2n vi\u00ean; lo\u1ea1i ngh\u1ec9; ng\u00e0y \u0111\u1ea7u/cu\u1ed1i; c\u1ea3/m\u1ed9t ph\u1ea7n ng\u00e0y; b\u00e0n giao; th\u1eddi \u0111i\u1ec3m n\u1ed9p. | Ki\u1ec3m tra / \u0111i\u1ec1u ki\u1ec7n ch\u1eb7n: Ng\u00e0y cu\u1ed1i >= ng\u00e0y \u0111\u1ea7u; r\u00e0 tr\u00f9ng; ngh\u1ec9 \u0111\u01b0\u1ee3c b\u1ea3o v\u1ec7 chuy\u1ec3n Nh\u00e2n s\u1ef1.\nRow 2: Bi\u1ec3u m\u1eabu: \u0110\u1ec1 ngh\u1ecb ho\u00e0n chi ph\u00ed | Tr\u01b0\u1eddng t\u1ed1i thi\u1ec3u: Ng\u01b0\u1eddi \u0111\u1ec1 ngh\u1ecb; ng\u00e0y giao d\u1ecbch; lo\u1ea1i; s\u1ed1 ti\u1ec1n; ti\u1ec1n t\u1ec7; m\u1ee5c \u0111\u00edch; trung t\u00e2m chi ph\u00ed; m\u00e3 ch\u1ee9ng t\u1eeb. | Ki\u1ec3m tra / \u0111i\u1ec1u ki\u1ec7n ch\u1eb7n: S\u1ed1 ti\u1ec1n >= 0; r\u00f5 ti\u1ec1n t\u1ec7; ho\u00e0n t\u1ea5t ki\u1ec3m tr\u00f9ng/b\u1eb1ng ch\u1ee9ng; duy\u1ec7t h\u1ee3p l\u1ec7 tr\u01b0\u1edbc thanh to\u00e1n.\nRow 3: Bi\u1ec3u m\u1eabu: Y\u00eau c\u1ea7u mua s\u1eafm | Tr\u01b0\u1eddng t\u1ed1i thi\u1ec3u: Ng\u01b0\u1eddi \u0111\u1ec1 ngh\u1ecb; b\u1ed9 ph\u1eadn; l\u00fd do; s\u1ea3n ph\u1ea9m/\u0111\u1eb7c t\u1ea3; l\u01b0\u1ee3ng; d\u1ef1 to\u00e1n; ti\u1ec1n t\u1ec7; ch\u1ee7 ng\u00e2n s\u00e1ch. | Ki\u1ec3m tra / \u0111i\u1ec1u ki\u1ec7n ch\u1eb7n: S\u1ed1 l\u01b0\u1ee3ng > 0; kh\u00f4ng tr\u00f9ng y\u00eau c\u1ea7u m\u1edf; ghi ng\u00e2n s\u00e1ch v\u00e0 tuy\u1ebfn t\u00ecm ngu\u1ed3n.",
+          "metadata": {
+            "bbox": [
+              50.67229529924841,
+              700.3683080938705,
+              544.447613132144,
+              794.4054319085417
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+            "source_url": null,
+            "chunk_index": 737,
+            "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 53,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 2,
+            "token_count": 257,
+            "element_type": "table",
+            "section_path": [
+              "Ph\u1ee5 l\u1ee5c C - Bi\u1ec3u m\u1eabu chu\u1ea9n v\u00e0 ki\u1ec3m tra t\u1ed1i thi\u1ec3u"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Ph\u1ee5 l\u1ee5c C - Bi\u1ec3u m\u1eabu chu\u1ea9n v\u00e0 ki\u1ec3m tra t\u1ed1i thi\u1ec3u",
+            "table_row_end": 3,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 1,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 870,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 2,
+            "table_fragment_index": 0,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": 3.934861421585083,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Theo Ph\u1ee5 l\u1ee5c C, s\u1ed1 l\u01b0\u1ee3ng b\u1eb1ng 0 c\u00f3 \u0111\u1ea1t \u0111i\u1ec1u ki\u1ec7n c\u1ee7a y\u00eau c\u1ea7u mua s\u1eafm kh\u00f4ng? C\u00f2n ph\u1ea3i ki\u1ec3m tra g\u00ec kh\u00e1c?",
+                "en": "According to Appendix C, does a quantity of 0 meet the conditions of the procurement requirement? What else needs to be checked?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 429.38828212209046,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 6538.1142920814455,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 2,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 12097.89
+    },
+    {
+      "phase": "first_pass",
+      "case_id": "V5",
+      "expected_route": "knowledge",
+      "question": "Bi\u00ean b\u1ea3n nh\u1eadn h\u00e0ng c\u00f3 l\u01b0\u1ee3ng giao 100, ch\u1ea5p nh\u1eadn 90, t\u1eeb ch\u1ed1i 15 c\u00f3 h\u1ee3p l\u1ec7 v\u1ec1 s\u1ed1 l\u01b0\u1ee3ng kh\u00f4ng? V\u00ec sao?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": false,
+      "citation_count": 0,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 474.33029394596815,
+          "embedding": 692.3837529029697,
+          "database_retrieval": 1948.7766490783542,
+          "retrieval_fusion": 2.068351022899151,
+          "query_translation": 519.302667118609,
+          "reranking": 8239.00559102185,
+          "answer_generation": 559.8605880513787,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 11412.326595047489,
+          "agent_workflow": 12450.814903946593,
+          "telemetry_persistence": null,
+          "claim_verification": 0.8620708249509335
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 474.33029394596815,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 692.3837529029697,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 519.302667118609,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 1948.7766490783542,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.4860830958932638,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 1.582267927005887,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 8239.00559102185,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 11412.326595047489,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 559.8605880513787,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 0.8620708249509335,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 12450.814903946593,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 12450.943699106574,
+        "response_ready_ms": 12451.026482973248
+      },
+      "answer_characters": 102,
+      "error": null,
+      "answer": "Ch\u01b0a th\u1ec3 ki\u1ec3m ch\u1ee9ng \u0111\u1ea7y \u0111\u1ee7 c\u00e2u tr\u1ea3 l\u1eddi v\u1edbi c\u00e1c ngu\u1ed3n \u0111\u01b0\u1ee3c tr\u00edch d\u1eabn. Vui l\u00f2ng th\u1eed l\u1ea1i ho\u1eb7c h\u1ecfi r\u00f5 h\u01a1n.",
+      "evidence": [],
+      "claim_verification": {
+        "status": "unavailable",
+        "reason": "unverified_arithmetic",
+        "claim_count": 0,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 12474.7
+    },
+    {
+      "phase": "first_pass",
+      "case_id": "V6",
+      "expected_route": "knowledge",
+      "question": "Theo Ph\u1ee5 l\u1ee5c B v\u00e0 C, kho\u1ea3n mua s\u1eafm 80 tri\u1ec7u c\u1ea7n ai duy\u1ec7t, \u0111i\u1ec1u ki\u1ec7n b\u00e1o gi\u00e1 l\u00e0 g\u00ec v\u00e0 \u0111\u01a1n mua h\u00e0ng ch\u1ec9 \u0111\u01b0\u1ee3c ph\u00e1t h\u00e0nh khi n\u00e0o?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 3,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 423.3078497927636,
+          "embedding": 1433.7838033679873,
+          "database_retrieval": 4839.415353024378,
+          "retrieval_fusion": 1.2052690144628286,
+          "query_translation": 804.2611128184944,
+          "reranking": 30688.652893994004,
+          "answer_generation": 813.3822781965137,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 37803.35822980851,
+          "agent_workflow": 39930.968953995034,
+          "telemetry_persistence": null,
+          "claim_verification": 888.5811949148774
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 423.3078497927636,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 660.9283732250333,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 434.0105929877609,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 2196.002314100042,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.23089908063411713,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.22337702102959156,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 13285.116678103805,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 16594.153441954404,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 772.855430142954,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 370.25051983073354,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 2643.4130389243364,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.4829489625990391,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.26804395020008087,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 17403.5362158902,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 21209.204787854105,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 813.3822781965137,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 888.5811949148774,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 39930.968953995034,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 39931.08724197373,
+        "response_ready_ms": 39933.98452596739
+      },
+      "answer_characters": 487,
+      "error": null,
+      "answer": "Theo Ph\u1ee5 l\u1ee5c B, kho\u1ea3n mua s\u1eafm c\u00f3 t\u1ed5ng cam k\u1ebft 80.000.000 VND (n\u1eb1m trong kho\u1ea3ng 50.000.001-200.000.000 VND) c\u1ea7n \u0111\u01b0\u1ee3c ph\u00ea duy\u1ec7t b\u1edfi Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn + Mua s\u1eafm + T\u00e0i ch\u00ednh [S1]. \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung cho m\u1ee9c cam k\u1ebft n\u00e0y l\u00e0 ph\u1ea3i c\u00f3 \u00edt nh\u1ea5t ba b\u00e1o gi\u00e1 v\u0103n b\u1ea3n ho\u1eb7c l\u00fd do ch\u1ec9 \u0111\u1ecbnh ngu\u1ed3n \u0111\u00e3 duy\u1ec7t [S1].\n\nTheo Ph\u1ee5 l\u1ee5c C v\u00e0 c\u00e1c quy t\u1eafc li\u00ean quan, \u0111\u01a1n mua h\u00e0ng ch\u1ec9 \u0111\u01b0\u1ee3c ph\u00e1t h\u00e0nh sau khi \u0111\u00e3 \u0111\u01b0\u1ee3c duy\u1ec7t [S4], c\u1ee5 th\u1ec3 l\u00e0 sau khi ho\u00e0n t\u1ea5t ki\u1ec3m tra y\u00eau c\u1ea7u, nh\u00e0 cung c\u1ea5p, ngu\u1ed3n cung, ng\u00e2n s\u00e1ch v\u00e0 duy\u1ec7t [S2].",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+          "content": "Section: Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh\nColumns: T\u1ed5ng cam k\u1ebft | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung\nRow 1: T\u1ed5ng cam k\u1ebft: \u0110\u1ebfn 5.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Qu\u1ea3n l\u00fd tr\u1ef1c ti\u1ebfp | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: M\u1ed9t b\u00e1o gi\u00e1 c\u00f3 h\u1ed3 s\u01a1; ng\u00e2n s\u00e1ch x\u00e1c nh\u1eadn.\nRow 2: T\u1ed5ng cam k\u1ebft: 5.000.001-50.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u00cdt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng n\u1ebfu th\u1ecb tr\u01b0\u1eddng cho ph\u00e9p.\nRow 3: T\u1ed5ng cam k\u1ebft: 50.000.001-200.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn + Mua s\u1eafm + T\u00e0i ch\u00ednh | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u00cdt nh\u1ea5t ba b\u00e1o gi\u00e1 v\u0103n b\u1ea3n ho\u1eb7c l\u00fd do ch\u1ec9 \u0111\u1ecbnh ngu\u1ed3n \u0111\u00e3 duy\u1ec7t.\nRow 4: T\u1ed5ng cam k\u1ebft: Tr\u00ean 200.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: H\u1ed9i \u0111\u1ed3ng \u0110i\u1ec1u h\u00e0nh V\u1eadn h\u00e0nh + T\u00e0i ch\u00ednh | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u0110\u00e1nh gi\u00e1 ngu\u1ed3n cung v\u00e0 r\u00e0 r\u1ee7i ro \u0111\u01b0\u1ee3c l\u1eadp h\u1ed3 s\u01a1.",
+          "metadata": {
+            "bbox": [
+              50.71791813280759,
+              477.4510147870351,
+              544.6367662918808,
+              572.5703992540083
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+            "source_url": null,
+            "chunk_index": 730,
+            "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 53,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 1,
+            "token_count": 226,
+            "element_type": "table",
+            "section_path": [
+              "Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh",
+            "table_row_end": 4,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 1,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 797,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 1,
+            "table_fragment_index": 0,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": 0.6159496307373047,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Theo Ph\u1ee5 l\u1ee5c B v\u00e0 C, kho\u1ea3n mua s\u1eafm 80 tri\u1ec7u c\u1ea7n ai duy\u1ec7t v\u00e0 \u0111i\u1ec1u ki\u1ec7n b\u00e1o gi\u00e1 l\u00e0 g\u00ec?",
+                "en": "According to Appendices B and C, who needs to approve the 80 million purchase, and what are the quotation conditions?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 434.0274778660387,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 13284.991719992831,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        },
+        {
+          "citation_id": "S2",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+          "content": "Section: T\u1ea1o v\u00e0 ph\u00e1t h\u00e0nh \u0111\u01a1n mua h\u00e0ng\nQuy t\u1eafc b\u1eaft bu\u1ed9c. Ch\u1ec9 ph\u00e1t h\u00e0nh PO sau khi ho\u00e0n t\u1ea5t ki\u1ec3m tra y\u00eau c\u1ea7u, nh\u00e0 cung c\u1ea5p, ngu\u1ed3n cung, ng\u00e2n s\u00e1ch v\u00e0 duy\u1ec7t.",
+          "metadata": {
+            "bbox": [
+              51.84,
+              85.52899999999988,
+              407.644,
+              96.51799999999992
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+            "source_url": null,
+            "chunk_index": 288,
+            "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+            "fiscal_year": null,
+            "layout_type": "text",
+            "page_number": 22,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "token_count": 40,
+            "element_type": "text",
+            "section_path": [
+              "T\u1ea1o v\u00e0 ph\u00e1t h\u00e0nh \u0111\u01a1n mua h\u00e0ng"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "text",
+            "document_type": "knowledge_document",
+            "heading_level": 1,
+            "parser_engine": "docling",
+            "section_title": "T\u1ea1o v\u00e0 ph\u00e1t h\u00e0nh \u0111\u01a1n mua h\u00e0ng",
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 154,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": 2.0899360179901123,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Theo Ph\u1ee5 l\u1ee5c B v\u00e0 C, \u0111\u01a1n mua h\u00e0ng ch\u1ec9 \u0111\u01b0\u1ee3c ph\u00e1t h\u00e0nh khi n\u00e0o?",
+                "en": "According to Appendices B and C, when is a purchase order only issued?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 370.2653630170971,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 17403.27633288689,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        },
+        {
+          "citation_id": "S4",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+          "content": "Section: Ph\u1ee5 l\u1ee5c C - Bi\u1ec3u m\u1eabu chu\u1ea9n v\u00e0 ki\u1ec3m tra t\u1ed1i thi\u1ec3u\nColumns: Bi\u1ec3u m\u1eabu | Tr\u01b0\u1eddng t\u1ed1i thi\u1ec3u | Ki\u1ec3m tra / \u0111i\u1ec1u ki\u1ec7n ch\u1eb7n\nRow 4: Bi\u1ec3u m\u1eabu: \u0110\u01a1n mua h\u00e0ng | Tr\u01b0\u1eddng t\u1ed1i thi\u1ec3u: S\u1ed1 PO; nh\u00e0 cung c\u1ea5p; ng\u00e0y ph\u00e1t h\u00e0nh; ti\u1ec1n t\u1ec7; d\u00f2ng h\u00e0ng; s\u1ed1 l\u01b0\u1ee3ng; \u0111\u01a1n gi\u00e1; \u0111i\u1ec1u ki\u1ec7n giao/thanh to\u00e1n. | Ki\u1ec3m tra / \u0111i\u1ec1u ki\u1ec7n ch\u1eb7n: Ch\u1ec9 ph\u00e1t h\u00e0nh sau duy\u1ec7t; t\u1ed5ng kh\u1edbp th\u1ea9m quy\u1ec1n; s\u1eeda c\u00f3 phi\u00ean b\u1ea3n.",
+          "metadata": {
+            "bbox": [
+              50.67229529924841,
+              700.3683080938705,
+              544.447613132144,
+              794.4054319085417
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+            "source_url": null,
+            "chunk_index": 738,
+            "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 53,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 2,
+            "token_count": 104,
+            "element_type": "table",
+            "section_path": [
+              "Ph\u1ee5 l\u1ee5c C - Bi\u1ec3u m\u1eabu chu\u1ea9n v\u00e0 ki\u1ec3m tra t\u1ed1i thi\u1ec3u"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Ph\u1ee5 l\u1ee5c C - Bi\u1ec3u m\u1eabu chu\u1ea9n v\u00e0 ki\u1ec3m tra t\u1ed1i thi\u1ec3u",
+            "table_row_end": 4,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 4,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 369,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 2,
+            "table_fragment_index": 1,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -0.3734580874443054,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Theo Ph\u1ee5 l\u1ee5c B v\u00e0 C, \u0111\u01a1n mua h\u00e0ng ch\u1ec9 \u0111\u01b0\u1ee3c ph\u00e1t h\u00e0nh khi n\u00e0o?",
+                "en": "According to Appendices B and C, when is a purchase order only issued?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 370.2653630170971,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 17403.27633288689,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 4,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 39944.83
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "V1",
+      "expected_route": "knowledge",
+      "question": "Theo Ph\u1ee5 l\u1ee5c B, kho\u1ea3n mua s\u1eafm 80 tri\u1ec7u \u0111\u1ed3ng c\u1ea7n nh\u1eefng b\u00ean n\u00e0o ph\u00ea duy\u1ec7t v\u00e0 c\u1ea7n bao nhi\u00eau b\u00e1o gi\u00e1?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 1,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 447.34155386686325,
+          "embedding": 412.0132690295577,
+          "database_retrieval": 2640.650467015803,
+          "retrieval_fusion": 0.7811901159584522,
+          "query_translation": 0.015873927623033524,
+          "reranking": 13017.808938864619,
+          "answer_generation": 660.5814059730619,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 16100.914919981733,
+          "agent_workflow": 17872.87728791125,
+          "telemetry_persistence": null,
+          "claim_verification": 662.117277039215
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 447.34155386686325,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 412.0132690295577,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.015873927623033524,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 2640.650467015803,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.5632811225950718,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.21790899336338043,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 13017.808938864619,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 16100.914919981733,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 660.5814059730619,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 662.117277039215,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 17872.87728791125,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 17873.003609012812,
+        "response_ready_ms": 17873.125693993643
+      },
+      "answer_characters": 296,
+      "error": null,
+      "answer": "Theo Ph\u1ee5 l\u1ee5c B, kho\u1ea3n mua s\u1eafm 80.000.000 VND thu\u1ed9c m\u1ee9c t\u1ed5ng cam k\u1ebft t\u1eeb 50.000.001 \u0111\u1ebfn 200.000.000 VND [S1].\n\n*   C\u00e1c b\u00ean c\u1ea7n ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c l\u00e0: Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn, Mua s\u1eafm v\u00e0 T\u00e0i ch\u00ednh [S1].\n*   \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung v\u1ec1 b\u00e1o gi\u00e1: C\u1ea7n \u00edt nh\u1ea5t ba b\u00e1o gi\u00e1 v\u0103n b\u1ea3n ho\u1eb7c l\u00fd do ch\u1ec9 \u0111\u1ecbnh ngu\u1ed3n \u0111\u00e3 duy\u1ec7t [S1].",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+          "content": "Section: Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh\nColumns: T\u1ed5ng cam k\u1ebft | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung\nRow 1: T\u1ed5ng cam k\u1ebft: \u0110\u1ebfn 5.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Qu\u1ea3n l\u00fd tr\u1ef1c ti\u1ebfp | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: M\u1ed9t b\u00e1o gi\u00e1 c\u00f3 h\u1ed3 s\u01a1; ng\u00e2n s\u00e1ch x\u00e1c nh\u1eadn.\nRow 2: T\u1ed5ng cam k\u1ebft: 5.000.001-50.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u00cdt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng n\u1ebfu th\u1ecb tr\u01b0\u1eddng cho ph\u00e9p.\nRow 3: T\u1ed5ng cam k\u1ebft: 50.000.001-200.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn + Mua s\u1eafm + T\u00e0i ch\u00ednh | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u00cdt nh\u1ea5t ba b\u00e1o gi\u00e1 v\u0103n b\u1ea3n ho\u1eb7c l\u00fd do ch\u1ec9 \u0111\u1ecbnh ngu\u1ed3n \u0111\u00e3 duy\u1ec7t.\nRow 4: T\u1ed5ng cam k\u1ebft: Tr\u00ean 200.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: H\u1ed9i \u0111\u1ed3ng \u0110i\u1ec1u h\u00e0nh V\u1eadn h\u00e0nh + T\u00e0i ch\u00ednh | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u0110\u00e1nh gi\u00e1 ngu\u1ed3n cung v\u00e0 r\u00e0 r\u1ee7i ro \u0111\u01b0\u1ee3c l\u1eadp h\u1ed3 s\u01a1.",
+          "metadata": {
+            "bbox": [
+              50.71791813280759,
+              477.4510147870351,
+              544.6367662918808,
+              572.5703992540083
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+            "source_url": null,
+            "chunk_index": 730,
+            "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 53,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 1,
+            "token_count": 226,
+            "element_type": "table",
+            "section_path": [
+              "Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh",
+            "table_row_end": 4,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 1,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 797,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 1,
+            "table_fragment_index": 0,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": 0.9445206522941589,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Theo Ph\u1ee5 l\u1ee5c B, kho\u1ea3n mua s\u1eafm 80 tri\u1ec7u \u0111\u1ed3ng c\u1ea7n nh\u1eefng b\u00ean n\u00e0o ph\u00ea duy\u1ec7t v\u00e0 c\u1ea7n bao nhi\u00eau b\u00e1o gi\u00e1?",
+                "en": "According to Appendix B, which parties need to approve the 80 million VND purchase, and how many quotations are required?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 0.04124199040234089,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 13017.714367015287,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 3,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 17896.26
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "V2",
+      "expected_route": "knowledge",
+      "question": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 50 tri\u1ec7u v\u00e0 50.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 b\u00e1o gi\u00e1?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 2,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 810.6212760321796,
+          "embedding": 3066.267719026655,
+          "database_retrieval": 2814.141317969188,
+          "retrieval_fusion": 1.8125881906598806,
+          "query_translation": 0.01239893026649952,
+          "reranking": 11966.010628966615,
+          "answer_generation": 1094.057808862999,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 17879.33961697854,
+          "agent_workflow": 20478.401105850935,
+          "telemetry_persistence": null,
+          "claim_verification": 686.7431281134486
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 810.6212760321796,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 3066.267719026655,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.01239893026649952,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 2814.141317969188,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 1.5417190734297037,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.2708691172301769,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 11966.010628966615,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 17879.33961697854,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 1094.057808862999,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 686.7431281134486,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 20478.401105850935,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 20478.534567169845,
+        "response_ready_ms": 20478.716432116926
+      },
+      "answer_characters": 647,
+      "error": null,
+      "answer": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 50.000.000 VND v\u00e0 50.000.001 VND kh\u00e1c nhau v\u1ec1 th\u1ea9m quy\u1ec1n ph\u00ea duy\u1ec7t v\u00e0 y\u00eau c\u1ea7u b\u00e1o gi\u00e1 nh\u01b0 sau:\n\n*   **Kho\u1ea3n mua s\u1eafm 50.000.000 VND:**\n    *   **Ph\u00ea duy\u1ec7t:** Thu\u1ed9c m\u1ee9c \"5.000.001-50.000.000 VND\", y\u00eau c\u1ea7u ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c t\u1eeb Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn [S1].\n    *   **B\u00e1o gi\u00e1:** C\u1ea7n t\u00ecm \u00edt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng n\u1ebfu th\u1ecb tr\u01b0\u1eddng cho ph\u00e9p [S1][S4].\n\n*   **Kho\u1ea3n mua s\u1eafm 50.000.001 VND:**\n    *   **Ph\u00ea duy\u1ec7t:** Thu\u1ed9c m\u1ee9c \"50.000.001-200.000.000 VND\", y\u00eau c\u1ea7u ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c t\u1eeb Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn + Mua s\u1eafm + T\u00e0i ch\u00ednh [S1].\n    *   **B\u00e1o gi\u00e1:** C\u1ea7n \u00edt nh\u1ea5t ba b\u00e1o gi\u00e1 b\u1eb1ng v\u0103n b\u1ea3n ho\u1eb7c gi\u1ea3i tr\u00ecnh ch\u1ec9 \u0111\u1ecbnh ngu\u1ed3n \u0111\u01b0\u1ee3c l\u1eadp h\u1ed3 s\u01a1 [S1][S4].",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+          "content": "Section: Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh\nColumns: T\u1ed5ng cam k\u1ebft | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung\nRow 1: T\u1ed5ng cam k\u1ebft: \u0110\u1ebfn 5.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Qu\u1ea3n l\u00fd tr\u1ef1c ti\u1ebfp | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: M\u1ed9t b\u00e1o gi\u00e1 c\u00f3 h\u1ed3 s\u01a1; ng\u00e2n s\u00e1ch x\u00e1c nh\u1eadn.\nRow 2: T\u1ed5ng cam k\u1ebft: 5.000.001-50.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u00cdt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng n\u1ebfu th\u1ecb tr\u01b0\u1eddng cho ph\u00e9p.\nRow 3: T\u1ed5ng cam k\u1ebft: 50.000.001-200.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn + Mua s\u1eafm + T\u00e0i ch\u00ednh | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u00cdt nh\u1ea5t ba b\u00e1o gi\u00e1 v\u0103n b\u1ea3n ho\u1eb7c l\u00fd do ch\u1ec9 \u0111\u1ecbnh ngu\u1ed3n \u0111\u00e3 duy\u1ec7t.\nRow 4: T\u1ed5ng cam k\u1ebft: Tr\u00ean 200.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: H\u1ed9i \u0111\u1ed3ng \u0110i\u1ec1u h\u00e0nh V\u1eadn h\u00e0nh + T\u00e0i ch\u00ednh | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u0110\u00e1nh gi\u00e1 ngu\u1ed3n cung v\u00e0 r\u00e0 r\u1ee7i ro \u0111\u01b0\u1ee3c l\u1eadp h\u1ed3 s\u01a1.",
+          "metadata": {
+            "bbox": [
+              50.71791813280759,
+              477.4510147870351,
+              544.6367662918808,
+              572.5703992540083
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+            "source_url": null,
+            "chunk_index": 730,
+            "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 53,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 1,
+            "token_count": 226,
+            "element_type": "table",
+            "section_path": [
+              "Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh",
+            "table_row_end": 4,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 1,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 797,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 1,
+            "table_fragment_index": 0,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": 1.354542851448059,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 50 tri\u1ec7u v\u00e0 50.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 b\u00e1o gi\u00e1?",
+                "en": "How do a purchase of exactly 50 million and 50,000,001 dong differ in terms of approval and quotation?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 0.07039704360067844,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 11965.927371988073,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        },
+        {
+          "citation_id": "S4",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+          "content": "Section: T\u00ecm ngu\u1ed3n c\u1ea1nh tranh v\u00e0 \u0111\u00e1nh gi\u00e1 b\u00e1o gi\u00e1\nQuy t\u1eafc b\u1eaft bu\u1ed9c. Cam k\u1ebft d\u1ef1 to\u00e1n \u0111\u1ebfn 5.000.000 VND c\u00f3 th\u1ec3 d\u00f9ng m\u1ed9t b\u00e1o gi\u00e1 \u0111\u01b0\u1ee3c l\u1eadp h\u1ed3 s\u01a1. T\u1eeb 5.000.001 \u0111\u1ebfn 50.000.000 VND c\u1ea7n t\u00ecm \u00edt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng n\u1ebfu th\u1ecb tr\u01b0\u1eddng cho ph\u00e9p. Tr\u00ean 50.000.000 VND c\u1ea7n \u00edt nh\u1ea5t ba b\u00e1o gi\u00e1 b\u1eb1ng v\u0103n b\u1ea3n ho\u1eb7c gi\u1ea3i tr\u00ecnh ch\u1ec9 \u0111\u1ecbnh ngu\u1ed3n \u0111\u01b0\u1ee3c l\u1eadp h\u1ed3 s\u01a1.",
+          "metadata": {
+            "bbox": [
+              51.84,
+              85.52899999999988,
+              377.623,
+              96.51799999999992
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+            "source_url": null,
+            "chunk_index": 261,
+            "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+            "fiscal_year": null,
+            "layout_type": "text",
+            "page_number": 20,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "token_count": 86,
+            "element_type": "text",
+            "section_path": [
+              "T\u00ecm ngu\u1ed3n c\u1ea1nh tranh v\u00e0 \u0111\u00e1nh gi\u00e1 b\u00e1o gi\u00e1"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "text",
+            "document_type": "knowledge_document",
+            "heading_level": 1,
+            "parser_engine": "docling",
+            "section_title": "T\u00ecm ngu\u1ed3n c\u1ea1nh tranh v\u00e0 \u0111\u00e1nh gi\u00e1 b\u00e1o gi\u00e1",
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 341,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -0.9279547929763794,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 50 tri\u1ec7u v\u00e0 50.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 b\u00e1o gi\u00e1?",
+                "en": "How do a purchase of exactly 50 million and 50,000,001 dong differ in terms of approval and quotation?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 0.07039704360067844,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 11965.927371988073,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 4,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 20574.63
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "V3",
+      "expected_route": "knowledge",
+      "question": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 5 tri\u1ec7u v\u00e0 5.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 \u0111i\u1ec1u ki\u1ec7n b\u1ed5 sung?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 1,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 430.99865899421275,
+          "embedding": 1211.9097500108182,
+          "database_retrieval": 2716.8944620061666,
+          "retrieval_fusion": 0.6619107443839312,
+          "query_translation": 0.011647120118141174,
+          "reranking": 18288.09010796249,
+          "answer_generation": 785.4679301381111,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 22249.027530895546,
+          "agent_workflow": 24328.770028194413,
+          "telemetry_persistence": null,
+          "claim_verification": 861.6762100718915
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 430.99865899421275,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 1211.9097500108182,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.011647120118141174,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 2716.8944620061666,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.3886378835886717,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.2732728607952595,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 18288.09010796249,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 22249.027530895546,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 785.4679301381111,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 861.6762100718915,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 24328.770028194413,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 24328.89651786536,
+        "response_ready_ms": 24329.00314894505
+      },
+      "answer_characters": 445,
+      "error": null,
+      "answer": "Kho\u1ea3n mua s\u1eafm c\u00f3 t\u1ed5ng cam k\u1ebft \u0111\u1ebfn 5.000.000 VND (bao g\u1ed3m \u0111\u00fang 5 tri\u1ec7u) y\u00eau c\u1ea7u ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c t\u1eeb Qu\u1ea3n l\u00fd tr\u1ef1c ti\u1ebfp, v\u1edbi \u0111i\u1ec1u ki\u1ec7n b\u1ed5 sung l\u00e0 c\u1ea7n m\u1ed9t b\u00e1o gi\u00e1 c\u00f3 h\u1ed3 s\u01a1 v\u00e0 ng\u00e2n s\u00e1ch \u0111\u00e3 \u0111\u01b0\u1ee3c x\u00e1c nh\u1eadn [S1].\n\nNg\u01b0\u1ee3c l\u1ea1i, kho\u1ea3n mua s\u1eafm c\u00f3 t\u1ed5ng cam k\u1ebft t\u1eeb 5.000.001 VND \u0111\u1ebfn 50.000.000 VND (bao g\u1ed3m 5.000.001 \u0111\u1ed3ng) y\u00eau c\u1ea7u ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c t\u1eeb Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn, v\u1edbi \u0111i\u1ec1u ki\u1ec7n b\u1ed5 sung l\u00e0 c\u1ea7n \u00edt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng n\u1ebfu th\u1ecb tr\u01b0\u1eddng cho ph\u00e9p [S1].",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+          "content": "Section: Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh\nColumns: T\u1ed5ng cam k\u1ebft | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung\nRow 1: T\u1ed5ng cam k\u1ebft: \u0110\u1ebfn 5.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Qu\u1ea3n l\u00fd tr\u1ef1c ti\u1ebfp | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: M\u1ed9t b\u00e1o gi\u00e1 c\u00f3 h\u1ed3 s\u01a1; ng\u00e2n s\u00e1ch x\u00e1c nh\u1eadn.\nRow 2: T\u1ed5ng cam k\u1ebft: 5.000.001-50.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u00cdt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng n\u1ebfu th\u1ecb tr\u01b0\u1eddng cho ph\u00e9p.\nRow 3: T\u1ed5ng cam k\u1ebft: 50.000.001-200.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn + Mua s\u1eafm + T\u00e0i ch\u00ednh | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u00cdt nh\u1ea5t ba b\u00e1o gi\u00e1 v\u0103n b\u1ea3n ho\u1eb7c l\u00fd do ch\u1ec9 \u0111\u1ecbnh ngu\u1ed3n \u0111\u00e3 duy\u1ec7t.\nRow 4: T\u1ed5ng cam k\u1ebft: Tr\u00ean 200.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: H\u1ed9i \u0111\u1ed3ng \u0110i\u1ec1u h\u00e0nh V\u1eadn h\u00e0nh + T\u00e0i ch\u00ednh | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u0110\u00e1nh gi\u00e1 ngu\u1ed3n cung v\u00e0 r\u00e0 r\u1ee7i ro \u0111\u01b0\u1ee3c l\u1eadp h\u1ed3 s\u01a1.",
+          "metadata": {
+            "bbox": [
+              50.71791813280759,
+              477.4510147870351,
+              544.6367662918808,
+              572.5703992540083
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+            "source_url": null,
+            "chunk_index": 730,
+            "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 53,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 1,
+            "token_count": 226,
+            "element_type": "table",
+            "section_path": [
+              "Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh",
+            "table_row_end": 4,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 1,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 797,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 1,
+            "table_fragment_index": 0,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": 3.0893750190734863,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Kho\u1ea3n mua s\u1eafm \u0111\u00fang 5 tri\u1ec7u v\u00e0 5.000.001 \u0111\u1ed3ng kh\u00e1c nhau th\u1ebf n\u00e0o v\u1ec1 ph\u00ea duy\u1ec7t v\u00e0 \u0111i\u1ec1u ki\u1ec7n b\u1ed5 sung?",
+                "en": "How do a purchase of exactly 5 million and 5,000,001 dong differ in terms of approval and additional conditions?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 0.0345518346875906,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 18287.96916594729,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 2,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 24340.62
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "V4",
+      "expected_route": "knowledge",
+      "question": "Theo Ph\u1ee5 l\u1ee5c C, s\u1ed1 l\u01b0\u1ee3ng b\u1eb1ng 0 c\u00f3 \u0111\u1ea1t \u0111i\u1ec1u ki\u1ec7n c\u1ee7a y\u00eau c\u1ea7u mua s\u1eafm kh\u00f4ng? C\u00f2n ph\u1ea3i ki\u1ec3m tra g\u00ec kh\u00e1c?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 1,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 1209.685386158526,
+          "embedding": 1239.2557670827955,
+          "database_retrieval": 3059.7810389008373,
+          "retrieval_fusion": 0.5851939786225557,
+          "query_translation": 0.010746065527200699,
+          "reranking": 13925.934215076268,
+          "answer_generation": 547.0437258481979,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 18246.750860009342,
+          "agent_workflow": 20551.64166679606,
+          "telemetry_persistence": null,
+          "claim_verification": 546.5490689966828
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 1209.685386158526,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 1239.2557670827955,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.010746065527200699,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 3059.7810389008373,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.3582518547773361,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.2269421238452196,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 13925.934215076268,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 18246.750860009342,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 547.0437258481979,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 546.5490689966828,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 20551.64166679606,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 20551.76710593514,
+        "response_ready_ms": 20551.864611916244
+      },
+      "answer_characters": 248,
+      "error": null,
+      "answer": "Theo Ph\u1ee5 l\u1ee5c C, s\u1ed1 l\u01b0\u1ee3ng b\u1eb1ng 0 kh\u00f4ng \u0111\u1ea1t \u0111i\u1ec1u ki\u1ec7n c\u1ee7a y\u00eau c\u1ea7u mua s\u1eafm v\u00ec \u0111i\u1ec1u ki\u1ec7n ch\u1eb7n y\u00eau c\u1ea7u s\u1ed1 l\u01b0\u1ee3ng ph\u1ea3i l\u1edbn h\u01a1n 0 [S1]. Ngo\u00e0i ra, c\u00f2n ph\u1ea3i ki\u1ec3m tra c\u00e1c \u0111i\u1ec1u ki\u1ec7n kh\u00e1c bao g\u1ed3m: kh\u00f4ng tr\u00f9ng y\u00eau c\u1ea7u m\u1edf v\u00e0 ghi ng\u00e2n s\u00e1ch v\u00e0 tuy\u1ebfn t\u00ecm ngu\u1ed3n [S1].",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+          "content": "Section: Ph\u1ee5 l\u1ee5c C - Bi\u1ec3u m\u1eabu chu\u1ea9n v\u00e0 ki\u1ec3m tra t\u1ed1i thi\u1ec3u\nColumns: Bi\u1ec3u m\u1eabu | Tr\u01b0\u1eddng t\u1ed1i thi\u1ec3u | Ki\u1ec3m tra / \u0111i\u1ec1u ki\u1ec7n ch\u1eb7n\nRow 1: Bi\u1ec3u m\u1eabu: Y\u00eau c\u1ea7u ngh\u1ec9 ph\u00e9p | Tr\u01b0\u1eddng t\u1ed1i thi\u1ec3u: M\u00e3 nh\u00e2n vi\u00ean; lo\u1ea1i ngh\u1ec9; ng\u00e0y \u0111\u1ea7u/cu\u1ed1i; c\u1ea3/m\u1ed9t ph\u1ea7n ng\u00e0y; b\u00e0n giao; th\u1eddi \u0111i\u1ec3m n\u1ed9p. | Ki\u1ec3m tra / \u0111i\u1ec1u ki\u1ec7n ch\u1eb7n: Ng\u00e0y cu\u1ed1i >= ng\u00e0y \u0111\u1ea7u; r\u00e0 tr\u00f9ng; ngh\u1ec9 \u0111\u01b0\u1ee3c b\u1ea3o v\u1ec7 chuy\u1ec3n Nh\u00e2n s\u1ef1.\nRow 2: Bi\u1ec3u m\u1eabu: \u0110\u1ec1 ngh\u1ecb ho\u00e0n chi ph\u00ed | Tr\u01b0\u1eddng t\u1ed1i thi\u1ec3u: Ng\u01b0\u1eddi \u0111\u1ec1 ngh\u1ecb; ng\u00e0y giao d\u1ecbch; lo\u1ea1i; s\u1ed1 ti\u1ec1n; ti\u1ec1n t\u1ec7; m\u1ee5c \u0111\u00edch; trung t\u00e2m chi ph\u00ed; m\u00e3 ch\u1ee9ng t\u1eeb. | Ki\u1ec3m tra / \u0111i\u1ec1u ki\u1ec7n ch\u1eb7n: S\u1ed1 ti\u1ec1n >= 0; r\u00f5 ti\u1ec1n t\u1ec7; ho\u00e0n t\u1ea5t ki\u1ec3m tr\u00f9ng/b\u1eb1ng ch\u1ee9ng; duy\u1ec7t h\u1ee3p l\u1ec7 tr\u01b0\u1edbc thanh to\u00e1n.\nRow 3: Bi\u1ec3u m\u1eabu: Y\u00eau c\u1ea7u mua s\u1eafm | Tr\u01b0\u1eddng t\u1ed1i thi\u1ec3u: Ng\u01b0\u1eddi \u0111\u1ec1 ngh\u1ecb; b\u1ed9 ph\u1eadn; l\u00fd do; s\u1ea3n ph\u1ea9m/\u0111\u1eb7c t\u1ea3; l\u01b0\u1ee3ng; d\u1ef1 to\u00e1n; ti\u1ec1n t\u1ec7; ch\u1ee7 ng\u00e2n s\u00e1ch. | Ki\u1ec3m tra / \u0111i\u1ec1u ki\u1ec7n ch\u1eb7n: S\u1ed1 l\u01b0\u1ee3ng > 0; kh\u00f4ng tr\u00f9ng y\u00eau c\u1ea7u m\u1edf; ghi ng\u00e2n s\u00e1ch v\u00e0 tuy\u1ebfn t\u00ecm ngu\u1ed3n.",
+          "metadata": {
+            "bbox": [
+              50.67229529924841,
+              700.3683080938705,
+              544.447613132144,
+              794.4054319085417
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+            "source_url": null,
+            "chunk_index": 737,
+            "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 53,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 2,
+            "token_count": 257,
+            "element_type": "table",
+            "section_path": [
+              "Ph\u1ee5 l\u1ee5c C - Bi\u1ec3u m\u1eabu chu\u1ea9n v\u00e0 ki\u1ec3m tra t\u1ed1i thi\u1ec3u"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Ph\u1ee5 l\u1ee5c C - Bi\u1ec3u m\u1eabu chu\u1ea9n v\u00e0 ki\u1ec3m tra t\u1ed1i thi\u1ec3u",
+            "table_row_end": 3,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 1,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 870,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 2,
+            "table_fragment_index": 0,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": 3.934861421585083,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Theo Ph\u1ee5 l\u1ee5c C, s\u1ed1 l\u01b0\u1ee3ng b\u1eb1ng 0 c\u00f3 \u0111\u1ea1t \u0111i\u1ec1u ki\u1ec7n c\u1ee7a y\u00eau c\u1ea7u mua s\u1eafm kh\u00f4ng? C\u00f2n ph\u1ea3i ki\u1ec3m tra g\u00ec kh\u00e1c?",
+                "en": "According to Appendix C, does a quantity of 0 meet the conditions of the procurement requirement? What else needs to be checked?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 0.021472107619047165,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 13925.84702395834,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 2,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 20565.27
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "V5",
+      "expected_route": "knowledge",
+      "question": "Bi\u00ean b\u1ea3n nh\u1eadn h\u00e0ng c\u00f3 l\u01b0\u1ee3ng giao 100, ch\u1ea5p nh\u1eadn 90, t\u1eeb ch\u1ed1i 15 c\u00f3 h\u1ee3p l\u1ec7 v\u1ec1 s\u1ed1 l\u01b0\u1ee3ng kh\u00f4ng? V\u00ec sao?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": false,
+      "citation_count": 0,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 409.02062109671533,
+          "embedding": 660.4402519296855,
+          "database_retrieval": 2359.218684025109,
+          "retrieval_fusion": 0.9933700785040855,
+          "query_translation": 0.017747050151228905,
+          "reranking": 10038.24807703495,
+          "answer_generation": 877.7593770064414,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 13080.023617949337,
+          "agent_workflow": 14368.490813998505,
+          "telemetry_persistence": null,
+          "claim_verification": 0.32889610156416893
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 409.02062109671533,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 660.4402519296855,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.017747050151228905,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 2359.218684025109,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.7007080130279064,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.2926620654761791,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 10038.24807703495,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 13080.023617949337,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 877.7593770064414,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 0.32889610156416893,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 14368.490813998505,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 14368.621981935576,
+        "response_ready_ms": 14370.339836925268
+      },
+      "answer_characters": 102,
+      "error": null,
+      "answer": "Ch\u01b0a th\u1ec3 ki\u1ec3m ch\u1ee9ng \u0111\u1ea7y \u0111\u1ee7 c\u00e2u tr\u1ea3 l\u1eddi v\u1edbi c\u00e1c ngu\u1ed3n \u0111\u01b0\u1ee3c tr\u00edch d\u1eabn. Vui l\u00f2ng th\u1eed l\u1ea1i ho\u1eb7c h\u1ecfi r\u00f5 h\u01a1n.",
+      "evidence": [],
+      "claim_verification": {
+        "status": "unavailable",
+        "reason": "unverified_arithmetic",
+        "claim_count": 0,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 14382.0
+    },
+    {
+      "phase": "warm_pass",
+      "case_id": "V6",
+      "expected_route": "knowledge",
+      "question": "Theo Ph\u1ee5 l\u1ee5c B v\u00e0 C, kho\u1ea3n mua s\u1eafm 80 tri\u1ec7u c\u1ea7n ai duy\u1ec7t, \u0111i\u1ec1u ki\u1ec7n b\u00e1o gi\u00e1 l\u00e0 g\u00ec v\u00e0 \u0111\u01a1n mua h\u00e0ng ch\u1ec9 \u0111\u01b0\u1ee3c ph\u00e1t h\u00e0nh khi n\u00e0o?",
+      "status": 200,
+      "agent": "knowledge",
+      "selected_route": "knowledge",
+      "application_ok": true,
+      "citation_count": 3,
+      "latency": {
+        "stages_ms": {
+          "routing": null,
+          "knowledge_search_planning": 702.0901220384985,
+          "embedding": 2759.8278429359198,
+          "database_retrieval": 5438.7471380177885,
+          "retrieval_fusion": 7.708706194534898,
+          "query_translation": 0.020072096958756447,
+          "reranking": 34155.8690846432,
+          "answer_generation": 1496.9600751064718,
+          "sql_planning": null,
+          "sql_execution": null,
+          "answer_synthesis": null,
+          "retrieval_total": 42572.55252008326,
+          "agent_workflow": 45620.17703894526,
+          "telemetry_persistence": null,
+          "claim_verification": 845.8087840117514
+        },
+        "events": [
+          {
+            "stage": "knowledge_search_planning",
+            "elapsed_ms": 702.0901220384985,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 1274.7847698628902,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.010587042197585106,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 2785.9763740561903,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.23593707010149956,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.23210002109408379,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 23438.897041836753,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 27599.87426106818,
+            "status": "completed"
+          },
+          {
+            "stage": "embedding",
+            "elapsed_ms": 1485.0430730730295,
+            "status": "completed"
+          },
+          {
+            "stage": "query_translation",
+            "elapsed_ms": 0.009485054761171341,
+            "status": "completed"
+          },
+          {
+            "stage": "database_retrieval",
+            "elapsed_ms": 2652.7707639615983,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 0.37063099443912506,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_fusion",
+            "elapsed_ms": 6.870038108900189,
+            "status": "completed"
+          },
+          {
+            "stage": "reranking",
+            "elapsed_ms": 10716.972042806447,
+            "status": "completed"
+          },
+          {
+            "stage": "retrieval_total",
+            "elapsed_ms": 14972.678259015083,
+            "status": "completed"
+          },
+          {
+            "stage": "answer_generation",
+            "elapsed_ms": 1496.9600751064718,
+            "status": "completed"
+          },
+          {
+            "stage": "claim_verification",
+            "elapsed_ms": 845.8087840117514,
+            "status": "completed"
+          },
+          {
+            "stage": "agent_workflow",
+            "elapsed_ms": 45620.17703894526,
+            "status": "completed"
+          }
+        ],
+        "request_total_ms": 45620.324249845,
+        "response_ready_ms": 45620.414265897125
+      },
+      "answer_characters": 582,
+      "error": null,
+      "answer": "Theo Ph\u1ee5 l\u1ee5c B, kho\u1ea3n mua s\u1eafm c\u00f3 t\u1ed5ng cam k\u1ebft 80.000.000 VND (n\u1eb1m trong kho\u1ea3ng 50.000.001-200.000.000 VND) c\u1ea7n \u0111\u01b0\u1ee3c ph\u00ea duy\u1ec7t b\u1edfi Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn + Mua s\u1eafm + T\u00e0i ch\u00ednh [S1]. \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung cho m\u1ee9c cam k\u1ebft n\u00e0y l\u00e0 ph\u1ea3i c\u00f3 \u00edt nh\u1ea5t ba b\u00e1o gi\u00e1 v\u0103n b\u1ea3n ho\u1eb7c l\u00fd do ch\u1ec9 \u0111\u1ecbnh ngu\u1ed3n \u0111\u00e3 duy\u1ec7t [S1].\n\nTheo Ph\u1ee5 l\u1ee5c C, \u0111\u01a1n mua h\u00e0ng ch\u1ec9 \u0111\u01b0\u1ee3c ph\u00e1t h\u00e0nh sau khi \u0111\u00e3 \u0111\u01b0\u1ee3c duy\u1ec7t, t\u1ed5ng kh\u1edbp th\u1ea9m quy\u1ec1n v\u00e0 n\u1ebfu c\u00f3 s\u1eeda \u0111\u1ed5i th\u00ec ph\u1ea3i c\u00f3 phi\u00ean b\u1ea3n [S4]. Quy t\u1eafc b\u1eaft bu\u1ed9c c\u0169ng x\u00e1c nh\u1eadn r\u1eb1ng ch\u1ec9 ph\u00e1t h\u00e0nh \u0111\u01a1n mua h\u00e0ng (PO) sau khi ho\u00e0n t\u1ea5t ki\u1ec3m tra y\u00eau c\u1ea7u, nh\u00e0 cung c\u1ea5p, ngu\u1ed3n cung, ng\u00e2n s\u00e1ch v\u00e0 duy\u1ec7t [S2].",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+          "content": "Section: Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh\nColumns: T\u1ed5ng cam k\u1ebft | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung\nRow 1: T\u1ed5ng cam k\u1ebft: \u0110\u1ebfn 5.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Qu\u1ea3n l\u00fd tr\u1ef1c ti\u1ebfp | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: M\u1ed9t b\u00e1o gi\u00e1 c\u00f3 h\u1ed3 s\u01a1; ng\u00e2n s\u00e1ch x\u00e1c nh\u1eadn.\nRow 2: T\u1ed5ng cam k\u1ebft: 5.000.001-50.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u00cdt nh\u1ea5t hai b\u00e1o gi\u00e1 t\u01b0\u01a1ng \u0111\u01b0\u01a1ng n\u1ebfu th\u1ecb tr\u01b0\u1eddng cho ph\u00e9p.\nRow 3: T\u1ed5ng cam k\u1ebft: 50.000.001-200.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: Tr\u01b0\u1edfng b\u1ed9 ph\u1eadn + Mua s\u1eafm + T\u00e0i ch\u00ednh | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u00cdt nh\u1ea5t ba b\u00e1o gi\u00e1 v\u0103n b\u1ea3n ho\u1eb7c l\u00fd do ch\u1ec9 \u0111\u1ecbnh ngu\u1ed3n \u0111\u00e3 duy\u1ec7t.\nRow 4: T\u1ed5ng cam k\u1ebft: Tr\u00ean 200.000.000 VND | Ph\u00ea duy\u1ec7t b\u1eaft bu\u1ed9c: H\u1ed9i \u0111\u1ed3ng \u0110i\u1ec1u h\u00e0nh V\u1eadn h\u00e0nh + T\u00e0i ch\u00ednh | \u0110i\u1ec1u ki\u1ec7n b\u1ed5 sung: \u0110\u00e1nh gi\u00e1 ngu\u1ed3n cung v\u00e0 r\u00e0 r\u1ee7i ro \u0111\u01b0\u1ee3c l\u1eadp h\u1ed3 s\u01a1.",
+          "metadata": {
+            "bbox": [
+              50.71791813280759,
+              477.4510147870351,
+              544.6367662918808,
+              572.5703992540083
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+            "source_url": null,
+            "chunk_index": 730,
+            "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 53,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 1,
+            "token_count": 226,
+            "element_type": "table",
+            "section_path": [
+              "Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Ph\u1ee5 l\u1ee5c B - H\u1ea1n m\u1ee9c ph\u00ea duy\u1ec7t v\u00e0 b\u1ea3ng quy\u1ebft \u0111\u1ecbnh v\u1eadn h\u00e0nh",
+            "table_row_end": 4,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 1,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 797,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 1,
+            "table_fragment_index": 0,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": 0.6159496307373047,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Theo Ph\u1ee5 l\u1ee5c B v\u00e0 C, kho\u1ea3n mua s\u1eafm 80 tri\u1ec7u c\u1ea7n ai duy\u1ec7t v\u00e0 \u0111i\u1ec1u ki\u1ec7n b\u00e1o gi\u00e1 l\u00e0 g\u00ec?",
+                "en": "According to Appendices B and C, who needs to approve the 80 million purchase, and what are the quotation conditions?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 0.028063077479600906,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 23438.760933931917,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        },
+        {
+          "citation_id": "S2",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+          "content": "Section: T\u1ea1o v\u00e0 ph\u00e1t h\u00e0nh \u0111\u01a1n mua h\u00e0ng\nQuy t\u1eafc b\u1eaft bu\u1ed9c. Ch\u1ec9 ph\u00e1t h\u00e0nh PO sau khi ho\u00e0n t\u1ea5t ki\u1ec3m tra y\u00eau c\u1ea7u, nh\u00e0 cung c\u1ea5p, ngu\u1ed3n cung, ng\u00e2n s\u00e1ch v\u00e0 duy\u1ec7t.",
+          "metadata": {
+            "bbox": [
+              51.84,
+              85.52899999999988,
+              407.644,
+              96.51799999999992
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+            "source_url": null,
+            "chunk_index": 288,
+            "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+            "fiscal_year": null,
+            "layout_type": "text",
+            "page_number": 22,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "token_count": 40,
+            "element_type": "text",
+            "section_path": [
+              "T\u1ea1o v\u00e0 ph\u00e1t h\u00e0nh \u0111\u01a1n mua h\u00e0ng"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "text",
+            "document_type": "knowledge_document",
+            "heading_level": 1,
+            "parser_engine": "docling",
+            "section_title": "T\u1ea1o v\u00e0 ph\u00e1t h\u00e0nh \u0111\u01a1n mua h\u00e0ng",
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 154,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": 2.0899360179901123,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Theo Ph\u1ee5 l\u1ee5c B v\u00e0 C, \u0111\u01a1n mua h\u00e0ng ch\u1ec9 \u0111\u01b0\u1ee3c ph\u00e1t h\u00e0nh khi n\u00e0o?",
+                "en": "According to Appendices B and C, when is a purchase order only issued?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 0.027942005544900894,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 10716.894896933809,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        },
+        {
+          "citation_id": "S4",
+          "source_type": "document",
+          "source": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+          "content": "Section: Ph\u1ee5 l\u1ee5c C - Bi\u1ec3u m\u1eabu chu\u1ea9n v\u00e0 ki\u1ec3m tra t\u1ed1i thi\u1ec3u\nColumns: Bi\u1ec3u m\u1eabu | Tr\u01b0\u1eddng t\u1ed1i thi\u1ec3u | Ki\u1ec3m tra / \u0111i\u1ec1u ki\u1ec7n ch\u1eb7n\nRow 4: Bi\u1ec3u m\u1eabu: \u0110\u01a1n mua h\u00e0ng | Tr\u01b0\u1eddng t\u1ed1i thi\u1ec3u: S\u1ed1 PO; nh\u00e0 cung c\u1ea5p; ng\u00e0y ph\u00e1t h\u00e0nh; ti\u1ec1n t\u1ec7; d\u00f2ng h\u00e0ng; s\u1ed1 l\u01b0\u1ee3ng; \u0111\u01a1n gi\u00e1; \u0111i\u1ec1u ki\u1ec7n giao/thanh to\u00e1n. | Ki\u1ec3m tra / \u0111i\u1ec1u ki\u1ec7n ch\u1eb7n: Ch\u1ec9 ph\u00e1t h\u00e0nh sau duy\u1ec7t; t\u1ed5ng kh\u1edbp th\u1ea9m quy\u1ec1n; s\u1eeda c\u00f3 phi\u00ean b\u1ea3n.",
+          "metadata": {
+            "bbox": [
+              50.67229529924841,
+              700.3683080938705,
+              544.447613132144,
+              794.4054319085417
+            ],
+            "domain": "general_knowledge",
+            "format": "PDF",
+            "parser": "docling",
+            "company": "Commerce Demo",
+            "filename": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+            "source_url": null,
+            "chunk_index": 738,
+            "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+            "fiscal_year": null,
+            "layout_type": "table",
+            "page_number": 53,
+            "pipeline_id": "docling",
+            "source_type": "user_upload",
+            "table_index": 2,
+            "token_count": 104,
+            "element_type": "table",
+            "section_path": [
+              "Ph\u1ee5 l\u1ee5c C - Bi\u1ec3u m\u1eabu chu\u1ea9n v\u00e0 ki\u1ec3m tra t\u1ed1i thi\u1ec3u"
+            ],
+            "allowed_roles": [
+              "employee"
+            ],
+            "docling_label": "table",
+            "document_type": "knowledge_document",
+            "parser_engine": "docling",
+            "section_title": "Ph\u1ee5 l\u1ee5c C - Bi\u1ec3u m\u1eabu chu\u1ea9n v\u00e0 ki\u1ec3m tra t\u1ed1i thi\u1ec3u",
+            "table_row_end": 4,
+            "chunk_strategy": "sentence",
+            "evidence_class": null,
+            "chunking_method": "table_row_groups",
+            "docling_version": "2.129.0",
+            "embedding_model": "intfloat/multilingual-e5-base",
+            "table_row_start": 4,
+            "chunk_size_chars": 1100,
+            "source_publisher": null,
+            "actual_char_count": 369,
+            "knowledge_domains": [],
+            "chunk_overlap_chars": 0,
+            "table_fragment_count": 2,
+            "table_fragment_index": 1,
+            "table_structure_model": "Docling TableFormer",
+            "bbox_coordinate_origin": "TOPLEFT",
+            "bbox_coordinate_system": "docling_page_coordinate",
+            "text_extraction_method": "docling.native",
+            "external_reference_type": null,
+            "reference_applicability": null,
+            "synthetic_company_policy": false,
+            "commerce_reference_active": false,
+            "external_policy_reference": false,
+            "external_business_reference": false,
+            "embedding_max_sequence_length": 508,
+            "similarity_score": -0.3734580874443054,
+            "retrieval_method": "translated_hybrid_rerank",
+            "retrieval_details": {
+              "language_aware": false,
+              "document_ids": null,
+              "candidate_k": 300,
+              "dense_weight": 1.0,
+              "bm25_weight": 2.0,
+              "rrf_k": 60,
+              "lexical_queries": {
+                "vn": "Theo Ph\u1ee5 l\u1ee5c B v\u00e0 C, \u0111\u01a1n mua h\u00e0ng ch\u1ec9 \u0111\u01b0\u1ee3c ph\u00e1t h\u00e0nh khi n\u00e0o?",
+                "en": "According to Appendices B and C, when is a purchase order only issued?"
+              },
+              "dense_fallback": false,
+              "translation_error": null,
+              "effective_method": "translated_hybrid_rerank",
+              "translation_model": "qwen/qwen3.8-27b",
+              "translation_latency_ms": 0.027942005544900894,
+              "lexical_document_scopes": {
+                "en": null,
+                "vn": null
+              },
+              "candidate_method": "translated_hybrid",
+              "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
+              "reranker_revision": "1427fd652930e4ba29e8149678df786c240d8825",
+              "reranker_candidate_count": 30,
+              "reranker_max_pair_tokens": 512,
+              "reranker_score_type": "raw_logit",
+              "reranker_applied": true,
+              "reranker_quantize": "",
+              "reranker_latency_ms": 10716.894896933809,
+              "embedding_model": "intfloat/multilingual-e5-base"
+            }
+          }
+        }
+      ],
+      "claim_verification": {
+        "status": "supported",
+        "reason": "all_claims_supported",
+        "claim_count": 4,
+        "arithmetic_checked": 0
+      },
+      "http_elapsed_ms": 45630.49
+    }
+  ],
+  "resource_samples": [],
+  "elapsed_seconds": 458.98,
+  "summary": {
+    "first_pass": {
+      "requests": 6,
+      "http_200": 6,
+      "application_ok": 5,
+      "errors": 0,
+      "http_e2e": {
+        "n": 6,
+        "median_ms": 20391.54,
+        "min_ms": 12097.89,
+        "max_ms": 39944.83
+      },
+      "stages": {
+        "agent_workflow": {
+          "n": 6,
+          "median_ms": 20376.99,
+          "min_ms": 12088.76,
+          "max_ms": 39930.97
+        },
+        "answer_generation": {
+          "n": 6,
+          "median_ms": 761.43,
+          "min_ms": 540.32,
+          "max_ms": 1208.29
+        },
+        "answer_synthesis": {
+          "n": 0
+        },
+        "claim_verification": {
+          "n": 6,
+          "median_ms": 642.54,
+          "min_ms": 0.86,
+          "max_ms": 904.17
+        },
+        "database_retrieval": {
+          "n": 6,
+          "median_ms": 2632.42,
+          "min_ms": 1948.78,
+          "max_ms": 9802.8
+        },
+        "embedding": {
+          "n": 6,
+          "median_ms": 995.68,
+          "min_ms": 692.38,
+          "max_ms": 1433.78
+        },
+        "knowledge_search_planning": {
+          "n": 6,
+          "median_ms": 418.62,
+          "min_ms": 380.18,
+          "max_ms": 2568.79
+        },
+        "query_translation": {
+          "n": 6,
+          "median_ms": 444.53,
+          "min_ms": 382.69,
+          "max_ms": 804.26
+        },
+        "reranking": {
+          "n": 6,
+          "median_ms": 9125.37,
+          "min_ms": 6378.43,
+          "max_ms": 30688.65
+        },
+        "retrieval_fusion": {
+          "n": 6,
+          "median_ms": 0.95,
+          "min_ms": 0.56,
+          "max_ms": 16.94
+        },
+        "retrieval_total": {
+          "n": 6,
+          "median_ms": 15909.93,
+          "min_ms": 10679.72,
+          "max_ms": 37803.36
+        },
+        "routing": {
+          "n": 0
+        },
+        "sql_execution": {
+          "n": 0
+        },
+        "sql_planning": {
+          "n": 0
+        },
+        "telemetry_persistence": {
+          "n": 0
+        }
+      }
+    },
+    "warm_pass": {
+      "requests": 6,
+      "http_200": 6,
+      "application_ok": 5,
+      "errors": 0,
+      "http_e2e": {
+        "n": 6,
+        "median_ms": 20569.95,
+        "min_ms": 14382.0,
+        "max_ms": 45630.49
+      },
+      "stages": {
+        "agent_workflow": {
+          "n": 6,
+          "median_ms": 20515.02,
+          "min_ms": 14368.49,
+          "max_ms": 45620.18
+        },
+        "answer_generation": {
+          "n": 6,
+          "median_ms": 831.61,
+          "min_ms": 547.04,
+          "max_ms": 1496.96
+        },
+        "answer_synthesis": {
+          "n": 0
+        },
+        "claim_verification": {
+          "n": 6,
+          "median_ms": 674.43,
+          "min_ms": 0.33,
+          "max_ms": 861.68
+        },
+        "database_retrieval": {
+          "n": 6,
+          "median_ms": 2765.52,
+          "min_ms": 2359.22,
+          "max_ms": 5438.75
+        },
+        "embedding": {
+          "n": 6,
+          "median_ms": 1225.58,
+          "min_ms": 412.01,
+          "max_ms": 3066.27
+        },
+        "knowledge_search_planning": {
+          "n": 6,
+          "median_ms": 574.72,
+          "min_ms": 409.02,
+          "max_ms": 1209.69
+        },
+        "query_translation": {
+          "n": 6,
+          "median_ms": 0.01,
+          "min_ms": 0.01,
+          "max_ms": 0.02
+        },
+        "reranking": {
+          "n": 6,
+          "median_ms": 13471.87,
+          "min_ms": 10038.25,
+          "max_ms": 34155.87
+        },
+        "retrieval_fusion": {
+          "n": 6,
+          "median_ms": 0.89,
+          "min_ms": 0.59,
+          "max_ms": 7.71
+        },
+        "retrieval_total": {
+          "n": 6,
+          "median_ms": 18063.05,
+          "min_ms": 13080.02,
+          "max_ms": 42572.55
+        },
+        "routing": {
+          "n": 0
+        },
+        "sql_execution": {
+          "n": 0
+        },
+        "sql_planning": {
+          "n": 0
+        },
+        "telemetry_persistence": {
+          "n": 0
+        }
+      }
+    }
+  },
+  "by_case": {
+    "V1": {
+      "requests": 2,
+      "http_200": 2,
+      "application_ok": 2,
+      "errors": 0,
+      "http_e2e": {
+        "n": 2,
+        "median_ms": 23885.67,
+        "min_ms": 17896.26,
+        "max_ms": 29875.07
+      },
+      "stages": {
+        "agent_workflow": {
+          "n": 2,
+          "median_ms": 22366.24,
+          "min_ms": 17872.88,
+          "max_ms": 26859.6
+        },
+        "answer_generation": {
+          "n": 2,
+          "median_ms": 738.47,
+          "min_ms": 660.58,
+          "max_ms": 816.36
+        },
+        "answer_synthesis": {
+          "n": 0
+        },
+        "claim_verification": {
+          "n": 2,
+          "median_ms": 783.14,
+          "min_ms": 662.12,
+          "max_ms": 904.17
+        },
+        "database_retrieval": {
+          "n": 2,
+          "median_ms": 6221.73,
+          "min_ms": 2640.65,
+          "max_ms": 9802.8
+        },
+        "embedding": {
+          "n": 2,
+          "median_ms": 695.15,
+          "min_ms": 412.01,
+          "max_ms": 978.29
+        },
+        "knowledge_search_planning": {
+          "n": 2,
+          "median_ms": 1508.07,
+          "min_ms": 447.34,
+          "max_ms": 2568.79
+        },
+        "query_translation": {
+          "n": 2,
+          "median_ms": 229.86,
+          "min_ms": 0.02,
+          "max_ms": 459.71
+        },
+        "reranking": {
+          "n": 2,
+          "median_ms": 9698.12,
+          "min_ms": 6378.43,
+          "max_ms": 13017.81
+        },
+        "retrieval_fusion": {
+          "n": 2,
+          "median_ms": 0.74,
+          "min_ms": 0.69,
+          "max_ms": 0.78
+        },
+        "retrieval_total": {
+          "n": 2,
+          "median_ms": 16874.57,
+          "min_ms": 16100.91,
+          "max_ms": 17648.22
+        },
+        "routing": {
+          "n": 0
+        },
+        "sql_execution": {
+          "n": 0
+        },
+        "sql_planning": {
+          "n": 0
+        },
+        "telemetry_persistence": {
+          "n": 0
+        }
+      }
+    },
+    "V2": {
+      "requests": 2,
+      "http_200": 2,
+      "application_ok": 2,
+      "errors": 0,
+      "http_e2e": {
+        "n": 2,
+        "median_ms": 22723.47,
+        "min_ms": 20574.63,
+        "max_ms": 24872.3
+      },
+      "stages": {
+        "agent_workflow": {
+          "n": 2,
+          "median_ms": 22668.13,
+          "min_ms": 20478.4,
+          "max_ms": 24857.87
+        },
+        "answer_generation": {
+          "n": 2,
+          "median_ms": 1151.17,
+          "min_ms": 1094.06,
+          "max_ms": 1208.29
+        },
+        "answer_synthesis": {
+          "n": 0
+        },
+        "claim_verification": {
+          "n": 2,
+          "median_ms": 687.26,
+          "min_ms": 686.74,
+          "max_ms": 687.78
+        },
+        "database_retrieval": {
+          "n": 2,
+          "median_ms": 2705.31,
+          "min_ms": 2596.48,
+          "max_ms": 2814.14
+        },
+        "embedding": {
+          "n": 2,
+          "median_ms": 1943.77,
+          "min_ms": 821.27,
+          "max_ms": 3066.27
+        },
+        "knowledge_search_planning": {
+          "n": 2,
+          "median_ms": 601.78,
+          "min_ms": 392.94,
+          "max_ms": 810.62
+        },
+        "query_translation": {
+          "n": 2,
+          "median_ms": 191.35,
+          "min_ms": 0.01,
+          "max_ms": 382.69
+        },
+        "reranking": {
+          "n": 2,
+          "median_ms": 15331.29,
+          "min_ms": 11966.01,
+          "max_ms": 18696.57
+        },
+        "retrieval_fusion": {
+          "n": 2,
+          "median_ms": 9.38,
+          "min_ms": 1.81,
+          "max_ms": 16.94
+        },
+        "retrieval_total": {
+          "n": 2,
+          "median_ms": 20218.7,
+          "min_ms": 17879.34,
+          "max_ms": 22558.06
+        },
+        "routing": {
+          "n": 0
+        },
+        "sql_execution": {
+          "n": 0
+        },
+        "sql_planning": {
+          "n": 0
+        },
+        "telemetry_persistence": {
+          "n": 0
+        }
+      }
+    },
+    "V3": {
+      "requests": 2,
+      "http_200": 2,
+      "application_ok": 2,
+      "errors": 0,
+      "http_e2e": {
+        "n": 2,
+        "median_ms": 20125.71,
+        "min_ms": 15910.79,
+        "max_ms": 24340.62
+      },
+      "stages": {
+        "agent_workflow": {
+          "n": 2,
+          "median_ms": 20112.44,
+          "min_ms": 15896.11,
+          "max_ms": 24328.77
+        },
+        "answer_generation": {
+          "n": 2,
+          "median_ms": 747.47,
+          "min_ms": 709.48,
+          "max_ms": 785.47
+        },
+        "answer_synthesis": {
+          "n": 0
+        },
+        "claim_verification": {
+          "n": 2,
+          "median_ms": 729.49,
+          "min_ms": 597.31,
+          "max_ms": 861.68
+        },
+        "database_retrieval": {
+          "n": 2,
+          "median_ms": 2660.77,
+          "min_ms": 2604.64,
+          "max_ms": 2716.89
+        },
+        "embedding": {
+          "n": 2,
+          "median_ms": 1169.11,
+          "min_ms": 1126.32,
+          "max_ms": 1211.91
+        },
+        "knowledge_search_planning": {
+          "n": 2,
+          "median_ms": 422.47,
+          "min_ms": 413.94,
+          "max_ms": 431.0
+        },
+        "query_translation": {
+          "n": 2,
+          "median_ms": 198.49,
+          "min_ms": 0.01,
+          "max_ms": 396.96
+        },
+        "reranking": {
+          "n": 2,
+          "median_ms": 14149.91,
+          "min_ms": 10011.73,
+          "max_ms": 18288.09
+        },
+        "retrieval_fusion": {
+          "n": 2,
+          "median_ms": 0.63,
+          "min_ms": 0.59,
+          "max_ms": 0.66
+        },
+        "retrieval_total": {
+          "n": 2,
+          "median_ms": 18210.33,
+          "min_ms": 14171.63,
+          "max_ms": 22249.03
+        },
+        "routing": {
+          "n": 0
+        },
+        "sql_execution": {
+          "n": 0
+        },
+        "sql_planning": {
+          "n": 0
+        },
+        "telemetry_persistence": {
+          "n": 0
+        }
+      }
+    },
+    "V4": {
+      "requests": 2,
+      "http_200": 2,
+      "application_ok": 2,
+      "errors": 0,
+      "http_e2e": {
+        "n": 2,
+        "median_ms": 16331.58,
+        "min_ms": 12097.89,
+        "max_ms": 20565.27
+      },
+      "stages": {
+        "agent_workflow": {
+          "n": 2,
+          "median_ms": 16320.2,
+          "min_ms": 12088.76,
+          "max_ms": 20551.64
+        },
+        "answer_generation": {
+          "n": 2,
+          "median_ms": 543.68,
+          "min_ms": 540.32,
+          "max_ms": 547.04
+        },
+        "answer_synthesis": {
+          "n": 0
+        },
+        "claim_verification": {
+          "n": 2,
+          "median_ms": 515.38,
+          "min_ms": 484.21,
+          "max_ms": 546.55
+        },
+        "database_retrieval": {
+          "n": 2,
+          "median_ms": 2859.99,
+          "min_ms": 2660.19,
+          "max_ms": 3059.78
+        },
+        "embedding": {
+          "n": 2,
+          "median_ms": 1126.16,
+          "min_ms": 1013.06,
+          "max_ms": 1239.26
+        },
+        "knowledge_search_planning": {
+          "n": 2,
+          "median_ms": 794.93,
+          "min_ms": 380.18,
+          "max_ms": 1209.69
+        },
+        "query_translation": {
+          "n": 2,
+          "median_ms": 214.69,
+          "min_ms": 0.01,
+          "max_ms": 429.36
+        },
+        "reranking": {
+          "n": 2,
+          "median_ms": 10232.07,
+          "min_ms": 6538.21,
+          "max_ms": 13925.93
+        },
+        "retrieval_fusion": {
+          "n": 2,
+          "median_ms": 0.57,
+          "min_ms": 0.56,
+          "max_ms": 0.59
+        },
+        "retrieval_total": {
+          "n": 2,
+          "median_ms": 14463.24,
+          "min_ms": 10679.72,
+          "max_ms": 18246.75
+        },
+        "routing": {
+          "n": 0
+        },
+        "sql_execution": {
+          "n": 0
+        },
+        "sql_planning": {
+          "n": 0
+        },
+        "telemetry_persistence": {
+          "n": 0
+        }
+      }
+    },
+    "V5": {
+      "requests": 2,
+      "http_200": 2,
+      "application_ok": 0,
+      "errors": 0,
+      "http_e2e": {
+        "n": 2,
+        "median_ms": 13428.35,
+        "min_ms": 12474.7,
+        "max_ms": 14382.0
+      },
+      "stages": {
+        "agent_workflow": {
+          "n": 2,
+          "median_ms": 13409.65,
+          "min_ms": 12450.81,
+          "max_ms": 14368.49
+        },
+        "answer_generation": {
+          "n": 2,
+          "median_ms": 718.81,
+          "min_ms": 559.86,
+          "max_ms": 877.76
+        },
+        "answer_synthesis": {
+          "n": 0
+        },
+        "claim_verification": {
+          "n": 2,
+          "median_ms": 0.6,
+          "min_ms": 0.33,
+          "max_ms": 0.86
+        },
+        "database_retrieval": {
+          "n": 2,
+          "median_ms": 2154.0,
+          "min_ms": 1948.78,
+          "max_ms": 2359.22
+        },
+        "embedding": {
+          "n": 2,
+          "median_ms": 676.41,
+          "min_ms": 660.44,
+          "max_ms": 692.38
+        },
+        "knowledge_search_planning": {
+          "n": 2,
+          "median_ms": 441.68,
+          "min_ms": 409.02,
+          "max_ms": 474.33
+        },
+        "query_translation": {
+          "n": 2,
+          "median_ms": 259.66,
+          "min_ms": 0.02,
+          "max_ms": 519.3
+        },
+        "reranking": {
+          "n": 2,
+          "median_ms": 9138.63,
+          "min_ms": 8239.01,
+          "max_ms": 10038.25
+        },
+        "retrieval_fusion": {
+          "n": 2,
+          "median_ms": 1.53,
+          "min_ms": 0.99,
+          "max_ms": 2.07
+        },
+        "retrieval_total": {
+          "n": 2,
+          "median_ms": 12246.18,
+          "min_ms": 11412.33,
+          "max_ms": 13080.02
+        },
+        "routing": {
+          "n": 0
+        },
+        "sql_execution": {
+          "n": 0
+        },
+        "sql_planning": {
+          "n": 0
+        },
+        "telemetry_persistence": {
+          "n": 0
+        }
+      }
+    },
+    "V6": {
+      "requests": 2,
+      "http_200": 2,
+      "application_ok": 2,
+      "errors": 0,
+      "http_e2e": {
+        "n": 2,
+        "median_ms": 42787.66,
+        "min_ms": 39944.83,
+        "max_ms": 45630.49
+      },
+      "stages": {
+        "agent_workflow": {
+          "n": 2,
+          "median_ms": 42775.57,
+          "min_ms": 39930.97,
+          "max_ms": 45620.18
+        },
+        "answer_generation": {
+          "n": 2,
+          "median_ms": 1155.17,
+          "min_ms": 813.38,
+          "max_ms": 1496.96
+        },
+        "answer_synthesis": {
+          "n": 0
+        },
+        "claim_verification": {
+          "n": 2,
+          "median_ms": 867.19,
+          "min_ms": 845.81,
+          "max_ms": 888.58
+        },
+        "database_retrieval": {
+          "n": 2,
+          "median_ms": 5139.08,
+          "min_ms": 4839.42,
+          "max_ms": 5438.75
+        },
+        "embedding": {
+          "n": 2,
+          "median_ms": 2096.81,
+          "min_ms": 1433.78,
+          "max_ms": 2759.83
+        },
+        "knowledge_search_planning": {
+          "n": 2,
+          "median_ms": 562.7,
+          "min_ms": 423.31,
+          "max_ms": 702.09
+        },
+        "query_translation": {
+          "n": 2,
+          "median_ms": 402.14,
+          "min_ms": 0.02,
+          "max_ms": 804.26
+        },
+        "reranking": {
+          "n": 2,
+          "median_ms": 32422.26,
+          "min_ms": 30688.65,
+          "max_ms": 34155.87
+        },
+        "retrieval_fusion": {
+          "n": 2,
+          "median_ms": 4.46,
+          "min_ms": 1.21,
+          "max_ms": 7.71
+        },
+        "retrieval_total": {
+          "n": 2,
+          "median_ms": 40187.96,
+          "min_ms": 37803.36,
+          "max_ms": 42572.55
+        },
+        "routing": {
+          "n": 0
+        },
+        "sql_execution": {
+          "n": 0
+        },
+        "sql_planning": {
+          "n": 0
+        },
+        "telemetry_persistence": {
+          "n": 0
+        }
+      }
+    }
+  },
+  "limitations": "Timing smoke, not a quality or load benchmark. No OCR/upload work occurs during chat. Provider/network variance and translation caching affect results. Resource peaks are sampled container-wide, not attributed to E5."
+}

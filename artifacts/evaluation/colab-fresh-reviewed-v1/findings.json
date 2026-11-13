@@ -1,0 +1,250 @@
+{
+  "status": "completed_verified",
+  "summary": {
+    "dense_top10": {
+      "en->en": {
+        "cases": 12,
+        "required_ready_components": 28,
+        "required_met_components": 26,
+        "required_component_coverage_at_10": 0.9285714285714286,
+        "mean_case_component_coverage_at_10": 0.9166666666666666,
+        "full_intent_eligible_cases": 12,
+        "full_evidence_cases_at_10": 11,
+        "full_evidence_success_rate_at_10": 0.9166666666666666,
+        "excluded_full_intent_ids": []
+      },
+      "en->vi": {
+        "cases": 12,
+        "required_ready_components": 28,
+        "required_met_components": 18,
+        "required_component_coverage_at_10": 0.6428571428571429,
+        "mean_case_component_coverage_at_10": 0.6666666666666666,
+        "full_intent_eligible_cases": 12,
+        "full_evidence_cases_at_10": 8,
+        "full_evidence_success_rate_at_10": 0.6666666666666666,
+        "excluded_full_intent_ids": []
+      },
+      "vi->en": {
+        "cases": 12,
+        "required_ready_components": 28,
+        "required_met_components": 19,
+        "required_component_coverage_at_10": 0.6785714285714286,
+        "mean_case_component_coverage_at_10": 0.6666666666666666,
+        "full_intent_eligible_cases": 12,
+        "full_evidence_cases_at_10": 8,
+        "full_evidence_success_rate_at_10": 0.6666666666666666,
+        "excluded_full_intent_ids": []
+      },
+      "vi->vi": {
+        "cases": 12,
+        "required_ready_components": 28,
+        "required_met_components": 28,
+        "required_component_coverage_at_10": 1.0,
+        "mean_case_component_coverage_at_10": 1.0,
+        "full_intent_eligible_cases": 12,
+        "full_evidence_cases_at_10": 12,
+        "full_evidence_success_rate_at_10": 1.0,
+        "excluded_full_intent_ids": []
+      }
+    },
+    "candidate_pool30": {
+      "en->en": {
+        "cases": 12,
+        "required_ready_components": 28,
+        "required_met_components": 28,
+        "required_component_coverage_at_30": 1.0,
+        "mean_case_component_coverage_at_30": 1.0,
+        "full_intent_eligible_cases": 12,
+        "full_evidence_cases_at_30": 12,
+        "full_evidence_success_rate_at_30": 1.0,
+        "excluded_full_intent_ids": []
+      },
+      "en->vi": {
+        "cases": 12,
+        "required_ready_components": 28,
+        "required_met_components": 23,
+        "required_component_coverage_at_30": 0.8214285714285714,
+        "mean_case_component_coverage_at_30": 0.8333333333333334,
+        "full_intent_eligible_cases": 12,
+        "full_evidence_cases_at_30": 10,
+        "full_evidence_success_rate_at_30": 0.8333333333333334,
+        "excluded_full_intent_ids": []
+      },
+      "vi->en": {
+        "cases": 12,
+        "required_ready_components": 28,
+        "required_met_components": 28,
+        "required_component_coverage_at_30": 1.0,
+        "mean_case_component_coverage_at_30": 1.0,
+        "full_intent_eligible_cases": 12,
+        "full_evidence_cases_at_30": 12,
+        "full_evidence_success_rate_at_30": 1.0,
+        "excluded_full_intent_ids": []
+      },
+      "vi->vi": {
+        "cases": 12,
+        "required_ready_components": 28,
+        "required_met_components": 28,
+        "required_component_coverage_at_30": 1.0,
+        "mean_case_component_coverage_at_30": 1.0,
+        "full_intent_eligible_cases": 12,
+        "full_evidence_cases_at_30": 12,
+        "full_evidence_success_rate_at_30": 1.0,
+        "excluded_full_intent_ids": []
+      }
+    },
+    "plain": {
+      "en->en": {
+        "cases": 12,
+        "required_ready_components": 28,
+        "required_met_components": 28,
+        "required_component_coverage_at_10": 1.0,
+        "mean_case_component_coverage_at_10": 1.0,
+        "full_intent_eligible_cases": 12,
+        "full_evidence_cases_at_10": 12,
+        "full_evidence_success_rate_at_10": 1.0,
+        "excluded_full_intent_ids": []
+      },
+      "en->vi": {
+        "cases": 12,
+        "required_ready_components": 28,
+        "required_met_components": 23,
+        "required_component_coverage_at_10": 0.8214285714285714,
+        "mean_case_component_coverage_at_10": 0.8333333333333334,
+        "full_intent_eligible_cases": 12,
+        "full_evidence_cases_at_10": 10,
+        "full_evidence_success_rate_at_10": 0.8333333333333334,
+        "excluded_full_intent_ids": []
+      },
+      "vi->en": {
+        "cases": 12,
+        "required_ready_components": 28,
+        "required_met_components": 28,
+        "required_component_coverage_at_10": 1.0,
+        "mean_case_component_coverage_at_10": 1.0,
+        "full_intent_eligible_cases": 12,
+        "full_evidence_cases_at_10": 12,
+        "full_evidence_success_rate_at_10": 1.0,
+        "excluded_full_intent_ids": []
+      },
+      "vi->vi": {
+        "cases": 12,
+        "required_ready_components": 28,
+        "required_met_components": 28,
+        "required_component_coverage_at_10": 1.0,
+        "mean_case_component_coverage_at_10": 1.0,
+        "full_intent_eligible_cases": 12,
+        "full_evidence_cases_at_10": 12,
+        "full_evidence_success_rate_at_10": 1.0,
+        "excluded_full_intent_ids": []
+      }
+    },
+    "parent-plain": {
+      "en->en": {
+        "cases": 12,
+        "required_ready_components": 28,
+        "required_met_components": 28,
+        "required_component_coverage_at_10": 1.0,
+        "mean_case_component_coverage_at_10": 1.0,
+        "full_intent_eligible_cases": 12,
+        "full_evidence_cases_at_10": 12,
+        "full_evidence_success_rate_at_10": 1.0,
+        "excluded_full_intent_ids": []
+      },
+      "en->vi": {
+        "cases": 12,
+        "required_ready_components": 28,
+        "required_met_components": 23,
+        "required_component_coverage_at_10": 0.8214285714285714,
+        "mean_case_component_coverage_at_10": 0.8333333333333334,
+        "full_intent_eligible_cases": 12,
+        "full_evidence_cases_at_10": 10,
+        "full_evidence_success_rate_at_10": 0.8333333333333334,
+        "excluded_full_intent_ids": []
+      },
+      "vi->en": {
+        "cases": 12,
+        "required_ready_components": 28,
+        "required_met_components": 28,
+        "required_component_coverage_at_10": 1.0,
+        "mean_case_component_coverage_at_10": 1.0,
+        "full_intent_eligible_cases": 12,
+        "full_evidence_cases_at_10": 12,
+        "full_evidence_success_rate_at_10": 1.0,
+        "excluded_full_intent_ids": []
+      },
+      "vi->vi": {
+        "cases": 12,
+        "required_ready_components": 28,
+        "required_met_components": 28,
+        "required_component_coverage_at_10": 1.0,
+        "mean_case_component_coverage_at_10": 1.0,
+        "full_intent_eligible_cases": 12,
+        "full_evidence_cases_at_10": 12,
+        "full_evidence_success_rate_at_10": 1.0,
+        "excluded_full_intent_ids": []
+      }
+    },
+    "narrative-parent": {
+      "en->en": {
+        "cases": 12,
+        "required_ready_components": 28,
+        "required_met_components": 28,
+        "required_component_coverage_at_10": 1.0,
+        "mean_case_component_coverage_at_10": 1.0,
+        "full_intent_eligible_cases": 12,
+        "full_evidence_cases_at_10": 12,
+        "full_evidence_success_rate_at_10": 1.0,
+        "excluded_full_intent_ids": []
+      },
+      "en->vi": {
+        "cases": 12,
+        "required_ready_components": 28,
+        "required_met_components": 23,
+        "required_component_coverage_at_10": 0.8214285714285714,
+        "mean_case_component_coverage_at_10": 0.8333333333333334,
+        "full_intent_eligible_cases": 12,
+        "full_evidence_cases_at_10": 10,
+        "full_evidence_success_rate_at_10": 0.8333333333333334,
+        "excluded_full_intent_ids": []
+      },
+      "vi->en": {
+        "cases": 12,
+        "required_ready_components": 28,
+        "required_met_components": 28,
+        "required_component_coverage_at_10": 1.0,
+        "mean_case_component_coverage_at_10": 1.0,
+        "full_intent_eligible_cases": 12,
+        "full_evidence_cases_at_10": 12,
+        "full_evidence_success_rate_at_10": 1.0,
+        "excluded_full_intent_ids": []
+      },
+      "vi->vi": {
+        "cases": 12,
+        "required_ready_components": 28,
+        "required_met_components": 28,
+        "required_component_coverage_at_10": 1.0,
+        "mean_case_component_coverage_at_10": 1.0,
+        "full_intent_eligible_cases": 12,
+        "full_evidence_cases_at_10": 12,
+        "full_evidence_success_rate_at_10": 1.0,
+        "excluded_full_intent_ids": []
+      }
+    }
+  },
+  "remaining_cases": {
+    "F03-en-to-vi": {
+      "gold_dense_rank": 187,
+      "source": "Manual chunk5",
+      "missing_components": 3
+    },
+    "F08-en-to-vi": {
+      "gold_dense_rank": 33,
+      "source": "SOP chunk2",
+      "missing_components": 2
+    }
+  },
+  "three_variants_same_per_case_evidence": true,
+  "extra_context_additional_evidence_gain": 0,
+  "results_sha256": "424bb73bf8d08f5f51db01c4d6df88a3b245eb252d159a3fdb3e26e10a5a9251"
+}

@@ -1,0 +1,27 @@
+{
+  "intents": 20,
+  "language_versions": 40,
+  "requirements": 66,
+  "required_status_counts": {
+    "ready": 61,
+    "needs_policy_resolution": 2
+  },
+  "all_status_counts": {
+    "ready": 61,
+    "needs_policy_resolution": 2,
+    "optional_context": 3
+  },
+  "source_spans": 198,
+  "spans_by_language": {
+    "vi": 99,
+    "en": 99
+  },
+  "fully_ready_intents": 19,
+  "not_fully_ready": [
+    "Q14"
+  ],
+  "checks": "Source/question/provenance SHA256, exact Unicode offsets/quotes, locations, both languages, references, required/optional/conflict status, complete source references and scenario arithmetic.",
+  "limits": "Mechanical validation is not independent semantic certification. Alternatives remain non-exhaustive; no retrieval, generation or model quality has been evaluated.",
+  "self_check": "Tampered quotation and wrong-language source rejected",
+  "evidence_json_sha256": "6e7a502a4b99cd347940f8c28562ed19d082c2761e8f2e0bbf75f75d142a7f0b"
+}

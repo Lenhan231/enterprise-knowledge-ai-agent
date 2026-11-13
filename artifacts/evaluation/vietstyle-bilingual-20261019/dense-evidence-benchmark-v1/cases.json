@@ -1,0 +1,1332 @@
+{
+  "cases": [
+    {
+      "id": "Q01-vi-to-vi",
+      "intent_id": "Q01",
+      "question": "Bộ chính sách VietStyle Commerce hiện ở phiên bản nào, ngày nào, và trạng thái phê duyệt ra sao?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "README.txt",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "unavailable_expected_sources": [
+        "README.txt"
+      ]
+    },
+    {
+      "id": "Q02-vi-to-vi",
+      "intent_id": "Q02",
+      "question": "Ai chịu trách nhiệm chính về KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q03-vi-to-vi",
+      "intent_id": "Q03",
+      "question": "Tần suất kiểm kê chu kỳ cho nhóm ABC là bao nhiêu và ABC được phân loại dựa trên tiêu chí nào?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q04-vi-to-vi",
+      "intent_id": "Q04",
+      "question": "Khi hàng trả về từ khách, hàng phải qua trạng thái nào trước khi được cộng vào tồn kho khả dụng?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q05-vi-to-vi",
+      "intent_id": "Q05",
+      "question": "Những KPI tồn kho nào cần theo dõi định kỳ theo bộ chính sách?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q06-vi-to-vi",
+      "intent_id": "Q06",
+      "question": "Trước một campaign, nhóm phải chuẩn bị kế hoạch tồn kho trước bao lâu và cần kiểm tra những thông tin nào?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q07-vi-to-vi",
+      "intent_id": "Q07",
+      "question": "Ở ngưỡng days of supply trên 120 ngày và trên 180 ngày, cần hành động gì?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q08-vi-to-vi",
+      "intent_id": "Q08",
+      "question": "Lead time 14 ngày, safety days 7 ngày và review period 7 ngày có phải là dữ liệu thực tế đã được xác nhận từ dataset không?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q09-vi-to-vi",
+      "intent_id": "Q09",
+      "question": "Theo công thức trong tài liệu, nếu nhu cầu bình quân là 10 đơn vị/ngày và dùng các tham số mặc định, ROP và Target Stock là bao nhiêu?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q10-vi-to-vi",
+      "intent_id": "Q10",
+      "question": "Inventory position được tính như thế nào? Nếu on-hand = 120, open PO = 40 và backorder = 25, inventory position bằng bao nhiêu?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q11-vi-to-vi",
+      "intent_id": "Q11",
+      "question": "Một SKU có stockout signal nhưng calculated days of supply là 145 ngày. AI Agent nên làm gì trước khi đề xuất mua thêm?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q12-vi-to-vi",
+      "intent_id": "Q12",
+      "question": "Cả stockout_flag và overstock_flag cùng bật cho một SKU. Có thể kết luận SKU chắc chắn vừa thiếu vừa dư hàng không? Hệ thống cần làm gì?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q13-vi-to-vi",
+      "intent_id": "Q13",
+      "question": "Mô tả quy trình xử lý chênh lệch kiểm kê từ lúc chuẩn bị đến lúc đóng phiếu, gồm các điểm kiểm soát bắt buộc.",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q14-vi-to-vi",
+      "intent_id": "Q14",
+      "question": "Ai được phép đếm, nhập điều chỉnh và phê duyệt? Có được để cùng một người thực hiện cả ba vai trò không?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q15-vi-to-vi",
+      "intent_id": "Q15",
+      "question": "Những trường thông tin tối thiểu nào phải lưu cho một giao dịch điều chỉnh tồn kho?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q16-vi-to-vi",
+      "intent_id": "Q16",
+      "question": "QA phân loại ba lô hàng trả về thành A-grade, B-grade và C-grade. Mỗi nhóm được xử lý thế nào?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q17-vi-to-vi",
+      "intent_id": "Q17",
+      "question": "Nhân viên phát hiện SKU nghi hàng giả hoặc sai nhãn nghiêm trọng. Có được tiếp tục bán nếu hệ thống vẫn ghi nhận tồn không?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q18-vi-to-vi",
+      "intent_id": "Q18",
+      "question": "Dataset cho biết PO inbound và backorder hiện tại của SKU X là bao nhiêu? Hãy cung cấp con số chính xác.",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "README.txt"
+      ],
+      "unavailable_expected_sources": [
+        "README.txt"
+      ]
+    },
+    {
+      "id": "Q19-vi-to-vi",
+      "intent_id": "Q19",
+      "question": "Snapshot tồn kho mới nhất trong bộ Datathon là ngày nào? Có thể dùng nó để khẳng định tồn kho hiện tại hôm nay không?",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "README.txt"
+      ],
+      "unavailable_expected_sources": [
+        "README.txt"
+      ]
+    },
+    {
+      "id": "Q20-vi-to-vi",
+      "intent_id": "Q20",
+      "question": "Người dùng yêu cầu AI Agent tự tạo và phát hành PO ngay khi inventory position ≤ ROP. Agent có được thực hiện không? Hãy nêu giới hạn và luồng xử lý phù hợp.",
+      "query_language": "vi",
+      "target_language": "vi",
+      "direction": "vi->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q01-en-to-vi",
+      "intent_id": "Q01",
+      "question": "What version and date does the current VietStyle Commerce policy set have, and what is its approval status?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "README.txt",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "unavailable_expected_sources": [
+        "README.txt"
+      ]
+    },
+    {
+      "id": "Q02-en-to-vi",
+      "intent_id": "Q02",
+      "question": "Who has primary responsibility for KPIs, inventory thresholds, exceptions, and policy approval?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q03-en-to-vi",
+      "intent_id": "Q03",
+      "question": "How often should classes A, B, and C be cycle-counted, and what criterion determines the ABC classification?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q04-en-to-vi",
+      "intent_id": "Q04",
+      "question": "When a customer returns an item, what status must it pass through before it can be added to available inventory?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q05-en-to-vi",
+      "intent_id": "Q05",
+      "question": "Which inventory KPIs must be monitored regularly under the policy set?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q06-en-to-vi",
+      "intent_id": "Q06",
+      "question": "How far in advance of a campaign must the team prepare its inventory plan, and what information must it check?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q07-en-to-vi",
+      "intent_id": "Q07",
+      "question": "What actions are required when days of supply exceeds 120 days and when it exceeds 180 days?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q08-en-to-vi",
+      "intent_id": "Q08",
+      "question": "Are the 14-day lead time, 7 safety days, and 7-day review period verified real-world values from the dataset?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q09-en-to-vi",
+      "intent_id": "Q09",
+      "question": "Using the formulas in the documents, if average demand is 10 units per day and the default parameters apply, what are the ROP and Target Stock?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q10-en-to-vi",
+      "intent_id": "Q10",
+      "question": "How is inventory position calculated? If on-hand is 120, open PO is 40, and backorder is 25, what is the inventory position?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q11-en-to-vi",
+      "intent_id": "Q11",
+      "question": "A SKU has a stockout signal but calculated days of supply is 145 days. What should the AI Agent do before recommending another purchase?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q12-en-to-vi",
+      "intent_id": "Q12",
+      "question": "Both stockout_flag and overstock_flag are enabled for a SKU. Can we conclude it is definitely both understocked and overstocked? What should the system do?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q13-en-to-vi",
+      "intent_id": "Q13",
+      "question": "Describe the inventory-count variance handling process from preparation through ticket closure, including the mandatory controls.",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q14-en-to-vi",
+      "intent_id": "Q14",
+      "question": "Who may perform the count, enter an adjustment, and approve it? May the same person perform all three roles?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q15-en-to-vi",
+      "intent_id": "Q15",
+      "question": "What minimum information must be retained for an inventory adjustment transaction?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q16-en-to-vi",
+      "intent_id": "Q16",
+      "question": "QA classifies three batches of returned goods as A-grade, B-grade, and C-grade. How should each class be handled?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q17-en-to-vi",
+      "intent_id": "Q17",
+      "question": "An employee discovers a SKU suspected of being counterfeit or seriously mislabeled. May it still be sold if the system records stock on hand?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q18-en-to-vi",
+      "intent_id": "Q18",
+      "question": "According to the dataset, what are the current inbound PO and backorder quantities for SKU X? Provide the exact numbers.",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "README.txt"
+      ],
+      "unavailable_expected_sources": [
+        "README.txt"
+      ]
+    },
+    {
+      "id": "Q19-en-to-vi",
+      "intent_id": "Q19",
+      "question": "What is the latest inventory snapshot date in the Datathon dataset? Can it be used to claim what the current inventory is today?",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "README.txt"
+      ],
+      "unavailable_expected_sources": [
+        "README.txt"
+      ]
+    },
+    {
+      "id": "Q20-en-to-vi",
+      "intent_id": "Q20",
+      "question": "A user asks the AI Agent to create and issue a PO immediately when inventory position is less than or equal to ROP. May the agent do this? Explain the limits and appropriate workflow.",
+      "query_language": "en",
+      "target_language": "vi",
+      "direction": "en->vi",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q01-vi-to-en",
+      "intent_id": "Q01",
+      "question": "Bộ chính sách VietStyle Commerce hiện ở phiên bản nào, ngày nào, và trạng thái phê duyệt ra sao?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "README_EN.txt",
+        "03_Policy_Rules_Registry_EN.csv"
+      ],
+      "unavailable_expected_sources": [
+        "README_EN.txt"
+      ]
+    },
+    {
+      "id": "Q02-vi-to-en",
+      "intent_id": "Q02",
+      "question": "Ai chịu trách nhiệm chính về KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q03-vi-to-en",
+      "intent_id": "Q03",
+      "question": "Tần suất kiểm kê chu kỳ cho nhóm ABC là bao nhiêu và ABC được phân loại dựa trên tiêu chí nào?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q04-vi-to-en",
+      "intent_id": "Q04",
+      "question": "Khi hàng trả về từ khách, hàng phải qua trạng thái nào trước khi được cộng vào tồn kho khả dụng?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q05-vi-to-en",
+      "intent_id": "Q05",
+      "question": "Những KPI tồn kho nào cần theo dõi định kỳ theo bộ chính sách?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "03_Policy_Rules_Registry_EN.csv"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q06-vi-to-en",
+      "intent_id": "Q06",
+      "question": "Trước một campaign, nhóm phải chuẩn bị kế hoạch tồn kho trước bao lâu và cần kiểm tra những thông tin nào?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q07-vi-to-en",
+      "intent_id": "Q07",
+      "question": "Ở ngưỡng days of supply trên 120 ngày và trên 180 ngày, cần hành động gì?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "03_Policy_Rules_Registry_EN.csv",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q08-vi-to-en",
+      "intent_id": "Q08",
+      "question": "Lead time 14 ngày, safety days 7 ngày và review period 7 ngày có phải là dữ liệu thực tế đã được xác nhận từ dataset không?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "03_Policy_Rules_Registry_EN.csv",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q09-vi-to-en",
+      "intent_id": "Q09",
+      "question": "Theo công thức trong tài liệu, nếu nhu cầu bình quân là 10 đơn vị/ngày và dùng các tham số mặc định, ROP và Target Stock là bao nhiêu?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q10-vi-to-en",
+      "intent_id": "Q10",
+      "question": "Inventory position được tính như thế nào? Nếu on-hand = 120, open PO = 40 và backorder = 25, inventory position bằng bao nhiêu?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q11-vi-to-en",
+      "intent_id": "Q11",
+      "question": "Một SKU có stockout signal nhưng calculated days of supply là 145 ngày. AI Agent nên làm gì trước khi đề xuất mua thêm?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+        "01_Inventory_Management_Policy_Manual_EN.docx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q12-vi-to-en",
+      "intent_id": "Q12",
+      "question": "Cả stockout_flag và overstock_flag cùng bật cho một SKU. Có thể kết luận SKU chắc chắn vừa thiếu vừa dư hàng không? Hệ thống cần làm gì?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+        "03_Policy_Rules_Registry_EN.csv"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q13-vi-to-en",
+      "intent_id": "Q13",
+      "question": "Mô tả quy trình xử lý chênh lệch kiểm kê từ lúc chuẩn bị đến lúc đóng phiếu, gồm các điểm kiểm soát bắt buộc.",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q14-vi-to-en",
+      "intent_id": "Q14",
+      "question": "Ai được phép đếm, nhập điều chỉnh và phê duyệt? Có được để cùng một người thực hiện cả ba vai trò không?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q15-vi-to-en",
+      "intent_id": "Q15",
+      "question": "Những trường thông tin tối thiểu nào phải lưu cho một giao dịch điều chỉnh tồn kho?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q16-vi-to-en",
+      "intent_id": "Q16",
+      "question": "QA phân loại ba lô hàng trả về thành A-grade, B-grade và C-grade. Mỗi nhóm được xử lý thế nào?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "03_Policy_Rules_Registry_EN.csv",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q17-vi-to-en",
+      "intent_id": "Q17",
+      "question": "Nhân viên phát hiện SKU nghi hàng giả hoặc sai nhãn nghiêm trọng. Có được tiếp tục bán nếu hệ thống vẫn ghi nhận tồn không?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+        "03_Policy_Rules_Registry_EN.csv"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q18-vi-to-en",
+      "intent_id": "Q18",
+      "question": "Dataset cho biết PO inbound và backorder hiện tại của SKU X là bao nhiêu? Hãy cung cấp con số chính xác.",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+        "README_EN.txt"
+      ],
+      "unavailable_expected_sources": [
+        "README_EN.txt"
+      ]
+    },
+    {
+      "id": "Q19-vi-to-en",
+      "intent_id": "Q19",
+      "question": "Snapshot tồn kho mới nhất trong bộ Datathon là ngày nào? Có thể dùng nó để khẳng định tồn kho hiện tại hôm nay không?",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx",
+        "README_EN.txt"
+      ],
+      "unavailable_expected_sources": [
+        "README_EN.txt"
+      ]
+    },
+    {
+      "id": "Q20-vi-to-en",
+      "intent_id": "Q20",
+      "question": "Người dùng yêu cầu AI Agent tự tạo và phát hành PO ngay khi inventory position ≤ ROP. Agent có được thực hiện không? Hãy nêu giới hạn và luồng xử lý phù hợp.",
+      "query_language": "vi",
+      "target_language": "en",
+      "direction": "vi->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "03_Policy_Rules_Registry_EN.csv",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q01-en-to-en",
+      "intent_id": "Q01",
+      "question": "What version and date does the current VietStyle Commerce policy set have, and what is its approval status?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "README_EN.txt",
+        "03_Policy_Rules_Registry_EN.csv"
+      ],
+      "unavailable_expected_sources": [
+        "README_EN.txt"
+      ]
+    },
+    {
+      "id": "Q02-en-to-en",
+      "intent_id": "Q02",
+      "question": "Who has primary responsibility for KPIs, inventory thresholds, exceptions, and policy approval?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q03-en-to-en",
+      "intent_id": "Q03",
+      "question": "How often should classes A, B, and C be cycle-counted, and what criterion determines the ABC classification?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q04-en-to-en",
+      "intent_id": "Q04",
+      "question": "When a customer returns an item, what status must it pass through before it can be added to available inventory?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q05-en-to-en",
+      "intent_id": "Q05",
+      "question": "Which inventory KPIs must be monitored regularly under the policy set?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "03_Policy_Rules_Registry_EN.csv"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q06-en-to-en",
+      "intent_id": "Q06",
+      "question": "How far in advance of a campaign must the team prepare its inventory plan, and what information must it check?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q07-en-to-en",
+      "intent_id": "Q07",
+      "question": "What actions are required when days of supply exceeds 120 days and when it exceeds 180 days?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "03_Policy_Rules_Registry_EN.csv",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q08-en-to-en",
+      "intent_id": "Q08",
+      "question": "Are the 14-day lead time, 7 safety days, and 7-day review period verified real-world values from the dataset?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "03_Policy_Rules_Registry_EN.csv",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q09-en-to-en",
+      "intent_id": "Q09",
+      "question": "Using the formulas in the documents, if average demand is 10 units per day and the default parameters apply, what are the ROP and Target Stock?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q10-en-to-en",
+      "intent_id": "Q10",
+      "question": "How is inventory position calculated? If on-hand is 120, open PO is 40, and backorder is 25, what is the inventory position?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q11-en-to-en",
+      "intent_id": "Q11",
+      "question": "A SKU has a stockout signal but calculated days of supply is 145 days. What should the AI Agent do before recommending another purchase?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+        "01_Inventory_Management_Policy_Manual_EN.docx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q12-en-to-en",
+      "intent_id": "Q12",
+      "question": "Both stockout_flag and overstock_flag are enabled for a SKU. Can we conclude it is definitely both understocked and overstocked? What should the system do?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+        "03_Policy_Rules_Registry_EN.csv"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q13-en-to-en",
+      "intent_id": "Q13",
+      "question": "Describe the inventory-count variance handling process from preparation through ticket closure, including the mandatory controls.",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q14-en-to-en",
+      "intent_id": "Q14",
+      "question": "Who may perform the count, enter an adjustment, and approve it? May the same person perform all three roles?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q15-en-to-en",
+      "intent_id": "Q15",
+      "question": "What minimum information must be retained for an inventory adjustment transaction?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q16-en-to-en",
+      "intent_id": "Q16",
+      "question": "QA classifies three batches of returned goods as A-grade, B-grade, and C-grade. How should each class be handled?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "03_Policy_Rules_Registry_EN.csv",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q17-en-to-en",
+      "intent_id": "Q17",
+      "question": "An employee discovers a SKU suspected of being counterfeit or seriously mislabeled. May it still be sold if the system records stock on hand?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+        "03_Policy_Rules_Registry_EN.csv"
+      ],
+      "unavailable_expected_sources": []
+    },
+    {
+      "id": "Q18-en-to-en",
+      "intent_id": "Q18",
+      "question": "According to the dataset, what are the current inbound PO and backorder quantities for SKU X? Provide the exact numbers.",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment_EN.pdf",
+        "README_EN.txt"
+      ],
+      "unavailable_expected_sources": [
+        "README_EN.txt"
+      ]
+    },
+    {
+      "id": "Q19-en-to-en",
+      "intent_id": "Q19",
+      "question": "What is the latest inventory snapshot date in the Datathon dataset? Can it be used to claim what the current inventory is today?",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "05_Inventory_Policy_Training_Deck_EN.pptx",
+        "README_EN.txt"
+      ],
+      "unavailable_expected_sources": [
+        "README_EN.txt"
+      ]
+    },
+    {
+      "id": "Q20-en-to-en",
+      "intent_id": "Q20",
+      "question": "A user asks the AI Agent to create and issue a PO immediately when inventory position is less than or equal to ROP. May the agent do this? Explain the limits and appropriate workflow.",
+      "query_language": "en",
+      "target_language": "en",
+      "direction": "en->en",
+      "allowed_roles": [
+        "admin"
+      ],
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual_EN.docx",
+        "03_Policy_Rules_Registry_EN.csv",
+        "05_Inventory_Policy_Training_Deck_EN.pptx"
+      ],
+      "unavailable_expected_sources": []
+    }
+  ]
+}

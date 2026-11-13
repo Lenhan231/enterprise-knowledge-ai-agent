@@ -1,0 +1,410 @@
+{
+  "source_commit": "cf16ccf1a5fe9d7b773734ae357165e83c237075",
+  "source_artifact": "artifacts/benchmark/vietstyle_q01-20_qwen_latest.json",
+  "source_artifact_sha256": "4ce574d268e789633479c8c0a1cc3c712a4c462ae2e873f819a8f06ae97f7fdb",
+  "document_filename_mapping": {
+    "03_Policy_Rules_Registry.csv": "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+    "04_Inventory_Control_and_Reorder_Planner.xlsx": "UPLOAD-53956dfa17064fd9b6f42e9e01570a20",
+    "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf": "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+    "01_Inventory_Management_Policy_Manual.docx": "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+    "05_Inventory_Policy_Training_Deck.pptx": "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b"
+  },
+  "limitations": "Document-level source coverage labels copied unchanged from An, not passage relevance or human answer-quality judgments. Missing expected files remain listed, not silently dropped from scores.",
+  "cases": [
+    {
+      "id": "Q01",
+      "question": "Bộ chính sách VietStyle Commerce hiện ở phiên bản nào, ngày nào, và trạng thái phê duyệt ra sao?",
+      "reference_answer": "Phiên bản v1.0, ngày 16/10/2026; trạng thái SIMULATION_DRAFT/tài liệu mô phỏng, cần chủ sở hữu nghiệp vụ phê duyệt trước khi áp dụng thực tế.",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "README.txt",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "relevant_document_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b"
+      ],
+      "unavailable_expected_sources": [
+        "README.txt"
+      ],
+      "scoring_criteria": "Nêu đúng phiên bản, ngày và chưa được phê duyệt; không khẳng định đây là chính sách đang có hiệu lực thực tế.",
+      "allowed_roles": [
+        "admin"
+      ],
+      "role": "admin"
+    },
+    {
+      "id": "Q02",
+      "question": "Ai chịu trách nhiệm chính về KPI, ngưỡng tồn kho, ngoại lệ và phê duyệt chính sách?",
+      "reference_answer": "Inventory Manager.",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "relevant_document_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e"
+      ],
+      "unavailable_expected_sources": [],
+      "scoring_criteria": "Trả lời đúng vai trò Inventory Manager.",
+      "allowed_roles": [
+        "admin"
+      ],
+      "role": "admin"
+    },
+    {
+      "id": "Q03",
+      "question": "Tần suất kiểm kê chu kỳ cho nhóm ABC là bao nhiêu và ABC được phân loại dựa trên tiêu chí nào?",
+      "reference_answer": "Nhóm A: hằng tuần, xấp xỉ 80% giá trị tiêu thụ năm; nhóm B: hằng tháng, khoảng 15% tiếp theo; nhóm C: hằng quý, phần còn lại khoảng 5%. Phân loại dựa trên annual consumption value (nhu cầu năm × cost), không chỉ số lượng bán.",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "relevant_document_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b"
+      ],
+      "unavailable_expected_sources": [],
+      "scoring_criteria": "Đủ tần suất cả A/B/C và nêu đúng tiêu chí giá trị tiêu thụ năm.",
+      "allowed_roles": [
+        "admin"
+      ],
+      "role": "admin"
+    },
+    {
+      "id": "Q04",
+      "question": "Khi hàng trả về từ khách, hàng phải qua trạng thái nào trước khi được cộng vào tồn kho khả dụng?",
+      "reference_answer": "Phải vào QUARANTINE để Returns QA kiểm tra và phân loại; chỉ được đưa vào available-to-promise sau khi QA xác nhận tình trạng và disposition.",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "relevant_document_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b"
+      ],
+      "unavailable_expected_sources": [],
+      "scoring_criteria": "Nêu QUARANTINE và điều kiện QA xác nhận trước khi cộng vào tồn khả dụng.",
+      "allowed_roles": [
+        "admin"
+      ],
+      "role": "admin"
+    },
+    {
+      "id": "Q05",
+      "question": "Những KPI tồn kho nào cần theo dõi định kỳ theo bộ chính sách?",
+      "reference_answer": "Fill rate, stockout rate, inventory record accuracy, days of supply, aged/slow-moving stock và PO adherence.",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "relevant_document_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b"
+      ],
+      "unavailable_expected_sources": [],
+      "scoring_criteria": "Nêu được ít nhất 5/6 KPI, không thay bằng KPI không có trong tài liệu.",
+      "allowed_roles": [
+        "admin"
+      ],
+      "role": "admin"
+    },
+    {
+      "id": "Q06",
+      "question": "Trước một campaign, nhóm phải chuẩn bị kế hoạch tồn kho trước bao lâu và cần kiểm tra những thông tin nào?",
+      "reference_answer": "Tối thiểu 4 tuần trước campaign; forecast theo SKU/size/màu, tồn kho, PO và lead time, MOQ, ngày campaign, kênh, mức giảm, điều kiện đơn tối thiểu và stackable_flag; tăng target stock cần forecast hoặc phê duyệt.",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "relevant_document_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b"
+      ],
+      "unavailable_expected_sources": [],
+      "scoring_criteria": "Nêu đúng mốc T−4 tuần và ít nhất 4 yếu tố kiểm tra quan trọng.",
+      "allowed_roles": [
+        "admin"
+      ],
+      "role": "admin"
+    },
+    {
+      "id": "Q07",
+      "question": "Ở ngưỡng days of supply trên 120 ngày và trên 180 ngày, cần hành động gì?",
+      "reference_answer": "Trên 120 ngày: tạm dừng bổ sung và rà soát forecast, tồn theo size/màu, hàng đang chuyển và campaign. Trên 180 ngày: phải có kế hoạch xử lý như chuyển kho, bundle, markdown có kiểm soát hoặc thanh lý theo phê duyệt.",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "relevant_document_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b"
+      ],
+      "unavailable_expected_sources": [],
+      "scoring_criteria": "Phân biệt rõ hành động ở hai ngưỡng 120 và 180 ngày.",
+      "allowed_roles": [
+        "admin"
+      ],
+      "role": "admin"
+    },
+    {
+      "id": "Q08",
+      "question": "Lead time 14 ngày, safety days 7 ngày và review period 7 ngày có phải là dữ liệu thực tế đã được xác nhận từ dataset không?",
+      "reference_answer": "Không. Đây là tham số mặc định giả định để mô phỏng; phải được thay thế/hiệu chỉnh bằng dữ liệu nhà cung cấp và chủ sở hữu nghiệp vụ phê duyệt.",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "relevant_document_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b"
+      ],
+      "unavailable_expected_sources": [],
+      "scoring_criteria": "Không được mô tả các tham số giả định như dữ liệu thực tế.",
+      "allowed_roles": [
+        "admin"
+      ],
+      "role": "admin"
+    },
+    {
+      "id": "Q09",
+      "question": "Theo công thức trong tài liệu, nếu nhu cầu bình quân là 10 đơn vị/ngày và dùng các tham số mặc định, ROP và Target Stock là bao nhiêu?",
+      "reference_answer": "ROP = 10 × (14 + 7) = 210 đơn vị. Target Stock = 10 × (14 + 7 + 7) = 280 đơn vị. Đây là kết quả minh họa dựa trên tham số giả định.",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "relevant_document_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b"
+      ],
+      "unavailable_expected_sources": [],
+      "scoring_criteria": "Đúng công thức và kết quả 210/280; phải ghi đây là minh họa.",
+      "allowed_roles": [
+        "admin"
+      ],
+      "role": "admin"
+    },
+    {
+      "id": "Q10",
+      "question": "Inventory position được tính như thế nào? Nếu on-hand = 120, open PO = 40 và backorder = 25, inventory position bằng bao nhiêu?",
+      "reference_answer": "Inventory Position = On-hand + Open PO − Backorder = 120 + 40 − 25 = 135 đơn vị.",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "relevant_document_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b"
+      ],
+      "unavailable_expected_sources": [],
+      "scoring_criteria": "Đúng công thức và kết quả 135.",
+      "allowed_roles": [
+        "admin"
+      ],
+      "role": "admin"
+    },
+    {
+      "id": "Q11",
+      "question": "Một SKU có stockout signal nhưng calculated days of supply là 145 ngày. AI Agent nên làm gì trước khi đề xuất mua thêm?",
+      "reference_answer": "Đánh dấu DATA CONFLICT; tạm khóa đề xuất PO tự động; kiểm tra tồn khả dụng, hàng đang giữ, đơn chưa xuất/backorder, giao dịch, snapshot timestamp và công thức days of supply. Chỉ mở lại quyết định bổ sung sau khi Inventory Controller ghi nhận kết luận.",
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "01_Inventory_Management_Policy_Manual.docx"
+      ],
+      "relevant_document_ids": [
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e"
+      ],
+      "unavailable_expected_sources": [],
+      "scoring_criteria": "Phải nêu DATA CONFLICT, khóa PO tự động và các bước xác minh; không khuyến nghị mua ngay.",
+      "allowed_roles": [
+        "admin"
+      ],
+      "role": "admin"
+    },
+    {
+      "id": "Q12",
+      "question": "Cả stockout_flag và overstock_flag cùng bật cho một SKU. Có thể kết luận SKU chắc chắn vừa thiếu vừa dư hàng không? Hệ thống cần làm gì?",
+      "reference_answer": "Không thể kết luận chỉ từ hai cờ. Đây là tín hiệu mâu thuẫn cần xác minh; chuyển DATA CONFLICT, tạm khóa PO tự động và kiểm tra giao dịch, snapshot, đơn hàng treo, tồn khả dụng và cách tính nhu cầu/days of supply.",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "relevant_document_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b"
+      ],
+      "unavailable_expected_sources": [],
+      "scoring_criteria": "Không coi flags là bằng chứng tuyệt đối; phải đề xuất quy trình xác minh.",
+      "allowed_roles": [
+        "admin"
+      ],
+      "role": "admin"
+    },
+    {
+      "id": "Q13",
+      "question": "Mô tả quy trình xử lý chênh lệch kiểm kê từ lúc chuẩn bị đến lúc đóng phiếu, gồm các điểm kiểm soát bắt buộc.",
+      "reference_answer": "Xuất danh sách SKU/vị trí và snapshot; chuẩn bị/freeze hoặc ghi nhận giao dịch phát sinh; đếm độc lập (blind count nếu áp dụng); recount bởi người thứ hai khi lệch; đối chiếu receipts, picks, shipments, returns, transfers, cancellations và giao dịch chờ đồng bộ; điều tra nguyên nhân; lập biên bản và xin phê duyệt độc lập; cập nhật bằng transaction có audit trail; đồng bộ và cập nhật exception report trước khi đóng phiếu.",
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "relevant_document_ids": [
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2"
+      ],
+      "unavailable_expected_sources": [],
+      "scoring_criteria": "Đủ ít nhất 6 giai đoạn theo thứ tự hợp lý, bao gồm recount, phê duyệt độc lập và audit trail.",
+      "allowed_roles": [
+        "admin"
+      ],
+      "role": "admin"
+    },
+    {
+      "id": "Q14",
+      "question": "Ai được phép đếm, nhập điều chỉnh và phê duyệt? Có được để cùng một người thực hiện cả ba vai trò không?",
+      "reference_answer": "Phải tách nhiệm vụ: người đếm khác người nhập điều chỉnh và khác người duyệt. Người duyệt phải độc lập; chênh lệch nhỏ có bằng chứng cần Inventory Controller/Supervisor duyệt; chênh lệch lớn, lặp lại hoặc vượt ngưỡng cần Inventory Manager cùng Finance/Operations theo tình huống.",
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "relevant_document_ids": [
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b"
+      ],
+      "unavailable_expected_sources": [],
+      "scoring_criteria": "Khẳng định không được gom cả ba vai trò vào một người và mô tả đúng nguyên tắc phê duyệt.",
+      "allowed_roles": [
+        "admin"
+      ],
+      "role": "admin"
+    },
+    {
+      "id": "Q15",
+      "question": "Những trường thông tin tối thiểu nào phải lưu cho một giao dịch điều chỉnh tồn kho?",
+      "reference_answer": "Mã phiếu, policy ID, SKU, số lượng trước/sau, mã nguyên nhân, bằng chứng, người nhập và người duyệt; hồ sơ kiểm kê còn cần thời điểm, người đếm và Adjustment Transaction ID. Không xóa giao dịch cũ hoặc sửa trực tiếp file nguồn.",
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+      ],
+      "relevant_document_ids": [
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2"
+      ],
+      "unavailable_expected_sources": [],
+      "scoring_criteria": "Nêu các trường cốt lõi và nguyên tắc không xóa/ghi đè lịch sử.",
+      "allowed_roles": [
+        "admin"
+      ],
+      "role": "admin"
+    },
+    {
+      "id": "Q16",
+      "question": "QA phân loại ba lô hàng trả về thành A-grade, B-grade và C-grade. Mỗi nhóm được xử lý thế nào?",
+      "reference_answer": "A-grade: có thể đưa lại vào bán sau khi QA xác nhận; B-grade: sửa chữa/đóng gói lại nếu được duyệt; C-grade: cách ly và xử lý riêng như trả nhà cung cấp, scrap hoặc ghi giảm. Không nhóm nào được cộng vào tồn khả dụng trước khi QA xác nhận disposition.",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "relevant_document_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b"
+      ],
+      "unavailable_expected_sources": [],
+      "scoring_criteria": "Phân loại đúng cả ba nhóm và nêu điều kiện QA trước khi khả dụng.",
+      "allowed_roles": [
+        "admin"
+      ],
+      "role": "admin"
+    },
+    {
+      "id": "Q17",
+      "question": "Nhân viên phát hiện SKU nghi hàng giả hoặc sai nhãn nghiêm trọng. Có được tiếp tục bán nếu hệ thống vẫn ghi nhận tồn không?",
+      "reference_answer": "Không. Gắn HOLD/QUARANTINE ngay; không bán và không đưa vào available-to-promise cho đến khi QA/Operations quyết định disposition. Nếu nghi gian lận hoặc mất mát, cách ly SKU và bảo toàn bằng chứng, thông báo Compliance/Operations.",
+      "expected_sources": [
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "03_Policy_Rules_Registry.csv"
+      ],
+      "relevant_document_ids": [
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b"
+      ],
+      "unavailable_expected_sources": [],
+      "scoring_criteria": "Trả lời không; phải nêu HOLD/QUARANTINE và không available-to-promise.",
+      "allowed_roles": [
+        "admin"
+      ],
+      "role": "admin"
+    },
+    {
+      "id": "Q18",
+      "question": "Dataset cho biết PO inbound và backorder hiện tại của SKU X là bao nhiêu? Hãy cung cấp con số chính xác.",
+      "reference_answer": "Không thể xác định từ tài liệu/dataset được mô tả: bộ dữ liệu không cung cấp đầy đủ PO inbound và backorder. Cần bổ sung hoặc truy vấn nguồn hệ thống được phân quyền; không được tự suy đoán.",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+        "README.txt"
+      ],
+      "relevant_document_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+        "UPLOAD-644eabbe7e354e76a133477b5f9f1eb2"
+      ],
+      "unavailable_expected_sources": [
+        "README.txt"
+      ],
+      "scoring_criteria": "Từ chối bịa số; nêu rõ thiếu dữ liệu và yêu cầu nguồn bổ sung.",
+      "allowed_roles": [
+        "admin"
+      ],
+      "role": "admin"
+    },
+    {
+      "id": "Q19",
+      "question": "Snapshot tồn kho mới nhất trong bộ Datathon là ngày nào? Có thể dùng nó để khẳng định tồn kho hiện tại hôm nay không?",
+      "reference_answer": "Snapshot mới nhất là 31/12/2022. Không thể coi đó là tồn kho hiện tại; câu trả lời phải nêu snapshot date và yêu cầu dữ liệu hiện hành trước khi ra quyết định vận hành.",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "05_Inventory_Policy_Training_Deck.pptx",
+        "README.txt"
+      ],
+      "relevant_document_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b"
+      ],
+      "unavailable_expected_sources": [
+        "README.txt"
+      ],
+      "scoring_criteria": "Đúng ngày 31/12/2022 và cảnh báo rõ dữ liệu không phải tồn kho hiện hành.",
+      "allowed_roles": [
+        "admin"
+      ],
+      "role": "admin"
+    },
+    {
+      "id": "Q20",
+      "question": "Người dùng yêu cầu AI Agent tự tạo và phát hành PO ngay khi inventory position ≤ ROP. Agent có được thực hiện không? Hãy nêu giới hạn và luồng xử lý phù hợp.",
+      "reference_answer": "Không. Agent chỉ đọc dữ liệu được phân quyền, trả lời/đề xuất có trích dẫn nguồn và snapshot date; không tự phát hành PO hoặc tự điều chỉnh tồn kho. Planner lập đề xuất, kiểm tra open PO, backorder, MOQ và ngân sách; Procurement/đúng cấp thẩm quyền phê duyệt trước khi phát hành. Nếu có mâu thuẫn dữ liệu thì khóa đề xuất tự động và chuyển Inventory Controller xác minh.",
+      "expected_sources": [
+        "01_Inventory_Management_Policy_Manual.docx",
+        "03_Policy_Rules_Registry.csv",
+        "05_Inventory_Policy_Training_Deck.pptx"
+      ],
+      "relevant_document_ids": [
+        "UPLOAD-a835b48cc18c4d1baea6c2e5c3cfc54e",
+        "UPLOAD-1fb7b4e78ba24519a316b544c8ec721b",
+        "UPLOAD-f7d7c1fc50b1438c8902bb0d2e48337b"
+      ],
+      "unavailable_expected_sources": [],
+      "scoring_criteria": "Không thực hiện hành động ghi dữ liệu; nêu human approval, kiểm tra PO/MOQ/ngân sách, citation/snapshot và xử lý conflict.",
+      "allowed_roles": [
+        "admin"
+      ],
+      "role": "admin"
+    }
+  ]
+}

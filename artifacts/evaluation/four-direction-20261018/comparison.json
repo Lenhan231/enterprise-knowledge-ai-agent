@@ -1,0 +1,875 @@
+{
+  "metric": "Evidence-page recall among top ten dense chunks; not exact-chunk recall or answer accuracy",
+  "scope": "Both full reports compete for all queries, no target-language or gold filtering",
+  "corpus_sha256": "b8e46d0776b602ace3d74efbc7cb14cfa554377294219a1f1615f7fa15f890e4",
+  "cases_sha256": "1464440db4666e5873f3ca3c0fd2b70886624e718a54caff1769849a419d35f5",
+  "chunks": 525,
+  "queries": 48,
+  "independent_intents": 24,
+  "models": {
+    "multilingual-e5-base": {
+      "revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+      "by_direction": {
+        "vi->en": {
+          "cases": 12,
+          "page_recall_at_10": 0.6666666666666666,
+          "mrr_at_10": 0.3488425925925926,
+          "full_page_cases": 8
+        },
+        "en->en": {
+          "cases": 12,
+          "page_recall_at_10": 0.4166666666666667,
+          "mrr_at_10": 0.28968253968253965,
+          "full_page_cases": 5
+        },
+        "vi->vi": {
+          "cases": 10,
+          "page_recall_at_10": 0.8,
+          "mrr_at_10": 0.5277777777777778,
+          "full_page_cases": 8
+        },
+        "en->vi": {
+          "cases": 10,
+          "page_recall_at_10": 0.1,
+          "mrr_at_10": 0.05,
+          "full_page_cases": 1
+        },
+        "vi->mixed": {
+          "cases": 2,
+          "page_recall_at_10": 0.25,
+          "mrr_at_10": 0.08333333333333333,
+          "full_page_cases": 0
+        },
+        "en->mixed": {
+          "cases": 2,
+          "page_recall_at_10": 0.25,
+          "mrr_at_10": 0.16666666666666666,
+          "full_page_cases": 0
+        }
+      },
+      "four_direction_macro_page_recall_at_10": 0.49583333333333335,
+      "four_direction_pooled_page_recall_at_10": 0.5,
+      "max_passage_tokens": 234,
+      "max_query_tokens": 38,
+      "corpus_embedding_seconds": 3.6416860059980536,
+      "peak_gpu_allocated_mib": 1088.39306640625
+    },
+    "bge-m3": {
+      "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+      "by_direction": {
+        "vi->en": {
+          "cases": 12,
+          "page_recall_at_10": 0.4166666666666667,
+          "mrr_at_10": 0.3611111111111111,
+          "full_page_cases": 5
+        },
+        "en->en": {
+          "cases": 12,
+          "page_recall_at_10": 0.4166666666666667,
+          "mrr_at_10": 0.3194444444444444,
+          "full_page_cases": 5
+        },
+        "vi->vi": {
+          "cases": 10,
+          "page_recall_at_10": 0.8,
+          "mrr_at_10": 0.4942857142857143,
+          "full_page_cases": 8
+        },
+        "en->vi": {
+          "cases": 10,
+          "page_recall_at_10": 0.8,
+          "mrr_at_10": 0.2861111111111111,
+          "full_page_cases": 8
+        },
+        "vi->mixed": {
+          "cases": 2,
+          "page_recall_at_10": 0.25,
+          "mrr_at_10": 0.125,
+          "full_page_cases": 0
+        },
+        "en->mixed": {
+          "cases": 2,
+          "page_recall_at_10": 0.0,
+          "mrr_at_10": 0,
+          "full_page_cases": 0
+        }
+      },
+      "four_direction_macro_page_recall_at_10": 0.6083333333333334,
+      "four_direction_pooled_page_recall_at_10": 0.5909090909090909,
+      "max_passage_tokens": 232,
+      "max_query_tokens": 35,
+      "corpus_embedding_seconds": 8.67110760599462,
+      "peak_gpu_allocated_mib": 2196.46728515625
+    },
+    "qwen3-embedding-0.6b": {
+      "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+      "by_direction": {
+        "vi->en": {
+          "cases": 12,
+          "page_recall_at_10": 0.5,
+          "mrr_at_10": 0.3402777777777778,
+          "full_page_cases": 6
+        },
+        "en->en": {
+          "cases": 12,
+          "page_recall_at_10": 0.4166666666666667,
+          "mrr_at_10": 0.30833333333333335,
+          "full_page_cases": 5
+        },
+        "vi->vi": {
+          "cases": 10,
+          "page_recall_at_10": 0.7,
+          "mrr_at_10": 0.5583333333333333,
+          "full_page_cases": 7
+        },
+        "en->vi": {
+          "cases": 10,
+          "page_recall_at_10": 0.7,
+          "mrr_at_10": 0.18666666666666668,
+          "full_page_cases": 7
+        },
+        "vi->mixed": {
+          "cases": 2,
+          "page_recall_at_10": 0.5,
+          "mrr_at_10": 0.6,
+          "full_page_cases": 0
+        },
+        "en->mixed": {
+          "cases": 2,
+          "page_recall_at_10": 0.5,
+          "mrr_at_10": 0.625,
+          "full_page_cases": 0
+        }
+      },
+      "four_direction_macro_page_recall_at_10": 0.5791666666666666,
+      "four_direction_pooled_page_recall_at_10": 0.5681818181818182,
+      "max_passage_tokens": 465,
+      "max_query_tokens": 60,
+      "corpus_embedding_seconds": 29.067355494000367,
+      "peak_gpu_allocated_mib": 2408.2421875
+    }
+  },
+  "case_results": {
+    "Q01-vi": {
+      "direction": "vi->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      }
+    },
+    "Q01-en": {
+      "direction": "en->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      }
+    },
+    "Q02-vi": {
+      "direction": "vi->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.1111111111111111
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.3333333333333333
+      }
+    },
+    "Q02-en": {
+      "direction": "en->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.2
+      }
+    },
+    "Q03-vi": {
+      "direction": "vi->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      }
+    },
+    "Q03-en": {
+      "direction": "en->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      }
+    },
+    "Q04-vi": {
+      "direction": "vi->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      }
+    },
+    "Q04-en": {
+      "direction": "en->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      }
+    },
+    "Q05-vi": {
+      "direction": "vi->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      }
+    },
+    "Q05-en": {
+      "direction": "en->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.5
+      }
+    },
+    "Q06-vi": {
+      "direction": "vi->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.125
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      }
+    },
+    "Q06-en": {
+      "direction": "en->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      }
+    },
+    "Q07-vi": {
+      "direction": "vi->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.2
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      }
+    },
+    "Q07-en": {
+      "direction": "en->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      }
+    },
+    "Q08-vi": {
+      "direction": "vi->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.3333333333333333
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      }
+    },
+    "Q08-en": {
+      "direction": "en->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.3333333333333333
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.3333333333333333
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      }
+    },
+    "Q09-vi": {
+      "direction": "vi->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.25
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.25
+      }
+    },
+    "Q09-en": {
+      "direction": "en->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.14285714285714285
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      }
+    },
+    "Q10-vi": {
+      "direction": "vi->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.5
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.5
+      }
+    },
+    "Q10-en": {
+      "direction": "en->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.5
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      }
+    },
+    "Q11-vi": {
+      "direction": "vi->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      }
+    },
+    "Q11-en": {
+      "direction": "en->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      }
+    },
+    "Q12-vi": {
+      "direction": "vi->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      }
+    },
+    "Q12-en": {
+      "direction": "en->en",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      }
+    },
+    "Q13-vi": {
+      "direction": "vi->vi",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.5
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      }
+    },
+    "Q13-en": {
+      "direction": "en->vi",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.5
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.5
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.25
+      }
+    },
+    "Q14-vi": {
+      "direction": "vi->vi",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      }
+    },
+    "Q14-en": {
+      "direction": "en->vi",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.25
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.16666666666666666
+      }
+    },
+    "Q15-vi": {
+      "direction": "vi->vi",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      }
+    },
+    "Q15-en": {
+      "direction": "en->vi",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.3333333333333333
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.3333333333333333
+      }
+    },
+    "Q16-vi": {
+      "direction": "vi->vi",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      }
+    },
+    "Q16-en": {
+      "direction": "en->vi",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      }
+    },
+    "Q17-vi": {
+      "direction": "vi->vi",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      }
+    },
+    "Q17-en": {
+      "direction": "en->vi",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      }
+    },
+    "Q18-vi": {
+      "direction": "vi->vi",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.16666666666666666
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.2
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      }
+    },
+    "Q18-en": {
+      "direction": "en->vi",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.16666666666666666
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.2
+      }
+    },
+    "Q19-vi": {
+      "direction": "vi->vi",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.1111111111111111
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.14285714285714285
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      }
+    },
+    "Q19-en": {
+      "direction": "en->vi",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.1111111111111111
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.25
+      }
+    },
+    "Q20-vi": {
+      "direction": "vi->vi",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.5
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.25
+      }
+    },
+    "Q20-en": {
+      "direction": "en->vi",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.3333333333333333
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.16666666666666666
+      }
+    },
+    "Q21-vi": {
+      "direction": "vi->vi",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      }
+    },
+    "Q21-en": {
+      "direction": "en->vi",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.16666666666666666
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      }
+    },
+    "Q22-vi": {
+      "direction": "vi->vi",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.5
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.1
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.3333333333333333
+      }
+    },
+    "Q22-en": {
+      "direction": "en->vi",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 1.0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 1.0,
+        "mrr_at_10": 0.5
+      }
+    },
+    "Q23-vi": {
+      "direction": "vi->mixed",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.5,
+        "mrr_at_10": 0.16666666666666666
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.5,
+        "mrr_at_10": 0.2
+      }
+    },
+    "Q23-en": {
+      "direction": "en->mixed",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.5,
+        "mrr_at_10": 0.25
+      }
+    },
+    "Q24-vi": {
+      "direction": "vi->mixed",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.5,
+        "mrr_at_10": 0.25
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.5,
+        "mrr_at_10": 1.0
+      }
+    },
+    "Q24-en": {
+      "direction": "en->mixed",
+      "multilingual-e5-base": {
+        "page_recall_at_10": 0.5,
+        "mrr_at_10": 0.3333333333333333
+      },
+      "bge-m3": {
+        "page_recall_at_10": 0.0,
+        "mrr_at_10": 0
+      },
+      "qwen3-embedding-0.6b": {
+        "page_recall_at_10": 0.5,
+        "mrr_at_10": 1.0
+      }
+    }
+  },
+  "independently_verified_rankings": 144
+}

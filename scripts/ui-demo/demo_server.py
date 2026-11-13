@@ -33,6 +33,41 @@ ANSWER = {
                  "claim_verification": {"status": "supported", "reason": "all_claims_supported", "claim_count": 5},
                  "latency": {"request_total_ms": 9100, "stages_ms": {"database_retrieval": 1900, "reranking": 1200, "answer_generation": 3600, "claim_verification": 2100}}},
 }
+def _invoice(i, name, seller, no, status, total, days):
+    return {"invoice_id": f"inv-{i}", "source_filename": name, "processing_status": status, "source_available": True,
+            "created_at": f"2026-11-{days:02d}T08:30:00Z", "updated_at": f"2026-11-{days:02d}T09:10:00Z",
+            "invoice_data": {} if status in ("processing", "failed") else {
+                "invoice_no": no, "date": f"{days:02d}/11/2026", "seller": seller, "buyer": "Công ty TNHH Demo Commerce",
+                "subtotal": f"{total:,}".replace(",", "."), "tax_amount": f"{total // 10:,}".replace(",", "."),
+                "total_amount": f"{total + total // 10:,}".replace(",", "."),
+                "items": [{"description": "Thùng carton 3 lớp 40×30×30", "quantity": "500", "unit": "thùng", "unit_price": "12.000", "amount": "6.000.000"},
+                          {"description": "Băng keo đóng hàng 5 cm", "quantity": "120", "unit": "cuộn", "unit_price": "18.500", "amount": "2.220.000"}]},
+            "error_message": "OCR could not read page 1" if status == "failed" else None,
+            "ocr_elements": [{"page_number": 1, "label": "Header", "text": f"HÓA ĐƠN GIÁ TRỊ GIA TĂNG\nSố: {no}"}], "ocr_tables": []}
+
+
+INVOICES = [_invoice(1, "HD-0012-bao-bi-minh-phat.pdf", "Công ty Bao bì Minh Phát", "0012", "review_required", 8220000, 12),
+            _invoice(2, "HD-0458-van-tai-sao-viet.pdf", "Vận tải Sao Việt", "0458", "review_required", 15400000, 11),
+            _invoice(3, "scan-hoa-don-1103.jpg", "", "", "processing", 0, 13),
+            _invoice(4, "HD-0091-in-an-tan-long.pdf", "In ấn Tân Long", "0091", "approved", 4300000, 8),
+            _invoice(5, "hoa-don-mo.png", "", "", "failed", 0, 7)]
+INVOICE_SOURCE = """<!doctype html><meta charset="utf-8"><body style="font:14px/1.5 Georgia,serif;margin:28px;color:#222">
+<p style="font:12px sans-serif;color:#888">Synthetic demo invoice</p><h2 style="margin:0">HÓA ĐƠN GIÁ TRỊ GIA TĂNG</h2><p>Số: 0012 · Ngày 12/11/2026</p>
+<p><b>Đơn vị bán:</b> Công ty Bao bì Minh Phát<br><b>Người mua:</b> Công ty TNHH Demo Commerce</p>
+<table border="1" cellpadding="6" style="border-collapse:collapse;width:100%"><tr><th>Hàng hóa</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr>
+<tr><td>Thùng carton 3 lớp 40×30×30</td><td>500</td><td>12.000</td><td>6.000.000</td></tr><tr><td>Băng keo đóng hàng 5 cm</td><td>120</td><td>18.500</td><td>2.220.000</td></tr></table>
+<p style="text-align:right">Cộng: 8.220.000 · Thuế GTGT 10%: 822.000<br><b>Tổng cộng: 9.042.000</b></p></body>"""
+KNOWLEDGE_DOCS = [
+    {"document_id": "vs-policy-v1", "title": "VietStyle Enterprise Operating Policy v1.0", "synthetic_company_policy": True, "source_publisher": "VietStyle (synthetic)",
+     "format": "PDF", "chunk_count": 412, "processing_status": "ready", "knowledge_base_active": True, "knowledge_domains": ["inventory_allocation", "promotion_planning"],
+     "allowed_roles": ["employee", "finance_analyst", "procurement", "operations"], "has_processing_output": True},
+    {"document_id": "hr-2025", "title": "Quy chế nhân sự 2025", "source_type": "user_upload", "source_publisher": "HR department", "format": "PDF", "chunk_count": 96,
+     "processing_status": "ready", "knowledge_base_active": True, "knowledge_domains": [], "allowed_roles": ["employee", "executive"]},
+    {"document_id": "asset-rules", "title": "Quy định quản lý tài sản", "source_type": "user_upload", "source_publisher": "Administration", "format": "DOCX", "chunk_count": 0,
+     "processing_status": "failed", "knowledge_base_active": True, "knowledge_domains": [], "allowed_roles": ["employee"]},
+    {"document_id": "old-logistics", "title": "Logistics handbook 2023", "source_type": "user_upload", "source_publisher": "Operations", "format": "PDF", "chunk_count": 58,
+     "processing_status": "ready", "knowledge_base_active": False, "knowledge_domains": ["nationwide_logistics"], "allowed_roles": ["operations"]},
+]
 STAGES = ["routing", "query_translation", "database_retrieval", "reranking", "answer_generation", "claim_verification"]
 FIXED = {
     "/api/auth/me": {"username": "demo.admin", "role": ROLE},
@@ -49,8 +84,8 @@ FIXED = {
         {"role": "procurement", "permissions": ["ask_documents", "review_invoices"]},
         {"role": "document_uploader", "permissions": ["upload_documents"]},
         {"role": "document_processing_owner", "permissions": ["upload_documents", "inspect_parsing"]}]},
-    "/api/admin/knowledge-documents": {"documents": []},
-    "/api/invoices": {"invoices": []},
+    "/api/admin/knowledge-documents": {"documents": KNOWLEDGE_DOCS},
+    "/api/invoices": {"invoices": INVOICES},
     "/api/upload-tests": {"runs": []},
     "/api/admin/answer-feedback": {"summary": {"up": 14, "down": 3}, "recent": [
         {"created_at": "2026-11-12T09:20:00Z", "rating": "down", "actor_role": "employee", "agent_name": "knowledge",
@@ -99,6 +134,15 @@ class Handler(SimpleHTTPRequestHandler):
             raw = (STATIC / "index.html").read_text().replace("</head>", '<script src="/demo.js"></script></head>', 1).encode()
             self.send_response(200); self.send_header("Content-Type", "text/html; charset=utf-8"); self.end_headers()
             return self.wfile.write(raw)
+        if path == "/api/auth/me" and "demo_logout=1" in (self.headers.get("Cookie") or ""):
+            return self.send_json({"detail": "Not signed in"}, 401)
+        if path.startswith("/api/invoices/") and path.endswith("/source"):
+            raw = INVOICE_SOURCE.encode()
+            self.send_response(200); self.send_header("Content-Type", "text/html; charset=utf-8"); self.end_headers()
+            return self.wfile.write(raw)
+        if path.startswith("/api/invoices/"):
+            found = next((i for i in INVOICES if i["invoice_id"] == path.rsplit("/", 1)[1]), None)
+            return self.send_json(found or {"detail": "Not found"}, 200 if found else 404)
         if path.startswith("/api/"):
             return self.send_json(FIXED.get(path, {}))
         return super().do_GET()

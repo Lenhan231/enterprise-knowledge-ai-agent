@@ -55,6 +55,14 @@ function selectWorkspaceTab(name) {
   const button = $(`[data-tab-target="${name}"]`);
   if (!button || button.hidden) return;
   activeTab = name;
+  // Rows settle in only while a tab is opening, not when a filter or selection re-renders the list.
+  const panel = $(`#tab-${name}`);
+  if (panel) {
+    clearTimeout(panel.freshTimer);
+    panel.classList.add("is-fresh");
+    panel.freshTimer = setTimeout(() => panel.classList.remove("is-fresh"), 2500);
+    panel.querySelectorAll(".monitoring-stat strong").forEach(countUp);
+  }
   $("#workspace-main").classList.toggle("invoice-review-active", name === "invoice-review");
   const isKnowledgeTab = name === "knowledge";
   $(".intro").hidden = !isKnowledgeTab;
@@ -78,7 +86,7 @@ function syncWorkspaceTabs(user = currentUser) {
   const canAskDocuments = !isProcessingOwner && user?.role !== "document_uploader";
   const canUpload = ["document_uploader", "admin", "document_processing_owner"].includes(user?.role);
   const available = {
-    // General Chat is the one chat (with Route to); Knowledge Q&A keeps the report generator, its old chat box stays hidden.
+    // General Chat is the one chat (with Route to); the Reports tab (id "knowledge") keeps the report generator; its old chat box stays hidden.
     knowledge: canAskDocuments,
     "general-chat": canAskDocuments,
     upload: canUpload,
@@ -220,7 +228,13 @@ function renderKnowledgeDocuments() {
   const attentionCount = knowledgeDocuments.filter((doc) => doc.knowledge_base_active && !knowledgeDocumentIsRetrievable(doc)).length;
   $("#knowledge-documents-status").textContent = `Showing ${formatNumber(matches.length)} of ${formatNumber(knowledgeDocuments.length)} sources · ${formatNumber(retrievableCount)} retrievable · ${formatNumber(removedCount)} removed · ${formatNumber(attentionCount)} need attention`;
   $("#knowledge-documents-list").innerHTML = matches.map((doc) => {
-    const domains = (doc.knowledge_domains || []).join(", ") || doc.domain || "General";
+    const domainLabel = (key) => $(`#knowledge-domain-filter option[value="${CSS.escape(key)}"]`)?.textContent || displayName({}, key);
+    const domains = (doc.knowledge_domains || []).map(domainLabel).join(", ") || "General";
+    const retrievable = knowledgeDocumentIsRetrievable(doc);
+    const state = retrievable ? ["ok", "Available to AI"] : doc.knowledge_base_active
+      ? doc.processing_status === "failed" ? ["warn", "Processing failed"] : doc.processing_status === "ready" ? ["warn", "No passages yet"] : ["warn is-live", "Still processing"]
+      : ["off", "Removed from AI retrieval"];
+    const roles = (doc.allowed_roles || []).map((role) => displayName(ROLE_NAMES, role)).join(", ") || "No roles";
     const href = validSourceUrl(doc.source_url);
     const sourceKind = doc.synthetic_company_policy
       ? "Synthetic demo policy · fictional Commerce Demo only"
@@ -239,11 +253,10 @@ function renderKnowledgeDocuments() {
     const reviewOpen = activeKnowledgeReview?.document_id === doc.document_id;
     return `<div class="knowledge-document-entry"><article class="knowledge-document-row ${doc.knowledge_base_active ? "" : "is-removed"}">
       <div class="knowledge-document-copy"><strong>${escapeHtml(doc.title)}</strong>
-        <span class="knowledge-source-kind ${doc.synthetic_company_policy ? "is-synthetic" : ""}">${escapeHtml(sourceKind)}</span>
-        <span>${escapeHtml(doc.source_publisher || "Unknown publisher")} · ${escapeHtml(doc.format || "File")} · ${formatNumber(doc.chunk_count)} passages</span>
-        <small>${escapeHtml(domains)} · ${escapeHtml(doc.processing_status || "unknown")} · ${knowledgeDocumentIsRetrievable(doc) ? "Available to AI" : doc.knowledge_base_active ? "Not retrievable" : "Removed from AI retrieval"}</small>
-        <code>${escapeHtml(doc.document_id)}</code>${sourceLink}
-        <details class="knowledge-access-editor"><summary>Access roles: ${escapeHtml((doc.allowed_roles || []).join(", ") || "none")}</summary>
+        <span class="knowledge-doc-badges"><span class="knowledge-state is-${state[0]}">${escapeHtml(state[1])}</span>${sourceKind === "Knowledge source" ? "" : `<span class="knowledge-source-kind ${doc.synthetic_company_policy ? "is-synthetic" : ""}">${escapeHtml(sourceKind)}</span>`}</span>
+        <span>${escapeHtml(doc.source_publisher || "Unknown publisher")} · ${escapeHtml(doc.format || "File")} · ${formatNumber(doc.chunk_count)} passages · ${escapeHtml(domains)}</span>
+        <small><code>${escapeHtml(doc.document_id)}</code>${sourceLink}</small>
+        <details class="knowledge-access-editor"><summary>Readers: ${escapeHtml(roles)}</summary>
           <form class="knowledge-access-form" data-document-id="${escapeHtml(doc.document_id)}">
             <div class="knowledge-access-options">${Object.entries(UPLOAD_ROLE_LABELS).map(([role, [label]]) => `<label><input type="checkbox" name="allowed_roles" value="${escapeHtml(role)}" ${(doc.allowed_roles || []).includes(role) ? "checked" : ""}><span>${escapeHtml(label)}</span></label>`).join("")}</div>
             <button class="secondary-button" type="submit">Save access</button>
@@ -301,7 +314,7 @@ function renderInvoiceReviewList() {
     return `<button class="invoice-review-card ${selected ? "active" : ""}" type="button" data-invoice-review-id="${escapeHtml(invoice.invoice_id)}">
       <strong>${escapeHtml(invoice.source_filename || invoice.invoice_id)}</strong>
       <span>${escapeHtml(data.invoice_no || "Invoice number not extracted")} · ${escapeHtml(data.seller || "Seller not extracted")}</span>
-      <small><span class="invoice-status-badge is-${escapeHtml(({approved: "approved", review_required: "review", failed: "failed", processing: "processing", rejected: "rejected"})[status] || "unknown")}">${escapeHtml(({review_required: "Needs review", failed: "Extraction failed", processing: "Processing", approved: "Approved", rejected: "Rejected"})[status] || status)}</span> · ${escapeHtml(new Date(invoice.updated_at || invoice.created_at).toLocaleDateString())}</small>
+      <small><span class="invoice-status-badge is-${escapeHtml(({approved: "approved", review_required: "review", failed: "failed", processing: "processing", rejected: "rejected"})[status] || "unknown")}">${escapeHtml(({review_required: "Needs review", failed: "Extraction failed", processing: "Processing", approved: "Approved", rejected: "Rejected"})[status] || status)}</span> <time>${escapeHtml(formatShortDate(invoice.updated_at || invoice.created_at))}</time></small>
     </button>`;
   }).join("") || '<p class="analysis-empty">No invoices match this status.</p>';
   $("#invoice-review-page").textContent = `${filteredInvoices.length ? start + 1 : 0}–${Math.min(start + INVOICE_REVIEW_PAGE_SIZE, filteredInvoices.length)} of ${filteredInvoices.length}`;
@@ -356,7 +369,7 @@ function renderInvoiceReviewDetail(invoice) {
     <div class="invoice-review-editor">
     ${(failed || processing) && !Object.keys(data).length ? `<p class="analysis-empty">${failed ? "No extracted data. Retry extraction to create a draft." : "Your draft will appear here when extraction finishes."}</p>` : `<form id="invoice-review-form" data-invoice-id="${escapeHtml(invoice.invoice_id)}">
       <div class="invoice-review-fields">${fields}</div><div id="invoice-review-items">${itemRows}</div>
-      ${editable ? `<div class="invoice-review-actions"><button class="secondary-button" type="button" data-add-invoice-item>Add line item</button><button class="primary-button" type="submit">Save corrections</button>${canApprove ? `<button class="primary-button" type="button" data-approve-invoice>Approve and publish</button>` : ""}${canReject ? `<button class="danger-button" type="button" data-reject-invoice>Reject invoice</button>` : ""}</div>` : `<p class="corpus-note">This invoice is ${escapeHtml(invoice.processing_status)} and read-only.</p>`}
+      ${editable ? `<div class="invoice-review-actions"><button class="secondary-button" type="button" data-add-invoice-item>Add line item</button><button class="${canApprove ? "secondary-button" : "primary-button"}" type="submit">Save corrections</button>${canApprove ? `<button class="primary-button" type="button" data-approve-invoice>Approve and publish</button>` : ""}${canReject ? `<button class="danger-button" type="button" data-reject-invoice>Reject invoice</button>` : ""}</div>` : `<p class="corpus-note">This invoice is ${escapeHtml(invoice.processing_status)} and read-only.</p>`}
       <p class="corpus-note" data-invoice-edit-status aria-live="polite"></p>
     </form>`}
     ${elements.length || (invoice.ocr_tables || []).length ? `<details class="invoice-ocr-evidence"><summary>OCR evidence (${elements.length} elements, ${(invoice.ocr_tables || []).length} tables)</summary>${evidence || '<p>No OCR text was saved.</p>'}</details>` : ""}
@@ -365,7 +378,12 @@ function renderInvoiceReviewDetail(invoice) {
     previousWorkspace.append(rendered.querySelector(".invoice-review-editor"));
     for (const child of [...detail.children]) if (child !== previousWorkspace) child.remove();
     while (rendered.firstElementChild && !rendered.firstElementChild.classList.contains("invoice-review-workspace")) detail.insertBefore(rendered.firstElementChild, previousWorkspace);
-  } else detail.replaceChildren(...rendered.childNodes);
+  } else {
+    detail.replaceChildren(...rendered.childNodes);
+    detail.classList.remove("is-entering");
+    void detail.offsetWidth;
+    detail.classList.add("is-entering");
+  }
   if (retry) $("#invoice-retry-model").value = "groq";
   if (processing) watchInvoiceProgress(invoice, invoiceProgressGeneration);
 }
@@ -495,7 +513,7 @@ async function saveInvoiceReview(form, approve = false) {
 
 async function rejectInvoice(form) {
   const invoiceId = form.dataset.invoiceId;
-  if (!window.confirm("Reject this invoice? It will remain available for review but will not be published to analytics.")) return;
+  if (!(await confirmDialog({ title: "Reject this invoice?", message: "It stays available for review but will not be published to analytics.", confirmLabel: "Reject invoice", danger: true }))) return;
   const button = form.querySelector("[data-reject-invoice]");
   const status = form.querySelector("[data-invoice-edit-status]");
   button.disabled = true;
@@ -883,6 +901,29 @@ function formatNumber(value) {
 
 // "12 Nov 2026, 16:20" cannot be misread the way 11/12/2026 is (day-first in VN, month-first in US).
 const DATE_TIME_FORMAT = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+const SHORT_DATE_FORMAT = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" });
+// Figures count up from zero once when they appear, keeping their decimals and unit.
+function countUp(element) {
+  element.dataset.value ??= element.textContent;
+  const match = element.dataset.value.match(/^([\d,]*\.?\d+)(.*)$/);
+  if (!match || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const target = Number(match[1].replaceAll(",", ""));
+  const decimals = (match[1].split(".")[1] || "").length;
+  const started = performance.now();
+  const step = (now) => {
+    const t = Math.min(1, (now - started) / 700);
+    const value = target * (1 - (1 - t) ** 3);
+    element.textContent = value.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + match[2];
+    if (t < 1 && element.isConnected) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+function formatShortDate(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? String(value ?? "") : SHORT_DATE_FORMAT.format(date);
+}
+
 function formatDateTime(value) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? String(value ?? "") : DATE_TIME_FORMAT.format(date);
@@ -1377,6 +1418,7 @@ function renderAgentMonitoring(data) {
     ["Runs, last hour", summary.last_hour_runs ?? 0],
   ];
   $("#monitoring-summary").innerHTML = cards.map(([label, value]) => `<article class="monitoring-stat"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></article>`).join("");
+  $("#monitoring-summary").querySelectorAll("strong").forEach(countUp);
   const agents = data.by_agent || [];
   const maxRuns = Math.max(1, ...agents.map((agent) => Number(agent.total_runs) || 0));
   $("#monitoring-agents").innerHTML = agents.length ? agents.map((agent) => `
@@ -1833,7 +1875,15 @@ async function loadWorkspace(user) {
   try {
     if (user.role === "admin") {
       const access = await api("/api/admin/access-matrix");
-      $("#access-matrix").innerHTML = access.roles.map((role) => `<article><strong>${escapeHtml(displayName(ROLE_NAMES, role.role))}</strong><span>${role.permissions.map((permission) => escapeHtml(displayName(PERMISSION_NAMES, permission))).join(" · ")}</span></article>`).join("");
+      const permissions = [...new Set(access.roles.flatMap((role) => role.permissions))];
+      const yes = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 12.5 4 4 8-9"/></svg>';
+      $("#access-matrix").innerHTML = `<div class="access-table-wrap"><table class="access-table">
+        <caption class="visually-hidden">Workspace permissions by role</caption>
+        <thead><tr><th scope="col">Role</th>${permissions.map((permission) => `<th scope="col">${escapeHtml(displayName(PERMISSION_NAMES, permission))}</th>`).join("")}</tr></thead>
+        <tbody>${access.roles.map((role) => `<tr><th scope="row">${escapeHtml(displayName(ROLE_NAMES, role.role))}</th>${permissions.map((permission) => role.permissions.includes(permission)
+          ? `<td class="is-allowed">${yes}<span class="visually-hidden">Allowed</span></td>`
+          : '<td class="is-denied"><span aria-hidden="true">–</span><span class="visually-hidden">Not allowed</span></td>').join("")}</tr>`).join("")}</tbody>
+      </table></div>`;
       $("#admin-section").hidden = false;
       $("#monitoring-section").hidden = false;
       await refreshAgentMonitoring();
@@ -1889,7 +1939,7 @@ $("#knowledge-documents-list").addEventListener("click", async (event) => {
   if (deleteButton) {
     const documentId = deleteButton.dataset.knowledgeDelete;
     const title = deleteButton.dataset.title;
-    if (!window.confirm(`Permanently delete “${title}”? This removes the original file, parser output, and indexed data. This cannot be undone.`)) return;
+    if (!(await confirmDialog({ title: `Delete “${title}” permanently?`, message: "This removes the original file, its parser output and its indexed passages. It cannot be undone.", confirmLabel: "Delete permanently", danger: true }))) return;
     deleteButton.disabled = true;
     try {
       const result = await api(`/api/admin/knowledge-documents/${encodeURIComponent(documentId)}`, { method: "DELETE" });
@@ -1954,8 +2004,10 @@ $("#knowledge-documents-list").addEventListener("click", async (event) => {
   if (!button) return;
   const active = button.dataset.active === "true";
   const documentId = button.dataset.knowledgeToggle;
-  const action = active ? "Remove this source from AI retrieval? Its original file and parser output will be retained." : "Restore this source to AI retrieval?";
-  if (!window.confirm(action)) return;
+  const confirmed = await confirmDialog(active
+    ? { title: "Remove this source from AI retrieval?", message: "Answers will stop using it. The original file and its parser output are kept, so you can restore it later.", confirmLabel: "Remove from AI retrieval", danger: true }
+    : { title: "Restore this source to AI retrieval?", message: "Answers can use it again for the roles allowed to read it.", confirmLabel: "Restore" });
+  if (!confirmed) return;
   button.disabled = true;
   try {
     await api(`/api/admin/knowledge-documents/${encodeURIComponent(documentId)}`, {
@@ -2922,6 +2974,64 @@ function setupThemeToggle() {
 setupThemeToggle();
 setupQuickPrompts();
 loadCorpus();
+
+// Confirmations use the app's own dialog instead of the browser's "localhost says" box.
+function confirmDialog({ title, message, confirmLabel = "Confirm", danger = false }) {
+  const dialog = $("#app-dialog");
+  $("#app-dialog-title").textContent = title;
+  $("#app-dialog-message").textContent = message;
+  const confirm = $("#app-dialog-confirm");
+  confirm.textContent = confirmLabel;
+  confirm.className = danger ? "danger-button" : "primary-button";
+  dialog.returnValue = "";
+  return new Promise((resolve) => {
+    dialog.addEventListener("close", () => resolve(dialog.returnValue === "confirm"), { once: true });
+    dialog.showModal();
+    // A destructive choice never sits under the default focus.
+    (danger ? dialog.querySelector('[value="cancel"]') : confirm).focus();
+  });
+}
+$("#app-dialog").addEventListener("click", (event) => {
+  if (event.target === event.currentTarget) event.currentTarget.close("cancel");
+});
+
+// Sidebar width: drag the edge (or use arrow keys on it); double-click resets. Kept per browser.
+const SIDEBAR_WIDTH = { min: 220, max: 420, default: 272 };
+function setSidebarWidth(width, save = false) {
+  const value = Math.round(Math.min(SIDEBAR_WIDTH.max, Math.max(SIDEBAR_WIDTH.min, width)));
+  $("#workspace").style.setProperty("--sidebar-w", `${value}px`);
+  $("#sidebar-resizer").setAttribute("aria-valuenow", String(value));
+  if (save) try { localStorage.setItem("sidebar_width", String(value)); } catch {}
+  return value;
+}
+try { setSidebarWidth(Number(localStorage.getItem("sidebar_width")) || SIDEBAR_WIDTH.default); } catch { setSidebarWidth(SIDEBAR_WIDTH.default); }
+$("#sidebar-resizer").setAttribute("aria-valuemin", String(SIDEBAR_WIDTH.min));
+$("#sidebar-resizer").setAttribute("aria-valuemax", String(SIDEBAR_WIDTH.max));
+$("#sidebar-resizer").addEventListener("pointerdown", (event) => {
+  if ($("#workspace").classList.contains("sidebar-collapsed")) return;
+  event.preventDefault();
+  const handle = event.currentTarget;
+  handle.setPointerCapture(event.pointerId);
+  $("#workspace").classList.add("is-resizing");
+  const move = (e) => setSidebarWidth(e.clientX - $("#workspace").getBoundingClientRect().left);
+  const stop = (e) => {
+    handle.removeEventListener("pointermove", move);
+    $("#workspace").classList.remove("is-resizing");
+    setSidebarWidth(e.clientX - $("#workspace").getBoundingClientRect().left, true);
+  };
+  handle.addEventListener("pointermove", move);
+  handle.addEventListener("pointerup", stop, { once: true });
+  handle.addEventListener("pointercancel", stop, { once: true });
+});
+$("#sidebar-resizer").addEventListener("dblclick", () => setSidebarWidth(SIDEBAR_WIDTH.default, true));
+$("#sidebar-resizer").addEventListener("keydown", (event) => {
+  const step = event.shiftKey ? 40 : 12;
+  const now = Number($("#sidebar-resizer").getAttribute("aria-valuenow"));
+  const next = { ArrowLeft: now - step, ArrowRight: now + step, Home: SIDEBAR_WIDTH.min, End: SIDEBAR_WIDTH.max }[event.key];
+  if (next === undefined) return;
+  event.preventDefault();
+  setSidebarWidth(next, true);
+});
 
 // Keep this preference local to the browser; storage may be disabled.
 function setSidebarCollapsed(collapsed) {

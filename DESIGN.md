@@ -156,7 +156,7 @@ components:
 
 The workspace is quiet on purpose. Surfaces are near-white on a faintly sage paper, text is a deep green-black ink, and almost nothing carries colour. The one strong colour, jade, is reserved for what the product promises: an answer whose every claim was checked against its sources. When an answer passes verification a round jade stamp lands beside it, the answer reads like a short cited document in a text serif, and its citations are small jade marks that light up the exact sentence they rely on. Everything else in the interface stays out of the way, so the seal and the evidence are what the eye finds.
 
-Density is calm and exact rather than sparse or crowded. General Chat is the one place to ask questions: a conversation column whose composer carries a "Route to" choice (Auto, Documents only, Sales data). Knowledge Q&A is the report page: a short hero that points to General Chat, then the report generator; tools such as monitoring, access control and invoice review use the same hairline-bordered cards and tables without decoration. A thin layer of frosted glass sits only on the controls that float over the page (the sidebar, the question composer, the monitoring tabs), above soft jade and amber colour fields, so the controls feel lifted while the content they hold stays solid and readable.
+Density is calm and exact rather than sparse or crowded. General Chat is the one place to ask questions: a conversation column whose composer carries a "Route to" choice (Auto, Documents only, Sales data). Reports is the report page: a short hero that points to General Chat, then the report generator; tools such as monitoring, access control and invoice review use the same hairline-bordered cards and tables without decoration. A thin layer of frosted glass sits only on the controls that float over the page (the sidebar, the question composer, the monitoring tabs), above soft jade and amber colour fields, so the controls feel lifted while the content they hold stays solid and readable.
 
 The system rejects three looks explicitly: the generic AI-chatbot style (purple or blue gradients, sparkle icons, glowing chat bubbles), busy admin dashboards (KPI walls, heavy shadows, colour-coded everything), and the product's own pre-12-Nov navy-and-blue design.
 
@@ -224,7 +224,7 @@ A cool, low-chroma sage neutral world with a single jade accent family and two s
 
 ## Layout
 
-The app is a sidebar workspace: a left sidebar of navigation rows (40px tall, 10px rounded, 19px icons) that collapses without the icons moving, and a content area on Sage Paper. General Chat (the default page after sign-in) is a transcript above a docked composer; Knowledge Q&A is a centred single column of at most 880px holding the report generator; tool pages (monitoring, access control, invoice review, processing) use full-width panels with 24px padding. Older content pages keep a 1120px maximum width.
+The app is a sidebar workspace: a left sidebar of navigation rows (40px tall, 10px rounded, 19px icons) that collapses without the icons moving, and a content area on Sage Paper. General Chat (the default page after sign-in) is a transcript above a docked composer; Reports (tab id `knowledge`) is a centred single column of at most 880px holding the report generator; tool pages (monitoring, access control, invoice review, processing) use full-width panels with 24px padding. Older content pages keep a 1120px maximum width.
 
 Spacing is small-stepped: 2px between nav rows, 4–8px inside controls and chip rows, 12–16px inside cards, 22–30px between page blocks (for example 30px above the answer panel). Tables use tabular numbers and hairline rules.
 
@@ -282,7 +282,18 @@ The feel is calm and exact: soft corners, hairlines, no ornament; precision come
 ### Navigation
 - **Sidebar rows:** 40px tall, 10px corners, Muted label (500, 14px) with a 19px line icon. Hover fills Deep Surface; the active row takes Jade Mist with Deep Jade text (600) and a 3px jade marker bar that grows in from its centre.
 - **Monitoring sub-tabs:** a glass segmented control (4px inset track, 34px tabs, 9px corners); the selected tab becomes a lighter glass chip.
+- **Width:** 272px by default; dragging its right edge (or arrow keys on the focused edge) resizes it between 220px and 420px, a 2px Jade Line shows while dragging, a double-click resets it, and the width is kept per browser. Collapsed, it is 76px and cannot be dragged.
+- **Logo:** a faceless girl with very long, straight, pale-gold hair swept back from a side part, one side tucked behind the ear with a small dark hoop, wearing a dark brown robe with green lining over a grey V-neck and a green-and-silver striped tie, on a Jade Mist tile with a Jade Line border. No house crest or name (that is Warner Bros' trademark). Used in the sidebar and on the login page.
 - **Phone:** below 780px the sidebar becomes a bar with its glass rim on the bottom edge.
+
+### Tool Pages
+Upload, Invoice Review, Knowledge Management, Access Control, Monitoring and Processing share one frame: the heading (650, 26px), one Muted description of at most 72ch and the page's action button sit on the page itself, with no panel around them; status lines are left-aligned. Content lives in hairline-bordered Surface lists: invoices and knowledge files are hairline rows in one surface, not separate cards. Knowledge rows have a fixed 232px action column of equal-width buttons, the safe action on top. Status labels are small tinted pills with a dot (Available to AI: Verified; Processing failed or No passages yet: Amber; Removed: neutral; Still processing pulses). Access Control is a real matrix (roles down, permissions across, a Verified tick where allowed); on phones it scrolls sideways with the role column pinned. Monitoring shows its figures in one strip divided by hairlines.
+
+### Confirmation Dialog
+Every confirmation uses the app's own modal instead of the browser's: Surface, 18px corners, a soft deep shadow, a blurred ink backdrop, and a 0.18s fade and scale in. A title that asks the question, one Muted sentence on the consequence, then Cancel and a button that names the action ("Reject invoice", "Delete permanently"). Destructive actions use a solid Brick button and put the initial focus on Cancel; Esc or a click outside cancels.
+
+### Dropdown List
+Where the browser supports customisable selects (current Chrome and Edge), the open list is a Surface sheet with 12px corners and the floating shadow; options are 36px rows, hover fills Sunk Surface, and the chosen option is Jade Mist with Deep Jade text and a Jade tick. It fades in over 0.16s. Other browsers keep their native list.
 
 ### Verified Answer Seal (signature)
 A round stamp, 54px, in the left gutter beside a verified answer: a Verified ring on Surface, a dashed inner ring on Verified Mist, and a check that draws itself in. It lands once with a 0.6s stamp (scale down from 1.3 while turning to its resting -8°). Beside it a plain Verified Ink line says "Every claim checked against its cited source · N claims"; the words carry the meaning, the stamp is decoration (aria-hidden). On phones the stamp sits above the answer at 44px. Partial, withheld and not-covered answers never get the stamp; they keep their Amber outcome pill.
@@ -318,7 +329,7 @@ When search statistics cannot load, the header status reads "Search unavailable"
 - **Do** pair every status colour with words ("Every claim checked", "Partial answer", "Failed").
 - **Do** take every colour from a token so dark mode stays a pure token swap.
 - **Do** keep content solid and put glass only on the sidebar, composers and tab controls, with a solid fallback for reduced transparency.
-- **Do** animate only in response to an action (seal, folds, theme reveal, nav marker) and switch all motion off for reduced motion.
+- **Do** animate only in response to an action (seal, folds, theme reveal, nav marker, rows settling in when a tool page opens but not when a filter re-renders it, access ticks, monitoring figures counting up, agent bars growing, the invoice draft fading in when another is chosen, dialogs and dropdowns fading in) and switch all motion off for reduced motion.
 - **Do** use tabular numbers (`font-variant-numeric: tabular-nums`) for every figure in stats and tables.
 - **Do** draw monitoring bars in Muted ink; a bar is a quantity, not a verdict, so it never takes Jade.
 - **Do** show people the plain names of roles, permissions, agents and checks ("Finance analyst", "Ask documents"), never internal ids.
@@ -331,4 +342,6 @@ When search statistics cannot load, the header status reads "Search unavailable"
 - **Don't** use red for anything but errors and destructive actions, or amber for anything but gaps and partial results.
 - **Don't** set essential text in Faint; it is for placeholders and minor notes only (it holds 4.5:1 on Surface, Sage Paper and Sunk Surface, but not on Deep Surface).
 - **Don't** put a coloured stripe on one side of a card, callout or note; notes are whole tinted boxes with one hairline border. A quote bar on a real blockquote is the one exception.
+- **Don't** use the browser's alert or confirm boxes; use the Confirmation Dialog.
+- **Don't** put a small label or eyebrow above a page heading; the heading and its description carry the page.
 - **Don't** set text below 12.5px (12px for code); the older stylesheet's 9–11px sizes are overridden by a floor in redesign.css.

@@ -88,14 +88,38 @@ class InvoiceRepository:
             )
             return cursor.rowcount == 1
 
-    def get_invoice(self, invoice_id: str) -> dict | None:
+    def get_invoice(self, invoice_id: str, *, include_evidence: bool = True) -> dict | None:
+        columns = [
+            "invoice_id", "source_filename", "source_format", "source_sha256",
+            "storage_path", "uploaded_by", "processing_status", "schema_version",
+            "invoice_data",
+        ]
+        if include_evidence:
+            columns.extend(("ocr_elements", "ocr_tables"))
+        columns.extend((
+            "extraction_model", "extraction_metadata", "review_required",
+            "error_message", "created_at", "updated_at",
+        ))
         with self.connection.transaction(), self.connection.cursor(row_factory=dict_row) as cursor:
             cursor.execute(
-                """SELECT invoice_id, source_filename, source_format, source_sha256,
-                          storage_path, uploaded_by, processing_status, schema_version, invoice_data,
-                          ocr_elements, ocr_tables,
-                          extraction_model, extraction_metadata, review_required,
-                          error_message, created_at, updated_at
+                f"SELECT {', '.join(columns)} FROM public.invoice_extractions WHERE invoice_id = %s",
+                (invoice_id,),
+            )
+            return cursor.fetchone()
+
+    def get_invoice_evidence(self, invoice_id: str) -> dict | None:
+        with self.connection.transaction(), self.connection.cursor(row_factory=dict_row) as cursor:
+            cursor.execute(
+                """SELECT invoice_id, uploaded_by, ocr_elements, ocr_tables
+                   FROM public.invoice_extractions WHERE invoice_id = %s""",
+                (invoice_id,),
+            )
+            return cursor.fetchone()
+
+    def get_invoice_source(self, invoice_id: str) -> dict | None:
+        with self.connection.transaction(), self.connection.cursor(row_factory=dict_row) as cursor:
+            cursor.execute(
+                """SELECT invoice_id, uploaded_by, source_filename, source_format, storage_path
                    FROM public.invoice_extractions WHERE invoice_id = %s""",
                 (invoice_id,),
             )
@@ -105,6 +129,7 @@ class InvoiceRepository:
         with self.connection.cursor(row_factory=dict_row) as cursor:
             cursor.execute(
                 """SELECT invoice_id, source_filename, source_format, uploaded_by,
+                          (storage_path IS NOT NULL) AS source_available,
                           processing_status, schema_version, invoice_data,
                           extraction_model, review_required, error_message, created_at, updated_at
                    FROM public.invoice_extractions

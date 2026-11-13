@@ -160,7 +160,7 @@
 :root .monitoring-stat strong{color:var(--ink);font:650 26px/1.15 var(--font);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 :root .monitoring-agent i{height:8px;border-radius:999px;background:var(--surface-3)}
 /* run volume is not verification, so the bars are neutral ink, not jade (One Seal Rule) */
-:root .monitoring-agent i b{border-radius:999px;background:var(--muted)}
+:root .monitoring-agent i b{border-radius:999px;background:linear-gradient(90deg,var(--accent-line),var(--accent))}
 :root .monitoring-agent strong{font-weight:600}
 :root .monitoring-agent span{color:var(--muted);font-size:13px}
 :root .quick-chip{min-height:34px;padding:0 13px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink-2);font:500 13px/1 var(--font)}

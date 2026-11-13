@@ -331,7 +331,7 @@ When search statistics cannot load, the header status reads "Search unavailable"
 - **Do** keep content solid and put glass only on the sidebar, composers and tab controls, with a solid fallback for reduced transparency.
 - **Do** animate only in response to an action (seal, folds, theme reveal, nav marker, rows settling in when a tool page opens but not when a filter re-renders it, access ticks, monitoring figures counting up, agent bars growing, the invoice draft fading in when another is chosen, dialogs and dropdowns fading in) and switch all motion off for reduced motion.
 - **Do** use tabular numbers (`font-variant-numeric: tabular-nums`) for every figure in stats and tables.
-- **Do** draw monitoring bars in Muted ink; a bar is a quantity, not a verdict, so it never takes Jade.
+- **Do** draw monitoring bars in Jade (a soft Jade Line to Jade fill on a Deep Surface track); they carry the brand colour on the monitoring page, while statuses keep their own signal colours.
 - **Do** show people the plain names of roles, permissions, agents and checks ("Finance analyst", "Ask documents"), never internal ids.
 
 ### Don't:

@@ -7,6 +7,11 @@ let invoiceReviewItems = [];
 let activeInvoiceReview = null;
 let invoiceReviewPage = 1;
 const INVOICE_REVIEW_PAGE_SIZE = 8;
+const invoiceReviewEvidenceCache = new Map();
+const invoiceReviewSourceUrlCache = new Map();
+const invoiceReviewSourceRequests = new Map();
+const INVOICE_REVIEW_SOURCE_CACHE_SIZE = 4;
+const INVOICE_REVIEW_EVIDENCE_CACHE_SIZE = 12;
 let invoiceProgressGeneration = 0;
 let agentConversationId = crypto.randomUUID();
 let reportConversationId = crypto.randomUUID();
@@ -297,6 +302,117 @@ const formatInvoiceDate = (value) => {
   return `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${year}`;
 };
 
+function readInvoiceCache(cache, key) {
+  if (!cache.has(key)) return undefined;
+  const value = cache.get(key);
+  cache.delete(key);
+  cache.set(key, value);
+  return value;
+}
+
+function writeInvoiceCache(cache, key, value, limit, onEvict = null) {
+  if (cache.has(key)) cache.delete(key);
+  cache.set(key, value);
+  while (cache.size > limit) {
+    const [oldKey, oldValue] = cache.entries().next().value;
+    cache.delete(oldKey);
+    onEvict?.(oldValue);
+  }
+}
+
+function clearInvoiceReviewCaches() {
+  invoiceReviewEvidenceCache.clear();
+  invoiceReviewSourceRequests.clear();
+  for (const url of invoiceReviewSourceUrlCache.values()) URL.revokeObjectURL(url);
+  invoiceReviewSourceUrlCache.clear();
+}
+
+async function fetchInvoiceSource(invoiceId, session) {
+  const cached = readInvoiceCache(invoiceReviewSourceUrlCache, invoiceId);
+  if (cached) return cached;
+  const pending = invoiceReviewSourceRequests.get(invoiceId);
+  if (pending) return pending;
+
+  const request = (async () => {
+    const response = await fetch(`/api/invoices/${encodeURIComponent(invoiceId)}/source`, {
+      credentials: "same-origin",
+      headers: { "ngrok-skip-browser-warning": "1" },
+    });
+    if (response.status === 401) {
+      if (session === sessionGeneration) clearExpiredSession();
+      throw new Error("Sign in to continue");
+    }
+    if (response.status === 404) return null;
+    if (!response.ok) throw new Error(`Could not load invoice source (HTTP ${response.status})`);
+    const url = URL.createObjectURL(await response.blob());
+    if (session !== sessionGeneration) {
+      URL.revokeObjectURL(url);
+      return null;
+    }
+    writeInvoiceCache(invoiceReviewSourceUrlCache, invoiceId, url, INVOICE_REVIEW_SOURCE_CACHE_SIZE,
+      (oldUrl) => URL.revokeObjectURL(oldUrl));
+    return url;
+  })();
+  invoiceReviewSourceRequests.set(invoiceId, request);
+  try {
+    return await request;
+  } finally {
+    if (invoiceReviewSourceRequests.get(invoiceId) === request) invoiceReviewSourceRequests.delete(invoiceId);
+  }
+}
+
+function attachInvoiceSource(invoice, session, sourcePromise = null) {
+  if (!invoice.source_available) return;
+  const invoiceId = invoice.invoice_id;
+  const detail = $("#invoice-review-detail");
+  const wrapper = [...detail.querySelectorAll(".invoice-review-source-wrap")]
+    .find((candidate) => candidate.dataset.invoiceId === invoiceId);
+  const frame = wrapper?.querySelector("iframe");
+  const status = wrapper?.querySelector("[data-invoice-source-status]");
+  if (!wrapper || !frame || !status) return;
+  const pendingSource = sourcePromise || fetchInvoiceSource(invoiceId, session).then(
+    (url) => ({ url }),
+    (error) => ({ error }),
+  );
+  pendingSource.then((result) => {
+    if (session !== sessionGeneration || activeInvoiceReview?.invoice_id !== invoiceId || !wrapper.isConnected) return;
+    if (result.url) {
+      frame.src = result.url;
+      frame.hidden = false;
+      status.remove();
+    } else {
+      status.textContent = result.error?.message || "Original file is unavailable.";
+    }
+  });
+}
+
+async function loadInvoiceReviewEvidence(details) {
+  if (details.dataset.loaded === "true" || details.dataset.loading === "true") return;
+  const invoiceId = details.dataset.invoiceId;
+  const content = details.querySelector("[data-invoice-evidence-content]");
+  const summary = details.querySelector("summary");
+  if (!invoiceId || !content || !summary) return;
+  details.dataset.loading = "true";
+  content.textContent = "Loading OCR evidence…";
+  try {
+    let evidence = readInvoiceCache(invoiceReviewEvidenceCache, invoiceId);
+    if (!evidence) {
+      evidence = await api(`/api/invoices/${encodeURIComponent(invoiceId)}/evidence`);
+      writeInvoiceCache(invoiceReviewEvidenceCache, invoiceId, evidence, INVOICE_REVIEW_EVIDENCE_CACHE_SIZE);
+    }
+    if (activeInvoiceReview?.invoice_id !== invoiceId || !details.isConnected) return;
+    const elements = Array.isArray(evidence.ocr_elements) ? evidence.ocr_elements : [];
+    const tables = Array.isArray(evidence.ocr_tables) ? evidence.ocr_tables : [];
+    summary.textContent = `OCR evidence (${elements.length} elements, ${tables.length} tables)`;
+    content.innerHTML = elements.map((element) => `<details class="invoice-ocr-element"><summary>Page ${escapeHtml(element.page_number ?? "?")} · ${escapeHtml(element.label || element.type || "OCR text")}</summary><pre>${escapeHtml(element.text || element.content || JSON.stringify(element))}</pre></details>`).join("") || "<p>No OCR text was saved.</p>";
+    details.dataset.loaded = "true";
+  } catch (error) {
+    if (details.isConnected) content.textContent = `Could not load OCR evidence: ${error.message}`;
+  } finally {
+    delete details.dataset.loading;
+  }
+}
+
 let invoiceOpenGeneration = 0;
 
 function renderInvoiceReviewList() {
@@ -322,7 +438,7 @@ function renderInvoiceReviewList() {
   $("#invoice-review-next").disabled = invoiceReviewPage === pageCount;
 }
 
-function renderInvoiceReviewDetail(invoice) {
+function renderInvoiceReviewDetail(invoice, { sourcePromise = null } = {}) {
   invoiceProgressGeneration += 1;
   activeInvoiceReview = invoice;
   renderInvoiceReviewList();
@@ -336,9 +452,9 @@ function renderInvoiceReviewDetail(invoice) {
     ${INVOICE_ITEM_FIELDS.map(([key, label]) => `<label>${escapeHtml(label)}${key === "description" ? `<textarea name="items.${index}.${key}" ${editable ? "" : "readonly"}>${escapeHtml(invoiceReviewValue(item?.[key]))}</textarea>` : `<input name="items.${index}.${key}" value="${escapeHtml(invoiceReviewValue(item?.[key]))}" ${editable ? "" : "readonly"}>`}</label>`).join("")}
     ${editable ? `<button class="secondary-button" type="button" data-remove-invoice-item="${index}">Remove line</button>` : ""}
   </fieldset>`).join("");
-  const elements = Array.isArray(invoice.ocr_elements) ? invoice.ocr_elements : [];
-  const evidence = elements.map((element) => `<details class="invoice-ocr-element"><summary>Page ${escapeHtml(element.page_number ?? "?")} · ${escapeHtml(element.label || element.type || "OCR text")}</summary><pre>${escapeHtml(element.text || element.content || JSON.stringify(element))}</pre></details>`).join("");
-  const source = invoice.source_available ? `<iframe class="invoice-review-source" title="Original invoice" src="/api/invoices/${encodeURIComponent(invoice.invoice_id)}/source"></iframe>` : '<p class="analysis-empty">Original file is unavailable.</p>';
+  const source = invoice.source_available
+    ? '<p class="invoice-source-status" data-invoice-source-status role="status">Loading original invoice…</p><iframe class="invoice-review-source" title="Original invoice" hidden></iframe>'
+    : '<p class="analysis-empty">Original file is unavailable.</p>';
   const failed = invoice.processing_status === "failed";
   const retry = failed && invoice.source_available ? `
     <form id="invoice-retry-form" data-invoice-id="${escapeHtml(invoice.invoice_id)}">
@@ -372,7 +488,7 @@ function renderInvoiceReviewDetail(invoice) {
       ${editable ? `<div class="invoice-review-actions"><button class="secondary-button" type="button" data-add-invoice-item>Add line item</button><button class="${canApprove ? "secondary-button" : "primary-button"}" type="submit">Save corrections</button>${canApprove ? `<button class="primary-button" type="button" data-approve-invoice>Approve and publish</button>` : ""}${canReject ? `<button class="danger-button" type="button" data-reject-invoice>Reject invoice</button>` : ""}</div>` : `<p class="corpus-note">This invoice is ${escapeHtml(invoice.processing_status)} and read-only.</p>`}
       <p class="corpus-note" data-invoice-edit-status aria-live="polite"></p>
     </form>`}
-    ${elements.length || (invoice.ocr_tables || []).length ? `<details class="invoice-ocr-evidence"><summary>OCR evidence (${elements.length} elements, ${(invoice.ocr_tables || []).length} tables)</summary>${evidence || '<p>No OCR text was saved.</p>'}</details>` : ""}
+    <details class="invoice-ocr-evidence" data-invoice-id="${escapeHtml(invoice.invoice_id)}"><summary>OCR evidence · open to load</summary><div class="invoice-ocr-evidence-content" data-invoice-evidence-content>OCR evidence loads when expanded.</div></details>
     </div></div>`;
   if (keepSource) {
     previousWorkspace.append(rendered.querySelector(".invoice-review-editor"));
@@ -384,6 +500,10 @@ function renderInvoiceReviewDetail(invoice) {
     void detail.offsetWidth;
     detail.classList.add("is-entering");
   }
+  if (!keepSource) attachInvoiceSource(invoice, sessionGeneration, sourcePromise);
+  detail.querySelector(".invoice-ocr-evidence")?.addEventListener("toggle", (event) => {
+    if (event.currentTarget.open) void loadInvoiceReviewEvidence(event.currentTarget);
+  });
   if (retry) $("#invoice-retry-model").value = "groq";
   if (processing) watchInvoiceProgress(invoice, invoiceProgressGeneration);
 }
@@ -408,7 +528,7 @@ async function watchInvoiceProgress(invoice, progressGeneration) {
     nextPollAt = Date.now() + 4000;
     let result;
     try {
-      result = await api(`/api/invoices/${encodeURIComponent(invoice.invoice_id)}`, { cache: "no-store" });
+      result = await api(`/api/invoices/${encodeURIComponent(invoice.invoice_id)}?include_evidence=false`, { cache: "no-store" });
     } catch (error) {
       if (progressGeneration !== invoiceProgressGeneration || session !== sessionGeneration) return;
       $("#invoice-review-detail [data-invoice-progress-status]").textContent =
@@ -448,13 +568,19 @@ async function refreshInvoiceReview(selectId = activeInvoiceReview?.invoice_id) 
 async function openInvoiceReview(invoiceId) {
   const generation = ++invoiceOpenGeneration;
   const session = sessionGeneration;
-  const invoice = await api(`/api/invoices/${encodeURIComponent(invoiceId)}`);
+  const summary = invoiceReviewItems.find((item) => item.invoice_id === invoiceId);
+  if (!summary) return;
+  const sourcePromise = fetchInvoiceSource(invoiceId, session).then(
+    (url) => ({ url }),
+    (error) => ({ error }),
+  );
   if (generation !== invoiceOpenGeneration || session !== sessionGeneration) return;
-  renderInvoiceReviewDetail(invoice);
+  renderInvoiceReviewDetail(structuredClone(summary), { sourcePromise });
 }
 
 async function retryInvoiceExtraction(form) {
   const invoiceId = form.dataset.invoiceId;
+  invoiceReviewEvidenceCache.delete(invoiceId);
   const path = `/api/invoices/${encodeURIComponent(invoiceId)}`;
   const generation = sessionGeneration;
   const button = form.querySelector('button[type="submit"]');
@@ -1799,6 +1925,7 @@ function clearExpiredSession() {
   sessionGeneration += 1;
   sessionSubject = null;
   currentUser = null;
+  clearInvoiceReviewCaches();
   resetConversationState();
   $("#login-view").hidden = false;
   $("#workspace").hidden = true;
@@ -1810,6 +1937,7 @@ function clearExpiredSession() {
 async function loadWorkspace(user) {
   if (sessionSubject !== user.username) {
     sessionGeneration += 1;
+    clearInvoiceReviewCaches();
     sessionSubject = user.username;
     resetConversationState();
   }
@@ -2504,7 +2632,8 @@ async function sendChatMessage({ question, mode, button, input, state, render })
       button.setAttribute("aria-label", "Send message");
     } else button.innerHTML = initialButton;
     if (state.turns.includes(turn)) render(false);
-    announceTurn(turn);
+    // A reply that arrived after the conversation was reset stays pending and is never announced.
+    if (state.turns.includes(turn) && turn.state !== "pending") announceTurn(turn);
   }
 }
 

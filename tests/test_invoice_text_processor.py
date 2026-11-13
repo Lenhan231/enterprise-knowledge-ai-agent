@@ -1,4 +1,6 @@
+import json
 import unittest
+from threading import Barrier
 from unittest.mock import patch
 
 from document_processing.document_processor import DocumentProcessor
@@ -6,12 +8,59 @@ from document_processing.invoice_text_processor import (
     InvoiceFields,
     SCHEMA,
     _extraction_jobs,
+    _infer_with_gemini,
     _parse_json_response,
     _prepare_extraction_input,
 )
 
 
 class InvoiceTextProcessorTest(unittest.TestCase):
+    def test_gemini_invoice_jobs_run_in_parallel_and_keep_input_order(self):
+        both_requests_started = Barrier(2)
+
+        class Response:
+            def __init__(self, payload):
+                self.payload = payload
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return False
+
+            def read(self):
+                return self.payload
+
+        def fake_urlopen(request, timeout):
+            prompt = request.data.decode("utf-8")
+            both_requests_started.wait(timeout=2)
+            response_text = "header" if '"text": "first"' in prompt else "table"
+            return Response(
+                json.dumps({
+                    "modelVersion": "gemini-test-version",
+                    "candidates": [{"content": {"parts": [{"text": response_text}]}}],
+                    "usageMetadata": {"promptTokenCount": 10, "candidatesTokenCount": 2},
+                }).encode("utf-8")
+            )
+
+        with patch("document_processing.invoice_text_processor.urlopen", side_effect=fake_urlopen):
+            result = _infer_with_gemini(
+                [
+                    {"prompt": "first", "max_new_tokens": 256},
+                    {"prompt": "second", "max_new_tokens": 1024},
+                ],
+                api_key="test-key",
+                model_id="gemini-test",
+                timeout=3,
+            )
+
+        self.assertEqual(result["responses"], ["header", "table"])
+        self.assertEqual(result["revision"], "gemini-test-version")
+        self.assertEqual(result["metrics"]["request_count"], 2)
+        self.assertEqual(result["metrics"]["prompt_tokens"], 20)
+        self.assertEqual(result["metrics"]["generated_tokens"], 4)
+        self.assertIn("request_inference_seconds", result["metrics"])
+
     def test_schema_is_compact_and_rejects_tax_id_fields(self):
         self.assertEqual(
             set(SCHEMA),

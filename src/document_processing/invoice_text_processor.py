@@ -12,6 +12,7 @@ import re
 import subprocess
 import tempfile
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed, wait
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote
@@ -56,6 +57,7 @@ TABLE_SCHEMA = {
 _MAX_EVIDENCE_CHARS = 12_000
 _LOGGER = logging.getLogger(__name__)
 _TABLE_CHUNK_CHARS = 2_400
+_GEMINI_EXECUTOR = ThreadPoolExecutor(max_workers=2, thread_name_prefix="invoice-gemini")
 
 
 class InvoiceItem(BaseModel):
@@ -694,15 +696,16 @@ def _infer_with_gemini(
     if not api_key:
         raise RuntimeError("GEMINI_API is required when DOCUMENT_PROCESSING_INVOICE_PROVIDER=gemini")
 
-    responses: list[str] = []
-    prompt_tokens = generated_tokens = 0
-    elapsed = 0.0
-    model_version = model_id
+    if not jobs:
+        raise ValueError("Gemini invoice extraction requires at least one job")
+
+    started = time.perf_counter()
     endpoint = (
         "https://generativelanguage.googleapis.com/v1beta/models/"
         f"{model_id}:generateContent?key={quote(api_key, safe='')}"
     )
-    for job in jobs:
+
+    def infer_job(job: dict[str, Any]) -> dict[str, Any]:
         body = json.dumps({
             "contents": [{"role": "user", "parts": [{"text": job["prompt"]}]}],
             "generationConfig": {
@@ -711,6 +714,7 @@ def _infer_with_gemini(
                 "responseMimeType": "application/json",
             },
         }, ensure_ascii=False).encode("utf-8")
+        request_seconds = 0.0
         for attempt in range(3):
             request = Request(
                 endpoint,
@@ -722,15 +726,18 @@ def _infer_with_gemini(
             try:
                 with urlopen(request, timeout=timeout) as response:
                     result = json.loads(response.read().decode("utf-8"))
-                elapsed += time.perf_counter() - started
+                request_seconds += time.perf_counter() - started
                 candidates = result.get("candidates") or []
                 parts = ((candidates[0].get("content") or {}).get("parts") or []) if candidates else []
-                responses.append("".join(part.get("text", "") for part in parts))
+                response_text = "".join(part.get("text", "") for part in parts)
                 usage = result.get("usageMetadata") or {}
-                prompt_tokens += int(usage.get("promptTokenCount") or 0)
-                generated_tokens += int(usage.get("candidatesTokenCount") or 0)
-                model_version = result.get("modelVersion") or model_version
-                break
+                return {
+                    "response": response_text,
+                    "prompt_tokens": int(usage.get("promptTokenCount") or 0),
+                    "generated_tokens": int(usage.get("candidatesTokenCount") or 0),
+                    "model_version": result.get("modelVersion") or model_id,
+                    "request_seconds": request_seconds,
+                }
             except HTTPError as error:
                 detail = error.read(1200).decode("utf-8", errors="replace")
                 if error.code not in {429, 500, 502, 503, 504} or attempt == 2:
@@ -744,20 +751,48 @@ def _infer_with_gemini(
                 time.sleep(max(1.0, min(delay, 30.0)))
             except (URLError, TimeoutError, json.JSONDecodeError) as error:
                 raise RuntimeError(f"Gemini invoice API request failed: {error}") from error
+        raise RuntimeError("Gemini invoice API retries exhausted")
+
+    if len(jobs) == 1:
+        results = [infer_job(jobs[0])]
+    else:
+        results: list[dict[str, Any] | None] = [None] * len(jobs)
+        future_indexes = {
+            _GEMINI_EXECUTOR.submit(infer_job, job): index
+            for index, job in enumerate(jobs)
+        }
+        try:
+            for future in as_completed(future_indexes):
+                results[future_indexes[future]] = future.result()
+        except Exception:
+            for future in future_indexes:
+                future.cancel()
+            wait(future_indexes)
+            raise
+
+    completed = [result for result in results if result is not None]
+    if len(completed) != len(jobs):
+        raise RuntimeError("Gemini invoice API returned an incomplete job set")
+    model_version = next(
+        (result["model_version"] for result in completed if result["model_version"] != model_id),
+        model_id,
+    )
+    request_seconds = sum(result["request_seconds"] for result in completed)
 
     return {
         "revision": model_version,
         "adapter": None,
         "adapter_revision": None,
-        "responses": responses,
+        "responses": [result["response"] for result in completed],
         "metrics": {
             "provider": "gemini_api",
             "device": "remote_api",
             "dtype": "remote",
             "load_seconds": 0,
-            "inference_seconds": round(elapsed, 2),
-            "prompt_tokens": prompt_tokens,
-            "generated_tokens": generated_tokens,
+            "inference_seconds": round(time.perf_counter() - started, 2),
+            "request_inference_seconds": round(request_seconds, 2),
+            "prompt_tokens": sum(result["prompt_tokens"] for result in completed),
+            "generated_tokens": sum(result["generated_tokens"] for result in completed),
             "request_count": len(jobs),
         },
     }

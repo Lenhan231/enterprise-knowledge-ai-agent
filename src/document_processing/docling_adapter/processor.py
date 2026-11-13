@@ -74,6 +74,11 @@ class DoclingProcessor:
             converter = get_converter(self._pipeline_options(do_ocr, embedded, page_images))
             converter.initialize_pipeline(InputFormat.PDF)
 
+        from .orientation import preload_paddle_page_orientation_model
+
+        with _timed_component("ocr_orientation_model_preload"):
+            preload_paddle_page_orientation_model()
+
     def process(
         self, source: bytes | str | Path, file_path: str | None, document: dict[str, Any],
     ) -> dict[str, Any]:

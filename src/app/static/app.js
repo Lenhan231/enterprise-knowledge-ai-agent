@@ -2,6 +2,19 @@ const $ = (selector) => document.querySelector(selector);
 let activeTab = "knowledge";
 let currentUser = null;
 let knowledgeDocuments = [];
+let activeKnowledgeReview = null;
+let invoiceReviewItems = [];
+let activeInvoiceReview = null;
+let invoiceReviewPage = 1;
+const INVOICE_REVIEW_PAGE_SIZE = 8;
+let invoiceProgressGeneration = 0;
+let agentConversationId = crypto.randomUUID();
+let reportConversationId = crypto.randomUUID();
+let sessionTurns = [];
+let generalConversationId = crypto.randomUUID();
+let generalTurns = [];
+let sessionGeneration = 0;
+let sessionSubject = null;
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
 }[char]));
@@ -42,12 +55,12 @@ function selectWorkspaceTab(name) {
   const button = $(`[data-tab-target="${name}"]`);
   if (!button || button.hidden) return;
   activeTab = name;
+  $("#workspace-main").classList.toggle("invoice-review-active", name === "invoice-review");
   const isKnowledgeTab = name === "knowledge";
   $(".intro").hidden = !isKnowledgeTab;
   $(".agent-overview").hidden = !isKnowledgeTab
     || ["document_processing_owner", "document_uploader"].includes(currentUser?.role);
   $(".stats").hidden = !isKnowledgeTab || currentUser?.role === "document_processing_owner";
-  $("#inventory-snapshot").hidden = !isKnowledgeTab;
   document.querySelectorAll(".workspace-tab").forEach((tab) => {
     const selected = tab === button;
     tab.setAttribute("aria-selected", String(selected));
@@ -66,7 +79,9 @@ function syncWorkspaceTabs(user = currentUser) {
   const canUpload = ["document_uploader", "admin", "document_processing_owner"].includes(user?.role);
   const available = {
     knowledge: canAskDocuments,
+    "general-chat": canAskDocuments,
     upload: canUpload,
+    "invoice-review": canUpload,
     processing: isProcessingOwner,
     "ocr-lab": isProcessingOwner,
     "knowledge-management": isAdmin,
@@ -125,6 +140,60 @@ function knowledgeDocumentIsRetrievable(doc) {
   return doc.knowledge_base_active && doc.processing_status === "ready" && Number(doc.chunk_count) > 0;
 }
 
+function renderKnowledgeProcessingReview(doc) {
+  if (activeKnowledgeReview?.status === "loading") {
+    return '<section class="knowledge-output-review"><p class="corpus-note">Loading parser evidence…</p></section>';
+  }
+  if (activeKnowledgeReview?.error) {
+    return `<section class="knowledge-output-review"><p class="error-message">${escapeHtml(activeKnowledgeReview.error)}</p></section>`;
+  }
+
+  const output = activeKnowledgeReview?.output;
+  if (!output) return "";
+  const sourceUrl = doc.source_type === "user_upload"
+    ? uploadedSourcePageUrl(doc.document_id)
+    : doc.synthetic_company_policy
+      ? `/api/admin/knowledge-documents/${encodeURIComponent(doc.document_id)}/source`
+      : "";
+  const format = String(doc.format || "").toLowerCase();
+  const sourcePreview = format === "pdf"
+    ? `<iframe class="knowledge-output-source" title="${escapeHtml(doc.title)} source" src="${escapeHtml(sourceUrl)}"></iframe>`
+    : ["png", "jpg", "jpeg", "tif", "tiff"].includes(format)
+      ? `<img class="knowledge-output-image" src="${escapeHtml(sourceUrl)}" alt="Source file: ${escapeHtml(doc.title)}">`
+      : `<p class="corpus-note">Inline preview is unavailable for ${escapeHtml(format.toUpperCase() || "this format")} files. <a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">Open original file</a></p>`;
+  const elements = Array.isArray(output.elements) ? output.elements : [];
+  const tables = Array.isArray(output.tables) ? output.tables : [];
+  const elementList = elements.map((element) => {
+    const metadata = element.metadata || {};
+    const page = metadata.page_number ?? element.page_number ?? "?";
+    const type = metadata.element_type || metadata.layout_type || element.element_type || "text";
+    const content = element.text ?? element.content ?? (element.table_ref != null ? `Table reference ${element.table_ref}` : "No text content");
+    return `<details class="knowledge-output-element">
+      <summary>Page ${escapeHtml(page)} · ${escapeHtml(type)} · ${formatNumber(String(content).length)} chars</summary>
+      <pre>${escapeHtml(content)}</pre>
+      <details class="knowledge-output-metadata"><summary>Element metadata</summary><pre>${escapeHtml(JSON.stringify(metadata, null, 2))}</pre></details>
+    </details>`;
+  }).join("");
+  const tableList = tables.map((table, index) => {
+    const rows = Array.isArray(table.rows) ? table.rows : [];
+    const columns = Array.isArray(table.columns) ? table.columns : (rows[0] && !Array.isArray(rows[0]) ? Object.keys(rows[0]) : []);
+    const header = columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("");
+    const body = rows.map((row) => `<tr>${columns.map((column, cellIndex) => `<td>${escapeHtml(Array.isArray(row) ? row[cellIndex] : row?.[column])}</td>`).join("")}</tr>`).join("");
+    const page = table.metadata?.page_number ?? table.page_number ?? "?";
+    return `<details class="knowledge-output-table"><summary>Table ${index + 1} · Page ${escapeHtml(page)} · ${formatNumber(rows.length)} rows</summary>
+      <div class="knowledge-output-table-scroll"><table><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table></div>
+    </details>`;
+  }).join("");
+
+  return `<section class="knowledge-output-review" aria-label="Parser output review">
+    <header><div><strong>Parser output</strong><span>${escapeHtml(output.pipeline_id || output.metadata?.pipeline_id || "Parser")} · ${formatNumber(elements.length)} elements · ${formatNumber(tables.length)} tables</span></div>
+      <button type="button" class="secondary-button" data-close-knowledge-review>Close review</button></header>
+    <div class="knowledge-output-columns"><div class="knowledge-output-source-pane">${sourcePreview}</div>
+      <div class="knowledge-output-evidence"><h3>Elements</h3>${elementList || '<p class="corpus-note">No parser elements were saved.</p>'}
+        <h3>Tables</h3>${tableList || '<p class="corpus-note">No tables were extracted.</p>'}</div></div>
+  </section>`;
+}
+
 function renderKnowledgeDocuments() {
   const query = $("#knowledge-documents-search").value.trim().toLocaleLowerCase();
   const selectedDomain = $("#knowledge-domain-filter").value;
@@ -165,7 +234,8 @@ function renderKnowledgeDocuments() {
         ? `<a href="${escapeHtml(uploadedSource)}" target="_blank" rel="noopener noreferrer">Open uploaded file</a>`
         : href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Open source</a>` : "";
     const canRetryEmbedding = doc.source_type === "user_upload" && doc.processing_status === "failed";
-    return `<article class="knowledge-document-row ${doc.knowledge_base_active ? "" : "is-removed"}">
+    const reviewOpen = activeKnowledgeReview?.document_id === doc.document_id;
+    return `<div class="knowledge-document-entry"><article class="knowledge-document-row ${doc.knowledge_base_active ? "" : "is-removed"}">
       <div class="knowledge-document-copy"><strong>${escapeHtml(doc.title)}</strong>
         <span class="knowledge-source-kind ${doc.synthetic_company_policy ? "is-synthetic" : ""}">${escapeHtml(sourceKind)}</span>
         <span>${escapeHtml(doc.source_publisher || "Unknown publisher")} · ${escapeHtml(doc.format || "File")} · ${formatNumber(doc.chunk_count)} passages</span>
@@ -180,12 +250,315 @@ function renderKnowledgeDocuments() {
         </details>
       </div>
       <div class="knowledge-document-actions">
+        ${doc.has_processing_output ? `<button class="secondary-button" type="button" data-review-elements="${escapeHtml(doc.document_id)}" aria-expanded="${reviewOpen ? "true" : "false"}">${reviewOpen ? "Hide element review" : "Review elements"}</button>` : ""}
         ${canRetryEmbedding ? `<button class="secondary-button" type="button" data-retry-embedding="${escapeHtml(doc.document_id)}">Retry embedding</button>` : ""}
+        ${doc.knowledge_base_active === false && doc.source_type === "user_upload" ? `<button class="danger-button" type="button" data-knowledge-delete="${escapeHtml(doc.document_id)}" data-title="${escapeHtml(doc.title)}">Delete permanently</button>` : ""}
         <button class="${doc.knowledge_base_active ? "danger-button" : "secondary-button"}" type="button" data-knowledge-toggle="${escapeHtml(doc.document_id)}" data-active="${doc.knowledge_base_active ? "true" : "false"}">${doc.knowledge_base_active ? "Remove from knowledge base" : "Restore to knowledge base"}</button>
       </div>
-    </article>`;
+    </article>${reviewOpen ? renderKnowledgeProcessingReview(doc) : ""}</div>`;
   }).join("") || '<p class="loading-card">No matching indexed sources.</p>';
 }
+
+const INVOICE_REVIEW_FIELDS = [
+  ["invoice_no", "Invoice number"], ["date", "Invoice date"], ["seller", "Seller"],
+  ["buyer", "Buyer"], ["subtotal", "Subtotal"], ["tax_amount", "Tax amount"],
+  ["total_amount", "Total amount"],
+];
+const INVOICE_ITEM_FIELDS = [
+  ["description", "Description"], ["quantity", "Quantity"], ["unit", "Unit"],
+  ["unit_price", "Unit price"], ["amount", "Amount"],
+];
+const invoiceReviewValue = (value) => value == null ? "" : String(value);
+const formatInvoiceDate = (value) => {
+  const raw = invoiceReviewValue(value).trim();
+  const match = raw.match(/^(?:(\d{4})-(\d{2})-(\d{2})|(\d{1,2})\/(\d{1,2})\/(\d{4})|(\d{1,2})\s+tháng\s+(\d{1,2})\s+năm\s+(\d{4}))$/i);
+  if (!match) return raw;
+  const [, isoYear, isoMonth, isoDay, slashDay, slashMonth, slashYear, viDay, viMonth, viYear] = match;
+  const day = Number(isoDay || slashDay || viDay);
+  const month = Number(isoMonth || slashMonth || viMonth);
+  const year = Number(isoYear || slashYear || viYear);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  if (parsed.getUTCFullYear() !== year || parsed.getUTCMonth() !== month - 1 || parsed.getUTCDate() !== day) return raw;
+  return `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${year}`;
+};
+
+let invoiceOpenGeneration = 0;
+
+function renderInvoiceReviewList() {
+  const statusFilter = $("#invoice-review-filter").value;
+  const filteredInvoices = statusFilter === "all"
+    ? invoiceReviewItems
+    : invoiceReviewItems.filter((invoice) => invoice.processing_status === statusFilter);
+  const pageCount = Math.max(1, Math.ceil(filteredInvoices.length / INVOICE_REVIEW_PAGE_SIZE));
+  invoiceReviewPage = Math.min(invoiceReviewPage, pageCount);
+  const start = (invoiceReviewPage - 1) * INVOICE_REVIEW_PAGE_SIZE;
+  $("#invoice-review-list").innerHTML = filteredInvoices.slice(start, start + INVOICE_REVIEW_PAGE_SIZE).map((invoice) => {
+    const data = invoice.invoice_data || {};
+    const selected = invoice.invoice_id === activeInvoiceReview?.invoice_id;
+    const status = invoice.processing_status || "unknown";
+    return `<button class="invoice-review-card ${selected ? "active" : ""}" type="button" data-invoice-review-id="${escapeHtml(invoice.invoice_id)}">
+      <strong>${escapeHtml(invoice.source_filename || invoice.invoice_id)}</strong>
+      <span>${escapeHtml(data.invoice_no || "Invoice number not extracted")} · ${escapeHtml(data.seller || "Seller not extracted")}</span>
+      <small><span class="invoice-status-badge is-${escapeHtml(({approved: "approved", review_required: "review", failed: "failed", processing: "processing", rejected: "rejected"})[status] || "unknown")}">${escapeHtml(({review_required: "Needs review", failed: "Extraction failed", processing: "Processing", approved: "Approved", rejected: "Rejected"})[status] || status)}</span> · ${escapeHtml(new Date(invoice.updated_at || invoice.created_at).toLocaleDateString())}</small>
+    </button>`;
+  }).join("") || '<p class="analysis-empty">No invoices match this status.</p>';
+  $("#invoice-review-page").textContent = `${filteredInvoices.length ? start + 1 : 0}–${Math.min(start + INVOICE_REVIEW_PAGE_SIZE, filteredInvoices.length)} of ${filteredInvoices.length}`;
+  $("#invoice-review-prev").disabled = invoiceReviewPage === 1;
+  $("#invoice-review-next").disabled = invoiceReviewPage === pageCount;
+}
+
+function renderInvoiceReviewDetail(invoice) {
+  invoiceProgressGeneration += 1;
+  activeInvoiceReview = invoice;
+  renderInvoiceReviewList();
+  const data = invoice.invoice_data || {};
+  const editable = invoice.processing_status === "review_required";
+  const canApprove = currentUser?.role === "admin" && editable;
+  const canReject = currentUser?.role === "admin" && editable;
+  const fields = INVOICE_REVIEW_FIELDS.map(([key, label]) => `<label>${escapeHtml(label)}<input name="${key}" value="${escapeHtml(key === "date" ? formatInvoiceDate(data[key]) : invoiceReviewValue(data[key]))}" ${editable ? "" : "readonly"}></label>`).join("");
+  const items = Array.isArray(data.items) ? data.items : [];
+  const itemRows = items.map((item, index) => `<fieldset class="invoice-review-item" data-item-index="${index}"><legend>Line item ${index + 1}</legend>
+    ${INVOICE_ITEM_FIELDS.map(([key, label]) => `<label>${escapeHtml(label)}${key === "description" ? `<textarea name="items.${index}.${key}" ${editable ? "" : "readonly"}>${escapeHtml(invoiceReviewValue(item?.[key]))}</textarea>` : `<input name="items.${index}.${key}" value="${escapeHtml(invoiceReviewValue(item?.[key]))}" ${editable ? "" : "readonly"}>`}</label>`).join("")}
+    ${editable ? `<button class="secondary-button" type="button" data-remove-invoice-item="${index}">Remove line</button>` : ""}
+  </fieldset>`).join("");
+  const elements = Array.isArray(invoice.ocr_elements) ? invoice.ocr_elements : [];
+  const evidence = elements.map((element) => `<details class="invoice-ocr-element"><summary>Page ${escapeHtml(element.page_number ?? "?")} · ${escapeHtml(element.label || element.type || "OCR text")}</summary><pre>${escapeHtml(element.text || element.content || JSON.stringify(element))}</pre></details>`).join("");
+  const source = invoice.source_available ? `<iframe class="invoice-review-source" title="Original invoice" src="/api/invoices/${encodeURIComponent(invoice.invoice_id)}/source"></iframe>` : '<p class="analysis-empty">Original file is unavailable.</p>';
+  const failed = invoice.processing_status === "failed";
+  const retry = failed && invoice.source_available ? `
+    <form id="invoice-retry-form" data-invoice-id="${escapeHtml(invoice.invoice_id)}">
+      <div class="invoice-review-actions">
+        <label for="invoice-retry-model">Extraction model</label>
+        <select id="invoice-retry-model" name="model_provider">${$("#invoice-model").innerHTML}</select>
+        <button class="primary-button" type="submit">Retry extraction</button>
+      </div>
+      <p class="corpus-note" data-invoice-retry-status role="status"></p>
+    </form>` : "";
+  const processing = invoice.processing_status === "processing";
+  const detail = $("#invoice-review-detail");
+  const existingSource = detail.querySelector(".invoice-review-source-wrap");
+  const keepSource = existingSource?.dataset.invoiceId === invoice.invoice_id && !!existingSource.querySelector("iframe") === !!invoice.source_available;
+  const previousWorkspace = keepSource ? existingSource.parentElement : null;
+  if (previousWorkspace) previousWorkspace.removeChild(previousWorkspace.querySelector(".invoice-review-editor"));
+  const rendered = document.createElement("div");
+  rendered.innerHTML = `
+    ${failed ? `<p role="status">Extraction failed${invoice.error_message ? `: ${escapeHtml(invoice.error_message)}` : "."}</p>` : ""}
+    ${retry}
+    ${processing ? `<div class="upload-status-wrap invoice-processing-progress" aria-busy="true">
+      <div class="upload-progress" role="progressbar" aria-label="Invoice extraction" aria-valuetext="OCR and extraction in progress"><span></span></div>
+      <p role="status" data-invoice-progress-status>Running OCR and extraction. Status updates automatically.</p>
+      <small class="upload-elapsed" data-invoice-progress-elapsed aria-live="off"></small>
+    </div>` : ""}
+    <div class="invoice-review-workspace">
+    <div class="invoice-review-source-wrap" data-invoice-id="${escapeHtml(invoice.invoice_id)}">${source}</div>
+    <div class="invoice-review-editor">
+    ${(failed || processing) && !Object.keys(data).length ? `<p class="analysis-empty">${failed ? "No extracted data. Retry extraction to create a draft." : "Your draft will appear here when extraction finishes."}</p>` : `<form id="invoice-review-form" data-invoice-id="${escapeHtml(invoice.invoice_id)}">
+      <div class="invoice-review-fields">${fields}</div><div id="invoice-review-items">${itemRows}</div>
+      ${editable ? `<div class="invoice-review-actions"><button class="secondary-button" type="button" data-add-invoice-item>Add line item</button><button class="primary-button" type="submit">Save corrections</button>${canApprove ? `<button class="primary-button" type="button" data-approve-invoice>Approve and publish</button>` : ""}${canReject ? `<button class="danger-button" type="button" data-reject-invoice>Reject invoice</button>` : ""}</div>` : `<p class="corpus-note">This invoice is ${escapeHtml(invoice.processing_status)} and read-only.</p>`}
+      <p class="corpus-note" data-invoice-edit-status aria-live="polite"></p>
+    </form>`}
+    ${elements.length || (invoice.ocr_tables || []).length ? `<details class="invoice-ocr-evidence"><summary>OCR evidence (${elements.length} elements, ${(invoice.ocr_tables || []).length} tables)</summary>${evidence || '<p>No OCR text was saved.</p>'}</details>` : ""}
+    </div></div>`;
+  if (keepSource) {
+    previousWorkspace.append(rendered.querySelector(".invoice-review-editor"));
+    for (const child of [...detail.children]) if (child !== previousWorkspace) child.remove();
+    while (rendered.firstElementChild && !rendered.firstElementChild.classList.contains("invoice-review-workspace")) detail.insertBefore(rendered.firstElementChild, previousWorkspace);
+  } else detail.replaceChildren(...rendered.childNodes);
+  if (retry) $("#invoice-retry-model").value = "groq";
+  if (processing) watchInvoiceProgress(invoice, invoiceProgressGeneration);
+}
+
+async function watchInvoiceProgress(invoice, progressGeneration) {
+  const session = sessionGeneration;
+  const parsedStart = Date.parse(invoice.updated_at || invoice.created_at);
+  const startedAt = Number.isFinite(parsedStart) ? parsedStart : Date.now();
+  let nextPollAt = Date.now() + 4000;
+  while (
+    progressGeneration === invoiceProgressGeneration
+    && session === sessionGeneration
+    && activeInvoiceReview?.invoice_id === invoice.invoice_id
+  ) {
+    const elapsed = $("#invoice-review-detail [data-invoice-progress-elapsed]");
+    if (!elapsed) return;
+    const seconds = Math.floor(Math.max(0, Date.now() - startedAt) / 1000);
+    elapsed.textContent = `Elapsed: ${Math.floor(seconds / 60)}m ${seconds % 60}s · Checking status every 4s`;
+    await new Promise((resolve) => window.setTimeout(resolve, 1000));
+    if (progressGeneration !== invoiceProgressGeneration || session !== sessionGeneration) return;
+    if (Date.now() < nextPollAt) continue;
+    nextPollAt = Date.now() + 4000;
+    let result;
+    try {
+      result = await api(`/api/invoices/${encodeURIComponent(invoice.invoice_id)}`, { cache: "no-store" });
+    } catch (error) {
+      if (progressGeneration !== invoiceProgressGeneration || session !== sessionGeneration) return;
+      $("#invoice-review-detail [data-invoice-progress-status]").textContent =
+        `Could not check status: ${error.message}. Reconnecting…`;
+      continue;
+    }
+    if (progressGeneration !== invoiceProgressGeneration || session !== sessionGeneration) return;
+    invoiceReviewItems = invoiceReviewItems.map((item) => item.invoice_id === result.invoice_id ? { ...item, ...result } : item);
+    if (result.processing_status !== "processing") {
+      renderInvoiceReviewDetail(result);
+      $("#invoice-review-status").textContent = result.processing_status === "review_required"
+        ? "Extraction finished. Review the invoice fields below."
+        : result.processing_status === "failed" ? "Extraction failed. You can retry with another model." : `Invoice status: ${result.processing_status}`;
+      return;
+    }
+    activeInvoiceReview = result;
+    $("#invoice-review-detail [data-invoice-progress-status]").textContent =
+      "Running OCR and extraction. Status updates automatically.";
+  }
+}
+
+async function refreshInvoiceReview(selectId = activeInvoiceReview?.invoice_id) {
+  $("#invoice-review-status").textContent = "Loading invoice drafts…";
+  const result = await api("/api/invoices");
+  invoiceReviewItems = result.invoices || [];
+  renderInvoiceReviewList();
+  const target = invoiceReviewItems.find((item) => item.invoice_id === selectId)
+    || invoiceReviewItems.find((item) => item.processing_status === "review_required");
+  if (target) await openInvoiceReview(target.invoice_id);
+  else {
+    activeInvoiceReview = null;
+    $("#invoice-review-detail").innerHTML = '<p class="analysis-empty">Choose an invoice to review.</p>';
+  }
+  $("#invoice-review-status").textContent = `${invoiceReviewItems.length} invoice${invoiceReviewItems.length === 1 ? "" : "s"} · drafts stay private until approved.`;
+}
+
+async function openInvoiceReview(invoiceId) {
+  const generation = ++invoiceOpenGeneration;
+  const session = sessionGeneration;
+  const invoice = await api(`/api/invoices/${encodeURIComponent(invoiceId)}`);
+  if (generation !== invoiceOpenGeneration || session !== sessionGeneration) return;
+  renderInvoiceReviewDetail(invoice);
+}
+
+async function retryInvoiceExtraction(form) {
+  const invoiceId = form.dataset.invoiceId;
+  const path = `/api/invoices/${encodeURIComponent(invoiceId)}`;
+  const generation = sessionGeneration;
+  const button = form.querySelector('button[type="submit"]');
+  const status = form.querySelector("[data-invoice-retry-status]");
+  const modelProvider = form.elements.namedItem("model_provider").value;
+  button.disabled = true;
+  status.textContent = "Starting extraction…";
+  try {
+    await api(`${path}/retry`, {
+      method: "POST",
+      body: JSON.stringify({ model_provider: modelProvider }),
+    });
+  } catch (error) {
+    status.textContent = error.message;
+    button.disabled = false;
+    return;
+  }
+
+  if (generation !== sessionGeneration) return;
+  const invoice = activeInvoiceReview?.invoice_id === invoiceId ? activeInvoiceReview
+    : invoiceReviewItems.find((item) => item.invoice_id === invoiceId);
+  if (invoice) {
+    const processingInvoice = { ...invoice, processing_status: "processing", error_message: null, updated_at: new Date().toISOString() };
+    invoiceReviewItems = invoiceReviewItems.map((item) => item.invoice_id === invoiceId ? processingInvoice : item);
+    if (activeInvoiceReview?.invoice_id === invoiceId) renderInvoiceReviewDetail(processingInvoice);
+    else renderInvoiceReviewList();
+  }
+}
+
+function invoiceReviewPayload(form) {
+  const data = Object.fromEntries(INVOICE_REVIEW_FIELDS.map(([key]) => [key, form.elements.namedItem(key).value.trim() || null]));
+  data.items = [...form.querySelectorAll(".invoice-review-item")].map((row) => Object.fromEntries(
+    INVOICE_ITEM_FIELDS.map(([key]) => [key, row.querySelector(`[name="items.${row.dataset.itemIndex}.${key}"]`).value.trim() || null]),
+  ));
+  return data;
+}
+
+async function saveInvoiceReview(form, approve = false) {
+  const status = form.querySelector("[data-invoice-edit-status]");
+  const invoiceId = form.dataset.invoiceId;
+  const button = approve ? form.querySelector("[data-approve-invoice]") : form.querySelector('[type="submit"]');
+  button.disabled = true;
+  status.textContent = approve ? "Approving invoice…" : "Saving corrections…";
+  try {
+    const invoiceData = invoiceReviewPayload(form);
+    await api(`/api/invoices/${encodeURIComponent(invoiceId)}${approve ? "/approve" : ""}`, {
+      method: approve ? "POST" : "PATCH", body: JSON.stringify({ invoice_data: invoiceData }),
+    });
+    await refreshInvoiceReview(invoiceId);
+    $("#invoice-review-status").textContent = approve ? "Invoice approved and published to analytics." : "Corrections saved.";
+  } catch (error) {
+    status.textContent = error.message;
+    button.disabled = false;
+  }
+}
+
+async function rejectInvoice(form) {
+  const invoiceId = form.dataset.invoiceId;
+  if (!window.confirm("Reject this invoice? It will remain available for review but will not be published to analytics.")) return;
+  const button = form.querySelector("[data-reject-invoice]");
+  const status = form.querySelector("[data-invoice-edit-status]");
+  button.disabled = true;
+  status.textContent = "Rejecting invoice…";
+  try {
+    await api(`/api/invoices/${encodeURIComponent(invoiceId)}/reject`, { method: "POST" });
+    await refreshInvoiceReview(invoiceId);
+    $("#invoice-review-status").textContent = "Invoice rejected and kept out of analytics.";
+  } catch (error) {
+    status.textContent = error.message;
+    button.disabled = false;
+  }
+}
+
+$("#invoice-review-refresh").addEventListener("click", () => refreshInvoiceReview().catch((error) => {
+  $("#invoice-review-status").textContent = `Could not load invoices: ${error.message}`;
+}));
+$("#invoice-review-list").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-invoice-review-id]");
+  if (button) openInvoiceReview(button.dataset.invoiceReviewId).catch((error) => {
+    $("#invoice-review-status").textContent = error.message;
+  });
+});
+$("#invoice-review-filter").addEventListener("change", () => {
+  invoiceReviewPage = 1;
+  renderInvoiceReviewList();
+});
+$("#invoice-review-prev").addEventListener("click", () => {
+  invoiceReviewPage = Math.max(1, invoiceReviewPage - 1);
+  renderInvoiceReviewList();
+});
+$("#invoice-review-next").addEventListener("click", () => {
+  invoiceReviewPage += 1;
+  renderInvoiceReviewList();
+});
+$("#invoice-review-detail").addEventListener("submit", (event) => {
+  if (event.target.id === "invoice-retry-form") {
+    event.preventDefault();
+    retryInvoiceExtraction(event.target);
+    return;
+  }
+  if (event.target.id !== "invoice-review-form") return;
+  event.preventDefault();
+  saveInvoiceReview(event.target);
+});
+$("#invoice-review-detail").addEventListener("click", (event) => {
+  const form = event.target.closest("#invoice-review-form");
+  if (!form) return;
+  if (event.target.closest("[data-approve-invoice]")) return saveInvoiceReview(form, true);
+  if (event.target.closest("[data-reject-invoice]")) return rejectInvoice(form);
+  if (event.target.closest("[data-add-invoice-item]")) {
+    const currentData = invoiceReviewPayload(form);
+    currentData.items.push(Object.fromEntries(INVOICE_ITEM_FIELDS.map(([key]) => [key, null])));
+    activeInvoiceReview.invoice_data = currentData;
+    renderInvoiceReviewDetail(activeInvoiceReview);
+  }
+  const remove = event.target.closest("[data-remove-invoice-item]");
+  if (remove) {
+    const index = Number(remove.dataset.removeInvoiceItem);
+    const currentData = invoiceReviewPayload(form);
+    currentData.items.splice(index, 1);
+    activeInvoiceReview.invoice_data = currentData;
+    renderInvoiceReviewDetail(activeInvoiceReview);
+  }
+});
 
 async function refreshKnowledgeDocuments() {
   $("#knowledge-documents-status").textContent = "Loading indexed sources…";
@@ -258,7 +631,10 @@ async function loadOcrTestRuns() {
     const config = run.processor_config || {};
     const engine = config.parser_engine;
     const selected = config.parser_settings?.[engine] || config;
-    const parserSettings = `Docling · ${selected.docling_device || "cpu"} · OCR ${selected.docling_ocr ? "on" : "off"} (${selected.docling_ocr_language || "vi"}) · tables ${selected.docling_table_structure ? "on" : "off"} · ${selected.docling_num_threads || 4} threads`;
+    const intent = config.intent || "document";
+    const parserSettings = intent === "document"
+      ? `Document · Docling · ${selected.docling_device || "cpu"} · OCR ${selected.docling_ocr ? "on" : "off"} (${selected.docling_ocr_language || "vi"}) · tables ${selected.docling_table_structure ? "on" : "off"} · ${selected.docling_num_threads || 4} threads`
+      : intent === "invoice" ? "Invoice extraction · Docling OCR + Qwen text model" : "Image caption · Vintern";
     const settings = parserSettings;
     const previewSummary = run.page_count ? `${formatNumber(run.page_count)} page previews` : "no page previews";
     const processingSummary = `processing ${formatDuration(run.runtime_info?.processing_time_ms)}`;
@@ -267,15 +643,74 @@ async function loadOcrTestRuns() {
 }
 
 function renderOcrTestDetails(run) {
+  const previewPages = run.pages || [];
+  const invoiceExtraction = run.runtime_info?.invoice_extraction;
+  const invoiceOutput = invoiceExtraction ? `<section class="ocr-test-invoice">
+    <div class="candidate-heading"><strong>Invoice JSON draft</strong><span>${escapeHtml(invoiceExtraction.model || "Text model")} · ${invoiceExtraction.review_required ? "review required" : "status unknown"}</span></div>
+    <p class="corpus-note">Schema ${escapeHtml(invoiceExtraction.schema_version || "invoice.v1")} · inference ${formatDuration((invoiceExtraction.metrics?.inference_seconds || 0) * 1000)} · this draft is separate from the parser elements and table output.</p>
+    <pre>${escapeHtml(JSON.stringify(invoiceExtraction.fields ?? null, null, 2))}</pre>
+    ${invoiceExtraction.parse_error ? `<p class="corpus-note" data-state="warning">${escapeHtml(invoiceExtraction.parse_error)}. Raw model response is available below.</p>` : ""}
+    ${invoiceExtraction.raw_response ? `<details class="candidate-source"><summary>Raw model response</summary><pre>${escapeHtml(invoiceExtraction.raw_response)}</pre></details>` : ""}
+  </section>` : "";
+  const singlePreviewPage = previewPages.length === 1 ? Number(previewPages[0]) : null;
+  const elementPage = (element) => element.metadata?.page_number;
+  const tablePage = (table) => table.page_number ?? table.metadata?.page_number;
+  const inferredPageAssignment = singlePreviewPage != null && (
+    run.elements.some((element) => elementPage(element) == null)
+    || run.tables.some((table) => tablePage(table) == null)
+  );
   const allPages = [...new Set([
-    ...run.pages,
-    ...run.elements.map((element) => element.metadata?.page_number == null ? NaN : Number(element.metadata.page_number)).filter(Number.isFinite),
-    ...run.tables.map((table) => table.page_number == null ? NaN : Number(table.page_number)).filter(Number.isFinite),
+    ...previewPages,
+    ...run.elements.map((element) => elementPage(element) == null ? NaN : Number(elementPage(element))).filter(Number.isFinite),
+    ...run.tables.map((table) => tablePage(table) == null ? NaN : Number(tablePage(table))).filter(Number.isFinite),
   ])].sort((a, b) => a - b);
   const pageContent = allPages.map((pageNumber, pageIndex) => {
-    const pagePreview = `<img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/upload-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview">`;
-    const elements = run.elements.filter((element) => Number(element.metadata?.page_number) === pageNumber);
-    const tables = run.tables.filter((table) => Number(table.page_number) === pageNumber);
+    const elements = run.elements.filter((element) => {
+      const value = elementPage(element);
+      return value == null ? singlePreviewPage === pageNumber : Number(value) === pageNumber;
+    });
+    const tables = run.tables.filter((table) => {
+      const value = tablePage(table);
+      return value == null ? singlePreviewPage === pageNumber : Number(value) === pageNumber;
+    });
+    const pageSize = run.runtime_info?.parser_page_sizes?.[String(pageNumber)]
+      || run.runtime_info?.preview_page_sizes?.[String(pageNumber)];
+    const pageWidth = Number(pageSize?.width);
+    const pageHeight = Number(pageSize?.height);
+    const hasOutOfBoundsBox = elements.some((element) => {
+      const metadata = element.metadata || {};
+      const bbox = metadata.bbox;
+      if (metadata.bbox_coordinate_system !== "docling_page_coordinate" || !Array.isArray(bbox) || bbox.length !== 4) return false;
+      const [left, top, right, bottom] = bbox.map(Number);
+      return [left, top, right, bottom].every(Number.isFinite)
+        && (left < -1 || top < -1 || right > pageWidth + 1 || bottom > pageHeight + 1);
+    });
+    const boxes = hasOutOfBoundsBox ? "" : elements.flatMap((element) => {
+      const metadata = element.metadata || {};
+      const bbox = metadata.bbox;
+      if (
+        metadata.bbox_coordinate_system !== "docling_page_coordinate"
+        || !Array.isArray(bbox) || bbox.length !== 4
+        || !Number.isFinite(pageWidth) || !Number.isFinite(pageHeight)
+        || pageWidth <= 0 || pageHeight <= 0
+      ) return [];
+      const [left, top, right, bottom] = bbox.map(Number);
+      if (![left, top, right, bottom].every(Number.isFinite)) return [];
+      const x = Math.max(0, Math.min(pageWidth, left));
+      const y = Math.max(0, Math.min(pageHeight, top));
+      const width = Math.max(0, Math.min(pageWidth, right) - x);
+      const height = Math.max(0, Math.min(pageHeight, bottom) - y);
+      if (!width || !height) return [];
+      const label = String(metadata.element_type || "text").toLowerCase().replace(/[^a-z0-9_-]/g, "");
+      const snippet = String(element.content || "").replace(/\s+/g, " ").slice(0, 100);
+      const linkId = `${pageNumber}:${element.element_index}`;
+      return [`<g class="layout-region layout-region-${escapeHtml(label)}" data-bbox-link="${escapeHtml(linkId)}"><title>Element ${formatNumber(element.element_index + 1)} · ${escapeHtml(label)}${snippet ? `: ${escapeHtml(snippet)}` : ""}</title><rect x="${x}" y="${y}" width="${width}" height="${height}" /></g>`];
+    }).join("");
+    const pagePreviewImage = `<img loading="lazy" alt="Rendered source page ${formatNumber(pageNumber)}" src="/api/upload-tests/${encodeURIComponent(run.run_id)}/pages/${pageNumber}/preview">`;
+    const pagePreview = boxes && pageSize
+      ? `<div class="ocr-layout-preview">${pagePreviewImage}<svg viewBox="0 0 ${pageWidth} ${pageHeight}" preserveAspectRatio="none" aria-label="Parser element bounding boxes">${boxes}</svg></div>`
+      : pagePreviewImage;
+    const missingBoxScale = !pageSize && elements.some((element) => Array.isArray(element.metadata?.bbox));
     const ocrDiagnostics = elements.flatMap((element) => element.metadata?.ocr_diagnostics || []);
     const tablesHtml = tables.map((table) => {
       const data = table.structured_data || {};
@@ -283,6 +718,7 @@ function renderOcrTestDetails(run) {
       const columns = Array.isArray(data.columns) ? data.columns : [];
       const rows = Array.isArray(data.rows) ? data.rows : [];
       const headers = columns.length ? columns : [...new Set(rows.flatMap((row) => Object.keys(row || {})))];
+      const tableMinWidth = Math.max(460, headers.length * 115);
       const metadata = table.metadata || {};
       const parserMetadata = metadata.parser_details || {};
       const ocr = { ...(metadata.ocr || parserMetadata.ocr || {}) };
@@ -306,7 +742,7 @@ function renderOcrTestDetails(run) {
         ...(continuation ? [["Continuation", continuation]] : []),
       ];
       return `<article class="ocr-test-table"><h5>Table ${formatNumber(table.table_index + 1)} <span>${formatNumber(rows.length)} rows</span></h5>
-        ${headers.length ? `<div class="ocr-test-table-wrap"><table class="extracted-table"><thead><tr>${headers.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${headers.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`}
+        ${headers.length ? `<div class="ocr-test-table-wrap"><table class="extracted-table" style="min-width:${tableMinWidth}px"><thead><tr>${headers.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${headers.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`}
         <details class="candidate-source"><summary>Table context</summary><dl class="ocr-context-list">
           <dt>Source</dt><dd>${escapeHtml(context.source_filename || run.source_filename)}</dd>
           <dt>Section</dt><dd>${escapeHtml(context.section_title || "Not extracted")}</dd>
@@ -322,16 +758,19 @@ function renderOcrTestDetails(run) {
       <div class="ocr-test-page-content">
       <section class="ocr-test-raw"><h4>Raw page</h4>${pagePreview}</section>
       <section class="ocr-test-extracted"><h4>Extracted output</h4>
+        ${missingBoxScale ? '<p class="corpus-note">This run has element boxes but no saved page dimensions. Re-run Upload Test to overlay them on the page.</p>' : ""}
+        ${hasOutOfBoundsBox ? '<p class="corpus-note">Saved element boxes do not fit the page dimensions for this older run, so the overlay is hidden. Re-run Upload Test to save matching parser coordinates.</p>' : ""}
+        ${inferredPageAssignment ? '<p class="corpus-note">Page assignment inferred from the only preview; parser metadata has no page number.</p>' : ""}
         ${renderOcrDiagnostics(ocrDiagnostics)}
-        <details class="ocr-test-elements"><summary>Document elements · ${formatNumber(elements.length)} elements</summary>${elements.map((element) => `<article class="ocr-test-element"><div class="candidate-heading"><strong>Element ${formatNumber(element.element_index + 1)}</strong><span>${formatNumber(element.content.length)} chars · ${escapeHtml(element.metadata?.element_type || "text")} · ${escapeHtml(element.metadata?.text_extraction_method || "parser output")}</span></div><pre>${escapeHtml(element.content)}</pre><details class="candidate-source"><summary>Element metadata</summary><pre>${escapeHtml(JSON.stringify(element.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser elements on this page.</p>'}</details>
+        <details class="ocr-test-elements"><summary>Document elements · ${formatNumber(elements.length)} elements</summary>${elements.map((element) => `<article class="ocr-test-element" data-bbox-link="${escapeHtml(`${pageNumber}:${element.element_index}`)}" tabindex="0" aria-label="Element ${formatNumber(element.element_index + 1)} on page ${formatNumber(pageNumber)}"><div class="candidate-heading"><strong>Element ${formatNumber(element.element_index + 1)}</strong><span>${formatNumber(element.content.length)} chars · ${escapeHtml(element.metadata?.element_type || "text")} · ${escapeHtml(element.metadata?.text_extraction_method || "parser output")}</span></div><pre>${escapeHtml(element.content)}</pre><details class="candidate-source"><summary>Element metadata</summary><pre>${escapeHtml(JSON.stringify(element.metadata, null, 2))}</pre></details></article>`).join("") || '<p class="ocr-test-empty">No parser elements on this page.</p>'}</details>
         <h4 class="ocr-test-table-heading">Extracted tables</h4>
         ${tablesHtml || '<p class="ocr-test-empty">No structured table detected on this page.</p>'}
       </section>
       </div>
     </details>`;
   }).join("");
-  const unpagedElements = run.elements.filter((element) => element.metadata?.page_number == null);
-  const unpagedTables = run.tables.filter((table) => table.page_number == null);
+  const unpagedElements = run.elements.filter((element) => elementPage(element) == null && singlePreviewPage == null);
+  const unpagedTables = run.tables.filter((table) => tablePage(table) == null && singlePreviewPage == null);
   const unpagedOutput = unpagedElements.length || unpagedTables.length
     ? `<section class="ocr-test-page">
         <h3>Document content · no page previews</h3>
@@ -343,9 +782,10 @@ function renderOcrTestDetails(run) {
             const rows = Array.isArray(data.rows) ? data.rows : [];
             const columns = Array.isArray(data.columns) && data.columns.length
               ? data.columns : [...new Set(rows.flatMap((row) => Object.keys(row || {})))];
+            const tableMinWidth = Math.max(460, columns.length * 115);
             const location = table.metadata?.sheet_name ? ` · ${escapeHtml(table.metadata.sheet_name)}` : "";
             return `<article class="ocr-test-table"><h5>Table ${formatNumber(table.table_index + 1)}${location} <span>${formatNumber(rows.length)} rows</span></h5>
-              ${columns.length ? `<div class="ocr-test-table-wrap"><table class="extracted-table"><thead><tr>${columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${columns.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`}
+              ${columns.length ? `<div class="ocr-test-table-wrap"><table class="extracted-table" style="min-width:${tableMinWidth}px"><thead><tr>${columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${columns.map((column) => `<td>${escapeHtml(row?.[column] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`}
               <details class="candidate-source"><summary>Table metadata</summary><pre>${escapeHtml(JSON.stringify(table.metadata, null, 2))}</pre></details></article>`;
           }).join("") || '<p class="ocr-test-empty">No unpaged structured tables.</p>'}
         </section>
@@ -356,9 +796,57 @@ function renderOcrTestDetails(run) {
     <div class="candidate-heading"><strong>${escapeHtml(run.source_filename)}</strong><span>${processingSummary} · ${run.page_count ? `${formatNumber(run.page_count)} page previews` : "No page previews"} · ${formatNumber(run.elements.length)} parser elements · ${formatNumber(run.tables.length)} tables</span></div>
     <p class="corpus-note">SHA-256: <code>${escapeHtml(run.source_sha256)}</code></p>
     <details class="candidate-source"><summary>Parser configuration and versions</summary><pre>${escapeHtml(JSON.stringify({processor_config:run.processor_config,runtime_info:run.runtime_info},null,2))}</pre></details>
+    ${invoiceOutput}
     <div class="ocr-test-pages">${pageContent}${unpagedOutput}</div>
   </article>`;
 }
+
+function setUploadTestHighlight(item) {
+  const page = item.closest(".ocr-test-page-content");
+  if (!page) return;
+  page.querySelectorAll("[data-bbox-link]").forEach((linkedItem) => {
+    linkedItem.classList.toggle("is-highlighted", linkedItem.dataset.bboxLink === item.dataset.bboxLink);
+  });
+}
+
+function clearUploadTestHighlight(item) {
+  item.closest(".ocr-test-page-content")?.querySelectorAll(".is-highlighted").forEach((linkedItem) => {
+    linkedItem.classList.remove("is-highlighted");
+  });
+}
+
+document.addEventListener("pointerover", (event) => {
+  const item = event.target.closest?.("[data-bbox-link]");
+  if (!item || (event.relatedTarget instanceof Element && item.contains(event.relatedTarget))) return;
+  setUploadTestHighlight(item);
+});
+
+document.addEventListener("pointerout", (event) => {
+  const item = event.target.closest?.("[data-bbox-link]");
+  if (!item || (event.relatedTarget instanceof Node && item.contains(event.relatedTarget))) return;
+  const nextItem = event.relatedTarget instanceof Element ? event.relatedTarget.closest("[data-bbox-link]") : null;
+  if (nextItem && nextItem.closest(".ocr-test-page-content") === item.closest(".ocr-test-page-content")) {
+    setUploadTestHighlight(nextItem);
+  } else {
+    clearUploadTestHighlight(item);
+  }
+});
+
+document.addEventListener("focusin", (event) => {
+  const item = event.target.closest?.("[data-bbox-link]");
+  if (item) setUploadTestHighlight(item);
+});
+
+document.addEventListener("focusout", (event) => {
+  const item = event.target.closest?.("[data-bbox-link]");
+  if (!item) return;
+  const nextItem = event.relatedTarget instanceof Element ? event.relatedTarget.closest("[data-bbox-link]") : null;
+  if (nextItem && nextItem.closest(".ocr-test-page-content") === item.closest(".ocr-test-page-content")) {
+    setUploadTestHighlight(nextItem);
+  } else {
+    clearUploadTestHighlight(item);
+  }
+});
 
 async function openOcrTestRun(runId) {
   $("#ocr-test-results").innerHTML = '<p class="loading-card">Loading test pages and parser output…</p>';
@@ -370,14 +858,17 @@ async function openOcrTestRun(runId) {
 }
 
 function updateUploadTestParserSettings() {
-  const engine = $("#ocr-test-parser").value;
+  const intent = $("#ocr-test-parser").value;
   document.querySelectorAll("#ocr-test-form [data-parser-settings]").forEach((fieldset) => {
-    const active = fieldset.dataset.parserSettings === engine;
+    const active = fieldset.dataset.parserSettings === intent;
     fieldset.hidden = !active;
     fieldset.querySelectorAll("input, select, textarea").forEach((control) => {
       control.disabled = !active;
     });
   });
+  $("#ocr-test-file").accept = intent === "document"
+    ? ".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff,.svg,.webp"
+    : ".pdf,.png,.jpg,.jpeg,.tif,.tiff,.webp";
 }
 
 $("#ocr-test-parser").addEventListener("change", updateUploadTestParserSettings);
@@ -489,7 +980,8 @@ function renderAnswerBody(answer) {
   let paragraph = [];
   const inline = (value) => escapeHtml(value)
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/`([^`]+)`/g, "<code>$1</code>");
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\[(S\d+)\]/g, '<a class="cite-ref" href="#" data-cite="$1" aria-label="Source $1">$1</a>');
   const cells = (line) => line.trim().replace(/^\|/, "").replace(/\|$/, "")
     .split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, "|"));
   const isRow = (line) => /^\s*\|.*\|\s*$/.test(line);
@@ -521,12 +1013,13 @@ function renderAnswerBody(answer) {
   return blocks.join("");
 }
 
-function renderAnswer(data, panel = $("#answer-panel")) {
+function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
   panel.hidden = false;
   const citations = Array.isArray(data.citations) ? data.citations : [];
   const usedEvidenceFallback = Boolean(data.answer_fallback_reason || data.fallback);
-  const responseTitle = ({partial: "Partial answer", clarification_required: "Clarification needed", failed: "Answer unavailable"})[data.status]
-    || (usedEvidenceFallback ? "Evidence fallback" : "Synthesized answer");
+  const responseTitle = data.failure_code === "sql_timeout" ? "Truy vấn mất quá lâu"
+    : ({partial: "Partial answer", clarification_required: "Clarification needed", failed: "Could not complete"})[data.status]
+    || (data.ok === false ? "Answer unavailable" : usedEvidenceFallback ? "Evidence only" : "Answer");
   const domainLabels = {
     inventory_allocation: "Inventory allocation",
     promotion_planning: "Promotion planning",
@@ -579,14 +1072,25 @@ function renderAnswer(data, panel = $("#answer-panel")) {
   const limitations = Array.isArray(data.limitations) && data.limitations.length
     ? `<p class="analysis-caveat answer-provenance-note"><strong>Limits:</strong> ${data.limitations.map(escapeHtml).join(" · ")}</p>`
     : "";
+  const fallbackNotice = usedEvidenceFallback && !data.limitations?.length
+    ? '<p class="analysis-caveat answer-provenance-note" role="note"><strong>Evidence fallback.</strong> This is not successful model synthesis.</p>'
+    : "";
+  const sqlScope = data.context_used
+    ? (() => {
+      const scope = data.semantic_interpretation || {};
+      const time = scope.time || {};
+      const snapshot = time.start || (data.snapshot_dates || []).join(", ") || time.mode || "not reported";
+      const filters = (scope.filters || []).map((item) => `${item.field} ${item.operator} ${Array.isArray(item.value) ? item.value.join(", ") : item.value}`);
+      const snapshotLabel = data.historical_inventory ? "Historical snapshot" : "Snapshot";
+      return `<p class="analysis-caveat answer-provenance-note" role="status"><strong>Continuing the previous SQL scope.</strong> ${snapshotLabel}: ${escapeHtml(snapshot)}${filters.length ? ` · Filters: ${filters.map(escapeHtml).join("; ")}` : ""}</p>`;
+    })()
+    : "";
+  const routeDetails = renderRunDetails(data);
   panel.innerHTML = `
     <div class="answer-header-wrap">
-      <div class="answer-heading">
+      <div class="answer-heading${data.status === "partial" || data.limitations?.length ? " is-partial" : ""}">
         <span class="answer-mark">${usedEvidenceFallback ? "EV" : "AI"}</span>
-        <div><span class="eyebrow">${escapeHtml(({knowledge:"KNOWLEDGE AGENT",analytics:"ANALYTICS AGENT",sql_analytics:"ANALYTICS AGENT",dashboard:"INVENTORY AGENT",report:"REPORT AGENT",agentic:"AUTOMATIC ROUTER",hybrid:"KNOWLEDGE + ANALYTICS"})[data.agent] || "AGENT RESPONSE")}</span><h3>${escapeHtml(responseTitle)}</h3></div>
-      </div>
-      <div class="answer-actions-bar">
-        <button type="button" class="action-btn" id="copy-answer-btn" title="Copy response text">Copy</button>
+        <div><span class="eyebrow">${escapeHtml(({knowledge:"Knowledge agent",analytics:"Analytics agent",sql_analytics:"Analytics agent",dashboard:"Inventory agent",report:"Report agent",agentic:"Automatic router",hybrid:"Knowledge + analytics"})[data.agent] || "Agent response")}</span><h3>${escapeHtml(responseTitle)}</h3></div>
       </div>
     </div>
     ${domainNote}
@@ -594,9 +1098,12 @@ function renderAnswer(data, panel = $("#answer-panel")) {
     ${referenceRetrievalNote}
     ${questionSqlFallbackNote}
     ${limitations}
+    ${fallbackNotice}
+    ${sqlScope}
+    ${routeDetails}
     ${tokenUsage}
+    ${data.claim_verification?.status === "supported" && citations.length ? `<p class="answer-verified">Every claim checked against its cited source${data.claim_verification.claim_count ? ` · ${formatNumber(data.claim_verification.claim_count)} claims` : ""}</p>` : ""}
     <div class="answer-text">${renderAnswerBody(data.answer)}</div>
-    ${renderAgentInventoryDashboard(data.data?.dashboard)}
     ${renderAgentRows(data.data)}
     ${renderDashboardVisualization(data.data?.visualization)}
     ${data.citation_validation_failed ? `<p class="error-message">The answer was withheld because it failed evidence validation.${data.decision_validation_failure ? ` <details><summary>Admin diagnostic</summary><code>${escapeHtml(data.decision_validation_failure)}</code>${data.decision_validation_numeric_tokens?.length ? `<p>Unsupported numeric claims: ${data.decision_validation_numeric_tokens.map(escapeHtml).join(", ")}</p>` : ""}</details>` : ""}</p>` : citations.length ? `
@@ -610,16 +1117,11 @@ function renderAnswer(data, panel = $("#answer-panel")) {
             || syntheticPolicySourcePageUrl(source)
             || validSourceUrl(source.source_url);
           const link = href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">View original</a>` : "";
-          const chunk = Number.isInteger(source.chunk_index) ? ` · Indexed chunk ${source.chunk_index}` : "";
+          const chunk = Number.isInteger(source.chunk_index) ? ` (chunk ${source.chunk_index})` : "";
           const location = source.page_number ? `Page ${source.page_number}${chunk}`
             : source.source_type === "commerce_sql" ? `SQL aggregate · ${(source.source_tables || []).join(", ")}`
               : source.source_type === "commerce_schema" ? `Schema coverage · ${(source.source_tables || []).join(", ")}`
               : Number.isInteger(source.chunk_index) ? `Passage ${source.chunk_index + 1}` : "Reference";
-          const relevanceScore = Number.isFinite(source.score) ? source.score * 100 : null;
-          const scoreClass = relevanceScore && relevanceScore >= 80 ? "high" : relevanceScore && relevanceScore >= 60 ? "med" : "low";
-          const relevanceBadge = relevanceScore !== null
-            ? `<span class="citation-relevance-meter ${scoreClass}">Relevance: ${relevanceScore.toFixed(1)}%</span>`
-            : "";
           const referenceScope = source.reference_applicability
             ? `<p class="citation-scope"><strong>Source scope:</strong> ${escapeHtml(source.reference_applicability)}</p>`
             : "";
@@ -642,9 +1144,9 @@ function renderAnswer(data, panel = $("#answer-panel")) {
             : `<p>${escapeHtml(source.excerpt)}</p>`;
           const publisher = source.source_publisher || source.company || "Verified source";
           return `
-            <article class="citation">
+            <article class="citation" data-cite-id="${escapeHtml(source.id)}">
               <div class="citation-title">
-                <span class="citation-id">[${escapeHtml(source.id)}]</span>
+                <span class="citation-id">${escapeHtml(source.id)}</span>
                 <strong>${escapeHtml(source.title)}</strong>
                 <span>${escapeHtml(location)}</span>
               </div>
@@ -655,22 +1157,35 @@ function renderAnswer(data, panel = $("#answer-panel")) {
               ${sqlTrace}
               <div class="citation-foot">
                 <span>${escapeHtml(publisher)}${source.evidence_class ? ` · ${escapeHtml(source.evidence_class.replaceAll("_", " "))}` : ""}</span>
-                ${relevanceBadge}
                 ${link}
               </div>
             </article>`;
         }).join("")}
-      </div>` : ""}`;
+      </div>` : ""}
+    <div class="answer-actions-bar">
+      <button type="button" class="action-btn copy-answer-btn" title="Copy response text" aria-label="Copy response">${ICONS.copy}<span class="action-label">Copy</span></button>
+    </div>`;
 
-  const copyBtn = panel.querySelector("#copy-answer-btn");
+  // Inline [S1] chips scroll to and highlight their source card.
+  panel.querySelectorAll(".cite-ref").forEach((ref) => ref.addEventListener("click", (event) => {
+    event.preventDefault();
+    const card = panel.querySelector(`.citation[data-cite-id="${CSS.escape(ref.dataset.cite)}"]`);
+    if (!card || card.hidden) return;
+    card.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
+    card.classList.remove("is-highlighted");
+    void card.offsetWidth;
+    card.classList.add("is-highlighted");
+    setTimeout(() => card.classList.remove("is-highlighted"), 1600);
+  }));
+  const copyBtn = panel.querySelector(".copy-answer-btn");
   if (copyBtn) {
     copyBtn.addEventListener("click", async () => {
       try {
         await navigator.clipboard.writeText(data.answer);
-        copyBtn.textContent = "Copied!";
+        copyBtn.innerHTML = `${ICONS.check}<span class="action-label">Copied</span>`;
         copyBtn.classList.add("copied");
         setTimeout(() => {
-          copyBtn.textContent = "Copy";
+          copyBtn.innerHTML = `${ICONS.copy}<span class="action-label">Copy</span>`;
           copyBtn.classList.remove("copied");
         }, 2000);
       } catch {
@@ -679,79 +1194,93 @@ function renderAnswer(data, panel = $("#answer-panel")) {
     });
   }
 
-  panel.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-function renderAgentInventoryDashboard(dashboard) {
-  if (dashboard?.outline_id !== "inventory_control") return "";
-  const kpis = dashboard.kpis || {};
-  const metrics = [["SKUs", kpis.sku_count], ["Stockout rate", kpis.stockout_rate == null ? null : `${Number(kpis.stockout_rate).toFixed(1)}%`],
-    ["Overstock rate", kpis.overstock_rate == null ? null : `${Number(kpis.overstock_rate).toFixed(1)}%`],
-    ["Mean fill rate", kpis.mean_fill_rate == null ? null : `${(Number(kpis.mean_fill_rate) * 100).toFixed(1)}%`]];
-  const exceptions = dashboard.exceptions || [];
-  const columns = ["product_name", "category", "stock_on_hand", "days_of_supply", "stockout_flag", "overstock_flag", "reorder_flag"];
-  const rows = exceptions.slice(0, 25).map((row) => `<tr>${columns.map((key) => `<td>${escapeHtml(row[key] ?? "—")}</td>`).join("")}</tr>`).join("");
-  return `<section class="agent-inventory-result"><div class="section-heading"><div><p class="eyebrow">LATEST SNAPSHOT · ${escapeHtml(dashboard.snapshot_date || "date unavailable")}</p><h3>${escapeHtml(dashboard.title || "Inventory Control & Exceptions")}</h3></div></div>
-    <div class="agent-result-kpis">${metrics.map(([label,value]) => `<article><span>${escapeHtml(label)}</span><strong>${escapeHtml(value ?? "Unavailable")}</strong></article>`).join("")}</div>
-    <h4>Flagged products</h4>${rows ? `<div class="commerce-table-wrap"><table><thead><tr>${columns.map((key) => `<th scope="col">${escapeHtml(key.replaceAll("_", " "))}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>` : `<p class="no-citations">No inventory exceptions were returned.</p>`}
-  </section>`;
-}
-
-async function loadInventorySnapshot() {
-  const panel = $("#inventory-snapshot");
-  panel.hidden = false;
-  panel.innerHTML = '<p class="analysis-empty">Loading latest inventory snapshot…</p>';
-  try {
-    const result = await api("/api/agents/chat", {
-      method: "POST",
-      body: JSON.stringify({
-        question: "Show the latest inventory snapshot and stock exceptions.",
-        agent_mode: "dashboard",
-      }),
-    });
-    const dashboard = renderAgentInventoryDashboard(result.data?.dashboard);
-    panel.innerHTML = dashboard || '<p class="analysis-empty">No inventory snapshot is available.</p>';
-  } catch (error) {
-    panel.innerHTML = `<p class="analysis-empty">Inventory snapshot unavailable: ${escapeHtml(error.message)}</p>`;
-  }
+  if (shouldScroll) panel.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function renderAgentRows(data) {
-  const groups = [["Results", data], ...Object.entries(data || {}).filter(([, value]) => value && !Array.isArray(value) && typeof value === "object")];
+  const groups = Object.entries(data || {}).filter(([, value]) => value && !Array.isArray(value) && typeof value === "object");
+  if (Array.isArray(data?.rows)) groups.unshift(["Results", data]);
   return groups.map(([label, value]) => {
     const rows = value?.rows;
-    if (!Array.isArray(rows) || !rows.length || !rows.every((row) => row && typeof row === "object" && !Array.isArray(row))) return "";
-    const columns = Object.keys(rows[0]).slice(0, 12);
-    return `<section class="agent-data-result"><h4>${escapeHtml(label)}</h4><div class="commerce-table-wrap"><table><thead><tr>${columns.map((key) => `<th scope="col">${escapeHtml(key.replaceAll("_", " "))}</th>`).join("")}</tr></thead><tbody>${rows.slice(0, 50).map((row) => `<tr>${columns.map((key) => `<td>${escapeHtml(row[key] ?? "—")}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`;
+    if (!Array.isArray(rows) && !value?.attempted_sql) return "";
+    const validRows = (rows || []).filter((row) => row && typeof row === "object" && !Array.isArray(row));
+    const columns = validRows.length ? Object.keys(validRows[0]).slice(0, 12) : [];
+    const executed = value.query_status === "executed";
+    const statusLabel = executed ? "Đã chạy" : value.query_status === "error"
+      ? (value.failure_code === "analytics_not_configured" ? "Thiếu cấu hình" : value.failure_code === "sql_timeout" ? "Dừng do timeout" : "Lỗi khi chạy")
+      : value.query_status === "rejected" ? "Bị chặn trước khi chạy"
+        : value.query_status === "clarification_required" ? "Chờ bạn làm rõ" : value.query_status;
+    const queryStatus = value.query_status
+      ? `<span class="query-status ${executed ? "is-executed" : "is-not-executed"}">${escapeHtml(statusLabel)}</span>`
+      : "";
+    const canShowRows = value.query_status == null || executed;
+    const table = canShowRows && validRows.length
+      ? `<div class="commerce-table-wrap"><table><thead><tr>${columns.map((key) => `<th scope="col">${escapeHtml(key.replaceAll("_", " "))}</th>`).join("")}</tr></thead><tbody>${validRows.slice(0, 50).map((row) => `<tr>${columns.map((key) => `<td>${escapeHtml(row[key] ?? "—")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`
+      : executed && Array.isArray(rows) ? '<p class="no-citations">The query ran and returned no rows.</p>' : "";
+    const diagnosticSql = value.attempted_sql || value.sql;
+    const parameters = Array.isArray(value.parameters) && value.parameters.length
+      ? `<p>Parameters: <code>${escapeHtml(JSON.stringify(value.parameters))}</code></p>`
+      : "";
+    const diagnostics = diagnosticSql || parameters
+      ? `<details><summary>${value.query_status === "error" ? "Xem truy vấn lỗi" : value.query_status === "rejected" ? "Xem truy vấn bị chặn" : executed ? "Xem SQL đã chạy" : "Chi tiết truy vấn"}</summary>${diagnosticSql ? `<pre>${escapeHtml(diagnosticSql)}</pre>` : ""}${parameters}</details>`
+      : "";
+    const jev = value.jev;
+    const jevNote = jev?.probabilities ? `<p class="jev-note">JEV · rõ ${Math.round((jev.probabilities.clear || 0) * 100)}% · mơ hồ ${Math.round((jev.probabilities.ambiguous || 0) * 100)}% · độ rõ tối thiểu để chạy ${Math.round((jev.threshold || 0) * 100)}%</p>` : "";
+    return `<section class="agent-data-result"><h4>${escapeHtml(label.replace(/^task:/, "Task "))} ${queryStatus}</h4>${table}${jevNote}${diagnostics}</section>`;
   }).join("");
 }
 
-function renderAgentResult(result) {
+function renderAgentResult(result, panel = $("#answer-panel"), shouldScroll = true) {
   const citations = (result.evidence || []).map((item) => {
     const metadata = item.metadata || {};
     return { ...metadata, id: item.citation_id, title: item.source, source_type: item.source_type,
-      content: item.content, score: metadata.similarity_score };
+      excerpt: item.content || "", content: item.content, score: metadata.similarity_score };
   });
-  renderAnswer({ ...result.metadata, ...result, citations });
+  renderAnswer({ ...result, ...result.metadata, metadata: result.metadata, citations }, panel, shouldScroll);
 }
+
+// "9.4 s" reads the same in every locale; "9.420 ms" looks like 9 ms where "." groups thousands.
+const formatSeconds = (ms) => `${(Number(ms) / 1000).toFixed(1)} s`;
+
+function selectMonitorTab(name, focus = false) {
+  document.querySelectorAll("[data-monitor-tab]").forEach((tab) => {
+    const selected = tab.dataset.monitorTab === name;
+    tab.setAttribute("aria-selected", String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+    if (selected && focus) tab.focus();
+  });
+  document.querySelectorAll("[data-monitor-panel]").forEach((panel) => { panel.hidden = panel.dataset.monitorPanel !== name; });
+}
+document.querySelector(".monitoring-tabs")?.addEventListener("click", (event) => {
+  const tab = event.target.closest("[data-monitor-tab]");
+  if (tab) selectMonitorTab(tab.dataset.monitorTab);
+});
+document.querySelector(".monitoring-tabs")?.addEventListener("keydown", (event) => {
+  if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+  const tabs = [...document.querySelectorAll("[data-monitor-tab]")];
+  const index = tabs.findIndex((tab) => tab.getAttribute("aria-selected") === "true");
+  const next = tabs[(index + (event.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+  selectMonitorTab(next.dataset.monitorTab, true);
+});
 
 function renderAgentMonitoring(data) {
   const summary = data.summary || {};
   const cards = [
-    ["Runs · 24 hours", summary.total_runs ?? 0],
+    ["Runs, last 24 h", summary.total_runs ?? 0],
     ["Success rate", summary.success_rate == null ? "—" : `${summary.success_rate}%`],
-    ["Average latency", summary.average_elapsed_ms == null ? "—" : `${formatNumber(summary.average_elapsed_ms)} ms`],
-    ["P95 latency", summary.p95_elapsed_ms == null ? "—" : `${formatNumber(summary.p95_elapsed_ms)} ms`],
-    ["Runs · last hour", summary.last_hour_runs ?? 0],
+    ["Average latency", summary.average_elapsed_ms == null ? "—" : formatSeconds(summary.average_elapsed_ms)],
+    ["P95 latency", summary.p95_elapsed_ms == null ? "—" : formatSeconds(summary.p95_elapsed_ms)],
+    ["Runs, last hour", summary.last_hour_runs ?? 0],
   ];
   $("#monitoring-summary").innerHTML = cards.map(([label, value]) => `<article class="monitoring-stat"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></article>`).join("");
   const agents = data.by_agent || [];
   const maxRuns = Math.max(1, ...agents.map((agent) => Number(agent.total_runs) || 0));
   $("#monitoring-agents").innerHTML = agents.length ? agents.map((agent) => `
-    <div class="monitoring-agent"><div><strong>${escapeHtml(agent.agent_name)}</strong><span>${formatNumber(agent.completed_runs)} of ${formatNumber(agent.total_runs)} completed · avg ${agent.average_elapsed_ms == null ? "—" : `${formatNumber(agent.average_elapsed_ms)} ms`}</span></div><i><b style="width:${Math.max(3, Number(agent.total_runs) / maxRuns * 100)}%"></b></i></div>
+    <div class="monitoring-agent"><div><strong>${escapeHtml(agent.agent_name)}</strong><span>${formatNumber(agent.completed_runs)} of ${formatNumber(agent.total_runs)} completed, ${agent.average_elapsed_ms == null ? "no timing" : `${formatSeconds(agent.average_elapsed_ms)} average`}</span></div><i><b style="width:${Math.max(3, Number(agent.total_runs) / maxRuns * 100)}%"></b></i></div>
   `).join("") : '<p class="analysis-empty">No agent runs have been recorded in the last 24 hours.</p>';
   const runs = data.recent_runs || [];
-  $("#monitoring-runs").innerHTML = runs.length ? `<div class="monitoring-table-wrap"><table class="monitoring-table"><thead><tr><th>Time</th><th>Role</th><th>Agent</th><th>Retrieval</th><th>Result</th><th>Latency</th><th>Sources</th></tr></thead><tbody>${runs.map((run) => `<tr><td>${escapeHtml(new Date(run.created_at).toLocaleString())}</td><td>${escapeHtml(run.actor_role)}</td><td>${escapeHtml(run.agent_name)}</td><td>${escapeHtml(run.retrieval_method)}</td><td><span class="run-status ${escapeHtml(run.status)}">${escapeHtml(run.status.replaceAll("_", " "))}</span>${run.error_type ? `<small>${escapeHtml(run.error_type)}</small>` : ""}</td><td>${formatNumber(run.elapsed_ms)} ms</td><td>${formatNumber(run.citation_count)}</td></tr>`).join("")}</tbody></table></div>` : '<p class="analysis-empty">No requests recorded yet.</p>';
+  $("#monitor-count-runs").textContent = runs.length ? formatNumber(runs.length) : "";
+  $("#monitoring-runs").innerHTML = runs.length ? `<div class="monitoring-table-wrap"><table class="monitoring-table"><thead><tr><th>Time</th><th>Role</th><th>Agent</th><th>Retrieval</th><th>Result</th><th>Latency</th><th>Sources</th></tr></thead><tbody>${runs.map((run) => `<tr><td>${escapeHtml(new Date(run.created_at).toLocaleString())}</td><td>${escapeHtml(run.actor_role)}</td><td>${escapeHtml(run.agent_name)}</td><td>${escapeHtml(run.retrieval_method)}</td><td><span class="run-status ${escapeHtml(run.status)}">${escapeHtml(run.status.replaceAll("_", " "))}</span>${run.error_type ? `<small>${escapeHtml(run.error_type)}</small>` : ""}</td><td>${formatSeconds(run.elapsed_ms)}</td><td>${formatNumber(run.citation_count)}</td></tr>`).join("")}</tbody></table></div>` : '<p class="analysis-empty">No requests recorded yet.</p>';
 }
 
 async function refreshAgentMonitoring() {
@@ -761,6 +1290,11 @@ async function refreshAgentMonitoring() {
     renderAgentMonitoring(await api("/api/admin/agent-monitoring"));
   } catch (error) {
     $("#monitoring-runs").innerHTML = `<p class="error-message">${escapeHtml(error.message)}</p>`;
+  }
+  try {
+    renderAnswerFeedback(await api("/api/admin/answer-feedback"));
+  } catch (error) {
+    $("#monitoring-feedback").innerHTML = `<p class="error-message">${escapeHtml(error.message)}</p>`;
   } finally {
     button.disabled = false;
   }
@@ -772,9 +1306,7 @@ async function api(path, options = {}) {
   headers["ngrok-skip-browser-warning"] = "1";
   const response = await fetch(path, { credentials: "same-origin", ...options, headers });
   if (response.status === 401 && path !== "/api/auth/login") {
-    $("#login-view").hidden = false;
-    $("#workspace").hidden = true;
-    $("#login-brand-sidebar").hidden = false;
+    clearExpiredSession();
     throw new Error("Sign in to continue");
   }
   let data;
@@ -794,7 +1326,347 @@ async function api(path, options = {}) {
   return data;
 }
 
+// Thumbs up/down next to Copy. A rating sends the question and the shown answer (see answer_feedback).
+const ICONS = {
+  copy: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6.5A2.5 2.5 0 0 0 13.5 4h-7A2.5 2.5 0 0 0 4 6.5v7A2.5 2.5 0 0 0 6.5 16H8"/></svg>',
+  check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+  up: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10v10H4.5A1.5 1.5 0 0 1 3 18.5v-7A1.5 1.5 0 0 1 4.5 10H7Zm0 0 4-7a2.5 2.5 0 0 1 2.5 2.5V9h5.2a2 2 0 0 1 2 2.4l-1.4 7A2 2 0 0 1 17.3 20H7"/></svg>',
+  down: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 14V4h2.5A1.5 1.5 0 0 1 21 5.5v7a1.5 1.5 0 0 1-1.5 1.5H17Zm0 0-4 7a2.5 2.5 0 0 1-2.5-2.5V15H5.3a2 2 0 0 1-2-2.4l1.4-7A2 2 0 0 1 6.7 4H17"/></svg>',
+};
+const FEEDBACK_REASONS = ["Wrong information", "Missing details", "Wrong or weak source", "Hard to understand"];
+
+function attachFeedback(panel, turn) {
+  const bar = panel.querySelector(".answer-actions-bar");
+  if (!bar || !turn.result?.answer) return;
+  const box = document.createElement("span");
+  box.className = "feedback-buttons";
+  box.innerHTML = ["up", "down"].map((rating) => `<button type="button" class="action-btn feedback-btn" data-rating="${rating}" aria-pressed="false" aria-label="${rating === "up" ? "Helpful" : "Not helpful"}" title="${rating === "up" ? "Helpful" : "Not helpful"}: sends this question and answer to the team for review">${ICONS[rating]}</button>`).join("")
+    + '<span class="feedback-status" role="status" aria-live="polite"></span>';
+  bar.append(box);
+  const status = box.querySelector(".feedback-status");
+  const say = (text, tone = "") => {
+    status.textContent = text;
+    status.dataset.tone = tone;
+    status.classList.remove("show");
+    void status.offsetWidth;
+    status.classList.add("show");
+  };
+  const mark = (rating) => box.querySelectorAll(".feedback-btn").forEach((button) => {
+    const chosen = button.dataset.rating === rating;
+    button.setAttribute("aria-pressed", String(chosen));
+    button.classList.toggle("chosen", chosen);
+    button.disabled = true;
+  });
+  if (turn.feedback) mark(turn.feedback);
+  const unmark = () => box.querySelectorAll(".feedback-btn").forEach((button) => {
+    button.setAttribute("aria-pressed", "false");
+    button.classList.remove("chosen");
+    button.disabled = false;
+  });
+  // Optimistic: the choice shows at once and the database write happens in the background;
+  // if the write fails the choice is undone and the reason is shown, so nothing looks saved that isn't.
+  const send = async (rating, comment) => {
+    turn.feedback = rating;
+    mark(rating);
+    say("Thanks for the feedback", "ok");
+    try {
+      await api("/api/agents/feedback", { method: "POST", body: JSON.stringify({
+        rating, question: turn.question, answer: turn.result.answer, agent: turn.result.agent || "unknown",
+        comment: comment || null, claim_status: turn.result.metadata?.claim_verification?.status ?? null,
+      }) });
+    } catch (error) {
+      turn.feedback = null;
+      unmark();
+      say(`Not saved: ${error.message}. Try again.`, "error");
+      throw error;
+    }
+  };
+
+  // Inline card for 👎: reason chips and an optional note; it opens and closes with a height animation.
+  const card = document.createElement("div");
+  card.className = "feedback-card";
+  card.hidden = true;
+  card.innerHTML = `<div class="feedback-card-inner"><form class="feedback-form">
+      <p class="feedback-title">What went wrong?</p>
+      <div class="feedback-reasons" role="group" aria-label="Reasons">${FEEDBACK_REASONS.map((reason) =>
+        `<button type="button" class="feedback-reason" aria-pressed="false">${escapeHtml(reason)}</button>`).join("")}</div>
+      <label class="visually-hidden" for="fb-${turn.id ?? Date.now()}">Details (optional)</label>
+      <textarea id="fb-${turn.id ?? Date.now()}" maxlength="900" rows="2" placeholder="Tell us what the answer should have said (optional)"></textarea>
+      <div class="feedback-form-actions">
+        <button type="button" class="secondary-button feedback-cancel">Cancel</button>
+        <button type="submit" class="primary-button feedback-send">Send feedback</button>
+      </div>
+    </form></div>`;
+  bar.after(card);
+  const open = (show) => {
+    if (show) {
+      card.hidden = false;
+      requestAnimationFrame(() => card.classList.add("open"));
+      card.querySelector("textarea").focus({ preventScroll: true });
+    } else {
+      card.classList.remove("open");
+      const done = () => { card.hidden = true; };
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ? done() : card.addEventListener("transitionend", done, { once: true });
+    }
+  };
+  card.querySelector(".feedback-reasons").addEventListener("click", (event) => {
+    const chip = event.target.closest(".feedback-reason");
+    if (chip) chip.setAttribute("aria-pressed", String(chip.getAttribute("aria-pressed") !== "true"));
+  });
+  card.querySelector(".feedback-cancel").addEventListener("click", () => {
+    open(false);
+    box.querySelector('[data-rating="down"]').focus();
+  });
+  card.querySelector(".feedback-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const reasons = [...card.querySelectorAll('.feedback-reason[aria-pressed="true"]')].map((chip) => chip.textContent);
+    const note = card.querySelector("textarea").value.trim();
+    open(false);
+    try {
+      await send("down", [reasons.join(", "), note].filter(Boolean).join(" — ").slice(0, 1000));
+    } catch {
+      open(true);  // keep the typed note so the reader can resend
+    }
+  });
+
+  box.addEventListener("click", async (event) => {
+    const button = event.target.closest(".feedback-btn");
+    if (!button || turn.feedback) return;
+    if (button.dataset.rating === "down") {
+      const opening = card.hidden;
+      button.setAttribute("aria-expanded", String(opening));
+      open(opening);
+      return;
+    }
+    send("up", null).catch(() => {});
+  });
+}
+
+function renderAnswerFeedback(data) {
+  const summary = data.summary || {};
+  const items = data.recent || [];
+  $("#monitor-count-feedback").textContent = formatNumber((summary.up ?? 0) + (summary.down ?? 0));
+  $("#monitoring-feedback").innerHTML = `<p class="rating-totals"><span>Last 30 days</span><span class="rating-pill up">${ICONS.up}${formatNumber(summary.up ?? 0)} helpful</span><span class="rating-pill down">${ICONS.down}${formatNumber(summary.down ?? 0)} not helpful</span></p>${items.length ? `<div class="monitoring-table-wrap"><table class="monitoring-table"><thead><tr><th>Time</th><th>Rating</th><th>Role</th><th>Agent</th><th>Question</th><th>Comment</th><th>Claim check</th></tr></thead><tbody>${items.map((item) => `<tr><td>${escapeHtml(new Date(item.created_at).toLocaleString())}</td><td><span class="rating-icon ${item.rating === "up" ? "up" : "down"}" title="${item.rating === "up" ? "Helpful" : "Not helpful"}">${ICONS[item.rating === "up" ? "up" : "down"]}</span></td><td>${escapeHtml(item.actor_role)}</td><td>${escapeHtml(item.agent_name)}</td><td><details><summary>${escapeHtml(item.question.slice(0, 80))}</summary><p>${escapeHtml(item.answer)}</p></details></td><td>${escapeHtml(item.comment || "")}</td><td>${escapeHtml(item.claim_status || "")}</td></tr>`).join("")}</tbody></table></div>` : '<p class="analysis-empty">No feedback yet.</p>'}`;
+}
+
+// Fades the old stage message out and the new one in; a newer stage cancels a fade still running.
+function swapStageText(heading, text) {
+  if (heading.textContent === text) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    heading.textContent = text;
+    return;
+  }
+  heading.getAnimations().filter((animation) => animation.id === "stage-swap").forEach((animation) => animation.cancel());
+  const out = heading.animate([{ opacity: 1, transform: "translateY(0)" }, { opacity: 0, transform: "translateY(-4px)" }],
+    { duration: 180, easing: "ease-in", fill: "forwards", id: "stage-swap" });
+  out.finished.then(() => {
+    heading.textContent = text;
+    out.cancel();
+    heading.animate([{ opacity: 0, transform: "translateY(4px)" }, { opacity: 1, transform: "translateY(0)" }],
+      { duration: 260, easing: "ease-out", id: "stage-swap" });
+  }).catch(() => { heading.textContent = text; });
+}
+
+const RUN_STAGE_LABELS = {
+  routing: "Routing", knowledge_search_planning: "Search planning", query_translation: "Translation",
+  embedding: "Query embedding", database_retrieval: "Database search", reranking: "Reranking",
+  answer_generation: "Answer writing", claim_verification: "Claim check", sql_planning: "SQL planning",
+  sql_execution: "SQL execution", answer_synthesis: "Synthesis",
+};
+const VERIFICATION_REASONS = {
+  all_claims_supported: "every claim is supported by its cited passage",
+  insufficient: "a claim is not supported by the cited passages",
+  contradicted: "a claim contradicts a cited passage",
+  unsupported_arithmetic: "a calculation does not match the sources",
+  unverified_arithmetic: "a calculation could not be checked",
+  uncited_or_oversized_draft: "the draft was too long or not cited, so it could not be checked",
+  uncited_answer: "the draft cited no source",
+  unknown_citation: "the draft cited a passage that was not retrieved",
+};
+
+// What the system actually did for this answer: route, search queries, passages, claim check, time.
+function renderRunDetails(data) {
+  const rows = [];
+  if (data.selected_route) rows.push(`<p><strong>Route:</strong> ${escapeHtml(data.selected_route)}</p>`);
+  if (Array.isArray(data.task_trace) && data.task_trace.length) {
+    rows.push(`<ul>${data.task_trace.map((task) => `<li>${escapeHtml(task.agent)} · ${escapeHtml(task.status)} · ${formatNumber(task.elapsed_ms)} ms${task.error_type ? ` · ${escapeHtml(task.error_type)}` : ""}</li>`).join("")}</ul>`);
+  }
+  const search = data.search;
+  if (search) {
+    const queries = search.lexical_queries || {};
+    const lines = [["Vietnamese", queries.vn], ["English", queries.en]].filter(([, text]) => text);
+    if (lines.length) {
+      rows.push(`<p><strong>Searched as:</strong></p><ul>${lines.map(([label, text]) => `<li>${label}: “${escapeHtml(text)}”</li>`).join("")}</ul>`);
+    }
+    const counts = [
+      search.candidate_count ? `${formatNumber(search.candidate_count)} candidates reranked` : "",
+      `${formatNumber(search.passages_to_model)} passages given to the model${search.context_radius ? " (with neighbouring text)" : ""}`,
+      `${formatNumber((data.citations || []).length)} cited`,
+    ].filter(Boolean);
+    rows.push(`<p><strong>Passages:</strong> ${counts.join(" → ")}${search.reranker_model ? ` · reranker ${escapeHtml(String(search.reranker_model).split("/").pop())}` : ""}</p>`);
+  }
+  const check = data.claim_verification;
+  if (check) {
+    const verdict = check.status === "supported" ? "Passed" : "Answer withheld";
+    const reason = VERIFICATION_REASONS[check.reason] || check.reason || "";
+    const counted = [check.claim_count ? `${formatNumber(check.claim_count)} claims checked` : "",
+      check.arithmetic_checked ? `${formatNumber(check.arithmetic_checked)} calculations checked` : ""].filter(Boolean);
+    rows.push(`<p><strong>Claim check:</strong> ${verdict}${reason ? `: ${escapeHtml(reason)}` : ""}${counted.length ? ` (${counted.join(", ")})` : ""}</p>`);
+  }
+  const latency = data.latency || {};
+  const stages = Object.entries(latency.stages_ms || {})
+    .filter(([stage, ms]) => ms != null && RUN_STAGE_LABELS[stage])
+    .sort((a, b) => b[1] - a[1]);
+  if (stages.length || latency.request_total_ms) {
+    const seconds = (ms) => `${(ms / 1000).toFixed(1)} s`;
+    rows.push(`<p><strong>Time:</strong> ${latency.request_total_ms ? `${seconds(latency.request_total_ms)} on the server` : ""}</p>${stages.length ? `<ul>${stages.map(([stage, ms]) => `<li>${RUN_STAGE_LABELS[stage]}: ${seconds(ms)}</li>`).join("")}</ul><small>Some stages overlap, so they do not add up to the total.</small>` : ""}`);
+  }
+  return rows.length ? `<details class="agent-diagnostics"><summary>Run details</summary>${rows.join("")}</details>` : "";
+}
+
+// Reveals an already verified, fully rendered answer; markup and citation links stay intact
+// because only the text nodes are filled in. About 60 characters a second, 3–10 s in total;
+// `revealAfter` (the source panel, then each card) appears one by one after the text is complete.
+// Skipped for reduced motion.
+function typeOutText(element, revealAfter = []) {
+  if (!element || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push([walker.currentNode, walker.currentNode.nodeValue]);
+  const total = nodes.reduce((sum, [, text]) => sum + text.length, 0);
+  if (!total) return;
+  for (const [node] of nodes) node.nodeValue = "";
+  for (const item of revealAfter) item.hidden = true;
+  element.setAttribute("aria-busy", "true");
+  const seconds = Math.min(10, Math.max(3, total / 60));
+  const perFrame = Math.max(1, Math.ceil(total / (seconds * 60)));
+  let index = 0;
+  let shown = 0;
+  const step = () => {
+    let budget = perFrame;
+    while (budget > 0 && index < nodes.length) {
+      const [node, text] = nodes[index];
+      const take = Math.min(budget, text.length - shown);
+      node.nodeValue = text.slice(0, shown + take);
+      shown += take;
+      budget -= take;
+      if (shown >= text.length) { index += 1; shown = 0; }
+    }
+    if (index < nodes.length && element.isConnected) requestAnimationFrame(step);
+    else {
+      for (const [node, text] of nodes) node.nodeValue = text;
+      element.removeAttribute("aria-busy");
+      revealAfter.forEach((item, position) => setTimeout(() => { item.hidden = false; }, 500 + position * 400));
+    }
+  };
+  requestAnimationFrame(step);
+}
+
+const STAGE_STATUS = {
+  routing: "Đang chọn agent phù hợp",
+  knowledge_search_planning: "Đang chuẩn bị tìm tài liệu",
+  query_translation: "Đang chuyển câu hỏi để tìm kiếm song ngữ",
+  embedding: "Đang tìm tài liệu liên quan",
+  database_retrieval: "Đang truy xuất dữ liệu",
+  retrieval_fusion: "Đang hợp nhất kết quả tìm kiếm",
+  reranking: "Đang xếp hạng nguồn phù hợp",
+  answer_generation: "Đang soạn câu trả lời có trích dẫn",
+  claim_verification: "Đang kiểm tra câu trả lời với nguồn",
+  sql_ambiguity_check: "Đang kiểm tra câu hỏi có mơ hồ không",
+  sql_planning: "Đang lập truy vấn SQL",
+  sql_execution: "Đang chạy truy vấn SQL",
+  answer_synthesis: "Đang tổng hợp kết quả",
+};
+
+// Streams stage progress; the answer arrives only after the claim verifier, never as draft tokens.
+// Throws { streamUnavailable: true } before any answer is received so the caller can retry on /chat.
+async function askAgentStream(body, signal, onStatus) {
+  const unavailable = (message) => Object.assign(new Error(message), { streamUnavailable: true });
+  let response;
+  try {
+    response = await fetch("/api/agents/chat/stream", {
+      method: "POST", credentials: "same-origin", body, signal,
+      headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "1" },
+    });
+  } catch (error) {
+    if (error.name === "TimeoutError" || error.name === "AbortError") throw error;
+    throw unavailable(error.message);
+  }
+  if (response.status === 401) {
+    clearExpiredSession();
+    throw new Error("Sign in to continue");
+  }
+  if (!response.ok || !response.body || !(response.headers.get("content-type") || "").includes("text/event-stream")) {
+    throw unavailable(`Streaming unavailable (HTTP ${response.status})`);
+  }
+  const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+  let buffer = "";
+  for (;;) {
+    let chunk;
+    try { chunk = await reader.read(); }
+    catch (error) {
+      if (error.name === "TimeoutError" || error.name === "AbortError") throw error;
+      throw unavailable(error.message);
+    }
+    if (chunk.done) throw unavailable("The stream ended before the answer");
+    buffer += chunk.value;
+    let end;
+    while ((end = buffer.indexOf("\n\n")) >= 0) {
+      const block = buffer.slice(0, end);
+      buffer = buffer.slice(end + 2);
+      const kind = /^event: (.*)$/m.exec(block)?.[1];
+      const data = /^data: (.*)$/m.exec(block)?.[1];
+      if (!kind || data === undefined) continue;
+      const payload = JSON.parse(data);
+      if (kind === "stage") {
+        if (STAGE_STATUS[payload.stage]) onStatus(payload.stage, payload.state);
+      } else if (kind === "result") {
+        reader.cancel().catch(() => {});
+        return payload;
+      } else if (kind === "error") {
+        throw Object.assign(new Error(payload.detail || "Request failed"), { status: payload.status });
+      }
+    }
+  }
+}
+
+function resetConversationState() {
+  agentConversationId = crypto.randomUUID();
+  reportConversationId = crypto.randomUUID();
+  sessionTurns = [];
+  generalConversationId = crypto.randomUUID();
+  generalTurns = [];
+  $("#answer-panel").replaceChildren();
+  $("#answer-panel").hidden = true;
+  $("#general-chat-transcript").replaceChildren();
+  $("#general-chat-transcript").hidden = true;
+  $("#general-chat-welcome").hidden = false;
+  $("#report-agent-question").value = "";
+  $("#report-agent-template").value = "";
+  updateReportFormatVisibility();
+  $("#report-agent-status").textContent = "";
+  delete $("#report-agent-status").dataset.state;
+  $("#question").value = "";
+}
+
+function clearExpiredSession() {
+  sessionGeneration += 1;
+  sessionSubject = null;
+  currentUser = null;
+  resetConversationState();
+  $("#login-view").hidden = false;
+  $("#workspace").hidden = true;
+  $("#login-brand-sidebar").hidden = false;
+  $("#user-badge").hidden = true;
+  $("#logout-button").hidden = true;
+}
+
 async function loadWorkspace(user) {
+  if (sessionSubject !== user.username) {
+    sessionGeneration += 1;
+    sessionSubject = user.username;
+    resetConversationState();
+  }
   currentUser = user;
   $("#login-view").hidden = true;
   $("#login-brand-sidebar").hidden = true;
@@ -827,16 +1699,21 @@ async function loadWorkspace(user) {
       $("#knowledge-documents-status").textContent = `Could not load knowledge-base files: ${error.message}`;
     });
   }
+  if (["admin", "document_uploader", "document_processing_owner"].includes(user.role)) {
+    void refreshInvoiceReview().catch((error) => {
+      $("#invoice-review-status").textContent = `Could not load invoices: ${error.message}`;
+    });
+  }
   $("#access-matrix").replaceChildren();
   $("#connection-status").textContent = "Knowledge base connected";
-  $("#user-badge").textContent = `${user.username} · ${user.role}`;
+  $("#user-badge").textContent = `${user.username} (${user.role})`;
+  $("#account-initial").textContent = (user.username || "?").charAt(0).toUpperCase();
   $("#user-badge").hidden = false;
   $("#logout-button").hidden = false;
   $(".intro").hidden = user.role === "document_processing_owner";
   $(".agent-overview").hidden = ["document_processing_owner", "document_uploader"].includes(user.role);
   $(".stats").hidden = user.role === "document_processing_owner";
   const canUseAnalytics = ["admin", "finance_analyst", "sustainability_analyst", "operations", "executive"].includes(user.role);
-  $("#inventory-snapshot").hidden = false;
   ["#analytics-agent-card", "#inventory-agent-card", "#report-agent-card", "#report-agent-form-section"].forEach((selector) => {
     $(selector).hidden = !canUseAnalytics;
   });
@@ -850,8 +1727,6 @@ async function loadWorkspace(user) {
     try { renderCorpus(await api("/api/dashboard")); }
     catch (error) { $("#connection-status").textContent = `Knowledge base unavailable: ${error.message}`; }
   }
-  if (canUseAnalytics) void loadInventorySnapshot();
-  else $("#inventory-snapshot").innerHTML = '<p class="analysis-empty">Inventory snapshot requires analytics access.</p>';
   try {
     if (user.role === "admin") {
       const access = await api("/api/admin/access-matrix");
@@ -907,6 +1782,53 @@ $("#knowledge-documents-refresh").addEventListener("click", async () => {
   catch (error) { $("#knowledge-documents-status").textContent = error.message; }
 });
 $("#knowledge-documents-list").addEventListener("click", async (event) => {
+  const deleteButton = event.target.closest("[data-knowledge-delete]");
+  if (deleteButton) {
+    const documentId = deleteButton.dataset.knowledgeDelete;
+    const title = deleteButton.dataset.title;
+    if (!window.confirm(`Permanently delete “${title}”? This removes the original file, parser output, and indexed data. This cannot be undone.`)) return;
+    deleteButton.disabled = true;
+    try {
+      const result = await api(`/api/admin/knowledge-documents/${encodeURIComponent(documentId)}`, { method: "DELETE" });
+      await refreshKnowledgeDocuments();
+      $("#knowledge-documents-status").textContent = result.source_file_removed
+        ? `Permanently deleted “${title}” and its source file.`
+        : `Deleted “${title}” from the knowledge base, but private-file cleanup failed. Check application logs.`;
+    } catch (error) {
+      $("#knowledge-documents-status").textContent = error.message;
+      deleteButton.disabled = false;
+    }
+    return;
+  }
+  if (event.target.closest("[data-close-knowledge-review]")) {
+    activeKnowledgeReview = null;
+    renderKnowledgeDocuments();
+    return;
+  }
+  const reviewButton = event.target.closest("[data-review-elements]");
+  if (reviewButton) {
+    const documentId = reviewButton.dataset.reviewElements;
+    if (activeKnowledgeReview?.document_id === documentId) {
+      activeKnowledgeReview = null;
+      renderKnowledgeDocuments();
+      return;
+    }
+    activeKnowledgeReview = { document_id: documentId, status: "loading" };
+    renderKnowledgeDocuments();
+    try {
+      const output = await api(`/api/admin/knowledge-documents/${encodeURIComponent(documentId)}/processing-output`);
+      if (activeKnowledgeReview?.document_id === documentId) {
+        activeKnowledgeReview = { document_id: documentId, output };
+        renderKnowledgeDocuments();
+      }
+    } catch (error) {
+      if (activeKnowledgeReview?.document_id === documentId) {
+        activeKnowledgeReview = { document_id: documentId, error: error.message };
+        renderKnowledgeDocuments();
+      }
+    }
+    return;
+  }
   const retryButton = event.target.closest("[data-retry-embedding]");
   if (retryButton) {
     const documentId = retryButton.dataset.retryEmbedding;
@@ -1006,11 +1928,28 @@ $("#ocr-test-form").addEventListener("submit", async (event) => {
   const form = event.currentTarget;
   const button = $("#ocr-test-button");
   button.disabled = true;
-  const parserEngine = form.elements.namedItem("parser_engine").value;
-  const parserLabel = "Docling";
-  $("#ocr-test-status").textContent = `Running ${parserLabel} with shared output cleanup…`;
+  const intent = form.elements.namedItem("intent").value;
+  const parserLabel = intent === "document" ? "Docling" : intent === "invoice" ? "Docling OCR + Qwen invoice extraction" : "Vintern image caption";
+  $("#ocr-test-status").textContent = `Running ${parserLabel}…`;
   try {
-    const result = await api("/api/upload-tests", {method:"POST", body:new FormData(form)});
+    let result = await api("/api/upload-tests", {method:"POST", body:new FormData(form)});
+    if (result.status === "processing") {
+      const runId = result.run_id;
+      const startedAt = Date.now();
+      while (result.status === "processing") {
+        await new Promise((resolve) => window.setTimeout(resolve, 3000));
+        result = await api(`/api/upload-tests/${encodeURIComponent(runId)}`);
+        if (result.status === "processing") {
+          const elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000);
+          const runningLabel = intent === "invoice"
+            ? "Docling OCR + Qwen invoice extraction"
+            : intent === "image_caption" ? "Vintern image caption" : "Docling";
+          $("#ocr-test-status").textContent = `${runningLabel} is still processing (${formatDuration(elapsedSeconds * 1000)})…`;
+        } else if (result.status === "failed") {
+          throw new Error(result.error || "Vintern processing failed");
+        }
+      }
+    }
     $("#ocr-test-status").textContent = `Saved isolated run ${result.run_id}: ${result.page_count} pages, ${result.element_count} parser elements, ${result.table_count} tables. No production document was created.`;
     await loadOcrTestRuns();
     await openOcrTestRun(result.run_id);
@@ -1041,11 +1980,8 @@ $("#login-form").addEventListener("submit", async (event) => {
 });
 
 $("#logout-button").addEventListener("click", async () => {
-  agentConversationId = crypto.randomUUID();
-  reportConversationId = crypto.randomUUID();
-  $("#answer-panel").hidden = true;
-  $("#answer-panel").textContent = "";
-  await api("/api/auth/logout", { method: "POST" });
+  clearExpiredSession();
+  await api("/api/auth/logout", { method: "POST" }).catch(() => {});
   $("#workspace").hidden = true;
   $("#login-view").hidden = false;
   $("#login-brand-sidebar").hidden = false;
@@ -1064,22 +2000,34 @@ async function loadCorpus() {
   }
 }
 
-function renderSkeletonAnswer(panel, statusMessage = "Retrieving passages and preparing cited answer…") {
+function renderSkeletonAnswer(panel, statusMessage = "Đang gửi yêu cầu…", progress = []) {
   panel.hidden = false;
   panel.innerHTML = `
-    <div class="answer-header-wrap">
-      <div class="answer-heading">
-        <span class="answer-mark">AI</span>
-        <div><span class="eyebrow">PROCESSING QUERY</span><h3>${escapeHtml(statusMessage)}</h3></div>
+    <section class="agent-progress" role="status" aria-live="polite" aria-busy="true">
+      <span class="agent-progress-spinner" aria-hidden="true"></span>
+      <div class="agent-progress-content">
+        <strong class="stage-status">${escapeHtml(statusMessage)}</strong>
+        <ol class="agent-progress-steps">${renderProgressSteps(progress)}</ol>
       </div>
-    </div>
-    <div class="skeleton-loader">
-      <div class="skeleton-line medium"></div>
-      <div class="skeleton-line"></div>
-      <div class="skeleton-line short"></div>
-      <div class="skeleton-card"></div>
-    </div>
+    </section>
   `;
+}
+
+function renderProgressSteps(progress = []) {
+  return progress.slice(-4).map(({ stage, state }) => `
+    <li class="agent-progress-step is-${escapeHtml(state)}">
+      <span aria-hidden="true">${state === "completed" ? "✓" : state === "failed" ? "!" : "·"}</span>
+      ${escapeHtml(STAGE_STATUS[stage] || "Đang xử lý")}
+    </li>`).join("");
+}
+
+function updatePendingProgress(turn) {
+  const entry = document.querySelector(`[data-turn-id="${turn.id}"]`);
+  if (!entry) return;
+  const heading = entry.querySelector(".stage-status");
+  const steps = entry.querySelector(".agent-progress-steps");
+  if (heading) swapStageText(heading, turn.status || "Đang xử lý yêu cầu…");
+  if (steps) steps.innerHTML = renderProgressSteps(turn.progress);
 }
 
 function setupQuickPrompts() {
@@ -1106,44 +2054,169 @@ $(".agent-grid").addEventListener("click", (event) => {
     $("#ask-form").requestSubmit();
   } else if (event.target.closest("[data-open-report]")) {
     $("#report-agent-form-section").hidden = false;
+    $("#report-fold").open = true;
     $("#report-agent-question").focus();
   }
 });
 
-let agentConversationId = crypto.randomUUID();
-let reportConversationId = crypto.randomUUID();
+function renderSessionTranscript(shouldScroll = false) {
+  renderChatTranscript($("#answer-panel"), sessionTurns, shouldScroll);
+}
+
+function renderGeneralChatTranscript(shouldScroll = false) {
+  renderChatTranscript($("#general-chat-transcript"), generalTurns, shouldScroll);
+  $("#general-chat-welcome").hidden = generalTurns.length > 0;
+}
+
+function renderChatTranscript(root, turns, shouldScroll) {
+  root.replaceChildren();
+  root.hidden = turns.length === 0;
+  for (const turn of turns) {
+    const entry = document.createElement("article");
+    entry.className = "chat-turn";
+    entry.dataset.turnId = turn.id;
+    entry.innerHTML = `<div class="chat-turn-question"><span>${escapeHtml(({auto:"AUTO",knowledge:"KNOWLEDGE",sql:"ANALYTICS"})[turn.mode] || turn.mode.toUpperCase())}</span><p>${escapeHtml(turn.question)}</p></div>`;
+    const response = document.createElement("div");
+    response.className = "answer-panel chat-turn-response";
+    entry.append(response);
+    root.append(entry);
+    if (turn.state === "pending") renderSkeletonAnswer(response, turn.status || "Đang gửi yêu cầu…", turn.progress);
+    else if (turn.state === "error") response.innerHTML = `<p class="error-message" role="alert">${escapeHtml(turn.error)}. Please check service configuration or connection.</p>`;
+    else if (turn.result) {
+      renderAgentResult(turn.result, response, false);
+      attachFeedback(response, turn);
+      if (turn.typeOut) {
+        turn.typeOut = false;
+        typeOutText(response.querySelector(".answer-text"),
+          [...response.querySelectorAll(".citations, .citations .citation")]);
+      }
+    }
+  }
+  if (shouldScroll) root.lastElementChild?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 $("#new-conversation").addEventListener("click", () => {
   agentConversationId = crypto.randomUUID();
+  sessionTurns = [];
+  $("#answer-panel").replaceChildren();
   $("#answer-panel").hidden = true;
-  $("#answer-panel").textContent = "";
   $("#question").value = "";
 });
 
-$("#ask-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const requestConversationId = agentConversationId;
-  const button = $("#ask-button");
-  const question = $("#question").value.trim();
+$("#new-general-chat").addEventListener("click", () => {
+  generalConversationId = crypto.randomUUID();
+  generalTurns = [];
+  $("#general-chat-question").value = "";
+  resizeGeneralChatComposer();
+  renderGeneralChatTranscript();
+  $("#general-chat-question").focus();
+});
+
+async function sendChatMessage({ question, mode, button, input, state, render }) {
+  const requestConversationId = state.getId();
+  const requestGeneration = sessionGeneration;
+  const requestSubject = sessionSubject;
   if (!question) return;
+  const turn = { id: crypto.randomUUID(), mode, question, state: "pending" };
+  state.turns.push(turn);
+  state.turns = state.turns.slice(-20);
+  input.value = "";
+  if (input.id === "general-chat-question") resizeGeneralChatComposer();
+  render(true);
+  const initialButton = button.innerHTML;
   button.disabled = true;
-  button.innerHTML = "<span>Working...</span>";
-  const panel = $("#answer-panel");
-  renderSkeletonAnswer(panel, "Routing your request to the right agent...");
+  if (button.id === "general-chat-send") {
+    button.setAttribute("aria-busy", "true");
+    button.setAttribute("aria-label", "Đang gửi tin nhắn");
+  } else {
+    button.innerHTML = "<span>Working...</span>";
+  }
   try {
-    const data = await api("/api/agents/chat", { method: "POST", body: JSON.stringify({
-      question, agent_mode: $("#agent-mode").value, retrieval_method: "translated_hybrid_rerank",
+    const body = JSON.stringify({
+      question, agent_mode: mode, retrieval_method: "translated_hybrid_rerank",
       conversation_id: requestConversationId,
-    }) });
-    if (agentConversationId !== requestConversationId) return;
+    });
+    const signal = AbortSignal.timeout(135_000);
+    const showStage = (stage, state) => {
+      turn.progress ||= [];
+      let step = turn.progress.find((item) => item.stage === stage);
+      if (!step) {
+        step = { stage, state };
+        turn.progress.push(step);
+      } else step.state = state;
+      const activeStep = [...turn.progress].reverse().find((item) => item.state === "started");
+      turn.status = activeStep ? STAGE_STATUS[activeStep.stage]
+        : state === "failed" ? "Một bước xử lý gặp lỗi"
+          : "Đang hoàn tất câu trả lời…";
+      updatePendingProgress(turn);
+    };
+    let data;
+    try {
+      data = await askAgentStream(body, signal, showStage);
+    } catch (error) {
+      if (!error.streamUnavailable) throw error;
+      turn.status = "Đang chờ agent xử lý yêu cầu…";
+      updatePendingProgress(turn);
+      data = await api("/api/agents/chat", { method: "POST", body, signal });
+    }
+    if (state.getId() !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
     $("#connection-status").textContent = "Agent services connected";
     $(".status-dot").classList.add("connected");
-    renderAgentResult(data);
+    turn.result = data;
+    turn.state = "complete";
+    turn.typeOut = true;
   } catch (error) {
-    if (agentConversationId !== requestConversationId) return;
-    panel.innerHTML = '<p class="error-message">' + escapeHtml(error.message) + '. Please check service configuration or connection.</p>';
+    if (state.getId() !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
+    turn.error = error.name === "TimeoutError" ? "The request timed out. No answer was received; try again or choose a specialist" : error.message;
+    turn.state = "error";
   } finally {
     button.disabled = false;
-    button.innerHTML = "<span>Ask agent</span>";
+    if (button.id === "general-chat-send") {
+      button.removeAttribute("aria-busy");
+      button.setAttribute("aria-label", "Gửi tin nhắn");
+    } else button.innerHTML = initialButton;
+    if (state.turns.includes(turn)) render(false);
+  }
+}
+
+$("#ask-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  return sendChatMessage({
+    question: $("#question").value.trim(), mode: $("#agent-mode").value,
+    button: $("#ask-button"), input: $("#question"),
+    state: { getId: () => agentConversationId, get turns() { return sessionTurns; }, set turns(value) { sessionTurns = value; } }, render: renderSessionTranscript,
+  });
+});
+
+$("#general-chat-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const input = $("#general-chat-question");
+  sendChatMessage({
+    question: input.value.trim(), mode: "auto", button: $("#general-chat-send"), input,
+    state: { getId: () => generalConversationId, get turns() { return generalTurns; }, set turns(value) { generalTurns = value; } },
+    render: renderGeneralChatTranscript,
+  });
+});
+
+function resizeGeneralChatComposer() {
+  const input = $("#general-chat-question");
+  input.style.height = "auto";
+  input.style.height = `${Math.min(input.scrollHeight, 180)}px`;
+}
+
+$("#general-chat-question").addEventListener("input", resizeGeneralChatComposer);
+$("#general-chat-prompts").addEventListener("click", (event) => {
+  const prompt = event.target.closest("[data-general-chat-prompt]");
+  if (!prompt) return;
+  $("#general-chat-question").value = prompt.dataset.generalChatPrompt;
+  resizeGeneralChatComposer();
+  $("#general-chat-form").requestSubmit();
+});
+
+$("#general-chat-question").addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !event.shiftKey && !event.isComposing && event.keyCode !== 229) {
+    event.preventDefault();
+    $("#general-chat-form").requestSubmit();
   }
 });
 
@@ -1199,6 +2272,8 @@ function confirmReportPlan(detail) {
 $("#report-agent-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const requestConversationId = reportConversationId;
+  const requestGeneration = sessionGeneration;
+  const requestSubject = sessionSubject;
   const button = $("#report-agent-submit");
   const status = $("#report-agent-status");
   const template = $("#report-agent-template").files[0];
@@ -1218,18 +2293,22 @@ $("#report-agent-form").addEventListener("submit", async (event) => {
         method: "POST", body: formData, credentials: "same-origin",
         headers: { "ngrok-skip-browser-warning": "1" },
       });
-      if (reportConversationId !== requestConversationId) return;
+      if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
+      if (response.status === 401) {
+        clearExpiredSession();
+        throw new Error("Sign in to continue");
+      }
       if (response.status !== 409) break;
       const payload = await response.json();
       if (!payload.detail?.confirmation_required) throw new Error("Unexpected report confirmation response.");
       const choice = await confirmReportPlan(payload.detail);
-      if (reportConversationId !== requestConversationId) return;
+      if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
       if (!choice) { status.textContent = "Report generation cancelled."; return; }
       if (choice.templateChoice) formData.set("template_choice", choice.templateChoice);
       if (choice.acceptSupportedScope) formData.set("accept_supported_scope", "true");
       if (attempt === 2) throw new Error("The report plan changed repeatedly. Refine the request and try again.");
     }
-    if (reportConversationId !== requestConversationId) return;
+    if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
     if (!response.ok) {
       let detail = "Report request failed (HTTP " + response.status + ")";
       try {
@@ -1275,7 +2354,7 @@ $("#report-agent-form").addEventListener("submit", async (event) => {
       }
     } catch {}
   } catch (error) {
-    if (reportConversationId !== requestConversationId) return;
+    if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
     status.dataset.state = "error";
     status.textContent = error.message;
   } finally {
@@ -1294,14 +2373,38 @@ function updateUploadRoleSelection() {
 
 const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
 const SUPPORTED_UPLOAD_EXTENSIONS = new Set([".pdf", ".docx", ".pptx", ".xlsx", ".csv", ".txt", ".md", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]);
+const INVOICE_UPLOAD_EXTENSIONS = new Set([".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]);
 
-function validateUploadFile(file) {
+function validateUploadFile(file, invoiceMode = false) {
   if (!file) return "Choose a document to upload.";
   const extension = "." + file.name.split(".").pop().toLocaleLowerCase();
-  if (!SUPPORTED_UPLOAD_EXTENSIONS.has(extension)) return "This file type is not supported. Choose PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG or TIF.";
+  const supported = invoiceMode ? INVOICE_UPLOAD_EXTENSIONS : SUPPORTED_UPLOAD_EXTENSIONS;
+  if (!supported.has(extension)) return invoiceMode
+    ? "Invoice extraction supports PDF, PNG, JPG and TIF files."
+    : "This file type is not supported. Choose PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG or TIF.";
   if (file.size > MAX_UPLOAD_BYTES) return "The file is larger than the 50 MiB upload limit.";
   return "";
 }
+
+function updateUploadKind() {
+  const invoiceMode = $("#upload-kind").value === "invoice";
+  $("#upload-access-step").hidden = invoiceMode;
+  $("#invoice-model-field").hidden = !invoiceMode;
+  $("#upload-title").required = !invoiceMode;
+  $("#upload-title").closest(".upload-field").hidden = invoiceMode;
+  $("#upload-file-label").textContent = invoiceMode ? "Invoice file" : "Document file";
+  $("#upload-file").accept = invoiceMode
+    ? ".pdf,.png,.jpg,.jpeg,.tif,.tiff"
+    : ".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff";
+  $("#upload-kind-help").textContent = invoiceMode
+    ? "Upload an invoice for extraction and review in the invoice table."
+    : "Knowledge documents are indexed for document Q&A.";
+  const file = $("#upload-file").files[0];
+  if (file) $("#upload-file-info").textContent = validateUploadFile(file, invoiceMode)
+    || `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)} MiB.`;
+}
+
+$("#upload-kind").addEventListener("change", updateUploadKind);
 
 $("#upload-file").addEventListener("change", (event) => {
   const file = event.currentTarget.files[0];
@@ -1309,8 +2412,10 @@ $("#upload-file").addEventListener("change", (event) => {
   if (file && title.dataset.userEdited !== "true") {
     title.value = file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim();
   }
-  const error = validateUploadFile(file);
-  $("#upload-file-info").textContent = error || file.name + " · " + (file.size / 1024 / 1024).toFixed(1) + " MiB. The original stays private; review OCR output in Document Processing.";
+  const invoiceMode = $("#upload-kind").value === "invoice";
+  const error = validateUploadFile(file, invoiceMode);
+  $("#upload-file-info").textContent = error || file.name + " · " + (file.size / 1024 / 1024).toFixed(1) + " MiB. "
+    + (invoiceMode ? "The source stays private and is available in the invoice table after processing." : "The original stays private; review OCR output in Document Processing.");
   $("#upload-file-info").setAttribute("role", error ? "alert" : "status");
 });
 
@@ -1350,10 +2455,11 @@ $("#upload-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
   const parserHandoff = event.submitter?.dataset.uploadMode === "parser-handoff";
+  const invoiceMode = $("#upload-kind").value === "invoice";
   const file = $("#upload-file").files[0];
   const roles = [...form.querySelectorAll('input[name="allowed_roles"]:checked')].map((input) => input.value);
-  const fileError = validateUploadFile(file);
-  if (fileError || !roles.length) {
+  const fileError = validateUploadFile(file, invoiceMode);
+  if (fileError || (!invoiceMode && !roles.length)) {
     const status = $("#upload-status");
     $("#upload-status-wrap").hidden = false;
     $("#upload-progress").hidden = true;
@@ -1363,13 +2469,17 @@ $("#upload-form").addEventListener("submit", async (event) => {
   }
   const body = new FormData();
   body.append("file", file);
-  for (const name of ["title"]) {
-    const value = form.elements[name].value.trim();
-    if (value) body.append(name, value);
+  if (invoiceMode) {
+    body.append("model_provider", $("#invoice-model").value);
+  } else {
+    for (const name of ["title"]) {
+      const value = form.elements[name].value.trim();
+      if (value) body.append(name, value);
+    }
+    body.append("document_type", "knowledge_document");
+    body.append("domain", "general_knowledge");
+    roles.forEach((role) => body.append("allowed_roles", role));
   }
-  body.append("document_type", "knowledge_document");
-  body.append("domain", "general_knowledge");
-  roles.forEach((role) => body.append("allowed_roles", role));
   const controls = [...form.querySelectorAll("input, select, textarea, button")];
   const controlsWereDisabled = controls.map((control) => control.disabled);
   controls.forEach((control) => { control.disabled = true; });
@@ -1388,14 +2498,43 @@ $("#upload-form").addEventListener("submit", async (event) => {
       : `${Math.floor(elapsedSeconds / 60)}m ${String(elapsedSeconds % 60).padStart(2, "0")}s`);
   };
   status.dataset.state = "processing";
-  status.textContent = parserHandoff
+  status.textContent = invoiceMode
+    ? "Uploading invoice and running OCR and extraction. Keep this tab open."
+    : parserHandoff
     ? "Uploading, extracting and saving parser output. Chunking and indexing run downstream. Keep this tab open."
     : "Uploading, extracting text/OCR, chunking and indexing. Keep this tab open.";
   updateProcessingTime();
   const processingTimer = window.setInterval(updateProcessingTime, 1000);
   let result;
   try {
-    result = await api(parserHandoff ? "/api/documents/parser-handoff" : "/api/documents/upload", { method: "POST", body, headers: {} });
+    result = await api(invoiceMode ? "/api/invoices/upload" : parserHandoff ? "/api/documents/parser-handoff" : "/api/documents/upload", { method: "POST", body, headers: {} });
+    if (invoiceMode) {
+      while (result.processing_status === "processing") {
+        const elapsedSeconds = Math.floor((Date.now() - processingStartedAt) / 1000);
+        status.textContent = `Invoice ${result.invoice_id} is running OCR and extraction (${formatDuration(elapsedSeconds * 1000)}). You can leave this tab open; the saved invoice remains available if you return later.`;
+        await new Promise((resolve) => window.setTimeout(resolve, 3000));
+        result = await api(`/api/invoices/${encodeURIComponent(result.invoice_id)}`);
+      }
+      if (result.processing_status === "failed") {
+        throw new Error(`Invoice ${result.invoice_id} was saved, but extraction failed: ${result.error_message || "check backend logs"}`);
+      }
+      status.dataset.state = "success";
+      progress.hidden = true;
+      elapsedLabel.hidden = true;
+      status.textContent = `Invoice ${result.invoice_id} saved for review in the invoice table. Model: ${result.extraction_model || "unknown"}.`;
+      form.reset();
+      $("#upload-kind").value = "invoice";
+      updateUploadKind();
+      updateUploadRoleSelection();
+      $("#upload-file-info").textContent = "Choose another invoice to process.";
+      try {
+        await refreshInvoiceReview(result.invoice_id);
+        selectWorkspaceTab("invoice-review");
+      } catch (error) {
+        $("#invoice-review-status").textContent = `Invoice was saved, but the review queue could not refresh: ${error.message}`;
+      }
+      return;
+    }
     const referenceStatus = parserHandoff
       ? " Parser output is saved in public for the chunking worker; this document is not searchable yet."
       : " Indexed for document Q&A.";
@@ -1437,10 +2576,20 @@ $("#upload-form").addEventListener("submit", async (event) => {
   } catch (error) {
     progress.hidden = true;
     elapsedLabel.hidden = true;
-    status.dataset.state = result ? "warning" : "error";
-    status.textContent = result
-      ? `The file was processed successfully as ${result.document_id}, but the workspace could not refresh: ${error.message}`
-      : error.message;
+    if (invoiceMode) {
+      const invoiceId = result?.invoice_id;
+      status.dataset.state = invoiceId ? "warning" : "error";
+      status.textContent = result?.processing_status === "failed"
+        ? `Invoice ${invoiceId} was saved, but extraction failed: ${result.error_message || error.message}`
+        : invoiceId
+        ? `Invoice ${invoiceId} was saved, but its processing status could not be refreshed: ${error.message}`
+        : error.message;
+    } else {
+      status.dataset.state = result ? "warning" : "error";
+      status.textContent = result
+        ? `The file was processed successfully as ${result.document_id}, but the workspace could not refresh: ${error.message}`
+        : error.message;
+    }
   } finally {
     window.clearInterval(processingTimer);
     controls.forEach((control, index) => { control.disabled = controlsWereDisabled[index]; });
@@ -1454,11 +2603,20 @@ function setupThemeToggle() {
   button.addEventListener("click", () => {
     const isDark = document.documentElement.getAttribute("data-theme") === "dark";
     const nextTheme = isDark ? "light" : "dark";
-    if (nextTheme === "dark") {
-      document.documentElement.setAttribute("data-theme", "dark");
-    } else {
-      document.documentElement.removeAttribute("data-theme");
-    }
+    const apply = () => {
+      if (nextTheme === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+      } else {
+        document.documentElement.removeAttribute("data-theme");
+      }
+    };
+    // The new theme spreads out in a circle from the toggle; plain swap without View Transitions or with reduced motion.
+    if (document.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const box = button.getBoundingClientRect();
+      document.documentElement.style.setProperty("--reveal-x", `${box.left + box.width / 2}px`);
+      document.documentElement.style.setProperty("--reveal-y", `${box.top + box.height / 2}px`);
+      document.startViewTransition(apply);
+    } else apply();
     try {
       localStorage.setItem("app_theme", nextTheme);
     } catch {}
@@ -1468,3 +2626,19 @@ function setupThemeToggle() {
 setupThemeToggle();
 setupQuickPrompts();
 loadCorpus();
+
+// Keep this preference local to the browser; storage may be disabled.
+function setSidebarCollapsed(collapsed) {
+  $("#workspace").classList.toggle("sidebar-collapsed", collapsed);
+  const toggle = $("#sidebar-toggle");
+  toggle.setAttribute("aria-expanded", String(!collapsed));
+  toggle.setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
+  toggle.title = collapsed ? "Expand sidebar" : "Collapse sidebar";
+  toggle.firstElementChild.textContent = collapsed ? "›" : "‹";
+}
+try { setSidebarCollapsed(localStorage.getItem("sidebar_collapsed") === "true"); } catch {}
+$("#sidebar-toggle").addEventListener("click", () => {
+  const collapsed = !$("#workspace").classList.contains("sidebar-collapsed");
+  setSidebarCollapsed(collapsed);
+  try { localStorage.setItem("sidebar_collapsed", String(collapsed)); } catch {}
+});

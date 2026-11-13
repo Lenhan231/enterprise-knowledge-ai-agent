@@ -1,6 +1,7 @@
 from pathlib import Path
 from contextlib import asynccontextmanager
 import hashlib
+import base64
 import json
 import logging
 import os
@@ -11,7 +12,7 @@ import uuid
 from typing import Annotated, Literal
 import jwt
 
-from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -32,6 +33,7 @@ from app.upload_test import (
     create_upload_test, get_upload_test_preview, inspect_upload_test,
     list_upload_tests, router as upload_test_router,
 )
+from core.services.client import post as post_internal_service
 
 logger = logging.getLogger(__name__)
 @asynccontextmanager
@@ -171,6 +173,11 @@ class DocumentAccessRequest(BaseModel):
         return value
 
 
+class InvoiceReviewRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    invoice_data: dict
+
+
 @app.get("/", include_in_schema=False)
 def home():
     if os.getenv("BACKEND_ONLY") == "1":
@@ -251,6 +258,28 @@ def admin_knowledge_documents(user: dict = Depends(require_permission("list_proc
             repository.close()
 
 
+@app.get("/api/admin/knowledge-documents/{document_id}/processing-output")
+def admin_knowledge_document_processing_output(
+    document_id: str,
+    user: dict = Depends(require_permission("manage_knowledge")),
+):
+    from core.database.document_processing_output_repository import DocumentProcessingOutputRepository
+
+    repository = DocumentProcessingOutputRepository()
+    try:
+        output = repository.get_document_output(document_id, company=CORPUS_COMPANY)
+        if output is None:
+            raise HTTPException(404, "No parser output is available for this source")
+        return {"document_id": document_id, **output}
+    except HTTPException:
+        raise
+    except Exception as error:
+        logger.exception("Could not load parser output for %s", document_id)
+        raise HTTPException(503, "Parser output could not be loaded") from error
+    finally:
+        repository.close()
+
+
 def _synthetic_policy_file_response(document_id: str) -> Response:
     """Resolve a synthetic policy PDF only through the checked-in corpus manifest."""
     root = Path(__file__).resolve().parents[2]
@@ -316,6 +345,37 @@ def set_knowledge_document_status(
             repository.close()
 
 
+@app.delete("/api/admin/knowledge-documents/{document_id}")
+def delete_removed_knowledge_document(
+    document_id: str,
+    request: Request,
+    user: dict = Depends(require_permission("manage_knowledge")),
+):
+    _require_same_origin(request)
+    repository = DocumentRepository()
+    try:
+        storage_path = repository.delete_removed_upload(document_id)
+        if storage_path is None:
+            raise HTTPException(409, "Only uploaded sources removed from AI retrieval can be deleted")
+    except HTTPException:
+        raise
+    except Exception as error:
+        logger.exception("Could not permanently delete knowledge source %s", document_id)
+        raise HTTPException(503, "Knowledge source could not be deleted") from error
+    finally:
+        repository.close()
+
+    source_file_removed = not storage_path
+    if storage_path:
+        try:
+            storage, bucket = _storage_client()
+            storage.storage.from_(bucket).remove([storage_path])
+            source_file_removed = True
+        except Exception:
+            logger.exception("Source file cleanup failed after deleting %s", document_id)
+    return {"document_id": document_id, "deleted": True, "source_file_removed": source_file_removed}
+
+
 @app.patch("/api/admin/knowledge-documents/{document_id}/access")
 def set_knowledge_document_access(
     document_id: str,
@@ -365,7 +425,7 @@ async def upload_document(
     filename = Path((file.filename or "").replace("\\", "/")).name
     extension = Path(filename).suffix.lower()
     from document_processing.document_processor import DocumentProcessor, SUPPORTED_FORMATS
-    if not filename or extension not in SUPPORTED_FORMATS:
+    if not filename or extension not in SUPPORTED_FORMATS or extension in {".svg", ".webp"}:
         raise HTTPException(415, "Supported formats: PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG, TIF")
     if not title.strip() or not document_type.strip() or not domain.strip():
         raise HTTPException(422, "Title, document type, and domain are required")
@@ -444,8 +504,6 @@ async def upload_document(
         })
         registered = True
         repository.update_processing_status(document_id, "processing")
-        from document_processing.document_processor import DocumentProcessor
-
         metadata = {
             "document_id": document_id,
             "company": CORPUS_COMPANY,
@@ -460,25 +518,33 @@ async def upload_document(
         }
         if synthetic_company_policy:
             metadata["source_type"] = "synthetic_demo_policy"
-        processor = DocumentProcessor({
-            "parser_engine": "docling",
-            "chunking_strategy": os.getenv("DOCUMENT_CHUNKING_STRATEGY", "sentence"),
-            "paddle_layout": os.getenv("DOCUMENT_PADDLE_LAYOUT", "false").strip().lower() == "true",
-            "paddle_chart_recognition": os.getenv(
-                "DOCUMENT_PADDLE_CHART_RECOGNITION", "false",
-            ).strip().lower() == "true",
-            "paddle_formula_recognition": os.getenv(
-                "DOCUMENT_PADDLE_FORMULA_RECOGNITION", "false",
-            ).strip().lower() == "true",
-            "vision_captioning": os.getenv("DOCUMENT_VISION_CAPTIONS", "false").strip().lower() == "true",
-            "ocr_language": ocr_language,
-        })
         try:
             from core.database.document_processing_output_repository import (
                 DocumentProcessingOutputRepository,
             )
 
-            parsed = processor.process(filename, content, metadata)
+            processing_url = os.environ.get("DOCUMENT_PROCESSING_URL")
+            if not processing_url:
+                raise RuntimeError("DOCUMENT_PROCESSING_URL is required")
+            parser_config = {
+                "parser_engine": "docling",
+                "chunking_strategy": os.getenv("DOCUMENT_CHUNKING_STRATEGY", "sentence"),
+                "paddle_layout": os.getenv("DOCUMENT_PADDLE_LAYOUT", "false").strip().lower() == "true",
+                "paddle_chart_recognition": os.getenv(
+                    "DOCUMENT_PADDLE_CHART_RECOGNITION", "false",
+                ).strip().lower() == "true",
+                "paddle_formula_recognition": os.getenv(
+                    "DOCUMENT_PADDLE_FORMULA_RECOGNITION", "false",
+                ).strip().lower() == "true",
+                "vision_captioning": os.getenv("DOCUMENT_VISION_CAPTIONS", "false").strip().lower() == "true",
+                "ocr_language": ocr_language,
+            }
+            parsed = post_internal_service(processing_url, "/parse", {
+                "filename": filename,
+                "content": base64.b64encode(content).decode("ascii"),
+                "metadata": metadata,
+                "config": parser_config,
+            }, timeout=int(os.getenv("DOCUMENT_PROCESSING_TIMEOUT_SECONDS", "600")))
             outputs_repository = DocumentProcessingOutputRepository()
             try:
                 outputs_repository.replace_document(document_id, parsed)
@@ -508,7 +574,7 @@ async def upload_document(
                 }
 
             from core.chunking.processor import ChunkingProcessor
-            processed = ChunkingProcessor(processor.config).process(parsed)
+            processed = ChunkingProcessor(parser_config).process(parsed)
         except ValueError as error:
             raise HTTPException(422, str(error)) from error
         parser_chunks = processed["chunks"]
@@ -597,6 +663,390 @@ async def upload_document(
     finally:
         if repository is not None:
             repository.close()
+
+
+def _process_invoice_upload(
+    invoice_id: str,
+    filename: str,
+    content: bytes | None,
+    uploaded_by: str,
+    source_sha256: str,
+    model_provider: str,
+    *,
+    storage_path: str | None = None,
+) -> None:
+    """Run invoice OCR after the upload response has been sent."""
+    from core.database.invoice_repository import InvoiceRepository
+
+    repository = InvoiceRepository()
+    try:
+        if content is None:
+            try:
+                storage, bucket = _storage_client()
+                content = storage.storage.from_(bucket).download(storage_path)
+            except Exception as error:
+                raise RuntimeError("Stored invoice source could not be read") from error
+        processing_url = os.environ.get("DOCUMENT_PROCESSING_URL")
+        if not processing_url:
+            raise RuntimeError("DOCUMENT_PROCESSING_URL is required")
+        parsed = post_internal_service(processing_url, "/parse", {
+            "filename": filename,
+            "content": base64.b64encode(content).decode("ascii"),
+            "metadata": {
+                "invoice_id": invoice_id,
+                "uploaded_by": uploaded_by,
+                "source_sha256": source_sha256,
+                "intent": "invoice",
+            },
+            "config": {
+                "intent": "invoice",
+                "parser_engine": "docling",
+                "invoice_provider": model_provider,
+                "docling_ocr": True,
+                "docling_ocr_engine": os.getenv("DOCUMENT_PROCESSING_OCR_ENGINE", "vietocr"),
+                "docling_ocr_language": "vie+eng",
+                "docling_table_structure": True,
+            },
+        }, timeout=int(os.getenv("DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS", "600")))
+        extraction = parsed.get("invoice_extraction") or {}
+        if extraction.get("status") != "review_required":
+            raise RuntimeError("Invoice parser returned no reviewable extraction")
+        invoice_data = extraction.get("fields")
+        repository.save_result(
+            invoice_id,
+            invoice_data=invoice_data if isinstance(invoice_data, dict) else {},
+            ocr_elements=parsed.get("elements") or [],
+            ocr_tables=parsed.get("tables") or [],
+            extraction_model=str(extraction.get("model") or ""),
+            extraction_metadata={
+                "revision": extraction.get("revision"),
+                "schema_version": extraction.get("schema_version", "invoice.v1"),
+                "metrics": extraction.get("metrics") or {},
+                "raw_response": extraction.get("raw_response", ""),
+            },
+            error_message=extraction.get("parse_error"),
+        )
+    except Exception as error:
+        logger.exception("Invoice extraction failed for %s", invoice_id)
+        try:
+            failure = str(error)
+            safe_failure = next((
+                label for marker, label in (
+                    ("Gemini invoice API returned HTTP 503", "Gemini temporarily unavailable (HTTP 503)"),
+                    ("Gemini invoice API returned HTTP 429", "Gemini rate limited (HTTP 429)"),
+                    ("Groq invoice API returned HTTP 429", "Groq rate limited (HTTP 429)"),
+                    ("Groq invoice API returned HTTP 503", "Groq temporarily unavailable (HTTP 503)"),
+                    ("GROQ_API_KEY is required", "Groq API key is not configured"),
+                    ("Stored invoice source could not be read", "Could not read the stored invoice file"),
+                ) if marker in failure
+            ), type(error).__name__)
+            repository.mark_failed(invoice_id, safe_failure)
+        except Exception:
+            logger.exception("Failed to record invoice failure %s", invoice_id)
+    finally:
+        repository.close()
+
+
+@app.post("/api/invoices/upload")
+async def upload_invoice(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+    model_provider: str = Form("gemini"),
+    user: dict = Depends(require_permission("upload_documents")),
+):
+    """OCR an invoice and save its reviewable JSON outside the document corpus."""
+    _require_same_origin(request)
+    model_provider = model_provider.strip().lower()
+    if model_provider not in {"gemini", "groq", "modal"}:
+        raise HTTPException(422, "Choose Gemini, Groq GPT-OSS 120B, or the fine-tuned Qwen Modal model")
+    filename = Path((file.filename or "").replace("\\", "/")).name
+    extension = Path(filename).suffix.lower()
+    supported = {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"}
+    if not filename or extension not in supported:
+        raise HTTPException(415, "Invoice upload supports PDF, PNG, JPG and TIFF files")
+    content = await file.read(50 * 1024 * 1024 + 1)
+    if len(content) > 50 * 1024 * 1024:
+        raise HTTPException(413, "Maximum file size is 50 MiB")
+    signatures = {
+        ".pdf": content.startswith(b"%PDF-"),
+        ".png": content.startswith(b"\x89PNG\r\n\x1a\n"),
+        ".jpg": content.startswith(b"\xff\xd8\xff"),
+        ".jpeg": content.startswith(b"\xff\xd8\xff"),
+        ".tif": content.startswith((b"II*\x00", b"MM\x00*")),
+        ".tiff": content.startswith((b"II*\x00", b"MM\x00*")),
+    }
+    if not signatures[extension]:
+        raise HTTPException(415, "File content does not match its extension")
+
+    invoice_id = f"INV-{uuid.uuid4().hex}"
+    storage_path = f"invoices/{invoice_id}/{filename}"
+    source_sha256 = hashlib.sha256(content).hexdigest()
+    storage, bucket = _storage_client()
+    uploaded = False
+    repository = None
+    registered = False
+    try:
+        storage.storage.from_(bucket).upload(
+            storage_path, content,
+            {"content-type": {
+                ".pdf": "application/pdf", ".png": "image/png",
+                ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+                ".tif": "image/tiff", ".tiff": "image/tiff",
+            }[extension], "upsert": "false"},
+        )
+        uploaded = True
+        from core.database.invoice_repository import InvoiceRepository
+
+        repository = InvoiceRepository()
+        repository.create_upload({
+            "invoice_id": invoice_id,
+            "source_filename": filename,
+            "source_format": extension[1:].upper(),
+            "source_sha256": source_sha256,
+            "storage_path": storage_path,
+            "uploaded_by": user["sub"],
+        })
+        registered = True
+
+        background_tasks.add_task(
+            _process_invoice_upload,
+            invoice_id,
+            filename,
+            content,
+            user["sub"],
+            source_sha256,
+            model_provider,
+        )
+        return {
+            "invoice_id": invoice_id,
+            "processing_status": "processing",
+        }
+    except HTTPException:
+        raise
+    except Exception as error:
+        logger.exception("Invoice upload or extraction failed for %s", invoice_id)
+        if registered and repository is not None:
+            try:
+                repository.mark_failed(invoice_id, type(error).__name__)
+            except Exception:
+                logger.exception("Failed to record invoice failure %s", invoice_id)
+        elif uploaded:
+            try:
+                storage.storage.from_(bucket).remove([storage_path])
+            except Exception:
+                logger.exception("Failed cleaning unregistered invoice source %s", invoice_id)
+        raise HTTPException(503, f"Invoice processing failed for {invoice_id}") from error
+    finally:
+        if repository is not None:
+            repository.close()
+
+
+@app.get("/api/invoices/{invoice_id}")
+def get_invoice(
+    invoice_id: str,
+    user: dict = Depends(require_permission("upload_documents")),
+):
+    """Return the uploader's invoice draft; admins can review any invoice."""
+    from core.database.invoice_repository import InvoiceRepository
+
+    repository = InvoiceRepository()
+    try:
+        invoice = repository.get_invoice(invoice_id)
+        if invoice is None or (
+            user.get("role") != "admin" and invoice["uploaded_by"] != user.get("sub")
+        ):
+            raise HTTPException(404, "Invoice not found")
+        invoice["source_available"] = bool(invoice.pop("storage_path", None))
+        return invoice
+    finally:
+        repository.close()
+
+
+@app.get("/api/invoices")
+def list_invoices(user: dict = Depends(require_permission("upload_documents"))):
+    from core.database.invoice_repository import InvoiceRepository
+
+    repository = InvoiceRepository()
+    try:
+        return {"invoices": repository.list_invoices(
+            user["sub"], include_all=user.get("role") == "admin", limit=100,
+        )}
+    finally:
+        repository.close()
+
+
+def _invoice_for_user(repository, invoice_id: str, user: dict) -> dict:
+    invoice = repository.get_invoice(invoice_id)
+    if invoice is None or (
+        user.get("role") != "admin" and invoice["uploaded_by"] != user.get("sub")
+    ):
+        raise HTTPException(404, "Invoice not found")
+    return invoice
+
+
+class InvoiceRetryRequest(BaseModel):
+    model_provider: Literal["gemini", "groq", "modal"]
+
+
+@app.post("/api/invoices/{invoice_id}/retry", status_code=202)
+def retry_invoice_extraction(
+    invoice_id: str,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    payload: InvoiceRetryRequest,
+    user: dict = Depends(require_permission("upload_documents")),
+):
+    _require_same_origin(request)
+    from core.database.invoice_repository import InvoiceRepository
+
+    repository = InvoiceRepository()
+    try:
+        invoice = _invoice_for_user(repository, invoice_id, user)
+        if not invoice["storage_path"]:
+            raise HTTPException(409, "The original invoice file is unavailable")
+        if not repository.start_retry(invoice_id):
+            raise HTTPException(409, "Only failed extractions can be retried. Refresh the invoice to see its status.")
+    finally:
+        repository.close()
+
+    background_tasks.add_task(
+        _process_invoice_upload,
+        invoice_id,
+        invoice["source_filename"],
+        None,
+        invoice["uploaded_by"],
+        invoice["source_sha256"],
+        payload.model_provider,
+        storage_path=invoice["storage_path"],
+    )
+    return {"invoice_id": invoice_id, "processing_status": "processing"}
+
+
+def _validated_invoice_data(invoice_data: dict) -> dict:
+    from document_processing.invoice_text_processor import InvoiceFields
+
+    return InvoiceFields.model_validate(invoice_data).model_dump(mode="json")
+
+
+@app.patch("/api/invoices/{invoice_id}")
+def save_invoice_review(
+    invoice_id: str,
+    request: Request,
+    payload: InvoiceReviewRequest,
+    user: dict = Depends(require_permission("upload_documents")),
+):
+    _require_same_origin(request)
+    from core.database.invoice_repository import InvoiceRepository
+
+    try:
+        invoice_data = _validated_invoice_data(payload.invoice_data)
+    except Exception as error:
+        raise HTTPException(422, "Invoice fields do not match invoice.v1") from error
+    repository = InvoiceRepository()
+    try:
+        invoice = _invoice_for_user(repository, invoice_id, user)
+        if invoice["processing_status"] != "review_required":
+            raise HTTPException(409, "Only pending invoices can be edited")
+        try:
+            repository.save_review(invoice_id, invoice_data, user["sub"])
+        except ValueError as error:
+            raise HTTPException(409, str(error)) from error
+        return {"invoice_id": invoice_id, "processing_status": "review_required", "invoice_data": invoice_data}
+    finally:
+        repository.close()
+
+
+@app.post("/api/invoices/{invoice_id}/approve")
+def approve_invoice_review(
+    invoice_id: str,
+    request: Request,
+    payload: InvoiceReviewRequest,
+    user: dict = Depends(require_permission("manage_knowledge")),
+):
+    _require_same_origin(request)
+    from core.database.invoice_repository import InvoiceRepository
+
+    try:
+        invoice_data = _validated_invoice_data(payload.invoice_data)
+    except Exception as error:
+        raise HTTPException(422, "Invoice fields do not match invoice.v1") from error
+    repository = InvoiceRepository()
+    try:
+        invoice = _invoice_for_user(repository, invoice_id, user)
+        if invoice["processing_status"] != "review_required":
+            raise HTTPException(409, "Only pending invoices can be approved")
+        try:
+            item_count = repository.approve(
+                invoice_id, invoice_data=invoice_data, reviewer=user["sub"],
+            )
+        except (ValueError, LookupError) as error:
+            raise HTTPException(422, str(error)) from error
+        return {"invoice_id": invoice_id, "processing_status": "approved", "item_count": item_count}
+    finally:
+        repository.close()
+
+
+@app.post("/api/invoices/{invoice_id}/reject")
+def reject_invoice_review(
+    invoice_id: str,
+    request: Request,
+    user: dict = Depends(require_permission("manage_knowledge")),
+):
+    _require_same_origin(request)
+    from core.database.invoice_repository import InvoiceRepository
+
+    repository = InvoiceRepository()
+    try:
+        invoice = _invoice_for_user(repository, invoice_id, user)
+        if invoice["processing_status"] != "review_required":
+            raise HTTPException(409, "Only pending invoices can be rejected")
+        try:
+            repository.reject(invoice_id, reviewer=user["sub"])
+        except ValueError as error:
+            raise HTTPException(409, str(error)) from error
+        return {"invoice_id": invoice_id, "processing_status": "rejected"}
+    finally:
+        repository.close()
+
+
+@app.get("/api/invoices/{invoice_id}/source")
+def invoice_source(
+    invoice_id: str,
+    user: dict = Depends(require_permission("upload_documents")),
+):
+    from core.database.invoice_repository import InvoiceRepository
+
+    repository = InvoiceRepository()
+    try:
+        invoice = _invoice_for_user(repository, invoice_id, user)
+        storage_path = invoice.get("storage_path")
+        filename = str(invoice.get("source_filename") or invoice_id)
+        source_format = str(invoice.get("source_format") or "").lower()
+    finally:
+        repository.close()
+    if not storage_path:
+        raise HTTPException(404, "Invoice source file is unavailable")
+    storage, bucket = _storage_client()
+    try:
+        content = storage.storage.from_(bucket).download(storage_path)
+    except Exception as error:
+        logger.exception("Could not open invoice source %s", invoice_id)
+        raise HTTPException(502, "The stored invoice file could not be opened") from error
+    media_type = {
+        "pdf": "application/pdf", "png": "image/png", "jpg": "image/jpeg",
+        "jpeg": "image/jpeg", "tif": "image/tiff", "tiff": "image/tiff",
+    }.get(source_format, "application/octet-stream")
+    safe_filename = quote(re.sub(r"[\r\n/\\]+", " ", filename)[:160], safe="")
+    return Response(
+        content=content,
+        media_type=media_type,
+        headers={
+            "Content-Disposition": f"inline; filename*=UTF-8''{safe_filename}",
+            "Cache-Control": "private, no-store",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
 
 
 @app.post("/api/admin/processing/{document_id}/retry-embedding")
@@ -772,10 +1222,11 @@ def _uploaded_source_response(document_id: str, user: dict) -> Response:
     try:
         source = repository.uploaded_source(
             document_id,
+            company=CORPUS_COMPANY,
             role=user["role"], username=user["sub"],
         )
         policy = None if source else repository.accessible_synthetic_policy_source(
-            document_id, role=user["role"],
+            document_id, company=CORPUS_COMPANY, role=user["role"],
         )
     finally:
         repository.close()
@@ -845,6 +1296,22 @@ def access_matrix(user: dict = Depends(require_permission("manage_access"))):
             for role, permissions in ROLE_PERMISSIONS.items()
         ],
     }
+
+
+@app.get("/api/admin/answer-feedback")
+def answer_feedback_snapshot(user: dict = Depends(require_permission("view_agent_monitoring"))):
+    from core.database.answer_feedback_repository import AnswerFeedbackRepository
+
+    repository = None
+    try:
+        repository = AnswerFeedbackRepository()
+        return repository.snapshot()
+    except Exception as error:
+        logger.exception("Could not load answer feedback")
+        raise HTTPException(503, "Answer feedback is unavailable") from error
+    finally:
+        if repository is not None:
+            repository.close()
 
 
 @app.get("/api/admin/agent-monitoring")

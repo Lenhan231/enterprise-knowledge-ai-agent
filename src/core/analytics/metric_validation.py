@@ -90,7 +90,8 @@ def validate_stock_comparison(sql, parameters, dates):
     stock = exp.column('stock_on_hand', table='inventory', db='commerce')
     observations = [exp.Max(this=exp.Case(ifs=[exp.If(this=exp.EQ(this=snapshot.copy(), expression=exp.convert(d)),
                         true=stock.copy())])) for d in dates]
-    expected = dict(stock_before=observations[0], stock_after=observations[1],
+    expected = dict(before_date=exp.convert(dates[0]), after_date=exp.convert(dates[1]),
+                    stock_before=observations[0], stock_after=observations[1],
                     stock_delta=exp.Sub(this=observations[1].copy(), expression=observations[0].copy()))
     projected = {p.alias_or_name: canonical(p) for p in tree.selects}
     if len(projected) != len(tree.selects) or any(projected.get(k) != v for k,v in expected.items()):
@@ -365,6 +366,9 @@ def _validate_inventory_metrics(sql, metric_names, parameters, table_columns, qu
     scalar = {name: _formula({**definition, 'formula': definition['scalar_formula']}, table_columns)
               for name, definition in active.items() if definition.get('scalar_formula')}
     has_aggregates = any(projection.find(exp.AggFunc) for projection in root.expression.selects)
+    scalar_count = (has_aggregates and not root.expression.args.get('group')
+                    and all(d['aggregation'] == 'count_distinct' for d in definitions.values())
+                    and _single_snapshot([root], parameters))
     if has_aggregates and any(definition['aggregation'] == 'value' for definition in definitions.values()):
         raise MetricDefinitionError('Stored product values and aggregate metrics have incompatible output grains. Request separate results or an explicit mean.', code='incompatible_grain', clarification=True)
     dimensions = set.intersection(*(set(definition['dimensions']) for definition in definitions.values()))
@@ -374,9 +378,19 @@ def _validate_inventory_metrics(sql, metric_names, parameters, table_columns, qu
     matched, used_scopes, representations = set(), {}, {}
     projected_snapshot = False
     for projection in root.expression.selects:
+        if scalar_count and projection.alias_or_name.casefold() == 'snapshot_date' and _latest_snapshot(projection.this) and any(
+                isinstance(predicate,exp.EQ) and _latest_snapshot(value)
+                for predicate,value,_ in _snapshot_predicates([root],parameters)):
+            projected_snapshot = True
+            continue
         expression = _canonical(projection, root, parameters, used_scopes)
         if expression == exp.column('snapshot_date', table='inventory', db='commerce') and projection.alias_or_name.casefold() == 'snapshot_date':
             projected_snapshot = True
+        if scalar_count and projection.alias_or_name.casefold() == 'snapshot_date' and any(
+                isinstance(predicate,exp.EQ) and expression == _canonical(value,root,parameters,{})
+                for predicate,value,_ in _snapshot_predicates([root],parameters)):
+            projected_snapshot = True
+            continue
         matches = {name for name, formula in formulas.items() if expression == formula}
         if not has_aggregates and not root.expression.args.get('group') and not root.expression.args.get('distinct'):
             matches |= {name for name, formula in scalar.items() if expression == formula}

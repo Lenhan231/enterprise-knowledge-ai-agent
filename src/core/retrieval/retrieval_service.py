@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from time import perf_counter
 from typing import Literal
 
@@ -12,6 +13,32 @@ from core.retrieval.methods import parent, translated_hybrid
 from core.retrieval.retrieval import (
     RankedChunk, RetrievalRequest, RetrievalResponse, SourceLocation, make_chunk_id,
 )
+
+
+def _expand_neighbours(repository, chunks, radius, company, roles):
+    """Attach same-page/section neighbours to reranked chunks; ACL is rechecked by the repository.
+
+    A chunk already inside a higher-ranked window is dropped, and windows never repeat a chunk,
+    so the answer prompt does not see the same text twice.
+    """
+    windows = repository.expand_parent_contexts(chunks, company=company, roles=roles, radius=radius)
+    kept, contexts, covered = [], {}, set()
+    for chunk in chunks:
+        key = (chunk.document_id, chunk.chunk_index)
+        if key in covered:
+            continue
+        window = windows.get(key)
+        if window:
+            fresh = [i for i in window["chunk_indices"] if (chunk.document_id, i) not in covered]
+            texts = dict(zip(window["chunk_indices"], window.get("texts") or []))
+            if texts and len(fresh) < len(window["chunk_indices"]):
+                window = {**window, "text": "\n".join(texts[i] for i in fresh), "chunk_indices": fresh,
+                          "parent_chunk_count": len(fresh)}
+            contexts[key] = window
+            covered.update((chunk.document_id, i) for i in window["chunk_indices"])
+        covered.add(key)
+        kept.append(chunk)
+    return kept, contexts
 
 
 class RetrievalService:
@@ -80,6 +107,7 @@ class RetrievalService:
                 self.repository, query_embedding, candidate_request, self._get_translator,
                 query_language=query_language, document_languages=document_languages,
                 dense_weight=dense_weight, bm25_weight=bm25_weight, rrf_k=rrf_k, **options,
+                embed=self.embedding_service.embed_query if self.embedding_service is not None else None,
             )
         elif method == "parent":
             chunks, parent_contexts = parent.search(
@@ -100,18 +128,23 @@ class RetrievalService:
                 from core.retrieval.reranker import BGEReranker
                 self.reranker = BGEReranker()
             retrieval_details["candidate_method"] = retrieval_details["effective_method"]
-            chunks, rerank_details = self.reranker.rerank(request.query, chunks, request.top_k)
+            rerank_query = retrieval_details.get("normalized_query") or request.query
+            chunks, rerank_details = self.reranker.rerank(rerank_query, chunks, request.top_k)
             retrieval_details.update(rerank_details)
             retrieval_details["effective_method"] = (
                 "dense_rerank" if retrieval_details.get("dense_fallback") else method
             )
             retrieval_details["embedding_model"] = getattr(self.embedding_service, "model_name", None)
+            radius = int(os.getenv("KNOWLEDGE_CONTEXT_RADIUS", "0"))
+            if radius and chunks:
+                chunks, parent_contexts = _expand_neighbours(self.repository, chunks, radius, company, roles)
+                retrieval_details["context_radius"] = radius
 
         results = []
         for rank, chunk in enumerate(chunks, start=1):
             context = parent_contexts.get((chunk.document_id, chunk.chunk_index), {})
             metadata = dict(chunk.metadata)
-            if method == "parent":
+            if method == "parent" or context:
                 indices = context.get("chunk_indices", [chunk.chunk_index])
                 metadata.update({
                     "parent_id": f"{chunk.document_id}::parent::{indices[0]}-{indices[-1]}",

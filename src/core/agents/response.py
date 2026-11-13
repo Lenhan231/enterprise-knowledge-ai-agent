@@ -6,6 +6,7 @@ from decimal import Decimal, InvalidOperation
 from core.agents.runtime import generate
 from core.models.agents import AgentResult
 from core.prompts.agents import SYNTHESIS_PROMPT
+from core.rag.arithmetic import verified_results
 
 
 def _number_options(text):
@@ -26,22 +27,55 @@ def _number_options(text):
     return numbers
 
 
+_MULTIPLIERS = {'tỷ': 10**9, 'tỉ': 10**9, 'triệu': 10**6, 'tr': 10**6, 'nghìn': 10**3, 'ngàn': 10**3, 'k': 10**3}
+_SHORTHAND = re.compile(r'(?<![\w.,])(\d+(?:[.,]\d+)?)\s*(tỷ|tỉ|triệu|tr|nghìn|ngàn|k)(\d)?(?!\w)', re.IGNORECASE)
+# A unit between operands ('4.000.000 VND + 1.500.000 VND = ...') would otherwise hide the equality.
+_UNITS = re.compile(r'(?<=\d)\s*(?:VNĐ|VND|đồng|USD)(?!\w)', re.IGNORECASE)
+
+
+def _shorthand_amounts(text):
+    """'18 triệu' -> 18000000, '4tr5' -> 4500000, so a full amount in the answer matches a shorthand source."""
+    amounts = set()
+    for number, unit, tail in _SHORTHAND.findall(text):
+        scale = _MULTIPLIERS[unit.lower()]
+        for options in _number_options(number):
+            amounts.update(value * scale + (int(tail) * scale // 10 if tail else 0) for value in options)
+    return amounts
+
+
+# List numbering ("1. ", "2) ", "Bước 3", "Step 3") is structure, not a fact to source.
+_LIST_MARKERS = re.compile(r'(?im)^[ \t]*(?:[-*•][ \t]*)?\d{1,2}[.)][ \t]|\b(?:bước|step)[ \t]+\d{1,2}\b')
+
+
 def _supported_numbers(answer, inputs, question):
     # Generated specialist prose is not an authority for facts in final synthesis.
     facts = [{'rows': item['data'].get('rows', []),
               'content': [e.get('content') for e in item['evidence']]} for item in inputs]
     source = json.dumps(facts, ensure_ascii=False, default=str) + question
-    source_numbers = _number_options(source)
-    allowed = set().union(*source_numbers) if source_numbers else set()
-    return all(options & allowed for options in _number_options(re.sub(r'\[S\d+\]', '', answer)))
+    # Results of equalities that check exactly are derived, not invented; their operands must still be sourced.
+    plain = _UNITS.sub('', answer)
+    source_numbers = _number_options(source + ' ' + ' '.join(verified_results(plain)))
+    allowed = set().union(*source_numbers, _shorthand_amounts(source)) if source_numbers else _shorthand_amounts(source)
+    return all(options & allowed for options in _number_options(_LIST_MARKERS.sub('', re.sub(r'\[S\d+\]', '', answer))))
 
 
 async def assemble_response(request, plan, execution, provider):
     active = [execution.outcomes[t.id] for t in plan.tasks if t.id in execution.outcomes]
+    if len(plan.tasks) == 1 and plan.tasks[0].agent == 'knowledge' and active and active[0].result is not None:
+        # Auto writes nothing new here: the Knowledge answer was already checked claim by claim by its
+        # verifier, so pass it (verified, withheld or no match) and its metadata through unchanged.
+        result = active[0].result
+        # 'status' keeps the turn in the conversation history; 'limitations' is read on the timeout path.
+        return result.model_copy(update={'metadata': {
+            'status': 'complete' if result.metadata.get('ok', True) else 'failed', 'limitations': [],
+            **result.metadata, 'selected_route': 'knowledge', 'task_trace': execution.trace,
+            'specialist_invocations': execution.invocations, 'planning_fallback': plan.fallback}})
     usable = [o for o in active if o.result and o.result.evidence and o.status in {'complete', 'partial'}]
     missing = [o for o in active if o.status != 'complete']
     status = 'complete' if len(active) == len(plan.tasks) and not missing else ('partial' if usable else 'failed')
-    if not usable and any(o.status == 'clarification_required' for o in active):
+    clarification = next((o for o in active if o.status == 'clarification_required'), None)
+    database_failure = next((o for o in active if o.result and o.result.data.get('query_status') == 'error'), None)
+    if clarification:
         status = 'clarification_required'
     evidence, inputs, data, limitations = [], [], {}, []
     for task in plan.tasks:
@@ -55,6 +89,10 @@ async def assemble_response(request, plan, execution, provider):
             if outcome.result:
                 diagnostic = {key: value for key, value in outcome.result.data.items()
                               if key in {'sql', 'attempted_sql', 'parameters', 'query_status'}}
+                if outcome.result.metadata.get('failure_code'):
+                    diagnostic['failure_code'] = outcome.result.metadata['failure_code']
+                if outcome.result.metadata.get('jev'):
+                    diagnostic['jev'] = outcome.result.metadata['jev']
                 if diagnostic:
                     data[outcome.task.agent] = diagnostic
     for outcome in usable:
@@ -76,7 +114,13 @@ async def assemble_response(request, plan, execution, provider):
         data[key] = result.data
     fallback = True
     answer = ''
-    if len(usable) == 1 and len(plan.tasks) == 1 and status == 'complete':
+    if clarification:
+        answer = clarification.result.answer
+        fallback = False
+    elif database_failure and not usable:
+        answer = database_failure.result.answer
+        fallback = False
+    elif len(usable) == 1 and len(plan.tasks) == 1 and status == 'complete':
         answer = inputs[0]['answer']
         fallback = bool(usable[0].result.metadata.get('fallback', False))
     elif usable:
@@ -108,7 +152,7 @@ async def assemble_response(request, plan, execution, provider):
             except Exception:
                 pass
     allowed = {e.citation_id for e in evidence}
-    if answer and (not re.search(r'\[S\d+\]', answer)
+    if not clarification and answer and (not re.search(r'\[S\d+\]', answer)
                    or not set(re.findall(r'\[(S\d+)\]', answer)) <= allowed or '[UNKNOWN]' in answer
                    or not _supported_numbers(answer, inputs, request.question)):
         answer, fallback = '', True
@@ -125,18 +169,24 @@ async def assemble_response(request, plan, execution, provider):
                 for source in item['evidence']:
                     excerpt = (source.get('content') or 'See the cited source.')[:1600]
                     blocks.append(f'Document evidence [{source["citation_id"]}]:\n> ' + excerpt.replace('\n', '\n> '))
-        if blocks:
+        if clarification:
+            answer = clarification.result.answer
+        elif database_failure:
+            answer = database_failure.result.answer
+        elif blocks:
             answer = 'Evidence fallback — review the supported findings and gaps below.\n\n' + '\n\n'.join(blocks)
         elif status == 'clarification_required':
             answer = next(o.result.answer for o in active if o.status == 'clarification_required')
         else:
             answer = 'No supported answer could be completed. A task failed or its deadline/evidence budget was exhausted.'
-    if limitations:
+    if limitations and not clarification and not database_failure:
         answer += '\n\nLimitations: ' + ' '.join(dict.fromkeys(limitations))
     agent_names = {task.agent for task in plan.tasks}
     route = 'hybrid' if len(agent_names) > 1 else ('analytics' if 'sql' in agent_names else 'knowledge')
-    return AgentResult(answer=answer, agent=route, evidence=evidence, data=data,
-                       metadata={'ok': status == 'complete', 'status': status, 'fallback': fallback,
-                                 'limitations': list(dict.fromkeys(limitations)), 'selected_route': route,
-                                 'task_trace': execution.trace, 'specialist_invocations': execution.invocations,
-                                 'planning_fallback': plan.fallback})
+    metadata = {'ok': status == 'complete', 'status': status, 'fallback': fallback,
+                'limitations': [] if database_failure else list(dict.fromkeys(limitations)), 'selected_route': route,
+                'task_trace': execution.trace, 'specialist_invocations': execution.invocations,
+                'planning_fallback': plan.fallback}
+    if database_failure:
+        metadata.update(database_failure.result.metadata)
+    return AgentResult(answer=answer, agent=route, evidence=evidence, data=data, metadata=metadata)

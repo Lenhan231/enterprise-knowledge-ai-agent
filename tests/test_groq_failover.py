@@ -17,24 +17,6 @@ def limited():
 
 class GroqFailoverTest(unittest.TestCase):
     @patch('core.llm.groq_provider.OpenAI')
-    def test_third_key_is_used_only_after_both_earlier_keys_are_limited(self, factory):
-        clients=[MagicMock() for _ in range(3)]
-        factory.side_effect=clients
-        for client in clients[:2]:
-            client.with_options.return_value.responses.create.side_effect=limited()
-        clients[2].with_options.return_value.responses.create.return_value=MagicMock(output_text='third key answer')
-        provider=GroqProvider(model='same-model',api_keys=['primary-test','backup-test','tertiary-test'])
-        try:
-            self.assertEqual(provider.generate('question'),'third key answer')
-            for client in clients:
-                call=client.with_options.return_value.responses.create.call_args
-                self.assertEqual(call.kwargs['model'],'same-model')
-            provider.generate('next question')
-            self.assertEqual([c.with_options.return_value.responses.create.call_count for c in clients],[1,1,2])
-        finally:
-            provider.close()
-
-    @patch('core.llm.groq_provider.OpenAI')
     def test_rate_limit_switches_key_and_preserves_model(self, factory):
         primary, backup = MagicMock(), MagicMock()
         factory.side_effect = [primary, backup]

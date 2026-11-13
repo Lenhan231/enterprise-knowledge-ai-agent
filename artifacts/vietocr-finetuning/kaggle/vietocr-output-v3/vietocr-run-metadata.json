@@ -1,0 +1,67 @@
+{
+  "dataset_id": "Enterprise Printed OCR Lines",
+  "weights_sha256": "fc76fb90a2a18d0e80052f41355136c382f1b64dc17e5c3778fe2403ed6c3935",
+  "config_sha256": "9666633039841592dfa9b7085e4214c6e620a43fb109aeab4d49e6a55a774972",
+  "metrics": [
+    {
+      "system": "VietOCR pretrained / all",
+      "n_lines": 1299,
+      "CER": 0.055884681536487485,
+      "WER": 0.10121005274588893,
+      "exact_match": 0.5257890685142417,
+      "raw_CER": 0.056130388489994264,
+      "raw_WER": 0.10214086255041886,
+      "raw_exact_match": 0.5211701308698999
+    },
+    {
+      "system": "VietOCR pretrained / enterprise_printed",
+      "n_lines": 1239,
+      "CER": 0.056497013688451975,
+      "WER": 0.1012504007694774,
+      "exact_match": 0.5181598062953995,
+      "raw_CER": 0.05661132226445289,
+      "raw_WER": 0.10157101635139468,
+      "raw_exact_match": 0.5181598062953995
+    },
+    {
+      "system": "VietOCR pretrained / enterprise_english",
+      "n_lines": 60,
+      "CER": 0.042787286063569685,
+      "WER": 0.1,
+      "exact_match": 0.6833333333333333,
+      "raw_CER": 0.04584352078239609,
+      "raw_WER": 0.11923076923076924,
+      "raw_exact_match": 0.5833333333333334
+    },
+    {
+      "system": "VietOCR fine-tuned / all",
+      "n_lines": 1299,
+      "CER": 0.015575090775068934,
+      "WER": 0.0436239528389699,
+      "exact_match": 0.6836027713625866,
+      "raw_CER": 0.015957301591635043,
+      "raw_WER": 0.04511324852621781,
+      "raw_exact_match": 0.6720554272517321
+    },
+    {
+      "system": "VietOCR fine-tuned / enterprise_printed",
+      "n_lines": 1239,
+      "CER": 0.016031777784128256,
+      "WER": 0.04341134979159987,
+      "exact_match": 0.6779661016949152,
+      "raw_CER": 0.01628897208013031,
+      "raw_WER": 0.04430907342096826,
+      "raw_exact_match": 0.6731234866828087
+    },
+    {
+      "system": "VietOCR fine-tuned / enterprise_english",
+      "n_lines": 60,
+      "CER": 0.005806845965770171,
+      "WER": 0.05,
+      "exact_match": 0.8,
+      "raw_CER": 0.008863080684596576,
+      "raw_WER": 0.06923076923076923,
+      "raw_exact_match": 0.65
+    }
+  ]
+}

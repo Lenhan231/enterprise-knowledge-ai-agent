@@ -1,0 +1,11 @@
+{
+  "title": "1000 Synthetic Vietnamese Invoice SFT and Holdout",
+  "id": "ltrngnhn/invoice-synthetic-1000-sft-benchmark",
+  "licenses": [
+    {
+      "name": "other"
+    }
+  ],
+  "subtitle": "Synthetic invoice PDFs with schema labels and leakage-safe split",
+  "description": "1,000 synthetic Vietnamese invoice PDFs and invoice.v1 ground truth. 900 train / 50 validation / 50 test; the established 50-sample pilot is held out from training. Synthetic demonstration data only."
+}

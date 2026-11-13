@@ -5,21 +5,25 @@ from __future__ import annotations
 import asyncio
 import inspect
 import json
+import os
 import re
+import urllib.request
 from collections.abc import Mapping
 from datetime import date
 from typing import Any
 
 from core.agents.base import BaseAgent
+from core.analytics.field_retrieval import field_contract, compile_field_query
 from core.analytics.commerce_decision_support import resolve_commerce_decision_domain, unavailable_commerce_dimensions
 from core.analytics.metric_ontology import resolve_metric_names, get_metric_definition
 from core.analytics.metric_mapping import build_metric_mapping_prompt, compile_inventory_query, decode_metric_mapping, decode_sql_turn, MetricTime, validate_mapped_sql
 from core.analytics.metric_validation import MetricDefinitionError, inventory_time_scope, validate_metric_definitions, validate_metric_request
 from core.analytics.text_to_sql import (
-    APPROVED_COLUMNS,
+    APPROVED_COLUMNS, INVENTORY_SOURCES, inventory_scope_enabled,
     approved_join_path,
     QueryPlan,
     relevant_schema_tables,
+    APPROVED_JOINS,
     SQLValidationError,
     build_sql_prompt,
     decode_query_plan,
@@ -30,7 +34,7 @@ from core.database.commerce_repository import CommerceRepository
 from core.llm.llm_interface import LLMInterface
 from core.models.agents import AgentResult, Evidence, VerifiedIdentity
 from core.latency import measure
-from core.agents.runtime import generate
+from core.agents.runtime import generate, run_sync
 
 
 class AnalyticsPermissionDenied(PermissionError):
@@ -67,7 +71,14 @@ def payload_to_agent_result(payload: Mapping[str, Any], *, agent: str = "analyti
 
 
 class SQLAnalyticsAgent(BaseAgent):
-    def __init__(self, repository: CommerceRepository, *, llm: LLMInterface | None = None) -> None:
+    JEV_MIN_CLEAR_CONFIDENCE = 0.8
+
+    def __init__(self, repository: CommerceRepository, *, llm: LLMInterface | None = None, inventory_only: bool | None = None) -> None:
+        if inventory_only is None:
+            inventory_only = inventory_scope_enabled()
+        self.inventory_only = inventory_only
+        self.table_columns = {name:columns for name,columns in APPROVED_COLUMNS.items()
+                              if not inventory_only or name in INVENTORY_SOURCES}
         self.repository = repository
         self.llm = llm
 
@@ -77,8 +88,30 @@ class SQLAnalyticsAgent(BaseAgent):
     async def run_payload(self, request: Any) -> dict[str, Any]:
         self._authorize(request)
         context_info = {}
+        options = request.get('metadata', {}) if isinstance(request, Mapping) else getattr(request, 'metadata', {})
+        context = options.get('_sql_context') if isinstance(options, Mapping) else None
+        if not (isinstance(context, Mapping) and context.get('pending')):
+            try:
+                with measure('sql_ambiguity_check'):
+                    decision = await run_sync(self._check_ambiguity, self._query_text(request), _timeout=12)
+            except Exception as error:
+                return self._jev_failure(error)
+            context_info['jev'] = {**decision, 'threshold': self.JEV_MIN_CLEAR_CONFIDENCE}
+            if decision['probabilities']['clear'] < self.JEV_MIN_CLEAR_CONFIDENCE:
+                result = {
+                    'ok': False, 'operation': 'text_to_sql', 'rows': [],
+                    'answer': 'Mình chưa đủ chắc cách hiểu câu hỏi để chạy truy vấn an toàn. Bạn muốn mình hiểu câu hỏi theo cách nào?',
+                    'limitations': ['Chưa chạy truy vấn vì cách hiểu của câu hỏi cần được làm rõ.'],
+                    'query_status': 'clarification_required',
+                    'metadata': {'status': 'clarification_required', 'clarification_required': True,
+                                 '_sql_context_action': 'new', 'jev': context_info['jev']},
+                }
+                result['metadata']['sql_scope'] = 'inventory' if self.inventory_only else 'approved_commerce'
+                result['metadata'].update(context_info, execution_status='clarification_required')
+                return result
         result = await self._run_payload(request,context_info)
         metadata = result.setdefault('metadata',{})
+        metadata['sql_scope'] = 'inventory' if self.inventory_only else 'approved_commerce'
         metadata.update(context_info)
         metadata['execution_status'] = (('executed' if result.get('rows') else 'executed_empty')
             if result.get('query_status') == 'executed' else
@@ -87,6 +120,62 @@ class SQLAnalyticsAgent(BaseAgent):
              'validation_failed' if metadata.get('error_type') in {'SQLValidationError','MetricDefinitionError'} else 'planning_failed'))
         return result
 
+    def _check_ambiguity(self, question: str) -> dict[str, Any]:
+        api_key = os.getenv('OPENROUTER_API_KEY', '').strip()
+        if not api_key:
+            raise RuntimeError('OPENROUTER_API_KEY is not configured')
+        schema = {table: sorted(columns) for table, columns in self.table_columns.items()}
+        relationships = [sorted(f'{table}.{column}' for table, column in edge) for edge in APPROVED_JOINS]
+        request_body = json.dumps({
+            'model': 'typesafe/jev-1.14',
+            'state': {'question': question, 'approved_schema': schema,
+                      'approved_relationships': relationships},
+            'questions': {'intent': {
+                'type': 'choice',
+                'instructions': ('Is the requested result clear enough to write exactly one safe SQL query? '
+                                 'Choose ambiguous when materially different metrics, entities, or scopes '
+                                 'are reasonably supported by the wording, or a required scope is missing. '
+                                 'Distinguish time grain from time period: "by each month" or a monthly trend '
+                                 'explicitly requests grouping by month, but "revenue for a month" without a '
+                                 'named month, date range, or explicit latest-available period lacks its time '
+                                 'scope and is ambiguous. Do not turn a missing period into GROUP BY, an '
+                                 'arbitrary date range, or a LIMIT. Treat "latest available month" as clear; '
+                                 'if "last month" could mean either the previous calendar month or latest '
+                                 'month in the data, ask for clarification. Missing optional filters alone '
+                                 'do not make it ambiguous. Consider only the question and approved schema; '
+                                 'do not judge SQL validity.'),
+                'criteria': {
+                    'clear': ('One reasonable metric, entity, and required scope can be identified. A time '
+                              'grouping is clear only when the question asks for a series or grouping.'),
+                    'ambiguous': ('At least two materially different interpretations are reasonable and would '
+                                  'produce different SQL results, or the metric requires a missing time period.'),
+                },
+            }},
+        }).encode()
+        req = urllib.request.Request(
+            'https://openrouter.ai/api/alpha/decisions', data=request_body,
+            headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'}, method='POST',
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            payload = json.loads(response.read())
+        answer = payload.get('answers', {}).get('intent', {})
+        probabilities = answer.get('probabilities', {})
+        clear, ambiguous = float(probabilities.get('clear', -1)), float(probabilities.get('ambiguous', -1))
+        if (answer.get('type') != 'choice' or answer.get('choice') not in {'clear', 'ambiguous'}
+                or not all(0 <= probability <= 1 for probability in (clear, ambiguous))):
+            raise ValueError('Jev returned an invalid ambiguity decision')
+        return {'choice': answer.get('choice'), 'probabilities': {'clear': clear, 'ambiguous': ambiguous},
+                'confidence': answer.get('confidence'), 'model': payload.get('model')}
+
+    @staticmethod
+    def _jev_failure(error: Exception) -> dict[str, Any]:
+        return {
+            'ok': False, 'operation': 'text_to_sql', 'rows': [], 'query_status': 'error',
+            'answer': 'Không thể kiểm tra độ rõ của câu hỏi lúc này, nên mình chưa chạy truy vấn. Vui lòng thử lại.',
+            'limitations': ['Jev ambiguity check did not complete; no database query was run.'],
+            'metadata': {'status': 'failed', 'error_type': type(error).__name__, '_sql_context_action': 'failed'},
+        }
+
     async def _run_payload(self, request: Any, context_info: dict) -> dict[str, Any]:
         question = self._query_text(request)
         options = request.get('metadata',{}) if isinstance(request,Mapping) else getattr(request,'metadata',{})
@@ -94,13 +183,27 @@ class SQLAnalyticsAgent(BaseAgent):
         if context is not None:
             context_info.update(context_used=False,_sql_context_action='new')
         unavailable = unavailable_commerce_dimensions(question, resolve_commerce_decision_domain(question) or '',
-                                                      set().union(*APPROVED_COLUMNS.values()))
+                                                      set().union(*self.table_columns.values()))
         if unavailable:
             return self._generation_error(MetricDefinitionError(
                 'The full approved schema does not support these requested dimensions: '+', '.join(unavailable)+'. '
                 'A supported alternative is inventory observations by product/category at an available historical snapshot.',
                 code='unsupported_dimension', clarification=True))
-        metric_names = resolve_metric_names(question)
+        try:
+            direct = field_contract(question) if context is None else None
+        except MetricDefinitionError as error:
+            return self._generation_error(error)
+        metric_names = set() if direct is not None else resolve_metric_names(question)
+        named_sources = set(re.findall(r'\bcommerce\.\w+', re.sub(r"'(?:[^']|'')*'", '', question).casefold()))
+        if self.inventory_only and direct is None and (named_sources - INVENTORY_SOURCES or any(
+                get_metric_definition(name).get('domain') != 'inventory_management' for name in metric_names)):
+            return self._generation_error(MetricDefinitionError(
+                'This deployment supports Inventory Management using commerce.inventory and commerce.products. '
+                'The requested business metric is outside that scope. Try stock_on_hand by category at a historical snapshot.',
+                code='outside_inventory_scope', clarification=True))
+        if direct is not None:
+            context_info['field_retrieval'] = {'source': direct.args['from_'].this.sql(),
+                'columns': [p.name for p in direct.selects], 'assurance': 'literal field contract'}
         definitions = {}
         raw = None
         interpretation = None
@@ -113,10 +216,11 @@ class SQLAnalyticsAgent(BaseAgent):
                 if error.code != 'snapshot_required':
                     raise
             tables = relevant_schema_tables(question, {name:get_metric_definition(name) for name in metric_names})
-            if ('commerce.inventory' in tables and metric_names and all(
+            if (direct is None and 'commerce.inventory' in tables and all(
                     get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
-                    and re.search(r'\bcurrent\b|\btoday\b|hiện tại|hôm nay', question, re.I)):
-                period = inventory_time_scope(question)
+                    and re.search(r'\bcurrent\b|\btoday\b|hiện tại|hôm nay', re.sub(r"'(?:[^']|'')*'", '', question), re.I)
+                    and not re.search(r'latest available|mới nhất hiện có', question, re.I)):
+                period = inventory_time_scope(question) or ('snapshot', date.today().isoformat(), None)
                 if period:
                     snapshot_sql = 'SELECT MAX(i.snapshot_date) AS snapshot_date FROM commerce.inventory AS i LIMIT 1'
                     try:
@@ -135,7 +239,7 @@ class SQLAnalyticsAgent(BaseAgent):
                         return result
             cross_domain = ('commerce.inventory' in tables and bool(tables & {'commerce.orders', 'commerce.order_items'})
                             and bool(re.search(r'\borders\b|\bordered\b|\border(?!\s+by)\b|đơn hàng', question, re.I)))
-            if (not cross_domain and (context is not None
+            if (direct is None and not cross_domain and (context is not None
                     or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
                     or (not metric_names and 'commerce.inventory' in tables))):
                 with measure('metric_interpretation'):
@@ -162,7 +266,7 @@ class SQLAnalyticsAgent(BaseAgent):
                 interpretation = decode_metric_mapping(interpretation.model_dump_json(),interpretation.date_question())
                 resolved_latest = True
             prompt = build_sql_prompt(question,metric_names=metric_names,
-                                      interpretation=interpretation.model_dump() if interpretation and interpretation.domain == 'inventory' else None)
+                                      allowed_sources=self.table_columns, interpretation=interpretation.model_dump() if interpretation and interpretation.domain == 'inventory' else None)
         except MetricDefinitionError as error:
             if context is not None and hasattr(error,'context_action'):
                 context_info['_sql_context_action'] = error.context_action
@@ -171,7 +275,9 @@ class SQLAnalyticsAgent(BaseAgent):
             return self._generation_error(error)
         for attempt in range(2):
             try:
-                if interpretation and interpretation.domain == 'inventory':
+                if direct is not None:
+                    plan = compile_field_query(direct)
+                elif interpretation and interpretation.domain == 'inventory':
                     sql, parameters = compile_inventory_query(interpretation)
                     plan = QueryPlan(sql=sql, parameters=parameters,
                                      explanation='Compiled from the validated inventory interpretation.')
@@ -185,6 +291,7 @@ class SQLAnalyticsAgent(BaseAgent):
                             'Use that path with independent aggregates or correlated EXISTS as appropriate; '
                             'do not introduce direct fact joins or ask the user to approve an existing relationship.')
                 if plan.sql:
+                    validate_commerce_sql(plan.sql, allowed_sources=self.table_columns)
                     if cross_domain and not {'commerce.inventory','commerce.orders','commerce.order_items'} <= set(validate_commerce_sql(plan.sql).sources):
                         raise SQLValidationError('The requested cross-domain contract must retain inventory, orders and order_items.')
                     definitions = validate_metric_definitions(plan.sql, metric_names, plan.parameters, APPROVED_COLUMNS,
@@ -193,10 +300,10 @@ class SQLAnalyticsAgent(BaseAgent):
                         validate_mapped_sql(plan,interpretation,question=interpretation.date_question() if resolved_latest else question)
                 break
             except (SQLValidationError, MetricDefinitionError) as error:
-                if attempt == 0 and not (interpretation and interpretation.domain == 'inventory'):
+                if attempt == 0 and direct is None and not (interpretation and interpretation.domain == 'inventory'):
                     prompt = build_sql_prompt(
                         question, validation_error=str(error), previous_response=str(raw),
-                        metric_names=metric_names,
+                        metric_names=metric_names, allowed_sources=self.table_columns,
                         interpretation=interpretation.model_dump() if interpretation and interpretation.domain == 'inventory' else None,
                     )
                     continue
@@ -215,7 +322,7 @@ class SQLAnalyticsAgent(BaseAgent):
             }
 
         try:
-            validated = validate_commerce_sql(plan.sql or "")
+            validated = validate_commerce_sql(plan.sql or "", allowed_sources=self.table_columns)
         except Exception as error:
             return self._generation_error(error, plan.sql, plan.parameters)
         try:
@@ -247,11 +354,16 @@ class SQLAnalyticsAgent(BaseAgent):
             metadata['semantic_interpretation'] = interpretation.model_dump()
             metadata['filters'] = [item.model_dump() for item in interpretation.filters]
             metadata['time_scope'] = interpretation.time.model_dump()
+        if interpretation and interpretation.time and interpretation.time.mode == 'comparison':
+            metadata['columns'] = [dict(name=name, unit='units' if name in {'stock_before','stock_after','stock_delta'} else None) for name in (rows[0] if rows else ())]
+            metadata['comparison'] = dict(before=interpretation.time.start, after=interpretation.time.end,
+                population='products observed on both dates', calculation='stock_after - stock_before', unit='units', null_policy='preserve')
+            limitations.append('Only products observed on both selected dates are included. NULL stock operands produce NULL deltas; missing observations are not zero stock.')
         if any(definition.get('domain') == 'inventory_management' for definition in definitions.values()):
-            dates = sorted({str(row['snapshot_date']) for row in rows if row.get('snapshot_date') is not None})
-            if rows and interpretation and interpretation.time.mode == 'comparison':
-                dates = [interpretation.time.start, interpretation.time.end]
+            dates = sorted({str(row[name]) for row in rows for name in ('snapshot_date','before_date','after_date') if row.get(name) is not None})
             metadata.update(metric_catalog_version='1.0.0', historical_inventory=True, snapshot_dates=dates)
+            if interpretation and interpretation.time.mode == 'range':
+                limitations.append('Results retain separate exact snapshot observations. No combined period movement or balance total is established by the catalog.')
             periods = [definition['calculation_scope'] for definition in definitions.values() if definition.get('calculation_scope')]
             if periods:
                 metadata['inventory_period_scope'] = periods[0]
@@ -323,11 +435,26 @@ class SQLAnalyticsAgent(BaseAgent):
 
     @staticmethod
     def _database_error(error: Exception, sql: str, parameters: tuple[Any, ...]) -> dict[str, Any]:
+        analytics_url_missing = isinstance(error, RuntimeError) and 'ANALYTICS_DATABASE_URL' in str(error)
+        query_timeout = isinstance(error, TimeoutError) or getattr(error, 'sqlstate', None) == '57014'
+        failure_code = ('analytics_not_configured' if analytics_url_missing else
+                        'sql_timeout' if query_timeout else 'sql_execution_failed')
+        answer = (
+            'Chưa cấu hình tài khoản đọc dữ liệu cho SQL Agent (ANALYTICS_DATABASE_URL), nên truy vấn chưa chạy. '
+            'Hãy cấu hình kết nối analytics chỉ đọc rồi thử lại.'
+            if analytics_url_missing else
+            'Truy vấn dữ liệu mất quá lâu nên đã được dừng trước khi có kết quả. Hãy thu hẹp khoảng thời gian '
+            'hoặc yêu cầu một phép tổng hợp cụ thể hơn.'
+            if query_timeout else
+            'Câu hỏi đã được chuyển thành truy vấn SQL nhưng cơ sở dữ liệu không thực thi được. Chưa có kết quả '
+            'để trả lời. Hãy thử lại; nếu lỗi tiếp diễn, cần kiểm tra SQL, schema và quyền truy cập cơ sở dữ liệu.'
+        )
         result = {
             "ok": False, "operation": "text_to_sql", "rows": [],
-            "answer": "The approved data query could not be completed. Please try again later.",
-            "limitations": ["Database query did not complete."],
-            "metadata": {"error_type": type(error).__name__},
+            "answer": answer,
+            "limitations": ["Truy vấn vượt quá thời gian cho phép." if query_timeout else
+                            "Truy vấn dữ liệu chưa hoàn tất."],
+            "metadata": {"status": "failed", "failure_code": failure_code, "error_type": type(error).__name__},
         }
         result.update(attempted_sql=sql, parameters=list(parameters), query_status="error")
         return result

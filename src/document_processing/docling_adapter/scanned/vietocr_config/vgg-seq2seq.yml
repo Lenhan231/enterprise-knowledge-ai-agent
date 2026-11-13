@@ -1,0 +1,18 @@
+# Upstream: pbcquoc/vietocr config/vgg-seq2seq.yml at fe8c3a7fc714aec57ab81cec844eb3adf0c1636c
+pretrain: https://vocr.vn/data/vietocr/vgg_seq2seq.pth
+weights: https://vocr.vn/data/vietocr/vgg_seq2seq.pth
+backbone: vgg19_bn
+cnn:
+  ss: [[2, 2], [2, 2], [2, 1], [2, 1], [1, 1]]
+  ks: [[2, 2], [2, 2], [2, 1], [2, 1], [1, 1]]
+  hidden: 256
+seq_modeling: seq2seq
+transformer:
+  encoder_hidden: 256
+  decoder_hidden: 256
+  img_channel: 256
+  decoder_embedded: 256
+  dropout: 0.1
+optimizer:
+  max_lr: 0.001
+  pct_start: 0.1

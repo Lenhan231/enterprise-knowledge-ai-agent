@@ -1,88 +1,60 @@
 # Document processing
 
-This package parses supported files into ordered elements and structured
-tables. Its ownership ends at normalized document-processing output; chunking
-and persistence are handled by separate modules in the application.
+This package converts supported files into parser output: ordered `elements`,
+structured `tables`, and provenance metadata. It does not own chunking,
+embeddings, retrieval, or application persistence.
 
-For supported formats and OCR settings, see the [processing guide](docs/document-processing.md).
-Shared provenance fields are listed in [`docs/metadata.md`](docs/metadata.md).
+Start here when tracing a document:
 
-## Flow
+1. [Architecture and request flow](docs/architecture.md)
+2. [Parser contract and callers](docs/document-processing.md)
+3. Follow the selected path: [Docling and OCR](docs/docling-pipeline.md) or
+   [Vintern invoice and image caption](docs/vintern-pipeline.md)
+4. Check [output metadata](docs/metadata.md), then the separate
+   [chunking pipeline](../core/chunking/README.md)
+
+## Current routes
 
 ```text
-DocumentProcessor.process(file)
-    └── DoclingProcessor (format router)
-          ├── native document conversion → {elements, tables}
-          └── scanned/embedded_images → OCR selected PDF/Office pictures only
-                └── result_mapper → {elements, tables}
-    └── common cleanup + provenance
+DocumentProcessor.process
+  ├─ intent=document       → Docling → elements + tables
+  ├─ intent=invoice        → Vintern → invoice JSON draft + text element
+  └─ intent=image_caption  → Vintern → caption + text element
 
-application → core.chunking → persist chunks/tables
+parser output → application handoff → core/chunking → persistence / indexing
 ```
 
-Production upload and Upload Test call this parser package and the separate
-chunking module. Upload Test stores isolated results. This package does not
-handle chunking, tokenization, embeddings, or retrieval indexing.
+Invoice and image-caption are explicit Upload Test intents. The document
+parser does not automatically classify an upload as an invoice. The current
+invoice intent asks Vintern to read page images directly; it does not combine
+Vintern with Docling OCR.
 
-## Package map
+## Useful entry points
 
-| Path | Responsibility |
+| Need to find | Start at |
 | --- | --- |
-| `document_processor.py` | Route supported files to Docling; normalize output and provenance. |
-| `docling_adapter/processor.py` | Route native document conversion and scanned embedded images. |
-| `docling_adapter/digital_born/` | Native PDF detection and DOCX structure enrichment. |
-| `docling_adapter/scanned/` | Layout/OCR flow for selected raster images embedded in PDFs and Office documents. |
-| `docling_adapter/result_mapper.py` | Normalize native and scanned results into shared elements and tables. |
-`pipeline_id` records the configured parser engine; `parser` identifies the
-component that produced an element or table. See [`docs/metadata.md`](docs/metadata.md).
+| Intent and file-format routing | `document_processor.py` |
+| Docling layout, OCR, tables, chart handling | `docling_adapter/processor.py` |
+| OCR line detection and printed/handwritten routing | `docling_adapter/scanned/` |
+| Docling output mapping | `docling_adapter/result_mapper.py` |
+| Invoice/caption preprocessing and output shaping | `vintern_processor.py` |
+| Vintern model loading and inference | `vintern_worker.py` |
+| Upload Test API | `src/app/upload_test.py` |
+| Production upload caller | `src/app/main.py` |
 
-PDFs with at least 100 non-whitespace native text characters on every page use
-Docling's native text path with OCR disabled. If any page falls below that
-threshold, the PDF is routed as scanned and uses OCR when enabled in the parser
-configuration. The selected route and effective OCR setting are returned in
-the parser result metadata.
+For local commands and image build notes, see [development](docs/development.md).
 
-## Module Docker image
+## CPU OCR performance
 
-Build and start the private parser service from the repository root:
+VietOCR's RapidOCR detector uses maximum-edge resizing on CPU. Layout crops
+are already rendered at OCR scale, so narrow text regions should not be
+expanded until their short edge reaches 736 pixels. The CUDA route keeps its
+existing detector configuration.
 
-```sh
-docker compose build document-processing
-docker compose up -d --no-deps --wait document-processing
-```
+CPU pipelines default to 2 threads. `docling_num_threads` controls the budget
+for both PP-DocLayoutV3 and TableFormer; override it when profiling a different
+CPU allocation. CUDA retains the previous default of 4 CPU threads.
 
-The image serves the authenticated `/parse` and `/health` endpoints on its
-internal Docker network. It contains Docling, VietOCR, RapidOCR, and
-Vietnamese/English Tesseract. Set `DOCUMENT_PROCESSING_OCR_ENGINE` in the
-service environment to `tesseract` to select Tesseract instead of VietOCR.
-
-Startup initializes the default scanned, native PDF, and embedded-image
-pipelines before reporting healthy. This loads the OCR, layout, and table
-models into memory; import-only checks do not count as preloading. A model
-loading failure prevents startup. The embedding and reranker services also
-load their models before accepting requests; the backend calls those services.
-
-Converters are reused across requests with equivalent settings. Up to four
-configurations are retained; custom settings can initialize another pipeline
-on first use and evict an older configuration. Startup takes longer and idle
-RAM usage increases. Hugging Face weights persist in the model-cache volume;
-VietOCR's temporary weights and Torch's default cache are container-local.
-
-For the independent chunking image, see
-[`core/chunking/README.md`](../core/chunking/README.md#module-docker-image).
-
-## Local owner store UI
-
-Install the optional Streamlit UI and run it on loopback:
-
-```sh
-PYTHONPATH=src \
-  .venv/bin/streamlit run src/document_processing/testing_parser_streamlit.py \
-  --server.address 127.0.0.1 --server.port 8502
-```
-
-By default, source files and Docling JSON output are saved under
-`src/document_processing/.owner_store/`. Set `DOCUMENT_PROCESSING_STORE` to
-use another local folder. PDF uploads can select arbitrary pages, such as
-`2, 5, 9`, before Docling runs, which is useful for reviewing a few pages of a
-large document. Leaving the field blank processes the full PDF.
+Use the [parser latency command](docs/development.md#measure-parser-latency)
+to compare cold and warm runs with identical inputs and inspect any changes
+in text or table cells before accepting a speed improvement.

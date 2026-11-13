@@ -37,6 +37,23 @@ class AutomaticTranslationTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 QueryTranslator(llm).translate('question', 'en')
 
+    def test_optional_normalization_replaces_only_a_vietnamese_original(self):
+        cases = (('0', '{"source_lang":"vn","translation":"Emergency purchase?"}', 'mua khan?'),
+                 ('1', '{"source_lang":"vn","translation":"Emergency purchase?","normalized":"mua khẩn?"}', 'mua khẩn?'))
+        for flag, raw, expected in cases:
+            with self.subTest(flag=flag), patch.dict('os.environ', {'QUERY_NORMALIZATION_ENABLED': flag}):
+                llm = Mock()
+                llm.generate.return_value = raw
+                self.assertEqual(QueryTranslator(llm).translate('mua khan?'), {'vn': expected, 'en': 'Emergency purchase?'})
+                self.assertEqual('normalized' in llm.generate.call_args.args[0], flag == '1')
+        with patch.dict('os.environ', {'QUERY_NORMALIZATION_ENABLED': '1'}):
+            llm = Mock()
+            llm.generate.return_value = '{"source_lang":"en","translation":"Mua khẩn?","normalized":"Rewritten"}'
+            self.assertEqual(QueryTranslator(llm).translate('Emergency?'), {'en': 'Emergency?', 'vn': 'Mua khẩn?'})
+            llm.generate.return_value = '{"source_lang":"vn","translation":"x"}'  # flag on but field missing
+            with self.assertRaises(ValueError):
+                QueryTranslator(llm).translate('mua khan')
+
     def test_help_and_self_check_do_not_construct_provider_or_repository(self):
         with patch.object(benchmark, 'GroqProvider') as provider, patch.object(benchmark, 'DocumentChunkRepository') as repository:
             with patch.object(sys, 'argv', ['runner', '--self-check']), redirect_stdout(io.StringIO()):

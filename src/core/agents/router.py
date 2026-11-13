@@ -34,6 +34,9 @@ class AgentRouter:
                  report_agent=None, *, llm=None, request_timeout=120):
         self.classifier = classifier
         self.knowledge_agent, self.analytics_agent = knowledge_agent, analytics_agent
+        sql_runtime = getattr(analytics_agent, 'sql_agent', analytics_agent)
+        schema = getattr(sql_runtime, 'table_columns', None)
+        self.sql_schema = schema if isinstance(schema, dict) else None
         self.dashboard_agent, self.report_agent = dashboard_agent, report_agent
         self.llm, self._owns_llm = llm, False
         self.request_timeout = min(120, request_timeout)
@@ -76,6 +79,7 @@ class AgentRouter:
                         if result.metadata.get('status') in {'complete', 'partial', 'clarification_required'}:
                             scope = state['plan'].objective if state.get('plan') else request.question
                             history.append({'question': request.question[:2000], 'scope': scope[:2000],
+                                            'answer': result.answer[:1500],
                                             'clarification': result.answer[:500] if result.metadata.get('status') == 'clarification_required' else ''})
                         self.last_destination = result.metadata.get('selected_route', 'unrouted')
                         return result
@@ -137,6 +141,8 @@ class AgentRouter:
                     action = result.metadata.pop('_sql_context_action','new')
                     if result.data.get('query_status') == 'executed':
                         state = SQLConversationState.model_validate({'accepted':result.metadata.get('semantic_interpretation')})
+                    elif action == 'failed':
+                        pass
                     elif state.pending and action != 'new':
                         combined = state.pending.question+'\nClarification reply: '+request.question
                         if len(combined) <= 2000:
@@ -156,7 +162,20 @@ class AgentRouter:
     async def _plan(self, state):
         with measure('routing'):
             plan = await plan_request(state['request'], self._provider(), history=state['history'],
-                                      report_headings=state.get('report_headings'))
+                                      report_headings=state.get('report_headings'), sql_schema=self.sql_schema)
+        tasks = plan.tasks
+        if (state.get('report_headings') is None and len(tasks) > 1
+                and all(t.agent == 'knowledge' and not t.inputs and not t.depends_on for t in tasks)):
+            # A documents-only question goes to Knowledge once: it handles multi-part questions itself, and a
+            # single task keeps the claim-verified pass-through instead of a new, unverified synthesis.
+            plan = plan.model_copy(update={'tasks': [tasks[0].model_copy(update={'question': plan.objective})]})
+            tasks = plan.tasks
+        if (state.get('report_headings') is None and len(tasks) == 1 and tasks[0].agent == 'knowledge'
+                and not tasks[0].inputs and (not state['history'] or not plan.uses_context)):
+            # Knowledge translates and plans its own search; a planner paraphrase only adds variation.
+            # Follow-ups that need earlier turns keep the planner's resolved question.
+            plan = plan.model_copy(update={'tasks': [tasks[0].model_copy(
+                update={'question': state['request'].question})]})
         state['execution'].plan = plan
         if plan.clarification:
             return {'plan': plan, 'result': AgentResult(answer=plan.clarification, agent='agentic', metadata={
@@ -172,14 +191,20 @@ class AgentRouter:
         execution = state['execution']
         failed = [execution.outcomes[t.id] for t in state['plan'].tasks if t.id in execution.outcomes
                   and execution.outcomes[t.id].status in {'failed', 'empty', 'clarification_required'}]
-        return {'revise': bool(failed and state['revisions'] < 1 and execution.invocations < 6
+        terminal_database_failure = any(
+            outcome.result and outcome.result.data.get('query_status') == 'error'
+            for outcome in failed
+        )
+        return {'revise': bool(failed and not terminal_database_failure
+                               and not any(o.status == 'clarification_required' for o in failed)
+                               and state['revisions'] < 1 and execution.invocations < 6
                                and remaining() > 5)}
 
     async def _revise(self, state):
         execution = state['execution']
         try:
             plan = await plan_request(state['request'], self._provider(), history=state['history'],
-                previous=execution.revision_context(state['plan']), report_headings=state.get('report_headings'))
+                previous=execution.revision_context(state['plan']), report_headings=state.get('report_headings'), sql_schema=self.sql_schema)
             if plan.clarification:
                 return {'revisions': 1}
             completed = {key: o for key, o in execution.outcomes.items() if o.status == 'complete'}

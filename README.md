@@ -87,6 +87,21 @@ request rather than silently changing retrieval or parser behavior.
 See [deployment instructions](docs/deployment-guide.md#docker) for Vercel,
 HTTPS ingress, checks and safe retirement of old containers.
 
+Production invoice uploads use Docling OCR/table extraction followed by a
+text-only model selected for each upload. The form offers Gemini 3.1 Flash-Lite,
+Groq GPT-OSS 120B, and the fine-tuned Qwen3-0.6B model served by Modal GPU.
+Gemini 3.1 Flash-Lite is selected by default; configure `GEMINI_API` for it,
+`GROQ_API_KEY` for Groq, or `HF_INVOICE_LLM_TOKEN` and
+`DOCUMENT_PROCESSING_INVOICE_MODAL_URL` for Modal. The OCR stage is shared, and
+the selected text model extracts the reviewable JSON draft. Sources and drafts
+are saved in `public.invoice_extractions`, separately from `documents` and the
+searchable corpus. On the shared 50-invoice benchmark, Groq GPT-OSS 120B averaged
+27.69 seconds and scored 74% whole-invoice exact; Gemini 3.5 Flash Lite averaged
+17.45 seconds and scored 76%. The benchmark used Gemini 3.5 Flash Lite, while
+production currently offers Gemini 3.1 Flash-Lite, so these measurements do not
+represent the production Gemini version. See the [invoice pipeline guide](src/document_processing/docs/invoice-pipeline.md)
+for the processing flow and configuration details.
+
 Chat responses include request-local stage timings under `metadata.latency`;
 the backend also writes `agent_latency` JSON records to Docker logs. Values are
 milliseconds, and `null` means the stage was skipped. Retrieval totals include

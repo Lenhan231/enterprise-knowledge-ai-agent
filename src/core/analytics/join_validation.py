@@ -33,20 +33,6 @@ def grouped_key(scope):
     return names or None
 
 
-def column_origin(scope, column, visited=()):
-    """Resolve only transparent key projections; computed expressions are not join keys."""
-    if id(scope) in visited:
-        return None
-    source = scope.sources.get(column.table)
-    if isinstance(source, exp.Table):
-        return (f'{source.db}.{source.name}'.casefold(), column.name.casefold())
-    if isinstance(source, Scope):
-        projections = [p for p in source.expression.selects if p.alias_or_name.casefold() == column.name.casefold()]
-        if len(projections) == 1 and isinstance(projections[0].unalias(), exp.Column):
-            return column_origin(source, projections[0].unalias(), (*visited, id(scope)))
-    return None
-
-
 def relation_key(source):
     return PRIMARY_KEYS.get(source.name.casefold()) if isinstance(source, exp.Table) else grouped_key(source)
 
@@ -149,3 +135,17 @@ def validate_join_aggregations(tree, error_type):
                     'Aggregate from its source without the multiplying join, or use COUNT(DISTINCT key) '
                     'for entity counts. SUM(DISTINCT value) does not restore source grain.'
                 )
+
+
+def column_origin(scope, column, visited=()):
+    """Resolve only transparent key projections; computed expressions are not join keys."""
+    if id(scope) in visited:
+        return None
+    source = scope.sources.get(column.table)
+    if isinstance(source, exp.Table):
+        return (f'{source.db}.{source.name}'.casefold(), column.name.casefold())
+    if isinstance(source, Scope):
+        projections = [p for p in source.expression.selects if p.alias_or_name.casefold() == column.name.casefold()]
+        if len(projections) == 1 and isinstance(projections[0].unalias(), exp.Column):
+            return column_origin(source, projections[0].unalias(), (*visited, id(scope)))
+    return None

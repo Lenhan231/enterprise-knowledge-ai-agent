@@ -1,99 +1,84 @@
-# Document processing metadata
+# Parser output and metadata
 
-This file describes metadata produced by the current upload and OCR processing
-paths. It is a JSON contract stored with parser chunks and structured tables;
-the database does not require one fixed set of JSONB keys.
+This page describes the current `DocumentProcessor` result. It is not a
+database schema or a strict allowlist: callers can add source/business context,
+and parser routes can add optional fields.
 
-## Shared chunk fields
+## Top-level result
 
-The shared normalization and chunking stages add these fields to parser chunks
-and structured tables:
+The common shape is:
 
-| Field | Meaning |
-| --- | --- |
-| `filename` | Original uploaded filename. |
-| `format` | Technical file format, such as `PDF`, `DOCX`, or `CSV`. |
-| `pipeline_id` | Selected parser: `docling`. |
-| `parser` | Actual component that produced this chunk/table, for example `docling`, `python-csv`, or `tesseract`. |
-| `chunk_index` | Zero-based index in this parser result (chunks only). |
-| `actual_char_count` | Character count of the parser chunk text (chunks only). |
-| `table_index` | Zero-based table index (tables only). |
+```json
+{
+  "elements": [],
+  "tables": [],
+  "metadata": {}
+}
+```
 
-Processors add source locations such as `page_number`, `sheet_name`, or
-`slide_number` only when meaningful for the format. These fields describe the
-parser result persisted for inspection and downstream use. See
-[chunking](../../core/chunking/README.md).
+Optional route-specific data includes `layout_detections`,
+`page_orientation_corrections`, `page_sizes`, `page_previews`,
+`invoice_extraction`, and `image_caption_extraction`. For route behavior, see
+the [architecture](architecture.md), [Docling](docling-pipeline.md), and
+[Vintern](vintern-pipeline.md) pages.
 
-The legacy `extracted_tables.page_number` database column is non-nullable. The
-structured store uses `0` internally for tables without page locations and
-returns that sentinel as `null`; source metadata retains the real sheet/slide
-location.
+## Common element and table fields
 
-## Heading context
+| Field | Where | Meaning |
+| --- | --- | --- |
+| `filename` | element/table metadata and run metadata | Original uploaded filename |
+| `format` | element/table metadata and run metadata | File format, such as `PDF`, `DOCX`, or `CSV` |
+| `pipeline_id` | element/table metadata and run metadata | Selected route, e.g. `docling`, `docling_qwen_invoice_text`, or `vintern_image_caption` |
+| `parser_engine` | element/table metadata and run metadata | Parser route selected by the caller |
+| `parser` | element/table metadata | Component that produced the content, commonly `docling` or `vintern_*` |
+| `text_extraction_method` | element/table metadata | Method used to produce text, such as `docling.native`, `docling.vietocr`, or `docling.tesseract` |
+| `page_number` | element/table metadata when applicable | Source page; removed for standalone PNG/JPEG/SVG/WebP inputs |
+| `bbox` | element metadata when available | Source location; `bbox_coordinate_system` describes its coordinates |
+| `element_type`, `layout_type` | element/table metadata | Normalized shared element label |
 
-Processors use `section_title` for the active heading or format-level section
-and `heading_level` for its depth (1–9 where the source provides it). Markdown
-uses explicit `#` levels; DOCX uses Heading styles, outline levels, bold
-numbered headings, and centered bold uppercase titles; numbered/bulleted
-paragraphs become list items. Header-only DOCX layout tables remain text
-elements instead of empty structured tables. PPTX uses its title
-placeholder; XLSX uses the worksheet name as a level-one section. PDF and OCR
-pipelines infer levels from numbered labels or prominent text, so those values
-are best-effort. Plain TXT only recognizes conservative standalone
-numbered or all-caps heading lines. Image OCR does not infer heading levels.
-When a format provides no reliable heading, both values are null or omitted.
+An element contains `text`, `element_type`, and `metadata`; table markers can
+reference a separate table through `table_ref`. Structured tables contain
+`columns`, `rows`, and `metadata`. Parser output order is retained for
+downstream chunking.
 
-## Request context
+## Route-specific metadata
 
-The same processor receives different context from each caller:
+### Docling
 
-- Production upload adds `document_id`, `company`, `domain`, business
-  `document_type`, fiscal year, source URL/type, and allowed roles. Its source
-  type is `user_upload` unless the caller explicitly marks demo material.
-- Upload Test adds `source_type="upload_test"` and the input `source_sha256`.
-  It saves parser chunks and normalized table rows in isolated storage; it
-  stops before tokenization, embeddings, or production document creation.
-`format` and `document_type` are different concepts: `format` is the file
-extension; `document_type` is the business classification selected for a
-production upload.
+- Run metadata records `parser_engine="docling"` and, for PDF, the selected
+  `pdf_processing_route` (`layout_region_ocr` for VietOCR or `full_page_ocr`
+  for Tesseract) plus OCR flags.
+- `layout_detections` preserves raw PP-DocLayoutV3 labels, scores, page boxes,
+  and coordinate conventions; normalized `elements` use the shared taxonomy.
+- Chart metadata can include chart/title crop association and external
+  recognition details. Tables can include `table_structure_model` and dash
+  recovery metadata.
 
-## Parser provenance
+### Invoice text extraction
 
-Parser-specific fields are optional extensions to the shared fields. They must
-not replace or rename shared provenance keys.
+- Run metadata records `pipeline_id="docling_qwen_invoice_text"` and
+  `parser_engine="docling"`, plus the model/revision and review status.
+- `invoice_extraction.fields` is the schema-checked `invoice.v1` draft; raw
+  model output and inference metrics remain in extraction metadata.
+- Docling elements and structured tables retain their normal OCR/parser
+  provenance; the text model does not emit or alter those results.
 
-| Parser path | Example metadata |
-| --- | --- |
-| Default PDF | `parser="pymupdf"`, OCR method/settings when OCR was used, PDF page and table metadata. |
-| MinerU Basic | `parser="mineru"`, `mineru_tier="basic"`, `layout_type`, `element_type`, page, bounding box, and `mineru_runtime="local"` at run level. |
-| Paddle PP-StructureV3 | `parser="paddleocr.PP-StructureV3"`, layout and OCR details. |
-| Office parsers | Format-specific parser name; XLSX may include `sheet_name`. |
-| CSV | `parser="python-csv"`, delimiter, one structured table, and row-aware text chunks. |
+### Vintern
 
-For example, a MinerU Upload Test chunk can include `parser="mineru"` while a
-production PDF chunk has `parser="pymupdf"`. That difference is intentional:
-it records which engine produced the content. The common keys and their
-meanings remain the same. Parser-only details such as `mineru_tier` or `bbox`
-are not required on other engines' output.
+- Run metadata records `pipeline_id="vintern_image_caption"`, model/revision,
+  and review status.
+- `image_caption_extraction.pages` keeps raw page responses and captions.
+- Vintern currently emits text elements and no structured tables.
 
-Tables are returned separately from text chunks as `{table_index, columns,
-rows, metadata}` with optional source locations. The production upload persists this structure in the
-structured table store; Upload Test keeps columns and normalized rows in
-`upload_test_tables` and `upload_test_records`. Table chunks also contain
-row-aware text while structured rows remain available separately. See the
-[processing guide](document-processing.md).
+## Parser output versus chunk metadata
 
-## Current model boundary
+Parser output is normalized in `document_processing`. The chunking stage adds
+chunk-specific fields such as `chunk_index`, `actual_char_count`, and
+`table_index`; those fields do not belong to every raw parser element. See the
+[chunking guide](../../core/chunking/README.md) for how tables and elements
+become parser chunks.
 
-Production upload and Upload Test build metadata dictionaries and add caller-
-and parser-specific keys. [`ChunkMetadata`](../../models/document.py) is used
-by a separate ingestion utility and is not the complete production parser
-schema; do not treat it as a strict allowlist for JSONB. A symlink from
-`document_processing` to that dataclass would create another import path, not a
-shared metadata contract. Keep `core/models` as the model owner; use this file
-to understand which keys are common and which are optional provenance.
-
-If code needs a shared runtime type in the future, define it at the common
-model boundary and use the same import path from all producers. Keep JSONB
-extensions for parser and caller context instead of making every engine emit
-the same parser-specific fields.
+Production upload can add document/business access context. Upload Test adds
+`source_type="upload_test"` and `source_sha256` and uses isolated review
+storage. `format` is the file extension; `document_type` is a business
+classification supplied by the caller.

@@ -10,7 +10,7 @@ import os
 import asyncio
 from typing import Any
 
-from core.analytics.text_to_sql import APPROVED_COLUMNS, validate_commerce_sql
+from core.analytics.text_to_sql import APPROVED_COLUMNS, INVENTORY_SOURCES, inventory_scope_enabled, validate_commerce_sql
 
 try:
     import asyncpg
@@ -18,7 +18,7 @@ except ImportError:  # Keep imports usable before the optional DB dependency is 
     asyncpg = None  # type: ignore[assignment]
 
 
-DEFAULT_TIMEOUT_MS = 5_000
+DEFAULT_TIMEOUT_MS = 7_500
 
 
 class LazyCommerceRepository:
@@ -70,15 +70,16 @@ GROUP BY role.rolsuper, role.rolcreaterole, role.rolcreatedb,
 class CommerceRepository:
     """Execute bounded, validated read-only queries against approved commerce data."""
 
-    def __init__(self, pool: Any, *, statement_timeout_ms: int = DEFAULT_TIMEOUT_MS) -> None:
+    def __init__(self, pool: Any, *, statement_timeout_ms: int = DEFAULT_TIMEOUT_MS, allowed_sources=None) -> None:
         if statement_timeout_ms <= 0:
             raise ValueError("statement_timeout_ms must be positive")
         self.pool = pool
+        self.allowed_sources = frozenset(allowed_sources) if allowed_sources is not None else None
         self.statement_timeout_ms = statement_timeout_ms
 
     async def execute_approved_query(self, query: str, *args: Any) -> list[dict[str, Any]]:
         """Revalidate and execute one bounded allowlisted SELECT."""
-        validated = validate_commerce_sql(query)
+        validated = validate_commerce_sql(query, allowed_sources=self.allowed_sources)
         return await self._fetch(validated.sql, *args)
 
     async def close(self) -> None:
@@ -118,16 +119,17 @@ async def create_repository_from_env() -> CommerceRepository:
         command_timeout=DEFAULT_TIMEOUT_MS / 1_000,
     )
     try:
-        await verify_analytics_role(pool)
+        sources = INVENTORY_SOURCES if inventory_scope_enabled() else None
+        await verify_analytics_role(pool, allowed_sources=sources)
     except Exception:
         await pool.close()
         raise
-    return CommerceRepository(pool)
+    return CommerceRepository(pool, allowed_sources=sources)
 
 
-async def verify_analytics_role(pool: Any) -> None:
+async def verify_analytics_role(pool: Any, *, allowed_sources=None) -> None:
     """Fail closed unless the connection role can only read approved sources."""
-    table_names = sorted(source.split(".", 1)[1] for source in APPROVED_COLUMNS)
+    table_names = sorted(source.split(".", 1)[1] for source in (APPROVED_COLUMNS if allowed_sources is None else allowed_sources))
     async with pool.acquire() as connection:
         info = await connection.fetchrow(ROLE_CHECK_SQL, table_names)
     if info is None:

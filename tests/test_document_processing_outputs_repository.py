@@ -8,6 +8,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from core.database.document_processing_outputs_repository import (  # noqa: E402
     DocumentProcessingOutputsRepository,
 )
+from core.database.document_processing_output_repository import (  # noqa: E402
+    DocumentProcessingOutputRepository,
+)
 
 
 class DocumentProcessingOutputsRepositoryTest(unittest.TestCase):
@@ -57,6 +60,28 @@ class DocumentProcessingOutputsRepositoryTest(unittest.TestCase):
 
         self.cursor.execute.assert_not_called()
 
+class DocumentProcessingOutputReviewTest(unittest.TestCase):
+    def setUp(self):
+        self.connection = MagicMock()
+        self.cursor = self.connection.cursor.return_value.__enter__.return_value
+        self.repository = DocumentProcessingOutputRepository(self.connection)
+
+    def test_get_document_output_returns_elements_and_tables_for_review(self):
+        self.cursor.fetchone.return_value = {
+            "pipeline_id": "docling",
+            "elements": [{"text": "Revenue 100", "metadata": {"page_number": 1}}],
+            "tables": [{"columns": ["Year"], "rows": [{"Year": "2024"}]}],
+            "document_metadata": {"company": "Example"},
+        }
+
+        output = self.repository.get_document_output("DOC-1", company="Example")
+
+        self.assertEqual(output["pipeline_id"], "docling")
+        self.assertEqual(output["elements"][0]["text"], "Revenue 100")
+        self.assertEqual(output["tables"][0]["rows"], [{"Year": "2024"}])
+        query = self.cursor.execute.call_args.args[0]
+        self.assertIn("o.document_metadata->>'company'", query)
+        self.assertEqual(self.cursor.execute.call_args.args[1], ("DOC-1", "Example"))
 
 if __name__ == "__main__":
     unittest.main()

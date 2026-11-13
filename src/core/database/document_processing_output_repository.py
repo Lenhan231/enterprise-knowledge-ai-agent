@@ -7,6 +7,7 @@ from typing import Any
 
 import psycopg
 from dotenv import load_dotenv
+from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 
 from core.database.connection_limit import close_database_connection, connect_database
@@ -75,6 +76,28 @@ class DocumentProcessingOutputRepository:
         with self.connection.transaction(), self.connection.cursor() as cursor:
             self._write_output(cursor, document_id, pipeline_id, elements, tables, metadata)
         return len(elements), len(tables)
+
+    def get_document_output(self, document_id: str, *, company: str) -> dict[str, Any] | None:
+        """Return saved parser evidence for the admin review screen."""
+        with self.connection.cursor(row_factory=dict_row) as cursor:
+            cursor.execute(
+                """SELECT o.pipeline_id, o.elements, o.tables, o.document_metadata
+                   FROM public.document_processing_outputs o
+                   JOIN public.documents d USING (document_id)
+                   WHERE o.document_id = %s
+                     AND o.document_metadata->>'company' = %s
+                     AND d.source_type IN ('user_upload', 'synthetic_demo_policy')""",
+                (document_id, company),
+            )
+            row = cursor.fetchone()
+        if row is None:
+            return None
+        return {
+            "pipeline_id": row["pipeline_id"],
+            "metadata": row["document_metadata"],
+            "elements": row["elements"] or [],
+            "tables": row["tables"] or [],
+        }
 
     @staticmethod
     def _normalize_elements(elements: list[dict[str, Any]]) -> list[dict[str, Any]]:

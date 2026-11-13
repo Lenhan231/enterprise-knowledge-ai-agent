@@ -1,0 +1,7 @@
+{
+  "architecture": "Tesseract LSTM",
+  "start_model": "vie",
+  "max_iterations": 5000,
+  "ratio_train": 0.9,
+  "early_stopping": false
+}

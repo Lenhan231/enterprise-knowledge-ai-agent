@@ -47,6 +47,14 @@ async function run(plan, path, init) {
   assert.strictEqual(await timed(false, true), '/api-fallback');
   assert.strictEqual(await timed(true, true), '/api');
   assert.strictEqual(await timed(false, false), '/api');
+  // source files load through backendFetch (fallback + ngrok header) and keep the PDF page anchor
+  const loader = source.slice(source.indexOf('async function loadApiFile'), source.indexOf('document.addEventListener("click", async'));
+  const seen = [];
+  const lctx = {backendFetch: async (url, init) => { seen.push([url, init.headers['ngrok-skip-browser-warning']]); return {status: 200, ok: true, blob: async () => 'pdf'}; },
+    URL: {createObjectURL: () => 'blob:x'}, clearExpiredSession() {}};
+  vm.runInNewContext(loader + '; this.loadApiFile = loadApiFile;', lctx);
+  assert.strictEqual(await lctx.loadApiFile('/api/documents/D1/source#page=12'), 'blob:x#page=12');
+  assert.deepStrictEqual(seen, [['/api/documents/D1/source', '1']]);
   console.log('ok');
 })().catch((error) => { console.error(error); process.exit(1); });
 '''

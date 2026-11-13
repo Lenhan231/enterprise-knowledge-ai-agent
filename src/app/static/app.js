@@ -172,7 +172,7 @@ function renderKnowledgeProcessingReview(doc) {
       : "";
   const format = String(doc.format || "").toLowerCase();
   const sourcePreview = format === "pdf"
-    ? `<iframe class="knowledge-output-source" title="${escapeHtml(doc.title)} source" src="${escapeHtml(sourceUrl)}"></iframe>`
+    ? `<iframe class="knowledge-output-source" title="${escapeHtml(doc.title)} source" data-api-src="${escapeHtml(sourceUrl)}"></iframe>`
     : ["png", "jpg", "jpeg", "tif", "tiff"].includes(format)
       ? `<img class="knowledge-output-image" src="${escapeHtml(sourceUrl)}" alt="Source file: ${escapeHtml(doc.title)}">`
       : `<p class="corpus-note">Inline preview is unavailable for ${escapeHtml(format.toUpperCase() || "this format")} files. <a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">Open original file</a></p>`;
@@ -1650,6 +1650,43 @@ async function refreshAgentMonitoring() {
     button.disabled = false;
   }
 }
+
+// Source files (links and PDF previews) are fetched like invoice sources: through backendFetch, so they follow
+// the fallback and carry the ngrok header (a plain link or iframe cannot), then shown from a blob URL.
+async function loadApiFile(path) {
+  const [url, hash = ""] = path.split("#");
+  const response = await backendFetch(url, { credentials: "same-origin", headers: { "ngrok-skip-browser-warning": "1" } });
+  if (response.status === 401) {
+    clearExpiredSession();
+    throw new Error("Sign in to continue");
+  }
+  if (!response.ok) throw new Error(`Could not open the source (HTTP ${response.status})`);
+  // shortcut: blob URLs are not revoked, so each opened source stays in memory until the page reloads.
+  return URL.createObjectURL(await response.blob()) + (hash ? `#${hash}` : "");
+}
+
+document.addEventListener("click", async (event) => {
+  const link = event.target.closest?.('a[href^="/api/"]');
+  if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  event.preventDefault();
+  const tab = link.target === "_blank" ? window.open("about:blank", "_blank") : null;  // opened now, while the click still counts
+  if (tab) tab.opener = null;
+  try {
+    const url = await loadApiFile(link.getAttribute("href"));
+    if (tab) tab.location.replace(url); else location.assign(url);
+  } catch (error) {
+    if (tab) tab.document.body.textContent = error.message;
+  }
+});
+
+new MutationObserver((records) => records.forEach((record) => record.addedNodes.forEach((node) => {
+  const frames = node.nodeType === 1 ? [...(node.matches("iframe[data-api-src]") ? [node] : []), ...node.querySelectorAll("iframe[data-api-src]")] : [];
+  frames.forEach((frame) => {
+    const path = frame.dataset.apiSrc;
+    frame.removeAttribute("data-api-src");
+    if (path) loadApiFile(path).then((url) => { frame.src = url; }).catch(() => {});
+  });
+}))).observe(document.documentElement, { childList: true, subtree: true });
 
 // Two backends behind Vercel: /api is the primary (NGROK_URL), /api-fallback the second one (FALLBACK_URL).
 // Signed in, the page times a real database round trip on both every few minutes and uses the faster one,

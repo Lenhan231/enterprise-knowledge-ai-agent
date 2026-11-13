@@ -346,6 +346,13 @@ class DoclingProcessor:
             raise ValueError(f"Unsupported Docling OCR engine: {ocr_engine}")
 
         register_pp_doclayout()
+        table_mode_name = str(self.config.get("docling_table_mode", "accurate")).strip().lower()
+        table_modes = {
+            "accurate": TableFormerMode.ACCURATE,
+            "fast": TableFormerMode.FAST,
+        }
+        if table_mode_name not in table_modes:
+            raise ValueError("docling_table_mode must be 'accurate' or 'fast'")
         return PdfPipelineOptions(
             accelerator_options=AcceleratorOptions(
                 device=device,
@@ -361,7 +368,7 @@ class DoclingProcessor:
                 score_threshold=float(self.config.get("docling_layout_score_threshold", 0.25))
             ),
             table_structure_options=TableStructureOptions(
-                mode=TableFormerMode.ACCURATE,
+                mode=table_modes[table_mode_name],
                 do_cell_matching=True,
             ),
             ocr_options=ocr_options,

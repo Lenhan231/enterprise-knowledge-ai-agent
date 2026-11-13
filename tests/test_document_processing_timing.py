@@ -3,12 +3,24 @@ from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 from docling.datamodel.settings import DebugSettings, scoped, settings
+from docling.datamodel.pipeline_options import TableFormerMode
 
 from document_processing.docling_adapter.processor import DoclingProcessor
 from document_processing.docling_adapter.processor import _summarize_docling_timings
 
 
 class DoclingTimingSummaryTest(unittest.TestCase):
+    def test_tableformer_fast_mode_is_explicit_and_accurate_stays_default(self):
+        accurate = DoclingProcessor({})._pipeline_options(True, False, False)
+        fast = DoclingProcessor({"docling_table_mode": "fast"})._pipeline_options(True, False, False)
+
+        self.assertEqual(accurate.table_structure_options.mode, TableFormerMode.ACCURATE)
+        self.assertEqual(fast.table_structure_options.mode, TableFormerMode.FAST)
+
+    def test_tableformer_mode_rejects_unknown_values(self):
+        with self.assertRaisesRegex(ValueError, "docling_table_mode"):
+            DoclingProcessor({"docling_table_mode": "unknown"})._pipeline_options(True, False, False)
+
     def test_preload_warms_page_orientation_after_pipeline_initialization(self):
         processor = DoclingProcessor({})
         processor._pipeline_options = Mock(return_value=object())

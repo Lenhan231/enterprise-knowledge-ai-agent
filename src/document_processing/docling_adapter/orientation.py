@@ -6,8 +6,10 @@ import re
 import logging
 import subprocess
 import tempfile
+from collections.abc import Sequence
 from functools import lru_cache
 from threading import Lock
+from typing import Any
 
 from PIL import Image
 
@@ -66,21 +68,49 @@ def detect_paddle_orientation(image: Image.Image) -> tuple[int, int, float]:
 
 def detect_paddle_textline_orientation(image: Image.Image) -> tuple[int, int, float]:
     """Return clockwise correction, predicted text-line orientation, and confidence."""
+    return detect_paddle_textline_orientations([image], batch_size=1)[0]
+
+
+def detect_paddle_textline_orientations(
+    images: Sequence[Any], *, batch_size: int = 16,
+) -> list[tuple[int, int, float]]:
+    """Classify PIL images or BGR arrays in bounded batches, preserving input order."""
+    if not images:
+        return []
+    if batch_size < 1:
+        raise ValueError("batch_size must be positive")
     import numpy as np
 
-    image_bgr = np.asarray(image.convert("RGB"))[:, :, ::-1].copy()
+    predictions = []
     with _orientation_lock:
-        result = next(iter(_paddle_textline_orientation_model().predict(image_bgr, batch_size=1)))
-    payload = result.json
-    if isinstance(payload, str):
-        import json
-        payload = json.loads(payload)
-    result = payload.get("res", payload)
-    label = result["label_names"][0]
-    angle = int(str(label).split("_", maxsplit=1)[0])
-    if angle not in (0, 180):
-        raise ValueError(f"Unsupported text-line orientation: {label}")
-    return (-angle) % 360, angle, float(result["scores"][0])
+        model = _paddle_textline_orientation_model()
+        for start in range(0, len(images), batch_size):
+            image_bgrs = []
+            for image in images[start : start + batch_size]:
+                if isinstance(image, Image.Image):
+                    image_bgrs.append(np.asarray(image.convert("RGB"))[:, :, ::-1].copy())
+                else:
+                    image_bgrs.append(np.asarray(image))
+            predictions.extend(model.predict(
+                image_bgrs,
+                batch_size=batch_size,
+            ))
+    if len(predictions) != len(images):
+        raise ValueError("Text-line orientation result count does not match input")
+
+    results = []
+    for prediction in predictions:
+        payload = prediction.json
+        if isinstance(payload, str):
+            import json
+            payload = json.loads(payload)
+        result = payload.get("res", payload)
+        label = result["label_names"][0]
+        angle = int(str(label).split("_", maxsplit=1)[0])
+        if angle not in (0, 180):
+            raise ValueError(f"Unsupported text-line orientation: {label}")
+        results.append(((-angle) % 360, angle, float(result["scores"][0])))
+    return results
 
 
 def detect_tesseract_orientation(image: Image.Image) -> tuple[int, int | None, float | None]:

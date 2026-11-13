@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from document_processing.docling_adapter.result_mapper import _get_page_image, _merge_text_layout_elements
 from document_processing.docling_adapter.orientation import (
     detect_paddle_orientation,
+    detect_paddle_textline_orientations,
     preload_paddle_page_orientation_model,
 )
 from document_processing.docling_adapter.scanned.postprocessing import (
@@ -92,6 +93,36 @@ class VietOcrPostprocessingTest(unittest.TestCase):
                 model = SimpleNamespace(predict=lambda *_args, **_kwargs: iter([prediction]))
                 with patch("document_processing.docling_adapter.orientation._paddle_orientation_model", return_value=model):
                     self.assertEqual(detect_paddle_orientation(Image.new("RGB", (4, 4))), (correction, angle, 0.9))
+
+    def test_textline_orientation_batches_preserve_order_and_bound_batch_size(self):
+        from PIL import Image
+
+        calls = []
+
+        def predict(images, *, batch_size):
+            calls.append((len(images), batch_size))
+            return iter(
+                SimpleNamespace(json={"res": {
+                    "label_names": [label], "scores": [score],
+                }})
+                for label, score in (("0_normal", 0.9), ("180_rotated", 0.8))[:len(images)]
+            )
+
+        model = SimpleNamespace(predict=predict)
+        images = [Image.new("RGB", (8, 4), color=(index, 0, 0)) for index in range(5)]
+        predictions = [("0_normal", 0.9), ("180_rotated", 0.8)] * 2 + [("0_normal", 0.9)]
+
+        with patch(
+            "document_processing.docling_adapter.orientation._paddle_textline_orientation_model",
+            return_value=model,
+        ):
+            results = detect_paddle_textline_orientations(images, batch_size=2)
+
+        self.assertEqual(calls, [(2, 2), (2, 2), (1, 2)])
+        self.assertEqual(results, [
+            (0, 0, 0.9), (180, 180, 0.8), (0, 0, 0.9),
+            (180, 180, 0.8), (0, 0, 0.9),
+        ])
 
     @staticmethod
     def _cell(text, box):

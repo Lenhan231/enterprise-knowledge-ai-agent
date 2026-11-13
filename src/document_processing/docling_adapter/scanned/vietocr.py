@@ -30,7 +30,7 @@ from docling.utils.profiling import TimeRecorder
 from .line_detection import create_line_detector, crop_line, detect_line_boxes, merge_line_fragments
 from ..orientation import (
     detect_paddle_orientation,
-    detect_paddle_textline_orientation,
+    detect_paddle_textline_orientations,
     rotate_for_reading,
 )
 
@@ -40,6 +40,7 @@ _TEXT_LAYOUT_LABELS = {
     "page_header", "page_footer", "code", "key_value_region",
 }
 _VIETOCR_BATCH_SIZE = 8
+_TEXTLINE_ORIENTATION_BATCH_SIZE = 16
 
 
 class VietOcrOptions(OcrOptions):
@@ -173,9 +174,13 @@ class VietOcrModel(BaseOcrModel):
             output.write(json.dumps(record, ensure_ascii=False) + "\n")
 
     @staticmethod
-    def _detect_orientation(image: Image.Image) -> tuple[int, int | None, float | None]:
-        """Classify a layout crop with the text-line orientation model."""
-        return detect_paddle_textline_orientation(image)
+    def _detect_orientations(
+        images: list[np.ndarray],
+    ) -> list[tuple[int, int | None, float | None]]:
+        """Classify line crops in bounded batches, preserving their order."""
+        return detect_paddle_textline_orientations(
+            images, batch_size=_TEXTLINE_ORIENTATION_BATCH_SIZE,
+        )
 
     @staticmethod
     def _cell_bbox(cell: TextCell) -> tuple[float, float, float, float]:
@@ -244,6 +249,7 @@ class VietOcrModel(BaseOcrModel):
             }
             line_count = 0
             recognition_batches = 0
+            orientation_batches = 0
 
             with TimeRecorder(conv_res, "ocr"):
                 region_discovery_started = time.perf_counter()
@@ -344,7 +350,6 @@ class VietOcrModel(BaseOcrModel):
                     component_seconds["line_detection_merge"] += time.perf_counter() - detection_started
 
                     prepared_lines = []
-                    line_orientation_started = time.perf_counter()
                     for index, (quad, merged_fragments) in enumerate(boxes):
                         quad = np.asarray(quad, dtype=np.float32)
                         line = crop_line(
@@ -352,25 +357,39 @@ class VietOcrModel(BaseOcrModel):
                             quad,
                             padding=2 if merged_fragments else 0,
                         )
-                        line_orientation_correction, line_orientation, line_confidence = (
-                            self._detect_orientation(
-                                Image.fromarray(cv2.cvtColor(line, cv2.COLOR_BGR2RGB))
-                            )
-                        )
-                        if line_confidence < 0.7:
-                            line_orientation_correction = 0
-                        if line_orientation_correction == 180:
-                            line = cv2.rotate(line, cv2.ROTATE_180)
-                        prepared_lines.append((index, quad, merged_fragments, line,
-                                               line_orientation_correction, line_orientation,
-                                               line_confidence))
-                    component_seconds["line_crop_orientation"] += time.perf_counter() - line_orientation_started
+                        prepared_lines.append((index, quad, merged_fragments, line))
                     line_count += len(prepared_lines)
                     page_lines.extend(
                         (prepared, ocr_rect, region_label, doc_orientation, region_index,
                          vertical_padding, image_size)
                         for prepared in prepared_lines
                     )
+
+                line_orientation_started = time.perf_counter()
+                orientation_inputs = [item[0][3] for item in page_lines]
+                orientations = self._detect_orientations(orientation_inputs)
+                orientation_batches = (
+                    (len(orientation_inputs) + _TEXTLINE_ORIENTATION_BATCH_SIZE - 1)
+                    // _TEXTLINE_ORIENTATION_BATCH_SIZE
+                )
+                for index, (item, orientation) in enumerate(zip(page_lines, orientations, strict=True)):
+                    (
+                        prepared, ocr_rect, region_label, doc_orientation,
+                        region_index, vertical_padding, image_size,
+                    ) = item
+                    line_index, quad, merged_fragments, line = prepared
+                    line_orientation_correction, line_orientation, line_confidence = orientation
+                    if line_confidence < 0.7:
+                        line_orientation_correction = 0
+                    if line_orientation_correction == 180:
+                        line = cv2.rotate(line, cv2.ROTATE_180)
+                    page_lines[index] = (
+                        (line_index, quad, merged_fragments, line,
+                         line_orientation_correction, line_orientation, line_confidence),
+                        ocr_rect, region_label, doc_orientation, region_index,
+                        vertical_padding, image_size,
+                    )
+                component_seconds["line_crop_orientation"] += time.perf_counter() - line_orientation_started
 
                 recognition_started = time.perf_counter()
                 recognized_lines = self._recognize_lines(
@@ -468,6 +487,7 @@ class VietOcrModel(BaseOcrModel):
                         "page_number": page_number,
                         "region_count": len(ocr_regions),
                         "line_count": line_count,
+                        "orientation_batches": orientation_batches,
                         "recognition_batches": recognition_batches,
                         "timings_ms": component_ms,
                     },

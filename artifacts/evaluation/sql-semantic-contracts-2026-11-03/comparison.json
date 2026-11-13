@@ -1,0 +1,181 @@
+{
+  "sql_before": {
+    "cases": 30,
+    "metrics": {
+      "execution_accuracy": {
+        "mean": 0.4642857142857143,
+        "scored": 28,
+        "not_applicable": 2,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "sql_semantic_equivalence": {
+        "mean": 0.17857142857142858,
+        "scored": 28,
+        "not_applicable": 2,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "numerical_accuracy": {
+        "mean": 0.44814814814814813,
+        "scored": 27,
+        "not_applicable": 3,
+        "evaluator_errors": 0,
+        "pending": 0
+      }
+    },
+    "outcomes": {
+      "executed_with_rows": 16,
+      "executed_empty": 1,
+      "clarification_required": 3,
+      "RateLimitError": 9,
+      "AmbiguousFunctionError": 1
+    },
+    "executed": 17,
+    "downloads": 0,
+    "provider_failures": 9,
+    "unsupported_cases": 2,
+    "unsupported_clarifications": 1,
+    "latency_seconds": {
+      "p50": 2.223,
+      "p95": 22.11045
+    }
+  },
+  "sql_after": {
+    "cases": 10,
+    "metrics": {
+      "execution_accuracy": {
+        "mean": 0.5714285714285714,
+        "scored": 7,
+        "not_applicable": 0,
+        "evaluator_errors": 3,
+        "pending": 0
+      },
+      "sql_semantic_equivalence": {
+        "mean": 0.3333333333333333,
+        "scored": 6,
+        "not_applicable": 0,
+        "evaluator_errors": 4,
+        "pending": 0
+      },
+      "numerical_accuracy": {
+        "mean": 0.5,
+        "scored": 6,
+        "not_applicable": 1,
+        "evaluator_errors": 3,
+        "pending": 0
+      }
+    },
+    "outcomes": {
+      "executed_with_rows": 7,
+      "executed_empty": 1,
+      "clarification_required": 1,
+      "RateLimitError": 1
+    },
+    "executed": 8,
+    "downloads": 0,
+    "provider_failures": 1,
+    "unsupported_cases": 0,
+    "unsupported_clarifications": 0,
+    "latency_seconds": {
+      "p50": 2.2885,
+      "p95": 4.6487
+    }
+  },
+  "report_before": {
+    "cases": 6,
+    "metrics": {
+      "faithfulness": {
+        "mean": 0.8163180710375963,
+        "scored": 3,
+        "not_applicable": 3,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "factual_correctness": {
+        "mean": 0.18,
+        "scored": 6,
+        "not_applicable": 0,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "numerical_accuracy": {
+        "mean": 1.0,
+        "scored": 2,
+        "not_applicable": 4,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "report_completeness": {
+        "mean": 0.20833333333333334,
+        "scored": 6,
+        "not_applicable": 0,
+        "evaluator_errors": 0,
+        "pending": 0
+      }
+    },
+    "outcomes": {
+      "partial": 3,
+      "failed": 2,
+      "unsupported": 1
+    },
+    "executed": 0,
+    "downloads": 3,
+    "provider_failures": 1,
+    "unsupported_cases": 0,
+    "unsupported_clarifications": 0,
+    "latency_seconds": {
+      "p50": 49.6295,
+      "p95": 106.87400000000001
+    }
+  },
+  "report_after": {
+    "cases": 0,
+    "metrics": {
+      "faithfulness": {
+        "mean": null,
+        "scored": 0,
+        "not_applicable": 0,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "factual_correctness": {
+        "mean": null,
+        "scored": 0,
+        "not_applicable": 0,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "numerical_accuracy": {
+        "mean": null,
+        "scored": 0,
+        "not_applicable": 0,
+        "evaluator_errors": 0,
+        "pending": 0
+      },
+      "report_completeness": {
+        "mean": null,
+        "scored": 0,
+        "not_applicable": 0,
+        "evaluator_errors": 0,
+        "pending": 0
+      }
+    },
+    "outcomes": {},
+    "executed": 0,
+    "downloads": 0,
+    "provider_failures": 0,
+    "unsupported_cases": 0,
+    "unsupported_clarifications": 0,
+    "latency_seconds": {
+      "p50": null,
+      "p95": null
+    }
+  },
+  "notes": [
+    "First responses only; no implicit confirmation acceptance. Report sample is predeclared, not all 30 cases.",
+    "Unsupported clarification counts require manual validity review; they are not automatically valid refusals.",
+    "Metrics and judge are inherited unchanged. Numerical applicability retains the frozen scorer convention.",
+    "Sequential live latency includes in-request provider waits, excludes ten-second between-request pacing."
+  ]
+}

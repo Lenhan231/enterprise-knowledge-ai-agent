@@ -1,0 +1,76 @@
+[
+  {
+    "id": "S04",
+    "question": "Which product categories have the highest total stock_on_hand on 2022-12-31?",
+    "frozen_reference_sql": "SELECT p.category,SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date = DATE '2022-12-31' GROUP BY p.category ORDER BY stock_on_hand DESC NULLS LAST,p.category",
+    "before_status": "executed",
+    "before_sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.products.category AS category, SUM(commerce.inventory.stock_on_hand) AS stock_on_hand FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.snapshot_date = $1 GROUP BY commerce.inventory.snapshot_date, commerce.products.category ORDER BY SUM(commerce.inventory.stock_on_hand) DESC NULLS LAST, commerce.inventory.snapshot_date, commerce.products.category LIMIT 10",
+    "before_source": "sql-semantic-refactor-2026-11-03/combined/sql_analytics/generations.jsonl"
+  },
+  {
+    "id": "S10",
+    "question": "What is the average fill_rate by category in December 2022?",
+    "frozen_reference_sql": "SELECT p.category,AVG(i.fill_rate) AS fill_rate FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date = DATE '2022-12-31' GROUP BY p.category ORDER BY p.category",
+    "before_status": "clarification_required",
+    "before_sql": null,
+    "before_source": "sql-semantic-refactor-2026-11-03/combined/sql_analytics/generations.jsonl"
+  },
+  {
+    "id": "S11",
+    "question": "Which products have the highest stockout_days in December 2022?",
+    "frozen_reference_sql": "SELECT i.product_id,p.product_name,i.stockout_days FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date = DATE '2022-12-31' ORDER BY i.stockout_days DESC NULLS LAST,i.product_id LIMIT 200",
+    "before_status": "executed",
+    "before_sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.inventory.product_id AS product_id, commerce.products.product_name AS product_name, commerce.inventory.stockout_days AS stockout_days FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.snapshot_date >= $1 AND commerce.inventory.snapshot_date < $2 ORDER BY commerce.inventory.stockout_days DESC NULLS LAST, commerce.inventory.snapshot_date, commerce.inventory.product_id, commerce.products.product_name LIMIT 10",
+    "before_source": "sql-semantic-refactor-2026-11-03/combined/sql_analytics/generations.jsonl"
+  },
+  {
+    "id": "S20",
+    "question": "What is the net line value after discount_amount by product category in 2022?",
+    "frozen_reference_sql": "SELECT p.category,SUM(oi.quantity*oi.unit_price-COALESCE(oi.discount_amount,0)) AS net_line_value FROM commerce.orders o JOIN commerce.order_items oi ON o.order_id=oi.order_id JOIN commerce.products p ON oi.product_id=p.product_id WHERE o.order_date >= DATE '2022-01-01' AND o.order_date < DATE '2023-01-01' GROUP BY p.category ORDER BY p.category",
+    "before_status": "executed",
+    "before_sql": "SELECT p.category, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_line_value FROM commerce.order_items AS oi JOIN commerce.orders AS o ON oi.order_id = o.order_id JOIN commerce.products AS p ON oi.product_id = p.product_id WHERE DATE_PART('year', o.order_date) = 2022 GROUP BY p.category ORDER BY 1 LIMIT 200",
+    "before_source": "sql-semantic-refactor-2026-11-03/combined/sql_analytics/generations.jsonl"
+  },
+  {
+    "id": "S21",
+    "question": "Which 10 products had the most units returned in 2022?",
+    "frozen_reference_sql": "SELECT r.product_id,SUM(r.return_quantity) AS returned_units FROM commerce.returns r WHERE r.return_date >= DATE '2022-01-01' AND r.return_date < DATE '2023-01-01' GROUP BY r.product_id ORDER BY returned_units DESC,r.product_id LIMIT 10",
+    "before_status": "source_failed",
+    "before_sql": "SELECT p.product_name, SUM(r.return_quantity) AS total_units_returned FROM commerce.products AS p JOIN commerce.returns AS r ON p.product_id = r.product_id WHERE DATE_TRUNC('YEAR', r.return_date) = DATE_TRUNC('YEAR', $1) GROUP BY p.product_name ORDER BY 2 DESC LIMIT 10",
+    "before_source": "sql-semantic-refactor-2026-11-03/combined/sql_analytics/generations.jsonl"
+  },
+  {
+    "id": "S23",
+    "question": "Which products have the highest ratio of returned units in 2022 to ordered units in 2022?",
+    "frozen_reference_sql": "WITH ret AS (SELECT r.product_id,SUM(r.return_quantity) AS returned_units FROM commerce.returns r WHERE r.return_date >= DATE '2022-01-01' AND r.return_date < DATE '2023-01-01' GROUP BY r.product_id), ord AS (SELECT oi.product_id,SUM(oi.quantity) AS ordered_units FROM commerce.orders o JOIN commerce.order_items oi ON o.order_id=oi.order_id WHERE o.order_date >= DATE '2022-01-01' AND o.order_date < DATE '2023-01-01' GROUP BY oi.product_id) SELECT ret.product_id,ret.returned_units,ord.ordered_units,ret.returned_units::numeric/NULLIF(ord.ordered_units,0) AS returned_to_ordered_ratio FROM ret JOIN ord ON ret.product_id=ord.product_id ORDER BY returned_to_ordered_ratio DESC NULLS LAST,ret.product_id LIMIT 200",
+    "before_status": "clarification_required",
+    "before_sql": null,
+    "before_source": "sql-semantic-refactor-2026-11-03/combined/sql_analytics/generations.jsonl"
+  },
+  {
+    "id": "S26",
+    "question": "Which products had stockout_flag=true in December 2022 and any customer orders that month?",
+    "frozen_reference_sql": "SELECT i.product_id,p.product_name FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date = DATE '2022-12-31' AND i.stockout_flag=TRUE AND EXISTS (SELECT 1 FROM commerce.orders o JOIN commerce.order_items oi ON o.order_id=oi.order_id WHERE oi.product_id=i.product_id AND o.order_date >= DATE '2022-12-01' AND o.order_date < DATE '2023-01-01') ORDER BY i.product_id LIMIT 200",
+    "before_status": "planning_failed",
+    "before_sql": null,
+    "before_source": "sql-semantic-refactor-2026-11-03/combined/sql_analytics/generations.jsonl"
+  },
+  {
+    "id": "S27",
+    "question": "For each category, compare summed December 2022 inventory units_sold with December 2022 ordered quantities.",
+    "frozen_reference_sql": "WITH inv AS (SELECT p.category,SUM(i.units_sold) AS inventory_units_sold FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date = DATE '2022-12-31' GROUP BY p.category), ord AS (SELECT p.category,SUM(oi.quantity) AS ordered_units FROM commerce.orders o JOIN commerce.order_items oi ON o.order_id=oi.order_id JOIN commerce.products p ON oi.product_id=p.product_id WHERE o.order_date >= DATE '2022-12-01' AND o.order_date < DATE '2023-01-01' GROUP BY p.category) SELECT inv.category,inv.inventory_units_sold,ord.ordered_units FROM inv FULL JOIN ord ON inv.category=ord.category ORDER BY inv.category",
+    "before_status": "planning_failed",
+    "before_sql": null,
+    "before_source": "sql-semantic-refactor-2026-11-03/combined/sql_analytics/generations.jsonl"
+  },
+  {
+    "id": "S28",
+    "question": "How many inventory rows have duplicate (snapshot_date,product_id) keys?",
+    "frozen_reference_sql": "SELECT COALESCE(SUM(n-1),0) AS duplicate_rows FROM (SELECT COUNT(*) AS n FROM commerce.inventory GROUP BY snapshot_date,product_id HAVING COUNT(*)>1) d",
+    "before_status": "planning_failed",
+    "before_sql": null,
+    "before_source": "sql-semantic-refactor-2026-11-03/combined/sql_analytics/generations.jsonl",
+    "earlier_observed_sql": "SELECT COUNT(*) FROM (SELECT 1 FROM commerce.inventory AS inv GROUP BY inv.snapshot_date, inv.product_id HAVING COUNT(*) > 1) AS dupes LIMIT 200",
+    "earlier_source": "sql-semantic-refactor-2026-11-03/live-6ed9a19/sql_analytics/generations.jsonl"
+  }
+]

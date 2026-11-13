@@ -12,6 +12,7 @@ from sqlglot import exp, parse
 from sqlglot.errors import ParseError, TokenError
 
 from core.analytics.metric_ontology import get_metric_definition, resolve_metric_names
+from core.analytics.invoices import is_invoice_question, validate_invoice_currency
 from core.analytics.join_validation import PRIMARY_KEYS, validate_join_aggregations, approved_derived_join, column_origin
 from core.analytics.metric_validation import _single_snapshot
 from sqlglot.optimizer.scope import Scope, traverse_scope
@@ -20,6 +21,13 @@ from core.prompts.sql import SQL_GENERATION_PROMPT, SQL_REPAIR_PROMPT, INVENTORY
 
 MAX_RESULT_ROWS = 200
 APPROVED_COLUMNS: dict[str, frozenset[str]] = {
+    "commerce.invoices": frozenset({
+        "invoice_id", "source_filename", "invoice_no", "invoice_date", "buyer", "seller",
+        "subtotal", "tax_amount", "total_amount", "currency",
+    }),
+    "commerce.invoice_items": frozenset({
+        "invoice_id", "line_no", "description", "unit", "quantity", "unit_price", "amount",
+    }),
     "commerce.sales": frozenset({"date", "revenue", "cogs"}),
     "commerce.orders": frozenset({
         "order_id", "order_date", "customer_id", "zip", "order_status", "payment_method", "device_type", "order_source",
@@ -56,6 +64,7 @@ def _edge(left_table: str, left_column: str, right_table: str, right_column: str
 
 
 APPROVED_JOINS = frozenset({
+    _edge("commerce.invoices", "invoice_id", "commerce.invoice_items", "invoice_id"),
     _edge("commerce.customers", "customer_id", "commerce.orders", "customer_id"),
     _edge("commerce.customers", "zip", "commerce.geography", "zip"),
     _edge("commerce.orders", "order_id", "commerce.payments", "order_id"),
@@ -72,6 +81,7 @@ APPROVED_JOINS = frozenset({
     _edge("commerce.shipments", "order_id", "commerce.orders", "order_id"),
 })
 APPROVED_DATE_COLUMNS = frozenset({
+    ("commerce.invoices", "invoice_date"),
     ("commerce.customers", "signup_date"),
     ("commerce.inventory", "snapshot_date"),
     ("commerce.orders", "order_date"),
@@ -250,6 +260,7 @@ def validate_commerce_sql(sql: str) -> ValidatedSQL:
             raise SQLValidationError('JOIN requires an approved relationship in addition to any date filters.')
 
     validate_join_aggregations(tree, SQLValidationError)
+    validate_invoice_currency(tree, SQLValidationError)
 
     def owning_select(node):
         while node is not None and not isinstance(node, exp.Select):
@@ -398,6 +409,8 @@ def _date_parameter_indexes(sql: str) -> set[int]:
 
 def relevant_schema_tables(question, definitions):
     """Select prompt context only; authorization always uses the full backend allowlist."""
+    if is_invoice_question(question) or any(d.get('domain') == 'invoices' for d in definitions.values()):
+        return {'commerce.invoices', 'commerce.invoice_items'}
     text = question.casefold().replace('_', ' ')
     tables = {table for definition in definitions.values()
               for table in re.findall(r'commerce\.\w+', definition['source'])}

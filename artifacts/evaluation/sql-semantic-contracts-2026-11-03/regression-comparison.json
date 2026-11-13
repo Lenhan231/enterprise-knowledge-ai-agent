@@ -146,9 +146,9 @@
       }
     ]
   },
-  "quocan_working_tree": {
-    "revision": "8bb243721c723333bc528fb4202f6772be90818f",
-    "tests": 663,
+  "quocan": {
+    "revision": "3b3a9f32073469b976dc45e2de4d14df1eadbc42",
+    "tests": 673,
     "failures": [
       "test_agent_benchmarks.AgentBenchmarkAssetsTest.test_known_citation_and_codex_auth_failures_are_retried",
       "test_document_processing_outputs_repository.DocumentProcessingOutputsRepositoryTest.test_replace_document_stores_normalized_output_separately",
@@ -281,8 +281,6 @@
   "new_failure_names": [],
   "new_error_names": [],
   "notes": [
-    "Same Python/dependencies, isolated origin/main worktree; source checkout differs. Uncommitted application tree later committed before live benchmark.",
-    "Full suite discovered 663 tests; two additional cross-domain Agent tests were added afterward and pass separately.",
-    "Full suite is not green; failure names include existing dependency, platform and stale fixture problems. No new failure/error names versus main."
+    "Same Python/dependencies; isolated origin/main checkout. Full suite remains failing. Exact failure/error-name comparison finds no new names."
   ]
 }

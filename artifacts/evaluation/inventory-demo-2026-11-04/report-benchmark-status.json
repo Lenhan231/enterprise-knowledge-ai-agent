@@ -1,11 +1,18 @@
 {
-  "status": "deferred_by_user",
-  "instruction": "Do not continue Report benchmarking until explicitly requested.",
-  "generation_stopped": true,
-  "scoring_started": false,
-  "publish_report_results": false,
+  "status": "resumed_completed_with_evaluator_error",
+  "instruction": "Resumed by explicit user request using the current SQL agent on 2026-11-07.",
+  "generation_stopped": false,
+  "scoring_started": true,
+  "publish_report_results": true,
   "local_checkpoints": [
     "report-production",
     "report-final"
-  ]
+  ],
+  "current_cohort": "artifacts\\evaluation\\report-current-sql-2026-11-07",
+  "report_ids": [
+    "R01",
+    "R06",
+    "R07"
+  ],
+  "evaluator_errors": 1
 }

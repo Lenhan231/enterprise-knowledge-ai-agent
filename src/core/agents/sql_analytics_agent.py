@@ -226,12 +226,21 @@ class SQLAnalyticsAgent(BaseAgent):
         limitations = list(dict.fromkeys(
             note for definition in definitions.values() for note in definition.get("limitations", ())
         ))
+        invoice_query = any(source in {'commerce.invoices', 'commerce.invoice_items'} for source in validated.sources)
+        if invoice_query:
+            limitations.extend([
+                'Only explicitly approved invoice extractions are included; missing fields remain unknown.',
+                'Invoice access is temporarily shared across all analytics:read users until RBAC is established.',
+                'Currency may be unknown; a NULL currency group does not establish a shared currency.',
+            ])
         if any(definition["unit"].startswith("currency") for definition in definitions.values()):
             limitations.append("Dataset currency is not confirmed; do not assume USD, VND or another currency.")
         if any(definition["aggregation"] == "ratio" and definition["unit"] == "percent"
                for definition in definitions.values()):
             limitations.append("Ratio results are fractions: 0.25 means 25%; raw result rows are not rescaled.")
         metadata = {"source": list(validated.sources), "explanation": plan.explanation, "metrics": definitions}
+        if invoice_query:
+            metadata['invoice_access_control'] = 'temporary_all_analytics_readers'
         metadata['columns'] = [{'name': name, 'unit': definitions.get(name, {}).get('unit')}
                                for name in (rows[0] if rows else ())]
         if interpretation and interpretation.domain == 'inventory':

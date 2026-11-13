@@ -16,6 +16,8 @@ OUTPUT = benchmark.ROOT/'artifacts/evaluation/sql-semantic-contracts-2026-11-03'
 
 
 async def main():
+    if subprocess.run(['git','diff','--quiet','HEAD','--','src']).returncode:
+        raise RuntimeError('Commit application changes before recording revision-specific verification.')
     refs = json.loads((benchmark.OUT/'sql_analytics/references.json').read_text(encoding='utf-8'))
     questions = {r['id']:r['question'] for r in benchmark.load_cases('sql_analytics')}
     fixtures = {}

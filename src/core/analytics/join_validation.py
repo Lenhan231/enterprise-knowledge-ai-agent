@@ -5,6 +5,7 @@ from sqlglot.optimizer.scope import Scope, traverse_scope
 
 # Primary keys from 20261003055344_datathon_commerce_schema.sql, not inferred from data.
 PRIMARY_KEYS = {
+    'invoices': {'invoice_id'}, 'invoice_items': {'invoice_id', 'line_no'},
     'products': {'product_id'}, 'geography': {'zip'}, 'customers': {'customer_id'},
     'promotions': {'promo_id'}, 'orders': {'order_id'}, 'order_items': {'order_item_id'},
     'payments': {'order_id'}, 'shipments': {'order_id'}, 'returns': {'return_id'},

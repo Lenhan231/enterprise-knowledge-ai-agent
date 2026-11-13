@@ -7,6 +7,7 @@ knowledge:
 Tra cứu thông tin thực tế trong tài liệu doanh nghiệp.
 
 analytics:
+Tra cứu hóa đơn đã duyệt, bên mua, bên bán, dòng hàng, số tiền và thuế bằng SQL.
 Truy vấn dữ liệu thương mại có cấu trúc trong schema `commerce` bằng SQL và
 tính toán chỉ số. Dữ liệu gồm doanh thu, giá vốn, đơn hàng, khách hàng, sản
 phẩm, khuyến mãi, thanh toán, giao hàng, trả hàng, đánh giá, tồn kho và lưu

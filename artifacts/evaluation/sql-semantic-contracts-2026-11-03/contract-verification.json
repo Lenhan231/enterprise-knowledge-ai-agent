@@ -1,0 +1,98 @@
+{
+  "revision": "2e31cdc129c33f27c7cee0866dbad95e3fae7fc6",
+  "method": "Constructed/replayed contract fixtures executed through SQL validation and the read-only repository; not new LLM generations or benchmark accuracy.",
+  "results": [
+    {
+      "id": "S04",
+      "rows": 4,
+      "reference_matches": true,
+      "sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.products.category AS category, SUM(commerce.inventory.stock_on_hand) AS stock_on_hand FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.snapshot_date = $1 GROUP BY commerce.inventory.snapshot_date, commerce.products.category ORDER BY SUM(commerce.inventory.stock_on_hand) DESC NULLS LAST, commerce.inventory.snapshot_date, commerce.products.category LIMIT 200",
+      "parameters": [
+        "2022-12-31"
+      ]
+    },
+    {
+      "id": "S10",
+      "rows": 4,
+      "reference_matches": true,
+      "sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.products.category AS category, AVG(commerce.inventory.fill_rate) AS fill_rate FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.snapshot_date >= $1 AND commerce.inventory.snapshot_date < $2 GROUP BY commerce.inventory.snapshot_date, commerce.products.category ORDER BY commerce.inventory.snapshot_date, commerce.products.category LIMIT 200",
+      "parameters": [
+        "2022-12-01",
+        "2023-01-01"
+      ]
+    },
+    {
+      "id": "S11",
+      "rows": 200,
+      "reference_matches": true,
+      "sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.inventory.product_id AS product_id, commerce.products.product_name AS product_name, commerce.inventory.stockout_days AS stockout_days FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.snapshot_date >= $1 AND commerce.inventory.snapshot_date < $2 ORDER BY commerce.inventory.stockout_days DESC NULLS LAST, commerce.inventory.snapshot_date, commerce.inventory.product_id, commerce.products.product_name LIMIT 200",
+      "parameters": [
+        "2022-12-01",
+        "2023-01-01"
+      ]
+    },
+    {
+      "id": "S20",
+      "rows": 4,
+      "reference_matches": true,
+      "sql": "SELECT p.category, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_line_value FROM commerce.orders AS o JOIN commerce.order_items AS oi ON o.order_id = oi.order_id JOIN commerce.products AS p ON oi.product_id = p.product_id WHERE o.order_date >= CAST('2022-01-01' AS DATE) AND o.order_date < CAST('2023-01-01' AS DATE) GROUP BY p.category ORDER BY p.category LIMIT 200",
+      "parameters": []
+    },
+    {
+      "id": "S23",
+      "rows": 200,
+      "reference_matches": true,
+      "sql": "WITH ret AS (SELECT r.product_id, SUM(r.return_quantity) AS returned_units FROM commerce.returns AS r WHERE r.return_date >= CAST('2022-01-01' AS DATE) AND r.return_date < CAST('2023-01-01' AS DATE) GROUP BY r.product_id), ord AS (SELECT oi.product_id, SUM(oi.quantity) AS ordered_units FROM commerce.orders AS o JOIN commerce.order_items AS oi ON o.order_id = oi.order_id WHERE o.order_date >= CAST('2022-01-01' AS DATE) AND o.order_date < CAST('2023-01-01' AS DATE) GROUP BY oi.product_id) SELECT ret.product_id, ret.returned_units, ord.ordered_units, CAST(ret.returned_units AS DECIMAL) / NULLIF(ord.ordered_units, 0) AS returned_to_ordered_ratio FROM ret JOIN ord ON ret.product_id = ord.product_id ORDER BY 4 DESC NULLS LAST, ret.product_id LIMIT 200",
+      "parameters": []
+    },
+    {
+      "id": "S23_catalog_anchor",
+      "rows": 200,
+      "reference_matches": true,
+      "sql": "WITH ret AS (SELECT r.product_id, SUM(r.return_quantity) AS returned_units FROM commerce.returns AS r WHERE r.return_date >= CAST('2022-01-01' AS DATE) AND r.return_date < CAST('2023-01-01' AS DATE) GROUP BY r.product_id), ord AS (SELECT oi.product_id, SUM(oi.quantity) AS ordered_units FROM commerce.orders AS o JOIN commerce.order_items AS oi ON o.order_id = oi.order_id WHERE o.order_date >= CAST('2022-01-01' AS DATE) AND o.order_date < CAST('2023-01-01' AS DATE) GROUP BY oi.product_id) SELECT ret.product_id, ret.returned_units, ord.ordered_units, CAST(ret.returned_units AS DECIMAL) / NULLIF(ord.ordered_units, 0) AS returned_to_ordered_ratio FROM commerce.products AS p JOIN ret ON p.product_id = ret.product_id JOIN ord ON p.product_id = ord.product_id ORDER BY 4 DESC NULLS LAST, ret.product_id LIMIT 200",
+      "parameters": []
+    },
+    {
+      "id": "S26",
+      "rows": 200,
+      "reference_matches": true,
+      "sql": "SELECT i.snapshot_date, i.product_id, p.product_name FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date >= CAST('2022-12-01' AS DATE) AND i.snapshot_date < CAST('2023-01-01' AS DATE) AND i.stockout_flag = TRUE AND EXISTS(SELECT 1 FROM commerce.orders AS o JOIN commerce.order_items AS oi ON o.order_id = oi.order_id WHERE oi.product_id = p.product_id AND o.order_date >= CAST('2022-12-01' AS DATE) AND o.order_date < CAST('2023-01-01' AS DATE)) ORDER BY i.product_id LIMIT 200",
+      "parameters": []
+    },
+    {
+      "id": "S27",
+      "rows": 4,
+      "reference_matches": true,
+      "sql": "WITH inv AS (SELECT p.category, SUM(i.units_sold) AS inventory_units_sold FROM commerce.inventory AS i JOIN commerce.products AS p ON i.product_id = p.product_id WHERE i.snapshot_date >= CAST('2022-12-01' AS DATE) AND i.snapshot_date < CAST('2023-01-01' AS DATE) GROUP BY p.category), ord AS (SELECT p.category, SUM(oi.quantity) AS ordered_units FROM commerce.orders AS o JOIN commerce.order_items AS oi ON o.order_id = oi.order_id JOIN commerce.products AS p ON oi.product_id = p.product_id WHERE o.order_date >= CAST('2022-12-01' AS DATE) AND o.order_date < CAST('2023-01-01' AS DATE) GROUP BY p.category) SELECT COALESCE(inv.category, ord.category) AS category, inv.inventory_units_sold, ord.ordered_units FROM inv FULL JOIN ord ON inv.category = ord.category ORDER BY inv.category LIMIT 200",
+      "parameters": []
+    },
+    {
+      "id": "S28",
+      "rows": 1,
+      "reference_matches": true,
+      "sql": "SELECT COALESCE(SUM(d.n - 1), 0) AS duplicate_rows FROM (SELECT COUNT(*) AS n FROM commerce.inventory AS i GROUP BY i.snapshot_date, i.product_id HAVING COUNT(*) > 1) AS d LIMIT 200",
+      "parameters": []
+    },
+    {
+      "id": "S25",
+      "rows": 0,
+      "reference_matches": true,
+      "sql": "SELECT DISTINCT r.product_id,r.order_id FROM commerce.returns r JOIN commerce.products p ON r.product_id=p.product_id JOIN commerce.orders o ON r.order_id=o.order_id WHERE NOT EXISTS (SELECT 1 FROM commerce.order_items oi WHERE oi.product_id=p.product_id AND oi.order_id=o.order_id) LIMIT 200",
+      "parameters": []
+    },
+    {
+      "id": "typed_date_function",
+      "execution_passed": true,
+      "rows": 10,
+      "reference_matches": true,
+      "note": "Overload-resolution integration probe; not a frozen question score."
+    },
+    {
+      "id": "S14",
+      "replayed_provider_output": true,
+      "execution_status": "executed",
+      "reference_matches": true
+    }
+  ],
+  "all_match": true
+}

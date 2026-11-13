@@ -1,0 +1,48 @@
+{
+  "cases": 3,
+  "expected_cases": 3,
+  "unattempted": 0,
+  "metrics": {
+    "faithfulness": {
+      "mean": 0.8461538461538461,
+      "scored": 1,
+      "not_applicable": 2,
+      "evaluator_errors": 0,
+      "pending": 0
+    },
+    "factual_correctness": {
+      "mean": 0.14333333333333334,
+      "scored": 3,
+      "not_applicable": 0,
+      "evaluator_errors": 0,
+      "pending": 0
+    },
+    "numerical_accuracy": {
+      "mean": null,
+      "scored": 0,
+      "not_applicable": 2,
+      "evaluator_errors": 1,
+      "pending": 0
+    },
+    "report_completeness": {
+      "mean": 0.16666666666666666,
+      "scored": 3,
+      "not_applicable": 0,
+      "evaluator_errors": 0,
+      "pending": 0
+    }
+  },
+  "outcomes": {
+    "partial": 1,
+    "clarification_required": 2
+  },
+  "executed": 0,
+  "downloads": 1,
+  "provider_failures": 0,
+  "unsupported_cases": 0,
+  "unsupported_clarifications": 0,
+  "latency_seconds": {
+    "p50": 45.95,
+    "p95": 52.679300000000005
+  }
+}

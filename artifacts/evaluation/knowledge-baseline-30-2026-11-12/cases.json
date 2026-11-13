@@ -1,0 +1,727 @@
+{
+  "knowledge": [
+    {
+      "id": "K01",
+      "question": "Theo chính sách VietStyle, trước khi dùng số tồn trong một báo cáo phải xác định thông tin thời gian nào?",
+      "reference": "Phải xác định ngày dữ liệu, chọn snapshot phù hợp mới nhất cho sản phẩm và kỳ được hỏi, và ghi rõ đó là dữ liệu lịch sử nếu nguồn cũ.",
+      "policy_pages": [
+        25,
+        27
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "25": "4. Tồn kho, nhận hàng và trả hàng\n\nHồ sơ tồn kho, phạm vi và thứ bậc nguồn\n\nQuyết định tồn kho phải phân biệt snapshot phân tích với tồn vật lý ở vị trí và thời điểm cụ thể.\n\nQuy tắc bắt buộc. Số hiện tại chính thức là số dư trực tiếp trong hệ thống quản lý kho/tồn được duyệt. Supabase commerce.inventory là dữ liệu phân tích lịch sử, không phải sổ tồn trực tiếp.\n\nQuy trình bắt buộc\n\nXác định ngày dữ liệu trước dùng chỉ số tồn.\n\nKiểm snapshot được chọn là mới nhất có cho sản phẩm và kỳ cần hỏi.\n\nDùng commerce.products.product_id làm khóa nối sản phẩm.\n\nNếu nguồn hiện tại cũ hoặc thiếu, ghi rõ lịch sử và chuyển Vận hành xác minh tồn trực tiếp.\n\nYêu cầu kiểm soát\n\nKhông coi thiếu sản phẩm trong snapshot là tồn bằng không.\n\nKhông cộng số lượng qua ngày; mỗi hàng là trạng thái/chỉ số tại ngày đó.\n\nKhông cập nhật snapshot lịch sử để thể hiện điều chỉnh vật lý.\n\nBằng chứng bắt buộc\n\nHệ thống nguồn, ngày snapshot, product_id, định nghĩa chỉ số, thời điểm truy vấn và mã xác minh trực tiếp nếu có.\n\nSự phù hợp hệ thống và dữ liệu\n\nKhóa chính commerce.inventory là (snapshot_date, product_id). Trường có stock_on_hand, units_received, units_sold, stockout_days, days_of_supply, fill_rate, stockout_flag, overstock_flag, reorder_flag và sell_through_rate. Dữ liệu lịch sử kết thúc 2022-12-31.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành.",
+        "27": "4. Tồn kho, nhận hàng và trả hàng\n\nĐộ mới snapshot và báo cáo lịch sử\n\nChỉ số tồn lịch sử hỗ trợ phân tích xu hướng nhưng không chứng minh khả dụng hôm nay.\n\nQuy tắc bắt buộc. Mọi câu trả lời tồn phải nêu ngày dữ liệu. Với câu hỏi “tồn hiện tại”, tác tử không được trình bày snapshot lịch sử như hàng đang khả dụng.\n\nQuy trình bắt buộc\n\nXác định snapshot_date lớn nhất có cho sản phẩm hoặc tập dữ liệu liên quan.\n\nBáo ngày chọn và mọi kỳ thiếu.\n\nVới xu hướng, so kỳ tương đương và nêu dữ liệu hằng ngày, tháng hay không đều.\n\nQuyết định vận hành hiện tại cần hệ thống trực tiếp xác minh.\n\nYêu cầu kiểm soát\n\nKhông âm thầm kéo số dư biết cuối sang hiện tại.\n\nKhông nội suy snapshot thiếu để cam kết hàng.\n\nNếu hỏi “bây giờ” nhưng chỉ có lịch sử, trả ngày lịch sử mới nhất và giới hạn.\n\nBằng chứng bắt buộc\n\nNgày yêu cầu, ngày snapshot chọn, khoảng thiếu độ mới và giới hạn nguồn.\n\nSự phù hợp hệ thống và dữ liệu\n\nNguồn tồn có snapshot lịch sử từ 2012-07-31 đến 2022-12-31; không được mô tả thành số dư trực tiếp năm 2026.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K02",
+      "question": "Một sản phẩm không xuất hiện trong snapshot: có được kết luận tồn bằng không không?",
+      "reference": "Không được coi sản phẩm thiếu trong snapshot là tồn bằng không; phải nêu thiếu dữ liệu.",
+      "policy_pages": [
+        25
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "25": "4. Tồn kho, nhận hàng và trả hàng\n\nHồ sơ tồn kho, phạm vi và thứ bậc nguồn\n\nQuyết định tồn kho phải phân biệt snapshot phân tích với tồn vật lý ở vị trí và thời điểm cụ thể.\n\nQuy tắc bắt buộc. Số hiện tại chính thức là số dư trực tiếp trong hệ thống quản lý kho/tồn được duyệt. Supabase commerce.inventory là dữ liệu phân tích lịch sử, không phải sổ tồn trực tiếp.\n\nQuy trình bắt buộc\n\nXác định ngày dữ liệu trước dùng chỉ số tồn.\n\nKiểm snapshot được chọn là mới nhất có cho sản phẩm và kỳ cần hỏi.\n\nDùng commerce.products.product_id làm khóa nối sản phẩm.\n\nNếu nguồn hiện tại cũ hoặc thiếu, ghi rõ lịch sử và chuyển Vận hành xác minh tồn trực tiếp.\n\nYêu cầu kiểm soát\n\nKhông coi thiếu sản phẩm trong snapshot là tồn bằng không.\n\nKhông cộng số lượng qua ngày; mỗi hàng là trạng thái/chỉ số tại ngày đó.\n\nKhông cập nhật snapshot lịch sử để thể hiện điều chỉnh vật lý.\n\nBằng chứng bắt buộc\n\nHệ thống nguồn, ngày snapshot, product_id, định nghĩa chỉ số, thời điểm truy vấn và mã xác minh trực tiếp nếu có.\n\nSự phù hợp hệ thống và dữ liệu\n\nKhóa chính commerce.inventory là (snapshot_date, product_id). Trường có stock_on_hand, units_received, units_sold, stockout_days, days_of_supply, fill_rate, stockout_flag, overstock_flag, reorder_flag và sell_through_rate. Dữ liệu lịch sử kết thúc 2022-12-31.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K03",
+      "question": "Có được cộng stock_on_hand của nhiều ngày để làm tổng tồn kỳ không?",
+      "reference": "Không. Mỗi hàng là trạng thái tại một ngày; không cộng số lượng tồn qua ngày.",
+      "policy_pages": [
+        25
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "25": "4. Tồn kho, nhận hàng và trả hàng\n\nHồ sơ tồn kho, phạm vi và thứ bậc nguồn\n\nQuyết định tồn kho phải phân biệt snapshot phân tích với tồn vật lý ở vị trí và thời điểm cụ thể.\n\nQuy tắc bắt buộc. Số hiện tại chính thức là số dư trực tiếp trong hệ thống quản lý kho/tồn được duyệt. Supabase commerce.inventory là dữ liệu phân tích lịch sử, không phải sổ tồn trực tiếp.\n\nQuy trình bắt buộc\n\nXác định ngày dữ liệu trước dùng chỉ số tồn.\n\nKiểm snapshot được chọn là mới nhất có cho sản phẩm và kỳ cần hỏi.\n\nDùng commerce.products.product_id làm khóa nối sản phẩm.\n\nNếu nguồn hiện tại cũ hoặc thiếu, ghi rõ lịch sử và chuyển Vận hành xác minh tồn trực tiếp.\n\nYêu cầu kiểm soát\n\nKhông coi thiếu sản phẩm trong snapshot là tồn bằng không.\n\nKhông cộng số lượng qua ngày; mỗi hàng là trạng thái/chỉ số tại ngày đó.\n\nKhông cập nhật snapshot lịch sử để thể hiện điều chỉnh vật lý.\n\nBằng chứng bắt buộc\n\nHệ thống nguồn, ngày snapshot, product_id, định nghĩa chỉ số, thời điểm truy vấn và mã xác minh trực tiếp nếu có.\n\nSự phù hợp hệ thống và dữ liệu\n\nKhóa chính commerce.inventory là (snapshot_date, product_id). Trường có stock_on_hand, units_received, units_sold, stockout_days, days_of_supply, fill_rate, stockout_flag, overstock_flag, reorder_flag và sell_through_rate. Dữ liệu lịch sử kết thúc 2022-12-31.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K04",
+      "question": "Nếu inventory và products ghi tên hoặc category khác nhau, dùng nguồn nào làm danh mục chuẩn?",
+      "reference": "Dùng commerce.products làm metadata danh mục chuẩn, product_id làm khóa và đánh dấu sai lệch với inventory.",
+      "policy_pages": [
+        26
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "26": "4. Tồn kho, nhận hàng và trả hàng\n\nDanh tính sản phẩm, đổi danh mục và nối dữ liệu\n\nDanh tính ổn định cần để nối tồn, đơn, trả hàng và thuộc tính mà không đếm trùng.\n\nQuy tắc bắt buộc. Dùng product_id làm khóa chuẩn. Tên, loại, phân khúc, kích thước và màu là thuộc tính mô tả, không thay khóa.\n\nQuy trình bắt buộc\n\nPhân giải sản phẩm được hỏi thành đúng một product_id trước phân tích hoặc chuẩn bị giao dịch.\n\nDùng commerce.products cho thuộc tính mô tả chuẩn, commerce.inventory cho chỉ số theo ngày.\n\nNếu tên hoặc biến thể có vẻ trùng, so kích thước, màu, phân khúc và thuộc tính khác sẵn có.\n\nNếu chưa nối được, trả trạng thái chưa xác định sản phẩm và yêu cầu làm rõ.\n\nYêu cầu kiểm soát\n\nKhông tạo product_id giả để nối thành công.\n\nNếu inventory.product_name hoặc category khác products, lấy products làm metadata danh mục và đánh dấu lệch.\n\nSản phẩm mới phải qua quy trình tiếp nhận danh mục được phép.\n\nBằng chứng bắt buộc\n\nID sản phẩm, hàng danh mục chọn, khóa không khớp và yêu cầu sửa danh mục đã duyệt nếu có.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.products có 2.412 hàng danh mục, được inventory, order_items, returns và reviews tham chiếu qua product_id.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K05",
+      "question": "Hai biến thể trùng tên phải được phân giải như thế nào trước khi phân tích tồn?",
+      "reference": "Phân giải thành đúng một product_id, so kích thước, màu, phân khúc và thuộc tính khác; nếu chưa xác định thì yêu cầu làm rõ, không tạo ID giả.",
+      "policy_pages": [
+        26
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "26": "4. Tồn kho, nhận hàng và trả hàng\n\nDanh tính sản phẩm, đổi danh mục và nối dữ liệu\n\nDanh tính ổn định cần để nối tồn, đơn, trả hàng và thuộc tính mà không đếm trùng.\n\nQuy tắc bắt buộc. Dùng product_id làm khóa chuẩn. Tên, loại, phân khúc, kích thước và màu là thuộc tính mô tả, không thay khóa.\n\nQuy trình bắt buộc\n\nPhân giải sản phẩm được hỏi thành đúng một product_id trước phân tích hoặc chuẩn bị giao dịch.\n\nDùng commerce.products cho thuộc tính mô tả chuẩn, commerce.inventory cho chỉ số theo ngày.\n\nNếu tên hoặc biến thể có vẻ trùng, so kích thước, màu, phân khúc và thuộc tính khác sẵn có.\n\nNếu chưa nối được, trả trạng thái chưa xác định sản phẩm và yêu cầu làm rõ.\n\nYêu cầu kiểm soát\n\nKhông tạo product_id giả để nối thành công.\n\nNếu inventory.product_name hoặc category khác products, lấy products làm metadata danh mục và đánh dấu lệch.\n\nSản phẩm mới phải qua quy trình tiếp nhận danh mục được phép.\n\nBằng chứng bắt buộc\n\nID sản phẩm, hàng danh mục chọn, khóa không khớp và yêu cầu sửa danh mục đã duyệt nếu có.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.products có 2.412 hàng danh mục, được inventory, order_items, returns và reviews tham chiếu qua product_id.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K06",
+      "question": "Snapshot cuối năm 2022 có thể chứng minh hàng đang bán được trong năm 2026 không?",
+      "reference": "Không. Snapshot lịch sử không chứng minh khả dụng hiện tại. Phải nêu ngày lịch sử và giới hạn, rồi xác minh trong hệ thống trực tiếp.",
+      "policy_pages": [
+        27
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "27": "4. Tồn kho, nhận hàng và trả hàng\n\nĐộ mới snapshot và báo cáo lịch sử\n\nChỉ số tồn lịch sử hỗ trợ phân tích xu hướng nhưng không chứng minh khả dụng hôm nay.\n\nQuy tắc bắt buộc. Mọi câu trả lời tồn phải nêu ngày dữ liệu. Với câu hỏi “tồn hiện tại”, tác tử không được trình bày snapshot lịch sử như hàng đang khả dụng.\n\nQuy trình bắt buộc\n\nXác định snapshot_date lớn nhất có cho sản phẩm hoặc tập dữ liệu liên quan.\n\nBáo ngày chọn và mọi kỳ thiếu.\n\nVới xu hướng, so kỳ tương đương và nêu dữ liệu hằng ngày, tháng hay không đều.\n\nQuyết định vận hành hiện tại cần hệ thống trực tiếp xác minh.\n\nYêu cầu kiểm soát\n\nKhông âm thầm kéo số dư biết cuối sang hiện tại.\n\nKhông nội suy snapshot thiếu để cam kết hàng.\n\nNếu hỏi “bây giờ” nhưng chỉ có lịch sử, trả ngày lịch sử mới nhất và giới hạn.\n\nBằng chứng bắt buộc\n\nNgày yêu cầu, ngày snapshot chọn, khoảng thiếu độ mới và giới hạn nguồn.\n\nSự phù hợp hệ thống và dữ liệu\n\nNguồn tồn có snapshot lịch sử từ 2012-07-31 đến 2022-12-31; không được mô tả thành số dư trực tiếp năm 2026.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K07",
+      "question": "Chính sách yêu cầu báo cáo xu hướng tồn công bố những gì về các kỳ dữ liệu?",
+      "reference": "So các kỳ tương đương, nêu ngày snapshot, kỳ thiếu và dữ liệu hàng ngày, tháng hay không đều. Không nội suy kỳ thiếu để cam kết hàng.",
+      "policy_pages": [
+        27
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "27": "4. Tồn kho, nhận hàng và trả hàng\n\nĐộ mới snapshot và báo cáo lịch sử\n\nChỉ số tồn lịch sử hỗ trợ phân tích xu hướng nhưng không chứng minh khả dụng hôm nay.\n\nQuy tắc bắt buộc. Mọi câu trả lời tồn phải nêu ngày dữ liệu. Với câu hỏi “tồn hiện tại”, tác tử không được trình bày snapshot lịch sử như hàng đang khả dụng.\n\nQuy trình bắt buộc\n\nXác định snapshot_date lớn nhất có cho sản phẩm hoặc tập dữ liệu liên quan.\n\nBáo ngày chọn và mọi kỳ thiếu.\n\nVới xu hướng, so kỳ tương đương và nêu dữ liệu hằng ngày, tháng hay không đều.\n\nQuyết định vận hành hiện tại cần hệ thống trực tiếp xác minh.\n\nYêu cầu kiểm soát\n\nKhông âm thầm kéo số dư biết cuối sang hiện tại.\n\nKhông nội suy snapshot thiếu để cam kết hàng.\n\nNếu hỏi “bây giờ” nhưng chỉ có lịch sử, trả ngày lịch sử mới nhất và giới hạn.\n\nBằng chứng bắt buộc\n\nNgày yêu cầu, ngày snapshot chọn, khoảng thiếu độ mới và giới hạn nguồn.\n\nSự phù hợp hệ thống và dữ liệu\n\nNguồn tồn có snapshot lịch sử từ 2012-07-31 đến 2022-12-31; không được mô tả thành số dư trực tiếp năm 2026.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K08",
+      "question": "reorder_flag=true có tự cho phép phát hành PO không?",
+      "reference": "Không. reorder_flag, stockout_flag hoặc days_of_supply thấp chỉ kích hoạt rà bổ sung; không tự tạo PO hay cho phép mua.",
+      "policy_pages": [
+        28
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "28": "4. Tồn kho, nhận hàng và trả hàng\n\nTín hiệu đặt lại và rà bổ sung hàng\n\nChỉ báo đặt lại giúp ưu tiên rà, không cho phép mua tự động hoặc chứng minh lead time nhà cung cấp.\n\nQuy tắc bắt buộc. Hàng có reorder_flag=true, stockout_flag=true hoặc days_of_supply thấp kích hoạt rà bổ sung, không tự tạo PO.\n\nQuy trình bắt buộc\n\nKiểm danh tính sản phẩm và snapshot mới nhất.\n\nXem đồng thời stock_on_hand, days_of_supply, units_sold, units_received, stockout_days và fill_rate.\n\nXác nhận tồn trực tiếp, hàng đã phân bổ, cam kết mua mở, lead time, số đặt tối thiểu và trạng thái nhà cung cấp trong hệ thống nghiệp vụ.\n\nƯớc nhu cầu và mức bổ sung bằng phương pháp kế hoạch tồn đã duyệt.\n\nChuyển khuyến nghị đến chủ tồn kho và luồng mua sắm.\n\nYêu cầu kiểm soát\n\nKhông dùng riêng reorder_flag làm phép mua.\n\nNếu chỉ số mâu thuẫn, gắn DATA_CONFLICT và điều tra trước cam kết.\n\nKhông tạo lead time hoặc số đặt tối thiểu khi thiếu.\n\nBằng chứng bắt buộc\n\nMã snapshot, giá trị tín hiệu, xác minh trực tiếp, cam kết mở, đề xuất và quyết định duyệt.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.inventory có reorder_flag và days_of_supply nhưng không có trường nhà cung cấp, lead time, số đặt tối thiểu hay PO.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K09",
+      "question": "Trước khi đề nghị bổ sung hàng, phải xác minh những yếu tố nào ngoài các chỉ số snapshot?",
+      "reference": "Xác minh tồn trực tiếp, hàng đã phân bổ, cam kết mua mở, lead time, số đặt tối thiểu và trạng thái nhà cung cấp trong hệ thống nghiệp vụ; dùng phương pháp kế hoạch đã duyệt.",
+      "policy_pages": [
+        28
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "28": "4. Tồn kho, nhận hàng và trả hàng\n\nTín hiệu đặt lại và rà bổ sung hàng\n\nChỉ báo đặt lại giúp ưu tiên rà, không cho phép mua tự động hoặc chứng minh lead time nhà cung cấp.\n\nQuy tắc bắt buộc. Hàng có reorder_flag=true, stockout_flag=true hoặc days_of_supply thấp kích hoạt rà bổ sung, không tự tạo PO.\n\nQuy trình bắt buộc\n\nKiểm danh tính sản phẩm và snapshot mới nhất.\n\nXem đồng thời stock_on_hand, days_of_supply, units_sold, units_received, stockout_days và fill_rate.\n\nXác nhận tồn trực tiếp, hàng đã phân bổ, cam kết mua mở, lead time, số đặt tối thiểu và trạng thái nhà cung cấp trong hệ thống nghiệp vụ.\n\nƯớc nhu cầu và mức bổ sung bằng phương pháp kế hoạch tồn đã duyệt.\n\nChuyển khuyến nghị đến chủ tồn kho và luồng mua sắm.\n\nYêu cầu kiểm soát\n\nKhông dùng riêng reorder_flag làm phép mua.\n\nNếu chỉ số mâu thuẫn, gắn DATA_CONFLICT và điều tra trước cam kết.\n\nKhông tạo lead time hoặc số đặt tối thiểu khi thiếu.\n\nBằng chứng bắt buộc\n\nMã snapshot, giá trị tín hiệu, xác minh trực tiếp, cam kết mở, đề xuất và quyết định duyệt.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.inventory có reorder_flag và days_of_supply nhưng không có trường nhà cung cấp, lead time, số đặt tối thiểu hay PO.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K10",
+      "question": "Khi chỉ số bổ sung hàng mâu thuẫn nhau, phải gắn trạng thái nào và làm gì?",
+      "reference": "Gắn DATA_CONFLICT và điều tra trước khi cam kết; không tự tạo lead time hoặc số đặt tối thiểu còn thiếu.",
+      "policy_pages": [
+        28
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "28": "4. Tồn kho, nhận hàng và trả hàng\n\nTín hiệu đặt lại và rà bổ sung hàng\n\nChỉ báo đặt lại giúp ưu tiên rà, không cho phép mua tự động hoặc chứng minh lead time nhà cung cấp.\n\nQuy tắc bắt buộc. Hàng có reorder_flag=true, stockout_flag=true hoặc days_of_supply thấp kích hoạt rà bổ sung, không tự tạo PO.\n\nQuy trình bắt buộc\n\nKiểm danh tính sản phẩm và snapshot mới nhất.\n\nXem đồng thời stock_on_hand, days_of_supply, units_sold, units_received, stockout_days và fill_rate.\n\nXác nhận tồn trực tiếp, hàng đã phân bổ, cam kết mua mở, lead time, số đặt tối thiểu và trạng thái nhà cung cấp trong hệ thống nghiệp vụ.\n\nƯớc nhu cầu và mức bổ sung bằng phương pháp kế hoạch tồn đã duyệt.\n\nChuyển khuyến nghị đến chủ tồn kho và luồng mua sắm.\n\nYêu cầu kiểm soát\n\nKhông dùng riêng reorder_flag làm phép mua.\n\nNếu chỉ số mâu thuẫn, gắn DATA_CONFLICT và điều tra trước cam kết.\n\nKhông tạo lead time hoặc số đặt tối thiểu khi thiếu.\n\nBằng chứng bắt buộc\n\nMã snapshot, giá trị tín hiệu, xác minh trực tiếp, cam kết mở, đề xuất và quyết định duyệt.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.inventory có reorder_flag và days_of_supply nhưng không có trường nhà cung cấp, lead time, số đặt tối thiểu hay PO.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K11",
+      "question": "Có thể hứa ngày giao cho khách chỉ từ fill_rate lịch sử không?",
+      "reference": "Không. Phải xác minh tồn có thể bán hiện tại; không hứa ngày giao chỉ theo fill_rate lịch sử.",
+      "policy_pages": [
+        29
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "29": "4. Tồn kho, nhận hàng và trả hàng\n\nỨng phó thiếu hàng và mức dịch vụ\n\nRủi ro thiếu hàng phải phân loại theo ảnh hưởng khách, khả năng thay thế và tính khả thi bổ sung.\n\nQuy tắc bắt buộc. stockout_flag hoặc stockout_days dương là tín hiệu lịch sử cần xác nhận với tồn trực tiếp trước khi đổi cam kết khách hoặc mua sắm.\n\nQuy trình bắt buộc\n\nXác nhận hàng hiện có thể bán và hàng giữ do chất lượng, hỏng hoặc đơn hàng.\n\nXác định đơn bị ảnh hưởng và ngày hẹn bằng order_id nếu hệ thống đơn trực tiếp xác nhận liên quan.\n\nĐánh giá thay thế đã duyệt và nhu cầu thông báo khách.\n\nChuyển thiếu hàng ảnh hưởng lớn hoặc lặp đến chủ Tồn kho và Kinh doanh.\n\nGhi nguyên nhân như nhu cầu tăng, nguồn cung trễ, lệch danh mục hoặc chất lượng dữ liệu.\n\nYêu cầu kiểm soát\n\nKhông hứa ngày giao chỉ theo fill_rate lịch sử.\n\nKhông đổi hàng không khả dụng thành có thể bán để cải thiện chỉ số.\n\nQuyết định ảnh hưởng khách tuân chính sách đơn và dịch vụ.\n\nBằng chứng bắt buộc\n\nMã sự cố/tham chiếu, ID sản phẩm ảnh hưởng, tồn xác nhận, đơn ảnh hưởng, giảm thiểu và người theo dõi.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.orders và commerce.order_items mô tả bán hàng lịch sử; commerce.shipments ghi ship_date và delivery_date. Đây không phải hàng đợi thực hiện đơn trực tiếp.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K12",
+      "question": "Thiếu hàng ảnh hưởng lớn hoặc lặp lại phải chuyển đến những bộ phận nào?",
+      "reference": "Chuyển đến chủ Tồn kho và Kinh doanh; xác minh tồn, đơn bị ảnh hưởng, biện pháp giảm thiểu và ghi nguyên nhân.",
+      "policy_pages": [
+        29
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "29": "4. Tồn kho, nhận hàng và trả hàng\n\nỨng phó thiếu hàng và mức dịch vụ\n\nRủi ro thiếu hàng phải phân loại theo ảnh hưởng khách, khả năng thay thế và tính khả thi bổ sung.\n\nQuy tắc bắt buộc. stockout_flag hoặc stockout_days dương là tín hiệu lịch sử cần xác nhận với tồn trực tiếp trước khi đổi cam kết khách hoặc mua sắm.\n\nQuy trình bắt buộc\n\nXác nhận hàng hiện có thể bán và hàng giữ do chất lượng, hỏng hoặc đơn hàng.\n\nXác định đơn bị ảnh hưởng và ngày hẹn bằng order_id nếu hệ thống đơn trực tiếp xác nhận liên quan.\n\nĐánh giá thay thế đã duyệt và nhu cầu thông báo khách.\n\nChuyển thiếu hàng ảnh hưởng lớn hoặc lặp đến chủ Tồn kho và Kinh doanh.\n\nGhi nguyên nhân như nhu cầu tăng, nguồn cung trễ, lệch danh mục hoặc chất lượng dữ liệu.\n\nYêu cầu kiểm soát\n\nKhông hứa ngày giao chỉ theo fill_rate lịch sử.\n\nKhông đổi hàng không khả dụng thành có thể bán để cải thiện chỉ số.\n\nQuyết định ảnh hưởng khách tuân chính sách đơn và dịch vụ.\n\nBằng chứng bắt buộc\n\nMã sự cố/tham chiếu, ID sản phẩm ảnh hưởng, tồn xác nhận, đơn ảnh hưởng, giảm thiểu và người theo dõi.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.orders và commerce.order_items mô tả bán hàng lịch sử; commerce.shipments ghi ship_date và delivery_date. Đây không phải hàng đợi thực hiện đơn trực tiếp.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K13",
+      "question": "overstock_flag=true có cho phép tự thanh lý hay giảm giá không?",
+      "reference": "Không. Cờ dư hàng hoặc days_of_supply cao chỉ kích hoạt rà; cần cấp Kinh doanh và Tài chính liên quan duyệt trước khi đổi giá hoặc xử lý hàng.",
+      "policy_pages": [
+        30
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "30": "4. Tồn kho, nhận hàng và trả hàng\n\nDư hàng và tồn chậm luân chuyển\n\nChỉ báo dư hàng hỗ trợ rà vốn, lưu kho và phương án giảm giá, đồng thời bảo vệ toàn vẹn dữ liệu và cam kết khách.\n\nQuy tắc bắt buộc. overstock_flag=true hoặc days_of_supply cao kéo dài kích hoạt rà, không tự cho phép thanh lý, ghi giảm hoặc khuyến mãi.\n\nQuy trình bắt buộc\n\nXác minh snapshot mới nhất và lượng có thể bán hiện tại.\n\nRà tốc độ bán, mùa vụ, tuổi hàng, biên lợi nhuận, trả hàng và chiến dịch sắp tới.\n\nĐánh giá điều chuyển, trả nhà cung cấp, giảm giá đã duyệt, bán gói hoặc giữ nguyên.\n\nĐược cấp Kinh doanh và Tài chính cần thiết duyệt trước đổi giá hoặc xử lý hàng.\n\nTheo dõi kết quả và rà lại sau kỳ được xác định.\n\nYêu cầu kiểm soát\n\nKhông đánh dấu hàng hỏng chỉ để loại dư hàng.\n\nKiểm quy tắc khuyến mãi và tồn trước giảm giá.\n\nGhi giảm cần đếm/bằng chứng độc lập và phê duyệt.\n\nBằng chứng bắt buộc\n\nHồ sơ rà, kỳ dữ liệu, hành động đề nghị, tác động tài chính dự kiến, duyệt và kết quả theo dõi.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.inventory có overstock_flag, sell_through_rate và days_of_supply; commerce.promotions có loại khuyến mãi, giảm giá, ngày, nhóm/kênh và stackable_flag.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K14",
+      "question": "Khi rà hàng dư, chính sách cho phép cân nhắc những phương án xử lý nào?",
+      "reference": "Có thể đánh giá điều chuyển, trả nhà cung cấp, giảm giá đã duyệt, bán gói hoặc giữ nguyên; theo dõi kết quả sau kỳ xác định.",
+      "policy_pages": [
+        30
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "30": "4. Tồn kho, nhận hàng và trả hàng\n\nDư hàng và tồn chậm luân chuyển\n\nChỉ báo dư hàng hỗ trợ rà vốn, lưu kho và phương án giảm giá, đồng thời bảo vệ toàn vẹn dữ liệu và cam kết khách.\n\nQuy tắc bắt buộc. overstock_flag=true hoặc days_of_supply cao kéo dài kích hoạt rà, không tự cho phép thanh lý, ghi giảm hoặc khuyến mãi.\n\nQuy trình bắt buộc\n\nXác minh snapshot mới nhất và lượng có thể bán hiện tại.\n\nRà tốc độ bán, mùa vụ, tuổi hàng, biên lợi nhuận, trả hàng và chiến dịch sắp tới.\n\nĐánh giá điều chuyển, trả nhà cung cấp, giảm giá đã duyệt, bán gói hoặc giữ nguyên.\n\nĐược cấp Kinh doanh và Tài chính cần thiết duyệt trước đổi giá hoặc xử lý hàng.\n\nTheo dõi kết quả và rà lại sau kỳ được xác định.\n\nYêu cầu kiểm soát\n\nKhông đánh dấu hàng hỏng chỉ để loại dư hàng.\n\nKiểm quy tắc khuyến mãi và tồn trước giảm giá.\n\nGhi giảm cần đếm/bằng chứng độc lập và phê duyệt.\n\nBằng chứng bắt buộc\n\nHồ sơ rà, kỳ dữ liệu, hành động đề nghị, tác động tài chính dự kiến, duyệt và kết quả theo dõi.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.inventory có overstock_flag, sell_through_rate và days_of_supply; commerce.promotions có loại khuyến mãi, giảm giá, ngày, nhóm/kênh và stackable_flag.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K15",
+      "question": "Trong cửa sổ kiểm kê chu kỳ, phải kiểm soát luân chuyển hàng ra sao?",
+      "reference": "Đóng băng hoặc ghi nhận luân chuyển trong cửa sổ đếm; đếm theo danh tính sản phẩm, vị trí và đơn vị đã duyệt.",
+      "policy_pages": [
+        31
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "31": "4. Tồn kho, nhận hàng và trả hàng\n\nKiểm kê chu kỳ và chuẩn bị đếm\n\nKiểm kê chu kỳ kiểm độ chính xác vật lý và tìm lệch trước khi dùng số cho bổ sung hoặc tài chính.\n\nQuy tắc bắt buộc. Lập lịch đếm theo rủi ro và luân chuyển; không cho người đếm biết số dự kiến nếu quy trình duyệt cho phép.\n\nQuy trình bắt buộc\n\nChọn sản phẩm theo lịch rủi ro đã duyệt và ghi phạm vi.\n\nĐóng băng hoặc ghi nhận luân chuyển trong cửa sổ đếm.\n\nĐếm theo danh tính sản phẩm và vị trí lưu bằng đơn vị đã duyệt.\n\nNgười độc lập đếm lại sai lệch trọng yếu.\n\nSo số thực với hệ thống tồn trực tiếp và ghi nguyên nhân trước điều chỉnh.\n\nYêu cầu kiểm soát\n\nPhiếu đếm không tự là giao dịch điều chỉnh.\n\nKhông đếm theo snapshot phân tích lịch sử như số sổ sách trực tiếp.\n\nDuy trì trách nhiệm giữ và chuỗi bảo quản bằng chứng cho hàng giá trị cao hoặc nhạy cảm.\n\nBằng chứng bắt buộc\n\nKế hoạch đếm, danh tính người đếm, thời điểm, vị trí, lượng thực, lượng sổ, đếm lại và giải thích lệch.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.inventory không có vị trí, ô kho, người đếm, phiên kiểm kê hoặc mã điều chỉnh. Thực hiện kiểm kê thuộc hệ thống tồn nghiệp vụ.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K16",
+      "question": "Sai lệch kiểm kê trọng yếu cần ai đếm lại và phiếu đếm có tự điều chỉnh tồn không?",
+      "reference": "Người độc lập đếm lại sai lệch trọng yếu. Phiếu đếm không tự là giao dịch điều chỉnh; phải so với hệ thống trực tiếp và giải thích lệch.",
+      "policy_pages": [
+        31
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "31": "4. Tồn kho, nhận hàng và trả hàng\n\nKiểm kê chu kỳ và chuẩn bị đếm\n\nKiểm kê chu kỳ kiểm độ chính xác vật lý và tìm lệch trước khi dùng số cho bổ sung hoặc tài chính.\n\nQuy tắc bắt buộc. Lập lịch đếm theo rủi ro và luân chuyển; không cho người đếm biết số dự kiến nếu quy trình duyệt cho phép.\n\nQuy trình bắt buộc\n\nChọn sản phẩm theo lịch rủi ro đã duyệt và ghi phạm vi.\n\nĐóng băng hoặc ghi nhận luân chuyển trong cửa sổ đếm.\n\nĐếm theo danh tính sản phẩm và vị trí lưu bằng đơn vị đã duyệt.\n\nNgười độc lập đếm lại sai lệch trọng yếu.\n\nSo số thực với hệ thống tồn trực tiếp và ghi nguyên nhân trước điều chỉnh.\n\nYêu cầu kiểm soát\n\nPhiếu đếm không tự là giao dịch điều chỉnh.\n\nKhông đếm theo snapshot phân tích lịch sử như số sổ sách trực tiếp.\n\nDuy trì trách nhiệm giữ và chuỗi bảo quản bằng chứng cho hàng giá trị cao hoặc nhạy cảm.\n\nBằng chứng bắt buộc\n\nKế hoạch đếm, danh tính người đếm, thời điểm, vị trí, lượng thực, lượng sổ, đếm lại và giải thích lệch.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.inventory không có vị trí, ô kho, người đếm, phiên kiểm kê hoặc mã điều chỉnh. Thực hiện kiểm kê thuộc hệ thống tồn nghiệp vụ.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K17",
+      "question": "Hồ sơ bằng chứng cho kiểm kê chu kỳ phải chứa những nội dung nào?",
+      "reference": "Kế hoạch đếm, danh tính người đếm, thời điểm, vị trí, lượng thực, lượng sổ, đếm lại và giải thích lệch.",
+      "policy_pages": [
+        31
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "31": "4. Tồn kho, nhận hàng và trả hàng\n\nKiểm kê chu kỳ và chuẩn bị đếm\n\nKiểm kê chu kỳ kiểm độ chính xác vật lý và tìm lệch trước khi dùng số cho bổ sung hoặc tài chính.\n\nQuy tắc bắt buộc. Lập lịch đếm theo rủi ro và luân chuyển; không cho người đếm biết số dự kiến nếu quy trình duyệt cho phép.\n\nQuy trình bắt buộc\n\nChọn sản phẩm theo lịch rủi ro đã duyệt và ghi phạm vi.\n\nĐóng băng hoặc ghi nhận luân chuyển trong cửa sổ đếm.\n\nĐếm theo danh tính sản phẩm và vị trí lưu bằng đơn vị đã duyệt.\n\nNgười độc lập đếm lại sai lệch trọng yếu.\n\nSo số thực với hệ thống tồn trực tiếp và ghi nguyên nhân trước điều chỉnh.\n\nYêu cầu kiểm soát\n\nPhiếu đếm không tự là giao dịch điều chỉnh.\n\nKhông đếm theo snapshot phân tích lịch sử như số sổ sách trực tiếp.\n\nDuy trì trách nhiệm giữ và chuỗi bảo quản bằng chứng cho hàng giá trị cao hoặc nhạy cảm.\n\nBằng chứng bắt buộc\n\nKế hoạch đếm, danh tính người đếm, thời điểm, vị trí, lượng thực, lượng sổ, đếm lại và giải thích lệch.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.inventory không có vị trí, ô kho, người đếm, phiên kiểm kê hoặc mã điều chỉnh. Thực hiện kiểm kê thuộc hệ thống tồn nghiệp vụ.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K18",
+      "question": "Người tự phát hiện chênh lệch trọng yếu có được làm người duyệt duy nhất cho điều chỉnh không?",
+      "reference": "Không. Người đếm không được là người duyệt duy nhất cho điều chỉnh trọng yếu; cần bằng chứng và phê duyệt phù hợp.",
+      "policy_pages": [
+        32
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "32": "4. Tồn kho, nhận hàng và trả hàng\n\nĐiều chỉnh, ghi giảm và sửa tồn kho\n\nĐiều chỉnh sửa lỗi xác minh hoặc phản ánh sự kiện vật lý được phép; không dùng để ép chỉ số đạt mục tiêu.\n\nQuy tắc bắt buộc. Mọi điều chỉnh trọng yếu cần bằng chứng tình trạng hoặc giao dịch thực, mã lý do, người duyệt độc lập và hồ sơ trước/sau được giữ.\n\nQuy trình bắt buộc\n\nĐiều tra lệch và kiểm nhận, giao, trả, chuyển kho gần đây cùng lỗi nhập liệu.\n\nPhân loại nguyên nhân: đếm sai, hỏng, mất, nhận sai, hệ thống sai hoặc sự kiện nghiệp vụ được duyệt.\n\nTrình số lượng và tác động giá trị đề nghị để duyệt.\n\nGhi điều chỉnh vào hệ thống tồn trực tiếp sau duyệt.\n\nĐối chiếu số dư trực tiếp sau điều chỉnh và giữ mã giao dịch.\n\nYêu cầu kiểm soát\n\nNgười đếm không được là người duyệt duy nhất cho điều chỉnh trọng yếu.\n\nKhông sửa snapshot lịch sử để giả lập điều chỉnh.\n\nNghi trộm, gian lận hoặc mất không giải thích lặp lại phải chuyển Bảo mật và Tài chính.\n\nBằng chứng bắt buộc\n\nLượng gốc và sửa, lý do, bằng chứng, người yêu cầu, người duyệt, mã ghi sổ và rà soát.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.inventory là bảng snapshot lịch sử có stock_on_hand không âm, không có sổ điều chỉnh. Không ghi sửa tại đây.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K19",
+      "question": "Có được sửa commerce.inventory để ghi nhận điều chỉnh vật lý sau kiểm kê không?",
+      "reference": "Không sửa snapshot lịch sử để giả lập điều chỉnh. Sau duyệt, ghi trong hệ thống tồn trực tiếp, đối chiếu số dư và giữ mã giao dịch.",
+      "policy_pages": [
+        32
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "32": "4. Tồn kho, nhận hàng và trả hàng\n\nĐiều chỉnh, ghi giảm và sửa tồn kho\n\nĐiều chỉnh sửa lỗi xác minh hoặc phản ánh sự kiện vật lý được phép; không dùng để ép chỉ số đạt mục tiêu.\n\nQuy tắc bắt buộc. Mọi điều chỉnh trọng yếu cần bằng chứng tình trạng hoặc giao dịch thực, mã lý do, người duyệt độc lập và hồ sơ trước/sau được giữ.\n\nQuy trình bắt buộc\n\nĐiều tra lệch và kiểm nhận, giao, trả, chuyển kho gần đây cùng lỗi nhập liệu.\n\nPhân loại nguyên nhân: đếm sai, hỏng, mất, nhận sai, hệ thống sai hoặc sự kiện nghiệp vụ được duyệt.\n\nTrình số lượng và tác động giá trị đề nghị để duyệt.\n\nGhi điều chỉnh vào hệ thống tồn trực tiếp sau duyệt.\n\nĐối chiếu số dư trực tiếp sau điều chỉnh và giữ mã giao dịch.\n\nYêu cầu kiểm soát\n\nNgười đếm không được là người duyệt duy nhất cho điều chỉnh trọng yếu.\n\nKhông sửa snapshot lịch sử để giả lập điều chỉnh.\n\nNghi trộm, gian lận hoặc mất không giải thích lặp lại phải chuyển Bảo mật và Tài chính.\n\nBằng chứng bắt buộc\n\nLượng gốc và sửa, lý do, bằng chứng, người yêu cầu, người duyệt, mã ghi sổ và rà soát.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.inventory là bảng snapshot lịch sử có stock_on_hand không âm, không có sổ điều chỉnh. Không ghi sửa tại đây.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K20",
+      "question": "Mất hàng không giải thích lặp lại hoặc nghi gian lận phải được chuyển tới đâu?",
+      "reference": "Chuyển Bảo mật và Tài chính, giữ bằng chứng và phê duyệt liên quan.",
+      "policy_pages": [
+        32
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "32": "4. Tồn kho, nhận hàng và trả hàng\n\nĐiều chỉnh, ghi giảm và sửa tồn kho\n\nĐiều chỉnh sửa lỗi xác minh hoặc phản ánh sự kiện vật lý được phép; không dùng để ép chỉ số đạt mục tiêu.\n\nQuy tắc bắt buộc. Mọi điều chỉnh trọng yếu cần bằng chứng tình trạng hoặc giao dịch thực, mã lý do, người duyệt độc lập và hồ sơ trước/sau được giữ.\n\nQuy trình bắt buộc\n\nĐiều tra lệch và kiểm nhận, giao, trả, chuyển kho gần đây cùng lỗi nhập liệu.\n\nPhân loại nguyên nhân: đếm sai, hỏng, mất, nhận sai, hệ thống sai hoặc sự kiện nghiệp vụ được duyệt.\n\nTrình số lượng và tác động giá trị đề nghị để duyệt.\n\nGhi điều chỉnh vào hệ thống tồn trực tiếp sau duyệt.\n\nĐối chiếu số dư trực tiếp sau điều chỉnh và giữ mã giao dịch.\n\nYêu cầu kiểm soát\n\nNgười đếm không được là người duyệt duy nhất cho điều chỉnh trọng yếu.\n\nKhông sửa snapshot lịch sử để giả lập điều chỉnh.\n\nNghi trộm, gian lận hoặc mất không giải thích lặp lại phải chuyển Bảo mật và Tài chính.\n\nBằng chứng bắt buộc\n\nLượng gốc và sửa, lý do, bằng chứng, người yêu cầu, người duyệt, mã ghi sổ và rà soát.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.inventory là bảng snapshot lịch sử có stock_on_hand không âm, không có sổ điều chỉnh. Không ghi sửa tại đây.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K21",
+      "question": "Khi nhận hàng, lượng giao, lượng chấp nhận và lượng từ chối phải được ghi như thế nào?",
+      "reference": "Ghi riêng lượng giao thực, lượng chấp nhận và lượng từ chối. Chấp nhận cộng từ chối không vượt lượng giao; chỉ hàng chấp nhận được xếp kho để bán hoặc đối chiếu hóa đơn chuẩn.",
+      "policy_pages": [
+        33
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "33": "4. Tồn kho, nhận hàng và trả hàng\n\nNhận hàng, kiểm số lượng và giữ kiểm định\n\nNhận hàng phải xác nhận hàng giao khớp đơn được phép, đạt số lượng và tình trạng.\n\nQuy tắc bắt buộc. Lượng nhận, chấp nhận và từ chối là riêng biệt. Chỉ lượng chấp nhận được xếp kho để bán hoặc đối chiếu hóa đơn chuẩn.\n\nQuy trình bắt buộc\n\nKiểm nhà cung cấp, PO, phiếu giao, sản phẩm, đơn vị, số lượng và tình trạng.\n\nGhi lượng giao thực riêng lượng chấp nhận và từ chối.\n\nKiểm hư, bao bì, lô/sê-ri và hạn dùng nếu áp dụng.\n\nĐưa hàng chưa rõ hoặc không đạt vào khu giữ chất lượng có nhãn rõ.\n\nBáo Mua sắm và nhà cung cấp về thiếu, thừa hoặc hỏng.\n\nYêu cầu kiểm soát\n\nKhông chấp nhận giao nếu thiếu PO hợp lệ hoặc ngoại lệ đã duyệt.\n\nLượng chấp nhận cộng từ chối không vượt lượng giao.\n\nNgười nhận không được âm thầm đổi lượng PO cho khớp giao.\n\nBằng chứng bắt buộc\n\nMã PO/dòng, phiếu giao, lượng giao/chấp nhận/từ chối, kết quả kiểm, ảnh và thông báo nhà cung cấp.\n\nSự phù hợp hệ thống và dữ liệu\n\nLược đồ chưa có receiving_events hoặc bảng dòng PO. commerce.inventory.units_received là chỉ số lịch sử, không phải nhật ký giao dịch nhận.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K22",
+      "question": "Hàng nhận không đạt hoặc chưa rõ tình trạng phải được xử lý trước xếp kho ra sao?",
+      "reference": "Đưa vào khu giữ chất lượng có nhãn rõ, kiểm hư hỏng và thông báo Mua sắm cùng nhà cung cấp về thiếu, thừa hoặc hỏng.",
+      "policy_pages": [
+        33
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "33": "4. Tồn kho, nhận hàng và trả hàng\n\nNhận hàng, kiểm số lượng và giữ kiểm định\n\nNhận hàng phải xác nhận hàng giao khớp đơn được phép, đạt số lượng và tình trạng.\n\nQuy tắc bắt buộc. Lượng nhận, chấp nhận và từ chối là riêng biệt. Chỉ lượng chấp nhận được xếp kho để bán hoặc đối chiếu hóa đơn chuẩn.\n\nQuy trình bắt buộc\n\nKiểm nhà cung cấp, PO, phiếu giao, sản phẩm, đơn vị, số lượng và tình trạng.\n\nGhi lượng giao thực riêng lượng chấp nhận và từ chối.\n\nKiểm hư, bao bì, lô/sê-ri và hạn dùng nếu áp dụng.\n\nĐưa hàng chưa rõ hoặc không đạt vào khu giữ chất lượng có nhãn rõ.\n\nBáo Mua sắm và nhà cung cấp về thiếu, thừa hoặc hỏng.\n\nYêu cầu kiểm soát\n\nKhông chấp nhận giao nếu thiếu PO hợp lệ hoặc ngoại lệ đã duyệt.\n\nLượng chấp nhận cộng từ chối không vượt lượng giao.\n\nNgười nhận không được âm thầm đổi lượng PO cho khớp giao.\n\nBằng chứng bắt buộc\n\nMã PO/dòng, phiếu giao, lượng giao/chấp nhận/từ chối, kết quả kiểm, ảnh và thông báo nhà cung cấp.\n\nSự phù hợp hệ thống và dữ liệu\n\nLược đồ chưa có receiving_events hoặc bảng dòng PO. commerce.inventory.units_received là chỉ số lịch sử, không phải nhật ký giao dịch nhận.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K23",
+      "question": "Hàng giữ kiểm định hoặc thu hồi có được tính là hàng có thể bán không?",
+      "reference": "Không. Phải tách vật lý, dán nhãn hàng hạn chế; chỉ giải phóng giữ khi có quyết định chất lượng có thẩm quyền.",
+      "policy_pages": [
+        34
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "34": "4. Tồn kho, nhận hàng và trả hàng\n\nXếp kho, trách nhiệm giữ và trạng thái tồn\n\nHàng chấp nhận phải đúng vị trí và trạng thái để tôn trọng khả dụng và giới hạn chất lượng.\n\nQuy tắc bắt buộc. Hàng giữ kiểm định, hỏng, thu hồi hoặc hạn chế khác không được tính là hàng có thể bán.\n\nQuy trình bắt buộc\n\nGán vị trí và trạng thái trong hệ thống kho trực tiếp.\n\nÁp nhận diện sản phẩm, lô/sê-ri và hạn dùng khi cần.\n\nTách vật lý và dán nhãn rõ hàng hạn chế.\n\nChuyển trách nhiệm giữ bằng giao dịch luân chuyển có ghi nhận.\n\nChỉ giải phóng giữ khi có quyết định chất lượng có thẩm quyền.\n\nYêu cầu kiểm soát\n\nĐổi vị trí không phải điều chỉnh lượng trừ khi hệ thống ghi cả hai vế chuyển.\n\nKhông thực hiện đơn khách từ hàng hạn chế.\n\nĐối chiếu lệch giữa lượng nhận chấp nhận và lượng xếp kho.\n\nBằng chứng bắt buộc\n\nVị trí, trạng thái, mã luân chuyển, người giữ, lý do giữ và duyệt giải phóng.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.inventory không có vị trí, lô, sê-ri, hạn dùng, trạng thái chất lượng hoặc luân chuyển; cần hệ thống kho cho các kiểm soát này.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K24",
+      "question": "Bản ghi trả hàng và refund_amount có chứng minh sản phẩm đã nhập lại kho bán được không?",
+      "reference": "Không. Trả hàng không tự nghĩa đã nhập lại kho và tiền hoàn không chứng minh đủ bán lại. Hoàn tiền và xử lý tồn là hai quyết định riêng.",
+      "policy_pages": [
+        35
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "35": "4. Tồn kho, nhận hàng và trả hàng\n\nTrả hàng, điều kiện hoàn tiền và xử lý vật phẩm\n\nTrả hàng phải nối giao dịch khách gốc và tách hoàn tiền khỏi xử lý vật lý sản phẩm.\n\nQuy tắc bắt buộc. Bản ghi trả không tự nghĩa đã nhập lại kho; số tiền hoàn không chứng minh hàng đủ bán lại.\n\nQuy trình bắt buộc\n\nXác minh đơn gốc và danh tính sản phẩm.\n\nGhi lý do, ngày và lượng trả.\n\nKiểm tình trạng và quyết định nhập lại, tân trang, cách ly, trả nhà cung cấp hoặc thanh lý.\n\nTài chính xác minh điều kiện và số hoàn theo chính sách trả của khách.\n\nĐối chiếu hàng trả với xử lý tồn và xác nhận thanh toán/hoàn tiền.\n\nYêu cầu kiểm soát\n\nLượng trả phải dương, không vượt lượng đủ điều kiện đã xác minh sau các lần trả trước.\n\nKhông suy tình trạng chỉ từ return_reason.\n\nGiữ hoàn tiền khách và xử lý tồn là hai quyết định riêng.\n\nBằng chứng bắt buộc\n\nID trả, ID đơn, ID sản phẩm, lượng, lý do, kết quả kiểm, phương án xử lý và bằng chứng hoàn.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.returns có return_id, order_id, product_id, return_date, return_reason, return_quantity và refund_amount; không có trạng thái kiểm hoặc xử lý vật phẩm.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K25",
+      "question": "Trước khi hoàn tiền và xử lý hàng trả, cần giữ những bằng chứng định danh và kiểm tra nào?",
+      "reference": "Giữ ID trả, ID đơn, ID sản phẩm, lượng, lý do, kết quả kiểm, phương án xử lý và bằng chứng hoàn. Không suy tình trạng chỉ từ return_reason.",
+      "policy_pages": [
+        35
+      ],
+      "should_abstain": false,
+      "reference_passages": {
+        "35": "4. Tồn kho, nhận hàng và trả hàng\n\nTrả hàng, điều kiện hoàn tiền và xử lý vật phẩm\n\nTrả hàng phải nối giao dịch khách gốc và tách hoàn tiền khỏi xử lý vật lý sản phẩm.\n\nQuy tắc bắt buộc. Bản ghi trả không tự nghĩa đã nhập lại kho; số tiền hoàn không chứng minh hàng đủ bán lại.\n\nQuy trình bắt buộc\n\nXác minh đơn gốc và danh tính sản phẩm.\n\nGhi lý do, ngày và lượng trả.\n\nKiểm tình trạng và quyết định nhập lại, tân trang, cách ly, trả nhà cung cấp hoặc thanh lý.\n\nTài chính xác minh điều kiện và số hoàn theo chính sách trả của khách.\n\nĐối chiếu hàng trả với xử lý tồn và xác nhận thanh toán/hoàn tiền.\n\nYêu cầu kiểm soát\n\nLượng trả phải dương, không vượt lượng đủ điều kiện đã xác minh sau các lần trả trước.\n\nKhông suy tình trạng chỉ từ return_reason.\n\nGiữ hoàn tiền khách và xử lý tồn là hai quyết định riêng.\n\nBằng chứng bắt buộc\n\nID trả, ID đơn, ID sản phẩm, lượng, lý do, kết quả kiểm, phương án xử lý và bằng chứng hoàn.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.returns có return_id, order_id, product_id, return_date, return_reason, return_quantity và refund_amount; không có trạng thái kiểm hoặc xử lý vật phẩm.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K26",
+      "question": "Theo duy nhất chính sách này, chính xác còn bao nhiêu chiếc SKU VS-UNKNOWN ở kho lúc này?",
+      "reference": "Không đủ thông tin để xác định số tồn hiện tại cho SKU này; chính sách không cung cấp giao dịch tồn trực tiếp.",
+      "policy_pages": [
+        25,
+        27
+      ],
+      "should_abstain": true,
+      "reference_passages": {
+        "25": "4. Tồn kho, nhận hàng và trả hàng\n\nHồ sơ tồn kho, phạm vi và thứ bậc nguồn\n\nQuyết định tồn kho phải phân biệt snapshot phân tích với tồn vật lý ở vị trí và thời điểm cụ thể.\n\nQuy tắc bắt buộc. Số hiện tại chính thức là số dư trực tiếp trong hệ thống quản lý kho/tồn được duyệt. Supabase commerce.inventory là dữ liệu phân tích lịch sử, không phải sổ tồn trực tiếp.\n\nQuy trình bắt buộc\n\nXác định ngày dữ liệu trước dùng chỉ số tồn.\n\nKiểm snapshot được chọn là mới nhất có cho sản phẩm và kỳ cần hỏi.\n\nDùng commerce.products.product_id làm khóa nối sản phẩm.\n\nNếu nguồn hiện tại cũ hoặc thiếu, ghi rõ lịch sử và chuyển Vận hành xác minh tồn trực tiếp.\n\nYêu cầu kiểm soát\n\nKhông coi thiếu sản phẩm trong snapshot là tồn bằng không.\n\nKhông cộng số lượng qua ngày; mỗi hàng là trạng thái/chỉ số tại ngày đó.\n\nKhông cập nhật snapshot lịch sử để thể hiện điều chỉnh vật lý.\n\nBằng chứng bắt buộc\n\nHệ thống nguồn, ngày snapshot, product_id, định nghĩa chỉ số, thời điểm truy vấn và mã xác minh trực tiếp nếu có.\n\nSự phù hợp hệ thống và dữ liệu\n\nKhóa chính commerce.inventory là (snapshot_date, product_id). Trường có stock_on_hand, units_received, units_sold, stockout_days, days_of_supply, fill_rate, stockout_flag, overstock_flag, reorder_flag và sell_through_rate. Dữ liệu lịch sử kết thúc 2022-12-31.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành.",
+        "27": "4. Tồn kho, nhận hàng và trả hàng\n\nĐộ mới snapshot và báo cáo lịch sử\n\nChỉ số tồn lịch sử hỗ trợ phân tích xu hướng nhưng không chứng minh khả dụng hôm nay.\n\nQuy tắc bắt buộc. Mọi câu trả lời tồn phải nêu ngày dữ liệu. Với câu hỏi “tồn hiện tại”, tác tử không được trình bày snapshot lịch sử như hàng đang khả dụng.\n\nQuy trình bắt buộc\n\nXác định snapshot_date lớn nhất có cho sản phẩm hoặc tập dữ liệu liên quan.\n\nBáo ngày chọn và mọi kỳ thiếu.\n\nVới xu hướng, so kỳ tương đương và nêu dữ liệu hằng ngày, tháng hay không đều.\n\nQuyết định vận hành hiện tại cần hệ thống trực tiếp xác minh.\n\nYêu cầu kiểm soát\n\nKhông âm thầm kéo số dư biết cuối sang hiện tại.\n\nKhông nội suy snapshot thiếu để cam kết hàng.\n\nNếu hỏi “bây giờ” nhưng chỉ có lịch sử, trả ngày lịch sử mới nhất và giới hạn.\n\nBằng chứng bắt buộc\n\nNgày yêu cầu, ngày snapshot chọn, khoảng thiếu độ mới và giới hạn nguồn.\n\nSự phù hợp hệ thống và dữ liệu\n\nNguồn tồn có snapshot lịch sử từ 2012-07-31 đến 2022-12-31; không được mô tả thành số dư trực tiếp năm 2026.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K27",
+      "question": "Theo duy nhất chính sách này, thời gian giao thực tế của nhà cung cấp SUP-UNKNOWN hôm nay là mấy ngày?",
+      "reference": "Không đủ thông tin. Không có lead time hoặc giao dịch thực tế cho nhà cung cấp này trong nguồn được cung cấp; cần xác minh hệ thống nghiệp vụ.",
+      "policy_pages": [
+        28
+      ],
+      "should_abstain": true,
+      "reference_passages": {
+        "28": "4. Tồn kho, nhận hàng và trả hàng\n\nTín hiệu đặt lại và rà bổ sung hàng\n\nChỉ báo đặt lại giúp ưu tiên rà, không cho phép mua tự động hoặc chứng minh lead time nhà cung cấp.\n\nQuy tắc bắt buộc. Hàng có reorder_flag=true, stockout_flag=true hoặc days_of_supply thấp kích hoạt rà bổ sung, không tự tạo PO.\n\nQuy trình bắt buộc\n\nKiểm danh tính sản phẩm và snapshot mới nhất.\n\nXem đồng thời stock_on_hand, days_of_supply, units_sold, units_received, stockout_days và fill_rate.\n\nXác nhận tồn trực tiếp, hàng đã phân bổ, cam kết mua mở, lead time, số đặt tối thiểu và trạng thái nhà cung cấp trong hệ thống nghiệp vụ.\n\nƯớc nhu cầu và mức bổ sung bằng phương pháp kế hoạch tồn đã duyệt.\n\nChuyển khuyến nghị đến chủ tồn kho và luồng mua sắm.\n\nYêu cầu kiểm soát\n\nKhông dùng riêng reorder_flag làm phép mua.\n\nNếu chỉ số mâu thuẫn, gắn DATA_CONFLICT và điều tra trước cam kết.\n\nKhông tạo lead time hoặc số đặt tối thiểu khi thiếu.\n\nBằng chứng bắt buộc\n\nMã snapshot, giá trị tín hiệu, xác minh trực tiếp, cam kết mở, đề xuất và quyết định duyệt.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.inventory có reorder_flag và days_of_supply nhưng không có trường nhà cung cấp, lead time, số đặt tối thiểu hay PO.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K28",
+      "question": "Chỉ từ chính sách này, hãy nêu số lượng mua tối ưu chính xác cho SKU VS-UNKNOWN vào ngày mai.",
+      "reference": "Không đủ thông tin để đưa số mua chính xác; cần tồn trực tiếp, cam kết mở, nhu cầu, lead time, số đặt tối thiểu và phương pháp đã duyệt.",
+      "policy_pages": [
+        28
+      ],
+      "should_abstain": true,
+      "reference_passages": {
+        "28": "4. Tồn kho, nhận hàng và trả hàng\n\nTín hiệu đặt lại và rà bổ sung hàng\n\nChỉ báo đặt lại giúp ưu tiên rà, không cho phép mua tự động hoặc chứng minh lead time nhà cung cấp.\n\nQuy tắc bắt buộc. Hàng có reorder_flag=true, stockout_flag=true hoặc days_of_supply thấp kích hoạt rà bổ sung, không tự tạo PO.\n\nQuy trình bắt buộc\n\nKiểm danh tính sản phẩm và snapshot mới nhất.\n\nXem đồng thời stock_on_hand, days_of_supply, units_sold, units_received, stockout_days và fill_rate.\n\nXác nhận tồn trực tiếp, hàng đã phân bổ, cam kết mua mở, lead time, số đặt tối thiểu và trạng thái nhà cung cấp trong hệ thống nghiệp vụ.\n\nƯớc nhu cầu và mức bổ sung bằng phương pháp kế hoạch tồn đã duyệt.\n\nChuyển khuyến nghị đến chủ tồn kho và luồng mua sắm.\n\nYêu cầu kiểm soát\n\nKhông dùng riêng reorder_flag làm phép mua.\n\nNếu chỉ số mâu thuẫn, gắn DATA_CONFLICT và điều tra trước cam kết.\n\nKhông tạo lead time hoặc số đặt tối thiểu khi thiếu.\n\nBằng chứng bắt buộc\n\nMã snapshot, giá trị tín hiệu, xác minh trực tiếp, cam kết mở, đề xuất và quyết định duyệt.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.inventory có reorder_flag và days_of_supply nhưng không có trường nhà cung cấp, lead time, số đặt tối thiểu hay PO.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K29",
+      "question": "Theo duy nhất chính sách này, ai là người đã duyệt điều chỉnh tồn ADJ-UNKNOWN sáng nay?",
+      "reference": "Không đủ thông tin để xác định người duyệt một giao dịch cụ thể. Chính sách không chứa sổ điều chỉnh hoặc giao dịch đó.",
+      "policy_pages": [
+        31,
+        32
+      ],
+      "should_abstain": true,
+      "reference_passages": {
+        "31": "4. Tồn kho, nhận hàng và trả hàng\n\nKiểm kê chu kỳ và chuẩn bị đếm\n\nKiểm kê chu kỳ kiểm độ chính xác vật lý và tìm lệch trước khi dùng số cho bổ sung hoặc tài chính.\n\nQuy tắc bắt buộc. Lập lịch đếm theo rủi ro và luân chuyển; không cho người đếm biết số dự kiến nếu quy trình duyệt cho phép.\n\nQuy trình bắt buộc\n\nChọn sản phẩm theo lịch rủi ro đã duyệt và ghi phạm vi.\n\nĐóng băng hoặc ghi nhận luân chuyển trong cửa sổ đếm.\n\nĐếm theo danh tính sản phẩm và vị trí lưu bằng đơn vị đã duyệt.\n\nNgười độc lập đếm lại sai lệch trọng yếu.\n\nSo số thực với hệ thống tồn trực tiếp và ghi nguyên nhân trước điều chỉnh.\n\nYêu cầu kiểm soát\n\nPhiếu đếm không tự là giao dịch điều chỉnh.\n\nKhông đếm theo snapshot phân tích lịch sử như số sổ sách trực tiếp.\n\nDuy trì trách nhiệm giữ và chuỗi bảo quản bằng chứng cho hàng giá trị cao hoặc nhạy cảm.\n\nBằng chứng bắt buộc\n\nKế hoạch đếm, danh tính người đếm, thời điểm, vị trí, lượng thực, lượng sổ, đếm lại và giải thích lệch.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.inventory không có vị trí, ô kho, người đếm, phiên kiểm kê hoặc mã điều chỉnh. Thực hiện kiểm kê thuộc hệ thống tồn nghiệp vụ.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành.",
+        "32": "4. Tồn kho, nhận hàng và trả hàng\n\nĐiều chỉnh, ghi giảm và sửa tồn kho\n\nĐiều chỉnh sửa lỗi xác minh hoặc phản ánh sự kiện vật lý được phép; không dùng để ép chỉ số đạt mục tiêu.\n\nQuy tắc bắt buộc. Mọi điều chỉnh trọng yếu cần bằng chứng tình trạng hoặc giao dịch thực, mã lý do, người duyệt độc lập và hồ sơ trước/sau được giữ.\n\nQuy trình bắt buộc\n\nĐiều tra lệch và kiểm nhận, giao, trả, chuyển kho gần đây cùng lỗi nhập liệu.\n\nPhân loại nguyên nhân: đếm sai, hỏng, mất, nhận sai, hệ thống sai hoặc sự kiện nghiệp vụ được duyệt.\n\nTrình số lượng và tác động giá trị đề nghị để duyệt.\n\nGhi điều chỉnh vào hệ thống tồn trực tiếp sau duyệt.\n\nĐối chiếu số dư trực tiếp sau điều chỉnh và giữ mã giao dịch.\n\nYêu cầu kiểm soát\n\nNgười đếm không được là người duyệt duy nhất cho điều chỉnh trọng yếu.\n\nKhông sửa snapshot lịch sử để giả lập điều chỉnh.\n\nNghi trộm, gian lận hoặc mất không giải thích lặp lại phải chuyển Bảo mật và Tài chính.\n\nBằng chứng bắt buộc\n\nLượng gốc và sửa, lý do, bằng chứng, người yêu cầu, người duyệt, mã ghi sổ và rà soát.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.inventory là bảng snapshot lịch sử có stock_on_hand không âm, không có sổ điều chỉnh. Không ghi sửa tại đây.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    },
+    {
+      "id": "K30",
+      "question": "Chỉ từ chính sách VietStyle, cho biết chính xác vị trí ô kho và số sê-ri của sản phẩm VS-UNKNOWN.",
+      "reference": "Không đủ thông tin để xác định ô kho và sê-ri cụ thể; cần hệ thống kho trực tiếp, không được suy diễn.",
+      "policy_pages": [
+        34
+      ],
+      "should_abstain": true,
+      "reference_passages": {
+        "34": "4. Tồn kho, nhận hàng và trả hàng\n\nXếp kho, trách nhiệm giữ và trạng thái tồn\n\nHàng chấp nhận phải đúng vị trí và trạng thái để tôn trọng khả dụng và giới hạn chất lượng.\n\nQuy tắc bắt buộc. Hàng giữ kiểm định, hỏng, thu hồi hoặc hạn chế khác không được tính là hàng có thể bán.\n\nQuy trình bắt buộc\n\nGán vị trí và trạng thái trong hệ thống kho trực tiếp.\n\nÁp nhận diện sản phẩm, lô/sê-ri và hạn dùng khi cần.\n\nTách vật lý và dán nhãn rõ hàng hạn chế.\n\nChuyển trách nhiệm giữ bằng giao dịch luân chuyển có ghi nhận.\n\nChỉ giải phóng giữ khi có quyết định chất lượng có thẩm quyền.\n\nYêu cầu kiểm soát\n\nĐổi vị trí không phải điều chỉnh lượng trừ khi hệ thống ghi cả hai vế chuyển.\n\nKhông thực hiện đơn khách từ hàng hạn chế.\n\nĐối chiếu lệch giữa lượng nhận chấp nhận và lượng xếp kho.\n\nBằng chứng bắt buộc\n\nVị trí, trạng thái, mã luân chuyển, người giữ, lý do giữ và duyệt giải phóng.\n\nSự phù hợp hệ thống và dữ liệu\n\ncommerce.inventory không có vị trí, lô, sê-ri, hạn dùng, trạng thái chất lượng hoặc luân chuyển; cần hệ thống kho cho các kiểm soát này.\n\nĐơn vị chịu trách nhiệm: Chủ sở hữu lĩnh vực liên quan; Bộ phận Quản trị Vận hành quản lý bản được kiểm soát.\n\nĐiều kiện rà soát: Hằng năm, sự cố trọng yếu, thay đổi quy trình hoặc hệ thống.\n\nTuyến chuyển cấp: Tạm dừng hành động liên quan và chuyển chủ lĩnh vực được chỉ định; xung đột liên lĩnh vực chưa giải quyết chuyển Bộ phận Quản trị Vận hành."
+      }
+    }
+  ],
+  "invoice": [
+    {
+      "id": "I01",
+      "question": "How many approved invoices are available? Return invoice_count.",
+      "reference_sql": "SELECT COUNT(DISTINCT inv.invoice_id) AS invoice_count FROM commerce.invoices AS inv LIMIT 1",
+      "reference_rows": [
+        {
+          "invoice_count": 6
+        }
+      ]
+    },
+    {
+      "id": "I02",
+      "question": "List the latest 20 approved invoices with invoice_id, invoice_no, invoice_date and source_filename; order by invoice_date descending, then invoice_id.",
+      "reference_sql": "SELECT inv.invoice_id, inv.invoice_no, inv.invoice_date, inv.source_filename FROM commerce.invoices AS inv ORDER BY inv.invoice_date DESC NULLS FIRST, inv.invoice_id LIMIT 20",
+      "reference_rows": [
+        {
+          "invoice_id": "INV-44f38e1d7b2b4febaa9b3c15b8fce5b6",
+          "invoice_no": null,
+          "invoice_date": null,
+          "source_filename": "invoice_0009.pdf"
+        },
+        {
+          "invoice_id": "INV-88a6aa96c6094dc288d57ddddab9ac86",
+          "invoice_no": "DEMO26-0970",
+          "invoice_date": "2026-10-19",
+          "source_filename": "invoice_0970.pdf"
+        },
+        {
+          "invoice_id": "INV-3108e2c1137a46759e40810c6f07230a",
+          "invoice_no": "2",
+          "invoice_date": "2026-09-30",
+          "source_filename": "EA PHAT HUY CONSTRUCTIO!-1.pdf"
+        },
+        {
+          "invoice_id": "INV-ddb7378e45604ab1a851240331776e11",
+          "invoice_no": "DEMO26-0990",
+          "invoice_date": "2026-09-15",
+          "source_filename": "invoice_0990.pdf"
+        },
+        {
+          "invoice_id": "INV-eeb0ee9ab8174c529439ea4f67284e5e",
+          "invoice_no": "DEMO26-0998",
+          "invoice_date": "2026-08-26",
+          "source_filename": "invoice_0998.pdf"
+        },
+        {
+          "invoice_id": "INV-aa3ce374d7824df3ba00cff2140861c2",
+          "invoice_no": "DEMO26-0991",
+          "invoice_date": "2026-08-23",
+          "source_filename": "invoice_0991.pdf"
+        }
+      ]
+    },
+    {
+      "id": "I03",
+      "question": "Show total invoice amount by seller and currency. Return seller, currency, invoice_total; sort by seller and currency.",
+      "reference_sql": "SELECT inv.seller, inv.currency, SUM(inv.total_amount) AS invoice_total FROM commerce.invoices AS inv GROUP BY inv.seller, inv.currency ORDER BY inv.seller, inv.currency LIMIT 200",
+      "reference_rows": [
+        {
+          "seller": "CÔNG TY TNHH ĐẦU TƯ XÂY DỰNG THƯƠNG MẠI GIA PHÁT HUY",
+          "currency": null,
+          "invoice_total": 1147530240.0
+        },
+        {
+          "seller": null,
+          "currency": null,
+          "invoice_total": null
+        }
+      ]
+    },
+    {
+      "id": "I04",
+      "question": "Show total invoice tax by currency. Return currency and invoice_tax.",
+      "reference_sql": "SELECT inv.currency, SUM(inv.tax_amount) AS invoice_tax FROM commerce.invoices AS inv GROUP BY inv.currency ORDER BY inv.currency LIMIT 200",
+      "reference_rows": [
+        {
+          "currency": null,
+          "invoice_tax": 85002240.0
+        }
+      ]
+    },
+    {
+      "id": "I05",
+      "question": "Count approved invoices by buyer. Return buyer and invoice_count.",
+      "reference_sql": "SELECT inv.buyer, COUNT(DISTINCT inv.invoice_id) AS invoice_count FROM commerce.invoices AS inv GROUP BY inv.buyer ORDER BY inv.buyer LIMIT 200",
+      "reference_rows": [
+        {
+          "buyer": "công ty cổ phần kỹ thuật hưng thịnh",
+          "invoice_count": 1
+        },
+        {
+          "buyer": "CÔNG TY CỔ PHẦN NỘI THẤT PHÚC AN",
+          "invoice_count": 1
+        },
+        {
+          "buyer": "CÔNG TY TNHH CƠ ĐIỆN NAM SƠN",
+          "invoice_count": 1
+        },
+        {
+          "buyer": "CÔNG TY TNHH NHÔM KÍNH BÌNH MINH",
+          "invoice_count": 2
+        },
+        {
+          "buyer": "CÔNG TY TNHH XÂY DỰNG QUANG MINH",
+          "invoice_count": 1
+        }
+      ]
+    },
+    {
+      "id": "I06",
+      "question": "Show invoice totals by calendar month and currency. Return month, currency and invoice_total.",
+      "reference_sql": "SELECT DATE_TRUNC('month', inv.invoice_date) AS month, inv.currency, SUM(inv.total_amount) AS invoice_total FROM commerce.invoices AS inv GROUP BY DATE_TRUNC('month', inv.invoice_date), inv.currency ORDER BY 1, 2 LIMIT 200",
+      "reference_rows": [
+        {
+          "month": "2026-08-01T00:00:00+00:00",
+          "currency": null,
+          "invoice_total": 650480760.0
+        },
+        {
+          "month": "2026-09-01T00:00:00+00:00",
+          "currency": null,
+          "invoice_total": 167677560.0
+        },
+        {
+          "month": "2026-10-01T00:00:00+00:00",
+          "currency": null,
+          "invoice_total": 329371920.0
+        },
+        {
+          "month": null,
+          "currency": null,
+          "invoice_total": null
+        }
+      ]
+    },
+    {
+      "id": "I07",
+      "question": "List the first 20 invoice items with invoice_id, line_no, description, unit, quantity, unit_price and amount, ordered by invoice_id and line_no.",
+      "reference_sql": "SELECT li.invoice_id, li.line_no, li.description, li.unit, li.quantity, li.unit_price, li.amount FROM commerce.invoice_items AS li ORDER BY li.invoice_id, li.line_no LIMIT 20",
+      "reference_rows": [
+        {
+          "invoice_id": "INV-3108e2c1137a46759e40810c6f07230a",
+          "line_no": 1,
+          "description": "Thanh toán mục: sửa chữa văn phòng công ty theo hợp đồng số: 026/2026/HĐTC ngày 30/05/2026",
+          "unit": null,
+          "quantity": null,
+          "unit_price": null,
+          "amount": 118000000.0
+        },
+        {
+          "invoice_id": "INV-44f38e1d7b2b4febaa9b3c15b8fce5b6",
+          "line_no": 1,
+          "description": "1 Tấm thạch cao chống ẩm - theo phiếu xuất kho 795/PXK, công trình táng 2",
+          "unit": "Thùng",
+          "quantity": null,
+          "unit_price": 583000.0,
+          "amount": 11077000.0
+        },
+        {
+          "invoice_id": "INV-44f38e1d7b2b4febaa9b3c15b8fce5b6",
+          "line_no": 2,
+          "description": "Khung nhôm định hình hệ 55 - theo phiếu xuất kho 650/PXK, công trình nhà thạng mục xưởng B",
+          "unit": null,
+          "quantity": null,
+          "unit_price": 1992000.0,
+          "amount": 57768000.0
+        },
+        {
+          "invoice_id": "INV-44f38e1d7b2b4febaa9b3c15b8fce5b6",
+          "line_no": 3,
+          "description": "3 Bulong inox M10 - theo phiếu xuất kho 461/PXK, công trình nhà xưởng B",
+          "unit": "Cái",
+          "quantity": null,
+          "unit_price": 1104000.0,
+          "amount": 34224000.0
+        },
+        {
+          "invoice_id": "INV-44f38e1d7b2b4febaa9b3c15b8fce5b6",
+          "line_no": 4,
+          "description": "sơn nước nội thất màu trắng , theo phiếu xuất kho 2 Th PXX công trịnh nhà",
+          "unit": "Cái",
+          "quantity": null,
+          "unit_price": 2321000.0,
+          "amount": 71951000.0
+        },
+        {
+          "invoice_id": "INV-88a6aa96c6094dc288d57ddddab9ac86",
+          "line_no": 1,
+          "description": "Gạch lát nền 600x600",
+          "unit": "Cái",
+          "quantity": 40.0,
+          "unit_price": 2725000.0,
+          "amount": 109000000.0
+        },
+        {
+          "invoice_id": "INV-88a6aa96c6094dc288d57ddddab9ac86",
+          "line_no": 2,
+          "description": "Keo silicone trung tính; nghiệm thu và bàn giao tại công trình theo yêu cầu kỹ thuật",
+          "unit": "Thùng",
+          "quantity": 29.0,
+          "unit_price": 911000.0,
+          "amount": 26419000.0
+        },
+        {
+          "invoice_id": "INV-88a6aa96c6094dc288d57ddddab9ac86",
+          "line_no": 3,
+          "description": "Dịch vụ cải tạo văn phòng - theo phiếu xuất kho 973/PXK, công trình tầng 2",
+          "unit": "Cái",
+          "quantity": 15.0,
+          "unit_price": 2068000.0,
+          "amount": 31020000.0
+        },
+        {
+          "invoice_id": "INV-88a6aa96c6094dc288d57ddddab9ac86",
+          "line_no": 4,
+          "description": "Sơn nước nội thất màu trắng - theo phiếu xuất kho 249/PXK, công trình văn đạng mục phòng chính",
+          "unit": "Hạng mục",
+          "quantity": 1.0,
+          "unit_price": 2743000.0,
+          "amount": 2743000.0
+        },
+        {
+          "invoice_id": "INV-88a6aa96c6094dc288d57ddddab9ac86",
+          "line_no": 5,
+          "description": "Ổ cắm điện đôi âm tường - theo phiếu xuất kho 718/PXK, công trình khu A",
+          "unit": "Thùng",
+          "quantity": 40.0,
+          "unit_price": 1786000.0,
+          "amount": 71440000.0
+        },
+        {
+          "invoice_id": "INV-88a6aa96c6094dc288d57ddddab9ac86",
+          "line_no": 6,
+          "description": "Tủ điện phân phối - theo phiếu xuất kho 746/PXK, công trình khu A",
+          "unit": "Cái",
+          "quantity": 30.0,
+          "unit_price": 120000.0,
+          "amount": 3600000.0
+        },
+        {
+          "invoice_id": "INV-88a6aa96c6094dc288d57ddddab9ac86",
+          "line_no": 7,
+          "description": "Gạch lát nền 600x600 - theo phiếu xuất kho 686/PXK, công trình khu A",
+          "unit": "Cái",
+          "quantity": 14.0,
+          "unit_price": 1273000.0,
+          "amount": 17822000.0
+        },
+        {
+          "invoice_id": "INV-88a6aa96c6094dc288d57ddddab9ac86",
+          "line_no": 8,
+          "description": "Ống thép mạ kẽm - theo phiếu xuất kho 958/PXK, công trình tầng 2",
+          "unit": "m",
+          "quantity": 4.0,
+          "unit_price": 2910000.0,
+          "amount": 11640000.0
+        },
+        {
+          "invoice_id": "INV-88a6aa96c6094dc288d57ddddab9ac86",
+          "line_no": 9,
+          "description": "Khung nhôm định hình hệ 55 - theo phiếu xuất kho 864/PXK, công trình nhà xưởng B",
+          "unit": "Kg",
+          "quantity": 21.0,
+          "unit_price": 1490000.0,
+          "amount": 31290000.0
+        },
+        {
+          "invoice_id": "INV-aa3ce374d7824df3ba00cff2140861c2",
+          "line_no": 1,
+          "description": "Bảo trì hệ thống thông gió: nghiệm thu và bàn giao tại công trình theo yêu cầu kỹ thuật",
+          "unit": "Bộ",
+          "quantity": 7.0,
+          "unit_price": 863000.0,
+          "amount": 6041000.0
+        },
+        {
+          "invoice_id": "INV-aa3ce374d7824df3ba00cff2140861c2",
+          "line_no": 2,
+          "description": "Cung cấp phụ kiện thi công - theo phiếu xuất kho 729/PXK, công trình văn phòng chính",
+          "unit": "Cái",
+          "quantity": 28.0,
+          "unit_price": 1733000.0,
+          "amount": 48524000.0
+        },
+        {
+          "invoice_id": "INV-aa3ce374d7824df3ba00cff2140861c2",
+          "line_no": 3,
+          "description": "Bộ lọc nước công nghiệp - theo phiếu xuất kho 905/PXK, công trình khu A",
+          "unit": "Thùng",
+          "quantity": 35.0,
+          "unit_price": 1886000.0,
+          "amount": 66010000.0
+        },
+        {
+          "invoice_id": "INV-aa3ce374d7824df3ba00cff2140861c2",
+          "line_no": 4,
+          "description": "Cát xây tô đã sàng - theo phiếu xuất kho 663/PXK, công trình văn phòng chính",
+          "unit": "Cái",
+          "quantity": 14.0,
+          "unit_price": 655000.0,
+          "amount": 9170000.0
+        },
+        {
+          "invoice_id": "INV-aa3ce374d7824df3ba00cff2140861c2",
+          "line_no": 5,
+          "description": "Dịch vụ vận chuyển vật liệu - theo phiếu xuất kho 675/PXK, công trình văn phòng chính",
+          "unit": "m2",
+          "quantity": 26.0,
+          "unit_price": 1917000.0,
+          "amount": 49842000.0
+        },
+        {
+          "invoice_id": "INV-aa3ce374d7824df3ba00cff2140861c2",
+          "line_no": 6,
+          "description": "Sơn nước nội thất màu trắng - theo phiếu xuất kho 517/PXK, công trình nhà xưởng B; nghiệm thu và bàn giao tại công trình theo yêu cầu kỹ thuật",
+          "unit": "m2",
+          "quantity": 30.0,
+          "unit_price": 2702000.0,
+          "amount": 81060000.0
+        }
+      ]
+    },
+    {
+      "id": "I08",
+      "question": "Show the sum of invoice item amounts by seller and invoice currency. Return seller, currency and invoice_item_amount.",
+      "reference_sql": "SELECT inv.seller, inv.currency, SUM(li.amount) AS invoice_item_amount FROM commerce.invoice_items AS li JOIN commerce.invoices AS inv ON li.invoice_id = inv.invoice_id GROUP BY inv.seller, inv.currency ORDER BY inv.seller, inv.currency LIMIT 200",
+      "reference_rows": [
+        {
+          "seller": "CÔNG TY TNHH ĐẦU TƯ XÂY DỰNG THƯƠNG MẠI GIA PHÁT HUY",
+          "currency": null,
+          "invoice_item_amount": 1062528000.0
+        },
+        {
+          "seller": null,
+          "currency": null,
+          "invoice_item_amount": 175020000.0
+        }
+      ]
+    },
+    {
+      "id": "I09",
+      "question": "Count approved invoices with unknown currency. Return invoice_count.",
+      "reference_sql": "SELECT COUNT(DISTINCT inv.invoice_id) AS invoice_count FROM commerce.invoices AS inv WHERE inv.currency IS NULL LIMIT 1",
+      "reference_rows": [
+        {
+          "invoice_count": 6
+        }
+      ]
+    },
+    {
+      "id": "I10",
+      "question": "Find approved invoices whose invoice_no is BENCHMARK-NOT-EXIST-20261110. Return invoice_id and source_filename.",
+      "reference_sql": "SELECT inv.invoice_id, inv.source_filename FROM commerce.invoices AS inv WHERE inv.invoice_no = 'BENCHMARK-NOT-EXIST-20261110' ORDER BY inv.invoice_id LIMIT 200",
+      "reference_rows": []
+    }
+  ]
+}

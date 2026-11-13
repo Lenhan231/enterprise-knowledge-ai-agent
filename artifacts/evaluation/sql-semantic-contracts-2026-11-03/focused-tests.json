@@ -1,10 +1,11 @@
 {
-  "tests": 223,
+  "tests": 233,
   "failures": [],
   "errors": [],
   "skips": [],
   "patterns": [
     "test_sql_semantic_contracts.py",
+    "test_sql_contract_benchmark.py",
     "test_sql_semantic_refactor.py",
     "test_sql_semantic_ablation.py",
     "test_metric_mapping.py",

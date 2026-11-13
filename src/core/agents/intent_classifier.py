@@ -2,6 +2,7 @@ import json
 import re
 
 from core.analytics.metric_ontology import resolve_metric_names
+from core.analytics.invoices import is_invoice_question
 from core.llm.groq_provider import GroqProvider
 from core.models.intent import IntentResult
 from core.prompts.intent import INTENT_CLASSIFIER_PROMPT
@@ -69,7 +70,7 @@ class IntentClassifier:
             and bool(commerce_metrics)
             and len(years) >= 2
         )
-        analytics = metadata_counts or structured_lookup or bool(commerce_metrics) or any(
+        analytics = is_invoice_question(text) or metadata_counts or structured_lookup or bool(commerce_metrics) or any(
             term in text for term in ("trend", "compare", "growth", "tăng trưởng", "so sánh", "thống kê")
         )
         dashboard = any(term in text for term in (

@@ -1,0 +1,448 @@
+{
+  "summaries": {
+    "baseline": {
+      "generation_failures": [],
+      "supported_refusals": [
+        "K17"
+      ],
+      "correct_unsupported_refusals": 5,
+      "metric_errors": []
+    },
+    "v3": {
+      "generation_failures": [],
+      "supported_refusals": [
+        "K17"
+      ],
+      "correct_unsupported_refusals": 5,
+      "metric_errors": []
+    }
+  },
+  "paired": {
+    "all_common": {
+      "faithfulness": {
+        "cases": 24,
+        "baseline": 0.9270833333333334,
+        "v3": 0.95,
+        "change_pp": 2.291666666666667
+      },
+      "answer_relevancy": {
+        "cases": 30,
+        "baseline": 0.7518660786817466,
+        "v3": 0.7523669349323949,
+        "change_pp": 0.05008562506484145
+      },
+      "context_precision": {
+        "cases": 30,
+        "baseline": 0.8462962962594615,
+        "v3": 0.8824999999639652,
+        "change_pp": 3.6203703704503853
+      }
+    },
+    "supported_only": {
+      "faithfulness": {
+        "cases": 24,
+        "baseline": 0.9270833333333334,
+        "v3": 0.95,
+        "change_pp": 2.291666666666667
+      },
+      "answer_relevancy": {
+        "cases": 25,
+        "baseline": 0.9022392944180959,
+        "v3": 0.902840321918874,
+        "change_pp": 0.06010275007780974
+      },
+      "context_precision": {
+        "cases": 25,
+        "baseline": 0.8453333332947556,
+        "v3": 0.9009999999601084,
+        "change_pp": 5.566666666535277
+      }
+    }
+  },
+  "case_differences": [
+    {
+      "id": "K01",
+      "question": "Theo chính sách VietStyle, trước khi dùng số tồn trong một báo cáo phải xác định thông tin thời gian nào?",
+      "supported": true,
+      "same_answer": false,
+      "same_context_set": true,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.018167593059366105,
+        "context_precision": 0.0
+      }
+    },
+    {
+      "id": "K02",
+      "question": "Một sản phẩm không xuất hiện trong snapshot: có được kết luận tồn bằng không không?",
+      "supported": true,
+      "same_answer": true,
+      "same_context_set": false,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": -0.08125677246280283,
+        "context_precision": 0.19583333333343744
+      }
+    },
+    {
+      "id": "K03",
+      "question": "Có được cộng stock_on_hand của nhiều ngày để làm tổng tồn kỳ không?",
+      "supported": true,
+      "same_answer": true,
+      "same_context_set": true,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.012380815587839988,
+        "context_precision": 0.050000000003750045
+      }
+    },
+    {
+      "id": "K04",
+      "question": "Nếu inventory và products ghi tên hoặc category khác nhau, dùng nguồn nào làm danh mục chuẩn?",
+      "supported": true,
+      "same_answer": true,
+      "same_context_set": true,
+      "same_context_order": true,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": -0.0053251776973729514,
+        "context_precision": 0.19583333333343744
+      }
+    },
+    {
+      "id": "K05",
+      "question": "Hai biến thể trùng tên phải được phân giải như thế nào trước khi phân tích tồn?",
+      "supported": true,
+      "same_answer": true,
+      "same_context_set": false,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": -0.06125280785478693,
+        "context_precision": 0.1333333333122222
+      }
+    },
+    {
+      "id": "K06",
+      "question": "Snapshot cuối năm 2022 có thể chứng minh hàng đang bán được trong năm 2026 không?",
+      "supported": true,
+      "same_answer": false,
+      "same_context_set": true,
+      "same_context_order": true,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0
+      }
+    },
+    {
+      "id": "K07",
+      "question": "Chính sách yêu cầu báo cáo xu hướng tồn công bố những gì về các kỳ dữ liệu?",
+      "supported": true,
+      "same_answer": true,
+      "same_context_set": false,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.1333333333122222
+      }
+    },
+    {
+      "id": "K08",
+      "question": "reorder_flag=true có tự cho phép phát hành PO không?",
+      "supported": true,
+      "same_answer": false,
+      "same_context_set": true,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": -0.0038117789066758334,
+        "context_precision": 0.08333333333124993
+      }
+    },
+    {
+      "id": "K09",
+      "question": "Trước khi đề nghị bổ sung hàng, phải xác minh những yếu tố nào ngoài các chỉ số snapshot?",
+      "supported": true,
+      "same_answer": true,
+      "same_context_set": true,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.0060258807801094605,
+        "context_precision": -0.6666666666000001
+      }
+    },
+    {
+      "id": "K10",
+      "question": "Khi chỉ số bổ sung hàng mâu thuẫn nhau, phải gắn trạng thái nào và làm gì?",
+      "supported": true,
+      "same_answer": true,
+      "same_context_set": true,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.015619214273763338,
+        "context_precision": -1.333333443653828e-11
+      }
+    },
+    {
+      "id": "K11",
+      "question": "Có thể hứa ngày giao cho khách chỉ từ fill_rate lịch sử không?",
+      "supported": true,
+      "same_answer": false,
+      "same_context_set": true,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.14074442595598002,
+        "context_precision": 0.0
+      }
+    },
+    {
+      "id": "K12",
+      "question": "Thiếu hàng ảnh hưởng lớn hoặc lặp lại phải chuyển đến những bộ phận nào?",
+      "supported": true,
+      "same_answer": true,
+      "same_context_set": false,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.7951331282350935e-05,
+        "context_precision": 0.0
+      }
+    },
+    {
+      "id": "K13",
+      "question": "overstock_flag=true có cho phép tự thanh lý hay giảm giá không?",
+      "supported": true,
+      "same_answer": false,
+      "same_context_set": false,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": -0.25,
+        "answer_relevancy": -0.03876063380585204,
+        "context_precision": 5.000000413701855e-11
+      }
+    },
+    {
+      "id": "K14",
+      "question": "Khi rà hàng dư, chính sách cho phép cân nhắc những phương án xử lý nào?",
+      "supported": true,
+      "same_answer": false,
+      "same_context_set": false,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": -0.013354206706216343,
+        "context_precision": 0.9999999999
+      }
+    },
+    {
+      "id": "K15",
+      "question": "Trong cửa sổ kiểm kê chu kỳ, phải kiểm soát luân chuyển hàng ra sao?",
+      "supported": true,
+      "same_answer": true,
+      "same_context_set": true,
+      "same_context_order": true,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.001236893230327163,
+        "context_precision": 0.0
+      }
+    },
+    {
+      "id": "K16",
+      "question": "Sai lệch kiểm kê trọng yếu cần ai đếm lại và phiếu đếm có tự điều chỉnh tồn không?",
+      "supported": true,
+      "same_answer": true,
+      "same_context_set": true,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": -0.010232431641650774,
+        "context_precision": -0.08333333333124993
+      }
+    },
+    {
+      "id": "K17",
+      "question": "Hồ sơ bằng chứng cho kiểm kê chu kỳ phải chứa những nội dung nào?",
+      "supported": true,
+      "same_answer": false,
+      "same_context_set": false,
+      "same_context_order": false,
+      "deltas": {
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0
+      }
+    },
+    {
+      "id": "K18",
+      "question": "Người tự phát hiện chênh lệch trọng yếu có được làm người duyệt duy nhất cho điều chỉnh không?",
+      "supported": true,
+      "same_answer": false,
+      "same_context_set": false,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": -0.19999999999999996,
+        "answer_relevancy": 0.009364128771430003,
+        "context_precision": 0.0
+      }
+    },
+    {
+      "id": "K19",
+      "question": "Có được sửa commerce.inventory để ghi nhận điều chỉnh vật lý sau kiểm kê không?",
+      "supported": true,
+      "same_answer": false,
+      "same_context_set": true,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": -0.001652006572138487,
+        "context_precision": 0.0
+      }
+    },
+    {
+      "id": "K20",
+      "question": "Mất hàng không giải thích lặp lại hoặc nghi gian lận phải được chuyển tới đâu?",
+      "supported": true,
+      "same_answer": false,
+      "same_context_set": false,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.038901395320076304,
+        "context_precision": 0.0
+      }
+    },
+    {
+      "id": "K21",
+      "question": "Khi nhận hàng, lượng giao, lượng chấp nhận và lượng từ chối phải được ghi như thế nào?",
+      "supported": true,
+      "same_answer": false,
+      "same_context_set": true,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0
+      }
+    },
+    {
+      "id": "K22",
+      "question": "Hàng nhận không đạt hoặc chưa rõ tình trạng phải được xử lý trước xếp kho ra sao?",
+      "supported": true,
+      "same_answer": true,
+      "same_context_set": true,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": -0.010568961730863413,
+        "context_precision": 0.29999999998999993
+      }
+    },
+    {
+      "id": "K23",
+      "question": "Hàng giữ kiểm định hoặc thu hồi có được tính là hàng có thể bán không?",
+      "supported": true,
+      "same_answer": true,
+      "same_context_set": true,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.002089698533242146,
+        "context_precision": 0.049999999998750044
+      }
+    },
+    {
+      "id": "K24",
+      "question": "Bản ghi trả hàng và refund_amount có chứng minh sản phẩm đã nhập lại kho bán được không?",
+      "supported": true,
+      "same_answer": false,
+      "same_context_set": false,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 1.333333443653828e-11
+      }
+    },
+    {
+      "id": "K25",
+      "question": "Trước khi hoàn tiền và xử lý hàng trả, cần giữ những bằng chứng định danh và kiểm tra nào?",
+      "supported": true,
+      "same_answer": false,
+      "same_context_set": true,
+      "same_context_order": false,
+      "deltas": {
+        "faithfulness": 0.0,
+        "answer_relevancy": -0.003307531945604847,
+        "context_precision": 0.0
+      }
+    },
+    {
+      "id": "K26",
+      "question": "Theo duy nhất chính sách này, chính xác còn bao nhiêu chiếc SKU VS-UNKNOWN ở kho lúc này?",
+      "supported": false,
+      "same_answer": false,
+      "same_context_set": false,
+      "same_context_order": false,
+      "deltas": {
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0
+      }
+    },
+    {
+      "id": "K27",
+      "question": "Theo duy nhất chính sách này, thời gian giao thực tế của nhà cung cấp SUP-UNKNOWN hôm nay là mấy ngày?",
+      "supported": false,
+      "same_answer": false,
+      "same_context_set": false,
+      "same_context_order": false,
+      "deltas": {
+        "answer_relevancy": 0.0,
+        "context_precision": 0.14444444444754634
+      }
+    },
+    {
+      "id": "K28",
+      "question": "Chỉ từ chính sách này, hãy nêu số lượng mua tối ưu chính xác cho SKU VS-UNKNOWN vào ngày mai.",
+      "supported": false,
+      "same_answer": false,
+      "same_context_set": true,
+      "same_context_order": false,
+      "deltas": {
+        "answer_relevancy": 0.0,
+        "context_precision": 0.050000000003750045
+      }
+    },
+    {
+      "id": "K29",
+      "question": "Theo duy nhất chính sách này, ai là người đã duyệt điều chỉnh tồn ADJ-UNKNOWN sáng nay?",
+      "supported": false,
+      "same_answer": false,
+      "same_context_set": false,
+      "same_context_order": false,
+      "deltas": {
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0
+      }
+    },
+    {
+      "id": "K30",
+      "question": "Chỉ từ chính sách VietStyle, cho biết chính xác vị trí ô kho và số sê-ri của sản phẩm VS-UNKNOWN.",
+      "supported": false,
+      "same_answer": false,
+      "same_context_set": true,
+      "same_context_order": false,
+      "deltas": {
+        "answer_relevancy": 0.0,
+        "context_precision": -0.49999999995
+      }
+    }
+  ]
+}

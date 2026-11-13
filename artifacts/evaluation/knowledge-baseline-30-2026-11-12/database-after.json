@@ -1,0 +1,484 @@
+{
+  "schema": [
+    {
+      "table_name": "invoice_items",
+      "column_name": "invoice_id",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "invoice_items",
+      "column_name": "line_no",
+      "data_type": "integer",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "invoice_items",
+      "column_name": "description",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoice_items",
+      "column_name": "unit",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoice_items",
+      "column_name": "quantity",
+      "data_type": "numeric",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoice_items",
+      "column_name": "unit_price",
+      "data_type": "numeric",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoice_items",
+      "column_name": "amount",
+      "data_type": "numeric",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoices",
+      "column_name": "invoice_id",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "invoices",
+      "column_name": "source_filename",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "invoices",
+      "column_name": "invoice_no",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoices",
+      "column_name": "invoice_date",
+      "data_type": "date",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoices",
+      "column_name": "buyer",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoices",
+      "column_name": "seller",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoices",
+      "column_name": "subtotal",
+      "data_type": "numeric",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoices",
+      "column_name": "tax_amount",
+      "data_type": "numeric",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoices",
+      "column_name": "total_amount",
+      "data_type": "numeric",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "invoices",
+      "column_name": "currency",
+      "data_type": "text",
+      "is_nullable": "YES"
+    }
+  ],
+  "keys": [
+    {
+      "relation": "commerce.invoice_items",
+      "definition": "CHECK (((amount >= (0)::numeric) AND (amount < 'Infinity'::numeric)))"
+    },
+    {
+      "relation": "commerce.invoice_items",
+      "definition": "CHECK (((quantity >= (0)::numeric) AND (quantity < 'Infinity'::numeric)))"
+    },
+    {
+      "relation": "commerce.invoice_items",
+      "definition": "CHECK (((unit_price >= (0)::numeric) AND (unit_price < 'Infinity'::numeric)))"
+    },
+    {
+      "relation": "commerce.invoice_items",
+      "definition": "CHECK ((line_no > 0))"
+    },
+    {
+      "relation": "commerce.invoice_items",
+      "definition": "FOREIGN KEY (invoice_id) REFERENCES commerce.invoices(invoice_id) ON DELETE CASCADE"
+    },
+    {
+      "relation": "commerce.invoice_items",
+      "definition": "PRIMARY KEY (invoice_id, line_no)"
+    },
+    {
+      "relation": "commerce.invoices",
+      "definition": "CHECK (((subtotal >= (0)::numeric) AND (subtotal < 'Infinity'::numeric)))"
+    },
+    {
+      "relation": "commerce.invoices",
+      "definition": "CHECK (((tax_amount >= (0)::numeric) AND (tax_amount < 'Infinity'::numeric)))"
+    },
+    {
+      "relation": "commerce.invoices",
+      "definition": "CHECK (((total_amount >= (0)::numeric) AND (total_amount < 'Infinity'::numeric)))"
+    },
+    {
+      "relation": "commerce.invoices",
+      "definition": "CHECK ((currency ~ '^[A-Z]{3}$'::text))"
+    },
+    {
+      "relation": "commerce.invoices",
+      "definition": "FOREIGN KEY (invoice_id) REFERENCES invoice_extractions(invoice_id) ON DELETE CASCADE"
+    },
+    {
+      "relation": "commerce.invoices",
+      "definition": "PRIMARY KEY (invoice_id)"
+    },
+    {
+      "relation": "commerce.invoices",
+      "definition": "UNIQUE (source_sha256)"
+    }
+  ],
+  "role": {
+    "role": "commerce_reader",
+    "readonly": "on"
+  },
+  "invoice_rows": 6,
+  "item_rows": 30,
+  "invoice_data_sha256": "f357a7507a29ea524288770cbe7b75c190ab58b672cb9d3d589144748fcdfc34",
+  "references": [
+    [
+      {
+        "invoice_count": 6
+      }
+    ],
+    [
+      {
+        "invoice_id": "INV-44f38e1d7b2b4febaa9b3c15b8fce5b6",
+        "invoice_no": null,
+        "invoice_date": null,
+        "source_filename": "invoice_0009.pdf"
+      },
+      {
+        "invoice_id": "INV-88a6aa96c6094dc288d57ddddab9ac86",
+        "invoice_no": "DEMO26-0970",
+        "invoice_date": "2026-10-19",
+        "source_filename": "invoice_0970.pdf"
+      },
+      {
+        "invoice_id": "INV-3108e2c1137a46759e40810c6f07230a",
+        "invoice_no": "2",
+        "invoice_date": "2026-09-30",
+        "source_filename": "EA PHAT HUY CONSTRUCTIO!-1.pdf"
+      },
+      {
+        "invoice_id": "INV-ddb7378e45604ab1a851240331776e11",
+        "invoice_no": "DEMO26-0990",
+        "invoice_date": "2026-09-15",
+        "source_filename": "invoice_0990.pdf"
+      },
+      {
+        "invoice_id": "INV-eeb0ee9ab8174c529439ea4f67284e5e",
+        "invoice_no": "DEMO26-0998",
+        "invoice_date": "2026-08-26",
+        "source_filename": "invoice_0998.pdf"
+      },
+      {
+        "invoice_id": "INV-aa3ce374d7824df3ba00cff2140861c2",
+        "invoice_no": "DEMO26-0991",
+        "invoice_date": "2026-08-23",
+        "source_filename": "invoice_0991.pdf"
+      }
+    ],
+    [
+      {
+        "seller": "CÔNG TY TNHH ĐẦU TƯ XÂY DỰNG THƯƠNG MẠI GIA PHÁT HUY",
+        "currency": null,
+        "invoice_total": 1147530240.0
+      },
+      {
+        "seller": null,
+        "currency": null,
+        "invoice_total": null
+      }
+    ],
+    [
+      {
+        "currency": null,
+        "invoice_tax": 85002240.0
+      }
+    ],
+    [
+      {
+        "buyer": "công ty cổ phần kỹ thuật hưng thịnh",
+        "invoice_count": 1
+      },
+      {
+        "buyer": "CÔNG TY CỔ PHẦN NỘI THẤT PHÚC AN",
+        "invoice_count": 1
+      },
+      {
+        "buyer": "CÔNG TY TNHH CƠ ĐIỆN NAM SƠN",
+        "invoice_count": 1
+      },
+      {
+        "buyer": "CÔNG TY TNHH NHÔM KÍNH BÌNH MINH",
+        "invoice_count": 2
+      },
+      {
+        "buyer": "CÔNG TY TNHH XÂY DỰNG QUANG MINH",
+        "invoice_count": 1
+      }
+    ],
+    [
+      {
+        "month": "2026-08-01T00:00:00+00:00",
+        "currency": null,
+        "invoice_total": 650480760.0
+      },
+      {
+        "month": "2026-09-01T00:00:00+00:00",
+        "currency": null,
+        "invoice_total": 167677560.0
+      },
+      {
+        "month": "2026-10-01T00:00:00+00:00",
+        "currency": null,
+        "invoice_total": 329371920.0
+      },
+      {
+        "month": null,
+        "currency": null,
+        "invoice_total": null
+      }
+    ],
+    [
+      {
+        "invoice_id": "INV-3108e2c1137a46759e40810c6f07230a",
+        "line_no": 1,
+        "description": "Thanh toán mục: sửa chữa văn phòng công ty theo hợp đồng số: 026/2026/HĐTC ngày 30/05/2026",
+        "unit": null,
+        "quantity": null,
+        "unit_price": null,
+        "amount": 118000000.0
+      },
+      {
+        "invoice_id": "INV-44f38e1d7b2b4febaa9b3c15b8fce5b6",
+        "line_no": 1,
+        "description": "1 Tấm thạch cao chống ẩm - theo phiếu xuất kho 795/PXK, công trình táng 2",
+        "unit": "Thùng",
+        "quantity": null,
+        "unit_price": 583000.0,
+        "amount": 11077000.0
+      },
+      {
+        "invoice_id": "INV-44f38e1d7b2b4febaa9b3c15b8fce5b6",
+        "line_no": 2,
+        "description": "Khung nhôm định hình hệ 55 - theo phiếu xuất kho 650/PXK, công trình nhà thạng mục xưởng B",
+        "unit": null,
+        "quantity": null,
+        "unit_price": 1992000.0,
+        "amount": 57768000.0
+      },
+      {
+        "invoice_id": "INV-44f38e1d7b2b4febaa9b3c15b8fce5b6",
+        "line_no": 3,
+        "description": "3 Bulong inox M10 - theo phiếu xuất kho 461/PXK, công trình nhà xưởng B",
+        "unit": "Cái",
+        "quantity": null,
+        "unit_price": 1104000.0,
+        "amount": 34224000.0
+      },
+      {
+        "invoice_id": "INV-44f38e1d7b2b4febaa9b3c15b8fce5b6",
+        "line_no": 4,
+        "description": "sơn nước nội thất màu trắng , theo phiếu xuất kho 2 Th PXX công trịnh nhà",
+        "unit": "Cái",
+        "quantity": null,
+        "unit_price": 2321000.0,
+        "amount": 71951000.0
+      },
+      {
+        "invoice_id": "INV-88a6aa96c6094dc288d57ddddab9ac86",
+        "line_no": 1,
+        "description": "Gạch lát nền 600x600",
+        "unit": "Cái",
+        "quantity": 40.0,
+        "unit_price": 2725000.0,
+        "amount": 109000000.0
+      },
+      {
+        "invoice_id": "INV-88a6aa96c6094dc288d57ddddab9ac86",
+        "line_no": 2,
+        "description": "Keo silicone trung tính; nghiệm thu và bàn giao tại công trình theo yêu cầu kỹ thuật",
+        "unit": "Thùng",
+        "quantity": 29.0,
+        "unit_price": 911000.0,
+        "amount": 26419000.0
+      },
+      {
+        "invoice_id": "INV-88a6aa96c6094dc288d57ddddab9ac86",
+        "line_no": 3,
+        "description": "Dịch vụ cải tạo văn phòng - theo phiếu xuất kho 973/PXK, công trình tầng 2",
+        "unit": "Cái",
+        "quantity": 15.0,
+        "unit_price": 2068000.0,
+        "amount": 31020000.0
+      },
+      {
+        "invoice_id": "INV-88a6aa96c6094dc288d57ddddab9ac86",
+        "line_no": 4,
+        "description": "Sơn nước nội thất màu trắng - theo phiếu xuất kho 249/PXK, công trình văn đạng mục phòng chính",
+        "unit": "Hạng mục",
+        "quantity": 1.0,
+        "unit_price": 2743000.0,
+        "amount": 2743000.0
+      },
+      {
+        "invoice_id": "INV-88a6aa96c6094dc288d57ddddab9ac86",
+        "line_no": 5,
+        "description": "Ổ cắm điện đôi âm tường - theo phiếu xuất kho 718/PXK, công trình khu A",
+        "unit": "Thùng",
+        "quantity": 40.0,
+        "unit_price": 1786000.0,
+        "amount": 71440000.0
+      },
+      {
+        "invoice_id": "INV-88a6aa96c6094dc288d57ddddab9ac86",
+        "line_no": 6,
+        "description": "Tủ điện phân phối - theo phiếu xuất kho 746/PXK, công trình khu A",
+        "unit": "Cái",
+        "quantity": 30.0,
+        "unit_price": 120000.0,
+        "amount": 3600000.0
+      },
+      {
+        "invoice_id": "INV-88a6aa96c6094dc288d57ddddab9ac86",
+        "line_no": 7,
+        "description": "Gạch lát nền 600x600 - theo phiếu xuất kho 686/PXK, công trình khu A",
+        "unit": "Cái",
+        "quantity": 14.0,
+        "unit_price": 1273000.0,
+        "amount": 17822000.0
+      },
+      {
+        "invoice_id": "INV-88a6aa96c6094dc288d57ddddab9ac86",
+        "line_no": 8,
+        "description": "Ống thép mạ kẽm - theo phiếu xuất kho 958/PXK, công trình tầng 2",
+        "unit": "m",
+        "quantity": 4.0,
+        "unit_price": 2910000.0,
+        "amount": 11640000.0
+      },
+      {
+        "invoice_id": "INV-88a6aa96c6094dc288d57ddddab9ac86",
+        "line_no": 9,
+        "description": "Khung nhôm định hình hệ 55 - theo phiếu xuất kho 864/PXK, công trình nhà xưởng B",
+        "unit": "Kg",
+        "quantity": 21.0,
+        "unit_price": 1490000.0,
+        "amount": 31290000.0
+      },
+      {
+        "invoice_id": "INV-aa3ce374d7824df3ba00cff2140861c2",
+        "line_no": 1,
+        "description": "Bảo trì hệ thống thông gió: nghiệm thu và bàn giao tại công trình theo yêu cầu kỹ thuật",
+        "unit": "Bộ",
+        "quantity": 7.0,
+        "unit_price": 863000.0,
+        "amount": 6041000.0
+      },
+      {
+        "invoice_id": "INV-aa3ce374d7824df3ba00cff2140861c2",
+        "line_no": 2,
+        "description": "Cung cấp phụ kiện thi công - theo phiếu xuất kho 729/PXK, công trình văn phòng chính",
+        "unit": "Cái",
+        "quantity": 28.0,
+        "unit_price": 1733000.0,
+        "amount": 48524000.0
+      },
+      {
+        "invoice_id": "INV-aa3ce374d7824df3ba00cff2140861c2",
+        "line_no": 3,
+        "description": "Bộ lọc nước công nghiệp - theo phiếu xuất kho 905/PXK, công trình khu A",
+        "unit": "Thùng",
+        "quantity": 35.0,
+        "unit_price": 1886000.0,
+        "amount": 66010000.0
+      },
+      {
+        "invoice_id": "INV-aa3ce374d7824df3ba00cff2140861c2",
+        "line_no": 4,
+        "description": "Cát xây tô đã sàng - theo phiếu xuất kho 663/PXK, công trình văn phòng chính",
+        "unit": "Cái",
+        "quantity": 14.0,
+        "unit_price": 655000.0,
+        "amount": 9170000.0
+      },
+      {
+        "invoice_id": "INV-aa3ce374d7824df3ba00cff2140861c2",
+        "line_no": 5,
+        "description": "Dịch vụ vận chuyển vật liệu - theo phiếu xuất kho 675/PXK, công trình văn phòng chính",
+        "unit": "m2",
+        "quantity": 26.0,
+        "unit_price": 1917000.0,
+        "amount": 49842000.0
+      },
+      {
+        "invoice_id": "INV-aa3ce374d7824df3ba00cff2140861c2",
+        "line_no": 6,
+        "description": "Sơn nước nội thất màu trắng - theo phiếu xuất kho 517/PXK, công trình nhà xưởng B; nghiệm thu và bàn giao tại công trình theo yêu cầu kỹ thuật",
+        "unit": "m2",
+        "quantity": 30.0,
+        "unit_price": 2702000.0,
+        "amount": 81060000.0
+      }
+    ],
+    [
+      {
+        "seller": "CÔNG TY TNHH ĐẦU TƯ XÂY DỰNG THƯƠNG MẠI GIA PHÁT HUY",
+        "currency": null,
+        "invoice_item_amount": 1062528000.0
+      },
+      {
+        "seller": null,
+        "currency": null,
+        "invoice_item_amount": 175020000.0
+      }
+    ],
+    [
+      {
+        "invoice_count": 6
+      }
+    ],
+    []
+  ],
+  "policy_document": {
+    "document_id": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919",
+    "storage_path": "UPLOAD-5f3724762c5e4146b9f85d3696a6f919/VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+    "processing_status": "ready"
+  },
+  "corpus_sha256": "6496876ec30f941eab40bebbd0c9e3ec9479345ca924c3f2f1407af62200c625",
+  "chunks": 747,
+  "embedding_models": [
+    "intfloat/multilingual-e5-base"
+  ]
+}

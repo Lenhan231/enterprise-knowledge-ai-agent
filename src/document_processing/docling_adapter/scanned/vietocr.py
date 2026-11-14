@@ -43,16 +43,6 @@ _VIETOCR_BATCH_SIZE = 16
 _TEXTLINE_ORIENTATION_BATCH_SIZE = 16
 
 
-def _configure_vietocr_cpu_threads(torch, accelerator_options: AcceleratorOptions) -> int | None:
-    """Keep VietOCR's PyTorch CPU pool within the Docling pipeline budget."""
-    device = str(getattr(accelerator_options.device, "value", accelerator_options.device)).lower()
-    if device != "cpu":
-        return None
-    thread_count = max(1, int(accelerator_options.num_threads))
-    torch.set_num_threads(thread_count)
-    return thread_count
-
-
 class VietOcrOptions(OcrOptions):
     kind: ClassVar[str] = "vietocr"
     lang: list[str] = Field(default_factory=list)
@@ -80,10 +70,6 @@ class VietOcrModel(BaseOcrModel):
         import yaml
         from vietocr.tool.config import Cfg
         from vietocr.tool.predictor import Predictor
-
-        cpu_threads = _configure_vietocr_cpu_threads(torch, accelerator_options)
-        if cpu_threads is not None:
-            _LOGGER.info("Set VietOCR PyTorch CPU threads=%s", cpu_threads)
 
         fine_tuned_weights = os.environ.get("DOCUMENT_PROCESSING_VIETOCR_WEIGHTS")
         model_repo = os.environ.get("DOCUMENT_PROCESSING_VIETOCR_REPO_ID", "").strip()

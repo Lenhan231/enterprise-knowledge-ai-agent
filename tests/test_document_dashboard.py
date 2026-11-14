@@ -18,7 +18,7 @@ class DocumentDashboardTest(unittest.TestCase):
             "title": "Annual report", "format": "PDF", "storage_path": "UPLOAD-1/report.pdf",
         }
 
-        result = repository.uploaded_source("UPLOAD-1", "Vinamilk")
+        result = repository.uploaded_source("UPLOAD-1", "Vinamilk", "admin", "admin-user")
 
         self.assertEqual(result["storage_path"], "UPLOAD-1/report.pdf")
         query, params = cursor.execute.call_args.args
@@ -26,7 +26,7 @@ class DocumentDashboardTest(unittest.TestCase):
         self.assertIn("source_type = 'user_upload'", normalized)
         self.assertIn("processing_status = 'ready'", normalized)
         self.assertIn("storage_path is not null", normalized)
-        self.assertEqual(params, ("UPLOAD-1", "Vinamilk"))
+        self.assertEqual(params, ("UPLOAD-1", "admin", "admin", "admin", "admin-user"))
 
     def test_manifest_upsert_persists_processing_status(self):
         repository = DocumentRepository.__new__(DocumentRepository)

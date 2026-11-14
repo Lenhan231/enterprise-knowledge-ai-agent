@@ -70,7 +70,7 @@ class RetrievalServiceTest(unittest.TestCase):
         result = self.service.retrieve(RetrievalRequest(query="What is required?", top_k=3))
 
         self.assertEqual(self.embeddings.questions, ["What is required?"])
-        self.assertEqual(self.repository.search_args, ([0.1, 0.2], 30, None, None, "What is required?", "dense", {}))
+        self.assertEqual(self.repository.search_args, ([0.1, 0.2], 300, None, None, "What is required?", "dense", {}))
         self.assertIsInstance(result, RetrievalResponse)
         self.assertEqual(result.query, "What is required?")
         self.assertEqual(result.method, "translated_hybrid_rerank")
@@ -147,7 +147,7 @@ class RetrievalServiceTest(unittest.TestCase):
         cursor.fetchall.return_value = [
             ("policy.pdf", 7, "full text", {"document_id": "DOC"}, 0.9)
         ]
-        service = RetrievalService(self.embeddings, repository)
+        service = RetrievalService(self.embeddings, repository, FakeTranslator(), FakeReranker())
         result = service.retrieve(RetrievalRequest(query="question"))
         self.assertEqual(result.results[0].chunk_id, "DOC::chunk::7")
         self.assertEqual(result.results[0].text, "full text")

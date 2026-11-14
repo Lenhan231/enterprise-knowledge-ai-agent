@@ -733,6 +733,7 @@ def _process_invoice_upload(
                 "docling_ocr_engine": os.getenv("DOCUMENT_PROCESSING_OCR_ENGINE", "vietocr"),
                 "docling_ocr_language": "vie+eng",
                 "docling_table_structure": True,
+                "docling_table_mode": "fast",
             },
         }, timeout=int(os.getenv("DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS", "600")))
         logger.info("INVOICE_UPLOAD_COMPONENT %s", json.dumps({

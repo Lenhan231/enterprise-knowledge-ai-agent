@@ -89,7 +89,7 @@ JSON schema: ''' + json.dumps(DashboardPlan.model_json_schema()) + '\nAvailable 
                         status = 'clarification_required' if payload.get('query_status') in {'clarification_required', 'needs_clarification'} or payload.get('metadata', {}).get('status') == 'clarification_required' else 'failed'
                     message = payload.get('answer') or payload.get('message') or payload.get('error') or ''
                     # Retain result provenance, excluding conversational/provider state.
-                    safe = {key: payload[key] for key in ('rows', 'sql', 'parameters', 'metadata', 'query_status') if key in payload}
+                    safe = {key: payload[key] for key in ('rows', 'sql', 'attempted_sql', 'parameters', 'metadata', 'query_status') if key in payload}
                     safe['metadata'] = {key: value for key, value in safe.get('metadata', {}).items() if not key.startswith('_')}
                     if payload.get('limitations'):
                         safe['metadata']['limitations'] = payload['limitations']

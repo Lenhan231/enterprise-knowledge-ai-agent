@@ -32,10 +32,11 @@ class _State(TypedDict, total=False):
 
 
 class AgentRouter:
-    def __init__(self, classifier, knowledge_agent, analytics_agent, dashboard_agent=None,
-                 report_agent=None, *, llm=None, request_timeout=120):
+    def __init__(self, classifier, knowledge_agent, analytics_agent, hybrid_agent=None,
+                 dashboard_agent=None, report_agent=None, *, llm=None, request_timeout=120):
         self.classifier = classifier
         self.knowledge_agent, self.analytics_agent = knowledge_agent, analytics_agent
+        self.hybrid_agent = hybrid_agent
         sql_runtime = getattr(analytics_agent, 'sql_agent', analytics_agent)
         schema = getattr(sql_runtime, 'table_columns', None)
         self.sql_schema = schema if isinstance(schema, dict) else None
@@ -103,8 +104,25 @@ class AgentRouter:
         finally:
             deadline.reset(token)
 
-    async def route(self, request):
-        return await self.run(request)
+    def route(self, request):
+        classify = getattr(self.classifier, 'classify', None)
+        intent = classify(request.question) if classify is not None else IntentClassifier.fallback(request.question)
+        destination = intent.intent
+        selected = {
+            'knowledge': self.knowledge_agent,
+            'analytics': self.analytics_agent,
+            'dashboard': self.dashboard_agent,
+            'report': self.report_agent or self.hybrid_agent,
+            'hybrid': self.hybrid_agent or self.report_agent,
+        }.get(destination)
+        if selected is None:
+            return self._failure('This request type is not supported.')
+        result = selected.run(request)
+        if inspect.isawaitable(result):
+            result = asyncio.run(result)
+        result = AgentResult.model_validate(result)
+        self.last_destination = destination if destination != 'sql' else 'analytics'
+        return result
 
     async def run_mode(self, request, mode, *, config=None):
         if mode in {'auto', 'agentic'}:

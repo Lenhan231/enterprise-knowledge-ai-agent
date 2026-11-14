@@ -181,6 +181,16 @@ METRIC_ONTOLOGY = {
         "dimensions": ("return_date", "region", "product_id"),
         "limitations": ("Đây là tỷ lệ đơn có return, không phải tỷ lệ số lượng sản phẩm trả.",),
     },
+    "returned_order_count": {
+        "aliases": ("returned orders", "returned order count", "number of returned orders", "count of returned orders",
+                    "số lượng đơn bị trả lại", "số đơn hàng bị trả lại", "số đơn bị trả lại"),
+        "source": "commerce.returns",
+        "formula": "COUNT(DISTINCT order_id)",
+        "grain": "order",
+        "aggregation": "count_distinct",
+        "unit": "orders",
+        "dimensions": ("return_date", "product_id"),
+    },
     "rating": {
         "aliases": ("rating", "review score", "điểm đánh giá", "xếp hạng đánh giá"),
         "source": "commerce.reviews",

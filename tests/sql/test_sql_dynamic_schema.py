@@ -63,7 +63,7 @@ class DynamicSchemaTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn('MySchema.order-history', provider.generate.await_args_list[1].args[0])
         repository.get_schema.assert_awaited_once()
 
-    async def test_auto_planner_discovers_schema_when_analytics_question_was_misclassified_as_clarification(self):
+    async def test_auto_planner_routes_promotion_question_to_sql_without_clarification(self):
         from core.agents.router import AgentRouter
 
         repository = Mock()
@@ -73,12 +73,8 @@ class DynamicSchemaTest(unittest.IsolatedAsyncioTestCase):
             'joins': frozenset(), 'date_columns': frozenset(),
         })
         sql_agent = SQLAnalyticsAgent(repository, llm=Mock())
-        clarification = json.dumps({'objective': 'promotion performance', 'tasks': [],
-                                    'clarification': 'I need more context.'})
-        resolved = json.dumps({'objective': 'promotion performance', 'tasks': [
-            {'id': 'query', 'agent': 'sql', 'question': 'Compare promotion revenue and margin'}]})
         provider = Mock()
-        provider.generate = AsyncMock(side_effect=[clarification, resolved])
+        provider.generate = AsyncMock()
         router = AgentRouter(None, None, sql_agent, llm=provider)
         question = 'Khuyến mãi nào tạo ra nhiều doanh thu nhất nhưng có biên lợi nhuận gộp thấp nhất?'
         state = {
@@ -89,8 +85,9 @@ class DynamicSchemaTest(unittest.IsolatedAsyncioTestCase):
         await router._plan(state)
 
         self.assertFalse(state['execution'].plan.clarification)
-        self.assertEqual(provider.generate.await_count, 2)
-        self.assertIn('commerce.promotions', provider.generate.await_args_list[1].args[0])
+        self.assertEqual(state['execution'].plan.tasks[0].agent, 'sql')
+        self.assertEqual(state['execution'].plan.tasks[0].question, question)
+        provider.generate.assert_not_awaited()
         repository.get_schema.assert_awaited_once()
 
     def test_live_schema_is_an_allowlist_and_system_schemas_cannot_be_configured(self):

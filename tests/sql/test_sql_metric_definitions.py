@@ -36,6 +36,17 @@ class MetricPlanningTest(unittest.TestCase):
         self.assertIn("commerce.order_items", prompt)
         self.assertIn("orders.order_status = 'delivered'", prompt)
 
+    def test_returned_order_count_resolves_to_distinct_order_metric(self):
+        for question in (
+            "cung cấp thông tin về số lượng đơn bị trả lại",
+            "How many returned orders are there?",
+        ):
+            with self.subTest(question=question):
+                self.assertEqual(resolve_metric_names(question), {"returned_order_count"})
+                prompt = build_sql_prompt(question)
+                self.assertIn("COUNT(DISTINCT order_id)", prompt)
+                self.assertIn("commerce.returns", prompt)
+
     def test_repair_prompt_keeps_metric_definitions(self):
         prompt = build_sql_prompt("Average order value", validation_error="wrong formula", previous_response="{}")
         self.assertIn(get_metric_definition("average_order_value")["formula"], prompt)
@@ -75,6 +86,14 @@ class MetricEnforcementTest(unittest.TestCase):
         self.validate("SELECT COUNT(DISTINCT o.order_id) AS n FROM commerce.orders AS o LIMIT 1", {"order_count"})
         with self.assertRaises(MetricDefinitionError):
             self.validate("SELECT COUNT(o.order_id) AS n FROM commerce.orders AS o LIMIT 1", {"order_count"})
+
+    def test_returned_order_count_requires_distinct_order_ids(self):
+        from core.analytics.metric_validation import MetricDefinitionError
+        valid = "SELECT COUNT(DISTINCT r.order_id) AS n FROM commerce.returns AS r LIMIT 200"
+        self.assertIn("returned_order_count", self.validate(valid, {"returned_order_count"}))
+        with self.assertRaises(MetricDefinitionError):
+            self.validate("SELECT COUNT(r.return_id) AS n FROM commerce.returns AS r LIMIT 200",
+                          {"returned_order_count"})
 
     def test_order_count_can_be_grouped_by_customer(self):
         self.validate(
@@ -150,6 +169,7 @@ class MetricEnforcementTest(unittest.TestCase):
                                 + "WHERE o.order_status = $1 GROUP BY p.product_id, p.product_name, "
                                 "EXTRACT(YEAR FROM o.order_date) LIMIT 20", ["delivered"]),
             "order_count": ("SELECT COUNT(DISTINCT o.order_id) FROM commerce.orders AS o LIMIT 1", []),
+            "returned_order_count": ("SELECT COUNT(DISTINCT r.order_id) FROM commerce.returns AS r LIMIT 200", []),
             "average_order_value": ("SELECT SUM(oi.quantity * oi.unit_price - oi.discount_amount) / "
                                     "COUNT(DISTINCT o.order_id)" + items + "LIMIT 1", []),
             "return_rate": ("SELECT COUNT(DISTINCT r.order_id)::numeric / NULLIF(COUNT(DISTINCT o.order_id), 0) "
@@ -181,6 +201,27 @@ class MetricEnforcementTest(unittest.TestCase):
 
 
 class MetricAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def test_returned_order_count_uses_all_records_and_discards_stale_inventory_context(self):
+        sql = "SELECT COUNT(DISTINCT r.order_id) AS returned_order_count FROM commerce.returns AS r LIMIT 200"
+        repository = AsyncMock()
+        repository.execute_approved_query.return_value = [{"returned_order_count": 42}]
+        provider = self.provider(json.dumps({"sql": sql}))
+        request = self.request("cung cấp thông tin về số lượng đơn bị trả lại").model_copy(update={
+            "metadata": {"_sql_context": {
+                "accepted": {"metrics": ["stock_on_hand"], "dimensions": ["category"],
+                             "time": {"mode": "snapshot", "start": "2022-12-31"}},
+                "pending": None,
+            }}
+        })
+
+        result = await SQLAnalyticsAgent(repository, llm=provider).run(request)
+
+        self.assertTrue(result.metadata["ok"], result.answer)
+        self.assertEqual(result.data["rows"][0]["returned_order_count"], 42)
+        self.assertIn("COUNT(DISTINCT order_id)", provider.prompts[0])
+        self.assertNotIn("2022-12-31", provider.prompts[0])
+        repository.execute_approved_query.assert_awaited_once_with(sql)
+
     async def test_schema_mismatch_requests_confirmation_but_security_error_does_not(self):
         mismatch = SQLSchemaMismatchError('commerce.sales', 'net_sales', ['date', 'revenue', 'cogs'])
         result = SQLAnalyticsAgent._generation_error(mismatch, 'SELECT ...', question='doanh thu tháng trước')

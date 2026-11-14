@@ -753,8 +753,8 @@ def relevant_schema_tables(question, definitions, available_tables=None):
         'inventory': r'inventory|stock|snapshot|tồn kho',
         'products': r'product|category|catalog|sku|sản phẩm|danh mục',
         'returns': r'return|refund|trả hàng|hoàn hàng|hoàn trả',
-        'orders': r'order|ordered|đơn hàng',
-        'order_items': r'quantity|quantities|ordered units|ordered quantities|sold units|sold quantities|sales quantity|quantities sold|line value|order items|số lượng đã bán|đã bán',
+        'orders': r'order|ordered|buy|bought|purchase|purchased|mua|đặt hàng|đơn hàng|giao dịch',
+        'order_items': r'quantity|quantities|ordered units|ordered quantities|sold units|sold quantities|sales quantity|quantities sold|line value|order items?|số lượng đã bán|đã bán',
         'customers': r'customer|khách hàng',
         'geography': r'region|district|city|khu vực|thành phố',
         'payments': r'payment|installment|thanh toán',
@@ -765,6 +765,13 @@ def relevant_schema_tables(question, definitions, available_tables=None):
         'sales': r'revenue|cogs|gross profit|doanh thu|lợi nhuận',
     }
     tables.update('commerce.'+name for name, pattern in cues.items() if re.search(pattern, text))
+    # A question that spells out order-item formulas is defining its own revenue
+    # grain; the company-wide sales summary is a different fact source.
+    if (re.search(r'\border items?\b', text)
+            and re.search(r'\b(?:discount amount|refund amount|unit price|quantity)\b', text)):
+        tables.discard('commerce.sales')
+        if re.search(r'\b(?:cogs|cost of goods|giá vốn)\b', text):
+            tables.add('commerce.products')
     if 'commerce.payments' in tables:
         tables.update({'commerce.orders', 'commerce.order_items'})
         if re.search(r'ship|shipping|delivery|vận chuyển|phí ship', text):

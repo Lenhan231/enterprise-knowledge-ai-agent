@@ -255,7 +255,12 @@ class SQLAnalyticsAgent(BaseAgent):
         except MetricDefinitionError as error:
             return self._generation_error(error)
         promotion_plan, promotion_metric = _promotion_query_plan(question) if direct is None else (None, None)
-        metric_names = set() if direct is not None or promotion_plan is not None else resolve_metric_names(question)
+        explicit_order_item_formula = bool(
+            re.search(r'\border[_ ]items?\b', question, re.I)
+            and re.search(r'\b(?:discount_amount|refund_amount|unit_price|quantity)\b', question, re.I)
+        )
+        metric_names = (set() if direct is not None or promotion_plan is not None or explicit_order_item_formula
+                        else resolve_metric_names(question))
         relative_month_followup = bool(re.fullmatch(
             r'\s*(?:(?:vậy|còn)\s+)?(?:tháng trước(?: thì sao)?|last month|previous month)\s*[?!.]*\s*',
             original_question, re.I))
@@ -340,7 +345,8 @@ class SQLAnalyticsAgent(BaseAgent):
                 resolved_latest = True
             metric_evidence = {}
             metric_lookup = {}
-            if not metric_names and direct is None and promotion_plan is None and self.metric_retriever is not None:
+            if (not metric_names and direct is None and promotion_plan is None
+                    and not explicit_order_item_formula and self.metric_retriever is not None):
                 with measure('metric_retrieval'):
                     try:
                         items = await self.metric_retriever(request, question)
@@ -554,13 +560,21 @@ class SQLAnalyticsAgent(BaseAgent):
             return await generate(primary, prompt, timeout=60)
         except Exception as primary_error:
             from core.llm.Cloudflare_provider import CloudflareProvider
-            if not isinstance(primary, CloudflareProvider):
+            from core.llm.groq_provider import GroqProvider
+            if isinstance(primary, CloudflareProvider):
+                fallback_type = GroqProvider
+                fallback_kwargs = {}
+            elif (isinstance(primary, GroqProvider)
+                  and os.getenv("CLOUDFLARE_ACCOUNT_ID")
+                  and (os.getenv("CLOUDFLARE_API_TOKEN") or os.getenv("CLOUDFLARE_WORKERS_API"))):
+                fallback_type = CloudflareProvider
+                fallback_kwargs = {"model": os.getenv("SQL_CLOUDFLARE_MODEL") or None}
+            else:
                 raise
             try:
                 fallback = getattr(self, "_fallback_llm", None)
                 if fallback is None:
-                    from core.llm.groq_provider import GroqProvider
-                    fallback = GroqProvider()
+                    fallback = fallback_type(**fallback_kwargs)
                     self._fallback_llm = fallback
             except Exception:
                 raise primary_error

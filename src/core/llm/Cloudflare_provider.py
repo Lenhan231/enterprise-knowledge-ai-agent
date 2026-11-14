@@ -18,7 +18,11 @@ load_dotenv()
 class CloudflareProvider(LLMInterface):
     """Call a Cloudflare Workers AI model through its OpenAI-compatible API."""
 
-    DEFAULT_MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8-fast"
+    DEFAULT_MODEL = "@cf/meta/llama-3.1-8b-instruct-fast"
+    DEPRECATED_MODELS = {
+        "@cf/meta/llama-3.1-8b-instruct": "@cf/meta/llama-3.1-8b-instruct-fast",
+        "@cf/meta/llama-3.1-8b-instruct-fp8": "@cf/meta/llama-3.1-8b-instruct-fast",
+    }
 
     def __init__(self, model: str | None = None, temperature: float = 0, max_tokens: int | None = None) -> None:
         self.account_id = os.getenv("CLOUDFLARE_ACCOUNT_ID")
@@ -28,7 +32,8 @@ class CloudflareProvider(LLMInterface):
         if not self.api_token:
             raise ValueError("CLOUDFLARE_API_TOKEN or CLOUDFLARE_WORKERS_API is not set")
 
-        self.model_name = model or os.getenv("CLOUDFLARE_MODEL", self.DEFAULT_MODEL)
+        requested_model = model or os.getenv("CLOUDFLARE_MODEL", self.DEFAULT_MODEL)
+        self.model_name = self.DEPRECATED_MODELS.get(requested_model, requested_model)
         self.model = self.model_name
         self.temperature = temperature
         self.max_tokens = max_tokens if max_tokens is not None else (

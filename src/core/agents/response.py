@@ -157,8 +157,10 @@ async def assemble_response(request, plan, execution, provider):
     fallback = True
     answer = ''
     if len(usable) == 1 and len(plan.tasks) == 1 and status == 'complete':
-        answer = inputs[0]['answer']
-        fallback = bool(usable[0].result.metadata.get('fallback', False))
+        scalar_answer = (_scalar_sql_finding(inputs[0], request.question)
+                         if inputs[0]['agent'] == 'sql' else None)
+        answer = scalar_answer or inputs[0]['answer']
+        fallback = False if scalar_answer else bool(usable[0].result.metadata.get('fallback', False))
     elif usable:
         serialized = json.dumps(inputs, ensure_ascii=False, default=str)
         if len(serialized) <= 32_000:

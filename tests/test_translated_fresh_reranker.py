@@ -10,6 +10,7 @@ import unittest
 import numpy as np
 
 ROOT=Path(__file__).resolve().parents[1]
+SAVED_RUN=ROOT/'artifacts/evaluation/fresh-reviewed-v1'
 sys.path.insert(0,str(ROOT/'scripts/retrieval'))
 import evaluate_translated_fresh_reranker as runner
 from fresh_translated_candidates import bm25_scores,build_candidates,FrozenRepository
@@ -23,6 +24,7 @@ class TranslatedReplayTest(unittest.TestCase):
         self.assertAlmostEqual(values[0],expected)
         self.assertEqual(bm25_scores([1,2],terms,['a']),[])
         self.assertEqual(bm25_scores([],terms,['a']),[])
+    @unittest.skipUnless(SAVED_RUN.is_dir(), "Saved fresh-reviewed evaluation run is not present")
     def test_failed_translation_falls_back_and_filters_hold(self):
         with contextlib.redirect_stdout(io.StringIO()):data=runner.load()
         translation=copy.deepcopy(runner.base.frozen.read(runner.INPUT/'translations.json'))
@@ -35,6 +37,7 @@ class TranslatedReplayTest(unittest.TestCase):
         repo=FrozenRepository(data['rows'],data['vectors'],lexical['document_terms'],lexical['query_terms'])
         self.assertEqual(repo.similarity_search(queries[0],5,query=data['cases'][0]['question'],method='dense',roles=['no_such_role']),[])
         self.assertEqual(repo.similarity_search(queries[0],5,query=data['cases'][0]['question'],method='dense',roles=['admin'],document_ids=[]),[])
+    @unittest.skipUnless(SAVED_RUN.is_dir(), "Saved fresh-reviewed evaluation run is not present")
     def test_full_saved_replay_rejects_wrong_rank(self):
         with contextlib.redirect_stdout(io.StringIO()):data=runner.load()
         # Synthetic logits keyed by original anchor identity; no model used.

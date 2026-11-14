@@ -84,42 +84,12 @@ comparison and raw reports are linked from
 See the paired-engine matrix and limitations in
 [`docs/technical/document-processing.md`](../docs/technical/document-processing.md).
 
-Download the source documents locally (raw files are not committed):
-
-```bash
-.venv/bin/python scripts/download_vietnam_enterprise_corpus.py
-```
-
-Download a controlled subset by manifest IDs when source validation or
-incremental ingestion is needed:
-
-```bash
-.venv/bin/python scripts/download_vietnam_enterprise_corpus.py \
-  --ids VNM-AR-2020-VI VNM-AR-2021-VI VNM-AR-2022-VI VNM-AR-2023-EN
-```
-
-The downloader validates PDFs and HTML and writes files under
-`data/raw/vietnam_enterprises/vnm/`. Re-ingest after changing the manifest or
-source files:
-
-```bash
-.venv/bin/python scripts/ingest_vietnam_enterprise_corpus.py
-```
-
-The ingestion command converts selected sources to page-aware chunks, creates
-embeddings, upserts metadata/RBAC roles, and atomically replaces each
-document's chunks. Each manifest document is marked `processing` before parse
-and persistence, `ready` only after both chunks and extracted tables finish, or
-`failed` on error. Retrieval only returns `ready` documents, so partial writes
-stay hidden; rerun the same manifest ID to replace them. PDF bulk ingestion
-and uploads use the page-aware PyMuPDF parser with Vietnamese/English Tesseract
-OCR for pages under 50 native-text characters, and mixed pages under 500
-characters when raster images cover at least 25% of the page. Text OCR uses
-PSM 11; scanned-table TSV word boxes use PSM 3. Mixed-page OCR is appended to
-native text, and extraction method is recorded in chunk metadata. Seed PDF table rows are stored
-in `public.extracted_tables` and `public.extracted_records`; uploads use the
-same structured store. Retrieval filters allowed roles before ranking and
-prioritizes an explicitly requested single fiscal year. It requires
+The old Vinamilk corpus downloader and seed-ingestion command were retired;
+raw source files are not committed. The corpus counts and evaluation artifacts
+below describe historical indexed snapshots. Current user uploads use the
+document-processing service and keep parsed tables separate from retrieval
+chunks. Retrieval filters allowed roles before ranking and prioritizes an
+explicitly requested single fiscal year. It requires
 the project's `DATABASE_URL`, the schema applied from the canonical
 `supabase/migrations/` history, and the configured embedding model. See the
 [database setup guide](../docs/deployment-guide.md#database-migrations).
@@ -164,53 +134,31 @@ Markdown, PNG, JPEG and TIFF; it uses Tesseract for image-only scans and stores
 PDF/Office tables separately from chunks. The upload API requires the
 server-only `SUPABASE_SECRET_KEY`
 and an uploader demo identity. KPI candidates remain pending review until an
-admin confirms the value and unit. Rebuild report evidence without database
-writes with `uv run python scripts/process_vinamilk_financial_reports.py
---dry-run`. The 2026-09-26 smoke summary is in
+admin confirms the value and unit. The one-off financial-report candidate
+processor has been retired. Its 2026-09-26 smoke summary remains archived in
 [`artifacts/evaluation/vinamilk-metric-candidate-smoke.json`](../artifacts/evaluation/vinamilk-metric-candidate-smoke.json);
 it measures candidate coverage, not extraction accuracy. Existing database
-review rows may include older per-page duplicates; dry-run does not remove or
-rewrite them.
+review rows may include older per-page duplicates; this artifact does not
+describe current database state.
 
-The report processor also accepts `--ids <document_id...>` for a controlled
-refresh. Large-font PDF number spans are matched to nearby labels for infographic
-KPI cards that native reading order otherwise loses; table and text extraction
-remain the paths for statements and narrative. These are suggestions only. A
-controlled save looks like:
-
-```bash
-.venv/bin/python scripts/process_vinamilk_financial_reports.py \
-  --ids VNM-AR-2024-VI --save-candidates
-```
-
-This stores current candidates as `needs_review`; it does not publish KPIs. A
-2026-09-27 rerun for `VNM-AR-2024-VI` stored six current source-linked candidates;
-two headline values came from page 2 (the report prints `61.824` and `9.453`
-with `tỷ đồng` units, using Vietnamese thousands punctuation). Preserve these
-as text while reviewing; the admin must normalize them to `61824` and `9453`
-before publication. See the [review input rules](../docs/user-guide.md#analytics-review).
-`supabase/migrations/20260926190105_metric_candidate_superseding.sql` preserves
-unmatched older pending evidence as `superseded`, not
-`rejected`, when that document is reprocessed.
 
 ## Archived Review 1 corpus (legacy Apple dataset)
 
 This is a retained, separate Review 1 experiment and is not part of the active
-Vinamilk demo manifest or its 25-document dashboard/QA scope. Its download and
-ingestion scripts remain for reproducing that earlier experiment; raw downloads
-and generated Markdown are local artifacts and are not committed. Do not use
-this legacy corpus as evidence for current Vinamilk evaluation.
+Vinamilk demo manifest or its 25-document dashboard/QA scope. The old ingestion
+script was retired; raw downloads and generated Markdown remain local artifacts
+and are not committed. Do not use this legacy corpus as evidence for current
+Vinamilk evaluation.
 
 ## Prerequisites
 
 - Set `DATABASE_URL` in `.env`.
 - Apply the canonical timestamped SQL migrations in `supabase/migrations/`
   following the [database setup guide](../docs/deployment-guide.md#database-migrations).
-- Configure the embedding model required by the ingestion pipeline.
 
 ## Review 1 corpus
 
-`scripts/download_apple_corpus.py` downloads these default document IDs:
+`scripts/ingestion/download_apple_corpus.py` downloads these default document IDs:
 
 - `APL-CMP-003`
 - `APL-CMP-004`
@@ -221,7 +169,7 @@ this legacy corpus as evidence for current Vinamilk evaluation.
 Download the frozen subset into a dedicated directory:
 
 ```bash
-python scripts/download_apple_corpus.py \
+python scripts/ingestion/download_apple_corpus.py \
   --output data/raw/apple_review1
 ```
 
@@ -231,32 +179,16 @@ skips existing files. Use `--force` to replace existing downloads.
 Download specific document IDs when needed:
 
 ```bash
-python scripts/download_apple_corpus.py \
+python scripts/ingestion/download_apple_corpus.py \
   --ids APL-CMP-003 APL-PRC-002 \
   --output data/raw/apple_review1
 ```
 
-## Ingestion
+## Archived ingestion
 
-Parse, chunk, embed, and persist the Review 1 subset:
-
-```bash
-python scripts/ingest_apple_corpus.py \
-  --input data/raw/apple_review1 \
-  --output data/processed/apple_review1
-```
-
-For a small metadata check, ingest one file:
-
-```bash
-python scripts/ingest_apple_corpus.py \
-  --file data/raw/apple_review1/compliance/apl-cmp-003_anti_corruption_policy.pdf \
-  --output data/processed/apple_review1
-```
-
-Re-ingestion is idempotent by `document_name`: existing chunks for that file
-are deleted and replaced in one transaction, and each document starts at
-`chunk_index = 0`.
+The previous Apple Review 1 ingestion commands were removed with the obsolete
+pipeline. Existing database snapshots and evidence checks below are historical
+records; use the application upload flow for new documents.
 
 ## Evidence checks
 
@@ -294,9 +226,9 @@ limit 5;
 
 ## Known limitations
 
-- The verified ingestion path currently supports PDF files only.
+- The retired Review 1 ingestion path supported PDF files only.
 - Existing Review 1 Apple chunks predate native-text heading extraction and
-  need re-ingestion if populated `section_title` is required there.
+  would require a new supported ingestion path to populate `section_title`.
 - Hierarchical parent sections are not persisted, so `parent_id` is `null`.
 - OCR, layout-aware parsing, and table extraction are not part of the Review 1
   baseline.

@@ -1,10 +1,14 @@
 import sys
 import unittest
+import importlib.util
 from unittest.mock import patch
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 
 import numpy as np
+
+if any(importlib.util.find_spec(module) is None for module in ("docling", "docling_core", "cv2")):
+    raise unittest.SkipTest("OCR dependencies are optional outside the document-processing image")
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 

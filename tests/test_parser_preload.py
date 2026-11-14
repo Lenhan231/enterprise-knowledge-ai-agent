@@ -1,9 +1,13 @@
 import os
 import sys
 import unittest
+import importlib.util
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
+
+if any(importlib.util.find_spec(module) is None for module in ("docling", "docling_core")):
+    raise unittest.SkipTest("Docling is an optional document-processing dependency")
 
 from fastapi import FastAPI
 

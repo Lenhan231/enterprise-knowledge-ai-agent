@@ -35,9 +35,6 @@ boundary rather than one cross-table transaction.
   `processors/pdf/layout_processor.py` for Paddle layout analysis and
   `processors/pdf/table_extractor.py` for native/OCR table reconstruction.
   Compatibility methods remain on `PDFProcessor` for existing callers.
-- `ingest_documents.py` adapts seed PDFs and HTML into token-bounded chunks.
-  Seed PDFs reuse `PDFProcessor`; public HTML uses the local HTML text
-  extractor.
 - Upload orchestration in `app/main.py` stores originals, calls the dispatcher,
   persists parsed chunks/tables before tokenization and embedding, then writes
   vectors and metric candidates. For fiscal-year PDFs, it additionally ranks
@@ -113,12 +110,9 @@ the chunk metadata marks `contains_formula` and stores the extracted math text.
 This preserves the source's textual math tokens for retrieval, but does not
 reconstruct two-dimensional notation, recognize formulas in figures/scanned
 pages, or evaluate an equation.
-The parser change alone does not update existing rows. For a seed PDF,
-`uv run python scripts/processing/backfill_section_titles.py --ids <DOCUMENT_ID>` creates
-a dry-run report. Add `--apply` only after checking that stored chunk count,
-indices, and every content string match the parser; it then updates only
-`metadata.section_title` and writes a backup. If chunks do not match exactly,
-the tool skips the document and re-ingestion is required.
+The parser change alone does not update existing rows. The historical one-off section-title backfill runner has been retired. Its
+coverage and dry-run artifacts remain historical evidence; future parser changes
+apply when a document is reprocessed through the current ingestion path.
 
 Office ZIP packages are checked before XML parsing: at most 10,000 entries,
 100 MiB per member, 200 MiB expanded total, and a 200:1 member compression
@@ -187,7 +181,7 @@ checks find nothing, even if OCR did not run. A real source-crop regression
 checks the audited `Tổng tài sản` values for 2024 and 2023. The 2020 product
 poster remains difficult at CER/WER 0.662500/0.906250 on this fixture; it is
 complex artwork and does not justify changing global OCR defaults. Reproduce
-the parser replay with `uv run python scripts/processing/evaluate_scan_document_processing.py
+the parser replay with `uv run python tools/processing/evaluate_scan_document_processing.py
 --dataset data/evaluation/vinamilk_ocr_ground_truth_v8.json --output
 artifacts/evaluation/vinamilk-upload-processor-v8-20260929.json`.
 
@@ -201,9 +195,7 @@ born-digital reports, not true scanned originals. The result shows that good
 native-text extraction and a detected OCR table do not establish that KPI
 evidence reaches the admin review queue. Keep OCR-derived metrics pending and
 require source verification; do not treat the score as financial accuracy.
-Reproduce with
-`uv run python scripts/processing/evaluate_document_extraction.py --compact --output
-artifacts/evaluation/vinamilk-document-extraction-ocr-to-kpi-20260929.json`.
+The extraction evaluator has since been retired; this result is retained as historical evidence.
 
 An optional one-request LLM mode exercises the same PDF-upload shortlist and
 verbatim-evidence validator without persisting candidates. On the reviewed
@@ -212,12 +204,8 @@ verbatim-evidence validator without persisting candidates. On the reviewed
 and one matched a labeled target (profit after tax; 1/2 field recall). Revenue
 was not recovered because its OCR label was corrupted. This confirms the
 review gate rejects unsupported suggestions, but does not close OCR accuracy
-or model-quality evaluation. Reproduce with
-`uv run python scripts/processing/evaluate_document_extraction.py --compact --case-id
-ar2023-consolidated-income-p115 --llm --output
-artifacts/evaluation/vinamilk-document-extraction-ocr-to-kpi-llm-20260929.json`;
-the command reads `GROQ_API_KEY` from the environment or local `.env` and makes
-one LLM request for the selected case.
+or model-quality evaluation. The legacy evaluator and its one-request LLM command
+have been retired; this result remains historical evidence.
 
 The no-write LLM path was exercised on the original scanned PDF page from the
 separate third-party 2011 financial-statement packet. A prior run returned four
@@ -238,11 +226,7 @@ records the provider error and must not be interpreted as a successful rerun.
 During the earlier trace, a handoff defect was also fixed: accepted LLM units
 were validated but omitted from the pending candidate before database save. The
 unit now travels through that handoff; extractor and upload boundary tests
-assert it. No database write was made. Reproduce against the original source scan with
-`uv run python scripts/processing/evaluate_document_extraction.py --cases
-data/evaluation/vinamilk_2011_real_scan_kpi_cases.json --case-id
-real-scan-2011-income-statement-vi --compact --llm --output
-artifacts/evaluation/vinamilk-ocr-2011-real-scan-kpi-llm-20260929.json`.
+assert it. No database write was made. The legacy evaluator has since been retired; this remains an archived source-scan diagnostic.
 
 The actual PDF upload parser was also measured on the manually labeled
 Vietnamese product poster. At its nominal 108 DPI, PSM 11 scored CER/WER
@@ -251,7 +235,7 @@ Vietnamese product poster. At its nominal 108 DPI, PSM 11 scored CER/WER
 the absolute error remains high for complex artwork. These are single-region
 results, not a Vietnamese scan benchmark. The PSM runs share the same
 deterministic cropped-PDF SHA-256 (`74b3b66d250bbfa60c44d8934e120e8d2f4a10457a376622b1e860362c960ffd`). Reproduce with
-`scripts/processing/evaluate_scan_document_processing.py --dataset data/evaluation/vinamilk_ocr_ground_truth_v6.json --case-id annual-2020-product-poster-vi --tesseract-psm 11`; the [PSM 11](../../artifacts/evaluation/vinamilk-upload-ocr-vietnamese-poster-psm11-v6-20260928.json), [PSM 3](../../artifacts/evaluation/vinamilk-upload-ocr-vietnamese-poster-psm3-v6-20260928.json), and [PSM 6](../../artifacts/evaluation/vinamilk-upload-ocr-vietnamese-poster-psm6-v6-20260928.json) artifacts preserve upload-path outputs and input hashes.
+`tools/processing/evaluate_scan_document_processing.py --dataset data/evaluation/vinamilk_ocr_ground_truth_v6.json --case-id annual-2020-product-poster-vi --tesseract-psm 11`; the [PSM 11](../../artifacts/evaluation/vinamilk-upload-ocr-vietnamese-poster-psm11-v6-20260928.json), [PSM 3](../../artifacts/evaluation/vinamilk-upload-ocr-vietnamese-poster-psm3-v6-20260928.json), and [PSM 6](../../artifacts/evaluation/vinamilk-upload-ocr-vietnamese-poster-psm6-v6-20260928.json) artifacts preserve upload-path outputs and input hashes.
 Raising the actual parser render scale from 1.5 (108 DPI) to 2.5 (180 DPI)
 made this same poster worse: PSM 11 CER/WER rose to 0.631250/1.218750 and
 latency to 1.721 seconds, so the default remains 1.5. Set the
@@ -288,7 +272,7 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
 
 ## Current boundaries
 
-- Seed parsing: `src/core/document_processing/ingest_documents.py`.
+- Seed and upload parsing: the current adapters under `src/document_processing/`.
 - Upload parsing: `src/core/document_processing/processors/document_processor.py`.
 - PDF/OCR/layout: `src/core/document_processing/processors/pdf/processor.py`.
 - Table persistence: `src/core/database/structured_store.py`.
@@ -627,7 +611,7 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   its record is
   [`vinamilk-scan-upload-live-e2e-20260929.json`](../../artifacts/evaluation/vinamilk-scan-upload-live-e2e-20260929.json).
   Reproduce with
-  `uv run python scripts/processing/evaluate_scan_document_processing.py --dataset data/evaluation/vinamilk_ocr_ground_truth_2011_scan_diagnostic_v2.json --tesseract-psm 11 --tesseract-table-psm 3 --render-scale 1.5 --table-render-scale 2.5 --output artifacts/evaluation/vinamilk-scan-document-processor-2011-three-pages-v2-20260929.json`.
+  `uv run python tools/processing/evaluate_scan_document_processing.py --dataset data/evaluation/vinamilk_ocr_ground_truth_2011_scan_diagnostic_v2.json --tesseract-psm 11 --tesseract-table-psm 3 --render-scale 1.5 --table-render-scale 2.5 --output artifacts/evaluation/vinamilk-scan-document-processor-2011-three-pages-v2-20260929.json`.
   See the [labels](../../data/evaluation/vinamilk_ocr_ground_truth_2011_scan_diagnostic_v2.json)
   and [run artifact](../../artifacts/evaluation/vinamilk-scan-document-processor-2011-three-pages-v2-20260929.json).
 
@@ -733,7 +717,7 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   accent-folded similarity. This one-page result does not establish accuracy
   across layouts or safe automatic financial publication. Reproduce the
   split-resolution production path with `uv run python
-  scripts/processing/evaluate_scan_document_processing.py --dataset
+  tools/processing/evaluate_scan_document_processing.py --dataset
   data/evaluation/vinamilk_ocr_ground_truth_2011_scan_diagnostic.json
   --tesseract-psm 11 --tesseract-table-psm 3 --render-scale 1.5
   --table-render-scale 2.5`; PSM 4 gives the same reviewed score. See the [PSM 3 report](../../artifacts/evaluation/vinamilk-scan-document-processor-2011-table-psm3-20260929.json),
@@ -781,12 +765,11 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   production PDF path; do not compare the protocols as if they were identical
   engine settings. This remains a two-page, English-only Tesseract pilot with
   no table-cell/layout labels or paired engines. Reproduce it with
-  `uv run python scripts/processing/evaluate_scan_document_processing.py`; artifact:
+  `uv run python tools/processing/evaluate_scan_document_processing.py`; artifact:
   `artifacts/evaluation/vinamilk-scan-document-processor-v1.json`.
 - Sampled real-document extraction evaluation uses the manually transcribed,
   visually checked fixture `data/evaluation/vinamilk_document_extraction_cases.json`.
-  Re-run compactly with
-  `uv run python scripts/processing/evaluate_document_extraction.py --compact --output artifacts/evaluation/vinamilk-document-extraction-compact-20260928.json`.
+  The legacy evaluator has been retired; the compact report remains archived.
   The compact report preserves source/render hashes, scores, Tesseract version
   and traineddata hashes while omitting raw parser dumps. Native 2020
   financial-infographic parsing and rule-based KPI extraction each match 2/2
@@ -808,8 +791,8 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   remains the text OCR default because the separate mixed-layout poster
   CER/WER comparison favored it; these two financial pages are not enough to
   change that global text setting. PDF table OCR remains PSM 3; image table
-  OCR now defaults to PSM 6. Reproduce the latter comparison with
-  `uv run python scripts/processing/evaluate_document_extraction.py --compact --tesseract-psm 3 --tesseract-table-psm 6 --output artifacts/evaluation/vinamilk-document-extraction-compact-table-psm6-20260928.json`.
+  OCR now defaults to PSM 6. The evaluator for this comparison has been retired;
+  its reports remain archived.
   The [table PSM 6 report](../../artifacts/evaluation/vinamilk-document-extraction-compact-table-psm6-20260928.json), [PSM 11 compact report](../../artifacts/evaluation/vinamilk-document-extraction-compact-20260928.json)
   and [paired PSM 3 report](../../artifacts/evaluation/vinamilk-document-extraction-compact-psm3-20260928.json)
   preserve comparable hashes and scores. The table strategy sweep records the
@@ -832,7 +815,7 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   on a born-digital source page; it does not evaluate the normal native-PDF
   extraction path, which is covered by the separate document-extraction
   fixture above. Reproduce with
-  `uv run python scripts/processing/evaluate_scan_document_processing.py --dataset data/evaluation/vinamilk_ocr_ground_truth_v9.json --all-pages --output artifacts/evaluation/vinamilk-upload-document-processor-v9-14regions-20260929.json`.
+  `uv run python tools/processing/evaluate_scan_document_processing.py --dataset data/evaluation/vinamilk_ocr_ground_truth_v9.json --all-pages --output artifacts/evaluation/vinamilk-upload-document-processor-v9-14regions-20260929.json`.
   See the [14-region parser report](../../artifacts/evaluation/vinamilk-upload-document-processor-v9-14regions-20260929.json).
 - A paired CPU-only v9 OCR benchmark reran Tesseract 4.1.1, PaddleOCR 3.7.0,
   EasyOCR 1.7.2 and Surya 0.17.1 against the same 14 reviewed English/Vietnamese
@@ -897,7 +880,7 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   minority-interest row: its value is correct but the parser does not emit a
   usable box for that small dash. This is a single-page, single-source diagnostic,
   not independent multi-reviewer gold or paired engine evidence. Run
-  `uv run python scripts/processing/evaluate_scan_document_processing.py --dataset data/evaluation/vinamilk_ocr_ground_truth_2011_scan_diagnostic_v4.json --case-id income-statement-scan-2011-vi --output artifacts/evaluation/vinamilk-scan-document-processor-2011-raster-cell-labels-20260929.json`.
+  `uv run python tools/processing/evaluate_scan_document_processing.py --dataset data/evaluation/vinamilk_ocr_ground_truth_2011_scan_diagnostic_v4.json --case-id income-statement-scan-2011-vi --output artifacts/evaluation/vinamilk-scan-document-processor-2011-raster-cell-labels-20260929.json`.
   The evaluator now maps short year keys to extracted full-date columns, which
   fixes the prior false-zero coordinate score when expected box keys were
   `2011`/`2010` and parser columns were `31/12/2011`/`31/12/2010`.
@@ -1003,15 +986,10 @@ direct `anon`/`authenticated` access; the server-side database role owns writes.
   saved parsed output, but durable/background jobs, OCR alternatives,
   layout-quality checks, and broad real-file validation remain.
 
-The manually reviewed financial extraction fixture now covers five Vinamilk
-annual-report pages from 2020–2024, with eleven labels/values transcribed from
-rendered pages and checked against period and unit. Run it with:
-
-```sh
-uv run python scripts/processing/evaluate_document_extraction.py \\
-  --cases data/evaluation/vinamilk_document_extraction_cases.json --compact \\
-  --output artifacts/evaluation/vinamilk-document-extraction-multiyear-v3-20260928.json
-```
+The archived manually reviewed financial-extraction fixture covers five
+Vinamilk annual-report pages from 2020–2024, with eleven labels/values checked
+against period and unit. Its legacy evaluator has been retired; the historical
+scores below remain in `artifacts/evaluation/`.
 
 The 2020 highlight and 2024 balance-sheet figures are in VND billion and VND
 million respectively; audited 2021–2023 income-statement values are in VND.

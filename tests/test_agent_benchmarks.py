@@ -1,7 +1,11 @@
 import json
 import asyncio
 import unittest
+import importlib.util
 from pathlib import Path
+
+if importlib.util.find_spec("ragas") is None:
+    raise unittest.SkipTest("Ragas is an optional evaluation dependency")
 
 from evaluation import run_agent_benchmarks
 from evaluation.run_agent_benchmarks import (

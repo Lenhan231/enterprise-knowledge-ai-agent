@@ -13,18 +13,10 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from scripts.retrieval import check_apple_retrieval
 from core.retrieval.retrieval import RetrievalRequest, RetrievalResponse
-from core.rag.rag_service import RAGService, _RESPONSE_CACHE, _RESPONSE_CACHE_LOCK
+from core.rag.rag_service import RAGService
 
 
 class RetrievalCallersTest(unittest.TestCase):
-    def setUp(self):
-        with _RESPONSE_CACHE_LOCK:
-            _RESPONSE_CACHE.clear()
-        self.response = RetrievalResponse.model_validate_json(
-            (Path(__file__).parent / "fixtures" / "ranked_dense_retrieval.json").read_text(encoding="utf-8")
-        )
-        self.retrieval = MagicMock()
-        self.retrieval.retrieve.return_value = self.response
 
     def test_rag_passes_request_and_uses_full_ranked_text(self):
         llm = MagicMock()

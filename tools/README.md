@@ -26,37 +26,11 @@ The migration creates the private `commerce` schema, separate from the
 knowledge-base tables in `public`. Import is one-time and refuses a non-empty
 schema; it copies the 13 source CSVs directly and skips `sample_submission.csv`.
 
-The Commerce operating-method references and platform procedures are registered in
+Commerce operating-method references are described by
 [`data/commerce_knowledge/manifest.json`](../data/commerce_knowledge/manifest.json).
-Download and index them through the same parser/chunk/embed repositories with:
-
-```bash
-PYTHONPATH=src .venv/bin/python tools/ingestion/ingest_commerce_knowledge.py --download-only
-PYTHONPATH=src .venv/bin/python tools/ingestion/ingest_commerce_knowledge.py
-```
-
-The three explicitly synthetic Commerce Demo policy PDFs are reproducible and
-can be indexed without downloading/reprocessing the public corpus:
-
-```bash
-PYTHONPATH=src .venv/bin/python tools/ingestion/generate_commerce_demo_policies.py
-PYTHONPATH=src .venv/bin/python tools/ingestion/ingest_commerce_knowledge.py --ids CD-POL-INV-001 CD-POL-PROMO-001 CD-POL-LOG-001
-```
-
-These fictional scenario rules are for testing policy-grounded decision support
-only. Every PDF and indexed document is labeled synthetic; do not attribute the
-rules to a real retailer.
-
-The downloader only accepts HTTPS URLs from its explicit host allowlist in
-`ingest_commerce_knowledge.py` (TikTok Shop, Shopee, Walmart, Shopify, Amazon,
-and DoorDash hosts); downloaded HTML/PDF and parsed text stay local and are
-git-ignored. Synthetic policy PDFs are read directly from their canonical
-`data/commerce_knowledge/synthetic_policies/` paths without a duplicate cache.
-Chunks retain publisher, update date, original URL, evidence class, decision
-domain, applicability, and content SHA-256. Seller/platform requirements apply
-only to that issuer's marketplace; they are not policies of the synthetic
-Commerce dataset. The command writes indexed references to
-`public.documents`, `document_parser_chunks`, and `document_chunks`.
+The legacy downloader and ingestion scripts were retired; existing indexed
+references remain available to the application. Synthetic policy source files
+remain under `data/commerce_knowledge/synthetic_policies/` for review.
 
 The SQL case set and document-level source labels live in
 [`data/evaluation/commerce_decision_benchmark.json`](../data/evaluation/commerce_decision_benchmark.json)

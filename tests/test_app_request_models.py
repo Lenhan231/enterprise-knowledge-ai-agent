@@ -12,12 +12,12 @@ from starlette.requests import Request
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import app.main as app_main
-from app.main import CORPUS_COMPANY, DOCUMENT_ROLES, ROLE_PERMISSIONS, AskRequest, DocumentAccessRequest, KnowledgeBaseStatusRequest, _answer_documents, _commerce_reference_metadata, _referenced_citation_ids, _role_accounts, _roles_with_permission, access_matrix, app, require_permission, upload_capability
+from app.main import CORPUS_COMPANY, DOCUMENT_ROLES, ROLE_PERMISSIONS, DocumentAccessRequest, KnowledgeBaseStatusRequest, _answer_documents, _commerce_reference_metadata, _referenced_citation_ids, _role_accounts, _roles_with_permission, access_matrix, app, require_permission, upload_capability
 from core.agents.intent_classifier import IntentClassifier
 from core.models.agents import AgentResult, Evidence
 
 
-class AskRequestTest(unittest.TestCase):
+class CommerceDashboardApiTest(unittest.TestCase):
     def test_analyst_dashboard_can_request_one_commerce_domain_at_a_time(self):
         environment = {
             "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
@@ -56,21 +56,6 @@ class AskRequestTest(unittest.TestCase):
                          [unittest.mock.call(keys) for keys in expected.values()]
                          + [unittest.mock.call(("promotions_by_campaign",))])
 
-    def test_commerce_domain_is_accepted_for_questions_and_server_side_suggestions(self):
-        question = AskRequest(
-            question="Should we rebalance inventory?",
-            commerce_decision_support=True,
-            business_decision_domain="inventory_allocation",
-        )
-        suggestions = AskRequest(
-            decision_suggestions=True,
-            business_decision_domain="promotion_planning",
-        )
-        self.assertEqual(question.business_decision_domain, "inventory_allocation")
-        self.assertTrue(question.commerce_decision_support)
-        self.assertTrue(suggestions.decision_suggestions)
-        with self.assertRaises(ValidationError):
-            AskRequest(question="Should we change inventory?", business_decision_domain="made_up")
 
     def test_commerce_upload_reference_requires_trusted_classification_and_attribution(self):
         method = _commerce_reference_metadata(
@@ -215,271 +200,15 @@ class AskRequestTest(unittest.TestCase):
         self.assertTrue(indexed_rows[0][3]["synthetic_company_policy"])
         self.assertTrue(indexed_rows[0][3]["commerce_reference_active"])
 
-    def test_report_route_uses_knowledge_agent_without_running_hybrid_sql(self):
-        evidence = Evidence(
-            citation_id="S1", source_type="document", source="2024 annual report",
-            content="Example Retailer reported its 2024 strategy and risks.",
-            metadata={"document_id": "EXAMPLE-AR-2024-VI", "page_number": 20,
-                      "source_url": "https://example.com/report.pdf",
-                      "synthetic_company_policy": True,
-                      "text_extraction_method": "tesseract",
-                      "ocr": {"engine": "tesseract", "language": "vie+eng", "page_psm": 11, "render_scale": 1.5},
-                      "source_publisher": "Example Publisher",
-                      "evidence_class": "company_practice_reference",
-                      "reference_applicability": "External example only."},
-        )
-        knowledge = Mock()
-        analytics = Mock()
-        hybrid = Mock()
-        dashboard = Mock()
-        report = Mock()
-        report.run.return_value = AgentResult(
-            answer="The annual report discusses its strategy and risks [S1].",
-            agent="report", evidence=[evidence],
-            metadata={"token_usage": {
-                "sql_generation": {"input_tokens": 80, "output_tokens": 14, "total_tokens": 94},
-                "answer_generation": {"input_tokens": 140, "output_tokens": 30, "total_tokens": 170},
-                "total": {"input_tokens": 220, "output_tokens": 44, "total_tokens": 264},
-            }},
-        )
-        classifier = Mock()
-        classifier.classify.return_value = IntentClassifier.fallback(
-            "Summarize Example Retailer's 2024 strategy and risks for executive decision support"
-        )
-        with (
-            patch("app.main.KnowledgeAgent", return_value=knowledge),
-            patch("app.main.SQLAnalyticsAgent", return_value=analytics),
-            patch("app.main.HybridAgent", return_value=hybrid),
-            patch("app.main.DashboardAgent", return_value=dashboard),
-            patch("app.main.IntentClassifier", return_value=classifier),
-            patch("app.main.ReportAgent", return_value=report) as report_factory,
-            patch("app.main.AgentRunRepository", return_value=Mock()),
-        ):
-            payload = _answer_documents(
-                AskRequest(question="Summarize Example Retailer's 2024 strategy and risks for executive decision support"),
-                {"sub": "admin-test", "role": "admin"},
-            )
 
-        report_factory.assert_called_once_with(knowledge=knowledge, analytics=analytics)
-        report.run.assert_called_once()
-        hybrid.run.assert_not_called()
-        analytics.run.assert_not_called()
-        self.assertEqual(payload["agent"], "report")
-        self.assertEqual([item["document_id"] for item in payload["citations"]], ["EXAMPLE-AR-2024-VI"])
-        self.assertEqual(payload["citations"][0]["source_publisher"], "Example Publisher")
-        self.assertEqual(payload["citations"][0]["evidence_class"], "company_practice_reference")
-        self.assertEqual(payload["citations"][0]["reference_applicability"], "External example only.")
-        self.assertTrue(payload["citations"][0]["synthetic_company_policy"])
-        self.assertEqual(payload["citations"][0]["text_extraction_method"], "tesseract")
-        self.assertEqual(payload["citations"][0]["ocr"]["engine"], "tesseract")
-        self.assertEqual(payload["token_usage"]["total"]["total_tokens"], 264)
 
-    def test_action_suggestion_api_mode_builds_internal_question_and_domain_metadata(self):
-        report, classifier, hybrid, dashboard = Mock(), Mock(), Mock(), Mock()
-        report.run.return_value = AgentResult(
-            answer="No recommendation", agent="report",
-            metadata={"answer_fallback_reason": "provider_unavailable"},
-        )
-        with (
-            patch("app.main.KnowledgeAgent", return_value=Mock()),
-            patch("app.main.SQLAnalyticsAgent", return_value=Mock()),
-            patch("app.main.HybridAgent", return_value=hybrid),
-            patch("app.main.DashboardAgent", return_value=dashboard),
-            patch("app.main.IntentClassifier", return_value=classifier),
-            patch("app.main.ReportAgent", return_value=report),
-            patch("app.main.AgentRunRepository", return_value=Mock()),
-        ):
-            payload = _answer_documents(
-                AskRequest(decision_suggestions=True, business_decision_domain="inventory_allocation"),
-                {"sub": "admin-test", "role": "admin"},
-            )
 
-        request = report.run.call_args.args[0]
-        self.assertEqual(request.question, "Generate conditional management actions from available Commerce observations.")
-        self.assertEqual(request.metadata["business_decision_domain"], "inventory_allocation")
-        self.assertTrue(request.metadata["decision_suggestions"])
-        classifier.classify.assert_not_called()
-        hybrid.assert_not_called()
-        dashboard.assert_not_called()
-        self.assertEqual(payload["agent"], "report")
-        self.assertEqual(payload["business_decision_domain"], "inventory_allocation")
-        self.assertTrue(payload["decision_suggestions_fallback"])
 
-    def test_natural_action_suggestion_response_marks_fallback_for_ui(self):
-        report, classifier = Mock(), Mock()
-        report.run.return_value = AgentResult(
-            answer="One bounded next step [C1][S1]", agent="report",
-            metadata={"answer_fallback_reason": "provider_rate_limited", "decision_suggestions": True},
-        )
-        with (
-            patch("app.main.KnowledgeAgent", return_value=Mock()),
-            patch("app.main.SQLAnalyticsAgent", return_value=Mock()),
-            patch("app.main.HybridAgent", return_value=Mock()),
-            patch("app.main.DashboardAgent", return_value=Mock()),
-            patch("app.main.IntentClassifier", return_value=classifier),
-            patch("app.main.ReportAgent", return_value=report),
-            patch("app.main.AgentRunRepository", return_value=Mock()),
-        ):
-            payload = _answer_documents(
-                AskRequest(
-                    question="Suggest up to three conditional actions for promotion planning.",
-                    business_decision_domain="promotion_planning",
-                    commerce_decision_support=True,
-                ),
-                {"sub": "analyst-test", "role": "finance_analyst"},
-            )
 
-        self.assertTrue(report.run.call_args.args[0].metadata["decision_suggestions"])
-        self.assertTrue(payload["decision_suggestions_fallback"])
 
-    def test_commerce_question_api_returns_auto_detected_domain(self):
-        report, classifier = Mock(), Mock()
-        report.run.return_value = AgentResult(
-            answer="Inventory evidence [C1]", agent="report",
-            metadata={"citation_validation_failed": True,
-                      "decision_validation_failure": "decision_numeric_claim_not_present_in_cited_evidence",
-                      "decision_validation_numeric_tokens": ["0.12", "25"],
-                      "answer_fallback_reason": "provider_unavailable"},
-        )
-        classifier.classify_commerce_domain.return_value = "inventory_allocation"
-        with (
-            patch("app.main.KnowledgeAgent", return_value=Mock()),
-            patch("app.main.SQLAnalyticsAgent", return_value=Mock()),
-            patch("app.main.HybridAgent", return_value=Mock()),
-            patch("app.main.DashboardAgent", return_value=Mock()),
-            patch("app.main.IntentClassifier", return_value=classifier),
-            patch("app.main.ReportAgent", return_value=report),
-            patch("app.main.AgentRunRepository", return_value=Mock()),
-        ):
-            payload = _answer_documents(
-                AskRequest(question="Should inventory be reallocated?", commerce_decision_support=True),
-                {"sub": "analyst-test", "role": "analyst"},
-            )
-            admin_payload = _answer_documents(
-                AskRequest(question="Should inventory be reallocated?", commerce_decision_support=True),
-                {"sub": "admin-test", "role": "admin"},
-            )
 
-        self.assertEqual(report.run.call_args.args[0].metadata["business_decision_domain"], "inventory_allocation")
-        self.assertEqual(payload["business_decision_domain"], "inventory_allocation")
-        self.assertTrue(payload["business_domain_auto_detected"])
-        self.assertTrue(payload["citation_validation_failed"])
-        self.assertEqual(payload["answer_fallback_reason"], "provider_unavailable")
-        self.assertNotIn("decision_validation_failure", payload)
-        self.assertNotIn("decision_validation_numeric_tokens", payload)
 
-        self.assertEqual(
-            admin_payload["decision_validation_failure"],
-            "decision_numeric_claim_not_present_in_cited_evidence",
-        )
-        self.assertEqual(admin_payload["decision_validation_numeric_tokens"], ["0.12", "25"])
 
-    def test_commerce_question_api_returns_clarification_without_running_agents(self):
-        report, classifier = Mock(), Mock()
-        classifier.classify_commerce_domain.return_value = None
-        unused = Mock()
-        with (
-            patch("app.main.KnowledgeAgent", return_value=unused),
-            patch("app.main.SQLAnalyticsAgent", return_value=unused),
-            patch("app.main.HybridAgent", return_value=unused),
-            patch("app.main.DashboardAgent", return_value=unused),
-            patch("app.main.IntentClassifier", return_value=classifier),
-            patch("app.main.ReportAgent", return_value=report),
-            patch("app.main.AgentRunRepository", return_value=Mock()),
-        ):
-            payload = _answer_documents(
-                AskRequest(question="What should we improve?", commerce_decision_support=True),
-                {"sub": "analyst-test", "role": "analyst"},
-            )
-
-        self.assertEqual(payload["agent"], "commerce_domain_router")
-        self.assertTrue(payload["needs_domain_clarification"])
-        report.run.assert_not_called()
-        unused.run.assert_not_called()
-
-    def test_ask_api_preserves_dashboard_visualization_and_verified_citations(self):
-        answer = AgentResult(
-            answer="Revenue trend [M1] [M2]", agent="dashboard",
-            metadata={"token_usage": {"total": {"total_tokens": 1}}},
-            evidence=[Evidence(
-                citation_id="M1", source_type="verified_metric", source="FY2023 net revenue",
-                content="Audited source quote", metadata={"document_id": "AR23", "page_number": 12,
-                                                          "source_chunk_id": 90, "chunk_index": 4,
-                                                          "retrieval_chunk_id": "AR23::chunk::4",
-                                                          "source_content_hash": "sha256:abc"},
-            ), Evidence(
-                citation_id="M2", source_type="verified_metric", source="FY2024 net revenue",
-                content="Audited source quote", metadata={"document_id": "AR24", "page_number": 12,
-                                                          "chunk_index": 5, "source_sha256": "sha256:def"},
-            )],
-            data={"visualization": {
-                "type": "line", "title": "Revenue by year", "unit": "billion VND",
-                "categories": [2023, 2024],
-                "series": [{"name": "Net revenue", "values": [60322.0, 61524.0]}],
-            }},
-        )
-        dashboard = Mock()
-        dashboard.run.return_value = answer
-        classifier = Mock()
-        classifier.classify.return_value = IntentClassifier.fallback("Show a chart of revenue by year")
-        monitor = Mock()
-        with (
-            patch("app.main.KnowledgeAgent"),
-            patch("app.main.SQLAnalyticsAgent"),
-            patch("app.main.HybridAgent"),
-            patch("app.main.DashboardAgent", return_value=dashboard),
-            patch("app.main.IntentClassifier", return_value=classifier),
-            patch("app.main.ReportAgent"),
-            patch("app.main.AgentRunRepository", return_value=monitor),
-        ):
-            payload = _answer_documents(
-                AskRequest(question="Show a chart of revenue by year"),
-                {"sub": "analyst", "role": "finance_analyst"},
-            )
-
-        self.assertEqual(payload["agent"], "dashboard")
-        self.assertEqual(payload["data"]["visualization"], answer.data["visualization"])
-        self.assertEqual({item["id"] for item in payload["citations"]}, {"M1", "M2"})
-        citation = next(item for item in payload["citations"] if item["id"] == "M1")
-        self.assertEqual(citation["source_chunk_id"], 90)
-        self.assertEqual(citation["retrieval_chunk_id"], "AR23::chunk::4")
-        self.assertEqual(citation["chunk_index"], 4)
-        self.assertEqual(citation["source_content_hash"], "sha256:abc")
-        citation = next(item for item in payload["citations"] if item["id"] == "M2")
-        self.assertEqual(citation["source_content_hash"], "sha256:def")
-        self.assertNotIn("token_usage", payload)
-
-    def test_supported_retrieval_methods_are_validated(self):
-        for method in ("dense", "bm25", "hybrid", "parent"):
-            with self.subTest(method=method):
-                request = AskRequest(question="Revenue for 2024?", retrieval_method=method)
-                self.assertEqual(request.retrieval_method, method)
-
-    def test_unknown_retrieval_method_is_rejected(self):
-        with self.assertRaises(ValidationError):
-            AskRequest(question="Revenue for 2024?", retrieval_method="unfiltered")
-
-    def test_business_decision_workflow_accepts_only_commerce_domains(self):
-        request = AskRequest(
-            question="How should we review inventory allocation?",
-            business_decision_domain="inventory_allocation",
-        )
-        self.assertEqual(request.business_decision_domain, "inventory_allocation")
-        promotion = AskRequest(
-            question="Compare tagged and untagged promotions", business_decision_domain="promotion_planning",
-        )
-        self.assertEqual(promotion.business_decision_domain, "promotion_planning")
-        with self.assertRaises(ValidationError):
-            AskRequest(question="Which market needs diligence?", business_decision_domain="unknown_domain")
-
-    def test_conditional_suggestion_mode_needs_no_user_question_but_requires_a_domain(self):
-        request = AskRequest(decision_suggestions=True, business_decision_domain="inventory_allocation")
-        self.assertEqual(request.question, "")
-        self.assertTrue(request.decision_suggestions)
-        with self.assertRaises(ValidationError):
-            AskRequest()
-        with self.assertRaises(ValidationError):
-            AskRequest(decision_suggestions=True)
 
     def test_access_matrix_matches_actual_role_capabilities(self):
         matrix = access_matrix({"sub": "admin"})

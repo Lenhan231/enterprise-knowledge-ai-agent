@@ -7,14 +7,7 @@ from unittest.mock import patch
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from core.rag.rag_service import (
-    INSUFFICIENT_ANSWER,
-    RAGService,
-    _RESPONSE_CACHE,
-    _RESPONSE_CACHE_LOCK,
-    _cache_response,
-    _get_cached_response,
-)
+from core.rag.rag_service import INSUFFICIENT_ANSWER, RAGService
 from core.retrieval.retrieval import RankedChunk, RetrievalResponse, SourceLocation, make_chunk_id
 
 
@@ -73,9 +66,6 @@ def context(document_id="DOC-1"):
 
 
 class RAGServiceTest(unittest.TestCase):
-    def setUp(self):
-        with _RESPONSE_CACHE_LOCK:
-            _RESPONSE_CACHE.clear()
 
     def test_invoice_request_does_not_misstate_an_annual_report_as_an_invoice(self):
         report = context("VNM-AR-2020-VI")
@@ -249,12 +239,6 @@ class RAGServiceTest(unittest.TestCase):
 
         self.assertEqual(len(second_llm.calls), 1)
 
-    def test_response_cache_expires_after_ttl(self):
-        with patch("core.rag.rag_service.monotonic", side_effect=[10.0, 71.0]):
-            _cache_response("expiry-test", "Answer [S1].", ["S1"])
-            result = _get_cached_response("expiry-test")
-
-        self.assertIsNone(result)
 
     def test_response_cache_misses_when_retrieved_evidence_changes(self):
         question = "cache must include current evidence"

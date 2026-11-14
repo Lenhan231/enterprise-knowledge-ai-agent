@@ -1,5 +1,9 @@
 import unittest
+import importlib.util
 from unittest.mock import patch
+
+if importlib.util.find_spec("ragas") is None:
+    raise unittest.SkipTest("Ragas is an optional evaluation dependency")
 
 from evaluation.ragas_judge import DEFAULT_CODEX_MODEL, build_ragas_metrics
 

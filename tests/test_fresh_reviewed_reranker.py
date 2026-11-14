@@ -10,10 +10,12 @@ import unittest
 import numpy as np
 
 ROOT=Path(__file__).resolve().parents[1]
+SAVED_RUN=ROOT/'artifacts/evaluation/fresh-reviewed-v1'
 sys.path.insert(0,str(ROOT/'scripts/retrieval'))
 import evaluate_fresh_reviewed_reranker as runner
 
 class FreshReplayTest(unittest.TestCase):
+    @unittest.skipUnless(SAVED_RUN.is_dir(), "Saved fresh-reviewed evaluation run is not present")
     def test_replay_and_reject_changed_scores(self):
         with contextlib.redirect_stdout(io.StringIO()):
             data=runner.load_inputs()

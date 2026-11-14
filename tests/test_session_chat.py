@@ -1,8 +1,12 @@
 import os
+import importlib.util
 from pathlib import Path
 import sys
 import unittest
 from unittest.mock import Mock, patch
+
+if importlib.util.find_spec("streamlit") is None:
+    raise unittest.SkipTest("Streamlit is an optional UI dependency")
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
 from streamlit.testing.v1 import AppTest

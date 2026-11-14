@@ -351,7 +351,8 @@ class DoclingProcessor:
                 ) from error
             register_vietocr()
             ocr_options = VietOcrOptions(
-                mode=OcrMode.FULL_PAGE if source_format == "pdf" and do_ocr else OcrMode.DEFAULT
+                mode=OcrMode.FULL_PAGE if source_format == "pdf" and do_ocr else OcrMode.DEFAULT,
+                recognition_batch_size=int(self.config.get("docling_vietocr_batch_size", 16)),
             )
         elif ocr_engine == "tesseract":
             ocr_options = TesseractCliOcrOptions(

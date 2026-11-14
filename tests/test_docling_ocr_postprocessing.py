@@ -71,6 +71,7 @@ class VietOcrPostprocessingTest(unittest.TestCase):
         from document_processing.docling_adapter.scanned import vietocr as vietocr_module
 
         model = VietOcrModel.__new__(VietOcrModel)
+        model.recognition_batch_size = vietocr_module._VIETOCR_BATCH_SIZE
         batch_sizes = []
 
         def predict_batch(images):
@@ -88,6 +89,18 @@ class VietOcrPostprocessingTest(unittest.TestCase):
         self.assertEqual([route for _text, route in results], ["default"] * len(lines))
         self.assertEqual(results[0][0], "text-1-0")
         self.assertEqual(results[-1][0], "text-2-1")
+
+    def test_vietocr_recognition_batch_size_is_configurable(self):
+        model = VietOcrModel.__new__(VietOcrModel)
+        model.recognition_batch_size = 4
+        batch_sizes = []
+        model.recognizer = SimpleNamespace(predict_batch=lambda images: (
+            batch_sizes.append(len(images)) or ["ok"] * len(images)
+        ))
+        lines = [np.zeros((4, 8, 3), dtype=np.uint8) for _ in range(10)]
+
+        self.assertEqual(len(model._recognize_lines(lines)), 10)
+        self.assertEqual(batch_sizes, [4, 4, 2])
 
     def test_vietocr_batch_recognition_falls_back_to_single_predictions(self):
         model = VietOcrModel.__new__(VietOcrModel)

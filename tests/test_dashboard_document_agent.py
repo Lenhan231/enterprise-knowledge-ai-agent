@@ -1,0 +1,79 @@
+import json
+import unittest
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, Mock
+
+from core.dashboards.agent import DashboardDocumentAgent
+from core.models.agents import AgentRequest, VerifiedIdentity
+
+
+class DashboardAgentTest(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        self.plan = {'title': 'Sales', 'queries': [{'id': 'sales', 'question': 'Monthly revenue July through September 2026 from commerce.sales'}],
+                     'tiles': [{'id': 'trend', 'title': 'Revenue trend', 'kind': 'line', 'query_id': 'sales'}]}
+        self.provider = SimpleNamespace(generate=Mock(return_value=json.dumps(self.plan)))
+        self.sql = SimpleNamespace(inventory_only=False,
+            repository=SimpleNamespace(get_schema=AsyncMock(return_value={'tables': {'commerce.sales': {'date', 'revenue'}}})),
+            _provider=lambda: self.provider,
+            run_payload=AsyncMock(return_value={'ok': True, 'query_status': 'executed', 'rows': [{'month': '2026-07-01', 'revenue': 10}], 'sql': 'select 10'}))
+        self.agent = DashboardDocumentAgent(self.sql)
+        self.request = AgentRequest(question='Dashboard', identity=VerifiedIdentity(subject='alice', permissions={'analytics:read'}))
+
+    async def test_uses_verified_sql_for_each_dataset(self):
+        doc = await self.agent.build(self.request, 'Revenue dashboard July through September 2026')
+        self.assertEqual('complete', doc.status)
+        self.assertEqual(1, len(doc.results))
+        child = self.sql.run_payload.call_args.args[0]
+        self.assertEqual(self.request.identity, child.identity)
+        self.assertEqual({}, child.metadata)
+        self.assertEqual(self.plan['queries'][0]['question'], child.question)
+
+    async def test_failure_remains_explicit(self):
+        self.sql.run_payload.return_value = {'ok': False, 'query_status': 'clarification_required', 'answer': 'Specify date'}
+        doc = await self.agent.build(self.request, 'Sales dashboard')
+        self.assertEqual('failed', doc.status)
+        self.assertEqual('clarification_required', doc.results[0].status)
+        self.assertEqual('Specify date', doc.results[0].message)
+
+    async def test_sql_aliases_bind_without_changing_metric(self):
+        self.plan['tiles'][0]['measures'] = ['total_revenue']
+        self.provider.generate.return_value = json.dumps(self.plan)
+        self.sql.run_payload.return_value['rows'] = [{'month': '2026-07-01', 'revenue': 10}]
+        doc = await self.agent.build(self.request, 'Monthly revenue')
+        self.assertEqual(['revenue'], doc.tiles[0].measures)
+        doc.tiles[0].measures = ['profit']
+        self.agent.bind_fields(doc)
+        self.assertEqual(['profit'], doc.tiles[0].measures)
+
+    async def test_invalid_plan_is_repaired_once(self):
+        self.provider.generate.side_effect = ['{}', json.dumps(self.plan)]
+        doc = await self.agent.build(self.request, 'Sales dashboard')
+        self.assertEqual('Sales', doc.title)
+        self.assertEqual(2, self.provider.generate.call_count)
+
+    async def test_denial_before_schema_or_model(self):
+        self.request.identity = None
+        with self.assertRaises(PermissionError):
+            await self.agent.build(self.request, 'Sales dashboard')
+        self.sql.repository.get_schema.assert_not_called()
+        self.provider.generate.assert_not_called()
+
+    async def test_scope_edit_rewrites_questions_before_sql(self):
+        doc = await self.agent.build(self.request, 'Sales dashboard July through September 2026')
+        doc.scope = 'October through December 2026'
+        self.provider.generate.return_value = json.dumps({'sales': 'Monthly revenue October through December 2026 from commerce.sales'})
+        refreshed = await self.agent.refresh(self.request, doc, rescope=True)
+        self.assertNotIn('July', refreshed.queries[0].question)
+        self.assertIn('October', self.sql.run_payload.call_args.args[0].question)
+
+    async def test_invalid_scope_edit_never_runs_sql(self):
+        doc = await self.agent.build(self.request, 'Sales dashboard')
+        self.sql.run_payload.reset_mock()
+        self.provider.generate.return_value = '{"other":"Invent a metric"}'
+        with self.assertRaises(ValueError):
+            await self.agent.refresh(self.request, doc, rescope=True)
+        self.sql.run_payload.assert_not_called()
+
+
+if __name__ == '__main__':
+    unittest.main()

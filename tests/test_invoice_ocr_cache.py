@@ -42,7 +42,7 @@ class InvoiceDoclingCacheTest(unittest.TestCase):
         self.assertFalse(cache.put(key, {"elements": [{"text": "x" * 100}]}))
         self.assertIsNone(cache.get(key))
 
-    def test_retry_after_gemini_timeout_reuses_docling_but_refreshes_invoice_metadata(self):
+    def test_retry_after_gemini_timeout_reuses_docling_when_provider_changes(self):
         invoice_docling_cache.clear()
         self.addCleanup(invoice_docling_cache.clear)
         docling_result = {
@@ -59,7 +59,14 @@ class InvoiceDoclingCacheTest(unittest.TestCase):
             "fields": {"invoice_no": "A-1"},
             "metrics": {},
         }
-        processor = DocumentProcessor({"intent": "invoice", "invoice_provider": "gemini"})
+        gemini_processor = DocumentProcessor({
+            "intent": "invoice", "invoice_provider": "gemini",
+            "gemini_invoice_model": "first-model", "docling_ocr_engine": "vietocr",
+        })
+        groq_retry_processor = DocumentProcessor({
+            "intent": "invoice", "invoice_provider": "groq",
+            "groq_invoice_model": "retry-model", "docling_ocr_engine": "vietocr",
+        })
         docling_process = Mock(return_value=docling_result)
         docling_module = ModuleType("document_processing.docling_adapter.processor")
         docling_module.DoclingProcessor = Mock(
@@ -78,9 +85,11 @@ class InvoiceDoclingCacheTest(unittest.TestCase):
             }),
         ):
             with self.assertRaises(TimeoutError):
-                processor.process("invoice.pdf", b"same invoice bytes", {"invoice_id": "retry-1"})
+                gemini_processor.process(
+                    "invoice.pdf", b"same invoice bytes", {"invoice_id": "retry-1"}
+                )
 
-            result = processor.process(
+            result = groq_retry_processor.process(
                 "invoice.pdf", b"same invoice bytes", {"invoice_id": "retry-2"}
             )
 

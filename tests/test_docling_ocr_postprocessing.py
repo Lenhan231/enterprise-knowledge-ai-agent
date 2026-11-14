@@ -2,7 +2,7 @@ import sys
 import unittest
 from unittest.mock import patch
 from pathlib import Path
-from types import SimpleNamespace
+from types import ModuleType, SimpleNamespace
 
 import numpy as np
 
@@ -18,10 +18,44 @@ from document_processing.docling_adapter.scanned.postprocessing import (
     clean_ocr_elements,
     recover_empty_cell_dashes,
 )
+from document_processing.docling_adapter.scanned.line_detection import create_line_detector
 from document_processing.docling_adapter.scanned.vietocr import VietOcrModel
 
 
 class VietOcrPostprocessingTest(unittest.TestCase):
+    def test_rapidocr_cpu_detector_uses_docling_thread_budget(self):
+        torch = ModuleType("torch")
+        torch.cuda = SimpleNamespace(is_available=lambda: False)
+        rapidocr = ModuleType("rapidocr")
+        rapidocr.EngineType = SimpleNamespace(TORCH="torch")
+        rapidocr.RapidOCR = unittest.mock.Mock(return_value=object())
+
+        with patch.dict(sys.modules, {"torch": torch, "rapidocr": rapidocr}):
+            detector = create_line_detector(cpu_threads=2)
+
+        self.assertIs(detector, rapidocr.RapidOCR.return_value)
+        rapidocr.RapidOCR.assert_called_once_with(params={
+            "Det.limit_type": "max",
+            "EngineConfig.onnxruntime.intra_op_num_threads": 2,
+        })
+
+    def test_rapidocr_cuda_detector_does_not_set_cpu_thread_limit(self):
+        torch = ModuleType("torch")
+        torch.cuda = SimpleNamespace(is_available=lambda: True)
+        rapidocr = ModuleType("rapidocr")
+        rapidocr.EngineType = SimpleNamespace(TORCH="torch")
+        rapidocr.RapidOCR = unittest.mock.Mock(return_value=object())
+
+        with patch.dict(sys.modules, {"torch": torch, "rapidocr": rapidocr}):
+            detector = create_line_detector(cpu_threads=2)
+
+        self.assertIs(detector, rapidocr.RapidOCR.return_value)
+        rapidocr.RapidOCR.assert_called_once_with(params={
+            "Det.engine_type": "torch",
+            "EngineConfig.torch.use_cuda": True,
+            "EngineConfig.torch.cuda_ep_cfg.device_id": 0,
+        })
+
     def test_preload_initializes_cached_page_orientation_model(self):
         with patch("document_processing.docling_adapter.orientation._paddle_orientation_model") as page_model:
             preload_paddle_page_orientation_model()

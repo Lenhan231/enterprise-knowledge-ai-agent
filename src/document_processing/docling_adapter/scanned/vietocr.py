@@ -115,7 +115,7 @@ class VietOcrModel(BaseOcrModel):
             model_revision,
             config["device"],
         )
-        self.detector = create_line_detector()
+        self.detector = create_line_detector(cpu_threads=accelerator_options.num_threads)
         self.orientation_diagnostics: list[dict] = []
         self.routing_diagnostics: list[dict] = []
         self._orientation_counts: dict[int, int] = {}

@@ -1413,8 +1413,11 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
   const tokenUsage = usageStages.length
     ? `<details class="token-usage"><summary>Generation tokens · ${Number(usage.total?.total_tokens || 0).toLocaleString()} total</summary><ul>${usageStages.map(([label, value]) => `<li>${escapeHtml(label)}: ${Number(value.input_tokens || 0).toLocaleString()} in · ${Number(value.output_tokens || 0).toLocaleString()} out · ${Number(value.total_tokens).toLocaleString()} total</li>`).join("")}</ul><small>SQL and answer model calls only; embeddings and routing are not included.</small></details>`
     : "";
-  const limitations = Array.isArray(data.limitations) && data.limitations.length
-    ? `<p class="analysis-caveat answer-provenance-note"><strong>Limits:</strong> ${data.limitations.map(escapeHtml).join(" · ")}</p>`
+  // Auto-mode answers already end with "Limitations: ..." (core/agents/response.py); only show what the text lacks.
+  const extraLimitations = Array.isArray(data.limitations)
+    ? data.limitations.filter((item) => !String(data.answer || "").includes(item)) : [];
+  const limitations = extraLimitations.length
+    ? `<p class="analysis-caveat answer-provenance-note"><strong>Limits:</strong> ${extraLimitations.map(escapeHtml).join(" ")}</p>`
     : "";
   const fallbackNotice = usedEvidenceFallback && !data.limitations?.length
     ? '<p class="analysis-caveat answer-provenance-note" role="note"><strong>Evidence fallback.</strong> This is not successful model synthesis.</p>'
@@ -3272,11 +3275,8 @@ function setupThemeToggle() {
         document.documentElement.removeAttribute("data-theme");
       }
     };
-    // The new theme spreads out in a circle from the toggle; plain swap without View Transitions or with reduced motion.
+    // Paint/eraser transition (redesign.css); plain swap without View Transitions or with reduced motion.
     if (document.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      const box = button.getBoundingClientRect();
-      document.documentElement.style.setProperty("--reveal-x", `${box.left + box.width / 2}px`);
-      document.documentElement.style.setProperty("--reveal-y", `${box.top + box.height / 2}px`);
       document.startViewTransition(apply);
     } else apply();
     try {

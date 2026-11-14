@@ -137,6 +137,25 @@ class SQLValidationTest(unittest.TestCase):
 
 
 class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def test_compiles_explicit_month_revenue_without_llm_sql(self):
+        class LLM:
+            def generate(self, prompt):
+                raise AssertionError("An explicit month revenue total should use the checked SQL plan")
+
+        repository = AsyncMock()
+        repository.execute_approved_query.return_value = [{
+            "month": date(2026, 2, 1), "revenue": 123.45,
+        }]
+
+        result = await SQLAnalyticsAgent(repository, llm=LLM()).run(
+            AgentRequest(question="doanh thu tháng 2 năm 2026", identity=ANALYST))
+
+        self.assertTrue(result.metadata["ok"], result.answer)
+        self.assertEqual(result.data["rows"][0]["month"], date(2026, 2, 1))
+        sql, *parameters = repository.execute_approved_query.await_args.args
+        self.assertIn("AS month", sql)
+        self.assertEqual(parameters, [date(2026, 2, 1), date(2026, 3, 1)])
+
     async def test_compiles_current_vs_previous_month_revenue_without_llm_sql(self):
         class LLM:
             def generate(self, prompt):

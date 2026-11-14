@@ -37,16 +37,25 @@ async function run(plan, path, init) {
   r = await run([Object.assign(new Error('t'), {name: 'TimeoutError'})], '/api/auth/me', {});
   assert.ok(r.error && r.calls.length === 1);
   // backend choice: primary kept unless the fallback is clearly faster; nothing changes if both fail
-  const timed = async (primaryOk, fallbackOk) => {
+  // backend choice over three: the main one is kept unless another is clearly faster; a down main one is left
+  const timed = async (ok, delays = [20, 25, 30]) => {
     const ctx = (await run([], '/x', {})).context;
-    // primary answers in 20 ms, fallback in 25 ms: close enough that the primary must be kept
-    ctx.fetch = (url) => new Promise((done) => setTimeout(() => done(reply(url.startsWith('/api-fallback')
-      ? (fallbackOk ? 200 : 503) : (primaryOk ? 200 : 503), 'application/json')), url.startsWith('/api-fallback') ? 25 : 20));
+    const index = (url) => url.startsWith('/api-fallback-2') ? 2 : url.startsWith('/api-fallback') ? 1 : 0;
+    ctx.fetch = (url) => new Promise((done) => setTimeout(() => done(reply(ok[index(url)] ? 200 : 503, 'application/json')), delays[index(url)]));
     await ctx.chooseBackend(); return ctx.base();
   };
-  assert.strictEqual(await timed(false, true), '/api-fallback');
-  assert.strictEqual(await timed(true, true), '/api');
-  assert.strictEqual(await timed(false, false), '/api');
+  assert.strictEqual(await timed([false, true, true]), '/api-fallback');
+  assert.strictEqual(await timed([false, false, true]), '/api-fallback-2');
+  assert.strictEqual(await timed([true, true, true]), '/api');
+  assert.strictEqual(await timed([true, true, true], [100, 20, 90]), '/api-fallback');  // >40% faster than the main one
+  assert.strictEqual(await timed([false, false, false]), '/api');
+  // with the first two unreachable, a request reaches the third and it is kept for the next ones
+  r = await run([reply(502, 'text/html'), reply(404, 'text/html'), reply(200, 'application/json')], '/api/agents/chat/stream', {method: 'POST'});
+  assert.deepStrictEqual(r.calls, ['/api/agents/chat/stream', '/api-fallback/agents/chat/stream', '/api-fallback-2/agents/chat/stream']);
+  assert.strictEqual(r.base, '/api-fallback-2');
+  // all three unreachable: the last answer is returned, not an exception
+  r = await run([reply(502, 'text/html'), reply(502, 'text/html'), reply(502, 'text/html')], '/api/dashboard', {});
+  assert.strictEqual(r.result.status, 502);
   // source files load through backendFetch (fallback + ngrok header) and keep the PDF page anchor
   const loader = source.slice(source.indexOf('async function loadApiFile'), source.indexOf('document.addEventListener("click", async'));
   const seen = [];

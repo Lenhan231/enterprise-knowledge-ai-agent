@@ -6,9 +6,13 @@ Every push to `main` deploys both backends automatically (`.github/workflows/dep
 push to main ──▶ GitHub Actions "Deploy"
                    ├─ job 1  VPS (fallback)   joins the tailnet as tag:ci, ssh to the VPS's tailnet address with a key restricted to the deploy script
                    │          └─ scripts/deploy/deploy.sh  → git fast-forward → docker compose up -d --build → /health 200, /api/auth/me 401
-                   └─ job 2  Home PC (main)   only if job 1 succeeded; joins the tailnet as tag:ci, Tailscale SSH
+                   ├─ job 2  Laptop home-pc (main)    only if job 1 succeeded; joins the tailnet as tag:ci, Tailscale SSH
+                   │          └─ same script
+                   └─ job 3  Desktop (2nd fallback)   after job 2 whatever its result; allowed to fail (often switched off)
                               └─ same script
-Vercel deploys the web page from main on its own; /api goes to the PC, /api-fallback to the VPS.
+Vercel deploys the web page from main on its own; /api goes to the laptop (NGROK_URL), /api-fallback to the VPS
+(FALLBACK_URL), /api-fallback-2 to the desktop (FALLBACK_2_URL, Tailscale Funnel). The page uses the fastest healthy one
+and moves a request that cannot reach its backend to the next one.
 ```
 
 - **One backend is always up.** The jobs run one after the other, never in parallel, and the PC is only touched after the VPS is healthy again. `concurrency` stops two deploys overlapping.

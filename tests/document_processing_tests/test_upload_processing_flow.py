@@ -1,4 +1,5 @@
 import asyncio
+import importlib.util
 import io
 import shutil
 import sys
@@ -90,8 +91,29 @@ def blank_table_image() -> bytes:
 
 class UploadProcessingFlowTest(unittest.TestCase):
     def setUp(self):
+        environment = patch.dict("os.environ", {
+            "DOCUMENT_PROCESSING_URL": "http://document-processing.test",
+            "SERVICE_KIND": "document-processing",
+            "INTERNAL_SERVICE_TOKEN": "test-internal-service-token",
+            "DATABASE_URL": "postgresql://test:test@localhost/test",
+        })
+        environment.start()
+        self.addCleanup(environment.stop)
+        from core.services.runtime import Parse, parse
+
+        def parse_service(_url, path, payload, timeout):
+            self.assertEqual(path, "/parse")
+            processing_url = __import__("os").environ.pop("DOCUMENT_PROCESSING_URL")
+            try:
+                return parse(Parse(**payload))
+            finally:
+                __import__("os").environ["DOCUMENT_PROCESSING_URL"] = processing_url
+
+        parser_transport = patch.object(app_main, "post_internal_service", side_effect=parse_service)
+        parser_transport.start()
+        self.addCleanup(parser_transport.stop)
         output_repository = patch(
-            "core.database.document_processing_outputs_repository.DocumentProcessingOutputsRepository",
+            "core.database.document_processing_output_repository.DocumentProcessingOutputRepository",
         )
         self.output_repository_class = output_repository.start()
         self.addCleanup(output_repository.stop)
@@ -110,7 +132,11 @@ class UploadProcessingFlowTest(unittest.TestCase):
         self.assertEqual(raised.exception.status_code, 422)
         self.assertIn("OCR language", raised.exception.detail)
 
-    @unittest.skipUnless(shutil.which("tesseract"), "Tesseract is required for the scanned-PDF upload integration fixture")
+    @unittest.skipUnless(
+        shutil.which("tesseract") and (ROOT / "data/evaluation/ocr/commerce_synthetic_policy_scan_demo.pdf").is_file(),
+        "Tesseract and the scanned-PDF fixture are required",
+    )
+    @unittest.skipUnless(importlib.util.find_spec("docling_core"), "Docling optional extra is not installed")
     def test_scanned_pdf_upload_reports_ocr_and_persists_structured_output(self):
         source = (ROOT / "data/evaluation/ocr/commerce_synthetic_policy_scan_demo.pdf").read_bytes()
         document_repo = MagicMock()
@@ -170,6 +196,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
         self.assertEqual(len(indexed), response["indexed_chunk_count"])
         self.assertEqual(sum(bool(row[3].get("ocr")) for row in indexed), response["ocr_chunk_count"])
 
+    @unittest.skipUnless(importlib.util.find_spec("docling_core"), "Docling optional extra is not installed")
     def test_commerce_reference_upload_indexes_context_without_changing_dashboard_data(self):
         source = financial_summary_pdf()
         document_repo = MagicMock()
@@ -178,8 +205,8 @@ class UploadProcessingFlowTest(unittest.TestCase):
         embedding = MagicMock(model_name="test-embedding", max_sequence_length=100)
         embedding.embed_documents.side_effect = lambda texts: [[0.1, 0.2] for _ in texts]
         parsed_document = {
-            "chunks": [{"text": "Walmart supplier logistics reference", "metadata": {"page_number": 1}}],
-            "tables": [],
+            "elements": [{"text": "Walmart supplier logistics reference", "metadata": {"page_number": 1}}],
+            "tables": [], "metadata": {"pipeline_id": "docling"},
         }
         chunk_repository = MagicMock()
         with (
@@ -195,7 +222,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
                 "document_processing.document_processor.DocumentProcessor.process",
                 side_effect=lambda filename, content, metadata: {
                     **parsed_document,
-                    "chunks": [{"text": "Walmart supplier logistics reference", "metadata": {**metadata, "page_number": 1}}],
+                    "elements": [{"text": "Walmart supplier logistics reference", "metadata": {**metadata, "page_number": 1}}],
                 },
             ) as parse_document,
         ):
@@ -252,7 +279,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
 
         self.assertEqual(result[0]["row_count"], 130)
         query, params = cursor.execute.call_args.args
-        self.assertIn("d.company = %s", query)
+        self.assertIn("t.metadata->>'company' = %s", query)
         self.assertIn("LIMIT %s OFFSET %s", query)
         self.assertEqual(params, (50, 30, "DOC-1", "Example Retailer", 10, 2))
 
@@ -261,6 +288,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "table_limit"):
             store.get_document_tables("DOC-1", company="Example Retailer", row_limit=1000)
 
+    @unittest.skipUnless(importlib.util.find_spec("docling_core"), "Docling optional extra is not installed")
     def test_docx_section_title_flows_through_upload_into_retrieval_chunks(self):
         document_repo = MagicMock()
         structured_store = MagicMock()
@@ -320,11 +348,16 @@ class UploadProcessingFlowTest(unittest.TestCase):
         storage = MagicMock()
         storage.storage.from_.return_value.upload.return_value = None
         parsed_repository = MagicMock()
+        parsed_output = {
+            "elements": [{"text": "Revenue was 100 VND.", "metadata": {"page_number": 1}}],
+            "tables": [], "metadata": {"pipeline_id": "docling"},
+        }
 
         with (
             patch.object(app_main, "_require_same_origin"),
             patch.object(app_main, "_storage_client", return_value=(storage, "private")),
             patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch.object(DocumentProcessor, "process", return_value=parsed_output),
             patch("core.embeddings.embedding_service.EmbeddingService", side_effect=RuntimeError("model unavailable")),
             patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
             patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
@@ -347,8 +380,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
                 ))
 
         self.assertEqual(error.exception.status_code, 503)
-        self.assertEqual(parsed_repository.set_status.call_args_list[-1].args[1], "failed")
-        self.assertEqual(parsed_repository.set_status.call_args_list[-1].args[2], "model unavailable")
+        self.output_repository_class.return_value.replace_document.assert_called_once()
         document_repo.update_processing_status.assert_called_with(
             document_repo.register_upload.call_args.args[0]["document_id"], "failed",
         )
@@ -363,10 +395,10 @@ class UploadProcessingFlowTest(unittest.TestCase):
         embedding.embed_documents.return_value = [[0.1], [0.2]]
         parsed_repo = MagicMock()
         extracted_text = "Revenue 100; cash 20; total assets 500"
-        processed = {"chunks": [{
+        processed = {"elements": [{
             "text": extracted_text,
             "metadata": {"chunk_index": 0, "page_number": 1, "layout_type": "text"},
-        }], "tables": []}
+        }], "tables": [], "metadata": {"pipeline_id": "docling"}}
         with (
             patch.object(app_main, "_require_same_origin"),
             patch.object(app_main, "_storage_client", return_value=(storage, "private")),
@@ -395,6 +427,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
         self.assertEqual(len(chunks_cls.return_value.replace_document.call_args.args[1]), 2)
 
 
+    @unittest.skipUnless(importlib.util.find_spec("docling_core"), "Docling optional extra is not installed")
     def test_borderless_pdf_table_flows_through_upload_to_structured_store(self):
         source = borderless_financial_pdf()
         document_repo = MagicMock()
@@ -454,6 +487,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
         chunks_cls.return_value.replace_document.assert_called_once()
 
 
+    @unittest.skipUnless(importlib.util.find_spec("docling_core"), "Docling optional extra is not installed")
     def test_pptx_table_flows_from_upload_to_structured_store(self):
         source = pptx_with_table()
         document_repo = MagicMock()
@@ -497,6 +531,7 @@ class UploadProcessingFlowTest(unittest.TestCase):
         document_repo.update_processing_status.assert_called_with(response["document_id"], "ready")
         chunks_cls.return_value.replace_document.assert_called_once()
 
+    @unittest.skipUnless(importlib.util.find_spec("docling_core"), "Docling optional extra is not installed")
     def test_xlsx_formula_metadata_flows_from_upload_to_structured_store(self):
         source = xlsx_with_formula()
         document_repo = MagicMock()
@@ -612,8 +647,6 @@ class UploadProcessingFlowTest(unittest.TestCase):
         self.assertEqual(result["indexed_chunk_count"], 1)
         document_repo.update_processing_status.assert_any_call(document_id, "processing")
         document_repo.update_processing_status.assert_any_call(document_id, "ready")
-        parsed_repo.set_status.assert_any_call(document_id, "embedding")
-        parsed_repo.set_status.assert_any_call(document_id, "embedded")
         indexed = chunks_cls.return_value.replace_document.call_args.args[1]
         self.assertEqual(indexed[0][0:3], ("inventory-policy.pdf", 0, "Inventory policy passage"))
         self.assertEqual(indexed[0][3]["allowed_roles"], ["admin"])

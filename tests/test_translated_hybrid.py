@@ -139,7 +139,7 @@ class TranslatedHybridTest(unittest.IsolatedAsyncioTestCase):
             sql, params = call.args
             scope = next(s for s in scopes if s in [x for x in params if isinstance(x, list)])
             for clause in ["d.document_id = ANY(%s::text[])", "d.allowed_roles && %s::text[]",
-                           "d.company = %s::text", "c.metadata @> %s::jsonb", "coalesce(d.processing_status, 'ready') = 'ready'"]:
+                           "c.metadata->>'company' = %s::text", "c.metadata @> %s::jsonb", "d.processing_status = 'ready'"]:
                 self.assertIn(clause, sql)
                 self.assertLess(sql.index(clause), sql.index("LIMIT"))
             self.assertIn(scope, [x for x in params if isinstance(x, list)])

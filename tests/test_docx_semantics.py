@@ -26,9 +26,9 @@ class DocxSemanticsTest(unittest.TestCase):
               "metadata": {"section_title": "Old section"}}],
             "tables": [{"metadata": {"section_title": "Old section"}, "context": {}}]}
         apply_docx_semantics(result, content.getvalue())
-        for metadata in [result["elements"][-1]["metadata"], result["tables"][0]["metadata"]]:
-            self.assertEqual(metadata["section_title"], "CTL-4100")
-            self.assertEqual(metadata["section_path"], ["Specifications", "CTL-4100"])
+        self.assertEqual(result["elements"][1]["metadata"]["section_path"], ["Specifications", "CTL-4100"])
+        self.assertEqual(result["tables"][0]["table_name"], "CTL-4100")
+        self.assertEqual(result["tables"][0]["context"]["table_title"], "CTL-4100")
 
     def test_missing_default_style_preserves_paragraph_text(self):
         document = Document()

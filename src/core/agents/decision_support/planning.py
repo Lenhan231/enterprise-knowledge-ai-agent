@@ -38,7 +38,12 @@ async def plan_request(request, provider, *, history=(), previous=None, report_h
     if not history and previous is None and report_headings is None:
         from core.agents.intent_classifier import IntentClassifier
         intent = IntentClassifier.fallback(request.question)
-        if intent.intent == 'analytics' and intent.needs_sql and not intent.needs_knowledge:
+        unresolved_reference = bool(re.search(
+            r'\b(that|the other one|this one|those|them)\b|cái đó|cái còn lại|cái kia',
+            request.question, re.I,
+        ))
+        if (intent.intent == 'analytics' and intent.needs_sql and not intent.needs_knowledge
+                and not unresolved_reference):
             return AgentPlan(objective=request.question, fallback=True, tasks=[{
                 'id': 'fallback', 'agent': 'sql', 'question': request.question}])
     from core.analytics.text_to_sql import APPROVED_COLUMNS

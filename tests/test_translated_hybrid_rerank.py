@@ -1,5 +1,6 @@
 """Offline integration checks: no model weights, translation API, or database."""
 import unittest
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import test_translated_hybrid as existing
@@ -101,7 +102,8 @@ class RerankTest(unittest.IsolatedAsyncioTestCase):
         code = "from core.retrieval import reranker as r; print(r.MODEL_ID, r.REVISION, r.MAX_LENGTH)"
         def run(name):
             return subprocess.run([sys.executable, "-c", code], capture_output=True, text=True,
-                                  env={**__import__("os").environ, "RERANKER_MODEL": name})
+                                  env={**__import__("os").environ, "RERANKER_MODEL": name,
+                                       "PYTHONPATH": str(Path(__file__).resolve().parents[1] / "src")})
         self.assertEqual(run("bge").stdout.split(), ["BAAI/bge-reranker-v2-m3", REVISION, "1024"])
         self.assertEqual(run("mminilm").stdout.split()[0::2], ["cross-encoder/mmarco-mMiniLMv2-L12-H384-v1", "512"])
         self.assertIn("KeyError", run("typo").stderr)

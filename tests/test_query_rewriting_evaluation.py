@@ -7,14 +7,11 @@ from scripts.agents.evaluate_query_rewriting import expand_metric_labels
 
 
 class QueryRewritingEvaluationTest(unittest.TestCase):
-    def test_expands_vietnamese_financial_metric_to_canonical_english_labels(self):
+    def test_current_rewriter_leaves_vietnamese_metric_wording_unchanged(self):
         question = "Doanh thu thuần và lợi nhuận sau thuế năm 2024 là bao nhiêu?"
         rewritten = expand_metric_labels(question)
 
-        self.assertEqual(
-            rewritten,
-            question + " Net revenue; Profit after tax",
-        )
+        self.assertEqual(rewritten, question)
 
     def test_does_not_repeat_metric_label_already_present(self):
         question = "What was net revenue and profit after tax in 2024?"

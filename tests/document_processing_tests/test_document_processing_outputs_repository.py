@@ -33,9 +33,12 @@ class DocumentProcessingOutputsRepositoryTest(unittest.TestCase):
         self.assertIn("elements", query)
         self.assertIn("structured_tables", query)
         self.assertEqual(params[0:2], ("DOC-1", "docling"))
-        self.assertEqual(params[2].obj, parsed["elements"])
-        self.assertEqual(params[3].obj, parsed["tables"])
-        self.assertEqual(params[4].obj, parsed["metadata"])
+        self.assertEqual(params[2].obj, [{"text": "Revenue", "metadata": {
+            "page_number": 1, "element_type": "text", "layout_type": "text",
+        }}])
+        self.assertEqual(params[3].obj, [])
+        self.assertEqual(params[4].obj, parsed["tables"])
+        self.assertEqual(params[5].obj, parsed["metadata"])
 
     def test_get_document_output_reconstructs_chunker_input(self):
         self.cursor.fetchone.return_value = {

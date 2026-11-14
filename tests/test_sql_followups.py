@@ -270,3 +270,14 @@ class OriginalQuestionContextTest(unittest.IsolatedAsyncioTestCase):
             _scalar_sql_finding(item, 'doanh thu tháng 3'),
             'Doanh thu tháng 3 năm 2026: 2,248,522.83 [S1].',
         )
+
+    def test_scalar_fallback_uses_month_returned_by_query(self):
+        item = {
+            'agent': 'sql',
+            'data': {'rows': [{'month': '2026-03-01T00:00:00Z', 'revenue': 2248522.83}]},
+            'evidence': [{'citation_id': 'S1'}],
+        }
+        self.assertEqual(
+            _scalar_sql_finding(item, 'doanh thu của tháng nào cao nhất để đưa ra chiến lược'),
+            'Doanh thu tháng 3 năm 2026: 2,248,522.83 [S1].',
+        )

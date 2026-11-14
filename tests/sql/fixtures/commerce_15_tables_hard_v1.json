@@ -1,0 +1,1529 @@
+{
+  "format_version": "1.0",
+  "suite": "commerce_15_tables_hard_v1",
+  "source": {
+    "provider": "Supabase",
+    "project": "FA26AI69",
+    "project_id": "ciiztxhbxtkxferpmyet",
+    "schema": "commerce",
+    "table_count": 15,
+    "snapshot_hash": "5fad21389b02e1b77fe2381fc2574820"
+  },
+  "cases": [
+    {
+      "id": "E01",
+      "question": "Trong 90 ngày kết thúc tại MAX(orders.order_date), tìm 5 vùng (region) có lợi nhuận gộp sau hoàn trả cao nhất. Tính doanh thu từ từng order_item sau discount_amount, trừ refund_amount; COGS theo số lượng thực giữ lại sau trả hàng. Xuất thêm số đơn, số lượng bán/trả và tỷ lệ đối soát tổng payments với giá trị order_items; không được nhân dòng khi có nhiều items, returns hoặc payments.",
+      "difficulty": 5,
+      "expected_tables": [
+        "commerce.orders",
+        "commerce.order_items",
+        "commerce.products",
+        "commerce.returns",
+        "commerce.geography",
+        "commerce.payments"
+      ],
+      "expected_behavior": "answer_with_sql",
+      "gold_sql": "\nWITH bounds AS (SELECT MAX(order_date) AS end_date FROM commerce.orders),\nline AS (\n SELECT oi.order_id,oi.product_id,SUM(oi.quantity) AS units_sold,\n        SUM(oi.quantity*oi.unit_price-oi.discount_amount) AS item_sales,\n        MAX(p.cogs) AS unit_cogs\n FROM commerce.order_items oi JOIN commerce.products p USING(product_id)\n GROUP BY oi.order_id,oi.product_id\n),\nret AS (SELECT order_id,product_id,SUM(return_quantity) AS returned_units,SUM(refund_amount) AS refunds\n FROM commerce.returns GROUP BY order_id,product_id),\norder_fin AS (\n SELECT l.order_id,SUM(l.units_sold) sold_units,SUM(COALESCE(r.returned_units,0)) returned_units,\n        SUM(l.item_sales) item_sales,SUM(COALESCE(r.refunds,0)) refunds,\n        SUM(l.units_sold*l.unit_cogs) item_cogs,\n        SUM(COALESCE(r.returned_units,0)*l.unit_cogs) returned_cogs\n FROM line l LEFT JOIN ret r USING(order_id,product_id) GROUP BY l.order_id\n),\nregional AS (\n SELECT COALESCE(g.region,'UNKNOWN') region,COUNT(*) orders_count,\n        SUM(f.sold_units) units_sold,SUM(f.returned_units) units_returned,\n        SUM(f.item_sales-f.refunds) net_revenue,\n        SUM(f.item_cogs-f.returned_cogs) net_cogs,\n        SUM(f.item_sales-f.refunds-f.item_cogs+f.returned_cogs) net_gross_profit,\n        SUM(COALESCE(pay.payment_value,0)) payments_total,\n        SUM(f.item_sales) items_total\n FROM commerce.orders o JOIN order_fin f USING(order_id)\n CROSS JOIN bounds b LEFT JOIN commerce.geography g ON g.zip=o.zip\n LEFT JOIN commerce.payments pay USING(order_id)\n WHERE o.order_date BETWEEN b.end_date-89 AND b.end_date\n GROUP BY COALESCE(g.region,'UNKNOWN')\n)\nSELECT ROW_NUMBER() OVER (ORDER BY net_gross_profit DESC,region) rank,region,orders_count,units_sold,units_returned,\n       ROUND(net_revenue,2) net_revenue,ROUND(net_cogs,2) net_cogs,\n       ROUND(net_gross_profit,2) net_gross_profit,\n       ROUND(100*net_gross_profit/NULLIF(net_revenue,0),2) gross_margin_pct,\n       ROUND(payments_total/NULLIF(items_total,0),4) payments_to_line_sales_ratio\nFROM regional ORDER BY net_gross_profit DESC,region LIMIT 5",
+      "expected_result": [
+        {
+          "rank": 1,
+          "region": "East",
+          "net_cogs": 4969629.96,
+          "units_sold": 1404,
+          "net_revenue": 5748850.69,
+          "orders_count": 257,
+          "units_returned": 22,
+          "gross_margin_pct": 13.55,
+          "net_gross_profit": 779220.73,
+          "payments_to_line_sales_ratio": 1.0804
+        }
+      ],
+      "expected_row_count": 1,
+      "notes": "Items aggregated by order/product before returns; 90 inclusive days anchored at max order_date; gross profit net of refunds and returned COGS. Payment ratio is a diagnostic, not accounting equality."
+    },
+    {
+      "id": "E02",
+      "question": "Tìm tối đa 30 dòng order_items có dấu hiệu áp mã khuyến mãi không hợp lệ: promo_id/promo_id_2 ngoài khoảng start_date–end_date của promotion, không phù hợp category, dưới min_order_value, hoặc chồng hai mã mà một mã không được stackable. Với mỗi dòng, trả về lý do vi phạm và tổng giá trị đơn trước giảm giá; nếu không có mã kép phải trả ra 0 trường hợp chứ không bịa.",
+      "difficulty": 5,
+      "expected_tables": [
+        "commerce.promotions",
+        "commerce.order_items",
+        "commerce.orders",
+        "commerce.products"
+      ],
+      "expected_behavior": "answer_with_sql",
+      "gold_sql": "\nWITH order_pre AS (\n SELECT order_id,SUM(quantity*unit_price) order_before_discount FROM commerce.order_items GROUP BY order_id\n),\ndetail AS (\n SELECT oi.order_item_id,oi.order_id,oi.product_id,o.order_date,p.category,\n        oi.promo_id,oi.promo_id_2,op.order_before_discount,\n        concat_ws('; ',\n          CASE WHEN oi.promo_id IS NOT NULL AND (pr1.promo_id IS NULL OR o.order_date NOT BETWEEN pr1.start_date AND pr1.end_date)\n               THEN 'promo1_out_of_window' END,\n          CASE WHEN oi.promo_id_2 IS NOT NULL AND (pr2.promo_id IS NULL OR o.order_date NOT BETWEEN pr2.start_date AND pr2.end_date)\n               THEN 'promo2_out_of_window' END,\n          CASE WHEN pr1.applicable_category IS NOT NULL AND pr1.applicable_category<>p.category THEN 'promo1_wrong_category' END,\n          CASE WHEN pr2.applicable_category IS NOT NULL AND pr2.applicable_category<>p.category THEN 'promo2_wrong_category' END,\n          CASE WHEN pr1.min_order_value IS NOT NULL AND op.order_before_discount<pr1.min_order_value THEN 'promo1_below_min_order' END,\n          CASE WHEN pr2.min_order_value IS NOT NULL AND op.order_before_discount<pr2.min_order_value THEN 'promo2_below_min_order' END,\n          CASE WHEN oi.promo_id IS NOT NULL AND oi.promo_id_2 IS NOT NULL\n                    AND (NOT pr1.stackable_flag OR NOT pr2.stackable_flag)\n               THEN 'nonstackable_promo_pair' END\n        ) as violation_reasons\n FROM commerce.order_items oi JOIN commerce.orders o USING(order_id)\n JOIN commerce.products p USING(product_id) JOIN order_pre op USING(order_id)\n LEFT JOIN commerce.promotions pr1 ON pr1.promo_id=oi.promo_id\n LEFT JOIN commerce.promotions pr2 ON pr2.promo_id=oi.promo_id_2\n)\nSELECT order_item_id,order_id,product_id,order_date,promo_id,promo_id_2,\n       ROUND(order_before_discount,2) order_before_discount,violation_reasons\nFROM detail WHERE violation_reasons<>'' ORDER BY order_item_id LIMIT 30",
+      "expected_result": [],
+      "expected_row_count": 0,
+      "notes": "Order total before discounts used for min-order thresholds. No double promotions observed in the source; zero violations is an admissible result."
+    },
+    {
+      "id": "E03",
+      "question": "Theo tháng khách hàng mua hàng lần đầu và acquisition_channel, tính tỷ lệ khách quay lại mua đơn thứ hai trong vòng 30 ngày kể từ đơn đầu (không tính hai dòng sản phẩm của cùng đơn là hai lần mua). Chỉ hiện cohort có ít nhất 5 khách; kèm tỷ lệ theo region nơi cư trú.",
+      "difficulty": 5,
+      "expected_tables": [
+        "commerce.customers",
+        "commerce.orders",
+        "commerce.geography"
+      ],
+      "expected_behavior": "answer_with_sql",
+      "gold_sql": "\nWITH ranked AS (\n SELECT o.customer_id,o.order_id,o.order_date,\n        ROW_NUMBER() OVER(PARTITION BY o.customer_id ORDER BY o.order_date,o.order_id) pos\n FROM commerce.orders o\n),\nfirst_two AS (\n SELECT customer_id,\n        MAX(order_date) FILTER(WHERE pos=1) first_date,\n        MAX(order_date) FILTER(WHERE pos=2) second_date\n FROM ranked WHERE pos<=2 GROUP BY customer_id\n),\ncohorts AS (\n SELECT DATE_TRUNC('month',f.first_date)::date cohort_month,\n        COALESCE(c.acquisition_channel,'UNKNOWN') acquisition_channel,\n        COALESCE(g.region,'UNKNOWN') region,\n        COUNT(*) cohort_customers,\n        COUNT(*) FILTER(WHERE f.second_date IS NOT NULL AND f.second_date BETWEEN f.first_date AND f.first_date+30) repeated_within_30d\n FROM first_two f JOIN commerce.customers c USING(customer_id)\n LEFT JOIN commerce.geography g ON g.zip=c.zip\n GROUP BY 1,2,3 HAVING COUNT(*)>=5\n)\nSELECT *, ROUND(100.0*repeated_within_30d/NULLIF(cohort_customers,0),2) repeat_rate_pct\nFROM cohorts ORDER BY cohort_month,acquisition_channel,region LIMIT 100",
+      "expected_result": [
+        {
+          "region": "East",
+          "cohort_month": "2025-11-01",
+          "repeat_rate_pct": 40,
+          "cohort_customers": 5,
+          "acquisition_channel": "email_campaign",
+          "repeated_within_30d": 2
+        },
+        {
+          "region": "East",
+          "cohort_month": "2025-11-01",
+          "repeat_rate_pct": 66.67,
+          "cohort_customers": 12,
+          "acquisition_channel": "organic_search",
+          "repeated_within_30d": 8
+        },
+        {
+          "region": "East",
+          "cohort_month": "2025-11-01",
+          "repeat_rate_pct": 90.91,
+          "cohort_customers": 11,
+          "acquisition_channel": "paid_search",
+          "repeated_within_30d": 10
+        },
+        {
+          "region": "East",
+          "cohort_month": "2025-11-01",
+          "repeat_rate_pct": 66.67,
+          "cohort_customers": 6,
+          "acquisition_channel": "social_media",
+          "repeated_within_30d": 4
+        },
+        {
+          "region": "East",
+          "cohort_month": "2025-12-01",
+          "repeat_rate_pct": 60,
+          "cohort_customers": 5,
+          "acquisition_channel": "email_campaign",
+          "repeated_within_30d": 3
+        },
+        {
+          "region": "East",
+          "cohort_month": "2025-12-01",
+          "repeat_rate_pct": 44.44,
+          "cohort_customers": 9,
+          "acquisition_channel": "organic_search",
+          "repeated_within_30d": 4
+        },
+        {
+          "region": "East",
+          "cohort_month": "2025-12-01",
+          "repeat_rate_pct": 66.67,
+          "cohort_customers": 6,
+          "acquisition_channel": "paid_search",
+          "repeated_within_30d": 4
+        },
+        {
+          "region": "East",
+          "cohort_month": "2025-12-01",
+          "repeat_rate_pct": 83.33,
+          "cohort_customers": 6,
+          "acquisition_channel": "referral",
+          "repeated_within_30d": 5
+        },
+        {
+          "region": "East",
+          "cohort_month": "2025-12-01",
+          "repeat_rate_pct": 75,
+          "cohort_customers": 8,
+          "acquisition_channel": "social_media",
+          "repeated_within_30d": 6
+        },
+        {
+          "region": "East",
+          "cohort_month": "2026-01-01",
+          "repeat_rate_pct": 80,
+          "cohort_customers": 5,
+          "acquisition_channel": "organic_search",
+          "repeated_within_30d": 4
+        }
+      ],
+      "expected_row_count": 10,
+      "notes": "Each distinct order is an event; second order on same date but later order_id qualifies. Region from customer ZIP."
+    },
+    {
+      "id": "E04",
+      "question": "Trong 180 ngày gần nhất có orders, theo region nhận hàng và order_source, tìm các nhóm có ít nhất 5 đơn đã giao, và trả về median, p90 số ngày từ ship_date tới delivery_date, tỷ lệ thiếu ngày giao, tỷ lệ delivery_date trước ship_date. Xếp theo p90 giảm dần, null phải được tính đúng.",
+      "difficulty": 4,
+      "expected_tables": [
+        "commerce.shipments",
+        "commerce.orders",
+        "commerce.geography"
+      ],
+      "expected_behavior": "answer_with_sql",
+      "gold_sql": "\nWITH bounds AS (SELECT MAX(order_date) end_date FROM commerce.orders),\neligible AS (\n SELECT o.order_id,COALESCE(g.region,'UNKNOWN') region,\n        COALESCE(o.order_source,'UNKNOWN') order_source,\n        s.ship_date,s.delivery_date,\n        CASE WHEN s.ship_date IS NOT NULL AND s.delivery_date IS NOT NULL\n             THEN (s.delivery_date-s.ship_date) END shipping_days\n FROM commerce.orders o CROSS JOIN bounds b\n LEFT JOIN commerce.shipments s USING(order_id)\n LEFT JOIN commerce.geography g ON o.zip=g.zip\n WHERE o.order_status='delivered' AND o.order_date BETWEEN b.end_date-179 AND b.end_date\n)\nSELECT region,order_source,COUNT(*) eligible_orders,\n       COUNT(*) FILTER(WHERE delivery_date IS NULL) missing_delivery_date,\n       ROUND(100.0*COUNT(*) FILTER(WHERE delivery_date IS NULL)/COUNT(*),2) missing_delivery_pct,\n       COUNT(*) FILTER(WHERE shipping_days<0) negative_shipping_days_count,\n       ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY shipping_days)\n             FILTER(WHERE shipping_days>=0)::numeric,2) median_shipping_days,\n       ROUND(PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY shipping_days)\n             FILTER(WHERE shipping_days>=0)::numeric,2) p90_shipping_days\nFROM eligible GROUP BY region,order_source HAVING COUNT(*)>=5\nORDER BY p90_shipping_days DESC NULLS LAST, region,order_source LIMIT 40",
+      "expected_result": [
+        {
+          "region": "East",
+          "order_source": "direct",
+          "eligible_orders": 35,
+          "p90_shipping_days": 5,
+          "median_shipping_days": 4,
+          "missing_delivery_pct": 0,
+          "missing_delivery_date": 0,
+          "negative_shipping_days_count": 0
+        },
+        {
+          "region": "East",
+          "order_source": "email_campaign",
+          "eligible_orders": 54,
+          "p90_shipping_days": 5,
+          "median_shipping_days": 3.5,
+          "missing_delivery_pct": 0,
+          "missing_delivery_date": 0,
+          "negative_shipping_days_count": 0
+        },
+        {
+          "region": "East",
+          "order_source": "organic_search",
+          "eligible_orders": 119,
+          "p90_shipping_days": 5,
+          "median_shipping_days": 3,
+          "missing_delivery_pct": 0,
+          "missing_delivery_date": 0,
+          "negative_shipping_days_count": 0
+        },
+        {
+          "region": "East",
+          "order_source": "paid_search",
+          "eligible_orders": 107,
+          "p90_shipping_days": 5,
+          "median_shipping_days": 3,
+          "missing_delivery_pct": 0,
+          "missing_delivery_date": 0,
+          "negative_shipping_days_count": 0
+        },
+        {
+          "region": "East",
+          "order_source": "referral",
+          "eligible_orders": 73,
+          "p90_shipping_days": 5,
+          "median_shipping_days": 3,
+          "missing_delivery_pct": 0,
+          "missing_delivery_date": 0,
+          "negative_shipping_days_count": 0
+        },
+        {
+          "region": "East",
+          "order_source": "social_media",
+          "eligible_orders": 56,
+          "p90_shipping_days": 5,
+          "median_shipping_days": 3,
+          "missing_delivery_pct": 0,
+          "missing_delivery_date": 0,
+          "negative_shipping_days_count": 0
+        }
+      ],
+      "expected_row_count": 6,
+      "notes": "Only delivered orders; no shipment record counts as missing delivery. Percentiles exclude negative or null durations."
+    },
+    {
+      "id": "E05",
+      "question": "Trong ba tháng cuối của dữ liệu, hãy tính CHÍNH XÁC doanh thu bị mất do hết hàng của từng sản phẩm, và chứng minh toàn bộ doanh thu đó chắc chắn phát sinh nếu kho không hết hàng. Đưa ra 10 sản phẩm thiệt hại lớn nhất, không sử dụng bất kỳ giả định nào.",
+      "difficulty": 5,
+      "expected_tables": [
+        "commerce.inventory",
+        "commerce.products",
+        "commerce.orders",
+        "commerce.order_items",
+        "commerce.sales"
+      ],
+      "expected_behavior": "abstain_or_qualify",
+      "gold_sql": null,
+      "expected_result": {
+        "reason": "Không thể tính doanh thu mất đi CHÍNH XÁC khi hết hàng; dữ liệu không có nhu cầu chưa được đáp ứng hoặc hành vi thay thế sản phẩm.",
+        "verdict": "not_identifiable",
+        "missing_evidence": [
+          "unobserved_customer_demand",
+          "control_group_or_demand_model",
+          "counterfactual_purchase_records"
+        ],
+        "may_offer_estimate_only_with_assumptions": true
+      },
+      "expected_row_count": 0,
+      "notes": "Không thể tính doanh thu mất đi CHÍNH XÁC khi hết hàng; dữ liệu không có nhu cầu chưa được đáp ứng hoặc hành vi thay thế sản phẩm."
+    },
+    {
+      "id": "E06",
+      "question": "Hãy tính tỷ lệ chuyển đổi session → order CHÍNH XÁC theo từng traffic_source và chứng minh mỗi order được gán cho đúng session đã tạo ra nó, kể cả khách truy cập đa thiết bị, từ toàn bộ dữ liệu commerce.",
+      "difficulty": 5,
+      "expected_tables": [
+        "commerce.web_traffic",
+        "commerce.orders",
+        "commerce.customers"
+      ],
+      "expected_behavior": "abstain_or_qualify",
+      "gold_sql": null,
+      "expected_result": {
+        "reason": "Không thể tính conversion session→order CHÍNH XÁC theo source; bảng web_traffic chỉ có tổng hợp ngày và kênh, không có session_id hay khóa nối orders.",
+        "verdict": "not_identifiable",
+        "missing_evidence": [
+          "session_id",
+          "session_to_order_attribution_key",
+          "cross_device_identity_mapping"
+        ],
+        "may_offer_estimate_only_with_assumptions": true
+      },
+      "expected_row_count": 0,
+      "notes": "Không thể tính conversion session→order CHÍNH XÁC theo source; bảng web_traffic chỉ có tổng hợp ngày và kênh, không có session_id hay khóa nối orders."
+    },
+    {
+      "id": "E07",
+      "question": "Tìm 20 hóa đơn có sai lệch lớn nhất giữa invoices.subtotal và tổng invoice_items.amount, đồng thời kiểm tra subtotal + tax_amount = total_amount. Với invoice chưa có dòng chi tiết hoặc có trường NULL, giữ chúng trong một nhóm kiểm tra riêng, không tự thay NULL bằng 0 để kết luận sai dữ liệu.",
+      "difficulty": 4,
+      "expected_tables": [
+        "commerce.invoices",
+        "commerce.invoice_items"
+      ],
+      "expected_behavior": "answer_with_sql",
+      "gold_sql": "\nWITH items AS (\n SELECT invoice_id,COUNT(*) line_count,\n        COUNT(*) FILTER(WHERE amount IS NULL) missing_line_amounts,\n        SUM(amount) line_amount_total\n FROM commerce.invoice_items GROUP BY invoice_id\n),\naudit AS (\n SELECT i.invoice_id,i.invoice_no,i.invoice_date,i.subtotal,i.tax_amount,i.total_amount,\n        it.line_count,it.missing_line_amounts,it.line_amount_total,\n        CASE WHEN it.line_count IS NOT NULL AND it.missing_line_amounts=0\n                  AND i.subtotal IS NOT NULL THEN i.subtotal-it.line_amount_total END subtotal_gap,\n        CASE WHEN i.subtotal IS NOT NULL AND i.tax_amount IS NOT NULL\n                  AND i.total_amount IS NOT NULL\n                  THEN i.subtotal+i.tax_amount-i.total_amount END header_gap,\n        CASE WHEN it.line_count IS NULL THEN 'no_items'\n             WHEN i.subtotal IS NULL OR i.tax_amount IS NULL OR i.total_amount IS NULL THEN 'incomplete_header'\n             WHEN it.missing_line_amounts>0 THEN 'incomplete_items'\n             WHEN ABS(i.subtotal-it.line_amount_total)>0.01 THEN 'subtotal_mismatch'\n             WHEN ABS(i.subtotal+i.tax_amount-i.total_amount)>0.01 THEN 'header_mismatch'\n             ELSE 'all_clear' END audit_status\n FROM commerce.invoices i LEFT JOIN items it USING(invoice_id)\n),\nranked AS (\n SELECT *,ROW_NUMBER() OVER (ORDER BY ABS(subtotal_gap) DESC NULLS LAST,invoice_id) rn\n FROM audit\n)\nSELECT invoice_id,invoice_no,invoice_date,COALESCE(line_count,0) line_count,\n       audit_status,ROUND(subtotal,2) header_subtotal,ROUND(line_amount_total,2) detail_total,\n       ROUND(subtotal_gap,2) subtotal_gap,ROUND(header_gap,2) header_gap,\n       CASE WHEN rn<=20 THEN 'top_20_subtotal_gap' ELSE 'missing_or_incomplete' END reason_selected\nFROM ranked WHERE rn<=20 OR audit_status IN ('no_items','incomplete_header','incomplete_items')\nORDER BY CASE WHEN rn<=20 THEN 0 ELSE 1 END,rn,invoice_id",
+      "expected_result": [
+        {
+          "header_gap": 0,
+          "invoice_id": "DEMO-COMMERCE-787463",
+          "invoice_no": "VS-787463",
+          "line_count": 1,
+          "audit_status": "all_clear",
+          "detail_total": 41178.24,
+          "invoice_date": "2026-05-02",
+          "subtotal_gap": 0,
+          "header_subtotal": 41178.24,
+          "reason_selected": "top_20_subtotal_gap"
+        },
+        {
+          "header_gap": 0,
+          "invoice_id": "DEMO-COMMERCE-787464",
+          "invoice_no": "VS-787464",
+          "line_count": 1,
+          "audit_status": "all_clear",
+          "detail_total": 3247.56,
+          "invoice_date": "2026-05-22",
+          "subtotal_gap": 0,
+          "header_subtotal": 3247.56,
+          "reason_selected": "top_20_subtotal_gap"
+        },
+        {
+          "header_gap": 0,
+          "invoice_id": "DEMO-COMMERCE-787465",
+          "invoice_no": "VS-787465",
+          "line_count": 1,
+          "audit_status": "all_clear",
+          "detail_total": 16931.44,
+          "invoice_date": "2026-05-25",
+          "subtotal_gap": 0,
+          "header_subtotal": 16931.44,
+          "reason_selected": "top_20_subtotal_gap"
+        },
+        {
+          "header_gap": 0,
+          "invoice_id": "DEMO-COMMERCE-787466",
+          "invoice_no": "VS-787466",
+          "line_count": 1,
+          "audit_status": "all_clear",
+          "detail_total": 18114.99,
+          "invoice_date": "2026-10-29",
+          "subtotal_gap": 0,
+          "header_subtotal": 18114.99,
+          "reason_selected": "top_20_subtotal_gap"
+        },
+        {
+          "header_gap": 0,
+          "invoice_id": "DEMO-COMMERCE-787467",
+          "invoice_no": "VS-787467",
+          "line_count": 1,
+          "audit_status": "all_clear",
+          "detail_total": 3461.55,
+          "invoice_date": "2026-02-03",
+          "subtotal_gap": 0,
+          "header_subtotal": 3461.55,
+          "reason_selected": "top_20_subtotal_gap"
+        },
+        {
+          "header_gap": 0,
+          "invoice_id": "DEMO-COMMERCE-787468",
+          "invoice_no": "VS-787468",
+          "line_count": 1,
+          "audit_status": "all_clear",
+          "detail_total": 64002.28,
+          "invoice_date": "2025-11-19",
+          "subtotal_gap": 0,
+          "header_subtotal": 64002.28,
+          "reason_selected": "top_20_subtotal_gap"
+        },
+        {
+          "header_gap": 0,
+          "invoice_id": "DEMO-COMMERCE-787469",
+          "invoice_no": "VS-787469",
+          "line_count": 1,
+          "audit_status": "all_clear",
+          "detail_total": 2408.14,
+          "invoice_date": "2026-04-26",
+          "subtotal_gap": 0,
+          "header_subtotal": 2408.14,
+          "reason_selected": "top_20_subtotal_gap"
+        },
+        {
+          "header_gap": 0,
+          "invoice_id": "DEMO-COMMERCE-787470",
+          "invoice_no": "VS-787470",
+          "line_count": 1,
+          "audit_status": "all_clear",
+          "detail_total": 11557.41,
+          "invoice_date": "2026-03-29",
+          "subtotal_gap": 0,
+          "header_subtotal": 11557.41,
+          "reason_selected": "top_20_subtotal_gap"
+        },
+        {
+          "header_gap": 0,
+          "invoice_id": "DEMO-COMMERCE-787471",
+          "invoice_no": "VS-787471",
+          "line_count": 1,
+          "audit_status": "all_clear",
+          "detail_total": 3041.3,
+          "invoice_date": "2026-05-15",
+          "subtotal_gap": 0,
+          "header_subtotal": 3041.3,
+          "reason_selected": "top_20_subtotal_gap"
+        },
+        {
+          "header_gap": 0,
+          "invoice_id": "DEMO-COMMERCE-787472",
+          "invoice_no": "VS-787472",
+          "line_count": 1,
+          "audit_status": "all_clear",
+          "detail_total": 2146.8,
+          "invoice_date": "2025-12-07",
+          "subtotal_gap": 0,
+          "header_subtotal": 2146.8,
+          "reason_selected": "top_20_subtotal_gap"
+        },
+        {
+          "header_gap": 0,
+          "invoice_id": "DEMO-COMMERCE-787473",
+          "invoice_no": "VS-787473",
+          "line_count": 1,
+          "audit_status": "all_clear",
+          "detail_total": 75605.22,
+          "invoice_date": "2026-07-09",
+          "subtotal_gap": 0,
+          "header_subtotal": 75605.22,
+          "reason_selected": "top_20_subtotal_gap"
+        },
+        {
+          "header_gap": 0,
+          "invoice_id": "DEMO-COMMERCE-787474",
+          "invoice_no": "VS-787474",
+          "line_count": 2,
+          "audit_status": "all_clear",
+          "detail_total": 200842.88,
+          "invoice_date": "2025-11-17",
+          "subtotal_gap": 0,
+          "header_subtotal": 200842.88,
+          "reason_selected": "top_20_subtotal_gap"
+        },
+        {
+          "header_gap": 0,
+          "invoice_id": "DEMO-COMMERCE-787475",
+          "invoice_no": "VS-787475",
+          "line_count": 1,
+          "audit_status": "all_clear",
+          "detail_total": 5697.5,
+          "invoice_date": "2026-10-07",
+          "subtotal_gap": 0,
+          "header_subtotal": 5697.5,
+          "reason_selected": "top_20_subtotal_gap"
+        },
+        {
+          "header_gap": 0,
+          "invoice_id": "DEMO-COMMERCE-787476",
+          "invoice_no": "VS-787476",
+          "line_count": 1,
+          "audit_status": "all_clear",
+          "detail_total": 85685.92,
+          "invoice_date": "2025-12-16",
+          "subtotal_gap": 0,
+          "header_subtotal": 85685.92,
+          "reason_selected": "top_20_subtotal_gap"
+        },
+        {
+          "header_gap": 0,
+          "invoice_id": "DEMO-COMMERCE-787477",
+          "invoice_no": "VS-787477",
+          "line_count": 1,
+          "audit_status": "all_clear",
+          "detail_total": 6794.93,
+          "invoice_date": "2025-12-10",
+          "subtotal_gap": 0,
+          "header_subtotal": 6794.93,
+          "reason_selected": "top_20_subtotal_gap"
+        },
+        {
+          "header_gap": 0,
+          "invoice_id": "DEMO-COMMERCE-787478",
+          "invoice_no": "VS-787478",
+          "line_count": 1,
+          "audit_status": "all_clear",
+          "detail_total": 32859.65,
+          "invoice_date": "2026-06-07",
+          "subtotal_gap": 0,
+          "header_subtotal": 32859.65,
+          "reason_selected": "top_20_subtotal_gap"
+        },
+        {
+          "header_gap": 0,
+          "invoice_id": "DEMO-COMMERCE-787479",
+          "invoice_no": "VS-787479",
+          "line_count": 2,
+          "audit_status": "all_clear",
+          "detail_total": 48241.61,
+          "invoice_date": "2026-09-14",
+          "subtotal_gap": 0,
+          "header_subtotal": 48241.61,
+          "reason_selected": "top_20_subtotal_gap"
+        },
+        {
+          "header_gap": 0,
+          "invoice_id": "DEMO-COMMERCE-787480",
+          "invoice_no": "VS-787480",
+          "line_count": 1,
+          "audit_status": "all_clear",
+          "detail_total": 3220.2,
+          "invoice_date": "2026-01-15",
+          "subtotal_gap": 0,
+          "header_subtotal": 3220.2,
+          "reason_selected": "top_20_subtotal_gap"
+        },
+        {
+          "header_gap": 0,
+          "invoice_id": "DEMO-COMMERCE-787481",
+          "invoice_no": "VS-787481",
+          "line_count": 1,
+          "audit_status": "all_clear",
+          "detail_total": 8081.25,
+          "invoice_date": "2026-10-05",
+          "subtotal_gap": 0,
+          "header_subtotal": 8081.25,
+          "reason_selected": "top_20_subtotal_gap"
+        },
+        {
+          "header_gap": 0,
+          "invoice_id": "DEMO-COMMERCE-787482",
+          "invoice_no": "VS-787482",
+          "line_count": 2,
+          "audit_status": "all_clear",
+          "detail_total": 74803.15,
+          "invoice_date": "2026-03-18",
+          "subtotal_gap": 0,
+          "header_subtotal": 74803.15,
+          "reason_selected": "top_20_subtotal_gap"
+        }
+      ],
+      "expected_row_count": 20,
+      "notes": "Top 20 by absolute header-vs-detail subtotal gap; also includes all missing/incomplete records outside top20. NULLs are not coerced to zero; 0.01 tolerance."
+    },
+    {
+      "id": "E08",
+      "question": "Liệt kê CHÍNH XÁC các orders đã thanh toán nhưng chưa có invoice, nối mỗi invoice với order tương ứng và đối soát từng invoice_items với order_items, không dùng phép ghép suy đoán theo ngày, số tiền hoặc tên người mua.",
+      "difficulty": 5,
+      "expected_tables": [
+        "commerce.invoices",
+        "commerce.invoice_items",
+        "commerce.orders",
+        "commerce.payments",
+        "commerce.order_items"
+      ],
+      "expected_behavior": "abstain_or_qualify",
+      "gold_sql": null,
+      "expected_result": {
+        "reason": "Không thể xác định orders nào thiếu invoice và đối soát từng hóa đơn chính xác; invoices không có order_id hoặc bảng ánh xạ order↔invoice đáng tin cậy.",
+        "verdict": "not_identifiable",
+        "missing_evidence": [
+          "verified_invoice_order_mapping",
+          "line_item_to_invoice_order_item_mapping"
+        ],
+        "may_offer_estimate_only_with_assumptions": true
+      },
+      "expected_row_count": 0,
+      "notes": "Không thể xác định orders nào thiếu invoice và đối soát từng hóa đơn chính xác; invoices không có order_id hoặc bảng ánh xạ order↔invoice đáng tin cậy."
+    },
+    {
+      "id": "E09",
+      "question": "Trong 180 ngày kết thúc tại MAX(orders.order_date), theo region nhận hàng (orders.zip) và acquisition_channel của khách, tìm 10 nhóm có tỷ lệ đơn có ít nhất một return cao nhất (tối thiểu 5 đơn). Xuất số đơn duy nhất, số khách duy nhất, số đơn bị trả, return_rate, net_revenue trừ refund, gross_profit sau hoàn nhập COGS hàng trả, và tổng payments. Tuyệt đối không nhân số liệu khi JOIN order_items, returns hoặc payments.",
+      "difficulty": 5,
+      "expected_tables": [
+        "commerce.orders",
+        "commerce.customers",
+        "commerce.order_items",
+        "commerce.products",
+        "commerce.returns",
+        "commerce.geography",
+        "commerce.payments"
+      ],
+      "expected_behavior": "answer_with_sql",
+      "gold_sql": "\nWITH bounds AS (SELECT MAX(order_date) end_date FROM commerce.orders),\nline AS (\n SELECT oi.order_id,oi.product_id,SUM(oi.quantity) quantity,\n        SUM(oi.quantity*oi.unit_price-oi.discount_amount) line_net,\n        MAX(p.cogs) unit_cogs\n FROM commerce.order_items oi JOIN commerce.products p USING(product_id)\n GROUP BY oi.order_id,oi.product_id\n),\nret AS (\n SELECT order_id,product_id,SUM(return_quantity) qty_returned,SUM(refund_amount) refund\n FROM commerce.returns GROUP BY order_id,product_id\n),\norder_fin AS (\n SELECT l.order_id,SUM(l.line_net-COALESCE(r.refund,0)) net_revenue,\n        SUM(l.line_net-COALESCE(r.refund,0)-(l.quantity-COALESCE(r.qty_returned,0))*l.unit_cogs) gross_profit,\n        BOOL_OR(r.order_id IS NOT NULL) has_return\n FROM line l LEFT JOIN ret r USING(order_id,product_id) GROUP BY l.order_id\n),\ngrouped AS (\n SELECT COALESCE(g.region,'UNKNOWN') delivery_region,\n        COALESCE(c.acquisition_channel,'UNKNOWN') acquisition_channel,\n        COUNT(*) orders_count,COUNT(DISTINCT o.customer_id) buyers_count,\n        COUNT(*) FILTER(WHERE f.has_return) returned_orders,\n        SUM(f.net_revenue) net_revenue,SUM(f.gross_profit) gross_profit,\n        SUM(COALESCE(pay.payment_value,0)) payments_total\n FROM commerce.orders o JOIN commerce.customers c USING(customer_id)\n JOIN order_fin f USING(order_id) LEFT JOIN commerce.geography g ON g.zip=o.zip\n LEFT JOIN commerce.payments pay USING(order_id) CROSS JOIN bounds b\n WHERE o.order_date BETWEEN b.end_date-179 AND b.end_date\n GROUP BY 1,2 HAVING COUNT(*)>=5\n)\nSELECT delivery_region,acquisition_channel,orders_count,buyers_count,returned_orders,\n       ROUND(100.0*returned_orders/NULLIF(orders_count,0),2) return_rate_pct,\n       ROUND(net_revenue,2) net_revenue,ROUND(gross_profit,2) gross_profit,\n       ROUND(payments_total,2) payments_total\nFROM grouped ORDER BY return_rate_pct DESC,returned_orders DESC,delivery_region,acquisition_channel LIMIT 10",
+      "expected_result": [
+        {
+          "net_revenue": 2932889.91,
+          "buyers_count": 28,
+          "gross_profit": 392539.52,
+          "orders_count": 148,
+          "payments_total": 3269367.13,
+          "delivery_region": "East",
+          "return_rate_pct": 5.41,
+          "returned_orders": 8,
+          "acquisition_channel": "organic_search"
+        },
+        {
+          "net_revenue": 1412158.94,
+          "buyers_count": 12,
+          "gross_profit": 212104.66,
+          "orders_count": 59,
+          "payments_total": 1543072.58,
+          "delivery_region": "East",
+          "return_rate_pct": 5.08,
+          "returned_orders": 3,
+          "acquisition_channel": "email_campaign"
+        },
+        {
+          "net_revenue": 2001826.38,
+          "buyers_count": 17,
+          "gross_profit": 236291.71,
+          "orders_count": 93,
+          "payments_total": 2191715.64,
+          "delivery_region": "East",
+          "return_rate_pct": 4.3,
+          "returned_orders": 4,
+          "acquisition_channel": "social_media"
+        },
+        {
+          "net_revenue": 1063981.73,
+          "buyers_count": 11,
+          "gross_profit": 101835.73,
+          "orders_count": 53,
+          "payments_total": 1226815.91,
+          "delivery_region": "East",
+          "return_rate_pct": 3.77,
+          "returned_orders": 2,
+          "acquisition_channel": "referral"
+        },
+        {
+          "net_revenue": 2856992.86,
+          "buyers_count": 23,
+          "gross_profit": 392644.57,
+          "orders_count": 117,
+          "payments_total": 3159262.76,
+          "delivery_region": "East",
+          "return_rate_pct": 2.56,
+          "returned_orders": 3,
+          "acquisition_channel": "paid_search"
+        },
+        {
+          "net_revenue": 802707.96,
+          "buyers_count": 6,
+          "gross_profit": 101397.92,
+          "orders_count": 32,
+          "payments_total": 867144.24,
+          "delivery_region": "East",
+          "return_rate_pct": 0,
+          "returned_orders": 0,
+          "acquisition_channel": "direct"
+        }
+      ],
+      "expected_row_count": 6,
+      "notes": "Returns flag via distinct order_id; all amount metrics are preaggregated at order-product then order grain; region is delivery ZIP from orders; 180 inclusive days anchored at max order_date. Do not infer payment totals equal net revenue."
+    },
+    {
+      "id": "E10",
+      "question": "Theo product category và return_reason, so sánh tỷ lệ review 1–2 sao của hàng đã bị trả với tỷ lệ của hàng không bị trả, nhưng chỉ dùng review được viết sau ngày return_date đối với nhóm trả. Nếu một sản phẩm/đơn có nhiều reviews hoặc returns, mỗi cặp (order_id, product_id) chỉ tính một lần; công bố kích thước mẫu.",
+      "difficulty": 5,
+      "expected_tables": [
+        "commerce.reviews",
+        "commerce.returns",
+        "commerce.orders",
+        "commerce.order_items",
+        "commerce.products"
+      ],
+      "expected_behavior": "answer_with_sql",
+      "gold_sql": "\nWITH sold_pairs AS (\n SELECT DISTINCT oi.order_id,oi.product_id FROM commerce.order_items oi\n),\nreturned AS (\n SELECT order_id,product_id,MIN(return_date) first_return_date\n FROM commerce.returns GROUP BY order_id,product_id\n),\nreview_ranked AS (\n SELECT sp.order_id,sp.product_id,p.category,\n        CASE WHEN r.first_return_date IS NULL THEN 'not_returned' ELSE 'returned' END return_group,\n        rv.rating,\n        ROW_NUMBER() OVER(PARTITION BY sp.order_id,sp.product_id ORDER BY rv.review_date DESC,rv.review_id DESC) pos\n FROM sold_pairs sp\n JOIN commerce.products p USING(product_id)\n LEFT JOIN returned r USING(order_id,product_id)\n JOIN commerce.reviews rv ON rv.order_id=sp.order_id AND rv.product_id=sp.product_id\n       AND (r.first_return_date IS NULL OR rv.review_date>r.first_return_date)\n),\ncategory_agg AS (\n SELECT category,\n        COUNT(*) FILTER(WHERE return_group='returned') returned_reviewed_pairs,\n        COUNT(*) FILTER(WHERE return_group='returned' AND rating<=2) returned_low_rating,\n        COUNT(*) FILTER(WHERE return_group='not_returned') nonreturned_reviewed_pairs,\n        COUNT(*) FILTER(WHERE return_group='not_returned' AND rating<=2) nonreturned_low_rating\n FROM review_ranked WHERE pos=1 GROUP BY category\n)\nSELECT category,returned_reviewed_pairs,returned_low_rating,\n       ROUND(100.0*returned_low_rating/NULLIF(returned_reviewed_pairs,0),2) returned_low_rating_pct,\n       nonreturned_reviewed_pairs,nonreturned_low_rating,\n       ROUND(100.0*nonreturned_low_rating/NULLIF(nonreturned_reviewed_pairs,0),2) nonreturned_low_rating_pct\nFROM category_agg ORDER BY category",
+      "expected_result": [
+        {
+          "category": "Casual",
+          "returned_low_rating": 0,
+          "nonreturned_low_rating": 0,
+          "returned_low_rating_pct": null,
+          "returned_reviewed_pairs": 0,
+          "nonreturned_low_rating_pct": 0,
+          "nonreturned_reviewed_pairs": 2
+        },
+        {
+          "category": "GenZ",
+          "returned_low_rating": 0,
+          "nonreturned_low_rating": 1,
+          "returned_low_rating_pct": null,
+          "returned_reviewed_pairs": 0,
+          "nonreturned_low_rating_pct": 5.56,
+          "nonreturned_reviewed_pairs": 18
+        },
+        {
+          "category": "Outdoor",
+          "returned_low_rating": 0,
+          "nonreturned_low_rating": 8,
+          "returned_low_rating_pct": null,
+          "returned_reviewed_pairs": 0,
+          "nonreturned_low_rating_pct": 7.41,
+          "nonreturned_reviewed_pairs": 108
+        },
+        {
+          "category": "Streetwear",
+          "returned_low_rating": 0,
+          "nonreturned_low_rating": 8,
+          "returned_low_rating_pct": null,
+          "returned_reviewed_pairs": 0,
+          "nonreturned_low_rating_pct": 11.94,
+          "nonreturned_reviewed_pairs": 67
+        }
+      ],
+      "expected_row_count": 4,
+      "notes": "Unit is unique (order_id,product_id); returned reviews strictly after earliest return date; newest qualifying review per pair; sample size is reviewed pairs."
+    },
+    {
+      "id": "E11",
+      "question": "Cho 30 đơn có chênh lệch thanh toán lớn nhất: tiền hàng sau discount_amount, trừ refund_amount, cộng shipping_fee, so với tổng payments.payment_value. Xuất order_id, order_status, paid_total, items_net, refunds, shipping_fee, expected_cash, gap; phân biệt thiếu payments với payment_value=0, và không nhân tiền khi join.",
+      "difficulty": 5,
+      "expected_tables": [
+        "commerce.orders",
+        "commerce.payments",
+        "commerce.order_items",
+        "commerce.returns",
+        "commerce.shipments"
+      ],
+      "expected_behavior": "answer_with_sql",
+      "gold_sql": "\nWITH items AS (\n SELECT order_id,SUM(quantity*unit_price-discount_amount) items_net\n FROM commerce.order_items GROUP BY order_id\n),\nrefunds AS (\n SELECT order_id,SUM(refund_amount) refund_total FROM commerce.returns GROUP BY order_id\n),\naudit AS (\n SELECT o.order_id,o.order_status,\n        p.order_id IS NOT NULL has_payment,\n        ROUND(p.payment_value,2) paid_total,\n        ROUND(i.items_net,2) items_net,\n        ROUND(COALESCE(r.refund_total,0),2) refunds,\n        ROUND(s.shipping_fee,2) shipping_fee,\n        ROUND(i.items_net-COALESCE(r.refund_total,0)+COALESCE(s.shipping_fee,0),2) expected_cash,\n        ROUND(p.payment_value-(i.items_net-COALESCE(r.refund_total,0)+COALESCE(s.shipping_fee,0)),2) payment_gap\n FROM commerce.orders o LEFT JOIN items i USING(order_id)\n LEFT JOIN refunds r USING(order_id)\n LEFT JOIN commerce.shipments s USING(order_id)\n LEFT JOIN commerce.payments p USING(order_id)\n)\nSELECT order_id,order_status,has_payment,paid_total,items_net,refunds,shipping_fee,\n       expected_cash,payment_gap\nFROM audit ORDER BY ABS(payment_gap) DESC NULLS LAST,order_id LIMIT 30",
+      "expected_result": [
+        {
+          "refunds": 46419.35,
+          "order_id": 787642,
+          "items_net": 85961.76,
+          "paid_total": 92864.42,
+          "has_payment": true,
+          "payment_gap": 53296.29,
+          "order_status": "returned",
+          "shipping_fee": 25.72,
+          "expected_cash": 39568.13
+        },
+        {
+          "refunds": 47133.06,
+          "order_id": 788027,
+          "items_net": 66909.86,
+          "paid_total": 72265.03,
+          "has_payment": true,
+          "payment_gap": 52485.85,
+          "order_status": "returned",
+          "shipping_fee": 2.38,
+          "expected_cash": 19779.18
+        },
+        {
+          "refunds": 45314.47,
+          "order_id": 788312,
+          "items_net": 41957.84,
+          "paid_total": 45315.5,
+          "has_payment": true,
+          "payment_gap": 48671.1,
+          "order_status": "returned",
+          "shipping_fee": 1.03,
+          "expected_cash": -3355.6
+        },
+        {
+          "refunds": 44065.57,
+          "order_id": 787570,
+          "items_net": 40801.45,
+          "paid_total": 44067.06,
+          "has_payment": true,
+          "payment_gap": 47329.69,
+          "order_status": "returned",
+          "shipping_fee": 1.49,
+          "expected_cash": -3262.63
+        },
+        {
+          "refunds": 40768.44,
+          "order_id": 787835,
+          "items_net": 47185.7,
+          "paid_total": 50963.41,
+          "has_payment": true,
+          "payment_gap": 44543.3,
+          "order_status": "returned",
+          "shipping_fee": 2.85,
+          "expected_cash": 6420.11
+        },
+        {
+          "refunds": 28122.77,
+          "order_id": 788004,
+          "items_net": 52079.2,
+          "paid_total": 56246.55,
+          "has_payment": true,
+          "payment_gap": 32289.11,
+          "order_status": "returned",
+          "shipping_fee": 1.01,
+          "expected_cash": 23957.44
+        },
+        {
+          "refunds": 25015.78,
+          "order_id": 788163,
+          "items_net": 41438.6,
+          "paid_total": 44754.6,
+          "has_payment": true,
+          "payment_gap": 28330.87,
+          "order_status": "returned",
+          "shipping_fee": 0.91,
+          "expected_cash": 16423.73
+        },
+        {
+          "refunds": 21108.59,
+          "order_id": 788429,
+          "items_net": 38158.75,
+          "paid_total": 41211.73,
+          "has_payment": true,
+          "payment_gap": 24161.29,
+          "order_status": "returned",
+          "shipping_fee": 0.28,
+          "expected_cash": 17050.44
+        },
+        {
+          "refunds": 19143.18,
+          "order_id": 788126,
+          "items_net": 17725.17,
+          "paid_total": 19174.77,
+          "has_payment": true,
+          "payment_gap": 20561.19,
+          "order_status": "returned",
+          "shipping_fee": 31.59,
+          "expected_cash": -1386.42
+        },
+        {
+          "refunds": 13784.73,
+          "order_id": 787653,
+          "items_net": 63207.94,
+          "paid_total": 68266.43,
+          "has_payment": true,
+          "payment_gap": 18841.37,
+          "order_status": "returned",
+          "shipping_fee": 1.85,
+          "expected_cash": 49425.06
+        },
+        {
+          "refunds": 16325.02,
+          "order_id": 787859,
+          "items_net": 20154.35,
+          "paid_total": 21768.2,
+          "has_payment": true,
+          "payment_gap": 17937.37,
+          "order_status": "returned",
+          "shipping_fee": 1.5,
+          "expected_cash": 3830.83
+        },
+        {
+          "refunds": 16677.19,
+          "order_id": 787533,
+          "items_net": 15441.84,
+          "paid_total": 16678.64,
+          "has_payment": true,
+          "payment_gap": 17912.54,
+          "order_status": "returned",
+          "shipping_fee": 1.45,
+          "expected_cash": -1233.9
+        },
+        {
+          "refunds": 15673.67,
+          "order_id": 787754,
+          "items_net": 14512.66,
+          "paid_total": 15675.18,
+          "has_payment": true,
+          "payment_gap": 16834.68,
+          "order_status": "returned",
+          "shipping_fee": 1.51,
+          "expected_cash": -1159.5
+        },
+        {
+          "refunds": 15366.35,
+          "order_id": 787727,
+          "items_net": 17073.72,
+          "paid_total": 18440.56,
+          "has_payment": true,
+          "payment_gap": 16732.25,
+          "order_status": "returned",
+          "shipping_fee": 0.94,
+          "expected_cash": 1708.31
+        },
+        {
+          "refunds": 0,
+          "order_id": 787474,
+          "items_net": 200842.88,
+          "paid_total": 216911.5,
+          "has_payment": true,
+          "payment_gap": 16067.43,
+          "order_status": "delivered",
+          "shipping_fee": 1.19,
+          "expected_cash": 200844.07
+        },
+        {
+          "refunds": 14376.42,
+          "order_id": 787820,
+          "items_net": 13311.5,
+          "paid_total": 14377.44,
+          "has_payment": true,
+          "payment_gap": 15441.34,
+          "order_status": "returned",
+          "shipping_fee": 1.02,
+          "expected_cash": -1063.9
+        },
+        {
+          "refunds": 11604.84,
+          "order_id": 787797,
+          "items_net": 18721.72,
+          "paid_total": 20219.55,
+          "has_payment": true,
+          "payment_gap": 13102.58,
+          "order_status": "returned",
+          "shipping_fee": 0.09,
+          "expected_cash": 7116.97
+        },
+        {
+          "refunds": 10908,
+          "order_id": 788121,
+          "items_net": 19216,
+          "paid_total": 20753.69,
+          "has_payment": true,
+          "payment_gap": 12445.28,
+          "order_status": "returned",
+          "shipping_fee": 0.41,
+          "expected_cash": 8308.41
+        },
+        {
+          "refunds": 5286.49,
+          "order_id": 788016,
+          "items_net": 76283.52,
+          "paid_total": 82417.79,
+          "has_payment": true,
+          "payment_gap": 11389.17,
+          "order_status": "returned",
+          "shipping_fee": 31.59,
+          "expected_cash": 71028.62
+        },
+        {
+          "refunds": 0,
+          "order_id": 788228,
+          "items_net": 137294.92,
+          "paid_total": 148279.7,
+          "has_payment": true,
+          "payment_gap": 10983.59,
+          "order_status": "delivered",
+          "shipping_fee": 1.19,
+          "expected_cash": 137296.11
+        },
+        {
+          "refunds": 0,
+          "order_id": 788279,
+          "items_net": 136137.84,
+          "paid_total": 147058.42,
+          "has_payment": true,
+          "payment_gap": 10891.03,
+          "order_status": "delivered",
+          "shipping_fee": 29.55,
+          "expected_cash": 136167.39
+        },
+        {
+          "refunds": 0,
+          "order_id": 788250,
+          "items_net": 131589.45,
+          "paid_total": 142118.11,
+          "has_payment": true,
+          "payment_gap": 10527.16,
+          "order_status": "delivered",
+          "shipping_fee": 1.5,
+          "expected_cash": 131590.95
+        },
+        {
+          "refunds": 0,
+          "order_id": 788083,
+          "items_net": 131567.6,
+          "paid_total": 142095.14,
+          "has_payment": true,
+          "payment_gap": 10525.41,
+          "order_status": "delivered",
+          "shipping_fee": 2.13,
+          "expected_cash": 131569.73
+        },
+        {
+          "refunds": 0,
+          "order_id": 788341,
+          "items_net": 128004.56,
+          "paid_total": 138274.65,
+          "has_payment": true,
+          "payment_gap": 10240.36,
+          "order_status": "shipped",
+          "shipping_fee": 29.73,
+          "expected_cash": 128034.29
+        },
+        {
+          "refunds": 8463.4,
+          "order_id": 787772,
+          "items_net": 11754.72,
+          "paid_total": 12726.95,
+          "has_payment": true,
+          "payment_gap": 9403.78,
+          "order_status": "returned",
+          "shipping_fee": 31.85,
+          "expected_cash": 3323.17
+        },
+        {
+          "refunds": 0,
+          "order_id": 788239,
+          "items_net": 116108.34,
+          "paid_total": 125399.96,
+          "has_payment": true,
+          "payment_gap": 9288.67,
+          "order_status": "delivered",
+          "shipping_fee": 2.95,
+          "expected_cash": 116111.29
+        },
+        {
+          "refunds": 0,
+          "order_id": 787855,
+          "items_net": 106516.06,
+          "paid_total": 115037.76,
+          "has_payment": true,
+          "payment_gap": 8521.28,
+          "order_status": "delivered",
+          "shipping_fee": 0.42,
+          "expected_cash": 106516.48
+        },
+        {
+          "refunds": 0,
+          "order_id": 788188,
+          "items_net": 104886.08,
+          "paid_total": 113308.44,
+          "has_payment": true,
+          "payment_gap": 8390.89,
+          "order_status": "delivered",
+          "shipping_fee": 31.47,
+          "expected_cash": 104917.55
+        },
+        {
+          "refunds": 0,
+          "order_id": 787671,
+          "items_net": 104158.4,
+          "paid_total": 112491.21,
+          "has_payment": true,
+          "payment_gap": 8332.67,
+          "order_status": "delivered",
+          "shipping_fee": 0.14,
+          "expected_cash": 104158.54
+        },
+        {
+          "refunds": 0,
+          "order_id": 787700,
+          "items_net": 104158.4,
+          "paid_total": 112493.06,
+          "has_payment": true,
+          "payment_gap": 8332.67,
+          "order_status": "delivered",
+          "shipping_fee": 1.99,
+          "expected_cash": 104160.39
+        }
+      ],
+      "expected_row_count": 30,
+      "notes": "Per-order independent aggregates. Payment gap is payment minus (item lines less refunds plus shipping); excludes unavailable tax and is reconciliation proxy, not a general ledger balance."
+    },
+    {
+      "id": "E12",
+      "question": "Trong 60 ngày cuối có orders, theo order_date đối chiếu tiền thật đã nhận trong payments với 'cash expected' = tổng (order_items.quantity*unit_price-discount_amount) - refund_amount + shipping_fee. Trả về top 10 ngày chênh lệch lớn nhất và trung bình trượt 7 NGÀY LỊCH của chênh lệch, kể cả ngày không có đơn. Phân biệt số đơn không có payment với amount bằng 0; không nhân dòng khi nối các bảng; nêu rõ cash expected chưa tính thuế không có trong dữ liệu.",
+      "difficulty": 5,
+      "expected_tables": [
+        "commerce.orders",
+        "commerce.order_items",
+        "commerce.payments",
+        "commerce.returns",
+        "commerce.shipments"
+      ],
+      "expected_behavior": "answer_with_sql",
+      "gold_sql": "\nWITH bounds AS (SELECT MAX(order_date) end_date FROM commerce.orders),\nitems AS (\n SELECT order_id,SUM(quantity*unit_price-discount_amount) items_net\n FROM commerce.order_items GROUP BY order_id\n),\nrefund AS (SELECT order_id,SUM(refund_amount) refund_total FROM commerce.returns GROUP BY order_id),\norder_audit AS (\n SELECT o.order_date,o.order_id,(p.order_id IS NULL) missing_payment,\n        COALESCE(p.payment_value,0) received_cash,\n        COALESCE(i.items_net,0)-COALESCE(r.refund_total,0)+COALESCE(s.shipping_fee,0) expected_cash\n FROM commerce.orders o LEFT JOIN items i USING(order_id)\n LEFT JOIN refund r USING(order_id)\n LEFT JOIN commerce.shipments s USING(order_id)\n LEFT JOIN commerce.payments p USING(order_id)\n),\ndaily_agg AS (\n SELECT order_date AS date,COUNT(*) orders_count,\n        COUNT(*) FILTER(WHERE missing_payment) missing_payment_orders,\n        SUM(received_cash) received_cash,SUM(expected_cash) expected_cash\n FROM order_audit GROUP BY order_date\n),\ndaily AS (\n SELECT d.date::date date,COALESCE(a.orders_count,0) orders_count,\n        COALESCE(a.missing_payment_orders,0) missing_payment_orders,\n        COALESCE(a.received_cash,0) received_cash,\n        COALESCE(a.expected_cash,0) expected_cash,\n        COALESCE(a.received_cash,0)-COALESCE(a.expected_cash,0) cash_gap\n FROM bounds b CROSS JOIN LATERAL generate_series(b.end_date-59,b.end_date,'1 day'::interval) AS d(date)\n LEFT JOIN daily_agg a ON a.date=d.date\n),\nmoving AS (\n SELECT date,orders_count,missing_payment_orders,received_cash,expected_cash,cash_gap,\n        AVG(cash_gap) OVER(ORDER BY date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) rolling_7d_cash_gap\n FROM daily\n)\nSELECT date,orders_count,missing_payment_orders,\n       ROUND(received_cash,2) received_cash,ROUND(expected_cash,2) expected_cash,\n       ROUND(cash_gap,2) cash_gap,ROUND(rolling_7d_cash_gap,2) rolling_7d_cash_gap\nFROM moving ORDER BY ABS(cash_gap) DESC,date LIMIT 10",
+      "expected_result": [
+        {
+          "date": "2026-09-26",
+          "cash_gap": 71676.74,
+          "orders_count": 3,
+          "expected_cash": 48940.29,
+          "received_cash": 120617.03,
+          "rolling_7d_cash_gap": 15450.66,
+          "missing_payment_orders": 0
+        },
+        {
+          "date": "2026-10-07",
+          "cash_gap": 57432.12,
+          "orders_count": 4,
+          "expected_cash": 44072.67,
+          "received_cash": 101504.79,
+          "rolling_7d_cash_gap": 11233.31,
+          "missing_payment_orders": 0
+        },
+        {
+          "date": "2026-11-06",
+          "cash_gap": 16618.65,
+          "orders_count": 5,
+          "expected_cash": 207766.19,
+          "received_cash": 224384.84,
+          "rolling_7d_cash_gap": 9450.7,
+          "missing_payment_orders": 0
+        },
+        {
+          "date": "2026-11-03",
+          "cash_gap": 16462.89,
+          "orders_count": 3,
+          "expected_cash": 205821.23,
+          "received_cash": 222284.12,
+          "rolling_7d_cash_gap": 8248.29,
+          "missing_payment_orders": 0
+        },
+        {
+          "date": "2026-10-03",
+          "cash_gap": 11548.72,
+          "orders_count": 6,
+          "expected_cash": 144417.17,
+          "received_cash": 155965.89,
+          "rolling_7d_cash_gap": 3654.59,
+          "missing_payment_orders": 0
+        },
+        {
+          "date": "2026-10-22",
+          "cash_gap": 11313.61,
+          "orders_count": 2,
+          "expected_cash": 141450.34,
+          "received_cash": 152763.95,
+          "rolling_7d_cash_gap": 4285.86,
+          "missing_payment_orders": 0
+        },
+        {
+          "date": "2026-09-23",
+          "cash_gap": 10134.81,
+          "orders_count": 2,
+          "expected_cash": 126687.88,
+          "received_cash": 136822.69,
+          "rolling_7d_cash_gap": 6111.79,
+          "missing_payment_orders": 0
+        },
+        {
+          "date": "2026-11-04",
+          "cash_gap": 9247.85,
+          "orders_count": 6,
+          "expected_cash": 115692.52,
+          "received_cash": 124940.37,
+          "rolling_7d_cash_gap": 8528.79,
+          "missing_payment_orders": 0
+        },
+        {
+          "date": "2026-10-23",
+          "cash_gap": 8740.35,
+          "orders_count": 5,
+          "expected_cash": 109258.56,
+          "received_cash": 117998.91,
+          "rolling_7d_cash_gap": 4998.81,
+          "missing_payment_orders": 0
+        },
+        {
+          "date": "2026-09-19",
+          "cash_gap": 8451.54,
+          "orders_count": 5,
+          "expected_cash": 105680.83,
+          "received_cash": 114132.37,
+          "rolling_7d_cash_gap": 6312.74,
+          "missing_payment_orders": 0
+        }
+      ],
+      "expected_row_count": 10,
+      "notes": "Daily totals from independent order-grain aggregates of order_items, refunds, shipments, payments. Cash expected is tax-exclusive proxy, NOT a guaranteed ledger balance; 7-day rolling window computed over full date series before top 10."
+    },
+    {
+      "id": "E13",
+      "question": "Trong ba tháng lịch hoàn chỉnh gần nhất có inventory, với từng category tìm 3 sản phẩm có tỷ lệ sell-through cao nhưng số ngày stockout cũng cao, và đối chiếu doanh thu đơn hàng cùng tháng. Chỉ chọn snapshot mới nhất của mỗi sản phẩm trong từng tháng, không cộng stock_on_hand của nhiều snapshot; trả về thứ hạng theo từng category.",
+      "difficulty": 5,
+      "expected_tables": [
+        "commerce.inventory",
+        "commerce.products",
+        "commerce.orders",
+        "commerce.order_items"
+      ],
+      "expected_behavior": "answer_with_sql",
+      "gold_sql": "\nWITH bounds AS (\n SELECT date_trunc('month',MAX(snapshot_date))::date AS current_month FROM commerce.inventory\n),\nsnapshots AS (\n SELECT i.*,DATE_TRUNC('month',i.snapshot_date)::date month_start,\n        ROW_NUMBER() OVER (PARTITION BY DATE_TRUNC('month',i.snapshot_date),i.product_id\n                           ORDER BY i.snapshot_date DESC) pos\n FROM commerce.inventory i CROSS JOIN bounds b\n WHERE i.snapshot_date >= (b.current_month-INTERVAL '3 months')::date\n   AND i.snapshot_date < b.current_month\n),\nmonth_sales AS (\n SELECT DATE_TRUNC('month',o.order_date)::date month_start,oi.product_id,\n        SUM(oi.quantity*oi.unit_price-oi.discount_amount) item_revenue\n FROM commerce.orders o JOIN commerce.order_items oi USING(order_id)\n GROUP BY DATE_TRUNC('month',o.order_date)::date,oi.product_id\n),\nranked AS (\n SELECT i.month_start,i.snapshot_date,i.product_id,p.product_name,p.category,\n        i.sell_through_rate,i.stockout_days,i.stock_on_hand,\n        COALESCE(m.item_revenue,0) item_revenue,\n        ROW_NUMBER() OVER(PARTITION BY i.month_start,p.category\n                          ORDER BY i.sell_through_rate DESC NULLS LAST,i.stockout_days DESC,i.product_id) category_rank\n FROM snapshots i JOIN commerce.products p USING(product_id)\n LEFT JOIN month_sales m ON m.month_start=i.month_start AND m.product_id=i.product_id\n WHERE i.pos=1 AND i.stockout_days>0 AND i.sell_through_rate IS NOT NULL\n)\nSELECT month_start,category,category_rank,product_id,product_name,snapshot_date,\n       ROUND(sell_through_rate,4) sell_through_rate,stockout_days,stock_on_hand,\n       ROUND(item_revenue,2) item_revenue\nFROM ranked WHERE category_rank<=3\nORDER BY month_start,category,category_rank",
+      "expected_result": [
+        {
+          "category": "GenZ",
+          "product_id": 1826,
+          "month_start": "2026-08-01",
+          "item_revenue": 0,
+          "product_name": "SaigonCore YY-21",
+          "category_rank": 1,
+          "snapshot_date": "2026-08-31",
+          "stock_on_hand": 50,
+          "stockout_days": 1,
+          "sell_through_rate": 0
+        },
+        {
+          "category": "Outdoor",
+          "product_id": 2252,
+          "month_start": "2026-08-01",
+          "item_revenue": 16053.34,
+          "product_name": "VietMotion RP-49",
+          "category_rank": 1,
+          "snapshot_date": "2026-08-31",
+          "stock_on_hand": 36,
+          "stockout_days": 1,
+          "sell_through_rate": 0.2115
+        },
+        {
+          "category": "Outdoor",
+          "product_id": 735,
+          "month_start": "2026-08-01",
+          "item_revenue": 24924.56,
+          "product_name": "HanoiStreet RP-23",
+          "category_rank": 2,
+          "snapshot_date": "2026-08-31",
+          "stock_on_hand": 11,
+          "stockout_days": 2,
+          "sell_through_rate": 0.1579
+        },
+        {
+          "category": "Outdoor",
+          "product_id": 2207,
+          "month_start": "2026-08-01",
+          "item_revenue": 6021.46,
+          "product_name": "VietMotion RP-04",
+          "category_rank": 3,
+          "snapshot_date": "2026-08-31",
+          "stock_on_hand": 27,
+          "stockout_days": 2,
+          "sell_through_rate": 0.1471
+        },
+        {
+          "category": "Streetwear",
+          "product_id": 396,
+          "month_start": "2026-08-01",
+          "item_revenue": 119107.04,
+          "product_name": "SaigonFlex UM-01",
+          "category_rank": 1,
+          "snapshot_date": "2026-08-31",
+          "stock_on_hand": 16,
+          "stockout_days": 1,
+          "sell_through_rate": 0.3158
+        },
+        {
+          "category": "Streetwear",
+          "product_id": 2180,
+          "month_start": "2026-08-01",
+          "item_revenue": 78238.66,
+          "product_name": "PhoenixWear UC-10",
+          "category_rank": 2,
+          "snapshot_date": "2026-08-31",
+          "stock_on_hand": 47,
+          "stockout_days": 2,
+          "sell_through_rate": 0.254
+        },
+        {
+          "category": "Streetwear",
+          "product_id": 491,
+          "month_start": "2026-08-01",
+          "item_revenue": 77420.56,
+          "product_name": "SaigonFlex UM-96",
+          "category_rank": 3,
+          "snapshot_date": "2026-08-31",
+          "stock_on_hand": 42,
+          "stockout_days": 1,
+          "sell_through_rate": 0.1429
+        },
+        {
+          "category": "GenZ",
+          "product_id": 1000,
+          "month_start": "2026-09-01",
+          "item_revenue": 2139.03,
+          "product_name": "HanoiStreet YY-01",
+          "category_rank": 1,
+          "snapshot_date": "2026-09-30",
+          "stock_on_hand": 18,
+          "stockout_days": 1,
+          "sell_through_rate": 0.0952
+        },
+        {
+          "category": "GenZ",
+          "product_id": 2400,
+          "month_start": "2026-09-01",
+          "item_revenue": 0,
+          "product_name": "VietMotion YY-09",
+          "category_rank": 2,
+          "snapshot_date": "2026-09-30",
+          "stock_on_hand": 35,
+          "stockout_days": 1,
+          "sell_through_rate": 0
+        },
+        {
+          "category": "Outdoor",
+          "product_id": 1442,
+          "month_start": "2026-09-01",
+          "item_revenue": 88455.2,
+          "product_name": "VietMode RP-34",
+          "category_rank": 1,
+          "snapshot_date": "2026-09-30",
+          "stock_on_hand": 13,
+          "stockout_days": 1,
+          "sell_through_rate": 0.5484
+        },
+        {
+          "category": "Outdoor",
+          "product_id": 735,
+          "month_start": "2026-09-01",
+          "item_revenue": 50772.26,
+          "product_name": "HanoiStreet RP-23",
+          "category_rank": 2,
+          "snapshot_date": "2026-09-30",
+          "stock_on_hand": 11,
+          "stockout_days": 1,
+          "sell_through_rate": 0.5
+        },
+        {
+          "category": "Outdoor",
+          "product_id": 2252,
+          "month_start": "2026-09-01",
+          "item_revenue": 21566.61,
+          "product_name": "VietMotion RP-49",
+          "category_rank": 3,
+          "snapshot_date": "2026-09-30",
+          "stock_on_hand": 15,
+          "stockout_days": 2,
+          "sell_through_rate": 0.3889
+        },
+        {
+          "category": "Streetwear",
+          "product_id": 491,
+          "month_start": "2026-09-01",
+          "item_revenue": 99540.72,
+          "product_name": "SaigonFlex UM-96",
+          "category_rank": 1,
+          "snapshot_date": "2026-09-30",
+          "stock_on_hand": 36,
+          "stockout_days": 1,
+          "sell_through_rate": 0.2174
+        },
+        {
+          "category": "Streetwear",
+          "product_id": 115,
+          "month_start": "2026-09-01",
+          "item_revenue": 119006.25,
+          "product_name": "DragonWear UM-42",
+          "category_rank": 2,
+          "snapshot_date": "2026-09-30",
+          "stock_on_hand": 41,
+          "stockout_days": 1,
+          "sell_through_rate": 0.2115
+        },
+        {
+          "category": "Streetwear",
+          "product_id": 396,
+          "month_start": "2026-09-01",
+          "item_revenue": 88227.44,
+          "product_name": "SaigonFlex UM-01",
+          "category_rank": 3,
+          "snapshot_date": "2026-09-30",
+          "stock_on_hand": 38,
+          "stockout_days": 1,
+          "sell_through_rate": 0.1739
+        },
+        {
+          "category": "GenZ",
+          "product_id": 1826,
+          "month_start": "2026-10-01",
+          "item_revenue": 19231.78,
+          "product_name": "SaigonCore YY-21",
+          "category_rank": 1,
+          "snapshot_date": "2026-10-31",
+          "stock_on_hand": 49,
+          "stockout_days": 1,
+          "sell_through_rate": 0.1404
+        },
+        {
+          "category": "Outdoor",
+          "product_id": 2238,
+          "month_start": "2026-10-01",
+          "item_revenue": 33472.42,
+          "product_name": "VietMotion RP-35",
+          "category_rank": 1,
+          "snapshot_date": "2026-10-31",
+          "stock_on_hand": 57,
+          "stockout_days": 1,
+          "sell_through_rate": 0.2875
+        },
+        {
+          "category": "Outdoor",
+          "product_id": 816,
+          "month_start": "2026-10-01",
+          "item_revenue": 59060.22,
+          "product_name": "HanoiStreet RS-20",
+          "category_rank": 2,
+          "snapshot_date": "2026-10-31",
+          "stock_on_hand": 59,
+          "stockout_days": 2,
+          "sell_through_rate": 0.1918
+        },
+        {
+          "category": "Outdoor",
+          "product_id": 1061,
+          "month_start": "2026-10-01",
+          "item_revenue": 12243.4,
+          "product_name": "MekongFit RP-07",
+          "category_rank": 3,
+          "snapshot_date": "2026-10-31",
+          "stock_on_hand": 34,
+          "stockout_days": 1,
+          "sell_through_rate": 0.1905
+        },
+        {
+          "category": "Streetwear",
+          "product_id": 2045,
+          "month_start": "2026-10-01",
+          "item_revenue": 37872.33,
+          "product_name": "UrbanVN UE-05",
+          "category_rank": 1,
+          "snapshot_date": "2026-10-31",
+          "stock_on_hand": 19,
+          "stockout_days": 1,
+          "sell_through_rate": 0.2963
+        },
+        {
+          "category": "Streetwear",
+          "product_id": 2380,
+          "month_start": "2026-10-01",
+          "item_revenue": 26095.23,
+          "product_name": "VietMotion UC-28",
+          "category_rank": 2,
+          "snapshot_date": "2026-10-31",
+          "stock_on_hand": 33,
+          "stockout_days": 2,
+          "sell_through_rate": 0.1538
+        },
+        {
+          "category": "Streetwear",
+          "product_id": 494,
+          "month_start": "2026-10-01",
+          "item_revenue": 0,
+          "product_name": "SaigonFlex UM-99",
+          "category_rank": 3,
+          "snapshot_date": "2026-10-31",
+          "stock_on_hand": 37,
+          "stockout_days": 3,
+          "sell_through_rate": 0
+        }
+      ],
+      "expected_row_count": 22,
+      "notes": "Use latest available inventory snapshot per product-month in the three complete months preceding maximum inventory snapshot month. Require positive stockout days; monthly sales computed separately."
+    },
+    {
+      "id": "E14",
+      "question": "Với những khách đăng ký trong 12 tháng cuối có orders, tính lợi nhuận gộp trọn đời đến ngày dữ liệu cuối theo region và acquisition_channel, trừ refund và hoàn nhập COGS theo số lượng trả; cho top 10 nhóm theo gross profit và tỷ lệ khách mua lặp. Tất cả khách đã đăng ký nhưng chưa từng mua phải còn nằm trong mẫu số khi tính conversion lần đầu.",
+      "difficulty": 5,
+      "expected_tables": [
+        "commerce.customers",
+        "commerce.geography",
+        "commerce.orders",
+        "commerce.order_items",
+        "commerce.products",
+        "commerce.returns"
+      ],
+      "expected_behavior": "answer_with_sql",
+      "gold_sql": "\nWITH bounds AS (SELECT MAX(order_date) last_day FROM commerce.orders),\nregistered AS (\n SELECT c.customer_id,c.acquisition_channel,COALESCE(g.region,'UNKNOWN') region\n FROM commerce.customers c CROSS JOIN bounds b\n LEFT JOIN commerce.geography g ON g.zip=c.zip\n WHERE c.signup_date BETWEEN b.last_day-365 AND b.last_day\n),\nline AS (\n SELECT oi.order_id,oi.product_id,SUM(oi.quantity) quantity,\n        SUM(oi.quantity*oi.unit_price-oi.discount_amount) sales_net,MAX(p.cogs) unit_cogs\n FROM commerce.order_items oi JOIN commerce.products p USING(product_id)\n GROUP BY oi.order_id,oi.product_id\n),\nret AS (\n SELECT order_id,product_id,SUM(return_quantity) returned_qty,SUM(refund_amount) refund\n FROM commerce.returns GROUP BY order_id,product_id\n),\norder_fin AS (\n SELECT l.order_id,SUM(l.sales_net-COALESCE(r.refund,0)\n                   -(l.quantity-COALESCE(r.returned_qty,0))*l.unit_cogs) gross_profit,\n        SUM(l.sales_net-COALESCE(r.refund,0)) net_revenue\n FROM line l LEFT JOIN ret r USING(order_id,product_id)\n GROUP BY l.order_id\n),\nbuyer_totals AS (\n SELECT o.customer_id,COUNT(*) orders_count,\n        SUM(ofin.gross_profit) gross_profit,SUM(ofin.net_revenue) net_revenue\n FROM commerce.orders o JOIN order_fin ofin USING(order_id)\n CROSS JOIN bounds b WHERE o.order_date<=b.last_day GROUP BY o.customer_id\n),\ncohorts AS (\n SELECT COALESCE(r.acquisition_channel,'UNKNOWN') acquisition_channel,r.region,\n        COUNT(*) signed_up_customers,\n        COUNT(*) FILTER(WHERE COALESCE(bt.orders_count,0)>=1) first_time_buyers,\n        COUNT(*) FILTER(WHERE COALESCE(bt.orders_count,0)>=2) repeat_buyers,\n        SUM(COALESCE(bt.net_revenue,0)) net_revenue,\n        SUM(COALESCE(bt.gross_profit,0)) gross_profit\n FROM registered r LEFT JOIN buyer_totals bt USING(customer_id)\n GROUP BY 1,2\n)\nSELECT acquisition_channel,region,signed_up_customers,first_time_buyers,repeat_buyers,\n       ROUND(100.0*first_time_buyers/NULLIF(signed_up_customers,0),2) first_purchase_conversion_pct,\n       ROUND(100.0*repeat_buyers/NULLIF(first_time_buyers,0),2) repeat_rate_among_buyers_pct,\n       ROUND(net_revenue,2) net_revenue,ROUND(gross_profit,2) lifetime_gross_profit\nFROM cohorts ORDER BY gross_profit DESC,acquisition_channel,region LIMIT 10",
+      "expected_result": [
+        {
+          "region": "East",
+          "net_revenue": 1211493.94,
+          "repeat_buyers": 7,
+          "first_time_buyers": 7,
+          "acquisition_channel": "organic_search",
+          "signed_up_customers": 7,
+          "lifetime_gross_profit": 107862.22,
+          "repeat_rate_among_buyers_pct": 100,
+          "first_purchase_conversion_pct": 100
+        },
+        {
+          "region": "East",
+          "net_revenue": 546721.83,
+          "repeat_buyers": 3,
+          "first_time_buyers": 3,
+          "acquisition_channel": "paid_search",
+          "signed_up_customers": 3,
+          "lifetime_gross_profit": 61324.59,
+          "repeat_rate_among_buyers_pct": 100,
+          "first_purchase_conversion_pct": 100
+        },
+        {
+          "region": "East",
+          "net_revenue": 309461.18,
+          "repeat_buyers": 1,
+          "first_time_buyers": 1,
+          "acquisition_channel": "referral",
+          "signed_up_customers": 1,
+          "lifetime_gross_profit": 35951.83,
+          "repeat_rate_among_buyers_pct": 100,
+          "first_purchase_conversion_pct": 100
+        },
+        {
+          "region": "East",
+          "net_revenue": 334272.68,
+          "repeat_buyers": 1,
+          "first_time_buyers": 1,
+          "acquisition_channel": "direct",
+          "signed_up_customers": 1,
+          "lifetime_gross_profit": 35302.19,
+          "repeat_rate_among_buyers_pct": 100,
+          "first_purchase_conversion_pct": 100
+        }
+      ],
+      "expected_row_count": 4,
+      "notes": "Customer signup cohort is 365 inclusive days ending max order_date; include registered nonbuyers for acquisition conversion; repeat denominator is customers who bought >=1 order; lifetime is observed dataset horizon."
+    },
+    {
+      "id": "E15",
+      "question": "Dựa trên promotion và toàn bộ doanh số, hãy chứng minh bằng SQL mức tăng doanh thu NHÂN QUẢ do từng khuyến mãi mang lại so với kịch bản không chạy khuyến mãi, loại bỏ hoàn toàn seasonal effect, selection bias và cannibalization. Không được dùng giả định hay mô hình thống kê.",
+      "difficulty": 5,
+      "expected_tables": [
+        "commerce.promotions",
+        "commerce.order_items",
+        "commerce.orders",
+        "commerce.products",
+        "commerce.sales",
+        "commerce.web_traffic"
+      ],
+      "expected_behavior": "abstain_or_qualify",
+      "gold_sql": null,
+      "expected_result": {
+        "reason": "Không thể chứng minh tác động nhân quả của khuyến mãi chỉ từ dữ liệu quan sát; phải có thử nghiệm đối chứng hoặc giả định phương pháp thống kê được nêu rõ.",
+        "verdict": "not_identifiable",
+        "missing_evidence": [
+          "randomized_experiment_or_valid_identification_strategy",
+          "counterfactual_control_outcomes"
+        ],
+        "may_offer_estimate_only_with_assumptions": true
+      },
+      "expected_row_count": 0,
+      "notes": "Không thể chứng minh tác động nhân quả của khuyến mãi chỉ từ dữ liệu quan sát; phải có thử nghiệm đối chứng hoặc giả định phương pháp thống kê được nêu rõ."
+    }
+  ]
+}

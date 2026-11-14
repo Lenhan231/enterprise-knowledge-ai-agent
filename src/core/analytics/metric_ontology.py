@@ -160,7 +160,7 @@ METRIC_ONTOLOGY = {
         "grain": "order",
         "aggregation": "count_distinct",
         "unit": "orders",
-        "dimensions": ("order_date", "order_status", "region"),
+        "dimensions": ("order_date", "order_status", "customer_id", "region"),
     },
     "average_order_value": {
         "aliases": ("average order value", "aov", "giá trị đơn hàng trung bình"),

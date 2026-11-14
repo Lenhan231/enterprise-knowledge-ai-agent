@@ -85,7 +85,7 @@ def overlaps_region(box: list[float], region: list[float], threshold: float = 0.
     return intersection / area >= threshold
 
 
-def create_line_detector():
+def create_line_detector(*, cpu_threads: int = 2):
     import logging
     import torch
     from rapidocr import EngineType, RapidOCR
@@ -99,10 +99,16 @@ def create_line_detector():
             "EngineConfig.torch.use_cuda": True,
             "EngineConfig.torch.cuda_ep_cfg.device_id": 0,
         })
-    logging.getLogger(__name__).info("RapidOCR line detection using CPU backend with max-edge resize.")
+    logging.getLogger(__name__).info(
+        "RapidOCR line detection using CPU backend with max-edge resize and %s intra-op threads.",
+        max(1, int(cpu_threads)),
+    )
     # Layout crops are already rendered at OCR scale. Upscaling their short edge
     # to 736px makes a one-line region unnecessarily large for detection.
-    return RapidOCR(params={"Det.limit_type": "max"})
+    return RapidOCR(params={
+        "Det.limit_type": "max",
+        "EngineConfig.onnxruntime.intra_op_num_threads": max(1, int(cpu_threads)),
+    })
 
 
 def detect_line_boxes(detector, image: np.ndarray):

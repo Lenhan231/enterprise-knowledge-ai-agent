@@ -1700,7 +1700,8 @@ new MutationObserver((records) => records.forEach((record) => record.addedNodes.
 // Signed in, the page times a real database round trip on both every few minutes and uses the faster one,
 // preferring the primary unless the other is clearly faster. A request that cannot reach its backend at all
 // (the proxy or tunnel answers instead of the app, which always answers JSON) moves once to the other backend.
-const API_BASES = ["/api", "/api-fallback"];
+// In order of preference: main backend (NGROK_URL), then FALLBACK_URL, then FALLBACK_2_URL (vercel.mjs).
+const API_BASES = ["/api", "/api-fallback", "/api-fallback-2"];
 let apiBase = "/api";
 let backendTimer = null;
 
@@ -1714,15 +1715,24 @@ function backendUnreachable(response, method) {
 async function backendFetch(path, init = {}) {
   const method = (init.method || "GET").toUpperCase();
   const at = (base) => fetch(path.replace(/^\/api(?=\/)/, base), init);
-  const other = () => API_BASES.find((base) => base !== apiBase);
-  try {
-    const response = await at(apiBase);
-    if (!path.startsWith("/api/") || !backendUnreachable(response, method)) return response;
-  } catch (error) {
-    if (error.name === "AbortError" || error.name === "TimeoutError" || method !== "GET" || !path.startsWith("/api/")) throw error;
+  if (!path.startsWith("/api/")) return fetch(path, init);
+  // The backend in use first, then the others in order of preference; the first that answers becomes the one in use.
+  const order = [apiBase, ...API_BASES.filter((base) => base !== apiBase)];
+  let last;
+  for (const base of order) {
+    try {
+      last = await at(base);
+      if (!backendUnreachable(last, method)) {
+        apiBase = base;
+        return last;
+      }
+    } catch (error) {
+      if (error.name === "AbortError" || error.name === "TimeoutError" || method !== "GET") throw error;
+      last = error;
+    }
   }
-  apiBase = other();
-  return at(apiBase);
+  if (last instanceof Error) throw last;
+  return last;
 }
 
 async function chooseBackend() {
@@ -1736,10 +1746,12 @@ async function chooseBackend() {
       return Infinity;
     }
   };
-  const [primary, fallback] = await Promise.all(API_BASES.map(time));
-  if (primary === Infinity && fallback === Infinity) return;
-  // shortcut: one sample per check; switches only when the other is >40% faster, upgrade to a rolling median if it flaps.
-  apiBase = fallback < primary * 0.6 ? "/api-fallback" : "/api";
+  const times = await Promise.all(API_BASES.map(time));
+  const fastest = times.indexOf(Math.min(...times));
+  if (times[fastest] === Infinity) return;
+  // shortcut: one sample per check; leaves the main backend only when another is >40% faster (or it is down),
+  // upgrade to a rolling median if it flaps.
+  apiBase = times[0] !== Infinity && times[fastest] >= times[0] * 0.6 ? API_BASES[0] : API_BASES[fastest];
 }
 
 async function api(path, options = {}) {

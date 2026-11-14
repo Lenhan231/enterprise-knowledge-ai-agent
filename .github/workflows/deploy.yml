@@ -1,7 +1,7 @@
 name: Deploy
 
-# Every push to main deploys the VPS (fallback backend) first, then — only if the VPS came back healthy —
-# the home PC (main backend), so the two never restart at the same time and the site always has one backend.
+# Every push to main deploys the VPS (fallback) first, then — only if the VPS came back healthy — the laptop
+# home-pc (main backend), then the desktop (second fallback): one machine restarts at a time, so the site always has a backend.
 # Jobs run on GitHub's machines: nothing from a pull request ever runs on the servers, and fork PRs get no secrets.
 on:
   push:
@@ -48,7 +48,7 @@ jobs:
           ssh -i ~/.ssh/deploy -o BatchMode=yes -o ServerAliveInterval=30 "root@$vps_ip"
 
   home-pc:
-    name: Home PC (main backend)
+    name: Laptop home-pc (main backend)
     needs: vps
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -62,3 +62,23 @@ jobs:
           tags: tag:ci
       - name: Deploy over Tailscale SSH
         run: tailscale ssh eroz@home-pc 'DEPLOY_DIR="$HOME/projects/ekai-prod" bash -s' < scripts/deploy/deploy.sh
+
+  desktop:
+    name: Desktop (second fallback)
+    # After the laptop job (whatever its result) and only if the VPS is healthy, so at most one backend restarts at a time.
+    needs: [vps, home-pc]
+    if: ${{ !cancelled() && needs.vps.result == 'success' }}
+    # The desktop is often switched off; that must not turn the whole deploy red.
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - name: Join the tailnet as tag:ci
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+      - name: Deploy over Tailscale SSH
+        run: tailscale ssh eroz@desktop 'DEPLOY_DIR="$HOME/projects/ekai-prod" bash -s' < scripts/deploy/deploy.sh

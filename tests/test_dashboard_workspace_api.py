@@ -1,6 +1,8 @@
 import tempfile
 import unittest
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
+from types import SimpleNamespace
+import json
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -48,6 +50,20 @@ class DashboardApiTest(unittest.TestCase):
         body = {'revision': 1, 'title': 'Bad', 'tiles': [self.doc.tiles[0].model_dump() | {'query_id': 'foreign'}]}
         self.assertEqual(422, self.client.patch(f'/api/dashboards/{self.doc.id}', json=body).status_code)
         self.assertEqual(403, self.client.delete(f'/api/dashboards/{self.doc.id}?revision=1', headers={'Origin': 'https://foreign.example'}).status_code)
+
+    def test_build_uses_shared_analytics_sql_with_legacy_dashboard_present(self):
+        plan = {'title': 'Sales', 'queries': [{'id': 'sales', 'question': 'Total revenue from commerce.sales in July 2026'}],
+                'tiles': [{'id': 'total', 'title': 'Revenue', 'kind': 'kpi', 'query_id': 'sales'}]}
+        sql = SimpleNamespace(inventory_only=False,
+            repository=SimpleNamespace(get_schema=AsyncMock(return_value={'tables': {'commerce.sales': {'date', 'revenue'}}})),
+            _provider=lambda: SimpleNamespace(generate=Mock(return_value=json.dumps(plan))),
+            run_payload=AsyncMock(return_value={'ok': True, 'query_status': 'executed', 'rows': [{'revenue': 12.5}]}))
+        runtime = SimpleNamespace(analytics_agent=SimpleNamespace(sql_agent=sql), dashboard_agent=SimpleNamespace(repository=object()))
+        with patch('app.dashboards._get_runtime', AsyncMock(return_value=runtime)):
+            response = self.client.post('/api/dashboards', json={'description': 'Revenue dashboard July 2026'})
+        self.assertEqual(201, response.status_code, response.text)
+        self.assertEqual('complete', response.json()['dashboard']['status'])
+        sql.run_payload.assert_awaited_once()
 
 
 if __name__ == '__main__':

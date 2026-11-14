@@ -527,6 +527,16 @@
     </div>
     </main>
   </div>
+  <dialog id="app-dialog" class="app-dialog" aria-labelledby="app-dialog-title" aria-describedby="app-dialog-message">
+    <form method="dialog">
+      <h2 id="app-dialog-title"></h2>
+      <p id="app-dialog-message"></p>
+      <div class="app-dialog-actions">
+        <button value="cancel" class="secondary-button" type="submit">Cancel</button>
+        <button value="confirm" id="app-dialog-confirm" class="primary-button" type="submit"></button>
+      </div>
+    </form>
+  </dialog>
   <link rel="stylesheet" href="/static/dashboard.css?v=20261114">
   <script src="/static/app.js?v=dashboard-20261114" defer></script>
   <script src="/static/dashboard.js?v=20261114" defer></script>

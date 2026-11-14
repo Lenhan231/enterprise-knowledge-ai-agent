@@ -37,3 +37,9 @@ The latest SQL change from main, `90c46c0`, was imported as `1588a38`: returned-
 Planning still depends on Groq availability/quota and Jev clarity decisions. Output planning retains the provider's 1,000-token allowance; plans are requested in compact JSON. The current environment produced a quota rejection with a larger allowance and one transient TLS failure before a successful build. This is a focused smoke verification, not a new bilingual reliability benchmark.
 
 Statistics describe returned observations, not an invented full population. Donut composition and unit compatibility retain existing chart safeguards. Static exports are snapshots; filters and edits happen in the app, and downloading HTML exports its visible business data. Browser automation exposed no available browser, so visual interaction review remains unverified.
+
+## Main integration verification
+
+The publication branch starts from current main and imports only the dashboard workspace and required chart/policy helpers. It preserves main's SQL implementation, inventory-dashboard class, report/navigation design, shared dialog and document-processing changes. The saved-dashboard API uses `runtime.analytics_agent.sql_agent`; it does not depend on replacing the legacy inventory agent.
+
+On this checkout, 22 dashboard checks and two legacy inventory checks pass, both JavaScript files pass syntax checks, and a live authenticated build rendered a chart and descriptive summary from approved SQL results. A 65-test existing app/agent/SQL comparison produced identical failure IDs before and after integration: 24 failures and 31 errors, largely stale contracts and missing document fixtures/services. These existing checks are not reported as passing. Comparison logs, live data, benchmark snapshots and credentials are excluded from the published commits.

@@ -7,7 +7,7 @@ import unittest
 from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
-from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+from core.sql_agent.agent import SQLAnalyticsAgent
 from core.analytics.text_to_sql import APPROVED_COLUMNS, validate_commerce_sql
 from core.models.agents import AgentRequest, VerifiedIdentity
 
@@ -67,8 +67,11 @@ class InventoryScopeCompatibilityTest(unittest.IsolatedAsyncioTestCase):
     async def test_inventory_factory_verifies_only_required_read_privileges(self):
         from core.database.commerce_repository import create_repository_from_env
         pool=AsyncMock()
+        discovered={'tables':{table:APPROVED_COLUMNS[table] for table in TABLES},
+                    'primary_keys':{},'joins':frozenset(),'date_columns':frozenset()}
         with patch.dict(os.environ,{'SQL_INVENTORY_ONLY':'true','ANALYTICS_DATABASE_URL':'postgresql://reader:unused@localhost/test'}), \
              patch('core.database.commerce_repository.asyncpg.create_pool',new=AsyncMock(return_value=pool)), \
+             patch('core.database.commerce_repository.discover_schema',new=AsyncMock(return_value=discovered)), \
              patch('core.database.commerce_repository.verify_analytics_role',new=AsyncMock()) as verify:
             repo=await create_repository_from_env()
         self.assertEqual(set(repo.allowed_sources),TABLES)

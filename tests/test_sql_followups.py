@@ -5,14 +5,17 @@ import json
 from pathlib import Path
 import sys
 import unittest
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, Mock
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
 from core.analytics.metric_mapping import decode_sql_turn
 from core.analytics.metric_validation import MetricDefinitionError
+from core.agents.execution import Execution
+from core.agents.response import _scalar_sql_finding
 from core.agents.router import AgentRouter
-from core.agents.sql_analytics_agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
-from core.models.agents import AgentRequest, AgentResult, VerifiedIdentity, validate_chat_metadata
+from core.sql_agent.agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
+from core.models.agent_plan import AgentPlan, AgentTask
+from core.models.agents import AgentRequest, AgentResult, Evidence, VerifiedIdentity, validate_chat_metadata
 
 BASE = {'metrics':['stock_on_hand'],'dimensions':['category'],'time':{'mode':'snapshot','start':'2022-12-31'}}
 STATE = {'accepted':BASE,'pending':None}
@@ -85,14 +88,6 @@ class SQLPatchTest(unittest.TestCase):
 
 
 class SQLConversationTest(unittest.IsolatedAsyncioTestCase):
-    def setUp(self):
-        self.jev = patch.object(SQLAnalyticsAgent, '_check_ambiguity', return_value={
-            'choice': 'clear', 'probabilities': {'clear': 0.95, 'ambiguous': 0.05},
-            'confidence': 0.95, 'model': 'test',
-        })
-        self.jev.start()
-        self.addCleanup(self.jev.stop)
-
     async def test_expiry_identity_permission_changes_and_restart_clear_scope(self):
         agent=Mock();seen=[]
         async def run(request):
@@ -181,6 +176,7 @@ class SQLConversationTest(unittest.IsolatedAsyncioTestCase):
         return AgentRequest(question=question,conversation_id=conversation,
                             identity=VerifiedIdentity(subject=subject,permissions=permissions or {'analytics:read'},document_roles={'admin'}))
 
+
     async def test_three_turn_sequence_pins_latest_and_executes_each_turn(self):
         provider=Mock()
         provider.generate.side_effect=[json.dumps({'action':'new','mapping':{**BASE,'time':{'mode':'latest'}}}),
@@ -203,3 +199,36 @@ class SQLConversationTest(unittest.IsolatedAsyncioTestCase):
         saved=router.sql_conversations.entries[('test','session')].history
         self.assertNotIn('stock_on_hand": 12',json.dumps(saved))
         self.assertNotIn('SELECT',json.dumps(saved))
+
+
+class OriginalQuestionContextTest(unittest.IsolatedAsyncioTestCase):
+    async def test_sql_task_keeps_root_question_for_relative_date_validation(self):
+        question = 'Doanh thu tháng 3 năm nay là bao nhiêu?'
+        request = AgentRequest(question=question, identity=IDENTITY)
+        sql_agent = Mock()
+        sql_agent.run = AsyncMock(return_value=AgentResult(
+            answer='Query completed', agent='analytics',
+            evidence=[Evidence(source_type='sql', source='commerce.sales')],
+            data={'rows': [{'revenue': 1}]},
+        ))
+        plan = AgentPlan(objective='March revenue', tasks=[
+            AgentTask(id='sql', agent='sql', question='Revenue in March')
+        ])
+
+        await Execution(request, {'sql': sql_agent}).run(plan)
+
+        sql_request = sql_agent.run.await_args.args[0]
+        self.assertEqual(sql_request.question, 'Revenue in March')
+        self.assertEqual(sql_request.metadata['_original_question'], question)
+
+    def test_scalar_fallback_formats_value_and_uses_bound_month(self):
+        item = {
+            'agent': 'sql',
+            'data': {'rows': [{'revenue': 2248522.83}],
+                     'parameters': ['2026-03-01', '2026-04-01']},
+            'evidence': [{'citation_id': 'S1'}],
+        }
+        self.assertEqual(
+            _scalar_sql_finding(item, 'doanh thu tháng 3'),
+            'Doanh thu tháng 3 năm 2026: 2,248,522.83 [S1].',
+        )

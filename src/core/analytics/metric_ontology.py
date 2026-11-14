@@ -98,6 +98,7 @@ METRIC_ONTOLOGY = {
         "aliases": ("revenue", "sales", "doanh thu"),
         "source": "commerce.sales",
         "formula": "SUM(revenue)",
+        "time_scope": "All available records unless the question requests a time period.",
         "grain": "day",
         "aggregation": "sum",
         "unit": "currency",
@@ -138,6 +139,19 @@ METRIC_ONTOLOGY = {
         # Chính sách MVP: chỉ xem đơn đã giao là doanh thu thực hiện.
         "filters": ("orders.order_status = 'delivered'",),
         "limitations": ("Có thể không khớp sales.Revenue do khác pipeline và định nghĩa.",),
+    },
+    "product_revenue": {
+        "aliases": ("product revenue", "revenue by product", "revenue per product",
+                    "doanh thu theo sản phẩm", "doanh thu sản phẩm"),
+        "source": "commerce.orders + commerce.order_items + commerce.products",
+        "formula": "SUM(quantity * unit_price - discount_amount)",
+        "grain": "order_item",
+        "aggregation": "sum",
+        "unit": "currency",
+        "dimensions": ("order_date", "product_id", "product_name", "category", "segment"),
+        "currency": "dataset_currency_unknown",
+        "filters": ("orders.order_status = 'delivered'",),
+        "limitations": ("Doanh thu dòng hàng sau chiết khấu từ đơn đã giao; có thể khác commerce.sales.Revenue.",),
     },
     "order_count": {
         "aliases": ("order count", "number of orders", "số đơn hàng", "lượng đơn hàng"),
@@ -277,6 +291,9 @@ def resolve_metric_names(text: str) -> set[str]:
             continue
         selected.append((start, end, metric_name))
     names = {metric_name for _, _, metric_name in selected}
+    if "revenue" in names and re.search(r"\bproducts?\b|sản phẩm|mặt hàng", normalized):
+        names.remove("revenue")
+        names.add("product_revenue")
     if "stock_on_hand" in names and len(names) > 1 and not re.search(r"stock on hand|(?:inventory|stock) levels?|(?:lowest|highest) stock|l\u01b0\u1ee3ng t\u1ed3n kho", normalized):
         names.remove("stock_on_hand")
     if "fill_rate" in names and re.search(r"lowest|highest|worst|best|th\u1ea5p nh\u1ea5t|cao nh\u1ea5t|t\u1eebng s\u1ea3n ph\u1ea9m", normalized) and not re.search(r"average|mean|trung b\u00ecnh", normalized):

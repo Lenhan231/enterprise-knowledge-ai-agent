@@ -15,6 +15,24 @@ def response(value):
 
 
 class SessionChatTest(unittest.TestCase):
+    @patch.dict(os.environ,{'API_AGENT_PREFIX':'/api','API_BASE_URL':'http://api.test'})
+    def test_sql_assistant_reviews_draft_before_executing(self):
+        app=self.app()
+        app.selectbox[0].select('SQL Assistant (Draft → Approve)').run()
+        app.text_area[0].set_value('List products').run()
+        draft={'status':'approval_required','question':'List products','sql':'SELECT * FROM commerce.products LIMIT 10',
+               'parameters':[],'sources':['commerce.products'],'explanation':'List product rows.'}
+        result={'status':'executed','sql':draft['sql'],'rows':[{'product_id':'P1'}],'limitations':[]}
+        with patch.object(ui,'submit_sql_assistant',side_effect=[draft,result]) as submit:
+            app.button(key='sql_assistant_draft').click().run()
+            self.assertTrue(any('SQL to review' == item.label for item in app.text_area))
+            self.assertIn(draft['sql'],[item.value for item in app.text_area])
+            app.button(key='sql_assistant_execute').click().run()
+        self.assertEqual(submit.call_count,2)
+        self.assertEqual(submit.call_args_list[1].kwargs['mode'],'execute')
+        self.assertEqual(len(app.dataframe),1)
+        self.assertFalse(app.exception)
+
     @patch.dict(os.environ,{'API_AGENT_PREFIX':'/api'})
     def test_reports_stay_separate_and_reset_clears_download_and_draft(self):
         app=self.app()

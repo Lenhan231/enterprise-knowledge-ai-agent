@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, Mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from core.analytics.text_to_sql import APPROVED_COLUMNS, APPROVED_JOINS, INVENTORY_SOURCES, validate_commerce_sql
-from core.agents.sql_analytics_agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
+from core.sql_agent.agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
 from core.models.agents import AgentRequest, VerifiedIdentity
 from core.analytics.metric_mapping import decode_metric_mapping, compile_inventory_query, validate_mapped_sql
 from core.analytics.metric_validation import validate_metric_definitions

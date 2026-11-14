@@ -2,7 +2,7 @@
 
 from core.agents.base import BaseAgent
 from core.agents.knowledge_agent import KnowledgeAgent
-from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+from core.sql_agent.agent import SQLAnalyticsAgent
 from core.models.agents import AgentRequest, AgentResult
 
 

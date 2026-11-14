@@ -41,8 +41,9 @@ async def plan_request(request, provider, *, history=(), previous=None, report_h
         mixed_cues = mixed_cues or any(term in text for term in ('so sánh', 'đếm', 'bao nhiêu', 'doanh thu', 'đơn hàng'))
         policy_only = not mixed_cues and intent.intent == 'knowledge' and any(
             term in text for term in ('policy', 'procedure', 'chính sách', 'quy trình'))
-        sql_only = intent.intent == 'analytics' and any(
-            term in text for term in ('how many orders', 'list products', 'bao nhiêu đơn hàng'))
+        # A single analytics request needs no task decomposition. Let the SQL
+        # agent apply its own ambiguity and metric safeguards during an outage.
+        sql_only = intent.intent == 'analytics' and intent.needs_sql and not intent.needs_knowledge
         if policy_only or sql_only:
             return AgentPlan(objective=request.question, fallback=True, tasks=[{
                 'id': 'fallback', 'agent': 'knowledge' if policy_only else 'sql', 'question': request.question}])

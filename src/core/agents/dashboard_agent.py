@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 
-from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+from core.sql_agent.agent import SQLAnalyticsAgent
 from core.models.agents import AgentResult, Evidence
 
 

@@ -9,12 +9,25 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 
 from core.analytics.metric_mapping import build_metric_mapping_prompt, decode_metric_mapping
 from core.analytics.metric_ontology import resolve_metric_names
-from core.analytics.text_to_sql import build_sql_prompt, validate_commerce_sql, SQLValidationError, decode_query_plan
+from core.analytics.text_to_sql import (build_sql_prompt, validate_commerce_sql, validate_sql_security,
+    SQLValidationError, SQLSecurityError, SQLSchemaMismatchError, decode_query_plan)
 from core.analytics.metric_validation import validate_metric_definitions, MetricDefinitionError
 from core.analytics.text_to_sql import APPROVED_COLUMNS
 
 
 class InterpretationRegressionTest(unittest.TestCase):
+    def test_security_gate_stays_hard_and_schema_mismatch_is_separate(self):
+        with self.assertRaises(SQLSecurityError):
+            validate_sql_security('DELETE FROM commerce.sales')
+        with self.assertRaises(SQLSchemaMismatchError) as caught:
+            validate_commerce_sql(
+                'SELECT s.not_a_column FROM commerce.sales AS s LIMIT 1',
+                schema_columns=APPROVED_COLUMNS,
+            )
+        self.assertEqual(caught.exception.table, 'commerce.sales')
+        self.assertEqual(caught.exception.column, 'not_a_column')
+        self.assertIn('revenue', caught.exception.available_columns)
+
     def test_unambiguous_scalar_sql_is_qualified_and_bounded_before_validation(self):
         plan=decode_query_plan(json.dumps({'sql':
             'SELECT COALESCE(SUM(d.n-1),0) AS duplicate_rows FROM '
@@ -137,6 +150,69 @@ class DerivedJoinContractTest(unittest.TestCase):
         validate_commerce_sql(sql)
         with self.assertRaises(SQLValidationError):
             validate_commerce_sql(sql.replace('p.product_id=ret.product_id','p.category=ret.product_id'))
+
+    def test_monthly_facts_can_align_different_date_sources_and_prior_month(self):
+        sql = ("WITH sales_month AS (SELECT oi.product_id,DATE_TRUNC('month',o.order_date) AS month,"
+               "SUM(oi.quantity*oi.unit_price-oi.discount_amount) AS revenue "
+               "FROM commerce.order_items oi JOIN commerce.orders o ON oi.order_id=o.order_id "
+               "GROUP BY oi.product_id,DATE_TRUNC('month',o.order_date)), "
+               "stock_month AS (SELECT i.product_id,DATE_TRUNC('month',i.snapshot_date) AS month,"
+               "SUM(i.stockout_days) AS stockout_days FROM commerce.inventory i "
+               "GROUP BY i.product_id,DATE_TRUNC('month',i.snapshot_date)), "
+               "product_months AS (SELECT st.product_id,st.month,sm.revenue,st.stockout_days "
+               "FROM stock_month st LEFT JOIN sales_month sm ON sm.product_id=st.product_id AND sm.month=st.month), "
+               "comparisons AS (SELECT cur.product_id,cur.month,cur.revenue,cur.stockout_days,"
+               "prev.revenue AS previous_revenue,prev.stockout_days AS previous_stockout_days "
+               "FROM product_months cur LEFT JOIN product_months prev ON prev.product_id=cur.product_id "
+               "AND prev.month=cur.month-INTERVAL '1 month'), "
+               "ranked AS (SELECT p.product_id,p.product_name,SUM(c.revenue) AS revenue,"
+               "COUNT(*) FILTER(WHERE c.revenue<c.previous_revenue AND c.stockout_days>c.previous_stockout_days) AS overlaps "
+               "FROM comparisons c JOIN commerce.products p ON p.product_id=c.product_id "
+               "GROUP BY p.product_id,p.product_name) "
+               "SELECT r.product_id,r.product_name,r.revenue,r.overlaps FROM ranked r "
+               "ORDER BY r.revenue DESC LIMIT 10")
+        validate_commerce_sql(sql)
+
+    def test_latest_month_single_row_bucket_can_filter_base_fact(self):
+        sql = ("WITH latest_month AS (SELECT DATE_TRUNC('month', s2.date) AS month "
+               "FROM commerce.sales AS s2 GROUP BY 1 ORDER BY 1 DESC LIMIT 1) "
+               "SELECT lm.month, SUM(s.revenue) AS revenue FROM commerce.sales AS s "
+               "JOIN latest_month AS lm ON DATE_TRUNC('month', s.date)=lm.month "
+               "GROUP BY lm.month ORDER BY lm.month DESC LIMIT 1")
+        validate_commerce_sql(sql)
+
+    def test_latest_month_metric_validation_accepts_cte_aggregation_shapes(self):
+        from core.analytics.text_to_sql import validate_latest_month_query
+        question = 'doanh thu tháng gần nhất là bao nhiêu'
+        queries = (
+            "WITH latest_month AS (SELECT DATE_TRUNC('month', s.date) AS month, SUM(s.revenue) AS revenue "
+            "FROM commerce.sales AS s GROUP BY 1 ORDER BY 1 DESC LIMIT 1) "
+            "SELECT month, revenue FROM latest_month",
+            "WITH latest_month AS (SELECT DATE_TRUNC('month', s2.date) AS month "
+            "FROM commerce.sales AS s2 ORDER BY month DESC LIMIT 1) "
+            "SELECT month, SUM(s.revenue) AS revenue FROM commerce.sales AS s "
+            "JOIN latest_month AS lm ON DATE_TRUNC('month', s.date) = lm.month "
+            "GROUP BY 1 ORDER BY 1 DESC LIMIT 1",
+        )
+        for sql in queries:
+            with self.subTest(sql=sql):
+                validate_latest_month_query(sql, question)
+
+    def test_detail_rows_can_join_unique_aggregate_on_shared_currency_key(self):
+        sql = ("WITH invoice_lines AS (SELECT ii.invoice_id,i.currency,SUM(ii.amount) AS amount "
+               "FROM commerce.invoice_items AS ii JOIN commerce.invoices AS i ON ii.invoice_id=i.invoice_id "
+               "GROUP BY ii.invoice_id,i.currency), by_currency AS (SELECT il.currency,SUM(il.amount) AS amount "
+               "FROM invoice_lines AS il GROUP BY il.currency), top5 AS (SELECT i.invoice_id,i.currency "
+               "FROM commerce.invoices AS i ORDER BY i.invoice_id LIMIT 5) "
+               "SELECT t.invoice_id,b.amount FROM top5 AS t JOIN by_currency AS b ON t.currency=b.currency LIMIT 5")
+        validate_commerce_sql(sql)
+        unsafe = sql.replace('GROUP BY il.currency', 'GROUP BY il.currency,il.amount')
+        with self.assertRaises(SQLValidationError):
+            validate_commerce_sql(unsafe)
+
+    def test_order_by_position_must_exist_in_select_list(self):
+        with self.assertRaisesRegex(SQLValidationError, 'ORDER BY position'):
+            validate_commerce_sql('SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s ORDER BY 2 LIMIT 1')
 
     def test_inner_limit_does_not_hide_incomplete_operands(self):
         with self.assertRaises(SQLValidationError):
@@ -268,7 +344,7 @@ class CrossDomainInventoryTest(unittest.TestCase):
 class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
     async def test_current_period_unavailability_is_verified_without_a_provider(self):
         from datetime import date
-        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.sql_agent.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         for latest in [date(2022,12,31),None]:
             provider,repository=Mock(),AsyncMock()
@@ -283,7 +359,7 @@ class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
             repository.execute_approved_query.assert_awaited_once()
 
     async def test_approved_bridge_replaces_an_unnecessary_join_clarification(self):
-        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.sql_agent.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         provider, repository = Mock(), AsyncMock()
         sql=('SELECT DISTINCT r.product_id,r.order_id FROM commerce.returns r '
@@ -299,7 +375,7 @@ class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(provider.generate.call_count,2)
 
     async def test_two_snapshot_change_executes_verified_product_comparison(self):
-        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.sql_agent.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         provider, repository = Mock(), AsyncMock()
         provider.generate.return_value = json.dumps(dict(metrics=['stock_on_hand'], dimensions=['product_id'],
@@ -313,7 +389,7 @@ class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
         repository.execute_approved_query.assert_awaited_once()
 
     async def test_comparison_reaches_shared_sql_path_and_readonly_repository(self):
-        from core.agents.sql_analytics_agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
+        from core.sql_agent.agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
         from core.models.agents import AgentRequest, VerifiedIdentity
         provider, repository = Mock(), AsyncMock()
         provider.generate.return_value = json.dumps({'sql':CrossDomainInventoryTest.comparison})
@@ -331,7 +407,7 @@ class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn('period_observation_sum',str(result.metadata['metrics']))
 
     async def test_dropped_order_operand_cannot_execute(self):
-        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.sql_agent.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         provider, repository = Mock(), AsyncMock()
         provider.generate.return_value = json.dumps({'sql':

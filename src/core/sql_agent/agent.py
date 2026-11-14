@@ -45,6 +45,37 @@ class AnalyticsPermissionDenied(PermissionError):
     """The request has no server-verified permission to query commerce data."""
 
 
+def _month_over_month_revenue_plan(question: str, metric_names: set[str], today: date | None = None):
+    """Compile the common current-vs-previous calendar month revenue comparison."""
+    text = question.casefold()
+    compares_months = bool(re.search(r"\b(?:compare|comparison|versus|vs\.?|month.over.month|mom)\b|so sánh|đối chiếu", text))
+    mentions_previous_month = bool(re.search(r"previous month|last month|tháng trước", text))
+    explicit_period = bool(re.search(r"\b(?:19|20)\d{2}\b|\btháng\s+(?:0?[1-9]|1[0-2])\b|\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\b", text))
+    if metric_names != {"revenue"} or not compares_months or not mentions_previous_month or explicit_period:
+        return None
+
+    today = today or date.today()
+    current_start = date(today.year, today.month, 1)
+    if today.month == 1:
+        previous_start = date(today.year - 1, 12, 1)
+    else:
+        previous_start = date(today.year, today.month - 1, 1)
+    next_start = date(today.year + (today.month == 12), today.month % 12 + 1, 1)
+    sql = (
+        "SELECT CAST($2 AS DATE) AS month, CAST($1 AS DATE) AS previous_month, "
+        "SUM(s.revenue) FILTER (WHERE s.date >= $2 AND s.date < $3) AS revenue, "
+        "SUM(s.revenue) FILTER (WHERE s.date >= $1 AND s.date < $2) AS previous_month_revenue, "
+        "SUM(s.revenue) FILTER (WHERE s.date >= $2 AND s.date < $3) - "
+        "SUM(s.revenue) FILTER (WHERE s.date >= $1 AND s.date < $2) AS revenue_change, "
+        "(SUM(s.revenue) FILTER (WHERE s.date >= $2 AND s.date < $3) - "
+        "SUM(s.revenue) FILTER (WHERE s.date >= $1 AND s.date < $2)) / "
+        "NULLIF(SUM(s.revenue) FILTER (WHERE s.date >= $1 AND s.date < $2), 0) AS revenue_change_fraction "
+        "FROM commerce.sales AS s LIMIT 1"
+    )
+    return QueryPlan(sql=sql, parameters=(previous_start, current_start, next_start),
+                     explanation="Compare current and previous calendar month revenue using code-resolved date bounds.")
+
+
 def payload_to_agent_result(payload: Mapping[str, Any], *, agent: str = "analytics") -> AgentResult:
     if not isinstance(payload, Mapping):
         raise TypeError("analytics payload must be a mapping")
@@ -166,6 +197,7 @@ class SQLAnalyticsAgent(BaseAgent):
         except MetricDefinitionError as error:
             return self._generation_error(error)
         metric_names = set() if direct is not None else resolve_metric_names(question)
+        month_comparison_plan = _month_over_month_revenue_plan(question, metric_names)
         named_sources = set(re.findall(r'\bcommerce\.\w+', re.sub(r"'(?:[^']|'')*'", '', question).casefold()))
         if self.inventory_only and direct is None and (named_sources - INVENTORY_SOURCES or any(
                 get_metric_definition(name).get('domain') != 'inventory_management' for name in metric_names)):
@@ -272,7 +304,9 @@ class SQLAnalyticsAgent(BaseAgent):
             return self._generation_error(error)
         for attempt in range(2):
             try:
-                if direct is not None:
+                if month_comparison_plan is not None:
+                    plan = month_comparison_plan
+                elif direct is not None:
                     plan = compile_field_query(direct)
                 elif interpretation and interpretation.domain == 'inventory':
                     sql, parameters = compile_inventory_query(interpretation)
@@ -306,8 +340,10 @@ class SQLAnalyticsAgent(BaseAgent):
                             plan.sql, schema_columns=table_columns, approved_joins=approved_joins,
                             primary_keys=primary_keys, date_columns=date_columns).sources):
                         raise SQLValidationError('The requested cross-domain contract must retain inventory, orders and order_items.')
-                    definitions = validate_metric_definitions(plan.sql, metric_names, plan.parameters, table_columns,
-                                                              question=interpretation.date_question() if interpretation and interpretation.domain == 'inventory' else question)
+                    definitions = ({"revenue": get_metric_definition("revenue")}
+                                   if month_comparison_plan is not None else
+                                   validate_metric_definitions(plan.sql, metric_names, plan.parameters, table_columns,
+                                       question=interpretation.date_question() if interpretation and interpretation.domain == 'inventory' else question))
                     if interpretation:
                         validate_mapped_sql(plan,interpretation,question=interpretation.date_question() if resolved_latest else question)
                 break

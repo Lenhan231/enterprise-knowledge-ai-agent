@@ -511,10 +511,13 @@
 
 /* ---------- motion: only in answer to an action, plus the answer's own reveal ---------- */
 :root .tab-panel:not([hidden]),:root .chat-turn,:root .chat-turn-question p{animation:none}
-/* theme switch: circular reveal from the toggle (View Transitions; app.js sets --reveal-x/y) */
-::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
-::view-transition-new(root){animation:themeReveal .55s var(--ease)}
-@keyframes themeReveal{from{clip-path:circle(0 at var(--reveal-x,50%) var(--reveal-y,50%))}to{clip-path:circle(150vmax at var(--reveal-x,50%) var(--reveal-y,50%))}}
+/* theme switch: to dark the page is painted in alternating vertical strokes, to light the dark page is erased in
+   alternating horizontal rows from the top (View Transitions; the old page stays on top while it is erased) */
+::view-transition-old(root),::view-transition-new(root){animation:none}
+:root[data-theme="dark"]::view-transition-new(root){animation:themePaint 1.3s cubic-bezier(.45,0,.55,1) both}
+:root:not([data-theme="dark"])::view-transition-old(root){z-index:1;animation:themeErase 1.3s cubic-bezier(.45,0,.55,1) both}
+@keyframes themePaint{0.0%{clip-path:polygon(0.0% 0.0%,16.667% 0.0%,16.667% 100.0%,33.333% 100.0%,33.333% 0.0%,50.0% 0.0%,50.0% 100.0%,66.667% 100.0%,66.667% 0.0%,83.333% 0.0%,83.333% 100.0%,100.0% 100.0%,100.0% 100.0%,83.333% 100.0%,83.333% 0.0%,66.667% 0.0%,66.667% 100.0%,50.0% 100.0%,50.0% 0.0%,33.333% 0.0%,33.333% 100.0%,16.667% 100.0%,16.667% 0.0%,0.0% 0.0%)}16.667%{clip-path:polygon(0.0% 0.0%,16.667% 0.0%,16.667% 100.0%,33.333% 100.0%,33.333% 0.0%,50.0% 0.0%,50.0% 100.0%,66.667% 100.0%,66.667% 0.0%,83.333% 0.0%,83.333% 100.0%,100.0% 100.0%,100.0% 100.0%,83.333% 100.0%,83.333% 0.0%,66.667% 0.0%,66.667% 100.0%,50.0% 100.0%,50.0% 0.0%,33.333% 0.0%,33.333% 100.0%,16.667% 100.0%,16.667% 100.0%,0.0% 100.0%)}33.333%{clip-path:polygon(0.0% 0.0%,16.667% 0.0%,16.667% 0.0%,33.333% 0.0%,33.333% 0.0%,50.0% 0.0%,50.0% 100.0%,66.667% 100.0%,66.667% 0.0%,83.333% 0.0%,83.333% 100.0%,100.0% 100.0%,100.0% 100.0%,83.333% 100.0%,83.333% 0.0%,66.667% 0.0%,66.667% 100.0%,50.0% 100.0%,50.0% 0.0%,33.333% 0.0%,33.333% 100.0%,16.667% 100.0%,16.667% 100.0%,0.0% 100.0%)}50.0%{clip-path:polygon(0.0% 0.0%,16.667% 0.0%,16.667% 0.0%,33.333% 0.0%,33.333% 0.0%,50.0% 0.0%,50.0% 100.0%,66.667% 100.0%,66.667% 0.0%,83.333% 0.0%,83.333% 100.0%,100.0% 100.0%,100.0% 100.0%,83.333% 100.0%,83.333% 0.0%,66.667% 0.0%,66.667% 100.0%,50.0% 100.0%,50.0% 100.0%,33.333% 100.0%,33.333% 100.0%,16.667% 100.0%,16.667% 100.0%,0.0% 100.0%)}66.667%{clip-path:polygon(0.0% 0.0%,16.667% 0.0%,16.667% 0.0%,33.333% 0.0%,33.333% 0.0%,50.0% 0.0%,50.0% 0.0%,66.667% 0.0%,66.667% 0.0%,83.333% 0.0%,83.333% 100.0%,100.0% 100.0%,100.0% 100.0%,83.333% 100.0%,83.333% 0.0%,66.667% 0.0%,66.667% 100.0%,50.0% 100.0%,50.0% 100.0%,33.333% 100.0%,33.333% 100.0%,16.667% 100.0%,16.667% 100.0%,0.0% 100.0%)}83.333%{clip-path:polygon(0.0% 0.0%,16.667% 0.0%,16.667% 0.0%,33.333% 0.0%,33.333% 0.0%,50.0% 0.0%,50.0% 0.0%,66.667% 0.0%,66.667% 0.0%,83.333% 0.0%,83.333% 100.0%,100.0% 100.0%,100.0% 100.0%,83.333% 100.0%,83.333% 100.0%,66.667% 100.0%,66.667% 100.0%,50.0% 100.0%,50.0% 100.0%,33.333% 100.0%,33.333% 100.0%,16.667% 100.0%,16.667% 100.0%,0.0% 100.0%)}100.0%{clip-path:polygon(0.0% 0.0%,16.667% 0.0%,16.667% 0.0%,33.333% 0.0%,33.333% 0.0%,50.0% 0.0%,50.0% 0.0%,66.667% 0.0%,66.667% 0.0%,83.333% 0.0%,83.333% 0.0%,100.0% 0.0%,100.0% 100.0%,83.333% 100.0%,83.333% 100.0%,66.667% 100.0%,66.667% 100.0%,50.0% 100.0%,50.0% 100.0%,33.333% 100.0%,33.333% 100.0%,16.667% 100.0%,16.667% 100.0%,0.0% 100.0%)}}
+@keyframes themeErase{0.0%{clip-path:polygon(0.0% 0.0%,0.0% 16.667%,0.0% 16.667%,0.0% 33.333%,0.0% 33.333%,0.0% 50.0%,0.0% 50.0%,0.0% 66.667%,0.0% 66.667%,0.0% 83.333%,0.0% 83.333%,0.0% 100.0%,100.0% 100.0%,100.0% 83.333%,100.0% 83.333%,100.0% 66.667%,100.0% 66.667%,100.0% 50.0%,100.0% 50.0%,100.0% 33.333%,100.0% 33.333%,100.0% 16.667%,100.0% 16.667%,100.0% 0.0%)}16.667%{clip-path:polygon(100.0% 0.0%,100.0% 16.667%,0.0% 16.667%,0.0% 33.333%,0.0% 33.333%,0.0% 50.0%,0.0% 50.0%,0.0% 66.667%,0.0% 66.667%,0.0% 83.333%,0.0% 83.333%,0.0% 100.0%,100.0% 100.0%,100.0% 83.333%,100.0% 83.333%,100.0% 66.667%,100.0% 66.667%,100.0% 50.0%,100.0% 50.0%,100.0% 33.333%,100.0% 33.333%,100.0% 16.667%,100.0% 16.667%,100.0% 0.0%)}33.333%{clip-path:polygon(100.0% 0.0%,100.0% 16.667%,0.0% 16.667%,0.0% 33.333%,0.0% 33.333%,0.0% 50.0%,0.0% 50.0%,0.0% 66.667%,0.0% 66.667%,0.0% 83.333%,0.0% 83.333%,0.0% 100.0%,100.0% 100.0%,100.0% 83.333%,100.0% 83.333%,100.0% 66.667%,100.0% 66.667%,100.0% 50.0%,100.0% 50.0%,100.0% 33.333%,0.0% 33.333%,0.0% 16.667%,100.0% 16.667%,100.0% 0.0%)}50.0%{clip-path:polygon(100.0% 0.0%,100.0% 16.667%,0.0% 16.667%,0.0% 33.333%,100.0% 33.333%,100.0% 50.0%,0.0% 50.0%,0.0% 66.667%,0.0% 66.667%,0.0% 83.333%,0.0% 83.333%,0.0% 100.0%,100.0% 100.0%,100.0% 83.333%,100.0% 83.333%,100.0% 66.667%,100.0% 66.667%,100.0% 50.0%,100.0% 50.0%,100.0% 33.333%,0.0% 33.333%,0.0% 16.667%,100.0% 16.667%,100.0% 0.0%)}66.667%{clip-path:polygon(100.0% 0.0%,100.0% 16.667%,0.0% 16.667%,0.0% 33.333%,100.0% 33.333%,100.0% 50.0%,0.0% 50.0%,0.0% 66.667%,0.0% 66.667%,0.0% 83.333%,0.0% 83.333%,0.0% 100.0%,100.0% 100.0%,100.0% 83.333%,100.0% 83.333%,100.0% 66.667%,0.0% 66.667%,0.0% 50.0%,100.0% 50.0%,100.0% 33.333%,0.0% 33.333%,0.0% 16.667%,100.0% 16.667%,100.0% 0.0%)}83.333%{clip-path:polygon(100.0% 0.0%,100.0% 16.667%,0.0% 16.667%,0.0% 33.333%,100.0% 33.333%,100.0% 50.0%,0.0% 50.0%,0.0% 66.667%,100.0% 66.667%,100.0% 83.333%,0.0% 83.333%,0.0% 100.0%,100.0% 100.0%,100.0% 83.333%,100.0% 83.333%,100.0% 66.667%,0.0% 66.667%,0.0% 50.0%,100.0% 50.0%,100.0% 33.333%,0.0% 33.333%,0.0% 16.667%,100.0% 16.667%,100.0% 0.0%)}100.0%{clip-path:polygon(100.0% 0.0%,100.0% 16.667%,0.0% 16.667%,0.0% 33.333%,100.0% 33.333%,100.0% 50.0%,0.0% 50.0%,0.0% 66.667%,100.0% 66.667%,100.0% 83.333%,0.0% 83.333%,0.0% 100.0%,0.0% 100.0%,0.0% 83.333%,100.0% 83.333%,100.0% 66.667%,0.0% 66.667%,0.0% 50.0%,100.0% 50.0%,100.0% 33.333%,0.0% 33.333%,0.0% 16.667%,100.0% 16.667%,100.0% 0.0%)}}
 
 /* ---------- phone ---------- */
 @media(max-width:780px){
@@ -727,6 +730,11 @@
 :root .invoice-review-item [data-remove-invoice-item]{grid-column:1/-1;justify-self:start;min-height:32px;padding:0 12px;font-size:13px}
 :root .invoice-review-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
 :root .invoice-review-actions [data-reject-invoice]{margin-left:auto}
+/* Reject is destructive: the same solid red as the confirmation dialog's danger button, distinct from jade Approve. */
+:root .invoice-review-actions .danger-button{border:1px solid var(--danger);background:var(--danger);color:#fff}
+:root .invoice-review-actions .danger-button:hover:not(:disabled){border-color:var(--danger-ink);background:var(--danger-ink)}
+:root .invoice-review-actions .danger-button:focus-visible{outline:2px solid var(--danger);outline-offset:2px}
+:root[data-theme="dark"] .invoice-review-actions .danger-button{color:#2a0f0b}
 
 /* knowledge files: filters in one row, files as hairline rows in one surface */
 :root .knowledge-filters.tool-toolbar label.knowledge-search-label{flex:1 1 320px}
@@ -948,3 +956,19 @@
 :root .bar-key.is-done{background:var(--accent)}
 :root .bar-key.is-other{background:var(--warn-line)}
 :root .invoice-zoom-bar button[aria-pressed="true"]{border-color:var(--accent-line);background:var(--accent-soft);color:var(--accent-ink)}
+
+/* ---------- sidebar: solid rail, always darker than the work area ---------- */
+/* Light: deep jade-ink rail (the app's frame); dark: one step deeper than the chat. The colour tokens are re-scoped
+   to the sidebar, so every nav item, icon and row inside follows. Solid, so the page needs no background wash. */
+:root body .workspace-sidebar{-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none}
+:root:not([data-theme="dark"]) body .workspace-sidebar{background:#12302a;border-right:0;color:var(--ink);
+  --ink:#eef6f2;--ink-2:#cfe1da;--muted:#9fbdb3;--faint:#7c9c92;--line:#24453d;--surface:#163a33;--surface-2:#173b33;--surface-3:#1c463d;
+  --accent-soft:#1f5246;--accent-ink:#bdf0e0;--accent:#6fd3b8;--on-accent:#06201a}
+:root[data-theme="dark"] body .workspace-sidebar{background:#0a110f;border-right:1px solid #1c2a25;--surface-3:#15211d;--line:#1c2a25}
+:root body::before{display:none}
+/* Three groups (ask / documents / admin), each after the first opened by a hairline, which also works on the
+   collapsed rail where headings would not fit; roles only see their own items. */
+@media(min-width:781px){
+  :root #tab-button-upload,:root #tab-button-access{margin-top:19px}
+  :root #tab-button-upload::after,:root #tab-button-access::after{content:"";position:absolute;left:0;right:0;top:-11px;height:1px;background:var(--line);pointer-events:none}
+}

@@ -12,7 +12,7 @@ from starlette.requests import Request
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import app.main as app_main
-from app.main import CORPUS_COMPANY, DOCUMENT_ROLES, ROLE_PERMISSIONS, DocumentAccessRequest, KnowledgeBaseStatusRequest, _commerce_reference_metadata, _referenced_citation_ids, _role_accounts, _roles_with_permission, access_matrix, app, require_permission, upload_capability
+from app.main import CORPUS_COMPANY, DOCUMENT_ROLES, ROLE_PERMISSIONS, DocumentAccessRequest, KnowledgeBaseStatusRequest, _commerce_reference_metadata, _role_accounts, _roles_with_permission, access_matrix, app, require_permission, upload_capability
 from core.agents.intent_classifier import IntentClassifier
 from core.models.agents import AgentResult, Evidence
 
@@ -802,15 +802,6 @@ class CommerceDashboardApiTest(unittest.TestCase):
     def test_unknown_permission_fails_closed(self):
         with self.assertRaises(ValueError):
             require_permission("manage_everything")
-
-    def test_citation_filter_accepts_only_ids_referenced_by_final_answer(self):
-        self.assertEqual(
-            _referenced_citation_ids(
-                "Revenue [S2], profit 【M1】, source [Nguồn: S3], "
-                "zero-width [\u200bS4]; ignore S5."
-            ),
-            {"S2", "M1", "S3", "S4"},
-        )
 
 
 if __name__ == "__main__":

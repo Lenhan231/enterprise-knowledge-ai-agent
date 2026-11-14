@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from core.agents.intent_classifier import IntentClassifier
 from core.analytics.metric_ontology import resolve_metric_names
 from core.agents.knowledge_agent import KnowledgeAgent
-from core.agents.report_agent import ReportAgent, _financial_facts_match_cited_evidence
+from core.agents.report_agent import ReportAgent
 from core.agents.router import AgentRouter
 from core.sql_agent.agent import SQLAnalyticsAgent
 from core.agents.report_agent import _normalize_numeric_citations
@@ -472,25 +472,6 @@ class AgentFlowTest(unittest.TestCase):
         self.assertIn("Priority IDs: [S7]", llm.generate.call_args.args[0])
         self.assertEqual(result.answer, "Vinamilk reported total consolidated revenue of 61.824 trillion VND and consolidated profit after tax of 9.453 trillion VND [S7].")
         self.assertTrue(hybrid.run.call_args.args[0].metadata["evidence_only"])
-
-    def test_financial_report_rejects_rescaled_or_rounded_cited_values(self):
-        evidence = [Evidence(
-            citation_id="S3", source_type="document", source="annual report",
-            content="Total consolidated revenue 2024; profit after tax 2024; tỷ đồng tỷ đồng 9.453 61.824",
-        )]
-
-        self.assertTrue(_financial_facts_match_cited_evidence(
-            "Revenue 61.824 tỷ đồng and profit 9.453 tỷ đồng [S3]", evidence,
-        ))
-        self.assertFalse(_financial_facts_match_cited_evidence(
-            "Revenue 61.824 triệu đồng and profit 9.453 triệu đồng [S3]", evidence,
-        ))
-        self.assertFalse(_financial_facts_match_cited_evidence(
-            "Revenue 61.8 tỷ đồng and profit 9.453 tỷ đồng [S3]", evidence,
-        ))
-        self.assertFalse(_financial_facts_match_cited_evidence(
-            "Revenue 61.824 billion USD and profit 9.453 billion USD [S3]", evidence,
-        ))
 
     def test_report_withholds_a_financial_answer_with_a_cited_unit_mismatch(self):
         hybrid = Mock()

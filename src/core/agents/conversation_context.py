@@ -1,5 +1,6 @@
-"""Compatibility import for decision-support conversation state."""
+"""Compatibility alias for decision-support conversation state."""
 
-from core.agents.decision_support.conversation_context import ConversationStore
+import sys
+from core.agents.decision_support import conversation_context as _implementation
 
-__all__ = ["ConversationStore"]
+sys.modules[__name__] = _implementation

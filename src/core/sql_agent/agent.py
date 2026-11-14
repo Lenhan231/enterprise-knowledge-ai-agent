@@ -1,9 +1,6 @@
-"""Compatibility imports for the SQL agent's previous module path."""
+"""Compatibility alias for the SQL agent's previous module path."""
 
-from core.agents.sql.agent import (
-    AnalyticsPermissionDenied,
-    SQLAnalyticsAgent,
-    payload_to_agent_result,
-)
+import sys
+from core.agents.sql import agent as _implementation
 
-__all__ = ["AnalyticsPermissionDenied", "SQLAnalyticsAgent", "payload_to_agent_result"]
+sys.modules[__name__] = _implementation

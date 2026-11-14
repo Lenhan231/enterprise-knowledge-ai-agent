@@ -6,6 +6,11 @@ name: Deploy
 on:
   push:
     branches: [main]
+    # The web page (src/app/static) is deployed by Vercel on its own; pushes that change only it or docs skip this.
+    paths-ignore:
+      - "src/app/static/**"
+      - "docs/**"
+      - "**/*.md"
   workflow_dispatch:
 
 concurrency:

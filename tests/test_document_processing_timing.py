@@ -25,6 +25,7 @@ class DoclingTimingSummaryTest(unittest.TestCase):
         processor = DoclingProcessor({})
         processor._pipeline_options = Mock(return_value=object())
         converter = Mock()
+        converter.initialized_pipelines = {}
 
         with (
             patch("document_processing.docling_adapter.processor.get_converter", return_value=converter) as get_converter,

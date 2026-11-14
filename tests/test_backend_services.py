@@ -55,6 +55,30 @@ with patch("core.services.client.post", return_value={"elements": [], "tables": 
             self.assertEqual(call.call_args.args[1], "/embed")
         _load_backend.cache_clear()
 
+    def test_remote_retrieval_preserves_scope_and_response_contract(self):
+        from core.retrieval.remote_service import RemoteRetrievalService
+        from core.retrieval.retrieval import RetrievalRequest, RetrievalResponse
+        expected = RetrievalResponse(query="policy", method="hybrid", latency_ms=2, results=[])
+        with patch("core.retrieval.remote_service.post", return_value=expected.model_dump(mode="json")) as call:
+            service = RemoteRetrievalService("http://retrieval-api:8000")
+            result = service.retrieve(
+                RetrievalRequest(query="policy", top_k=3), company="Example",
+                roles=["admin"], method="hybrid", document_ids=["DOC-1"],
+            )
+        self.assertEqual(result, expected)
+        self.assertEqual(call.call_args.args[:2], ("http://retrieval-api:8000", "/retrieve"))
+        self.assertEqual(call.call_args.args[2]["roles"], ["admin"])
+        self.assertEqual(call.call_args.args[2]["company"], "Example")
+        self.assertEqual(call.call_args.args[2]["document_ids"], ["DOC-1"])
+
+    def test_remote_retrieval_refuses_unscoped_search(self):
+        from core.retrieval.remote_service import RemoteRetrievalService
+        from core.retrieval.retrieval import RetrievalRequest
+        with self.assertRaisesRegex(PermissionError, "verified document roles"):
+            RemoteRetrievalService("http://retrieval-api:8000").retrieve(
+                RetrievalRequest(query="policy"), roles=None,
+            )
+
     def test_parser_delegates_without_local_docling(self):
         from document_processing.document_processor import DocumentProcessor
         with patch.dict(os.environ, {"DOCUMENT_PROCESSING_URL": "http://document-processing:8000"}), patch("core.services.client.post", return_value={"elements": [], "tables": [], "metadata": {}}) as call:
@@ -112,6 +136,33 @@ class InternalRuntimeTest(unittest.TestCase):
         with patch.dict(os.environ, {"SERVICE_KIND": "reranker"}):
             response = self.client.post("/embed", headers=self.headers, json={"texts": ["x"]})
         self.assertEqual(response.status_code, 404)
+
+    def test_retrieval_endpoint_requires_token_and_passes_scope(self):
+        from unittest.mock import Mock
+        from core.retrieval.retrieval import RetrievalResponse
+        from core.services.runtime import app
+
+        service = Mock()
+        service.retrieve.return_value = RetrievalResponse(
+            query="policy", method="hybrid", latency_ms=1, results=[],
+        )
+        previous = getattr(app.state, "retrieval_service", None)
+        app.state.retrieval_service = service
+        self.addCleanup(
+            lambda: setattr(app.state, "retrieval_service", previous)
+            if previous is not None else delattr(app.state, "retrieval_service")
+        )
+        with patch.dict(os.environ, {"SERVICE_KIND": "retrieval"}):
+            unauthorized = self.client.post("/retrieve", json={"query": "policy", "roles": ["admin"]})
+            response = self.client.post(
+                "/retrieve", headers=self.headers,
+                json={"query": "policy", "roles": ["admin"], "company": "Example", "method": "hybrid"},
+            )
+        self.assertEqual(unauthorized.status_code, 401)
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()["query"], "policy")
+        self.assertEqual(service.retrieve.call_args.kwargs["roles"], ["admin"])
+        self.assertEqual(service.retrieve.call_args.kwargs["company"], "Example")
 
     def test_parser_rejects_invalid_base64(self):
         with patch.dict(os.environ, {"SERVICE_KIND": "document-processing"}):

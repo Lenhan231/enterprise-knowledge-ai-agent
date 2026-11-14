@@ -26,7 +26,8 @@ services:
       EMBEDDING_PRELOAD: "0"
       RERANKER_PRELOAD: "0"
       EMBEDDINGS_URL: http://embeddings:8000
-      RERANKER_URL: http://reranker:8000
+      RETRIEVAL_SERVICE_URL: http://retrieval-api:8000
+      RETRIEVAL_SERVICE_TIMEOUT_SECONDS: ${RETRIEVAL_SERVICE_TIMEOUT_SECONDS:-90}
       DOCUMENT_PROCESSING_URL: http://document-processing:8000
       DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS: ${DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS:-1200}
     ports: ["127.0.0.1:8000:8000"]
@@ -35,7 +36,7 @@ services:
       - ./artifacts/local/knowledge-latency:/benchmarks
     depends_on:
       embeddings: {condition: service_healthy}
-      reranker: {condition: service_healthy}
+      retrieval-api: {condition: service_healthy}
       document-processing: {condition: service_healthy}
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health',timeout=5)"]
@@ -73,6 +74,31 @@ services:
       DOCUMENT_PROCESSING_INVOICE_ADAPTER: ${DOCUMENT_PROCESSING_INVOICE_ADAPTER:-lenhanm1/qwen3-0.6b-invoice-lora-900}
       DOCUMENT_PROCESSING_INVOICE_ADAPTER_REVISION: ${DOCUMENT_PROCESSING_INVOICE_ADAPTER_REVISION:-7e062bb552f77af64b1c3bc9e205fa107c68c3d3}
     volumes: ["document_model_cache:/models"]
+
+  retrieval-api:
+    <<: *private
+    image: enterprise-knowledge-retrieval:local
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.retrieval
+    environment:
+      <<: *internal-env
+      SERVICE_KIND: retrieval
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
+      DATABASE_MAX_CONNECTIONS_PER_PROCESS: ${DATABASE_MAX_CONNECTIONS_PER_PROCESS:-10}
+      EMBEDDING_BACKEND: remote
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-intfloat/multilingual-e5-base}
+      EMBEDDING_MAX_SEQUENCE_LENGTH: ${EMBEDDING_MAX_SEQUENCE_LENGTH:-512}
+      EMBEDDINGS_URL: http://embeddings:8000
+      RERANKER_URL: http://reranker:8000
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_API_KEY_2: ${GROQ_API_KEY_2:-}
+      GROQ_MODEL: ${GROQ_MODEL:-qwen/qwen3.8-27b}
+      QUERY_NORMALIZATION_ENABLED: ${QUERY_NORMALIZATION_ENABLED:-0}
+      KNOWLEDGE_CONTEXT_RADIUS: ${KNOWLEDGE_CONTEXT_RADIUS:-0}
+    depends_on:
+      embeddings: {condition: service_healthy}
+      reranker: {condition: service_healthy}
 
   chunking:
     image: enterprise-knowledge-chunking:local

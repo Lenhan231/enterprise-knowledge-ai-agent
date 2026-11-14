@@ -7,6 +7,7 @@ import os
 import secrets
 import time
 from contextlib import asynccontextmanager
+from typing import Literal
 from threading import Lock
 
 from fastapi import Depends, FastAPI, HTTPException, Request
@@ -43,6 +44,7 @@ async def lifespan(app):
     if not os.getenv("INTERNAL_SERVICE_TOKEN"):
         raise RuntimeError("INTERNAL_SERVICE_TOKEN is required")
     kind = os.environ["SERVICE_KIND"]
+    retrieval_service = None
     logger.info("Loading %s models before accepting requests", kind)
     if kind == "embeddings":
         from core.embeddings.embedding_service import _shared_backend
@@ -54,10 +56,18 @@ async def lifespan(app):
     elif kind == "document-processing":
         from document_processing.docling_adapter.processor import DoclingProcessor
         DoclingProcessor({}).preload()
+    elif kind == "retrieval":
+        from core.retrieval.retrieval_service import RetrievalService
+        retrieval_service = RetrievalService()
+        app.state.retrieval_service = retrieval_service
     else:
         raise RuntimeError("Unsupported SERVICE_KIND")
     logger.info("%s models ready", kind)
-    yield
+    try:
+        yield
+    finally:
+        if retrieval_service is not None:
+            retrieval_service.close()
 
 
 app = FastAPI(lifespan=lifespan, dependencies=[Depends(authorize)])
@@ -72,6 +82,44 @@ class Texts(BaseModel):
     texts: list[str] = Field(min_length=1, max_length=300)
     model_name: str | None = Field(default=None, max_length=255)
     query: str = Field(default="", max_length=32768)
+
+
+class Retrieve(BaseModel):
+    query: str = Field(min_length=1, max_length=4000)
+    top_k: int = Field(default=5, ge=1, le=100)
+    company: str | None = Field(default=None, max_length=255)
+    roles: list[str] = Field(min_length=1, max_length=16)
+    method: Literal["dense", "bm25", "hybrid", "parent", "translated_hybrid", "translated_hybrid_rerank"] = "translated_hybrid_rerank"
+    dense_weight: float = Field(default=1.0, ge=0)
+    bm25_weight: float = Field(default=2.0, ge=0)
+    rrf_k: int = Field(default=60, ge=1)
+    document_ids: list[str] | None = Field(default=None, max_length=500)
+    metadata_filter: dict | None = None
+    query_language: Literal["auto", "en", "vn"] = "auto"
+    document_languages: dict[str, str] | None = None
+
+
+@app.post("/retrieve")
+def retrieve(body: Retrieve):
+    if os.getenv("SERVICE_KIND") != "retrieval":
+        raise HTTPException(404)
+    from core.retrieval.retrieval import RetrievalRequest
+    from core.retrieval.retrieval import RetrievalResponse
+
+    result = app.state.retrieval_service.retrieve(
+        RetrievalRequest(query=body.query, top_k=body.top_k),
+        company=body.company,
+        roles=body.roles,
+        method=body.method,
+        dense_weight=body.dense_weight,
+        bm25_weight=body.bm25_weight,
+        rrf_k=body.rrf_k,
+        document_ids=body.document_ids,
+        metadata_filter=body.metadata_filter,
+        query_language=body.query_language,
+        document_languages=body.document_languages,
+    )
+    return RetrievalResponse.model_validate(result)
 
 
 @app.post("/embed")

@@ -1,0 +1,14 @@
+FROM python:3.11-slim
+WORKDIR /app
+RUN python -m pip install --no-cache-dir uv==0.12.15
+COPY pyproject.toml uv.lock ./
+RUN uv venv && uv export --locked --no-dev --no-hashes --no-emit-project \
+    --prune sentence-transformers --prune langchain-huggingface --prune langchain-experimental \
+    --output-file /retrieval.txt > /dev/null \
+    && uv pip install --no-cache -r /retrieval.txt
+# Retrieval uses the remote embedding and reranker services; it does not load model weights.
+COPY src/core ./src/core
+ENV PATH="/app/.venv/bin:$PATH" PYTHONPATH="/app/src" PYTHONUNBUFFERED="1" HF_HOME="/models"
+EXPOSE 8000
+ENV SERVICE_KIND="retrieval" EMBEDDING_BACKEND="remote"
+CMD ["uvicorn", "core.services.runtime:app", "--host", "0.0.0.0", "--port", "8000"]

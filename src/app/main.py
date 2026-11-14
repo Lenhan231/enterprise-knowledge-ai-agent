@@ -29,6 +29,7 @@ from app.security import (
     _roles_with_permission, auth_scheme, require_permission, require_roles,
 )
 from app.agents import router as agents_router
+from app.dashboards import router as dashboards_router
 from app.upload_test import (
     create_upload_test, get_upload_test_preview, inspect_upload_test,
     list_upload_tests, router as upload_test_router,
@@ -56,6 +57,7 @@ async def _lifespan(application: FastAPI):
 app = FastAPI(title="Commerce Decision Support", lifespan=_lifespan)
 app.include_router(upload_test_router)
 app.include_router(agents_router)
+app.include_router(dashboards_router)
 
 APP_DIR = Path(__file__).resolve().parent
 STATIC_DIR = APP_DIR / "static"

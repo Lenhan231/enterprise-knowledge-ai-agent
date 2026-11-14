@@ -602,6 +602,13 @@ def _date_parameter_indexes(sql: str, date_columns=None) -> set[int]:
         if isinstance(predicate.this, exp.Column) and (
                 table_sources.get(predicate.this.table.casefold()), _column_name(predicate.this)) in date_columns:
             indexes.update(int(p.this.this) for value in predicate.expressions for p in value.find_all(exp.Parameter))
+    for predicate in tree.find_all(exp.Between):
+        column = predicate.this
+        if isinstance(column, exp.Column) and (
+                table_sources.get(column.table.casefold()), _column_name(column)) in date_columns:
+            for bound in (predicate.args['low'], predicate.args['high']):
+                if isinstance(bound, exp.Parameter):
+                    indexes.add(int(bound.this.this))
     comparisons = (exp.EQ, exp.NEQ, exp.GT, exp.GTE, exp.LT, exp.LTE)
     for comparison in tree.find_all(comparisons):
         for column_side, value_side in ((comparison.this, comparison.expression),

@@ -64,6 +64,14 @@ class DashboardDocumentsTest(unittest.TestCase):
         self.assertIn('Chart unavailable', html)
         self.assertIn('<table>', html)
 
+    def test_failed_source_shows_attempted_sql_and_safe_error_type(self):
+        doc = document(results=[QueryResult(id='sales', question='Revenue', status='failed',
+            payload={'attempted_sql': "SELECT '<script>'", 'metadata': {'error_type': 'DataError'}})])
+        html = render_dashboard(doc)
+        self.assertIn("SELECT &#x27;&lt;script&gt;&#x27;", html)
+        self.assertIn('DataError', html)
+        self.assertNotIn('No SQL executed', html)
+
 
 if __name__ == '__main__':
     unittest.main()

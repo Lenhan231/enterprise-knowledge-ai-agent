@@ -74,6 +74,14 @@ class DashboardAgentTest(unittest.IsolatedAsyncioTestCase):
             await self.agent.refresh(self.request, doc, rescope=True)
         self.sql.run_payload.assert_not_called()
 
+    async def test_failed_query_preserves_attempted_sql(self):
+        self.sql.run_payload.return_value = {'ok': False, 'query_status': 'error',
+            'attempted_sql': 'SELECT SUM(revenue) FROM commerce.sales',
+            'metadata': {'error_type': 'DataError'}}
+        doc = await self.agent.build(self.request, 'Revenue dashboard')
+        self.assertEqual('failed', doc.results[0].status)
+        self.assertEqual('SELECT SUM(revenue) FROM commerce.sales', doc.results[0].payload['attempted_sql'])
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -2,15 +2,17 @@ import json
 import sqlite3
 import sys
 import unittest
+from datetime import date
 from pathlib import Path
 from unittest.mock import AsyncMock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from core.analytics.metric_ontology import METRIC_ONTOLOGY, get_metric_definition
-from core.analytics.text_to_sql import APPROVED_COLUMNS, SQLValidationError, build_sql_prompt, decode_query_plan
-from core.agents.analytics_agent import AnalyticsAgent
-from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+from core.analytics.metric_ontology import METRIC_ONTOLOGY, get_metric_definition, resolve_metric_names
+from core.analytics.text_to_sql import (APPROVED_COLUMNS, SQLValidationError, SQLSecurityError,
+    SQLSchemaMismatchError, build_sql_prompt, decode_query_plan)
+from core.sql_agent.analytics_agent import AnalyticsAgent
+from core.sql_agent.agent import SQLAnalyticsAgent
 from core.models.agents import AgentRequest, VerifiedIdentity
 
 
@@ -26,6 +28,13 @@ class MetricPlanningTest(unittest.TestCase):
         self.assertIn('"metrics": ["revenue"]', build_sql_prompt("Total revenue in 2022"))
         self.assertIn('"metrics": []', build_sql_prompt("List products"))
         self.assertIn("Do not invent a metric definition", build_sql_prompt("List products"))
+
+    def test_product_revenue_resolves_to_order_item_metric(self):
+        question = "Find products with the highest revenue growth from 2021 to 2022"
+        self.assertEqual(resolve_metric_names(question), {"product_revenue"})
+        prompt = build_sql_prompt(question)
+        self.assertIn("commerce.order_items", prompt)
+        self.assertIn("orders.order_status = 'delivered'", prompt)
 
     def test_repair_prompt_keeps_metric_definitions(self):
         prompt = build_sql_prompt("Average order value", validation_error="wrong formula", previous_response="{}")
@@ -127,6 +136,11 @@ class MetricEnforcementTest(unittest.TestCase):
             "gross_profit": ("SELECT SUM(s.revenue) - SUM(s.cogs)" + sales, []),
             "regional_revenue": ("SELECT SUM(oi.quantity * oi.unit_price - oi.discount_amount)" + items
                                  + "WHERE o.order_status = $1 LIMIT 1", ["delivered"]),
+            "product_revenue": ("SELECT p.product_id, p.product_name, EXTRACT(YEAR FROM o.order_date) AS year, "
+                                "SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS revenue " + items
+                                + "JOIN commerce.products AS p ON p.product_id = oi.product_id "
+                                + "WHERE o.order_status = $1 GROUP BY p.product_id, p.product_name, "
+                                "EXTRACT(YEAR FROM o.order_date) LIMIT 20", ["delivered"]),
             "order_count": ("SELECT COUNT(DISTINCT o.order_id) FROM commerce.orders AS o LIMIT 1", []),
             "average_order_value": ("SELECT SUM(oi.quantity * oi.unit_price - oi.discount_amount) / "
                                     "COUNT(DISTINCT o.order_id)" + items + "LIMIT 1", []),
@@ -159,6 +173,30 @@ class MetricEnforcementTest(unittest.TestCase):
 
 
 class MetricAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def test_schema_mismatch_requests_confirmation_but_security_error_does_not(self):
+        mismatch = SQLSchemaMismatchError('commerce.sales', 'net_sales', ['date', 'revenue', 'cogs'])
+        result = SQLAnalyticsAgent._generation_error(mismatch, 'SELECT ...', question='doanh thu tháng trước')
+        self.assertTrue(result['metadata']['clarification_required'])
+        self.assertTrue(result['metadata']['schema_confirmation_required'])
+        self.assertIn('Trả lời', result['answer'])
+        self.assertEqual(result['query_status'], 'rejected')
+
+        blocked = SQLAnalyticsAgent._generation_error(SQLSecurityError('Writes are not allowed.'))
+        self.assertNotIn('schema_confirmation_required', blocked['metadata'])
+        self.assertNotIn('clarification_required', blocked['metadata'])
+
+    async def test_repeated_live_schema_mismatch_asks_before_any_query_runs(self):
+        sql = 'SELECT SUM(s.net_sales) AS revenue FROM commerce.sales AS s LIMIT 1'
+        llm = self.provider(*(json.dumps({'sql': sql}) for _ in range(2)))
+        repository = AsyncMock()
+        result = await SQLAnalyticsAgent(repository, llm=llm).run(self.request('Total revenue'))
+        self.assertTrue(result.metadata['clarification_required'])
+        self.assertTrue(result.metadata['schema_confirmation_required'])
+        self.assertIn('commerce.sales.net_sales', result.answer)
+        self.assertIn('Available columns are: cogs, date, revenue', result.answer)
+        self.assertIn('not in the discovered schema', llm.prompts[1])
+        repository.execute_approved_query.assert_not_awaited()
+
     def request(self, question):
         return AgentRequest(question=question, identity=VerifiedIdentity(subject="analyst", permissions={"analytics:read"}))
 
@@ -233,6 +271,25 @@ class MetricAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn("dataset_currency_unknown", llm.prompts[-1])
         self.assertIn("Canonical metric definitions", llm.prompts[-1])
         self.assertIn("currency", " ".join(result.metadata["limitations"]).lower())
+
+    async def test_null_aggregate_is_explained_without_claiming_no_data(self):
+        year = date.today().year
+        query = json.dumps({"sql": "SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s "
+                                   "WHERE s.date >= $1 AND s.date < $2 LIMIT 1",
+                            "parameters": [f"{year}-03-01", f"{year}-04-01"]})
+        llm = self.provider(query, "The dataset has no revenue for this month.")
+        repository = AsyncMock()
+        repository.execute_approved_query.return_value = [{"revenue": None}]
+
+        result = await AnalyticsAgent(SQLAnalyticsAgent(repository, llm=llm)).run(
+            self.request("Doanh thu tháng 3 năm nay")
+        )
+
+        self.assertIn("trả về NULL", result.answer)
+        self.assertIn("chưa đủ để kết luận", result.answer)
+        self.assertIn("không có bản ghi phù hợp", result.answer)
+        self.assertNotIn("no revenue for this month", result.answer)
+        self.assertEqual(len(llm.prompts), 1)
 
 
 if __name__ == "__main__":

@@ -130,7 +130,7 @@ class SchemaContextTest(unittest.TestCase):
 
 class CanonicalAgentTest(unittest.IsolatedAsyncioTestCase):
     async def test_missing_dimension_uses_full_schema_and_offers_supported_scope(self):
-        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.sql_agent.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         for question in ['Which suppliers delivered stock late in December 2022?',
                          'Tổng hợp tồn kho theo nhà cung cấp tại snapshot 2022-12-31']:
@@ -144,7 +144,7 @@ class CanonicalAgentTest(unittest.IsolatedAsyncioTestCase):
             repo.execute_approved_query.assert_not_awaited()
 
     async def test_unreviewed_alias_cannot_be_replaced_with_an_approved_metric(self):
-        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.sql_agent.agent import SQLAnalyticsAgent
         from core.analytics.metric_ontology import METRIC_ONTOLOGY
         from core.models.agents import AgentRequest, VerifiedIdentity
         provider, repo = Mock(), AsyncMock()
@@ -160,7 +160,7 @@ class CanonicalAgentTest(unittest.IsolatedAsyncioTestCase):
         repo.execute_approved_query.assert_not_awaited()
 
     async def test_transaction_question_does_not_pass_through_inventory_interpreter(self):
-        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.sql_agent.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         provider, repo = Mock(), AsyncMock()
         provider.generate.return_value = json.dumps({'sql':
@@ -175,7 +175,7 @@ class CanonicalAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(provider.generate.call_count,1)
 
     async def test_provider_failure_is_not_a_validation_failure(self):
-        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.sql_agent.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         provider, repo = Mock(), AsyncMock()
         provider.generate.side_effect = ConnectionError('provider unavailable')
@@ -186,7 +186,7 @@ class CanonicalAgentTest(unittest.IsolatedAsyncioTestCase):
         repo.execute_approved_query.assert_not_awaited()
 
     async def test_valid_mapping_compiles_without_second_llm_interpretation(self):
-        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.sql_agent.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         provider, repo = Mock(), AsyncMock()
         provider.generate.return_value = json.dumps({'metrics':['stock_on_hand'],

@@ -118,7 +118,7 @@ class MetricMappingTest(unittest.TestCase):
 
 class MappingAgentTest(unittest.IsolatedAsyncioTestCase):
     async def test_permission_is_checked_before_mapping(self):
-        from core.agents.sql_analytics_agent import SQLAnalyticsAgent,AnalyticsPermissionDenied
+        from core.sql_agent.agent import SQLAnalyticsAgent,AnalyticsPermissionDenied
         from core.models.agents import AgentRequest
         provider,repository=Mock(),AsyncMock()
         with self.assertRaises(AnalyticsPermissionDenied):
@@ -127,11 +127,11 @@ class MappingAgentTest(unittest.IsolatedAsyncioTestCase):
         repository.execute_approved_query.assert_not_awaited()
 
     async def test_compiler_contract_violation_never_reaches_repository(self):
-        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.sql_agent.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest,VerifiedIdentity
         provider,repository=Mock(),AsyncMock()
         provider.generate.return_value=json.dumps(MAPPING)
-        with patch('core.agents.sql_analytics_agent.compile_inventory_query', return_value=(SQL.replace('AND p.color=$1',''), ())):
+        with patch('core.sql_agent.agent.compile_inventory_query', return_value=(SQL.replace('AND p.color=$1',''), ())):
             result=await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
                 question='Which blue styles have the fewest pieces left at latest snapshot?',
                 identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
@@ -141,7 +141,7 @@ class MappingAgentTest(unittest.IsolatedAsyncioTestCase):
         repository.execute_approved_query.assert_not_awaited()
 
     async def test_mapping_compiles_for_mixed_language_request(self):
-        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.sql_agent.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest,VerifiedIdentity
         provider,repository=Mock(),AsyncMock()
         provider.generate.return_value=json.dumps(MAPPING)
@@ -155,7 +155,7 @@ class MappingAgentTest(unittest.IsolatedAsyncioTestCase):
         repository.execute_approved_query.assert_awaited_once()
 
     async def test_bad_interpretation_stops_before_sql_and_execution(self):
-        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.sql_agent.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest,VerifiedIdentity
         provider,repository=Mock(),AsyncMock()
         provider.generate.return_value=json.dumps({'clarification':'Which snapshot and low-stock threshold do you mean?'})

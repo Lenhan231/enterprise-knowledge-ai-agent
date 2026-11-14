@@ -7,10 +7,10 @@ from test_bounded_execution import IDENTITY, source_result, FakeProvider, task
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from core.agents.analytics_agent import AnalyticsAgent
+from core.sql_agent.analytics_agent import AnalyticsAgent
 from core.agents.base import BaseAgent
 from core.agents.router import AgentRouter
-from core.agents.sql_analytics_agent import payload_to_agent_result
+from core.sql_agent.agent import payload_to_agent_result
 from core.models.agents import AgentRequest, AgentResult, VerifiedIdentity
 
 

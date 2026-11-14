@@ -8,9 +8,11 @@ from unittest.mock import AsyncMock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from core.analytics.text_to_sql import SQLValidationError, decode_query_plan, validate_commerce_sql
-from core.agents.sql_analytics_agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
-from core.agents.analytics_agent import AnalyticsAgent
+from core.analytics.text_to_sql import (SQLValidationError, current_year_month_range,
+                                        decode_query_plan, validate_commerce_sql,
+                                        validate_current_year_month_range)
+from core.sql_agent.agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
+from core.sql_agent.analytics_agent import AnalyticsAgent
 from core.database.commerce_repository import CommerceRepository
 from core.models.agents import AgentRequest, VerifiedIdentity
 
@@ -19,6 +21,17 @@ ANALYST = VerifiedIdentity(subject="analyst-1", permissions={"analytics:read"})
 
 
 class SQLValidationTest(unittest.TestCase):
+    def test_current_year_month_uses_server_year_and_half_open_dates(self):
+        expected = (date(2026, 3, 1), date(2026, 4, 1))
+        self.assertEqual(current_year_month_range("Doanh thu tháng 3 năm nay", date(2026, 11, 14)), expected)
+        self.assertEqual(current_year_month_range("Doanh thu tháng 3", date(2026, 11, 14)), expected)
+        sql = "SELECT SUM(s.revenue) FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 LIMIT 1"
+        validate_current_year_month_range(sql, expected, "Doanh thu tháng 3 năm nay",
+                                          today=date(2026, 11, 14))
+        with self.assertRaisesRegex(SQLValidationError, "Current-year month filters must bind"):
+            validate_current_year_month_range(sql, (date(2024, 3, 1), date(2024, 3, 31)),
+                                              "Doanh thu tháng 3 năm nay", today=date(2026, 11, 14))
+
     def test_accepts_cte_aggregation_and_bind_parameters(self):
         sql = (
             "WITH monthly AS (SELECT date_trunc('month', s.date) AS month, "
@@ -105,6 +118,34 @@ class SQLValidationTest(unittest.TestCase):
 
 
 class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def test_resolves_model_year_to_current_month_before_execution(self):
+        year = date.today().year
+        sql = "SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 LIMIT 1"
+
+        class LLM:
+            def __init__(self):
+                self.prompts = []
+                self.responses = [json.dumps({"sql": sql, "parameters": ["2024-03-01", "2024-03-31"]})]
+
+            def generate(self, prompt):
+                if prompt.startswith("Interpret the question BEFORE"):
+                    return json.dumps({"domain": "other"})
+                self.prompts.append(prompt)
+                return self.responses.pop(0)
+
+        llm = LLM()
+        repository = AsyncMock()
+        repository.execute_approved_query.return_value = [{"revenue": 100}]
+        result = await SQLAnalyticsAgent(repository, llm=llm).run(
+            AgentRequest(question="Revenue in March", identity=ANALYST,
+                         metadata={"_original_question": "doanh thu tháng 3"}))
+
+        self.assertTrue(result.metadata["ok"], result.answer)
+        self.assertEqual(len(llm.prompts), 1)
+        self.assertIn(f"bind {year}-03-01 as the inclusive start", llm.prompts[0])
+        repository.execute_approved_query.assert_awaited_once_with(
+            sql, date(year, 3, 1), date(year, 4, 1))
+
     async def test_retries_validation_failure_with_feedback_for_generic_date_query(self):
         bad_sql = (
             "SELECT EXTRACT(YEAR FROM commerce.sales.date) AS year, "

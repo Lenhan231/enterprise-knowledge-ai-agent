@@ -11,7 +11,7 @@ from core.analytics.metric_ontology import resolve_metric_names
 from core.agents.knowledge_agent import KnowledgeAgent, _financial_retrieval_query
 from core.agents.report_agent import ReportAgent, _financial_facts_match_cited_evidence
 from core.agents.router import AgentRouter
-from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+from core.sql_agent.agent import SQLAnalyticsAgent
 from core.agents.report_agent import _normalize_numeric_citations
 from core.models.agents import AgentRequest, AgentResult, Evidence
 from core.rag.rag_service import RAGResult
@@ -27,6 +27,7 @@ class AgentFlowTest(unittest.TestCase):
 
         rag.generate_answer.assert_not_called()
         rag.retrieve_contexts.assert_not_called()
+
 
     def test_metric_ontology_resolves_bilingual_aliases_and_prefers_specific_phrase(self):
         self.assertEqual(resolve_metric_names("Revenue and profit after tax"), {"net_revenue", "profit_after_tax"})

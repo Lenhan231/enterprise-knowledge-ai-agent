@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 
 from core.analytics.text_to_sql import SQLValidationError, validate_commerce_sql
-from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+from core.sql_agent.agent import SQLAnalyticsAgent
 from core.models.agents import AgentRequest, VerifiedIdentity
 
 
@@ -43,6 +43,16 @@ class JoinDuplicationTest(unittest.TestCase):
         validate_commerce_sql('SELECT SUM(p.payment_value) AS total FROM commerce.payments AS p '
                               'JOIN commerce.orders AS o ON p.order_id = o.order_id '
                               'JOIN commerce.shipments AS sh ON o.order_id = sh.order_id LIMIT 1')
+
+    def test_allows_fact_quantity_times_dimension_cost_but_rejects_dimension_only_sum(self):
+        sql = ('SELECT SUM(oi.quantity * p.cogs) AS total_cogs '
+               'FROM commerce.order_items AS oi '
+               'JOIN commerce.products AS p ON p.product_id = oi.product_id LIMIT 1')
+        validate_commerce_sql(sql)
+        with self.assertRaisesRegex(SQLValidationError, 'duplicat'):
+            validate_commerce_sql('SELECT SUM(p.cogs) AS total_cogs '
+                                   'FROM commerce.order_items AS oi '
+                                   'JOIN commerce.products AS p ON p.product_id = oi.product_id LIMIT 1')
 
     def test_cte_does_not_hide_duplication(self):
         for projection in ('p.payment_value', 'p.payment_value * 2'):

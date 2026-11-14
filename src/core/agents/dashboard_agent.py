@@ -10,7 +10,7 @@ import re
 
 from sqlglot import exp, parse_one
 
-from core.agents.sql_analytics_agent import SQLAnalyticsAgent, payload_to_agent_result
+from core.sql_agent.agent import SQLAnalyticsAgent, payload_to_agent_result
 from core.models.agents import ChartSeries, ChartSpec
 
 

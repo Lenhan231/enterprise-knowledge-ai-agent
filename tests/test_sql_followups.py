@@ -5,13 +5,14 @@ import json
 from pathlib import Path
 import sys
 import unittest
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
 from core.analytics.metric_mapping import decode_sql_turn
 from core.analytics.metric_validation import MetricDefinitionError
-from core.agents.execution import Execution
-from core.agents.response import _scalar_sql_finding
+from core.agents.execution import Execution, TaskOutcome
+from core.agents.response import _scalar_sql_finding, assemble_response
 from core.agents.router import AgentRouter
 from core.sql_agent.agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
 from core.models.agent_plan import AgentPlan, AgentTask
@@ -220,6 +221,26 @@ class OriginalQuestionContextTest(unittest.IsolatedAsyncioTestCase):
         sql_request = sql_agent.run.await_args.args[0]
         self.assertEqual(sql_request.question, 'Revenue in March')
         self.assertEqual(sql_request.metadata['_original_question'], question)
+
+    async def test_scalar_month_result_overrides_unsupported_model_period_claim(self):
+        question = 'doanh thu tháng này sao'
+        plan = AgentPlan(objective=question, tasks=[AgentTask(id='sql', agent='sql', question=question)])
+        result = AgentResult(
+            answer='The result has no date, so the month is unknown.', agent='analytics',
+            evidence=[Evidence(citation_id='S1', source_type='database', source='commerce.sales')],
+            data={'rows': [{'revenue': 1000968.55}],
+                  'parameters': ['2026-11-01', '2026-12-01']},
+            metadata={'ok': True},
+        )
+        execution = SimpleNamespace(
+            outcomes={'sql': TaskOutcome(plan.tasks[0], 'complete', result)},
+            trace=[], invocations=1,
+        )
+
+        answer = await assemble_response(
+            AgentRequest(question=question, identity=IDENTITY), plan, execution, provider=None)
+
+        self.assertEqual(answer.answer, 'Doanh thu tháng 11 năm 2026: 1,000,968.55 [S1].')
 
     def test_scalar_fallback_formats_value_and_uses_bound_month(self):
         item = {

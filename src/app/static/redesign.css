@@ -953,3 +953,17 @@
 :root .bar-key.is-done{background:var(--accent)}
 :root .bar-key.is-other{background:var(--warn-line)}
 :root .invoice-zoom-bar button[aria-pressed="true"]{border-color:var(--accent-line);background:var(--accent-soft);color:var(--accent-ink)}
+
+/* ---------- sidebar: solid rail, always darker than the work area ---------- */
+/* Light: deep jade-ink rail (the app's frame); dark: one step deeper than the chat. The colour tokens are re-scoped
+   to the sidebar, so every nav item, icon and row inside follows. Solid, so the page needs no background wash. */
+:root body .workspace-sidebar{-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none}
+:root:not([data-theme="dark"]) body .workspace-sidebar{background:#12302a;border-right:0;color:var(--ink);
+  --ink:#eef6f2;--ink-2:#cfe1da;--muted:#9fbdb3;--faint:#7c9c92;--line:#24453d;--surface:#163a33;--surface-2:#173b33;--surface-3:#1c463d;
+  --accent-soft:#1f5246;--accent-ink:#bdf0e0;--accent:#6fd3b8;--on-accent:#06201a}
+:root[data-theme="dark"] body .workspace-sidebar{background:#0a110f;border-right:1px solid #1c2a25;--surface-3:#15211d;--line:#1c2a25}
+:root body::before{display:none}
+/* Three groups (ask / documents / admin) separated by space, not headings; roles only see their own items. */
+@media(min-width:781px){
+  :root #tab-button-upload,:root #tab-button-access{margin-top:14px}
+}

@@ -1,7 +1,8 @@
 from enum import Enum
-from typing import Any
+import math
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 def validate_chat_metadata(value: dict[str, Any]) -> dict[str, Any]:
@@ -48,3 +49,33 @@ class AgentResult(BaseModel):
     evidence: list[Evidence] = Field(default_factory=list)
     data: dict[str, Any] = Field(default_factory=dict)
     metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ChartSeries(BaseModel):
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
+    name: str
+    values: list[float | None] = Field(min_length=1, max_length=200)
+
+
+class ChartSpec(BaseModel):
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
+    type: Literal['line', 'bar', 'donut']
+    title: str
+    categories: list[str] = Field(min_length=1, max_length=200)
+    series: list[ChartSeries] = Field(min_length=1, max_length=4)
+    unit: str
+    x_label: str
+    y_label: str
+    temporal: bool = False
+    scope: dict[str, Any] = Field(default_factory=dict)
+
+    @model_validator(mode='after')
+    def check_series(self):
+        if any(len(series.values) != len(self.categories) for series in self.series):
+            raise ValueError('Chart series must align with every category')
+        if self.type == 'donut':
+            values = self.series[0].values
+            if (len(self.series) != 1 or any(value is None or value < 0 for value in values)
+                    or not math.isfinite(sum(values)) or sum(values) <= 0):
+                raise ValueError('A donut needs one nonnegative series with a positive total')
+        return self

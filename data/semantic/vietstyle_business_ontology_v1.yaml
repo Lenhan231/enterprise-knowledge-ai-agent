@@ -1,0 +1,45 @@
+policy:
+  document_id: VSC-OPS-POL-001
+  version: '1.0'
+  sha256: bf55be948913d0f54ea873cf59d305081939f3391c8530d973c0b943f8bc1a0d
+  status: approved
+  source: artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md
+  approves_metric_formulas: false
+entities:
+  commerce.products: {identity: [product_id], grain: product, pages: [26]}
+  commerce.inventory: {identity: [snapshot_date, product_id], grain: product_snapshot, pages: [25, 36]}
+  commerce.order_items: {identity: [order_item_id], grain: order_item, pages: [36]}
+  commerce.payments: {identity: [order_id], grain: order, pages: [36]}
+  commerce.shipments: {identity: [order_id], grain: order, pages: [36]}
+  commerce.returns: {identity: [return_id], grain: return_observation, pages: [36]}
+relationships:
+  - {from: commerce.inventory.product_id, to: commerce.products.product_id, cardinality: many_to_one, pages: [25, 26]}
+rules:
+  - id: historical_inventory
+    sources: [commerce.inventory]
+    pages: [25]
+    text: Inventory snapshots are historical analytical observations, not live warehouse balances. State the selected snapshot; discover actual coverage from data rather than assuming a fixed latest date.
+  - id: missing_is_unknown
+    sources: [commerce.inventory]
+    pages: [25]
+    text: A product missing from a snapshot is unknown, never zero stock. Do not COALESCE missing observations to zero.
+  - id: snapshot_grain
+    sources: [commerce.inventory]
+    pages: [25, 36]
+    text: Never sum stock balances across snapshots. Trends retain each snapshot separately. Identify whether a metric is a balance, period flow or ratio before aggregating.
+  - id: product_identity
+    sources: [commerce.products, commerce.inventory, commerce.order_items, commerce.returns]
+    pages: [26]
+    text: Use product_id as stable identity; descriptive names and categories do not replace it.
+  - id: compatible_grains
+    sources: [commerce.inventory, commerce.order_items, commerce.payments, commerce.shipments, commerce.returns]
+    pages: [36]
+    text: Compare compatible source grains and periods. Do not multiply order-level payments by raw order-item rows. Use approved keys and aggregate each fact independently when needed.
+  - id: defined_metrics
+    sources: []
+    pages: [36]
+    text: Metrics require an explicit definition, source, period, unit and grain. Policy approval does not approve an undocumented formula. Keep recorded indicators distinct from inferred business states.
+  - id: server_authorization
+    sources: []
+    pages: [37]
+    text: Enforce trusted server-side authorization and applicable row-level access. Authentication alone does not grant access to every record. Never expose service credentials.

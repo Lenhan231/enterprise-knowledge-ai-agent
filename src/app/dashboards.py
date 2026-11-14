@@ -44,7 +44,7 @@ def bundle(doc, status=200):
 
 async def build(request, user, *, description=None, scope='', document=None, rescope=False):
     runtime = await _get_runtime(request.app)
-    agent = DashboardDocumentAgent(runtime.dashboard_agent.sql_agent)
+    agent = DashboardDocumentAgent(runtime.analytics_agent.sql_agent)
     identity = _agent_request(user, description or document.description)
     try:
         async with asyncio.timeout(190):

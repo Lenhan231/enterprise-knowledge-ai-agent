@@ -643,7 +643,7 @@ async function refreshInvoiceReview(selectId = activeInvoiceReview?.invoice_id) 
     activeInvoiceReview = null;
     $("#invoice-review-detail").innerHTML = '<p class="analysis-empty">Choose an invoice to review.</p>';
   }
-  $("#invoice-review-status").textContent = `${invoiceReviewItems.length} invoice${invoiceReviewItems.length === 1 ? "" : "s"} · drafts stay private until approved.`;
+  $("#invoice-review-status").textContent = `${invoiceReviewItems.length} invoice${invoiceReviewItems.length === 1 ? "" : "s"}. Drafts stay private until approved.`;
 }
 
 async function openInvoiceReview(invoiceId) {
@@ -1460,7 +1460,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
             || syntheticPolicySourcePageUrl(source)
             || validSourceUrl(source.source_url);
           const link = href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">View original</a>` : "";
-          const chunk = Number.isInteger(source.chunk_index) ? ` · passage ${source.chunk_index}` : "";
+          const chunk = Number.isInteger(source.chunk_index) ? `, passage ${source.chunk_index}` : "";
           const location = source.page_number ? `Page ${source.page_number}${chunk}`
             : source.source_type === "commerce_sql" ? `SQL aggregate · ${(source.source_tables || []).join(", ")}`
               : source.source_type === "commerce_schema" ? `Schema coverage · ${(source.source_tables || []).join(", ")}`

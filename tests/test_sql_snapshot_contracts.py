@@ -3,7 +3,7 @@ import sqlite3
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 
@@ -94,8 +94,11 @@ class ComparisonAgentTest(unittest.IsolatedAsyncioTestCase):
             representation='product', time=dict(mode='comparison', start='2022-11-30', end='2022-12-31')))
         repository.execute_approved_query.return_value = [{'product_id': 1, 'before_date': '2022-11-30',
             'after_date': '2022-12-31', 'stock_before': 8, 'stock_after': 3, 'stock_delta': -5}]
-        result = await SQLAnalyticsAgent(repository, llm=provider).run(AgentRequest(question=CHANGE,
-            identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'})))
+        agent = SQLAnalyticsAgent(repository, llm=provider)
+        with patch.object(agent, '_check_ambiguity', return_value={
+                'choice': 'clear', 'probabilities': {'clear': .95, 'ambiguous': .05}}):
+            result = await agent.run(AgentRequest(question=CHANGE,
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'})))
         self.assertEqual(result.metadata['execution_status'], 'executed', result.answer)
         self.assertEqual(result.data['rows'][0]['stock_delta'], -5)
         self.assertEqual(result.metadata['snapshot_dates'], ['2022-11-30', '2022-12-31'])

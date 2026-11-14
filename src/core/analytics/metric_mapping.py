@@ -178,10 +178,12 @@ def snapshot_metric_bundle(question):
 
 
 def build_metric_mapping_prompt(question, *, context=None):
+    from core.analytics.business_ontology import policy_context
     candidates = {name: {'description':d['description'],'aggregation':d['aggregation'],
                          'status':d['definition_status']}
                   for name,d in METRIC_ONTOLOGY.items() if d.get('domain') == 'inventory_management'}
-    return ('Interpret the question BEFORE generating SQL. Return one JSON object, no Markdown, SQL, formulas or new metric IDs.\n'
+    return ('Governing business ontology: ' + json.dumps(policy_context({'commerce.inventory', 'commerce.products'}), ensure_ascii=False)
+            + '\nInterpret the question BEFORE generating SQL. Return one JSON object, no Markdown, SQL, formulas or new metric IDs.\n'
             'Map English, Vietnamese and mixed language, synonyms and paraphrases onto inventory catalog IDs. '
             'Use domain=other only for requests entirely outside inventory analytics (e.g. list products, orders, payments). '
             'Structural observation queries (latest snapshot date only, distinct product counts, missing observations, duplicate keys) '
@@ -242,9 +244,17 @@ def _field(name):
 def requested_ranking_limit(question):
     """A safety ceiling is not an inferred user request for top N."""
     words = dict(zip('one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty'.split(), range(1,21)))
-    count = re.search(r'\b(?:top|bottom|first|last|limit)\s+(\d+|'+'|'.join(words)+r')\b|\b(\d+)\s+(?:products?|categories|rows?|sản phẩm)\b', question, re.I)
-    value = next(value for value in count.groups() if value).casefold() if count else None
-    limit = (words[value] if value in words else int(value)) if value else None
+    words.update(zip('một hai ba bốn năm sáu bảy tám chín mười'.split(), range(1,11)))
+    numbers = r'\d+|' + '|'.join(sorted(words, key=len, reverse=True))
+    counts = re.finditer(r'\b(?:top|bottom|first|last|limit)\s+(' + numbers + r')\b|\b(' + numbers +
+                        r')\s+(?:(?:inventory|catalog)\s+)?(?:products?|categories|rows?|sản phẩm)\b', _normalize(question), re.I)
+    limits = set()
+    for count in counts:
+        value = next(value for value in count.groups() if value)
+        limits.add(words[value] if value in words else int(value))
+    if len(limits) > 1:
+        _error('Specify one consistent ranking limit.', 'interpretation_invalid')
+    limit = next(iter(limits), None)
     if limit is not None and not 1 <= limit <= 200:
         _error('Detail rankings support 1 to 200 rows.', 'interpretation_invalid')
     return limit
@@ -283,6 +293,12 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
     # Vietnamese "inventory" is also a legacy stock alias; context alone cannot force a stock measure.
     known = _required_metrics(question)
     count_requested = re.search(r'how many|\bcount\b|number of|most.*products|đếm|bao nhiêu|nhiều.*sản phẩm', question, re.I)
+    # One shared filter set cannot represent independently filtered output counts.
+    flag_mentions = re.findall(r'\b(?:stockout|overstock|reorder)_flag\b', question, re.I)
+    separate_counts = len(re.findall(r'\bcount\b|đếm', question, re.I)) > 1
+    if count_requested and separate_counts and len(set(name.lower() for name in flag_mentions)) > 1:
+        _error('Separate flag counts require independent filtered aggregates. Request each count separately; '
+               'the current inventory interpretation supports one shared filter set.', 'interpretation_invalid')
     if mapping.representation == 'aggregate' and len(mapping.metrics) == 1 and count_requested:
         name = mapping.metrics[0]
         definition = METRIC_ONTOLOGY.get(name, {})

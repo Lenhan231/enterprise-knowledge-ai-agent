@@ -200,6 +200,11 @@ def display_result(st: Any, result: Mapping[str, Any], *, key_prefix: str | None
     if metadata.get("status"):
         st.caption("Status: " + metadata["status"].replace("_", " ") +
                    (" · evidence fallback" if metadata.get("fallback") else ""))
+    if str(metadata.get('failure_code', '')).startswith('jev_'):
+        attempts = metadata.get('jev_attempts')
+        note = f'Clarity check attempts: {attempts}. ' if attempts is not None else ''
+        st.caption(note + ('Retry later; SQL was not executed.' if metadata.get('retryable')
+                           else 'Check the backend clarity-service configuration or response; SQL was not executed.'))
     st.markdown(result.get("answer", "No answer returned."))
     data = result.get('data') or {}
     chart = data.get('visualization')

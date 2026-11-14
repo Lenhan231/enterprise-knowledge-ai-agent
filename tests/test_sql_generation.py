@@ -3,7 +3,7 @@ import sys
 import unittest
 from datetime import date
 from pathlib import Path
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -137,6 +137,13 @@ class SQLValidationTest(unittest.TestCase):
 
 
 class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        # Isolate SQL behavior; test_jev_* covers the actual clarity gate.
+        clarity = patch.object(SQLAnalyticsAgent, '_check_ambiguity', return_value={
+            'choice': 'clear', 'probabilities': {'clear': .95, 'ambiguous': .05}})
+        clarity.start()
+        self.addCleanup(clarity.stop)
+
     async def test_compiles_current_vs_previous_month_revenue_without_llm_sql(self):
         class LLM:
             def generate(self, prompt):

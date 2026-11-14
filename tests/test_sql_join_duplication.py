@@ -3,7 +3,7 @@ import sqlite3
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 
@@ -113,6 +113,13 @@ class JoinDuplicationTest(unittest.TestCase):
 
 
 class JoinRepairTest(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        # SQL semantics are isolated from transport; test_jev_* verifies the gate.
+        clarity = patch.object(SQLAnalyticsAgent, '_check_ambiguity', return_value={
+            'choice': 'clear', 'probabilities': {'clear': .95, 'ambiguous': .05}})
+        clarity.start()
+        self.addCleanup(clarity.stop)
+
     async def test_repeated_unsafe_plan_never_executes(self):
         class Provider:
             def generate(self, prompt):

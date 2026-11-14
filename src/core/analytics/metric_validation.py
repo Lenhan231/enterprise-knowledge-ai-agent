@@ -766,6 +766,13 @@ def validate_metric_definitions(sql, metric_names, parameters, table_columns, *,
         matches = {name for name, formula in formulas.items() if expression == formula}
         label = projection.alias.casefold()
         if not matches:
+            windows = list(expression.find_all(exp.Window))
+            aggregates = [node for node in expression.find_all(exp.AggFunc) if not isinstance(node, exp.Lag)]
+            if (set(definitions) == {'revenue'} and label not in definitions and windows and aggregates
+                    and all(isinstance(window.this, exp.Lag) and window.args.get('order') for window in windows)
+                    and all(aggregate == formulas['revenue'] for aggregate in aggregates)):
+                # Derived growth may reuse validated revenue through an ordered LAG.
+                continue
             if label in definitions or any(column.sql() in measure_columns for column in expression.find_all(exp.Column)):
                 raise MetricDefinitionError("Aggregate does not match a canonical metric formula")
             continue

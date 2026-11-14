@@ -184,6 +184,18 @@ async def assemble_response(request, plan, execution, provider):
         if key in data:
             key = 'task:' + outcome.task.id
         data[key] = result.data
+    interruption = next((o for o in active if o.result and o.status == 'clarification_required'), None)
+    if interruption is None and not usable:
+        interruption = next((o for o in active if o.result and o.result.data.get('query_status') == 'error'), None)
+    if interruption is not None:
+        interrupted_status = 'clarification_required' if interruption.status == 'clarification_required' else 'failed'
+        agent_names = {task.agent for task in plan.tasks}
+        route = 'hybrid' if len(agent_names) > 1 else ('analytics' if 'sql' in agent_names else 'knowledge')
+        return AgentResult(answer=interruption.result.answer, agent=route, evidence=evidence, data=data,
+            metadata={**interruption.result.metadata, 'ok': False, 'status': interrupted_status,
+                      'fallback': False, 'limitations': [], 'selected_route': route,
+                      'task_trace': execution.trace, 'specialist_invocations': execution.invocations,
+                      'planning_fallback': plan.fallback})
     fallback = True
     answer = ''
     if len(usable) == 1 and len(plan.tasks) == 1 and status == 'complete':

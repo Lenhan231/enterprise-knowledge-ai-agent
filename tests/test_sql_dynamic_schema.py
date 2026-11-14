@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 from types import SimpleNamespace
 import unittest
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 
@@ -15,6 +15,13 @@ from core.sql_agent.schema import configured_schemas
 
 
 class DynamicSchemaTest(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        # Isolate SQL behavior; test_jev_* covers the actual clarity gate.
+        clarity = patch.object(SQLAnalyticsAgent, '_check_ambiguity', return_value={
+            'choice': 'clear', 'probabilities': {'clear': .95, 'ambiguous': .05}})
+        clarity.start()
+        self.addCleanup(clarity.stop)
+
     async def test_pipeline_queries_a_discovered_schema_with_quoted_identifiers(self):
         query = 'SELECT t."customerName" FROM "MySchema"."order-history" AS t LIMIT 10'
         repository = Mock()
@@ -89,8 +96,8 @@ class DynamicSchemaTest(unittest.IsolatedAsyncioTestCase):
         await router._plan(state)
 
         self.assertFalse(state['execution'].plan.clarification)
-        self.assertEqual(provider.generate.await_count, 2)
-        self.assertIn('commerce.promotions', provider.generate.await_args_list[1].args[0])
+        provider.generate.assert_not_awaited()
+        self.assertEqual(state['execution'].plan.tasks[0].agent, 'sql')
         repository.get_schema.assert_awaited_once()
 
     def test_live_schema_is_an_allowlist_and_system_schemas_cannot_be_configured(self):

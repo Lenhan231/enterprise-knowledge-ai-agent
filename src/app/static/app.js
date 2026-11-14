@@ -1050,7 +1050,9 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
   panel.hidden = false;
   const citations = Array.isArray(data.citations) ? data.citations : [];
   const usedEvidenceFallback = Boolean(data.answer_fallback_reason || data.fallback);
-  const responseTitle = data.failure_code === "sql_timeout" ? "Truy vấn mất quá lâu"
+  const responseTitle = String(data.failure_code || "").startsWith("jev_")
+    ? (data.failure_code === "jev_auth_failed" ? "Clarity service configuration required" : "Clarity check unavailable")
+    : data.failure_code === "sql_timeout" ? "Truy vấn mất quá lâu"
     : ({partial: "Partial answer", clarification_required: "Clarification needed", failed: "Could not complete"})[data.status]
     || (data.ok === false ? "Answer unavailable" : usedEvidenceFallback ? "Evidence only" : "Answer");
   const domainLabels = {

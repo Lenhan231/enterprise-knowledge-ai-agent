@@ -35,6 +35,17 @@ class _BinaryResponse(_Response):
 
 
 class StreamlitClientTest(unittest.TestCase):
+    def test_clarity_service_failure_is_distinct_from_ambiguity(self):
+        from unittest.mock import Mock
+        st = Mock()
+        display_result(st, {'answer': 'Clarity service unavailable', 'metadata': {
+            'status': 'failed', 'failure_code': 'jev_unavailable', 'retryable': True,
+            'jev_attempts': 2}, 'data': {}})
+        captions = [call.args[0] for call in st.caption.call_args_list]
+        self.assertTrue(any('attempts: 2' in value and 'SQL was not executed' in value for value in captions))
+        st.markdown.assert_called_with('Clarity service unavailable')
+        st.vega_lite_chart.assert_not_called()
+
     def test_report_confirmation_is_preserved_for_explicit_resubmission(self):
         detail = {'status': 'confirmation_required', 'confirmation_required': True,
                   'scope_decision_required': True, 'unsupported_requirements': ['Supplier lead time missing']}
@@ -132,6 +143,7 @@ class StreamlitClientTest(unittest.TestCase):
         response.__enter__.return_value.read.return_value = json.dumps({
             'answer': 'done', 'agent': 'dashboard', 'data': {
                 'rows': [{'source': 'A', 'sessions': 10}], 'visualization': chart}}).encode()
+        response.__enter__.return_value.__iter__.return_value = [b'event: result\n', b'data: ' + response.__enter__.return_value.read.return_value + b'\n', b'\n']
         with patch.dict('os.environ', {'API_AGENT_PREFIX': '/api'}), \
                 patch('urllib.request.urlopen', return_value=response) as submit, \
                 patch.object(st, 'vega_lite_chart', wraps=st.vega_lite_chart) as render:

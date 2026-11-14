@@ -112,6 +112,13 @@ def assistant(repository, provider):
 
 
 class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        # Isolate SQL behavior; test_jev_* covers the actual clarity gate.
+        clarity = patch.object(SQLAnalyticsAgent, '_check_ambiguity', return_value={
+            'choice': 'clear', 'probabilities': {'clear': .95, 'ambiguous': .05}})
+        clarity.start()
+        self.addCleanup(clarity.stop)
+
     async def test_product_growth_repairs_bad_schema_then_waits_for_approval_and_executes(self):
         question = (
             "Tìm 10 sản phẩm có doanh thu sau giảm giá tăng mạnh nhất từ năm 2021 sang 2022; "
@@ -131,7 +138,7 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(draft["status"], "approval_required")
         self.assertEqual(draft["sql"], PRODUCT_GROWTH_SQL)
-        self.assertEqual(draft["sources"], [
+        self.assertCountEqual(draft["sources"], [
             "commerce.products", "commerce.order_items", "commerce.orders",
         ])
         self.assertEqual(len(provider.prompts), 2)

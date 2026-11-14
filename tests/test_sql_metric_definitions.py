@@ -4,7 +4,7 @@ import sys
 import unittest
 from datetime import date
 from pathlib import Path
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
@@ -173,6 +173,13 @@ class MetricEnforcementTest(unittest.TestCase):
 
 
 class MetricAgentTest(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        # SQL semantics are isolated from transport; test_jev_* verifies the gate.
+        clarity = patch.object(SQLAnalyticsAgent, '_check_ambiguity', return_value={
+            'choice': 'clear', 'probabilities': {'clear': .95, 'ambiguous': .05}})
+        clarity.start()
+        self.addCleanup(clarity.stop)
+
     async def test_schema_mismatch_requests_confirmation_but_security_error_does_not(self):
         mismatch = SQLSchemaMismatchError('commerce.sales', 'net_sales', ['date', 'revenue', 'cogs'])
         result = SQLAnalyticsAgent._generation_error(mismatch, 'SELECT ...', question='doanh thu tháng trước')
@@ -252,13 +259,12 @@ class MetricAgentTest(unittest.IsolatedAsyncioTestCase):
             repository.execute_approved_query.assert_awaited_once_with(correct)
 
     async def test_ratio_rows_preserve_the_canonical_fraction(self):
-        query = json.dumps({"sql": "SELECT i.snapshot_date, COUNT(i.product_id) FILTER (WHERE i.stockout_flag IS TRUE)::numeric / "
-                           "NULLIF(COUNT(i.product_id), 0) AS rate FROM commerce.inventory AS i "
-                           "WHERE i.snapshot_date = '2022-12-31' GROUP BY i.snapshot_date LIMIT 200"})
+        query = json.dumps({'metrics': ['stockout_rate'], 'dimensions': [],
+                            'time': {'mode': 'snapshot', 'start': '2022-12-31'}})
         repository = AsyncMock()
-        repository.execute_approved_query.return_value = [{"snapshot_date": "2022-12-31", "rate": 0.25}]
+        repository.execute_approved_query.return_value = [{"snapshot_date": "2022-12-31", "stockout_rate": 0.25}]
         result = await SQLAnalyticsAgent(repository, llm=self.provider(query)).run(self.request("Stockout rate on 2022-12-31"))
-        self.assertEqual(result.data["rows"], [{"snapshot_date": "2022-12-31", "rate": 0.25}])
+        self.assertEqual(result.data["rows"], [{"snapshot_date": "2022-12-31", "stockout_rate": 0.25}])
         self.assertEqual(result.metadata["metrics"]["stockout_rate"]["unit"], "percent")
         self.assertTrue(any("fractions" in note for note in result.metadata["limitations"]))
 

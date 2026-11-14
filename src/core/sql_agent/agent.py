@@ -7,6 +7,9 @@ import inspect
 import json
 import os
 import re
+import threading
+import time
+from openai import OpenAI, APIConnectionError, APIStatusError, APITimeoutError
 from collections.abc import Mapping
 from datetime import date
 from typing import Any
@@ -15,6 +18,7 @@ from core.agents.base import BaseAgent
 from core.analytics.field_retrieval import field_contract, compile_field_query
 from core.analytics.commerce_decision_support import resolve_commerce_decision_domain, unavailable_commerce_dimensions
 from core.analytics.metric_ontology import resolve_metric_names, get_metric_definition
+from core.analytics.business_ontology import policy_context
 from core.analytics.metric_mapping import build_metric_mapping_prompt, compile_inventory_query, decode_metric_mapping, decode_sql_turn, MetricTime, validate_mapped_sql
 from core.analytics.metric_validation import MetricDefinitionError, inventory_time_scope, validate_metric_definitions, validate_metric_request
 from core.analytics.join_validation import PRIMARY_KEYS
@@ -38,7 +42,7 @@ from core.database.commerce_repository import CommerceRepository
 from core.llm.llm_interface import LLMInterface
 from core.models.agents import AgentResult, Evidence, VerifiedIdentity
 from core.latency import measure
-from core.agents.runtime import generate
+from core.agents.runtime import generate, run_sync, remaining
 
 
 class AnalyticsPermissionDenied(PermissionError):
@@ -105,7 +109,17 @@ def payload_to_agent_result(payload: Mapping[str, Any], *, agent: str = "analyti
     return AgentResult(answer=answer, agent=agent, evidence=evidence, data=data, metadata=metadata)
 
 
+class JevCheckError(RuntimeError):
+    def __init__(self, code, *, retryable, attempts, elapsed_ms=0, http_status=None, error_type=None):
+        super().__init__(code)
+        self.details = dict(failure_code=code, retryable=retryable, jev_attempts=attempts,
+                            jev_elapsed_ms=elapsed_ms, jev_http_status=http_status,
+                            error_type=error_type or type(self).__name__)
+
+
 class SQLAnalyticsAgent(BaseAgent):
+    JEV_MIN_CLEAR_CONFIDENCE = 0.8
+
     def __init__(self, repository: CommerceRepository, *, llm: LLMInterface | None = None,
                  inventory_only: bool | None = None, metric_retriever=None) -> None:
         if inventory_only is None:
@@ -116,6 +130,8 @@ class SQLAnalyticsAgent(BaseAgent):
         self.repository = repository
         self.llm = llm
         self.metric_retriever = metric_retriever
+        self._jev_client = None
+        self._jev_lock = threading.Lock()
 
     async def run(self, request: Any) -> AgentResult:
         return payload_to_agent_result(await self.run_payload(request), agent="sql_analytics")
@@ -125,7 +141,7 @@ class SQLAnalyticsAgent(BaseAgent):
         context_info = {}
         schema = {}
         discover = getattr(self.repository, 'get_schema', None)
-        if discover is not None:
+        if discover is not None and inspect.iscoroutinefunction(discover):
             try:
                 with measure('schema_discovery'):
                     discovered = await discover()
@@ -154,6 +170,27 @@ class SQLAnalyticsAgent(BaseAgent):
                 'tables': sorted(table_columns),
                 'schemas': sorted({table.split('.', 1)[0] for table in table_columns}),
             }
+        ontology = policy_context(table_columns)
+        context_info['business_ontology'] = {
+            'policy': ontology['policy'], 'rule_ids': [rule['id'] for rule in ontology['rules']]}
+        context_info['sql_scope'] = 'inventory' if self.inventory_only else ','.join(sorted({name.split('.')[0] for name in table_columns}))
+        options = request.get('metadata', {}) if isinstance(request, Mapping) else getattr(request, 'metadata', {})
+        context = options.get('_sql_context') if isinstance(options, Mapping) else None
+        if not (isinstance(context, Mapping) and context.get('pending')):
+            try:
+                with measure('sql_ambiguity_check'):
+                    decision = await run_sync(self._check_ambiguity, self._query_text(request), table_columns, joins, _timeout=20)
+            except Exception as error:
+                result = self._jev_failure(error)
+                result['metadata'].update(context_info)
+                return result
+            context_info['jev'] = {**decision, 'threshold': self.JEV_MIN_CLEAR_CONFIDENCE}
+            if decision['probabilities']['clear'] < self.JEV_MIN_CLEAR_CONFIDENCE:
+                return {'ok': False, 'operation': 'text_to_sql', 'rows': [],
+                        'query_status': 'clarification_required',
+                        'answer': 'Please specify the source, measures, grouping and date scope so the query can be planned safely.',
+                        'metadata': {'status': 'clarification_required', 'clarification_required': True,
+                                     'execution_status': 'clarification_required', '_sql_context_action': 'new', **context_info}}
         result = await self._run_payload(request, context_info, table_columns, joins, primary_keys, date_columns)
         metadata = result.setdefault('metadata',{})
         schemas = context_info.get('discovered_schema', {}).get('schemas')
@@ -168,6 +205,126 @@ class SQLAnalyticsAgent(BaseAgent):
                  'SQLValidationError', 'SQLSecurityError', 'SQLSchemaMismatchError', 'MetricDefinitionError'
              } else 'planning_failed'))
         return result
+
+    def _check_ambiguity(self, question: str, table_columns=None, approved_joins=None) -> dict[str, Any]:
+        api_key = os.getenv('OPENROUTER_API_KEY', '').strip()
+        if not api_key:
+            raise JevCheckError('jev_auth_failed', retryable=False, attempts=0)
+        schema = {table: sorted(columns) for table, columns in (self.table_columns if table_columns is None else table_columns).items()}
+        relationships = [sorted(f'{table}.{column}' for table, column in edge)
+                         for edge in (APPROVED_JOINS if approved_joins is None else approved_joins)
+                         if all(table in schema for table, _ in edge)]
+        definitions = {name: get_metric_definition(name) for name in resolve_metric_names(question)}
+        definitions = {name: {key: definition.get(key) for key in ('source', 'formula', 'grain', 'unit', 'aliases', 'domain')}
+                       for name, definition in definitions.items()
+                       if set(re.findall(r'commerce\.\w+', definition['source'])) <= set(schema)}
+        descriptions = {'commerce.products': 'Product catalog; one row per product, not dated inventory observations.',
+                        'commerce.inventory': 'Historical product snapshots; stockout flags, stockout days and zero stock are distinct concepts.',
+                        'commerce.sales': 'Recorded daily sales revenue and COGS; currency is unconfirmed.',
+                        'commerce.web_traffic': 'Dated traffic-source observations including sessions and page views.'}
+        request_body = {
+            'model': 'typesafe/jev-1.14',
+            'state': {'question': question, 'approved_schema': schema,
+                      'business_ontology': policy_context(schema),
+                      'approved_relationships': relationships,
+                      'source_descriptions': {name: description for name, description in descriptions.items() if name in schema},
+                      'metric_definitions': definitions,
+                      'preferred_sources': sorted(relevant_schema_tables(question, definitions, schema) & set(schema))},
+            'questions': {'intent': {
+                'type': 'choice',
+                'instructions': ('Is the requested result clear enough to write exactly one safe SQL query? '
+                                 'Choose ambiguous when materially different metrics, entities, or scopes '
+                                 'are reasonably supported by the wording, or a required scope is missing. '
+                                 'Distinguish time grain from time period: "by each month" or a monthly trend '
+                                 'explicitly requests grouping by month, but "revenue for a month" without a '
+                                 'named month, date range, or explicit latest-available period lacks its time '
+                                 'scope and is ambiguous. Do not turn a missing period into GROUP BY, an '
+                                 'arbitrary date range, or a LIMIT. Treat "latest available month" as clear; '
+                                 'if "last month" could mean either the previous calendar month or latest '
+                                 'month in the data, ask for clarification. Missing optional filters alone '
+                                 'do not make it ambiguous. Use the supplied source descriptions and metric definitions. '
+                                 'Without inventory wording, product counts by category refer to the product catalog. '
+                                 'Multiple explicitly requested measures with one clear scope are not competing interpretations. '
+                                 'Use the governing business ontology for identity, grain and missing-data meaning; '
+                                 'policy approval does not approve undocumented metric formulas. '
+                                 'Chart type is presentation, not a different business metric. Do not guess what undefined stockout means. '
+                                 'Consider only the question and approved schema; '
+                                 'do not judge SQL validity.'),
+                'criteria': {
+                    'clear': ('One reasonable metric, entity, and required scope can be identified. A time '
+                              'grouping is clear only when the question asks for a series or grouping.'),
+                    'ambiguous': ('At least two materially different interpretations are reasonable and would '
+                                  'produce different SQL results, or the metric requires a missing time period.'),
+                },
+            }},
+        }
+        payload, stats = self._request_jev(request_body, api_key)
+        try:
+            answer = payload.get('answers', {}).get('intent', {})
+            probabilities = answer.get('probabilities', {})
+            clear, ambiguous = float(probabilities.get('clear', -1)), float(probabilities.get('ambiguous', -1))
+            if (answer.get('type') != 'choice' or answer.get('choice') not in {'clear', 'ambiguous'}
+                    or not all(0 <= probability <= 1 for probability in (clear, ambiguous))):
+                raise ValueError('invalid decision')
+        except (AttributeError, TypeError, ValueError):
+            raise JevCheckError('jev_invalid_response', retryable=False, attempts=stats['attempts'],
+                                elapsed_ms=stats['elapsed_ms'], http_status=200) from None
+        return {'choice': answer.get('choice'), 'probabilities': {'clear': clear, 'ambiguous': ambiguous},
+                'confidence': answer.get('confidence'), 'model': payload.get('model'), **stats}
+
+    def _request_jev(self, body, api_key):
+        started = time.monotonic()
+        end = started + remaining(20)
+        with self._jev_lock:
+            if self._jev_client is None:
+                self._jev_client = OpenAI(api_key=api_key, base_url='https://openrouter.ai/api/',
+                                          timeout=8, max_retries=0)
+        for attempt in (1, 2):
+            budget = min(end-time.monotonic(), remaining(20))
+            if budget <= 0:
+                raise JevCheckError('jev_timeout', retryable=True, attempts=attempt-1,
+                                    elapsed_ms=round((time.monotonic()-started)*1000, 2))
+            try:
+                payload = self._jev_client.post('/alpha/decisions', cast_to=dict[str, Any], body=body,
+                                                options={'timeout': min(8, budget)})
+                return payload, dict(attempts=attempt, elapsed_ms=round((time.monotonic()-started)*1000, 2), http_status=200)
+            except (APIConnectionError, APIStatusError) as error:
+                status = getattr(error, 'status_code', None)
+                retryable = isinstance(error, APIConnectionError) or status in {429, 502, 503, 504}
+                code = ('jev_auth_failed' if status in {401, 403} else
+                        'jev_timeout' if isinstance(error, APITimeoutError) else 'jev_unavailable')
+                pause = .5
+                header = error.response.headers.get('retry-after') if isinstance(error, APIStatusError) else None
+                if header is not None:
+                    try:
+                        pause = max(0, float(header))
+                    except ValueError:
+                        pause = 20  # An unparsed server retry window must not be ignored.
+                if not retryable or attempt == 2 or pause + 8 > end-time.monotonic():
+                    raise JevCheckError(code, retryable=retryable, attempts=attempt,
+                        elapsed_ms=round((time.monotonic()-started)*1000, 2), http_status=status,
+                        error_type=type(error).__name__) from None
+                time.sleep(pause)
+
+    @staticmethod
+    def _jev_failure(error: Exception) -> dict[str, Any]:
+        details = getattr(error, 'details', None) or {
+            'failure_code': ('jev_timeout' if isinstance(error, TimeoutError) else
+                             'jev_invalid_response' if isinstance(error, (TypeError, ValueError)) else 'jev_unavailable'),
+            'retryable': not isinstance(error, (TypeError, ValueError)), 'jev_attempts': None, 'error_type': type(error).__name__}
+        messages = {
+            'jev_auth_failed': 'The clarity service credentials are missing or invalid. Configure OPENROUTER_API_KEY and restart the backend.',
+            'jev_timeout': 'The clarity service timed out. Please retry; no database query was run.',
+            'jev_unavailable': 'The clarity service is unavailable. Please retry later; no database query was run.',
+            'jev_invalid_response': 'The clarity service returned an invalid response. No database query was run.',
+        }
+        return {
+            'ok': False, 'operation': 'text_to_sql', 'rows': [], 'query_status': 'error',
+            'answer': messages[details['failure_code']],
+            'limitations': ['Jev ambiguity check did not complete; no database query was run.'],
+            'metadata': {'status': 'failed', 'execution_status': 'ambiguity_failed',
+                         '_sql_context_action': 'failed', **details},
+        }
 
     async def _run_payload(self, request: Any, context_info: dict, table_columns, approved_joins,
                            primary_keys, date_columns) -> dict[str, Any]:
@@ -321,7 +478,8 @@ class SQLAnalyticsAgent(BaseAgent):
                         plan.sql or '', plan.parameters, original_question, date_columns=date_columns)
                     if resolved_parameters != plan.parameters:
                         plan = QueryPlan(sql=plan.sql, parameters=resolved_parameters,
-                                         explanation=plan.explanation, clarification=plan.clarification)
+                                         explanation=plan.explanation, clarification=plan.clarification,
+                                         request_contract=plan.request_contract)
                     validate_current_year_month_range(plan.sql or '', plan.parameters, original_question,
                                                       date_columns=date_columns)
                     if plan.sql:
@@ -346,6 +504,8 @@ class SQLAnalyticsAgent(BaseAgent):
                                        question=interpretation.date_question() if interpretation and interpretation.domain == 'inventory' else question))
                     if interpretation:
                         validate_mapped_sql(plan,interpretation,question=interpretation.date_question() if resolved_latest else question)
+                if plan.request_contract is not None:
+                    context_info['request_contract'] = plan.request_contract
                 break
             except (SQLValidationError, MetricDefinitionError) as error:
                 if attempt == 0 and direct is None and not (interpretation and interpretation.domain == 'inventory'):
@@ -441,10 +601,14 @@ class SQLAnalyticsAgent(BaseAgent):
         }
 
     async def close(self) -> None:
-        await self.repository.close()
-        for provider in (self.llm, getattr(self, "_fallback_llm", None)):
-            if provider is not None and hasattr(provider, "close"):
-                provider.close()
+        try:
+            await self.repository.close()
+        finally:
+            if self._jev_client is not None:
+                self._jev_client.close()
+            for provider in (self.llm, getattr(self, "_fallback_llm", None)):
+                if provider is not None and hasattr(provider, "close"):
+                    provider.close()
 
     def _provider(self) -> LLMInterface:
         if self.llm is None:
@@ -534,16 +698,29 @@ class SQLAnalyticsAgent(BaseAgent):
         return result
 
     @staticmethod
-    def _database_error(error: Exception, sql: str | None, parameters: tuple[Any, ...]) -> dict[str, Any]:
+    def _database_error(error: Exception, sql: str, parameters: tuple[Any, ...]) -> dict[str, Any]:
+        analytics_url_missing = isinstance(error, RuntimeError) and 'ANALYTICS_DATABASE_URL' in str(error)
+        query_timeout = isinstance(error, TimeoutError) or getattr(error, 'sqlstate', None) == '57014'
+        failure_code = ('analytics_not_configured' if analytics_url_missing else
+                        'sql_timeout' if query_timeout else 'sql_execution_failed')
+        answer = (
+            'Chưa cấu hình tài khoản đọc dữ liệu cho SQL Agent (ANALYTICS_DATABASE_URL), nên truy vấn chưa chạy. '
+            'Hãy cấu hình kết nối analytics chỉ đọc rồi thử lại.'
+            if analytics_url_missing else
+            'Truy vấn dữ liệu mất quá lâu nên đã được dừng trước khi có kết quả. Hãy thu hẹp khoảng thời gian '
+            'hoặc yêu cầu một phép tổng hợp cụ thể hơn.'
+            if query_timeout else
+            'Câu hỏi đã được chuyển thành truy vấn SQL nhưng cơ sở dữ liệu không thực thi được. Chưa có kết quả '
+            'để trả lời. Hãy thử lại; nếu lỗi tiếp diễn, cần kiểm tra SQL, schema và quyền truy cập cơ sở dữ liệu.'
+        )
         result = {
             "ok": False, "operation": "text_to_sql", "rows": [],
-            "answer": "The approved data query could not be completed. Please try again later.",
-            "limitations": ["Database query did not complete."],
-            "metadata": {"error_type": type(error).__name__},
+            "answer": answer,
+            "limitations": ["Truy vấn vượt quá thời gian cho phép." if query_timeout else
+                            "Truy vấn dữ liệu chưa hoàn tất."],
+            "metadata": {"status": "failed", "failure_code": failure_code, "error_type": type(error).__name__},
         }
-        result['query_status'] = "error"
-        if sql:
-            result.update(attempted_sql=sql, parameters=list(parameters))
+        result.update(attempted_sql=sql, parameters=list(parameters), query_status="error")
         return result
 
     @staticmethod

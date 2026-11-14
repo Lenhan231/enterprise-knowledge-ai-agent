@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 import unittest
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
 from core.analytics.metric_mapping import decode_sql_turn
@@ -89,6 +89,13 @@ class SQLPatchTest(unittest.TestCase):
 
 
 class SQLConversationTest(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        # Isolate SQL behavior; test_jev_* covers the actual clarity gate.
+        clarity = patch.object(SQLAnalyticsAgent, '_check_ambiguity', return_value={
+            'choice': 'clear', 'probabilities': {'clear': .95, 'ambiguous': .05}})
+        clarity.start()
+        self.addCleanup(clarity.stop)
+
     async def test_expiry_identity_permission_changes_and_restart_clear_scope(self):
         agent=Mock();seen=[]
         async def run(request):
@@ -203,6 +210,13 @@ class SQLConversationTest(unittest.IsolatedAsyncioTestCase):
 
 
 class OriginalQuestionContextTest(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        # Isolate SQL behavior; test_jev_* covers the actual clarity gate.
+        clarity = patch.object(SQLAnalyticsAgent, '_check_ambiguity', return_value={
+            'choice': 'clear', 'probabilities': {'clear': .95, 'ambiguous': .05}})
+        clarity.start()
+        self.addCleanup(clarity.stop)
+
     async def test_sql_task_keeps_root_question_for_relative_date_validation(self):
         question = 'Doanh thu tháng 3 năm nay là bao nhiêu?'
         request = AgentRequest(question=question, identity=IDENTITY)

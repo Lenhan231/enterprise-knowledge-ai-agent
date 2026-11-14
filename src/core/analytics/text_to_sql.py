@@ -14,6 +14,7 @@ from sqlglot import exp, parse
 from sqlglot.errors import ParseError, TokenError
 
 from core.analytics.metric_ontology import get_metric_definition, resolve_metric_names
+from core.analytics.business_ontology import policy_context, validate_request_contract
 from core.analytics.invoices import is_invoice_question, validate_invoice_currency
 from core.analytics.join_validation import PRIMARY_KEYS, validate_join_aggregations, approved_derived_join, column_origin
 from core.analytics.metric_validation import _single_snapshot
@@ -142,6 +143,7 @@ class QueryPlan:
     parameters: tuple[Any, ...] = ()
     explanation: str = ""
     clarification: str | None = None
+    request_contract: dict | None = None
 
 
 def _source_name(table: exp.Table) -> str:
@@ -584,7 +586,10 @@ def decode_query_plan(raw: str, schema_columns=None, *, allowed_sources=None, ap
         sql = tree.sql(dialect='postgres')
         validate_commerce_sql(sql, allowed_sources=allowed_sources, schema_columns=schema_columns,
             approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns)
-    return QueryPlan(sql=sql, parameters=tuple(parameters), explanation=explanation.strip())
+    contract = payload.get('request_contract')
+    if contract is not None:
+        validate_request_contract(sql, contract, parameters)
+    return QueryPlan(sql=sql, parameters=tuple(parameters), explanation=explanation.strip(), request_contract=contract)
 
 
 def _date_parameter_indexes(sql: str, date_columns=None) -> set[int]:
@@ -745,7 +750,7 @@ def relevant_schema_tables(question, definitions, available_tables=None):
     cues = {
         'inventory': r'inventory|stock|snapshot|tồn kho',
         'products': r'product|category|catalog|sku|sản phẩm|danh mục',
-        'returns': r'return|refund|trả hàng|hoàn hàng|hoàn trả',
+        'returns': r'\breturns\b|\breturned\b|\breturn (?:rate|date|quantity|reason)\b|refund|trả hàng|hoàn hàng',
         'orders': r'order|ordered|đơn hàng',
         'order_items': r'quantity|quantities|ordered units|line value|order items|ordered quantities',
         'customers': r'customer|khách hàng',
@@ -754,7 +759,7 @@ def relevant_schema_tables(question, definitions, available_tables=None):
         'promotions': r'promotion|promo|khuyến mãi',
         'reviews': r'review|rating|đánh giá',
         'shipments': r'shipment|shipping|delivery|giao hàng|vận chuyển|phí ship',
-        'web_traffic': r'session|traffic|bounce|truy cập',
+        'web_traffic': r'session|traffic|bounce|page\s*views?|unique visitors|web analytics|truy cập|lượt xem trang',
         'sales': r'revenue|cogs|gross profit|doanh thu|lợi nhuận',
     }
     tables.update('commerce.'+name for name, pattern in cues.items() if re.search(pattern, text))
@@ -937,6 +942,13 @@ def build_sql_prompt(
             question=question,
         )
         + ''.join(prompt_rules)
+        + '\nGoverning business ontology: ' + json.dumps(policy_context(tables), ensure_ascii=False)
+        + '\nInclude request_contract in SQL JSON: columns is the ordered list of requested output aliases only; '
+          'dimensions lists the dimension aliases; chart_type is line, bar, donut, table or null. '
+          'For independent boolean conditional counts, measure_filters maps each count alias to '
+          '{"column": "recorded_flag_column", "equals": true}. Each count uses its own FILTER; '
+          'do not intersect those independent filters in WHERE. Do not add unrequested measures to columns. '
+          'Metric formulas, periods and units still come from canonical metric contracts; ontology context grants no database access.'
         + ('\nStored projection fields: '+json.dumps(stored_fields)+
            '. Select these directly from the inventory alias. Do not aggregate or GROUP BY in product representation. '
            'Product identity may use inventory.product_id or the joined products.product_id.\n' if stored_fields else '')

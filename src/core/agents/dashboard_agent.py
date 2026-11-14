@@ -12,12 +12,13 @@ from sqlglot import exp, parse_one
 
 from core.sql_agent.agent import SQLAnalyticsAgent, payload_to_agent_result
 from core.models.agents import ChartSeries, ChartSpec
+from core.analytics.business_ontology import validate_request_contract
 
 
 def requested_chart_type(question):
     choices = {
-        'line': r'\bline chart\b|biểu đồ đường',
-        'bar': r'\bbar chart\b|biểu đồ cột|biểu đồ thanh',
+        'line': r'\bline[\s-]*chart\b|biểu đồ đường',
+        'bar': r'\bbar[\s-]*chart\b|biểu đồ cột|biểu đồ thanh',
         'donut': r'\bdonut\b|\bdoughnut\b|\bpie chart\b|biểu đồ tròn',
     }
     matches = [kind for kind, pattern in choices.items() if re.search(pattern, question, re.I)]
@@ -98,6 +99,13 @@ def _unit(name, projection, metadata):
 def build_chart(payload, question):
     rows = payload['rows']
     metadata = payload.get('metadata', {})
+    contract = metadata.get('request_contract')
+    if contract is not None:
+        validate_request_contract(payload['sql'], contract, payload.get('parameters', ()))
+        contract_type = contract.get('chart_type')
+        requested_type = requested_chart_type(question)
+        if contract_type == 'table' or (requested_type and contract_type and requested_type != contract_type):
+            raise ValueError('The requested chart is incompatible with the planned output contract; showing source rows instead.')
     try:
         tree = parse_one(payload['sql'], read='postgres')
     except Exception as error:
@@ -125,6 +133,9 @@ def build_chart(payload, question):
     if len(dimensions) > 1:
         dimensions = [name for name in dimensions if name not in constant_dates]
         names = [name for name in names if name not in constant_dates]
+    if 'product_id' in names:
+        dimensions = ['product_id']
+        names = [name for name in names if name not in {'product_name', 'category', 'segment', 'size', 'color', *constant_dates}]
     if len(dimensions) != 1:
         raise ValueError('Specify one date or category dimension and numeric measures for the chart.')
     dimension = dimensions[0]
@@ -165,7 +176,8 @@ def build_chart(payload, question):
                      scope={'time': metadata.get('time_scope'), 'filters': metadata.get('filters', []),
                             'dates': constant_dates,
                             'snapshot_dates': metadata.get('snapshot_dates', []),
-                            'sources': metadata.get('source', [])})
+                            'sources': metadata.get('source', []),
+                            'policy': metadata.get('business_ontology', {}).get('policy')})
 
 
 def _validate_composition(tree, dimension, measures, rows):

@@ -4,6 +4,8 @@ Implemented on branch `QuocAn`. The user approved the Inventory Management scope
 
 ## Evidence and governance
 
+Policy integration update (2026-11-14): [Enterprise Policy ontology and SQL integration](technical/vietstyle-ontology-integration.md). The controlled policy now supplies structured, cited runtime context; executable formulas and their approval status remain in this catalog.
+
 Read-only inspection of Supabase FA26AI69 verified table columns, types, keys, relationships, nulls, distributions and snapshot coverage. The immutable [inspection evidence](../artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json) includes the original broader preflight; it is preserved, not a proposal to extend this catalog.
 
 Inventory has 60,247 rows and 1,624 observed products over 126 monthly month-end snapshots, July 31, 2012 through December 31, 2022. The latest snapshot contains 424 observed products, 104,235 units on hand and 4,081 recorded units received. There are 2,412 products in the product master. A product absent from a snapshot is unknown, never zero. The primary key is `(snapshot_date, product_id)`; `inventory.product_id` references the unique `products.product_id`.

@@ -93,6 +93,47 @@ def _explicit_month_revenue_plan(question: str, metric_names: set[str], today: d
                      explanation="Compile a calendar-month revenue total from commerce.sales.")
 
 
+def _promotion_query_plan(question: str, today: date | None = None):
+    """Compile the two unambiguous promotion questions using their source grain."""
+    text = question.casefold()
+    mentions_promo = bool(re.search(r"promo(?:tion)?s?|promotion code|discount code|coupon|voucher|khuyến mãi|mã giảm giá|mã khuyến mãi", text))
+    if not mentions_promo:
+        return None, None
+
+    asks_active_count = bool(re.search(
+        r"\bhow many\b|\bcount\b|bao nhiêu|số lượng", text
+    )) and bool(re.search(r"\bactive\b|\bcurrent\b|currently|hiện tại|đang hoạt động", text))
+    if asks_active_count:
+        today = today or date.today()
+        return QueryPlan(
+            sql=("SELECT COUNT(*) AS active_promotion_count "
+                 "FROM commerce.promotions AS p "
+                 "WHERE p.start_date <= $1 AND p.end_date >= $1 LIMIT 1"),
+            parameters=(today,),
+            explanation="Count promotions whose recorded start and end dates include the server's current date.",
+        ), "active_promotion_count"
+
+    asks_top_revenue = bool(re.search(r"\b(?:top|highest|most|rank|best)\b|cao nhất|nhiều nhất|đứng đầu", text)) \
+        and bool(re.search(r"revenue|sales|doanh thu", text))
+    if asks_top_revenue:
+        limit_match = re.search(r"\btop\s+(\d{1,2})\b|(\d{1,2})\s+(?:mã|promo|promotion|discount)", text)
+        limit = min(int(next(group for group in limit_match.groups() if group)), 50) if limit_match else 10
+        return QueryPlan(
+            sql=("SELECT p.promo_id, p.promo_name, "
+                 "SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS revenue "
+                 "FROM commerce.order_items AS oi "
+                 "JOIN commerce.promotions AS p ON p.promo_id = oi.promo_id "
+                 "WHERE oi.promo_id IS NOT NULL AND oi.promo_id_2 IS NULL "
+                 "AND oi.quantity IS NOT NULL AND oi.unit_price IS NOT NULL "
+                 "AND oi.discount_amount IS NOT NULL "
+                 "GROUP BY p.promo_id, p.promo_name "
+                 "ORDER BY revenue DESC, p.promo_id LIMIT " + str(limit)),
+            parameters=(),
+            explanation="Rank promotions by recorded net item revenue, without double-attributing lines with a second promotion.",
+        ), "promotion_revenue"
+    return None, None
+
+
 def payload_to_agent_result(payload: Mapping[str, Any], *, agent: str = "analytics") -> AgentResult:
     if not isinstance(payload, Mapping):
         raise TypeError("analytics payload must be a mapping")
@@ -213,7 +254,8 @@ class SQLAnalyticsAgent(BaseAgent):
             direct = field_contract(question) if context is None else None
         except MetricDefinitionError as error:
             return self._generation_error(error)
-        metric_names = set() if direct is not None else resolve_metric_names(question)
+        promotion_plan, promotion_metric = _promotion_query_plan(question) if direct is None else (None, None)
+        metric_names = set() if direct is not None or promotion_plan is not None else resolve_metric_names(question)
         relative_month_followup = bool(re.fullmatch(
             r'\s*(?:(?:vậy|còn)\s+)?(?:tháng trước(?: thì sao)?|last month|previous month)\s*[?!.]*\s*',
             original_question, re.I))
@@ -293,7 +335,7 @@ class SQLAnalyticsAgent(BaseAgent):
                 resolved_latest = True
             metric_evidence = {}
             metric_lookup = {}
-            if not metric_names and direct is None and self.metric_retriever is not None:
+            if not metric_names and direct is None and promotion_plan is None and self.metric_retriever is not None:
                 with measure('metric_retrieval'):
                     try:
                         items = await self.metric_retriever(request, question)
@@ -326,7 +368,9 @@ class SQLAnalyticsAgent(BaseAgent):
             return self._generation_error(error)
         for attempt in range(2):
             try:
-                if explicit_month_plan is not None:
+                if promotion_plan is not None:
+                    plan = promotion_plan
+                elif explicit_month_plan is not None:
                     plan = explicit_month_plan
                 elif month_comparison_plan is not None:
                     plan = month_comparison_plan
@@ -368,6 +412,20 @@ class SQLAnalyticsAgent(BaseAgent):
                                    if month_comparison_plan is not None or explicit_month_plan is not None else
                                    validate_metric_definitions(plan.sql, metric_names, plan.parameters, table_columns,
                                        question=interpretation.date_question() if interpretation and interpretation.domain == 'inventory' else question))
+                    if promotion_metric == "promotion_revenue":
+                        definitions = {"promotion_revenue": {
+                            "unit": "currency", "aggregation": "sum",
+                            "limitations": (
+                                "Revenue is net item revenue attributed through order_items.promo_id; lines with promo_id_2 are excluded because the allocation rule is undefined.",
+                            ),
+                        }}
+                    elif promotion_metric == "active_promotion_count":
+                        definitions = {"active_promotion_count": {
+                            "unit": "promotions", "aggregation": "count",
+                            "limitations": (
+                                "A promotion is counted as active when the current server date falls within its recorded start_date and end_date.",
+                            ),
+                        }}
                     if interpretation:
                         validate_mapped_sql(plan,interpretation,question=interpretation.date_question() if resolved_latest else question)
                 break

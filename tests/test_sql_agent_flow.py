@@ -114,6 +114,31 @@ def assistant(repository, provider):
 
 
 class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
+    async def test_returned_vs_sold_prompt_includes_order_item_schema_and_executes(self):
+        question = "so sánh số lượng trả hàng với số lượng đã bán"
+        sql = """SELECT
+  (SELECT SUM(r.return_quantity) FROM commerce.returns AS r) AS returned_units,
+  (SELECT SUM(oi.quantity) FROM commerce.order_items AS oi) AS sold_units,
+  CAST((SELECT SUM(r.return_quantity) FROM commerce.returns AS r) AS NUMERIC)
+    / NULLIF((SELECT SUM(oi.quantity) FROM commerce.order_items AS oi), 0) AS returned_to_sold_ratio
+LIMIT 1"""
+        provider = FakeProvider([plan(sql, "Compare recorded returned units with recorded order-item quantities.")])
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        request = AgentRequest(
+            question=question,
+            identity=VerifiedIdentity(subject="test", permissions={"analytics:read"}),
+        )
+
+        result = await agent.run_payload(request)
+
+        self.assertEqual(result["query_status"], "executed", result)
+        self.assertIn("commerce.order_items:", provider.prompts[0])
+        self.assertIn("quantity", provider.prompts[0])
+        self.assertIn("commerce.returns:", provider.prompts[0])
+        self.assertIn("return_quantity", provider.prompts[0])
+        repository.execute_approved_query.assert_awaited_once()
+
     async def test_hard_prompts_across_commerce_tables_pass_sql_planning_and_validation(self):
         cases = (
             (

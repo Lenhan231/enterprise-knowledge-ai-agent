@@ -20,10 +20,21 @@ from document_processing.docling_adapter.scanned.postprocessing import (
     recover_empty_cell_dashes,
 )
 from document_processing.docling_adapter.scanned.line_detection import create_line_detector
-from document_processing.docling_adapter.scanned.vietocr import VietOcrModel
+from document_processing.docling_adapter.scanned.vietocr import (
+    VietOcrModel,
+    _set_torch_cpu_threads,
+)
 
 
 class VietOcrPostprocessingTest(unittest.TestCase):
+    def test_vietocr_torch_inference_uses_docling_cpu_thread_budget(self):
+        torch = SimpleNamespace(set_num_threads=unittest.mock.Mock())
+        accelerator_options = SimpleNamespace(num_threads=2)
+
+        _set_torch_cpu_threads(torch, accelerator_options)
+
+        torch.set_num_threads.assert_called_once_with(2)
+
     def test_rapidocr_cpu_detector_uses_docling_thread_budget(self):
         torch = ModuleType("torch")
         torch.cuda = SimpleNamespace(is_available=lambda: False)

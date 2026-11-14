@@ -43,6 +43,11 @@ _VIETOCR_BATCH_SIZE = 16
 _TEXTLINE_ORIENTATION_BATCH_SIZE = 16
 
 
+def _set_torch_cpu_threads(torch, accelerator_options: AcceleratorOptions) -> None:
+    """Keep VietOCR's PyTorch inference within Docling's configured CPU budget."""
+    torch.set_num_threads(max(1, int(accelerator_options.num_threads)))
+
+
 class VietOcrOptions(OcrOptions):
     kind: ClassVar[str] = "vietocr"
     lang: list[str] = Field(default_factory=list)
@@ -69,6 +74,7 @@ class VietOcrModel(BaseOcrModel):
         self.scale = options.scale
         self.recognition_batch_size = options.recognition_batch_size
         import torch
+        _set_torch_cpu_threads(torch, accelerator_options)
         import yaml
         from vietocr.tool.config import Cfg
         from vietocr.tool.predictor import Predictor

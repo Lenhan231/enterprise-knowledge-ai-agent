@@ -93,7 +93,7 @@ def chart_svg(chart):
     return ''.join(out) + f'<small>{text(chart.unit)} · Exact values in source table below</small>'
 
 
-def tile_content(tile, result):
+def _tile_content(tile, result):
     if not result or result.status not in {'complete', 'empty'}:
         return f'<p class="notice">{text(result.message if result else "Source unavailable")}</p>'
     rows = result.payload.get('rows') or []
@@ -102,10 +102,10 @@ def tile_content(tile, result):
     names = list(rows[0])
     measures = tile.measures or [key for key in names if any(number(row.get(key)) is not None for row in rows) and key != tile.dimension]
     if any(key not in names for key in [*measures, *([tile.dimension] if tile.dimension else [])]):
-        return '<p class="notice">Selected fields are unavailable. Edit this tile.</p>' + table(rows)
+        raise ValueError('Selected fields are unavailable. Edit this tile.')
     if tile.kind == 'kpi':
         if len(rows) != 1 or len(measures) != 1:
-            return '<p class="notice">A KPI needs one aggregate row and one measure; showing observations.</p>' + table(rows)
+            raise ValueError('A KPI needs one aggregate row and one measure; showing observations.')
         value = number(rows[0].get(measures[0]))
         shown = formatted(Decimal(str(rows[0][measures[0]]))) if value is not None else 'No observed value'
         return f'<p class="kpi">{shown}</p><p>{text(measures[0])}</p>'
@@ -116,6 +116,8 @@ def tile_content(tile, result):
             observed = [value for value in values if value is not None]
             if observed:
                 items.append(f'<li>{text(key)}: {len(observed)} observed; min {formatted(min(observed))}; max {formatted(max(observed))}; mean {formatted(mean(observed))}</li>')
+        if not items:
+            raise ValueError('No numeric observations are available for this summary.')
         return '<p>Descriptive statistics of returned observations only.</p><ul>' + ''.join(items) + '</ul>'
     if tile.kind == 'table':
         return table([{key: row.get(key) for key in names if not tile.measures or key in {*measures, tile.dimension}} for row in rows])
@@ -134,7 +136,23 @@ def tile_content(tile, result):
         chart.title = tile.title
         return chart_svg(chart) + '<details><summary>Source observations</summary>' + table(rows) + '</details>'
     except ValueError as error:
-        return f'<p class="notice">Chart unavailable: {text(error)}</p>' + table(rows)
+        raise ValueError('Chart unavailable: ' + str(error)) from error
+
+
+def tile_presentation(tile, result):
+    if not result or result.status not in {'complete', 'empty'}:
+        message = result.message if result and result.message else 'Source unavailable'
+        return f'<p class="notice">{text(message)}</p>', 'unavailable', message
+    try:
+        html = _tile_content(tile, result)
+        return html, 'complete' if result.payload.get('rows') else 'empty', ''
+    except ValueError as error:
+        message = str(error)
+        return f'<p class="notice">{text(message)}</p>' + table(result.payload.get('rows') or []), 'unavailable', message
+
+
+def tile_content(tile, result):
+    return tile_presentation(tile, result)[0]
 
 
 def render_dashboard(document):

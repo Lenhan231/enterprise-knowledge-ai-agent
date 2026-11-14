@@ -25,6 +25,10 @@ class SQLValidationTest(unittest.TestCase):
         expected = (date(2026, 3, 1), date(2026, 4, 1))
         self.assertEqual(current_year_month_range("Doanh thu tháng 3 năm nay", date(2026, 11, 14)), expected)
         self.assertEqual(current_year_month_range("Doanh thu tháng 3", date(2026, 11, 14)), expected)
+        self.assertEqual(current_year_month_range("doanh thu tháng này sao", date(2026, 11, 14)),
+                         (date(2026, 11, 1), date(2026, 12, 1)))
+        self.assertEqual(current_year_month_range("revenue this month", date(2026, 11, 14)),
+                         (date(2026, 11, 1), date(2026, 12, 1)))
         sql = "SELECT SUM(s.revenue) FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 LIMIT 1"
         validate_current_year_month_range(sql, expected, "Doanh thu tháng 3 năm nay",
                                           today=date(2026, 11, 14))

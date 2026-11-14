@@ -196,8 +196,10 @@ class AgentRouter:
 
     async def _inspect(self, state):
         execution = state['execution']
+        # A clarification is a request for user input, not a recoverable execution failure.
+        # Replanning it adds another model call without changing the information available.
         failed = [execution.outcomes[t.id] for t in state['plan'].tasks if t.id in execution.outcomes
-                  and execution.outcomes[t.id].status in {'failed', 'empty', 'clarification_required'}]
+                  and execution.outcomes[t.id].status in {'failed', 'empty'}]
         return {'revise': bool(failed and state['revisions'] < 1 and execution.invocations < 6
                                and remaining() > 5)}
 

@@ -75,6 +75,18 @@ class BoundedExecutionTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn('commerce.inventory', knowledge.requests[0].question)
         self.assertEqual(result.metadata['task_trace'][0]['id'], 's')
 
+    async def test_clarification_does_not_trigger_a_second_planner_call(self):
+        sql = FakeAgent(AgentResult(
+            answer='Which month do you mean?', agent='analytics',
+            metadata={'ok': False, 'status': 'clarification_required', 'clarification_required': True},
+        ))
+        llm = FakeProvider([task('s', 'sql', 'Revenue this month')])
+        result = await AgentRouter(None, None, sql, llm=llm).run(
+            AgentRequest(question='Revenue this month', identity=IDENTITY))
+        self.assertEqual(result.metadata['status'], 'clarification_required')
+        self.assertEqual(len(sql.requests), 1)
+        self.assertEqual(len(llm.prompts), 1)
+
     async def test_partial_failure_preserves_success_and_blocks_descendants(self):
         tasks = [task('k', 'knowledge', 'Policy'), task('s', 'sql', 'Count orders')]
         knowledge = FakeAgent(source_result('knowledge'))

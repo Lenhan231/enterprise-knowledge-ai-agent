@@ -727,6 +727,11 @@
 :root .invoice-review-item [data-remove-invoice-item]{grid-column:1/-1;justify-self:start;min-height:32px;padding:0 12px;font-size:13px}
 :root .invoice-review-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
 :root .invoice-review-actions [data-reject-invoice]{margin-left:auto}
+/* Reject is destructive: the same solid red as the confirmation dialog's danger button, distinct from jade Approve. */
+:root .invoice-review-actions .danger-button{border:1px solid var(--danger);background:var(--danger);color:#fff}
+:root .invoice-review-actions .danger-button:hover:not(:disabled){border-color:var(--danger-ink);background:var(--danger-ink)}
+:root .invoice-review-actions .danger-button:focus-visible{outline:2px solid var(--danger);outline-offset:2px}
+:root[data-theme="dark"] .invoice-review-actions .danger-button{color:#2a0f0b}
 
 /* knowledge files: filters in one row, files as hairline rows in one surface */
 :root .knowledge-filters.tool-toolbar label.knowledge-search-label{flex:1 1 320px}

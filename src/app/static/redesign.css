@@ -966,6 +966,6 @@
 /* Three groups (ask / documents / admin), each after the first opened by a hairline, which also works on the
    collapsed rail where headings would not fit; roles only see their own items. */
 @media(min-width:781px){
-  :root #tab-button-upload,:root #tab-button-access{margin-top:17px}
-  :root #tab-button-upload::after,:root #tab-button-access::after{content:"";position:absolute;left:10px;right:10px;top:-9px;height:1px;background:var(--line);pointer-events:none}
+  :root #tab-button-upload,:root #tab-button-access{margin-top:19px}
+  :root #tab-button-upload::after,:root #tab-button-access::after{content:"";position:absolute;left:0;right:0;top:-11px;height:1px;background:var(--line);pointer-events:none}
 }

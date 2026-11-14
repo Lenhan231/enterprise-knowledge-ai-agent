@@ -6,7 +6,7 @@ from types import ModuleType
 import unittest
 from unittest.mock import Mock, patch
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from core.chunking.processor import ChunkingProcessor

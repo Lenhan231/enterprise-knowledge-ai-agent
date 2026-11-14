@@ -10,7 +10,7 @@ import numpy as np
 if any(importlib.util.find_spec(module) is None for module in ("docling", "docling_core", "cv2")):
     raise unittest.SkipTest("OCR dependencies are optional outside the document-processing image")
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from document_processing.docling_adapter.result_mapper import _get_page_image, _merge_text_layout_elements
 from document_processing.docling_adapter.orientation import (

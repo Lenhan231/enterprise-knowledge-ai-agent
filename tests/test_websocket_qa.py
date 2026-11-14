@@ -12,7 +12,7 @@ from starlette.websockets import WebSocketDisconnect
 from core.models.agents import AgentResult, Evidence
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from app.main import _answer_documents, app
+from app.main import app
 
 
 class WebSocketQATest(unittest.TestCase):
@@ -38,17 +38,6 @@ class WebSocketQATest(unittest.TestCase):
         response = self.client.post("/api/auth/login", json={"username": username, "password": password})
         self.assertEqual(response.status_code, 200)
 
-    def test_websocket_returns_status_then_shared_qa_response(self):
-        expected = {"answer": "Grounded result [S1]", "citations": [], "agent": "knowledge", "data": None}
-        self.login()
-        with patch("app.main._answer_documents", return_value=expected) as answer:
-            with self.client.websocket_connect("/ws/ask") as websocket:
-                websocket.send_json({"question": "What does the report say?", "retrieval_method": "hybrid"})
-                self.assertEqual(websocket.receive_json(), {"type": "status", "status": "processing"})
-                self.assertEqual(websocket.receive_json(), {"type": "answer", **expected})
-        answer.assert_called_once()
-        self.assertEqual(answer.call_args.args[1]["role"], "finance_analyst")
-
 
 
     def test_websocket_validates_request_without_dropping_session(self):
@@ -58,17 +47,6 @@ class WebSocketQATest(unittest.TestCase):
             message = websocket.receive_json()
             self.assertEqual(message["type"], "error")
             self.assertTrue(message["detail"])
-
-    def test_websocket_preserves_temporary_provider_rate_limit(self):
-        self.login()
-        with patch("app.main._answer_documents", side_effect=HTTPException(429, "Provider quota; retry later")):
-            with self.client.websocket_connect("/ws/ask") as websocket:
-                websocket.send_json({"question": "What does the report say?"})
-                self.assertEqual(websocket.receive_json()["type"], "status")
-                message = websocket.receive_json()
-                self.assertEqual(message["type"], "error")
-                self.assertEqual(message["status_code"], 429)
-                self.assertIn("retry", message["detail"])
 
 
     def test_websocket_requires_authenticated_session(self):

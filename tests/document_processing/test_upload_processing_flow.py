@@ -11,7 +11,7 @@ import fitz
 
 from fastapi import HTTPException, UploadFile
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from app import main as app_main  # noqa: E402

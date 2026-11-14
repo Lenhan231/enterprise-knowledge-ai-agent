@@ -12,7 +12,7 @@ from starlette.requests import Request
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import app.main as app_main
-from app.main import CORPUS_COMPANY, DOCUMENT_ROLES, ROLE_PERMISSIONS, DocumentAccessRequest, KnowledgeBaseStatusRequest, _answer_documents, _commerce_reference_metadata, _referenced_citation_ids, _role_accounts, _roles_with_permission, access_matrix, app, require_permission, upload_capability
+from app.main import CORPUS_COMPANY, DOCUMENT_ROLES, ROLE_PERMISSIONS, DocumentAccessRequest, KnowledgeBaseStatusRequest, _commerce_reference_metadata, _referenced_citation_ids, _role_accounts, _roles_with_permission, access_matrix, app, require_permission, upload_capability
 from core.agents.intent_classifier import IntentClassifier
 from core.models.agents import AgentResult, Evidence
 

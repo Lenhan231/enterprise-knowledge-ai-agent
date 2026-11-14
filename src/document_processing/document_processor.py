@@ -136,6 +136,13 @@ class DocumentProcessor:
                 },
                 timeout=int(os.getenv(timeout_env, default_timeout)),
             )
+            previews = result.get("page_previews")
+            if isinstance(previews, dict):
+                result["page_previews"] = {
+                    page: base64.b64decode(value, validate=True)
+                    if isinstance(value, str) else value
+                    for page, value in previews.items()
+                }
             return result
         if intent == "invoice":
             from document_processing.docling_adapter.processor import DoclingProcessor

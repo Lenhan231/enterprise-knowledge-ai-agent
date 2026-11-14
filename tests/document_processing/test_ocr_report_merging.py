@@ -5,8 +5,8 @@ import sys
 import tempfile
 import unittest
 
-SCRIPT = Path(__file__).resolve().parents[1] / "scripts/processing/merge_ocr_reports.py"
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+SCRIPT = Path(__file__).resolve().parents[2] / "scripts/processing/merge_ocr_reports.py"
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 SPEC = importlib.util.spec_from_file_location("merge_ocr_reports", SCRIPT)
 merge_ocr_reports = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(merge_ocr_reports)
@@ -62,7 +62,7 @@ class OCRReportMergingTests(unittest.TestCase):
         return paths
 
     def test_merges_disjoint_hash_matched_pages_in_dataset_order(self):
-        with tempfile.TemporaryDirectory(dir=SCRIPT.parents[1]) as temp:
+        with tempfile.TemporaryDirectory(dir=SCRIPT.parents[2]) as temp:
             directory = Path(temp)
             reports = self.write_reports(directory, [
                 ("second", self.page("B", 2, "pdf-b", "image-b")),
@@ -81,7 +81,7 @@ class OCRReportMergingTests(unittest.TestCase):
         self.assertEqual(engine["pages"][0]["reference_source"], "manual")
 
     def test_rejects_render_hash_mismatch_and_engine_version_drift(self):
-        with tempfile.TemporaryDirectory(dir=SCRIPT.parents[1]) as temp:
+        with tempfile.TemporaryDirectory(dir=SCRIPT.parents[2]) as temp:
             directory = Path(temp)
             bad_hash = self.write_reports(directory, [
                 ("first", self.page("A", 1, "pdf-a", "wrong-image")),

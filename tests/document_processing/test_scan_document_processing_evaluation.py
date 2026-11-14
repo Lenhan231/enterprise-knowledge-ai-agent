@@ -5,7 +5,7 @@ from pathlib import Path
 import sys
 import unittest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from tools.processing.evaluate_scan_document_processing import (
     crop_pdf_page,
     evaluate_region,
@@ -19,7 +19,7 @@ from tools.processing.evaluate_scan_document_processing import (
 
 class ScanDocumentProcessingEvaluationTest(unittest.TestCase):
     def test_shopee_inventory_grid_labels_match_the_registered_source_hash(self):
-        root = Path(__file__).resolve().parents[1]
+        root = Path(__file__).resolve().parents[2]
         dataset = json.loads(
             (root / "data/evaluation/ocr/commerce_shopee_inventory_grid_anchors.json").read_text(encoding="utf-8")
         )
@@ -56,7 +56,7 @@ class ScanDocumentProcessingEvaluationTest(unittest.TestCase):
         self.assertIsNone(source_text_for_scoring(chunks[1:]))
 
     def test_commerce_scan_upload_path_scores_ocr_text_and_structured_table_separately(self):
-        root = Path(__file__).resolve().parents[1]
+        root = Path(__file__).resolve().parents[2]
         dataset = json.loads(
             (root / "data/evaluation/ocr/commerce_scan_ground_truth.json").read_text(encoding="utf-8")
         )
@@ -71,7 +71,7 @@ class ScanDocumentProcessingEvaluationTest(unittest.TestCase):
         self.assertIn("generated table serialization excluded", result["text_score_scope"])
 
     def test_degraded_image_only_scan_is_not_rasterized_a_second_time(self):
-        root = Path(__file__).resolve().parents[1]
+        root = Path(__file__).resolve().parents[2]
         dataset = json.loads(
             (root / "data/evaluation/ocr/commerce_degraded_scan_ground_truth.json").read_text(encoding="utf-8")
         )

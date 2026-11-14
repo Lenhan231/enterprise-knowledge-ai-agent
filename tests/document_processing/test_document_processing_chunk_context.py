@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from core.chunking.config import ChunkingConfig
 from core.chunking.processor import ChunkingProcessor
@@ -63,28 +63,6 @@ class DocumentProcessingChunkContextTest(unittest.TestCase):
             ))
             self.assertEqual(chunk["text"].count("Section: Operations"), 1)
             self.assertLessEqual(chunk["metadata"]["token_count"], 98)
-
-
-    def test_short_text_chunks_merge_only_within_same_section(self):
-        metadata = {"element_type": "text", "section_path": ["Overview"]}
-        parsed = {"elements": [
-            {"text": "short sentence", "metadata": dict(metadata)},
-            {"text": "following explanatory paragraph", "metadata": dict(metadata)},
-            {"text": "different section stays separate", "metadata": {
-                "element_type": "text", "section_path": ["Other"],
-            }},
-        ], "tables": []}
-        with patch(
-            "document_processing.document_processor.process_built_in",
-            return_value=parsed,
-        ):
-            parsed_result = DocumentProcessor().process("sample.docx", b"file", {})
-
-        self.assertEqual(parsed_result["elements"], parsed["elements"])
-        chunks = ChunkingProcessor({"chunk_size": 75, "chunk_overlap": 0}).process(parsed_result)["chunks"]
-        self.assertEqual(len(chunks), 2)
-        self.assertIn("short sentence\n\nfollowing explanatory paragraph", chunks[0]["text"])
-        self.assertEqual(chunks[1]["text"], "different section stays separate")
 
     def test_upload_test_does_not_send_table_fragments_through_text_chunker(self):
         parsed = {

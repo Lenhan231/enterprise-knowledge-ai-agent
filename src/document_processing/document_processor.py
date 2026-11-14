@@ -90,7 +90,15 @@ class DocumentProcessor:
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
 
-    def process(self, filename: str, content: bytes, metadata: dict[str, Any]) -> dict[str, Any]:
+    def process(
+        self,
+        filename: str,
+        content: bytes,
+        metadata: dict[str, Any],
+        *,
+        invoice_docling_lock=None,
+        on_invoice_docling_lock_wait=None,
+    ) -> dict[str, Any]:
         """Parse a source file into normalized ordered elements and structured tables."""
         suffix = Path(filename).suffix.lower()
         if suffix not in self.SUPPORTED:
@@ -119,19 +127,12 @@ class DocumentProcessor:
             cache_key = invoice_docling_cache.key(parser_content, suffix[1:], cache_config)
             cache_started = time.perf_counter()
             result = invoice_docling_cache.get(cache_key)
+            cache_lookup_ms = (time.perf_counter() - cache_started) * 1000
             cache_hit = result is not None
-            _LOGGER.info(
-                "DOCUMENT_PROCESS_COMPONENT %s",
-                json.dumps({
-                    "invoice_id": metadata.get("invoice_id"),
-                    "component": "invoice_docling_cache_lookup",
-                    "cache_hit": cache_hit,
-                    "elapsed_ms": round((time.perf_counter() - cache_started) * 1000, 2),
-                }, separators=(",", ":")),
-            )
-            if not cache_hit:
+
+            def parse_and_cache():
                 docling_started = time.perf_counter()
-                result = DoclingProcessor(processor_config).process(
+                parsed = DoclingProcessor(processor_config).process(
                     parser_content, None, {"content": parser_content, "metadata": parser_metadata}
                 )
                 _LOGGER.info(
@@ -143,7 +144,7 @@ class DocumentProcessor:
                     }, separators=(",", ":")),
                 )
                 cache_started = time.perf_counter()
-                cache_stored = invoice_docling_cache.put(cache_key, result)
+                cache_stored = invoice_docling_cache.put(cache_key, parsed)
                 _LOGGER.info(
                     "DOCUMENT_PROCESS_COMPONENT %s",
                     json.dumps({
@@ -153,6 +154,39 @@ class DocumentProcessor:
                         "elapsed_ms": round((time.perf_counter() - cache_started) * 1000, 2),
                     }, separators=(",", ":")),
                 )
+                return parsed
+
+            if result is None and invoice_docling_lock is not None:
+                lock_started = time.perf_counter()
+                invoice_docling_lock.acquire()
+                lock_wait_ms = (time.perf_counter() - lock_started) * 1000
+                try:
+                    if on_invoice_docling_lock_wait is not None:
+                        on_invoice_docling_lock_wait(lock_wait_ms)
+                    # Another request may have populated the cache while this
+                    # request waited for the shared Docling pipeline.
+                    cache_started = time.perf_counter()
+                    result = invoice_docling_cache.get(cache_key)
+                    cache_lookup_ms += (time.perf_counter() - cache_started) * 1000
+                    cache_hit = result is not None
+                    if result is None:
+                        result = parse_and_cache()
+                        cache_hit = False
+                finally:
+                    invoice_docling_lock.release()
+            elif result is None:
+                result = parse_and_cache()
+                cache_hit = False
+
+            _LOGGER.info(
+                "DOCUMENT_PROCESS_COMPONENT %s",
+                json.dumps({
+                    "invoice_id": metadata.get("invoice_id"),
+                    "component": "invoice_docling_cache_lookup",
+                    "cache_hit": cache_hit,
+                    "elapsed_ms": round(cache_lookup_ms, 2),
+                }, separators=(",", ":")),
+            )
             extraction_started = time.perf_counter()
             extraction = InvoiceTextProcessor(self.config).process(
                 result.get("elements", []), result.get("tables", []),

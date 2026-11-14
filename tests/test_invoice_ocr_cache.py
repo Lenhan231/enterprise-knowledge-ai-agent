@@ -1,4 +1,5 @@
 import unittest
+from threading import Event, Lock, Thread
 from types import ModuleType, SimpleNamespace
 from unittest.mock import Mock, patch
 
@@ -7,6 +8,136 @@ from document_processing.invoice_ocr_cache import InvoiceDoclingCache, invoice_d
 
 
 class InvoiceDoclingCacheTest(unittest.TestCase):
+    def test_waiting_request_rechecks_docling_cache_before_reparsing(self):
+        invoice_docling_cache.clear()
+        self.addCleanup(invoice_docling_cache.clear)
+        content = b"duplicate invoice bytes"
+        config = {
+            "intent": "invoice",
+            "invoice_provider": "gemini",
+            "docling_ocr_engine": "vietocr",
+        }
+        cache_key = invoice_docling_cache.key(content, "pdf", {
+            "intent": "document",
+            "docling_ocr_engine": "vietocr",
+            "parser_engine": "docling",
+        })
+        lock = Lock()
+        lock.acquire()
+        acquire_requested = Event()
+
+        class SignalingLock:
+            def acquire(self):
+                acquire_requested.set()
+                return lock.acquire()
+
+            def release(self):
+                lock.release()
+
+        extraction = {
+            "model": "test-model",
+            "revision": "test-revision",
+            "schema_version": "invoice.v1",
+            "status": "review_required",
+            "review_required": True,
+            "fields": {"invoice_no": "A-1"},
+            "metrics": {},
+        }
+        cached_result = {
+            "elements": [{"element_type": "text", "text": "Invoice"}],
+            "tables": [],
+            "metadata": {},
+        }
+        docling_module = ModuleType("document_processing.docling_adapter.processor")
+        docling_module.DoclingProcessor = Mock(side_effect=AssertionError("duplicate parse"))
+        invoice_module = ModuleType("document_processing.invoice_text_processor")
+        invoice_module.InvoiceTextProcessor = Mock(
+            return_value=SimpleNamespace(process=Mock(return_value=extraction))
+        )
+        outcome = {}
+        failure = []
+
+        def run_request():
+            try:
+                with patch.dict("sys.modules", {
+                    "document_processing.docling_adapter.processor": docling_module,
+                    "document_processing.invoice_text_processor": invoice_module,
+                }):
+                    outcome["result"] = DocumentProcessor(config).process(
+                        "invoice.pdf", content, {}, invoice_docling_lock=SignalingLock(),
+                    )
+            except Exception as error:
+                failure.append(error)
+
+        worker = Thread(target=run_request)
+        worker.start()
+        requested = acquire_requested.wait(timeout=2)
+        if requested:
+            invoice_docling_cache.put(cache_key, cached_result)
+        lock.release()
+        worker.join(timeout=5)
+
+        self.assertTrue(requested)
+        self.assertFalse(worker.is_alive())
+        self.assertEqual(failure, [])
+        self.assertEqual(outcome["result"]["invoice_extraction"]["fields"]["invoice_no"], "A-1")
+        docling_module.DoclingProcessor.assert_not_called()
+
+    def test_remote_extraction_runs_after_docling_lock_is_released(self):
+        invoice_docling_cache.clear()
+        self.addCleanup(invoice_docling_cache.clear)
+        lock = Lock()
+        docling_result = {
+            "elements": [{"element_type": "text", "text": "Invoice"}],
+            "tables": [],
+            "metadata": {},
+        }
+        extraction = {
+            "model": "test-model",
+            "revision": "test-revision",
+            "schema_version": "invoice.v1",
+            "status": "review_required",
+            "review_required": True,
+            "fields": {"invoice_no": "A-1"},
+            "metrics": {},
+        }
+
+        def parse_docling(*args):
+            self.assertTrue(lock.locked())
+            return docling_result
+
+        def extract_invoice(*args, **kwargs):
+            self.assertTrue(lock.acquire(blocking=False))
+            lock.release()
+            return extraction
+
+        docling_process = Mock(side_effect=parse_docling)
+        docling_module = ModuleType("document_processing.docling_adapter.processor")
+        docling_module.DoclingProcessor = Mock(
+            return_value=SimpleNamespace(process=docling_process)
+        )
+        invoice_module = ModuleType("document_processing.invoice_text_processor")
+        invoice_module.InvoiceTextProcessor = Mock(
+            return_value=SimpleNamespace(process=Mock(side_effect=extract_invoice))
+        )
+        wait_times = []
+
+        with patch.dict("sys.modules", {
+            "document_processing.docling_adapter.processor": docling_module,
+            "document_processing.invoice_text_processor": invoice_module,
+        }):
+            result = DocumentProcessor({
+                "intent": "invoice", "invoice_provider": "gemini",
+            }).process(
+                "invoice.pdf", b"invoice bytes", {},
+                invoice_docling_lock=lock,
+                on_invoice_docling_lock_wait=wait_times.append,
+            )
+
+        self.assertEqual(len(wait_times), 1)
+        self.assertEqual(result["invoice_extraction"]["fields"]["invoice_no"], "A-1")
+        self.assertFalse(lock.locked())
+
     def test_key_is_scoped_to_source_format_and_parser_configuration(self):
         cache = InvoiceDoclingCache()
         config = {"docling_ocr_engine": "vietocr", "docling_num_threads": 2}

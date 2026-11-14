@@ -735,7 +735,7 @@ def _process_invoice_upload(
                 "docling_table_structure": True,
                 "docling_table_mode": "fast",
                 "docling_layout_num_threads": int(os.getenv(
-                    "DOCUMENT_PROCESSING_INVOICE_LAYOUT_THREADS", "4",
+                    "DOCUMENT_PROCESSING_INVOICE_LAYOUT_THREADS", "2",
                 )),
             },
         }, timeout=int(os.getenv("DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS", "600")))

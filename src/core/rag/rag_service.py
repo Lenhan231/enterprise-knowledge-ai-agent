@@ -122,7 +122,13 @@ class RAGService:
         retrieval_service: RetrievalService | None = None,
         llm: GroqProvider | None = None,
     ):
-        self.retrieval_service = retrieval_service or RetrievalService()
+        if retrieval_service is not None:
+            self.retrieval_service = retrieval_service
+        elif os.getenv("RETRIEVAL_SERVICE_URL"):
+            from core.retrieval.remote_service import RemoteRetrievalService
+            self.retrieval_service = RemoteRetrievalService()
+        else:
+            self.retrieval_service = RetrievalService()
         self.llm = llm or GroqProvider()
 
     def retrieve_contexts(

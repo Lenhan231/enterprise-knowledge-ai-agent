@@ -1,6 +1,4 @@
-"""The embeddings and reranker images copy only the source files they import (so unrelated changes do not
-restart them and reload their models). This fails when one of those files gains an import the Dockerfile
-does not copy."""
+"""Service images must copy the source files imported by their runtime branch."""
 import ast
 import os
 import re
@@ -13,9 +11,14 @@ SRC = ROOT / "src"
 SERVICES = {
     "embeddings": ["core.services.runtime", "core.embeddings.embedding_service", "core.embeddings.settings"],
     "reranker": ["core.services.runtime", "core.retrieval.reranker"],
+    "retrieval": ["core.services.runtime", "core.retrieval.retrieval_service"],
 }
-# runtime.py also imports other services' modules in their own SERVICE_KIND branches; those are not needed.
-OTHER_BRANCHES = ("document_processing", "core.embeddings", "core.retrieval")
+# runtime.py imports unrelated service branches lazily; each image copies only its own branch.
+OTHER_BRANCHES = {
+    "embeddings": ("document_processing", "core.retrieval"),
+    "reranker": ("document_processing", "core.embeddings", "core.retrieval"),
+    "retrieval": ("document_processing",),
+}
 
 
 def module_file(module):
@@ -42,7 +45,7 @@ def local_imports(path, package, skip=()):
     return found
 
 
-def needed_files(entries):
+def needed_files(entries, service):
     files, todo = set(), list(entries)
     while todo:
         parts = todo.pop().split(".")
@@ -52,7 +55,7 @@ def needed_files(entries):
             if path and path not in files:
                 files.add(path)
                 package = module if path.name == "__init__.py" else ".".join(parts[: i - 1])
-                skip = OTHER_BRANCHES if module == "core.services.runtime" else ()
+                skip = OTHER_BRANCHES[service] if module == "core.services.runtime" else ()
                 todo += local_imports(path, package, skip)
     return {p.relative_to(ROOT).as_posix() for p in files}
 
@@ -73,7 +76,7 @@ class ModelServiceImagesTest(unittest.TestCase):
     def test_each_image_copies_every_source_file_it_imports(self):
         for service, entries in SERVICES.items():
             with self.subTest(service=service):
-                missing = needed_files(entries) - copied_files(ROOT / "docker" / f"Dockerfile.{service}")
+                missing = needed_files(entries, service) - copied_files(ROOT / "docker" / f"Dockerfile.{service}")
                 self.assertFalse(missing, f"add to docker/Dockerfile.{service}: {sorted(missing)}")
 
 

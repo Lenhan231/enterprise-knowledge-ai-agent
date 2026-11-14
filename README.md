@@ -57,10 +57,10 @@ It uses the authenticated backend at `http://127.0.0.1:8000` by default.
 - src/core/chunking: shared text and table chunk creation
 - src/core/database: PostgreSQL repositories and table persistence
 - Supabase `document_preprocessing_test` schema: isolated Upload Test runs and parser outputs
-- src/core/retrieval and src/core/rag: role-scoped hybrid search and grounded answers
-- src/core/agents: runtime router for grounded QA, analytics, hybrid reports and dashboard data
+- src/core/retrieval: role-scoped search; in Docker, the private Retrieval API owns translation, embedding, search and reranking
+- src/core/rag and src/core/agents: answer grounding, runtime routing, analytics, reports and dashboard data
 - [CLI tools](tools/README.md): reproducible CLI entry points grouped by workstream; see the [repository map](docs/technical/repository-ownership.md) for ownership and shared contracts
-- docker-compose.yml: backend API, document processing, chunking worker, embeddings and reranker; optional Nginx ingress. Frontend hosting remains on Vercel and data remains in Supabase.
+- docker-compose.yml: Agents API, private Retrieval API, document processing, chunking worker, embeddings and reranker; optional Nginx ingress. Frontend hosting remains on Vercel and data remains in Supabase.
 
 Backend Docker quick start (configure `.env` first, including a random
 `INTERNAL_SERVICE_TOKEN` shared only by the backend containers):

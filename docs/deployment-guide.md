@@ -60,16 +60,20 @@ changes to repeat both checks. It never applies SQL or writes test rows.
 
 ## Docker
 
-The deployment contains five backend services, each built from its own Dockerfile:
-`backend-api`, `document-processing`, `chunking`, `embeddings`, and `reranker`.
+The deployment contains six backend services, each built from its own Dockerfile:
+`backend-api`, `retrieval-api`, `document-processing`, `chunking`, `embeddings`, and `reranker`.
 Supabase remains external; no local database or frontend is started.
 
 1. Configure `.env` as above and generate `INTERNAL_SERVICE_TOKEN` with
    `python -c "import secrets; print(secrets.token_hex(32))"`. Set the generated
    value in `.env`; never commit it or send it to the frontend. Existing `.env`
-   files need this new variable added. Internal services receive only this
-   token and their model configuration, not Supabase or LLM secrets. The
-   non-HTTP chunking worker receives `DATABASE_URL` and chunking settings only.
+   files need this new variable added. Embeddings and reranker receive the
+   token and model configuration. The private Retrieval API also receives
+   `DATABASE_URL` and the Groq credentials used for query translation; the
+   document-processing service receives only the provider credentials needed
+   for its configured parsing path. These values stay in the internal
+   containers and are never sent to the browser. The non-HTTP chunking worker
+   receives `DATABASE_URL` and chunking settings only.
    Apply `supabase/migrations/20261028090548_add_chunking_document_statuses.sql`
    and `supabase/migrations/20261028091543_align_processing_outputs_with_parser.sql`
    through the normal migration workflow before starting this worker.
@@ -83,8 +87,15 @@ Supabase remains external; no local database or frontend is started.
    upload to size the host. Splitting containers does not guarantee a smaller
    total RAM requirement. Use one inference process per container initially.
 
-The API listens on loopback port 8000. Internal HTTP services publish no host ports
-and require the shared service token. The chunking worker has no HTTP endpoint;
+The public Agents API listens on loopback port 8000. It keeps authentication,
+agent routing, SQL, reports and final answer generation. Its Knowledge/RAG
+retrieval call goes to the private `retrieval-api` at `/retrieve`; that service
+performs query translation, embedding dispatch, scoped chunk search and
+reranking, then returns evidence to the Agents API. Role and company scopes are
+passed on every request. `retrieval-api` owns `DATABASE_URL`; embeddings and
+reranker remain separate model services. The Agents API also keeps its direct
+embedding connection for document uploads. Internal HTTP services publish no
+host ports and require the shared service token. The chunking worker has no HTTP endpoint;
 it polls parsed documents and atomically persists parser chunks with status
 `chunked`. It does not create embeddings, activate documents, or change access
 roles. Check its logs for startup migration failures and per-document errors;

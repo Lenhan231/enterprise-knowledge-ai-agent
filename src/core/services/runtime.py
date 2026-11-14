@@ -16,6 +16,22 @@ LOCK = Lock()
 logger = logging.getLogger(__name__)
 
 
+def _invoice_provider_is_remote(config):
+    provider = str(
+        config.get("invoice_provider")
+        or os.environ.get("DOCUMENT_PROCESSING_INVOICE_PROVIDER")
+        or "modal"
+    ).strip().lower()
+    if provider in {"gemini", "groq"}:
+        return True
+    if provider == "modal":
+        return bool(
+            config.get("invoice_modal_url")
+            or os.environ.get("DOCUMENT_PROCESSING_INVOICE_MODAL_URL")
+        )
+    return False
+
+
 def authorize(request: Request):
     token = os.getenv("INTERNAL_SERVICE_TOKEN", "")
     if not token or not secrets.compare_digest(request.headers.get("authorization", ""), "Bearer " + token):
@@ -112,17 +128,38 @@ def parse(body: Parse):
         if len(content) > 50 * 1024 * 1024:
             raise HTTPException(413, "Document exceeds 50 MiB")
         from document_processing.document_processor import DocumentProcessor
-        lock_started = time.perf_counter()
-        LOCK.acquire()
-        timings_ms["queue_lock_wait"] = round((time.perf_counter() - lock_started) * 1000, 2)
-        try:
+        processor = DocumentProcessor(body.config)
+        remote_invoice = (
+            str(body.config.get("intent", "document")).strip().lower() == "invoice"
+            and _invoice_provider_is_remote(body.config)
+        )
+        if remote_invoice:
+            timings_ms["queue_lock_wait"] = 0.0
             stage_started = time.perf_counter()
             try:
-                result = DocumentProcessor(body.config).process(body.filename, content, body.metadata)
+                result = processor.process(
+                    body.filename,
+                    content,
+                    body.metadata,
+                    invoice_docling_lock=LOCK,
+                    on_invoice_docling_lock_wait=lambda wait_ms: timings_ms.__setitem__(
+                        "queue_lock_wait", round(wait_ms, 2)
+                    ),
+                )
             finally:
                 timings_ms["document_processor"] = round((time.perf_counter() - stage_started) * 1000, 2)
-        finally:
-            LOCK.release()
+        else:
+            lock_started = time.perf_counter()
+            LOCK.acquire()
+            timings_ms["queue_lock_wait"] = round((time.perf_counter() - lock_started) * 1000, 2)
+            try:
+                stage_started = time.perf_counter()
+                try:
+                    result = processor.process(body.filename, content, body.metadata)
+                finally:
+                    timings_ms["document_processor"] = round((time.perf_counter() - stage_started) * 1000, 2)
+            finally:
+                LOCK.release()
         if "page_previews" in result:
             stage_started = time.perf_counter()
             result["page_previews"] = {key: base64.b64encode(value).decode("ascii")

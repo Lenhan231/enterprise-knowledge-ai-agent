@@ -1,4 +1,5 @@
 import json
+import importlib.util
 import unittest
 from threading import Barrier, Event
 from time import perf_counter
@@ -150,6 +151,10 @@ class InvoiceTextProcessorTest(unittest.TestCase):
         self.assertIn("CÔNG TY TNHH ĐẦU TƯ XÂY DỰNG THƯƠNG MẠI GIA PHÁT HUY", jobs[0]["prompt"])
         self.assertIn("Tên đơn vị: CÔNG TY TNHH NHÔM KÍNH BÌNH MINH", jobs[0]["prompt"])
 
+    @unittest.skipUnless(
+        importlib.util.find_spec("docling") and importlib.util.find_spec("docling_core"),
+        "Docling is an optional document-processing dependency",
+    )
     def test_invoice_dispatches_docling_then_text_extraction(self):
         docling_output = {
             "elements": [{"element_type": "text", "text": "HÓA ĐƠN"}],

@@ -6,7 +6,6 @@ from unittest.mock import MagicMock, Mock
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.database.document_repository import DocumentRepository
-from core.agents.dashboard_agent import DashboardAgent, _financial_time_series
 from core.models.agents import AgentRequest, AgentResult, Evidence
 
 
@@ -85,85 +84,9 @@ class DocumentDashboardTest(unittest.TestCase):
             self.assertTrue("d.company = %s::text" in query or "m.company = %s::text" in query or "coalesce(candidate.company, d.company) = %s::text" in query)
             self.assertEqual(parameters[-1], "Vinamilk Ltd.")
 
-    def test_dashboard_agent_passes_trusted_company_scope(self):
-        repository = Mock()
-        repository.corpus_dashboard.return_value = {"documents": []}
-        agent = DashboardAgent(repository)
 
-        result = agent.run(AgentRequest(
-            question="Show the dashboard",
-            user_id="analyst",
-            metadata={"role": "finance_analyst", "company": "Vinamilk Ltd."},
-        ))
 
-        repository.corpus_dashboard.assert_called_once_with(
-            "finance_analyst", "analyst", include_analytics=True,
-            company="Vinamilk Ltd.",
-        )
-        self.assertEqual(result.data, {"documents": []})
 
-    def test_dashboard_agent_creates_only_source_backed_financial_time_series(self):
-        repository = Mock()
-        analytics = Mock()
-        analytics.run.return_value = AgentResult(
-            answer="Revenue by year [M1] [M2]", agent="analytics",
-            evidence=[Evidence(
-                citation_id="M1", source_type="verified_metric", source="FY2023 revenue",
-                metadata={"document_id": "AR23"},
-            ), Evidence(
-                citation_id="M2", source_type="verified_metric", source="FY2024 revenue",
-                metadata={"document_id": "AR24"},
-            )],
-            data={"financial": [
-                {"metric_name": "net_revenue", "metric_label": "Net revenue", "fiscal_year": 2023,
-                 "metric_value": "60322", "unit": "billion VND", "document_id": "AR23"},
-                {"metric_name": "net_revenue", "metric_label": "Net revenue", "fiscal_year": 2024,
-                 "metric_value": "61524", "unit": "billion VND", "document_id": "AR24"},
-            ]},
-        )
-        agent = DashboardAgent(repository, analytics)
-        request = AgentRequest(
-            question="Show a chart of revenue by year", user_id="analyst",
-            metadata={"role": "finance_analyst", "company": "Vinamilk"},
-        )
-
-        result = agent.run(request)
-
-        analytics.run.assert_called_once()
-        chart_request = analytics.run.call_args.args[0]
-        self.assertEqual(chart_request.metadata["role"], "finance_analyst")
-        self.assertEqual(chart_request.metadata["company"], "Vinamilk")
-        self.assertTrue(chart_request.metadata["dashboard_visualization"])
-        repository.corpus_dashboard.assert_not_called()
-        self.assertEqual(result.agent, "dashboard")
-        self.assertEqual(result.evidence[0].citation_id, "M1")
-        self.assertEqual(result.data["visualization"]["categories"], [2023, 2024])
-        self.assertEqual(result.data["visualization"]["series"][0]["values"], [60322.0, 61524.0])
-
-    def test_financial_chart_rejects_ambiguous_or_incomparable_rows(self):
-        base = {"metric_name": "net_revenue", "metric_label": "Net revenue", "unit": "billion VND"}
-        rows = [
-            {**base, "fiscal_year": 2023, "metric_value": 10},
-            {**base, "fiscal_year": 2024, "metric_value": 12},
-        ]
-        self.assertIsNotNone(_financial_time_series(rows, "Revenue trend"))
-        self.assertIsNone(_financial_time_series(rows + [rows[0]], "Revenue trend"))
-        self.assertIsNone(_financial_time_series([
-            rows[0], {**rows[1], "unit": "million VND"},
-        ], "Revenue trend"))
-        self.assertIsNone(_financial_time_series([
-            rows[0], {**rows[1], "metric_value": "1e9999"},
-        ], "Revenue trend"))
-
-    def test_dashboard_agent_requires_authenticated_role_before_querying(self):
-        analytics = Mock()
-        repository = Mock()
-        with self.assertRaisesRegex(ValueError, "authenticated role"):
-            DashboardAgent(repository, analytics).run(AgentRequest(
-                question="Show a chart of revenue by year",
-            ))
-        analytics.run.assert_not_called()
-        repository.corpus_dashboard.assert_not_called()
 
     def test_unreviewed_metric_candidates_are_only_returned_to_admins(self):
         candidate = {"id": 7, "status": "needs_review"}

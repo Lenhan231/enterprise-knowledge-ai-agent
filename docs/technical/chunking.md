@@ -91,14 +91,11 @@ question diagnostic does not establish a winner or test BM25, hybrid,
 reranking, or answer quality. The latest baseline used 1,912 stored vectors;
 the alternate had 1,979 chunks. Sentence parsing took 39.10 s, embedding took
 71.00 s, and peak RSS was 1,676.7 MiB on CPU. It is read-only with respect to
-Supabase. The corrected-label run is in
-`artifacts/evaluation/vinamilk-chunking-retrieval-source-reviewed-20260928.json`;
-reproduce with:
-
-```bash
-uv run python scripts/chunking/evaluate_chunking_retrieval.py \
-  --output artifacts/evaluation/vinamilk-chunking-retrieval-source-reviewed-20260928.json
-```
+Supabase. The corrected-label run is archived in
+`artifacts/evaluation/vinamilk-chunking-retrieval-source-reviewed-20260928.json`.
+Its legacy retrieval evaluator has been retired. For a current PDF-only chunk
+boundary diagnostic, use `tools/chunking/evaluate_chunking.py`; it does not run
+embeddings or retrieval.
 
 The detailed per-question results, transferred-label mappings, case and source
 PDF hashes, candidate hashes, environment and limitations are recorded in the

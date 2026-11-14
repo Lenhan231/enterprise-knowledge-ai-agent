@@ -1,6 +1,10 @@
 import unittest
+import importlib.util
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
+
+if any(importlib.util.find_spec(module) is None for module in ("docling", "docling_core")):
+    raise unittest.SkipTest("Docling is an optional document-processing dependency")
 
 from docling.datamodel.settings import DebugSettings, scoped, settings
 from docling.datamodel.pipeline_options import TableFormerMode

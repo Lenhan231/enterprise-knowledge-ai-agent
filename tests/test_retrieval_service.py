@@ -46,11 +46,25 @@ class FakeRepository:
         self.closed = True
 
 
+class FakeTranslator:
+    llm = None
+
+    def translate(self, query, query_language="auto"):
+        return {"en": query, "vn": query}
+
+
+class FakeReranker:
+    def rerank(self, query, items, k):
+        return items[:k], {"reranker_model": "fake", "rerank_latency_ms": 0}
+
+
 class RetrievalServiceTest(unittest.TestCase):
     def setUp(self):
         self.embeddings = FakeEmbeddingService()
         self.repository = FakeRepository()
-        self.service = RetrievalService(self.embeddings, self.repository)
+        self.service = RetrievalService(
+            self.embeddings, self.repository, FakeTranslator(), FakeReranker()
+        )
 
     def test_retrieve_embeds_question_and_maps_repository_results(self):
         result = self.service.retrieve(RetrievalRequest(query="What is required?", top_k=3))
@@ -110,7 +124,7 @@ class RetrievalServiceTest(unittest.TestCase):
              patch.object(self.embeddings, "embed_query", side_effect=embed), \
              patch.object(self.repository, "similarity_search", side_effect=search), \
              patch("core.retrieval.retrieval_service.RankedChunk", side_effect=map_chunk):
-            result = self.service.retrieve(RetrievalRequest(query="question"))
+            result = self.service.retrieve(RetrievalRequest(query="question"), method="hybrid")
         self.assertEqual(result.latency_ms, 125.0)
         self.assertEqual(events, ["clock", "embed", "search", "map", "clock"])
 

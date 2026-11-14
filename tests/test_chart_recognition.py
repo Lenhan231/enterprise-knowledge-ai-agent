@@ -2,9 +2,13 @@ import sys
 import json
 import os
 import unittest
+import importlib.util
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
+
+if any(importlib.util.find_spec(module) is None for module in ("docling", "docling_core", "PIL")):
+    raise unittest.SkipTest("Docling and Pillow are optional document-processing dependencies")
 
 from PIL import Image
 

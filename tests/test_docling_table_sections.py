@@ -1,7 +1,11 @@
 import sys
 import unittest
+import importlib.util
 from pathlib import Path
 from types import SimpleNamespace
+
+if any(importlib.util.find_spec(module) is None for module in ("docling", "docling_core")):
+    raise unittest.SkipTest("Docling is an optional document-processing dependency")
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 

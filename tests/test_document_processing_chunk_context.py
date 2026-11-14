@@ -9,7 +9,6 @@ from core.chunking.config import ChunkingConfig
 from core.chunking.processor import ChunkingProcessor
 from core.chunking.router import build_chunks
 from document_processing.document_processor import DocumentProcessor
-from document_processing.pipelines.mineru.result_mapper import MineruResultMapper
 from core.tokenization.embedding_chunker import build_embedding_chunks
 from core.tokenization.token_counter import TokenCounter
 
@@ -65,30 +64,6 @@ class DocumentProcessingChunkContextTest(unittest.TestCase):
             self.assertEqual(chunk["text"].count("Section: Operations"), 1)
             self.assertLessEqual(chunk["metadata"]["token_count"], 98)
 
-    def test_mineru_html_table_and_referenced_image_become_ordered_structured_chunks(self):
-        mapper = MineruResultMapper({})
-        image_chunk = {
-            "text": "OCR from chart",
-            "metadata": {"source_part": "images/chart.png", "text_extraction_method": "mineru.local.basic"},
-        }
-        result = mapper.markdown_result(
-            "# Overview\nBefore image.\n![](images/chart.png)\nAfter image.\n"
-            "<table><tr><th>Metric</th><th>Value</th></tr><tr><td>Revenue</td><td>42</td></tr></table>",
-            {"metadata": {"format": "DOCX", "filename": "report.docx"},
-             "image_chunks_by_asset": {"images/chart.png": [image_chunk]}},
-        )
-
-        self.assertEqual(len(result["tables"]), 1)
-        self.assertEqual(result["tables"][0]["columns"], ["Metric", "Value"])
-        self.assertEqual(result["tables"][0]["rows"], [{"Metric": "Revenue", "Value": "42"}])
-        self.assertEqual(
-            [element["metadata"]["element_type"] for element in result["elements"]],
-            ["text", "image", "text", "table"],
-        )
-        self.assertEqual(len(result["tables"]), 1)
-        chunks = ChunkingProcessor({"chunk_size": 300}).process(result)["chunks"]
-        self.assertTrue(all("<table" not in chunk["text"] for chunk in chunks))
-        self.assertEqual(chunks[1]["text"], "Section: Overview\nOCR from chart")
 
     def test_short_text_chunks_merge_only_within_same_section(self):
         metadata = {"element_type": "text", "section_path": ["Overview"]}

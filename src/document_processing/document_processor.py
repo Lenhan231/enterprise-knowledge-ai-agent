@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from pathlib import Path
+import base64
 import json
 import logging
+import os
 import time
 from typing import Any
 from io import BytesIO
@@ -112,6 +114,29 @@ class DocumentProcessor:
             "format": suffix[1:].upper(),
             "intent": intent,
         }
+        remote_url = os.getenv("DOCUMENT_PROCESSING_URL", "").strip()
+        if remote_url:
+            from core.services import client
+
+            timeout_env = (
+                "DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS"
+                if intent == "invoice" else "DOCUMENT_PROCESSING_TIMEOUT_SECONDS"
+            )
+            default_timeout = "600"
+            if intent == "invoice":
+                default_timeout = "1200"
+            result = client.post(
+                remote_url,
+                "/parse",
+                {
+                    "filename": Path(filename).name,
+                    "content": base64.b64encode(content).decode("ascii"),
+                    "metadata": common,
+                    "config": self.config,
+                },
+                timeout=int(os.getenv(timeout_env, default_timeout)),
+            )
+            return result
         if intent == "invoice":
             from document_processing.docling_adapter.processor import DoclingProcessor
             from document_processing.invoice_text_processor import InvoiceTextProcessor

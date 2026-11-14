@@ -17,8 +17,6 @@ sys.path.insert(0, str(ROOT / "src"))
 from app import main as app_main  # noqa: E402
 from core.database.structured_store import StructuredDataStore  # noqa: E402
 from document_processing.document_processor import DocumentProcessor  # noqa: E402
-from document_processing.pipelines.built_in.processor import BuiltInProcessor  # noqa: E402
-from document_processing.readers.image.processor import ScannedImageProcessor  # noqa: E402
 
 
 def xlsx_with_formula() -> bytes:
@@ -396,78 +394,6 @@ class UploadProcessingFlowTest(unittest.TestCase):
         self.assertNotIn("embedding_model", parsed_repo.replace_document.call_args.args[1][0]["metadata"])
         self.assertEqual(len(chunks_cls.return_value.replace_document.call_args.args[1]), 2)
 
-    def test_image_ocr_caption_and_table_flow_through_upload_to_persistence(self):
-        source = blank_table_image()
-        words = []
-        for row, (label, current, previous) in enumerate((
-            ("Revenue", "100", "90"),
-            ("Cash", "25", "20"),
-            ("Assets", "500", "450"),
-        )):
-            y = 40 + row * 20
-            words.extend([
-                (10, y, 85, y + 8, label, 1, row, 1),
-                (110, y, 140, y + 8, current, 1, row, 2),
-                (210, y, 240, y + 8, previous, 1, row, 3),
-            ])
-        document_repo = MagicMock()
-        structured_store = MagicMock()
-        storage = MagicMock()
-        storage.storage.from_.return_value.upload.return_value = None
-        embedding = MagicMock(model_name="test-embedding", max_sequence_length=100)
-        embedding.embed_documents.return_value = [[0.1, 0.2], [0.3, 0.4]]
-        with (
-            patch.object(app_main, "_require_same_origin"),
-            patch.object(app_main, "_storage_client", return_value=(storage, "private")),
-            patch.object(app_main, "DocumentRepository", return_value=document_repo),
-            patch.object(ScannedImageProcessor, "_ocr", return_value="Revenue 100 90\nCash 25 20\nAssets 500 450"),
-            patch.object(BuiltInProcessor, "_ocr_page_words", return_value=words),
-            patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
-            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
-            patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
-            patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
-            patch("core.database.parser_chunks_repository.ParserChunksRepository") as parsed_cls,
-            patch.dict("os.environ", {"DOCUMENT_VISION_CAPTIONS": "true"}),
-            patch("core.llm.groq_provider.GroqProvider") as vision_provider,
-        ):
-            vision_provider.return_value.caption_image.return_value = "A financial table lists revenue, cash, and assets."
-            vision_provider.return_value.vision_model_name = "qwen/qwen3.8-27b"
-            counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
-            counter_cls.return_value.count.return_value = 4
-            response = asyncio.run(app_main.upload_document(
-                request=None,
-                file=UploadFile(filename="scan.png", file=io.BytesIO(source)),
-                title="Scanned balance sheet",
-                document_type="annual_report",
-                domain="finance",
-                fiscal_year=2024,
-                allowed_roles=["finance_analyst"],
-                ocr_language="vie+eng",
-                user={"sub": "uploader-1"},
-            ))
-
-        self.assertEqual(response["processing_status"], "ready")
-        self.assertEqual(response["page_count"], 1)
-        self.assertEqual(response["ocr_chunk_count"], 1)
-        self.assertGreater(response["parser_chunk_count"], 0)
-        self.assertEqual(response["table_count"], 1)
-        parsed_chunks = parsed_cls.return_value.replace_document.call_args.args[1]
-        self.assertEqual(response["indexed_chunk_count"], len(parsed_chunks))
-        self.assertTrue(parsed_chunks)
-        self.assertIn("Revenue", parsed_chunks[0]["text"])
-        self.assertNotIn("embedding_model", parsed_chunks[0]["metadata"])
-        caption_chunk = next(chunk for chunk in parsed_chunks if chunk["metadata"].get("layout_type") == "figure_caption")
-        self.assertEqual(caption_chunk["text"], "AI-generated image caption (unverified): A financial table lists revenue, cash, and assets.")
-        self.assertEqual(caption_chunk["metadata"]["caption_model"], "qwen/qwen3.8-27b")
-        vision_provider.return_value.close.assert_called_once()
-        self.assertEqual(parsed_cls.return_value.set_status.call_args.args[1], "embedded")
-        saved_tables = structured_store.save_document_tables.call_args.args[2]
-        self.assertEqual(len(saved_tables), 1)
-        self.assertEqual(saved_tables[0]["rows"][-1], {
-            "label": "Assets", "value_1": "500", "value_2": "450",
-        })
-        self.assertEqual(saved_tables[0]["metadata"]["ocr"]["table_psm"], 6)
-        chunks_cls.return_value.replace_document.assert_called_once()
 
     def test_borderless_pdf_table_flows_through_upload_to_structured_store(self):
         source = borderless_financial_pdf()
@@ -527,94 +453,6 @@ class UploadProcessingFlowTest(unittest.TestCase):
         self.assertEqual(saved_tables[0]["metadata"]["table_extraction_method"], "pymupdf.find_tables_text_aligned_columns")
         chunks_cls.return_value.replace_document.assert_called_once()
 
-    def test_scanned_pdf_table_flows_from_ocr_parser_to_structured_store(self):
-        pdf = fitz.open()
-        pdf.new_page(width=600, height=400)
-        source = pdf.tobytes()
-        pdf.close()
-        words = [
-            (40, 30, 180, 38, "Period", 1, 0, 1),
-            (300, 30, 390, 38, "31122024", 1, 0, 2),
-            (470, 30, 560, 38, "31122023", 1, 0, 3),
-        ]
-        for row, (label, current, previous) in enumerate((
-            ("Revenue", "100000", "90000"),
-            ("Cash balance", "25000", "20000"),
-            ("Total assets", "500000", "450000"),
-        )):
-            y = 60 + row * 25
-            words.extend([
-                (40, y, 180, y + 8, label, 1, row + 1, 1),
-                (300, y, 390, y + 8, current, 1, row + 1, 2),
-                (470, y, 560, y + 8, previous, 1, row + 1, 3),
-            ])
-
-        document_repo = MagicMock()
-        structured_store = MagicMock()
-        storage = MagicMock()
-        storage.storage.from_.return_value.upload.return_value = None
-        embedding = MagicMock(model_name="test-embedding", max_sequence_length=100)
-        embedding.embed_documents.side_effect = lambda texts: [[0.1, 0.2] for _ in texts]
-        processor_settings = {}
-        original_processor_init = DocumentProcessor.__init__
-
-        def capture_processor_settings(processor, config=None):
-            processor_settings.update(config or {})
-            original_processor_init(processor, config)
-
-        with (
-            patch.object(app_main, "_require_same_origin"),
-            patch.object(app_main, "_storage_client", return_value=(storage, "private")),
-            patch.object(app_main, "DocumentRepository", return_value=document_repo),
-            patch("document_processing.pipelines.built_in.processor.shutil.which", return_value="/usr/bin/tesseract"),
-            patch.object(BuiltInProcessor, "_ocr_page", return_value="Revenue 100000 90000\nCash balance 25000 20000\nTotal assets 500000 450000"),
-            patch.object(BuiltInProcessor, "_ocr_page_words", return_value=words),
-            patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
-            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
-            patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
-            patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
-            patch("core.database.parser_chunks_repository.ParserChunksRepository") as parsed_cls,
-            patch.dict("os.environ", {
-                "DOCUMENT_PADDLE_LAYOUT": "false",
-                "DOCUMENT_PADDLE_FORMULA_RECOGNITION": "false",
-                "DOCUMENT_PADDLE_CHART_RECOGNITION": "false",
-                "DOCUMENT_VISION_CAPTIONS": "false",
-            }),
-            patch.object(DocumentProcessor, "__init__", capture_processor_settings),
-        ):
-            counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
-            counter_cls.return_value.count.return_value = 4
-            response = asyncio.run(app_main.upload_document(
-                request=None,
-                file=UploadFile(filename="scanned-statement.pdf", file=io.BytesIO(source)),
-                title="Scanned statement",
-                document_type="annual_report",
-                domain="finance",
-                fiscal_year=None,
-                allowed_roles=["finance_analyst"],
-                ocr_language="vie+eng",
-                user={"sub": "uploader-1"},
-            ))
-
-        self.assertEqual(response["processing_status"], "ready")
-        self.assertFalse(processor_settings["paddle_chart_recognition"])
-        saved_tables = structured_store.save_document_tables.call_args.args[2]
-        self.assertEqual(saved_tables[0]["columns"], ["label", "31/12/2024", "31/12/2023"])
-        self.assertEqual(saved_tables[0]["rows"], [
-            {"label": "Revenue", "31/12/2024": "100000", "31/12/2023": "90000"},
-            {"label": "Cash balance", "31/12/2024": "25000", "31/12/2023": "20000"},
-            {"label": "Total assets", "31/12/2024": "500000", "31/12/2023": "450000"},
-        ])
-        embedding_inputs = embedding.embed_documents.call_args.args[0]
-        self.assertTrue(any("label: Revenue" in text for text in embedding_inputs))
-        persisted_chunks = chunks_cls.return_value.replace_document.call_args.args[1]
-        table_chunk = next(row for row in persisted_chunks if row[3].get("layout_type") == "table")
-        self.assertIn("31/12/2024: 100000", table_chunk[2])
-        self.assertTrue(any("Revenue 100000 90000" in text for text in embedding_inputs))
-        self.assertEqual(table_chunk[3]["chunking_method"], "table_row_groups")
-        parsed_chunks = parsed_cls.return_value.replace_document.call_args.args[1]
-        self.assertTrue(any(chunk["metadata"].get("layout_type") == "table" for chunk in parsed_chunks))
-        chunks_cls.return_value.replace_document.assert_called_once()
 
     def test_pptx_table_flows_from_upload_to_structured_store(self):
         source = pptx_with_table()

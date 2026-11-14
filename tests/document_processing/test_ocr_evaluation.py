@@ -9,7 +9,7 @@ from unittest.mock import patch, MagicMock
 
 import fitz
 
-SCRIPT = Path(__file__).resolve().parents[1] / "scripts/processing/evaluate_ocr.py"
+SCRIPT = Path(__file__).resolve().parents[2] / "scripts/processing/evaluate_ocr.py"
 SPEC = importlib.util.spec_from_file_location("evaluate_ocr", SCRIPT)
 evaluate_ocr = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(evaluate_ocr)
@@ -239,7 +239,7 @@ class OCREvaluationTest(unittest.TestCase):
     def test_model_initialization_failure_keeps_explicitly_unscored_engine(self):
         torch = MagicMock()
         torch.cuda.is_available.return_value = False
-        source_dataset = Path(__file__).resolve().parents[1] / "data/evaluation/vinamilk_ocr_ground_truth_v2.json"
+        source_dataset = Path(__file__).resolve().parents[2] / "data/evaluation/vinamilk_ocr_ground_truth_v2.json"
         dataset = json.loads(source_dataset.read_text(encoding="utf-8"))
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)
@@ -331,7 +331,7 @@ class OCREvaluationTest(unittest.TestCase):
             self.assertEqual(report["engines"]["paddleocr"]["pages"][0]["hypothesis_text"], "fixture text")
 
     def test_selected_page_language_uses_visible_page_not_document_suffix(self):
-        dataset_path = Path(__file__).resolve().parents[1] / "data/evaluation/ocr_pages.json"
+        dataset_path = Path(__file__).resolve().parents[2] / "data/evaluation/ocr_pages.json"
         dataset = json.loads(dataset_path.read_text(encoding="utf-8"))
         languages = {page["document_id"]: page["language"] for page in dataset["pages"]}
         self.assertEqual(languages["VNM-AR-2020-VI"], "en")
@@ -342,7 +342,7 @@ class OCREvaluationTest(unittest.TestCase):
         self.assertIn("checked visually", dataset["language_label_method"])
 
     def test_human_reviewed_ocr_regions_have_manual_references_and_same_crop_protocol(self):
-        dataset_path = Path(__file__).resolve().parents[1] / "data/evaluation/vinamilk_ocr_ground_truth.json"
+        dataset_path = Path(__file__).resolve().parents[2] / "data/evaluation/vinamilk_ocr_ground_truth.json"
         dataset = json.loads(dataset_path.read_text(encoding="utf-8"))
         self.assertTrue(dataset["primary_metric_selection_eligible"])
         self.assertEqual(dataset["reference_quality"], "human_transcribed_visual_review")
@@ -353,7 +353,7 @@ class OCREvaluationTest(unittest.TestCase):
             self.assertIn(case["language"], {"vi", "en"})
 
     def test_v2_human_review_dataset_includes_raster_embedded_report_art(self):
-        dataset_path = Path(__file__).resolve().parents[1] / "data/evaluation/vinamilk_ocr_ground_truth_v2.json"
+        dataset_path = Path(__file__).resolve().parents[2] / "data/evaluation/vinamilk_ocr_ground_truth_v2.json"
         dataset = json.loads(dataset_path.read_text(encoding="utf-8"))
         self.assertEqual(dataset["reference_quality"], "human_transcribed_visual_review")
         self.assertFalse(dataset["primary_metric_selection_eligible"])
@@ -364,7 +364,7 @@ class OCREvaluationTest(unittest.TestCase):
         self.assertIn("not a physical scan", dataset["limitations"])
 
     def test_v3_adds_manually_reviewed_physical_scan_region(self):
-        root = Path(__file__).resolve().parents[1]
+        root = Path(__file__).resolve().parents[2]
         dataset = json.loads((root / "data/evaluation/vinamilk_ocr_ground_truth_v3.json").read_text(encoding="utf-8"))
         scan = next(page for page in dataset["pages"] if page.get("physical_scan"))
         self.assertFalse(dataset["primary_metric_selection_eligible"])
@@ -377,7 +377,7 @@ class OCREvaluationTest(unittest.TestCase):
         self.assertIn("INTRODUCTION", scan["reference_text"])
 
     def test_v4_has_two_image_only_scans_with_manual_text_labels(self):
-        root = Path(__file__).resolve().parents[1]
+        root = Path(__file__).resolve().parents[2]
         dataset = json.loads((root / "data/evaluation/vinamilk_ocr_ground_truth_v4.json").read_text(encoding="utf-8"))
         scans = [page for page in dataset["pages"] if page.get("physical_scan")]
         self.assertEqual({page["document_id"] for page in scans}, {"VNM-CHARTER-2026-EN", "VNM-CGRULES-2026-EN"})
@@ -390,7 +390,7 @@ class OCREvaluationTest(unittest.TestCase):
                 self.assertTrue(page.get_images(full=True))
 
     def test_v5_contains_visually_reviewed_vietnamese_table_rows(self):
-        root = Path(__file__).resolve().parents[1]
+        root = Path(__file__).resolve().parents[2]
         dataset = json.loads((root / "data/evaluation/vinamilk_ocr_ground_truth_v5.json").read_text(encoding="utf-8"))
         table = next(page for page in dataset["pages"] if page.get("layout_type") == "financial_table")
         self.assertFalse(table.get("physical_scan", False))
@@ -402,7 +402,7 @@ class OCREvaluationTest(unittest.TestCase):
         self.assertEqual(evaluate_ocr.exact_table_rows(table["table_rows"], native_text), 16)
 
     def test_v6_scan_crops_preserve_full_printed_text_width(self):
-        root = Path(__file__).resolve().parents[1]
+        root = Path(__file__).resolve().parents[2]
         dataset = json.loads((root / "data/evaluation/vinamilk_ocr_ground_truth_v6.json").read_text(encoding="utf-8"))
         scans = [page for page in dataset["pages"] if page.get("physical_scan")]
         self.assertEqual(len(scans), 2)
@@ -418,7 +418,7 @@ class OCREvaluationTest(unittest.TestCase):
             self.assertIn("clipped", scan["annotation"])
 
     def test_v7_adds_four_manually_labeled_image_only_scan_regions(self):
-        root = Path(__file__).resolve().parents[1]
+        root = Path(__file__).resolve().parents[2]
         dataset = json.loads((root / "data/evaluation/vinamilk_ocr_ground_truth_v7.json").read_text(encoding="utf-8"))
         additions = [
             page for page in dataset["pages"]
@@ -442,7 +442,7 @@ class OCREvaluationTest(unittest.TestCase):
 
 
     def test_cafef_2011_v2_reference_matches_bounded_scan_scope_and_corrected_values(self):
-        root = Path(__file__).resolve().parents[1]
+        root = Path(__file__).resolve().parents[2]
         dataset = json.loads((root / "data/evaluation/vinamilk_ocr_2011_cafef_scan_v2.json").read_text(encoding="utf-8"))
         page_spec = dataset["pages"][0]
         self.assertFalse(dataset["primary_metric_selection_eligible"])

@@ -11,7 +11,7 @@ if any(importlib.util.find_spec(module) is None for module in ("docling", "docli
 
 from fastapi import FastAPI
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from core.services.runtime import lifespan
 from document_processing.docling_adapter.processor import DoclingProcessor

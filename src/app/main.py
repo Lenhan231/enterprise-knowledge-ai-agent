@@ -440,7 +440,7 @@ async def upload_document(
 ):
     """Keep original bytes in private Storage; persist parsed evidence in PostgreSQL."""
     _require_same_origin(request)
-    parser_handoff = request.url.path == "/api/documents/parser-handoff"
+    parser_handoff = request is not None and request.url.path == "/api/documents/parser-handoff"
     filename = Path((file.filename or "").replace("\\", "/")).name
     extension = Path(filename).suffix.lower()
     from document_processing.document_processor import DocumentProcessor, SUPPORTED_FORMATS

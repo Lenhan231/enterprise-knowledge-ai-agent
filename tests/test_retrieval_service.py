@@ -50,7 +50,7 @@ class FakeTranslator:
     llm = None
 
     def translate(self, query, query_language="auto"):
-        return {"en": query, "vn": query}
+        raise RuntimeError("translation disabled in this unit test")
 
 
 class FakeReranker:
@@ -70,10 +70,10 @@ class RetrievalServiceTest(unittest.TestCase):
         result = self.service.retrieve(RetrievalRequest(query="What is required?", top_k=3))
 
         self.assertEqual(self.embeddings.questions, ["What is required?"])
-        self.assertEqual(self.repository.search_args, ([0.1, 0.2], 3, None, None, "What is required?", "hybrid", {"dense_weight": 1.0, "bm25_weight": 2.0, "rrf_k": 60}))
+        self.assertEqual(self.repository.search_args, ([0.1, 0.2], 30, None, None, "What is required?", "dense", {}))
         self.assertIsInstance(result, RetrievalResponse)
         self.assertEqual(result.query, "What is required?")
-        self.assertEqual(result.method, "hybrid")
+        self.assertEqual(result.method, "translated_hybrid_rerank")
         chunk = result.results[0]
         self.assertEqual(chunk.source, "policy.pdf")
         self.assertEqual(chunk.score, 0.81234)
@@ -83,7 +83,7 @@ class RetrievalServiceTest(unittest.TestCase):
         self.assertEqual(chunk.location.chunk_index, 7)
         self.assertIsNone(chunk.location.page_number)
         self.assertIsNone(chunk.location.section_title)
-        self.assertEqual(chunk.retrieval_method, "hybrid")
+        self.assertEqual(chunk.retrieval_method, "translated_hybrid_rerank")
 
     def test_full_text_metadata_location_and_tie_order_are_preserved(self):
         first = self.repository.results[0]

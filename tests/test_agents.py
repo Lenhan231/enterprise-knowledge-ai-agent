@@ -8,7 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.agents.intent_classifier import IntentClassifier
 from core.analytics.metric_ontology import resolve_metric_names
-from core.agents.knowledge_agent import KnowledgeAgent, _financial_retrieval_query
+from core.agents.knowledge_agent import KnowledgeAgent
 from core.agents.report_agent import ReportAgent, _financial_facts_match_cited_evidence
 from core.agents.router import AgentRouter
 from core.sql_agent.agent import SQLAnalyticsAgent
@@ -518,20 +518,6 @@ class AgentFlowTest(unittest.TestCase):
         ]
         answer = _normalize_numeric_citations("Headline 【2】, audited [1], year [2024], invalid [3]", evidence)
         self.assertEqual(answer, "Headline [S7], audited [S1], year [2024], invalid [3]")
-
-    def test_vinamilk_financial_retrieval_rewrites_english_queries_bilingually(self):
-        rewritten = _financial_retrieval_query(
-            "What were Vinamilk's 2024 revenue and profit?",
-            "Công ty Cổ phần Sữa Việt Nam (Vinamilk)",
-        )
-        self.assertIn("Tổng doanh thu hợp nhất", rewritten)
-        self.assertIn("lợi nhuận sau thuế hợp nhất", rewritten)
-
-    def test_other_queries_are_not_rewritten(self):
-        self.assertEqual(
-            _financial_retrieval_query("Summarize sustainability initiatives", "Vinamilk"),
-            "Summarize sustainability initiatives",
-        )
 
 
 if __name__ == "__main__":

@@ -70,8 +70,10 @@ class VietOcrPostprocessingTest(unittest.TestCase):
 
     def test_preload_initializes_cached_page_orientation_model(self):
         with patch("document_processing.docling_adapter.orientation._paddle_orientation_model") as page_model:
+            page_model.return_value.predict.return_value = iter([object()])
             preload_paddle_page_orientation_model()
         page_model.assert_called_once_with()
+        page_model.return_value.predict.assert_called_once()
 
     def test_preload_initializes_cached_textline_orientation_model(self):
         with patch("document_processing.docling_adapter.orientation._paddle_textline_orientation_model") as textline_model:

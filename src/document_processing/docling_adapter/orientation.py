@@ -37,8 +37,17 @@ def _paddle_textline_orientation_model():
 
 
 def preload_paddle_page_orientation_model() -> None:
-    """Load the lazy page-orientation classifier before the first document request."""
-    _paddle_orientation_model()
+    """Load and run the page-orientation classifier before the first document request."""
+    import numpy as np
+
+    try:
+        with _orientation_lock:
+            model = _paddle_orientation_model()
+            next(iter(model.predict(np.zeros((512, 512, 3), dtype=np.uint8), batch_size=1)))
+    except Exception:
+        # Orientation is a best-effort correction; keep startup available if its
+        # optional warmup fails, and let the request path retry with real input.
+        _log.warning("Paddle page orientation warmup failed.", exc_info=True)
 
 
 def preload_paddle_textline_orientation_model() -> None:

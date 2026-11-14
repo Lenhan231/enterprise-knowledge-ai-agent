@@ -15,7 +15,9 @@ class DashboardAgentTest(unittest.IsolatedAsyncioTestCase):
         self.sql = SimpleNamespace(inventory_only=False,
             repository=SimpleNamespace(get_schema=AsyncMock(return_value={'tables': {'commerce.sales': {'date', 'revenue'}}})),
             _provider=lambda: self.provider,
-            run_payload=AsyncMock(return_value={'ok': True, 'query_status': 'executed', 'rows': [{'month': '2026-07-01', 'revenue': 10}], 'sql': 'select 10'}))
+            run_payload=AsyncMock(return_value={'ok': True, 'query_status': 'executed',
+                'rows': [{'month': '2026-07-01', 'revenue': 10}, {'month': '2026-08-01', 'revenue': 20}],
+                'sql': "SELECT DATE_TRUNC('month', date) AS month, SUM(revenue) AS revenue FROM commerce.sales GROUP BY 1"}))
         self.agent = DashboardDocumentAgent(self.sql)
         self.request = AgentRequest(question='Dashboard', identity=VerifiedIdentity(subject='alice', permissions={'analytics:read'}))
 
@@ -81,6 +83,27 @@ class DashboardAgentTest(unittest.IsolatedAsyncioTestCase):
         doc = await self.agent.build(self.request, 'Revenue dashboard')
         self.assertEqual('failed', doc.results[0].status)
         self.assertEqual('SELECT SUM(revenue) FROM commerce.sales', doc.results[0].payload['attempted_sql'])
+
+    async def test_independent_summary_plan_is_repaired_before_sql(self):
+        from copy import deepcopy
+        bad = deepcopy(self.plan)
+        bad['queries'].append({'id': 'stats', 'question': 'AVG MIN MAX raw revenue in July 2026'})
+        bad['tiles'].append({'id': 'summary', 'title': 'Statistics', 'kind': 'summary', 'query_id': 'stats'})
+        good = deepcopy(bad)
+        good['tiles'][1]['query_id'] = 'sales'
+        self.provider.generate.side_effect = [json.dumps(bad), json.dumps(good)]
+        doc = await self.agent.build(self.request, 'Monthly revenue trend and statistical summary')
+        self.assertEqual(1, len(doc.queries))
+        self.assertEqual('sales', doc.tiles[1].query_id)
+        self.sql.run_payload.assert_awaited_once()
+        self.assertEqual('complete', doc.status)
+
+    async def test_grouped_kpi_plan_is_rejected_before_sql(self):
+        self.plan['tiles'].append({'id': 'kpi', 'title': 'Total', 'kind': 'kpi', 'query_id': 'sales'})
+        self.provider.generate.return_value = json.dumps(self.plan)
+        with self.assertRaises(ValueError):
+            await self.agent.build(self.request, 'Monthly revenue and total')
+        self.sql.run_payload.assert_not_called()
 
 
 if __name__ == '__main__':

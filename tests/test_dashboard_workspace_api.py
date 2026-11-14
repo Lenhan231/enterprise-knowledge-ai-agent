@@ -65,6 +65,25 @@ class DashboardApiTest(unittest.TestCase):
         self.assertEqual('complete', response.json()['dashboard']['status'])
         sql.run_payload.assert_awaited_once()
 
+    def test_deleting_tile_removes_unused_failed_source_and_updates_status(self):
+        from core.dashboards.models import QuerySpec, QueryResult, TileSpec
+        doc = self.doc.model_copy(deep=True)
+        doc.queries.append(QuerySpec(id='unused', question='Other data'))
+        doc.results.append(QueryResult(id='unused', question='Other data', status='failed'))
+        doc.tiles.append(TileSpec(id='redundant', title='Redundant', kind='table', query_id='unused'))
+        doc = self.store.save('alice', doc, expected_revision=1)
+        body = {'revision': doc.revision, 'title': doc.title, 'tiles': [doc.tiles[0].model_dump()]}
+        with patch('app.dashboards.build', new_callable=AsyncMock) as build:
+            response = self.client.patch(f'/api/dashboards/{doc.id}', json=body)
+            build.assert_not_called()
+        saved = response.json()['dashboard']
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('complete', saved['status'])
+        self.assertEqual(['sales'], [query['id'] for query in saved['queries']])
+        self.assertEqual(['total'], [tile['id'] for tile in saved['tiles']])
+        body.update(revision=saved['revision'], tiles=[])
+        self.assertEqual(422, self.client.patch(f'/api/dashboards/{doc.id}', json=body).status_code)
+
 
 if __name__ == '__main__':
     unittest.main()

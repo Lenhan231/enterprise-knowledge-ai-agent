@@ -47,6 +47,9 @@ class DashboardDocumentAgent:
 Never generate SQL, HTML, scripts, invented columns, or invented observations.
 Use 1-4 distinct self-contained natural-language query questions for the existing SQL agent,
 and 1-8 tiles referencing those queries. Reuse the same query for a chart and statistical summary.
+Summary tiles describe returned observations in code. Never request a separate AVG/MIN/MAX query
+just to populate a summary. With charts present, summaries must reference a chart's query_id.
+KPI tiles need their own single-aggregate query_id, never a chart's grouped dataset.
 Every query must explicitly specify metric definitions, grouping, source and requested date/filter scope.
 Preserve exactly the user's date constraints; never change dates just because coverage is elsewhere.
 An explicitly supplied shared scope overrides conflicting dates/filters in the description.
@@ -69,9 +72,17 @@ JSON schema: ''' + json.dumps(DashboardPlan.model_json_schema()) + '\nAvailable 
             raw = str(raw).strip()
             raw = re.sub(r'^```(?:json)?\s*|\s*```$', '', raw)
             try:
-                return DashboardPlan.model_validate_json(raw)
-            except ValueError:
-                error = '\nPrevious output was invalid. Return only a bounded valid JSON dashboard plan matching the schema.'
+                plan = DashboardPlan.model_validate_json(raw)
+                charts = {tile.query_id for tile in plan.tiles if tile.kind in {'bar', 'line', 'donut'}}
+                if charts and any(tile.kind == 'summary' and tile.query_id not in charts for tile in plan.tiles):
+                    raise ValueError('Summary tiles must reuse a chart dataset; calculate descriptive statistics in code.')
+                if any(tile.kind == 'kpi' and tile.query_id in charts for tile in plan.tiles):
+                    raise ValueError('KPI tiles require a separate single-aggregate dataset, not a chart dataset.')
+                used = {tile.query_id for tile in plan.tiles}
+                plan.queries = [query for query in plan.queries if query.id in used]
+                return plan
+            except ValueError as failure:
+                error = '\nPrevious plan was invalid: ' + str(failure)[:600] + '\nReturn corrected compact JSON under the same schema.'
         raise ValueError('The dashboard plan was invalid. Try a more specific description with metrics and dates.')
 
     async def execute(self, request, document):
@@ -98,31 +109,17 @@ JSON schema: ''' + json.dumps(DashboardPlan.model_json_schema()) + '\nAvailable 
                     logger.exception('Dashboard dataset failed: %s', spec.id)
                     return QueryResult(id=spec.id, question=question, status='failed', message='Source query could not complete. Retry refresh or make its metric and scope more explicit.')
 
-        document.results = await asyncio.gather(*(query(spec) for spec in document.queries))
-        self.bind_fields(document)
-        successes = sum(result.status in {'complete', 'empty'} for result in document.results)
-        document.status = 'complete' if successes == len(document.results) else 'partial' if successes else 'failed'
+        used = {tile.query_id for tile in document.tiles}
+        document.results = await asyncio.gather(*(query(spec) for spec in document.queries if spec.id in used))
+        from core.dashboards.presentation import reconcile
+        reconcile(document)
         document.data_updated_at = now()
         return document
 
     @staticmethod
     def bind_fields(document):
-        # SQL owns aliases; accept only exact or unambiguous total/sum spelling variants.
-        canonical = lambda name: re.sub(r'^(?:total|sum)_|_(?:total|sum)$', '', name.lower())
-        datasets = {result.id: result.payload.get('rows') or [] for result in document.results}
-        for tile in document.tiles:
-            rows = datasets.get(tile.query_id)
-            if not rows:
-                continue
-            names = list(rows[0])
-            def bind(name):
-                if name in names:
-                    return name
-                matches = [key for key in names if canonical(key) == canonical(name)]
-                return matches[0] if len(matches) == 1 else name
-            tile.measures = [bind(name) for name in tile.measures]
-            if tile.dimension:
-                tile.dimension = bind(tile.dimension)
+        from core.dashboards.presentation import bind_fields
+        bind_fields(document)
 
     async def build(self, request, description, scope=''):
         SQLAnalyticsAgent._authorize(request)

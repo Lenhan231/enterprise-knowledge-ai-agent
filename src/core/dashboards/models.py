@@ -62,6 +62,7 @@ class DashboardDocument(DashboardPlan):
     updated_at: datetime = Field(default_factory=now)
     data_updated_at: datetime = Field(default_factory=now)
     results: list[QueryResult] = Field(default_factory=list, max_length=4)
+    tile_status: dict[str, dict[str, str]] = Field(default_factory=dict)
     status: Literal['complete', 'partial', 'failed'] = 'complete'
 
 

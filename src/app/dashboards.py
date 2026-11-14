@@ -121,7 +121,7 @@ async def get_html(identifier: str, download: bool = False, user=Depends(princip
                'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer'}
     if download:
         headers['Content-Disposition'] = f'attachment; filename="dashboard-{doc.id}.html"'
-    return HTMLResponse(store.html(user['sub'], identifier), headers=headers)
+    return HTMLResponse(render_dashboard(doc), headers=headers)
 
 
 @router.delete('/{identifier}', dependencies=[Depends(_require_same_origin)])

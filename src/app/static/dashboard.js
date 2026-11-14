@@ -14,7 +14,7 @@
   const setBusy = value => {
     busy = value;
     root.setAttribute('aria-busy', String(value));
-    root.querySelectorAll('button,input,textarea,select').forEach(node => { node.disabled = value; });
+    root.querySelectorAll('button,input,textarea,select').forEach(node => { node.disabled = value || node.matches('[data-remove]') && selected?.tiles.length === 1; });
   };
   async function action(message, work) {
     if (busy) return;
@@ -51,7 +51,7 @@
     el('tiles').innerHTML = selected.tiles.map((tile, i) => {
       const result = selected.results.find(item => item.id === tile.query_id);
       const fields = Object.keys(result?.payload?.rows?.[0] || {});
-      return `<fieldset class="dw-tile" data-index="${i}"><legend>Tile ${i + 1} · ${escapeHtml(tile.query_id)}</legend><div class="dw-tile-fields"><div><label for="dw-tile-${i}-title">Title</label><input id="dw-tile-${i}-title" data-field="title" maxlength="120" value="${escapeHtml(tile.title)}" required></div><div><label for="dw-tile-${i}-kind">Representation</label><select id="dw-tile-${i}-kind" data-field="kind">${kinds.map(kind => `<option${kind === tile.kind ? ' selected' : ''}>${kind}</option>`).join('')}</select></div><div><label for="dw-tile-${i}-dimension">Dimension (blank = infer)</label><input id="dw-tile-${i}-dimension" data-field="dimension" maxlength="128" value="${escapeHtml(tile.dimension || '')}"></div><div><label for="dw-tile-${i}-measures">Measures (comma separated, blank = infer)</label><input id="dw-tile-${i}-measures" data-field="measures" value="${escapeHtml(tile.measures.join(', '))}"></div><div><label for="dw-tile-${i}-span">Tile width</label><select id="dw-tile-${i}-span" data-field="span"><option value="1"${tile.span === 1 ? ' selected' : ''}>Half width</option><option value="2"${tile.span === 2 ? ' selected' : ''}>Full width</option></select></div></div><small>Returned fields: ${escapeHtml(fields.join(', ') || 'No rows returned')}<br>Dataset status: ${escapeHtml(result?.status || 'unavailable')} · ${escapeHtml(result?.message || '')}</small><div class="dw-tile-actions"><button type="button" data-move="-1"${i === 0 ? ' disabled' : ''}>Move up</button><button type="button" data-move="1"${i === selected.tiles.length - 1 ? ' disabled' : ''}>Move down</button></div></fieldset>`;
+      return `<fieldset class="dw-tile" data-index="${i}"><legend>Tile ${i + 1} · ${escapeHtml(tile.query_id)}</legend><div class="dw-tile-fields"><div><label for="dw-tile-${i}-title">Title</label><input id="dw-tile-${i}-title" data-field="title" maxlength="120" value="${escapeHtml(tile.title)}" required></div><div><label for="dw-tile-${i}-kind">Representation</label><select id="dw-tile-${i}-kind" data-field="kind">${kinds.map(kind => `<option${kind === tile.kind ? ' selected' : ''}>${kind}</option>`).join('')}</select></div><div><label for="dw-tile-${i}-dimension">Dimension (blank = infer)</label><input id="dw-tile-${i}-dimension" data-field="dimension" maxlength="128" value="${escapeHtml(tile.dimension || '')}"></div><div><label for="dw-tile-${i}-measures">Measures (comma separated, blank = infer)</label><input id="dw-tile-${i}-measures" data-field="measures" value="${escapeHtml(tile.measures.join(', '))}"></div><div><label for="dw-tile-${i}-span">Tile width</label><select id="dw-tile-${i}-span" data-field="span"><option value="1"${tile.span === 1 ? ' selected' : ''}>Half width</option><option value="2"${tile.span === 2 ? ' selected' : ''}>Full width</option></select></div></div><small>${escapeHtml(selected.tile_status?.[tile.id]?.message || '')}<br>Returned fields: ${escapeHtml(fields.join(', ') || 'No rows returned')}<br>Dataset status: ${escapeHtml(result?.status || 'unavailable')} · ${escapeHtml(result?.message || '')}</small><div class="dw-tile-actions"><button type="button" data-move="-1"${i === 0 ? ' disabled' : ''}>Move up</button><button type="button" data-move="1"${i === selected.tiles.length - 1 ? ' disabled' : ''}>Move down</button><button type="button" data-remove aria-label="Delete tile ${i + 1}"${selected.tiles.length === 1 ? ' disabled' : ''}>Delete tile</button></div></fieldset>`;
     }).join('');
   }
   function readEdits() {
@@ -73,8 +73,8 @@
     el('open').href = data.html_url;
     el('download').href = `${data.html_url}?download=true`;
     tileEditors();
-    const failed = selected.results.filter(item => !['complete', 'empty'].includes(item.status)).length;
-    status(failed ? `Saved with ${failed} unavailable dataset(s). Review source messages, edit the description, then rebuild.` : 'Saved. Edit tiles, refresh data, or open the HTML dashboard.', failed > 0);
+    const failed = Object.values(selected.tile_status || {}).filter(item => item.status === 'unavailable').length;
+    status(failed ? `Saved with ${failed} unavailable tile(s). Review the tile messages below.` : 'Saved. Edit tiles, refresh data, or open the HTML dashboard.', failed > 0);
   }
   async function load(id, valid) {
     const data = await api(`/api/dashboards/${encodeURIComponent(id)}`);
@@ -87,10 +87,17 @@
     if (button) action('Opening dashboard…', valid => load(button.dataset.id, valid));
   });
   el('tiles').addEventListener('click', event => {
-    const button = event.target.closest('button[data-move]');
+    const button = event.target.closest('button[data-move],button[data-remove]');
     if (!button || busy) return;
     selected.tiles = readEdits();
     const i = Number(button.closest('.dw-tile').dataset.index);
+    if (button.hasAttribute('data-remove')) {
+      if (selected.tiles.length === 1) { status('Keep at least one tile, or delete the dashboard.'); return; }
+      selected.tiles.splice(i, 1);
+      tileEditors();
+      status('Tile removed from this draft. Save edits to update the dashboard preview.');
+      return;
+    }
     const j = i + Number(button.dataset.move);
     if (j < 0 || j >= selected.tiles.length) return;
     [selected.tiles[i], selected.tiles[j]] = [selected.tiles[j], selected.tiles[i]];

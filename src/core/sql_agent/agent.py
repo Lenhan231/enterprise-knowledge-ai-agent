@@ -32,6 +32,7 @@ from core.analytics.text_to_sql import (
     validate_current_year_month_range,
     validate_latest_month_query,
     resolve_current_year_month_parameters,
+    validate_current_month_total_query,
 )
 from core.database.commerce_repository import CommerceRepository
 from core.llm.llm_interface import LLMInterface
@@ -290,6 +291,8 @@ class SQLAnalyticsAgent(BaseAgent):
                     validate_current_year_month_range(plan.sql or '', plan.parameters, original_question,
                                                       date_columns=date_columns)
                     if plan.sql:
+                        validate_current_month_total_query(plan.sql, original_question,
+                                                           date_columns=date_columns)
                         validate_latest_month_query(plan.sql, question)
                     if plan.clarification and attempt == 0 and approved_join_path(tables, approved_joins) and re.search(
                             r'join|relationship', plan.clarification, re.I):

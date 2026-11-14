@@ -19,6 +19,15 @@ SUPPORTED_FORMATS = frozenset({
     ".pdf", ".docx", ".pptx", ".xlsx", ".csv", ".txt", ".md",
     ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".svg", ".webp",
 })
+_INVOICE_EXTRACTION_CONFIG_KEYS = frozenset({
+    "invoice_provider",
+    "gemini_invoice_model",
+    "groq_invoice_model",
+    "invoice_model",
+    "invoice_model_revision",
+    "invoice_adapter",
+    "invoice_adapter_revision",
+})
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -103,7 +112,11 @@ class DocumentProcessor:
             processor_config = {**self.config, "parser_engine": "docling", "intent": "document"}
             parser_content = render_svg(content) if suffix == ".svg" else render_webp(content) if suffix == ".webp" else content
             parser_metadata = {**common, "format": "PNG"} if suffix in {".svg", ".webp"} else common
-            cache_key = invoice_docling_cache.key(parser_content, suffix[1:], processor_config)
+            cache_config = {
+                key: value for key, value in processor_config.items()
+                if key not in _INVOICE_EXTRACTION_CONFIG_KEYS
+            }
+            cache_key = invoice_docling_cache.key(parser_content, suffix[1:], cache_config)
             cache_started = time.perf_counter()
             result = invoice_docling_cache.get(cache_key)
             cache_hit = result is not None

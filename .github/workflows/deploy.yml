@@ -1,0 +1,50 @@
+name: Deploy
+
+# Every push to main deploys the VPS (fallback backend) first, then — only if the VPS came back healthy —
+# the home PC (main backend), so the two never restart at the same time and the site always has one backend.
+# Jobs run on GitHub's machines: nothing from a pull request ever runs on the servers, and fork PRs get no secrets.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  vps:
+    name: VPS (fallback backend)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Deploy over SSH
+        env:
+          VPS_DEPLOY_SSH_KEY: ${{ secrets.VPS_DEPLOY_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$VPS_DEPLOY_SSH_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # On the VPS this key may only run scripts/deploy/deploy.sh (forced command), so no command is sent.
+          ssh -i ~/.ssh/deploy -o BatchMode=yes -o ServerAliveInterval=30 "root@$VPS_HOST"
+
+  home-pc:
+    name: Home PC (main backend)
+    needs: vps
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - name: Join the tailnet as tag:ci
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+      - name: Deploy over Tailscale SSH
+        run: tailscale ssh eroz@home-pc 'DEPLOY_DIR="$HOME/projects/ekai-prod" bash -s' < scripts/deploy/deploy.sh

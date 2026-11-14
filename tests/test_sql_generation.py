@@ -337,6 +337,31 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.data["rows"][0]["category"], "Outdoor")
         self.assertEqual(result.evidence[0].source, "commerce.products")
 
+    async def test_month_comparison_has_deterministic_human_readable_summary(self):
+        class SQLAgent:
+            async def run_payload(self, request):
+                return {
+                    "ok": True,
+                    "rows": [{
+                        "month": "2026-11-01", "previous_month": "2026-10-01",
+                        "revenue": "1000968.55", "previous_month_revenue": "1754342.36",
+                        "revenue_change": "-753373.81", "revenue_change_fraction": "-0.4294337",
+                    }],
+                    "metadata": {"source": ["commerce.sales"]},
+                    "limitations": [],
+                }
+
+            def _provider(self):
+                raise AssertionError("This checked comparison should not need an LLM summary")
+
+        result = await AnalyticsAgent(SQLAgent()).run_payload(
+            AgentRequest(question="so sánh với tháng trước", identity=ANALYST))
+
+        self.assertIn("1,000,968.55", result["answer"])
+        self.assertIn("1,754,342.36", result["answer"])
+        self.assertIn("-42.94%", result["answer"])
+        self.assertNotIn("Evidence fallback", result["answer"])
+
     async def test_summary_failure_returns_rows_and_deterministic_answer(self):
         sql = "SELECT p.product_id FROM commerce.products AS p LIMIT 20"
 

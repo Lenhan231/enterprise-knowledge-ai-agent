@@ -25,9 +25,10 @@ MIME_TYPES = {
 
 
 class ReportAgent:
-    def __init__(self, knowledge_agent, analytics_agent, *, llm=None, source_router=None):
-        self.knowledge_agent = knowledge_agent
-        self.analytics_agent = analytics_agent
+    def __init__(self, knowledge_agent=None, analytics_agent=None, *, llm=None,
+                 source_router=None, knowledge=None, analytics=None):
+        self.knowledge_agent = knowledge_agent if knowledge_agent is not None else knowledge
+        self.analytics_agent = analytics_agent if analytics_agent is not None else analytics
         self.llm = llm
         self._owns_llm = llm is None
         self.source_router = source_router
@@ -36,7 +37,7 @@ class ReportAgent:
         if self._owns_llm and self.llm is not None:
             self.llm.close()
 
-    async def run(self, request):
+    async def _run_async(self, request):
         result, payload, _ = await self.generate_from_template(
             request, source_mode=request.metadata.get("source_mode", "documents"),
             template_choice=request.metadata.get('template_choice'),
@@ -44,6 +45,13 @@ class ReportAgent:
         if payload:
             result.answer = payload.decode("utf-8")
         return result
+
+    def run(self, request):
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            return asyncio.run(self._run_async(request))
+        return self._run_async(request)
 
     async def generate_from_template(self, request, filename=None, content=None, *,
                                      source_mode="documents", output_format=None,

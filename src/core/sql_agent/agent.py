@@ -164,7 +164,7 @@ def payload_to_agent_result(payload: Mapping[str, Any], *, agent: str = "analyti
 
 
 class SQLAnalyticsAgent(BaseAgent):
-    def __init__(self, repository: CommerceRepository, *, llm: LLMInterface | None = None,
+    def __init__(self, repository: CommerceRepository, llm: LLMInterface | None = None, *,
                  inventory_only: bool | None = None, metric_retriever=None) -> None:
         if inventory_only is None:
             inventory_only = inventory_scope_enabled()
@@ -175,8 +175,15 @@ class SQLAnalyticsAgent(BaseAgent):
         self.llm = llm
         self.metric_retriever = metric_retriever
 
-    async def run(self, request: Any) -> AgentResult:
+    async def _run_async(self, request: Any) -> AgentResult:
         return payload_to_agent_result(await self.run_payload(request), agent="sql_analytics")
+
+    def run(self, request: Any) -> AgentResult:
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            return asyncio.run(self._run_async(request))
+        return self._run_async(request)
 
     async def run_payload(self, request: Any) -> dict[str, Any]:
         self._authorize(request)

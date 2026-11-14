@@ -1,5 +1,6 @@
 """Execute planned reports with bounded, reusable, validated evidence tasks."""
 import asyncio
+import inspect
 from collections import defaultdict
 from copy import deepcopy
 import json
@@ -65,7 +66,12 @@ async def collect_tasks(plan, sql_agent, request, semaphore):
                     async with semaphore:
                         timeout = remaining(60)
                         scoped = request.model_copy(update={'question': task.question})
-                        return await asyncio.wait_for(sql_agent.run(scoped), timeout)
+                        result = sql_agent.run(scoped)
+                        async def resolve(value):
+                            while inspect.isawaitable(value):
+                                value = await value
+                            return value
+                        return await asyncio.wait_for(resolve(result), timeout)
                 cache[key] = asyncio.create_task(execute_shared())
             return await cache[key]
         sql, parameters = build_task_sql(task)

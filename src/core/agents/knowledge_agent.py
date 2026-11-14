@@ -35,7 +35,7 @@ class KnowledgeAgent(BaseAgent):
                          "chunk_id": item.get("chunk_id"), "chunk_index": item["chunk_index"]})
                 for item in contexts]
 
-    async def run(
+    async def _run_async(
         self,
         request: AgentRequest,
     ) -> AgentResult:
@@ -98,6 +98,13 @@ class KnowledgeAgent(BaseAgent):
             evidence=evidence,
             metadata=metadata,
         )
+
+    def run(self, request: AgentRequest) -> AgentResult:
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            return asyncio.run(self._run_async(request))
+        return self._run_async(request)
 
     async def close(self) -> None:
         await asyncio.to_thread(self.rag.close)

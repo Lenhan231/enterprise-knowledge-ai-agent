@@ -68,33 +68,27 @@ class DoclingProcessor:
         """Initialize the scanned, native, and embedded-image routes before startup."""
         from docling.datamodel.base_models import InputFormat
 
-        invoice_converters = []
+        invoice_converter = None
         for do_ocr, embedded, page_images in (
             (True, False, False), (False, False, False), (False, True, True),
         ):
-            converter = get_converter(self._pipeline_options(do_ocr, embedded, page_images))
+            # The invoice route uses TableFormer fast mode. Load that exact
+            # OCR pipeline here instead of creating a second model set later.
+            table_mode = "fast" if do_ocr and not embedded else None
+            converter = get_converter(self._pipeline_options(
+                do_ocr, embedded, page_images, table_mode=table_mode,
+            ))
             converter.initialize_pipeline(InputFormat.PDF)
             if do_ocr and not embedded:
-                invoice_converters.append(converter)
+                invoice_converter = converter
 
-        # Invoice uploads use TableFormer fast mode. Warm its separate layout
-        # pipeline before health checks pass so the first upload does not pay
-        # PP-DocLayout's cold inference cost.
-        invoice_fast_converter = get_converter(self._pipeline_options(
-            True, False, False, table_mode="fast",
-        ))
-        invoice_fast_converter.initialize_pipeline(InputFormat.PDF)
-        if invoice_fast_converter not in invoice_converters:
-            invoice_converters.append(invoice_fast_converter)
-
-        if invoice_converters:
+        if invoice_converter is not None:
             with _timed_component("layout_model_warmup"):
-                for converter in invoice_converters:
-                    for pipeline in converter.initialized_pipelines.values():
-                        layout_model = getattr(pipeline, "layout_model", None)
-                        warmup = getattr(layout_model, "warmup", None)
-                        if callable(warmup):
-                            warmup()
+                for pipeline in invoice_converter.initialized_pipelines.values():
+                    layout_model = getattr(pipeline, "layout_model", None)
+                    warmup = getattr(layout_model, "warmup", None)
+                    if callable(warmup):
+                        warmup()
 
         from .orientation import (
             preload_paddle_page_orientation_model,

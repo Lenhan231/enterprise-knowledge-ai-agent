@@ -40,7 +40,8 @@ class DocumentProcessingOutputsRepositoryTest(unittest.TestCase):
     def test_get_document_output_reconstructs_chunker_input(self):
         self.cursor.fetchone.return_value = {
             "pipeline_id": "docling",
-            "elements": [{"text": "Revenue"}],
+            "text_elements": [{"text": "Revenue", "metadata": {"element_type": "text", "layout_type": "text"}}],
+            "figures": [],
             "structured_tables": [{"columns": ["Year"], "rows": []}],
             "document_metadata": {"format": "PDF"},
         }
@@ -49,7 +50,7 @@ class DocumentProcessingOutputsRepositoryTest(unittest.TestCase):
 
         self.assertEqual(output, {
             "metadata": {"format": "PDF"},
-            "elements": [{"text": "Revenue"}],
+            "elements": [{"text": "Revenue", "metadata": {"element_type": "text", "layout_type": "text"}}],
             "tables": [{"columns": ["Year"], "rows": []}],
         })
         self.assertEqual(self.cursor.execute.call_args.args[1], ("DOC-1", "Example"))

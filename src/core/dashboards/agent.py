@@ -7,6 +7,7 @@ import time
 
 from core.agents.runtime import deadline, generate
 from core.analytics.business_ontology import policy_context
+from core.analytics.text_to_sql import parse_json_response
 from core.dashboards.models import DashboardDocument, DashboardPlan, QueryResult, QuerySpec, now
 from core.sql_agent.agent import SQLAnalyticsAgent
 
@@ -69,10 +70,8 @@ JSON schema: ''' + json.dumps(DashboardPlan.model_json_schema()) + '\nAvailable 
         provider = self.sql_agent._provider()
         for attempt in range(2):
             raw = await generate(provider, prompt + error, timeout=40)
-            raw = str(raw).strip()
-            raw = re.sub(r'^```(?:json)?\s*|\s*```$', '', raw)
             try:
-                plan = DashboardPlan.model_validate_json(raw)
+                plan = DashboardPlan.model_validate(parse_json_response(str(raw)))
                 charts = {tile.query_id for tile in plan.tiles if tile.kind in {'bar', 'line', 'donut'}}
                 if charts and any(tile.kind == 'summary' and tile.query_id not in charts for tile in plan.tiles):
                     raise ValueError('Summary tiles must reuse a chart dataset; calculate descriptive statistics in code.')
@@ -155,7 +154,7 @@ Each question must be nonempty and at most 800 characters. Use compact JSON unde
                   'queries': [query.model_dump() for query in document.queries]})
         raw = await generate(self.sql_agent._provider(), prompt, timeout=40)
         try:
-            revised = json.loads(re.sub(r'^```(?:json)?\s*|\s*```$', '', str(raw).strip()))
+            revised = parse_json_response(str(raw))
             if not isinstance(revised, dict) or set(revised) != {query.id for query in document.queries}:
                 raise ValueError('Query ids changed')
             queries = [QuerySpec(id=query.id, question=revised[query.id]) for query in document.queries]

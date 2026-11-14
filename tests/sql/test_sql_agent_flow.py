@@ -17,7 +17,7 @@ from core.analytics.text_to_sql import (
     approved_join_path, relevant_schema_tables,
 )
 from core.analytics.metric_ontology import get_metric_definition, resolve_metric_names
-from core.sql_agent.agent import SQLAnalyticsAgent
+from core.sql_agent.agent import SQLAnalyticsAgent, _completed_months_revenue_plan
 from core.sql_agent.assistant_endpoint import run_sql_assistant
 from core.models.agents import AgentRequest, VerifiedIdentity
 
@@ -118,6 +118,15 @@ def assistant(repository, provider):
 
 
 class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
+    def test_recent_months_revenue_plan_accepts_vietnamese_gan_day(self):
+        plan = _completed_months_revenue_plan(
+            "doanh thu 5 tháng gần đây", {"revenue"}, today=date(2026, 11, 15)
+        )
+
+        self.assertIsNotNone(plan)
+        self.assertEqual(plan.parameters, (date(2026, 6, 1), date(2026, 11, 1)))
+        self.assertIn("GROUP BY DATE_TRUNC('month'", plan.sql)
+
     def test_repeat_purchase_wording_selects_orders_schema(self):
         question = (
             "Theo tháng khách hàng mua hàng lần đầu và acquisition_channel, tính tỷ lệ khách "

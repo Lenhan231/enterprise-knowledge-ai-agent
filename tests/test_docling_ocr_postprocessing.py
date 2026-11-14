@@ -13,6 +13,7 @@ from document_processing.docling_adapter.orientation import (
     detect_paddle_orientation,
     detect_paddle_textline_orientations,
     preload_paddle_page_orientation_model,
+    preload_paddle_textline_orientation_model,
 )
 from document_processing.docling_adapter.scanned.postprocessing import (
     clean_ocr_elements,
@@ -60,6 +61,11 @@ class VietOcrPostprocessingTest(unittest.TestCase):
         with patch("document_processing.docling_adapter.orientation._paddle_orientation_model") as page_model:
             preload_paddle_page_orientation_model()
         page_model.assert_called_once_with()
+
+    def test_preload_initializes_cached_textline_orientation_model(self):
+        with patch("document_processing.docling_adapter.orientation._paddle_textline_orientation_model") as textline_model:
+            preload_paddle_textline_orientation_model()
+        textline_model.assert_called_once_with()
 
     def test_vietocr_recognizes_bounded_batches_in_order(self):
         from document_processing.docling_adapter.scanned import vietocr as vietocr_module

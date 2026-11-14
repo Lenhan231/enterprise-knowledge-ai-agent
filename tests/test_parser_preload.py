@@ -2,6 +2,7 @@ import os
 import sys
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from fastapi import FastAPI
@@ -10,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.services.runtime import lifespan
 from document_processing.docling_adapter.processor import DoclingProcessor
+from document_processing.docling_adapter.layout_model import PPDocLayoutModel
 
 
 class ParserStartupTest(unittest.IsolatedAsyncioTestCase):
@@ -28,17 +30,58 @@ class ParserStartupTest(unittest.IsolatedAsyncioTestCase):
 
 
 class ParserPreloadTest(unittest.TestCase):
+    def test_layout_warmup_uses_a_dummy_page_without_changing_model_settings(self):
+        layout = PPDocLayoutModel.__new__(PPDocLayoutModel)
+        layout.options = SimpleNamespace(score_threshold=0.25)
+        layout.model = SimpleNamespace(predict=unittest.mock.Mock(return_value=iter([object()])))
+
+        layout.warmup()
+
+        kwargs = layout.model.predict.call_args.kwargs
+        self.assertEqual(kwargs["input"].shape, (800, 800, 3))
+        self.assertEqual(kwargs["input"].max(), 255)
+        self.assertEqual(kwargs["threshold"], 0.25)
+        self.assertEqual(kwargs["batch_size"], 1)
+        self.assertTrue(kwargs["layout_nms"])
+
     def test_preload_initializes_scanned_and_native_routes(self):
         processor = DoclingProcessor({})
+        converter = unittest.mock.Mock()
+        converter.initialized_pipelines = {}
         with patch.object(processor, "_pipeline_options", create=True) as options, \
-                patch("document_processing.docling_adapter.processor.get_converter", create=True) as converter:
+                patch("document_processing.docling_adapter.processor.get_converter", return_value=converter):
             processor.preload()
             self.assertEqual(options.call_args_list, [
                 unittest.mock.call(True, False, False),
                 unittest.mock.call(False, False, False),
                 unittest.mock.call(False, True, True),
             ])
-            self.assertEqual(converter.return_value.initialize_pipeline.call_count, 3)
+            self.assertEqual(converter.initialize_pipeline.call_count, 3)
+
+    def test_preload_warms_only_the_invoice_layout_model(self):
+        processor = DoclingProcessor({})
+        processor._pipeline_options = unittest.mock.Mock(return_value=object())
+        layout_warmup = unittest.mock.Mock()
+        converters = [unittest.mock.Mock() for _ in range(3)]
+        converters[0].initialized_pipelines = {
+            "pdf": SimpleNamespace(layout_model=SimpleNamespace(warmup=layout_warmup))
+        }
+        converters[1].initialized_pipelines = {
+            "pdf": SimpleNamespace(layout_model=SimpleNamespace(warmup=unittest.mock.Mock()))
+        }
+        converters[2].initialized_pipelines = {
+            "pdf": SimpleNamespace(layout_model=SimpleNamespace(warmup=unittest.mock.Mock()))
+        }
+
+        with (
+            patch("document_processing.docling_adapter.processor.get_converter", side_effect=converters),
+            patch("document_processing.docling_adapter.orientation.preload_paddle_page_orientation_model"),
+        ):
+            processor.preload()
+
+        layout_warmup.assert_called_once_with()
+        for converter in converters:
+            converter.initialize_pipeline.assert_called_once()
 
     def test_converter_is_reused_for_equivalent_options(self):
         from document_processing.docling_adapter.converters import get_converter, _converters

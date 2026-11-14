@@ -142,6 +142,22 @@ class PPDocLayoutModel(BaseLayoutModel):
     def get_options_type(cls) -> type[PPDocLayoutOptions]:
         return PPDocLayoutOptions
 
+    def warmup(self) -> None:
+        """Run one forward pass so the first invoice does not pay model cold-start cost."""
+        import numpy as np
+
+        image = np.full((800, 800, 3), 255, dtype=np.uint8)
+        started = time.perf_counter()
+        next(iter(self.model.predict(
+            input=image,
+            batch_size=1,
+            threshold=self.options.score_threshold,
+            layout_nms=True,
+        )), None)
+        _log.info("DOCLING_LAYOUT_WARMUP %s", json.dumps({
+            "elapsed_ms": round((time.perf_counter() - started) * 1000, 2),
+        }, separators=(",", ":")))
+
     def predict_layout(
         self,
         conv_res: ConversionResult,

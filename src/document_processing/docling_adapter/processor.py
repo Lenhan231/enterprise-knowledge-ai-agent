@@ -68,11 +68,22 @@ class DoclingProcessor:
         """Initialize the scanned, native, and embedded-image routes before startup."""
         from docling.datamodel.base_models import InputFormat
 
+        invoice_converter = None
         for do_ocr, embedded, page_images in (
             (True, False, False), (False, False, False), (False, True, True),
         ):
             converter = get_converter(self._pipeline_options(do_ocr, embedded, page_images))
             converter.initialize_pipeline(InputFormat.PDF)
+            if do_ocr and not embedded:
+                invoice_converter = converter
+
+        if invoice_converter is not None:
+            with _timed_component("layout_model_warmup"):
+                for pipeline in invoice_converter.initialized_pipelines.values():
+                    layout_model = getattr(pipeline, "layout_model", None)
+                    warmup = getattr(layout_model, "warmup", None)
+                    if callable(warmup):
+                        warmup()
 
         from .orientation import preload_paddle_page_orientation_model
 

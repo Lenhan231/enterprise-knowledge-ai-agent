@@ -61,3 +61,10 @@ class DashboardReconciliationTest(unittest.TestCase):
                                  'rows': [{f'metric_{i}': i for i in range(5)}]}
         reconcile(doc)
         self.assertEqual('complete', DashboardDocument.model_validate_json(doc.model_dump_json()).status)
+
+    def test_cte_monthly_output_binds_projected_date_alias(self):
+        doc = self.monthly()
+        doc.results[0].payload['sql'] = "WITH monthly AS (SELECT DATE_TRUNC('month', s.date) AS month, SUM(s.revenue) AS revenue FROM commerce.sales s GROUP BY 1) SELECT month,revenue FROM monthly ORDER BY month LIMIT 12"
+        reconcile(doc)
+        self.assertEqual('month', doc.tiles[0].dimension)
+        self.assertEqual('complete', doc.status)

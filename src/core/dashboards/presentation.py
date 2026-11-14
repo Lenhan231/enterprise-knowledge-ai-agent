@@ -53,7 +53,7 @@ def bind_fields(document):
         if tile.dimension:
             tile.dimension = bind(tile.dimension)
         dimensions = [name for name in names if name in grouped]
-        dates = [name for name in dimensions if temporal([row.get(name) for row in rows])]
+        dates = [name for name in names if name in projections and temporal([row.get(name) for row in rows])]
         if tile.dimension is None or tile.dimension not in names and tile.dimension.lower() in {
                 'date', 'month', 'period', 'snapshot_date', 'order_date'}:
             if len(dates) == 1:

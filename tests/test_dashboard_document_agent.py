@@ -105,6 +105,23 @@ class DashboardAgentTest(unittest.IsolatedAsyncioTestCase):
             await self.agent.build(self.request, 'Monthly revenue and total')
         self.sql.run_payload.assert_not_called()
 
+    async def test_8b_schema_echo_does_not_replace_plan_or_execute_trailing_sql(self):
+        self.provider.generate.return_value = ('```json\n' + json.dumps(self.plan) + '\n```\n'
+            '```json\n{"title":"DashboardPlan","type":"object"}\n```\n'
+            '```sql\nDROP TABLE commerce.sales;\n```')
+        doc = await self.agent.build(self.request, 'Monthly revenue dashboard')
+        self.assertEqual('complete', doc.status)
+        self.assertEqual(1, self.provider.generate.call_count)
+        self.sql.run_payload.assert_awaited_once()
+        self.assertEqual(self.plan['queries'][0]['question'], self.sql.run_payload.call_args.args[0].question)
+
+    async def test_model_cannot_add_metric_authority_or_currency_to_queries(self):
+        self.plan['queries'][0]['metric_definitions'] = {'revenue': {'unit': 'USD'}}
+        self.provider.generate.return_value = json.dumps(self.plan)
+        with self.assertRaises(ValueError):
+            await self.agent.build(self.request, 'Revenue dashboard')
+        self.sql.run_payload.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()

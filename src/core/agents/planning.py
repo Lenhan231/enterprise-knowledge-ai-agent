@@ -1,13 +1,40 @@
 """Context-aware task decomposition; rules are only a narrow outage fallback."""
 import json
 import re
+from datetime import date
 
 from core.agents.runtime import generate
-from core.models.agent_plan import AgentPlan
+from core.models.agent_plan import AgentPlan, AgentTask
 from core.prompts.agents import PLANNING_PROMPT, PLANNING_REPAIR_PROMPT
 
 
+def _revenue_month_followup(question, history):
+    if not re.fullmatch(r'\s*(?:(?:vậy|còn)\s+)?(?:tháng trước(?: thì sao)?|last month|previous month)\s*[?!.]*\s*',
+                        question, re.I):
+        return None
+    from core.analytics.metric_ontology import resolve_metric_names
+
+    for turn in reversed(history):
+        scope = turn.get('scope') or turn.get('question') or ''
+        if resolve_metric_names(scope) != {'revenue'}:
+            continue
+        match = re.search(r'\btháng\s+(0?[1-9]|1[0-2])(?:\s+năm\s+((?:19|20)\d{2}))?\b', scope, re.I)
+        if not match:
+            return None
+        year, month = int(match.group(2) or date.today().year), int(match.group(1))
+        month -= 1
+        if month == 0:
+            month, year = 12, year - 1
+        return f'doanh thu tháng {month} năm {year}'
+    return None
+
+
 async def plan_request(request, provider, *, history=(), previous=None, report_headings=None, sql_schema=None):
+    resolved_followup = (_revenue_month_followup(request.question, history)
+                         if previous is None and report_headings is None else None)
+    if resolved_followup:
+        return AgentPlan(objective=resolved_followup, tasks=[
+            AgentTask(id='sql', agent='sql', question=resolved_followup)])
     if not history and previous is None and report_headings is None:
         from core.agents.intent_classifier import IntentClassifier
         intent = IntentClassifier.fallback(request.question)

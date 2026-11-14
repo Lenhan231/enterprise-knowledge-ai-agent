@@ -48,10 +48,29 @@ class RequestPlanningTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn('2021 and 2022', llm.prompts[0])
         self.assertEqual(len(llm.prompts), 1)
 
+    async def test_confirmed_schema_retry_keeps_the_original_metric_and_scope(self):
+        payload = plan({'id': 's', 'agent': 'sql',
+                        'question': 'Total revenue for the previous month using commerce.sales'})
+        llm = Provider(payload)
+        history = [{'question': 'tháng trước thì sao', 'scope': 'doanh thu tháng gần nhất',
+                    'clarification': 'Schema mismatch: available columns are date and revenue. Retry?'}]
+        result = await plan_request(AgentRequest(question='Có, thử lại theo schema vừa nêu'), llm, history=history)
+        self.assertEqual(result.tasks[0].question, payload['tasks'][0]['question'])
+        self.assertIn('schema-mismatch confirmation', llm.prompts[0].lower())
+
     async def test_clear_mixed_request_does_not_broadcast_on_provider_failure(self):
         llm = Provider(RuntimeError('offline'), RuntimeError('offline'))
         with self.assertRaisesRegex(ValueError, 'planning'):
             await plan_request(AgentRequest(question='Compare revenue and policy documents'), llm)
+
+    async def test_analytics_only_question_falls_back_to_sql_agent_on_provider_failure(self):
+        llm = Provider(RuntimeError('offline'), RuntimeError('offline'))
+        result = await plan_request(AgentRequest(question=(
+            'Tìm 10 sản phẩm có doanh thu tăng mạnh nhất từ năm 2021 sang năm 2022, '
+            'chỉ xét các sản phẩm có doanh thu dương trong cả hai năm.')), llm)
+        self.assertTrue(result.fallback)
+        self.assertEqual([task.agent for task in result.tasks], ['sql'])
+        self.assertEqual(result.tasks[0].question, result.objective)
 
     async def test_genuine_ambiguity_is_targeted_and_repair_is_bounded(self):
         llm = Provider('bad json', {'objective': 'Compare revenue', 'clarification': 'Which years?', 'tasks': []})

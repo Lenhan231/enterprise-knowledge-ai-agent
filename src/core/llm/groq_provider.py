@@ -42,9 +42,13 @@ class GroqProvider(LLMInterface):
     def generate(self, prompt: str, *, max_output_tokens: int = 1000) -> str:
         if not 1 <= max_output_tokens <= 4096:
             raise ValueError("Output token budget must be between 1 and 4096")
+        self.last_usage = None
         with self._lock:
             order = [(self._active + offset) % len(self._clients) for offset in range(len(self._clients))]
         response = None
+        last_rate_error = self._last_rate_error
+        last_rate_index = None
+        rate_limited_this_call = False
         for index in order:
             remaining(60)
             with self._lock:
@@ -64,8 +68,25 @@ class GroqProvider(LLMInterface):
                 with self._lock:
                     self._cooldowns[index] = time.monotonic() + min(cooldown, 3600)
                     self._last_rate_error = error
+                last_rate_error = error
+                last_rate_index = index
+                rate_limited_this_call = True
+        if response is None and rate_limited_this_call and last_rate_error is not None:
+            message = str(last_rate_error).casefold()
+            if 'tokens per minute' in message:
+                retry_after = last_rate_error.response.headers.get('retry-after')
+                try:
+                    delay = float(retry_after)
+                except (TypeError, ValueError):
+                    match = re.search(r'try again in ([\d.]+)s', message)
+                    delay = float(match.group(1)) if match else None
+                if delay is not None and 0 <= delay <= 10 and remaining(60) > delay + 1:
+                    time.sleep(delay + 1)
+                    response = self._create(last_rate_index, prompt, max_output_tokens)
+                    with self._lock:
+                        self._active = last_rate_index
         if response is None:
-            raise self._last_rate_error or RuntimeError('No Groq key is currently available')
+            raise last_rate_error or RuntimeError('No Groq key is currently available')
 
         answer = response.output_text.strip()
         usage = getattr(response, "usage", None)

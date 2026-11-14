@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock, patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
-from core.agents.sql_analytics_agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
+from core.sql_agent.agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
 from core.models.agents import AgentRequest, VerifiedIdentity
 IDENTITY=VerifiedIdentity(subject='inventory-adversarial',permissions={'analytics:read','documents:read'})
 SQL = 'SELECT i.snapshot_date,i.product_id,i.stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date=$1 AND p.color=$2 ORDER BY 3 DESC NULLS LAST,i.product_id LIMIT 2'
@@ -20,7 +20,7 @@ class InventoryAdversarialAgentTest(unittest.IsolatedAsyncioTestCase):
         provider.generate.return_value = json.dumps(MAPPING)
         repo.execute_approved_query.return_value = [dict(snapshot_date='2022-12-31', product_id=1, stock_on_hand=5)]
         agent = SQLAnalyticsAgent(repo, llm=provider)
-        with patch('core.agents.sql_analytics_agent.compile_inventory_query', create=True, return_value=(sql, tuple(parameters if parameters is not None else ['2022-12-31', 'blue']))):
+        with patch('core.sql_agent.agent.compile_inventory_query', create=True, return_value=(sql, tuple(parameters if parameters is not None else ['2022-12-31', 'blue']))):
             result = await agent.run(AgentRequest(question=question, identity=identity))
         return (result, provider, repo)
 
@@ -80,7 +80,7 @@ class InventoryAdversarialAgentTest(unittest.IsolatedAsyncioTestCase):
             async def query(sql, *params):
                 return [dict(r) for r in db.execute(parse_one(sql, read='postgres').sql(dialect='sqlite'), tuple((str(p) for p in params)))]
             repo.execute_approved_query.side_effect = query
-            with patch('core.agents.sql_analytics_agent.compile_inventory_query', create=True, return_value=(wrong, ('2022-12-31',))):
+            with patch('core.sql_agent.agent.compile_inventory_query', create=True, return_value=(wrong, ('2022-12-31',))):
                 result = await SQLAnalyticsAgent(repo, llm=provider).run(AgentRequest(question=question, identity=IDENTITY))
         ids = [r['product_id'] for r in result.data.get('rows', [])]
         gap = result.data.get('query_status') == 'executed' and ids != [1]
@@ -111,7 +111,7 @@ class InventoryCanonicalFallbackTest(unittest.IsolatedAsyncioTestCase):
         mapping = dict(metrics=['stock_on_hand'], dimensions=['product_id'], representation='product', time=dict(mode='snapshot', start='2022-12-31'), ranking=dict(metric='stock_on_hand', direction='desc', limit=2), filters=[dict(field='color', operator='eq', value='blue')])
         provider.generate.return_value = json.dumps(mapping)
         wrong = 'SELECT i.snapshot_date,i.product_id,i.stock_on_hand FROM commerce.inventory i JOIN commerce.products p ON i.product_id=p.product_id WHERE i.snapshot_date=$1 ORDER BY 3 DESC NULLS LAST,i.product_id LIMIT 2'
-        with patch('core.agents.sql_analytics_agent.compile_inventory_query', return_value=(wrong, ('2022-12-31',))):
+        with patch('core.sql_agent.agent.compile_inventory_query', return_value=(wrong, ('2022-12-31',))):
             result = await SQLAnalyticsAgent(repo, llm=provider).run(AgentRequest(question='Top 2 blue products by stock_on_hand on 2022-12-31.', identity=IDENTITY))
         self.assertNotEqual(result.data.get('query_status'), 'executed')
         repo.execute_approved_query.assert_not_awaited()

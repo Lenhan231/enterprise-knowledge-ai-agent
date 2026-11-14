@@ -13,13 +13,14 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from core.agents.analytics_agent import AnalyticsAgent
+from core.sql_agent.analytics_agent import AnalyticsAgent
 from core.agents.dashboard_agent import InventoryDashboardAgent
 from core.agents.intent_classifier import IntentClassifier
 from core.agents.knowledge_agent import KnowledgeAgent
 from core.agents.report_agent import ReportAgent
 from core.agents.router import AgentRouter
-from core.agents.sql_analytics_agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
+from core.sql_agent.agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
+from core.sql_agent.assistant_endpoint import run_sql_assistant
 from core.database.commerce_repository import LazyCommerceRepository
 from core.models.agents import AgentRequest, AgentResult, VerifiedIdentity, validate_chat_metadata
 
@@ -70,6 +71,11 @@ class _LazyKnowledgeAgent:
             self.agent = KnowledgeAgent()
         return await self.agent.retrieve(request)
 
+    async def retrieve_metric_definition(self, request: AgentRequest, metric_name: str):
+        if self.agent is None:
+            self.agent = KnowledgeAgent()
+        return await self.agent.retrieve_metric_definition(request, metric_name)
+
     async def close(self) -> None:
         if self.agent is not None:
             await self.agent.close()
@@ -104,10 +110,27 @@ class ChatRequest(BaseModel):
         return validate_chat_metadata(value)
 
 
+class SQLAssistantRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    question: str = Field(min_length=1, max_length=2_000)
+    mode: Literal["draft", "execute"] = "draft"
+    sql: str | None = Field(default=None, max_length=20_000)
+    parameters: list[Any] = Field(default_factory=list, max_length=32)
+
+    @field_validator("question")
+    @classmethod
+    def normalize_question(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("Câu hỏi không được để trống")
+        return normalized
+
+
 def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None = None,
                knowledge_agent: Any | None = None, classifier: Any | None = None,
                identity_resolver: Any | None = None, llm: Any | None = None,
-               report_agent: Any | None = None) -> FastAPI:
+               report_agent: Any | None = None, sql_agent: SQLAnalyticsAgent | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
         runtime_agent = chat_agent
@@ -115,9 +138,12 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
         owns_agent = runtime_agent is None
         if runtime_agent is None:
             load_dotenv(REPO_ROOT / ".env", override=False)
-            repository = commerce_repository or LazyCommerceRepository()
+            repository = commerce_repository or getattr(sql_agent, "repository", None) or LazyCommerceRepository()
             knowledge = knowledge_agent or _LazyKnowledgeAgent()
-            analytics_agent = AnalyticsAgent(SQLAnalyticsAgent(repository, llm=llm))
+            runtime_sql_agent = sql_agent or SQLAnalyticsAgent(
+                repository, llm=llm, metric_retriever=knowledge.retrieve_metric_definition,
+            )
+            analytics_agent = AnalyticsAgent(runtime_sql_agent)
             runtime_report_agent = runtime_report_agent or ReportAgent(knowledge, analytics_agent.sql_agent, llm=llm)
             runtime_agent = AgentRouter(
                 classifier or _FallbackClassifier(), knowledge, analytics_agent,
@@ -126,8 +152,12 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
             )
             if isinstance(runtime_report_agent, ReportAgent):
                 runtime_report_agent.source_router = runtime_agent
+        else:
+            runtime_sql_agent = sql_agent or getattr(
+                getattr(runtime_agent, "analytics_agent", None), "sql_agent", None)
         application.state.chat_agent = runtime_agent
         application.state.report_agent = runtime_report_agent
+        application.state.sql_agent = runtime_sql_agent
         try:
             yield
         finally:
@@ -175,6 +205,36 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
                 status_code=403,
                 detail="Bạn không có quyền truy cập dữ liệu phân tích.",
             ) from None
+
+    @application.post("/api/sql/assistant", summary="Draft and run an approved schema-aware SQL query")
+    async def sql_assistant(payload: SQLAssistantRequest, request: Request) -> dict[str, Any]:
+        agent = request.app.state.sql_agent
+        if agent is None:
+            raise HTTPException(status_code=503, detail="The SQL assistant is not configured")
+        if payload.mode == "execute" and not payload.sql:
+            raise HTTPException(status_code=422, detail="Provide the SQL draft you reviewed and approved")
+        if payload.mode == "draft" and payload.sql is not None:
+            raise HTTPException(status_code=422, detail="SQL is accepted only with mode='execute'")
+        identity = None
+        if identity_resolver is not None:
+            identity = identity_resolver(request)
+            if inspect.isawaitable(identity):
+                identity = await identity
+        else:
+            identity = getattr(request.state, "verified_identity", None)
+            if identity is None:
+                identity = _local_development_identity()
+        if (not isinstance(identity, VerifiedIdentity)
+                or "analytics:read" not in identity.permissions):
+            raise HTTPException(status_code=403, detail="Verified analytics:read permission is required")
+        try:
+            return await run_sql_assistant(agent, payload.question, mode=payload.mode,
+                sql=payload.sql, parameters=payload.parameters)
+        except PermissionError:
+            raise HTTPException(status_code=403, detail="Verified analytics:read permission is required") from None
+        except Exception as error:
+            LOGGER.exception("SQL assistant request failed")
+            raise HTTPException(status_code=422, detail=str(error)) from None
 
     @application.post("/api/report")
     async def report(request: Request, question: str = Form(...), template: UploadFile | None = File(None),

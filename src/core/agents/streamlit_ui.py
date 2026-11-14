@@ -10,7 +10,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 from urllib.request import build_opener, HTTPCookieProcessor
 from http.cookiejar import CookieJar
-from typing import Any
+from typing import Any, Callable
 
 
 AGENT_MODES = {
@@ -38,6 +38,72 @@ def submit_chat(question: str, agent_mode: str, *, metadata: dict | None = None,
             return json.loads(response.read())
     except HTTPError as error:
         raise RuntimeError(f"Backend returned HTTP {error.code}.") from None
+    except URLError:
+        raise RuntimeError("Could not connect to the FastAPI backend.") from None
+
+
+def submit_chat_stream(question: str, agent_mode: str, *, metadata: dict | None = None,
+                       api_url: str | None = None, opener=None, agent_prefix="/api",
+                       conversation_id: str | None = None,
+                       on_stage: Callable[[str, str], None] | None = None) -> dict[str, Any]:
+    if agent_mode not in {*AGENT_MODES.values(), "agentic"}:
+        raise ValueError("Choose a supported agent mode.")
+    payload = {"question": question, "agent_mode": agent_mode, "metadata": metadata or {}}
+    if conversation_id:
+        payload["conversation_id"] = conversation_id
+    request = Request(
+        f"{(api_url or os.getenv('API_BASE_URL', 'http://127.0.0.1:8000')).rstrip('/')}{agent_prefix}/chat/stream",
+        data=json.dumps(payload).encode(), headers={"Content-Type": "application/json"}, method="POST",
+    )
+    try:
+        with (opener or urlopen)(request, timeout=300) as response:
+            event = None
+            result = None
+            for raw_line in response:
+                line = raw_line.decode("utf-8").strip()
+                if line.startswith("event:"):
+                    event = line[6:].strip()
+                elif line.startswith("data:"):
+                    data = json.loads(line[5:].strip())
+                    if event == "stage" and on_stage:
+                        on_stage(data.get("stage", ""), data.get("state", ""))
+                    elif event == "result":
+                        result = data
+                    elif event == "error":
+                        raise RuntimeError(data.get("detail", "Agent request failed."))
+                elif not line:
+                    event = None
+            if result is None:
+                raise RuntimeError("The agent stream ended before returning a result.")
+            return result
+    except HTTPError as error:
+        raise RuntimeError(f"Backend returned HTTP {error.code}.") from None
+    except URLError:
+        raise RuntimeError("Could not connect to the FastAPI backend.") from None
+
+
+def submit_sql_assistant(question: str, *, mode="draft", sql=None, parameters=None,
+                         api_url: str | None = None, opener=None) -> dict[str, Any]:
+    if mode not in {"draft", "execute"} or (mode == "execute" and not sql):
+        raise ValueError("Provide a draft request or the SQL you approved.")
+    payload = {"question": question, "mode": mode}
+    if sql is not None:
+        payload["sql"] = sql
+    if parameters is not None:
+        payload["parameters"] = parameters
+    request = Request(
+        f"{(api_url or os.getenv('API_BASE_URL', 'http://127.0.0.1:8000')).rstrip('/')}/api/sql/assistant",
+        data=json.dumps(payload).encode(), headers={"Content-Type": "application/json"}, method="POST",
+    )
+    try:
+        with (opener or urlopen)(request, timeout=135) as response:
+            return json.loads(response.read())
+    except HTTPError as error:
+        try:
+            detail = json.loads(error.read()).get("detail", "SQL assistant request failed.")
+        except (ValueError, AttributeError):
+            detail = "SQL assistant request failed."
+        raise RuntimeError(f"HTTP {error.code}: {detail}") from None
     except URLError:
         raise RuntimeError("Could not connect to the FastAPI backend.") from None
 
@@ -196,6 +262,8 @@ def _display_data(st: Any, value: Any, label: str = "Results", *, key_prefix: st
             export = f"-- Query status: {status}\n-- Parameters (JSON): {parameters}\n{sql}\n"
             with st.expander(f"SQL query · {status}"):
                 st.code(sql, language="sql")
+                if value.get("parameters"):
+                    st.caption("Parameters: " + parameters)
                 st.download_button("Download SQL", export, file_name="query.sql", mime="text/plain",
                                    **({'key':key_prefix+':sql'} if key_prefix else {}))
         rows = value.get("rows")
@@ -262,6 +330,8 @@ def main() -> None:
     if st.button("New conversation",key='new_conversation'):
         reset_conversation(st.session_state)
         st.rerun()
+    if st.session_state.get('agent_mode') not in AGENT_MODES:
+        st.session_state.pop('agent_mode', None)
     mode_label = st.selectbox("Agent", list(AGENT_MODES),key='agent_mode')
     is_report = AGENT_MODES[mode_label] == "report"
     report_id = st.session_state['report_conversation_id']
@@ -353,10 +423,26 @@ def main() -> None:
             st.caption(mode_label)
             st.markdown(question.strip())
         try:
-            with st.chat_message('assistant'), st.spinner('Working...'):
+            with st.chat_message('assistant'):
                 metadata = {"category": category.strip()} if category.strip() else None
-                turn['result'] = submit_chat(question.strip(),AGENT_MODES[mode_label],metadata=metadata,
-                    opener=opener,agent_prefix=prefix,conversation_id=conversation_id)
+                with st.status('Đang bắt đầu xử lý…', expanded=True) as progress:
+                    stage_labels = {
+                        'routing': 'Phân loại câu hỏi',
+                        'schema_discovery': 'Khám phá cấu trúc database',
+                        'metric_retrieval': 'Tra cứu định nghĩa metric trong RAG',
+                        'metric_interpretation': 'Diễn giải yêu cầu theo metric',
+                        'sql_planning': 'Tạo và kiểm tra câu truy vấn',
+                        'sql_execution': 'Chạy truy vấn trên database',
+                        'agent_workflow': 'Xử lý yêu cầu',
+                        'answer_synthesis': 'Tổng hợp câu trả lời',
+                    }
+                    def show_stage(stage, state):
+                        label = stage_labels.get(stage, stage.replace('_', ' ').capitalize())
+                        icon = {'started': '⏳', 'completed': '✓', 'failed': '⚠'}.get(state, '·')
+                        progress.write(f'{icon} {label}')
+                    turn['result'] = submit_chat_stream(question.strip(),AGENT_MODES[mode_label],metadata=metadata,
+                        opener=opener,agent_prefix=prefix,conversation_id=conversation_id,on_stage=show_stage)
+                    progress.update(label='Đã hoàn tất', state='complete')
         except (RuntimeError,ValueError) as error:
             turn['error'] = str(error)
         if (st.session_state.get('conversation_id') == conversation_id

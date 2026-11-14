@@ -71,7 +71,7 @@ class SnapshotContractsTest(unittest.TestCase):
 
 class ComparisonAgentTest(unittest.IsolatedAsyncioTestCase):
     async def test_comparison_runs_through_shared_agent(self):
-        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.sql_agent.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         provider, repository = Mock(), AsyncMock()
         provider.generate.return_value = json.dumps(dict(metrics=['stock_on_hand'], dimensions=['product_id'],

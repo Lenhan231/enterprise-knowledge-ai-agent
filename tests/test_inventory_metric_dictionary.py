@@ -216,7 +216,7 @@ class InventoryEnforcementTest(unittest.TestCase):
 class InventoryRequestTest(unittest.IsolatedAsyncioTestCase):
     async def test_lowest_stock_question_executes_dated_product_values(self):
         from unittest.mock import AsyncMock, Mock
-        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.sql_agent.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         provider, repository = Mock(), AsyncMock()
         provider.generate.return_value = json.dumps({'metrics':['stock_on_hand'],'representation':'product',
@@ -260,7 +260,7 @@ class InventoryRequestTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_unresolved_and_missing_snapshot_clarify_before_generation(self):
         from unittest.mock import AsyncMock, Mock
-        from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+        from core.sql_agent.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         for question, code in [('What is the weighted fill rate on 2022-12-31?', 'metric_unresolved'),
                                ('What is stock on hand?', 'snapshot_required'),
@@ -276,7 +276,7 @@ class InventoryRequestTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_rbac_still_precedes_catalog_and_provider(self):
         from unittest.mock import AsyncMock, Mock
-        from core.agents.sql_analytics_agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
+        from core.sql_agent.agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
         from core.models.agents import AgentRequest
         provider, repository = Mock(), AsyncMock()
         with self.assertRaises(AnalyticsPermissionDenied):

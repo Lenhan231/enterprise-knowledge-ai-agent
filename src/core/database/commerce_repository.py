@@ -1,7 +1,7 @@
-"""Read-only repository for the Supabase ``commerce`` schema.
+"""Read-only repository for explicitly configured PostgreSQL schemas.
 
-The repository exposes only approved query templates. It intentionally does
-not accept arbitrary SQL from users or agents.
+The repository discovers readable tables but validates every generated query
+against the live schema and a read-only database role.
 """
 
 from __future__ import annotations
@@ -10,7 +10,8 @@ import os
 import asyncio
 from typing import Any
 
-from core.analytics.text_to_sql import APPROVED_COLUMNS, INVENTORY_SOURCES, inventory_scope_enabled, validate_commerce_sql
+from core.analytics.text_to_sql import INVENTORY_SOURCES, inventory_scope_enabled, validate_commerce_sql
+from core.sql_agent.schema import configured_schemas, discover_schema
 
 try:
     import asyncpg
@@ -18,7 +19,7 @@ except ImportError:  # Keep imports usable before the optional DB dependency is 
     asyncpg = None  # type: ignore[assignment]
 
 
-DEFAULT_TIMEOUT_MS = 7_500
+DEFAULT_TIMEOUT_MS = 5_000
 
 
 class LazyCommerceRepository:
@@ -34,6 +35,12 @@ class LazyCommerceRepository:
                 self.repository = await create_repository_from_env()
         return await self.repository.execute_approved_query(query, *args)
 
+    async def get_schema(self):
+        async with self.lock:
+            if self.repository is None:
+                self.repository = await create_repository_from_env()
+        return await self.repository.get_schema()
+
     async def close(self):
         if self.repository is not None:
             await self.repository.close()
@@ -47,20 +54,23 @@ SELECT
     role.rolcreatedb,
     role.rolreplication,
     role.rolbypassrls,
-    has_schema_privilege(current_user, 'commerce', 'USAGE') AS schema_usage,
-    has_schema_privilege(current_user, 'commerce', 'CREATE') AS schema_create,
+    bool_and(has_schema_privilege(current_user, allowed.schema_name, 'USAGE')) AS schema_usage,
+    bool_or(has_schema_privilege(current_user, allowed.schema_name, 'CREATE')) AS schema_create,
     bool_and(has_any_column_privilege(
         current_user,
-        format('%I.%I', 'commerce', approved.table_name),
+        format('%I.%I', approved.table_schema, approved.table_name),
         'SELECT'
     )) AS can_select,
     bool_or(has_table_privilege(
         current_user,
-        format('%I.%I', 'commerce', approved.table_name),
+        format('%I.%I', approved.table_schema, approved.table_name),
         'INSERT,UPDATE,DELETE,TRUNCATE'
     )) AS can_write
 FROM pg_roles AS role
-CROSS JOIN unnest($1::text[]) AS approved(table_name)
+CROSS JOIN unnest($1::text[]) AS allowed(schema_name)
+LEFT JOIN information_schema.tables AS approved
+  ON approved.table_schema = allowed.schema_name
+ AND approved.table_type IN ('BASE TABLE', 'VIEW', 'FOREIGN')
 WHERE role.rolname = current_user
 GROUP BY role.rolsuper, role.rolcreaterole, role.rolcreatedb,
          role.rolreplication, role.rolbypassrls
@@ -68,19 +78,42 @@ GROUP BY role.rolsuper, role.rolcreaterole, role.rolcreatedb,
 
 
 class CommerceRepository:
-    """Execute bounded, validated read-only queries against approved commerce data."""
+    """Execute bounded, validated read-only queries against configured schemas."""
 
-    def __init__(self, pool: Any, *, statement_timeout_ms: int = DEFAULT_TIMEOUT_MS, allowed_sources=None) -> None:
+    def __init__(self, pool: Any, *, statement_timeout_ms: int = DEFAULT_TIMEOUT_MS, allowed_sources=None,
+                 allowed_schemas=('commerce',), schema_metadata=None) -> None:
         if statement_timeout_ms <= 0:
             raise ValueError("statement_timeout_ms must be positive")
         self.pool = pool
         self.allowed_sources = frozenset(allowed_sources) if allowed_sources is not None else None
+        self.allowed_schemas = tuple(allowed_schemas)
+        self.schema_metadata = schema_metadata or {}
         self.statement_timeout_ms = statement_timeout_ms
 
     async def execute_approved_query(self, query: str, *args: Any) -> list[dict[str, Any]]:
         """Revalidate and execute one bounded allowlisted SELECT."""
-        validated = validate_commerce_sql(query, allowed_sources=self.allowed_sources)
+        validated = validate_commerce_sql(query, allowed_sources=self.allowed_sources,
+            schema_columns=self.schema_metadata.get('tables'), approved_joins=self.schema_metadata.get('joins'),
+            primary_keys=self.schema_metadata.get('primary_keys'), date_columns=self.schema_metadata.get('date_columns'))
         return await self._fetch(validated.sql, *args)
+
+    async def get_schema(self) -> dict:
+        """Refresh the live table/column and declared relationship metadata."""
+        schema = await discover_schema(self.pool, self.allowed_schemas)
+        if not schema['tables']:
+            raise RuntimeError('No readable tables found in ANALYTICS_SCHEMAS')
+        sources = set(schema['tables'])
+        if inventory_scope_enabled():
+            sources &= INVENTORY_SOURCES
+        await verify_analytics_role(self.pool, allowed_sources=sources, allowed_schemas=self.allowed_schemas)
+        schema['tables'] = {name: columns for name, columns in schema['tables'].items() if name in sources}
+        schema['primary_keys'] = {name: keys for name, keys in schema['primary_keys'].items() if name in sources}
+        schema['joins'] = frozenset(join for join in schema['joins']
+                                    if all(table in sources for table, _ in join))
+        schema['date_columns'] = frozenset(item for item in schema['date_columns'] if item[0] in sources)
+        self.allowed_sources = frozenset(sources)
+        self.schema_metadata = schema
+        return schema
 
     async def close(self) -> None:
         """Close the underlying asyncpg pool during application shutdown."""
@@ -119,19 +152,26 @@ async def create_repository_from_env() -> CommerceRepository:
         command_timeout=DEFAULT_TIMEOUT_MS / 1_000,
     )
     try:
-        sources = INVENTORY_SOURCES if inventory_scope_enabled() else None
-        await verify_analytics_role(pool, allowed_sources=sources)
+        schemas = configured_schemas(os.getenv('ANALYTICS_SCHEMAS'))
+        schema = await discover_schema(pool, schemas)
+        sources = set(schema['tables'])
+        if not sources:
+            raise RuntimeError('No readable tables found in ANALYTICS_SCHEMAS')
+        if inventory_scope_enabled():
+            sources &= INVENTORY_SOURCES
+            schema['tables'] = {name: columns for name, columns in schema['tables'].items() if name in sources}
+            schema['primary_keys'] = {name: keys for name, keys in schema['primary_keys'].items() if name in sources}
+        await verify_analytics_role(pool, allowed_sources=sources, allowed_schemas=schemas)
     except Exception:
         await pool.close()
         raise
-    return CommerceRepository(pool, allowed_sources=sources)
+    return CommerceRepository(pool, allowed_sources=sources, allowed_schemas=schemas, schema_metadata=schema)
 
 
-async def verify_analytics_role(pool: Any, *, allowed_sources=None) -> None:
-    """Fail closed unless the connection role can only read approved sources."""
-    table_names = sorted(source.split(".", 1)[1] for source in (APPROVED_COLUMNS if allowed_sources is None else allowed_sources))
+async def verify_analytics_role(pool: Any, *, allowed_sources=None, allowed_schemas=('commerce',)) -> None:
+    """Fail closed unless the connection role is read-only in configured schemas."""
     async with pool.acquire() as connection:
-        info = await connection.fetchrow(ROLE_CHECK_SQL, table_names)
+        info = await connection.fetchrow(ROLE_CHECK_SQL, list(allowed_schemas))
     if info is None:
         raise RuntimeError("Analytics database role could not be verified")
     values = dict(info)
@@ -142,6 +182,6 @@ async def verify_analytics_role(pool: Any, *, allowed_sources=None) -> None:
     if privileged:
         raise RuntimeError("ANALYTICS_DATABASE_URL must use a least-privilege read-only role")
     if not values.get("schema_usage"):
-        raise RuntimeError("Analytics role lacks USAGE on schema commerce")
-    if not values.get("can_select"):
-        raise RuntimeError("Analytics role lacks SELECT on one or more approved commerce tables")
+        raise RuntimeError("Analytics role lacks USAGE on one or more configured schemas")
+    if not values.get("can_select") or not allowed_sources:
+        raise RuntimeError("Analytics role lacks SELECT on readable tables in the configured schemas")

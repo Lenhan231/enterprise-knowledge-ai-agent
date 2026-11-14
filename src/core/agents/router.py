@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import re
 import time
 from typing import TypedDict
 
@@ -10,6 +11,7 @@ from langgraph.graph import END, START, StateGraph
 
 from core.agents.conversation_context import ConversationStore
 from core.agents.execution import Execution, authorize
+from core.agents.intent_classifier import IntentClassifier
 from core.agents.planning import plan_request
 from core.agents.response import assemble_response
 from core.agents.runtime import deadline, remaining
@@ -79,7 +81,6 @@ class AgentRouter:
                         if result.metadata.get('status') in {'complete', 'partial', 'clarification_required'}:
                             scope = state['plan'].objective if state.get('plan') else request.question
                             history.append({'question': request.question[:2000], 'scope': scope[:2000],
-                                            'answer': result.answer[:1500],
                                             'clarification': result.answer[:500] if result.metadata.get('status') == 'clarification_required' else ''})
                         self.last_destination = result.metadata.get('selected_route', 'unrouted')
                         return result
@@ -141,8 +142,6 @@ class AgentRouter:
                     action = result.metadata.pop('_sql_context_action','new')
                     if result.data.get('query_status') == 'executed':
                         state = SQLConversationState.model_validate({'accepted':result.metadata.get('semantic_interpretation')})
-                    elif action == 'failed':
-                        pass
                     elif state.pending and action != 'new':
                         combined = state.pending.question+'\nClarification reply: '+request.question
                         if len(combined) <= 2000:
@@ -161,21 +160,29 @@ class AgentRouter:
 
     async def _plan(self, state):
         with measure('routing'):
-            plan = await plan_request(state['request'], self._provider(), history=state['history'],
+            request = state['request']
+            plan = await plan_request(request, self._provider(), history=state['history'],
                                       report_headings=state.get('report_headings'), sql_schema=self.sql_schema)
-        tasks = plan.tasks
-        if (state.get('report_headings') is None and len(tasks) > 1
-                and all(t.agent == 'knowledge' and not t.inputs and not t.depends_on for t in tasks)):
-            # A documents-only question goes to Knowledge once: it handles multi-part questions itself, and a
-            # single task keeps the claim-verified pass-through instead of a new, unverified synthesis.
-            plan = plan.model_copy(update={'tasks': [tasks[0].model_copy(update={'question': plan.objective})]})
-            tasks = plan.tasks
-        if (state.get('report_headings') is None and len(tasks) == 1 and tasks[0].agent == 'knowledge'
-                and not tasks[0].inputs and (not state['history'] or not plan.uses_context)):
-            # Knowledge translates and plans its own search; a planner paraphrase only adds variation.
-            # Follow-ups that need earlier turns keep the planner's resolved question.
-            plan = plan.model_copy(update={'tasks': [tasks[0].model_copy(
-                update={'question': state['request'].question})]})
+            explicit_sql = bool(re.search(
+                r'\b(select|sql|query|table|database|schema|from)\b|(?:truy vấn|bảng)',
+                request.question, re.I))
+            analytics_intent = IntentClassifier.fallback(request.question).needs_sql
+            if any(task.agent == 'sql' for task in plan.tasks) or (
+                    plan.clarification and (explicit_sql or analytics_intent)):
+                sql_agent = getattr(self.analytics_agent, 'sql_agent', self.analytics_agent)
+                repository = getattr(sql_agent, 'repository', None)
+                discover = getattr(repository, 'get_schema', None)
+                if discover is not None:
+                    try:
+                        schema = await discover()
+                    except Exception:
+                        # Let the SQL agent return its structured source error.
+                        # Discovery here is only for improving the planner context.
+                        schema = None
+                    live_schema = schema.get('tables') if isinstance(schema, dict) else None
+                    if live_schema and live_schema != self.sql_schema:
+                        plan = await plan_request(request, self._provider(), history=state['history'],
+                            report_headings=state.get('report_headings'), sql_schema=live_schema)
         state['execution'].plan = plan
         if plan.clarification:
             return {'plan': plan, 'result': AgentResult(answer=plan.clarification, agent='agentic', metadata={
@@ -191,13 +198,7 @@ class AgentRouter:
         execution = state['execution']
         failed = [execution.outcomes[t.id] for t in state['plan'].tasks if t.id in execution.outcomes
                   and execution.outcomes[t.id].status in {'failed', 'empty', 'clarification_required'}]
-        terminal_database_failure = any(
-            outcome.result and outcome.result.data.get('query_status') == 'error'
-            for outcome in failed
-        )
-        return {'revise': bool(failed and not terminal_database_failure
-                               and not any(o.status == 'clarification_required' for o in failed)
-                               and state['revisions'] < 1 and execution.invocations < 6
+        return {'revise': bool(failed and state['revisions'] < 1 and execution.invocations < 6
                                and remaining() > 5)}
 
     async def _revise(self, state):

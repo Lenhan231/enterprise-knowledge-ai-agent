@@ -7,7 +7,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from core.agents.streamlit_ui import AGENT_MODES, ReportConfirmationRequired, display_result, submit_chat, submit_report
+from core.agents.streamlit_ui import (AGENT_MODES, ReportConfirmationRequired, display_result,
+                                      submit_chat, submit_report, submit_sql_assistant)
 
 
 class _Response:
@@ -150,6 +151,23 @@ class StreamlitClientTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             submit_chat("question", "unknown")
 
+    def test_sql_assistant_sends_draft_and_approved_requests_to_dedicated_route(self):
+        requests = []
+        def opener(request, timeout):
+            requests.append((request, timeout))
+            return _Response({"status": "approval_required"})
+        submit_sql_assistant("List products", api_url="http://api.test", opener=opener)
+        submit_sql_assistant("List products", mode="execute", sql="SELECT 1 LIMIT 1",
+                             parameters=[], opener=opener)
+        self.assertEqual([request.full_url for request, _ in requests], [
+            "http://api.test/api/sql/assistant", "http://127.0.0.1:8000/api/sql/assistant",
+        ])
+        self.assertEqual(json.loads(requests[0][0].data), {"question": "List products", "mode": "draft"})
+        self.assertEqual(json.loads(requests[1][0].data), {
+            "question": "List products", "mode": "execute", "sql": "SELECT 1 LIMIT 1", "parameters": [],
+        })
+        self.assertTrue(all(timeout == 135 for _, timeout in requests))
+
     def test_auto_is_single_default_and_conversation_is_transmitted(self):
         self.assertEqual(next(iter(AGENT_MODES.values())), 'auto')
         self.assertNotIn('agentic', AGENT_MODES.values())
@@ -199,7 +217,7 @@ class StreamlitClientTest(unittest.TestCase):
         display_result(st, {
             "answer": "Combined answer",
             "data": {"sql": {"rows": [{"orders": 4}], "attempted_sql": "DELETE FROM commerce.orders",
-                              "parameters": [], "query_status": "rejected"}},
+                              "parameters": ["2026-03-01", "2026-04-01"], "query_status": "rejected"}},
             "evidence": [{"citation_id": "S1", "source": "commerce.orders"}],
             "metadata": {"limitations": ["Limited to current schema."]},
         })
@@ -209,6 +227,7 @@ class StreamlitClientTest(unittest.TestCase):
         self.assertIn("**S1 · commerce.orders**", st.text)
         self.assertIn("Limitation: Limited to current schema.", st.text)
         self.assertEqual(st.codes, ["DELETE FROM commerce.orders"])
+        self.assertIn('Parameters: ["2026-03-01", "2026-04-01"]', st.text)
         self.assertIn("Query status: rejected", st.downloads[0][1])
 
 

@@ -69,6 +69,43 @@ def inventory_comparison_dates(question):
     return None
 
 
+def _has_explicit_time_scope(question):
+    text = _normalize(question or "")
+    months = "january|february|march|april|may|june|july|august|september|october|november|december"
+    return bool(re.search(
+        r"\b(?:19|20)\d{2}\b|\b\d{4}-\d{2}-\d{2}\b|"
+        r"\b(?:today|yesterday|tomorrow|ytd|mtd|qtd|latest|most recent|to date)\b|"
+        r"\b(?:this|last|past|previous|current)\s+(?:day|week|month|quarter|year)\b|"
+        r"\b(?:" + months + r")\b|"
+        r"\b(?:hôm nay|hôm qua|ngày mai|tuần này|tuần trước|tháng này|tháng trước|"
+        r"năm nay|năm trước|quý này|quý trước|mới nhất|gần nhất|đến nay)\b|"
+        r"\b(?:tháng|quý|năm)\s*(?:\d{1,2}|\d{4})\b",
+        text,
+    ))
+
+
+def _unrequested_date_filter(tree, question):
+    if not question or _has_explicit_time_scope(question):
+        return False
+    for scope in traverse_scope(tree):
+        select = scope.expression
+        predicates = list(_conjuncts(select.args.get("where")))
+        predicates.extend(
+            predicate
+            for join in select.args.get("joins", [])
+            for predicate in _conjuncts(join.args.get("on"))
+        )
+        for predicate in predicates:
+            date_columns = [
+                column for column in predicate.find_all(exp.Column)
+                if re.fullmatch(r"(?:date|[a-z_]*_date)", column.name, re.I)
+            ]
+            has_bound = any(isinstance(node, (exp.Literal, exp.Parameter)) for node in predicate.walk())
+            if date_columns and has_bound:
+                return True
+    return False
+
+
 def validate_stock_comparison(sql, parameters, dates):
     """Verify a two-observation identity calculation, never a period stock aggregate."""
     tree = parse_one(sql, read='postgres')
@@ -641,6 +678,12 @@ def _cross_domain_inventory(sql, metric_names, parameters, table_columns, questi
 def validate_metric_definitions(sql, metric_names, parameters, table_columns, *, question=None):
     """Verify recognized metrics; generic queries retain the existing SQL safety path."""
     tree = parse_one(sql, read='postgres')
+    if _unrequested_date_filter(tree, question) and not any(
+            table.name.casefold() == 'inventory' for table in tree.find_all(exp.Table)):
+        raise MetricDefinitionError(
+            'Do not filter by date unless the question requests a time period; use all available records.',
+            code='unrequested_time_filter',
+        )
     if question and metric_names == {'stock_on_hand'}:
         dates = inventory_comparison_dates(question)
         if dates:
@@ -700,8 +743,14 @@ def validate_metric_definitions(sql, metric_names, parameters, table_columns, *,
     if any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names):
         return _validate_inventory_metrics(sql, metric_names, parameters, table_columns, question)
     definitions = {name: get_metric_definition(name) for name in sorted(metric_names)}
-    formulas = {name: _formula(definition, table_columns) for name, definition in METRIC_ONTOLOGY.items()
-                if definition.get("formula")}
+    formulas = {}
+    for name, definition in METRIC_ONTOLOGY.items():
+        if not definition.get("formula"):
+            continue
+        formula = _formula(definition, table_columns)
+        if definition.get("null_handling", "").startswith("COALESCE the aggregate to 0"):
+            formula = exp.Coalesce(this=formula, expressions=[exp.Literal.number(0)])
+        formulas[name] = formula
     scopes = list(traverse_scope(parse_one(sql, read="postgres")))
     root = scopes[-1]
     matched = set()

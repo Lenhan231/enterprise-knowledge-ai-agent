@@ -63,18 +63,18 @@ class RequestPlanningTest(unittest.IsolatedAsyncioTestCase):
         with self.assertRaisesRegex(ValueError, 'planning'):
             await plan_request(AgentRequest(question='Compare revenue and policy documents'), llm)
 
-    async def test_analytics_only_question_falls_back_to_sql_agent_on_provider_failure(self):
-        llm = Provider(RuntimeError('offline'), RuntimeError('offline'))
-        result = await plan_request(AgentRequest(question=(
-            'Tìm 10 sản phẩm có doanh thu tăng mạnh nhất từ năm 2021 sang năm 2022, '
-            'chỉ xét các sản phẩm có doanh thu dương trong cả hai năm.')), llm)
+    async def test_single_analytics_request_skips_the_planner_model(self):
+        llm = Provider(RuntimeError('offline'))
+        question = 'doanh thu tháng này sao'
+        result = await plan_request(AgentRequest(question=question), llm)
         self.assertTrue(result.fallback)
         self.assertEqual([task.agent for task in result.tasks], ['sql'])
-        self.assertEqual(result.tasks[0].question, result.objective)
+        self.assertEqual(result.tasks[0].question, question)
+        self.assertFalse(llm.prompts)
 
     async def test_genuine_ambiguity_is_targeted_and_repair_is_bounded(self):
         llm = Provider('bad json', {'objective': 'Compare revenue', 'clarification': 'Which years?', 'tasks': []})
-        result = await plan_request(AgentRequest(question='Compare revenue'), llm)
+        result = await plan_request(AgentRequest(question='Compare revenue and explain policy'), llm)
         self.assertEqual(result.clarification, 'Which years?')
         self.assertEqual(len(llm.prompts), 2)
 

@@ -137,6 +137,32 @@ class SQLValidationTest(unittest.TestCase):
 
 
 class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def test_compiles_current_vs_previous_month_revenue_without_llm_sql(self):
+        class LLM:
+            def generate(self, prompt):
+                raise AssertionError("A relative month comparison should use the checked SQL plan")
+
+        today = date.today()
+        current_start = date(today.year, today.month, 1)
+        previous_start = date(today.year - (today.month == 1), 12 if today.month == 1 else today.month - 1, 1)
+        next_start = date(today.year + (today.month == 12), today.month % 12 + 1, 1)
+        repository = AsyncMock()
+        repository.execute_approved_query.return_value = [{
+            "month": current_start, "previous_month": previous_start,
+            "revenue": 100, "previous_month_revenue": 80,
+            "revenue_change": 20, "revenue_change_fraction": .25,
+        }]
+
+        result = await SQLAnalyticsAgent(repository, llm=LLM()).run(
+            AgentRequest(question="Compare this month's revenue with previous month", identity=ANALYST))
+
+        self.assertTrue(result.metadata["ok"], result.answer)
+        self.assertEqual(result.data["rows"][0]["revenue_change_fraction"], .25)
+        sql, *parameters = repository.execute_approved_query.await_args.args
+        self.assertIn("previous_month_revenue", sql)
+        self.assertIn("FILTER (WHERE s.date >= $2 AND s.date < $3)", sql)
+        self.assertEqual(parameters, [previous_start, current_start, next_start])
+
     async def test_resolves_model_year_to_current_month_before_execution(self):
         year = date.today().year
         sql = "SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 LIMIT 1"

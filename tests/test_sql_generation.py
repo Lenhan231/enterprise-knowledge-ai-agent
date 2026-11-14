@@ -10,7 +10,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.analytics.text_to_sql import (SQLValidationError, current_year_month_range,
                                         decode_query_plan, validate_commerce_sql,
-                                        validate_current_year_month_range)
+                                        validate_current_year_month_range,
+                                        validate_current_month_total_query)
 from core.sql_agent.agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
 from core.sql_agent.analytics_agent import AnalyticsAgent
 from core.database.commerce_repository import CommerceRepository
@@ -35,6 +36,20 @@ class SQLValidationTest(unittest.TestCase):
         with self.assertRaisesRegex(SQLValidationError, "Current-year month filters must bind"):
             validate_current_year_month_range(sql, (date(2024, 3, 1), date(2024, 3, 31)),
                                               "Doanh thu tháng 3 năm nay", today=date(2026, 11, 14))
+
+    def test_current_month_single_total_rejects_daily_grouping_only(self):
+        daily = (
+            "SELECT s.date, SUM(s.revenue) AS revenue FROM commerce.sales AS s "
+            "WHERE s.date >= $1 AND s.date < $2 GROUP BY s.date LIMIT 200"
+        )
+        with self.assertRaisesRegex(SQLValidationError, "Do not group the result by day"):
+            validate_current_month_total_query(daily, "doanh thu tháng này sao",
+                                               date_columns={("commerce.sales", "date")})
+        validate_current_month_total_query(daily, "doanh thu tháng này theo ngày",
+                                           date_columns={("commerce.sales", "date")})
+        monthly = "SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 LIMIT 1"
+        validate_current_month_total_query(monthly, "doanh thu tháng này sao",
+                                           date_columns={("commerce.sales", "date")})
 
     def test_accepts_cte_aggregation_and_bind_parameters(self):
         sql = (
@@ -149,6 +164,41 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn(f"bind {year}-03-01 as the inclusive start", llm.prompts[0])
         repository.execute_approved_query.assert_awaited_once_with(
             sql, date(year, 3, 1), date(year, 4, 1))
+
+    async def test_current_month_daily_breakdown_is_repaired_to_one_total(self):
+        year, month = date.today().year, date.today().month
+        daily_sql = (
+            "SELECT s.date, SUM(s.revenue) AS revenue FROM commerce.sales AS s "
+            "WHERE s.date >= $1 AND s.date < $2 GROUP BY s.date LIMIT 200"
+        )
+        monthly_sql = (
+            "SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s "
+            "WHERE s.date >= $1 AND s.date < $2 LIMIT 1"
+        )
+
+        class LLM:
+            def __init__(self):
+                self.prompts = []
+                self.responses = [
+                    json.dumps({"sql": daily_sql, "parameters": ["2024-01-01", "2024-02-01"]}),
+                    json.dumps({"sql": monthly_sql, "parameters": ["2024-01-01", "2024-02-01"]}),
+                ]
+
+            def generate(self, prompt):
+                self.prompts.append(prompt)
+                return self.responses.pop(0)
+
+        llm = LLM()
+        repository = AsyncMock()
+        repository.execute_approved_query.return_value = [{"revenue": 42}]
+        request = AgentRequest(question="doanh thu tháng này sao", identity=ANALYST)
+        result = await SQLAnalyticsAgent(repository, llm=llm).run(request)
+
+        self.assertTrue(result.metadata["ok"], result.answer)
+        self.assertEqual(len(llm.prompts), 2)
+        self.assertIn("Do not group the result by day", llm.prompts[1])
+        repository.execute_approved_query.assert_awaited_once_with(
+            monthly_sql, date(year, month, 1), date(year + (month == 12), month % 12 + 1, 1))
 
     async def test_retries_validation_failure_with_feedback_for_generic_date_query(self):
         bad_sql = (

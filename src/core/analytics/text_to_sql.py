@@ -696,6 +696,45 @@ def resolve_current_year_month_parameters(sql: str, parameters: tuple, question:
     return tuple(resolved)
 
 
+def is_daily_grain_requested(question: str) -> bool:
+    return bool(re.search(
+        r'\b(?:daily|day-by-day)\b|\b(?:by|per|each|every)\s+day\b|'
+        r'theo ngày|từng ngày|mỗi ngày|hằng ngày|hàng ngày|chi tiết.*ngày|xu hướng.*ngày',
+        question, re.I,
+    ))
+
+
+def validate_current_month_total_query(sql: str, question: str, date_columns=None) -> None:
+    """Prevent an unsolicited daily breakdown for a single-month total request."""
+    if current_year_month_range(question) is None or is_daily_grain_requested(question):
+        return
+    tree = parse(sql, read='postgres')[0]
+    group = tree.args.get('group') if isinstance(tree, exp.Select) else None
+    if group is None:
+        return
+    projections = tree.expressions
+    columns = APPROVED_DATE_COLUMNS if date_columns is None else APPROVED_DATE_COLUMNS | set(date_columns)
+    for expression in group.expressions:
+        if isinstance(expression, exp.Literal) and expression.is_int:
+            index = int(expression.this) - 1
+            if not 0 <= index < len(projections):
+                continue
+            expression = projections[index]
+        expression = expression.this if isinstance(expression, exp.Alias) else expression
+        while isinstance(expression, (exp.Cast, exp.Paren)):
+            expression = expression.this
+        if isinstance(expression, exp.TimestampTrunc) and expression.args.get('unit') \
+                and expression.args['unit'].this.casefold() in {'month', 'quarter', 'year'}:
+            continue
+        if any((_source_name(table), _column_name(column)) in columns
+               for table in tree.find_all(exp.Table) for column in expression.find_all(exp.Column)
+               if column.table.casefold() == (table.alias_or_name or table.name).casefold()):
+            raise SQLValidationError(
+                'This question asks for a single current-month total. Do not group the result by day; '
+                'sum the requested measure across the whole month unless the user explicitly asks for daily detail.'
+            )
+
+
 def relevant_schema_tables(question, definitions, available_tables=None):
     """Select prompt context only; authorization always uses the full backend allowlist."""
     if is_invoice_question(question) or any(d.get('domain') == 'invoices' for d in definitions.values()):
@@ -852,6 +891,11 @@ def build_sql_prompt(
             f'bind {start.isoformat()} as the inclusive start and {end.isoformat()} as the exclusive end. '
             'Use both values in predicates on the source date column; do not infer a year from the dataset.'
         )
+        if not is_daily_grain_requested(relative_time_question or question):
+            prompt_rules.append(
+                '\nFor one-month revenue questions, return the total for the full month in one row. '
+                'Do not group by individual dates unless the user asks for daily detail or a daily trend.'
+            )
     if 'commerce.orders' in tables:
         prompt_rules.append(
             '\nDo not invent order-status filters. Apply a status filter only when the question or selected metric card requires it.'

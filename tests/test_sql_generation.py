@@ -285,7 +285,7 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
         repository = AsyncMock()
         repository.execute_approved_query.return_value = [{"month": "2021-01-01", "revenue": 20}]
         result = await SQLAnalyticsAgent(repository, llm=llm).run(
-            AgentRequest(question="Show monthly revenue for 2021", identity=ANALYST))
+            AgentRequest(question="Show monthly revenue for 2021 sorted by month", identity=ANALYST))
 
         self.assertTrue(result.metadata["ok"])
         self.assertEqual(len(llm.prompts), 2)

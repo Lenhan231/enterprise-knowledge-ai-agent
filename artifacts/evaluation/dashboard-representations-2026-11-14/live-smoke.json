@@ -1,0 +1,991 @@
+[
+  {
+    "question": "Create a donut chart for monthly recorded sales revenue from July to September in 2026",
+    "result": {
+      "answer": "Donut chart from 3 SQL observations. Review the data table, source scope, and limitations below.",
+      "agent": "dashboard",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "database",
+          "source": "commerce.sales",
+          "content": null,
+          "metadata": {
+            "metrics": {
+              "revenue": {
+                "aliases": [
+                  "revenue",
+                  "sales",
+                  "doanh thu"
+                ],
+                "source": "commerce.sales",
+                "formula": "SUM(revenue)",
+                "time_scope": "All available records unless the question requests a time period.",
+                "grain": "day",
+                "aggregation": "sum",
+                "unit": "currency",
+                "dimensions": [
+                  "date"
+                ],
+                "currency": "dataset_currency_unknown",
+                "limitations": [
+                  "Không có region, category hoặc product."
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "data": {
+        "ok": true,
+        "operation": "text_to_sql",
+        "rows": [
+          {
+            "month": "2026-07-01T00:00:00Z",
+            "revenue": "1810421.90"
+          },
+          {
+            "month": "2026-08-01T00:00:00Z",
+            "revenue": "1832695.76"
+          },
+          {
+            "month": "2026-09-01T00:00:00Z",
+            "revenue": "2090232.15"
+          }
+        ],
+        "sql": "SELECT DATE_TRUNC('month', s.date) AS month, SUM(s.revenue) AS revenue FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 GROUP BY 1 ORDER BY 1 LIMIT 200",
+        "parameters": [
+          "2026-07-01",
+          "2026-10-01"
+        ],
+        "query_status": "executed",
+        "limitations": [
+          "Không có region, category hoặc product.",
+          "Dataset currency is not confirmed; do not assume USD, VND or another currency."
+        ],
+        "visualization": {
+          "type": "donut",
+          "title": "Create a donut chart for monthly recorded sales revenue from July to September in 2026",
+          "categories": [
+            "2026-07-01 00:00:00+00:00",
+            "2026-08-01 00:00:00+00:00",
+            "2026-09-01 00:00:00+00:00"
+          ],
+          "series": [
+            {
+              "name": "Revenue",
+              "values": [
+                1810421.9,
+                1832695.76,
+                2090232.15
+              ]
+            }
+          ],
+          "unit": "currency (unconfirmed)",
+          "x_label": "Month",
+          "y_label": "currency (unconfirmed)",
+          "temporal": true,
+          "scope": {
+            "time": null,
+            "filters": [],
+            "dates": {},
+            "snapshot_dates": [],
+            "sources": [
+              "commerce.sales"
+            ],
+            "policy": {
+              "document_id": "VSC-OPS-POL-001",
+              "version": "1.0",
+              "sha256": "bf55be948913d0f54ea873cf59d305081939f3391c8530d973c0b943f8bc1a0d",
+              "status": "approved",
+              "source": "artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md",
+              "approves_metric_formulas": false
+            }
+          }
+        }
+      },
+      "metadata": {
+        "source": [
+          "commerce.sales"
+        ],
+        "explanation": "Compile the explicitly requested calendar-month recorded revenue series.",
+        "metrics": {
+          "revenue": {
+            "aliases": [
+              "revenue",
+              "sales",
+              "doanh thu"
+            ],
+            "source": "commerce.sales",
+            "formula": "SUM(revenue)",
+            "time_scope": "All available records unless the question requests a time period.",
+            "grain": "day",
+            "aggregation": "sum",
+            "unit": "currency",
+            "dimensions": [
+              "date"
+            ],
+            "currency": "dataset_currency_unknown",
+            "limitations": [
+              "Không có region, category hoặc product."
+            ]
+          }
+        },
+        "columns": [
+          {
+            "name": "month",
+            "unit": null
+          },
+          {
+            "name": "revenue",
+            "unit": "currency"
+          }
+        ],
+        "sql_scope": "commerce",
+        "discovered_schema": {
+          "tables": [
+            "commerce.customers",
+            "commerce.geography",
+            "commerce.inventory",
+            "commerce.invoice_items",
+            "commerce.invoices",
+            "commerce.order_items",
+            "commerce.orders",
+            "commerce.payments",
+            "commerce.products",
+            "commerce.promotions",
+            "commerce.returns",
+            "commerce.reviews",
+            "commerce.sales",
+            "commerce.shipments",
+            "commerce.web_traffic"
+          ],
+          "schemas": [
+            "commerce"
+          ]
+        },
+        "business_ontology": {
+          "policy": {
+            "document_id": "VSC-OPS-POL-001",
+            "version": "1.0",
+            "sha256": "bf55be948913d0f54ea873cf59d305081939f3391c8530d973c0b943f8bc1a0d",
+            "status": "approved",
+            "source": "artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md",
+            "approves_metric_formulas": false
+          },
+          "rule_ids": [
+            "historical_inventory",
+            "missing_is_unknown",
+            "snapshot_grain",
+            "product_identity",
+            "compatible_grains",
+            "defined_metrics",
+            "server_authorization"
+          ]
+        },
+        "jev": {
+          "choice": "clear",
+          "probabilities": {
+            "clear": 0.98,
+            "ambiguous": 0.02
+          },
+          "confidence": 0.96,
+          "model": "typesafe/jev-1.14-20261014",
+          "attempts": 1,
+          "elapsed_ms": 2688.0,
+          "http_status": 200,
+          "threshold": 0.8
+        },
+        "metric_definition_source": {
+          "revenue": "metric_ontology"
+        },
+        "request_contract": {
+          "columns": [
+            "month",
+            "revenue"
+          ],
+          "dimensions": [
+            "month"
+          ],
+          "chart_type": null
+        },
+        "execution_status": "executed",
+        "ok": true,
+        "limitations": [
+          "Không có region, category hoặc product.",
+          "Dataset currency is not confirmed; do not assume USD, VND or another currency."
+        ],
+        "chart_status": "rendered"
+      }
+    }
+  },
+  {
+    "question": "Count products with stockout_flag=true and count products with overstock_flag=true at inventory snapshot_date 2026-05-31. Show a bar chart.",
+    "result": {
+      "answer": "Bar chart from 1 SQL observations. Review the data table, source scope, and limitations below.",
+      "agent": "dashboard",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "database",
+          "source": "commerce.inventory",
+          "content": null,
+          "metadata": {
+            "metrics": {
+              "observed_product_count": {
+                "name": "Observed inventory product count",
+                "description": "Distinct product IDs observed at the selected snapshot; not total catalog size.",
+                "version": "1.0.0",
+                "domain": "inventory_management",
+                "aliases": [
+                  "observed inventory products",
+                  "inventory product count",
+                  "observed product count",
+                  "số sản phẩm có dữ liệu tồn kho",
+                  "số SKU quan sát"
+                ],
+                "source": "commerce.inventory + commerce.products",
+                "source_columns": {
+                  "commerce.inventory": [
+                    "snapshot_date",
+                    "product_id"
+                  ],
+                  "commerce.products": [
+                    "product_id",
+                    "product_name",
+                    "category",
+                    "segment",
+                    "size",
+                    "color"
+                  ]
+                },
+                "formula": "COUNT(DISTINCT product_id) within one snapshot",
+                "grain": "product_snapshot",
+                "dimensions": [
+                  "snapshot_date",
+                  "product_id",
+                  "product_name",
+                  "category",
+                  "segment",
+                  "size",
+                  "color",
+                  "year",
+                  "month"
+                ],
+                "date_field": "commerce.inventory.snapshot_date",
+                "temporal_semantics": "One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.",
+                "aggregation": "count_distinct",
+                "unit": "products",
+                "eligibility_filters": [],
+                "null_handling": "Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.",
+                "zero_denominator": "Return NULL using NULLIF; never substitute zero for an undefined ratio.",
+                "join_requirements": [
+                  "inventory.product_id = products.product_id; many-to-one only"
+                ],
+                "provenance": "team_defined",
+                "definition_status": "executable",
+                "approval_status": "team_accepted",
+                "business_approval_status": "not_recorded",
+                "validation_status": "data_profiled",
+                "currency": "dataset_currency_unknown",
+                "snapshot_required": true,
+                "evidence": [
+                  "artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json",
+                  "VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections",
+                  "User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded."
+                ],
+                "limitations": [
+                  "Historical monthly observations; every answer must state the selected snapshot date.",
+                  "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+                  "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+                  "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula."
+                ],
+                "examples": {
+                  "en": "Show observed inventory product count at the latest available inventory snapshot.",
+                  "vi": "Cho biết số sản phẩm có dữ liệu tồn kho tại kỳ tồn kho mới nhất."
+                },
+                "aliases_by_language": {
+                  "en": [
+                    "observed inventory products",
+                    "inventory product count",
+                    "observed product count"
+                  ],
+                  "vi": [
+                    "số sản phẩm có dữ liệu tồn kho",
+                    "số SKU quan sát"
+                  ]
+                },
+                "representation": "aggregate"
+              }
+            }
+          }
+        },
+        {
+          "citation_id": "S2",
+          "source_type": "database",
+          "source": "commerce.products",
+          "content": null,
+          "metadata": {
+            "metrics": {
+              "observed_product_count": {
+                "name": "Observed inventory product count",
+                "description": "Distinct product IDs observed at the selected snapshot; not total catalog size.",
+                "version": "1.0.0",
+                "domain": "inventory_management",
+                "aliases": [
+                  "observed inventory products",
+                  "inventory product count",
+                  "observed product count",
+                  "số sản phẩm có dữ liệu tồn kho",
+                  "số SKU quan sát"
+                ],
+                "source": "commerce.inventory + commerce.products",
+                "source_columns": {
+                  "commerce.inventory": [
+                    "snapshot_date",
+                    "product_id"
+                  ],
+                  "commerce.products": [
+                    "product_id",
+                    "product_name",
+                    "category",
+                    "segment",
+                    "size",
+                    "color"
+                  ]
+                },
+                "formula": "COUNT(DISTINCT product_id) within one snapshot",
+                "grain": "product_snapshot",
+                "dimensions": [
+                  "snapshot_date",
+                  "product_id",
+                  "product_name",
+                  "category",
+                  "segment",
+                  "size",
+                  "color",
+                  "year",
+                  "month"
+                ],
+                "date_field": "commerce.inventory.snapshot_date",
+                "temporal_semantics": "One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.",
+                "aggregation": "count_distinct",
+                "unit": "products",
+                "eligibility_filters": [],
+                "null_handling": "Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.",
+                "zero_denominator": "Return NULL using NULLIF; never substitute zero for an undefined ratio.",
+                "join_requirements": [
+                  "inventory.product_id = products.product_id; many-to-one only"
+                ],
+                "provenance": "team_defined",
+                "definition_status": "executable",
+                "approval_status": "team_accepted",
+                "business_approval_status": "not_recorded",
+                "validation_status": "data_profiled",
+                "currency": "dataset_currency_unknown",
+                "snapshot_required": true,
+                "evidence": [
+                  "artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json",
+                  "VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections",
+                  "User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded."
+                ],
+                "limitations": [
+                  "Historical monthly observations; every answer must state the selected snapshot date.",
+                  "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+                  "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+                  "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula."
+                ],
+                "examples": {
+                  "en": "Show observed inventory product count at the latest available inventory snapshot.",
+                  "vi": "Cho biết số sản phẩm có dữ liệu tồn kho tại kỳ tồn kho mới nhất."
+                },
+                "aliases_by_language": {
+                  "en": [
+                    "observed inventory products",
+                    "inventory product count",
+                    "observed product count"
+                  ],
+                  "vi": [
+                    "số sản phẩm có dữ liệu tồn kho",
+                    "số SKU quan sát"
+                  ]
+                },
+                "representation": "aggregate"
+              }
+            }
+          }
+        }
+      ],
+      "data": {
+        "ok": true,
+        "operation": "text_to_sql",
+        "rows": [
+          {
+            "snapshot_date": "2026-05-31",
+            "stockout_count": 15,
+            "overstock_count": 73
+          }
+        ],
+        "sql": "SELECT CAST($1 AS DATE) AS snapshot_date, COUNT(DISTINCT commerce.inventory.product_id) FILTER(WHERE commerce.inventory.stockout_flag = TRUE) AS stockout_count, COUNT(DISTINCT commerce.inventory.product_id) FILTER(WHERE commerce.inventory.overstock_flag = TRUE) AS overstock_count FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.snapshot_date = $2 LIMIT 200",
+        "parameters": [
+          "2026-05-31",
+          "2026-05-31"
+        ],
+        "query_status": "executed",
+        "limitations": [
+          "Historical monthly observations; every answer must state the selected snapshot date.",
+          "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+          "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+          "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.",
+          "Inventory observations are historical; selected snapshot dates: 2026-05-31"
+        ],
+        "visualization": {
+          "type": "bar",
+          "title": "Count products with stockout_flag=true and count products with overstock_flag=true at inventory snapshot_date 2026-05-31. Show a bar chart.",
+          "categories": [
+            "2026-05-31"
+          ],
+          "series": [
+            {
+              "name": "Stockout Count",
+              "values": [
+                15.0
+              ]
+            },
+            {
+              "name": "Overstock Count",
+              "values": [
+                73.0
+              ]
+            }
+          ],
+          "unit": "products",
+          "x_label": "Snapshot Date",
+          "y_label": "products",
+          "temporal": true,
+          "scope": {
+            "time": {
+              "mode": "snapshot",
+              "start": "2026-05-31",
+              "end": null
+            },
+            "filters": [],
+            "dates": {
+              "snapshot_date": "2026-05-31"
+            },
+            "snapshot_dates": [
+              "2026-05-31"
+            ],
+            "sources": [
+              "commerce.inventory",
+              "commerce.products"
+            ],
+            "policy": {
+              "document_id": "VSC-OPS-POL-001",
+              "version": "1.0",
+              "sha256": "bf55be948913d0f54ea873cf59d305081939f3391c8530d973c0b943f8bc1a0d",
+              "status": "approved",
+              "source": "artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md",
+              "approves_metric_formulas": false
+            }
+          }
+        }
+      },
+      "metadata": {
+        "source": [
+          "commerce.inventory",
+          "commerce.products"
+        ],
+        "explanation": "Compiled from the validated inventory interpretation.",
+        "metrics": {
+          "observed_product_count": {
+            "name": "Observed inventory product count",
+            "description": "Distinct product IDs observed at the selected snapshot; not total catalog size.",
+            "version": "1.0.0",
+            "domain": "inventory_management",
+            "aliases": [
+              "observed inventory products",
+              "inventory product count",
+              "observed product count",
+              "số sản phẩm có dữ liệu tồn kho",
+              "số SKU quan sát"
+            ],
+            "source": "commerce.inventory + commerce.products",
+            "source_columns": {
+              "commerce.inventory": [
+                "snapshot_date",
+                "product_id"
+              ],
+              "commerce.products": [
+                "product_id",
+                "product_name",
+                "category",
+                "segment",
+                "size",
+                "color"
+              ]
+            },
+            "formula": "COUNT(DISTINCT product_id) within one snapshot",
+            "grain": "product_snapshot",
+            "dimensions": [
+              "snapshot_date",
+              "product_id",
+              "product_name",
+              "category",
+              "segment",
+              "size",
+              "color",
+              "year",
+              "month"
+            ],
+            "date_field": "commerce.inventory.snapshot_date",
+            "temporal_semantics": "One selected snapshot or separate exact snapshot_date groups; never combine balances across dates.",
+            "aggregation": "count_distinct",
+            "unit": "products",
+            "eligibility_filters": [],
+            "null_handling": "Non-null stored values only; SUM and AVG of no observations remain NULL; COUNT is zero; absent snapshots are not zero stock.",
+            "zero_denominator": "Return NULL using NULLIF; never substitute zero for an undefined ratio.",
+            "join_requirements": [
+              "inventory.product_id = products.product_id; many-to-one only"
+            ],
+            "provenance": "team_defined",
+            "definition_status": "executable",
+            "approval_status": "team_accepted",
+            "business_approval_status": "not_recorded",
+            "validation_status": "data_profiled",
+            "currency": "dataset_currency_unknown",
+            "snapshot_required": true,
+            "evidence": [
+              "artifacts/evaluation/vietstyle-metrics-v1/preflight/database-profile.json",
+              "VietStyle Enterprise Operating Policy v1.0; SHA256 23a10676110a9a5d238947b31dcc884c3b78038b96c4fa85185ec72f8ba409dc; inventory and metric-grain sections",
+              "User approved Inventory Management scope and team conventions in this task; no business-owner sign-off recorded."
+            ],
+            "limitations": [
+              "Historical monthly observations; every answer must state the selected snapshot date.",
+              "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+              "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+              "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula."
+            ],
+            "examples": {
+              "en": "Show observed inventory product count at the latest available inventory snapshot.",
+              "vi": "Cho biết số sản phẩm có dữ liệu tồn kho tại kỳ tồn kho mới nhất."
+            },
+            "aliases_by_language": {
+              "en": [
+                "observed inventory products",
+                "inventory product count",
+                "observed product count"
+              ],
+              "vi": [
+                "số sản phẩm có dữ liệu tồn kho",
+                "số SKU quan sát"
+              ]
+            },
+            "representation": "aggregate"
+          }
+        },
+        "columns": [
+          {
+            "name": "snapshot_date",
+            "unit": null
+          },
+          {
+            "name": "stockout_count",
+            "unit": "products"
+          },
+          {
+            "name": "overstock_count",
+            "unit": "products"
+          }
+        ],
+        "semantic_interpretation": {
+          "domain": "inventory",
+          "metrics": [
+            "observed_product_count"
+          ],
+          "dimensions": [],
+          "filters": [],
+          "conditional_counts": [
+            {
+              "field": "stockout_indicator",
+              "operator": "eq",
+              "value": true
+            },
+            {
+              "field": "overstock_indicator",
+              "operator": "eq",
+              "value": true
+            }
+          ],
+          "time": {
+            "mode": "snapshot",
+            "start": "2026-05-31",
+            "end": null
+          },
+          "ranking": null,
+          "representation": "aggregate",
+          "clarification": null
+        },
+        "filters": [],
+        "time_scope": {
+          "mode": "snapshot",
+          "start": "2026-05-31",
+          "end": null
+        },
+        "metric_catalog_version": "1.0.0",
+        "historical_inventory": true,
+        "snapshot_dates": [
+          "2026-05-31"
+        ],
+        "sql_scope": "commerce",
+        "discovered_schema": {
+          "tables": [
+            "commerce.customers",
+            "commerce.geography",
+            "commerce.inventory",
+            "commerce.invoice_items",
+            "commerce.invoices",
+            "commerce.order_items",
+            "commerce.orders",
+            "commerce.payments",
+            "commerce.products",
+            "commerce.promotions",
+            "commerce.returns",
+            "commerce.reviews",
+            "commerce.sales",
+            "commerce.shipments",
+            "commerce.web_traffic"
+          ],
+          "schemas": [
+            "commerce"
+          ]
+        },
+        "business_ontology": {
+          "policy": {
+            "document_id": "VSC-OPS-POL-001",
+            "version": "1.0",
+            "sha256": "bf55be948913d0f54ea873cf59d305081939f3391c8530d973c0b943f8bc1a0d",
+            "status": "approved",
+            "source": "artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md",
+            "approves_metric_formulas": false
+          },
+          "rule_ids": [
+            "historical_inventory",
+            "missing_is_unknown",
+            "snapshot_grain",
+            "product_identity",
+            "compatible_grains",
+            "defined_metrics",
+            "server_authorization"
+          ]
+        },
+        "jev": {
+          "choice": "clear",
+          "probabilities": {
+            "clear": 0.99,
+            "ambiguous": 0.01
+          },
+          "confidence": 0.98,
+          "model": "typesafe/jev-1.14-20261014",
+          "attempts": 1,
+          "elapsed_ms": 531.0,
+          "http_status": 200,
+          "threshold": 0.8
+        },
+        "metric_definition_source": {
+          "observed_product_count": "metric_ontology"
+        },
+        "execution_status": "executed",
+        "ok": true,
+        "limitations": [
+          "Historical monthly observations; every answer must state the selected snapshot date.",
+          "Missing product snapshots are not zero inventory; denominators cover observed products only.",
+          "No live warehouse balance, purchase-order, backorder, forecast or supplier lead-time evidence.",
+          "Stored rate values are returned unchanged as fractions; 0.25 displays as 25 percent, without implying the original source formula.",
+          "Inventory observations are historical; selected snapshot dates: 2026-05-31"
+        ],
+        "chart_status": "rendered"
+      }
+    }
+  },
+  {
+    "question": "Show average review rating and the number of reviews by product category for reviews dated in 2026.",
+    "result": {
+      "answer": "The query completed. Showing the result table: Choose measures with one confirmed, comparable unit.",
+      "agent": "dashboard",
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "source_type": "database",
+          "source": "commerce.reviews",
+          "content": null,
+          "metadata": {
+            "metrics": {
+              "rating": {
+                "aliases": [
+                  "rating",
+                  "review score",
+                  "điểm đánh giá",
+                  "xếp hạng đánh giá"
+                ],
+                "source": "commerce.reviews",
+                "formula": "AVG(rating)",
+                "grain": "review",
+                "aggregation": "mean",
+                "unit": "score",
+                "dimensions": [
+                  "review_date",
+                  "product_id",
+                  "category"
+                ]
+              },
+              "review_count": {
+                "aliases": [
+                  "review count",
+                  "number of reviews",
+                  "count reviews",
+                  "số đánh giá",
+                  "đếm đánh giá"
+                ],
+                "source": "commerce.reviews (+ commerce.products for category)",
+                "formula": "COUNT(DISTINCT review_id)",
+                "grain": "review",
+                "aggregation": "count_distinct",
+                "unit": "reviews",
+                "dimensions": [
+                  "review_date",
+                  "product_id",
+                  "category"
+                ],
+                "provenance": "team_defined",
+                "approval_status": "team_accepted",
+                "business_approval_status": "not_recorded"
+              }
+            }
+          }
+        },
+        {
+          "citation_id": "S2",
+          "source_type": "database",
+          "source": "commerce.products",
+          "content": null,
+          "metadata": {
+            "metrics": {
+              "rating": {
+                "aliases": [
+                  "rating",
+                  "review score",
+                  "điểm đánh giá",
+                  "xếp hạng đánh giá"
+                ],
+                "source": "commerce.reviews",
+                "formula": "AVG(rating)",
+                "grain": "review",
+                "aggregation": "mean",
+                "unit": "score",
+                "dimensions": [
+                  "review_date",
+                  "product_id",
+                  "category"
+                ]
+              },
+              "review_count": {
+                "aliases": [
+                  "review count",
+                  "number of reviews",
+                  "count reviews",
+                  "số đánh giá",
+                  "đếm đánh giá"
+                ],
+                "source": "commerce.reviews (+ commerce.products for category)",
+                "formula": "COUNT(DISTINCT review_id)",
+                "grain": "review",
+                "aggregation": "count_distinct",
+                "unit": "reviews",
+                "dimensions": [
+                  "review_date",
+                  "product_id",
+                  "category"
+                ],
+                "provenance": "team_defined",
+                "approval_status": "team_accepted",
+                "business_approval_status": "not_recorded"
+              }
+            }
+          }
+        }
+      ],
+      "data": {
+        "ok": true,
+        "operation": "text_to_sql",
+        "rows": [
+          {
+            "category": "Casual",
+            "rating": "4.0000000000000000",
+            "review_count": 1
+          },
+          {
+            "category": "GenZ",
+            "rating": "4.2941176470588235",
+            "review_count": 17
+          },
+          {
+            "category": "Outdoor",
+            "rating": "4.1752577319587629",
+            "review_count": 97
+          },
+          {
+            "category": "Streetwear",
+            "rating": "4.0491803278688525",
+            "review_count": 61
+          }
+        ],
+        "sql": "SELECT p.category AS category, AVG(r.rating) AS rating, COUNT(DISTINCT r.review_id) AS review_count FROM commerce.reviews AS r JOIN commerce.products AS p ON r.product_id = p.product_id WHERE r.review_date >= CAST($1 AS DATE) AND r.review_date < CAST($2 AS DATE) GROUP BY p.category ORDER BY 1 LIMIT 200",
+        "parameters": [
+          "2026-01-01",
+          "2027-01-01"
+        ],
+        "query_status": "executed",
+        "limitations": []
+      },
+      "metadata": {
+        "source": [
+          "commerce.reviews",
+          "commerce.products"
+        ],
+        "explanation": "Joins reviews to products to group by category, filters review dates to the year 2026, and calculates the average rating and distinct review count for each category.",
+        "metrics": {
+          "rating": {
+            "aliases": [
+              "rating",
+              "review score",
+              "điểm đánh giá",
+              "xếp hạng đánh giá"
+            ],
+            "source": "commerce.reviews",
+            "formula": "AVG(rating)",
+            "grain": "review",
+            "aggregation": "mean",
+            "unit": "score",
+            "dimensions": [
+              "review_date",
+              "product_id",
+              "category"
+            ]
+          },
+          "review_count": {
+            "aliases": [
+              "review count",
+              "number of reviews",
+              "count reviews",
+              "số đánh giá",
+              "đếm đánh giá"
+            ],
+            "source": "commerce.reviews (+ commerce.products for category)",
+            "formula": "COUNT(DISTINCT review_id)",
+            "grain": "review",
+            "aggregation": "count_distinct",
+            "unit": "reviews",
+            "dimensions": [
+              "review_date",
+              "product_id",
+              "category"
+            ],
+            "provenance": "team_defined",
+            "approval_status": "team_accepted",
+            "business_approval_status": "not_recorded"
+          }
+        },
+        "columns": [
+          {
+            "name": "category",
+            "unit": null
+          },
+          {
+            "name": "rating",
+            "unit": "score"
+          },
+          {
+            "name": "review_count",
+            "unit": "reviews"
+          }
+        ],
+        "sql_scope": "commerce",
+        "discovered_schema": {
+          "tables": [
+            "commerce.customers",
+            "commerce.geography",
+            "commerce.inventory",
+            "commerce.invoice_items",
+            "commerce.invoices",
+            "commerce.order_items",
+            "commerce.orders",
+            "commerce.payments",
+            "commerce.products",
+            "commerce.promotions",
+            "commerce.returns",
+            "commerce.reviews",
+            "commerce.sales",
+            "commerce.shipments",
+            "commerce.web_traffic"
+          ],
+          "schemas": [
+            "commerce"
+          ]
+        },
+        "business_ontology": {
+          "policy": {
+            "document_id": "VSC-OPS-POL-001",
+            "version": "1.0",
+            "sha256": "bf55be948913d0f54ea873cf59d305081939f3391c8530d973c0b943f8bc1a0d",
+            "status": "approved",
+            "source": "artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md",
+            "approves_metric_formulas": false
+          },
+          "rule_ids": [
+            "historical_inventory",
+            "missing_is_unknown",
+            "snapshot_grain",
+            "product_identity",
+            "compatible_grains",
+            "defined_metrics",
+            "server_authorization"
+          ]
+        },
+        "jev": {
+          "choice": "clear",
+          "probabilities": {
+            "clear": 0.91,
+            "ambiguous": 0.09
+          },
+          "confidence": 0.82,
+          "model": "typesafe/jev-1.14-20261014",
+          "attempts": 1,
+          "elapsed_ms": 656.0,
+          "http_status": 200,
+          "threshold": 0.8
+        },
+        "metric_definition_source": {
+          "rating": "metric_ontology",
+          "review_count": "metric_ontology"
+        },
+        "request_contract": {
+          "columns": [
+            "category",
+            "rating",
+            "review_count"
+          ],
+          "dimensions": [
+            "category"
+          ],
+          "chart_type": "bar",
+          "measure_filters": {}
+        },
+        "execution_status": "executed",
+        "ok": true,
+        "chart_status": "table_only",
+        "chart_reason": "Choose measures with one confirmed, comparable unit."
+      }
+    }
+  }
+]

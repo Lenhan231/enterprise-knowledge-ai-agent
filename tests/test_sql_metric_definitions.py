@@ -155,6 +155,7 @@ class MetricEnforcementTest(unittest.TestCase):
             "return_rate": ("SELECT COUNT(DISTINCT r.order_id)::numeric / NULLIF(COUNT(DISTINCT o.order_id), 0) "
                             "FROM commerce.orders AS o LEFT JOIN commerce.returns AS r ON o.order_id = r.order_id LIMIT 1", []),
             "rating": ("SELECT AVG(r.rating) FROM commerce.reviews AS r LIMIT 1", []),
+            "review_count": ("SELECT COUNT(DISTINCT r.review_id) FROM commerce.reviews AS r LIMIT 1", []),
             "sessions": ("SELECT SUM(w.sessions) FROM commerce.web_traffic AS w LIMIT 1", []),
             "bounce_rate": ("SELECT AVG(w.bounce_rate) FROM commerce.web_traffic AS w LIMIT 1", []),
             "delivery_time": ("SELECT AVG(sh.delivery_date - sh.ship_date) FROM commerce.shipments AS sh LIMIT 1", []),

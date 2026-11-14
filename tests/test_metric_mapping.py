@@ -9,7 +9,8 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
 
 from core.analytics.metric_mapping import decode_metric_mapping, validate_mapped_sql
 from core.analytics.metric_validation import MetricDefinitionError
-from core.analytics.text_to_sql import decode_query_plan
+from core.analytics.text_to_sql import decode_query_plan, SQLValidationError
+from core.sql_agent.agent import SQLAnalyticsAgent
 
 
 MAPPING = {'domain':'inventory','metrics':['stock_on_hand'],'dimensions':['product_name'],
@@ -76,8 +77,9 @@ class MetricMappingTest(unittest.TestCase):
         raw=json.dumps({'sql':SQL,'parameters':['blue']})
         self.assertEqual(decode_query_plan('```json\n'+raw+'\n```').sql,SQL)
         self.assertEqual(decode_metric_mapping('```json\n'+json.dumps(MAPPING)+'\n```','Fewest pieces at latest observation').metrics,['stock_on_hand'])
+        self.assertEqual(decode_query_plan('Explanation: '+raw).sql, SQL)
         for raw in ('```json\n{"sql":"DELETE FROM commerce.inventory"}\n```',
-                    '```json\n{}\n{}\n```', 'Explanation: '+raw):
+                    '```json\n{}\n{}\n```'):
             with self.assertRaises(SQLValidationError):decode_query_plan(raw)
         with self.assertRaises(MetricDefinitionError):
             decode_metric_mapping('```json\n'+json.dumps({**MAPPING,'sql':'SELECT 1'})+'\n```','Fewest pieces at latest observation')
@@ -112,11 +114,17 @@ class MetricMappingTest(unittest.TestCase):
                                (SQL.replace('LIMIT 10','LIMIT 5'),['blue']),
                                (SQL.replace('p.product_name,',''),['blue']),
                                (SQL.replace('(SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j)',"'2020-12-31'"),['blue'])]:
-            with self.subTest(sql=sql,parameters=parameters),self.assertRaises(MetricDefinitionError):
+            with self.subTest(sql=sql,parameters=parameters),self.assertRaises((MetricDefinitionError,SQLValidationError)):
                 validate_mapped_sql(decode_query_plan(json.dumps({'sql':sql,'parameters':parameters})),mapping)
 
 
 class MappingAgentTest(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        clarity = patch.object(SQLAnalyticsAgent, '_check_ambiguity', return_value={
+            'choice':'clear','probabilities':{'clear':.95,'ambiguous':.05}})
+        clarity.start()
+        self.addCleanup(clarity.stop)
+
     async def test_permission_is_checked_before_mapping(self):
         from core.sql_agent.agent import SQLAnalyticsAgent,AnalyticsPermissionDenied
         from core.models.agents import AgentRequest

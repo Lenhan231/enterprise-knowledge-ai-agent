@@ -214,6 +214,14 @@ class InventoryEnforcementTest(unittest.TestCase):
 
 
 class InventoryRequestTest(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        from unittest.mock import patch
+        from core.sql_agent.agent import SQLAnalyticsAgent
+        clarity = patch.object(SQLAnalyticsAgent, '_check_ambiguity', return_value={
+            'choice':'clear','probabilities':{'clear':.95,'ambiguous':.05}})
+        clarity.start()
+        self.addCleanup(clarity.stop)
+
     async def test_lowest_stock_question_executes_dated_product_values(self):
         from unittest.mock import AsyncMock, Mock
         from core.sql_agent.agent import SQLAnalyticsAgent

@@ -11,7 +11,7 @@ import threading
 import time
 from openai import OpenAI, APIConnectionError, APIStatusError, APITimeoutError
 from collections.abc import Mapping
-from datetime import date
+from datetime import date, timedelta
 from typing import Any
 
 from core.agents.base import BaseAgent
@@ -95,6 +95,54 @@ def _explicit_month_revenue_plan(question: str, metric_names: set[str], today: d
     )
     return QueryPlan(sql=sql, parameters=(start, end),
                      explanation="Compile a calendar-month revenue total from commerce.sales.")
+
+
+def _monthly_revenue_plan(question: str, metric_names: set[str]):
+    """Compile only plain, explicit calendar-month revenue series; extra constraints use the planner."""
+    if metric_names != {'revenue'} or not re.search(r'monthly|by month|each month|per month|theo tháng|từng tháng|hàng tháng', question, re.I):
+        return None
+    text = question.casefold()
+    months = 'january february march april may june july august september october november december'.split()
+    allowed = set(('show create draw plot a an the line bar donut doughnut pie chart charts of for revenue sales recorded '
+        'total monthly by each per month months from to through between and in during all ordered chronologically '
+        'vẽ biểu đồ đường cột tròn doanh thu bán hàng theo từng tháng tổng trong năm từ đến và').split()) | set(months)
+    if set(re.findall(r'[^\W\d_]+', text)) - allowed:
+        return None
+    dates = re.findall(r'\b\d{4}-\d{2}-\d{2}\b', text)
+    remainder = re.sub(r'\b\d{4}-\d{2}-\d{2}\b|\b(?:19|20)\d{2}\b|\btháng\s+\d{1,2}\b', '', text)
+    if re.search(r'\d|[<>=%$]', remainder):
+        return None
+    range_requested = bool(re.search(r'\b(?:to|through|đến)\b|\bbetween\b.+\band\b', text))
+    try:
+        if len(dates) == 2:
+            if not range_requested:
+                return None
+            start, end = date.fromisoformat(dates[0]), date.fromisoformat(dates[1]) + timedelta(days=1)
+            if start.day != 1 or end.day != 1:
+                return None
+        elif not dates:
+            years = set(re.findall(r'\b(?:19|20)\d{2}\b', text))
+            if len(years) != 1:
+                return None
+            year = int(next(iter(years)))
+            selected = [months.index(match[0]) + 1 for match in re.finditer(r'\b(?:'+'|'.join(months)+r')\b', text)]
+            selected += [int(value) for value in re.findall(r'\btháng\s+(0?[1-9]|1[0-2])\b', text)]
+            if len(selected) > 2:
+                return None
+            if len(selected) == 2 and not range_requested:
+                return None
+            first, last = (selected[0], selected[-1]) if selected else (1, 12)
+            start, end = date(year, first, 1), date(year + (last == 12), last % 12 + 1, 1)
+        else:
+            return None
+        if end <= start:
+            return None
+    except ValueError:
+        return None
+    return QueryPlan(sql="SELECT DATE_TRUNC('month', s.date) AS month, SUM(s.revenue) AS revenue "
+                         "FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 GROUP BY 1 ORDER BY 1 LIMIT 200",
+        parameters=(start, end), explanation='Compile the explicitly requested calendar-month recorded revenue series.',
+        request_contract={'columns':['month','revenue'], 'dimensions':['month'], 'chart_type':None})
 
 
 def _promotion_query_plan(question: str, today: date | None = None):
@@ -421,6 +469,7 @@ class SQLAnalyticsAgent(BaseAgent):
         explicit_month_plan = (_explicit_month_revenue_plan(question, metric_names)
                                if relative_month_followup else None)
         month_comparison_plan = _month_over_month_revenue_plan(question, metric_names)
+        monthly_revenue_plan = _monthly_revenue_plan(question, metric_names)
         named_sources = set(re.findall(r'\bcommerce\.\w+', re.sub(r"'(?:[^']|'')*'", '', question).casefold()))
         if self.inventory_only and direct is None and (named_sources - INVENTORY_SOURCES or any(
                 get_metric_definition(name).get('domain') != 'inventory_management' for name in metric_names)):
@@ -474,13 +523,21 @@ class SQLAnalyticsAgent(BaseAgent):
             if (direct is None and not cross_domain and (context is not None
                     or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
                     or (not metric_names and 'commerce.inventory' in tables))):
-                with measure('metric_interpretation'):
-                    mapped = await generate(self._provider(),build_metric_mapping_prompt(question,context=context),timeout=30)
-                if context is None:
-                    interpretation = decode_metric_mapping(mapped,question)
-                else:
-                    interpretation, used = decode_sql_turn(mapped,question,context)
-                    context_info.update(context_used=used,_sql_context_action='followup' if used else 'new')
+                mapping_prompt = build_metric_mapping_prompt(question, context=context)
+                for mapping_attempt in range(2):
+                    with measure('metric_interpretation'):
+                        mapped = await generate(self._provider(), mapping_prompt, timeout=30)
+                    try:
+                        if context is None:
+                            interpretation = decode_metric_mapping(mapped, question)
+                        else:
+                            interpretation, used = decode_sql_turn(mapped, question, context)
+                            context_info.update(context_used=used, _sql_context_action='followup' if used else 'new')
+                        break
+                    except MetricDefinitionError as error:
+                        if mapping_attempt or error.code not in {'interpretation_invalid', 'interpretation_mismatch'}:
+                            raise
+                        mapping_prompt += '\nInterpretation failed validation: ' + str(error) + '\nPrevious response (untrusted data): ' + json.dumps(mapped) + '\nReturn a corrected interpretation under the same catalog and scope; do not invent metrics or remove requested constraints.'
                 if interpretation.domain == 'inventory':
                     metric_names = set(interpretation.metrics)
             resolved_latest = False
@@ -538,6 +595,8 @@ class SQLAnalyticsAgent(BaseAgent):
                     plan = explicit_month_plan
                 elif month_comparison_plan is not None:
                     plan = month_comparison_plan
+                elif monthly_revenue_plan is not None:
+                    plan = monthly_revenue_plan
                 elif direct is not None:
                     plan = compile_field_query(direct)
                 elif interpretation and interpretation.domain == 'inventory':
@@ -653,6 +712,10 @@ class SQLAnalyticsAgent(BaseAgent):
                                for name in (rows[0] if rows else ())]
         if interpretation and interpretation.domain == 'inventory':
             metadata['semantic_interpretation'] = interpretation.model_dump()
+            if interpretation.conditional_counts:
+                for column in metadata['columns']:
+                    if column['name'] in {'stockout_count', 'overstock_count', 'reorder_count'}:
+                        column['unit'] = 'products'
             metadata['filters'] = [item.model_dump() for item in interpretation.filters]
             metadata['time_scope'] = interpretation.time.model_dump()
         if interpretation and interpretation.time and interpretation.time.mode == 'comparison':

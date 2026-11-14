@@ -196,7 +196,16 @@ METRIC_ONTOLOGY = {
         "grain": "review",
         "aggregation": "mean",
         "unit": "score",
-        "dimensions": ("review_date", "product_id"),
+        "dimensions": ("review_date", "product_id", "category"),
+    },
+    "review_count": {
+        "aliases": ("review count", "number of reviews", "count reviews", "số đánh giá", "đếm đánh giá"),
+        "source": "commerce.reviews (+ commerce.products for category)",
+        "formula": "COUNT(DISTINCT review_id)",
+        "grain": "review", "aggregation": "count_distinct", "unit": "reviews",
+        "dimensions": ("review_date", "product_id", "category"),
+        "provenance": "team_defined", "approval_status": "team_accepted",
+        "business_approval_status": "not_recorded",
     },
     "sessions": {
         "aliases": ("sessions", "website sessions", "lượt truy cập", "phiên truy cập"),
@@ -289,8 +298,10 @@ def resolve_metric_names(text: str) -> set[str]:
     for metric_name, definition in METRIC_ONTOLOGY.items():
         for alias in (*definition["aliases"], metric_name):
             phrase = _normalize(alias)
-            spelling = re.escape(phrase).replace(r'\ ', '[ _]')
-            suffix = r'(?![ _]+items?\b)' if metric_name == 'order_count' else ''
+            spelling = re.escape(phrase).replace(r'\ ', '[ _-]+')
+            if phrase.endswith(' count'):
+                spelling += 's?'
+            suffix = r'(?![ _-]+items?\b)' if metric_name == 'order_count' else ''
             pattern = re.compile(rf"(?<!\w){spelling}(?!\w){suffix}")
             matches.extend((match.start(), match.end(), metric_name) for match in pattern.finditer(normalized))
 

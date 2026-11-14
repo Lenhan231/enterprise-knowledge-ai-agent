@@ -26,7 +26,8 @@ def policy_context(available_sources):
         'relationships': [relation for relation in data['relationships']
                           if relation['from'].rsplit('.', 1)[0] in available
                           and relation['to'].rsplit('.', 1)[0] in available],
-        'rules': [rule for rule in data['rules'] if not rule['sources'] or available.intersection(rule['sources'])],
+        'rules': [{**rule, 'sources': [name for name in rule['sources'] if name in available]}
+                  for rule in data['rules'] if not rule['sources'] or available.intersection(rule['sources'])],
         'metric_authority': 'Use the executable metric catalog for formulas and approval status; policy supplies business constraints.'})
 
 

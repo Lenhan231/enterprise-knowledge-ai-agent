@@ -192,13 +192,23 @@ def _validate_composition(tree, dimension, measures, rows):
     projections = {item.alias_or_name: item.unalias() for item in tree.expressions}
     measure = projections.get(measures[0])
     category = projections.get(dimension)
+    date_columns = {'sales': 'date', 'web_traffic': 'date', 'inventory': 'snapshot_date'}
+    calendar_bucket = (isinstance(category, exp.TimestampTrunc) and isinstance(category.this, exp.Column)
+                       and category.this.name == date_columns.get(tables[0].name)
+                       and str(category.args.get('unit')).upper() in {'DAY', 'WEEK', 'MONTH', 'QUARTER', 'YEAR'})
+    grouping = group.expressions[0]
+    if isinstance(grouping, exp.Literal) and grouping.is_int:
+        index = int(grouping.this) - 1
+        grouping = tree.selects[index].unalias() if 0 <= index < len(tree.selects) else None
+    if not (grouping == category or isinstance(grouping, exp.Column) and grouping.name == dimension):
+        raise ValueError(reason)
     # shortcut: prove composition only for simple single-table groups; extend with provenance for joins/CTEs.
     additive = {'web_traffic': {'sessions', 'page_views'}, 'sales': {'revenue', 'cogs'},
                 'inventory': {'stock_on_hand', 'units_received', 'units_sold'}}
     safe_sum = (isinstance(measure, exp.Sum) and isinstance(measure.this, exp.Column)
                 and measure.this.name in additive.get(tables[0].name, set()))
     safe_count = isinstance(measure, exp.Count) and isinstance(measure.this, exp.Star)
-    if not isinstance(category, exp.Column) or not (safe_sum or safe_count):
+    if not (isinstance(category, exp.Column) or calendar_bucket) or not (safe_sum or safe_count):
         raise ValueError(reason)
     limit = tree.args.get('limit')
     if limit and (not isinstance(limit.expression, exp.Literal) or len(rows) >= int(limit.expression.this)):

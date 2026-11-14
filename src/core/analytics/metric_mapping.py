@@ -43,6 +43,7 @@ class MetricMapping(_StrictModel):
     metrics: list[str] = Field(default_factory=list,max_length=16)
     dimensions: list[str] = Field(default_factory=list,max_length=10)
     filters: list[MetricFilter] = Field(default_factory=list,max_length=12)
+    conditional_counts: list[MetricFilter] = Field(default_factory=list,max_length=3)
     time: MetricTime | None = None
     ranking: MetricRanking | None = None
     representation: Literal['aggregate','product'] = 'aggregate'
@@ -194,6 +195,10 @@ def build_metric_mapping_prompt(question, *, context=None):
             'For product-level rankings use representation=product and product_name/product_id dimensions. '
             'For category totals use aggregate and category. Stored fill rankings use stored_fill_rate; means use fill_rate. '
             'Counting flagged products uses observed_product_count with a boolean indicator filter; '
+            'For separate counts of multiple flags, use metrics=[observed_product_count], representation=aggregate, '
+            'and conditional_counts=[{field:stockout_indicator,operator:eq,value:true}, '
+            '{field:overstock_indicator,operator:eq,value:true}] as requested. These count distinct products '
+            'independently; never place those flag predicates in shared filters. Reorder uses reorder_indicator. '
             'rank categories by observed_product_count, never aggregate or rank a boolean indicator as a count. '
             'Ranking without an explicit row count uses limit=null; the independent safety ceiling is 200 rows. Never invent top 10. '
             'Explicit non-null population uses an is_not_null filter with value=null. '
@@ -274,7 +279,7 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
                if definition.get('domain') == 'inventory_management' and definition.get('aggregation') in {'sum','value'}
                and definition.get('formula')}
     mapping.metrics = [name if name in METRIC_ONTOLOGY else aliases.get(name, name) for name in mapping.metrics]
-    for item in mapping.filters:
+    for item in [*mapping.filters, *mapping.conditional_counts]:
         item.field = item.field if item.field in METRIC_ONTOLOGY else aliases.get(item.field, item.field)
     if mapping.ranking:
         name = mapping.ranking.metric
@@ -282,7 +287,7 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
     if mapping.clarification:
         _error(mapping.clarification,'metric_ambiguous')
     if mapping.domain == 'other':
-        if mapping.metrics or mapping.dimensions or mapping.filters or mapping.time or mapping.ranking or any(
+        if mapping.metrics or mapping.dimensions or mapping.filters or mapping.conditional_counts or mapping.time or mapping.ranking or any(
                 METRIC_ONTOLOGY[name].get('domain') == 'inventory_management' for name in known):
             _error('An inventory request cannot bypass catalog interpretation.')
         return mapping
@@ -297,8 +302,17 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
     flag_mentions = re.findall(r'\b(?:stockout|overstock|reorder)_flag\b', question, re.I)
     separate_counts = len(re.findall(r'\bcount\b|đếm', question, re.I)) > 1
     if count_requested and separate_counts and len(set(name.lower() for name in flag_mentions)) > 1:
-        _error('Separate flag counts require independent filtered aggregates. Request each count separately; '
-               'the current inventory interpretation supports one shared filter set.', 'interpretation_invalid')
+        expected = {name.lower().replace('_flag', '_indicator') for name in flag_mentions}
+        if {item.field for item in mapping.conditional_counts} != expected:
+            _error('Map each requested flag to its own independent conditional count.', 'interpretation_invalid')
+    if mapping.conditional_counts:
+        fields = [item.field for item in mapping.conditional_counts]
+        if (mapping.metrics != ['observed_product_count'] or mapping.representation != 'aggregate'
+                or mapping.ranking is not None or len(set(fields)) != len(fields)
+                or any(item.field not in CONDITIONAL_FLAGS or item.operator != 'eq' or item.value is not True
+                       for item in mapping.conditional_counts)
+                or set(fields).intersection(item.field for item in mapping.filters)):
+            _error('Independent flag counts require unique recorded flags, true predicates and a shared population without those flag filters.', 'interpretation_invalid')
     if mapping.representation == 'aggregate' and len(mapping.metrics) == 1 and count_requested:
         name = mapping.metrics[0]
         definition = METRIC_ONTOLOGY.get(name, {})
@@ -317,7 +331,7 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
                  or METRIC_ONTOLOGY[name].get('approval_status') == 'unreviewed'}
     if protected - set(mapping.metrics):
         _error('The interpretation omitted or changed a recognized metric. Please clarify which measures you need.','metric_ambiguous')
-    required = known - {item.field for item in mapping.filters}
+    required = known - {item.field for item in [*mapping.filters, *mapping.conditional_counts]}
     for name in required - set(mapping.metrics):
         # Scalar and mean variants share an approved source field, not a new formula.
         definition = METRIC_ONTOLOGY[name]
@@ -439,6 +453,8 @@ def _validate_explicit_slots(mapping, question):
         name, operator, literal = match.groups()
         name = aliases.get(name, name)
         value = literal[1:-1].replace("''", "'") if literal.startswith("'") else json.loads(literal)
+        if any(item.field == name and operator == '=' and value is True for item in mapping.conditional_counts):
+            continue
         if not any(f.field == name and f.operator == operators[operator] and f.value == value for f in mapping.filters):
             _error('The interpretation omitted or changed explicit filter '+name+'.', 'interpretation_mismatch')
     for match in re.finditer(r'\b(?:by|theo)\s+((?:category|segment|size|color)(?:(?:\s*,\s*|\s+and\s+)(?:category|segment|size|color))*)\b', text):
@@ -468,6 +484,19 @@ def _scalar_count(mapping):
     return (mapping.representation == 'aggregate' and not mapping.dimensions
             and mapping.time.mode in {'snapshot','latest'}
             and all(METRIC_ONTOLOGY[name]['aggregation'] == 'count_distinct' for name in mapping.metrics))
+
+
+CONDITIONAL_FLAGS = {'stockout_indicator': 'stockout_count', 'overstock_indicator': 'overstock_count',
+                     'reorder_indicator': 'reorder_count'}
+
+
+def _mapped_measures(mapping, table_columns):
+    if mapping.conditional_counts:
+        count = _formula(METRIC_ONTOLOGY['observed_product_count'], table_columns)
+        return {CONDITIONAL_FLAGS[item.field]: exp.Filter(this=count.copy(),
+                    expression=exp.Where(this=_filter_expression(item))) for item in mapping.conditional_counts}
+    return {name: (_field(name) if mapping.representation == 'product' else _formula(METRIC_ONTOLOGY[name], table_columns))
+            for name in mapping.metrics}
 
 
 def _count_snapshot(mapping):
@@ -540,15 +569,14 @@ def validate_mapped_sql(plan, mapping, *, question=None):
     groups = {canonical(p).sql() for p in group.expressions} if group else set()
     if (mapping.representation == 'product' and groups) or (mapping.representation == 'aggregate' and groups != expected_group):
         _error('SQL grouping differs from the validated output grain.','incompatible_grain')
-    for name in mapping.metrics:
-        definition = METRIC_ONTOLOGY[name]
-        formula = _field(name) if mapping.representation == 'product' else _formula(definition,APPROVED_COLUMNS)
+    for alias, formula in _mapped_measures(mapping, APPROVED_COLUMNS).items():
         if formula not in projections:
             _error('SQL omitted the requested metric representation.','interpretation_mismatch')
+        if mapping.conditional_counts and not any(p.alias_or_name == alias and canonical(p) == formula for p in tree.selects):
+            _error('SQL changed the identity of an independent flag count.', 'interpretation_mismatch')
     allowed = {(canonical(_count_snapshot(mapping)) if _scalar_count(mapping) else snapshot).sql(),
                *(_field(d).sql() for d in mapping.dimensions)}
-    allowed.update((_field(name) if mapping.representation == 'product' else _formula(METRIC_ONTOLOGY[name],APPROVED_COLUMNS)).sql()
-                   for name in mapping.metrics)
+    allowed.update(formula.sql() for formula in _mapped_measures(mapping, APPROVED_COLUMNS).values())
     if len(projections) != len(allowed) or {p.sql() for p in projections} != allowed:
         _error('SQL added an unrequested output or metric.','interpretation_mismatch')
     if question:
@@ -603,7 +631,7 @@ def compile_inventory_query(mapping):
         definition = METRIC_ONTOLOGY[name]
         if definition.get('definition_status') != 'executable':
             raise ValueError('Unresolved metric: '+name)
-        value = _field(name) if mapping.representation == 'product' else _formula(definition, APPROVED_COLUMNS)
+    for name, value in _mapped_measures(mapping, APPROVED_COLUMNS).items():
         projections.append(value.as_(name))
     query = exp.select(*projections).from_('commerce.inventory').join(
         'commerce.products', on='inventory.product_id = products.product_id')

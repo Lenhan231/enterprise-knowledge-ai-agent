@@ -29,6 +29,7 @@ class BusinessOntologyTest(unittest.TestCase):
         self.assertFalse(context['policy']['approves_metric_formulas'])
         self.assertTrue(context['policy']['sha256'])
         self.assertTrue(all(rule['pages'] for rule in context['rules']))
+        self.assertTrue(all(set(rule['sources']) <= set(context['entities']) for rule in context['rules']))
         root = Path(__file__).resolve().parents[1]
         self.assertEqual(hashlib.sha256((root / context['policy']['source']).read_bytes()).hexdigest(),
                          context['policy']['sha256'])

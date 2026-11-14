@@ -429,6 +429,15 @@ def _validate_inventory_metrics(sql, metric_names, parameters, table_columns, qu
             projected_snapshot = True
             continue
         matches = {name for name, formula in formulas.items() if expression == formula}
+        if (set(metric_names) == {'observed_product_count'} and isinstance(expression, exp.Filter)
+                and expression.this == formulas.get('observed_product_count')):
+            predicate = expression.expression
+            predicate = predicate.this if isinstance(predicate, exp.Where) else predicate
+            if (isinstance(predicate, exp.EQ) and isinstance(predicate.this, exp.Column)
+                    and predicate.this.db == 'commerce' and predicate.this.table == 'inventory'
+                    and predicate.this.name in {'stockout_flag','overstock_flag','reorder_flag'}
+                    and isinstance(predicate.expression, exp.Boolean) and predicate.expression.this is True):
+                matches.add('observed_product_count')
         if not has_aggregates and not root.expression.args.get('group') and not root.expression.args.get('distinct'):
             matches |= {name for name, formula in scalar.items() if expression == formula}
         label = projection.alias.casefold()

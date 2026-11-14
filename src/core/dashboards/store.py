@@ -7,6 +7,7 @@ from contextlib import contextmanager
 
 from core.dashboards.models import DashboardDocument, now
 from core.dashboards.render import render_dashboard
+from core.dashboards.presentation import reconcile
 
 
 class Conflict(ValueError):
@@ -41,7 +42,7 @@ class DashboardStore:
     def get(self, subject, identifier):
         with self.connect() as db:
             row = db.execute('SELECT document FROM dashboards WHERE owner=? AND id=?', (self.owner(subject), identifier)).fetchone()
-        return DashboardDocument.model_validate_json(row[0]) if row else None
+        return reconcile(DashboardDocument.model_validate_json(row[0])) if row else None
 
     def html(self, subject, identifier):
         with self.connect() as db:
@@ -53,6 +54,7 @@ class DashboardStore:
 
     def save(self, subject, document, expected_revision):
         doc = document.model_copy(deep=True)
+        reconcile(doc)
         doc.revision = 1 if expected_revision is None else expected_revision + 1
         doc.updated_at = now()
         encoded, html = doc.model_dump_json(), render_dashboard(doc)

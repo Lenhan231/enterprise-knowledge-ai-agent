@@ -20,7 +20,7 @@ class CloudflareProvider(LLMInterface):
 
     DEFAULT_MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8-fast"
 
-    def __init__(self, model: str | None = None, temperature: float = 0, max_tokens: int = 1000) -> None:
+    def __init__(self, model: str | None = None, temperature: float = 0, max_tokens: int | None = None) -> None:
         self.account_id = os.getenv("CLOUDFLARE_ACCOUNT_ID")
         self.api_token = os.getenv("CLOUDFLARE_API_TOKEN") or os.getenv("CLOUDFLARE_WORKERS_API")
         if not self.account_id:
@@ -31,7 +31,8 @@ class CloudflareProvider(LLMInterface):
         self.model_name = model or os.getenv("CLOUDFLARE_MODEL", self.DEFAULT_MODEL)
         self.model = self.model_name
         self.temperature = temperature
-        self.max_tokens = max_tokens
+        self.max_tokens = max_tokens if max_tokens is not None else (
+            2048 if self.model_name.startswith('@cf/openai/gpt-oss-') else 1000)
         self.last_usage = None
         self.endpoint = (
             "https://api.cloudflare.com/client/v4/accounts/"
@@ -48,6 +49,7 @@ class CloudflareProvider(LLMInterface):
             "temperature": self.temperature,
             "max_tokens": self.max_tokens,
             "chat_template_kwargs": {"enable_thinking": False},
+            **({'reasoning_effort': 'low'} if self.model_name.startswith('@cf/openai/gpt-oss-') else {}),
         }).encode("utf-8")
         request = Request(
             self.endpoint,

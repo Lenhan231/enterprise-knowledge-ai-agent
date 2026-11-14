@@ -46,6 +46,7 @@ _TEXTLINE_ORIENTATION_BATCH_SIZE = 16
 class VietOcrOptions(OcrOptions):
     kind: ClassVar[str] = "vietocr"
     lang: list[str] = Field(default_factory=list)
+    recognition_batch_size: int = Field(default=16, ge=1, le=64)
 
 
 class VietOcrModel(BaseOcrModel):
@@ -66,6 +67,7 @@ class VietOcrModel(BaseOcrModel):
             accelerator_options=accelerator_options,
         )
         self.scale = options.scale
+        self.recognition_batch_size = options.recognition_batch_size
         import torch
         import yaml
         from vietocr.tool.config import Cfg
@@ -135,10 +137,11 @@ class VietOcrModel(BaseOcrModel):
 
         results: list[tuple[str, str]] = []
         self._last_recognition_batches = 0
-        for start in range(0, len(lines), _VIETOCR_BATCH_SIZE):
+        batch_size = getattr(self, "recognition_batch_size", _VIETOCR_BATCH_SIZE)
+        for start in range(0, len(lines), batch_size):
             images = [
                 Image.fromarray(cv2.cvtColor(line, cv2.COLOR_BGR2RGB))
-                for line in lines[start : start + _VIETOCR_BATCH_SIZE]
+                for line in lines[start : start + batch_size]
             ]
             predictions = predict_batch(images)
             if len(predictions) != len(images):

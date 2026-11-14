@@ -50,6 +50,7 @@
         <span><strong>Enterprise Knowledge AI</strong><small>Commerce operations workspace</small></span>
       </a>
       <nav id="workspace-tabs" class="workspace-tabs" role="tablist" aria-label="Workspace navigation">
+        <button id="tab-button-dashboard" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-dashboard" data-tab-target="dashboard" hidden aria-label="Dashboard" title="Dashboard"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 3h8v8H3zM14 3h7v5h-7zM14 11h7v10h-7zM3 14h8v7H3z"/></svg><span class="nav-label">Dashboard</span></button>
         <button id="tab-button-general-chat" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-general-chat" data-tab-target="general-chat" aria-label="General Chat" title="General Chat"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg><span class="nav-label">General Chat</span></button>
         <button id="tab-button-knowledge" class="workspace-tab active" type="button" role="tab" aria-selected="true" aria-controls="tab-knowledge" data-tab-target="knowledge" aria-label="Reports" title="Reports"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6V3Zm8 0v4h4M9.5 17v-3m3 3v-6m3 6v-4"/></svg><span class="nav-label">Reports</span></button>
         <button id="tab-button-upload" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-upload" data-tab-target="upload" hidden aria-label="Upload Documents" title="Upload Documents"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5M4 16v5h16v-5"/></svg><span class="nav-label">Upload Documents</span></button>
@@ -105,11 +106,11 @@
           <button class="agent-card-launch" type="button" data-agent-mode="sql" data-agent-prompt="Summarize recent Commerce sales and identify the main trend.">Ask analytics agent</button>
         </article>
         <article id="inventory-agent-card" class="agent-card">
-          <span class="agent-index">03 · INVENTORY</span>
-          <h3>Spot stock exceptions</h3>
-          <p>Review the latest inventory snapshot, stockouts, and overstock signals.</p>
-          <span class="agent-capability">Snapshot · category exceptions</span>
-          <button class="agent-card-launch" type="button" data-agent-mode="dashboard" data-agent-prompt="Show the latest inventory dashboard and flag stock exceptions.">Open inventory view</button>
+          <span class="agent-index">03 · DASHBOARD</span>
+          <h3>Build a business dashboard</h3>
+          <p>Create and save several tiles using validated, read-only SQL observations.</p>
+          <span class="agent-capability">KPIs · charts · statistical summaries</span>
+          <button class="agent-card-launch" type="button" data-open-tab="dashboard">Open dashboard</button>
         </article>
         <article id="report-agent-card" class="agent-card">
           <span class="agent-index">04 · REPORTS</span>
@@ -153,6 +154,21 @@
     </section>
 
     <div class="workspace-content">
+    <section id="tab-dashboard" class="tab-panel dashboard-workspace" role="tabpanel" aria-labelledby="tab-button-dashboard" hidden>
+      <header class="dw-heading"><div><p class="eyebrow">Text to dashboard</p><h1>Your business, in view</h1><p>Describe what matters. Build a saved dashboard from approved SQL data, then edit its tiles and layout.</p></div><button id="dw-new" type="button" class="secondary-button">New dashboard</button></header>
+      <p id="dw-status" role="status" aria-live="polite"></p>
+      <div class="dw-layout">
+        <aside class="dw-library" aria-labelledby="dw-library-heading"><h2 id="dw-library-heading">Saved dashboards</h2><div id="dw-library"></div></aside>
+        <div class="dw-main">
+          <form id="dw-create" class="dw-card"><h2>What would you like to see?</h2><label for="dw-prompt">Dashboard description</label><textarea id="dw-prompt" rows="4" maxlength="2000" required placeholder="A sales dashboard for July to September 2026: monthly revenue trend, a revenue KPI, and a statistical summary."></textarea><label for="dw-create-scope">Shared date and filter scope (optional)</label><input id="dw-create-scope" maxlength="600" placeholder="July through September 2026"><p class="dw-help">Up to four SQL datasets and eight tiles. Planning and source queries can take up to three minutes.</p><button type="submit" class="primary-button">Build dashboard</button></form>
+          <section id="dw-editor" hidden aria-label="Dashboard editor">
+            <div class="dw-toolbar"><button id="dw-save" type="button" class="primary-button">Save edits</button><button id="dw-refresh" type="button" class="secondary-button">Refresh data</button><button id="dw-rebuild" type="button" class="secondary-button">Rebuild from description</button><a id="dw-open" target="_blank" rel="noopener" class="secondary-button">Open HTML</a><a id="dw-download" class="secondary-button">Download HTML</a><button id="dw-delete" type="button" class="secondary-button">Delete</button></div>
+            <details class="dw-card" open><summary>Edit dashboard</summary><label for="dw-title">Title</label><input id="dw-title" maxlength="120" required><label for="dw-description">Description (used by Rebuild)</label><textarea id="dw-description" maxlength="2000" rows="3"></textarea><label for="dw-scope">Shared scope (changing it reruns SQL)</label><input id="dw-scope" maxlength="600"><p id="dw-meta" class="dw-help"></p><div id="dw-tiles"></div></details>
+            <h2>Dashboard preview</h2><iframe id="dw-preview" title="Saved dashboard preview" sandbox="" referrerpolicy="no-referrer"></iframe>
+          </section>
+        </div>
+      </div>
+    </section>
     <section id="tab-general-chat" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-general-chat" hidden>
       <section class="general-chat" aria-labelledby="general-chat-title">
         <header class="general-chat-heading">
@@ -511,16 +527,8 @@
     </div>
     </main>
   </div>
-  <dialog id="app-dialog" class="app-dialog" aria-labelledby="app-dialog-title" aria-describedby="app-dialog-message">
-    <form method="dialog">
-      <h2 id="app-dialog-title"></h2>
-      <p id="app-dialog-message"></p>
-      <div class="app-dialog-actions">
-        <button value="cancel" class="secondary-button" type="submit">Cancel</button>
-        <button value="confirm" id="app-dialog-confirm" class="primary-button" type="submit"></button>
-      </div>
-    </form>
-  </dialog>
-  <script src="/static/app.js?v=redesign-20261114a" defer></script>
+  <link rel="stylesheet" href="/static/dashboard.css?v=20261114">
+  <script src="/static/app.js?v=dashboard-20261114" defer></script>
+  <script src="/static/dashboard.js?v=20261114" defer></script>
 </body>
 </html>

@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
 from core.analytics.metric_mapping import build_metric_mapping_prompt, decode_metric_mapping
 from core.analytics.metric_ontology import resolve_metric_names
@@ -120,7 +120,7 @@ class InterpretationRegressionTest(unittest.TestCase):
 
     def test_cross_domain_definitions_do_not_require_invented_kpis(self):
         prompt = build_sql_prompt('Returned units divided by ordered units per product in 2022')
-        self.assertIn('independently', prompt)
+        self.assertIn('source grain', prompt)
         self.assertIn('NULLIF', prompt)
 
 

@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
 from core.analytics.metric_mapping import decode_metric_mapping, compile_inventory_query, validate_mapped_sql
 from core.analytics.metric_validation import MetricDefinitionError

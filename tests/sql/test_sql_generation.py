@@ -6,7 +6,7 @@ from pathlib import Path
 from unittest.mock import AsyncMock
 
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from core.analytics.text_to_sql import (SQLValidationError, current_year_month_range,
                                         decode_query_plan, validate_commerce_sql,

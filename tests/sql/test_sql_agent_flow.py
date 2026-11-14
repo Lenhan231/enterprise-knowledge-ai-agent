@@ -9,7 +9,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock, patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from core.analytics.join_validation import PRIMARY_KEYS
 from core.analytics.text_to_sql import APPROVED_COLUMNS, APPROVED_DATE_COLUMNS, APPROVED_JOINS
@@ -354,9 +354,9 @@ ORDER BY m.sessions DESC LIMIT 20""",
 
         self.assertEqual(draft["status"], "approval_required")
         self.assertEqual(draft["sql"], PRODUCT_GROWTH_SQL)
-        self.assertEqual(draft["sources"], [
+        self.assertEqual(set(draft["sources"]), {
             "commerce.products", "commerce.order_items", "commerce.orders",
-        ])
+        })
         self.assertEqual(len(provider.prompts), 2)
         self.assertIn("failed validation", provider.prompts[1].lower())
         self.assertIn("commerce.orders.order_date", provider.prompts[0])

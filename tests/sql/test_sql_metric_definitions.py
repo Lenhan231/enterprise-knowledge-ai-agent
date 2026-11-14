@@ -6,7 +6,7 @@ from datetime import date
 from pathlib import Path
 from unittest.mock import AsyncMock
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from core.analytics.metric_ontology import METRIC_ONTOLOGY, get_metric_definition, resolve_metric_names
 from core.analytics.text_to_sql import (APPROVED_COLUMNS, SQLValidationError, SQLSecurityError,

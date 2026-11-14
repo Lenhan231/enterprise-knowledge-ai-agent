@@ -8,7 +8,7 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
 
-sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
+sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'src'))
 from core.analytics.metric_mapping import decode_sql_turn
 from core.analytics.metric_validation import MetricDefinitionError
 from core.agents.execution import Execution, TaskOutcome

@@ -114,6 +114,145 @@ def assistant(repository, provider):
 
 
 class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
+    async def test_hard_prompts_across_commerce_tables_pass_sql_planning_and_validation(self):
+        cases = (
+            (
+                "Đối soát tiền thanh toán với giá trị hàng sau giảm giá theo phương thức thanh toán. Phương thức nào lệch nhiều nhất?",
+                """WITH item_totals AS (
+  SELECT oi.order_id, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS order_value
+  FROM commerce.order_items AS oi GROUP BY oi.order_id
+)
+SELECT p.payment_method, SUM(p.payment_value) AS paid_total,
+  SUM(i.order_value) AS ordered_total,
+  SUM(p.payment_value) - SUM(i.order_value) AS variance
+FROM commerce.payments AS p
+JOIN commerce.orders AS o ON o.order_id = p.order_id
+JOIN item_totals AS i ON i.order_id = o.order_id
+GROUP BY p.payment_method
+ORDER BY ABS(SUM(p.payment_value) - SUM(i.order_value)) DESC
+LIMIT 20""",
+                {"commerce.payments", "commerce.orders", "commerce.order_items"},
+            ),
+            (
+                "Danh mục nào có tỷ lệ số lượng trả hàng cao nhất so với số lượng đã bán? Chỉ tính đơn đã giao.",
+                """WITH returned AS (
+  SELECT p.category, SUM(r.return_quantity) AS returned_units
+  FROM commerce.returns AS r JOIN commerce.products AS p ON p.product_id = r.product_id
+  GROUP BY p.category
+), sold AS (
+  SELECT p.category, SUM(oi.quantity) AS sold_units
+  FROM commerce.orders AS o
+  JOIN commerce.order_items AS oi ON oi.order_id = o.order_id
+  JOIN commerce.products AS p ON p.product_id = oi.product_id
+  WHERE o.order_status = 'delivered'
+  GROUP BY p.category
+)
+SELECT COALESCE(r.category, s.category) AS category, r.returned_units, s.sold_units,
+  r.returned_units / NULLIF(s.sold_units, 0) AS return_rate
+FROM returned AS r FULL JOIN sold AS s ON s.category = r.category
+ORDER BY 4 DESC LIMIT 20""",
+                {"commerce.returns", "commerce.products", "commerce.orders", "commerce.order_items"},
+            ),
+            (
+                "Theo danh mục, so sánh điểm đánh giá trung bình với số lượng hàng trả; tránh nhân chéo review và return.",
+                """WITH ratings AS (
+  SELECT p.category, AVG(r.rating) AS average_rating
+  FROM commerce.reviews AS r JOIN commerce.products AS p ON p.product_id = r.product_id
+  GROUP BY p.category
+), returns AS (
+  SELECT p.category, SUM(r.return_quantity) AS returned_units
+  FROM commerce.returns AS r JOIN commerce.products AS p ON p.product_id = r.product_id
+  GROUP BY p.category
+)
+SELECT COALESCE(a.category, b.category) AS category, a.average_rating, b.returned_units
+FROM ratings AS a FULL JOIN returns AS b ON b.category = a.category
+ORDER BY b.returned_units DESC LIMIT 20""",
+                {"commerce.reviews", "commerce.products", "commerce.returns"},
+            ),
+            (
+                "Trong snapshot mới nhất, danh mục nào có nhiều sản phẩm cần đặt lại hàng nhất?",
+                """SELECT i.category, COUNT(DISTINCT i.product_id) AS reorder_products
+FROM commerce.inventory AS i
+WHERE i.snapshot_date = (SELECT MAX(latest.snapshot_date) FROM commerce.inventory AS latest)
+  AND i.reorder_flag = TRUE
+GROUP BY i.category ORDER BY reorder_products DESC LIMIT 20""",
+                {"commerce.inventory"},
+            ),
+            (
+                "Hóa đơn nào có subtotal khác tổng amount của các dòng hàng? Hiện mã tiền tệ và độ lệch.",
+                """WITH item_totals AS (
+  SELECT li.invoice_id, SUM(li.amount) AS item_total
+  FROM commerce.invoice_items AS li GROUP BY li.invoice_id
+)
+SELECT inv.invoice_no, inv.currency, inv.subtotal, t.item_total,
+  inv.subtotal - t.item_total AS variance
+FROM commerce.invoices AS inv
+JOIN item_totals AS t ON t.invoice_id = inv.invoice_id
+WHERE ABS(inv.subtotal - t.item_total) > 0.01
+ORDER BY ABS(inv.subtotal - t.item_total) DESC LIMIT 20""",
+                {"commerce.invoices", "commerce.invoice_items"},
+            ),
+            (
+                "Theo khu vực và kênh thu hút, nhóm nào có nhiều khách quay lại đặt đơn nhất?",
+                """WITH customer_orders AS (
+  SELECT o.customer_id, COUNT(DISTINCT o.order_id) AS order_count
+  FROM commerce.orders AS o GROUP BY o.customer_id
+)
+SELECT g.region, c.acquisition_channel,
+  SUM(CASE WHEN co.order_count > 1 THEN 1 ELSE 0 END) AS repeat_customers,
+  COUNT(*) AS customers_with_orders
+FROM customer_orders AS co
+JOIN commerce.customers AS c ON c.customer_id = co.customer_id
+JOIN commerce.geography AS g ON g.zip = c.zip
+GROUP BY g.region, c.acquisition_channel
+ORDER BY repeat_customers DESC LIMIT 20""",
+                {"commerce.orders", "commerce.customers", "commerce.geography"},
+            ),
+            (
+                "Khu vực nào giao hàng lâu nhất? Chỉ tính chuyến đã có cả ngày gửi và ngày giao.",
+                """SELECT g.region, AVG(s.delivery_date - s.ship_date) AS average_delivery_days,
+  COUNT(*) AS shipment_count
+FROM commerce.shipments AS s
+JOIN commerce.orders AS o ON o.order_id = s.order_id
+JOIN commerce.geography AS g ON g.zip = o.zip
+WHERE s.ship_date IS NOT NULL AND s.delivery_date IS NOT NULL
+GROUP BY g.region ORDER BY average_delivery_days DESC LIMIT 20""",
+                {"commerce.shipments", "commerce.orders", "commerce.geography"},
+            ),
+            (
+                "Tháng nào có gross profit cao nhất theo bảng sales?",
+                """SELECT DATE_TRUNC('month', s.date) AS month,
+  SUM(s.revenue) - SUM(s.cogs) AS gross_profit
+FROM commerce.sales AS s
+GROUP BY 1 ORDER BY gross_profit DESC LIMIT 1""",
+                {"commerce.sales"},
+            ),
+            (
+                "Trong tháng mới nhất có dữ liệu, nguồn truy cập nào có nhiều phiên nhất và bounce rate trung bình bao nhiêu?",
+                """WITH monthly AS (
+  SELECT DATE_TRUNC('month', w.date) AS month, w.traffic_source,
+    SUM(w.sessions) AS sessions, AVG(w.bounce_rate) AS average_bounce_rate
+  FROM commerce.web_traffic AS w GROUP BY 1, 2
+)
+SELECT m.month, m.traffic_source, m.sessions, m.average_bounce_rate
+FROM monthly AS m
+WHERE m.month = (SELECT MAX(latest.month) FROM monthly AS latest)
+ORDER BY m.sessions DESC LIMIT 20""",
+                {"commerce.web_traffic"},
+            ),
+        )
+        for question, sql, expected_sources in cases:
+            with self.subTest(question=question):
+                provider = FakeProvider([plan(sql, "Independent aggregates preserve source grain.")])
+                repository = FakeRepository()
+
+                result = await run_sql_assistant(assistant(repository, provider), question)
+
+                self.assertEqual(result["status"], "approval_required", result)
+                self.assertEqual(set(result["sources"]), expected_sources)
+                self.assertEqual(len(provider.prompts), 1)
+                repository.execute_approved_query.assert_not_awaited()
+
     async def test_hard_promotion_questions_compile_and_pass_validators_without_llm(self):
         cases = (
             (

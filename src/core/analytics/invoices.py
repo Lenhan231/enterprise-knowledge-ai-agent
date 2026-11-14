@@ -18,6 +18,7 @@ def validate_invoice_currency(tree, error_type):
     currency = ('commerce.invoices', 'currency')
     monetary = {('commerce.invoices', name) for name in ('subtotal', 'tax_amount', 'total_amount')}
     monetary |= {('commerce.invoice_items', name) for name in ('amount', 'unit_price')}
+    invoice_keys = {('commerce.invoices', 'invoice_id'), ('commerce.invoice_items', 'invoice_id')}
 
     def uses_money(column, scope, visited=()):
         if id(scope) in visited:
@@ -46,9 +47,16 @@ def validate_invoice_currency(tree, error_type):
                 node = scope.expression.selects[index].unalias() if 0 <= index < len(scope.expression.selects) else node
             grouped.append(node)
         projected = [node.unalias() for node in scope.expression.selects]
-        if not all(any(isinstance(node, exp.Column) and column_origin(scope, node) == currency for node in nodes)
-                   for nodes in (grouped, projected)):
-            raise error_type('Invoice monetary aggregates must select and GROUP BY invoices.currency.')
+        groups_by_currency = any(isinstance(node, exp.Column) and column_origin(scope, node) == currency
+                                 for node in grouped)
+        projects_currency = any(isinstance(node, exp.Column) and column_origin(scope, node) == currency
+                                for node in projected)
+        groups_by_invoice = any(isinstance(node, exp.Column) and column_origin(scope, node) in invoice_keys
+                                for node in grouped)
+        projects_invoice = any(isinstance(node, exp.Column) and column_origin(scope, node) in invoice_keys
+                               for node in projected)
+        if not (groups_by_currency and projects_currency or groups_by_invoice and projects_invoice):
+            raise error_type('Invoice money aggregates must retain invoice_id grain or select and GROUP BY currency.')
 
 
 def _text(value):

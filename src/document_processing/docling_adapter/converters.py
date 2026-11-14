@@ -11,7 +11,14 @@ def get_converter(options):
     from docling.datamodel.base_models import InputFormat
     from docling.document_converter import DocumentConverter, ImageFormatOption, PdfFormatOption
 
-    key = (type(options.ocr_options), options.model_dump_json())
+    # PdfPipelineOptions serialization can omit fields defined only on a custom
+    # OCR options subclass. Include its own serialization so those settings
+    # (such as VietOCR recognition batch size) cannot reuse a stale pipeline.
+    key = (
+        type(options.ocr_options),
+        options.model_dump_json(),
+        options.ocr_options.model_dump_json(),
+    )
     with _lock:
         if key not in _converters:
             _converters[key] = DocumentConverter(format_options={

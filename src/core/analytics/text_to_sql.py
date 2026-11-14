@@ -749,7 +749,7 @@ def relevant_schema_tables(question, definitions, available_tables=None):
               for table in re.findall(r'commerce\.\w+', definition['source'])}
     cues = {
         'inventory': r'inventory|stock|snapshot|tồn kho',
-        'products': r'product|category|catalog|sku|sản phẩm|danh mục',
+        'products': r'product|categor(?:y|ies)|catalog|sku|sản phẩm|danh mục',
         'returns': r'\breturns\b|\breturned\b|\breturn (?:rate|date|quantity|reason)\b|refund|trả hàng|hoàn hàng',
         'orders': r'order|ordered|đơn hàng',
         'order_items': r'quantity|quantities|ordered units|line value|order items|ordered quantities',

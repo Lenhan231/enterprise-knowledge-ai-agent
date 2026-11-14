@@ -273,7 +273,9 @@ class SQLAnalyticsAgent(BaseAgent):
                          for edge in (APPROVED_JOINS if approved_joins is None else approved_joins)
                          if all(table in schema for table, _ in edge)]
         definitions = {name: get_metric_definition(name) for name in resolve_metric_names(question)}
-        definitions = {name: {key: definition.get(key) for key in ('source', 'formula', 'grain', 'unit', 'aliases', 'domain')}
+        definitions = {name: {key: definition.get(key) for key in (
+                           'source', 'formula', 'grain', 'unit', 'aliases', 'domain', 'dimensions',
+                           'category_join', 'grouping_semantics')}
                        for name, definition in definitions.items()
                        if set(re.findall(r'commerce\.\w+', definition['source'])) <= set(schema)}
         descriptions = {'commerce.products': 'Product catalog; one row per product, not dated inventory observations.',

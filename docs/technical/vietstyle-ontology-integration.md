@@ -1,5 +1,7 @@
 # VietStyle policy ontology integration
 
+Subsequent SQL synchronization: [order-category recognition and counting](order-category-counts.md) records the seven additional SQL commits imported through main `5fbe1c6` and a live verification of the reported category comparison.
+
 Implemented locally on QuocAn, 2026-11-14. Governing source: Enterprise Operating Policy v1.0, document VSC-OPS-POL-001. The registry records the exact source SHA256 and numbered policy-page references. The Inventory Policy Pack is a simulation draft and does not govern this integration.
 
 ## Main synchronization

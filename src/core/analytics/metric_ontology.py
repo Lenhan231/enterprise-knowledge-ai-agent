@@ -154,13 +154,21 @@ METRIC_ONTOLOGY = {
         "limitations": ("Doanh thu dòng hàng sau chiết khấu từ đơn đã giao; có thể khác commerce.sales.Revenue.",),
     },
     "order_count": {
-        "aliases": ("order count", "number of orders", "số đơn hàng", "lượng đơn hàng"),
+        "aliases": ("order count", "number of orders", "number of order", "count orders", "count order",
+                    "how many orders", "total orders",
+                    "đếm đơn hàng", "số đơn hàng", "lượng đơn hàng"),
         "source": "commerce.orders (+ commerce.geography khi lọc theo region)",
         "formula": "COUNT(DISTINCT order_id)",
         "grain": "order",
         "aggregation": "count_distinct",
         "unit": "orders",
-        "dimensions": ("order_date", "order_status", "customer_id", "region", "city", "payment_method"),
+        "dimensions": ("order_date", "order_status", "customer_id", "region", "city", "payment_method", "category"),
+        "category_join": ("commerce.orders.order_id = commerce.order_items.order_id",
+                          "commerce.order_items.product_id = commerce.products.product_id"),
+        "grouping_semantics": "For category counts, count DISTINCT orders.order_id in each products.category. "
+                              "Repeated item lines in the same category count once. An order with products in two "
+                              "categories counts once in each; category counts are not mutually exclusive. "
+                              "Use orders.order_date for the placement period and retain all statuses unless requested otherwise.",
     },
     "average_order_value": {
         "aliases": ("average order value", "aov", "giá trị đơn hàng trung bình"),
@@ -282,7 +290,8 @@ def resolve_metric_names(text: str) -> set[str]:
         for alias in (*definition["aliases"], metric_name):
             phrase = _normalize(alias)
             spelling = re.escape(phrase).replace(r'\ ', '[ _]')
-            pattern = re.compile(rf"(?<!\w){spelling}(?!\w)")
+            suffix = r'(?![ _]+items?\b)' if metric_name == 'order_count' else ''
+            pattern = re.compile(rf"(?<!\w){spelling}(?!\w){suffix}")
             matches.extend((match.start(), match.end(), metric_name) for match in pattern.finditer(normalized))
 
     selected: list[tuple[int, int, str]] = []

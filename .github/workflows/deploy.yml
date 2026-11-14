@@ -21,6 +21,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
+      - name: Check the VPS is reachable
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          # The secret is masked in logs, so describe it instead of printing it.
+          [ -n "$VPS_HOST" ] || { echo "VPS_HOST secret is empty"; exit 1; }
+          [ "$VPS_HOST" = "$(printf '%s' "$VPS_HOST" | tr -d '[:space:]')" ] || echo "VPS_HOST contains spaces or line breaks"
+          echo "VPS_HOST is ${#VPS_HOST} characters"
+          for port in 22 443; do
+            if timeout 15 bash -c "</dev/tcp/$VPS_HOST/$port" 2>/dev/null; then echo "port $port: reachable"; else echo "port $port: NOT reachable"; fi
+          done
       - name: Deploy over SSH
         env:
           VPS_DEPLOY_SSH_KEY: ${{ secrets.VPS_DEPLOY_SSH_KEY }}

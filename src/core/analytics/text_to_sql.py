@@ -620,8 +620,16 @@ def _date_parameter_indexes(sql: str, date_columns=None) -> set[int]:
 def current_year_month_range(question: str, today: date | None = None) -> tuple[date, date] | None:
     """Resolve a single requested month to a half-open range, defaulting to this year."""
     text = question.casefold()
-    month_match = re.search(r'\btháng\s*(1[0-2]|0?[1-9])\b|\bmonth\s*(1[0-2]|0?[1-9])\b', text)
-    month = int(next(group for group in month_match.groups() if group)) if month_match else None
+    today = today or date.today()
+    current_month_requested = bool(re.search(r'\bthis month\b|\bcurrent month\b|tháng này|tháng hiện tại', text))
+    explicit_years = re.findall(r'\b(?:19|20)\d{2}\b', text)
+    if current_month_requested:
+        if explicit_years and int(explicit_years[-1]) != today.year:
+            return None
+        month = today.month
+    else:
+        month_match = re.search(r'\btháng\s*(1[0-2]|0?[1-9])\b|\bmonth\s*(1[0-2]|0?[1-9])\b', text)
+        month = int(next(group for group in month_match.groups() if group)) if month_match else None
     if month is None:
         month_names = {name.casefold(): index for index, name in enumerate(calendar.month_name) if name}
         month_match = re.search(r'\b(' + '|'.join(month_names) + r')\b', text)
@@ -629,10 +637,9 @@ def current_year_month_range(question: str, today: date | None = None) -> tuple[
             month = month_names[month_match.group(1)]
     if month is None:
         return None
-    today = today or date.today()
-    explicit_year = re.findall(r'\b(?:19|20)\d{2}\b', text)
+    explicit_year = explicit_years
     current_year_requested = bool(re.search(r'\b(?:năm nay|this year|current year)\b', text))
-    if explicit_year and not current_year_requested:
+    if explicit_year and not current_year_requested and not current_month_requested:
         return None
     start = date(today.year, month, 1)
     end = date(today.year + (month == 12), month % 12 + 1, 1)

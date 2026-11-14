@@ -99,7 +99,14 @@ def _scalar_sql_finding(item, question):
     refs = ' '.join(f'[{citation}]' for citation in citations)
     parameters = item['data'].get('parameters') or []
     period = ''
-    if len(parameters) >= 2:
+    result_month = rows[0].get('month')
+    if result_month is not None:
+        try:
+            month = date.fromisoformat(str(result_month)[:10])
+            period = f' tháng {month.month} năm {month.year}'
+        except ValueError:
+            pass
+    if not period and len(parameters) >= 2:
         try:
             start = date.fromisoformat(str(parameters[0])[:10])
             end = date.fromisoformat(str(parameters[1])[:10])

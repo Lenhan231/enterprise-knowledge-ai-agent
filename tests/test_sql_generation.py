@@ -148,7 +148,8 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
         }]
 
         result = await SQLAnalyticsAgent(repository, llm=LLM()).run(
-            AgentRequest(question="doanh thu tháng 2 năm 2026", identity=ANALYST))
+            AgentRequest(question="doanh thu tháng 2 năm 2026", identity=ANALYST,
+                         metadata={"_original_question": "tháng trước thì sao"}))
 
         self.assertTrue(result.metadata["ok"], result.answer)
         self.assertEqual(result.data["rows"][0]["month"], date(2026, 2, 1))

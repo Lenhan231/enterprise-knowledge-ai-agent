@@ -214,7 +214,11 @@ class SQLAnalyticsAgent(BaseAgent):
         except MetricDefinitionError as error:
             return self._generation_error(error)
         metric_names = set() if direct is not None else resolve_metric_names(question)
-        explicit_month_plan = _explicit_month_revenue_plan(question, metric_names)
+        relative_month_followup = bool(re.fullmatch(
+            r'\s*(?:(?:vậy|còn)\s+)?(?:tháng trước(?: thì sao)?|last month|previous month)\s*[?!.]*\s*',
+            original_question, re.I))
+        explicit_month_plan = (_explicit_month_revenue_plan(question, metric_names)
+                               if relative_month_followup else None)
         month_comparison_plan = _month_over_month_revenue_plan(question, metric_names)
         named_sources = set(re.findall(r'\bcommerce\.\w+', re.sub(r"'(?:[^']|'')*'", '', question).casefold()))
         if self.inventory_only and direct is None and (named_sources - INVENTORY_SOURCES or any(

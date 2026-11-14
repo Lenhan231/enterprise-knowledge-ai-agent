@@ -69,7 +69,7 @@ class DoclingProcessor:
         from docling.datamodel.base_models import InputFormat
 
         invoice_converter = None
-        invoice_layout_threads = int(os.getenv("DOCUMENT_PROCESSING_INVOICE_LAYOUT_THREADS", "4"))
+        invoice_layout_threads = int(os.getenv("DOCUMENT_PROCESSING_INVOICE_LAYOUT_THREADS", "2"))
         for do_ocr, embedded, page_images in (
             (True, False, False), (False, False, False), (False, True, True),
         ):

@@ -54,7 +54,7 @@ existing detector configuration.
 CPU OCR pipelines default to 2 threads. `docling_num_threads` controls the OCR
 and Docling CPU budget. `docling_layout_num_threads` overrides only
 PP-DocLayoutV3; invoice uploads set it from
-`DOCUMENT_PROCESSING_INVOICE_LAYOUT_THREADS` (default 4), leaving VietOCR and
+`DOCUMENT_PROCESSING_INVOICE_LAYOUT_THREADS` (default 2), leaving VietOCR and
 its RapidOCR detector at 2 threads. CUDA retains the previous default of 4
 CPU threads.
 

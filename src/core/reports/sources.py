@@ -3,7 +3,7 @@
 import asyncio
 import json
 
-from core.agents.sql_analytics_agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
+from core.agents.sql.agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
 from core.models.agents import Evidence
 from core.agents.runtime import remaining
 
@@ -68,7 +68,7 @@ async def collect_sources(request, headings, source_mode, knowledge, analytics, 
             limitations.append('Orchestrated source collection is temporarily unavailable.')
     elif source_mode != "documents":
         try:
-            from core.agents.analytics_agent import AnalyticsAgent
+            from core.agents.sql.analytics_agent import AnalyticsAgent
             raw_agent = analytics.sql_agent if isinstance(analytics, AnalyticsAgent) else analytics
             timeout = remaining(60)
             result = await asyncio.wait_for(raw_agent.run(request), timeout=timeout)

@@ -208,8 +208,8 @@ async def generate_planned_report(agent, request, uploaded, *, source_mode, outp
                        template_decision_required=needs_template, scope_decision_required=needs_scope, **details), b'', media_type
     template = suggested if uploaded is None or template_choice == 'suggested' else uploaded
     analytics = agent.analytics_agent
-    from core.agents.analytics_agent import AnalyticsAgent
-    from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+    from core.agents.sql.analytics_agent import AnalyticsAgent
+    from core.agents.sql.agent import SQLAnalyticsAgent
     sql_agent = analytics.sql_agent if isinstance(analytics, AnalyticsAgent) else analytics
     if not isinstance(sql_agent, SQLAnalyticsAgent):
         return outcome('failed', 'Validated SQL query service is unavailable.', failure_type='source_unavailable', **details), b'', media_type

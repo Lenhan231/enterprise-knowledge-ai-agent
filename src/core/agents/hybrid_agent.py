@@ -1,8 +1,8 @@
 """Combine grounded document retrieval and verified database metrics."""
 
 from core.agents.base import BaseAgent
-from core.agents.knowledge_agent import KnowledgeAgent
-from core.sql_agent.agent import SQLAnalyticsAgent
+from core.agents.knowledge.agent import KnowledgeAgent
+from core.agents.sql.agent import SQLAnalyticsAgent
 from core.models.agents import AgentRequest, AgentResult
 
 

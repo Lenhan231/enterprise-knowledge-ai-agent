@@ -72,6 +72,16 @@ class RequestPlanningTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.tasks[0].question, question)
         self.assertFalse(llm.prompts)
 
+    async def test_revenue_previous_month_followup_resolves_from_conversation_scope(self):
+        llm = Provider(RuntimeError('planner should not be called'))
+        history = [{'question': 'doanh thu cho tháng 3', 'scope': 'doanh thu cho tháng 3'}]
+
+        result = await plan_request(AgentRequest(question='tháng trước thì sao'), llm, history=history)
+
+        self.assertEqual(result.tasks[0].agent, 'sql')
+        self.assertEqual(result.tasks[0].question, 'doanh thu tháng 2 năm 2026')
+        self.assertFalse(llm.prompts)
+
     async def test_genuine_ambiguity_is_targeted_and_repair_is_bounded(self):
         llm = Provider('bad json', {'objective': 'Compare revenue', 'clarification': 'Which years?', 'tasks': []})
         result = await plan_request(AgentRequest(question='Compare revenue and explain policy'), llm)

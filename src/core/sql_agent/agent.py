@@ -76,6 +76,23 @@ def _month_over_month_revenue_plan(question: str, metric_names: set[str], today:
                      explanation="Compare current and previous calendar month revenue using code-resolved date bounds.")
 
 
+def _explicit_month_revenue_plan(question: str, metric_names: set[str], today: date | None = None):
+    if metric_names != {"revenue"}:
+        return None
+    match = re.search(r"\btháng\s+(0?[1-9]|1[0-2])(?:\s+năm\s+((?:19|20)\d{2}))?\b", question, re.I)
+    if not match:
+        return None
+    year, month = int(match.group(2) or (today or date.today()).year), int(match.group(1))
+    start = date(year, month, 1)
+    end = date(year + (month == 12), month % 12 + 1, 1)
+    sql = (
+        "SELECT CAST($1 AS DATE) AS month, SUM(s.revenue) AS revenue "
+        "FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 LIMIT 1"
+    )
+    return QueryPlan(sql=sql, parameters=(start, end),
+                     explanation="Compile a calendar-month revenue total from commerce.sales.")
+
+
 def payload_to_agent_result(payload: Mapping[str, Any], *, agent: str = "analytics") -> AgentResult:
     if not isinstance(payload, Mapping):
         raise TypeError("analytics payload must be a mapping")
@@ -197,6 +214,7 @@ class SQLAnalyticsAgent(BaseAgent):
         except MetricDefinitionError as error:
             return self._generation_error(error)
         metric_names = set() if direct is not None else resolve_metric_names(question)
+        explicit_month_plan = _explicit_month_revenue_plan(question, metric_names)
         month_comparison_plan = _month_over_month_revenue_plan(question, metric_names)
         named_sources = set(re.findall(r'\bcommerce\.\w+', re.sub(r"'(?:[^']|'')*'", '', question).casefold()))
         if self.inventory_only and direct is None and (named_sources - INVENTORY_SOURCES or any(
@@ -304,7 +322,9 @@ class SQLAnalyticsAgent(BaseAgent):
             return self._generation_error(error)
         for attempt in range(2):
             try:
-                if month_comparison_plan is not None:
+                if explicit_month_plan is not None:
+                    plan = explicit_month_plan
+                elif month_comparison_plan is not None:
                     plan = month_comparison_plan
                 elif direct is not None:
                     plan = compile_field_query(direct)
@@ -341,7 +361,7 @@ class SQLAnalyticsAgent(BaseAgent):
                             primary_keys=primary_keys, date_columns=date_columns).sources):
                         raise SQLValidationError('The requested cross-domain contract must retain inventory, orders and order_items.')
                     definitions = ({"revenue": get_metric_definition("revenue")}
-                                   if month_comparison_plan is not None else
+                                   if month_comparison_plan is not None or explicit_month_plan is not None else
                                    validate_metric_definitions(plan.sql, metric_names, plan.parameters, table_columns,
                                        question=interpretation.date_question() if interpretation and interpretation.domain == 'inventory' else question))
                     if interpretation:

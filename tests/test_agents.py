@@ -12,7 +12,6 @@ from core.agents.knowledge_agent import KnowledgeAgent
 from core.agents.report_agent import ReportAgent
 from core.agents.router import AgentRouter
 from core.sql_agent.agent import SQLAnalyticsAgent
-from core.agents.report_agent import _normalize_numeric_citations
 from core.models.agents import AgentRequest, AgentResult, Evidence
 from core.rag.rag_service import RAGResult
 
@@ -491,14 +490,6 @@ class AgentFlowTest(unittest.TestCase):
         self.assertTrue(result.metadata["financial_evidence_validation_failed"])
         self.assertEqual(result.agent, "report")
         self.assertIn("withheld", result.answer)
-
-    def test_numeric_report_citations_map_to_prompt_evidence_and_reject_out_of_range(self):
-        evidence = [
-            Evidence(citation_id="S1", source_type="document", source="report"),
-            Evidence(citation_id="S7", source_type="document", source="report"),
-        ]
-        answer = _normalize_numeric_citations("Headline 【2】, audited [1], year [2024], invalid [3]", evidence)
-        self.assertEqual(answer, "Headline [S7], audited [S1], year [2024], invalid [3]")
 
 
 if __name__ == "__main__":

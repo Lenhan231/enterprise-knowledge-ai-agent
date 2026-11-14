@@ -4,7 +4,10 @@ RUN python -m pip install --no-cache-dir uv==0.12.15
 COPY pyproject.toml uv.lock ./
 RUN uv export --locked --no-dev --no-hashes --no-emit-project --extra docling --output-file /constraints.txt > /dev/null
 RUN uv venv && uv pip install --no-cache --torch-backend cpu -c /constraints.txt fastapi uvicorn python-dotenv langchain-huggingface sentence-transformers
-COPY src ./src
+# Only what SERVICE_KIND=embeddings imports, so unrelated code changes do not rebuild/restart this service
+# (and reload its model). tests/test_model_service_images.py fails if an import is added without a COPY here.
+COPY src/core/services/__init__.py src/core/services/client.py src/core/services/runtime.py ./src/core/services/
+COPY src/core/embeddings/__init__.py src/core/embeddings/embedding_service.py src/core/embeddings/settings.py ./src/core/embeddings/
 ENV PATH="/app/.venv/bin:$PATH" PYTHONPATH="/app/src" PYTHONUNBUFFERED="1" HF_HOME="/models"
 EXPOSE 8000
 ENV SERVICE_KIND="embeddings" EMBEDDING_BACKEND="local" RERANKER_ALLOW_DOWNLOAD="1"

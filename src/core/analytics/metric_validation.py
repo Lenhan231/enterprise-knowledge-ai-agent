@@ -74,11 +74,11 @@ def _has_explicit_time_scope(question):
     months = "january|february|march|april|may|june|july|august|september|october|november|december"
     return bool(re.search(
         r"\b(?:19|20)\d{2}\b|\b\d{4}-\d{2}-\d{2}\b|"
-        r"\b(?:today|yesterday|tomorrow|ytd|mtd|qtd|latest|most recent|to date)\b|"
+        r"\b(?:today|yesterday|tomorrow|ytd|mtd|qtd|latest|most recent|to date|currently)\b|"
         r"\b(?:this|last|past|previous|current)\s+(?:day|week|month|quarter|year)\b|"
         r"\b(?:" + months + r")\b|"
         r"\b(?:hôm nay|hôm qua|ngày mai|tuần này|tuần trước|tháng này|tháng trước|"
-        r"năm nay|năm trước|quý này|quý trước|mới nhất|gần nhất|đến nay)\b|"
+        r"năm nay|năm trước|quý này|quý trước|mới nhất|gần nhất|đến nay|hiện tại|đang hoạt động)\b|"
         r"\b(?:tháng|quý|năm)\s*(?:\d{1,2}|\d{4})\b",
         text,
     ))

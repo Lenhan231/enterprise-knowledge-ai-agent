@@ -283,7 +283,12 @@ class SQLAnalyticsAgent(BaseAgent):
             except MetricDefinitionError as error:
                 if error.code != 'snapshot_required':
                     raise
-            tables = relevant_schema_tables(question, {name:get_metric_definition(name) for name in metric_names}, table_columns)
+            if promotion_metric == "promotion_revenue":
+                tables = {"commerce.order_items", "commerce.promotions"}
+            elif promotion_metric == "active_promotion_count":
+                tables = {"commerce.promotions"}
+            else:
+                tables = relevant_schema_tables(question, {name:get_metric_definition(name) for name in metric_names}, table_columns)
             if (direct is None and 'commerce.inventory' in tables and all(
                     get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
                     and re.search(r'\bcurrent\b|\btoday\b|hiện tại|hôm nay', re.sub(r"'(?:[^']|'')*'", '', question), re.I)

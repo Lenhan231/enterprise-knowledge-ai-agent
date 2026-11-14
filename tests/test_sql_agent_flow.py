@@ -4,6 +4,7 @@ import json
 import os
 import sys
 import unittest
+from datetime import date
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock, patch
@@ -14,6 +15,7 @@ from core.analytics.join_validation import PRIMARY_KEYS
 from core.analytics.text_to_sql import APPROVED_COLUMNS, APPROVED_DATE_COLUMNS, APPROVED_JOINS
 from core.sql_agent.agent import SQLAnalyticsAgent
 from core.sql_agent.assistant_endpoint import run_sql_assistant
+from core.models.agents import AgentRequest, VerifiedIdentity
 
 
 PRODUCT_GROWTH_SQL = """WITH filtered_items AS (
@@ -112,6 +114,63 @@ def assistant(repository, provider):
 
 
 class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
+    async def test_hard_promotion_questions_compile_and_pass_validators_without_llm(self):
+        cases = (
+            (
+                "có bao nhiêu mã giảm giá hiện tại",
+                "active_promotion_count",
+                "FROM commerce.promotions AS p WHERE p.start_date <= $1 AND p.end_date >= $1",
+                1,
+            ),
+            (
+                "bao nhiêu mã giảm giá đang hoạt động?",
+                "active_promotion_count",
+                "FROM commerce.promotions AS p WHERE p.start_date <= $1 AND p.end_date >= $1",
+                1,
+            ),
+            (
+                "10 mã giảm giá có doanh thu cao nhất",
+                "promotion_revenue",
+                "FROM commerce.order_items AS oi JOIN commerce.promotions AS p ON p.promo_id = oi.promo_id",
+                10,
+            ),
+            (
+                "Cho tôi top 5 promo có revenue cao nhất",
+                "promotion_revenue",
+                "FROM commerce.order_items AS oi JOIN commerce.promotions AS p ON p.promo_id = oi.promo_id",
+                5,
+            ),
+            (
+                "Top 10 discount codes by total revenue",
+                "promotion_revenue",
+                "FROM commerce.order_items AS oi JOIN commerce.promotions AS p ON p.promo_id = oi.promo_id",
+                10,
+            ),
+        )
+        for question, metric, expected_sql, limit in cases:
+            with self.subTest(question=question):
+                provider = FakeProvider([])
+                repository = FakeRepository()
+                agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+                request = AgentRequest(
+                    question=question,
+                    identity=VerifiedIdentity(subject="test", permissions={"analytics:read"}),
+                )
+
+                result = await agent.run_payload(request)
+
+                self.assertEqual(result["query_status"], "executed", result)
+                self.assertEqual(set(result["metadata"]["metrics"]), {metric})
+                self.assertIn(expected_sql, result["sql"])
+                self.assertTrue(result["sql"].endswith(f"LIMIT {limit}"))
+                if metric == "active_promotion_count":
+                    self.assertEqual(result["parameters"], [date.today()])
+                else:
+                    self.assertIn("oi.promo_id_2 IS NULL", result["sql"])
+                    self.assertIn("oi.discount_amount IS NOT NULL", result["sql"])
+                    self.assertEqual(result["parameters"], [])
+                self.assertEqual(provider.prompts, [])
+
     async def test_product_growth_repairs_bad_schema_then_waits_for_approval_and_executes(self):
         question = (
             "Tìm 10 sản phẩm có doanh thu sau giảm giá tăng mạnh nhất từ năm 2021 sang 2022; "

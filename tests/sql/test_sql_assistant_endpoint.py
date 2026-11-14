@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock
 
 from fastapi.testclient import TestClient
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from core.agents.main import create_app
 from core.analytics.text_to_sql import APPROVED_COLUMNS

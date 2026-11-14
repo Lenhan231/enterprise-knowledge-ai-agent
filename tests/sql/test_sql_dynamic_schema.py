@@ -6,7 +6,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import AsyncMock, Mock
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
 from core.analytics.text_to_sql import SQLValidationError, validate_commerce_sql
 from core.models.agents import AgentRequest, VerifiedIdentity

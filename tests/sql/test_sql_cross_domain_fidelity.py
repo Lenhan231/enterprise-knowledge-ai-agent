@@ -6,7 +6,7 @@ import sqlite3
 import sys
 import unittest
 
-ROOT=Path(__file__).resolve().parents[1]
+ROOT=Path(__file__).resolve().parents[2]
 WORK=Path(os.environ.get('SQL_CROSS_DOMAIN_ROOT',ROOT))
 sys.path[:0]=[str(WORK),str(WORK/'src')]
 from core.analytics.text_to_sql import decode_query_plan,APPROVED_COLUMNS

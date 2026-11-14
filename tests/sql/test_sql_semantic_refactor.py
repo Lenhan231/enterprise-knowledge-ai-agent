@@ -5,7 +5,7 @@ from datetime import date
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock, patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
 from core.analytics.metric_mapping import decode_metric_mapping
 from core.analytics.metric_validation import MetricDefinitionError, validate_metric_definitions

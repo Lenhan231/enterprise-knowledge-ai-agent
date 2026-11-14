@@ -12,7 +12,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
 from core.analytics.metric_mapping import decode_sql_turn
 from core.analytics.metric_validation import MetricDefinitionError
 from core.agents.execution import Execution, TaskOutcome
-from core.agents.response import _scalar_sql_finding, assemble_response
+from core.agents.response import _month_over_month_sql_finding, _scalar_sql_finding, assemble_response
 from core.agents.router import AgentRouter
 from core.sql_agent.agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
 from core.models.agent_plan import AgentPlan, AgentTask
@@ -241,6 +241,23 @@ class OriginalQuestionContextTest(unittest.IsolatedAsyncioTestCase):
             AgentRequest(question=question, identity=IDENTITY), plan, execution, provider=None)
 
         self.assertEqual(answer.answer, 'Doanh thu tháng 11 năm 2026: 1,000,968.55 [S1].')
+
+    async def test_month_over_month_result_is_summarized_in_auto_answer(self):
+        question = 'so sánh với tháng trước'
+        plan = AgentPlan(objective=question, tasks=[AgentTask(id='sql', agent='sql', question='Compare current revenue with previous month')])
+        row = {'month': '2026-11-01', 'previous_month': '2026-10-01', 'revenue': '1000968.55',
+               'previous_month_revenue': '1754342.36', 'revenue_change': '-753373.81',
+               'revenue_change_fraction': '-0.42943374518984994468'}
+        result = AgentResult(answer='Evidence fallback', agent='analytics',
+            evidence=[Evidence(citation_id='S1', source_type='database', source='commerce.sales')],
+            data={'rows': [row]}, metadata={'ok': True})
+        execution = SimpleNamespace(
+            outcomes={'sql': TaskOutcome(plan.tasks[0], 'complete', result)}, trace=[], invocations=1)
+
+        answer = await assemble_response(AgentRequest(question=question, identity=IDENTITY), plan, execution, provider=None)
+
+        self.assertEqual(answer.answer,
+            'Doanh thu tháng 11 năm 2026: 1,000,968.55; tháng 10 năm 2026: 1,754,342.36, giảm 753,373.81 so với tháng trước [S1].')
 
     def test_scalar_fallback_formats_value_and_uses_bound_month(self):
         item = {

@@ -116,6 +116,36 @@ def _scalar_sql_finding(item, question):
     return f'{label}{period}: {rendered} {refs}.'
 
 
+def _month_over_month_sql_finding(item, question):
+    rows = item['data'].get('rows', [])
+    if len(rows) != 1:
+        return None
+    row = rows[0]
+    required = {'month', 'previous_month', 'revenue', 'previous_month_revenue', 'revenue_change'}
+    citations = [e['citation_id'] for e in item['evidence'] if e.get('citation_id')]
+    if not required <= set(row) or not citations or any(row[name] is None for name in required):
+        return None
+    try:
+        current_date = date.fromisoformat(str(row['month'])[:10])
+        previous_date = date.fromisoformat(str(row['previous_month'])[:10])
+        current = format(Decimal(str(row['revenue'])), ',f')
+        previous = format(Decimal(str(row['previous_month_revenue'])), ',f')
+        change_value = Decimal(str(row['revenue_change']))
+        change = format(abs(change_value), ',f')
+    except (InvalidOperation, TypeError, ValueError):
+        return None
+    refs = ' '.join(f'[{citation}]' for citation in citations)
+    vietnamese = bool(re.search(r'[ăâđêôơưáàảãạấầẩẫậắằẳẵộốồổỗỡớờởợứừửữựýỳỷỹỵ]', question, re.I))
+    if vietnamese:
+        direction = 'tăng' if change_value > 0 else 'giảm' if change_value < 0 else 'không đổi'
+        delta = f', {direction} {change} so với tháng trước' if change_value else ', không đổi so với tháng trước'
+        return (f'Doanh thu tháng {current_date.month} năm {current_date.year}: {current}; '
+                f'tháng {previous_date.month} năm {previous_date.year}: {previous}{delta} {refs}.')
+    direction = 'increased' if change_value > 0 else 'decreased' if change_value < 0 else 'was unchanged'
+    delta = f', {direction} by {change} versus {previous_date:%B %Y}' if change_value else ', unchanged versus the previous month'
+    return (f'Revenue for {current_date:%B %Y}: {current}; {previous_date:%B %Y}: {previous}{delta} {refs}.')
+
+
 async def assemble_response(request, plan, execution, provider):
     active = [execution.outcomes[t.id] for t in plan.tasks if t.id in execution.outcomes]
     usable = [o for o in active if o.result and o.result.evidence and o.status in {'complete', 'partial'}]
@@ -157,10 +187,11 @@ async def assemble_response(request, plan, execution, provider):
     fallback = True
     answer = ''
     if len(usable) == 1 and len(plan.tasks) == 1 and status == 'complete':
-        scalar_answer = (_scalar_sql_finding(inputs[0], request.question)
-                         if inputs[0]['agent'] == 'sql' else None)
-        answer = scalar_answer or inputs[0]['answer']
-        fallback = False if scalar_answer else bool(usable[0].result.metadata.get('fallback', False))
+        deterministic_answer = (_month_over_month_sql_finding(inputs[0], request.question)
+                                or _scalar_sql_finding(inputs[0], request.question)
+                                if inputs[0]['agent'] == 'sql' else None)
+        answer = deterministic_answer or inputs[0]['answer']
+        fallback = False if deterministic_answer else bool(usable[0].result.metadata.get('fallback', False))
     elif usable:
         serialized = json.dumps(inputs, ensure_ascii=False, default=str)
         if len(serialized) <= 32_000:
@@ -207,7 +238,8 @@ async def assemble_response(request, plan, execution, provider):
                 if answer:
                     continue
                 rows = item['data'].get('rows', [])
-                scalar = _scalar_sql_finding(item, request.question)
+                scalar = (_month_over_month_sql_finding(item, request.question)
+                          or _scalar_sql_finding(item, request.question))
                 if scalar:
                     scalar_answer = scalar
                     blocks.append(scalar)

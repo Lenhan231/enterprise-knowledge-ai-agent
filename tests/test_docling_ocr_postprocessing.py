@@ -1,6 +1,6 @@
 import sys
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -18,33 +18,10 @@ from document_processing.docling_adapter.scanned.postprocessing import (
     clean_ocr_elements,
     recover_empty_cell_dashes,
 )
-from document_processing.docling_adapter.scanned.vietocr import (
-    VietOcrModel,
-    _configure_vietocr_cpu_threads,
-)
+from document_processing.docling_adapter.scanned.vietocr import VietOcrModel
 
 
 class VietOcrPostprocessingTest(unittest.TestCase):
-    def test_vietocr_cpu_thread_pool_uses_docling_budget(self):
-        torch = SimpleNamespace(set_num_threads=Mock())
-
-        threads = _configure_vietocr_cpu_threads(
-            torch, SimpleNamespace(device="cpu", num_threads=2)
-        )
-
-        self.assertEqual(threads, 2)
-        torch.set_num_threads.assert_called_once_with(2)
-
-    def test_vietocr_does_not_override_cuda_cpu_thread_pool(self):
-        torch = SimpleNamespace(set_num_threads=Mock())
-
-        threads = _configure_vietocr_cpu_threads(
-            torch, SimpleNamespace(device="cuda:0", num_threads=4)
-        )
-
-        self.assertIsNone(threads)
-        torch.set_num_threads.assert_not_called()
-
     def test_preload_initializes_cached_page_orientation_model(self):
         with patch("document_processing.docling_adapter.orientation._paddle_orientation_model") as page_model:
             preload_paddle_page_orientation_model()

@@ -21,28 +21,26 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - name: Check the VPS is reachable
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-        run: |
-          # The secret is masked in logs, so describe it instead of printing it.
-          [ -n "$VPS_HOST" ] || { echo "VPS_HOST secret is empty"; exit 1; }
-          [ "$VPS_HOST" = "$(printf '%s' "$VPS_HOST" | tr -d '[:space:]')" ] || echo "VPS_HOST contains spaces or line breaks"
-          echo "VPS_HOST is ${#VPS_HOST} characters"
-          for port in 22 443; do
-            if timeout 15 bash -c "</dev/tcp/$VPS_HOST/$port" 2>/dev/null; then echo "port $port: reachable"; else echo "port $port: NOT reachable"; fi
-          done
-      - name: Deploy over SSH
+      # The VPS's public SSH port only admits the team's IPs (provider firewall), so the job reaches it over the
+      # tailnet instead, still with OpenSSH and the deploy-only key.
+      - name: Join the tailnet as tag:ci
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+      - name: Deploy over SSH (tailnet)
         env:
           VPS_DEPLOY_SSH_KEY: ${{ secrets.VPS_DEPLOY_SSH_KEY }}
           VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
-          VPS_HOST: ${{ secrets.VPS_HOST }}
         run: |
           install -m 700 -d ~/.ssh
           printf '%s\n' "$VPS_DEPLOY_SSH_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
-          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          vps_ip=$(tailscale ip -4 vps)
+          # Same host keys as the public address, listed under the VPS's tailnet address.
+          printf '%s\n' "$VPS_KNOWN_HOSTS" | sed -E "s/^[^ ]+ /$vps_ip /" > ~/.ssh/known_hosts
           # On the VPS this key may only run scripts/deploy/deploy.sh (forced command), so no command is sent.
-          ssh -i ~/.ssh/deploy -o BatchMode=yes -o ServerAliveInterval=30 "root@$VPS_HOST"
+          ssh -i ~/.ssh/deploy -o BatchMode=yes -o ServerAliveInterval=30 "root@$vps_ip"
 
   home-pc:
     name: Home PC (main backend)

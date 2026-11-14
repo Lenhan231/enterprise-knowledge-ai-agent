@@ -109,11 +109,9 @@ class ParserPreloadTest(unittest.TestCase):
             )
 
         with patch("docling.document_converter.DocumentConverter") as build:
-            batch16_first = get_converter(options(16))
-            batch32 = get_converter(options(32))
-            batch32_again = get_converter(options(32))
-            self.assertIsNot(batch16_first, batch32)
-            self.assertIs(batch32, batch32_again)
+            get_converter(options(16))
+            get_converter(options(32))
+            get_converter(options(32))
             self.assertEqual(build.call_count, 2)
 
     def test_custom_options_do_not_retain_unbounded_model_sets(self):

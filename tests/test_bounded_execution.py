@@ -85,7 +85,7 @@ class BoundedExecutionTest(unittest.IsolatedAsyncioTestCase):
             AgentRequest(question='Revenue this month', identity=IDENTITY))
         self.assertEqual(result.metadata['status'], 'clarification_required')
         self.assertEqual(len(sql.requests), 1)
-        self.assertEqual(len(llm.prompts), 1)
+        self.assertFalse(llm.prompts)
 
     async def test_partial_failure_preserves_success_and_blocks_descendants(self):
         tasks = [task('k', 'knowledge', 'Policy'), task('s', 'sql', 'Count orders')]

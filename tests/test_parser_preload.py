@@ -76,10 +76,12 @@ class ParserPreloadTest(unittest.TestCase):
         with (
             patch("document_processing.docling_adapter.processor.get_converter", side_effect=converters),
             patch("document_processing.docling_adapter.orientation.preload_paddle_page_orientation_model"),
+            patch("document_processing.docling_adapter.orientation.preload_paddle_textline_orientation_model") as textline_preload,
         ):
             processor.preload()
 
         layout_warmup.assert_called_once_with()
+        textline_preload.assert_called_once_with()
         for converter in converters:
             converter.initialize_pipeline.assert_called_once()
 

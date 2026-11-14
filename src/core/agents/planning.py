@@ -8,6 +8,12 @@ from core.prompts.agents import PLANNING_PROMPT, PLANNING_REPAIR_PROMPT
 
 
 async def plan_request(request, provider, *, history=(), previous=None, report_headings=None, sql_schema=None):
+    if not history and previous is None and report_headings is None:
+        from core.agents.intent_classifier import IntentClassifier
+        intent = IntentClassifier.fallback(request.question)
+        if intent.intent == 'analytics' and intent.needs_sql and not intent.needs_knowledge:
+            return AgentPlan(objective=request.question, fallback=True, tasks=[{
+                'id': 'fallback', 'agent': 'sql', 'question': request.question}])
     from core.analytics.text_to_sql import APPROVED_COLUMNS
     data = {'question': request.question, 'history': history, 'previous': previous,
             'available_sql_schema': {table: sorted(columns) for table, columns in (APPROVED_COLUMNS if sql_schema is None else sql_schema).items()}}
@@ -43,8 +49,7 @@ async def plan_request(request, provider, *, history=(), previous=None, report_h
             term in text for term in ('policy', 'procedure', 'chính sách', 'quy trình'))
         # A single analytics request needs no task decomposition. Let the SQL
         # agent apply its own ambiguity and metric safeguards during an outage.
-        sql_only = intent.intent == 'analytics' and intent.needs_sql and not intent.needs_knowledge
-        if policy_only or sql_only:
+        if policy_only:
             return AgentPlan(objective=request.question, fallback=True, tasks=[{
-                'id': 'fallback', 'agent': 'knowledge' if policy_only else 'sql', 'question': request.question}])
+                'id': 'fallback', 'agent': 'knowledge', 'question': request.question}])
     raise ValueError('Automatic task planning is temporarily unavailable; please retry or select a specialist mode.')

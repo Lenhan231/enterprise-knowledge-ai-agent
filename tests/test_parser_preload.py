@@ -96,6 +96,26 @@ class ParserPreloadTest(unittest.TestCase):
             self.assertIs(first, second)
             build.assert_called_once()
 
+    def test_converter_cache_distinguishes_custom_ocr_options(self):
+        from document_processing.docling_adapter.converters import get_converter, _converters
+        from docling.datamodel.pipeline_options import PdfPipelineOptions
+        from document_processing.docling_adapter.scanned.vietocr import VietOcrOptions
+        _converters.clear()
+        self.addCleanup(_converters.clear)
+
+        def options(batch_size):
+            return PdfPipelineOptions(
+                ocr_options=VietOcrOptions(recognition_batch_size=batch_size)
+            )
+
+        with patch("docling.document_converter.DocumentConverter") as build:
+            batch16_first = get_converter(options(16))
+            batch32 = get_converter(options(32))
+            batch32_again = get_converter(options(32))
+            self.assertIsNot(batch16_first, batch32)
+            self.assertIs(batch32, batch32_again)
+            self.assertEqual(build.call_count, 2)
+
     def test_custom_options_do_not_retain_unbounded_model_sets(self):
         from document_processing.docling_adapter.converters import get_converter, _converters
         from docling.datamodel.pipeline_options import PdfPipelineOptions

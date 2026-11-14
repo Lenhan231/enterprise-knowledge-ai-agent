@@ -106,7 +106,7 @@ def _completed_months_revenue_plan(question: str, metric_names: set[str], today:
         question.casefold(),
     )
     completed = bool(re.search(
-        r"completed|finished|đã\s+hoàn\s+tất|hoàn\s+tất|gần\s+nhất|most\s+recent|last|past",
+        r"completed|finished|đã\s+hoàn\s+tất|hoàn\s+tất|gần\s+(?:nhất|đây)|most\s+recent|last|past",
         question.casefold(),
     ))
     if not match or not completed:

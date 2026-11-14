@@ -76,6 +76,14 @@ class MetricEnforcementTest(unittest.TestCase):
         with self.assertRaises(MetricDefinitionError):
             self.validate("SELECT COUNT(o.order_id) AS n FROM commerce.orders AS o LIMIT 1", {"order_count"})
 
+    def test_order_count_can_be_grouped_by_customer(self):
+        self.validate(
+            "SELECT o.customer_id, COUNT(DISTINCT o.order_id) AS order_count "
+            "FROM commerce.orders AS o GROUP BY o.customer_id "
+            "ORDER BY order_count DESC LIMIT 1",
+            {"order_count"},
+        )
+
     def test_regional_revenue_requires_the_delivered_filter(self):
         from core.analytics.metric_validation import MetricDefinitionError
         sql = (

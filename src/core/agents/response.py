@@ -1,15 +1,6 @@
-"""Compatibility imports for evidence-based response synthesis."""
+"""Compatibility alias for evidence-based response synthesis."""
 
-from core.agents.decision_support.response import (
-    _month_over_month_sql_finding,
-    _scalar_sql_finding,
-    _supported_numbers,
-    assemble_response,
-)
+import sys
+from core.agents.decision_support import response as _implementation
 
-__all__ = [
-    "_month_over_month_sql_finding",
-    "_scalar_sql_finding",
-    "_supported_numbers",
-    "assemble_response",
-]
+sys.modules[__name__] = _implementation

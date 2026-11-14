@@ -1,5 +1,6 @@
-"""Compatibility import for the SQL analytics wrapper."""
+"""Compatibility alias for the SQL analytics wrapper."""
 
-from core.agents.sql.analytics_agent import AnalyticsAgent
+import sys
+from core.agents.sql import analytics_agent as _implementation
 
-__all__ = ["AnalyticsAgent"]
+sys.modules[__name__] = _implementation

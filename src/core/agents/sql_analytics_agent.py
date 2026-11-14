@@ -1,5 +1,6 @@
-"""Backward-compatible imports for the SQL analytics agent."""
+"""Compatibility alias for the SQL analytics agent."""
 
-from core.agents.sql.agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
+import sys
+from core.agents.sql import agent as _implementation
 
-__all__ = ["AnalyticsPermissionDenied", "SQLAnalyticsAgent"]
+sys.modules[__name__] = _implementation

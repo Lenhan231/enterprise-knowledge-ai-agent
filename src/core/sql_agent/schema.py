@@ -1,5 +1,6 @@
-"""Compatibility imports for SQL schema discovery."""
+"""Compatibility alias for SQL schema discovery."""
 
-from core.agents.sql.schema import configured_schemas, discover_schema
+import sys
+from core.agents.sql import schema as _implementation
 
-__all__ = ["configured_schemas", "discover_schema"]
+sys.modules[__name__] = _implementation

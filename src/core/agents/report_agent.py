@@ -1,5 +1,6 @@
-"""Compatibility imports for the Report agent."""
+"""Compatibility alias for the Report agent."""
 
-from core.agents.report.agent import MIME_TYPES, ReportAgent
+import sys
+from core.agents.report import agent as _implementation
 
-__all__ = ["MIME_TYPES", "ReportAgent"]
+sys.modules[__name__] = _implementation

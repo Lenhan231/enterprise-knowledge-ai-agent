@@ -1,5 +1,6 @@
-"""Compatibility import for the decision-support router."""
+"""Compatibility alias for the decision-support router."""
 
-from core.agents.decision_support.router import AgentRouter
+import sys
+from core.agents.decision_support import router as _implementation
 
-__all__ = ["AgentRouter"]
+sys.modules[__name__] = _implementation

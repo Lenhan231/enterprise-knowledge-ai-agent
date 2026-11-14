@@ -1,5 +1,6 @@
-"""Compatibility import for decision-support planning."""
+"""Compatibility alias for decision-support planning."""
 
-from core.agents.decision_support.planning import plan_request
+import sys
+from core.agents.decision_support import planning as _implementation
 
-__all__ = ["plan_request"]
+sys.modules[__name__] = _implementation

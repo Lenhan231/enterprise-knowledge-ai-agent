@@ -1,5 +1,6 @@
-"""Compatibility imports for bounded agent execution."""
+"""Compatibility alias for bounded agent execution."""
 
-from core.agents.decision_support.execution import Execution, TaskOutcome, authorize, outcome_status
+import sys
+from core.agents.decision_support import execution as _implementation
 
-__all__ = ["Execution", "TaskOutcome", "authorize", "outcome_status"]
+sys.modules[__name__] = _implementation

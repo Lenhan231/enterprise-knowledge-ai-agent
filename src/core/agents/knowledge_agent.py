@@ -1,5 +1,6 @@
-"""Compatibility import for the Knowledge agent."""
+"""Compatibility alias for the Knowledge agent."""
 
-from core.agents.knowledge.agent import KnowledgeAgent
+import sys
+from core.agents.knowledge import agent as _implementation
 
-__all__ = ["KnowledgeAgent"]
+sys.modules[__name__] = _implementation

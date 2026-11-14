@@ -1,5 +1,6 @@
-"""Compatibility import for the SQL assistant endpoint."""
+"""Compatibility alias for the SQL assistant endpoint."""
 
-from core.agents.sql.assistant_endpoint import run_sql_assistant
+import sys
+from core.agents.sql import assistant_endpoint as _implementation
 
-__all__ = ["run_sql_assistant"]
+sys.modules[__name__] = _implementation

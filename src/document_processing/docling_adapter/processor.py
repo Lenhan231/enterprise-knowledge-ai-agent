@@ -69,6 +69,7 @@ class DoclingProcessor:
         from docling.datamodel.base_models import InputFormat
 
         invoice_converter = None
+        invoice_layout_threads = int(os.getenv("DOCUMENT_PROCESSING_INVOICE_LAYOUT_THREADS", "4"))
         for do_ocr, embedded, page_images in (
             (True, False, False), (False, False, False), (False, True, True),
         ):
@@ -77,6 +78,7 @@ class DoclingProcessor:
             table_mode = "fast" if do_ocr and not embedded else None
             converter = get_converter(self._pipeline_options(
                 do_ocr, embedded, page_images, table_mode=table_mode,
+                layout_threads=invoice_layout_threads if do_ocr and not embedded else None,
             ))
             converter.initialize_pipeline(InputFormat.PDF)
             if do_ocr and not embedded:
@@ -327,6 +329,7 @@ class DoclingProcessor:
         *,
         source_format: str = "pdf",
         table_mode: str | None = None,
+        layout_threads: int | None = None,
     ) -> Any:
         from docling.datamodel.accelerator_options import AcceleratorDevice, AcceleratorOptions
         from docling.datamodel.pipeline_options import (
@@ -379,6 +382,13 @@ class DoclingProcessor:
         }
         if table_mode_name not in table_modes:
             raise ValueError("docling_table_mode must be 'accurate' or 'fast'")
+        layout_num_threads = int(
+            layout_threads
+            if layout_threads is not None
+            else self.config.get("docling_layout_num_threads", self.config.get(
+                "docling_num_threads", 2 if device == AcceleratorDevice.CPU else 4,
+            ))
+        )
         return PdfPipelineOptions(
             accelerator_options=AcceleratorOptions(
                 device=device,
@@ -391,7 +401,8 @@ class DoclingProcessor:
             generate_page_images=generate_page_images,
             images_scale=1.0,
             layout_options=PPDocLayoutOptions(
-                score_threshold=float(self.config.get("docling_layout_score_threshold", 0.25))
+                score_threshold=float(self.config.get("docling_layout_score_threshold", 0.25)),
+                cpu_threads=layout_num_threads,
             ),
             table_structure_options=TableStructureOptions(
                 mode=table_modes[table_mode_name],

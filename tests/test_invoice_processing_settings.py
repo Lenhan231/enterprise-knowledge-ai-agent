@@ -20,6 +20,7 @@ class InvoiceProcessingSettingsTest(unittest.TestCase):
             patch.dict(os.environ, {
                 "DOCUMENT_PROCESSING_URL": "http://document-processing",
                 "DOCUMENT_PROCESSING_OCR_ENGINE": "vietocr",
+                "DOCUMENT_PROCESSING_INVOICE_LAYOUT_THREADS": "4",
             }),
             patch("app.main.post_internal_service", return_value=parsed) as post,
             patch("core.database.invoice_repository.InvoiceRepository") as repository_type,
@@ -37,6 +38,7 @@ class InvoiceProcessingSettingsTest(unittest.TestCase):
         self.assertEqual(config["docling_table_mode"], "fast")
         self.assertEqual(config["docling_ocr_engine"], "vietocr")
         self.assertTrue(config["docling_table_structure"])
+        self.assertEqual(config["docling_layout_num_threads"], 4)
         repository_type.return_value.close.assert_called_once_with()
 
 

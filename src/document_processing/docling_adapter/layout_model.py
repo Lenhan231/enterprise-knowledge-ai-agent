@@ -89,6 +89,7 @@ class PPDocLayoutOptions(BaseLayoutOptions):
 
     kind: ClassVar[str] = "paddle_doclayout_v3"
     score_threshold: float = Field(default=0.25, ge=0.0, le=1.0)
+    cpu_threads: int = Field(default=2, ge=1, le=16)
 
 
 class PPDocLayoutModel(BaseLayoutModel):
@@ -135,7 +136,7 @@ class PPDocLayoutModel(BaseLayoutModel):
             device=device,
             threshold=options.score_threshold,
             enable_mkldnn=False,
-            cpu_threads=accelerator_options.num_threads,
+            cpu_threads=options.cpu_threads,
         )
 
     @classmethod

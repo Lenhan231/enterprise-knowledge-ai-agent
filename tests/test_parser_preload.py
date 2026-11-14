@@ -48,11 +48,12 @@ class ParserPreloadTest(unittest.TestCase):
         processor = DoclingProcessor({})
         converter = unittest.mock.Mock()
         converter.initialized_pipelines = {}
-        with patch.object(processor, "_pipeline_options", create=True) as options, \
+        with patch.dict(os.environ, {"DOCUMENT_PROCESSING_INVOICE_LAYOUT_THREADS": "4"}), \
+                patch.object(processor, "_pipeline_options", create=True) as options, \
                 patch("document_processing.docling_adapter.processor.get_converter", return_value=converter):
             processor.preload()
             self.assertEqual(options.call_args_list, [
-                unittest.mock.call(True, False, False, table_mode="fast"),
+                unittest.mock.call(True, False, False, table_mode="fast", layout_threads=4),
                 unittest.mock.call(False, False, False),
                 unittest.mock.call(False, True, True),
             ])
@@ -74,6 +75,7 @@ class ParserPreloadTest(unittest.TestCase):
         }
 
         with (
+            patch.dict(os.environ, {"DOCUMENT_PROCESSING_INVOICE_LAYOUT_THREADS": "4"}),
             patch("document_processing.docling_adapter.processor.get_converter", side_effect=converters),
             patch("document_processing.docling_adapter.orientation.preload_paddle_page_orientation_model"),
             patch("document_processing.docling_adapter.orientation.preload_paddle_textline_orientation_model") as textline_preload,

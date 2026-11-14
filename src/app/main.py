@@ -734,6 +734,9 @@ def _process_invoice_upload(
                 "docling_ocr_language": "vie+eng",
                 "docling_table_structure": True,
                 "docling_table_mode": "fast",
+                "docling_layout_num_threads": int(os.getenv(
+                    "DOCUMENT_PROCESSING_INVOICE_LAYOUT_THREADS", "4",
+                )),
             },
         }, timeout=int(os.getenv("DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS", "600")))
         logger.info("INVOICE_UPLOAD_COMPONENT %s", json.dumps({

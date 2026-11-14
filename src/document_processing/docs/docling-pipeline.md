@@ -80,14 +80,15 @@ self-contained content by `render_svg` in `document_processor.py`.
 | `DOCUMENT_PROCESSING_OCR_ENGINE` / `docling_ocr_engine` | `vietocr` or `tesseract` |
 | `docling_ocr` | Enable/disable OCR for the request |
 | `docling_device` | Docling accelerator (`cpu` by default; `cuda` when configured and available) |
-| `docling_num_threads` | CPU thread count; defaults to 2 on CPU and 4 on CUDA. On CPU, this also sets RapidOCR ONNX detector intra-op threads. |
+| `docling_num_threads` | OCR/Docling CPU thread count; defaults to 2 on CPU and 4 on CUDA. On CPU, this also sets RapidOCR ONNX detector intra-op threads. |
+| `docling_layout_num_threads` | PP-DocLayout-only CPU thread count. Invoice uploads default to `DOCUMENT_PROCESSING_INVOICE_LAYOUT_THREADS=4`; OCR keeps its 2-thread budget. |
 | `DOCUMENT_PROCESSING_VIETOCR_REPO_ID` | Hugging Face repo for the line recognizer; defaults to the enterprise printed checkpoint |
 | `DOCUMENT_PROCESSING_VIETOCR_FILENAME` | Checkpoint file in that repo; defaults to `vietocr/vgg-seq2seq-enterprise-print.pth` |
 | `DOCUMENT_PROCESSING_VIETOCR_REVISION` | Pinned Hugging Face revision used for reproducible model loads |
 | `DOCUMENT_PROCESSING_VIETOCR_CONFIG` | VietOCR architecture config; defaults to `vgg_seq2seq` |
 | `docling_layout_score_threshold` | PP-DocLayoutV3 score threshold; defaults to 0.25 |
 | `docling_table_structure` | Enable TableFormer; defaults to true |
-| `docling_table_mode` | TableFormer `accurate` (default) or `fast`; use `fast` for measured A/B checks before changing upload defaults |
+| `docling_table_mode` | TableFormer `accurate` (default) or `fast`; invoice uploads use the measured `fast` mode |
 | `docling_page_images` | Include rendered page previews in parser output |
 | `docling_chart_recognition` | Enable chart-region extraction |
 | `docling_chart_llm_correction` | Enable Groq text-cell correction |

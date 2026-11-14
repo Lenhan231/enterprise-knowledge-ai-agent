@@ -10,6 +10,13 @@ HEALTH_URL=${HEALTH_URL:-http://127.0.0.1:8000/health}
 HEALTH_WAIT_SECONDS=${HEALTH_WAIT_SECONDS:-600}
 cd "$DEPLOY_DIR"
 
+# Docker Desktop on WSL keeps registry credentials through a Windows helper (credsStore "desktop.exe"), but SSH
+# sessions (manual or the GitHub job over Tailscale SSH) get no Windows PATH, so builds fail to find it.
+DOCKER_DESKTOP_BIN=${DOCKER_DESKTOP_BIN:-"/mnt/c/Program Files/Docker/Docker/resources/bin"}
+if [ -x "$DOCKER_DESKTOP_BIN/docker-credential-desktop.exe" ] && ! command -v docker-credential-desktop.exe >/dev/null; then
+  PATH="$PATH:$DOCKER_DESKTOP_BIN"
+fi
+
 say() { printf '\n== %s\n' "$*"; }
 
 say "Server $(hostname), checkout $DEPLOY_DIR"

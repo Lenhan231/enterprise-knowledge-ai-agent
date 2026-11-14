@@ -68,22 +68,33 @@ class DoclingProcessor:
         """Initialize the scanned, native, and embedded-image routes before startup."""
         from docling.datamodel.base_models import InputFormat
 
-        invoice_converter = None
+        invoice_converters = []
         for do_ocr, embedded, page_images in (
             (True, False, False), (False, False, False), (False, True, True),
         ):
             converter = get_converter(self._pipeline_options(do_ocr, embedded, page_images))
             converter.initialize_pipeline(InputFormat.PDF)
             if do_ocr and not embedded:
-                invoice_converter = converter
+                invoice_converters.append(converter)
 
-        if invoice_converter is not None:
+        # Invoice uploads use TableFormer fast mode. Warm its separate layout
+        # pipeline before health checks pass so the first upload does not pay
+        # PP-DocLayout's cold inference cost.
+        invoice_fast_converter = get_converter(self._pipeline_options(
+            True, False, False, table_mode="fast",
+        ))
+        invoice_fast_converter.initialize_pipeline(InputFormat.PDF)
+        if invoice_fast_converter not in invoice_converters:
+            invoice_converters.append(invoice_fast_converter)
+
+        if invoice_converters:
             with _timed_component("layout_model_warmup"):
-                for pipeline in invoice_converter.initialized_pipelines.values():
-                    layout_model = getattr(pipeline, "layout_model", None)
-                    warmup = getattr(layout_model, "warmup", None)
-                    if callable(warmup):
-                        warmup()
+                for converter in invoice_converters:
+                    for pipeline in converter.initialized_pipelines.values():
+                        layout_model = getattr(pipeline, "layout_model", None)
+                        warmup = getattr(layout_model, "warmup", None)
+                        if callable(warmup):
+                            warmup()
 
         from .orientation import (
             preload_paddle_page_orientation_model,
@@ -321,6 +332,7 @@ class DoclingProcessor:
         generate_page_images: bool,
         *,
         source_format: str = "pdf",
+        table_mode: str | None = None,
     ) -> Any:
         from docling.datamodel.accelerator_options import AcceleratorDevice, AcceleratorOptions
         from docling.datamodel.pipeline_options import (
@@ -364,7 +376,9 @@ class DoclingProcessor:
             raise ValueError(f"Unsupported Docling OCR engine: {ocr_engine}")
 
         register_pp_doclayout()
-        table_mode_name = str(self.config.get("docling_table_mode", "accurate")).strip().lower()
+        table_mode_name = str(
+            table_mode or self.config.get("docling_table_mode", "accurate")
+        ).strip().lower()
         table_modes = {
             "accurate": TableFormerMode.ACCURATE,
             "fast": TableFormerMode.FAST,

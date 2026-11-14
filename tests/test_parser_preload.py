@@ -55,23 +55,19 @@ class ParserPreloadTest(unittest.TestCase):
                 unittest.mock.call(True, False, False),
                 unittest.mock.call(False, False, False),
                 unittest.mock.call(False, True, True),
+                unittest.mock.call(True, False, False, table_mode="fast"),
             ])
-            self.assertEqual(converter.initialize_pipeline.call_count, 3)
+            self.assertEqual(converter.initialize_pipeline.call_count, 4)
 
-    def test_preload_warms_only_the_invoice_layout_model(self):
+    def test_preload_warms_accurate_and_fast_invoice_layout_models(self):
         processor = DoclingProcessor({})
         processor._pipeline_options = unittest.mock.Mock(return_value=object())
-        layout_warmup = unittest.mock.Mock()
-        converters = [unittest.mock.Mock() for _ in range(3)]
-        converters[0].initialized_pipelines = {
-            "pdf": SimpleNamespace(layout_model=SimpleNamespace(warmup=layout_warmup))
-        }
-        converters[1].initialized_pipelines = {
-            "pdf": SimpleNamespace(layout_model=SimpleNamespace(warmup=unittest.mock.Mock()))
-        }
-        converters[2].initialized_pipelines = {
-            "pdf": SimpleNamespace(layout_model=SimpleNamespace(warmup=unittest.mock.Mock()))
-        }
+        warmups = [unittest.mock.Mock() for _ in range(4)]
+        converters = [unittest.mock.Mock() for _ in range(4)]
+        for converter, warmup in zip(converters, warmups):
+            converter.initialized_pipelines = {
+                "pdf": SimpleNamespace(layout_model=SimpleNamespace(warmup=warmup))
+            }
 
         with (
             patch("document_processing.docling_adapter.processor.get_converter", side_effect=converters),
@@ -80,7 +76,10 @@ class ParserPreloadTest(unittest.TestCase):
         ):
             processor.preload()
 
-        layout_warmup.assert_called_once_with()
+        for warmup in (warmups[0], warmups[3]):
+            warmup.assert_called_once_with()
+        for warmup in (warmups[1], warmups[2]):
+            warmup.assert_not_called()
         textline_preload.assert_called_once_with()
         for converter in converters:
             converter.initialize_pipeline.assert_called_once()

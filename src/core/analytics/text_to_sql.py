@@ -752,7 +752,7 @@ def relevant_schema_tables(question, definitions, available_tables=None):
         'products': r'product|categor(?:y|ies)|catalog|sku|sản phẩm|danh mục',
         'returns': r'\breturns\b|\breturned\b|\breturn (?:rate|date|quantity|reason)\b|refund|trả hàng|hoàn hàng',
         'orders': r'order|ordered|đơn hàng',
-        'order_items': r'quantity|quantities|ordered units|line value|order items|ordered quantities',
+        'order_items': r'quantity|quantities|ordered units|ordered quantities|sold units|sold quantities|sales quantity|quantities sold|line value|order items|số lượng đã bán|đã bán',
         'customers': r'customer|khách hàng',
         'geography': r'region|district|city|khu vực|thành phố',
         'payments': r'payment|installment|thanh toán',

@@ -963,7 +963,9 @@
   --accent-soft:#1f5246;--accent-ink:#bdf0e0;--accent:#6fd3b8;--on-accent:#06201a}
 :root[data-theme="dark"] body .workspace-sidebar{background:#0a110f;border-right:1px solid #1c2a25;--surface-3:#15211d;--line:#1c2a25}
 :root body::before{display:none}
-/* Three groups (ask / documents / admin) separated by space, not headings; roles only see their own items. */
+/* Three groups (ask / documents / admin), each after the first opened by a hairline, which also works on the
+   collapsed rail where headings would not fit; roles only see their own items. */
 @media(min-width:781px){
-  :root #tab-button-upload,:root #tab-button-access{margin-top:14px}
+  :root #tab-button-upload,:root #tab-button-access{margin-top:17px}
+  :root #tab-button-upload::after,:root #tab-button-access::after{content:"";position:absolute;left:10px;right:10px;top:-9px;height:1px;background:var(--line);pointer-events:none}
 }

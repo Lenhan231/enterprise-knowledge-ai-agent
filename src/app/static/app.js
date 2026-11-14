@@ -68,6 +68,7 @@ function selectWorkspaceTab(name) {
     panel.freshTimer = setTimeout(() => panel.classList.remove("is-fresh"), 2500);
     panel.querySelectorAll(".monitoring-stat strong").forEach(countUp);
   }
+  if (name === "dashboard") window.dashboardWorkspace?.show();
   $("#workspace-main").classList.toggle("invoice-review-active", name === "invoice-review");
   const isKnowledgeTab = name === "knowledge";
   $(".intro").hidden = !isKnowledgeTab;
@@ -92,6 +93,7 @@ function syncWorkspaceTabs(user = currentUser) {
   const canUpload = ["document_uploader", "admin", "document_processing_owner"].includes(user?.role);
   const available = {
     // General Chat is the one chat (with Route to); the Reports tab (id "knowledge") keeps the report generator; its old chat box stays hidden.
+    dashboard: ["admin", "finance_analyst", "sustainability_analyst", "operations", "executive"].includes(user?.role),
     knowledge: canAskDocuments,
     "general-chat": canAskDocuments,
     upload: canUpload,
@@ -2071,6 +2073,7 @@ async function askAgentStream(body, signal, onStatus) {
 }
 
 function resetConversationState() {
+  window.dashboardWorkspace?.clear();
   agentConversationId = crypto.randomUUID();
   reportConversationId = crypto.randomUUID();
   sessionTurns = [];

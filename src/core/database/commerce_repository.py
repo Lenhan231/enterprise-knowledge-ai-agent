@@ -11,7 +11,7 @@ import asyncio
 from typing import Any
 
 from core.analytics.text_to_sql import INVENTORY_SOURCES, inventory_scope_enabled, validate_commerce_sql
-from core.sql_agent.schema import configured_schemas, discover_schema
+from core.agents.sql.schema import configured_schemas, discover_schema
 
 try:
     import asyncpg

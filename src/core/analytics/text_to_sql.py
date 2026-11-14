@@ -629,6 +629,16 @@ def current_year_month_range(question: str, today: date | None = None) -> tuple[
     text = question.casefold()
     today = today or date.today()
     current_month_requested = bool(re.search(r'\bthis month\b|\bcurrent month\b|tháng này|tháng hiện tại', text))
+    month_count = r'(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)'
+    multiple_months_requested = bool(re.search(
+        rf'\b{month_count}\s+(?:completed\s+)?months?\b|'
+        rf'\b{month_count}\s+tháng\b|'
+        rf'\b(?:last|past|previous|prior|preceding|most recent)\s+{month_count}\s+(?:completed\s+)?months?\b',
+        text,
+    ))
+    if current_month_requested and multiple_months_requested:
+        # The current month can be the recommendation horizon while a wider period supplies the evidence.
+        return None
     explicit_years = re.findall(r'\b(?:19|20)\d{2}\b', text)
     if current_month_requested:
         if explicit_years and int(explicit_years[-1]) != today.year:

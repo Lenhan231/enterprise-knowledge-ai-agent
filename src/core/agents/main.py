@@ -13,14 +13,14 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from core.sql_agent.analytics_agent import AnalyticsAgent
+from core.agents.sql.analytics_agent import AnalyticsAgent
 from core.agents.dashboard_agent import InventoryDashboardAgent
 from core.agents.intent_classifier import IntentClassifier
-from core.agents.knowledge_agent import KnowledgeAgent
-from core.agents.report_agent import ReportAgent
-from core.agents.router import AgentRouter
-from core.sql_agent.agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
-from core.sql_agent.assistant_endpoint import run_sql_assistant
+from core.agents.knowledge.agent import KnowledgeAgent
+from core.agents.report.agent import ReportAgent
+from core.agents.decision_support.router import AgentRouter
+from core.agents.sql.agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
+from core.agents.sql.assistant_endpoint import run_sql_assistant
 from core.database.commerce_repository import LazyCommerceRepository
 from core.models.agents import AgentRequest, AgentResult, VerifiedIdentity, validate_chat_metadata
 
@@ -91,7 +91,7 @@ class ChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     question: str = Field(min_length=1, max_length=2_000)
-    agent_mode: Literal["auto", "knowledge", "sql", "dashboard", "agentic", "report"] = "auto"
+    agent_mode: Literal["auto", "knowledge", "sql", "dashboard", "agentic", "report", "decision_support"] = "auto"
     retrieval_method: Literal["dense", "bm25", "hybrid", "parent", "translated_hybrid", "translated_hybrid_rerank"] = "translated_hybrid_rerank"
     conversation_id: str | None = Field(default=None, max_length=128)
     metadata: dict[str, Any] = Field(default_factory=dict)

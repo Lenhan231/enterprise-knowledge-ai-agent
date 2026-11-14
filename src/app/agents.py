@@ -57,12 +57,12 @@ async def _get_runtime(application):
         runtime = getattr(application.state, "agent_router", None)
         if runtime is not None:
             return runtime
-        from core.sql_agent.analytics_agent import AnalyticsAgent
+        from core.agents.sql.analytics_agent import AnalyticsAgent
         from core.agents.dashboard_agent import InventoryDashboardAgent
         from core.agents.main import _FallbackClassifier, _LazyKnowledgeAgent
-        from core.agents.report_agent import ReportAgent
-        from core.agents.router import AgentRouter
-        from core.sql_agent.agent import SQLAnalyticsAgent
+        from core.agents.report.agent import ReportAgent
+        from core.agents.decision_support.router import AgentRouter
+        from core.agents.sql.agent import SQLAnalyticsAgent
         from core.database.commerce_repository import LazyCommerceRepository
 
         load_dotenv(Path(__file__).resolve().parents[2] / ".env", override=False)

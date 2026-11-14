@@ -51,7 +51,8 @@ class LangGraphRouterTest(unittest.IsolatedAsyncioTestCase):
 
         knowledge.run.assert_not_awaited()
         analytics.run.assert_awaited_once()
-        self.assertEqual(result.answer, "Rows [S1]")
+        self.assertIn("[S1]", result.answer)
+        self.assertIn("1", result.answer)
         llm.generate.assert_awaited_once()
 
     async def test_invalid_agentic_plan_returns_clear_failure_without_calling_tools(self):

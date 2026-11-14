@@ -37,9 +37,11 @@ class DocumentDashboardTest(unittest.TestCase):
 
         cursor = repository.conn.cursor.return_value.__enter__.return_value
         query = " ".join(cursor.execute.call_args.args[0].lower().split())
-        self.assertIn("allowed_roles, processing_status", query)
+        self.assertIn("allowed_roles, storage_path, processing_status", query)
         self.assertIn("processing_status = excluded.processing_status", query)
-        self.assertEqual(cursor.execute.call_args.args[1], document)
+        self.assertEqual(cursor.execute.call_args.args[1], {
+            **document, "storage_path": None, "knowledge_base_active": True,
+        })
         repository.conn.commit.assert_called_once()
 
 

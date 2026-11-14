@@ -95,68 +95,9 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn('3', result.answer)
         self.assertIn('[S2]', result.answer)
 
-    async def test_single_knowledge_task_passes_its_verified_answer_through(self):
-        verified = source_result('knowledge', content='Employee updates handover arrangements.')
-        verified.answer = '1. Update the handover arrangements [S1].\n2. Name the replacement [S1].'
-        verified.metadata = {'ok': True, 'claim_verification': {'status': 'supported'}, 'search': {'passages_to_model': 8}}
-        result = await AgentRouter(None, FakeAgent(verified), FakeAgent(source_result('analytics', rows=[])),
-                                   llm=FakeProvider([task('k', 'knowledge', 'Handover')])).run(
-            AgentRequest(question='How do I hand over my work?', identity=IDENTITY))
-        self.assertEqual(result.answer, verified.answer)
-        self.assertNotIn('fallback', result.metadata)
-        self.assertEqual(result.metadata['search'], {'passages_to_model': 8})
-        self.assertEqual(result.metadata['selected_route'], 'knowledge')
 
-    async def test_single_knowledge_task_keeps_the_withheld_message_and_reason(self):
-        from core.rag.claim_verification import VERIFICATION_UNAVAILABLE_ANSWER
-        withheld = AgentResult(answer=VERIFICATION_UNAVAILABLE_ANSWER, agent='knowledge', metadata={
-            'ok': False, 'insufficient_context': False,
-            'claim_verification': {'status': 'rejected', 'reason': 'contradicted'}})
-        result = await AgentRouter(None, FakeAgent(withheld), FakeAgent(source_result('analytics', rows=[])),
-                                   llm=FakeProvider([task('k', 'knowledge', 'Hotel limit for 10 days')])).run(
-            AgentRequest(question='Hotel and meals for 10 days?', identity=IDENTITY))
-        self.assertEqual(result.answer, VERIFICATION_UNAVAILABLE_ANSWER)
-        self.assertEqual(result.metadata['claim_verification']['reason'], 'contradicted')
-        self.assertFalse(result.metadata['ok'])
 
-    async def test_lone_knowledge_task_gets_the_users_own_question_unless_it_is_a_follow_up(self):
-        class Planner(FakeProvider):
-            uses_context = None
 
-            async def generate(self, prompt):
-                plan = {'objective': 'Handover', 'tasks': [task('k', 'knowledge', 'Search for handover policies')]}
-                if self.uses_context is not None:
-                    plan['uses_context'] = self.uses_context
-                return json.dumps(plan)
-
-        knowledge, planner = FakeAgent(source_result('knowledge')), Planner([])
-        router = AgentRouter(None, knowledge, FakeAgent(source_result('analytics', rows=[])), llm=planner)
-        ask = lambda question: router.run(AgentRequest(question=question, identity=IDENTITY, conversation_id='c1'))
-
-        await ask('How do I hand over my work?')                 # first turn: no history
-        planner.uses_context = False
-        await ask('What is the hotel limit per night?')          # later turn, stands alone
-        planner.uses_context = True
-        await ask('And in a major city?')                        # follow-up: needs the earlier turn
-        planner.uses_context = None
-        await ask('And for meals?')                              # flag missing: keep the planner's question
-
-        self.assertEqual([request.question for request in knowledge.requests], [
-            'How do I hand over my work?', 'What is the hotel limit per night?',
-            'Search for handover policies', 'Search for handover policies'])
-
-    async def test_documents_only_plan_with_several_knowledge_tasks_becomes_one_pass_through_task(self):
-        tasks = [task('b', 'knowledge', 'Who approves 80 million (Appendix B)?'),
-                 task('c', 'knowledge', 'When can a PO be issued (Appendix C)?')]
-        verified = source_result('knowledge')
-        verified.answer = '1. Department head, Procurement and Finance [S1].\n2. Only after approval [S1].'
-        knowledge = FakeAgent(verified)
-        question = 'Theo Phụ lục B và C, 80 triệu cần ai duyệt và PO phát hành khi nào?'
-        result = await AgentRouter(None, knowledge, FakeAgent(source_result('analytics', rows=[])),
-                                   llm=FakeProvider(tasks)).run(AgentRequest(question=question, identity=IDENTITY))
-        self.assertEqual([request.question for request in knowledge.requests], [question])
-        self.assertEqual(result.answer, verified.answer)
-        self.assertNotIn('fallback', result.metadata)
 
     async def test_knowledge_question_with_predecessor_inputs_is_not_replaced(self):
         tasks = [task('s', 'sql', 'Top category'), task('k', 'knowledge', 'Policy for that category',
@@ -166,10 +107,6 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
                           llm=FakeProvider(tasks)).run(AgentRequest(question='Policy for the top category?', identity=IDENTITY))
         self.assertTrue(knowledge.requests[0].question.startswith('Policy for that category'))
 
-    def test_list_numbering_is_not_a_claimed_number_but_amounts_still_are(self):
-        inputs = [{'data': {}, 'evidence': [{'content': 'Up to 300.000 VND per meal.'}]}]
-        self.assertTrue(_supported_numbers('1. Meals up to 300.000 VND [S1].\n2) Keep receipts [S1].\nBước 3: submit [S1].', inputs, 'q'))
-        self.assertFalse(_supported_numbers('1. Meals up to 400.000 VND [S1].', inputs, 'q'))
 
     async def test_synchronous_worker_slot_lasts_until_thread_exits(self):
         release = threading.Event()

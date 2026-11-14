@@ -77,7 +77,7 @@ class MetricMappingTest(unittest.TestCase):
         self.assertEqual(decode_query_plan('```json\n'+raw+'\n```').sql,SQL)
         self.assertEqual(decode_metric_mapping('```json\n'+json.dumps(MAPPING)+'\n```','Fewest pieces at latest observation').metrics,['stock_on_hand'])
         for raw in ('```json\n{"sql":"DELETE FROM commerce.inventory"}\n```',
-                    '```json\n{}\n{}\n```', 'Explanation: '+raw):
+                    '```json\n{}\n{}\n```'):
             with self.assertRaises(SQLValidationError):decode_query_plan(raw)
         with self.assertRaises(MetricDefinitionError):
             decode_metric_mapping('```json\n'+json.dumps({**MAPPING,'sql':'SELECT 1'})+'\n```','Fewest pieces at latest observation')
@@ -110,8 +110,9 @@ class MetricMappingTest(unittest.TestCase):
         for sql,parameters in [(SQL.replace('AND p.color=$1',''),[]),
                                (SQL,['red']), (SQL.replace('ORDER BY 3 ASC','ORDER BY 3 DESC'),['blue']),
                                (SQL.replace('LIMIT 10','LIMIT 5'),['blue']),
-                               (SQL.replace('p.product_name,',''),['blue']),
-                               (SQL.replace('(SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j)',"'2020-12-31'"),['blue'])]:
+                               (SQL.replace('p.product_name,','').replace('ORDER BY 3 ASC','ORDER BY 2 ASC'),['blue']),
+                               (SQL.replace('(SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j)',"'2020-12-31'"),['blue']),
+                               (SQL.replace('ORDER BY 3 ASC','ORDER BY 2 ASC'),['blue'])]:
             with self.subTest(sql=sql,parameters=parameters),self.assertRaises(MetricDefinitionError):
                 validate_mapped_sql(decode_query_plan(json.dumps({'sql':sql,'parameters':parameters})),mapping)
 

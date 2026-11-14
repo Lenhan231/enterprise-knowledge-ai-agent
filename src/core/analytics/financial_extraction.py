@@ -10,7 +10,6 @@ import unicodedata
 from collections import defaultdict
 from difflib import SequenceMatcher
 
-from core.analytics.metric_ontology import METRIC_ONTOLOGY
 from core.prompts.financial_extraction import FINANCIAL_EXTRACTION_PROMPT
 
 logger = logging.getLogger(__name__)
@@ -23,6 +22,14 @@ METRIC_NAMES = {
     "profit_before_tax": "Profit before tax",
     "profit_after_tax": "Profit after tax",
     "total_assets": "Total assets",
+}
+METRIC_SOURCE_LABELS = {
+    "total_consolidated_revenue": ("total consolidated revenue", "consolidated revenue", "doanh thu hợp nhất",
+                                    "doanh thu bán hàng và cung cấp dịch vụ"),
+    "net_revenue": ("net revenue", "doanh thu thuần"),
+    "profit_before_tax": ("profit before tax", "profit before income tax", "lợi nhuận trước thuế"),
+    "profit_after_tax": ("profit after tax", "profit after income tax", "lợi nhuận sau thuế"),
+    "total_assets": ("total assets", "tổng tài sản"),
 }
 FINANCIAL_TERMS = (
     "financial statements", "consolidated financial", "balance sheet",
@@ -126,8 +133,8 @@ def select_financial_pages(
         flat = _flat(text)
         term_hits = [term for term in FINANCIAL_TERMS if term in flat]
         metric_hits = [
-            name for name, definition in METRIC_ONTOLOGY.items()
-            if any(_flat(alias) in flat for alias in definition["source_labels"])
+            name for name, labels in METRIC_SOURCE_LABELS.items()
+            if any(_flat(alias) in flat for alias in labels)
         ]
         primary_hits = sorted(PRIMARY_METRICS.intersection(metric_hits))
         statement_hits = [term for term in STATEMENT_TERMS if term in flat]
@@ -218,7 +225,7 @@ def _validated_metrics(
             rejected["non_finite_or_long_quote"] += 1
             continue
         quote_flat = _flat(quote)
-        labels = METRIC_ONTOLOGY.get(name, {}).get("source_labels", ())
+        labels = METRIC_SOURCE_LABELS.get(name, ())
         exact_label = any(_flat(label) in quote_flat for label in labels)
         recovered_ocr_label = (
             allow_ocr_label_recovery and not exact_label

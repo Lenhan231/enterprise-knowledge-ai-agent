@@ -248,8 +248,10 @@ class AgentRouter:
             if outcome and outcome.status == 'complete' and outcome.result:
                 direct_fallback = outcome.result
         if direct_fallback is not None and state.get('report_headings') is None:
+            selected_route = 'analytics' if plan.tasks[0].agent == 'sql' else plan.tasks[0].agent
             result = direct_fallback.model_copy(update={'metadata': {
                 **direct_fallback.metadata,
+                'selected_route': selected_route,
                 'planning_fallback': True,
                 'task_trace': execution.trace,
                 'specialist_invocations': execution.invocations,

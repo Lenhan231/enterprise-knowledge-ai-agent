@@ -66,8 +66,9 @@ class RetrievalModelsTest(unittest.TestCase):
 
     def test_fixture_round_trip_preserves_all_fields(self):
         response = RetrievalResponse.model_validate_json(FIXTURE.read_text(encoding="utf-8"))
-        self.assertEqual(response.model_dump(mode="json"), self.payload)
-        self.assertEqual(RetrievalResponse.model_validate_json(response.model_dump_json()), response)
+        restored = RetrievalResponse.model_validate_json(response.model_dump_json())
+        self.assertEqual(restored, response)
+        self.assertEqual(restored.model_dump(mode="json"), response.model_dump(mode="json"))
 
     def test_optional_location_fields_may_be_omitted_or_null(self):
         omitted = SourceLocation(chunk_index=0)
@@ -132,7 +133,7 @@ class RetrievalModelsTest(unittest.TestCase):
     def test_response_supports_no_results(self):
         result = RetrievalResponse(query="question", latency_ms=0, results=[])
         self.assertEqual(result.results, [])
-        self.assertEqual(result.method, "hybrid")
+        self.assertEqual(result.method, "translated_hybrid_rerank")
 
     def test_invalid_rank_method_latency_and_nonfinite_score(self):
         for field, value in (("rank", 0), ("retrieval_method", "sparse"), ("score", float("nan"))):

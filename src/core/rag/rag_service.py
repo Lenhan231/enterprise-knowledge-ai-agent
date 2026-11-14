@@ -116,6 +116,16 @@ def _format_contexts(contexts: list[dict]) -> str:
     return "\n\n".join(blocks)
 
 
+def _contexts_within_budget(contexts: list[dict]) -> list[dict]:
+    """Keep only complete passages that will actually be included in the answer prompt."""
+    selected = []
+    for context in contexts:
+        candidate = {**context, "source_id": f"S{len(selected) + 1}"}
+        if len(_format_contexts([*selected, candidate])) <= MAX_CONTEXT_CHARS:
+            selected.append(candidate)
+    return selected
+
+
 class RAGService:
     def __init__(
         self,
@@ -232,6 +242,11 @@ class RAGService:
             query_language=query_language,
             document_languages=document_languages,
         )
+        if not contexts:
+            return self.generate_from_contexts(question, contexts, verify_claims=verify_claims)
+        contexts = _contexts_within_budget(contexts)
+        if not contexts:
+            return RAGResult(answer=INSUFFICIENT_ANSWER, insufficient_context=True)
         return self.generate_from_contexts(question, contexts, verify_claims=verify_claims)
 
     def _search_questions(self, question: str) -> list[str]:

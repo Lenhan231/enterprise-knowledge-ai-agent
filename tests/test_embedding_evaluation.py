@@ -46,6 +46,10 @@ class EmbeddingEvaluationTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "not allowlisted"):
                 _load_public_corpus(corpus_path, {"OTHER"})
 
+    @unittest.skipUnless(
+        (Path(__file__).resolve().parents[1] / "data/vietnam_enterprises/manifest.json").is_file(),
+        "Public retrieval corpus manifest is not included in this checkout",
+    )
     def test_public_corpus_cli_runs_without_database_credentials(self):
         import numpy as np
 

@@ -20,7 +20,13 @@ async def plan_request(request, provider, *, history=(), previous=None, report_h
             return AgentPlan(objective=request.question, fallback=True, tasks=[{
                 'id': 'fallback', 'agent': 'sql', 'question': request.question}])
     from core.analytics.text_to_sql import APPROVED_COLUMNS
+    latest_turn = history[-1] if history else {}
+    latest_metrics = next((turn.get('metrics') for turn in reversed(history) if turn.get('metrics')), '')
     data = {'question': request.question, 'history': history, 'previous': previous,
+            'follow_up_context': {
+                'prior_resolved_scope': latest_turn.get('scope') or latest_turn.get('question'),
+                'prior_confirmed_sql_metrics': latest_metrics,
+            },
             'available_sql_schema': {table: sorted(columns) for table, columns in (APPROVED_COLUMNS if sql_schema is None else sql_schema).items()}}
     if report_headings is not None:
         data['report_headings'] = report_headings
@@ -32,6 +38,9 @@ async def plan_request(request, provider, *, history=(), previous=None, report_h
             if not isinstance(raw, str) or len(raw) > 24_000:
                 raise ValueError('Invalid plan size')
             payload = json.loads(raw.strip().removeprefix('```json').removesuffix('```').strip())
+            if isinstance(payload, dict) and payload.get('clarification'):
+                payload.setdefault('objective', latest_turn.get('scope') or request.question)
+                payload.setdefault('tasks', [])
             if previous and not payload.get('clarification'):
                 completed = {outcome['id'] for outcome in previous['outcomes'] if outcome['status'] == 'complete'}
                 trusted = AgentPlan.model_validate(previous['plan'])

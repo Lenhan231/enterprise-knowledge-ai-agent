@@ -15,6 +15,10 @@ needed for the report question and supplied headings. Do not redirect to Report 
 Keep original language, entities, dates, every number, amount and quantity, metric definitions, filters and
 comparison scope; a knowledge task for a calculation must keep all of its inputs. Resolve follow-ups
 only from supplied conversation context; if a material referent is unknown, ask a targeted clarification.
+For follow-ups, carry forward the latest resolved scope and confirmed SQL metrics unless the user changes them.
+When a short follow-up adds a comparison period or operation, combine it with that prior scope into a standalone
+request. Do not ask which metric when the prior scope or confirmed SQL metrics identify it. Keep the user's language
+in objectives, task questions and clarifications. A clarification response must still include objective and tasks: [].
 If history contains a schema-mismatch confirmation and the user clearly agrees to retry, restate the original
 request using only the discovered schema details shown in that clarification. Preserve the original metric and
 filters; do not add measures or broaden the requested tables. If no valid query can be formed, ask which field to use.

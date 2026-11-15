@@ -140,6 +140,36 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(result.metadata['fallback'])
         self.assertNotIn('999', result.answer)
 
+    async def test_auto_followup_context_keeps_confirmed_sql_metrics(self):
+        sql_result = source_result('analytics', rows=[{'revenue': 18_881_151.9}])
+        sql_result.data['query_status'] = 'executed'
+        sql_result.metadata['metrics'] = {'revenue': {'formula': 'SUM(revenue)'}}
+        sql = FakeAgent(sql_result)
+
+        class FollowupProvider(FakeProvider):
+            def __init__(self):
+                super().__init__([task('s', 'sql', 'Compare revenue for this year and last year')])
+                self.followup_data = None
+
+            async def generate(self, prompt):
+                if prompt.startswith('You plan'):
+                    self.prompts.append(prompt)
+                    self.followup_data = json.loads(prompt.split('DATA:\n', 1)[1].split('\n\nInvalid', 1)[0])
+                    return json.dumps({'objective': 'Compare revenue for this year and last year',
+                                       'tasks': self.tasks})
+                raise AssertionError('A single SQL task should not need synthesis')
+
+        provider = FollowupProvider()
+        router = AgentRouter(None, None, sql, llm=provider)
+        first = AgentRequest(question='doanh thu năm nay', conversation_id='revenue-followup', identity=IDENTITY)
+        await router.run(first)
+        result = await router.run(first.model_copy(update={'question': 'so với năm ngoái'}))
+
+        self.assertEqual(provider.followup_data['follow_up_context']['prior_resolved_scope'], 'doanh thu năm nay')
+        self.assertEqual(provider.followup_data['follow_up_context']['prior_confirmed_sql_metrics'], 'revenue')
+        self.assertEqual(sql.requests[-1].question, 'Compare revenue for this year and last year')
+        self.assertEqual(result.metadata['status'], 'complete')
+
     async def test_concurrent_results_do_not_depend_on_shared_destination(self):
         class Selecting(FakeProvider):
             async def generate(self, prompt):

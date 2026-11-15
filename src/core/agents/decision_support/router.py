@@ -82,10 +82,17 @@ class AgentRouter:
                             graph_input['forced_plan'] = forced_plan
                         state = await self.graph.ainvoke(graph_input, config=config)
                         result = AgentResult.model_validate(state['result'])
-                        if result.metadata.get('status') in {'complete', 'partial', 'clarification_required'}:
+                        status = result.metadata.get('status')
+                        record_context = (status in {'complete', 'partial', 'clarification_required'}
+                                          or (status is None and result.metadata.get('ok') is True))
+                        if record_context:
                             scope = state['plan'].objective if state.get('plan') else request.question
-                            history.append({'question': request.question[:2000], 'scope': scope[:2000],
-                                            'clarification': result.answer[:500] if result.metadata.get('status') == 'clarification_required' else ''})
+                            turn = {'question': request.question[:2000], 'scope': scope[:2000],
+                                    'clarification': result.answer[:500] if result.metadata.get('status') == 'clarification_required' else ''}
+                            metrics = result.metadata.get('metrics')
+                            if result.data.get('query_status') == 'executed' and isinstance(metrics, dict):
+                                turn['metrics'] = ', '.join(sorted(name for name in metrics if isinstance(name, str)))
+                            history.append(turn)
                         self.last_destination = result.metadata.get('selected_route', 'unrouted')
                         return result
         except PermissionError:

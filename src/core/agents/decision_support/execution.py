@@ -37,9 +37,10 @@ def outcome_status(result):
         return metadata['status']
     if result.data.get('insufficient_context') or metadata.get('insufficient_context'):
         return 'empty'
-    if not metadata.get('ok', True):
+    if not metadata.get('ok', True) and result.data.get('query_status') != 'executed':
         return 'failed'
-    if not result.evidence or ('rows' in result.data and not result.data['rows']):
+    if not result.evidence or ('rows' in result.data and not result.data['rows']
+                               and result.data.get('query_status') != 'executed'):
         return 'empty'
     return 'complete'
 

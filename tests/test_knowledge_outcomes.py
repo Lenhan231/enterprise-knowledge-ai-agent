@@ -25,7 +25,8 @@ class KnowledgeOutcomeTest(unittest.IsolatedAsyncioTestCase):
         self.rag = RAGService.__new__(RAGService)
         self.rag.llm = Mock()
         self.contexts = [{"source_id": "S1", "document_name": "policy.pdf", "chunk_index": 0,
-                          "content": "Authorized policy text", "metadata": {"document_id": "DOC-1"}}]
+                          "content": "Authorized policy text", "similarity_score": 0.9,
+                          "metadata": {"document_id": "DOC-1"}}]
 
     def test_no_matches_returns_message_without_calling_llm(self):
         result = self.rag.generate_from_contexts("policy?", [])
@@ -61,15 +62,14 @@ class KnowledgeOutcomeTest(unittest.IsolatedAsyncioTestCase):
         for contexts in ([], self.contexts):
             with self.subTest(has_context=bool(contexts)):
                 self.rag.llm.generate.return_value = INSUFFICIENT_ANSWER
-                outcome = self.rag.generate_from_contexts("policy?", contexts)
                 service = Mock()
-                service.generate_answer.return_value = outcome
+                service.retrieve_for_answer.return_value = (contexts, not bool(contexts))
                 result = await KnowledgeAgent(service).run(AgentRequest(question="policy?", identity=identity))
-                self.assertEqual(result.answer, outcome.answer)
-                self.assertTrue(result.metadata["insufficient_context"])
-                self.assertEqual(result.evidence, [])
-                service.generate_answer.assert_called_once_with(
-                    "policy?", decompose=True, verify_claims=False, roles=["employee"], retrieval_method="translated_hybrid_rerank",
+                self.assertEqual(result.answer, INSUFFICIENT_ANSWER if not contexts else "")
+                self.assertEqual(result.metadata["insufficient_context"], not bool(contexts))
+                self.assertEqual(len(result.evidence), len(contexts))
+                service.retrieve_for_answer.assert_called_once_with(
+                    "policy?", decompose=True, roles=["employee"], retrieval_method="translated_hybrid_rerank",
                 )
 
     async def test_search_details_are_kept_even_when_nothing_is_cited(self):
@@ -77,11 +77,10 @@ class KnowledgeOutcomeTest(unittest.IsolatedAsyncioTestCase):
         contexts = [{**self.contexts[0], "retrieval_details": {
             "lexical_queries": {"vn": "hủy PO", "en": "cancel PO"}, "reranker_candidate_count": 30,
             "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1", "context_radius": 1}}]
-        self.rag.llm.generate.return_value = INSUFFICIENT_ANSWER
         service = Mock()
-        service.generate_answer.return_value = self.rag.generate_from_contexts("huy PO?", contexts)
+        service.retrieve_for_answer.return_value = (contexts, True)
         result = await KnowledgeAgent(service).run(AgentRequest(question="huy PO?", identity=identity))
-        self.assertEqual(result.evidence, [])
+        self.assertEqual(len(result.evidence), 1)
         self.assertEqual(result.metadata["search"], {
             "lexical_queries": {"vn": "hủy PO", "en": "cancel PO"}, "candidate_count": 30,
             "passages_to_model": 1, "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
@@ -95,10 +94,10 @@ class KnowledgeOutcomeTest(unittest.IsolatedAsyncioTestCase):
                 if value is not None:
                     os.environ["KNOWLEDGE_MULTIQUERY_ENABLED"] = value
                 service = Mock()
-                service.generate_answer.return_value = self.rag.generate_from_contexts("policy?", [])
+                service.retrieve_for_answer.return_value = ([], True)
                 await KnowledgeAgent(service).run(AgentRequest(question="policy?", identity=identity))
-                self.assertEqual(service.generate_answer.call_args.kwargs["decompose"], value == "1")
-                self.assertEqual(service.generate_answer.call_args.kwargs["roles"], ["employee"])
+                self.assertEqual(service.retrieve_for_answer.call_args.kwargs["decompose"], value == "1")
+                self.assertEqual(service.retrieve_for_answer.call_args.kwargs["roles"], ["employee"])
 
 
 class KnowledgeAccessMessageTest(unittest.TestCase):

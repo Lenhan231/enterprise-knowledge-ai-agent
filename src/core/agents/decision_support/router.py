@@ -13,7 +13,7 @@ from core.agents.decision_support.conversation_context import ConversationStore
 from core.agents.decision_support.execution import Execution, authorize
 from core.agents.intent_classifier import IntentClassifier
 from core.agents.decision_support.planning import plan_request
-from core.agents.decision_support.response import assemble_response
+from core.agents.decision_support.response import assemble_response, compose_single_result
 from core.agents.runtime import deadline, remaining
 from core.latency import measure
 from core.models.agents import AgentRequest, AgentResult
@@ -138,6 +138,8 @@ class AgentRouter:
             if inspect.isawaitable(result):
                 result = await result
         result = AgentResult.model_validate(result)
+        if mode in {'knowledge', 'sql'}:
+            result = await compose_single_result(request, mode, result, self._answer_provider())
         route = 'analytics' if mode == 'sql' else mode
         self.last_destination = route
         return result.model_copy(update={'metadata': {**result.metadata, 'selected_route': route}})
@@ -164,6 +166,7 @@ class AgentRouter:
                         state.pending = PendingSQLQuestion(question=request.question[:2000],clarification=result.answer[:1000],
                                                            base=state.accepted if action == 'followup' else None)
                     history[:] = [{'sql_state':state.model_dump_json()}]
+                result = await compose_single_result(request, 'sql', result, self._answer_provider())
                 self.last_destination = 'analytics'
                 return result.model_copy(update={'metadata':{**result.metadata,'selected_route':'analytics'}})
         except TimeoutError:
@@ -273,13 +276,21 @@ class AgentRouter:
 
     def _provider(self):
         if self.llm is None:
-            sql_agent = getattr(self.analytics_agent, 'sql_agent', None)
+            sql_agent = getattr(self.analytics_agent, 'sql_agent', self.analytics_agent)
             if sql_agent is not None and hasattr(sql_agent, '_provider'):
                 return sql_agent._provider()
             from core.llm.groq_provider import GroqProvider
             self.llm = GroqProvider()
             self._owns_llm = True
         return self.llm
+
+    def _answer_provider(self):
+        try:
+            return self._provider()
+        except ValueError as error:
+            if str(error) == 'GROQ_API_KEY is not set':
+                return None
+            raise
 
     async def close(self):
         seen = set()

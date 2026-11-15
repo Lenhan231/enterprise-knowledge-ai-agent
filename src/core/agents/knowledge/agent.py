@@ -11,6 +11,7 @@ from core.models.agents import (
 from core.rag.rag_service import RAGService
 from core.agents.decision_support.execution import authorize
 from core.agents.runtime import deadline, remaining, run_sync
+from core.prompts.Knowledge import INSUFFICIENT_ANSWER, NO_MATCHING_DOCUMENTS_ANSWER
 
 
 class KnowledgeAgent(BaseAgent):
@@ -44,22 +45,19 @@ class KnowledgeAgent(BaseAgent):
         timeout = 90.0 if multiquery else 60.0
         token = deadline.set(time.monotonic() + remaining(timeout))
         try:
-            result = await run_sync(
-                self.rag.generate_answer,
+            contexts, insufficient_context = await run_sync(
+                self.rag.retrieve_for_answer,
                 request.question,
                 decompose=multiquery,
-                verify_claims=os.getenv("KNOWLEDGE_CLAIM_VERIFICATION_ENABLED", "0") == "1",
                 _timeout=timeout,
                 roles=sorted(request.identity.document_roles) if request.identity and request.identity.document_roles else None,
                 retrieval_method=request.metadata.get("retrieval_method", "translated_hybrid_rerank"),
             )
         finally:
             deadline.reset(token)
-        cited = set(result.source_ids)
-
         evidence = [
             Evidence(
-                citation_id=context["source_id"],
+                citation_id=f"S{index}",
                 source_type="document",
                 source=context["document_name"],
                 content=context["content"],
@@ -73,27 +71,22 @@ class KnowledgeAgent(BaseAgent):
                     "retrieval_details": context.get("retrieval_details", {}),
                 },
             )
-            for context in result.contexts
-            if context["source_id"] in cited
+            for index, context in enumerate(contexts, start=1)
         ]
 
-        metadata = {"ok": not result.insufficient_context, "insufficient_context": result.insufficient_context}
-        if result.contexts:
-            # For the UI's run details; kept even when nothing is cited (e.g. a withheld answer).
-            details = result.contexts[0].get("retrieval_details") or {}
+        metadata = {"ok": not insufficient_context and bool(contexts),
+                    "insufficient_context": insufficient_context or not contexts}
+        if contexts:
+            details = contexts[0].get("retrieval_details") or {}
             metadata["search"] = {
                 "lexical_queries": details.get("lexical_queries"),
                 "candidate_count": details.get("reranker_candidate_count"),
-                "passages_to_model": len(result.contexts),
+                "passages_to_model": len(contexts),
                 "reranker_model": details.get("reranker_model"),
                 "context_radius": details.get("context_radius", 0),
             }
-        if result.verification is not None:
-            metadata["claim_verification"] = result.verification.model_dump()
-            metadata["ok"] = metadata["ok"] and result.verification.status == "supported"
-
         return AgentResult(
-            answer=result.answer,
+            answer=(INSUFFICIENT_ANSWER if insufficient_context else NO_MATCHING_DOCUMENTS_ANSWER) if not contexts or insufficient_context else "",
             agent="knowledge",
             evidence=evidence,
             metadata=metadata,

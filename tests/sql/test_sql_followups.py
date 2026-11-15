@@ -180,9 +180,11 @@ class SQLConversationTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_three_turn_sequence_pins_latest_and_executes_each_turn(self):
         provider=Mock()
-        provider.generate.side_effect=[json.dumps({'action':'new','mapping':{**BASE,'time':{'mode':'latest'}}}),
-                                       json.dumps({'action':'followup','changes':{'filters':[{'field':'color','operator':'eq','value':'blue'}]}}),
-                                       json.dumps({'action':'followup','changes':{'ranking':{'direction':'desc','limit':3}}})]
+        mapping_responses=iter([json.dumps({'action':'new','mapping':{**BASE,'time':{'mode':'latest'}}}),
+                                json.dumps({'action':'followup','changes':{'filters':[{'field':'color','operator':'eq','value':'blue'}]}}),
+                                json.dumps({'action':'followup','changes':{'ranking':{'direction':'desc','limit':3}}})])
+        provider.generate.side_effect=lambda prompt: next(mapping_responses) if prompt.startswith(
+            'Interpret the question BEFORE') else '{}'
         repository=AsyncMock()
         repository.execute_approved_query.side_effect=[[{'snapshot_date':date(2022,12,31)}],
             [{'snapshot_date':date(2022,12,31),'category':'A','stock_on_hand':12}],[],

@@ -6,6 +6,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 from core.agents.knowledge_agent import KnowledgeAgent
+from core.agents.router import AgentRouter
 from core.agents.runtime import deadline
 from core.latency import latency_events, snapshot
 from core.models.agents import AgentRequest, VerifiedIdentity
@@ -238,35 +239,48 @@ class PartialAnswerAndRetryTest(unittest.TestCase):
 
 
 class KnowledgeVerificationIntegrationTest(unittest.IsolatedAsyncioTestCase):
+    class ComposerProvider:
+        def __init__(self, synthesis, verification=None):
+            self.responses = [json.dumps({"answer": synthesis, "used_tasks": ["knowledge"]})]
+            if verification is not None:
+                self.responses.append(verification)
+
+        def generate(self, _prompt, **_kwargs):
+            return self.responses.pop(0)
+
     async def test_switch_is_server_owned_and_only_explicit_one_enables_it(self):
         identity = VerifiedIdentity(subject="test", permissions={"documents:read"}, document_roles={"employee"})
         for flag in (None, "0", "invalid", "1"):
             rag = RAGService.__new__(RAGService)
-            rag.retrieve_contexts = Mock(return_value=[SOURCE])
+            rag.retrieve_for_answer = Mock(return_value=([SOURCE], False))
             rag.llm = Mock()
-            rag.llm.generate.side_effect = [ANSWER, json.dumps(review())]
+            provider = self.ComposerProvider(ANSWER, json.dumps(review()))
             with patch.dict(os.environ, {"KNOWLEDGE_MULTIQUERY_ENABLED": "0"}):
                 os.environ.pop("KNOWLEDGE_CLAIM_VERIFICATION_ENABLED", None)
                 if flag is not None:
                     os.environ["KNOWLEDGE_CLAIM_VERIFICATION_ENABLED"] = flag
-                result = await KnowledgeAgent(rag).run(AgentRequest(
-                    question="Revenue?", identity=identity, metadata={"verify_claims": flag != "1"}))
-            self.assertEqual(rag.llm.generate.call_count, 2 if flag == "1" else 1)
+                result = await AgentRouter(None, KnowledgeAgent(rag), None, llm=provider).run_mode(
+                    AgentRequest(question="Revenue?", identity=identity,
+                                 metadata={"verify_claims": flag != "1"}), "knowledge")
+            self.assertEqual(len(provider.responses), 0 if flag == "1" else 1)
             self.assertEqual("claim_verification" in result.metadata, flag == "1")
+            rag.llm.generate.assert_not_called()
 
     async def test_rejected_draft_is_not_returned_or_exposed_as_evidence(self):
         draft = "Profit in 2024 was VND 100 billion [S1]."
         for response in (json.dumps(review(verdict="contradicted", evidence=None)), "invalid JSON"):
             rag = RAGService.__new__(RAGService)
-            rag.retrieve_contexts = Mock(return_value=[SOURCE])
+            rag.retrieve_for_answer = Mock(return_value=([SOURCE], False))
             rag.llm = Mock()
-            rag.llm.generate.side_effect = [draft, response, response]  # a malformed audit is retried once
+            provider = self.ComposerProvider(draft, response)
+            provider.responses.append(response)  # malformed verifier output is retried once
             identity = VerifiedIdentity(subject="test", permissions={"documents:read"}, document_roles={"employee"})
             with patch.dict(os.environ, {"KNOWLEDGE_MULTIQUERY_ENABLED": "0", "KNOWLEDGE_CLAIM_VERIFICATION_ENABLED": "1"}):
-                result = await KnowledgeAgent(rag).run(AgentRequest(question="Profit?", identity=identity))
+                result = await AgentRouter(None, KnowledgeAgent(rag), None, llm=provider).run_mode(
+                    AgentRequest(question="Profit?", identity=identity), "knowledge")
             self.assertEqual(result.answer, VERIFICATION_UNAVAILABLE_ANSWER)
             self.assertFalse(result.metadata["ok"])
             self.assertFalse(result.metadata["insufficient_context"])
             self.assertIn(result.metadata["claim_verification"]["status"], {"rejected", "unavailable"})
-            self.assertEqual(result.evidence, [])
+            self.assertEqual(len(result.evidence), 1)
             self.assertNotIn(draft, result.model_dump_json())

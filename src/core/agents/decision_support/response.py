@@ -1,11 +1,14 @@
 """Combine authorized evidence with stable citations and explicit coverage gaps."""
 import json
+import os
 import re
 from datetime import date
 from decimal import Decimal, InvalidOperation
+from types import SimpleNamespace
 
 from core.agents.runtime import generate
 from core.models.agents import AgentResult
+from core.models.agent_plan import AgentPlan, AgentTask
 from core.prompts.agents import SYNTHESIS_PROMPT
 from core.rag.arithmetic import verified_results
 
@@ -123,6 +126,25 @@ def _scalar_sql_finding(item, question):
     return f'{label}{period}: {rendered} {refs}.'
 
 
+def _best_selling_product_finding(item, question):
+    if not re.search(r'best[- ]selling|top[- ]selling|most sold|bán chạy nhất|bán được nhiều nhất', question, re.I):
+        return None
+    rows = item['data'].get('rows', [])
+    citations = [e['citation_id'] for e in item['evidence'] if e.get('citation_id')]
+    if len(rows) != 1 or not citations or not isinstance(rows[0].get('product_name'), str):
+        return None
+    row = rows[0]
+    quantity = next((row[name] for name in ('total_quantity', 'total_qty', 'units_sold', 'quantity', 'total_units')
+                     if name in row), None)
+    if not isinstance(quantity, (int, float, Decimal)) or isinstance(quantity, bool):
+        return None
+    rendered = format(Decimal(str(quantity)), ',f')
+    refs = ' '.join(f'[{citation}]' for citation in citations)
+    if re.search(r'[ăâđêôơưáàảãấầẩẫậắằẳẵặếềểễệốồổộớờởỡứừửữựýỳỷỹỵ]', question, re.I):
+        return f"Sản phẩm bán chạy nhất là {row['product_name']} với {rendered} sản phẩm đã bán {refs}."
+    return f"The best-selling product is {row['product_name']} with {rendered} units sold {refs}."
+
+
 def _month_over_month_sql_finding(item, question):
     rows = item['data'].get('rows', [])
     if len(rows) != 1:
@@ -176,16 +198,13 @@ async def assemble_response(request, plan, execution, provider):
                     data[outcome.task.agent] = diagnostic
     for outcome in usable:
         result = outcome.result
-        mapping, local = {}, []
+        local = []
         for item in result.evidence:
             new_id = f'S{len(evidence) + 1}'
-            if item.citation_id:
-                mapping[item.citation_id] = new_id
             source = item.model_copy(update={'citation_id': new_id})
             evidence.append(source)
             local.append(source)
-        answer = re.sub(r'\[(S\d+)\]', lambda m: f'[{mapping.get(m[1], "UNKNOWN")}]', result.answer)
-        inputs.append({'task_id': outcome.task.id, 'agent': outcome.task.agent, 'answer': answer,
+        inputs.append({'task_id': outcome.task.id, 'agent': outcome.task.agent,
                        'data': result.data, 'evidence': [e.model_dump() for e in local]})
         key = outcome.task.agent
         if key in data:
@@ -194,12 +213,13 @@ async def assemble_response(request, plan, execution, provider):
     fallback = True
     answer = ''
     if len(usable) == 1 and len(plan.tasks) == 1 and status == 'complete':
-        deterministic_answer = (_month_over_month_sql_finding(inputs[0], request.question)
+        deterministic_answer = (_best_selling_product_finding(inputs[0], request.question)
+                                or _month_over_month_sql_finding(inputs[0], request.question)
                                 or _scalar_sql_finding(inputs[0], request.question)
                                 if inputs[0]['agent'] == 'sql' else None)
-        answer = deterministic_answer or inputs[0]['answer']
-        fallback = False if deterministic_answer else bool(usable[0].result.metadata.get('fallback', False))
-    elif usable:
+        if deterministic_answer:
+            answer, fallback = deterministic_answer, False
+    if usable and not answer:
         serialized = json.dumps(inputs, ensure_ascii=False, default=str)
         if len(serialized) <= 32_000:
             prompt = SYNTHESIS_PROMPT.format(
@@ -208,6 +228,13 @@ async def assemble_response(request, plan, execution, provider):
                 limitations=json.dumps(limitations, ensure_ascii=False),
                 results=serialized,
             )
+            knowledge_rules = []
+            if os.getenv('KNOWLEDGE_COMPLETENESS_RULE', '0') == '1':
+                knowledge_rules.append('Address every material part of the question and state what the evidence does not establish.')
+            if os.getenv('KNOWLEDGE_STRICT_CITATION_RULE', '0') == '1':
+                knowledge_rules.append('Attach a valid source citation to every factual sentence and bullet.')
+            if knowledge_rules:
+                prompt += '\nKnowledge response requirements:\n- ' + '\n- '.join(knowledge_rules)
             try:
                 raw = await generate(provider, prompt, timeout=20)
                 draft = json.loads(raw.strip().removeprefix('```json').removesuffix('```').strip())
@@ -261,17 +288,70 @@ async def assemble_response(request, plan, execution, provider):
         if scalar_answer and len(blocks) == 1:
             answer, fallback = scalar_answer, False
         elif blocks:
-            answer = 'Evidence fallback — review the supported findings and gaps below.\n\n' + '\n\n'.join(blocks)
+            if re.search(r'[ăâđêôơưáàảãấầẩẫậắằẳẵặếềểễệốồổộớờởỡứừửữựýỳỷỹỵ]', request.question, re.I):
+                answer = 'Bằng chứng tìm được nhưng chưa thể tổng hợp thành câu trả lời hoàn chỉnh.\n\n' + '\n\n'.join(blocks)
+            else:
+                answer = 'Evidence was found, but could not be synthesized into a complete answer.\n\n' + '\n\n'.join(blocks)
         elif status == 'clarification_required':
             answer = next(o.result.answer for o in active if o.status == 'clarification_required')
+        elif active and any(o.result and o.result.answer for o in active):
+            answer = next(o.result.answer for o in active if o.result and o.result.answer)
         else:
-            answer = 'No supported answer could be completed. A task failed or its deadline/evidence budget was exhausted.'
-    if limitations:
-        answer += '\n\nLimitations: ' + ' '.join(dict.fromkeys(limitations))
+            if re.search(r'[ăâđêôơưáàảãấầẩẫậắằẳẵặếềểễệốồổộớờởỡứừửữýỳỷỹỵ]', request.question, re.I):
+                answer = 'Chưa thể tạo câu trả lời đủ căn cứ. Một tác vụ thất bại hoặc đã hết thời gian/ngân sách bằng chứng.'
+            else:
+                answer = 'No supported answer could be completed. A task failed or its deadline/evidence budget was exhausted.'
+
+    verification = None
+    verification_blocked = False
+    allowed = {e.citation_id for e in evidence}
+    if answer and not fallback and provider is not None and os.getenv('KNOWLEDGE_CLAIM_VERIFICATION_ENABLED', '0') == '1':
+        try:
+            from core.rag.claim_verification import VERIFICATION_UNAVAILABLE_ANSWER, verify_answer
+            cited_ids = set(re.findall(r'\[(S\d+)\]', answer))
+            verification_contexts = []
+            for item in inputs:
+                row_context = json.dumps(item['data'].get('rows', []), ensure_ascii=False, default=str)
+                for source in item['evidence']:
+                    if source['citation_id'] not in cited_ids:
+                        continue
+                    verification_contexts.append({
+                        'source_id': source['citation_id'], 'document_name': source['source'],
+                        'content': source.get('content') or row_context,
+                        'metadata': source.get('metadata') or {},
+                    })
+            verification = verify_answer(provider, request.question, answer, verification_contexts)
+            if verification.status != 'supported':
+                answer, fallback, verification_blocked = VERIFICATION_UNAVAILABLE_ANSWER, True, True
+        except Exception:
+            from core.rag.claim_verification import VERIFICATION_UNAVAILABLE_ANSWER
+            answer, fallback, verification_blocked = VERIFICATION_UNAVAILABLE_ANSWER, True, True
     agent_names = {task.agent for task in plan.tasks}
     route = 'hybrid' if len(agent_names) > 1 else ('analytics' if 'sql' in agent_names else 'knowledge')
-    return AgentResult(answer=answer, agent=route, evidence=evidence, data=data,
-                       metadata={'ok': status == 'complete', 'status': status, 'fallback': fallback,
-                                 'limitations': list(dict.fromkeys(limitations)), 'selected_route': route,
-                                 'task_trace': execution.trace, 'specialist_invocations': execution.invocations,
-                                 'planning_fallback': plan.fallback})
+    metadata = {'ok': status == 'complete' and not verification_blocked,
+                'status': 'failed' if verification_blocked else status, 'fallback': fallback,
+                'limitations': list(dict.fromkeys(limitations)), 'selected_route': route,
+                'task_trace': execution.trace, 'specialist_invocations': execution.invocations,
+                'planning_fallback': plan.fallback}
+    if verification is not None:
+        metadata['claim_verification'] = verification.model_dump()
+    return AgentResult(answer=answer, agent=route, evidence=evidence, data=data, metadata=metadata)
+
+
+async def compose_single_result(request, agent: str, result: AgentResult, provider) -> AgentResult:
+    """Send standalone Knowledge/SQL results through the same final answer path as Auto."""
+    from core.agents.decision_support.execution import TaskOutcome, outcome_status
+
+    result = AgentResult.model_validate(result)
+    status = outcome_status(result)
+    if status not in {'complete', 'partial'} or not result.evidence:
+        return result
+    task = AgentTask(id=agent, agent=agent, question=request.question)
+    plan = AgentPlan(objective=request.question, tasks=[task])
+    execution = SimpleNamespace(outcomes={task.id: TaskOutcome(task, status, result=result)},
+                                trace=[], invocations=1)
+    answer = await assemble_response(request, plan, execution, provider)
+    return answer.model_copy(update={
+        'metadata': {**result.metadata, **answer.metadata},
+        'data': {**answer.data, **result.data},
+    })

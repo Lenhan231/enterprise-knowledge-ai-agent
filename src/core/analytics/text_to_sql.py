@@ -764,7 +764,7 @@ def relevant_schema_tables(question, definitions, available_tables=None):
         'products': r'product|category|catalog|sku|sản phẩm|danh mục',
         'returns': r'return|refund|trả hàng|hoàn hàng|hoàn trả',
         'orders': r'order|ordered|buy|bought|purchase|purchased|mua|đặt hàng|đơn hàng|giao dịch',
-        'order_items': r'quantity|quantities|ordered units|ordered quantities|sold units|sold quantities|sales quantity|quantities sold|line value|order items?|số lượng đã bán|đã bán',
+        'order_items': r'quantity|quantities|ordered units|units sold|quantity sold|ordered quantities|sold units|sold quantities|sales quantity|quantities sold|line value|order items?|best[- ]sell(?:ing|er)?|top[- ]sell(?:ing|er)?|most sold|fast[- ]moving|số lượng đã bán|số lượng bán|bán chạy|bán được nhiều nhất|đã bán',
         'customers': r'customer|khách hàng',
         'geography': r'region|district|city|khu vực|thành phố',
         'payments': r'payment|installment|thanh toán',
@@ -885,7 +885,9 @@ def build_sql_prompt(
         definitions = {name: {**d,'formula':stored_fields[name],'aggregation':'value'} for name,d in definitions.items()}
     inventory = any(definition.get('domain') == 'inventory_management' for definition in definitions.values())
     schema_columns = APPROVED_COLUMNS if schema_columns is None else schema_columns
-    tables = relevant_schema_tables(question, definitions, schema_columns)
+    schema_question = question if relative_time_question and relative_time_question.casefold() in question.casefold() \
+        else question + ('\n' + relative_time_question if relative_time_question else '')
+    tables = relevant_schema_tables(schema_question, definitions, schema_columns)
     if allowed_sources is not None:
         tables = (tables & set(allowed_sources)) or set(allowed_sources)
     prompt_columns = {table: set(columns) for table, columns in schema_columns.items() if table in tables}
@@ -928,6 +930,17 @@ def build_sql_prompt(
         prompt_rules.append(
             '\nProduct names are not unique: product-level results include product_id and group by it. '
             'Product TOP-N rankings use product_id as a deterministic tie-break after the requested measure.'
+        )
+    ranking_question = schema_question
+    if re.search(r'best[- ]selling|top[- ]selling|most sold|bán chạy nhất|bán được nhiều nhất', ranking_question, re.I):
+        single_winner = bool(re.search(
+            r'\b(?:best[- ]selling|top[- ]selling)\s+(?:product|seller)\b|'
+            r'\b(?:best|top)\s+seller\b|\bsản phẩm bán chạy nhất\b', ranking_question, re.I))
+        ranking_limit = 'LIMIT 1 for the singular winner' if single_winner else (
+            'use the explicit requested TOP-N, or LIMIT 200 when no count was requested')
+        prompt_rules.append(
+            '\nBest-selling product means SUM(commerce.order_items.quantity). Group by product_id and product_name; '
+            'ORDER BY that sum DESC, then product_id ASC for stable ties; '+ranking_limit+'.'
         )
     if 'commerce.inventory' in tables:
         prompt_rules.append(

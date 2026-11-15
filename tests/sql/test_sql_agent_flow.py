@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 from core.analytics.join_validation import PRIMARY_KEYS
 from core.analytics.text_to_sql import (
     APPROVED_COLUMNS, APPROVED_DATE_COLUMNS, APPROVED_JOINS,
-    approved_join_path, relevant_schema_tables,
+    relevant_schema_tables,
 )
 from core.analytics.metric_ontology import get_metric_definition, resolve_metric_names
 from core.sql_agent.agent import SQLAnalyticsAgent, _completed_months_revenue_plan
@@ -127,13 +127,13 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(plan.parameters, (date(2026, 6, 1), date(2026, 11, 1)))
         self.assertIn("GROUP BY DATE_TRUNC('month'", plan.sql)
 
-    def test_repeat_purchase_wording_selects_orders_schema(self):
+    def test_schema_fallback_keeps_full_schema_when_no_jev_selection_exists(self):
         question = (
             "Theo tháng khách hàng mua hàng lần đầu và acquisition_channel, tính tỷ lệ khách "
             "quay lại mua đơn thứ hai trong vòng 30 ngày; kèm region."
         )
         tables = relevant_schema_tables(question, {}, APPROVED_COLUMNS)
-        self.assertTrue({"commerce.customers", "commerce.orders", "commerce.geography"} <= tables)
+        self.assertEqual(tables, set(APPROVED_COLUMNS))
 
     async def test_explicit_order_item_formula_retries_unnecessary_join_clarification(self):
         question = (
@@ -143,10 +143,7 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         )
         definitions = {name: get_metric_definition(name) for name in resolve_metric_names(question)}
         tables = relevant_schema_tables(question, definitions, APPROVED_COLUMNS)
-        self.assertNotIn("commerce.sales", tables)
-        self.assertTrue({"commerce.orders", "commerce.order_items", "commerce.products",
-                         "commerce.returns", "commerce.geography", "commerce.payments"} <= tables)
-        self.assertTrue(approved_join_path(tables, APPROVED_JOINS))
+        self.assertEqual(tables, set(APPROVED_COLUMNS))
 
         sql = (
             "SELECT g.region, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS revenue "
@@ -160,15 +157,38 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         repository = FakeRepository()
         agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
 
-        result = await agent.run_payload(AgentRequest(
-            question=question,
-            identity=VerifiedIdentity(subject="analyst", permissions={"analytics:read"}),
-        ))
+        selected = {"commerce.orders", "commerce.order_items", "commerce.products",
+                    "commerce.returns", "commerce.geography", "commerce.payments"}
+        with patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': selected, 'required_tables': selected}):
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject="analyst", permissions={"analytics:read"}),
+            ))
 
         self.assertEqual(result["query_status"], "executed")
         self.assertEqual(len(provider.prompts), 2)
         self.assertIn('Requested metrics: {"metrics": []}', provider.prompts[0])
         repository.execute_approved_query.assert_awaited_once_with(sql)
+
+    async def test_product_best_seller_uses_selected_transaction_schema(self):
+        provider = FakeProvider([json.dumps({'clarification': 'Please clarify the requested metric.'})])
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        selected = {'commerce.order_items', 'commerce.orders', 'commerce.products'}
+        with patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': selected, 'required_tables': {'commerce.order_items', 'commerce.orders'}}):
+            result = await agent.run_payload(AgentRequest(
+                question='sản phẩm bán chạy nhất tháng trước',
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertTrue(result['metadata']['clarification_required'])
+        self.assertEqual(len(provider.prompts), 1)
+        self.assertIn('commerce.order_items:', provider.prompts[0])
+        self.assertIn('commerce.orders:', provider.prompts[0])
+        self.assertIn('commerce.products:', provider.prompts[0])
+        self.assertNotIn('Interpret the question BEFORE generating SQL', provider.prompts[0])
 
     async def test_returned_vs_sold_prompt_includes_order_item_schema_and_executes(self):
         question = "so sánh số lượng trả hàng với số lượng đã bán"

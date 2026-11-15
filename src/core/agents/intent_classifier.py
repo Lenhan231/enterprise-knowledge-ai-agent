@@ -1,4 +1,5 @@
 import json
+import math
 import os
 import re
 import urllib.request
@@ -12,6 +13,7 @@ from core.prompts.intent import INTENT_CLASSIFIER_PROMPT
 
 JEV_ROUTE_THRESHOLD = 0.8
 JEV_ROUTES = {'knowledge', 'sql', 'hybrid', 'other_or_unclear'}
+JEV_TABLE_LIMIT = 5
 
 
 def classify_jev_route(question: str, approved_schema=None, history=()):
@@ -77,6 +79,104 @@ def classify_jev_route(question: str, approved_schema=None, history=()):
     return {'route': choice, 'confidence': probability,
             'history_required': not (history_choice == 'no' and history_probability >= JEV_ROUTE_THRESHOLD),
             'model': payload.get('model')}
+
+
+def select_jev_schema_tables(question, table_columns, metric_definitions=None, *, primary_keys=None,
+                             approved_joins=(), limit=JEV_TABLE_LIMIT):
+    """Rank schema tables with Jev and add metric sources and approved join bridges."""
+    tables = {name: sorted(columns) for name, columns in table_columns.items()}
+    if not tables:
+        raise ValueError('Cannot select tables from an empty schema')
+    api_key = os.getenv('OPENROUTER_API_KEY', '').strip()
+    if not api_key:
+        raise RuntimeError('OPENROUTER_API_KEY is not configured')
+    keys = primary_keys or {}
+    joins_by_table = {name: [] for name in tables}
+    graph = {name: set() for name in tables}
+    for edge in approved_joins:
+        (left_table, left_column), (right_table, right_column) = sorted(edge)
+        if left_table in tables and right_table in tables:
+            joins_by_table[left_table].append(f'{left_table}.{left_column} = {right_table}.{right_column}')
+            joins_by_table[right_table].append(f'{right_table}.{right_column} = {left_table}.{left_column}')
+            graph[left_table].add(right_table)
+            graph[right_table].add(left_table)
+    descriptions = {
+        name: {'columns': columns, 'primary_key': sorted(keys.get(name, ())),
+               'approved_joins': sorted(joins_by_table[name])}
+        for name, columns in tables.items()
+    }
+    metric_context = {
+        name: {key: definition.get(key) for key in ('aliases', 'source', 'formula', 'grain', 'unit', 'dimensions')
+               if definition.get(key) is not None}
+        for name, definition in (metric_definitions or {}).items()
+    }
+    question_ids = {name: f'table_{index}' for index, name in enumerate(sorted(tables))}
+    criteria = [
+        'Not relevant to the requested data or a valid join path.',
+        'May provide a requested dimension or an approved bridge to a relevant table.',
+        'Contains a requested measure or entity and is needed to answer the question.',
+    ]
+    request_body = json.dumps({
+        'model': 'typesafe/jev-1.14',
+        'state': {'question': question, 'canonical_metrics': metric_context, 'schema_tables': descriptions},
+        'questions': {
+            question_id: {
+                'type': 'score',
+                'instructions': (f'How relevant is {table} to answering the user question? Consider its columns, '
+                                'the requested measure and dimensions, time scope, and approved join relationships. '
+                                'Score each table independently; do not assume that a table absent from this schema exists.'),
+                'criteria': criteria,
+            }
+            for table, question_id in question_ids.items()
+        },
+    }, ensure_ascii=False).encode()
+    request = urllib.request.Request(
+        'https://openrouter.ai/api/alpha/decisions', data=request_body,
+        headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'}, method='POST',
+    )
+    with urllib.request.urlopen(request, timeout=10) as response:
+        payload = json.loads(response.read())
+    answers = payload.get('answers', {})
+    ranked = []
+    for table, question_id in question_ids.items():
+        answer = answers.get(question_id, {})
+        score = answer.get('score')
+        confidence = answer.get('confidence')
+        if (answer.get('type') != 'score' or isinstance(score, bool) or not isinstance(score, (int, float))
+                or not math.isfinite(score) or not 0 <= score <= len(criteria) - 1
+                or isinstance(confidence, bool) or not isinstance(confidence, (int, float)) or not math.isfinite(confidence)
+                or not 0 <= confidence <= 1):
+            raise ValueError('Jev returned an invalid schema-table score')
+        ranked.append((float(score), table))
+    top_tables = sorted(ranked, key=lambda item: (-item[0], item[1]))[:limit]
+    if not top_tables or top_tables[0][0] <= 0:
+        raise ValueError('Jev did not identify a relevant schema table')
+    selected = {table for _, table in top_tables}
+    required_tables = {table for score, table in ranked if score > 1}
+    metric_sources = {table for definition in (metric_definitions or {}).values()
+                      for table in re.findall(r'commerce\.\w+', definition.get('source', ''))
+                      if table in tables}
+    selected.update(metric_sources)
+    required_tables.update(metric_sources)
+
+    # Add the shortest approved bridge for each connected pair; bridge closure can exceed the top-five cap.
+    required = sorted(selected)
+    for index, start in enumerate(required):
+        for target in required[index + 1:]:
+            pending = [(start, [start])]
+            visited = {start}
+            path = None
+            while pending:
+                current, route = pending.pop(0)
+                if current == target:
+                    path = route
+                    break
+                for neighbor in sorted(graph[current] - visited):
+                    visited.add(neighbor)
+                    pending.append((neighbor, route + [neighbor]))
+            if path:
+                selected.update(path)
+    return {'tables': selected, 'required_tables': required_tables}
 
 
 def _is_document_count_request(text: str) -> bool:

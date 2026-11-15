@@ -48,6 +48,7 @@ def build_sql_prompt(
     dashboard_request: bool = False,
     dashboard_allow_multiple: bool = False,
     dashboard_clarifications: list[dict[str, str]] | None = None,
+    schema_tables: set[str] | None = None,
 ) -> str:
     metrics = sorted(resolve_metric_names(question) if metric_names is None else metric_names)
     definitions = {name: get_metric_definition(name) for name in metrics}
@@ -57,9 +58,13 @@ def build_sql_prompt(
         definitions = {name: {**d,'formula':stored_fields[name],'aggregation':'value'} for name,d in definitions.items()}
     inventory = any(definition.get('domain') == 'inventory_management' for definition in definitions.values())
     schema_columns = APPROVED_COLUMNS if schema_columns is None else schema_columns
-    tables = relevant_schema_tables(question, definitions, schema_columns)
+    tables = (relevant_schema_tables(question, definitions, schema_columns)
+              if schema_tables is None else set(schema_tables))
+    tables.update(table for definition in definitions.values()
+                  for table in re.findall(r'commerce\.\w+', definition.get('source', '')))
+    tables &= set(schema_columns)
     if allowed_sources is not None:
-        tables = (tables & set(allowed_sources)) or set(allowed_sources)
+        tables &= set(allowed_sources)
     prompt_columns = {table: set(columns) for table, columns in schema_columns.items() if table in tables}
     if inventory:
         prompt_columns['commerce.inventory'] -= {'year', 'month', 'category', 'segment', 'product_name'}

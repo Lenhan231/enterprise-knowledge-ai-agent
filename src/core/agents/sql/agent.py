@@ -33,6 +33,7 @@ from core.analytics.text_to_sql import (
     validate_latest_month_query,
     resolve_current_year_month_parameters,
     validate_current_month_total_query,
+    relevant_schema_tables,
 )
 from core.database.commerce_repository import CommerceRepository
 from core.llm.llm_interface import LLMInterface
@@ -385,7 +386,16 @@ class SQLAnalyticsAgent(BaseAgent):
                         primary_keys=primary_keys, approved_joins=approved_joins,
                     ), timeout=12)
                 except Exception:
-                    table_selection = None
+                    # Keep full-schema candidates when Jev is unavailable, while
+                    # retaining a deterministic relevant subset for routing and
+                    # approved-join checks.
+                    fallback_tables = relevant_schema_tables(
+                        question, metric_definitions, table_columns, prompt_only=True)
+                    table_selection = {
+                        'tables': set(table_columns),
+                        'required_tables': fallback_tables,
+                        'candidate_tables': set(table_columns),
+                    }
                     context_info['schema_table_selection'] = 'full_schema_fallback'
                 else:
                     context_info['schema_table_selection'] = 'jev_top_five'
@@ -404,7 +414,7 @@ class SQLAnalyticsAgent(BaseAgent):
                 tables.update(set(table_columns) & INVENTORY_SOURCES)
                 required_tables.add('commerce.inventory')
             query_sources = tables & set(table_columns)
-            if (direct is None and 'commerce.inventory' in tables and all(
+            if (direct is None and 'commerce.inventory' in required_tables and all(
                     get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
                     and re.search(r'\bcurrent\b|\btoday\b|hiện tại|hôm nay', re.sub(r"'(?:[^']|'')*'", '', question), re.I)
                     and not re.search(r'latest available|mới nhất hiện có', question, re.I)):
@@ -425,7 +435,8 @@ class SQLAnalyticsAgent(BaseAgent):
                         result['metadata'].update(status='unsupported',latest_available_snapshot=str(latest) if latest else None,
                             availability_source='MAX(commerce.inventory.snapshot_date)')
                         return result
-            cross_domain = ('commerce.inventory' in tables and bool(tables & {'commerce.orders', 'commerce.order_items'})
+            cross_domain = ('commerce.inventory' in required_tables
+                            and bool(required_tables & {'commerce.orders', 'commerce.order_items'})
                             and bool(re.search(r'\borders\b|\bordered\b|\border(?!\s+by)\b|đơn hàng', question, re.I)))
             if (direct is None and not cross_domain and (context is not None
                     or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
@@ -572,7 +583,7 @@ class SQLAnalyticsAgent(BaseAgent):
                         validate_current_month_total_query(plan.sql, original_question,
                                                            date_columns=date_columns)
                         validate_latest_month_query(plan.sql, question)
-                    if plan.clarification and attempt == 0 and approved_join_path(tables, approved_joins) and re.search(
+                    if plan.clarification and attempt == 0 and approved_join_path(required_tables, approved_joins) and re.search(
                             r'join|relationship', plan.clarification, re.I):
                         raise SQLValidationError('An approved bridge path exists in the supplied schema. '
                             'Use that path with independent aggregates or correlated EXISTS as appropriate; '

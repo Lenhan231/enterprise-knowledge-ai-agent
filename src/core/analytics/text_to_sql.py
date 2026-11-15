@@ -58,7 +58,7 @@ def build_sql_prompt(
         definitions = {name: {**d,'formula':stored_fields[name],'aggregation':'value'} for name,d in definitions.items()}
     inventory = any(definition.get('domain') == 'inventory_management' for definition in definitions.values())
     schema_columns = APPROVED_COLUMNS if schema_columns is None else schema_columns
-    tables = (relevant_schema_tables(question, definitions, schema_columns)
+    tables = (relevant_schema_tables(question, definitions, schema_columns, prompt_only=True)
               if schema_tables is None else set(schema_tables))
     tables.update(table for definition in definitions.values()
                   for table in re.findall(r'commerce\.\w+', definition.get('source', '')))

@@ -698,6 +698,47 @@ def _cross_domain_inventory(sql, metric_names, parameters, table_columns, questi
                                 code='incompatible_grain', clarification=True)
 
 
+def _validate_calendar_year_comparison(tree, question):
+    if not question or not tree.find(exp.AggFunc):
+        return
+    text = question.casefold()
+    if not re.search(r'\b(?:compare|comparison|versus|vs\.?|year.over.year)\b|so sánh|đối chiếu', text):
+        return
+    years = set(re.findall(r'\b(?:19|20)\d{2}\b', text))
+    if len(years) != 2:
+        return
+
+    root = list(traverse_scope(tree))[-1].expression
+    year_projection = None
+    year_index = None
+    for index, projection in enumerate(root.selects, 1):
+        expression = projection.this if isinstance(projection, exp.Alias) else projection
+        if (isinstance(expression, exp.Extract)
+                and str(expression.this).casefold() == 'year'
+                and isinstance(expression.expression, exp.Column)
+                and projection.alias.casefold() in {'year', 'calendar_year'}):
+            year_projection, year_index = expression, index
+            break
+    group = root.args.get('group')
+    grouped_by_year = bool(group and any(
+        (isinstance(item, exp.Literal) and not item.is_string and item.this == str(year_index))
+        or item == year_projection
+        or (isinstance(item, exp.Column) and item.name.casefold() in {'year', 'calendar_year'})
+        for item in group.expressions
+    )) if year_projection is not None else False
+    limit = root.args.get('limit')
+    limit_value = limit.expression if limit else None
+    has_two_row_limit = (isinstance(limit_value, exp.Literal) and not limit_value.is_string
+                         and limit_value.this.isdigit() and int(limit_value.this) >= 2)
+    if not year_projection or not grouped_by_year or not has_two_row_limit:
+        raise MetricDefinitionError(
+            'A comparison of two calendar years must return a separate aggregate per year: '
+            'select EXTRACT(YEAR FROM the_date_column) AS year, GROUP BY that year, and use LIMIT at least 2. '
+            'Do not group by individual dates or limit the comparison to one row.',
+            code='comparison_grain',
+        )
+
+
 def validate_metric_definitions(sql, metric_names, parameters, table_columns, *, question=None):
     """Verify recognized metrics; generic queries retain the existing SQL safety path."""
     tree = parse_one(sql, read='postgres')
@@ -713,6 +754,7 @@ def validate_metric_definitions(sql, metric_names, parameters, table_columns, *,
             validate_metric_request(question, metric_names)
             return validate_stock_comparison(sql, parameters, dates)
     tables = {t.name for t in tree.find_all(exp.Table) if t.db == 'commerce'}
+    _validate_calendar_year_comparison(tree, question)
     if question and 'inventory' not in tables:
         scopes = list(traverse_scope(tree))
         text = question.casefold().replace('_',' ')

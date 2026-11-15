@@ -1,6 +1,7 @@
 """Context-aware task decomposition; rules are only a narrow outage fallback."""
 import json
 import re
+from datetime import date
 
 from core.agents.runtime import generate
 from core.models.agent_plan import AgentPlan
@@ -22,7 +23,8 @@ async def plan_request(request, provider, *, history=(), previous=None, report_h
     from core.analytics.text_to_sql import APPROVED_COLUMNS
     latest_turn = history[-1] if history else {}
     latest_metrics = next((turn.get('metrics') for turn in reversed(history) if turn.get('metrics')), '')
-    data = {'question': request.question, 'history': history, 'previous': previous,
+    data = {'question': request.question, 'current_date': date.today().isoformat(),
+            'history': history, 'previous': previous,
             'follow_up_context': {
                 'prior_resolved_scope': latest_turn.get('scope') or latest_turn.get('question'),
                 'prior_confirmed_sql_metrics': latest_metrics,

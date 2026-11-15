@@ -345,7 +345,10 @@ class SQLAnalyticsAgent(BaseAgent):
             original_question, re.I))
         explicit_month_plan = (_explicit_month_revenue_plan(question, metric_names)
                                if relative_month_followup else None)
-        annual_revenue_plan = _annual_revenue_plan(question, metric_names)
+        # The latest user turn is authoritative for relative dates; planner context can
+        # accidentally carry an older year while correctly retaining the metric.
+        annual_revenue_plan = (_annual_revenue_plan(original_question, metric_names)
+                               or _annual_revenue_plan(question, metric_names))
         completed_months_plan = _completed_months_revenue_plan(original_question, metric_names)
         month_comparison_plan = _month_over_month_revenue_plan(question, metric_names)
         named_sources = set(re.findall(r'\bcommerce\.\w+', re.sub(r"'(?:[^']|'')*'", '', question).casefold()))

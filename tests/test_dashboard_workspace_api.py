@@ -58,7 +58,7 @@ class DashboardApiTest(unittest.TestCase):
             repository=SimpleNamespace(get_schema=AsyncMock(return_value={'tables': {'commerce.sales': {'date', 'revenue'}}})),
             _provider=lambda: SimpleNamespace(generate=Mock(return_value=json.dumps(plan))),
             run_payload=AsyncMock(return_value={'ok': True, 'query_status': 'executed', 'rows': [{'revenue': 12.5}]}))
-        runtime = SimpleNamespace(analytics_agent=SimpleNamespace(sql_agent=sql), dashboard_agent=SimpleNamespace(repository=object()))
+        runtime = SimpleNamespace(analytics_agent=sql, dashboard_agent=SimpleNamespace(repository=object()))
         with patch('app.dashboards._get_runtime', AsyncMock(return_value=runtime)):
             response = self.client.post('/api/dashboards', json={'description': 'Revenue dashboard July 2026'})
         self.assertEqual(201, response.status_code, response.text)

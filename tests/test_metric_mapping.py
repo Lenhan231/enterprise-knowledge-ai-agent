@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
 
-from core.analytics.metric_mapping import decode_metric_mapping, validate_mapped_sql
+from core.analytics.metric_mapping import build_metric_mapping_prompt, decode_metric_mapping, validate_mapped_sql
 from core.analytics.metric_validation import MetricDefinitionError
 from core.analytics.text_to_sql import decode_query_plan
 
@@ -40,6 +40,10 @@ class MetricMappingTest(unittest.TestCase):
         prompt=build_sql_prompt('Fewest pieces left',metric_names={'stock_on_hand'},interpretation=MAPPING)
         self.assertIn('Do not aggregate or GROUP BY',prompt)
         self.assertIn('Stored projection fields',prompt)
+
+    def test_clarifications_follow_the_question_language(self):
+        prompt=build_metric_mapping_prompt('so sánh với năm ngoái')
+        self.assertIn('ask a specific clarification in the same language as the user question',prompt)
 
     def test_unknown_metric_dimension_and_filters_are_rejected(self):
         for field,value in [('metrics',['predicted_stock']),('dimensions',['region']),

@@ -186,7 +186,7 @@ def build_metric_mapping_prompt(question, *, context=None):
             'Use domain=other only for requests entirely outside inventory analytics (e.g. list products, orders, payments). '
             'Structural observation queries (latest snapshot date only, distinct product counts, missing observations, duplicate keys) '
             'also use domain=other with every other slot empty. These are not stock or fulfillment KPIs. '
-            'Never use other to evade an unsupported inventory metric. If unclear, ask a specific clarification. '
+            'Never use other to evade an unsupported inventory metric. If unclear, ask a specific clarification in the same language as the user question. '
             'Low stock without a numeric threshold or explicit top/bottom ranking is ambiguous. Do not invent thresholds, weights, forecasts or reorder rules. '
             'Unresolved IDs must remain unresolved; never substitute a different metric. '
             'For product-level rankings use representation=product and product_name/product_id dimensions. '

@@ -408,7 +408,10 @@ class SQLAnalyticsAgent(BaseAgent):
                     if dashboard_build:
                         from core.prompts.sql import DASHBOARD_OUTPUT_INSTRUCTIONS
                         mapping_prompt += DASHBOARD_OUTPUT_INSTRUCTIONS + '\nFor this typed interpretation use query: 0 and the compiled output aliases from metrics/dimensions. Add outputs alongside the mapping fields; do not generate SQL. Clarify requests needing multiple datasets.'
-                    mapped = await generate(self._provider(),mapping_prompt,timeout=30)
+                    try:
+                        mapped = await generate(self._provider(), mapping_prompt, timeout=30)
+                    except Exception as provider_error:
+                        mapped = await generate_with_local_codex(mapping_prompt, provider_error)
                 if dashboard_build:
                     mapping_response = parse_json_response(mapped)
                     if isinstance(mapping_response, dict):

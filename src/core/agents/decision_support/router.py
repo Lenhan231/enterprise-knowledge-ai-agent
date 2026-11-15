@@ -227,6 +227,11 @@ class AgentRouter:
             plan = state.get('forced_plan')
             jev_routed = False
             if plan is None:
+                latest_turn = state['history'][-1] if state['history'] else {}
+                pending_clarification = bool(
+                    isinstance(latest_turn.get('clarification'), str)
+                    and latest_turn['clarification'].strip()
+                )
                 try:
                     route = await run_sync(classify_jev_route, request.question, self.sql_schema,
                                            state['history'], _timeout=12)
@@ -234,7 +239,7 @@ class AgentRouter:
                     route = None
                 if (route and route['route'] in {'knowledge', 'sql'}
                         and route['confidence'] >= JEV_ROUTE_THRESHOLD and not route['history_required']
-                        and state.get('report_headings') is None):
+                        and state.get('report_headings') is None and not pending_clarification):
                     agent = route['route']
                     task_id = 'k' if agent == 'knowledge' else 's'
                     plan = AgentPlan(objective=request.question, fallback=True, tasks=[{

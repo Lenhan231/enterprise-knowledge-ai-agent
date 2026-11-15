@@ -12,7 +12,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'src'))
 from core.analytics.metric_mapping import decode_sql_turn
 from core.analytics.metric_validation import MetricDefinitionError
 from core.agents.execution import Execution, TaskOutcome
-from core.agents.response import _month_over_month_sql_finding, _scalar_sql_finding, assemble_response
+from core.agents.response import _month_over_month_sql_finding, _null_sql_findings, _scalar_sql_finding, assemble_response
 from core.agents.router import AgentRouter
 from core.sql_agent.agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
 from core.models.agent_plan import AgentPlan, AgentTask
@@ -89,120 +89,78 @@ class SQLPatchTest(unittest.TestCase):
 
 
 class SQLConversationTest(unittest.IsolatedAsyncioTestCase):
-    async def test_expiry_identity_permission_changes_and_restart_clear_scope(self):
+    async def test_sql_debug_is_one_shot_and_auto_reuses_its_confirmed_scope(self):
+        class Planner:
+            def __init__(self): self.prompts=[]
+            async def generate(self,prompt):
+                self.prompts.append(prompt)
+                if prompt.startswith('You plan'):
+                    return json.dumps({'objective':'Compare stock with last year','tasks':[
+                        {'id':'s','agent':'sql','question':'Compare stock with last year'}]})
+                return json.dumps({'answer':'Stock comparison is supported [S1].','used_tasks':['s']})
+
         agent=Mock();seen=[]
         async def run(request):
             seen.append(request.metadata.get('_sql_context'))
-            return AgentResult(answer='done',agent='analytics',data={'query_status':'executed'},metadata={'semantic_interpretation':BASE})
+            return AgentResult(answer='done [S1]',agent='analytics',
+                evidence=[Evidence(citation_id='S1',source_type='database',source='commerce.inventory',content='stock')],
+                data={'query_status':'executed','rows':[{'stock_on_hand':3}]},
+                metadata={'ok':True,'semantic_interpretation':BASE})
         agent.run=run
-        router=AgentRouter(None,None,agent)
-        clock=Mock(return_value=0);router.sql_conversations.clock=clock
-        await router.run_mode(self.request('First'),'sql')
-        await router.run_mode(self.request('Follow up'),'sql')
-        self.assertIsNotNone(seen[-1]['accepted'])
-        await router.run_mode(self.request('Other user',subject='someone-else'),'sql')
-        self.assertIsNone(seen[-1]['accepted'])
-        await router.run_mode(self.request('Other session',conversation='new'),'sql')
-        self.assertIsNone(seen[-1]['accepted'])
-        changed=self.request('Changed role').model_copy(update={'identity':VerifiedIdentity(subject='test',permissions={'analytics:read'},document_roles={'operations'})})
-        await router.run_mode(changed,'sql')
-        self.assertIsNone(seen[-1]['accepted'])
-        clock.return_value=1801
-        await router.run_mode(changed,'sql')
-        self.assertIsNone(seen[-1]['accepted'])
-        fresh=AgentRouter(None,None,agent)
-        await fresh.run_mode(self.request('After restart'),'sql')
-        self.assertIsNone(seen[-1]['accepted'])
+        planner=Planner();router=AgentRouter(None,None,agent,llm=planner)
 
-    async def test_no_id_and_non_sql_modes_do_not_receive_or_update_sql_context(self):
-        agent=Mock();seen=[]
-        async def run(request):
-            seen.append(request.metadata)
-            return AgentResult(answer='done',agent='analytics')
-        agent.run=run
-        router=AgentRouter(None,agent,agent,dashboard_agent=agent,report_agent=agent)
-        for mode in ('sql','knowledge','dashboard','report'):
-            await router.run_mode(self.request('Question',conversation=None if mode=='sql' else 'session',permissions={'analytics:read','documents:read'}),mode)
-        self.assertTrue(all('_sql_context' not in item for item in seen))
-        self.assertEqual(len(router.sql_conversations.entries),0)
+        await router.run_mode(self.request('Show stock at latest snapshot'),'sql')
+        self.assertIsNone(seen[0])  # SQL mode never carries a prior SQL turn into the next debug query.
 
-    async def test_failed_turn_retains_last_scope_and_blocks_implicit_revival(self):
-        agent=Mock()
-        agent.run=AsyncMock(side_effect=[
-            AgentResult(answer='done',agent='analytics',data={'query_status':'executed'},metadata={'semantic_interpretation':BASE}),
-            AgentResult(answer='Unsupported',agent='analytics',metadata={'clarification_required':True,'_sql_context_action':'new'})])
-        router=AgentRouter(None,None,agent)
-        await router.run_mode(self.request('First'),'sql')
-        await router.run_mode(self.request('What safety stock do we need?'),'sql')
-        from core.analytics.metric_mapping import SQLConversationState
-        state=SQLConversationState.model_validate_json(router.sql_conversations.entries[('test','session')].history[-1]['sql_state'])
-        self.assertEqual(state.accepted.metrics,['stock_on_hand'])
-        with self.assertRaises(MetricDefinitionError):
-            decode_sql_turn(json.dumps({'action':'followup','changes':{'clear_filters':True}}),'Only blue',state.model_dump())
-        with self.assertRaises(MetricDefinitionError):
-            decode_sql_turn(json.dumps({'action':'answer','mapping':BASE}),'Latest',state.model_dump())
-
-    async def test_concurrent_turns_are_serialized_and_timeout_does_not_commit(self):
-        entered=asyncio.Event();release=asyncio.Event();agent=Mock();calls=[]
-        async def run(request):
-            calls.append(request.metadata['_sql_context'])
-            if len(calls)==1:
-                entered.set();await release.wait()
-            return AgentResult(answer='done',agent='analytics',data={'query_status':'executed'},metadata={'semantic_interpretation':BASE})
-        agent.run=run;router=AgentRouter(None,None,agent)
-        first=asyncio.create_task(router.run_mode(self.request('First'),'sql'))
-        await entered.wait()
-        second=asyncio.create_task(router.run_mode(self.request('Second'),'sql'))
-        await asyncio.sleep(0)
-        self.assertEqual(len(calls),1)
-        release.set();await asyncio.gather(first,second)
-        self.assertIsNotNone(calls[1]['accepted'])
-        slow=Mock();slow.run=AsyncMock(side_effect=lambda request:None)
-        async def blocked(request):await asyncio.sleep(1)
-        slow.run=blocked
-        timed=AgentRouter(None,None,slow,request_timeout=.01)
-        result=await timed.run_mode(self.request('Timeout'),'sql')
-        self.assertFalse(result.metadata['ok'])
-        self.assertEqual(timed.sql_conversations.entries[('test','session')].history,[])
-
-    async def test_denied_user_never_reads_context_or_calls_provider(self):
-        provider,repo=Mock(),AsyncMock();router=AgentRouter(None,None,SQLAnalyticsAgent(repo,llm=provider))
-        request=self.request('Only blue').model_copy(update={'identity':VerifiedIdentity(subject='test')})
-        with self.assertRaises(PermissionError):await router.run_mode(request,'sql')
-        self.assertEqual(len(router.sql_conversations.entries),0)
-        provider.generate.assert_not_called()
-        repo.execute_approved_query.assert_not_awaited()
+        await router.run_mode(self.request('Compare with last year'),'auto')
+        self.assertEqual(seen[1]['accepted']['metrics'],BASE['metrics'])
+        self.assertEqual(seen[1]['accepted']['time']['start'],BASE['time']['start'])
+        self.assertIsNone(seen[1]['pending'])
+        self.assertIn('Show stock at latest snapshot',planner.prompts[0])
+        self.assertIn('"sql_context"',planner.prompts[0])
+        self.assertNotIn('sql_conversations',vars(router))
 
     def request(self,question,subject='test',conversation='session',permissions=None):
         return AgentRequest(question=question,conversation_id=conversation,
                             identity=VerifiedIdentity(subject=subject,permissions=permissions or {'analytics:read'},document_roles={'admin'}))
 
 
-    async def test_three_turn_sequence_pins_latest_and_executes_each_turn(self):
-        provider=Mock()
-        provider.generate.side_effect=[json.dumps({'action':'new','mapping':{**BASE,'time':{'mode':'latest'}}}),
-                                       json.dumps({'action':'followup','changes':{'filters':[{'field':'color','operator':'eq','value':'blue'}]}}),
-                                       json.dumps({'action':'followup','changes':{'ranking':{'direction':'desc','limit':3}}})]
-        repository=AsyncMock()
-        repository.execute_approved_query.side_effect=[[{'snapshot_date':date(2022,12,31)}],
-            [{'snapshot_date':date(2022,12,31),'category':'A','stock_on_hand':12}],[],
-            [{'snapshot_date':date(2022,12,31),'category':'A','stock_on_hand':3}]]
-        router=AgentRouter(None,None,SQLAnalyticsAgent(repository,llm=provider))
-        results=[]
-        for question in ['Show stock by category at latest snapshot','Only blue products','Now show the top three categories']:
-            results.append(await router.run_mode(self.request(question),'sql'))
-        self.assertTrue(results[0].metadata['ok'],results[0].answer)
-        self.assertEqual(results[1].data['query_status'],'executed')
-        self.assertTrue(results[2].metadata['ok'],results[2].answer)
-        self.assertTrue(results[2].metadata['context_used'])
-        self.assertEqual(results[2].metadata['semantic_interpretation']['time']['start'],'2022-12-31')
-        self.assertEqual(repository.execute_approved_query.await_count,4)
-        saved=router.sql_conversations.entries[('test','session')].history
-        self.assertNotIn('stock_on_hand": 12',json.dumps(saved))
-        self.assertNotIn('SELECT',json.dumps(saved))
-
-
 class OriginalQuestionContextTest(unittest.IsolatedAsyncioTestCase):
+    async def test_single_sql_result_rows_are_explained_by_final_llm(self):
+        question = 'so sánh 2 năm 2026 với 2025'
+        plan = AgentPlan(objective=question, tasks=[AgentTask(id='sql', agent='sql', question=question)])
+        result = AgentResult(answer='Query completed.', agent='analytics',
+            evidence=[Evidence(citation_id='S1', source_type='database', source='commerce.sales')],
+            data={'query_status':'executed','rows':[
+                {'year': 2025, 'revenue': 3_369_646.71},
+                {'year': 2026, 'revenue': 18_881_151.90},
+            ]}, metadata={'ok':True})
+        execution = SimpleNamespace(
+            outcomes={'sql':TaskOutcome(plan.tasks[0], 'complete', result)}, trace=[], invocations=1)
+
+        class Provider:
+            called = False
+            async def generate(self, prompt, **_kwargs):
+                self.called = True
+                self.prompt = prompt
+                return json.dumps({'answer':
+                    'Doanh thu năm 2025 là 3,369,646.71 và năm 2026 là 18,881,151.90 [S1].',
+                    'used_tasks':['sql']})
+
+        provider = Provider()
+        answer = await assemble_response(AgentRequest(question=question, identity=IDENTITY), plan, execution, provider)
+
+        self.assertTrue(provider.called)
+        self.assertIn('Use the language of the request', provider.prompt)
+        self.assertIn('Doanh thu năm 2025', answer.answer)
+        self.assertFalse(answer.metadata['fallback'])
+
+    def test_null_fallback_recognizes_common_vietnamese_accent_in_followup(self):
+        item = {'agent':'sql', 'data':{'rows':[{'revenue':None}]},
+                'evidence':[{'citation_id':'S1'}]}
+        answer = _null_sql_findings([item], '2023 thì sao')
+        self.assertTrue(answer.startswith('Truy vấn đã chạy'))
+
     async def test_sql_task_keeps_root_question_for_relative_date_validation(self):
         question = 'Doanh thu tháng 3 năm nay là bao nhiêu?'
         request = AgentRequest(question=question, identity=IDENTITY)

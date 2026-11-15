@@ -45,7 +45,6 @@ class AgentRouter:
         self.request_timeout = min(120, request_timeout)
         self.conversations = ConversationStore()
         self.report_conversations = ConversationStore()
-        self.sql_conversations = ConversationStore()
         self.last_destination = 'unrouted'  # Compatibility only; results carry request-local routing.
         graph = StateGraph(_State)
         for name in ('plan', 'execute', 'inspect', 'revise', 'combine'):
@@ -76,6 +75,7 @@ class AgentRouter:
                 async with asyncio.timeout(self.request_timeout):
                     store = self.report_conversations if report_headings is not None else self.conversations
                     async with store.session(request) as history:
+                        execution.sql_context = self._sql_context_from_history(history)
                         graph_input = {'request': request, 'history': list(history),
                             'execution': execution, 'revisions': 0, 'report_headings': report_headings}
                         if forced_plan is not None:
@@ -89,9 +89,11 @@ class AgentRouter:
                             scope = state['plan'].objective if state.get('plan') else request.question
                             turn = {'question': request.question[:2000], 'scope': scope[:2000],
                                     'clarification': result.answer[:500] if result.metadata.get('status') == 'clarification_required' else ''}
-                            metrics = result.metadata.get('metrics')
-                            if result.data.get('query_status') == 'executed' and isinstance(metrics, dict):
-                                turn['metrics'] = ', '.join(sorted(name for name in metrics if isinstance(name, str)))
+                            if report_headings is None:
+                                turn['sql_context'] = self._sql_context_after_execution(execution, history)
+                                metrics = result.metadata.get('metrics')
+                                if result.data.get('query_status') == 'executed' and isinstance(metrics, dict):
+                                    turn['metrics'] = ', '.join(sorted(name for name in metrics if isinstance(name, str)))
                             history.append(turn)
                         self.last_destination = result.metadata.get('selected_route', 'unrouted')
                         return result
@@ -138,45 +140,70 @@ class AgentRouter:
         agent = agents[mode]
         if agent is None:
             return self._failure('This standalone request type is not supported.')
-        if mode == 'sql' and request.conversation_id:
-            return await self._run_sql_conversation(request,agent)
         with measure('agent_workflow'):
             result = agent.run(request)
             if inspect.isawaitable(result):
                 result = await result
         result = AgentResult.model_validate(result)
+        if mode == 'sql':
+            await self._record_sql_debug_turn(request, result)
         route = 'analytics' if mode == 'sql' else mode
         self.last_destination = route
         return result.model_copy(update={'metadata': {**result.metadata, 'selected_route': route}})
 
-    async def _run_sql_conversation(self, request, agent):
-        from core.analytics.metric_mapping import SQLConversationState, PendingSQLQuestion
-        token = deadline.set(time.monotonic()+remaining(self.request_timeout))
+    @staticmethod
+    def _sql_context_from_history(history):
+        from core.analytics.metric_mapping import SQLConversationState
+        for turn in reversed(history):
+            raw = turn.get('sql_context')
+            if raw is None:
+                continue
+            if not raw:
+                return None
+            try:
+                return SQLConversationState.model_validate_json(raw).model_dump()
+            except ValueError:
+                return None
+        return None
+
+    @staticmethod
+    def _serialize_sql_context(interpretation):
+        if not isinstance(interpretation, dict):
+            return ''
+        from core.analytics.metric_mapping import SQLConversationState
         try:
-            async with asyncio.timeout(remaining()):
-                async with self.sql_conversations.session(request) as history:
-                    state = SQLConversationState.model_validate_json(history[-1]['sql_state']) if history else SQLConversationState()
-                    scoped = request.model_copy(update={'metadata':{**request.metadata,'_sql_context':state.model_dump()}})
-                    with measure('agent_workflow'):
-                        result = AgentResult.model_validate(await agent.run(scoped))
-                    action = result.metadata.pop('_sql_context_action','new')
-                    if result.data.get('query_status') == 'executed':
-                        state = SQLConversationState.model_validate({'accepted':result.metadata.get('semantic_interpretation')})
-                    elif state.pending and action != 'new':
-                        combined = state.pending.question+'\nClarification reply: '+request.question
-                        if len(combined) <= 2000:
-                            state.pending.question = combined
-                        state.pending.clarification = result.answer[:1000]
-                    else:
-                        state.pending = PendingSQLQuestion(question=request.question[:2000],clarification=result.answer[:1000],
-                                                           base=state.accepted if action == 'followup' else None)
-                    history[:] = [{'sql_state':state.model_dump_json()}]
-                self.last_destination = 'analytics'
-                return result.model_copy(update={'metadata':{**result.metadata,'selected_route':'analytics'}})
-        except TimeoutError:
-            return self._failure('The SQL conversation request timed out. Please retry or restate the complete scope.')
-        finally:
-            deadline.reset(token)
+            return SQLConversationState.model_validate(
+                {'accepted': interpretation, 'pending': None}).model_dump_json()
+        except ValueError:
+            return ''
+
+    @classmethod
+    def _sql_context_after_execution(cls, execution, history):
+        context = next((turn['sql_context'] for turn in reversed(history) if 'sql_context' in turn), '')
+        for task in execution.plan.tasks if execution.plan else ():
+            outcome = execution.outcomes.get(task.id)
+            result = outcome.result if outcome and task.agent == 'sql' else None
+            if result and result.data.get('query_status') == 'executed':
+                context = cls._serialize_sql_context(result.metadata.get('semantic_interpretation'))
+        return context
+
+    async def _record_sql_debug_turn(self, request, result):
+        if not request.conversation_id or not request.identity:
+            return
+        status = result.metadata.get('status')
+        if status in {'failed', 'unsupported'} or result.metadata.get('ok') is False:
+            return
+        async with self.conversations.session(request) as history:
+            context = next((turn['sql_context'] for turn in reversed(history) if 'sql_context' in turn), '')
+            if result.data.get('query_status') == 'executed':
+                context = self._serialize_sql_context(result.metadata.get('semantic_interpretation'))
+            turn = {'question': request.question[:2000], 'scope': request.question[:2000],
+                    'clarification': result.answer[:500] if status == 'clarification_required' else '',
+                    'sql_context': context}
+            metrics = result.metadata.get('metrics')
+            if result.data.get('query_status') == 'executed' and isinstance(metrics, dict):
+                turn['metrics'] = ', '.join(sorted(name for name in metrics if isinstance(name, str)))
+            history.append(turn)
 
     async def _plan(self, state):
         with measure('routing'):

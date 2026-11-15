@@ -451,7 +451,7 @@ def main() -> None:
                 st.markdown(payload.decode("utf-8"))
     if is_report:
         return
-    st.caption('This session shows the latest 20 exchanges. Inventory SQL follow-up context expires after 30 minutes of inactivity and is separate from other modes.')
+    st.caption('This session shows the latest 20 exchanges. Auto carries confirmed SQL scope across the conversation; SQL mode runs one question at a time for debugging.')
     for turn in st.session_state['chat_turns']:
         with st.chat_message('user'):
             st.caption(turn['mode'])

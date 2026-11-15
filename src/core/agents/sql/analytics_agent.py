@@ -58,7 +58,11 @@ class AnalyticsAgent(BaseAgent):
             citations=', '.join(citations),
             metrics=json.dumps(result.get('metadata', {}).get('metrics', {}), ensure_ascii=False),
             limitations=json.dumps(limitations, ensure_ascii=False),
-            interpretation=json.dumps(result.get('metadata',{}).get('semantic_interpretation'),ensure_ascii=False),
+            interpretation=json.dumps({
+                'sql': result.get('sql'),
+                'parameters': result.get('parameters', []),
+                'semantic_interpretation': result.get('metadata', {}).get('semantic_interpretation'),
+            }, ensure_ascii=False, default=str),
             rows=json.dumps(rows, default=str, ensure_ascii=False),
         )
         try:

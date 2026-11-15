@@ -20,7 +20,7 @@ def fuse(rankings, weights, k=60):
 
 def search(repository, vector, request, get_translator, *, company=None, roles=None,
            document_ids=None, document_languages=None, query_language="auto", metadata_filter=None,
-           dense_weight=1.0, bm25_weight=2.0, rrf_k=60, embed=None):
+           dense_weight=1.0, bm25_weight=2.0, rrf_k=60, embed=None, dense_extra=0):
     if query_language not in {"auto", "en", "vn"}:
         raise ValueError("query_language must be auto, en or vn")
     if len(request.query) > 4000:
@@ -104,5 +104,12 @@ def search(repository, vector, request, get_translator, *, company=None, roles=N
     lexical_ids, _ = fuse(lexical, [1.0, 1.0], rrf_k)
     ranking, scores = fuse([dense_ids, lexical_ids[:candidate_k]],
                            [dense_weight, bm25_weight], rrf_k)
-    return [indexed[key].model_copy(update={"retrieval_score": scores[key]})
-            for key in ranking[:request.top_k]], details
+    selected = ranking[:request.top_k]
+    if dense_extra:
+        # Two weighted lexical lists can push a passage only dense search finds below the cut (#54: a dense
+        # rank 10 fell out of the top 30), so the reranker never saw it. Keep dense's best for it to judge.
+        chosen = set(selected)
+        extra = [key for key in dense_ids[:dense_extra] if key not in chosen]
+        selected += extra
+        details["dense_candidates_added"] = len(extra)
+    return [indexed[key].model_copy(update={"retrieval_score": scores[key]}) for key in selected], details

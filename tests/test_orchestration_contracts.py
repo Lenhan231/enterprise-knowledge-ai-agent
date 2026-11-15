@@ -128,6 +128,55 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
                           llm=FakeProvider(tasks)).run(AgentRequest(question='Policy for the top category?', identity=IDENTITY))
         self.assertTrue(knowledge.requests[0].question.startswith('Policy for that category'))
 
+    async def test_lone_knowledge_task_gets_the_users_own_question_but_followups_keep_the_rewrite(self):
+        question = 'nghi phep 3 ngay thi bao truoc bao lau'
+        rewrite = 'How many days before the deadline should the report be submitted?'
+        knowledge = FakeAgent(source_result('knowledge'))
+        router = AgentRouter(None, knowledge, FakeAgent(source_result('analytics')),
+                             llm=FakeProvider([task('k', 'knowledge', rewrite)]))
+        request = AgentRequest(question=question, identity=IDENTITY, conversation_id='c1')
+        await router.run(request)
+        self.assertEqual(knowledge.requests[0].question, question)
+        # The second turn has history, so the planner's resolved follow-up is what Knowledge needs.
+        await router.run(request.model_copy(update={'question': 'thế còn nghỉ 5 ngày?'}))
+        self.assertEqual(knowledge.requests[1].question, rewrite)
+
+    async def test_claim_checked_knowledge_answer_passes_through_with_its_seal(self):
+        checked = {'status': 'supported', 'claim_count': 1}
+        verified = AgentResult(
+            answer='Cần báo trước ít nhất 5 ngày làm việc [S1].', agent='knowledge',
+            evidence=[Evidence(citation_id='S1', source_type='document', source='policy.pdf',
+                               content='Nghỉ theo kế hoạch nên được đề nghị ít nhất năm ngày làm việc trước ngày đầu nghỉ.')],
+            metadata={'ok': True, 'insufficient_context': False, 'claim_verification': checked})
+        result = await AgentRouter(None, FakeAgent(verified), None, llm=FakeProvider([task('k', 'knowledge', 'leave notice')])).run(
+            AgentRequest(question='nghi phep 3 ngay thi bao truoc bao lau', identity=IDENTITY))
+        self.assertIn('5 ngày làm việc', result.answer)  # the source spells it 'năm'; the claim check already passed
+        self.assertFalse(result.metadata['fallback'])
+        self.assertEqual(result.metadata['claim_verification'], checked)
+
+        unchecked = verified.model_copy(update={'metadata': {'ok': True}})
+        result = await AgentRouter(None, FakeAgent(unchecked), None, llm=FakeProvider([task('k', 'knowledge', 'leave notice')])).run(
+            AgentRequest(question='nghi phep 3 ngay thi bao truoc bao lau', identity=IDENTITY))
+        self.assertTrue(result.metadata['fallback'])  # without a claim check the number guard still applies
+
+    async def test_knowledge_not_covered_is_its_own_answer_not_a_failure(self):
+        not_covered = AgentResult(answer='Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.',
+                                  agent='knowledge', metadata={'ok': False, 'insufficient_context': True})
+        result = await AgentRouter(None, FakeAgent(not_covered), None, llm=FakeProvider([task('k', 'knowledge', 'laptop')])).run(
+            AgentRequest(question='tui nghỉ việc thì phải trả lại laptop ko', identity=IDENTITY))
+        self.assertEqual(result.answer, not_covered.answer)
+        self.assertTrue(result.metadata['insufficient_context'])
+        self.assertNotIn('No supported answer', result.answer)
+
+        withheld = AgentResult(answer='Chưa thể kiểm chứng đầy đủ câu trả lời với các nguồn được trích dẫn.', agent='knowledge',
+                               metadata={'ok': False, 'insufficient_context': False,
+                                         'claim_verification': {'status': 'unavailable', 'reason': 'ValidationError'}})
+        result = await AgentRouter(None, FakeAgent(withheld), None, llm=FakeProvider([task('k', 'knowledge', 'desk')])).run(
+            AgentRequest(question='bàn ghế mua 3tr thì đưa ai duyệt', identity=IDENTITY))
+        self.assertEqual(result.answer, withheld.answer)
+        self.assertEqual(result.metadata['claim_verification']['status'], 'unavailable')
+        self.assertNotIn('task k', result.answer)
+
 
     async def test_synchronous_worker_slot_lasts_until_thread_exits(self):
         release = threading.Event()

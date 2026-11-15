@@ -90,6 +90,28 @@ class RequestPlanningTest(unittest.IsolatedAsyncioTestCase):
                 self.assertIn(turn['scope'], llm.prompts[0])
                 self.assertEqual(len(llm.prompts), 1)
 
+    async def test_sql_followup_receives_prior_resolved_scope_and_confirmed_metric(self):
+        llm = Provider(plan({'id': 's', 'agent': 'sql',
+                             'question': 'So sánh doanh thu năm nay với năm ngoái'},
+                            objective='So sánh doanh thu năm nay với năm ngoái'))
+        history = [{'question': 'doanh thu năm nay', 'scope': 'doanh thu năm nay',
+                    'clarification': '', 'metrics': 'revenue'}]
+        result = await plan_request(AgentRequest(question='so với năm ngoái'), llm, history=history)
+        data = json.loads(llm.prompts[0].split('DATA:\n', 1)[1].split('\n\nInvalid', 1)[0])
+        self.assertEqual(data['follow_up_context']['prior_resolved_scope'], 'doanh thu năm nay')
+        self.assertEqual(data['follow_up_context']['prior_confirmed_sql_metrics'], 'revenue')
+        self.assertIn('Do not ask which metric', llm.prompts[0])
+        self.assertEqual(result.tasks[0].question, 'So sánh doanh thu năm nay với năm ngoái')
+
+    async def test_clarification_without_objective_is_normalized_instead_of_failing(self):
+        llm = Provider({'clarification': 'Bạn muốn so sánh khoảng thời gian nào?'})
+        result = await plan_request(AgentRequest(question='so sánh thêm'), llm,
+                                    history=[{'question': 'doanh thu năm nay', 'scope': 'doanh thu năm nay'}])
+        self.assertEqual(result.objective, 'doanh thu năm nay')
+        self.assertEqual(result.tasks, [])
+        self.assertEqual(result.clarification, 'Bạn muốn so sánh khoảng thời gian nào?')
+        self.assertEqual(len(llm.prompts), 1)
+
     async def test_genuine_ambiguity_is_targeted_and_repair_is_bounded(self):
         llm = Provider('bad json', {'objective': 'Compare revenue', 'clarification': 'Which years?', 'tasks': []})
         result = await plan_request(AgentRequest(question='Compare revenue and explain policy'), llm)

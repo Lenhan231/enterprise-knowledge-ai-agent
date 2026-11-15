@@ -12,7 +12,7 @@ from core.analytics.metric_ontology import METRIC_ONTOLOGY, get_metric_definitio
 from core.analytics.text_to_sql import (APPROVED_COLUMNS, SQLValidationError, SQLSecurityError,
     SQLSchemaMismatchError, build_sql_prompt, decode_query_plan)
 from core.sql_agent.analytics_agent import AnalyticsAgent
-from core.agents.decision_support.response import compose_single_result
+from core.agents.orchestration.response import compose_single_result
 from core.sql_agent.agent import SQLAnalyticsAgent
 from core.models.agents import AgentRequest, VerifiedIdentity
 

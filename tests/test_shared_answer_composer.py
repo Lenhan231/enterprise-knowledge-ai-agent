@@ -7,8 +7,8 @@ from unittest.mock import Mock, patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.agents.knowledge.agent import KnowledgeAgent
-from core.agents.decision_support.execution import outcome_status
-from core.agents.decision_support.response import compose_single_result
+from core.agents.orchestration.execution import outcome_status
+from core.agents.orchestration.response import compose_single_result
 from core.models.agents import AgentRequest, AgentResult, Evidence, VerifiedIdentity
 
 

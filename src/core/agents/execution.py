@@ -1,6 +1,6 @@
 """Compatibility alias for bounded agent execution."""
 
 import sys
-from core.agents.decision_support import execution as _implementation
+from core.agents.orchestration import execution as _implementation
 
 sys.modules[__name__] = _implementation

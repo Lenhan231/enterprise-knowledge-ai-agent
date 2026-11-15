@@ -381,10 +381,12 @@ async def assemble_response(request, plan, execution, provider):
             answer = 'Evidence fallback — review the supported findings and gaps below.\n\n' + '\n\n'.join(blocks)
         elif status == 'clarification_required':
             answer = next(o.result.answer for o in active if o.status == 'clarification_required')
-        elif specialist.get('insufficient_context') and active[0].status == 'empty' and active[0].result.answer.strip():
-            # "The documents do not cover this" is Knowledge's answer, not a system failure.
+        elif ((specialist.get('insufficient_context') or 'claim_verification' in specialist)
+              and active[0].status in {'empty', 'failed'} and active[0].result.answer.strip()):
+            # "Not covered" or "withheld by the claim check" is Knowledge's own answer, not a system failure.
             answer, fallback = active[0].result.answer.strip(), False
-            limitations = [item for item in limitations if item != f'knowledge task {active[0].task.id}: empty.']
+            limitations = [item for item in limitations
+                           if item != f'knowledge task {active[0].task.id}: {active[0].status}.']
         else:
             answer = 'No supported answer could be completed. A task failed or its deadline/evidence budget was exhausted.'
     if limitations:

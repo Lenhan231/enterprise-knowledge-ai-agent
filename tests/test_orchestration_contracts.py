@@ -168,6 +168,15 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(result.metadata['insufficient_context'])
         self.assertNotIn('No supported answer', result.answer)
 
+        withheld = AgentResult(answer='Chưa thể kiểm chứng đầy đủ câu trả lời với các nguồn được trích dẫn.', agent='knowledge',
+                               metadata={'ok': False, 'insufficient_context': False,
+                                         'claim_verification': {'status': 'unavailable', 'reason': 'ValidationError'}})
+        result = await AgentRouter(None, FakeAgent(withheld), None, llm=FakeProvider([task('k', 'knowledge', 'desk')])).run(
+            AgentRequest(question='bàn ghế mua 3tr thì đưa ai duyệt', identity=IDENTITY))
+        self.assertEqual(result.answer, withheld.answer)
+        self.assertEqual(result.metadata['claim_verification']['status'], 'unavailable')
+        self.assertNotIn('task k', result.answer)
+
 
     async def test_synchronous_worker_slot_lasts_until_thread_exits(self):
         release = threading.Event()

@@ -72,15 +72,23 @@ class RequestPlanningTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.tasks[0].question, question)
         self.assertFalse(llm.prompts)
 
-    async def test_revenue_previous_month_followup_resolves_from_conversation_scope(self):
-        llm = Provider(RuntimeError('planner should not be called'))
-        history = [{'question': 'doanh thu cho tháng 3', 'scope': 'doanh thu cho tháng 3'}]
+    async def test_followup_planning_uses_history_for_any_tool(self):
+        cases = [
+            ({'question': 'doanh thu tháng 3', 'scope': 'doanh thu tháng 3'},
+             'tháng trước thì sao', 'sql', 'doanh thu tháng 2 năm 2026'),
+            ({'question': 'annual leave policy', 'scope': 'annual leave policy'},
+             'what about parental leave?', 'knowledge', 'parental leave policy'),
+        ]
+        for turn, question, agent, resolved_question in cases:
+            with self.subTest(agent=agent):
+                llm = Provider(plan({'id': 'followup', 'agent': agent,
+                                     'question': resolved_question}, objective=resolved_question))
+                result = await plan_request(AgentRequest(question=question), llm, history=[turn])
 
-        result = await plan_request(AgentRequest(question='tháng trước thì sao'), llm, history=history)
-
-        self.assertEqual(result.tasks[0].agent, 'sql')
-        self.assertEqual(result.tasks[0].question, 'doanh thu tháng 2 năm 2026')
-        self.assertFalse(llm.prompts)
+                self.assertEqual(result.tasks[0].agent, agent)
+                self.assertEqual(result.tasks[0].question, resolved_question)
+                self.assertIn(turn['scope'], llm.prompts[0])
+                self.assertEqual(len(llm.prompts), 1)
 
     async def test_genuine_ambiguity_is_targeted_and_repair_is_bounded(self):
         llm = Provider('bad json', {'objective': 'Compare revenue', 'clarification': 'Which years?', 'tasks': []})

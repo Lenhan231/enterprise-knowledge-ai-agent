@@ -330,11 +330,15 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.data["query_status"], "executed")
 
     async def test_analytics_summary_is_grounded_and_keeps_rows_and_sources(self):
-        sql = "SELECT p.category, COUNT(*) AS products FROM commerce.products AS p GROUP BY p.category LIMIT 20"
+        start = date(date.today().year, 3, 1)
+        end = date(date.today().year, 4, 1)
+        sql = ("SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s "
+               "WHERE s.date >= $1 AND s.date < $2 LIMIT 1")
 
         class LLM:
             def __init__(self):
-                self.responses = [json.dumps({"sql": sql, "parameters": []}), "Outdoor has 12 products."]
+                self.responses = [json.dumps({"sql": sql, "parameters": [start.isoformat(), end.isoformat()]}),
+                                  "March revenue was 2,248,522.83."]
                 self.prompts = []
 
             def generate(self, prompt):
@@ -345,17 +349,20 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
 
         llm = LLM()
         repository = AsyncMock()
-        repository.execute_approved_query.return_value = [{"category": "Outdoor", "products": 12}]
+        repository.execute_approved_query.return_value = [{"revenue": 2248522.83}]
         agent = AnalyticsAgent(SQLAnalyticsAgent(repository, llm=llm))
 
-        result = await agent.run(AgentRequest(question="How many products are in each category?", identity=ANALYST))
+        result = await agent.run(AgentRequest(question="Doanh thu tháng 3 năm nay là bao nhiêu?", identity=ANALYST))
 
-        self.assertTrue(result.answer.startswith("Outdoor has 12 products."))
-        self.assertIn("[S1] commerce.products", result.answer)
+        self.assertTrue(result.answer.startswith("March revenue was 2,248,522.83."))
+        self.assertIn("[S1] commerce.sales", result.answer)
         self.assertIn("Cite factual claims with the supplied [S#] references", llm.prompts[-1])
-        self.assertIn('"products": 12', llm.prompts[-1])
-        self.assertEqual(result.data["rows"][0]["category"], "Outdoor")
-        self.assertEqual(result.evidence[0].source, "commerce.products")
+        self.assertIn("Use the language of the question", llm.prompts[-1])
+        self.assertIn('"sql": "SELECT SUM(s.revenue)', llm.prompts[-1])
+        self.assertIn(f'"{start.isoformat()}"', llm.prompts[-1])
+        self.assertIn('"revenue": 2248522.83', llm.prompts[-1])
+        self.assertEqual(result.data["rows"][0]["revenue"], 2248522.83)
+        self.assertEqual(result.evidence[0].source, "commerce.sales")
 
     async def test_month_comparison_has_deterministic_human_readable_summary(self):
         class SQLAgent:

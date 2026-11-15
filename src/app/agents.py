@@ -28,7 +28,8 @@ class AgentChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     question: str = Field(min_length=1, max_length=2_000)
-    agent_mode: Literal["auto", "knowledge", "sql", "dashboard", "agentic", "report"] = "auto"
+    agent_mode: Literal["auto", "knowledge", "sql", "dashboard", "agentic", "report",
+                        "business_decision_support", "decision_support"] = "auto"
     retrieval_method: Literal[
         "dense", "bm25", "hybrid", "parent", "translated_hybrid", "translated_hybrid_rerank",
     ] = "translated_hybrid_rerank"
@@ -61,7 +62,7 @@ async def _get_runtime(application):
         from core.agents.dashboard_agent import InventoryDashboardAgent
         from core.agents.main import _FallbackClassifier, _LazyKnowledgeAgent
         from core.agents.report.agent import ReportAgent
-        from core.agents.decision_support.router import AgentRouter
+        from core.agents.orchestration.router import AgentRouter
         from core.agents.sql.agent import SQLAnalyticsAgent
         from core.database.commerce_repository import LazyCommerceRepository
 

@@ -16,7 +16,8 @@ from typing import Any, Callable
 
 AGENT_MODES = {
     "Auto (Knowledge + SQL)": "auto", "Knowledge": "knowledge", "SQL": "sql",
-    "Decision Support": "decision_support", "Inventory Dashboard": "dashboard", "Report": "report",
+    "Business Decision Support": "business_decision_support",
+    "Inventory Dashboard": "dashboard", "Report": "report",
 }
 
 

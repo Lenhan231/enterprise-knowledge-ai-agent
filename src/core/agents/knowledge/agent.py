@@ -9,7 +9,7 @@ from core.models.agents import (
     Evidence,
 )
 from core.rag.rag_service import RAGService
-from core.agents.decision_support.execution import authorize
+from core.agents.orchestration.execution import authorize
 from core.agents.runtime import deadline, remaining, run_sync
 from core.prompts.Knowledge import INSUFFICIENT_ANSWER, NO_MATCHING_DOCUMENTS_ANSWER
 

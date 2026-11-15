@@ -1,0 +1,357 @@
+{
+  "execution_id": "DB-18-en",
+  "case_id": "DB-18",
+  "language": "en",
+  "question": "Build a dashboard comparing stockout and overstock rates by category at the latest snapshot, with descriptive statistics and a table of exceptions.",
+  "expect": "Bar + summary + table",
+  "code_commit": "bac3d96dedef3187fde3755a5ce0eaf74609a106",
+  "dataset_sha256": "40fd4b4f7df9717e618b33cbde44a93bb5312915933528722eac39f45a392a7f",
+  "started_at": "2026-11-14T15:50:38.903960+00:00",
+  "dashboard_status": "failed",
+  "planner_output_valid": true,
+  "query_count": 2,
+  "tile_count": 3,
+  "tile_status": {
+    "stockout_overstock_rates_bar": {
+      "status": "unavailable",
+      "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+    },
+    "exceptions_table": {
+      "status": "unavailable",
+      "message": "The inventory records are historical. Which snapshot should I use?"
+    },
+    "descriptive_statistics_summary": {
+      "status": "unavailable",
+      "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+    }
+  },
+  "dashboard": {
+    "title": "Stockout and Overstock Dashboard",
+    "queries": [
+      {
+        "id": "stockout_overstock_rates",
+        "question": "What are the stockout and overstock rates by category at the latest snapshot?"
+      },
+      {
+        "id": "exceptions",
+        "question": "What are the exceptions to the stockout and overstock rates by category at the latest snapshot?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "stockout_overstock_rates_bar",
+        "title": "Stockout and Overstock Rates by Category",
+        "kind": "bar",
+        "query_id": "stockout_overstock_rates",
+        "measures": [
+          "stockout_rate",
+          "overstock_rate"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "exceptions_table",
+        "title": "Exceptions to Stockout and Overstock Rates",
+        "kind": "table",
+        "query_id": "exceptions",
+        "measures": [
+          "product_id",
+          "category",
+          "stockout_rate",
+          "overstock_rate"
+        ],
+        "dimension": null,
+        "span": 1
+      },
+      {
+        "id": "descriptive_statistics_summary",
+        "title": "Descriptive Statistics of Stockout and Overstock Rates",
+        "kind": "summary",
+        "query_id": "stockout_overstock_rates",
+        "measures": [
+          "stockout_rate",
+          "overstock_rate"
+        ],
+        "dimension": null,
+        "span": 1
+      }
+    ],
+    "id": "d44f24aecc564b56904fbdfffa6cd6e6",
+    "description": "Build a dashboard comparing stockout and overstock rates by category at the latest snapshot, with descriptive statistics and a table of exceptions.",
+    "scope": "",
+    "revision": 1,
+    "created_at": "2026-11-14T15:50:42.368875Z",
+    "updated_at": "2026-11-14T15:50:43.621818Z",
+    "data_updated_at": "2026-11-14T15:50:43.621295Z",
+    "results": [
+      {
+        "id": "stockout_overstock_rates",
+        "question": "What are the stockout and overstock rates by category at the latest snapshot?",
+        "status": "clarification_required",
+        "payload": {
+          "rows": [],
+          "metadata": {
+            "error_type": "MetricDefinitionError",
+            "metric_error_code": "invalid_date_scope",
+            "clarification_required": true,
+            "status": "clarification_required",
+            "sql_scope": "commerce",
+            "discovered_schema": {
+              "tables": [
+                "commerce.customers",
+                "commerce.geography",
+                "commerce.inventory",
+                "commerce.invoice_items",
+                "commerce.invoices",
+                "commerce.order_items",
+                "commerce.orders",
+                "commerce.payments",
+                "commerce.products",
+                "commerce.promotions",
+                "commerce.returns",
+                "commerce.reviews",
+                "commerce.sales",
+                "commerce.shipments",
+                "commerce.web_traffic"
+              ],
+              "schemas": [
+                "commerce"
+              ]
+            },
+            "execution_status": "clarification_required",
+            "limitations": [
+              "The generated query did not pass planning or SQL validation."
+            ]
+          }
+        },
+        "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+      },
+      {
+        "id": "exceptions",
+        "question": "What are the exceptions to the stockout and overstock rates by category at the latest snapshot?",
+        "status": "clarification_required",
+        "payload": {
+          "rows": [],
+          "metadata": {
+            "error_type": "MetricDefinitionError",
+            "metric_error_code": "snapshot_required",
+            "clarification_required": true,
+            "status": "clarification_required",
+            "sql_scope": "commerce",
+            "discovered_schema": {
+              "tables": [
+                "commerce.customers",
+                "commerce.geography",
+                "commerce.inventory",
+                "commerce.invoice_items",
+                "commerce.invoices",
+                "commerce.order_items",
+                "commerce.orders",
+                "commerce.payments",
+                "commerce.products",
+                "commerce.promotions",
+                "commerce.returns",
+                "commerce.reviews",
+                "commerce.sales",
+                "commerce.shipments",
+                "commerce.web_traffic"
+              ],
+              "schemas": [
+                "commerce"
+              ]
+            },
+            "execution_status": "clarification_required",
+            "limitations": [
+              "The generated query did not pass planning or SQL validation."
+            ]
+          }
+        },
+        "message": "The inventory records are historical. Which snapshot should I use?"
+      }
+    ],
+    "tile_status": {
+      "stockout_overstock_rates_bar": {
+        "status": "unavailable",
+        "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+      },
+      "exceptions_table": {
+        "status": "unavailable",
+        "message": "The inventory records are historical. Which snapshot should I use?"
+      },
+      "descriptive_statistics_summary": {
+        "status": "unavailable",
+        "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+      }
+    },
+    "status": "failed"
+  },
+  "total_latency_seconds": 4.730622600000061,
+  "planner_attempts": [
+    {
+      "schema_valid": true,
+      "validation_error": null,
+      "error": null,
+      "provider": "CloudflareProvider",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "latency_seconds": 3.4364062000022386
+    }
+  ],
+  "accepted_plan": {
+    "title": "Stockout and Overstock Dashboard",
+    "queries": [
+      {
+        "id": "stockout_overstock_rates",
+        "question": "What are the stockout and overstock rates by category at the latest snapshot?"
+      },
+      {
+        "id": "exceptions",
+        "question": "What are the exceptions to the stockout and overstock rates by category at the latest snapshot?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "stockout_overstock_rates_bar",
+        "title": "Stockout and Overstock Rates by Category",
+        "kind": "bar",
+        "query_id": "stockout_overstock_rates",
+        "measures": [
+          "stockout_rate",
+          "overstock_rate"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "exceptions_table",
+        "title": "Exceptions to Stockout and Overstock Rates",
+        "kind": "table",
+        "query_id": "exceptions",
+        "measures": [
+          "product_id",
+          "category",
+          "stockout_rate",
+          "overstock_rate"
+        ],
+        "dimension": null,
+        "span": 1
+      },
+      {
+        "id": "descriptive_statistics_summary",
+        "title": "Descriptive Statistics of Stockout and Overstock Rates",
+        "kind": "summary",
+        "query_id": "stockout_overstock_rates",
+        "measures": [
+          "stockout_rate",
+          "overstock_rate"
+        ],
+        "dimension": null,
+        "span": 1
+      }
+    ]
+  },
+  "sql_agent_call_count": 2,
+  "executed_dataset_sql_count": 0,
+  "inspection_sql_count": 0,
+  "llm_call_count": 3,
+  "actual_provider_models": [
+    "CloudflareProvider:@cf/meta/llama-3.1-8b-instruct-fast"
+  ],
+  "source_queries": [
+    {
+      "execution_id": "DB-18-en",
+      "phase": "sql",
+      "event": "sql_payload",
+      "time": "2026-11-14T15:50:43.290773+00:00",
+      "question": "What are the stockout and overstock rates by category at the latest snapshot?",
+      "payload": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "Specify valid historical ISO snapshot dates or an ordered inclusive range.",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError",
+          "metric_error_code": "invalid_date_scope",
+          "clarification_required": true,
+          "status": "clarification_required",
+          "sql_scope": "commerce",
+          "discovered_schema": {
+            "tables": [
+              "commerce.customers",
+              "commerce.geography",
+              "commerce.inventory",
+              "commerce.invoice_items",
+              "commerce.invoices",
+              "commerce.order_items",
+              "commerce.orders",
+              "commerce.payments",
+              "commerce.products",
+              "commerce.promotions",
+              "commerce.returns",
+              "commerce.reviews",
+              "commerce.sales",
+              "commerce.shipments",
+              "commerce.web_traffic"
+            ],
+            "schemas": [
+              "commerce"
+            ]
+          },
+          "execution_status": "clarification_required"
+        }
+      },
+      "latency_seconds": 0.9224273999934667
+    },
+    {
+      "execution_id": "DB-18-en",
+      "phase": "sql",
+      "event": "sql_payload",
+      "time": "2026-11-14T15:50:43.619690+00:00",
+      "question": "What are the exceptions to the stockout and overstock rates by category at the latest snapshot?",
+      "payload": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "The inventory records are historical. Which snapshot should I use?",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError",
+          "metric_error_code": "snapshot_required",
+          "clarification_required": true,
+          "status": "clarification_required",
+          "sql_scope": "commerce",
+          "discovered_schema": {
+            "tables": [
+              "commerce.customers",
+              "commerce.geography",
+              "commerce.inventory",
+              "commerce.invoice_items",
+              "commerce.invoices",
+              "commerce.order_items",
+              "commerce.orders",
+              "commerce.payments",
+              "commerce.products",
+              "commerce.promotions",
+              "commerce.returns",
+              "commerce.reviews",
+              "commerce.sales",
+              "commerce.shipments",
+              "commerce.web_traffic"
+            ],
+            "schemas": [
+              "commerce"
+            ]
+          },
+          "execution_status": "clarification_required"
+        }
+      },
+      "latency_seconds": 1.2505617999995593
+    }
+  ],
+  "error_or_clarification": "stockout_overstock_rates: Specify valid historical ISO snapshot dates or an ordered inclusive range.; exceptions: The inventory records are historical. Which snapshot should I use?"
+}

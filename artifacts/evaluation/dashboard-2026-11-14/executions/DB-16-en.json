@@ -1,0 +1,675 @@
+{
+  "execution_id": "DB-16-en",
+  "case_id": "DB-16",
+  "language": "en",
+  "question": "Build an executive dashboard combining monthly revenue, web sessions, and inventory stockout indicators for July to September 2026. Keep different units and observation grains separate.",
+  "expect": "Multiple safe tiles",
+  "code_commit": "bac3d96dedef3187fde3755a5ce0eaf74609a106",
+  "dataset_sha256": "40fd4b4f7df9717e618b33cbde44a93bb5312915933528722eac39f45a392a7f",
+  "started_at": "2026-11-14T15:50:05.164764+00:00",
+  "dashboard_status": "partial",
+  "planner_output_valid": true,
+  "query_count": 3,
+  "tile_count": 5,
+  "tile_status": {
+    "revenue_kpi": {
+      "status": "unavailable",
+      "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+    },
+    "web_sessions_line": {
+      "status": "complete",
+      "message": ""
+    },
+    "stockout_donut": {
+      "status": "unavailable",
+      "message": "The interpretation changed the requested historical period."
+    },
+    "stockout_table": {
+      "status": "unavailable",
+      "message": "The interpretation changed the requested historical period."
+    },
+    "stockout_summary": {
+      "status": "unavailable",
+      "message": "The interpretation changed the requested historical period."
+    }
+  },
+  "dashboard": {
+    "title": "Executive Dashboard",
+    "queries": [
+      {
+        "id": "revenue",
+        "question": "What was the total revenue for each month in July to September 2026?"
+      },
+      {
+        "id": "web_sessions",
+        "question": "How many web sessions occurred each month in July to September 2026?"
+      },
+      {
+        "id": "stockout",
+        "question": "What was the stockout rate for each product category in July to September 2026?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "revenue_kpi",
+        "title": "Monthly Revenue",
+        "kind": "kpi",
+        "query_id": "revenue",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": null,
+        "span": 1
+      },
+      {
+        "id": "web_sessions_line",
+        "title": "Monthly Web Sessions",
+        "kind": "line",
+        "query_id": "web_sessions",
+        "measures": [
+          "sessions"
+        ],
+        "dimension": "month",
+        "span": 1
+      },
+      {
+        "id": "stockout_donut",
+        "title": "Stockout Rate by Category",
+        "kind": "donut",
+        "query_id": "stockout",
+        "measures": [
+          "stockout_rate"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "stockout_table",
+        "title": "Stockout Details",
+        "kind": "table",
+        "query_id": "stockout",
+        "measures": [
+          "stockout_days",
+          "stockout_flag"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "stockout_summary",
+        "title": "Stockout Summary",
+        "kind": "summary",
+        "query_id": "stockout",
+        "measures": [
+          "stockout_rate",
+          "stockout_days"
+        ],
+        "dimension": "category",
+        "span": 1
+      }
+    ],
+    "id": "3c5af8afb9c74c708b71a2a24f51edb5",
+    "description": "Build an executive dashboard combining monthly revenue, web sessions, and inventory stockout indicators for July to September 2026. Keep different units and observation grains separate.",
+    "scope": "",
+    "revision": 1,
+    "created_at": "2026-11-14T15:50:09.120519Z",
+    "updated_at": "2026-11-14T15:50:12.161587Z",
+    "data_updated_at": "2026-11-14T15:50:12.158030Z",
+    "results": [
+      {
+        "id": "revenue",
+        "question": "What was the total revenue for each month in July to September 2026?",
+        "status": "failed",
+        "payload": {
+          "rows": [],
+          "attempted_sql": "SELECT DATE_TRUNC('month', s.date) AS month, COALESCE(SUM(s.revenue), 0) AS revenue FROM commerce.sales AS s WHERE s.date >= $1 AND s.date <= $2 GROUP BY 1 ORDER BY 1 DESC LIMIT 200",
+          "parameters": [
+            "2026-07-01",
+            "2026-09-30"
+          ],
+          "metadata": {
+            "error_type": "MetricDefinitionError",
+            "metric_error_code": "formula_violation",
+            "sql_scope": "commerce",
+            "discovered_schema": {
+              "tables": [
+                "commerce.customers",
+                "commerce.geography",
+                "commerce.inventory",
+                "commerce.invoice_items",
+                "commerce.invoices",
+                "commerce.order_items",
+                "commerce.orders",
+                "commerce.payments",
+                "commerce.products",
+                "commerce.promotions",
+                "commerce.returns",
+                "commerce.reviews",
+                "commerce.sales",
+                "commerce.shipments",
+                "commerce.web_traffic"
+              ],
+              "schemas": [
+                "commerce"
+              ]
+            },
+            "metric_definition_source": {
+              "revenue": "metric_ontology"
+            },
+            "execution_status": "validation_failed",
+            "limitations": [
+              "The generated query did not pass planning or SQL validation."
+            ]
+          },
+          "query_status": "rejected"
+        },
+        "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+      },
+      {
+        "id": "web_sessions",
+        "question": "How many web sessions occurred each month in July to September 2026?",
+        "status": "complete",
+        "payload": {
+          "rows": [
+            {
+              "month": "2026-09-01T00:00:00Z",
+              "sessions": 68462
+            },
+            {
+              "month": "2026-08-01T00:00:00Z",
+              "sessions": 73883
+            },
+            {
+              "month": "2026-07-01T00:00:00Z",
+              "sessions": 69588
+            }
+          ],
+          "sql": "SELECT DATE_TRUNC('month', wt.date) AS month, SUM(wt.sessions) AS sessions FROM commerce.web_traffic AS wt WHERE wt.date >= $1 AND wt.date <= $2 GROUP BY 1 ORDER BY 1 DESC LIMIT 200",
+          "parameters": [
+            "2026-07-01",
+            "2026-09-30"
+          ],
+          "metadata": {
+            "source": [
+              "commerce.web_traffic"
+            ],
+            "explanation": "",
+            "metrics": {
+              "sessions": {
+                "aliases": [
+                  "sessions",
+                  "website sessions",
+                  "lượt truy cập",
+                  "phiên truy cập"
+                ],
+                "source": "commerce.web_traffic",
+                "formula": "SUM(sessions)",
+                "grain": "day",
+                "aggregation": "sum",
+                "unit": "sessions",
+                "dimensions": [
+                  "date",
+                  "traffic_source"
+                ]
+              }
+            },
+            "columns": [
+              {
+                "name": "month",
+                "unit": null
+              },
+              {
+                "name": "sessions",
+                "unit": "sessions"
+              }
+            ],
+            "sql_scope": "commerce",
+            "discovered_schema": {
+              "tables": [
+                "commerce.customers",
+                "commerce.geography",
+                "commerce.inventory",
+                "commerce.invoice_items",
+                "commerce.invoices",
+                "commerce.order_items",
+                "commerce.orders",
+                "commerce.payments",
+                "commerce.products",
+                "commerce.promotions",
+                "commerce.returns",
+                "commerce.reviews",
+                "commerce.sales",
+                "commerce.shipments",
+                "commerce.web_traffic"
+              ],
+              "schemas": [
+                "commerce"
+              ]
+            },
+            "metric_definition_source": {
+              "sessions": "metric_ontology"
+            },
+            "execution_status": "executed"
+          },
+          "query_status": "executed"
+        },
+        "message": "Query completed."
+      },
+      {
+        "id": "stockout",
+        "question": "What was the stockout rate for each product category in July to September 2026?",
+        "status": "clarification_required",
+        "payload": {
+          "rows": [],
+          "metadata": {
+            "error_type": "MetricDefinitionError",
+            "metric_error_code": "invalid_date_scope",
+            "clarification_required": true,
+            "status": "clarification_required",
+            "sql_scope": "commerce",
+            "discovered_schema": {
+              "tables": [
+                "commerce.customers",
+                "commerce.geography",
+                "commerce.inventory",
+                "commerce.invoice_items",
+                "commerce.invoices",
+                "commerce.order_items",
+                "commerce.orders",
+                "commerce.payments",
+                "commerce.products",
+                "commerce.promotions",
+                "commerce.returns",
+                "commerce.reviews",
+                "commerce.sales",
+                "commerce.shipments",
+                "commerce.web_traffic"
+              ],
+              "schemas": [
+                "commerce"
+              ]
+            },
+            "execution_status": "clarification_required",
+            "limitations": [
+              "The generated query did not pass planning or SQL validation."
+            ]
+          }
+        },
+        "message": "The interpretation changed the requested historical period."
+      }
+    ],
+    "tile_status": {
+      "revenue_kpi": {
+        "status": "unavailable",
+        "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+      },
+      "web_sessions_line": {
+        "status": "complete",
+        "message": ""
+      },
+      "stockout_donut": {
+        "status": "unavailable",
+        "message": "The interpretation changed the requested historical period."
+      },
+      "stockout_table": {
+        "status": "unavailable",
+        "message": "The interpretation changed the requested historical period."
+      },
+      "stockout_summary": {
+        "status": "unavailable",
+        "message": "The interpretation changed the requested historical period."
+      }
+    },
+    "status": "partial"
+  },
+  "total_latency_seconds": 7.013466299998981,
+  "planner_attempts": [
+    {
+      "schema_valid": true,
+      "validation_error": null,
+      "error": null,
+      "provider": "CloudflareProvider",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "latency_seconds": 3.9262976000027265
+    }
+  ],
+  "accepted_plan": {
+    "title": "Executive Dashboard",
+    "queries": [
+      {
+        "id": "revenue",
+        "question": "What was the total revenue for each month in July to September 2026?"
+      },
+      {
+        "id": "web_sessions",
+        "question": "How many web sessions occurred each month in July to September 2026?"
+      },
+      {
+        "id": "stockout",
+        "question": "What was the stockout rate for each product category in July to September 2026?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "revenue_kpi",
+        "title": "Monthly Revenue",
+        "kind": "kpi",
+        "query_id": "revenue",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": null,
+        "span": 1
+      },
+      {
+        "id": "web_sessions_line",
+        "title": "Monthly Web Sessions",
+        "kind": "line",
+        "query_id": "web_sessions",
+        "measures": [
+          "sessions"
+        ],
+        "dimension": "date",
+        "span": 1
+      },
+      {
+        "id": "stockout_donut",
+        "title": "Stockout Rate by Category",
+        "kind": "donut",
+        "query_id": "stockout",
+        "measures": [
+          "stockout_rate"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "stockout_table",
+        "title": "Stockout Details",
+        "kind": "table",
+        "query_id": "stockout",
+        "measures": [
+          "stockout_days",
+          "stockout_flag"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "stockout_summary",
+        "title": "Stockout Summary",
+        "kind": "summary",
+        "query_id": "stockout",
+        "measures": [
+          "stockout_rate",
+          "stockout_days"
+        ],
+        "dimension": "category",
+        "span": 1
+      }
+    ]
+  },
+  "sql_agent_call_count": 3,
+  "executed_dataset_sql_count": 1,
+  "inspection_sql_count": 0,
+  "llm_call_count": 5,
+  "actual_provider_models": [
+    "CloudflareProvider:@cf/meta/llama-3.1-8b-instruct-fast"
+  ],
+  "source_queries": [
+    {
+      "execution_id": "DB-16-en",
+      "phase": "sql",
+      "event": "database",
+      "time": "2026-11-14T15:50:10.500076+00:00",
+      "sql": "SELECT DATE_TRUNC('month', wt.date) AS month, SUM(wt.sessions) AS sessions FROM commerce.web_traffic AS wt WHERE wt.date >= $1 AND wt.date <= $2 GROUP BY 1 ORDER BY 1 DESC LIMIT 200",
+      "parameters": [
+        "2026-07-01",
+        "2026-09-30"
+      ],
+      "parameter_types": [
+        "date",
+        "date"
+      ],
+      "observations": [
+        {
+          "month": "2026-09-01 00:00:00+00:00",
+          "sessions": 68462
+        },
+        {
+          "month": "2026-08-01 00:00:00+00:00",
+          "sessions": 73883
+        },
+        {
+          "month": "2026-07-01 00:00:00+00:00",
+          "sessions": 69588
+        }
+      ],
+      "latency_seconds": 0.009462900001381058
+    },
+    {
+      "execution_id": "DB-16-en",
+      "phase": "sql",
+      "event": "sql_payload",
+      "time": "2026-11-14T15:50:10.501158+00:00",
+      "question": "How many web sessions occurred each month in July to September 2026?",
+      "payload": {
+        "ok": true,
+        "operation": "text_to_sql",
+        "rows": [
+          {
+            "month": "2026-09-01 00:00:00+00:00",
+            "sessions": 68462
+          },
+          {
+            "month": "2026-08-01 00:00:00+00:00",
+            "sessions": 73883
+          },
+          {
+            "month": "2026-07-01 00:00:00+00:00",
+            "sessions": 69588
+          }
+        ],
+        "answer": "Query completed.",
+        "sql": "SELECT DATE_TRUNC('month', wt.date) AS month, SUM(wt.sessions) AS sessions FROM commerce.web_traffic AS wt WHERE wt.date >= $1 AND wt.date <= $2 GROUP BY 1 ORDER BY 1 DESC LIMIT 200",
+        "parameters": [
+          "2026-07-01",
+          "2026-09-30"
+        ],
+        "query_status": "executed",
+        "evidence": [
+          {
+            "source": "commerce.web_traffic",
+            "metadata": {
+              "metrics": {
+                "sessions": {
+                  "aliases": [
+                    "sessions",
+                    "website sessions",
+                    "lượt truy cập",
+                    "phiên truy cập"
+                  ],
+                  "source": "commerce.web_traffic",
+                  "formula": "SUM(sessions)",
+                  "grain": "day",
+                  "aggregation": "sum",
+                  "unit": "sessions",
+                  "dimensions": [
+                    "date",
+                    "traffic_source"
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "limitations": [],
+        "metadata": {
+          "source": [
+            "commerce.web_traffic"
+          ],
+          "explanation": "",
+          "metrics": {
+            "sessions": {
+              "aliases": [
+                "sessions",
+                "website sessions",
+                "lượt truy cập",
+                "phiên truy cập"
+              ],
+              "source": "commerce.web_traffic",
+              "formula": "SUM(sessions)",
+              "grain": "day",
+              "aggregation": "sum",
+              "unit": "sessions",
+              "dimensions": [
+                "date",
+                "traffic_source"
+              ]
+            }
+          },
+          "columns": [
+            {
+              "name": "month",
+              "unit": null
+            },
+            {
+              "name": "sessions",
+              "unit": "sessions"
+            }
+          ],
+          "sql_scope": "commerce",
+          "discovered_schema": {
+            "tables": [
+              "commerce.customers",
+              "commerce.geography",
+              "commerce.inventory",
+              "commerce.invoice_items",
+              "commerce.invoices",
+              "commerce.order_items",
+              "commerce.orders",
+              "commerce.payments",
+              "commerce.products",
+              "commerce.promotions",
+              "commerce.returns",
+              "commerce.reviews",
+              "commerce.sales",
+              "commerce.shipments",
+              "commerce.web_traffic"
+            ],
+            "schemas": [
+              "commerce"
+            ]
+          },
+          "metric_definition_source": {
+            "sessions": "metric_ontology"
+          },
+          "execution_status": "executed"
+        }
+      },
+      "latency_seconds": 1.3800406999944244
+    },
+    {
+      "execution_id": "DB-16-en",
+      "phase": "sql",
+      "event": "sql_payload",
+      "time": "2026-11-14T15:50:11.667122+00:00",
+      "question": "What was the stockout rate for each product category in July to September 2026?",
+      "payload": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "The interpretation changed the requested historical period.",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError",
+          "metric_error_code": "invalid_date_scope",
+          "clarification_required": true,
+          "status": "clarification_required",
+          "sql_scope": "commerce",
+          "discovered_schema": {
+            "tables": [
+              "commerce.customers",
+              "commerce.geography",
+              "commerce.inventory",
+              "commerce.invoice_items",
+              "commerce.invoices",
+              "commerce.order_items",
+              "commerce.orders",
+              "commerce.payments",
+              "commerce.products",
+              "commerce.promotions",
+              "commerce.returns",
+              "commerce.reviews",
+              "commerce.sales",
+              "commerce.shipments",
+              "commerce.web_traffic"
+            ],
+            "schemas": [
+              "commerce"
+            ]
+          },
+          "execution_status": "clarification_required"
+        }
+      },
+      "latency_seconds": 1.1664612000022316
+    },
+    {
+      "execution_id": "DB-16-en",
+      "phase": "sql",
+      "event": "sql_payload",
+      "time": "2026-11-14T15:50:12.153576+00:00",
+      "question": "What was the total revenue for each month in July to September 2026?",
+      "payload": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError",
+          "metric_error_code": "formula_violation",
+          "sql_scope": "commerce",
+          "discovered_schema": {
+            "tables": [
+              "commerce.customers",
+              "commerce.geography",
+              "commerce.inventory",
+              "commerce.invoice_items",
+              "commerce.invoices",
+              "commerce.order_items",
+              "commerce.orders",
+              "commerce.payments",
+              "commerce.products",
+              "commerce.promotions",
+              "commerce.returns",
+              "commerce.reviews",
+              "commerce.sales",
+              "commerce.shipments",
+              "commerce.web_traffic"
+            ],
+            "schemas": [
+              "commerce"
+            ]
+          },
+          "metric_definition_source": {
+            "revenue": "metric_ontology"
+          },
+          "execution_status": "validation_failed"
+        },
+        "attempted_sql": "SELECT DATE_TRUNC('month', s.date) AS month, COALESCE(SUM(s.revenue), 0) AS revenue FROM commerce.sales AS s WHERE s.date >= $1 AND s.date <= $2 GROUP BY 1 ORDER BY 1 DESC LIMIT 200",
+        "parameters": [
+          "2026-07-01",
+          "2026-09-30"
+        ],
+        "query_status": "rejected"
+      },
+      "latency_seconds": 3.033298599999398
+    }
+  ],
+  "error_or_clarification": "revenue: I couldn't safely run the generated query: Aggregate does not match a canonical metric formula; stockout: The interpretation changed the requested historical period."
+}

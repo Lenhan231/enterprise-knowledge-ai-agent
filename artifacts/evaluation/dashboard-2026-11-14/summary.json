@@ -1,0 +1,26 @@
+{
+  "en": {
+    "executions": 25,
+    "statuses": {
+      "failed": 21,
+      "partial": 3,
+      "complete": 1
+    },
+    "accepted_plans": 12,
+    "complete_dashboards": 1,
+    "latency_mean_seconds": 8.719746343998995,
+    "latency_median_seconds": 7.545910699998785,
+    "latency_p95_seconds": 14.655342600002768
+  },
+  "vi": {
+    "executions": 25,
+    "statuses": {
+      "failed": 25
+    },
+    "accepted_plans": 0,
+    "complete_dashboards": 0,
+    "latency_mean_seconds": 9.785030200000037,
+    "latency_median_seconds": 9.373617600002035,
+    "latency_p95_seconds": 13.021973000002617
+  }
+}

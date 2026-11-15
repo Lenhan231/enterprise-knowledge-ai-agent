@@ -1,0 +1,407 @@
+{
+  "execution_id": "DB-20-en",
+  "case_id": "DB-20",
+  "language": "en",
+  "question": "Create a dashboard for July–September 2026 showing monthly revenue, total revenue, a statistical summary, and the underlying observation table. Reuse datasets wherever valid.",
+  "expect": "Line + KPI + summary + table",
+  "code_commit": "bac3d96dedef3187fde3755a5ce0eaf74609a106",
+  "dataset_sha256": "40fd4b4f7df9717e618b33cbde44a93bb5312915933528722eac39f45a392a7f",
+  "started_at": "2026-11-14T15:51:14.766953+00:00",
+  "dashboard_status": "failed",
+  "planner_output_valid": true,
+  "query_count": 2,
+  "tile_count": 4,
+  "tile_status": {
+    "revenue_chart": {
+      "status": "unavailable",
+      "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+    },
+    "total_revenue_kpi": {
+      "status": "unavailable",
+      "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+    },
+    "summary_table": {
+      "status": "unavailable",
+      "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+    },
+    "revenue_table": {
+      "status": "unavailable",
+      "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+    }
+  },
+  "dashboard": {
+    "title": "Revenue Dashboard",
+    "queries": [
+      {
+        "id": "revenue",
+        "question": "What is the monthly revenue for July-September 2026?"
+      },
+      {
+        "id": "total_revenue",
+        "question": "What is the total revenue for July-September 2026?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "revenue_chart",
+        "title": "Monthly Revenue",
+        "kind": "line",
+        "query_id": "revenue",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": "month",
+        "span": 1
+      },
+      {
+        "id": "total_revenue_kpi",
+        "title": "Total Revenue",
+        "kind": "kpi",
+        "query_id": "total_revenue",
+        "measures": [
+          "total_revenue"
+        ],
+        "dimension": null,
+        "span": 1
+      },
+      {
+        "id": "summary_table",
+        "title": "Revenue Summary",
+        "kind": "summary",
+        "query_id": "revenue",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": null,
+        "span": 1
+      },
+      {
+        "id": "revenue_table",
+        "title": "Revenue Observations",
+        "kind": "table",
+        "query_id": "revenue",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": null,
+        "span": 1
+      }
+    ],
+    "id": "e73d942a5a09489c86cbd291ccc0744e",
+    "description": "Create a dashboard for July–September 2026 showing monthly revenue, total revenue, a statistical summary, and the underlying observation table. Reuse datasets wherever valid.",
+    "scope": "",
+    "revision": 1,
+    "created_at": "2026-11-14T15:51:22.952566Z",
+    "updated_at": "2026-11-14T15:51:27.936157Z",
+    "data_updated_at": "2026-11-14T15:51:27.936157Z",
+    "results": [
+      {
+        "id": "revenue",
+        "question": "What is the monthly revenue for July-September 2026?",
+        "status": "failed",
+        "payload": {
+          "rows": [],
+          "attempted_sql": "SELECT DATE_TRUNC('month', s.date) AS month, COALESCE(SUM(s.revenue), 0) AS revenue FROM commerce.sales AS s WHERE s.date >= $1 AND s.date <= $2 GROUP BY 1 ORDER BY 1 DESC LIMIT 200",
+          "parameters": [
+            "2026-07-01",
+            "2026-09-30"
+          ],
+          "metadata": {
+            "error_type": "MetricDefinitionError",
+            "metric_error_code": "formula_violation",
+            "sql_scope": "commerce",
+            "discovered_schema": {
+              "tables": [
+                "commerce.customers",
+                "commerce.geography",
+                "commerce.inventory",
+                "commerce.invoice_items",
+                "commerce.invoices",
+                "commerce.order_items",
+                "commerce.orders",
+                "commerce.payments",
+                "commerce.products",
+                "commerce.promotions",
+                "commerce.returns",
+                "commerce.reviews",
+                "commerce.sales",
+                "commerce.shipments",
+                "commerce.web_traffic"
+              ],
+              "schemas": [
+                "commerce"
+              ]
+            },
+            "metric_definition_source": {
+              "revenue": "metric_ontology"
+            },
+            "execution_status": "validation_failed",
+            "limitations": [
+              "The generated query did not pass planning or SQL validation."
+            ]
+          },
+          "query_status": "rejected"
+        },
+        "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+      },
+      {
+        "id": "total_revenue",
+        "question": "What is the total revenue for July-September 2026?",
+        "status": "failed",
+        "payload": {
+          "rows": [],
+          "attempted_sql": "SELECT CAST(SUM(CASE WHEN EXTRACT(MONTH FROM s.date) BETWEEN 7 AND 9 THEN s.revenue ELSE 0 END) AS NUMERIC) AS revenue FROM commerce.sales AS s",
+          "parameters": [],
+          "metadata": {
+            "error_type": "MetricDefinitionError",
+            "metric_error_code": "formula_violation",
+            "sql_scope": "commerce",
+            "discovered_schema": {
+              "tables": [
+                "commerce.customers",
+                "commerce.geography",
+                "commerce.inventory",
+                "commerce.invoice_items",
+                "commerce.invoices",
+                "commerce.order_items",
+                "commerce.orders",
+                "commerce.payments",
+                "commerce.products",
+                "commerce.promotions",
+                "commerce.returns",
+                "commerce.reviews",
+                "commerce.sales",
+                "commerce.shipments",
+                "commerce.web_traffic"
+              ],
+              "schemas": [
+                "commerce"
+              ]
+            },
+            "metric_definition_source": {
+              "revenue": "metric_ontology"
+            },
+            "execution_status": "validation_failed",
+            "limitations": [
+              "The generated query did not pass planning or SQL validation."
+            ]
+          },
+          "query_status": "rejected"
+        },
+        "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+      }
+    ],
+    "tile_status": {
+      "revenue_chart": {
+        "status": "unavailable",
+        "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+      },
+      "total_revenue_kpi": {
+        "status": "unavailable",
+        "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+      },
+      "summary_table": {
+        "status": "unavailable",
+        "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+      },
+      "revenue_table": {
+        "status": "unavailable",
+        "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+      }
+    },
+    "status": "failed"
+  },
+  "total_latency_seconds": 13.183233399999153,
+  "planner_attempts": [
+    {
+      "schema_valid": true,
+      "validation_error": null,
+      "error": null,
+      "provider": "CloudflareProvider",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "latency_seconds": 3.1872433999960776
+    },
+    {
+      "schema_valid": true,
+      "validation_error": null,
+      "error": null,
+      "provider": "CloudflareProvider",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "latency_seconds": 4.9633863999988534
+    }
+  ],
+  "accepted_plan": {
+    "title": "Revenue Dashboard",
+    "queries": [
+      {
+        "id": "revenue",
+        "question": "What is the monthly revenue for July-September 2026?"
+      },
+      {
+        "id": "total_revenue",
+        "question": "What is the total revenue for July-September 2026?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "revenue_chart",
+        "title": "Monthly Revenue",
+        "kind": "line",
+        "query_id": "revenue",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": "month",
+        "span": 1
+      },
+      {
+        "id": "total_revenue_kpi",
+        "title": "Total Revenue",
+        "kind": "kpi",
+        "query_id": "total_revenue",
+        "measures": [
+          "total_revenue"
+        ],
+        "dimension": null,
+        "span": 1
+      },
+      {
+        "id": "summary_table",
+        "title": "Revenue Summary",
+        "kind": "summary",
+        "query_id": "revenue",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": null,
+        "span": 1
+      },
+      {
+        "id": "revenue_table",
+        "title": "Revenue Observations",
+        "kind": "table",
+        "query_id": "revenue",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": null,
+        "span": 1
+      }
+    ]
+  },
+  "sql_agent_call_count": 2,
+  "executed_dataset_sql_count": 0,
+  "inspection_sql_count": 0,
+  "llm_call_count": 6,
+  "actual_provider_models": [
+    "CloudflareProvider:@cf/meta/llama-3.1-8b-instruct-fast"
+  ],
+  "source_queries": [
+    {
+      "execution_id": "DB-20-en",
+      "phase": "sql",
+      "event": "sql_payload",
+      "time": "2026-11-14T15:51:26.621667+00:00",
+      "question": "What is the monthly revenue for July-September 2026?",
+      "payload": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError",
+          "metric_error_code": "formula_violation",
+          "sql_scope": "commerce",
+          "discovered_schema": {
+            "tables": [
+              "commerce.customers",
+              "commerce.geography",
+              "commerce.inventory",
+              "commerce.invoice_items",
+              "commerce.invoices",
+              "commerce.order_items",
+              "commerce.orders",
+              "commerce.payments",
+              "commerce.products",
+              "commerce.promotions",
+              "commerce.returns",
+              "commerce.reviews",
+              "commerce.sales",
+              "commerce.shipments",
+              "commerce.web_traffic"
+            ],
+            "schemas": [
+              "commerce"
+            ]
+          },
+          "metric_definition_source": {
+            "revenue": "metric_ontology"
+          },
+          "execution_status": "validation_failed"
+        },
+        "attempted_sql": "SELECT DATE_TRUNC('month', s.date) AS month, COALESCE(SUM(s.revenue), 0) AS revenue FROM commerce.sales AS s WHERE s.date >= $1 AND s.date <= $2 GROUP BY 1 ORDER BY 1 DESC LIMIT 200",
+        "parameters": [
+          "2026-07-01",
+          "2026-09-30"
+        ],
+        "query_status": "rejected"
+      },
+      "latency_seconds": 3.6700984999988577
+    },
+    {
+      "execution_id": "DB-20-en",
+      "phase": "sql",
+      "event": "sql_payload",
+      "time": "2026-11-14T15:51:27.934148+00:00",
+      "question": "What is the total revenue for July-September 2026?",
+      "payload": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError",
+          "metric_error_code": "formula_violation",
+          "sql_scope": "commerce",
+          "discovered_schema": {
+            "tables": [
+              "commerce.customers",
+              "commerce.geography",
+              "commerce.inventory",
+              "commerce.invoice_items",
+              "commerce.invoices",
+              "commerce.order_items",
+              "commerce.orders",
+              "commerce.payments",
+              "commerce.products",
+              "commerce.promotions",
+              "commerce.returns",
+              "commerce.reviews",
+              "commerce.sales",
+              "commerce.shipments",
+              "commerce.web_traffic"
+            ],
+            "schemas": [
+              "commerce"
+            ]
+          },
+          "metric_definition_source": {
+            "revenue": "metric_ontology"
+          },
+          "execution_status": "validation_failed"
+        },
+        "attempted_sql": "SELECT CAST(SUM(CASE WHEN EXTRACT(MONTH FROM s.date) BETWEEN 7 AND 9 THEN s.revenue ELSE 0 END) AS NUMERIC) AS revenue FROM commerce.sales AS s",
+        "parameters": [],
+        "query_status": "rejected"
+      },
+      "latency_seconds": 4.982181800005492
+    }
+  ],
+  "error_or_clarification": "revenue: I couldn't safely run the generated query: Aggregate does not match a canonical metric formula; total_revenue: I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+}

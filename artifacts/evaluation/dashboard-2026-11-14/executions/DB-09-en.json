@@ -1,0 +1,340 @@
+{
+  "execution_id": "DB-09-en",
+  "case_id": "DB-09",
+  "language": "en",
+  "question": "Create an inventory exception dashboard showing stockout, overstock, and reorder indicators by category at the latest snapshot.",
+  "expect": "KPI/bar + table",
+  "code_commit": "bac3d96dedef3187fde3755a5ce0eaf74609a106",
+  "dataset_sha256": "40fd4b4f7df9717e618b33cbde44a93bb5312915933528722eac39f45a392a7f",
+  "started_at": "2026-11-14T15:47:49.277786+00:00",
+  "dashboard_status": "failed",
+  "planner_output_valid": true,
+  "query_count": 1,
+  "tile_count": 6,
+  "tile_status": {
+    "stockout_categories": {
+      "status": "unavailable",
+      "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+    },
+    "overstock_categories": {
+      "status": "unavailable",
+      "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+    },
+    "reorder_categories": {
+      "status": "unavailable",
+      "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+    },
+    "stockout_summary": {
+      "status": "unavailable",
+      "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+    },
+    "overstock_summary": {
+      "status": "unavailable",
+      "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+    },
+    "reorder_summary": {
+      "status": "unavailable",
+      "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+    }
+  },
+  "dashboard": {
+    "title": "Inventory Exception Dashboard",
+    "queries": [
+      {
+        "id": "inventory_exceptions",
+        "question": "What categories have stockout, overstock, or reorder indicators at the latest snapshot?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "stockout_categories",
+        "title": "Stockout Categories",
+        "kind": "bar",
+        "query_id": "inventory_exceptions",
+        "measures": [
+          "stockout_flag"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "overstock_categories",
+        "title": "Overstock Categories",
+        "kind": "bar",
+        "query_id": "inventory_exceptions",
+        "measures": [
+          "overstock_flag"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "reorder_categories",
+        "title": "Reorder Categories",
+        "kind": "bar",
+        "query_id": "inventory_exceptions",
+        "measures": [
+          "reorder_flag"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "stockout_summary",
+        "title": "Stockout Summary",
+        "kind": "summary",
+        "query_id": "inventory_exceptions",
+        "measures": [
+          "stockout_flag"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "overstock_summary",
+        "title": "Overstock Summary",
+        "kind": "summary",
+        "query_id": "inventory_exceptions",
+        "measures": [
+          "overstock_flag"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "reorder_summary",
+        "title": "Reorder Summary",
+        "kind": "summary",
+        "query_id": "inventory_exceptions",
+        "measures": [
+          "reorder_flag"
+        ],
+        "dimension": "category",
+        "span": 1
+      }
+    ],
+    "id": "929226830ca2443a8e3744fa87f7e61a",
+    "description": "Create an inventory exception dashboard showing stockout, overstock, and reorder indicators by category at the latest snapshot.",
+    "scope": "",
+    "revision": 1,
+    "created_at": "2026-11-14T15:47:54.424991Z",
+    "updated_at": "2026-11-14T15:47:55.528100Z",
+    "data_updated_at": "2026-11-14T15:47:55.528100Z",
+    "results": [
+      {
+        "id": "inventory_exceptions",
+        "question": "What categories have stockout, overstock, or reorder indicators at the latest snapshot?",
+        "status": "clarification_required",
+        "payload": {
+          "rows": [],
+          "metadata": {
+            "error_type": "MetricDefinitionError",
+            "metric_error_code": "invalid_date_scope",
+            "clarification_required": true,
+            "status": "clarification_required",
+            "sql_scope": "commerce",
+            "discovered_schema": {
+              "tables": [
+                "commerce.customers",
+                "commerce.geography",
+                "commerce.inventory",
+                "commerce.invoice_items",
+                "commerce.invoices",
+                "commerce.order_items",
+                "commerce.orders",
+                "commerce.payments",
+                "commerce.products",
+                "commerce.promotions",
+                "commerce.returns",
+                "commerce.reviews",
+                "commerce.sales",
+                "commerce.shipments",
+                "commerce.web_traffic"
+              ],
+              "schemas": [
+                "commerce"
+              ]
+            },
+            "execution_status": "clarification_required",
+            "limitations": [
+              "The generated query did not pass planning or SQL validation."
+            ]
+          }
+        },
+        "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+      }
+    ],
+    "tile_status": {
+      "stockout_categories": {
+        "status": "unavailable",
+        "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+      },
+      "overstock_categories": {
+        "status": "unavailable",
+        "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+      },
+      "reorder_categories": {
+        "status": "unavailable",
+        "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+      },
+      "stockout_summary": {
+        "status": "unavailable",
+        "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+      },
+      "overstock_summary": {
+        "status": "unavailable",
+        "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+      },
+      "reorder_summary": {
+        "status": "unavailable",
+        "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+      }
+    },
+    "status": "failed"
+  },
+  "total_latency_seconds": 6.263720799994189,
+  "planner_attempts": [
+    {
+      "schema_valid": true,
+      "validation_error": null,
+      "error": null,
+      "provider": "CloudflareProvider",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "latency_seconds": 5.120717799996783
+    }
+  ],
+  "accepted_plan": {
+    "title": "Inventory Exception Dashboard",
+    "queries": [
+      {
+        "id": "inventory_exceptions",
+        "question": "What categories have stockout, overstock, or reorder indicators at the latest snapshot?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "stockout_categories",
+        "title": "Stockout Categories",
+        "kind": "bar",
+        "query_id": "inventory_exceptions",
+        "measures": [
+          "stockout_flag"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "overstock_categories",
+        "title": "Overstock Categories",
+        "kind": "bar",
+        "query_id": "inventory_exceptions",
+        "measures": [
+          "overstock_flag"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "reorder_categories",
+        "title": "Reorder Categories",
+        "kind": "bar",
+        "query_id": "inventory_exceptions",
+        "measures": [
+          "reorder_flag"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "stockout_summary",
+        "title": "Stockout Summary",
+        "kind": "summary",
+        "query_id": "inventory_exceptions",
+        "measures": [
+          "stockout_flag"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "overstock_summary",
+        "title": "Overstock Summary",
+        "kind": "summary",
+        "query_id": "inventory_exceptions",
+        "measures": [
+          "overstock_flag"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "reorder_summary",
+        "title": "Reorder Summary",
+        "kind": "summary",
+        "query_id": "inventory_exceptions",
+        "measures": [
+          "reorder_flag"
+        ],
+        "dimension": "category",
+        "span": 1
+      }
+    ]
+  },
+  "sql_agent_call_count": 1,
+  "executed_dataset_sql_count": 0,
+  "inspection_sql_count": 0,
+  "llm_call_count": 2,
+  "actual_provider_models": [
+    "CloudflareProvider:@cf/meta/llama-3.1-8b-instruct-fast"
+  ],
+  "source_queries": [
+    {
+      "execution_id": "DB-09-en",
+      "phase": "sql",
+      "event": "sql_payload",
+      "time": "2026-11-14T15:47:55.528100+00:00",
+      "question": "What categories have stockout, overstock, or reorder indicators at the latest snapshot?",
+      "payload": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "Specify valid historical ISO snapshot dates or an ordered inclusive range.",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError",
+          "metric_error_code": "invalid_date_scope",
+          "clarification_required": true,
+          "status": "clarification_required",
+          "sql_scope": "commerce",
+          "discovered_schema": {
+            "tables": [
+              "commerce.customers",
+              "commerce.geography",
+              "commerce.inventory",
+              "commerce.invoice_items",
+              "commerce.invoices",
+              "commerce.order_items",
+              "commerce.orders",
+              "commerce.payments",
+              "commerce.products",
+              "commerce.promotions",
+              "commerce.returns",
+              "commerce.reviews",
+              "commerce.sales",
+              "commerce.shipments",
+              "commerce.web_traffic"
+            ],
+            "schemas": [
+              "commerce"
+            ]
+          },
+          "execution_status": "clarification_required"
+        }
+      },
+      "latency_seconds": 1.1011131999985082
+    }
+  ],
+  "error_or_clarification": "inventory_exceptions: Specify valid historical ISO snapshot dates or an ordered inclusive range."
+}

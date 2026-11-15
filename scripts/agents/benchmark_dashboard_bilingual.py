@@ -45,9 +45,13 @@ REFERENCES = {
     'B22': "WITH monthly AS (SELECT DATE_TRUNC('month', date)::date AS month, SUM(revenue) AS revenue FROM commerce.sales WHERE date >= '2022-01-01' AND date < '2023-01-01' GROUP BY 1), previous AS (SELECT month, revenue, LAG(revenue) OVER (ORDER BY month) AS previous_revenue FROM monthly) SELECT month, (revenue-previous_revenue)*100.0/NULLIF(previous_revenue,0) AS growth_percentage FROM previous ORDER BY month",
     'B23': "SELECT category, COUNT(DISTINCT product_id) AS product_count FROM commerce.inventory WHERE snapshot_date='2022-12-31' AND stockout_flag IS TRUE AND reorder_flag IS TRUE GROUP BY 1 ORDER BY 1",
 }
-ORDERED = {'B02', 'B06', 'B09', 'B12', 'B14', 'B15', 'B16', 'B18', 'B21', 'B22'}
+REFERENCES.update(C01=REFERENCES['B06'], C02=REFERENCES['B11'], C03=REFERENCES['B13'],
+    C04="SELECT COUNT(*) FILTER (WHERE stockout_flag IS TRUE) AS stockout_count, COUNT(*) FILTER (WHERE overstock_flag IS TRUE) AS overstock_count FROM commerce.inventory WHERE snapshot_date='2022-12-31'",
+    C05="SELECT traffic_source, SUM(sessions) AS sessions FROM commerce.web_traffic WHERE date >= '2022-01-01' AND date < '2023-01-01' GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3",
+    C06=REFERENCES['B19'])
+ORDERED = {'B02', 'B06', 'B09', 'B12', 'B14', 'B15', 'B16', 'B18', 'B21', 'B22', 'C01', 'C05'}
 EXTRA = {'B11': {'snapshot_date'}, 'B12': {'snapshot_date', 'product_name', 'category'},
-         'B16': {'product_name'}, 'B23': {'snapshot_date'}}
+         'B16': {'product_name'}, 'B23': {'snapshot_date'}, 'C02': {'snapshot_date'}}
 
 
 def encode(value):
@@ -126,7 +130,7 @@ def self_test():
     assert chart_grounded({'data': {'rows': [{'month': '2022-01-01T00:00:00Z', 'revenue': '12.5'}],
         'visualization': {'categories': ['2022-01-01 00:00:00+00:00'],
                           'series': [{'name': 'Revenue', 'values': [12.5]}]}}})
-    assert len(REFERENCES) == 23
+    assert sum(key.startswith('B') for key in REFERENCES) == 23
     print('Benchmark scorer self-check passed')
 
 
@@ -172,10 +176,19 @@ def score(out):
         behavior = (executed if expected == 'execute_read_only_sql' else
                     bool(meta.get('clarification_required') or meta.get('status') == 'clarification_required') if expected == 'clarify' else
                     not data.get('rows') and meta.get('status') == 'unsupported' and '2022-12-31' in result.get('answer', ''))
+        if expected == 'reject_chart':
+            behavior = (not data.get('visualization') and not meta.get('failure_code') and
+                        meta.get('jev', {}).get('probabilities', {}).get('clear', 0) >= .8 and
+                        (meta.get('chart_status') == 'table_only' or
+                         meta.get('metric_error_code') in {'unsupported_dimension', 'metric_unsupported', 'incompatible_grain',
+                                                          'interpretation_invalid', 'formula_violation'}))
         reference = references.get(case['id'], {})
         values = match_rows(data.get('rows', []), reference['rows'], case['id']) if executed and 'rows' in reference else {
             'value_match': False if expected == 'execute_read_only_sql' and 'rows' in reference else None,
             'reason': 'not_executed' if not executed else 'reference_unavailable'}
+        grounded = chart_grounded(result)
+        if case.get('expected_chart'):
+            behavior = behavior and data.get('visualization', {}).get('type') == case['expected_chart'] and grounded is True
         phase = ('exception' if record.get('error_type') else
                  'result_mismatch' if executed and values['value_match'] is False else
                  'ambiguity_service' if meta.get('error_type') and not meta.get('jev') else
@@ -189,9 +202,11 @@ def score(out):
             usage.update({name: amount for name, amount in (call.get('usage') or {}).items() if isinstance(amount, int)})
         scores.append({'id': record['id'], 'case_id': case['id'], 'language': record['language'],
             'difficulty': case['difficulty'], 'expected_behavior': expected, 'behavior_pass': behavior,
-            **values, 'baseline_pass': behavior and (values['value_match'] is True if expected == 'execute_read_only_sql' else True),
+            **values, 'baseline_pass': behavior and (values['value_match'] is True if expected == 'execute_read_only_sql' or executed else True),
             'executed': executed, 'chart_status': meta.get('chart_status'),
-            'chart_type': data.get('visualization', {}).get('type'), 'chart_grounded': chart_grounded(result),
+            'chart_type': data.get('visualization', {}).get('type'), 'chart_grounded': grounded,
+            'expected_chart': case.get('expected_chart'),
+            'jev_completed': bool(meta.get('jev')) or bool(record.get('generation_calls')),
             'status': meta.get('status'), 'execution_status': meta.get('execution_status'),
             'phase': phase,
             'error_type': record.get('error_type') or meta.get('error_type'),
@@ -208,6 +223,7 @@ def score(out):
     def summary(group):
         times = sorted(item['elapsed_ms'] for item in group)
         return {'prompts': len(group), 'baseline_passes': sum(item['baseline_pass'] for item in group),
+                'clarity_responses': sum(item['jev_completed'] for item in group),
                 'expected_behavior_passes': sum(item['behavior_pass'] for item in group),
                 'executed': sum(item['executed'] for item in group),
                 'value_matches': sum(item['value_match'] is True for item in group),
@@ -224,8 +240,9 @@ def score(out):
               'failed_phases': dict(Counter(item['phase'] for item in scores if not item['baseline_pass'])),
               'reference_errors': {key: value['error_type'] for key, value in references.items() if 'error_type' in value}}
     save(out / 'summary.json', totals)
-    lines = ['# Dashboard Bilingual Baseline', '',
-             f'Run date: 2026-11-13. Completed {len(scores)}/50 prompts. One first attempt per unchanged prompt; no clarification replies supplied.', '',
+    supplemental = any(case.get('expected_chart') or case['expected_behavior'] == 'reject_chart' for case in cases.values())
+    lines = ['# Dashboard Bilingual Benchmark', '',
+             f'Run date: 2026-11-13. Completed {len(scores)}/{len(cases)*2} prompts. One first attempt per unchanged prompt; no clarification replies supplied.', '',
              '## Results', '', '| Language | Prompts | Baseline passes | SQL executed | Value matches | Charts | Median seconds |',
              '|---|---:|---:|---:|---:|---:|---:|']
     for language, group in [('All', totals['overall']), *totals['by_language'].items()]:
@@ -250,12 +267,14 @@ def score(out):
               '- Reference values are independently queried; they are not supplied to the models. Read-only database access is used throughout.',
               '- References are captured before generation; the live database is not held in a single snapshot for the entire run. Supplied non-null numerical answers were checked against the captured data.',
               '- Value matching ignores aliases but preserves row associations and required ordering. It normalizes monthly date formatting and known extra provenance fields. This is numerical/result equivalence, not a formal proof of SQL semantic equivalence.',
-              '- SQL-oriented scalar questions can legitimately return tables. No prompts were rewritten to demand a chart; chart yield is descriptive and this set does not fully cover explicit donut selection.',
+              ('- Supplemental prompts require the named chart type and row grounding, or a safe chart rejection. A rejected chart must have no service failure and a completed clear Jev decision. Executed results must also match reference rows.' if supplemental else
+               '- SQL-oriented scalar questions can legitimately return tables. No prompts were rewritten to demand a chart; chart yield is descriptive and this set does not fully cover explicit donut selection.'),
               '- Chart grounding checks consistency with returned SQL rows, not browser appearance. Incorrect SQL can still produce a grounded but incorrect chart.',
               '- Generation token usage excludes Jev and any failed provider calls with unreported usage. No provider cost is inferred.',
               '- This single pass does not measure repeatability, clarification recovery, concurrency, or visual accessibility. Failures remain included; production code was not tuned during the run.', '',
               'Detailed evidence: [scores](scores.json), [summary](summary.json), [references](references.json), [raw generations](generations.jsonl), [configuration](manifest.json).']
     (out / 'REPORT.md').write_text('\n'.join(lines)+'\n', encoding='utf-8')
+    shutil.copy2(__file__, out / 'scorer.py')
     save(out / 'scoring-metadata.json', {'scored_at_utc': datetime.now(timezone.utc).isoformat(),
         'scorer_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(), 'scored_prompts': len(scores)})
     print(json.dumps(totals['overall']))
@@ -265,16 +284,18 @@ async def run(args):
     from dotenv import load_dotenv
     load_dotenv(ROOT / '.env')
     cases = json.loads(args.input.read_text(encoding='utf-8'))['questions']
-    if len(cases) != 25 or len({case['id'] for case in cases}) != 25:
-        raise ValueError('Expected 25 unique question pairs')
+    if not cases or len(cases) != len({case['id'] for case in cases}):
+        raise ValueError('Expected unique bilingual question pairs')
     out = args.output.resolve()
     if out.exists() and not args.resume:
         raise FileExistsError('Use a fresh output directory or --resume')
     out.mkdir(parents=True, exist_ok=True)
+    (out / '.gitattributes').write_text('* -text -whitespace\n', encoding='utf-8')
     frozen = out / 'source'
     if not frozen.exists():
-        shutil.copytree(ROOT / 'src', frozen / 'src', ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
-        shutil.copytree(ROOT / 'data/semantic', frozen / 'data/semantic')
+        source = args.source_directory.resolve() if args.source_directory else ROOT
+        shutil.copytree(source / 'src', frozen / 'src', ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+        shutil.copytree(source / 'data/semantic', frozen / 'data/semantic')
         shutil.copy2(args.input, out / 'questions.json')
         shutil.copy2(__file__, out / 'runner.py')
     if hashlib.sha256(args.input.read_bytes()).digest() != hashlib.sha256((out / 'questions.json').read_bytes()).digest():
@@ -314,6 +335,7 @@ async def run(args):
             'source_sha256': {str(path.relative_to(frozen)): hashlib.sha256(path.read_bytes()).hexdigest()
                               for path in frozen.rglob('*') if path.is_file() and '__pycache__' not in path.parts and path.suffix != '.pyc'},
             'question_sha256': hashlib.sha256(args.input.read_bytes()).hexdigest(),
+            'source_directory': str(args.source_directory.resolve()) if args.source_directory else str(ROOT),
             'model': provider.model_name, 'temperature': provider.temperature,
             'reasoning_effort': provider.reasoning_effort, 'output_token_cap': 1000,
             'ambiguity_threshold': SQLAnalyticsAgent.JEV_MIN_CLEAR_CONFIDENCE,
@@ -323,7 +345,10 @@ async def run(args):
             'oracle_note': 'Handwritten reference SELECTs use the same verified read-only role, without generated-SQL restrictions; no reference data is given to the agent.',
             'scoring_note': 'Alias-insensitive numerical/row equivalence; column mappings and raw SQL retained for semantic review. No LLM judge. Chart coverage is limited by unchanged SQL-oriented prompts.'})
     repository = await create_repository_from_env()
+    sql_agent = None
     reference_path = out / 'references.json'
+    if args.reference_file and not reference_path.exists():
+        shutil.copy2(args.reference_file, reference_path)
     try:
         if not reference_path.exists():
             references = {}
@@ -339,6 +364,7 @@ async def run(args):
                 else:
                     references[identifier] = {'expected_behavior': case['expected_behavior']}
                 save(reference_path, references)
+        if not (out / 'data-profile.json').exists():
             profile = await repository._fetch("SELECT MAX(snapshot_date) AS latest_inventory, COUNT(*) AS inventory_rows FROM commerce.inventory")
             discounts = await repository._fetch("SELECT COUNT(*) FILTER (WHERE discount_amount IS NULL) AS null_discount_rows FROM commerce.order_items")
             save(out / 'data-profile.json', {'inventory': profile, 'discounts': discounts})
@@ -370,10 +396,13 @@ async def run(args):
                                   'chart': meta.get('chart_status'), 'error': record.get('error_type') or meta.get('error_type'),
                                   'elapsed_ms': record['elapsed_ms']}), flush=True)
                 await asyncio.sleep(args.pace_seconds)
-        save(out / 'completion.json', {'completed_at_utc': datetime.now(timezone.utc).isoformat(), 'prompts': 50})
+        save(out / 'completion.json', {'completed_at_utc': datetime.now(timezone.utc).isoformat(), 'prompts': len(cases)*2})
     finally:
         try:
-            await repository.close()
+            if sql_agent is not None:
+                await sql_agent.close()
+            else:
+                await repository.close()
         except Exception as error:
             save(out / 'cleanup-warning.json', {'phase': 'repository_close', 'error_type': type(error).__name__})
         finally:
@@ -386,6 +415,8 @@ def main():
     parser.add_argument('--output', type=Path)
     parser.add_argument('--pace-seconds', type=float, default=5)
     parser.add_argument('--resume', action='store_true')
+    parser.add_argument('--source-directory', type=Path, help='Root containing the src/ and data/semantic/ to freeze')
+    parser.add_argument('--reference-file', type=Path, help='Reuse the same captured oracle as a control run')
     parser.add_argument('--self-test', action='store_true')
     parser.add_argument('--score-only', action='store_true')
     args = parser.parse_args()

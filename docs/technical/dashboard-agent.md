@@ -68,6 +68,18 @@ The router uses a separate dashboard conversation store with the existing user/p
 
 ## Verification
 
+### Reliability follow-up (2026-11-13)
+
+Jev now reuses an OpenAI SDK client with SDK retries disabled. The application permits two attempts, eight seconds each, within a twenty-second gate budget and the existing request deadline. Connection failures and HTTP 429/502/503/504 can retry once when the retry window and next attempt fit. Auth failures and invalid responses fail immediately; no query runs when the gate fails. The threshold remains 0.8. Existing approved metric definitions and source descriptions are included in the decision context.
+
+Failure metadata uses `jev_auth_failed`, `jev_timeout`, `jev_unavailable`, or `jev_invalid_response`, plus `retryable`, `jev_attempts`, `jev_elapsed_ms`, and `jev_http_status` when available. Successful decision metadata includes attempts and elapsed time. Both clients distinguish clarity-service failure from a clarification request. A genuine low-confidence decision asks for source, metric, grouping, and period.
+
+Ranking parsing now preserves “10 inventory products”, English number words, and Vietnamese one-to-ten words; conflicting limits and values outside 1–200 are rejected. Page-view wording selects web traffic; imperative “Return the month” does not select merchandise returns. Compact/hyphenated bar/line chart wording is recognized. Product-ID categories avoid duplicate display-name ambiguity, with names retained in the table.
+
+See the [implementation checklist](../../tasks/dashboard-agent-improvements.md) and [comparison report](../../artifacts/evaluation/dashboard-bilingual-2026-11-13/COMPARISON.md) for verification and remaining limitations. The original baseline remains unchanged.
+
+Final follow-up verification: 84 focused Python tests and five renderer tests pass. The alternate-key live rerun scores 36/50 against fresh control 29/50; the additional chart set scores 9/12 strict, with all six positive chart cases passing. Neither alternate-key cohort encountered provider failures. The SQL interpreter still mistakes two independent stockout/overstock counts for an intersection count in both supplemental languages; its donut is rejected but its table is wrong. One English mixed-unit prompt stops at Jev clear probability 0.79. These are retained acceptance failures, not claimed fixes. Backend and Streamlit were restarted and their health checks passed; browser visual review remains outstanding.
+
 ```powershell
 .venv/Scripts/python.exe -m unittest discover -s tests -p test_inventory_dashboard.py -v
 .venv/Scripts/python.exe -m unittest discover -s tests -p test_sql_followups.py -v

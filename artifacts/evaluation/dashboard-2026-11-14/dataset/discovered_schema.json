@@ -1,0 +1,197 @@
+{
+  "tables": {
+    "commerce.customers": [
+      "age_group",
+      "city",
+      "zip",
+      "acquisition_channel",
+      "signup_date",
+      "gender",
+      "customer_id"
+    ],
+    "commerce.geography": [
+      "region",
+      "city",
+      "district",
+      "zip"
+    ],
+    "commerce.inventory": [
+      "snapshot_date",
+      "units_received",
+      "fill_rate",
+      "units_sold",
+      "stock_on_hand",
+      "reorder_flag",
+      "month",
+      "stockout_flag",
+      "segment",
+      "overstock_flag",
+      "year",
+      "product_id",
+      "product_name",
+      "category",
+      "stockout_days",
+      "sell_through_rate",
+      "days_of_supply"
+    ],
+    "commerce.invoice_items": [
+      "line_no",
+      "amount",
+      "description",
+      "unit",
+      "invoice_id",
+      "quantity",
+      "unit_price"
+    ],
+    "commerce.invoices": [
+      "seller",
+      "invoice_no",
+      "buyer",
+      "invoice_date",
+      "subtotal",
+      "total_amount",
+      "source_filename",
+      "tax_amount",
+      "invoice_id",
+      "currency"
+    ],
+    "commerce.order_items": [
+      "unit_price",
+      "order_id",
+      "promo_id",
+      "product_id",
+      "discount_amount",
+      "promo_id_2",
+      "quantity",
+      "order_item_id"
+    ],
+    "commerce.orders": [
+      "device_type",
+      "order_date",
+      "zip",
+      "payment_method",
+      "order_source",
+      "order_id",
+      "order_status",
+      "customer_id"
+    ],
+    "commerce.payments": [
+      "order_id",
+      "payment_value",
+      "installments",
+      "payment_method"
+    ],
+    "commerce.products": [
+      "price",
+      "segment",
+      "color",
+      "size",
+      "cogs",
+      "product_id",
+      "product_name",
+      "category"
+    ],
+    "commerce.promotions": [
+      "min_order_value",
+      "promo_name",
+      "stackable_flag",
+      "applicable_category",
+      "promo_type",
+      "start_date",
+      "promo_channel",
+      "promo_id",
+      "end_date",
+      "discount_value"
+    ],
+    "commerce.returns": [
+      "order_id",
+      "return_quantity",
+      "return_reason",
+      "return_id",
+      "product_id",
+      "refund_amount",
+      "return_date"
+    ],
+    "commerce.reviews": [
+      "order_id",
+      "review_title",
+      "product_id",
+      "rating",
+      "review_id",
+      "review_date",
+      "customer_id"
+    ],
+    "commerce.sales": [
+      "revenue",
+      "cogs",
+      "date"
+    ],
+    "commerce.shipments": [
+      "order_id",
+      "delivery_date",
+      "ship_date",
+      "shipping_fee"
+    ],
+    "commerce.web_traffic": [
+      "sessions",
+      "date",
+      "traffic_source",
+      "unique_visitors",
+      "bounce_rate",
+      "page_views",
+      "avg_session_duration_sec"
+    ]
+  },
+  "primary_keys": {},
+  "joins": [],
+  "date_columns": [
+    [
+      "commerce.returns",
+      "return_date"
+    ],
+    [
+      "commerce.customers",
+      "signup_date"
+    ],
+    [
+      "commerce.shipments",
+      "ship_date"
+    ],
+    [
+      "commerce.promotions",
+      "end_date"
+    ],
+    [
+      "commerce.promotions",
+      "start_date"
+    ],
+    [
+      "commerce.sales",
+      "date"
+    ],
+    [
+      "commerce.reviews",
+      "review_date"
+    ],
+    [
+      "commerce.invoices",
+      "invoice_date"
+    ],
+    [
+      "commerce.orders",
+      "order_date"
+    ],
+    [
+      "commerce.shipments",
+      "delivery_date"
+    ],
+    [
+      "commerce.inventory",
+      "snapshot_date"
+    ],
+    [
+      "commerce.web_traffic",
+      "date"
+    ]
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "executions": 50,
+  "english": 25,
+  "vietnamese": 25,
+  "exact_questions": true,
+  "fixed_code_config_snapshot": true,
+  "post_run_table_hashes_match": {
+    "customers": true,
+    "geography": true,
+    "inventory": true,
+    "invoice_items": true,
+    "invoices": true,
+    "order_items": true,
+    "orders": true,
+    "payments": true,
+    "products": true,
+    "promotions": true,
+    "returns": true,
+    "reviews": true,
+    "sales": true,
+    "shipments": true,
+    "web_traffic": true
+  },
+  "default_transaction_read_only": "on",
+  "secret_scan": "passed",
+  "schema_parity": {
+    "equal": true,
+    "checks": {
+      "tables": true,
+      "primary_keys": true,
+      "joins": true,
+      "date_columns": true
+    }
+  }
+}

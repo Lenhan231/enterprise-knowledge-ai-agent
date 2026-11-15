@@ -1,0 +1,180 @@
+{
+  "DB-03-monthly": {
+    "sql": "SELECT date_trunc('month',date) AS month, SUM(revenue) AS revenue FROM commerce.sales WHERE date >= DATE '2026-01-01' AND date < DATE '2027-01-01' GROUP BY 1 ORDER BY 1",
+    "observations": [
+      {
+        "month": "2026-01-01 00:00:00+00:00",
+        "revenue": "1686596.81"
+      },
+      {
+        "month": "2026-02-01 00:00:00+00:00",
+        "revenue": "1447050.95"
+      },
+      {
+        "month": "2026-03-01 00:00:00+00:00",
+        "revenue": "2248522.83"
+      },
+      {
+        "month": "2026-04-01 00:00:00+00:00",
+        "revenue": "1384302.97"
+      },
+      {
+        "month": "2026-05-01 00:00:00+00:00",
+        "revenue": "1501979.04"
+      },
+      {
+        "month": "2026-06-01 00:00:00+00:00",
+        "revenue": "2124038.58"
+      },
+      {
+        "month": "2026-07-01 00:00:00+00:00",
+        "revenue": "1810421.90"
+      },
+      {
+        "month": "2026-08-01 00:00:00+00:00",
+        "revenue": "1832695.76"
+      },
+      {
+        "month": "2026-09-01 00:00:00+00:00",
+        "revenue": "2090232.15"
+      },
+      {
+        "month": "2026-10-01 00:00:00+00:00",
+        "revenue": "1754342.36"
+      },
+      {
+        "month": "2026-11-01 00:00:00+00:00",
+        "revenue": "1000968.55"
+      }
+    ]
+  },
+  "DB-03-total": {
+    "sql": "SELECT SUM(revenue) AS revenue FROM commerce.sales WHERE date >= DATE '2026-01-01' AND date < DATE '2027-01-01'",
+    "observations": [
+      {
+        "revenue": "18881151.90"
+      }
+    ]
+  },
+  "DB-11": {
+    "sql": "SELECT p.category, COUNT(DISTINCT o.order_id) AS distinct_orders FROM commerce.orders o JOIN commerce.order_items oi ON oi.order_id=o.order_id JOIN commerce.products p ON p.product_id=oi.product_id WHERE o.order_date>=DATE '2026-01-01' AND o.order_date<DATE '2027-01-01' GROUP BY 1 ORDER BY 1",
+    "observations": [
+      {
+        "category": "Casual",
+        "distinct_orders": 11
+      },
+      {
+        "category": "GenZ",
+        "distinct_orders": 63
+      },
+      {
+        "category": "Outdoor",
+        "distinct_orders": 548
+      },
+      {
+        "category": "Streetwear",
+        "distinct_orders": 318
+      }
+    ]
+  },
+  "DB-13": {
+    "sql": "SELECT i.snapshot_date,i.category,SUM(i.stock_on_hand) AS stock_on_hand FROM commerce.inventory i WHERE i.snapshot_date IN (SELECT DISTINCT snapshot_date FROM commerce.inventory ORDER BY snapshot_date DESC LIMIT 3) GROUP BY 1,2 ORDER BY 1,2",
+    "observations": [
+      {
+        "snapshot_date": "2026-09-30",
+        "category": "Casual",
+        "stock_on_hand": 16
+      },
+      {
+        "snapshot_date": "2026-09-30",
+        "category": "GenZ",
+        "stock_on_hand": 156
+      },
+      {
+        "snapshot_date": "2026-09-30",
+        "category": "Outdoor",
+        "stock_on_hand": 1889
+      },
+      {
+        "snapshot_date": "2026-09-30",
+        "category": "Streetwear",
+        "stock_on_hand": 1106
+      },
+      {
+        "snapshot_date": "2026-10-31",
+        "category": "Casual",
+        "stock_on_hand": 23
+      },
+      {
+        "snapshot_date": "2026-10-31",
+        "category": "GenZ",
+        "stock_on_hand": 253
+      },
+      {
+        "snapshot_date": "2026-10-31",
+        "category": "Outdoor",
+        "stock_on_hand": 2017
+      },
+      {
+        "snapshot_date": "2026-10-31",
+        "category": "Streetwear",
+        "stock_on_hand": 1304
+      },
+      {
+        "snapshot_date": "2026-11-13",
+        "category": "Casual",
+        "stock_on_hand": 53
+      },
+      {
+        "snapshot_date": "2026-11-13",
+        "category": "GenZ",
+        "stock_on_hand": 208
+      },
+      {
+        "snapshot_date": "2026-11-13",
+        "category": "Outdoor",
+        "stock_on_hand": 1910
+      },
+      {
+        "snapshot_date": "2026-11-13",
+        "category": "Streetwear",
+        "stock_on_hand": 1197
+      }
+    ]
+  },
+  "DB-20-monthly": {
+    "sql": "SELECT date_trunc('month',date) AS month, SUM(revenue) AS revenue FROM commerce.sales WHERE date>=DATE '2026-07-01' AND date<DATE '2026-10-01' GROUP BY 1 ORDER BY 1",
+    "observations": [
+      {
+        "month": "2026-07-01 00:00:00+00:00",
+        "revenue": "1810421.90"
+      },
+      {
+        "month": "2026-08-01 00:00:00+00:00",
+        "revenue": "1832695.76"
+      },
+      {
+        "month": "2026-09-01 00:00:00+00:00",
+        "revenue": "2090232.15"
+      }
+    ]
+  },
+  "DB-20-total": {
+    "sql": "SELECT SUM(revenue) AS revenue FROM commerce.sales WHERE date>=DATE '2026-07-01' AND date<DATE '2026-10-01'",
+    "observations": [
+      {
+        "revenue": "5733349.81"
+      }
+    ]
+  },
+  "DB-22-source-coverage": {
+    "sql": "SELECT COUNT(*) AS joined_rows, COUNT(DISTINCT o.order_id) AS recorded_distinct_orders, COUNT(DISTINCT p.category) AS categories FROM commerce.orders o LEFT JOIN commerce.order_items oi ON oi.order_id=o.order_id LEFT JOIN commerce.products p ON p.product_id=oi.product_id WHERE o.order_date>=DATE '2026-01-01' AND o.order_date<DATE '2027-01-01'",
+    "observations": [
+      {
+        "joined_rows": 985,
+        "recorded_distinct_orders": 856,
+        "categories": 4
+      }
+    ]
+  }
+}

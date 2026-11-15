@@ -1,0 +1,286 @@
+{
+  "execution_id": "DB-22-en",
+  "case_id": "DB-22",
+  "language": "en",
+  "question": "Create a donut chart of category revenue shares for 2026 only if the categories form an exclusive, complete, additive breakdown. Otherwise show a table and explain why the chart is unsupported.",
+  "expect": "Donut or safe fallback",
+  "code_commit": "bac3d96dedef3187fde3755a5ce0eaf74609a106",
+  "dataset_sha256": "40fd4b4f7df9717e618b33cbde44a93bb5312915933528722eac39f45a392a7f",
+  "started_at": "2026-11-14T15:51:51.397900+00:00",
+  "dashboard_status": "failed",
+  "planner_output_valid": true,
+  "query_count": 1,
+  "tile_count": 3,
+  "tile_status": {
+    "category_revenue_chart": {
+      "status": "unavailable",
+      "message": "The query used commerce.sales.product_id, which is missing from the live schema. Available columns are: cogs, date, revenue. Would you like me to retry using the discovered schema? Reply yes or specify the field you mean."
+    },
+    "category_revenue_summary": {
+      "status": "unavailable",
+      "message": "The query used commerce.sales.product_id, which is missing from the live schema. Available columns are: cogs, date, revenue. Would you like me to retry using the discovered schema? Reply yes or specify the field you mean."
+    },
+    "category_revenue_table": {
+      "status": "unavailable",
+      "message": "The query used commerce.sales.product_id, which is missing from the live schema. Available columns are: cogs, date, revenue. Would you like me to retry using the discovered schema? Reply yes or specify the field you mean."
+    }
+  },
+  "dashboard": {
+    "title": "Category Revenue Dashboard",
+    "queries": [
+      {
+        "id": "category_revenue",
+        "question": "What are the category revenue shares for 2026?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "category_revenue_chart",
+        "title": "Category Revenue Shares",
+        "kind": "donut",
+        "query_id": "category_revenue",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "category_revenue_summary",
+        "title": "Category Revenue Summary",
+        "kind": "summary",
+        "query_id": "category_revenue",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "category_revenue_table",
+        "title": "Category Revenue Table",
+        "kind": "table",
+        "query_id": "category_revenue",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": "category",
+        "span": 1
+      }
+    ],
+    "id": "d8aea427c99c4b40bc9f016e677b282b",
+    "description": "Create a donut chart of category revenue shares for 2026 only if the categories form an exclusive, complete, additive breakdown. Otherwise show a table and explain why the chart is unsupported.",
+    "scope": "",
+    "revision": 1,
+    "created_at": "2026-11-14T15:51:57.521015Z",
+    "updated_at": "2026-11-14T15:52:00.233329Z",
+    "data_updated_at": "2026-11-14T15:52:00.230778Z",
+    "results": [
+      {
+        "id": "category_revenue",
+        "question": "What are the category revenue shares for 2026?",
+        "status": "clarification_required",
+        "payload": {
+          "rows": [],
+          "attempted_sql": "SELECT CAST(SUM(CASE WHEN p.category = $1 THEN s.revenue ELSE 0 END) AS NUMERIC) / SUM(s.revenue) AS revenue_share, p.category FROM commerce.sales AS s JOIN commerce.products AS p ON s.product_id = p.product_id AND s.date >= DATE_TRUNC('year', $2) AND s.date < DATE_TRUNC('year', $2 + 1) GROUP BY p.category ORDER BY 1 LIMIT 200",
+          "parameters": [
+            "category",
+            2026
+          ],
+          "metadata": {
+            "error_type": "SQLSchemaMismatchError",
+            "status": "clarification_required",
+            "clarification_required": true,
+            "schema_confirmation_required": true,
+            "schema_mismatch": {
+              "table": "commerce.sales",
+              "column": "product_id",
+              "available_columns": [
+                "cogs",
+                "date",
+                "revenue"
+              ]
+            },
+            "sql_scope": "commerce",
+            "discovered_schema": {
+              "tables": [
+                "commerce.customers",
+                "commerce.geography",
+                "commerce.inventory",
+                "commerce.invoice_items",
+                "commerce.invoices",
+                "commerce.order_items",
+                "commerce.orders",
+                "commerce.payments",
+                "commerce.products",
+                "commerce.promotions",
+                "commerce.returns",
+                "commerce.reviews",
+                "commerce.sales",
+                "commerce.shipments",
+                "commerce.web_traffic"
+              ],
+              "schemas": [
+                "commerce"
+              ]
+            },
+            "metric_definition_source": {
+              "revenue": "metric_ontology"
+            },
+            "execution_status": "clarification_required",
+            "limitations": [
+              "No query was executed; the generated SQL did not match the live schema."
+            ]
+          },
+          "query_status": "rejected"
+        },
+        "message": "The query used commerce.sales.product_id, which is missing from the live schema. Available columns are: cogs, date, revenue. Would you like me to retry using the discovered schema? Reply yes or specify the field you mean."
+      }
+    ],
+    "tile_status": {
+      "category_revenue_chart": {
+        "status": "unavailable",
+        "message": "The query used commerce.sales.product_id, which is missing from the live schema. Available columns are: cogs, date, revenue. Would you like me to retry using the discovered schema? Reply yes or specify the field you mean."
+      },
+      "category_revenue_summary": {
+        "status": "unavailable",
+        "message": "The query used commerce.sales.product_id, which is missing from the live schema. Available columns are: cogs, date, revenue. Would you like me to retry using the discovered schema? Reply yes or specify the field you mean."
+      },
+      "category_revenue_table": {
+        "status": "unavailable",
+        "message": "The query used commerce.sales.product_id, which is missing from the live schema. Available columns are: cogs, date, revenue. Would you like me to retry using the discovered schema? Reply yes or specify the field you mean."
+      }
+    },
+    "status": "failed"
+  },
+  "total_latency_seconds": 8.847245199998724,
+  "planner_attempts": [
+    {
+      "schema_valid": true,
+      "validation_error": null,
+      "error": null,
+      "provider": "CloudflareProvider",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "latency_seconds": 6.0856194000007235
+    }
+  ],
+  "accepted_plan": {
+    "title": "Category Revenue Dashboard",
+    "queries": [
+      {
+        "id": "category_revenue",
+        "question": "What are the category revenue shares for 2026?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "category_revenue_chart",
+        "title": "Category Revenue Shares",
+        "kind": "donut",
+        "query_id": "category_revenue",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "category_revenue_summary",
+        "title": "Category Revenue Summary",
+        "kind": "summary",
+        "query_id": "category_revenue",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "category_revenue_table",
+        "title": "Category Revenue Table",
+        "kind": "table",
+        "query_id": "category_revenue",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": "category",
+        "span": 1
+      }
+    ]
+  },
+  "sql_agent_call_count": 1,
+  "executed_dataset_sql_count": 0,
+  "inspection_sql_count": 0,
+  "llm_call_count": 3,
+  "actual_provider_models": [
+    "CloudflareProvider:@cf/meta/llama-3.1-8b-instruct-fast"
+  ],
+  "source_queries": [
+    {
+      "execution_id": "DB-22-en",
+      "phase": "sql",
+      "event": "sql_payload",
+      "time": "2026-11-14T15:52:00.230778+00:00",
+      "question": "What are the category revenue shares for 2026?",
+      "payload": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "The query used commerce.sales.product_id, which is missing from the live schema. Available columns are: cogs, date, revenue. Would you like me to retry using the discovered schema? Reply yes or specify the field you mean.",
+        "limitations": [
+          "No query was executed; the generated SQL did not match the live schema."
+        ],
+        "metadata": {
+          "error_type": "SQLSchemaMismatchError",
+          "status": "clarification_required",
+          "clarification_required": true,
+          "schema_confirmation_required": true,
+          "schema_mismatch": {
+            "table": "commerce.sales",
+            "column": "product_id",
+            "available_columns": [
+              "cogs",
+              "date",
+              "revenue"
+            ]
+          },
+          "sql_scope": "commerce",
+          "discovered_schema": {
+            "tables": [
+              "commerce.customers",
+              "commerce.geography",
+              "commerce.inventory",
+              "commerce.invoice_items",
+              "commerce.invoices",
+              "commerce.order_items",
+              "commerce.orders",
+              "commerce.payments",
+              "commerce.products",
+              "commerce.promotions",
+              "commerce.returns",
+              "commerce.reviews",
+              "commerce.sales",
+              "commerce.shipments",
+              "commerce.web_traffic"
+            ],
+            "schemas": [
+              "commerce"
+            ]
+          },
+          "metric_definition_source": {
+            "revenue": "metric_ontology"
+          },
+          "execution_status": "clarification_required"
+        },
+        "attempted_sql": "SELECT CAST(SUM(CASE WHEN p.category = $1 THEN s.revenue ELSE 0 END) AS NUMERIC) / SUM(s.revenue) AS revenue_share, p.category FROM commerce.sales AS s JOIN commerce.products AS p ON s.product_id = p.product_id AND s.date >= DATE_TRUNC('year', $2) AND s.date < DATE_TRUNC('year', $2 + 1) GROUP BY p.category ORDER BY 1 LIMIT 200",
+        "parameters": [
+          "category",
+          2026
+        ],
+        "query_status": "rejected"
+      },
+      "latency_seconds": 2.710243800000171
+    }
+  ],
+  "error_or_clarification": "category_revenue: The query used commerce.sales.product_id, which is missing from the live schema. Available columns are: cogs, date, revenue. Would you like me to retry using the discovered schema? Reply yes or specify the field you mean."
+}

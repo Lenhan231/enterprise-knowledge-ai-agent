@@ -1,0 +1,47 @@
+{
+  "execution_id": "DB-14-en",
+  "case_id": "DB-14",
+  "language": "en",
+  "question": "Build a dashboard showing monthly recorded return counts and their descriptive statistics for the available 2026 period.",
+  "expect": "Line + summary",
+  "code_commit": "bac3d96dedef3187fde3755a5ce0eaf74609a106",
+  "dataset_sha256": "40fd4b4f7df9717e618b33cbde44a93bb5312915933528722eac39f45a392a7f",
+  "started_at": "2026-11-14T15:49:26.616042+00:00",
+  "dashboard_status": "failed",
+  "planner_output_valid": false,
+  "query_count": 0,
+  "tile_count": 0,
+  "tile_status": {},
+  "error": "The dashboard plan was invalid. Try a more specific description with metrics and dates.",
+  "error_type": "HTTPException",
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\publish-dashboard-20261114\\src\\app\\dashboards.py\", line 53, in build\n    return await agent.build(identity, description, scope)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\publish-dashboard-20261114\\src\\core\\dashboards\\agent.py\", line 128, in build\n    plan = await self.plan(description, scope)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\evaluation\\dashboard-2026-11-14\\runner.py\", line 60, in plan\n    plan=await super().plan(description,scope)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\publish-dashboard-20261114\\src\\core\\dashboards\\agent.py\", line 85, in plan\n    raise ValueError('The dashboard plan was invalid. Try a more specific description with metrics and dates.')\nValueError: The dashboard plan was invalid. Try a more specific description with metrics and dates.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\evaluation\\dashboard-2026-11-14\\runner.py\", line 116, in main\n    doc=await dashboards.build(SimpleNamespace(app=app),user,description=case[lang],scope='')\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\publish-dashboard-20261114\\src\\app\\dashboards.py\", line 58, in build\n    raise HTTPException(422, str(error))\nfastapi.exceptions.HTTPException: 422: The dashboard plan was invalid. Try a more specific description with metrics and dates.\n",
+  "total_latency_seconds": 12.50718880000204,
+  "planner_attempts": [
+    {
+      "schema_valid": false,
+      "validation_error": "1 validation error for DashboardPlan\ntiles.1.measures\n  List should have at most 4 items after validation, not 5 [type=too_long, input_value=['count', 'mean', 'stddev', 'min', 'max'], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.11/v/too_long",
+      "error": null,
+      "provider": "CloudflareProvider",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "latency_seconds": 5.069737099998747
+    },
+    {
+      "schema_valid": false,
+      "validation_error": "8 validation errors for DashboardPlan\nqueries\n  Field required [type=missing, input_value={'$schema': 'http://json-...Plan', 'type': 'object'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing\ntiles\n  Field required [type=missing, input_value={'$schema': 'http://json-...Plan', 'type': 'object'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing\n$schema\n  Extra inputs are not permitted [type=extra_forbidden, input_value='http://json-schema.org/draft-07/schema#', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden\n$defs\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'QuerySpec': {'additiona...pec', 'type': 'object'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden\nadditionalProperties\n  Extra inputs are not permitted [type=extra_forbidden, input_value=False, input_type=bool]\n    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden\nproperties\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'title': {'maxLength': 1...iles', 'type': 'array'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden\nrequired\n  Extra inputs are not permitted [type=extra_forbidden, input_value=['title', 'queries', 'tiles'], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden\ntype\n  Extra inputs are not permitted [type=extra_forbidden, input_value='object', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden",
+      "error": null,
+      "provider": "CloudflareProvider",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "latency_seconds": 7.404291799997736
+    }
+  ],
+  "accepted_plan": null,
+  "sql_agent_call_count": 0,
+  "executed_dataset_sql_count": 0,
+  "inspection_sql_count": 0,
+  "llm_call_count": 2,
+  "actual_provider_models": [
+    "CloudflareProvider:@cf/meta/llama-3.1-8b-instruct-fast"
+  ],
+  "source_queries": [],
+  "error_or_clarification": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+}

@@ -1,0 +1,635 @@
+{
+  "execution_id": "DB-10-en",
+  "case_id": "DB-10",
+  "language": "en",
+  "question": "Show monthly sessions and page views during 2026 using comparable charts, with a statistical summary of the returned months.",
+  "expect": "Line + summary",
+  "code_commit": "bac3d96dedef3187fde3755a5ce0eaf74609a106",
+  "dataset_sha256": "40fd4b4f7df9717e618b33cbde44a93bb5312915933528722eac39f45a392a7f",
+  "started_at": "2026-11-14T15:48:05.335260+00:00",
+  "dashboard_status": "partial",
+  "planner_output_valid": true,
+  "query_count": 2,
+  "tile_count": 3,
+  "tile_status": {
+    "monthly_sessions_bar": {
+      "status": "complete",
+      "message": ""
+    },
+    "monthly_page_views_line": {
+      "status": "unavailable",
+      "message": "monthly page views"
+    },
+    "monthly_summary": {
+      "status": "complete",
+      "message": ""
+    }
+  },
+  "dashboard": {
+    "title": "Monthly Sessions and Page Views",
+    "queries": [
+      {
+        "id": "monthly_sessions",
+        "question": "What are the monthly sessions and page views in 2026?"
+      },
+      {
+        "id": "monthly_page_views",
+        "question": "What are the monthly page views in 2026?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "monthly_sessions_bar",
+        "title": "Monthly Sessions",
+        "kind": "bar",
+        "query_id": "monthly_sessions",
+        "measures": [
+          "sessions"
+        ],
+        "dimension": "month",
+        "span": 1
+      },
+      {
+        "id": "monthly_page_views_line",
+        "title": "Monthly Page Views",
+        "kind": "line",
+        "query_id": "monthly_page_views",
+        "measures": [
+          "page_views"
+        ],
+        "dimension": "date",
+        "span": 1
+      },
+      {
+        "id": "monthly_summary",
+        "title": "Monthly Summary",
+        "kind": "summary",
+        "query_id": "monthly_sessions",
+        "measures": [
+          "sessions",
+          "page_views"
+        ],
+        "dimension": "month",
+        "span": 1
+      }
+    ],
+    "id": "ff8bcd38a9c045bb810c63016ee15afe",
+    "description": "Show monthly sessions and page views during 2026 using comparable charts, with a statistical summary of the returned months.",
+    "scope": "",
+    "revision": 1,
+    "created_at": "2026-11-14T15:48:10.523728Z",
+    "updated_at": "2026-11-14T15:48:11.907211Z",
+    "data_updated_at": "2026-11-14T15:48:11.903658Z",
+    "results": [
+      {
+        "id": "monthly_sessions",
+        "question": "What are the monthly sessions and page views in 2026?",
+        "status": "complete",
+        "payload": {
+          "rows": [
+            {
+              "month": "2026-11-01T00:00:00Z",
+              "sessions": 29467,
+              "page_views": 106975
+            },
+            {
+              "month": "2026-10-01T00:00:00Z",
+              "sessions": 68081,
+              "page_views": 225810
+            },
+            {
+              "month": "2026-09-01T00:00:00Z",
+              "sessions": 68462,
+              "page_views": 246534
+            },
+            {
+              "month": "2026-08-01T00:00:00Z",
+              "sessions": 73883,
+              "page_views": 262812
+            },
+            {
+              "month": "2026-07-01T00:00:00Z",
+              "sessions": 69588,
+              "page_views": 242655
+            },
+            {
+              "month": "2026-06-01T00:00:00Z",
+              "sessions": 73072,
+              "page_views": 246088
+            },
+            {
+              "month": "2026-05-01T00:00:00Z",
+              "sessions": 74663,
+              "page_views": 260302
+            },
+            {
+              "month": "2026-04-01T00:00:00Z",
+              "sessions": 64172,
+              "page_views": 217754
+            },
+            {
+              "month": "2026-03-01T00:00:00Z",
+              "sessions": 70856,
+              "page_views": 259755
+            },
+            {
+              "month": "2026-02-01T00:00:00Z",
+              "sessions": 64947,
+              "page_views": 232662
+            },
+            {
+              "month": "2026-01-01T00:00:00Z",
+              "sessions": 69313,
+              "page_views": 234105
+            }
+          ],
+          "sql": "SELECT \n    DATE_TRUNC('month', wt.date) AS month,\n    SUM(wt.sessions) AS sessions,\n    SUM(wt.page_views) AS page_views\n  FROM commerce.web_traffic AS wt\n  WHERE EXTRACT(YEAR FROM wt.date) = $1\n  GROUP BY 1\n  ORDER BY 1 DESC\n  LIMIT 200",
+          "parameters": [
+            2026
+          ],
+          "metadata": {
+            "source": [
+              "commerce.web_traffic"
+            ],
+            "explanation": "",
+            "metrics": {
+              "sessions": {
+                "aliases": [
+                  "sessions",
+                  "website sessions",
+                  "lượt truy cập",
+                  "phiên truy cập"
+                ],
+                "source": "commerce.web_traffic",
+                "formula": "SUM(sessions)",
+                "grain": "day",
+                "aggregation": "sum",
+                "unit": "sessions",
+                "dimensions": [
+                  "date",
+                  "traffic_source"
+                ]
+              }
+            },
+            "columns": [
+              {
+                "name": "month",
+                "unit": null
+              },
+              {
+                "name": "sessions",
+                "unit": "sessions"
+              },
+              {
+                "name": "page_views",
+                "unit": null
+              }
+            ],
+            "sql_scope": "commerce",
+            "discovered_schema": {
+              "tables": [
+                "commerce.customers",
+                "commerce.geography",
+                "commerce.inventory",
+                "commerce.invoice_items",
+                "commerce.invoices",
+                "commerce.order_items",
+                "commerce.orders",
+                "commerce.payments",
+                "commerce.products",
+                "commerce.promotions",
+                "commerce.returns",
+                "commerce.reviews",
+                "commerce.sales",
+                "commerce.shipments",
+                "commerce.web_traffic"
+              ],
+              "schemas": [
+                "commerce"
+              ]
+            },
+            "metric_definition_source": {
+              "sessions": "metric_ontology"
+            },
+            "execution_status": "executed"
+          },
+          "query_status": "executed"
+        },
+        "message": "Query completed."
+      },
+      {
+        "id": "monthly_page_views",
+        "question": "What are the monthly page views in 2026?",
+        "status": "clarification_required",
+        "payload": {
+          "rows": [],
+          "metadata": {
+            "error_type": "MetricDefinitionError",
+            "metric_error_code": "metric_ambiguous",
+            "clarification_required": true,
+            "status": "clarification_required",
+            "sql_scope": "commerce",
+            "discovered_schema": {
+              "tables": [
+                "commerce.customers",
+                "commerce.geography",
+                "commerce.inventory",
+                "commerce.invoice_items",
+                "commerce.invoices",
+                "commerce.order_items",
+                "commerce.orders",
+                "commerce.payments",
+                "commerce.products",
+                "commerce.promotions",
+                "commerce.returns",
+                "commerce.reviews",
+                "commerce.sales",
+                "commerce.shipments",
+                "commerce.web_traffic"
+              ],
+              "schemas": [
+                "commerce"
+              ]
+            },
+            "execution_status": "clarification_required",
+            "limitations": [
+              "The generated query did not pass planning or SQL validation."
+            ]
+          }
+        },
+        "message": "monthly page views"
+      }
+    ],
+    "tile_status": {
+      "monthly_sessions_bar": {
+        "status": "complete",
+        "message": ""
+      },
+      "monthly_page_views_line": {
+        "status": "unavailable",
+        "message": "monthly page views"
+      },
+      "monthly_summary": {
+        "status": "complete",
+        "message": ""
+      }
+    },
+    "status": "partial"
+  },
+  "total_latency_seconds": 6.586210900000879,
+  "planner_attempts": [
+    {
+      "schema_valid": true,
+      "validation_error": null,
+      "error": null,
+      "provider": "CloudflareProvider",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "latency_seconds": 5.16154230000393
+    }
+  ],
+  "accepted_plan": {
+    "title": "Monthly Sessions and Page Views",
+    "queries": [
+      {
+        "id": "monthly_sessions",
+        "question": "What are the monthly sessions and page views in 2026?"
+      },
+      {
+        "id": "monthly_page_views",
+        "question": "What are the monthly page views in 2026?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "monthly_sessions_bar",
+        "title": "Monthly Sessions",
+        "kind": "bar",
+        "query_id": "monthly_sessions",
+        "measures": [
+          "sessions"
+        ],
+        "dimension": "date",
+        "span": 1
+      },
+      {
+        "id": "monthly_page_views_line",
+        "title": "Monthly Page Views",
+        "kind": "line",
+        "query_id": "monthly_page_views",
+        "measures": [
+          "page_views"
+        ],
+        "dimension": "date",
+        "span": 1
+      },
+      {
+        "id": "monthly_summary",
+        "title": "Monthly Summary",
+        "kind": "summary",
+        "query_id": "monthly_sessions",
+        "measures": [
+          "sessions",
+          "page_views"
+        ],
+        "dimension": "date",
+        "span": 1
+      }
+    ]
+  },
+  "sql_agent_call_count": 2,
+  "executed_dataset_sql_count": 1,
+  "inspection_sql_count": 0,
+  "llm_call_count": 3,
+  "actual_provider_models": [
+    "CloudflareProvider:@cf/meta/llama-3.1-8b-instruct-fast"
+  ],
+  "source_queries": [
+    {
+      "execution_id": "DB-10-en",
+      "phase": "sql",
+      "event": "sql_payload",
+      "time": "2026-11-14T15:48:11.480884+00:00",
+      "question": "What are the monthly page views in 2026?",
+      "payload": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "monthly page views",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError",
+          "metric_error_code": "metric_ambiguous",
+          "clarification_required": true,
+          "status": "clarification_required",
+          "sql_scope": "commerce",
+          "discovered_schema": {
+            "tables": [
+              "commerce.customers",
+              "commerce.geography",
+              "commerce.inventory",
+              "commerce.invoice_items",
+              "commerce.invoices",
+              "commerce.order_items",
+              "commerce.orders",
+              "commerce.payments",
+              "commerce.products",
+              "commerce.promotions",
+              "commerce.returns",
+              "commerce.reviews",
+              "commerce.sales",
+              "commerce.shipments",
+              "commerce.web_traffic"
+            ],
+            "schemas": [
+              "commerce"
+            ]
+          },
+          "execution_status": "clarification_required"
+        }
+      },
+      "latency_seconds": 0.9581145999982255
+    },
+    {
+      "execution_id": "DB-10-en",
+      "phase": "sql",
+      "event": "database",
+      "time": "2026-11-14T15:48:11.896811+00:00",
+      "sql": "SELECT \n    DATE_TRUNC('month', wt.date) AS month,\n    SUM(wt.sessions) AS sessions,\n    SUM(wt.page_views) AS page_views\n  FROM commerce.web_traffic AS wt\n  WHERE EXTRACT(YEAR FROM wt.date) = $1\n  GROUP BY 1\n  ORDER BY 1 DESC\n  LIMIT 200",
+      "parameters": [
+        2026
+      ],
+      "parameter_types": [
+        "int"
+      ],
+      "observations": [
+        {
+          "month": "2026-11-01 00:00:00+00:00",
+          "sessions": 29467,
+          "page_views": 106975
+        },
+        {
+          "month": "2026-10-01 00:00:00+00:00",
+          "sessions": 68081,
+          "page_views": 225810
+        },
+        {
+          "month": "2026-09-01 00:00:00+00:00",
+          "sessions": 68462,
+          "page_views": 246534
+        },
+        {
+          "month": "2026-08-01 00:00:00+00:00",
+          "sessions": 73883,
+          "page_views": 262812
+        },
+        {
+          "month": "2026-07-01 00:00:00+00:00",
+          "sessions": 69588,
+          "page_views": 242655
+        },
+        {
+          "month": "2026-06-01 00:00:00+00:00",
+          "sessions": 73072,
+          "page_views": 246088
+        },
+        {
+          "month": "2026-05-01 00:00:00+00:00",
+          "sessions": 74663,
+          "page_views": 260302
+        },
+        {
+          "month": "2026-04-01 00:00:00+00:00",
+          "sessions": 64172,
+          "page_views": 217754
+        },
+        {
+          "month": "2026-03-01 00:00:00+00:00",
+          "sessions": 70856,
+          "page_views": 259755
+        },
+        {
+          "month": "2026-02-01 00:00:00+00:00",
+          "sessions": 64947,
+          "page_views": 232662
+        },
+        {
+          "month": "2026-01-01 00:00:00+00:00",
+          "sessions": 69313,
+          "page_views": 234105
+        }
+      ],
+      "latency_seconds": 0.009182399997371249
+    },
+    {
+      "execution_id": "DB-10-en",
+      "phase": "sql",
+      "event": "sql_payload",
+      "time": "2026-11-14T15:48:11.897865+00:00",
+      "question": "What are the monthly sessions and page views in 2026?",
+      "payload": {
+        "ok": true,
+        "operation": "text_to_sql",
+        "rows": [
+          {
+            "month": "2026-11-01 00:00:00+00:00",
+            "sessions": 29467,
+            "page_views": 106975
+          },
+          {
+            "month": "2026-10-01 00:00:00+00:00",
+            "sessions": 68081,
+            "page_views": 225810
+          },
+          {
+            "month": "2026-09-01 00:00:00+00:00",
+            "sessions": 68462,
+            "page_views": 246534
+          },
+          {
+            "month": "2026-08-01 00:00:00+00:00",
+            "sessions": 73883,
+            "page_views": 262812
+          },
+          {
+            "month": "2026-07-01 00:00:00+00:00",
+            "sessions": 69588,
+            "page_views": 242655
+          },
+          {
+            "month": "2026-06-01 00:00:00+00:00",
+            "sessions": 73072,
+            "page_views": 246088
+          },
+          {
+            "month": "2026-05-01 00:00:00+00:00",
+            "sessions": 74663,
+            "page_views": 260302
+          },
+          {
+            "month": "2026-04-01 00:00:00+00:00",
+            "sessions": 64172,
+            "page_views": 217754
+          },
+          {
+            "month": "2026-03-01 00:00:00+00:00",
+            "sessions": 70856,
+            "page_views": 259755
+          },
+          {
+            "month": "2026-02-01 00:00:00+00:00",
+            "sessions": 64947,
+            "page_views": 232662
+          },
+          {
+            "month": "2026-01-01 00:00:00+00:00",
+            "sessions": 69313,
+            "page_views": 234105
+          }
+        ],
+        "answer": "Query completed.",
+        "sql": "SELECT \n    DATE_TRUNC('month', wt.date) AS month,\n    SUM(wt.sessions) AS sessions,\n    SUM(wt.page_views) AS page_views\n  FROM commerce.web_traffic AS wt\n  WHERE EXTRACT(YEAR FROM wt.date) = $1\n  GROUP BY 1\n  ORDER BY 1 DESC\n  LIMIT 200",
+        "parameters": [
+          2026
+        ],
+        "query_status": "executed",
+        "evidence": [
+          {
+            "source": "commerce.web_traffic",
+            "metadata": {
+              "metrics": {
+                "sessions": {
+                  "aliases": [
+                    "sessions",
+                    "website sessions",
+                    "lượt truy cập",
+                    "phiên truy cập"
+                  ],
+                  "source": "commerce.web_traffic",
+                  "formula": "SUM(sessions)",
+                  "grain": "day",
+                  "aggregation": "sum",
+                  "unit": "sessions",
+                  "dimensions": [
+                    "date",
+                    "traffic_source"
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "limitations": [],
+        "metadata": {
+          "source": [
+            "commerce.web_traffic"
+          ],
+          "explanation": "",
+          "metrics": {
+            "sessions": {
+              "aliases": [
+                "sessions",
+                "website sessions",
+                "lượt truy cập",
+                "phiên truy cập"
+              ],
+              "source": "commerce.web_traffic",
+              "formula": "SUM(sessions)",
+              "grain": "day",
+              "aggregation": "sum",
+              "unit": "sessions",
+              "dimensions": [
+                "date",
+                "traffic_source"
+              ]
+            }
+          },
+          "columns": [
+            {
+              "name": "month",
+              "unit": null
+            },
+            {
+              "name": "sessions",
+              "unit": "sessions"
+            },
+            {
+              "name": "page_views",
+              "unit": null
+            }
+          ],
+          "sql_scope": "commerce",
+          "discovered_schema": {
+            "tables": [
+              "commerce.customers",
+              "commerce.geography",
+              "commerce.inventory",
+              "commerce.invoice_items",
+              "commerce.invoices",
+              "commerce.order_items",
+              "commerce.orders",
+              "commerce.payments",
+              "commerce.products",
+              "commerce.promotions",
+              "commerce.returns",
+              "commerce.reviews",
+              "commerce.sales",
+              "commerce.shipments",
+              "commerce.web_traffic"
+            ],
+            "schemas": [
+              "commerce"
+            ]
+          },
+          "metric_definition_source": {
+            "sessions": "metric_ontology"
+          },
+          "execution_status": "executed"
+        }
+      },
+      "latency_seconds": 1.3731987999999546
+    }
+  ],
+  "error_or_clarification": "monthly_page_views: monthly page views"
+}

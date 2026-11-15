@@ -1,0 +1,222 @@
+{
+  "execution_id": "DB-24-en",
+  "case_id": "DB-24",
+  "language": "en",
+  "question": "Build a dashboard showing net profit margin by month in 2026. If no approved net profit margin definition exists, explicitly report the limitation rather than inventing a formula.",
+  "expect": "Metric validation",
+  "code_commit": "bac3d96dedef3187fde3755a5ce0eaf74609a106",
+  "dataset_sha256": "40fd4b4f7df9717e618b33cbde44a93bb5312915933528722eac39f45a392a7f",
+  "started_at": "2026-11-14T15:52:28.066075+00:00",
+  "dashboard_status": "failed",
+  "planner_output_valid": true,
+  "query_count": 1,
+  "tile_count": 2,
+  "tile_status": {
+    "net_profit_margin_kpi": {
+      "status": "unavailable",
+      "message": "Net profit margin calculation requires revenue and cost data, which are not available in the inventory catalog."
+    },
+    "net_profit_margin_chart": {
+      "status": "unavailable",
+      "message": "Net profit margin calculation requires revenue and cost data, which are not available in the inventory catalog."
+    }
+  },
+  "dashboard": {
+    "title": "Net Profit Margin Dashboard",
+    "queries": [
+      {
+        "id": "net_profit_margin",
+        "question": "What is the net profit margin by month in 2026?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "net_profit_margin_kpi",
+        "title": "Net Profit Margin KPI",
+        "kind": "summary",
+        "query_id": "net_profit_margin",
+        "measures": [
+          "net_profit_margin"
+        ],
+        "dimension": null,
+        "span": 1
+      },
+      {
+        "id": "net_profit_margin_chart",
+        "title": "Net Profit Margin Chart",
+        "kind": "line",
+        "query_id": "net_profit_margin",
+        "measures": [
+          "revenue",
+          "cogs"
+        ],
+        "dimension": "month",
+        "span": 1
+      }
+    ],
+    "id": "04119a61555240d5b3932f2c13483606",
+    "description": "Build a dashboard showing net profit margin by month in 2026. If no approved net profit margin definition exists, explicitly report the limitation rather than inventing a formula.",
+    "scope": "",
+    "revision": 1,
+    "created_at": "2026-11-14T15:52:35.005873Z",
+    "updated_at": "2026-11-14T15:52:36.392740Z",
+    "data_updated_at": "2026-11-14T15:52:36.392740Z",
+    "results": [
+      {
+        "id": "net_profit_margin",
+        "question": "What is the net profit margin by month in 2026?",
+        "status": "clarification_required",
+        "payload": {
+          "rows": [],
+          "metadata": {
+            "error_type": "MetricDefinitionError",
+            "metric_error_code": "metric_ambiguous",
+            "clarification_required": true,
+            "status": "clarification_required",
+            "sql_scope": "commerce",
+            "discovered_schema": {
+              "tables": [
+                "commerce.customers",
+                "commerce.geography",
+                "commerce.inventory",
+                "commerce.invoice_items",
+                "commerce.invoices",
+                "commerce.order_items",
+                "commerce.orders",
+                "commerce.payments",
+                "commerce.products",
+                "commerce.promotions",
+                "commerce.returns",
+                "commerce.reviews",
+                "commerce.sales",
+                "commerce.shipments",
+                "commerce.web_traffic"
+              ],
+              "schemas": [
+                "commerce"
+              ]
+            },
+            "execution_status": "clarification_required",
+            "limitations": [
+              "The generated query did not pass planning or SQL validation."
+            ]
+          }
+        },
+        "message": "Net profit margin calculation requires revenue and cost data, which are not available in the inventory catalog."
+      }
+    ],
+    "tile_status": {
+      "net_profit_margin_kpi": {
+        "status": "unavailable",
+        "message": "Net profit margin calculation requires revenue and cost data, which are not available in the inventory catalog."
+      },
+      "net_profit_margin_chart": {
+        "status": "unavailable",
+        "message": "Net profit margin calculation requires revenue and cost data, which are not available in the inventory catalog."
+      }
+    },
+    "status": "failed"
+  },
+  "total_latency_seconds": 8.337812500001746,
+  "planner_attempts": [
+    {
+      "schema_valid": true,
+      "validation_error": null,
+      "error": null,
+      "provider": "CloudflareProvider",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "latency_seconds": 6.909695400005148
+    }
+  ],
+  "accepted_plan": {
+    "title": "Net Profit Margin Dashboard",
+    "queries": [
+      {
+        "id": "net_profit_margin",
+        "question": "What is the net profit margin by month in 2026?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "net_profit_margin_kpi",
+        "title": "Net Profit Margin KPI",
+        "kind": "summary",
+        "query_id": "net_profit_margin",
+        "measures": [
+          "net_profit_margin"
+        ],
+        "dimension": null,
+        "span": 1
+      },
+      {
+        "id": "net_profit_margin_chart",
+        "title": "Net Profit Margin Chart",
+        "kind": "line",
+        "query_id": "net_profit_margin",
+        "measures": [
+          "revenue",
+          "cogs"
+        ],
+        "dimension": "month",
+        "span": 1
+      }
+    ]
+  },
+  "sql_agent_call_count": 1,
+  "executed_dataset_sql_count": 0,
+  "inspection_sql_count": 0,
+  "llm_call_count": 2,
+  "actual_provider_models": [
+    "CloudflareProvider:@cf/meta/llama-3.1-8b-instruct-fast"
+  ],
+  "source_queries": [
+    {
+      "execution_id": "DB-24-en",
+      "phase": "sql",
+      "event": "sql_payload",
+      "time": "2026-11-14T15:52:36.391735+00:00",
+      "question": "What is the net profit margin by month in 2026?",
+      "payload": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "Net profit margin calculation requires revenue and cost data, which are not available in the inventory catalog.",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError",
+          "metric_error_code": "metric_ambiguous",
+          "clarification_required": true,
+          "status": "clarification_required",
+          "sql_scope": "commerce",
+          "discovered_schema": {
+            "tables": [
+              "commerce.customers",
+              "commerce.geography",
+              "commerce.inventory",
+              "commerce.invoice_items",
+              "commerce.invoices",
+              "commerce.order_items",
+              "commerce.orders",
+              "commerce.payments",
+              "commerce.products",
+              "commerce.promotions",
+              "commerce.returns",
+              "commerce.reviews",
+              "commerce.sales",
+              "commerce.shipments",
+              "commerce.web_traffic"
+            ],
+            "schemas": [
+              "commerce"
+            ]
+          },
+          "execution_status": "clarification_required"
+        }
+      },
+      "latency_seconds": 1.3862431000015931
+    }
+  ],
+  "error_or_clarification": "net_profit_margin: Net profit margin calculation requires revenue and cost data, which are not available in the inventory catalog."
+}

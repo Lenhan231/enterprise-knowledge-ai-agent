@@ -1,0 +1,389 @@
+{
+  "execution_id": "DB-07-en",
+  "case_id": "DB-07",
+  "language": "en",
+  "question": "Create a dashboard showing the monthly revenue trend and a table of the underlying monthly observations for July to September 2026.",
+  "expect": "Line + table",
+  "code_commit": "bac3d96dedef3187fde3755a5ce0eaf74609a106",
+  "dataset_sha256": "40fd4b4f7df9717e618b33cbde44a93bb5312915933528722eac39f45a392a7f",
+  "started_at": "2026-11-14T15:47:10.793827+00:00",
+  "dashboard_status": "complete",
+  "planner_output_valid": true,
+  "query_count": 1,
+  "tile_count": 2,
+  "tile_status": {
+    "monthly_revenue_trend": {
+      "status": "complete",
+      "message": ""
+    },
+    "monthly_observations": {
+      "status": "complete",
+      "message": ""
+    }
+  },
+  "dashboard": {
+    "title": "Monthly Revenue Trend",
+    "queries": [
+      {
+        "id": "monthly_revenue",
+        "question": "What is the monthly revenue trend from July to September 2026?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "monthly_revenue_trend",
+        "title": "Monthly Revenue Trend",
+        "kind": "line",
+        "query_id": "monthly_revenue",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": "month",
+        "span": 1
+      },
+      {
+        "id": "monthly_observations",
+        "title": "Monthly Observations",
+        "kind": "table",
+        "query_id": "monthly_revenue",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": "month",
+        "span": 1
+      }
+    ],
+    "id": "c715f6eb43054aa2bfb8bb9f23031113",
+    "description": "Create a dashboard showing the monthly revenue trend and a table of the underlying monthly observations for July to September 2026.",
+    "scope": "",
+    "revision": 1,
+    "created_at": "2026-11-14T15:47:18.164440Z",
+    "updated_at": "2026-11-14T15:47:25.431548Z",
+    "data_updated_at": "2026-11-14T15:47:25.427915Z",
+    "results": [
+      {
+        "id": "monthly_revenue",
+        "question": "What is the monthly revenue trend from July to September 2026?",
+        "status": "complete",
+        "payload": {
+          "rows": [
+            {
+              "month": "2026-07-01T00:00:00Z",
+              "revenue": "1810421.90"
+            },
+            {
+              "month": "2026-08-01T00:00:00Z",
+              "revenue": "1832695.76"
+            },
+            {
+              "month": "2026-09-01T00:00:00Z",
+              "revenue": "2090232.15"
+            }
+          ],
+          "sql": "SELECT DATE_TRUNC('month', s.date) AS month, SUM(s.revenue) AS revenue FROM commerce.sales AS s WHERE s.date >= $1 AND s.date <= $2 GROUP BY 1 ORDER BY 1 ASC LIMIT 200",
+          "parameters": [
+            "2026-07-01",
+            "2026-09-30"
+          ],
+          "metadata": {
+            "source": [
+              "commerce.sales"
+            ],
+            "explanation": "This query selects the monthly revenue trend from July to September 2026. It uses the commerce.sales table and aggregates the revenue by month.",
+            "metrics": {
+              "revenue": {
+                "aliases": [
+                  "revenue",
+                  "sales",
+                  "doanh thu"
+                ],
+                "source": "commerce.sales",
+                "formula": "SUM(revenue)",
+                "time_scope": "All available records unless the question requests a time period.",
+                "grain": "day",
+                "aggregation": "sum",
+                "unit": "currency",
+                "dimensions": [
+                  "date"
+                ],
+                "currency": "dataset_currency_unknown",
+                "limitations": [
+                  "Không có region, category hoặc product."
+                ]
+              }
+            },
+            "columns": [
+              {
+                "name": "month",
+                "unit": null
+              },
+              {
+                "name": "revenue",
+                "unit": "currency"
+              }
+            ],
+            "sql_scope": "commerce",
+            "discovered_schema": {
+              "tables": [
+                "commerce.customers",
+                "commerce.geography",
+                "commerce.inventory",
+                "commerce.invoice_items",
+                "commerce.invoices",
+                "commerce.order_items",
+                "commerce.orders",
+                "commerce.payments",
+                "commerce.products",
+                "commerce.promotions",
+                "commerce.returns",
+                "commerce.reviews",
+                "commerce.sales",
+                "commerce.shipments",
+                "commerce.web_traffic"
+              ],
+              "schemas": [
+                "commerce"
+              ]
+            },
+            "metric_definition_source": {
+              "revenue": "metric_ontology"
+            },
+            "execution_status": "executed",
+            "limitations": [
+              "Không có region, category hoặc product.",
+              "Dataset currency is not confirmed; do not assume USD, VND or another currency."
+            ]
+          },
+          "query_status": "executed"
+        },
+        "message": "Query completed."
+      }
+    ],
+    "tile_status": {
+      "monthly_revenue_trend": {
+        "status": "complete",
+        "message": ""
+      },
+      "monthly_observations": {
+        "status": "complete",
+        "message": ""
+      }
+    },
+    "status": "complete"
+  },
+  "total_latency_seconds": 14.655342600002768,
+  "planner_attempts": [
+    {
+      "schema_valid": true,
+      "validation_error": null,
+      "error": null,
+      "provider": "CloudflareProvider",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "latency_seconds": 7.317081200002576
+    }
+  ],
+  "accepted_plan": {
+    "title": "Monthly Revenue Trend",
+    "queries": [
+      {
+        "id": "monthly_revenue",
+        "question": "What is the monthly revenue trend from July to September 2026?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "monthly_revenue_trend",
+        "title": "Monthly Revenue Trend",
+        "kind": "line",
+        "query_id": "monthly_revenue",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": "date",
+        "span": 1
+      },
+      {
+        "id": "monthly_observations",
+        "title": "Monthly Observations",
+        "kind": "table",
+        "query_id": "monthly_revenue",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": "date",
+        "span": 1
+      }
+    ]
+  },
+  "sql_agent_call_count": 1,
+  "executed_dataset_sql_count": 1,
+  "inspection_sql_count": 0,
+  "llm_call_count": 3,
+  "actual_provider_models": [
+    "CloudflareProvider:@cf/meta/llama-3.1-8b-instruct-fast"
+  ],
+  "source_queries": [
+    {
+      "execution_id": "DB-07-en",
+      "phase": "sql",
+      "event": "database",
+      "time": "2026-11-14T15:47:25.420988+00:00",
+      "sql": "SELECT DATE_TRUNC('month', s.date) AS month, SUM(s.revenue) AS revenue FROM commerce.sales AS s WHERE s.date >= $1 AND s.date <= $2 GROUP BY 1 ORDER BY 1 ASC LIMIT 200",
+      "parameters": [
+        "2026-07-01",
+        "2026-09-30"
+      ],
+      "parameter_types": [
+        "date",
+        "date"
+      ],
+      "observations": [
+        {
+          "month": "2026-07-01 00:00:00+00:00",
+          "revenue": "1810421.90"
+        },
+        {
+          "month": "2026-08-01 00:00:00+00:00",
+          "revenue": "1832695.76"
+        },
+        {
+          "month": "2026-09-01 00:00:00+00:00",
+          "revenue": "2090232.15"
+        }
+      ],
+      "latency_seconds": 0.00886529999843333
+    },
+    {
+      "execution_id": "DB-07-en",
+      "phase": "sql",
+      "event": "sql_payload",
+      "time": "2026-11-14T15:47:25.422188+00:00",
+      "question": "What is the monthly revenue trend from July to September 2026?",
+      "payload": {
+        "ok": true,
+        "operation": "text_to_sql",
+        "rows": [
+          {
+            "month": "2026-07-01 00:00:00+00:00",
+            "revenue": "1810421.90"
+          },
+          {
+            "month": "2026-08-01 00:00:00+00:00",
+            "revenue": "1832695.76"
+          },
+          {
+            "month": "2026-09-01 00:00:00+00:00",
+            "revenue": "2090232.15"
+          }
+        ],
+        "answer": "Query completed.",
+        "sql": "SELECT DATE_TRUNC('month', s.date) AS month, SUM(s.revenue) AS revenue FROM commerce.sales AS s WHERE s.date >= $1 AND s.date <= $2 GROUP BY 1 ORDER BY 1 ASC LIMIT 200",
+        "parameters": [
+          "2026-07-01",
+          "2026-09-30"
+        ],
+        "query_status": "executed",
+        "evidence": [
+          {
+            "source": "commerce.sales",
+            "metadata": {
+              "metrics": {
+                "revenue": {
+                  "aliases": [
+                    "revenue",
+                    "sales",
+                    "doanh thu"
+                  ],
+                  "source": "commerce.sales",
+                  "formula": "SUM(revenue)",
+                  "time_scope": "All available records unless the question requests a time period.",
+                  "grain": "day",
+                  "aggregation": "sum",
+                  "unit": "currency",
+                  "dimensions": [
+                    "date"
+                  ],
+                  "currency": "dataset_currency_unknown",
+                  "limitations": [
+                    "Không có region, category hoặc product."
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "limitations": [
+          "Không có region, category hoặc product.",
+          "Dataset currency is not confirmed; do not assume USD, VND or another currency."
+        ],
+        "metadata": {
+          "source": [
+            "commerce.sales"
+          ],
+          "explanation": "This query selects the monthly revenue trend from July to September 2026. It uses the commerce.sales table and aggregates the revenue by month.",
+          "metrics": {
+            "revenue": {
+              "aliases": [
+                "revenue",
+                "sales",
+                "doanh thu"
+              ],
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)",
+              "time_scope": "All available records unless the question requests a time period.",
+              "grain": "day",
+              "aggregation": "sum",
+              "unit": "currency",
+              "dimensions": [
+                "date"
+              ],
+              "currency": "dataset_currency_unknown",
+              "limitations": [
+                "Không có region, category hoặc product."
+              ]
+            }
+          },
+          "columns": [
+            {
+              "name": "month",
+              "unit": null
+            },
+            {
+              "name": "revenue",
+              "unit": "currency"
+            }
+          ],
+          "sql_scope": "commerce",
+          "discovered_schema": {
+            "tables": [
+              "commerce.customers",
+              "commerce.geography",
+              "commerce.inventory",
+              "commerce.invoice_items",
+              "commerce.invoices",
+              "commerce.order_items",
+              "commerce.orders",
+              "commerce.payments",
+              "commerce.products",
+              "commerce.promotions",
+              "commerce.returns",
+              "commerce.reviews",
+              "commerce.sales",
+              "commerce.shipments",
+              "commerce.web_traffic"
+            ],
+            "schemas": [
+              "commerce"
+            ]
+          },
+          "metric_definition_source": {
+            "revenue": "metric_ontology"
+          },
+          "execution_status": "executed"
+        }
+      },
+      "latency_seconds": 7.25656319999689
+    }
+  ],
+  "error_or_clarification": ""
+}

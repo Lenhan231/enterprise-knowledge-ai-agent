@@ -1,0 +1,845 @@
+{
+  "source_version": "PostgreSQL 17.6 on aarch64-unknown-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit",
+  "isolation": "repeatable_read readonly",
+  "tables": [
+    {
+      "table": "customers",
+      "columns": [
+        {
+          "name": "customer_id",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "zip",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "city",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "signup_date",
+          "type": "date",
+          "not_null": true
+        },
+        {
+          "name": "gender",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "age_group",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "acquisition_channel",
+          "type": "text",
+          "not_null": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "customers_pkey",
+          "definition": "PRIMARY KEY (customer_id)"
+        },
+        {
+          "name": "customers_zip_fkey",
+          "definition": "FOREIGN KEY (zip) REFERENCES commerce.geography(zip)"
+        }
+      ],
+      "rows": 98,
+      "full_select": false,
+      "sha256": "31681e8e1916237e20640b82bcb0b698129eefcb0aec8aeaeae13c9a1ffd8b8e"
+    },
+    {
+      "table": "geography",
+      "columns": [
+        {
+          "name": "zip",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "city",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "region",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "district",
+          "type": "text",
+          "not_null": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "geography_pkey",
+          "definition": "PRIMARY KEY (zip)"
+        }
+      ],
+      "rows": 96,
+      "full_select": true,
+      "sha256": "5604e8a93a283e29211c6464dc8cca4ce9cfd309b064cb8bcf99ebb2098057e6"
+    },
+    {
+      "table": "inventory",
+      "columns": [
+        {
+          "name": "snapshot_date",
+          "type": "date",
+          "not_null": true
+        },
+        {
+          "name": "product_id",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "stock_on_hand",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "units_received",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "units_sold",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "stockout_days",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "days_of_supply",
+          "type": "numeric",
+          "not_null": false
+        },
+        {
+          "name": "fill_rate",
+          "type": "numeric",
+          "not_null": false
+        },
+        {
+          "name": "stockout_flag",
+          "type": "boolean",
+          "not_null": true
+        },
+        {
+          "name": "overstock_flag",
+          "type": "boolean",
+          "not_null": true
+        },
+        {
+          "name": "reorder_flag",
+          "type": "boolean",
+          "not_null": true
+        },
+        {
+          "name": "sell_through_rate",
+          "type": "numeric",
+          "not_null": false
+        },
+        {
+          "name": "product_name",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "category",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "segment",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "year",
+          "type": "integer",
+          "not_null": false
+        },
+        {
+          "name": "month",
+          "type": "integer",
+          "not_null": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "inventory_pkey",
+          "definition": "PRIMARY KEY (snapshot_date, product_id)"
+        },
+        {
+          "name": "inventory_product_id_fkey",
+          "definition": "FOREIGN KEY (product_id) REFERENCES commerce.products(product_id)"
+        }
+      ],
+      "rows": 1261,
+      "full_select": true,
+      "sha256": "6611fe31a0066e3902187a7cba67659e3f2cb5fb6df455a17e435b524fc53453"
+    },
+    {
+      "table": "invoice_items",
+      "columns": [
+        {
+          "name": "invoice_id",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "line_no",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "unit",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "quantity",
+          "type": "numeric",
+          "not_null": false
+        },
+        {
+          "name": "unit_price",
+          "type": "numeric",
+          "not_null": false
+        },
+        {
+          "name": "amount",
+          "type": "numeric",
+          "not_null": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "invoice_items_invoice_id_fkey",
+          "definition": "FOREIGN KEY (invoice_id) REFERENCES commerce.invoices(invoice_id) ON DELETE CASCADE"
+        },
+        {
+          "name": "invoice_items_pkey",
+          "definition": "PRIMARY KEY (invoice_id, line_no)"
+        }
+      ],
+      "rows": 1158,
+      "full_select": false,
+      "sha256": "aa295250cc19204be3f000b227f72097b8dd46a51842f494f38da4459a36c062"
+    },
+    {
+      "table": "invoices",
+      "columns": [
+        {
+          "name": "invoice_id",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "source_filename",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "invoice_no",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "invoice_date",
+          "type": "date",
+          "not_null": false
+        },
+        {
+          "name": "buyer",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "seller",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "subtotal",
+          "type": "numeric",
+          "not_null": false
+        },
+        {
+          "name": "tax_amount",
+          "type": "numeric",
+          "not_null": false
+        },
+        {
+          "name": "total_amount",
+          "type": "numeric",
+          "not_null": false
+        },
+        {
+          "name": "currency",
+          "type": "text",
+          "not_null": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "invoices_invoice_id_fkey",
+          "definition": "FOREIGN KEY (invoice_id) REFERENCES invoice_extractions(invoice_id) ON DELETE CASCADE"
+        },
+        {
+          "name": "invoices_pkey",
+          "definition": "PRIMARY KEY (invoice_id)"
+        },
+        {
+          "name": "invoices_source_sha256_key",
+          "definition": "UNIQUE (source_sha256)"
+        }
+      ],
+      "rows": 1001,
+      "full_select": false,
+      "sha256": "1ec84a98e9ad42d482107a2cb1fb2be5fe894a6573bcbf3586eb297a094fe058"
+    },
+    {
+      "table": "order_items",
+      "columns": [
+        {
+          "name": "order_item_id",
+          "type": "bigint",
+          "not_null": true
+        },
+        {
+          "name": "order_id",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "product_id",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "quantity",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "unit_price",
+          "type": "numeric",
+          "not_null": true
+        },
+        {
+          "name": "discount_amount",
+          "type": "numeric",
+          "not_null": true
+        },
+        {
+          "name": "promo_id",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "promo_id_2",
+          "type": "text",
+          "not_null": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "order_items_order_id_fkey",
+          "definition": "FOREIGN KEY (order_id) REFERENCES commerce.orders(order_id)"
+        },
+        {
+          "name": "order_items_pkey",
+          "definition": "PRIMARY KEY (order_item_id)"
+        },
+        {
+          "name": "order_items_product_id_fkey",
+          "definition": "FOREIGN KEY (product_id) REFERENCES commerce.products(product_id)"
+        },
+        {
+          "name": "order_items_promo_id_2_fkey",
+          "definition": "FOREIGN KEY (promo_id_2) REFERENCES commerce.promotions(promo_id)"
+        },
+        {
+          "name": "order_items_promo_id_fkey",
+          "definition": "FOREIGN KEY (promo_id) REFERENCES commerce.promotions(promo_id)"
+        }
+      ],
+      "rows": 1149,
+      "full_select": true,
+      "sha256": "aef861d26381257a3b61b095c66971aefd88ae7d63674572730e68b9e27277ca"
+    },
+    {
+      "table": "orders",
+      "columns": [
+        {
+          "name": "order_id",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "order_date",
+          "type": "date",
+          "not_null": true
+        },
+        {
+          "name": "customer_id",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "zip",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "order_status",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "payment_method",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "device_type",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "order_source",
+          "type": "text",
+          "not_null": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "orders_customer_id_fkey",
+          "definition": "FOREIGN KEY (customer_id) REFERENCES commerce.customers(customer_id)"
+        },
+        {
+          "name": "orders_pkey",
+          "definition": "PRIMARY KEY (order_id)"
+        },
+        {
+          "name": "orders_zip_fkey",
+          "definition": "FOREIGN KEY (zip) REFERENCES commerce.geography(zip)"
+        }
+      ],
+      "rows": 1000,
+      "full_select": true,
+      "sha256": "c12da2623f5299b7b380ffd71f97ff397f115298fe5c23d1f87387702640d943"
+    },
+    {
+      "table": "payments",
+      "columns": [
+        {
+          "name": "order_id",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "payment_method",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "payment_value",
+          "type": "numeric",
+          "not_null": true
+        },
+        {
+          "name": "installments",
+          "type": "integer",
+          "not_null": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "payments_order_id_fkey",
+          "definition": "FOREIGN KEY (order_id) REFERENCES commerce.orders(order_id)"
+        },
+        {
+          "name": "payments_pkey",
+          "definition": "PRIMARY KEY (order_id)"
+        }
+      ],
+      "rows": 1000,
+      "full_select": false,
+      "sha256": "d0c964366872b9a2aea2c9cb5031fef72ec97dc62b38555802e95a49c7605062"
+    },
+    {
+      "table": "products",
+      "columns": [
+        {
+          "name": "product_id",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "product_name",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "category",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "segment",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "size",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "color",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "price",
+          "type": "numeric",
+          "not_null": true
+        },
+        {
+          "name": "cogs",
+          "type": "numeric",
+          "not_null": true
+        }
+      ],
+      "constraints": [
+        {
+          "name": "products_pkey",
+          "definition": "PRIMARY KEY (product_id)"
+        }
+      ],
+      "rows": 97,
+      "full_select": true,
+      "sha256": "d415b3c81a2c3c69d7e3cd8d084dafaeecea324469c1799196671da65d50a4e4"
+    },
+    {
+      "table": "promotions",
+      "columns": [
+        {
+          "name": "promo_id",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "promo_name",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "promo_type",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "discount_value",
+          "type": "numeric",
+          "not_null": true
+        },
+        {
+          "name": "start_date",
+          "type": "date",
+          "not_null": true
+        },
+        {
+          "name": "end_date",
+          "type": "date",
+          "not_null": true
+        },
+        {
+          "name": "applicable_category",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "promo_channel",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "stackable_flag",
+          "type": "boolean",
+          "not_null": true
+        },
+        {
+          "name": "min_order_value",
+          "type": "numeric",
+          "not_null": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "promotions_pkey",
+          "definition": "PRIMARY KEY (promo_id)"
+        }
+      ],
+      "rows": 9,
+      "full_select": true,
+      "sha256": "d93b16dd9ebf8074c5be33f67af15b579a7baf0a33a639392619d13c6e9ea870"
+    },
+    {
+      "table": "returns",
+      "columns": [
+        {
+          "name": "return_id",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "order_id",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "product_id",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "return_date",
+          "type": "date",
+          "not_null": true
+        },
+        {
+          "name": "return_reason",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "return_quantity",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "refund_amount",
+          "type": "numeric",
+          "not_null": true
+        }
+      ],
+      "constraints": [
+        {
+          "name": "returns_order_id_fkey",
+          "definition": "FOREIGN KEY (order_id) REFERENCES commerce.orders(order_id)"
+        },
+        {
+          "name": "returns_pkey",
+          "definition": "PRIMARY KEY (return_id)"
+        },
+        {
+          "name": "returns_product_id_fkey",
+          "definition": "FOREIGN KEY (product_id) REFERENCES commerce.products(product_id)"
+        }
+      ],
+      "rows": 44,
+      "full_select": true,
+      "sha256": "93a70ed0f1a4addcdfa3aff7ac1060abd334afb0b47c219c12487300f5be5a3a"
+    },
+    {
+      "table": "reviews",
+      "columns": [
+        {
+          "name": "review_id",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "order_id",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "product_id",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "customer_id",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "review_date",
+          "type": "date",
+          "not_null": true
+        },
+        {
+          "name": "rating",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "review_title",
+          "type": "text",
+          "not_null": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "reviews_customer_id_fkey",
+          "definition": "FOREIGN KEY (customer_id) REFERENCES commerce.customers(customer_id)"
+        },
+        {
+          "name": "reviews_order_id_fkey",
+          "definition": "FOREIGN KEY (order_id) REFERENCES commerce.orders(order_id)"
+        },
+        {
+          "name": "reviews_pkey",
+          "definition": "PRIMARY KEY (review_id)"
+        },
+        {
+          "name": "reviews_product_id_fkey",
+          "definition": "FOREIGN KEY (product_id) REFERENCES commerce.products(product_id)"
+        }
+      ],
+      "rows": 199,
+      "full_select": true,
+      "sha256": "ee47117031e0a56264a8341ed4d7d8b24f46bc8dabdf5115f03fbddeea25b57c"
+    },
+    {
+      "table": "sales",
+      "columns": [
+        {
+          "name": "date",
+          "type": "date",
+          "not_null": true
+        },
+        {
+          "name": "revenue",
+          "type": "numeric",
+          "not_null": true
+        },
+        {
+          "name": "cogs",
+          "type": "numeric",
+          "not_null": true
+        }
+      ],
+      "constraints": [
+        {
+          "name": "sales_pkey",
+          "definition": "PRIMARY KEY (date)"
+        }
+      ],
+      "rows": 365,
+      "full_select": true,
+      "sha256": "36f4b5ede3563f9c98948c13aa46087880f0f7253f1dad8878742077a99d925f"
+    },
+    {
+      "table": "shipments",
+      "columns": [
+        {
+          "name": "order_id",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "ship_date",
+          "type": "date",
+          "not_null": false
+        },
+        {
+          "name": "delivery_date",
+          "type": "date",
+          "not_null": false
+        },
+        {
+          "name": "shipping_fee",
+          "type": "numeric",
+          "not_null": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "shipments_order_id_fkey",
+          "definition": "FOREIGN KEY (order_id) REFERENCES commerce.orders(order_id)"
+        },
+        {
+          "name": "shipments_pkey",
+          "definition": "PRIMARY KEY (order_id)"
+        }
+      ],
+      "rows": 996,
+      "full_select": true,
+      "sha256": "02297f31502fdc257ea851c80d1127fdc2cc8e0327ec40e04d0f93b41057145b"
+    },
+    {
+      "table": "web_traffic",
+      "columns": [
+        {
+          "name": "date",
+          "type": "date",
+          "not_null": true
+        },
+        {
+          "name": "sessions",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "unique_visitors",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "page_views",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "bounce_rate",
+          "type": "numeric",
+          "not_null": false
+        },
+        {
+          "name": "avg_session_duration_sec",
+          "type": "numeric",
+          "not_null": false
+        },
+        {
+          "name": "traffic_source",
+          "type": "text",
+          "not_null": true
+        }
+      ],
+      "constraints": [
+        {
+          "name": "web_traffic_pkey",
+          "definition": "PRIMARY KEY (date, traffic_source)"
+        }
+      ],
+      "rows": 1460,
+      "full_select": true,
+      "sha256": "0e21e4ad43880ae64b3d1477b20527a5b17d550822e2d308c9d3c22018a6dfe9"
+    }
+  ],
+  "image": "postgres:17.6",
+  "snapshot_time": "2026-11-14 15:43:17.761286+00:00"
+}

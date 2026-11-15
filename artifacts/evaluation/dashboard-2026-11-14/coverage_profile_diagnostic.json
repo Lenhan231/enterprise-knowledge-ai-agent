@@ -1,0 +1,14 @@
+[
+  {
+    "sql": "SELECT MIN(\"date\") AS first_date, MAX(\"date\") AS last_date, COUNT(*) AS observations FROM \"commerce\".\"sales\"",
+    "valid": false,
+    "error_type": "SQLSecurityError",
+    "error": "The final SELECT needs LIMIT 1..200."
+  },
+  {
+    "sql": "SELECT MIN(\"snapshot_date\") AS first_date, MAX(\"snapshot_date\") AS last_date, COUNT(*) AS observations FROM \"commerce\".\"inventory\"",
+    "valid": false,
+    "error_type": "SQLSecurityError",
+    "error": "The final SELECT needs LIMIT 1..200."
+  }
+]

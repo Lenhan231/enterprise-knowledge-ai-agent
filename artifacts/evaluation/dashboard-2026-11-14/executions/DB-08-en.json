@@ -1,0 +1,321 @@
+{
+  "execution_id": "DB-08-en",
+  "case_id": "DB-08",
+  "language": "en",
+  "question": "Compare stockout rates across product categories in the latest inventory snapshot and include a table of category-level observations.",
+  "expect": "Bar + table",
+  "code_commit": "bac3d96dedef3187fde3755a5ce0eaf74609a106",
+  "dataset_sha256": "40fd4b4f7df9717e618b33cbde44a93bb5312915933528722eac39f45a392a7f",
+  "started_at": "2026-11-14T15:47:31.049891+00:00",
+  "dashboard_status": "failed",
+  "planner_output_valid": true,
+  "query_count": 2,
+  "tile_count": 2,
+  "tile_status": {
+    "stockout_rates_bar": {
+      "status": "unavailable",
+      "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+    },
+    "category_observations_table": {
+      "status": "unavailable",
+      "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+    }
+  },
+  "dashboard": {
+    "title": "Inventory Stockout Dashboard",
+    "queries": [
+      {
+        "id": "stockout_rates",
+        "question": "What are the stockout rates across product categories in the latest inventory snapshot?"
+      },
+      {
+        "id": "category_observations",
+        "question": "What are the category-level observations for the latest inventory snapshot?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "stockout_rates_bar",
+        "title": "Stockout Rates by Category",
+        "kind": "bar",
+        "query_id": "stockout_rates",
+        "measures": [
+          "stockout_rate"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "category_observations_table",
+        "title": "Category-Level Observations",
+        "kind": "table",
+        "query_id": "category_observations",
+        "measures": [
+          "category",
+          "stockout_rate",
+          "stockout_days"
+        ],
+        "dimension": null,
+        "span": 1
+      }
+    ],
+    "id": "4c45f3c98f174299a34b02d0fcc8e3cb",
+    "description": "Compare stockout rates across product categories in the latest inventory snapshot and include a table of category-level observations.",
+    "scope": "",
+    "revision": 1,
+    "created_at": "2026-11-14T15:47:36.240842Z",
+    "updated_at": "2026-11-14T15:47:38.256760Z",
+    "data_updated_at": "2026-11-14T15:47:38.256216Z",
+    "results": [
+      {
+        "id": "stockout_rates",
+        "question": "What are the stockout rates across product categories in the latest inventory snapshot?",
+        "status": "clarification_required",
+        "payload": {
+          "rows": [],
+          "metadata": {
+            "error_type": "MetricDefinitionError",
+            "metric_error_code": "invalid_date_scope",
+            "clarification_required": true,
+            "status": "clarification_required",
+            "sql_scope": "commerce",
+            "discovered_schema": {
+              "tables": [
+                "commerce.customers",
+                "commerce.geography",
+                "commerce.inventory",
+                "commerce.invoice_items",
+                "commerce.invoices",
+                "commerce.order_items",
+                "commerce.orders",
+                "commerce.payments",
+                "commerce.products",
+                "commerce.promotions",
+                "commerce.returns",
+                "commerce.reviews",
+                "commerce.sales",
+                "commerce.shipments",
+                "commerce.web_traffic"
+              ],
+              "schemas": [
+                "commerce"
+              ]
+            },
+            "execution_status": "clarification_required",
+            "limitations": [
+              "The generated query did not pass planning or SQL validation."
+            ]
+          }
+        },
+        "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+      },
+      {
+        "id": "category_observations",
+        "question": "What are the category-level observations for the latest inventory snapshot?",
+        "status": "clarification_required",
+        "payload": {
+          "rows": [],
+          "metadata": {
+            "error_type": "MetricDefinitionError",
+            "metric_error_code": "invalid_date_scope",
+            "clarification_required": true,
+            "status": "clarification_required",
+            "sql_scope": "commerce",
+            "discovered_schema": {
+              "tables": [
+                "commerce.customers",
+                "commerce.geography",
+                "commerce.inventory",
+                "commerce.invoice_items",
+                "commerce.invoices",
+                "commerce.order_items",
+                "commerce.orders",
+                "commerce.payments",
+                "commerce.products",
+                "commerce.promotions",
+                "commerce.returns",
+                "commerce.reviews",
+                "commerce.sales",
+                "commerce.shipments",
+                "commerce.web_traffic"
+              ],
+              "schemas": [
+                "commerce"
+              ]
+            },
+            "execution_status": "clarification_required",
+            "limitations": [
+              "The generated query did not pass planning or SQL validation."
+            ]
+          }
+        },
+        "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+      }
+    ],
+    "tile_status": {
+      "stockout_rates_bar": {
+        "status": "unavailable",
+        "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+      },
+      "category_observations_table": {
+        "status": "unavailable",
+        "message": "Specify valid historical ISO snapshot dates or an ordered inclusive range."
+      }
+    },
+    "status": "failed"
+  },
+  "total_latency_seconds": 7.219164100002672,
+  "planner_attempts": [
+    {
+      "schema_valid": true,
+      "validation_error": null,
+      "error": null,
+      "provider": "CloudflareProvider",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "latency_seconds": 5.151467800002138
+    }
+  ],
+  "accepted_plan": {
+    "title": "Inventory Stockout Dashboard",
+    "queries": [
+      {
+        "id": "stockout_rates",
+        "question": "What are the stockout rates across product categories in the latest inventory snapshot?"
+      },
+      {
+        "id": "category_observations",
+        "question": "What are the category-level observations for the latest inventory snapshot?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "stockout_rates_bar",
+        "title": "Stockout Rates by Category",
+        "kind": "bar",
+        "query_id": "stockout_rates",
+        "measures": [
+          "stockout_rate"
+        ],
+        "dimension": "category",
+        "span": 1
+      },
+      {
+        "id": "category_observations_table",
+        "title": "Category-Level Observations",
+        "kind": "table",
+        "query_id": "category_observations",
+        "measures": [
+          "category",
+          "stockout_rate",
+          "stockout_days"
+        ],
+        "dimension": null,
+        "span": 1
+      }
+    ]
+  },
+  "sql_agent_call_count": 2,
+  "executed_dataset_sql_count": 0,
+  "inspection_sql_count": 0,
+  "llm_call_count": 3,
+  "actual_provider_models": [
+    "CloudflareProvider:@cf/meta/llama-3.1-8b-instruct-fast"
+  ],
+  "source_queries": [
+    {
+      "execution_id": "DB-08-en",
+      "phase": "sql",
+      "event": "sql_payload",
+      "time": "2026-11-14T15:47:37.723158+00:00",
+      "question": "What are the category-level observations for the latest inventory snapshot?",
+      "payload": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "Specify valid historical ISO snapshot dates or an ordered inclusive range.",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError",
+          "metric_error_code": "invalid_date_scope",
+          "clarification_required": true,
+          "status": "clarification_required",
+          "sql_scope": "commerce",
+          "discovered_schema": {
+            "tables": [
+              "commerce.customers",
+              "commerce.geography",
+              "commerce.inventory",
+              "commerce.invoice_items",
+              "commerce.invoices",
+              "commerce.order_items",
+              "commerce.orders",
+              "commerce.payments",
+              "commerce.products",
+              "commerce.promotions",
+              "commerce.returns",
+              "commerce.reviews",
+              "commerce.sales",
+              "commerce.shipments",
+              "commerce.web_traffic"
+            ],
+            "schemas": [
+              "commerce"
+            ]
+          },
+          "execution_status": "clarification_required"
+        }
+      },
+      "latency_seconds": 1.4815905999930692
+    },
+    {
+      "execution_id": "DB-08-en",
+      "phase": "sql",
+      "event": "sql_payload",
+      "time": "2026-11-14T15:47:38.255155+00:00",
+      "question": "What are the stockout rates across product categories in the latest inventory snapshot?",
+      "payload": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "Specify valid historical ISO snapshot dates or an ordered inclusive range.",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError",
+          "metric_error_code": "invalid_date_scope",
+          "clarification_required": true,
+          "status": "clarification_required",
+          "sql_scope": "commerce",
+          "discovered_schema": {
+            "tables": [
+              "commerce.customers",
+              "commerce.geography",
+              "commerce.inventory",
+              "commerce.invoice_items",
+              "commerce.invoices",
+              "commerce.order_items",
+              "commerce.orders",
+              "commerce.payments",
+              "commerce.products",
+              "commerce.promotions",
+              "commerce.returns",
+              "commerce.reviews",
+              "commerce.sales",
+              "commerce.shipments",
+              "commerce.web_traffic"
+            ],
+            "schemas": [
+              "commerce"
+            ]
+          },
+          "execution_status": "clarification_required"
+        }
+      },
+      "latency_seconds": 2.013894000003347
+    }
+  ],
+  "error_or_clarification": "stockout_rates: Specify valid historical ISO snapshot dates or an ordered inclusive range.; category_observations: Specify valid historical ISO snapshot dates or an ordered inclusive range."
+}

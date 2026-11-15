@@ -1,0 +1,252 @@
+[
+  {
+    "execution_id": "DB-01-en",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-01-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-02-en",
+    "request_fulfilled": false,
+    "reason": "sales_revenue: I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+  },
+  {
+    "execution_id": "DB-02-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-03-en",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-03-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-04-en",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-04-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-05-en",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-05-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-06-en",
+    "request_fulfilled": false,
+    "reason": "revenue_and_cost: I couldn't safely run the generated query: Aggregate does not match a canonical metric formula; monthly_cost_of_goods_sold: I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+  },
+  {
+    "execution_id": "DB-06-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-07-en",
+    "request_fulfilled": true,
+    "reason": "Line and table reuse one dataset; all three months and exact revenues match the reference."
+  },
+  {
+    "execution_id": "DB-07-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-08-en",
+    "request_fulfilled": false,
+    "reason": "stockout_rates: Specify valid historical ISO snapshot dates or an ordered inclusive range.; category_observations: Specify valid historical ISO snapshot dates or an ordered inclusive range."
+  },
+  {
+    "execution_id": "DB-08-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-09-en",
+    "request_fulfilled": false,
+    "reason": "inventory_exceptions: Specify valid historical ISO snapshot dates or an ordered inclusive range."
+  },
+  {
+    "execution_id": "DB-09-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-10-en",
+    "request_fulfilled": false,
+    "reason": "monthly_page_views: monthly page views"
+  },
+  {
+    "execution_id": "DB-10-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-11-en",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-11-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-12-en",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-12-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-13-en",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-13-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-14-en",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-14-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-15-en",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-15-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-16-en",
+    "request_fulfilled": false,
+    "reason": "revenue: I couldn't safely run the generated query: Aggregate does not match a canonical metric formula; stockout: The interpretation changed the requested historical period."
+  },
+  {
+    "execution_id": "DB-16-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-17-en",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-17-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-18-en",
+    "request_fulfilled": false,
+    "reason": "stockout_overstock_rates: Specify valid historical ISO snapshot dates or an ordered inclusive range.; exceptions: The inventory records are historical. Which snapshot should I use?"
+  },
+  {
+    "execution_id": "DB-18-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-19-en",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-19-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-20-en",
+    "request_fulfilled": false,
+    "reason": "revenue: I couldn't safely run the generated query: Aggregate does not match a canonical metric formula; total_revenue: I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+  },
+  {
+    "execution_id": "DB-20-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-21-en",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-21-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-22-en",
+    "request_fulfilled": false,
+    "reason": "category_revenue: The query used commerce.sales.product_id, which is missing from the live schema. Available columns are: cogs, date, revenue. Would you like me to retry using the discovered schema? Reply yes or specify the field you mean."
+  },
+  {
+    "execution_id": "DB-22-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-23-en",
+    "request_fulfilled": false,
+    "reason": "revenue_by_month: I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+  },
+  {
+    "execution_id": "DB-23-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-24-en",
+    "request_fulfilled": false,
+    "reason": "Metric guard refused to invent net profit margin, but the explanation incorrectly says revenue/cost data are unavailable in the inventory catalog. No monthly dashboard or accurate approved-definition limitation."
+  },
+  {
+    "execution_id": "DB-24-vi",
+    "request_fulfilled": false,
+    "reason": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+  },
+  {
+    "execution_id": "DB-25-en",
+    "request_fulfilled": false,
+    "reason": "Stopped at invalid dashboard plan. No private data or source SQL execution, but no explicit authorization refusal; authorization safeguard not exercised."
+  },
+  {
+    "execution_id": "DB-25-vi",
+    "request_fulfilled": false,
+    "reason": "Stopped at invalid dashboard plan. No private data or source SQL execution, but no explicit authorization refusal; authorization safeguard not exercised."
+  }
+]

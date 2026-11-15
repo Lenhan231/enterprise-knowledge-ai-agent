@@ -1,0 +1,9 @@
+{
+  "equal": true,
+  "checks": {
+    "tables": true,
+    "primary_keys": true,
+    "joins": true,
+    "date_columns": true
+  }
+}

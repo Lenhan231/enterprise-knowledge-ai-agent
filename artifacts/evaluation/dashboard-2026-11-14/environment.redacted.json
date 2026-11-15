@@ -1,0 +1,16 @@
+{
+  "GROQ_API_KEY": "<configured>",
+  "GROQ_API_KEY_2": "<configured>",
+  "GROQ_API_KEY_RAGAS": "<configured>",
+  "CLOUDFLARE_ACCOUNT_ID": "<configured>",
+  "CLOUDFLARE_API_TOKEN": "<configured>",
+  "CLOUDFLARE_MODEL": "@cf/meta/llama-3.1-8b-instruct",
+  "ANALYTICS_DATABASE_URL": "<configured>",
+  "EMBEDDING_MODEL": "intfloat/multilingual-e5-base",
+  "GROQ_MODEL": "qwen/qwen3.8-27b",
+  "RERANKER_ALLOW_DOWNLOAD": "1",
+  "SQL_LLM_PROVIDER": "cloudflare",
+  "SQL_GROQ_MODEL": "qwen/qwen3.8-27b",
+  "SQL_CLOUDFLARE_MODEL": "@cf/meta/llama-3.1-8b-instruct",
+  "ANALYTICS_SCHEMAS": "commerce"
+}

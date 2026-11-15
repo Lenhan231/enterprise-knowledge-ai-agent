@@ -1,0 +1,765 @@
+{
+  "execution_id": "DB-06-en",
+  "case_id": "DB-06",
+  "language": "en",
+  "question": "Compare monthly revenue and cost of goods sold in 2026 using separate charts with compatible units and a statistical summary.",
+  "expect": "Line/bar + summary",
+  "code_commit": "bac3d96dedef3187fde3755a5ce0eaf74609a106",
+  "dataset_sha256": "40fd4b4f7df9717e618b33cbde44a93bb5312915933528722eac39f45a392a7f",
+  "started_at": "2026-11-14T15:46:55.352713+00:00",
+  "dashboard_status": "partial",
+  "planner_output_valid": true,
+  "query_count": 3,
+  "tile_count": 4,
+  "tile_status": {
+    "revenue_and_cost_chart": {
+      "status": "unavailable",
+      "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+    },
+    "monthly_revenue_chart": {
+      "status": "complete",
+      "message": ""
+    },
+    "monthly_cost_of_goods_sold_chart": {
+      "status": "unavailable",
+      "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+    },
+    "summary": {
+      "status": "unavailable",
+      "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+    }
+  },
+  "dashboard": {
+    "title": "Revenue and Cost of Goods Sold Dashboard",
+    "queries": [
+      {
+        "id": "revenue_and_cost",
+        "question": "What is the monthly revenue and cost of goods sold in 2026?"
+      },
+      {
+        "id": "monthly_revenue",
+        "question": "What is the monthly revenue in 2026?"
+      },
+      {
+        "id": "monthly_cost_of_goods_sold",
+        "question": "What is the monthly cost of goods sold in 2026?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "revenue_and_cost_chart",
+        "title": "Revenue and Cost of Goods Sold",
+        "kind": "line",
+        "query_id": "revenue_and_cost",
+        "measures": [
+          "revenue",
+          "cogs"
+        ],
+        "dimension": "month",
+        "span": 1
+      },
+      {
+        "id": "monthly_revenue_chart",
+        "title": "Monthly Revenue",
+        "kind": "line",
+        "query_id": "monthly_revenue",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": "month",
+        "span": 1
+      },
+      {
+        "id": "monthly_cost_of_goods_sold_chart",
+        "title": "Monthly Cost of Goods Sold",
+        "kind": "line",
+        "query_id": "monthly_cost_of_goods_sold",
+        "measures": [
+          "cogs"
+        ],
+        "dimension": "month",
+        "span": 1
+      },
+      {
+        "id": "summary",
+        "title": "Summary",
+        "kind": "summary",
+        "query_id": "revenue_and_cost",
+        "measures": [
+          "revenue",
+          "cogs"
+        ],
+        "dimension": null,
+        "span": 1
+      }
+    ],
+    "id": "f2fc02f7d9b54b9bbd400594b883ff02",
+    "description": "Compare monthly revenue and cost of goods sold in 2026 using separate charts with compatible units and a statistical summary.",
+    "scope": "",
+    "revision": 1,
+    "created_at": "2026-11-14T15:46:58.885718Z",
+    "updated_at": "2026-11-14T15:47:02.495098Z",
+    "data_updated_at": "2026-11-14T15:47:02.490235Z",
+    "results": [
+      {
+        "id": "revenue_and_cost",
+        "question": "What is the monthly revenue and cost of goods sold in 2026?",
+        "status": "failed",
+        "payload": {
+          "rows": [],
+          "attempted_sql": "SELECT DATE_TRUNC('month', s.date) AS month, COALESCE(SUM(s.cogs), 0) AS cogs, COALESCE(SUM(s.revenue), 0) AS revenue FROM commerce.sales AS s WHERE DATE_TRUNC('year', s.date) = $1 GROUP BY 1 ORDER BY 1 DESC LIMIT 200",
+          "parameters": [
+            2026
+          ],
+          "metadata": {
+            "error_type": "MetricDefinitionError",
+            "metric_error_code": "formula_violation",
+            "sql_scope": "commerce",
+            "discovered_schema": {
+              "tables": [
+                "commerce.customers",
+                "commerce.geography",
+                "commerce.inventory",
+                "commerce.invoice_items",
+                "commerce.invoices",
+                "commerce.order_items",
+                "commerce.orders",
+                "commerce.payments",
+                "commerce.products",
+                "commerce.promotions",
+                "commerce.returns",
+                "commerce.reviews",
+                "commerce.sales",
+                "commerce.shipments",
+                "commerce.web_traffic"
+              ],
+              "schemas": [
+                "commerce"
+              ]
+            },
+            "metric_definition_source": {
+              "cogs": "metric_ontology",
+              "revenue": "metric_ontology"
+            },
+            "execution_status": "validation_failed",
+            "limitations": [
+              "The generated query did not pass planning or SQL validation."
+            ]
+          },
+          "query_status": "rejected"
+        },
+        "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+      },
+      {
+        "id": "monthly_revenue",
+        "question": "What is the monthly revenue in 2026?",
+        "status": "complete",
+        "payload": {
+          "rows": [
+            {
+              "month": "2026-11-01T00:00:00Z",
+              "revenue": "1000968.55"
+            },
+            {
+              "month": "2026-10-01T00:00:00Z",
+              "revenue": "1754342.36"
+            },
+            {
+              "month": "2026-09-01T00:00:00Z",
+              "revenue": "2090232.15"
+            },
+            {
+              "month": "2026-08-01T00:00:00Z",
+              "revenue": "1832695.76"
+            },
+            {
+              "month": "2026-07-01T00:00:00Z",
+              "revenue": "1810421.90"
+            },
+            {
+              "month": "2026-06-01T00:00:00Z",
+              "revenue": "2124038.58"
+            },
+            {
+              "month": "2026-05-01T00:00:00Z",
+              "revenue": "1501979.04"
+            },
+            {
+              "month": "2026-04-01T00:00:00Z",
+              "revenue": "1384302.97"
+            },
+            {
+              "month": "2026-03-01T00:00:00Z",
+              "revenue": "2248522.83"
+            },
+            {
+              "month": "2026-02-01T00:00:00Z",
+              "revenue": "1447050.95"
+            },
+            {
+              "month": "2026-01-01T00:00:00Z",
+              "revenue": "1686596.81"
+            }
+          ],
+          "sql": "SELECT DATE_TRUNC('month', s.date) AS month, SUM(s.revenue) AS revenue FROM commerce.sales AS s WHERE EXTRACT(YEAR FROM s.date) = $1 GROUP BY 1 ORDER BY 1 DESC LIMIT 200",
+          "parameters": [
+            2026
+          ],
+          "metadata": {
+            "source": [
+              "commerce.sales"
+            ],
+            "explanation": "This query selects the monthly revenue for the year 2026 from the commerce.sales table, grouping by month and ordering by month in descending order.",
+            "metrics": {
+              "revenue": {
+                "aliases": [
+                  "revenue",
+                  "sales",
+                  "doanh thu"
+                ],
+                "source": "commerce.sales",
+                "formula": "SUM(revenue)",
+                "time_scope": "All available records unless the question requests a time period.",
+                "grain": "day",
+                "aggregation": "sum",
+                "unit": "currency",
+                "dimensions": [
+                  "date"
+                ],
+                "currency": "dataset_currency_unknown",
+                "limitations": [
+                  "Không có region, category hoặc product."
+                ]
+              }
+            },
+            "columns": [
+              {
+                "name": "month",
+                "unit": null
+              },
+              {
+                "name": "revenue",
+                "unit": "currency"
+              }
+            ],
+            "sql_scope": "commerce",
+            "discovered_schema": {
+              "tables": [
+                "commerce.customers",
+                "commerce.geography",
+                "commerce.inventory",
+                "commerce.invoice_items",
+                "commerce.invoices",
+                "commerce.order_items",
+                "commerce.orders",
+                "commerce.payments",
+                "commerce.products",
+                "commerce.promotions",
+                "commerce.returns",
+                "commerce.reviews",
+                "commerce.sales",
+                "commerce.shipments",
+                "commerce.web_traffic"
+              ],
+              "schemas": [
+                "commerce"
+              ]
+            },
+            "metric_definition_source": {
+              "revenue": "metric_ontology"
+            },
+            "execution_status": "executed",
+            "limitations": [
+              "Không có region, category hoặc product.",
+              "Dataset currency is not confirmed; do not assume USD, VND or another currency."
+            ]
+          },
+          "query_status": "executed"
+        },
+        "message": "Query completed."
+      },
+      {
+        "id": "monthly_cost_of_goods_sold",
+        "question": "What is the monthly cost of goods sold in 2026?",
+        "status": "failed",
+        "payload": {
+          "rows": [],
+          "attempted_sql": "SELECT DATE_TRUNC('month', s.date) AS month, COALESCE(SUM(s.cogs), 0) AS cogs\nFROM commerce.sales AS s\nWHERE EXTRACT(YEAR FROM s.date) = $1\nGROUP BY 1\nORDER BY 1 DESC\nLIMIT 1",
+          "parameters": [
+            2026
+          ],
+          "metadata": {
+            "error_type": "MetricDefinitionError",
+            "metric_error_code": "formula_violation",
+            "sql_scope": "commerce",
+            "discovered_schema": {
+              "tables": [
+                "commerce.customers",
+                "commerce.geography",
+                "commerce.inventory",
+                "commerce.invoice_items",
+                "commerce.invoices",
+                "commerce.order_items",
+                "commerce.orders",
+                "commerce.payments",
+                "commerce.products",
+                "commerce.promotions",
+                "commerce.returns",
+                "commerce.reviews",
+                "commerce.sales",
+                "commerce.shipments",
+                "commerce.web_traffic"
+              ],
+              "schemas": [
+                "commerce"
+              ]
+            },
+            "metric_definition_source": {
+              "cogs": "metric_ontology"
+            },
+            "execution_status": "validation_failed",
+            "limitations": [
+              "The generated query did not pass planning or SQL validation."
+            ]
+          },
+          "query_status": "rejected"
+        },
+        "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+      }
+    ],
+    "tile_status": {
+      "revenue_and_cost_chart": {
+        "status": "unavailable",
+        "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+      },
+      "monthly_revenue_chart": {
+        "status": "complete",
+        "message": ""
+      },
+      "monthly_cost_of_goods_sold_chart": {
+        "status": "unavailable",
+        "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+      },
+      "summary": {
+        "status": "unavailable",
+        "message": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+      }
+    },
+    "status": "partial"
+  },
+  "total_latency_seconds": 7.16345210000145,
+  "planner_attempts": [
+    {
+      "schema_valid": true,
+      "validation_error": null,
+      "error": null,
+      "provider": "CloudflareProvider",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "latency_seconds": 3.5029619999986608
+    }
+  ],
+  "accepted_plan": {
+    "title": "Revenue and Cost of Goods Sold Dashboard",
+    "queries": [
+      {
+        "id": "revenue_and_cost",
+        "question": "What is the monthly revenue and cost of goods sold in 2026?"
+      },
+      {
+        "id": "monthly_revenue",
+        "question": "What is the monthly revenue in 2026?"
+      },
+      {
+        "id": "monthly_cost_of_goods_sold",
+        "question": "What is the monthly cost of goods sold in 2026?"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "revenue_and_cost_chart",
+        "title": "Revenue and Cost of Goods Sold",
+        "kind": "line",
+        "query_id": "revenue_and_cost",
+        "measures": [
+          "revenue",
+          "cogs"
+        ],
+        "dimension": "month",
+        "span": 1
+      },
+      {
+        "id": "monthly_revenue_chart",
+        "title": "Monthly Revenue",
+        "kind": "line",
+        "query_id": "monthly_revenue",
+        "measures": [
+          "revenue"
+        ],
+        "dimension": "month",
+        "span": 1
+      },
+      {
+        "id": "monthly_cost_of_goods_sold_chart",
+        "title": "Monthly Cost of Goods Sold",
+        "kind": "line",
+        "query_id": "monthly_cost_of_goods_sold",
+        "measures": [
+          "cogs"
+        ],
+        "dimension": "month",
+        "span": 1
+      },
+      {
+        "id": "summary",
+        "title": "Summary",
+        "kind": "summary",
+        "query_id": "revenue_and_cost",
+        "measures": [
+          "revenue",
+          "cogs"
+        ],
+        "dimension": null,
+        "span": 1
+      }
+    ]
+  },
+  "sql_agent_call_count": 3,
+  "executed_dataset_sql_count": 1,
+  "inspection_sql_count": 0,
+  "llm_call_count": 6,
+  "actual_provider_models": [
+    "CloudflareProvider:@cf/meta/llama-3.1-8b-instruct-fast"
+  ],
+  "source_queries": [
+    {
+      "execution_id": "DB-06-en",
+      "phase": "sql",
+      "event": "database",
+      "time": "2026-11-14T15:46:59.894319+00:00",
+      "sql": "SELECT DATE_TRUNC('month', s.date) AS month, SUM(s.revenue) AS revenue FROM commerce.sales AS s WHERE EXTRACT(YEAR FROM s.date) = $1 GROUP BY 1 ORDER BY 1 DESC LIMIT 200",
+      "parameters": [
+        2026
+      ],
+      "parameter_types": [
+        "int"
+      ],
+      "observations": [
+        {
+          "month": "2026-11-01 00:00:00+00:00",
+          "revenue": "1000968.55"
+        },
+        {
+          "month": "2026-10-01 00:00:00+00:00",
+          "revenue": "1754342.36"
+        },
+        {
+          "month": "2026-09-01 00:00:00+00:00",
+          "revenue": "2090232.15"
+        },
+        {
+          "month": "2026-08-01 00:00:00+00:00",
+          "revenue": "1832695.76"
+        },
+        {
+          "month": "2026-07-01 00:00:00+00:00",
+          "revenue": "1810421.90"
+        },
+        {
+          "month": "2026-06-01 00:00:00+00:00",
+          "revenue": "2124038.58"
+        },
+        {
+          "month": "2026-05-01 00:00:00+00:00",
+          "revenue": "1501979.04"
+        },
+        {
+          "month": "2026-04-01 00:00:00+00:00",
+          "revenue": "1384302.97"
+        },
+        {
+          "month": "2026-03-01 00:00:00+00:00",
+          "revenue": "2248522.83"
+        },
+        {
+          "month": "2026-02-01 00:00:00+00:00",
+          "revenue": "1447050.95"
+        },
+        {
+          "month": "2026-01-01 00:00:00+00:00",
+          "revenue": "1686596.81"
+        }
+      ],
+      "latency_seconds": 0.009143600000243168
+    },
+    {
+      "execution_id": "DB-06-en",
+      "phase": "sql",
+      "event": "sql_payload",
+      "time": "2026-11-14T15:46:59.895392+00:00",
+      "question": "What is the monthly revenue in 2026?",
+      "payload": {
+        "ok": true,
+        "operation": "text_to_sql",
+        "rows": [
+          {
+            "month": "2026-11-01 00:00:00+00:00",
+            "revenue": "1000968.55"
+          },
+          {
+            "month": "2026-10-01 00:00:00+00:00",
+            "revenue": "1754342.36"
+          },
+          {
+            "month": "2026-09-01 00:00:00+00:00",
+            "revenue": "2090232.15"
+          },
+          {
+            "month": "2026-08-01 00:00:00+00:00",
+            "revenue": "1832695.76"
+          },
+          {
+            "month": "2026-07-01 00:00:00+00:00",
+            "revenue": "1810421.90"
+          },
+          {
+            "month": "2026-06-01 00:00:00+00:00",
+            "revenue": "2124038.58"
+          },
+          {
+            "month": "2026-05-01 00:00:00+00:00",
+            "revenue": "1501979.04"
+          },
+          {
+            "month": "2026-04-01 00:00:00+00:00",
+            "revenue": "1384302.97"
+          },
+          {
+            "month": "2026-03-01 00:00:00+00:00",
+            "revenue": "2248522.83"
+          },
+          {
+            "month": "2026-02-01 00:00:00+00:00",
+            "revenue": "1447050.95"
+          },
+          {
+            "month": "2026-01-01 00:00:00+00:00",
+            "revenue": "1686596.81"
+          }
+        ],
+        "answer": "Query completed.",
+        "sql": "SELECT DATE_TRUNC('month', s.date) AS month, SUM(s.revenue) AS revenue FROM commerce.sales AS s WHERE EXTRACT(YEAR FROM s.date) = $1 GROUP BY 1 ORDER BY 1 DESC LIMIT 200",
+        "parameters": [
+          2026
+        ],
+        "query_status": "executed",
+        "evidence": [
+          {
+            "source": "commerce.sales",
+            "metadata": {
+              "metrics": {
+                "revenue": {
+                  "aliases": [
+                    "revenue",
+                    "sales",
+                    "doanh thu"
+                  ],
+                  "source": "commerce.sales",
+                  "formula": "SUM(revenue)",
+                  "time_scope": "All available records unless the question requests a time period.",
+                  "grain": "day",
+                  "aggregation": "sum",
+                  "unit": "currency",
+                  "dimensions": [
+                    "date"
+                  ],
+                  "currency": "dataset_currency_unknown",
+                  "limitations": [
+                    "Không có region, category hoặc product."
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "limitations": [
+          "Không có region, category hoặc product.",
+          "Dataset currency is not confirmed; do not assume USD, VND or another currency."
+        ],
+        "metadata": {
+          "source": [
+            "commerce.sales"
+          ],
+          "explanation": "This query selects the monthly revenue for the year 2026 from the commerce.sales table, grouping by month and ordering by month in descending order.",
+          "metrics": {
+            "revenue": {
+              "aliases": [
+                "revenue",
+                "sales",
+                "doanh thu"
+              ],
+              "source": "commerce.sales",
+              "formula": "SUM(revenue)",
+              "time_scope": "All available records unless the question requests a time period.",
+              "grain": "day",
+              "aggregation": "sum",
+              "unit": "currency",
+              "dimensions": [
+                "date"
+              ],
+              "currency": "dataset_currency_unknown",
+              "limitations": [
+                "Không có region, category hoặc product."
+              ]
+            }
+          },
+          "columns": [
+            {
+              "name": "month",
+              "unit": null
+            },
+            {
+              "name": "revenue",
+              "unit": "currency"
+            }
+          ],
+          "sql_scope": "commerce",
+          "discovered_schema": {
+            "tables": [
+              "commerce.customers",
+              "commerce.geography",
+              "commerce.inventory",
+              "commerce.invoice_items",
+              "commerce.invoices",
+              "commerce.order_items",
+              "commerce.orders",
+              "commerce.payments",
+              "commerce.products",
+              "commerce.promotions",
+              "commerce.returns",
+              "commerce.reviews",
+              "commerce.sales",
+              "commerce.shipments",
+              "commerce.web_traffic"
+            ],
+            "schemas": [
+              "commerce"
+            ]
+          },
+          "metric_definition_source": {
+            "revenue": "metric_ontology"
+          },
+          "execution_status": "executed"
+        }
+      },
+      "latency_seconds": 1.0089357999968342
+    },
+    {
+      "execution_id": "DB-06-en",
+      "phase": "sql",
+      "event": "sql_payload",
+      "time": "2026-11-14T15:47:01.807386+00:00",
+      "question": "What is the monthly revenue and cost of goods sold in 2026?",
+      "payload": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError",
+          "metric_error_code": "formula_violation",
+          "sql_scope": "commerce",
+          "discovered_schema": {
+            "tables": [
+              "commerce.customers",
+              "commerce.geography",
+              "commerce.inventory",
+              "commerce.invoice_items",
+              "commerce.invoices",
+              "commerce.order_items",
+              "commerce.orders",
+              "commerce.payments",
+              "commerce.products",
+              "commerce.promotions",
+              "commerce.returns",
+              "commerce.reviews",
+              "commerce.sales",
+              "commerce.shipments",
+              "commerce.web_traffic"
+            ],
+            "schemas": [
+              "commerce"
+            ]
+          },
+          "metric_definition_source": {
+            "cogs": "metric_ontology",
+            "revenue": "metric_ontology"
+          },
+          "execution_status": "validation_failed"
+        },
+        "attempted_sql": "SELECT DATE_TRUNC('month', s.date) AS month, COALESCE(SUM(s.cogs), 0) AS cogs, COALESCE(SUM(s.revenue), 0) AS revenue FROM commerce.sales AS s WHERE DATE_TRUNC('year', s.date) = $1 GROUP BY 1 ORDER BY 1 DESC LIMIT 200",
+        "parameters": [
+          2026
+        ],
+        "query_status": "rejected"
+      },
+      "latency_seconds": 2.9214265999980853
+    },
+    {
+      "execution_id": "DB-06-en",
+      "phase": "sql",
+      "event": "sql_payload",
+      "time": "2026-11-14T15:47:02.482997+00:00",
+      "question": "What is the monthly cost of goods sold in 2026?",
+      "payload": {
+        "ok": false,
+        "operation": "text_to_sql",
+        "rows": [],
+        "answer": "I couldn't safely run the generated query: Aggregate does not match a canonical metric formula",
+        "limitations": [
+          "The generated query did not pass planning or SQL validation."
+        ],
+        "metadata": {
+          "error_type": "MetricDefinitionError",
+          "metric_error_code": "formula_violation",
+          "sql_scope": "commerce",
+          "discovered_schema": {
+            "tables": [
+              "commerce.customers",
+              "commerce.geography",
+              "commerce.inventory",
+              "commerce.invoice_items",
+              "commerce.invoices",
+              "commerce.order_items",
+              "commerce.orders",
+              "commerce.payments",
+              "commerce.products",
+              "commerce.promotions",
+              "commerce.returns",
+              "commerce.reviews",
+              "commerce.sales",
+              "commerce.shipments",
+              "commerce.web_traffic"
+            ],
+            "schemas": [
+              "commerce"
+            ]
+          },
+          "metric_definition_source": {
+            "cogs": "metric_ontology"
+          },
+          "execution_status": "validation_failed"
+        },
+        "attempted_sql": "SELECT DATE_TRUNC('month', s.date) AS month, COALESCE(SUM(s.cogs), 0) AS cogs\nFROM commerce.sales AS s\nWHERE EXTRACT(YEAR FROM s.date) = $1\nGROUP BY 1\nORDER BY 1 DESC\nLIMIT 1",
+        "parameters": [
+          2026
+        ],
+        "query_status": "rejected"
+      },
+      "latency_seconds": 2.5868487999978242
+    }
+  ],
+  "error_or_clarification": "revenue_and_cost: I couldn't safely run the generated query: Aggregate does not match a canonical metric formula; monthly_cost_of_goods_sold: I couldn't safely run the generated query: Aggregate does not match a canonical metric formula"
+}

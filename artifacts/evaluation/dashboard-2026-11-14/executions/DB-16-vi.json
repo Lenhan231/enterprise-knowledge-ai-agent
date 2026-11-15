@@ -1,0 +1,47 @@
+{
+  "execution_id": "DB-16-vi",
+  "case_id": "DB-16",
+  "language": "vi",
+  "question": "Tạo dashboard điều hành kết hợp doanh thu theo tháng, số phiên truy cập web và chỉ báo hết hàng từ tháng 7 đến tháng 9 năm 2026. Tách biệt các đơn vị và mức độ chi tiết dữ liệu.",
+  "expect": "Multiple safe tiles",
+  "code_commit": "bac3d96dedef3187fde3755a5ce0eaf74609a106",
+  "dataset_sha256": "40fd4b4f7df9717e618b33cbde44a93bb5312915933528722eac39f45a392a7f",
+  "started_at": "2026-11-14T15:50:12.177928+00:00",
+  "dashboard_status": "failed",
+  "planner_output_valid": false,
+  "query_count": 0,
+  "tile_count": 0,
+  "tile_status": {},
+  "error": "The dashboard plan was invalid. Try a more specific description with metrics and dates.",
+  "error_type": "HTTPException",
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\publish-dashboard-20261114\\src\\app\\dashboards.py\", line 53, in build\n    return await agent.build(identity, description, scope)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\publish-dashboard-20261114\\src\\core\\dashboards\\agent.py\", line 128, in build\n    plan = await self.plan(description, scope)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\evaluation\\dashboard-2026-11-14\\runner.py\", line 60, in plan\n    plan=await super().plan(description,scope)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\publish-dashboard-20261114\\src\\core\\dashboards\\agent.py\", line 85, in plan\n    raise ValueError('The dashboard plan was invalid. Try a more specific description with metrics and dates.')\nValueError: The dashboard plan was invalid. Try a more specific description with metrics and dates.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\evaluation\\dashboard-2026-11-14\\runner.py\", line 116, in main\n    doc=await dashboards.build(SimpleNamespace(app=app),user,description=case[lang],scope='')\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Admin\\Desktop\\FA2026\\enterprise-knowledge-ai-agent\\artifacts\\local\\publish-dashboard-20261114\\src\\app\\dashboards.py\", line 58, in build\n    raise HTTPException(422, str(error))\nfastapi.exceptions.HTTPException: 422: The dashboard plan was invalid. Try a more specific description with metrics and dates.\n",
+  "total_latency_seconds": 12.82389300000068,
+  "planner_attempts": [
+    {
+      "schema_valid": false,
+      "validation_error": "9 validation errors for DashboardPlan\nqueries.0.metric_definitions\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'revenue': {'source': 'c...nth', 'grain': 'order'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden\nqueries.0.grouping\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'dimension': 'month', 'source': 'commerce.sales'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden\nqueries.0.date_scope\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'start_date': '2026-07-0...end_date': '2026-09-30'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden\nqueries.1.metric_definitions\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'page_views': {'source':...y', 'grain': 'session'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden\nqueries.1.grouping\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'dimension': 'date', 'so... 'commerce.web_traffic'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden\nqueries.1.date_scope\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'start_date': '2026-07-0...end_date': '2026-09-30'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden\nqueries.2.metric_definitions\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'return_quantity': {'sou...nth', 'grain': 'order'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden\nqueries.2.grouping\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'dimension': 'month', 's...ce': 'commerce.returns'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden\nqueries.2.date_scope\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'start_date': '2026-07-0...end_date': '2026-09-30'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden",
+      "error": null,
+      "provider": "CloudflareProvider",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "latency_seconds": 6.425396600003296
+    },
+    {
+      "schema_valid": false,
+      "validation_error": "8 validation errors for DashboardPlan\ntitle\n  Field required [type=missing, input_value={'id': 'revenue_by_month'...nd_date': '2026-09-30'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing\nqueries\n  Field required [type=missing, input_value={'id': 'revenue_by_month'...nd_date': '2026-09-30'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing\ntiles\n  Field required [type=missing, input_value={'id': 'revenue_by_month'...nd_date': '2026-09-30'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing\nid\n  Extra inputs are not permitted [type=extra_forbidden, input_value='revenue_by_month', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden\nquestion\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Hành kết doanh thu theo tháng', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden\nmetric_definitions\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'revenue': {'source': 'c...SD', 'period': 'month'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden\ngrouping\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'dimension': 'month', 'source': 'commerce.sales'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden\ndate_scope\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'start_date': '2026-07-0...end_date': '2026-09-30'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden",
+      "error": null,
+      "provider": "CloudflareProvider",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "latency_seconds": 6.366630999997142
+    }
+  ],
+  "accepted_plan": null,
+  "sql_agent_call_count": 0,
+  "executed_dataset_sql_count": 0,
+  "inspection_sql_count": 0,
+  "llm_call_count": 2,
+  "actual_provider_models": [
+    "CloudflareProvider:@cf/meta/llama-3.1-8b-instruct-fast"
+  ],
+  "source_queries": [],
+  "error_or_clarification": "The dashboard plan was invalid. Try a more specific description with metrics and dates."
+}

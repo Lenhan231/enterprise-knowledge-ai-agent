@@ -6,6 +6,7 @@ import sys
 import unittest
 import zipfile
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import fitz
@@ -117,6 +118,53 @@ class UploadProcessingFlowTest(unittest.TestCase):
         )
         self.output_repository_class = output_repository.start()
         self.addCleanup(output_repository.stop)
+
+    def test_storage_filename_transliterates_vietnamese_and_removes_unsafe_characters(self):
+        self.assertEqual(
+            app_main._storage_filename("Phụ lục kế hoạch lựa chọn nhà cung cấp(1).docx"),
+            "Phu_luc_ke_hoach_lua_chon_nha_cung_cap_1.docx",
+        )
+        self.assertEqual(app_main._storage_filename("報告.docx"), "document.docx")
+
+    def test_storage_upload_failure_records_failed_status_and_reports_stage(self):
+        document_id = "UPLOAD-storage-failure"
+        document_repo = MagicMock()
+        storage = MagicMock()
+        storage.storage.from_.return_value.upload.side_effect = RuntimeError("InvalidKey")
+
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "_storage_client", return_value=(storage, "private")),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch.object(app_main.uuid, "uuid4", return_value=SimpleNamespace(hex="storage-failure")),
+            patch.object(app_main.logger, "exception") as log_exception,
+        ):
+            with self.assertRaises(HTTPException) as raised:
+                asyncio.run(app_main.upload_document(
+                    request=None,
+                    file=UploadFile(
+                        filename="Phụ lục kế hoạch lựa chọn nhà cung cấp(1).docx",
+                        file=io.BytesIO(b"docx"),
+                    ),
+                    title="Supplier selection plan", document_type="knowledge_document",
+                    domain="general_knowledge", allowed_roles=["admin"], ocr_language="eng",
+                    user={"sub": "admin"},
+                ))
+
+        self.assertEqual(raised.exception.status_code, 503, raised.exception.detail)
+        self.assertIn("saving the original file", raised.exception.detail)
+        self.assertIn(document_id, raised.exception.detail)
+        storage.storage.from_.return_value.upload.assert_called_once()
+        upload_path = storage.storage.from_.return_value.upload.call_args.args[0]
+        self.assertEqual(
+            upload_path,
+            "UPLOAD-storage-failure/Phu_luc_ke_hoach_lua_chon_nha_cung_cap_1.docx",
+        )
+        document_repo.register_upload.assert_called_once()
+        document_repo.update_processing_status.assert_called_once_with(document_id, "failed")
+        self.assertIn("stage=%s", log_exception.call_args.args[0])
+        self.assertIn("store_source_file", log_exception.call_args.args)
+        document_repo.close.assert_called_once()
 
     def test_upload_rejects_unsupported_ocr_language_before_storage(self):
         with patch.object(app_main, "_require_same_origin"):

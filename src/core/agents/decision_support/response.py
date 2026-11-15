@@ -9,6 +9,15 @@ from core.models.agents import AgentResult
 from core.prompts.agents import SYNTHESIS_PROMPT
 from core.rag.arithmetic import verified_results
 
+_VIETNAMESE_TEXT = re.compile(
+    r'[ăâđêôơưáàảãạấầẩẫậắằẳẵặéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]',
+    re.IGNORECASE,
+)
+
+
+def _is_vietnamese(text):
+    return bool(_VIETNAMESE_TEXT.search(text))
+
 
 def _number_options(text):
     numbers = []
@@ -73,7 +82,7 @@ def _null_sql_findings(inputs, question):
         return None
     refs = ' '.join(f'[{citation}]' for citation in dict.fromkeys(citations))
     columns = ', '.join(sorted(null_columns))
-    if re.search(r'[ăâđêôơưáàảãạấầẩẫậắằẳẵặếềểễệốồổỗộớờởỡựứừửữýỳỷỹỵ]', question, re.I):
+    if _is_vietnamese(question):
         return (f"Truy vấn đã chạy nhưng kết quả {columns} là NULL {refs}. "
                 "Điều này không đồng nghĩa với doanh thu bằng không; kết quả hiện tại chưa cho biết "
                 "không có bản ghi phù hợp hay các bản ghi đều thiếu giá trị này.")
@@ -115,7 +124,7 @@ def _scalar_sql_finding(item, question):
                 period = f' tháng {start.month} năm {start.year}'
         except ValueError:
             pass
-    vietnamese = bool(re.search(r'[ăâđêôơưáàảãạấầẩẫậắằẳẵặếềễệốồổỗộớờởỡứừửữựýỳỷỹỵ]', question, re.I))
+    vietnamese = _is_vietnamese(question)
     if vietnamese:
         label = {'revenue': 'Doanh thu', 'cogs': 'Giá vốn'}.get(column.casefold(), column)
         return f'{label}{period}: {rendered} {refs}.'
@@ -142,7 +151,7 @@ def _month_over_month_sql_finding(item, question):
     except (InvalidOperation, TypeError, ValueError):
         return None
     refs = ' '.join(f'[{citation}]' for citation in citations)
-    vietnamese = bool(re.search(r'[ăâđêôơưáàảãạấầẩẫậắằẳẵộốồổỗỡớờởợứừửữựýỳỷỹỵ]', question, re.I))
+    vietnamese = _is_vietnamese(question)
     if vietnamese:
         direction = 'tăng' if change_value > 0 else 'giảm' if change_value < 0 else 'không đổi'
         delta = f', {direction} {change} so với tháng trước' if change_value else ', không đổi so với tháng trước'
@@ -197,9 +206,12 @@ async def assemble_response(request, plan, execution, provider):
         deterministic_answer = (_month_over_month_sql_finding(inputs[0], request.question)
                                 or _scalar_sql_finding(inputs[0], request.question)
                                 if inputs[0]['agent'] == 'sql' else None)
-        answer = deterministic_answer or inputs[0]['answer']
-        fallback = False if deterministic_answer else bool(usable[0].result.metadata.get('fallback', False))
-    elif usable:
+        if deterministic_answer:
+            answer, fallback = deterministic_answer, False
+        elif inputs[0]['agent'] != 'sql':
+            answer = inputs[0]['answer']
+            fallback = bool(usable[0].result.metadata.get('fallback', False))
+    if usable and not answer:
         serialized = json.dumps(inputs, ensure_ascii=False, default=str)
         if len(serialized) <= 32_000:
             prompt = SYNTHESIS_PROMPT.format(
@@ -229,7 +241,7 @@ async def assemble_response(request, plan, execution, provider):
                 pass
     allowed = {e.citation_id for e in evidence}
     null_answer = _null_sql_findings(inputs, request.question)
-    if null_answer:
+    if null_answer and not answer:
         answer, fallback = null_answer, False
     if answer and (not re.search(r'\[S\d+\]', answer)
                    or not set(re.findall(r'\[(S\d+)\]', answer)) <= allowed or '[UNKNOWN]' in answer

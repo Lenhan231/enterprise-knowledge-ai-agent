@@ -45,8 +45,9 @@ def outcome_status(result):
 
 
 class Execution:
-    def __init__(self, request, agents):
+    def __init__(self, request, agents, *, sql_context=None):
         self.request, self.agents = request, agents
+        self.sql_context = sql_context
         self.plan: AgentPlan | None = None
         self.outcomes = {}
         self.trace = []
@@ -90,6 +91,8 @@ class Execution:
             metadata = dict(self.request.metadata)
             if task.agent == 'sql':
                 metadata['_original_question'] = self.request.question
+                if self.sql_context:
+                    metadata['_sql_context'] = self.sql_context
             subrequest = self.request.model_copy(update={'question': question, 'metadata': metadata})
             for attempt in range(2):
                 if self.invocations >= 6:

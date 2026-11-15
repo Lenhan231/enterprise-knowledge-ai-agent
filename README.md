@@ -43,6 +43,8 @@ Project layout
 
 Agent orchestration update (2026-10-29): Auto combines bounded Knowledge/SQL
 selection, focused subtasks, dependent handoffs, and cited response assembly.
+SQL mode runs one-shot debug queries; confirmed metric scope is shared with Auto
+in the same conversation, where follow-ups execute again for fresh data.
 `agentic` remains an API alias; Report and Dashboard stay standalone. See the
 [implementation and validation document](docs/technical/agent-orchestration-implementation.md)
 and [Vercel frontend API contract](docs/technical/agent-api-frontend-contract.md).

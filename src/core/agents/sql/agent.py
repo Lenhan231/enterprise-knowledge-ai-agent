@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import inspect
 import json
 import os
@@ -11,6 +12,7 @@ from datetime import date
 from typing import Any
 
 from core.agents.base import BaseAgent
+from core.agents.intent_classifier import select_jev_schema_tables
 from core.analytics.field_retrieval import field_contract, compile_field_query
 from core.analytics.commerce_decision_support import resolve_commerce_decision_domain, unavailable_commerce_dimensions
 from core.analytics.metric_ontology import resolve_metric_names, get_metric_definition
@@ -21,7 +23,6 @@ from core.analytics.text_to_sql import (
     APPROVED_COLUMNS, APPROVED_JOINS, APPROVED_DATE_COLUMNS, INVENTORY_SOURCES, inventory_scope_enabled,
     approved_join_path,
     QueryPlan,
-    relevant_schema_tables,
     SQLValidationError,
     SQLSchemaMismatchError,
     build_sql_prompt,
@@ -371,12 +372,25 @@ class SQLAnalyticsAgent(BaseAgent):
             except MetricDefinitionError as error:
                 if error.code != 'snapshot_required':
                     raise
-            if promotion_metric == "promotion_revenue":
-                tables = {"commerce.order_items", "commerce.promotions"}
-            elif promotion_metric == "active_promotion_count":
-                tables = {"commerce.promotions"}
+            metric_definitions = {name: get_metric_definition(name) for name in metric_names}
+            try:
+                table_selection = await asyncio.wait_for(asyncio.to_thread(
+                    select_jev_schema_tables, question, table_columns, metric_definitions,
+                    primary_keys=primary_keys, approved_joins=approved_joins,
+                ), timeout=12)
+            except Exception:
+                table_selection = None
+                context_info['schema_table_selection'] = 'full_schema_fallback'
             else:
-                tables = relevant_schema_tables(question, {name:get_metric_definition(name) for name in metric_names}, table_columns)
+                context_info['schema_table_selection'] = 'jev_top_five'
+            schema_tables = table_selection['tables'] if table_selection else None
+            required_tables = table_selection['required_tables'] if table_selection else set()
+            tables = set(schema_tables or ())
+            tables.update(table for definition in metric_definitions.values()
+                          for table in re.findall(r'commerce\.\w+', definition.get('source', '')))
+            if self.inventory_only:
+                tables.update(set(table_columns) & INVENTORY_SOURCES)
+                required_tables.add('commerce.inventory')
             if (direct is None and 'commerce.inventory' in tables and all(
                     get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
                     and re.search(r'\bcurrent\b|\btoday\b|hiện tại|hôm nay', re.sub(r"'(?:[^']|'')*'", '', question), re.I)
@@ -402,7 +416,7 @@ class SQLAnalyticsAgent(BaseAgent):
                             and bool(re.search(r'\borders\b|\bordered\b|\border(?!\s+by)\b|đơn hàng', question, re.I)))
             if (direct is None and not cross_domain and (context is not None
                     or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
-                    or (not metric_names and 'commerce.inventory' in tables))):
+                    or (not metric_names and 'commerce.inventory' in required_tables))):
                 with measure('metric_interpretation'):
                     mapping_prompt = build_metric_mapping_prompt(question,context=context)
                     if dashboard_build:
@@ -464,6 +478,7 @@ class SQLAnalyticsAgent(BaseAgent):
             prompt = build_sql_prompt(question, metric_names=metric_names,
                 allowed_sources=set(table_columns), schema_columns=table_columns, approved_joins=approved_joins,
                 primary_keys=primary_keys,
+                schema_tables=schema_tables,
                 interpretation=interpretation.model_dump() if interpretation and interpretation.domain == 'inventory' else None,
                 metric_evidence=metric_evidence, relative_time_question=original_question,
                 dashboard_request=options.get('_dashboard_request') is True,
@@ -574,6 +589,7 @@ class SQLAnalyticsAgent(BaseAgent):
                         question, validation_error=str(error), previous_response=str(raw),
                         metric_names=metric_names, allowed_sources=set(table_columns), schema_columns=table_columns,
                         approved_joins=approved_joins, primary_keys=primary_keys,
+                        schema_tables=schema_tables,
                         interpretation=interpretation.model_dump() if interpretation and interpretation.domain == 'inventory' else None,
                         metric_evidence=metric_evidence, relative_time_question=original_question,
                         dashboard_request=options.get('_dashboard_request') is True,

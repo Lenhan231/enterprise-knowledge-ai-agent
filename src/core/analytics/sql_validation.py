@@ -14,7 +14,7 @@ from sqlglot import exp, parse
 from sqlglot.errors import ParseError, TokenError
 from sqlglot.optimizer.scope import Scope, traverse_scope
 
-from core.analytics.invoices import is_invoice_question, validate_invoice_currency
+from core.analytics.invoices import validate_invoice_currency
 from core.analytics.join_validation import PRIMARY_KEYS, validate_join_aggregations, approved_derived_join, column_origin
 from core.analytics.metric_ontology import get_metric_definition, resolve_metric_names
 from core.analytics.metric_validation import _single_snapshot
@@ -756,53 +756,8 @@ def validate_current_month_total_query(sql: str, question: str, date_columns=Non
 
 
 def relevant_schema_tables(question, definitions, available_tables=None):
-    """Select prompt context only; authorization always uses the full backend allowlist."""
-    if is_invoice_question(question) or any(d.get('domain') == 'invoices' for d in definitions.values()):
-        return {'commerce.invoices', 'commerce.invoice_items'}
-    text = question.casefold().replace('_', ' ')
-    tables = {table for definition in definitions.values()
-              for table in re.findall(r'commerce\.\w+', definition['source'])}
-    cues = {
-        'inventory': r'inventory|stock|snapshot|tồn kho',
-        'products': r'product|category|catalog|sku|sản phẩm|danh mục',
-        'returns': r'return|refund|trả hàng|hoàn hàng|hoàn trả',
-        'orders': r'order|ordered|buy|bought|purchase|purchased|mua|đặt hàng|đơn hàng|giao dịch',
-        'order_items': r'quantity|quantities|ordered units|ordered quantities|sold units|sold quantities|sales quantity|quantities sold|line value|order items?|số lượng đã bán|đã bán',
-        'customers': r'customer|khách hàng',
-        'geography': r'region|district|city|khu vực|thành phố',
-        'payments': r'payment|installment|thanh toán',
-        'promotions': r'promotion|promo|khuyến mãi',
-        'reviews': r'review|rating|đánh giá',
-        'shipments': r'shipment|shipping|delivery|giao hàng|vận chuyển|phí ship',
-        'web_traffic': r'session|traffic|bounce|truy cập',
-        'sales': r'revenue|cogs|gross profit|doanh thu|lợi nhuận',
-    }
-    tables.update('commerce.'+name for name, pattern in cues.items() if re.search(pattern, text))
-    # A question that spells out order-item formulas is defining its own revenue
-    # grain; the company-wide sales summary is a different fact source.
-    if (re.search(r'\border items?\b', text)
-            and re.search(r'\b(?:discount amount|refund amount|unit price|quantity)\b', text)):
-        tables.discard('commerce.sales')
-        if re.search(r'\b(?:cogs|cost of goods|giá vốn)\b', text):
-            tables.add('commerce.products')
-    if 'commerce.payments' in tables:
-        tables.update({'commerce.orders', 'commerce.order_items'})
-        if re.search(r'ship|shipping|delivery|vận chuyển|phí ship', text):
-            tables.add('commerce.shipments')
-        if re.search(r'return|refund|trả hàng|hoàn hàng|hoàn trả', text):
-            tables.add('commerce.returns')
-    if 'commerce.inventory' in tables and re.search(r'sales|revenue|doanh thu|lợi nhuận', text):
-        tables.update({'commerce.orders', 'commerce.order_items'})
-    if 'commerce.returns' in tables and 'commerce.products' in tables and re.search(r'category|danh mục|rate|tỷ lệ', text):
-        tables.update({'commerce.orders', 'commerce.order_items'})
-    # Supply bridge tables for approved paths, without inventing direct fact-to-fact joins.
-    if tables & {'commerce.inventory', 'commerce.returns', 'commerce.reviews', 'commerce.order_items'}:
-        tables.add('commerce.products')
-    if 'commerce.orders' in tables and 'commerce.products' in tables:
-        tables.add('commerce.order_items')
-    if 'commerce.order_items' in tables:
-        tables.add('commerce.orders')
-    return tables or set(available_tables if available_tables is not None else APPROVED_COLUMNS)
+    """Return the full schema fallback; semantic narrowing is handled by Jev."""
+    return set(available_tables if available_tables is not None else APPROVED_COLUMNS)
 
 
 def validate_latest_month_query(sql: str, question: str) -> None:

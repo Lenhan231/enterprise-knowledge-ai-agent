@@ -67,6 +67,11 @@ async def generate_with_local_codex(prompt, provider_error):
     executable = shutil.which('codex')
     if not executable:
         raise RuntimeError('Local Codex CLI fallback is enabled but codex is unavailable') from provider_error
+    prompt = (
+        'Local debugging response rule: answer in the language used by the user question in this prompt. '
+        'If the question is Vietnamese, keep all user-facing text in Vietnamese. Preserve the requested JSON or other output format.\n\n'
+        + prompt
+    )
     process = await asyncio.create_subprocess_exec(
         executable, 'exec', '--ephemeral', '--sandbox', 'read-only', '--skip-git-repo-check', '-',
         stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,

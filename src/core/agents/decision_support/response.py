@@ -281,6 +281,13 @@ async def assemble_response(request, plan, execution, provider):
         data[key] = result.data
     fallback = True
     answer = ''
+    # A lone Knowledge task is the whole answer: keep its claim check and coverage outcome for the page.
+    specialist = {}
+    claim_checked = False
+    if len(plan.tasks) == 1 and len(active) == 1 and active[0].task.agent == 'knowledge' and active[0].result:
+        specialist = {key: active[0].result.metadata[key] for key in ('claim_verification', 'insufficient_context', 'search')
+                      if key in active[0].result.metadata}
+        claim_checked = (specialist.get('claim_verification') or {}).get('status') == 'supported'
     if (len(usable) == 1 and len(plan.tasks) == 1 and status == 'complete'
             and (inputs[0].get('metric_validation') or {}).get('status') != 'unverified'):
         deterministic_answer = (_month_over_month_sql_finding(inputs[0], request.question)
@@ -335,7 +342,9 @@ async def assemble_response(request, plan, execution, provider):
         answer, fallback = null_answer, False
     if answer and (not re.search(r'\[S\d+\]', answer)
                    or not set(re.findall(r'\[(S\d+)\]', answer)) <= allowed or '[UNKNOWN]' in answer
-                   or not _supported_numbers(answer, inputs, request.question)):
+                   # Knowledge's claim check already verified its answer against the cited text, which may spell a
+                   # number out ('năm ngày' for '5 ngày'); the digit-matching check would reject a correct answer.
+                   or (not claim_checked and not _supported_numbers(answer, inputs, request.question))):
         answer, fallback = '', True
     if not answer:
         blocks = []
@@ -372,6 +381,10 @@ async def assemble_response(request, plan, execution, provider):
             answer = 'Evidence fallback — review the supported findings and gaps below.\n\n' + '\n\n'.join(blocks)
         elif status == 'clarification_required':
             answer = next(o.result.answer for o in active if o.status == 'clarification_required')
+        elif specialist.get('insufficient_context') and active[0].status == 'empty' and active[0].result.answer.strip():
+            # "The documents do not cover this" is Knowledge's answer, not a system failure.
+            answer, fallback = active[0].result.answer.strip(), False
+            limitations = [item for item in limitations if item != f'knowledge task {active[0].task.id}: empty.']
         else:
             answer = 'No supported answer could be completed. A task failed or its deadline/evidence budget was exhausted.'
     if limitations:
@@ -382,4 +395,4 @@ async def assemble_response(request, plan, execution, provider):
                        metadata={'ok': status == 'complete', 'status': status, 'fallback': fallback,
                                  'limitations': list(dict.fromkeys(limitations)), 'selected_route': route,
                                  'task_trace': execution.trace, 'specialist_invocations': execution.invocations,
-                                 'planning_fallback': plan.fallback})
+                                 'planning_fallback': plan.fallback, **specialist})

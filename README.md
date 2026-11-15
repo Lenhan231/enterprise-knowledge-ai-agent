@@ -50,6 +50,13 @@ and [Vercel frontend API contract](docs/technical/agent-api-frontend-contract.md
 The local agent demo can be run with
 `python -m streamlit run src/core/agents/streamlit_ui.py --server.address 127.0.0.1 --server.port 8501`.
 It uses the authenticated backend at `http://127.0.0.1:8000` by default.
+To keep the agent local while using a remote retrieval service, run the local API
+with `RETRIEVAL_SERVICE_URL=https://<backend-host>/api/retrieval` and
+`RETRIEVAL_SERVICE_AUTH=session`, and set `API_BASE_URL`/`API_AGENT_PREFIX` for
+the local API. Streamlit signs into both APIs with the entered account; the remote
+retrieval proxy derives document scope from that verified session and rejects a
+remote session whose username or role differs from the local one. The deployed
+backend still calls its private Docker service with internal service authentication.
 
 - src/app: FastAPI routes and dashboard UI; isolated Upload Test API lives in `upload_test.py`
 - src/document_processing: Docling parser with VietOCR recognition, RapidOCR line detection, and shared normalization

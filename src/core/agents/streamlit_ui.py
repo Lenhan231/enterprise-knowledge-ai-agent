@@ -7,6 +7,7 @@ import os
 import uuid
 from collections.abc import Mapping
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 from urllib.request import build_opener, HTTPCookieProcessor
 from http.cookiejar import CookieJar
@@ -21,16 +22,20 @@ AGENT_MODES = {
 
 def submit_chat(question: str, agent_mode: str, *, metadata: dict | None = None,
                 api_url: str | None = None, opener=None, agent_prefix="/api",
-                conversation_id: str | None = None) -> dict[str, Any]:
+                conversation_id: str | None = None,
+                remote_retrieval_session: str | None = None) -> dict[str, Any]:
     if agent_mode not in {*AGENT_MODES.values(), "agentic"}:
         raise ValueError("Choose a supported agent mode.")
     payload = {"question": question, "agent_mode": agent_mode, "metadata": metadata or {}}
     if conversation_id:
         payload["conversation_id"] = conversation_id
+    headers = {"Content-Type": "application/json"}
+    if remote_retrieval_session:
+        headers["X-Remote-Retrieval-Session"] = remote_retrieval_session
     request = Request(
         f"{(api_url or os.getenv('API_BASE_URL', 'http://127.0.0.1:8000')).rstrip('/')}{agent_prefix}/chat",
         data=json.dumps(payload).encode(),
-        headers={"Content-Type": "application/json"},
+        headers=headers,
         method="POST",
     )
     try:
@@ -45,15 +50,19 @@ def submit_chat(question: str, agent_mode: str, *, metadata: dict | None = None,
 def submit_chat_stream(question: str, agent_mode: str, *, metadata: dict | None = None,
                        api_url: str | None = None, opener=None, agent_prefix="/api",
                        conversation_id: str | None = None,
+                remote_retrieval_session: str | None = None,
                        on_stage: Callable[[str, str], None] | None = None) -> dict[str, Any]:
     if agent_mode not in {*AGENT_MODES.values(), "agentic"}:
         raise ValueError("Choose a supported agent mode.")
     payload = {"question": question, "agent_mode": agent_mode, "metadata": metadata or {}}
     if conversation_id:
         payload["conversation_id"] = conversation_id
+    headers = {"Content-Type": "application/json"}
+    if remote_retrieval_session:
+        headers["X-Remote-Retrieval-Session"] = remote_retrieval_session
     request = Request(
         f"{(api_url or os.getenv('API_BASE_URL', 'http://127.0.0.1:8000')).rstrip('/')}{agent_prefix}/chat/stream",
-        data=json.dumps(payload).encode(), headers={"Content-Type": "application/json"}, method="POST",
+        data=json.dumps(payload).encode(), headers=headers, method="POST",
     )
     try:
         with (opener or urlopen)(request, timeout=300) as response:
@@ -125,7 +134,8 @@ class ReportStatus(str):
 def submit_report(question: str, filename: str | None = None, content: bytes | None = None, *,
                   api_url: str | None = None, opener=None, source_mode="documents", output_format=None,
                   agent_prefix="/api", conversation_id: str | None = None,
-                  template_choice=None, accept_supported_scope=False) -> tuple[bytes, str, str]:
+                  template_choice=None, accept_supported_scope=False,
+                  remote_retrieval_session: str | None = None) -> tuple[bytes, str, str]:
     safe_name = os.path.basename(filename) if filename is not None else None
     if filename is not None and (not safe_name or any(char in safe_name for char in ('"', "\r", "\n"))):
         raise ValueError("Choose a valid DOCX or Markdown template filename.")
@@ -153,9 +163,12 @@ def submit_report(question: str, filename: str | None = None, content: bytes | N
                       f'Content-Type: {content_type}\r\n\r\n'.encode(), content or b"", b"\r\n"))
     parts.append(f"--{boundary}--\r\n".encode())
     body = b"".join(parts)
+    headers = {"Content-Type": f"multipart/form-data; boundary={boundary}"}
+    if remote_retrieval_session:
+        headers["X-Remote-Retrieval-Session"] = remote_retrieval_session
     request = Request(
         f"{(api_url or os.getenv('API_BASE_URL', 'http://127.0.0.1:8000')).rstrip('/')}{agent_prefix}/report",
-        data=body, headers={"Content-Type": f"multipart/form-data; boundary={boundary}"}, method="POST",
+        data=body, headers=headers, method="POST",
     )
     try:
         with (opener or urlopen)(request, timeout=600) as response:
@@ -282,6 +295,7 @@ def reset_conversation(state, *, sign_out=False):
             state.pop(key,None)
     if sign_out:
         state.pop('api_opener',None)
+        state.pop('remote_retrieval_session',None)
         state.pop('agent_mode',None)
         state.pop('login_username',None)
         state.pop('login_password',None)
@@ -289,6 +303,34 @@ def reset_conversation(state, *, sign_out=False):
         state['conversation_id'] = uuid.uuid4().hex
         state['report_conversation_id'] = uuid.uuid4().hex
         state['chat_turns'] = []
+
+
+def _remote_retrieval_login(username: str, password: str, local_identity: dict) -> str:
+    """Sign into the remote API and bind its session to the local account."""
+    if os.getenv("RETRIEVAL_SERVICE_AUTH", "internal") != "session":
+        return ""
+    parsed = urlsplit(os.getenv("RETRIEVAL_SERVICE_URL", ""))
+    if parsed.scheme != "https" or parsed.path.rstrip("/") != "/api/retrieval" or not parsed.netloc:
+        raise RuntimeError("Session retrieval requires an HTTPS RETRIEVAL_SERVICE_URL ending in /api/retrieval.")
+    remote_cookies = CookieJar()
+    remote_opener = build_opener(HTTPCookieProcessor(remote_cookies))
+    login = Request(
+        f"{parsed.scheme}://{parsed.netloc}/api/auth/login",
+        data=json.dumps({"username": username, "password": password}).encode(),
+        headers={"Content-Type": "application/json"}, method="POST",
+    )
+    try:
+        with remote_opener.open(login, timeout=30) as response:
+            remote_identity = json.loads(response.read())
+    except (HTTPError, URLError, ValueError):
+        raise RuntimeError("Remote retrieval sign-in failed. Check the account and retrieval API connection.") from None
+    if (remote_identity.get("username") != local_identity.get("username")
+            or remote_identity.get("role") != local_identity.get("role")):
+        raise RuntimeError("Local and remote sign-ins must use the same account and role.")
+    session = next((cookie.value for cookie in remote_cookies if cookie.name == "enterprise_session"), "")
+    if not session:
+        raise RuntimeError("Remote retrieval sign-in did not return a session.")
+    return session
 
 
 def main() -> None:
@@ -311,11 +353,15 @@ def main() -> None:
                 headers={"Content-Type": "application/json"}, method="POST")
             try:
                 with opener.open(login_request, timeout=30) as response:
-                    response.read()
+                    local_identity = json.loads(response.read())
+                remote_session = _remote_retrieval_login(username, password, local_identity)
                 reset_conversation(st.session_state)
                 st.session_state["api_opener"] = opener
+                st.session_state["remote_retrieval_session"] = remote_session
                 st.rerun()
-            except (HTTPError, URLError):
+            except RuntimeError as error:
+                st.error(str(error))
+            except (HTTPError, URLError, ValueError):
                 st.error("Sign-in failed. Check your account and backend connection.")
         st.stop()
     opener = st.session_state["api_opener"].open if "api_opener" in st.session_state else None
@@ -375,7 +421,8 @@ def main() -> None:
                     report_template.getvalue() if report_template else None,
                     source_mode=source_mode, output_format=output_format, opener=opener, agent_prefix=prefix,
                     conversation_id=st.session_state['report_conversation_id'],
-                    template_choice=template_choice, accept_supported_scope=accept_scope if confirmed else False)
+                    template_choice=template_choice, accept_supported_scope=accept_scope if confirmed else False,
+                    remote_retrieval_session=st.session_state.get('remote_retrieval_session') or None)
             if (st.session_state.get('report_conversation_id') == report_id
                     and st.session_state.get('api_opener') is report_client):
                 st.session_state["report_download"] = (payload, content_type, status)
@@ -441,7 +488,9 @@ def main() -> None:
                         icon = {'started': '⏳', 'completed': '✓', 'failed': '⚠'}.get(state, '·')
                         progress.write(f'{icon} {label}')
                     turn['result'] = submit_chat_stream(question.strip(),AGENT_MODES[mode_label],metadata=metadata,
-                        opener=opener,agent_prefix=prefix,conversation_id=conversation_id,on_stage=show_stage)
+                        opener=opener,agent_prefix=prefix,conversation_id=conversation_id,
+                        remote_retrieval_session=st.session_state.get('remote_retrieval_session') or None,
+                        on_stage=show_stage)
                     progress.update(label='Đã hoàn tất', state='complete')
         except (RuntimeError,ValueError) as error:
             turn['error'] = str(error)

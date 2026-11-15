@@ -129,6 +129,11 @@ async def agent_chat(
 ):
     started = perf_counter()
     timing_token = latency_events.set([])
+    from core.retrieval.remote_service import remote_session_context
+    remote_context_token = remote_session_context.set({
+        "token": http_request.headers.get("x-remote-retrieval-session"),
+        "subject": user["sub"], "role": user["role"],
+    })
     result = None
     agent_name = payload.agent_mode
     retrieval_method = payload.retrieval_method
@@ -181,6 +186,7 @@ async def agent_chat(
             if result is not None:
                 result.metadata["latency"] = timing
             logger.warning("agent_latency %s", json.dumps({"agent": agent_name, "status": status, **timing}))
+            remote_session_context.reset(remote_context_token)
 
 
 class AnswerFeedbackRequest(BaseModel):
@@ -275,6 +281,11 @@ async def generate_agent_report(
     user: dict = Depends(require_permission("ask_documents")),
 ):
     started = perf_counter()
+    from core.retrieval.remote_service import remote_session_context
+    remote_context_token = remote_session_context.set({
+        "token": http_request.headers.get("x-remote-retrieval-session"),
+        "subject": user["sub"], "role": user["role"],
+    })
     status = "failed"
     error_type = "RequestFailed"
     citation_count = 0
@@ -310,9 +321,12 @@ async def generate_agent_report(
         logger.exception("Report agent request failed")
         raise HTTPException(503, "The report service is unavailable") from error
     finally:
-        _record_in_background(
-            actor_role=user["role"], agent_name="report", retrieval_method="hybrid",
-            status="completed" if status == "complete" else "failed",
-            elapsed_ms=max(0, int((perf_counter() - started) * 1000)),
-            citation_count=citation_count, error_type="ReportPartial" if status == "partial" else error_type,
-        )
+        try:
+            _record_in_background(
+                actor_role=user["role"], agent_name="report", retrieval_method="hybrid",
+                status="completed" if status == "complete" else "failed",
+                elapsed_ms=max(0, int((perf_counter() - started) * 1000)),
+                citation_count=citation_count, error_type="ReportPartial" if status == "partial" else error_type,
+            )
+        finally:
+            remote_session_context.reset(remote_context_token)

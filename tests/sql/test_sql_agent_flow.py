@@ -160,7 +160,8 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         selected = {"commerce.orders", "commerce.order_items", "commerce.products",
                     "commerce.returns", "commerce.geography", "commerce.payments"}
         with patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
-                'tables': selected, 'required_tables': selected}):
+                'tables': selected, 'required_tables': selected,
+                'candidate_tables': selected}):
             result = await agent.run_payload(AgentRequest(
                 question=question,
                 identity=VerifiedIdentity(subject="analyst", permissions={"analytics:read"}),
@@ -177,7 +178,8 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
         selected = {'commerce.order_items', 'commerce.orders', 'commerce.products'}
         with patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
-                'tables': selected, 'required_tables': {'commerce.order_items', 'commerce.orders'}}):
+                'tables': selected, 'required_tables': {'commerce.order_items', 'commerce.orders'},
+                'candidate_tables': selected}):
             result = await agent.run_payload(AgentRequest(
                 question='sản phẩm bán chạy nhất tháng trước',
                 identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
@@ -189,6 +191,72 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn('commerce.orders:', provider.prompts[0])
         self.assertIn('commerce.products:', provider.prompts[0])
         self.assertNotIn('Interpret the question BEFORE generating SQL', provider.prompts[0])
+
+    async def test_supporting_inventory_table_cannot_be_added_as_extra_filter(self):
+        invalid_sql = (
+            "SELECT p.product_id, p.product_name, SUM(oi.quantity) AS total_quantity_sold "
+            "FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id=o.order_id "
+            "JOIN commerce.products AS p ON p.product_id=oi.product_id "
+            "WHERE o.order_date >= $1 AND o.order_date < $2 "
+            "AND EXISTS (SELECT 1 FROM commerce.inventory AS i WHERE i.product_id=p.product_id) "
+            "GROUP BY 1, 2 ORDER BY 3 DESC, 1 LIMIT 1"
+        )
+        valid_sql = invalid_sql.replace(
+            " AND EXISTS (SELECT 1 FROM commerce.inventory AS i WHERE i.product_id=p.product_id)", "")
+        provider = FakeProvider([
+            json.dumps({'sql': sql, 'parameters': ['2026-10-01', '2026-11-01']})
+            for sql in (invalid_sql, valid_sql)
+        ])
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        selected = {'commerce.order_items', 'commerce.orders', 'commerce.products'}
+        with patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': selected, 'required_tables': selected,
+                'candidate_tables': selected | {'commerce.inventory'}}):
+            result = await agent.run_payload(AgentRequest(
+                question='sản phẩm bán chạy nhất tháng trước',
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertEqual(result['query_status'], 'executed')
+        self.assertEqual(provider.response_index, 2)
+        self.assertNotIn('commerce.inventory:', provider.prompts[0])
+        repository.execute_approved_query.assert_awaited_once()
+
+    async def test_auto_executes_unverified_metric_after_knowledge_miss(self):
+        sql = (
+            "SELECT p.product_id, p.product_name, SUM(oi.quantity) AS total_quantity_sold "
+            "FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id=o.order_id "
+            "JOIN commerce.products AS p ON p.product_id=oi.product_id "
+            "WHERE o.order_date >= $1 AND o.order_date < $2 "
+            "AND EXISTS (SELECT 1 FROM commerce.inventory AS i WHERE i.product_id=p.product_id) "
+            "GROUP BY 1, 2 ORDER BY 3 DESC, 1 LIMIT 1"
+        )
+        question = 'sản phẩm bán chạy nhất tháng trước'
+        provider = FakeProvider([json.dumps({
+            'sql': sql, 'parameters': ['2026-10-01', '2026-11-01'],
+        })])
+        repository = FakeRepository()
+        metric_retriever = AsyncMock(return_value=[])
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False,
+                                  metric_retriever=metric_retriever)
+        selected = {'commerce.order_items', 'commerce.orders', 'commerce.products'}
+        with patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': selected, 'required_tables': {'commerce.order_items', 'commerce.orders'},
+                'candidate_tables': selected | {'commerce.inventory'}}):
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+                metadata={'_auto_mode': True, '_original_question': question},
+            ))
+
+        self.assertEqual(result['query_status'], 'executed', result)
+        self.assertEqual(result['rows'], repository.execute_approved_query.return_value)
+        self.assertEqual(result['metadata']['metric_validation']['status'], 'unverified')
+        self.assertEqual(result['metadata']['metric_validation']['knowledge_lookup'], 'not_found')
+        self.assertNotIn('commerce.inventory:', provider.prompts[0])
+        metric_retriever.assert_awaited_once()
+        repository.execute_approved_query.assert_awaited_once()
 
     async def test_returned_vs_sold_prompt_includes_order_item_schema_and_executes(self):
         question = "so sánh số lượng trả hàng với số lượng đã bán"

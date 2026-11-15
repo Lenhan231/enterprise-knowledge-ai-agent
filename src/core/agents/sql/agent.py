@@ -373,24 +373,37 @@ class SQLAnalyticsAgent(BaseAgent):
                 if error.code != 'snapshot_required':
                     raise
             metric_definitions = {name: get_metric_definition(name) for name in metric_names}
-            try:
-                table_selection = await asyncio.wait_for(asyncio.to_thread(
-                    select_jev_schema_tables, question, table_columns, metric_definitions,
-                    primary_keys=primary_keys, approved_joins=approved_joins,
-                ), timeout=12)
-            except Exception:
+            deterministic_plan = any((direct, promotion_plan, annual_revenue_plan,
+                                      completed_months_plan, explicit_month_plan, month_comparison_plan))
+            if deterministic_plan:
                 table_selection = None
-                context_info['schema_table_selection'] = 'full_schema_fallback'
+                context_info['schema_table_selection'] = 'compiled_query'
             else:
-                context_info['schema_table_selection'] = 'jev_top_five'
+                try:
+                    table_selection = await asyncio.wait_for(asyncio.to_thread(
+                        select_jev_schema_tables, question, table_columns, metric_definitions,
+                        primary_keys=primary_keys, approved_joins=approved_joins,
+                    ), timeout=12)
+                except Exception:
+                    table_selection = None
+                    context_info['schema_table_selection'] = 'full_schema_fallback'
+                else:
+                    context_info['schema_table_selection'] = 'jev_top_five'
             schema_tables = table_selection['tables'] if table_selection else None
             required_tables = table_selection['required_tables'] if table_selection else set()
-            tables = set(schema_tables or ())
+            if table_selection:
+                context_info['schema_table_candidates'] = sorted(table_selection['candidate_tables'])
+            compiled_sources = ({'commerce.promotions'} if promotion_metric == 'active_promotion_count'
+                                else {'commerce.order_items', 'commerce.promotions'}
+                                if promotion_metric == 'promotion_revenue' else None)
+            tables = (compiled_sources if compiled_sources is not None else
+                      set(table_columns) if schema_tables is None else set(schema_tables))
             tables.update(table for definition in metric_definitions.values()
                           for table in re.findall(r'commerce\.\w+', definition.get('source', '')))
             if self.inventory_only:
                 tables.update(set(table_columns) & INVENTORY_SOURCES)
                 required_tables.add('commerce.inventory')
+            query_sources = tables & set(table_columns)
             if (direct is None and 'commerce.inventory' in tables and all(
                     get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
                     and re.search(r'\bcurrent\b|\btoday\b|hiện tại|hôm nay', re.sub(r"'(?:[^']|'')*'", '', question), re.I)
@@ -475,8 +488,22 @@ class SQLAnalyticsAgent(BaseAgent):
                     'rag_fallback': 'rag' if metric_evidence else 'not_found_or_unavailable'
                 }
                 context_info['metric_lookup_status'] = metric_lookup
+            unverified_metric = None
+            if (options.get('_auto_mode') is True and not dashboard_build and not metric_names
+                    and direct is None and promotion_plan is None and not explicit_order_item_formula
+                    and interpretation is None):
+                lookup_status = metric_lookup.get('rag_fallback', 'not_configured')
+                reason = (
+                    'Knowledge returned context, but no approved metric formula was identified for this request.'
+                    if lookup_status == 'found' else
+                    'No approved metric definition was found in Knowledge; the query result is an unverified calculation.'
+                )
+                unverified_metric = {
+                    'status': 'unverified', 'code': 'metric_definition_unresolved',
+                    'reason': reason, 'knowledge_lookup': lookup_status,
+                }
             prompt = build_sql_prompt(question, metric_names=metric_names,
-                allowed_sources=set(table_columns), schema_columns=table_columns, approved_joins=approved_joins,
+                allowed_sources=query_sources, schema_columns=table_columns, approved_joins=approved_joins,
                 primary_keys=primary_keys,
                 schema_tables=schema_tables,
                 interpretation=interpretation.model_dump() if interpretation and interpretation.domain == 'inventory' else None,
@@ -491,7 +518,6 @@ class SQLAnalyticsAgent(BaseAgent):
         except Exception as error:
             return self._generation_error(error)
         dashboard_outputs = None
-        unverified_metric = None
         for attempt in range(2):
             try:
                 if promotion_plan is not None and not dashboard_build:
@@ -514,7 +540,7 @@ class SQLAnalyticsAgent(BaseAgent):
                     with measure("sql_planning"):
                         raw = await self._generate_sql(prompt)
                     if options.get('_dashboard_request') is True and options.get('_dashboard_allow_multiple') is True:
-                        bundle = self._decode_dashboard_queries(raw, question, options, metric_names,
+                        bundle = self._decode_dashboard_queries(raw, question, options, metric_names, set(table_columns),
                             table_columns, approved_joins, primary_keys, date_columns)
                         if bundle is not None:
                             if interpretation is not None or cross_domain:
@@ -525,7 +551,8 @@ class SQLAnalyticsAgent(BaseAgent):
                             datasets = []
                             for index, (data_question, data_plan, data_definitions) in enumerate(bundle):
                                 payload = await self._execute_plan(data_plan, data_definitions,
-                                    table_columns, approved_joins, primary_keys, date_columns)
+                                    table_columns, approved_joins, primary_keys, date_columns,
+                                    allowed_sources=set(table_columns))
                                 payload.setdefault('metadata', {}).update(context_info)
                                 payload['metadata']['dashboard_outputs'] = dashboard_outputs[index]
                                 datasets.append({'question': data_question, 'payload': payload})
@@ -554,13 +581,18 @@ class SQLAnalyticsAgent(BaseAgent):
                     validate_commerce_sql(plan.sql, allowed_sources=set(table_columns), schema_columns=table_columns,
                         approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns)
                     if cross_domain and not {'commerce.inventory','commerce.orders','commerce.order_items'} <= set(validate_commerce_sql(
-                            plan.sql, schema_columns=table_columns, approved_joins=approved_joins,
+                            plan.sql, allowed_sources=set(table_columns), schema_columns=table_columns, approved_joins=approved_joins,
                             primary_keys=primary_keys, date_columns=date_columns).sources):
                         raise SQLValidationError('The requested cross-domain contract must retain inventory, orders and order_items.')
-                    definitions = ({"revenue": get_metric_definition("revenue")}
-                                   if not dashboard_build and (annual_revenue_plan is not None or completed_months_plan is not None or month_comparison_plan is not None or explicit_month_plan is not None) else
-                                   validate_metric_definitions(plan.sql, metric_names, plan.parameters, table_columns,
-                                       question=interpretation.date_question() if interpretation and interpretation.domain == 'inventory' else question))
+                    if unverified_metric is not None:
+                        # The query has passed SQL safety/schema/join validation, but no canonical
+                        # metric was identified. Keep its rows for Auto to qualify in synthesis.
+                        definitions = {}
+                    else:
+                        definitions = ({"revenue": get_metric_definition("revenue")}
+                                       if not dashboard_build and (annual_revenue_plan is not None or completed_months_plan is not None or month_comparison_plan is not None or explicit_month_plan) else
+                                       validate_metric_definitions(plan.sql, metric_names, plan.parameters, table_columns,
+                                           question=interpretation.date_question() if interpretation and interpretation.domain == 'inventory' else question))
                     if promotion_metric == "promotion_revenue":
                         definitions = {"promotion_revenue": {
                             "unit": "currency", "aggregation": "sum",
@@ -587,7 +619,7 @@ class SQLAnalyticsAgent(BaseAgent):
                 if attempt == 0 and (direct is None or dashboard_build) and not (interpretation and interpretation.domain == 'inventory'):
                     prompt = build_sql_prompt(
                         question, validation_error=str(error), previous_response=str(raw),
-                        metric_names=metric_names, allowed_sources=set(table_columns), schema_columns=table_columns,
+                        metric_names=metric_names, allowed_sources=query_sources, schema_columns=table_columns,
                         approved_joins=approved_joins, primary_keys=primary_keys,
                         schema_tables=schema_tables,
                         interpretation=interpretation.model_dump() if interpretation and interpretation.domain == 'inventory' else None,
@@ -624,7 +656,8 @@ class SQLAnalyticsAgent(BaseAgent):
             }
 
         payload = await self._execute_plan(plan, definitions, table_columns, approved_joins,
-                                           primary_keys, date_columns, interpretation)
+                                           primary_keys, date_columns, interpretation,
+                                           allowed_sources=set(table_columns))
         if unverified_metric is not None:
             payload.setdefault('metadata', {})['metric_validation'] = unverified_metric
         if plan is annual_revenue_plan and payload.get("query_status") == "executed":
@@ -635,7 +668,7 @@ class SQLAnalyticsAgent(BaseAgent):
             payload.setdefault('metadata', {})['dashboard_outputs'] = dashboard_outputs[0]
         return payload
 
-    def _decode_dashboard_queries(self, raw, question, options, metric_names,
+    def _decode_dashboard_queries(self, raw, question, options, metric_names, allowed_sources,
                                   table_columns, approved_joins, primary_keys, date_columns):
         response = parse_json_response(raw)
         if not isinstance(response, dict) or 'queries' not in response:
@@ -655,7 +688,7 @@ class SQLAnalyticsAgent(BaseAgent):
                 raise SQLValidationError('An independent question conflicts with the shared dashboard period.')
             scoped_question = data_question + ('\nRequired dashboard date/filter scope: ' + options['_dashboard_scope']
                                              if options.get('_dashboard_scope') else '')
-            plan = decode_query_plan(json.dumps(item), table_columns, allowed_sources=set(table_columns),
+            plan = decode_query_plan(json.dumps(item), table_columns, allowed_sources=allowed_sources,
                 approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns)
             if not plan.sql:
                 raise SQLValidationError('Clarify the whole dashboard before executing independent queries.')
@@ -680,7 +713,7 @@ class SQLAnalyticsAgent(BaseAgent):
             validate_independent_query_period(plan.sql, plan.parameters, scoped_question, sources,
                                              APPROVED_DATE_COLUMNS | set(date_columns or ()))
             found_metrics.update(names)
-            found_sources.update(validate_commerce_sql(plan.sql, allowed_sources=set(table_columns), schema_columns=table_columns,
+            found_sources.update(validate_commerce_sql(plan.sql, allowed_sources=allowed_sources, schema_columns=table_columns,
                 approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns).sources)
             bundle.append((data_question, plan, definitions))
         if found_metrics != metric_names:
@@ -691,9 +724,10 @@ class SQLAnalyticsAgent(BaseAgent):
         return bundle
 
     async def _execute_plan(self, plan, definitions, table_columns, approved_joins,
-                            primary_keys, date_columns, interpretation=None):
+                            primary_keys, date_columns, interpretation=None, *, allowed_sources=None):
         try:
-            validated = validate_commerce_sql(plan.sql or "", allowed_sources=set(table_columns),
+            validated = validate_commerce_sql(plan.sql or "", allowed_sources=(
+                set(table_columns) if allowed_sources is None else allowed_sources),
                 schema_columns=table_columns, approved_joins=approved_joins,
                 primary_keys=primary_keys, date_columns=date_columns)
         except Exception as error:

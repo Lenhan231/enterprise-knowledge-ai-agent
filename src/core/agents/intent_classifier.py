@@ -151,13 +151,15 @@ def select_jev_schema_tables(question, table_columns, metric_definitions=None, *
     top_tables = sorted(ranked, key=lambda item: (-item[0], item[1]))[:limit]
     if not top_tables or top_tables[0][0] <= 0:
         raise ValueError('Jev did not identify a relevant schema table')
-    selected = {table for _, table in top_tables}
-    required_tables = {table for score, table in ranked if score > 1}
+    candidates = {table for _, table in top_tables}
+    required_tables = {table for score, table in top_tables if score > 1}
     metric_sources = {table for definition in (metric_definitions or {}).values()
                       for table in re.findall(r'commerce\.\w+', definition.get('source', ''))
                       if table in tables}
-    selected.update(metric_sources)
     required_tables.update(metric_sources)
+    if not required_tables:
+        raise ValueError('Jev did not identify a required schema table')
+    selected = set(required_tables)
 
     # Add the shortest approved bridge for each connected pair; bridge closure can exceed the top-five cap.
     required = sorted(selected)
@@ -176,7 +178,8 @@ def select_jev_schema_tables(question, table_columns, metric_definitions=None, *
                     pending.append((neighbor, route + [neighbor]))
             if path:
                 selected.update(path)
-    return {'tables': selected, 'required_tables': required_tables}
+    return {'tables': selected, 'required_tables': required_tables,
+            'candidate_tables': candidates}
 
 
 def _is_document_count_request(text: str) -> bool:

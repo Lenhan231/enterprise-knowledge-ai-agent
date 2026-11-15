@@ -126,6 +126,40 @@ class SQLConversationTest(unittest.IsolatedAsyncioTestCase):
 
 
 class OriginalQuestionContextTest(unittest.IsolatedAsyncioTestCase):
+    async def test_auto_synthesizes_query_rows_with_unverified_metric_caveat(self):
+        question = 'sản phẩm bán chạy nhất tháng trước'
+        task = AgentTask(id='sql', agent='sql', question=question)
+        plan = AgentPlan(objective=question, tasks=[task])
+        result = AgentResult(answer='Query completed.', agent='sql_analytics',
+            evidence=[Evidence(citation_id='S1', source_type='database', source='commerce.order_items')],
+            data={'rows': [{'product_name': 'Grid Runner', 'total_quantity_sold': 152}]},
+            metadata={'ok': True, 'metric_validation': {
+                'status': 'unverified', 'code': 'incompatible_grain',
+                'reason': 'No approved metric definition was found in Knowledge.',
+            }})
+        execution = SimpleNamespace(
+            outcomes={'sql': TaskOutcome(task, 'complete', result)}, trace=[], invocations=1)
+
+        class Provider:
+            called = False
+
+            async def generate(self, prompt, **_kwargs):
+                self.called = True
+                self.prompt = prompt
+                return json.dumps({'answer':
+                    'Theo truy vấn, Grid Runner có 152 đơn vị được ghi nhận [S1]; '
+                    'định nghĩa metric bán chạy chưa được xác minh.', 'used_tasks': ['sql']})
+
+        provider = Provider()
+        answer = await assemble_response(
+            AgentRequest(question=question, identity=IDENTITY), plan, execution, provider)
+
+        self.assertTrue(provider.called)
+        self.assertIn('unverified', provider.prompt)
+        self.assertIn('Grid Runner', answer.answer)
+        self.assertIn('chưa được xác minh', answer.answer)
+        self.assertFalse(answer.metadata['fallback'])
+
     async def test_single_sql_task_synthesizes_the_structured_sql_result_in_auto(self):
         question = 'so sánh 2 năm 2026 với 2025'
         plan = AgentPlan(objective=question, tasks=[AgentTask(id='sql', agent='sql', question=question)])

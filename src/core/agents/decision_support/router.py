@@ -36,8 +36,10 @@ class AgentRouter:
     def __init__(self, classifier, knowledge_agent, analytics_agent, dashboard_agent=None,
                  report_agent=None, *, llm=None, request_timeout=120):
         self.classifier = classifier
-        self.knowledge_agent, self.analytics_agent = knowledge_agent, analytics_agent
-        sql_runtime = getattr(analytics_agent, 'sql_agent', analytics_agent)
+        from core.agents.sql.analytics_agent import AnalyticsAgent
+        self.sql_mode_agent = analytics_agent if isinstance(analytics_agent, AnalyticsAgent) else None
+        sql_runtime = analytics_agent.sql_agent if self.sql_mode_agent else analytics_agent
+        self.knowledge_agent, self.analytics_agent = knowledge_agent, sql_runtime
         schema = getattr(sql_runtime, 'table_columns', None)
         self.sql_schema = schema if isinstance(schema, dict) else None
         self.dashboard_agent, self.report_agent = dashboard_agent, report_agent
@@ -91,8 +93,11 @@ class AgentRouter:
                                     'clarification': result.answer[:500] if result.metadata.get('status') == 'clarification_required' else ''}
                             if report_headings is None:
                                 turn['sql_context'] = self._sql_context_after_execution(execution, history)
-                                metrics = result.metadata.get('metrics')
-                                if result.data.get('query_status') == 'executed' and isinstance(metrics, dict):
+                                metrics = next((outcome.result.metadata.get('metrics')
+                                    for outcome in execution.outcomes.values()
+                                    if outcome.result and outcome.result.data.get('query_status') == 'executed'
+                                    and isinstance(outcome.result.metadata.get('metrics'), dict)), None)
+                                if metrics:
                                     turn['metrics'] = ', '.join(sorted(name for name in metrics if isinstance(name, str)))
                             history.append(turn)
                         self.last_destination = result.metadata.get('selected_route', 'unrouted')
@@ -140,6 +145,14 @@ class AgentRouter:
         agent = agents[mode]
         if agent is None:
             return self._failure('This standalone request type is not supported.')
+        if mode == 'sql':
+            if self.sql_mode_agent is not None:
+                agent = self.sql_mode_agent
+            else:
+                from core.agents.sql.agent import SQLAnalyticsAgent
+                if isinstance(agent, SQLAnalyticsAgent):
+                    from core.agents.sql.analytics_agent import AnalyticsAgent
+                    agent = AnalyticsAgent(agent)
         with measure('agent_workflow'):
             result = agent.run(request)
             if inspect.isawaitable(result):
@@ -281,7 +294,8 @@ class AgentRouter:
             outcome = execution.outcomes.get(plan.tasks[0].id)
             if outcome and outcome.status == 'complete' and outcome.result:
                 direct_fallback = outcome.result
-        if direct_fallback is not None and state.get('report_headings') is None:
+        if (direct_fallback is not None and state.get('report_headings') is None
+                and plan.tasks[0].agent != 'sql'):
             selected_route = 'analytics' if plan.tasks[0].agent == 'sql' else plan.tasks[0].agent
             result = direct_fallback.model_copy(update={'metadata': {
                 **direct_fallback.metadata,
@@ -307,7 +321,7 @@ class AgentRouter:
 
     def _provider(self):
         if self.llm is None:
-            sql_agent = getattr(self.analytics_agent, 'sql_agent', None)
+            sql_agent = getattr(self.analytics_agent, 'sql_agent', self.analytics_agent)
             if sql_agent is not None and hasattr(sql_agent, '_provider'):
                 return sql_agent._provider()
             from core.llm.groq_provider import GroqProvider

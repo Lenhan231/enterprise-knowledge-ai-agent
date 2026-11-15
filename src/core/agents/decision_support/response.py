@@ -211,13 +211,7 @@ async def assemble_response(request, plan, execution, provider):
                                 if inputs[0]['agent'] == 'sql' else None)
         if deterministic_answer:
             answer, fallback = deterministic_answer, False
-        elif inputs[0]['agent'] == 'sql':
-            # SQL's analytics layer already summarizes its validated rows. Reuse that
-            # response when Auto had only one specialist task; synthesize across tools
-            # only when there is more than one independent result to combine.
-            answer = inputs[0]['answer']
-            fallback = bool(usable[0].result.metadata.get('fallback', False))
-        else:
+        elif inputs[0]['agent'] != 'sql':
             answer = inputs[0]['answer']
             fallback = bool(usable[0].result.metadata.get('fallback', False))
     if usable and not answer:
@@ -229,25 +223,35 @@ async def assemble_response(request, plan, execution, provider):
                 limitations=json.dumps(limitations, ensure_ascii=False),
                 results=serialized,
             )
-            try:
-                raw = await generate(provider, prompt, timeout=20)
-                draft = json.loads(raw.strip().removeprefix('```json').removesuffix('```').strip())
-                candidate = draft['answer']
-                if not isinstance(candidate, str) or not candidate.strip() or len(candidate) > 8000:
-                    raise ValueError('Invalid synthesis')
-                cited = set(re.findall(r'\[(S\d+)\]', candidate))
-                allowed = {e.citation_id for e in evidence}
-                if not cited or not cited <= allowed or set(draft['used_tasks']) != {o.task.id for o in usable}:
-                    raise ValueError('Invalid citations or missing task coverage')
-                for item in inputs:
-                    if not cited.intersection(e['citation_id'] for e in item['evidence']):
-                        raise ValueError('Uncited task')
-                # This detects invented numeric tokens, not all possible semantic errors.
-                if not _supported_numbers(candidate, inputs, request.question):
-                    raise ValueError('Unsupported numeric value')
-                answer, fallback = candidate.strip(), False
-            except Exception:
-                pass
+            for attempt in range(2):
+                try:
+                    raw = await generate(provider, prompt, timeout=20)
+                except Exception:
+                    break
+                try:
+                    draft = json.loads(raw.strip().removeprefix('```json').removesuffix('```').strip())
+                    candidate = draft['answer']
+                    if not isinstance(candidate, str) or not candidate.strip() or len(candidate) > 8000:
+                        raise ValueError('Invalid synthesis')
+                    cited = set(re.findall(r'\[(S\d+)\]', candidate))
+                    allowed = {e.citation_id for e in evidence}
+                    if not cited or not cited <= allowed or set(draft['used_tasks']) != {o.task.id for o in usable}:
+                        raise ValueError('Invalid citations or missing task coverage')
+                    for item in inputs:
+                        if not cited.intersection(e['citation_id'] for e in item['evidence']):
+                            raise ValueError('Uncited task')
+                    # This detects invented numeric tokens, not all possible semantic errors.
+                    if not _supported_numbers(candidate, inputs, request.question):
+                        raise ValueError('Unsupported numeric value')
+                    answer, fallback = candidate.strip(), False
+                    break
+                except Exception:
+                    if attempt == 0:
+                        prompt += (
+                            '\nCorrection: your previous JSON did not pass citation, task-coverage, or numeric-grounding checks. '
+                            'Return corrected JSON. Use only supplied numeric values, include every task_id exactly, '
+                            'and do not add calculated quantities.'
+                        )
     allowed = {e.citation_id for e in evidence}
     null_answer = _null_sql_findings(inputs, request.question)
     if null_answer and not answer:

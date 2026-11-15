@@ -17,6 +17,17 @@ from test_bounded_execution import FakeAgent, FakeProvider, IDENTITY, source_res
 
 
 class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
+    async def test_sql_outage_fallback_still_uses_auto_response_layer(self):
+        question = 'doanh thu năm 2025'
+        router = AgentRouter(None, None, FakeAgent(source_result('analytics', rows=[{'revenue': 123}])),
+                             llm=FakeProvider([]))
+
+        result = await router.run(AgentRequest(question=question, identity=IDENTITY))
+
+        self.assertTrue(result.metadata['planning_fallback'])
+        self.assertIn('Doanh thu: 123', result.answer)
+        self.assertNotEqual(result.answer, 'Supported observation [S1].')
+
     def test_numeric_grounding_accepts_localized_thousands_but_not_new_magnitudes(self):
         inputs = [{'data': {'rows': [{'count': 1320}]}, 'evidence': []}]
         self.assertTrue(_supported_numbers('1,320 products [S1]', inputs, 'Count products'))
@@ -167,7 +178,8 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
                     self.followup_data = json.loads(prompt.split('DATA:\n', 1)[1].split('\n\nInvalid', 1)[0])
                     return json.dumps({'objective': 'Compare revenue for this year and last year',
                                        'tasks': self.tasks})
-                raise AssertionError('A single SQL task should not need synthesis')
+                return json.dumps({'answer': 'Doanh thu được truy vấn thành công [S1].',
+                                   'used_tasks': ['s']})
 
         provider = FollowupProvider()
         router = AgentRouter(None, None, sql, llm=provider)

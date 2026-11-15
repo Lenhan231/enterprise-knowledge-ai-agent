@@ -13,7 +13,6 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from core.agents.sql.analytics_agent import AnalyticsAgent
 from core.agents.dashboard_agent import InventoryDashboardAgent
 from core.agents.intent_classifier import IntentClassifier
 from core.agents.knowledge.agent import KnowledgeAgent
@@ -143,18 +142,17 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
             runtime_sql_agent = sql_agent or SQLAnalyticsAgent(
                 repository, llm=llm, metric_retriever=knowledge.retrieve_metric_definition,
             )
-            analytics_agent = AnalyticsAgent(runtime_sql_agent)
-            runtime_report_agent = runtime_report_agent or ReportAgent(knowledge, analytics_agent.sql_agent, llm=llm)
+            runtime_report_agent = runtime_report_agent or ReportAgent(knowledge, runtime_sql_agent, llm=llm)
             runtime_agent = AgentRouter(
-                classifier or _FallbackClassifier(), knowledge, analytics_agent,
+                classifier or _FallbackClassifier(), knowledge, runtime_sql_agent,
                 dashboard_agent=InventoryDashboardAgent(repository),
                 report_agent=runtime_report_agent,
             )
             if isinstance(runtime_report_agent, ReportAgent):
                 runtime_report_agent.source_router = runtime_agent
         else:
-            runtime_sql_agent = sql_agent or getattr(
-                getattr(runtime_agent, "analytics_agent", None), "sql_agent", None)
+            configured_analytics = getattr(runtime_agent, "analytics_agent", None)
+            runtime_sql_agent = sql_agent or getattr(configured_analytics, "sql_agent", configured_analytics)
         application.state.chat_agent = runtime_agent
         application.state.report_agent = runtime_report_agent
         application.state.sql_agent = runtime_sql_agent

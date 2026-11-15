@@ -11,6 +11,7 @@ from core.sql_agent.analytics_agent import AnalyticsAgent
 from core.agents.base import BaseAgent
 from core.agents.router import AgentRouter
 from core.sql_agent.agent import payload_to_agent_result
+from core.agents.sql.agent import SQLAnalyticsAgent
 from core.models.agents import AgentRequest, AgentResult, VerifiedIdentity
 
 
@@ -57,6 +58,31 @@ class AnalyticsAgentContractTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(auto.agent, "analytics")
         self.assertEqual(explicit.agent, "analytics")
         self.assertEqual(sql.run.await_count, 2)
+
+    async def test_auto_uses_raw_sql_engine_while_sql_mode_adds_summary(self):
+        class LLM:
+            def __init__(self):
+                self.prompts = []
+
+            def generate(self, prompt):
+                self.prompts.append(prompt)
+                return 'Doanh thu năm 2025 là 123 [S1].'
+
+        repository = AsyncMock()
+        repository.execute_approved_query.return_value = [{'revenue': 123}]
+        llm = LLM()
+        engine = SQLAnalyticsAgent(repository, llm=llm)
+        presentation = AnalyticsAgent(engine)
+        router = AgentRouter(None, None, presentation)
+        request = AgentRequest(question='doanh thu năm 2025', identity=IDENTITY)
+
+        self.assertIs(router.analytics_agent, engine)
+        self.assertIs(router.sql_mode_agent, presentation)
+        result = await router.run_mode(request, 'sql')
+
+        self.assertTrue(result.answer.startswith('Doanh thu năm 2025 là 123'))
+        self.assertEqual(len(llm.prompts), 1)
+        self.assertIn("Answer the user's question", llm.prompts[0])
 
     async def test_langgraph_router_runs_both_agents_for_hybrid_auto_intent(self):
         request = AgentRequest(question="Compare policy and stock", identity=IDENTITY)

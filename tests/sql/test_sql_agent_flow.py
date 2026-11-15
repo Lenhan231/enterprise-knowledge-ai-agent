@@ -504,6 +504,18 @@ ORDER BY m.sessions DESC LIMIT 20""",
         self.assertIs(selected, provider)
         groq.assert_called_once_with(model="openai/gpt-oss-20b")
 
+    async def test_sql_defaults_to_groq_even_if_cloudflare_credentials_exist(self):
+        provider = FakeProvider([])
+        agent = SQLAnalyticsAgent(FakeRepository(), inventory_only=False)
+        with patch.dict(os.environ, {'CLOUDFLARE_API_TOKEN': 'test-token', 'CLOUDFLARE_ACCOUNT_ID': 'test-account'}), \
+                patch('core.llm.groq_provider.GroqProvider', return_value=provider) as groq, \
+                patch('core.llm.Cloudflare_provider.CloudflareProvider') as cloudflare:
+            os.environ.pop('SQL_LLM_PROVIDER', None)
+            os.environ.pop('SQL_GROQ_MODEL', None)
+            self.assertIs(provider, agent._provider())
+            groq.assert_called_once_with(model=None)
+            cloudflare.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

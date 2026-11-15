@@ -48,9 +48,10 @@ def validate_outputs(raw, plans, question, date_columns=None):
         columns = set(projections)
         fields = set(output.measures + output.group_by + ([output.dimension] if output.dimension else []))
         require(fields <= columns, 'A requested output refers to measures or dimensions absent from its query. Please clarify which fields to show.')
-        require(not output.group_by, 'Statistics within each group are not supported yet. Choose a summary across returned observations, or request grouped aggregates as a table.')
+        require(output.kind == 'table' or not output.group_by, 'Statistics within each group are not supported yet. Choose a summary across returned observations, or request grouped aggregates as a table.')
         require(output.kind == 'table' or bool(output.measures), 'Each chart, KPI or summary needs its own requested measures.')
-        require(not set(output.measures) & grouped, 'A grouping dimension cannot be treated as a summary or KPI measure.')
+        require(output.kind == 'table' or not set(output.measures) & grouped,
+                'Grouping dimensions may be table columns, but cannot be numeric chart, KPI or summary measures.')
         if output.kind in {'line', 'bar', 'donut'}:
             require(output.dimension is not None and output.dimension not in output.measures,
                     'Each chart needs one returned date or category dimension, separate from its measures.')

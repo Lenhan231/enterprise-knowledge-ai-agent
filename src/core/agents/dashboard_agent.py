@@ -155,7 +155,8 @@ def build_chart(payload, question):
     temporal = all(isinstance(value, (date, datetime)) or
                    isinstance(value, str) and re.fullmatch(r'\d{4}-\d{2}-\d{2}(?:[ T].*)?', value)
                    for value in values)
-    temporal = bool(temporal or dimension in {'year', 'fiscal_year'} and all(_numeric(value) for value in values))
+    temporal = bool(temporal or dimension in {'year', 'fiscal_year'} and all(
+        _numeric(value) or isinstance(value, str) and re.fullmatch(r'\d{4}', value) for value in values))
     kind = requested_chart_type(question) or ('line' if temporal else 'bar')
     if kind == 'line' and (not temporal or sum(row[measures[0]] is not None for row in rows) < 2):
         raise ValueError('A line chart needs a date axis and at least two observed values.')

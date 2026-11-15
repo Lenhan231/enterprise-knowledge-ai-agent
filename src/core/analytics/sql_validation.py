@@ -18,6 +18,7 @@ from core.analytics.invoices import is_invoice_question, validate_invoice_curren
 from core.analytics.join_validation import PRIMARY_KEYS, validate_join_aggregations, approved_derived_join, column_origin
 from core.analytics.metric_ontology import get_metric_definition, resolve_metric_names
 from core.analytics.metric_validation import _single_snapshot
+from core.analytics.business_ontology import validate_request_contract
 
 MAX_RESULT_ROWS = 200
 APPROVED_COLUMNS: dict[str, frozenset[str]] = {
@@ -140,6 +141,7 @@ class QueryPlan:
     parameters: tuple[Any, ...] = ()
     explanation: str = ""
     clarification: str | None = None
+    request_contract: dict | None = None
 
 
 def _source_name(table: exp.Table) -> str:
@@ -582,7 +584,10 @@ def decode_query_plan(raw: str, schema_columns=None, *, allowed_sources=None, ap
         sql = tree.sql(dialect='postgres')
         validate_commerce_sql(sql, allowed_sources=allowed_sources, schema_columns=schema_columns,
             approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns)
-    return QueryPlan(sql=sql, parameters=tuple(parameters), explanation=explanation.strip())
+    contract = payload.get('request_contract')
+    if contract is not None:
+        validate_request_contract(sql, contract, parameters)
+    return QueryPlan(sql=sql, parameters=tuple(parameters), explanation=explanation.strip(), request_contract=contract)
 
 
 def _date_parameter_indexes(sql: str, date_columns=None) -> set[int]:

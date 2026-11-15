@@ -463,26 +463,18 @@ ORDER BY m.sessions DESC LIMIT 20""",
         cloudflare.generate.assert_called_once_with(prompt)
         self.assertEqual(fallback.prompts, [prompt])
 
-    async def test_groq_request_error_falls_back_to_cloudflare_with_same_prompt(self):
-        from core.llm.Cloudflare_provider import CloudflareProvider
+    async def test_groq_request_error_does_not_fall_back_to_cloudflare(self):
         from core.llm.groq_provider import GroqProvider
-
-        prompt = "Generate a bounded SELECT using the supplied schema."
-        groq = GroqProvider.__new__(GroqProvider)
-        groq.generate = Mock(side_effect=RuntimeError("rate limited in test"))
-        fallback_response = '{"sql":"SELECT 1 LIMIT 1","parameters":[]}'
+        from core.llm.Cloudflare_provider import CloudflareProvider
+        with patch("core.llm.groq_provider.OpenAI"):
+            groq = GroqProvider(api_keys=["fake-key"])
+        groq.generate = Mock(side_effect=RuntimeError("request failed"))
         agent = SQLAnalyticsAgent(FakeRepository(), llm=groq, inventory_only=False)
-        with patch.dict(os.environ, {
-            "CLOUDFLARE_ACCOUNT_ID": "account-test",
-            "CLOUDFLARE_WORKERS_API": "test-token",
-            "SQL_CLOUDFLARE_MODEL": "@cf/meta/llama-3.1-8b-instruct",
-        }), patch.object(CloudflareProvider, "generate", return_value=fallback_response) as generate_cloudflare:
-            result = await agent._generate_sql(prompt)
-
-        self.assertEqual(result, fallback_response)
-        groq.generate.assert_called_once_with(prompt)
-        generate_cloudflare.assert_called_once_with(prompt)
-        self.assertEqual(agent._fallback_llm.model_name, "@cf/meta/llama-3.1-8b-instruct-fast")
+        with patch.object(CloudflareProvider, "__init__", side_effect=AssertionError("No cross-provider fallback")) as cloudflare:
+            with self.assertRaises(RuntimeError):
+                await agent._generate_sql("same prompt")
+            cloudflare.assert_not_called()
+        groq.close()
 
     def test_cloudflare_maps_retired_llama_model_id_to_active_fast_variant(self):
         from core.llm.Cloudflare_provider import CloudflareProvider
@@ -500,6 +492,7 @@ ORDER BY m.sessions DESC LIMIT 20""",
                         CloudflareProvider(model=retired).model_name,
                         "@cf/meta/llama-3.1-8b-instruct-fast",
                     )
+
 
     async def test_sql_provider_can_explicitly_select_groq(self):
         provider = FakeProvider([])

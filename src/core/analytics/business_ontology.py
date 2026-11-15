@@ -38,7 +38,7 @@ def validate_request_contract(sql, contract, parameters=()):
     def reject():
         raise SQLValidationError('SQL does not match the requested output contract. Preserve only requested columns and independent measure filters.')
 
-    if (not isinstance(contract, dict) or set(contract) - {'columns', 'dimensions', 'chart_type', 'measure_filters'}):
+    if (not isinstance(contract, dict) or set(contract) - {'columns', 'dimensions', 'chart_type', 'measure_filters', 'charts'}):
         reject()
     columns = contract.get('columns')
     if (not isinstance(columns, list) or not 1 <= len(columns) <= 24
@@ -54,6 +54,18 @@ def validate_request_contract(sql, contract, parameters=()):
     projections = {item.alias_or_name: item.unalias() for item in tree.selects}
     if [item.alias_or_name for item in tree.selects] != columns:
         reject()
+    charts = contract.get('charts')
+    if charts is not None:
+        if not isinstance(charts, list) or not 1 <= len(charts) <= 2 or chart_type is not None:
+            reject()
+        for chart in charts:
+            if (not isinstance(chart, dict) or set(chart) != {'type', 'dimension', 'measures'}
+                    or not isinstance(chart.get('type'), str) or chart['type'] not in {'line', 'bar', 'donut'}
+                    or not isinstance(chart.get('dimension'), str) or chart['dimension'] not in dimensions
+                    or not isinstance(chart.get('measures'), list) or not 1 <= len(chart['measures']) <= 4
+                    or any(not isinstance(name, str) or name not in columns or name in dimensions for name in chart['measures'])
+                    or len(set(chart['measures'])) != len(chart['measures'])):
+                reject()
     filters = contract.get('measure_filters', {})
     if not isinstance(filters, dict) or len(filters) > 24:
         reject()

@@ -1,45 +1,61 @@
-# Saved Text-to-Dashboard workspace
+# Saved dashboard workspace
 
-The web app has a separate **Dashboard** tab for analytics roles. Describe a business view, create a saved dashboard, reopen it, edit tile titles/types/fields/order/width, refresh source data, or rebuild from an edited description. HTML can be opened privately or downloaded.
+The Dashboard tab starts with a chat-style request and a separate optional scope. Clarification stays in the composer; the workspace opens after usable outputs are available. Users can edit layouts, refresh data, rebuild requirements and download private HTML.
 
-## Data flow
+## Query and output flow
 
-1. Inspect the authorized live SQL schema and up to three date-coverage aggregates using the existing read-only repository.
-2. The configured SQL model proposes at most four natural-language data questions and eight tiles. It generates neither executable SQL nor HTML at this stage.
-3. Run questions through the shared `SQLAnalyticsAgent`, including Jev, metric definitions, parameterized planning and SQL security. Two source requests can run concurrently under a 180-second build deadline.
-4. Bind returned columns to tiles and compose trusted HTML/CSS/SVG. Available tiles: KPI, bar, line, donut, table, and descriptive summary. Failed or empty sources stay explicit. Incompatible charts fall back to source tables.
-5. Atomically save the typed definition, returned data and HTML in private SQLite storage. Presentation edits reuse saved results; scope changes rewrite the source questions and rerun SQL. Refresh preserves the existing definition; rebuild creates a new plan within the same saved dashboard.
+1. The API uses the shared SQL engine, supporting either a raw runtime or a wrapper exposing `sql_agent`.
+2. A server-owned dashboard context asks the existing SQL call to return an `outputs` manifest alongside one query or a bundle of at most two independent queries. Each output binds a supported kind, query index, dimension and returned measures. IDs are assigned by the server.
+3. Validate SQL, parameters, approved sources, canonical metrics, period, output references and grain before executing data queries. Overall KPIs need an overall aggregate query. Chart rows are never summed into a KPI.
+4. Render declared line/bar/donut/table/KPI/summary outputs and check them against the returned observations before saving. Invalid output plans receive the SQL runtime's bounded repair attempt, then clarify without executing. Incompatible charts, KPIs and summaries stay in chat with usable alternatives.
+5. Save the definition, observations and escaped HTML atomically. A source failure can produce a visibly partial dashboard when another query succeeds. Empty results remain unknown rather than becoming zero.
 
-The legacy single-chart chat route remains a chart preview. Saved dashboards use `/api/dashboards` and are owned by the authenticated subject. Stale edits return HTTP 409. The preview iframe is sandboxed, HTML responses prohibit scripts and network access, and all data text is escaped. No arbitrary model HTML is executed.
+Each new build permits at most two queries, eight outputs and two explicitly mapped charts per dataset, within the 180-second build budget. Existing legacy documents retain their saved query capacity. Multiple charts and summaries can share one result, with source observations shown once per dataset.
 
-## Local startup
+Descriptive summaries cover returned aggregate observations only. They follow SQL column lineage through CTEs, subqueries and aliases, exclude raw identifiers/window calculations, preserve NULLs and can bind measures without a chart. Statistics within each month/group, unsupported chart types, cross-result calculations and broader cross-domain interpretation remain deferred. Unsupported requirements must be clarified rather than silently converted into another output.
 
-From the repository root:
+## Clarification and scope
+
+Drafts use the existing ConversationStore with owner/permission isolation, expiry, bounded capacity and at most three replies. Clients send a message and opaque conversation ID; history and target dashboard identity remain server-owned. No clarification or wholly failed source result creates a saved dashboard.
+
+The original description and shared scope survive clarification. Recognized conflicting periods are rejected. Keep frequently edited dates in the scope field. Refresh reruns saved questions and preserves edited tile definitions; Rebuild selects new outputs for the revised description. Old dashboards need Rebuild to add newly requested outputs. Clarification continuations retain revision checks and preserve the saved dashboard until a successful replacement.
+
+Model interpretation remains responsible for translating prose into requirements. Manifest validation proves consistency with SQL and rendering; it does not guarantee perfect interpretation of arbitrary language.
+
+## Model cost and upstream compatibility
+
+There is no separate dashboard planner, requirement-extraction model or narrative call. Inventory outputs are declared alongside its existing typed interpretation and compiled without an additional model call. Other new builds use SQL generation for the manifest, including requests that previously used only a deterministic compiler. A valid two-query plan can come from one generation response. Repair/failover can still add attempts.
+
+Refresh generates saved queries separately when required. Main's deterministic annual-revenue compiler is preserved, including its source-completeness limitation, so eligible annual KPI refreshes need no SQL-generation call. Auto orchestration and final response synthesis remain unchanged by the dashboard integration.
+
+The local launcher selects Groq and includes the third configured key in its numbered key list. Rate/quota limits rotate configured keys without changing the model. Groq exhaustion returns a failure instead of falling back to Cloudflare. Credentials stay outside source and logs.
+
+## UI and security
+
+The UI reuses the application's authentication, API client and General Chat patterns. Enter sends; Shift+Enter inserts a newline. New clears request drafts, account changes clear private state, and late responses cannot restore another account's dashboard. The original scope cannot be replaced by generated content.
+
+Saved documents are owner-scoped and revision-checked. Write routes enforce same origin. Preview HTML is sandboxed, escapes all data, prohibits scripts/network access and never inserts model HTML into the privileged app. The SQL engine retains schema/function/parameter/read-only limits and server-verified analytics permissions.
+
+## Run locally
 
 ```powershell
-.venv\Scripts\python.exe scripts/start_local_web.py
+.venv/Scripts/python.exe scripts/start_local_web.py
 ```
 
-Open <http://127.0.0.1:8000> and select **Dashboard** after signing in with an analytics-enabled account. The same FastAPI process serves the web UI and backend; Streamlit is unnecessary. Groq configuration comes from `.env`; the launch script includes the configured third key in the provider's numbered fallback list without logging credentials.
+Open http://127.0.0.1:8000/ and sign in with an analytics-enabled account. The same FastAPI process serves the UI and API. Configure the existing database/provider environment variables; no OpenRouter/Jev credential is required.
 
-Storage defaults to `artifacts/local/dashboards/dashboards.sqlite3`, outside the static web root and ignored by Git. `DASHBOARD_STORAGE_DIR` overrides its location. Limits: 100 dashboards per owner and 2 MB per saved document plus HTML. Local storage needs a persistent private volume and backup strategy before deployment.
+Storage defaults to `artifacts/local/dashboards/dashboards.sqlite3`; `DASHBOARD_STORAGE_DIR` can override it. Limits are 100 dashboards per owner and 2 MB for each document plus HTML. Production storage needs a private persistent volume and backups.
 
-## Verification and limits
+## Verification
 
-The live sales smoke build saved three tiles from two approved queries for July–September 2026: monthly revenue, a descriptive summary and a total-revenue KPI. Refresh, field binding, SVG/summary generation, layout editing, stale-write rejection, reopening and authenticated HTML download were verified. The observed total revenue was 5,733,349.81 in unconfirmed source currency. Local evidence is in `artifacts/local/dashboards/live-smoke.json` and `.html`.
+Tests cover raw/wrapped runtimes, clarification isolation, query/output bounds, pre-execution rejection, two-query trend/KPI/summary plans, CTE lineage, NULLs, partial sources, persistence, optimistic revisions, refresh and scoped data. Provider/database transports are mocked in these tests.
 
-Checks: 25 dashboard tests, seven SQL-flow tests and five existing JavaScript renderer tests pass; both web JavaScript files pass syntax checks. A broader 111-check run passed 110 checks and encountered the existing `test_metric_candidates` import error (`KeyError: source_labels`). That separate import problem remains unresolved; the full repository suite is not claimed green.
+```powershell
+$env:PYTHONPATH = 'src'
+python -m unittest discover -s tests -p 'test_dashboard*.py'
+python -m unittest discover -s tests/sql
+node --test tests/test_dashboard_scope.cjs tests/test_dashboard_workspace.cjs
+node --check src/app/static/dashboard.js
+```
 
-A live scope edit to July–August 2026 rewrote both source questions, executed both queries with July 1/August 31 parameters and rendered a total-revenue KPI of 3,643,117.66 alongside the updated trend and summary. The saved sample is left in that edited state for local testing.
-
-The latest SQL change from main, `90c46c0`, was imported as `1588a38`: returned-versus-sold questions now include order-item quantity schema. The shared SQL flow is used by this dashboard builder.
-
-Planning still depends on Groq availability/quota and Jev clarity decisions. Output planning retains the provider's 1,000-token allowance; plans are requested in compact JSON. The current environment produced a quota rejection with a larger allowance and one transient TLS failure before a successful build. This is a focused smoke verification, not a new bilingual reliability benchmark.
-
-Statistics describe returned observations, not an invented full population. Donut composition and unit compatibility retain existing chart safeguards. Static exports are snapshots; filters and edits happen in the app, and downloading HTML exports its visible business data. Browser automation exposed no available browser, so visual interaction review remains unverified.
-
-## Main integration verification
-
-The publication branch starts from current main and imports only the dashboard workspace and required chart/policy helpers. It preserves main's SQL implementation, inventory-dashboard class, report/navigation design, shared dialog and document-processing changes. The saved-dashboard API uses `runtime.analytics_agent.sql_agent`; it does not depend on replacing the legacy inventory agent.
-
-On this checkout, 22 dashboard checks and two legacy inventory checks pass, both JavaScript files pass syntax checks, and a live authenticated build rendered a chart and descriptive summary from approved SQL results. A 65-test existing app/agent/SQL comparison produced identical failure IDs before and after integration: 24 failures and 31 errors, largely stale contracts and missing document fixtures/services. These existing checks are not reported as passing. Comparison logs, live data, benchmark snapshots and credentials are excluded from the published commits.
+The integration is based on main rather than an older branch snapshot, preserving newer SQL/Auto and web UI changes. Full-suite failures are compared with a clean-main baseline; a passing focused suite is not a claim that the entire repository is green. Visual-browser and live-provider testing are separate from mocked regression checks.

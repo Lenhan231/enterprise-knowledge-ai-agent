@@ -2,7 +2,6 @@ import tempfile
 import unittest
 from unittest.mock import AsyncMock, Mock, patch
 from types import SimpleNamespace
-import json
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -52,18 +51,36 @@ class DashboardApiTest(unittest.TestCase):
         self.assertEqual(403, self.client.delete(f'/api/dashboards/{self.doc.id}?revision=1', headers={'Origin': 'https://foreign.example'}).status_code)
 
     def test_build_uses_shared_analytics_sql_with_legacy_dashboard_present(self):
-        plan = {'title': 'Sales', 'queries': [{'id': 'sales', 'question': 'Total revenue from commerce.sales in July 2026'}],
-                'tiles': [{'id': 'total', 'title': 'Revenue', 'kind': 'kpi', 'query_id': 'sales'}]}
+        provider = Mock(side_effect=AssertionError('Dashboard must use SQL results directly'))
         sql = SimpleNamespace(inventory_only=False,
             repository=SimpleNamespace(get_schema=AsyncMock(return_value={'tables': {'commerce.sales': {'date', 'revenue'}}})),
-            _provider=lambda: SimpleNamespace(generate=Mock(return_value=json.dumps(plan))),
-            run_payload=AsyncMock(return_value={'ok': True, 'query_status': 'executed', 'rows': [{'revenue': 12.5}]}))
-        runtime = SimpleNamespace(analytics_agent=sql, dashboard_agent=SimpleNamespace(repository=object()))
+            _provider=provider,
+            run_payload=AsyncMock(return_value={'ok': True, 'query_status': 'executed', 'rows': [{'revenue': 12.5}],
+                                               'sql': 'SELECT SUM(revenue) AS revenue FROM commerce.sales LIMIT 1'}))
+        runtime = SimpleNamespace(analytics_agent=SimpleNamespace(sql_agent=sql), dashboard_agent=SimpleNamespace(repository=object()))
         with patch('app.dashboards._get_runtime', AsyncMock(return_value=runtime)):
             response = self.client.post('/api/dashboards', json={'description': 'Revenue dashboard July 2026'})
         self.assertEqual(201, response.status_code, response.text)
         self.assertEqual('complete', response.json()['dashboard']['status'])
         sql.run_payload.assert_awaited_once()
+        provider.assert_not_called()
+
+    def test_build_and_refresh_accept_raw_or_wrapped_sql_runtime(self):
+        for wrapped in (False, True):
+            with self.subTest(wrapped=wrapped):
+                sql = SimpleNamespace(run_payload=AsyncMock(return_value={
+                    'ok': True, 'query_status': 'executed', 'rows': [{'revenue': 25}],
+                    'sql': 'SELECT SUM(revenue) AS revenue FROM commerce.sales LIMIT 1'}))
+                analytics = SimpleNamespace(sql_agent=sql) if wrapped else sql
+                runtime = SimpleNamespace(analytics_agent=analytics)
+                with patch('app.dashboards._get_runtime', AsyncMock(return_value=runtime)):
+                    result = self.client.post('/api/dashboards', json={'description': 'Total revenue'})
+                    self.assertEqual(201, result.status_code, result.text)
+                    saved = result.json()['dashboard']
+                    refreshed = self.client.post(f"/api/dashboards/{saved['id']}/refresh", json={'revision': saved['revision']})
+                    self.assertEqual(200, refreshed.status_code, refreshed.text)
+                    self.assertEqual('complete', refreshed.json()['dashboard']['status'])
+                    self.assertEqual(2, sql.run_payload.await_count)
 
     def test_deleting_tile_removes_unused_failed_source_and_updates_status(self):
         from core.dashboards.models import QuerySpec, QueryResult, TileSpec
@@ -83,6 +100,34 @@ class DashboardApiTest(unittest.TestCase):
         self.assertEqual(['total'], [tile['id'] for tile in saved['tiles']])
         body.update(revision=saved['revision'], tiles=[])
         self.assertEqual(422, self.client.patch(f'/api/dashboards/{doc.id}', json=body).status_code)
+
+    def test_single_dataset_build_scope_refresh_reopen_and_download_without_dashboard_model(self):
+        provider = Mock(side_effect=AssertionError('Unexpected dashboard model call'))
+        sql = SimpleNamespace(_provider=provider, run_payload=AsyncMock(return_value={
+            'ok': True, 'query_status': 'executed', 'rows': [{'revenue': 12.5}],
+            'sql': 'SELECT SUM(revenue) AS revenue FROM commerce.sales LIMIT 1'}))
+        runtime = SimpleNamespace(analytics_agent=SimpleNamespace(sql_agent=sql))
+        with patch('app.dashboards._get_runtime', AsyncMock(return_value=runtime)):
+            response = self.client.post('/api/dashboards', json={'description': 'Total revenue', 'scope': 'July 2026'})
+            self.assertEqual(201, response.status_code, response.text)
+            saved = response.json()['dashboard']
+            self.assertEqual(['kpi'], [tile['kind'] for tile in saved['tiles']])
+            tiles = saved['tiles']
+            tiles[0]['title'] = 'My revenue'
+            response = self.client.patch(f"/api/dashboards/{saved['id']}", json={
+                'revision': saved['revision'], 'title': 'My dashboard', 'scope': 'August 2026', 'tiles': tiles})
+            self.assertEqual(200, response.status_code, response.text)
+            self.assertEqual(2, sql.run_payload.await_count)
+            self.assertIn('August 2026', sql.run_payload.call_args.args[0].question)
+            self.assertNotIn('July 2026', sql.run_payload.call_args.args[0].question)
+        provider.assert_not_called()
+        reopened = self.client.get(f"/api/dashboards/{saved['id']}")
+        self.assertEqual('My revenue', reopened.json()['dashboard']['tiles'][0]['title'])
+        self.assertEqual('August 2026', reopened.json()['dashboard']['scope'])
+        html = self.client.get(f"/api/dashboards/{saved['id']}/html?download=true")
+        self.assertEqual(200, html.status_code)
+        self.assertIn('attachment;', html.headers['content-disposition'])
+        self.assertIn('My revenue', html.text)
 
 
 if __name__ == '__main__':

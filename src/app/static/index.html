@@ -160,10 +160,19 @@
       <div class="dw-layout">
         <aside class="dw-library" aria-labelledby="dw-library-heading"><h2 id="dw-library-heading">Saved dashboards</h2><div id="dw-library"></div></aside>
         <div class="dw-main">
-          <form id="dw-create" class="dw-card"><h2>What would you like to see?</h2><label for="dw-prompt">Dashboard description</label><textarea id="dw-prompt" rows="4" maxlength="2000" required placeholder="A sales dashboard for July to September 2026: monthly revenue trend, a revenue KPI, and a statistical summary."></textarea><label for="dw-create-scope">Shared date and filter scope (optional)</label><input id="dw-create-scope" maxlength="600" placeholder="July through September 2026"><p class="dw-help">Up to four SQL datasets and eight tiles. Planning and source queries can take up to three minutes.</p><button type="submit" class="primary-button">Build dashboard</button></form>
+          <form id="dw-create" class="dw-card dw-chat" autocomplete="off">
+            <div id="dw-welcome" class="general-chat-welcome dw-chat-welcome">
+              <p class="eyebrow">Dashboard assistant</p><h2>What would you like to see?</h2>
+              <p>Describe your business question. I will ask if anything needs clarifying, then build your dashboard.</p>
+            </div>
+            <div id="dw-transcript" class="dw-transcript" role="log" aria-label="Dashboard conversation" aria-live="polite" aria-relevant="additions text" hidden></div>
+            <details class="dw-scope-options"><summary>Date and filter scope (optional)</summary><label for="dw-create-scope">Shared scope</label><input id="dw-create-scope" name="dashboard_create_scope" autocomplete="off" spellcheck="false" maxlength="600" placeholder="January through December 2026"><p class="dw-help">Scope stays with this request while we clarify it. Use New dashboard to change the request and scope.</p></details>
+            <div class="dw-chat-composer"><label for="dw-prompt" class="visually-hidden">Message the dashboard assistant</label><textarea id="dw-prompt" rows="2" maxlength="2000" required aria-describedby="dw-chat-note" placeholder="Describe the dashboard you want?"></textarea><button id="dw-send" type="submit" class="primary-button" aria-label="Send dashboard message">Send</button></div>
+            <p id="dw-chat-note" class="dw-help">Enter to send ? Shift + Enter for a new line. The dashboard opens once your request is clear and data is ready.</p>
+          </form>
           <section id="dw-editor" hidden aria-label="Dashboard editor">
             <div class="dw-toolbar"><button id="dw-save" type="button" class="primary-button">Save edits</button><button id="dw-refresh" type="button" class="secondary-button">Refresh data</button><button id="dw-rebuild" type="button" class="secondary-button">Rebuild from description</button><a id="dw-open" target="_blank" rel="noopener" class="secondary-button">Open HTML</a><a id="dw-download" class="secondary-button">Download HTML</a><button id="dw-delete" type="button" class="secondary-button">Delete</button></div>
-            <details class="dw-card" open><summary>Edit dashboard</summary><label for="dw-title">Title</label><input id="dw-title" maxlength="120" required><label for="dw-description">Description (used by Rebuild)</label><textarea id="dw-description" maxlength="2000" rows="3"></textarea><label for="dw-scope">Shared scope (changing it reruns SQL)</label><input id="dw-scope" maxlength="600"><p id="dw-meta" class="dw-help"></p><div id="dw-tiles"></div></details>
+            <details class="dw-card" open><summary>Edit dashboard</summary><label for="dw-title">Title</label><input id="dw-title" maxlength="120" required><label for="dw-description">Description (used by Rebuild)</label><textarea id="dw-description" maxlength="2000" rows="3"></textarea><label for="dw-scope">Shared scope (changing it reruns SQL)</label><input id="dw-scope" name="dashboard_edit_scope" autocomplete="off" spellcheck="false" maxlength="600"><p id="dw-meta" class="dw-help"></p><div id="dw-tiles"></div></details>
             <h2>Dashboard preview</h2><iframe id="dw-preview" title="Saved dashboard preview" sandbox="" referrerpolicy="no-referrer"></iframe>
           </section>
         </div>
@@ -537,8 +546,8 @@
       </div>
     </form>
   </dialog>
-  <link rel="stylesheet" href="/static/dashboard.css?v=20261114">
+  <link rel="stylesheet" href="/static/dashboard.css?v=20261115-output-contract">
   <script src="/static/app.js?v=redesign-20261115a" defer></script>
-  <script src="/static/dashboard.js?v=20261114-reconcile" defer></script>
+  <script src="/static/dashboard.js?v=20261115-output-contract-reconcile" defer></script>
 </body>
 </html>

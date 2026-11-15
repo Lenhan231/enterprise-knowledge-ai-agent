@@ -84,6 +84,44 @@ class GroqKeyFailoverTest(unittest.TestCase):
                     provider.close()
 
 
+class SQLGroqKeyFailoverTest(unittest.IsolatedAsyncioTestCase):
+    async def test_sql_uses_third_groq_key_and_preserves_model(self):
+        from core.agents.sql.agent import SQLAnalyticsAgent
+        clients = [client() for _ in range(3)]
+        for item in clients[:2]:
+            item.responses.create.side_effect = limited()
+        with patch('core.llm.groq_provider.OpenAI', side_effect=clients):
+            provider = GroqProvider(model='same-test-model', api_keys=['fake-one', 'fake-two', 'fake-three'])
+        try:
+            result = await SQLAnalyticsAgent(Mock(), llm=provider)._generate_sql('same prompt')
+            self.assertEqual('OK', result)
+            for item in clients:
+                item.responses.create.assert_called_once()
+                self.assertEqual('same-test-model', item.responses.create.call_args.kwargs['model'])
+                self.assertEqual('same prompt', item.responses.create.call_args.kwargs['input'])
+        finally:
+            provider.close()
+
+    async def test_all_three_groq_keys_limited_does_not_try_cloudflare(self):
+        from core.agents.sql.agent import SQLAnalyticsAgent
+        from core.llm.Cloudflare_provider import CloudflareProvider
+        clients = [client() for _ in range(3)]
+        for item in clients:
+            item.responses.create.side_effect = limited()
+        with patch('core.llm.groq_provider.OpenAI', side_effect=clients):
+            provider = GroqProvider(api_keys=['fake-one', 'fake-two', 'fake-three'])
+        try:
+            with patch.dict('os.environ', {'CLOUDFLARE_ACCOUNT_ID': 'test', 'CLOUDFLARE_API_TOKEN': 'test'}), \
+                 patch.object(CloudflareProvider, '__init__', side_effect=AssertionError('No cross-provider fallback')) as cloudflare:
+                with self.assertRaises(RateLimitError):
+                    await SQLAnalyticsAgent(Mock(), llm=provider)._generate_sql('same prompt')
+                cloudflare.assert_not_called()
+                for item in clients:
+                    item.responses.create.assert_called_once()
+        finally:
+            provider.close()
+
+
 def server_error(status):
     from openai import InternalServerError
     response = httpx.Response(status, request=httpx.Request("POST", "https://example.invalid/responses"))

@@ -1,5 +1,6 @@
 """Combine authorized evidence with stable citations and explicit coverage gaps."""
 import json
+import logging
 import os
 import re
 from datetime import date
@@ -11,6 +12,8 @@ from core.models.agents import AgentResult
 from core.models.agent_plan import AgentPlan, AgentTask
 from core.prompts.agents import SYNTHESIS_PROMPT
 from core.rag.arithmetic import verified_results
+
+logger = logging.getLogger(__name__)
 
 
 def _number_options(text):
@@ -219,7 +222,7 @@ async def assemble_response(request, plan, execution, provider):
                                 if inputs[0]['agent'] == 'sql' else None)
         if deterministic_answer:
             answer, fallback = deterministic_answer, False
-    if usable and not answer:
+    if usable and not answer and provider is not None:
         serialized = json.dumps(inputs, ensure_ascii=False, default=str)
         if len(serialized) <= 32_000:
             prompt = SYNTHESIS_PROMPT.format(
@@ -228,6 +231,8 @@ async def assemble_response(request, plan, execution, provider):
                 limitations=json.dumps(limitations, ensure_ascii=False),
                 results=serialized,
             )
+            task_ids = [outcome.task.id for outcome in usable]
+            prompt += '\nValid task IDs for used_tasks: ' + json.dumps(task_ids, ensure_ascii=False)
             knowledge_rules = []
             if os.getenv('KNOWLEDGE_COMPLETENESS_RULE', '0') == '1':
                 knowledge_rules.append('Address every material part of the question and state what the evidence does not establish.')
@@ -241,10 +246,16 @@ async def assemble_response(request, plan, execution, provider):
                 candidate = draft['answer']
                 if not isinstance(candidate, str) or not candidate.strip() or len(candidate) > 8000:
                     raise ValueError('Invalid synthesis')
+                if not isinstance(draft.get('used_tasks'), list) or any(
+                        not isinstance(task_id, str) for task_id in draft['used_tasks']):
+                    raise ValueError('Invalid used_tasks')
                 cited = set(re.findall(r'\[(S\d+)\]', candidate))
                 allowed = {e.citation_id for e in evidence}
-                if not cited or not cited <= allowed or set(draft['used_tasks']) != {o.task.id for o in usable}:
-                    raise ValueError('Invalid citations or missing task coverage')
+                # Task IDs are opaque planner labels. Model-reported used_tasks can
+                # confuse them with agent names; actual coverage is verified below
+                # by requiring citations from every usable task's evidence.
+                if not cited or not cited <= allowed:
+                    raise ValueError('Invalid synthesis citations')
                 for item in inputs:
                     if not cited.intersection(e['citation_id'] for e in item['evidence']):
                         raise ValueError('Uncited task')
@@ -252,8 +263,10 @@ async def assemble_response(request, plan, execution, provider):
                 if not _supported_numbers(candidate, inputs, request.question):
                     raise ValueError('Unsupported numeric value')
                 answer, fallback = candidate.strip(), False
-            except Exception:
-                pass
+            except Exception as error:
+                # Do not log model output or evidence; the error class is enough to
+                # distinguish provider failures from rejected synthesis responses.
+                logger.warning('Final answer synthesis fell back (%s)', type(error).__name__)
     allowed = {e.citation_id for e in evidence}
     null_answer = _null_sql_findings(inputs, request.question)
     if null_answer:

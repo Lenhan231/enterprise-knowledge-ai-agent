@@ -50,7 +50,13 @@ def inventory_time_scope(question):
     if len(years) != 1:
         return None
     year = int(next(iter(years)))
-    if month or numeric:
+    month_range = re.search(r'\b('+'|'.join(calendar.month_name[1:]).lower()+r')\s*(?:through|to|until|[-–—])\s*('+'|'.join(calendar.month_name[1:]).lower()+r')\b', question)
+    numeric_range = re.search(r'tháng\s+(\d{1,2})\s*(?:đến|tới|[-–—])\s*(?:tháng\s+)?(\d{1,2})', question)
+    if month_range:
+        first, last = (list(calendar.month_name).index(value.title()) for value in month_range.groups())
+    elif numeric_range:
+        first, last = map(int, numeric_range.groups())
+    elif month or numeric:
         first = list(calendar.month_name).index(month[1].title()) if month else int(numeric[1])
         last = first
     elif quarter:
@@ -58,6 +64,8 @@ def inventory_time_scope(question):
         last = first+2
     else:
         first, last = 1, 12
+    if not 1 <= first <= last <= 12:
+        raise MetricDefinitionError('Specify a valid ordered month range.', code='invalid_date_scope', clarification=True)
     return 'range', date(year, first, 1).isoformat(), date(year, last, calendar.monthrange(year, last)[1]).isoformat()
 
 
@@ -526,6 +534,21 @@ def _validate_source_period(scope, table, field, parameters, question):
             upper.append(bound + timedelta(days=int(operator in {exp.EQ,exp.LTE})))
     if not lower or not upper or max(lower) != start or min(upper) != end:
         raise MetricDefinitionError(f'{table}.{field} must independently cover the requested period.', code='invalid_date_scope')
+
+
+def validate_independent_query_period(sql, parameters, question, sources, date_columns):
+    """Each independent metric dataset must retain the shared historical period."""
+    if not inventory_time_scope(question):
+        return
+    scopes = list(traverse_scope(parse_one(sql, read='postgres')))
+    for source in sources:
+        fields = {field for table, field in date_columns if table == source}
+        if len(fields) != 1:
+            raise MetricDefinitionError('Clarify the date field for each independent dataset.', clarification=True)
+        for scope in scopes:
+            if any(isinstance(table, exp.Table) and table.db + '.' + table.name == source
+                   for table in scope.sources.values()):
+                _validate_source_period(scope, source.split('.')[1], next(iter(fields)), parameters, question)
 
 
 def _validate_contract_population(scope, required_tables, date_column, parameters):

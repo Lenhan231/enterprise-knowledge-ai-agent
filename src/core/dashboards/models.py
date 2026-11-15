@@ -15,7 +15,7 @@ class StrictModel(BaseModel):
 
 class QuerySpec(StrictModel):
     id: str = Field(pattern=r'^[a-z][a-z0-9_-]{0,31}$')
-    question: str = Field(min_length=1, max_length=800)
+    question: str = Field(min_length=1, max_length=2000)
 
 
 class TileSpec(StrictModel):
@@ -26,6 +26,22 @@ class TileSpec(StrictModel):
     measures: list[str] = Field(default_factory=list, max_length=4)
     dimension: str | None = Field(default=None, max_length=128)
     span: int = Field(default=1, ge=1, le=2)
+
+
+class DashboardOutput(StrictModel):
+    query: int = Field(strict=True, ge=0, le=1)
+    kind: Literal['kpi', 'bar', 'line', 'donut', 'table', 'summary']
+    dimension: str | None = Field(default=None, max_length=128)
+    measures: list[str] = Field(default_factory=list, max_length=4)
+    group_by: list[str] = Field(default_factory=list, max_length=4)
+
+    @model_validator(mode='after')
+    def check_fields(self):
+        if any(not name or len(name) > 128 for name in [*self.measures, *self.group_by]):
+            raise ValueError('Output fields must be bounded returned column names')
+        if len(set(self.measures)) != len(self.measures) or len(set(self.group_by)) != len(self.group_by):
+            raise ValueError('Output fields must be unique')
+        return self
 
 
 class DashboardPlan(StrictModel):
@@ -53,10 +69,16 @@ class QueryResult(StrictModel):
     message: str = ''
 
 
+class ClarificationTurn(StrictModel):
+    question: str = Field(min_length=1, max_length=1200)
+    reply: str = Field(min_length=1, max_length=2000)
+
+
 class DashboardDocument(DashboardPlan):
     id: str = Field(default_factory=lambda: uuid4().hex, pattern=r'^[a-f0-9]{32}$')
     description: str = Field(min_length=1, max_length=2000)
     scope: str = Field(default='', max_length=600)
+    clarifications: list[ClarificationTurn] = Field(default_factory=list, max_length=3)
     revision: int = Field(default=1, ge=1)
     created_at: datetime = Field(default_factory=now)
     updated_at: datetime = Field(default_factory=now)
@@ -69,6 +91,7 @@ class DashboardDocument(DashboardPlan):
 class BuildRequest(StrictModel):
     description: str = Field(min_length=1, max_length=2000)
     scope: str = Field(default='', max_length=600)
+    conversation_id: str | None = Field(default=None, pattern=r'^[a-f0-9]{32}$')
 
 
 class DashboardEdit(StrictModel):
@@ -82,3 +105,16 @@ class RefreshRequest(StrictModel):
     revision: int = Field(ge=1)
     description: str | None = Field(default=None, min_length=1, max_length=2000)
     scope: str | None = Field(default=None, max_length=600)
+
+
+class PendingDashboard(StrictModel):
+    description: str = Field(min_length=1, max_length=2000)
+    scope: str = Field(default='', max_length=600)
+    question: str = Field(default='', max_length=1200)
+    clarifications: list[ClarificationTurn] = Field(default_factory=list, max_length=3)
+    operation: Literal['create', 'rebuild', 'refresh', 'edit'] = 'create'
+    target_id: str | None = Field(default=None, pattern=r'^[a-f0-9]{32}$')
+    revision: int | None = Field(default=None, ge=1)
+    edit: DashboardEdit | None = None
+    presentation_tile_id: str | None = Field(default=None, pattern=r'^[a-z][a-z0-9_-]{0,31}$')
+    presentation_choices: dict[str, Literal['line', 'bar', 'donut', 'table']] = Field(default_factory=dict, max_length=8)

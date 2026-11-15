@@ -93,7 +93,7 @@ def chart_svg(chart):
     return ''.join(out) + f'<small>{text(chart.unit)} · Exact values in source table below</small>'
 
 
-def _tile_content(tile, result):
+def _tile_content(tile, result, *, include_observations=True):
     if not result or result.status not in {'complete', 'empty'}:
         return f'<p class="notice">{text(result.message if result else "Source unavailable")}</p>'
     rows = result.payload.get('rows') or []
@@ -131,20 +131,22 @@ def _tile_content(tile, result):
                     row[key] = number(row[key])
         contract = payload.get('metadata', {}).get('request_contract')
         if contract:
+            contract.pop('charts', None)
             contract['chart_type'] = tile.kind
         chart = build_chart(payload, f'{tile.kind} chart')
         chart.title = tile.title
-        return chart_svg(chart) + '<details><summary>Source observations</summary>' + table(rows) + '</details>'
+        observations = '<details><summary>Source observations</summary>' + table(rows) + '</details>' if include_observations else ''
+        return chart_svg(chart) + observations
     except ValueError as error:
         raise ValueError('Chart unavailable: ' + str(error)) from error
 
 
-def tile_presentation(tile, result):
+def tile_presentation(tile, result, *, include_observations=True):
     if not result or result.status not in {'complete', 'empty'}:
         message = result.message if result and result.message else 'Source unavailable'
         return f'<p class="notice">{text(message)}</p>', 'unavailable', message
     try:
-        html = _tile_content(tile, result)
+        html = _tile_content(tile, result, include_observations=include_observations)
         return html, 'complete' if result.payload.get('rows') else 'empty', ''
     except ValueError as error:
         message = str(error)
@@ -157,8 +159,21 @@ def tile_content(tile, result):
 
 def render_dashboard(document):
     results = {result.id: result for result in document.results}
-    tiles = ''.join(f'<article class="span-{tile.span}"><h2>{text(tile.title)}</h2>{tile_content(tile, results.get(tile.query_id))}<small>Dataset: {text(tile.query_id)}</small></article>' for tile in document.tiles)
-    sources = ''.join(f'<details><summary>{text(result.id)} · {text(result.status)}</summary><p>{text(result.question)}</p><p>{text(result.message)}</p><p>Error type: {text(result.payload.get("metadata", {}).get("error_type", "None reported"))}</p><pre>{text(result.payload.get("sql") or result.payload.get("attempted_sql") or "SQL text unavailable")}</pre><pre>{text(result.payload.get("parameters", []))}</pre><p>{text(result.payload.get("metadata", {}).get("limitations", []))}</p></details>' for result in document.results)
+    tiles, observed = [], set()
+    for tile in document.tiles:
+        content, status, _ = tile_presentation(tile, results.get(tile.query_id), include_observations=tile.query_id not in observed)
+        tiles.append(f'<article class="span-{tile.span}"><h2>{text(tile.title)}</h2>{content}<small>Dataset: {text(tile.query_id)}</small></article>')
+        if tile.kind in {'line', 'bar', 'donut', 'table'} and status == 'complete':
+            observed.add(tile.query_id)
+    tiles = ''.join(tiles)
+    sources = []
+    represented = {tile.query_id for tile in document.tiles if tile.kind in {'line', 'bar', 'donut', 'table'}}
+    for result in document.results:
+        evidence = f'<details><summary>{text(result.id)} · {text(result.status)}</summary><p>{text(result.question)}</p><p>{text(result.message)}</p><p>Error type: {text(result.payload.get("metadata", {}).get("error_type", "None reported"))}</p><pre>{text(result.payload.get("sql") or result.payload.get("attempted_sql") or "SQL text unavailable")}</pre><pre>{text(result.payload.get("parameters", []))}</pre><p>{text(result.payload.get("metadata", {}).get("limitations", []))}</p>'
+        if result.id not in represented and result.payload.get('rows'):
+            evidence += '<details><summary>Source observations</summary>' + table(result.payload['rows']) + '</details>'
+        sources.append(evidence + '</details>')
+    sources = ''.join(sources)
     return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="{escape(CSP, quote=True)}"><title>{text(document.title)}</title>
 <style>body{{margin:0;background:#f2f5f7;color:#172d36;font:15px system-ui,sans-serif;padding:30px}}header,main,footer{{max-width:1300px;margin:auto}}h1{{font-size:32px;letter-spacing:-1px}}h2{{font-size:19px}}main{{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}}article{{background:white;border:1px solid #d9e2e7;border-radius:14px;padding:22px;min-width:0}}.span-2{{grid-column:span 2}}.kpi{{font-size:42px;font-weight:700;margin:16px 0;color:#117b70}}small{{color:#526774}}svg{{width:100%;max-height:350px}}.table{{overflow:auto;max-height:380px}}table{{border-collapse:collapse;width:100%;font-size:13px}}td,th{{padding:10px;text-align:left;border-bottom:1px solid #e4e9ed;white-space:nowrap}}details{{margin:14px 0}}summary{{cursor:pointer}}pre{{white-space:pre-wrap;overflow-wrap:anywhere}}.notice{{color:#84510a}}footer{{margin-top:24px}}@media(max-width:700px){{body{{padding:15px}}main{{grid-template-columns:1fr}}.span-2{{grid-column:span 1}}}}</style></head>
 <body><header><small>SQL-backed business dashboard · {text(document.status)} · Revision {document.revision}</small><h1>{text(document.title)}</h1><p>{text(document.description)}</p><p>Scope: {text(document.scope or 'As specified in source questions')}</p><p><small>Data refreshed {text(document.data_updated_at.isoformat())}. Saved {text(document.updated_at.isoformat())}.</small></p></header><main>{tiles}</main><footer><h2>Sources and limitations</h2><p>Charts and statistics describe returned SQL observations. Missing values are unknown. Currency is unconfirmed unless the source explicitly identifies it.</p>{sources}</footer></body></html>'''

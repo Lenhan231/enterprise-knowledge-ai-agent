@@ -1,0 +1,79 @@
+"""Validate SQL/output consistency without interpreting prose or making model calls."""
+from pydantic import ValidationError
+from sqlglot import exp, parse_one
+from sqlglot.optimizer.scope import Scope, traverse_scope
+
+from core.analytics.metric_validation import MetricDefinitionError, validate_independent_query_period
+from core.analytics.sql_validation import APPROVED_DATE_COLUMNS
+from core.dashboards.models import DashboardOutput
+from core.dashboards.presentation import aggregate_outputs, output_roles
+
+
+def require(condition, message):
+    if not condition:
+        raise MetricDefinitionError(message, code='dashboard_requirements', clarification=True)
+
+
+def scalar_result(sql):
+    def scalar(scope, visited=()):
+        if id(scope) in visited:
+            return False
+        select = scope.expression
+        if select.args.get('group'):
+            return False
+        aggregates = [node for projection in select.selects for node in projection.find_all(exp.AggFunc)
+                      if node.find_ancestor(exp.Select) is select and not node.find_ancestor(exp.Window)]
+        if aggregates:
+            return True
+        sources = [source for _, source in scope.selected_sources.values()]
+        return len(sources) == 1 and isinstance(sources[0], Scope) and scalar(sources[0], (*visited, id(scope)))
+    scopes = list(traverse_scope(parse_one(sql, read='postgres')))
+    return bool(scopes) and scalar(scopes[-1])
+
+
+def validate_outputs(raw, plans, question, date_columns=None):
+    require(isinstance(raw, list) and 1 <= len(raw) <= 8,
+            'Please clarify the requested outputs. A dashboard supports one to eight outputs across at most two datasets.')
+    try:
+        outputs = [DashboardOutput.model_validate(value) for value in raw]
+    except ValidationError as error:
+        raise MetricDefinitionError('Please clarify the output type and measures. Supported outputs are line, bar, donut, table, KPI and descriptive summary.',
+                                    code='dashboard_requirements', clarification=True) from error
+    seen = set()
+    query_outputs = {index: [] for index in range(len(plans))}
+    for index, output in enumerate(outputs):
+        require(output.query in query_outputs, 'A requested output has no data query. Keep the request within two independent datasets.')
+        _, plan, _ = plans[output.query]
+        projections, grouped = output_roles({'sql': plan.sql})
+        columns = set(projections)
+        fields = set(output.measures + output.group_by + ([output.dimension] if output.dimension else []))
+        require(fields <= columns, 'A requested output refers to measures or dimensions absent from its query. Please clarify which fields to show.')
+        require(not output.group_by, 'Statistics within each group are not supported yet. Choose a summary across returned observations, or request grouped aggregates as a table.')
+        require(output.kind == 'table' or bool(output.measures), 'Each chart, KPI or summary needs its own requested measures.')
+        require(not set(output.measures) & grouped, 'A grouping dimension cannot be treated as a summary or KPI measure.')
+        if output.kind in {'line', 'bar', 'donut'}:
+            require(output.dimension is not None and output.dimension not in output.measures,
+                    'Each chart needs one returned date or category dimension, separate from its measures.')
+        if output.kind in {'kpi', 'summary'}:
+            require(output.dimension is None, 'Specify a global summary or KPI, or request grouped values as a table.')
+            aggregates = aggregate_outputs({'sql': plan.sql})
+            require(set(output.measures) <= aggregates, 'KPI and summary measures need verified aggregates, not identifiers, raw fields or window calculations.')
+        if output.kind == 'kpi':
+            require(len(output.measures) == 1 and scalar_result(plan.sql),
+                    'An overall KPI needs a separate overall aggregate query. Monthly or category rows cannot supply an overall total KPI.')
+        signature = (output.query, output.kind, output.dimension, tuple(output.measures))
+        require(signature not in seen, 'The output plan duplicates the same representation and measures. Please reuse that output.')
+        seen.add(signature)
+        query_outputs[output.query].append({'id': f'output{index}', **output.model_dump()})
+    for index, (_, plan, definitions) in enumerate(plans):
+        require(bool(query_outputs[index]), 'A query has no requested output. Remove it or bind the output it supplies.')
+        require(sum(output['kind'] in {'line', 'bar', 'donut'} for output in query_outputs[index]) <= 2,
+                'Each dataset supports at most two explicitly mapped charts. Please narrow the chart request.')
+        dates = APPROVED_DATE_COLUMNS | set(date_columns or ())
+        sources = {source for definition in definitions.values()
+                   for source in (definition.get('source_columns') or {definition.get('source'): ()}) if source}
+        if not sources:
+            sources = {table.db + '.' + table.name for table in parse_one(plan.sql, read='postgres').find_all(exp.Table) if table.db}
+        dated = {source for source in sources if any(table == source for table, _ in dates)}
+        validate_independent_query_period(plan.sql, plan.parameters, question, dated or sources, dates)
+    return query_outputs

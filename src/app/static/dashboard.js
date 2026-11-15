@@ -6,6 +6,9 @@
   let epoch = 0;
   let busy = false;
   let loaded = false;
+  let conversationId = null;
+  let restartRequired = false;
+  let messages = [];
   const kinds = ['kpi', 'bar', 'line', 'donut', 'table', 'summary'];
   const status = (message, error = false) => {
     el('status').textContent = message;
@@ -15,6 +18,9 @@
     busy = value;
     root.setAttribute('aria-busy', String(value));
     root.querySelectorAll('button,input,textarea,select').forEach(node => { node.disabled = value || node.matches('[data-remove]') && selected?.tiles.length === 1; });
+    el('create-scope').disabled = value || !!conversationId || restartRequired;
+    el('prompt').disabled = value || restartRequired;
+    el('send').disabled = value || restartRequired;
   };
   async function action(message, work) {
     if (busy) return;
@@ -28,7 +34,10 @@
     } catch (error) {
       if (valid()) status(error.message || 'Dashboard request failed.', true);
     } finally {
-      if (valid()) setBusy(false);
+      if (valid()) {
+        setBusy(false);
+        if (!root.hidden && !el('create').hidden && !restartRequired) el('prompt').focus();
+      }
     }
   }
   async function library(valid) {
@@ -40,12 +49,52 @@
   }
   function resetEditor() {
     selected = null;
+    conversationId = null;
+    restartRequired = false;
+    messages = [];
     el('editor').hidden = true;
     el('create').hidden = false;
     el('tiles').replaceChildren();
     el('preview').removeAttribute('srcdoc');
     el('open').removeAttribute('href');
     el('download').removeAttribute('href');
+    for (const name of ['prompt', 'create-scope', 'title', 'description', 'scope']) el(name).value = '';
+    el('transcript').innerHTML = '';
+    el('transcript').hidden = true;
+    el('welcome').hidden = false;
+    el('prompt').placeholder = 'Describe the dashboard you want…';
+  }
+  function chatMessage(role, message) {
+    messages.push({role, message});
+    el('welcome').hidden = true;
+    el('transcript').hidden = false;
+    el('transcript').innerHTML = messages.map(item => `<article class="dw-message dw-message-${item.role}"><strong>${item.role === 'user' ? 'You' : 'Dashboard assistant'}</strong><div>${escapeHtml(item.message)}</div></article>`).join('');
+    el('transcript').scrollTop = el('transcript').scrollHeight;
+  }
+  function resultOrQuestion(data, expectedScope, initialMessage) {
+    if (data.dashboard) { display(data, expectedScope); return true; }
+    if (!['clarification_required', 'failed'].includes(data.status)) throw new Error('Unexpected dashboard response. Please try again.');
+    if (expectedScope !== undefined && data.scope !== expectedScope) throw new Error('The response changed your date/filter scope. Start a new dashboard request.');
+    if (selected || initialMessage !== undefined) {
+      messages = [];
+      chatMessage('user', initialMessage || data.description || selected.description);
+    }
+    selected = null;
+    conversationId = data.conversation_id || null;
+    restartRequired = data.can_reply === false;
+    el('editor').hidden = true;
+    el('create').hidden = false;
+    el('preview').removeAttribute('srcdoc');
+    el('create-scope').value = data.scope;
+    chatMessage('assistant', data.message);
+    if (data.status === 'clarification_required') el('prompt').value = '';
+    else if (!el('prompt').value) el('prompt').value = data.description || '';
+    el('prompt').placeholder = conversationId ? 'Reply to the clarification…' : 'Describe the dashboard you want…';
+    let statusMessage = data.message;
+    if (restartRequired) statusMessage = 'Start a new dashboard request to continue.';
+    else if (data.status === 'clarification_required') statusMessage = 'Please clarify the request to continue.';
+    status(statusMessage, data.status === 'failed');
+    return false;
   }
   function tileEditors() {
     el('tiles').innerHTML = selected.tiles.map((tile, i) => {
@@ -61,13 +110,20 @@
         measures: value('measures').split(',').map(v => v.trim()).filter(Boolean), span: Number(value('span'))};
     });
   }
-  function display(data) {
+  function display(data, expectedScope) {
+    if (expectedScope !== undefined && data.dashboard.scope !== expectedScope) {
+      throw new Error('The response changed your date/filter scope. Reopen the dashboard before making further edits.');
+    }
     selected = data.dashboard;
+    conversationId = null;
+    restartRequired = false;
     el('create').hidden = true;
     el('editor').hidden = false;
     el('title').value = selected.title;
     el('description').value = selected.description;
     el('scope').value = selected.scope;
+    el('prompt').value = '';
+    el('create-scope').value = '';
     el('meta').textContent = `Revision ${selected.revision} · ${selected.status} · Data refreshed ${new Date(selected.data_updated_at).toLocaleString()}`;
     el('preview').srcdoc = data.html;
     el('open').href = data.html_url;
@@ -79,7 +135,7 @@
   async function load(id, valid) {
     const data = await api(`/api/dashboards/${encodeURIComponent(id)}`);
     if (!valid()) return;
-    display(data);
+    resultOrQuestion(data, undefined, data.description);
     await library(valid);
   }
   el('library').addEventListener('click', event => {
@@ -104,29 +160,39 @@
     tileEditors();
     status('Layout changed. Save edits to update the dashboard.');
   });
-  el('new').addEventListener('click', () => { if (!busy) { resetEditor(); status('Describe a new dashboard.'); el('prompt').focus(); } });
+  el('new').addEventListener('click', () => { if (!busy) { resetEditor(); setBusy(false); status('Describe a new dashboard.'); el('prompt').focus(); } });
   el('create').addEventListener('submit', event => {
     event.preventDefault();
-    action('Inspecting data and building dashboard…', async valid => {
-      const data = await api('/api/dashboards', {method: 'POST', body: JSON.stringify({description: el('prompt').value.trim(), scope: el('create-scope').value.trim()})});
+    if (restartRequired || busy) return;
+    const message = el('prompt').value.trim();
+    if (!message) return;
+    chatMessage('user', message);
+    action('Checking your request and querying data…', async valid => {
+      const body = {description: el('prompt').value.trim(), scope: el('create-scope').value.trim()};
+      if (conversationId) body.conversation_id = conversationId;
+      const data = await api('/api/dashboards', {method: 'POST', body: JSON.stringify(body)});
       if (!valid()) return;
-      display(data);
-      await library(valid);
+      if (resultOrQuestion(data, body.scope)) await library(valid);
     });
   });
+  el('prompt').addEventListener('keydown', event => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      if (!busy && !restartRequired) el('create').requestSubmit();
+    }
+  });
   el('save').addEventListener('click', () => action('Saving edits…', async valid => {
-    const data = await api(`/api/dashboards/${selected.id}`, {method: 'PATCH', body: JSON.stringify({revision: selected.revision, title: el('title').value.trim(), scope: el('scope').value.trim(), tiles: readEdits()})});
+    const body = {revision: selected.revision, title: el('title').value.trim(), scope: el('scope').value.trim(), tiles: readEdits()};
+    const data = await api(`/api/dashboards/${selected.id}`, {method: 'PATCH', body: JSON.stringify(body)});
     if (!valid()) return;
-    display(data);
-    await library(valid);
+    if (resultOrQuestion(data, body.scope, selected.description)) await library(valid);
   }));
-  for (const name of ['refresh', 'rebuild']) el(name).addEventListener('click', () => action(name === 'rebuild' ? 'Replanning dashboard and running SQL…' : 'Refreshing saved SQL datasets…', async valid => {
+  for (const name of ['refresh', 'rebuild']) el(name).addEventListener('click', () => action(name === 'rebuild' ? 'Running updated question and rebuilding tiles…' : 'Refreshing saved dashboard data…', async valid => {
     const body = {revision: selected.revision, scope: el('scope').value.trim()};
     if (name === 'rebuild') body.description = el('description').value.trim();
     const data = await api(`/api/dashboards/${selected.id}/refresh`, {method: 'POST', body: JSON.stringify(body)});
     if (!valid()) return;
-    display(data);
-    await library(valid);
+    if (resultOrQuestion(data, body.scope, body.description || selected.description)) await library(valid);
   }));
   el('delete').addEventListener('click', () => {
     if (!selected || busy || !window.confirm('Delete this saved dashboard?')) return;
@@ -146,7 +212,6 @@
       busy = false;
       resetEditor();
       el('library').replaceChildren();
-      for (const name of ['prompt', 'create-scope', 'title', 'description', 'scope']) el(name).value = '';
       status('');
       setBusy(false);
     },

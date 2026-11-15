@@ -329,12 +329,12 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.data["sql"], sql)
         self.assertEqual(result.data["query_status"], "executed")
 
-    async def test_analytics_summary_is_grounded_and_keeps_rows_and_sources(self):
+    async def test_sql_specialist_returns_rows_without_running_a_second_answer_model(self):
         sql = "SELECT p.category, COUNT(*) AS products FROM commerce.products AS p GROUP BY p.category LIMIT 20"
 
         class LLM:
             def __init__(self):
-                self.responses = [json.dumps({"sql": sql, "parameters": []}), "Outdoor has 12 products."]
+                self.responses = [json.dumps({"sql": sql, "parameters": []})]
                 self.prompts = []
 
             def generate(self, prompt):
@@ -350,10 +350,8 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
 
         result = await agent.run(AgentRequest(question="How many products are in each category?", identity=ANALYST))
 
-        self.assertTrue(result.answer.startswith("Outdoor has 12 products."))
-        self.assertIn("[S1] commerce.products", result.answer)
-        self.assertIn("Cite factual claims with the supplied [S#] references", llm.prompts[-1])
-        self.assertIn('"products": 12', llm.prompts[-1])
+        self.assertEqual(result.answer, "Query completed.")
+        self.assertEqual(len(llm.prompts), 1)
         self.assertEqual(result.data["rows"][0]["category"], "Outdoor")
         self.assertEqual(result.evidence[0].source, "commerce.products")
 
@@ -377,10 +375,8 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
         result = await AnalyticsAgent(SQLAgent()).run_payload(
             AgentRequest(question="so sánh với tháng trước", identity=ANALYST))
 
-        self.assertIn("1,000,968.55", result["answer"])
-        self.assertIn("1,754,342.36", result["answer"])
-        self.assertIn("-42.94%", result["answer"])
-        self.assertNotIn("Evidence fallback", result["answer"])
+        self.assertEqual(result["rows"][0]["revenue"], "1000968.55")
+        self.assertNotIn("answer", result)
 
     async def test_summary_failure_returns_rows_and_deterministic_answer(self):
         sql = "SELECT p.product_id FROM commerce.products AS p LIMIT 20"
@@ -403,7 +399,7 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
 
         result = await agent.run(AgentRequest(question="List products", identity=ANALYST))
 
-        self.assertIn("1 row", result.answer)
+        self.assertEqual(result.answer, "Query completed.")
         self.assertEqual(result.data["rows"], [{"product_id": 42}])
 
     async def test_requires_verified_analytics_permission_before_generation(self):

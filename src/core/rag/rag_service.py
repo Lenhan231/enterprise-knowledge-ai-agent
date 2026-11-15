@@ -208,6 +208,29 @@ class RAGService:
         decompose: bool = False,
         verify_claims: bool = False,
     ) -> RAGResult:
+        contexts, insufficient_context = self.retrieve_for_answer(
+            question, limit=limit, company=company, roles=roles,
+            retrieval_method=retrieval_method, metadata_filter=metadata_filter,
+            document_ids=document_ids, query_language=query_language,
+            document_languages=document_languages, decompose=decompose,
+        )
+        if insufficient_context:
+            return RAGResult(answer=INSUFFICIENT_ANSWER, contexts=contexts, insufficient_context=True)
+        return self.generate_from_contexts(question, contexts, verify_claims=verify_claims)
+
+    def retrieve_for_answer(
+        self,
+        question: str,
+        limit: int | None = None,
+        company: str | None = None,
+        roles: list[str] | None = None,
+        retrieval_method: str = "translated_hybrid_rerank",
+        metadata_filter: dict | None = None,
+        document_ids: list[str] | None = None,
+        query_language: str = "auto",
+        document_languages: dict[str, str] | None = None,
+        decompose: bool = False,
+    ) -> tuple[list[dict], bool]:
         if limit is None:
             limit = int(os.getenv("KNOWLEDGE_TOP_K", "5"))
         if decompose:
@@ -228,9 +251,8 @@ class RAGService:
                 not selected.intersection(_context_key(item) for item in group) for group in groups
             )
             if any(groups) and (not contexts or missing_branch):
-                return RAGResult(answer=INSUFFICIENT_ANSWER, contexts=contexts, insufficient_context=True)
-            remaining()
-            return self.generate_from_contexts(question, contexts, verify_claims=verify_claims)
+                return contexts, True
+            return contexts, False
         contexts = self.retrieve_contexts(
             question,
             limit=limit,
@@ -243,11 +265,11 @@ class RAGService:
             document_languages=document_languages,
         )
         if not contexts:
-            return self.generate_from_contexts(question, contexts, verify_claims=verify_claims)
+            return contexts, False
         contexts = _contexts_within_budget(contexts)
         if not contexts:
-            return RAGResult(answer=INSUFFICIENT_ANSWER, insufficient_context=True)
-        return self.generate_from_contexts(question, contexts, verify_claims=verify_claims)
+            return contexts, True
+        return contexts, False
 
     def _search_questions(self, question: str) -> list[str]:
         token = deadline.set(time.monotonic() + remaining(15))

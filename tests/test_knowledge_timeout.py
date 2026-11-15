@@ -7,7 +7,6 @@ from unittest.mock import patch
 from core.agents.knowledge_agent import KnowledgeAgent
 from core.agents.runtime import deadline, remaining, run_sync
 from core.models.agents import AgentRequest, VerifiedIdentity
-from core.rag.rag_service import RAGResult
 
 
 class KnowledgeTimeoutTest(unittest.IsolatedAsyncioTestCase):
@@ -20,9 +19,9 @@ class KnowledgeTimeoutTest(unittest.IsolatedAsyncioTestCase):
             observed = []
 
             class Rag:
-                def generate_answer(self, question, **kwargs):
+                def retrieve_for_answer(self, question, **kwargs):
                     observed.append((remaining(1000), kwargs))
-                    return RAGResult(answer="No evidence", insufficient_context=True)
+                    return [], True
 
             with self.subTest(flag=flag), patch.dict(os.environ, {"KNOWLEDGE_MULTIQUERY_ENABLED": flag}), \
                  patch("core.agents.runtime.asyncio.wait_for", wraps=asyncio.wait_for) as wait:
@@ -40,7 +39,7 @@ class KnowledgeTimeoutTest(unittest.IsolatedAsyncioTestCase):
         observed = []
 
         class Rag:
-            def generate_answer(self, *args, **kwargs):
+            def retrieve_for_answer(self, *args, **kwargs):
                 observed.append(remaining(1000))
                 raise ConnectionError("service disconnected")
 

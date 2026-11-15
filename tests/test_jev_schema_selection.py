@@ -41,6 +41,29 @@ class JevSchemaSelectionTest(unittest.TestCase):
         self.assertEqual(request['model'], 'typesafe/jev-1.14')
         self.assertEqual(len(request['questions']), len(APPROVED_COLUMNS))
 
+    def test_supporting_inventory_candidate_is_not_in_sql_schema(self):
+        required = {'commerce.order_items', 'commerce.orders', 'commerce.products'}
+        supporting = {'commerce.inventory', 'commerce.customers'}
+        scores = {**{table: 2 for table in required}, **{table: 1 for table in supporting}}
+        answers = {
+            f'table_{index}': {
+                'type': 'score', 'score': scores.get(table, 0), 'confidence': 1,
+            }
+            for index, table in enumerate(sorted(APPROVED_COLUMNS))
+        }
+        payload = json.dumps({'answers': answers}).encode()
+
+        with patch('core.agents.intent_classifier.os.getenv', return_value='test-key'), patch(
+                'core.agents.intent_classifier.urllib.request.urlopen', return_value=io.BytesIO(payload)):
+            selection = select_jev_schema_tables(
+                'sản phẩm bán chạy nhất tháng trước', APPROVED_COLUMNS,
+                primary_keys=PRIMARY_KEYS, approved_joins=APPROVED_JOINS,
+            )
+
+        self.assertTrue(supporting <= selection['candidate_tables'])
+        self.assertEqual(selection['required_tables'], required)
+        self.assertEqual(selection['tables'], required)
+
     def test_invalid_or_missing_score_is_rejected_for_full_schema_fallback(self):
         answers = {
             f'table_{index}': {'type': 'score', 'score': 0, 'confidence': 1}

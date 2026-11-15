@@ -93,6 +93,35 @@ def _explicit_month_revenue_plan(question: str, metric_names: set[str], today: d
                      explanation="Compile a calendar-month revenue total from commerce.sales.")
 
 
+def _annual_revenue_plan(question: str, metric_names: set[str], today: date | None = None):
+    """Compile an unambiguous calendar-year revenue total instead of daily rows."""
+    if metric_names != {"revenue"}:
+        return None
+    text = question.casefold()
+    if re.search(r"\btháng\s+(?:0?[1-9]|1[0-2])\b|\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\b|\bmonth\b|\bq[1-4]\b|\bquarter\b|quý\s+[1-4]|\b(?:19|20)\d{2}[-/]\d{1,2}", text):
+        return None
+    if re.search(r"\b(?:compare|comparison|versus|vs\.?|trend|monthly|daily|by|per|region|category|product|channel|quarter|year.over.year)\b|so sánh|xu hướng|theo\s+\w+", text):
+        return None
+    years = set(re.findall(r"\b(?:19|20)\d{2}\b", text))
+    if len(years) > 1:
+        return None
+    if years:
+        year = int(next(iter(years)))
+    elif re.search(r"\b(?:this year|current year|năm nay|năm hiện tại)\b", text):
+        year = (today or date.today()).year
+    elif re.search(r"\b(?:last year|previous year|năm ngoái|năm trước)\b", text):
+        year = (today or date.today()).year - 1
+    else:
+        return None
+    start, end = date(year, 1, 1), date(year + 1, 1, 1)
+    sql = (
+        "SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s "
+        "WHERE s.date >= $1 AND s.date < $2 LIMIT 1"
+    )
+    return QueryPlan(sql=sql, parameters=(start, end),
+                     explanation="Compile a calendar-year revenue total from commerce.sales.")
+
+
 def _completed_months_revenue_plan(question: str, metric_names: set[str], today: date | None = None):
     """Compile a monthly revenue series for the requested most recent completed months."""
     if metric_names != {"revenue"}:
@@ -303,6 +332,7 @@ class SQLAnalyticsAgent(BaseAgent):
             original_question, re.I))
         explicit_month_plan = (_explicit_month_revenue_plan(question, metric_names)
                                if relative_month_followup else None)
+        annual_revenue_plan = _annual_revenue_plan(question, metric_names)
         completed_months_plan = _completed_months_revenue_plan(original_question, metric_names)
         month_comparison_plan = _month_over_month_revenue_plan(question, metric_names)
         named_sources = set(re.findall(r'\bcommerce\.\w+', re.sub(r"'(?:[^']|'')*'", '', question).casefold()))
@@ -419,6 +449,8 @@ class SQLAnalyticsAgent(BaseAgent):
             try:
                 if promotion_plan is not None:
                     plan = promotion_plan
+                elif annual_revenue_plan is not None:
+                    plan = annual_revenue_plan
                 elif completed_months_plan is not None:
                     plan = completed_months_plan
                 elif explicit_month_plan is not None:
@@ -460,7 +492,7 @@ class SQLAnalyticsAgent(BaseAgent):
                             primary_keys=primary_keys, date_columns=date_columns).sources):
                         raise SQLValidationError('The requested cross-domain contract must retain inventory, orders and order_items.')
                     definitions = ({"revenue": get_metric_definition("revenue")}
-                                   if completed_months_plan is not None or month_comparison_plan is not None or explicit_month_plan is not None else
+                                   if annual_revenue_plan is not None or completed_months_plan is not None or month_comparison_plan is not None or explicit_month_plan is not None else
                                    validate_metric_definitions(plan.sql, metric_names, plan.parameters, table_columns,
                                        question=interpretation.date_question() if interpretation and interpretation.domain == 'inventory' else question))
                     if promotion_metric == "promotion_revenue":
@@ -518,6 +550,10 @@ class SQLAnalyticsAgent(BaseAgent):
         limitations = list(dict.fromkeys(
             note for definition in definitions.values() for note in definition.get("limitations", ())
         ))
+        if annual_revenue_plan is not None:
+            limitations.append(
+                "This is the sum of matching records for the calendar year; source-data completeness for the full year is not established."
+            )
         invoice_query = any(source in {'commerce.invoices', 'commerce.invoice_items'} for source in validated.sources)
         if invoice_query:
             limitations.extend([

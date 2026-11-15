@@ -119,7 +119,9 @@ def _scalar_sql_finding(item, question):
         try:
             start = date.fromisoformat(str(parameters[0])[:10])
             end = date.fromisoformat(str(parameters[1])[:10])
-            if start.day == end.day == 1 and (end.year, end.month) == (
+            if start.month == start.day == end.month == end.day == 1 and end.year == start.year + 1:
+                period = f' năm {start.year}'
+            elif start.day == end.day == 1 and (end.year, end.month) == (
                     start.year + (start.month == 12), start.month % 12 + 1):
                 period = f' tháng {start.month} năm {start.year}'
         except ValueError:
@@ -208,7 +210,13 @@ async def assemble_response(request, plan, execution, provider):
                                 if inputs[0]['agent'] == 'sql' else None)
         if deterministic_answer:
             answer, fallback = deterministic_answer, False
-        elif inputs[0]['agent'] != 'sql':
+        elif inputs[0]['agent'] == 'sql':
+            # SQL's analytics layer already summarizes its validated rows. Reuse that
+            # response when Auto had only one specialist task; synthesize across tools
+            # only when there is more than one independent result to combine.
+            answer = inputs[0]['answer']
+            fallback = bool(usable[0].result.metadata.get('fallback', False))
+        else:
             answer = inputs[0]['answer']
             fallback = bool(usable[0].result.metadata.get('fallback', False))
     if usable and not answer:

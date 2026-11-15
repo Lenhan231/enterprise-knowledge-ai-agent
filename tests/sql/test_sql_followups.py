@@ -126,10 +126,11 @@ class SQLConversationTest(unittest.IsolatedAsyncioTestCase):
 
 
 class OriginalQuestionContextTest(unittest.IsolatedAsyncioTestCase):
-    async def test_single_sql_result_rows_are_explained_by_final_llm(self):
+    async def test_single_sql_task_reuses_specialist_summary_without_final_llm(self):
         question = 'so sánh 2 năm 2026 với 2025'
         plan = AgentPlan(objective=question, tasks=[AgentTask(id='sql', agent='sql', question=question)])
-        result = AgentResult(answer='Query completed.', agent='analytics',
+        specialist_answer = 'Doanh thu năm 2025 là 3,369,646.71 và năm 2026 là 18,881,151.90 [S1].'
+        result = AgentResult(answer=specialist_answer, agent='analytics',
             evidence=[Evidence(citation_id='S1', source_type='database', source='commerce.sales')],
             data={'query_status':'executed','rows':[
                 {'year': 2025, 'revenue': 3_369_646.71},
@@ -150,9 +151,8 @@ class OriginalQuestionContextTest(unittest.IsolatedAsyncioTestCase):
         provider = Provider()
         answer = await assemble_response(AgentRequest(question=question, identity=IDENTITY), plan, execution, provider)
 
-        self.assertTrue(provider.called)
-        self.assertIn('Use the language of the request', provider.prompt)
-        self.assertIn('Doanh thu năm 2025', answer.answer)
+        self.assertFalse(provider.called)
+        self.assertEqual(answer.answer, specialist_answer)
         self.assertFalse(answer.metadata['fallback'])
 
     def test_null_fallback_recognizes_common_vietnamese_accent_in_followup(self):
@@ -199,6 +199,35 @@ class OriginalQuestionContextTest(unittest.IsolatedAsyncioTestCase):
             AgentRequest(question=question, identity=IDENTITY), plan, execution, provider=None)
 
         self.assertEqual(answer.answer, 'Doanh thu tháng 11 năm 2026: 1,000,968.55 [S1].')
+
+    async def test_single_sql_task_keeps_its_validated_summary_without_second_synthesis(self):
+        question = 'Tổng hợp doanh thu theo năm'
+        task = AgentTask(id='sql', agent='sql', question='Annual revenue totals')
+        plan = AgentPlan(objective=question, tasks=[task])
+        specialist_answer = 'Doanh thu năm 2025 là 2.000 [S1].'
+        result = AgentResult(answer=specialist_answer, agent='analytics',
+            evidence=[Evidence(citation_id='S1', source_type='database', source='commerce.sales')],
+            data={'rows': [{'year': 2025, 'revenue': 2000}]}, metadata={'ok': True})
+        execution = SimpleNamespace(
+            outcomes={'sql': TaskOutcome(task, 'complete', result)}, trace=[], invocations=1)
+
+        answer = await assemble_response(
+            AgentRequest(question=question, identity=IDENTITY), plan, execution,
+            provider=Mock(side_effect=AssertionError('single-task answers should be reused')))
+
+        self.assertEqual(answer.answer, specialist_answer)
+
+    def test_scalar_fallback_formats_value_and_uses_bound_year(self):
+        item = {
+            'agent': 'sql',
+            'data': {'rows': [{'revenue': 2248522.83}],
+                     'parameters': ['2025-01-01', '2026-01-01']},
+            'evidence': [{'citation_id': 'S1'}],
+        }
+        self.assertEqual(
+            _scalar_sql_finding(item, 'doanh thu năm 2025'),
+            'Doanh thu năm 2025: 2,248,522.83 [S1].',
+        )
 
     async def test_month_over_month_result_is_summarized_in_auto_answer(self):
         question = 'so sánh với tháng trước'

@@ -14,6 +14,9 @@ from core.retrieval.retrieval import (
     RankedChunk, RetrievalRequest, RetrievalResponse, SourceLocation, make_chunk_id,
 )
 
+# Dense search's best passages always reach the reranker, on top of the fused candidates (#54).
+RERANK_DENSE_EXTRA = 10
+
 
 def _expand_neighbours(repository, chunks, radius, company, roles):
     """Attach same-page/section neighbours to reranked chunks; ACL is rechecked by the repository.
@@ -108,6 +111,7 @@ class RetrievalService:
                 query_language=query_language, document_languages=document_languages,
                 dense_weight=dense_weight, bm25_weight=bm25_weight, rrf_k=rrf_k, **options,
                 embed=self.embedding_service.embed_query if self.embedding_service is not None else None,
+                dense_extra=RERANK_DENSE_EXTRA if method == "translated_hybrid_rerank" else 0,
             )
         elif method == "parent":
             chunks, parent_contexts = parent.search(

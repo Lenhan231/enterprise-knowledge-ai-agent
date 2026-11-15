@@ -212,3 +212,46 @@ class RestoredDenseSearchTest(unittest.TestCase):
         embed.assert_not_called()
         self.assertEqual(documents, {"RAW"})
         self.assertNotIn("restored_dense_search", details)
+
+
+class DenseRerankPoolTest(unittest.TestCase):
+    """#54: a passage only dense search finds (rank 10) lost to lexical-only passages and never reached the reranker."""
+
+    def search(self, dense_extra):
+        from core.retrieval.methods import translated_hybrid
+        shared = [chunk(f"S{i}", i) for i in range(9)]          # found by both searches
+        dense_only = chunk("TARGET", 99)                           # dense rank 10, no lexical match
+        lexical_only = [chunk(f"L{i}", 100 + i) for i in range(40)]
+        repo = MagicMock()
+        repo.similarity_search.side_effect = lambda vector, limit, **kw: (
+            shared + [dense_only] if kw["method"] == "dense" else shared + lexical_only)
+        translator = MagicMock()
+        translator.translate.return_value = {"vn": "question", "en": "question en"}
+        return translated_hybrid.search(repo, [0.1], RetrievalRequest(query="question", top_k=30),
+                                        lambda: translator, dense_extra=dense_extra)
+
+    def test_dense_finds_reach_the_reranker_only_when_added(self):
+        without, details = self.search(0)
+        self.assertEqual(len(without), 30)
+        self.assertNotIn("TARGET", [c.document_id for c in without])
+        self.assertNotIn("dense_candidates_added", details)
+
+        with_extra, details = self.search(10)
+        ids = [c.document_id for c in with_extra]
+        self.assertEqual(ids[:30], [c.document_id for c in without])  # the fused order is unchanged
+        self.assertEqual(ids[30:], ["TARGET"])                        # only dense passages not already chosen
+        self.assertEqual(details["dense_candidates_added"], 1)
+
+    def test_rerank_method_asks_for_dense_extra_and_plain_hybrid_does_not(self):
+        from core.retrieval import retrieval_service
+        calls = []
+        def fake_search(*args, **kwargs):
+            calls.append(kwargs["dense_extra"])
+            return [], {"effective_method": "translated_hybrid"}
+        service = RetrievalService(MagicMock(), MagicMock(), MagicMock())
+        service.reranker = MagicMock()
+        service.reranker.rerank.return_value = ([], {})
+        with patch.object(retrieval_service.translated_hybrid, "search", side_effect=fake_search):
+            service.retrieve(RetrievalRequest(query="q", top_k=5), method="translated_hybrid_rerank")
+            service.retrieve(RetrievalRequest(query="q", top_k=5), method="translated_hybrid")
+        self.assertEqual(calls, [retrieval_service.RERANK_DENSE_EXTRA, 0])

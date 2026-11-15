@@ -15,6 +15,8 @@ needed for the report question and supplied headings. Do not redirect to Report 
 Keep original language, entities, dates, every number, amount and quantity, metric definitions, filters and
 comparison scope; a knowledge task for a calculation must keep all of its inputs. Resolve follow-ups
 only from supplied conversation context; if a material referent is unknown, ask a targeted clarification.
+If the latest history turn contains a clarification, treat the current message as the user's answer to it:
+resolve that clarification using the original request and this answer, then create a standalone task question.
 For follow-ups, carry forward the latest resolved scope and confirmed SQL metrics unless the user changes them. A time period in the current user message replaces the previous period, including relative periods such as “năm nay” or “this year”; resolve these using current_date in DATA and never retain an old explicit year over a new relative period.
 When a short follow-up adds a comparison period or operation, combine it with that prior scope into a standalone
 request. Do not ask which metric when the prior scope or confirmed SQL metrics identify it. Keep the user's language

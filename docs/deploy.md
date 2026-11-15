@@ -6,7 +6,7 @@ Every push to `main` deploys both backends automatically (`.github/workflows/dep
 push to main ──▶ GitHub Actions "Deploy"
                    ├─ job 1  VPS (fallback)   joins the tailnet as tag:ci, ssh to the VPS's tailnet address with a key restricted to the deploy script
                    │          └─ scripts/deploy/deploy.sh  → git fast-forward → docker compose up -d --build → /health 200, /api/auth/me 401
-                   ├─ job 2  Laptop home-pc (main)    only if job 1 succeeded; joins the tailnet as tag:ci, Tailscale SSH
+                   ├─ job 2  Laptop home-pc (main)    only if job 1 succeeded; allowed to fail (may be off); tag:ci, Tailscale SSH
                    │          └─ same script
                    └─ job 3  Desktop (2nd fallback)   after job 2 whatever its result; allowed to fail (often switched off)
                               └─ same script

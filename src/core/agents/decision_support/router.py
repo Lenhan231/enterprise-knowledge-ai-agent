@@ -11,7 +11,7 @@ from langgraph.graph import END, START, StateGraph
 
 from core.agents.decision_support.conversation_context import ConversationStore
 from core.agents.decision_support.execution import Execution, authorize
-from core.agents.intent_classifier import IntentClassifier
+from core.agents.intent_classifier import JEV_ROUTE_THRESHOLD, classify_jev_route, IntentClassifier
 from core.agents.decision_support.planning import plan_request
 from core.agents.decision_support.response import assemble_response
 from core.agents.runtime import deadline, remaining
@@ -70,7 +70,8 @@ class AgentRouter:
         return await self._run(request, report_headings=list(headings), config=config)
 
     async def _run(self, request, *, report_headings=None, config=None, forced_plan=None):
-        execution = Execution(request, {'knowledge': self.knowledge_agent, 'sql': self.analytics_agent})
+        execution = Execution(request, {'knowledge': self.knowledge_agent, 'sql': self.analytics_agent},
+                              auto_mode=report_headings is None and forced_plan is None)
         token = deadline.set(time.monotonic() + self.request_timeout)
         try:
             with measure('agent_workflow'):
@@ -222,9 +223,24 @@ class AgentRouter:
         with measure('routing'):
             request = state['request']
             plan = state.get('forced_plan')
+            jev_routed = False
             if plan is None:
-                plan = await plan_request(request, self._provider(), history=state['history'],
-                                          report_headings=state.get('report_headings'), sql_schema=self.sql_schema)
+                try:
+                    route = await run_sync(classify_jev_route, request.question, self.sql_schema,
+                                           state['history'], _timeout=12)
+                except Exception:
+                    route = None
+                if (route and route['route'] in {'knowledge', 'sql'}
+                        and route['confidence'] >= JEV_ROUTE_THRESHOLD and not route['history_required']
+                        and state.get('report_headings') is None):
+                    agent = route['route']
+                    task_id = 'k' if agent == 'knowledge' else 's'
+                    plan = AgentPlan(objective=request.question, fallback=True, tasks=[{
+                        'id': task_id, 'agent': agent, 'question': request.question}])
+                    jev_routed = True
+                else:
+                    plan = await plan_request(request, self._provider(), history=state['history'],
+                                              report_headings=state.get('report_headings'), sql_schema=self.sql_schema)
             explicit_sql = bool(re.search(
                 r'\b(select|sql|query|table|database|schema|from)\b|(?:truy vấn|bảng)',
                 request.question, re.I))
@@ -242,7 +258,7 @@ class AgentRouter:
                         # Discovery here is only for improving the planner context.
                         schema = None
                     live_schema = schema.get('tables') if isinstance(schema, dict) else None
-                    if live_schema and live_schema != self.sql_schema:
+                    if live_schema and live_schema != self.sql_schema and not jev_routed:
                         plan = await plan_request(request, self._provider(), history=state['history'],
                             report_headings=state.get('report_headings'), sql_schema=live_schema)
         state['execution'].plan = plan

@@ -4,6 +4,8 @@ from __future__ import annotations
 import asyncio
 import contextvars
 import inspect
+import os
+import shutil
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -55,3 +57,32 @@ async def generate(provider, prompt, *, timeout=15):
         return result
     finally:
         deadline.reset(token)
+
+
+async def generate_with_local_codex(prompt, provider_error):
+    # Local debugging only: use authenticated Codex CLI after provider failure.
+    # This opt-in is not intended for deployed environments or main.
+    if os.getenv('CODEX_CLI_SQL_FALLBACK', 'false').casefold() != 'true':
+        raise provider_error
+    executable = shutil.which('codex')
+    if not executable:
+        raise RuntimeError('Local Codex CLI fallback is enabled but codex is unavailable') from provider_error
+    process = await asyncio.create_subprocess_exec(
+        executable, 'exec', '--ephemeral', '--sandbox', 'read-only', '--skip-git-repo-check', '-',
+        stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+    )
+    try:
+        stdout, stderr = await asyncio.wait_for(
+            process.communicate(prompt.encode('utf-8')), timeout=remaining(60)
+        )
+    except asyncio.TimeoutError as error:
+        process.kill()
+        await process.communicate()
+        raise TimeoutError('Local Codex CLI generation exceeded its deadline') from error
+    if process.returncode:
+        detail = stderr.decode('utf-8', errors='replace').strip()
+        raise RuntimeError(f'Local Codex CLI generation failed: {detail[-1000:]}') from provider_error
+    answer = stdout.decode('utf-8', errors='replace').strip()
+    if not answer:
+        raise RuntimeError('Local Codex CLI returned an empty response') from provider_error
+    return answer

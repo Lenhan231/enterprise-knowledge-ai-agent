@@ -45,9 +45,10 @@ def outcome_status(result):
 
 
 class Execution:
-    def __init__(self, request, agents, *, sql_context=None):
+    def __init__(self, request, agents, *, sql_context=None, auto_mode=False):
         self.request, self.agents = request, agents
         self.sql_context = sql_context
+        self.auto_mode = auto_mode
         self.plan: AgentPlan | None = None
         self.outcomes = {}
         self.trace = []
@@ -91,6 +92,8 @@ class Execution:
             metadata = dict(self.request.metadata)
             if task.agent == 'sql':
                 metadata['_original_question'] = self.request.question
+                if self.auto_mode:
+                    metadata['_auto_mode'] = True
                 if self.sql_context:
                     metadata['_sql_context'] = self.sql_context
             subrequest = self.request.model_copy(update={'question': question, 'metadata': metadata})

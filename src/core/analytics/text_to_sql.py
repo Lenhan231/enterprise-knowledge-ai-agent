@@ -140,7 +140,8 @@ def build_sql_prompt(
             )
     if 'commerce.orders' in tables:
         prompt_rules.append(
-            '\nDo not invent order-status filters. Apply a status filter only when the question or selected metric card requires it.'
+            '\nApply every filter declared by a selected canonical metric definition automatically, even if the user did not repeat it; '
+            'these filters define the metric and are not invented. Do not add filters absent from both the request and selected metric definition.'
         )
     if 'commerce.products' in tables:
         prompt_rules.append(

@@ -3,7 +3,7 @@ import json
 import re
 from datetime import date
 
-from core.agents.runtime import generate
+from core.agents.runtime import generate, generate_with_local_codex
 from core.models.agent_plan import AgentPlan
 from core.prompts.agents import PLANNING_PROMPT, PLANNING_REPAIR_PROMPT
 
@@ -36,7 +36,10 @@ async def plan_request(request, provider, *, history=(), previous=None, report_h
                                     data=json.dumps(data, ensure_ascii=False, default=str))
     for attempt in range(2):
         try:
-            raw = await generate(provider, prompt)
+            try:
+                raw = await generate(provider, prompt)
+            except Exception as provider_error:
+                raw = await generate_with_local_codex(prompt, provider_error)
             if not isinstance(raw, str) or len(raw) > 24_000:
                 raise ValueError('Invalid plan size')
             payload = json.loads(raw.strip().removeprefix('```json').removesuffix('```').strip())

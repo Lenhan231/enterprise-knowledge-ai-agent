@@ -201,13 +201,19 @@ async def assemble_response(request, plan, execution, provider):
                     data[outcome.task.agent] = diagnostic
     for outcome in usable:
         result = outcome.result
-        local = []
+        mapping, local = {}, []
         for item in result.evidence:
             new_id = f'S{len(evidence) + 1}'
+            if item.citation_id:
+                mapping[item.citation_id] = new_id
             source = item.model_copy(update={'citation_id': new_id})
             evidence.append(source)
             local.append(source)
+        specialist_response = re.sub(
+            r'\[(S\d+)\]', lambda match: f'[{mapping.get(match[1], "UNKNOWN")}]', result.answer,
+        )
         inputs.append({'task_id': outcome.task.id, 'agent': outcome.task.agent,
+                       'specialist_response': specialist_response,
                        'data': result.data, 'evidence': [e.model_dump() for e in local]})
         key = outcome.task.agent
         if key in data:
@@ -215,13 +221,6 @@ async def assemble_response(request, plan, execution, provider):
         data[key] = result.data
     fallback = True
     answer = ''
-    if len(usable) == 1 and len(plan.tasks) == 1 and status == 'complete':
-        deterministic_answer = (_best_selling_product_finding(inputs[0], request.question)
-                                or _month_over_month_sql_finding(inputs[0], request.question)
-                                or _scalar_sql_finding(inputs[0], request.question)
-                                if inputs[0]['agent'] == 'sql' else None)
-        if deterministic_answer:
-            answer, fallback = deterministic_answer, False
     if usable and not answer and provider is not None:
         serialized = json.dumps(inputs, ensure_ascii=False, default=str)
         if len(serialized) <= 32_000:
@@ -240,15 +239,16 @@ async def assemble_response(request, plan, execution, provider):
                 knowledge_rules.append('Attach a valid source citation to every factual sentence and bullet.')
             if knowledge_rules:
                 prompt += '\nKnowledge response requirements:\n- ' + '\n- '.join(knowledge_rules)
+            synthesis_stage = 'provider'
             try:
                 raw = await generate(provider, prompt, timeout=20)
+                synthesis_stage = 'json'
                 draft = json.loads(raw.strip().removeprefix('```json').removesuffix('```').strip())
+                synthesis_stage = 'answer'
                 candidate = draft['answer']
                 if not isinstance(candidate, str) or not candidate.strip() or len(candidate) > 8000:
                     raise ValueError('Invalid synthesis')
-                if not isinstance(draft.get('used_tasks'), list) or any(
-                        not isinstance(task_id, str) for task_id in draft['used_tasks']):
-                    raise ValueError('Invalid used_tasks')
+                synthesis_stage = 'citations'
                 cited = set(re.findall(r'\[(S\d+)\]', candidate))
                 allowed = {e.citation_id for e in evidence}
                 # Task IDs are opaque planner labels. Model-reported used_tasks can
@@ -256,17 +256,21 @@ async def assemble_response(request, plan, execution, provider):
                 # by requiring citations from every usable task's evidence.
                 if not cited or not cited <= allowed:
                     raise ValueError('Invalid synthesis citations')
+                synthesis_stage = 'coverage'
                 for item in inputs:
                     if not cited.intersection(e['citation_id'] for e in item['evidence']):
                         raise ValueError('Uncited task')
                 # This detects invented numeric tokens, not all possible semantic errors.
+                synthesis_stage = 'numbers'
                 if not _supported_numbers(candidate, inputs, request.question):
                     raise ValueError('Unsupported numeric value')
                 answer, fallback = candidate.strip(), False
+                synthesis_stage = 'complete'
             except Exception as error:
                 # Do not log model output or evidence; the error class is enough to
                 # distinguish provider failures from rejected synthesis responses.
-                logger.warning('Final answer synthesis fell back (%s)', type(error).__name__)
+                logger.warning('Final answer synthesis fell back at %s (%s)',
+                               synthesis_stage, type(error).__name__)
     allowed = {e.citation_id for e in evidence}
     null_answer = _null_sql_findings(inputs, request.question)
     if null_answer:
@@ -281,11 +285,20 @@ async def assemble_response(request, plan, execution, provider):
         answer = _null_sql_findings(inputs, plan.objective or request.question)
         for item in inputs:
             refs = ' '.join(f'[{e["citation_id"]}]' for e in item['evidence'])
+            specialist_response = item.get('specialist_response', '').strip()
+            specialist_citations = set(re.findall(r'\[(S\d+)\]', specialist_response))
+            task_citations = {e['citation_id'] for e in item['evidence']}
+            if (specialist_response and specialist_citations
+                    and specialist_citations <= task_citations
+                    and _supported_numbers(specialist_response, [item], request.question)):
+                blocks.append(f"{item['agent'].title()} finding {refs}:\n{specialist_response}")
+                continue
             if item['agent'] == 'sql':
                 if answer:
                     continue
                 rows = item['data'].get('rows', [])
-                scalar = (_month_over_month_sql_finding(item, request.question)
+                scalar = (_best_selling_product_finding(item, request.question)
+                          or _month_over_month_sql_finding(item, request.question)
                           or _scalar_sql_finding(item, request.question))
                 if scalar:
                     scalar_answer = scalar

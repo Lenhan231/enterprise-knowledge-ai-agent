@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from core.agents.knowledge.agent import KnowledgeAgent
 from core.agents.orchestration.execution import TaskOutcome, outcome_status
 from core.agents.orchestration.response import assemble_response, compose_single_result
+from core.agents.sql.analytics_agent import AnalyticsAgent
 from core.models.agents import AgentRequest, AgentResult, Evidence, VerifiedIdentity
 from core.models.agent_plan import AgentPlan, AgentTask
 
@@ -17,6 +18,7 @@ from core.models.agent_plan import AgentPlan, AgentTask
 class ContextOnlyRag:
     def __init__(self):
         self.calls = []
+        self.answer_calls = []
         self.contexts = [{
             "source_id": "S1", "document_name": "policy.pdf", "chunk_index": 3,
             "content": "Annual leave policy evidence.", "similarity_score": 0.9,
@@ -27,8 +29,13 @@ class ContextOnlyRag:
         self.calls.append((question, options))
         return self.contexts, False
 
-    def generate_answer(self, *_args, **_kwargs):
-        raise AssertionError("Knowledge retrieval must not generate a specialist answer")
+    def generate_answer(self, question, **options):
+        self.answer_calls.append((question, options))
+        return SimpleNamespace(
+            answer="Annual leave is one-twelfth of the annual entitlement per completed month [S1].",
+            source_ids=["S1"], contexts=self.contexts,
+            insufficient_context=False, verification=None,
+        )
 
 
 class Provider:
@@ -41,7 +48,65 @@ class Provider:
         return json.dumps(self.answer, ensure_ascii=False)
 
 
+class TextProvider:
+    def __init__(self, answer):
+        self.answer = answer
+        self.prompt = ""
+
+    def generate(self, prompt):
+        self.prompt = prompt
+        return self.answer
+
+
+class ContextOnlySQL:
+    def __init__(self, provider):
+        self.provider = provider
+
+    async def run_payload(self, _request):
+        return {
+            "ok": True,
+            "rows": [{"revenue": 125}],
+            "evidence": [{"source": "commerce.sales"}],
+            "metadata": {"source": ["commerce.sales"], "metrics": {},
+                         "semantic_interpretation": {"metric": "revenue"}},
+            "limitations": [],
+        }
+
+    def _provider(self):
+        return self.provider
+
+    async def close(self):
+        pass
+
+
 class SharedAnswerComposerTest(unittest.IsolatedAsyncioTestCase):
+    async def test_final_layer_receives_each_specialist_response_with_global_citations(self):
+        knowledge = AgentTask(id="k", agent="knowledge", question="Compare policy and revenue")
+        sql = AgentTask(id="s", agent="sql", question="Compare policy and revenue")
+        plan = AgentPlan(objective="Compare policy and revenue", tasks=[knowledge, sql])
+        execution = SimpleNamespace(outcomes={
+            "k": TaskOutcome(knowledge, "complete", result=AgentResult(
+                answer="Policy requires manager approval [S1].", agent="knowledge",
+                evidence=[Evidence(citation_id="S1", source_type="document", source="policy.pdf",
+                                   content="Manager approval is required.")],
+            )),
+            "s": TaskOutcome(sql, "complete", result=AgentResult(
+                answer="Revenue was 125 [S1].", agent="sql",
+                evidence=[Evidence(citation_id="S1", source_type="database", source="commerce.sales",
+                                   content="Revenue row: 125")],
+                data={"rows": [{"revenue": 125}]},
+            )),
+        }, trace=[], invocations=2)
+        provider = Provider({"answer": "Policy requires manager approval [S1]. Revenue was 125 [S2].",
+                             "used_tasks": ["k", "s"]})
+
+        result = await assemble_response(AgentRequest(question=plan.objective), plan, execution, provider)
+
+        self.assertFalse(result.metadata["fallback"])
+        self.assertIn('Policy requires manager approval [S1].', provider.prompt)
+        self.assertIn('Revenue was 125 [S2].', provider.prompt)
+        self.assertEqual([item.citation_id for item in result.evidence], ["S1", "S2"])
+
     async def test_task_coverage_uses_citations_not_model_task_name_guess(self):
         task = AgentTask(id="k", agent="knowledge", question="Who approves this purchase?")
         plan = AgentPlan(objective=task.question, tasks=[task])
@@ -66,6 +131,7 @@ class SharedAnswerComposerTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.answer, provider.answer["answer"])
         self.assertFalse(result.metadata["fallback"])
         self.assertIn('Valid task IDs for used_tasks: ["k"]', provider.prompt)
+        self.assertIn('"specialist_response": ""', provider.prompt)
 
     async def test_knowledge_agent_returns_context_without_answer_generation(self):
         rag = ContextOnlyRag()
@@ -78,10 +144,22 @@ class SharedAnswerComposerTest(unittest.IsolatedAsyncioTestCase):
         with patch.dict("os.environ", {"KNOWLEDGE_MULTIQUERY_ENABLED": "1"}):
             result = await agent.run(request)
 
-        self.assertEqual(result.answer, "")
+        self.assertIn("one-twelfth", result.answer)
         self.assertEqual(result.evidence[0].content, "Annual leave policy evidence.")
-        self.assertEqual(rag.calls[0][1]["retrieval_method"], "bm25")
-        self.assertTrue(rag.calls[0][1]["decompose"])
+        self.assertEqual(rag.answer_calls[0][1]["retrieval_method"], "bm25")
+        self.assertTrue(rag.answer_calls[0][1]["decompose"])
+
+    async def test_sql_agent_summarizes_rows_and_preserves_structured_result(self):
+        provider = TextProvider("Doanh thu ghi nhận là 125 [S1].")
+        agent = AnalyticsAgent(ContextOnlySQL(provider))
+
+        result = await agent.run(AgentRequest(question="Doanh thu hiện tại là bao nhiêu?"))
+
+        self.assertEqual(result.data["rows"], [{"revenue": 125}])
+        self.assertEqual(result.evidence[0].source, "commerce.sales")
+        self.assertIn("Doanh thu ghi nhận là 125 [S1].", result.answer)
+        self.assertIn("Canonical metric definitions", provider.prompt)
+        self.assertIn('"revenue": 125', provider.prompt)
 
     async def test_single_sql_result_uses_shared_language_aware_composer(self):
         answer = "Sản phẩm bán chạy nhất là UrbanVN RP-49 với 12 sản phẩm [S1]."
@@ -107,7 +185,7 @@ class SharedAnswerComposerTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn("strictly in the same language", provider.prompt)
         self.assertIn("Address every material part", provider.prompt)
         self.assertIn("every factual sentence and bullet", provider.prompt)
-        self.assertNotIn("The product with the highest", provider.prompt)
+        self.assertIn("The product with the highest", provider.prompt)
         self.assertEqual(result.data["rows"], specialist_result.data["rows"])
 
     async def test_single_bestselling_product_uses_grounded_deterministic_answer(self):

@@ -21,8 +21,9 @@ def _is_vietnamese(text):
 
 def _number_options(text):
     numbers = []
-    for token in re.findall(r'(?<!\w)[+-]?\d+(?:[.,]\d+)*(?:[eE][+-]?\d+)?%?', text):
-        token = token.rstrip('%')
+    pattern = r'(?<!\w)[+-]?(?:\d{1,3}(?:[ \u00a0\u202f]\d{3})+(?:[.,]\d+)?|\d+(?:[.,]\d+)*(?:[eE][+-]?\d+)?)(?:%?)'
+    for token in re.findall(pattern, text):
+        token = re.sub(r'[ \u00a0\u202f]', '', token).rstrip('%')
         options = set()
         if '.' in token and ',' in token:
             decimal = '.' if token.rfind('.') > token.rfind(',') else ','

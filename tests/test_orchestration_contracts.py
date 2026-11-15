@@ -21,6 +21,16 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         inputs = [{'data': {'rows': [{'count': 1320}]}, 'evidence': []}]
         self.assertTrue(_supported_numbers('1,320 products [S1]', inputs, 'Count products'))
         self.assertTrue(_supported_numbers('1.320 sản phẩm [S1]', inputs, 'Count products'))
+        revenue_inputs = [{'data': {'rows': [
+            {'year': '2025-01-01T00:00:00+00:00', 'revenue': '3369646.71'},
+            {'year': '2026-01-01T00:00:00+00:00', 'revenue': '18881151.90'},
+        ]}, 'evidence': []}]
+        self.assertTrue(_supported_numbers(
+            'Doanh thu năm 2025 là 3 369 646,71 và năm 2026 là 18 881 151,90 [S1].',
+            revenue_inputs, 'so sánh 2 năm'))
+        self.assertFalse(_supported_numbers(
+            'Doanh thu năm 2025 là 3 369 646,72 và năm 2026 là 18 881 151,90 [S1].',
+            revenue_inputs, 'so sánh 2 năm'))
         self.assertFalse(_supported_numbers('1.32 products [S1]', inputs, 'Count products'))
         self.assertFalse(_supported_numbers('1320e6 products [S1]', inputs, 'Count products'))
 

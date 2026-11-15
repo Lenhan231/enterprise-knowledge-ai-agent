@@ -65,8 +65,7 @@ backend still calls its private Docker service with internal service authenticat
 - src/core/database: PostgreSQL repositories and table persistence
 - Supabase `document_preprocessing_test` schema: isolated Upload Test runs and parser outputs
 - src/core/retrieval: role-scoped search; in Docker, the private Retrieval API owns translation, embedding, search and reranking
-- src/core/agents/{knowledge,sql,report,business_decision_support}: specialist agents; planning, execution, routing and synthesis live in src/core/agents/orchestration
-- Business Decision Support reuses ReportAgent's authorized `combined` source workflow for grounded SQL and document evidence; orchestration owns tool planning and execution.
+- src/core/agents/{knowledge,sql,report}: specialist agent implementations; planning, execution, routing and synthesis live in src/core/agents/decision_support
 - src/core/rag: retrieval-grounded answer generation; src/core/sql_agent keeps compatibility imports for existing callers
 - [CLI tools](tools/README.md): reproducible CLI entry points grouped by workstream; see the [repository map](docs/technical/repository-ownership.md) for ownership and shared contracts
 - docker-compose.yml: Agents API, private Retrieval API, document processing, chunking worker, embeddings and reranker; optional Nginx ingress. Frontend hosting remains on Vercel and data remains in Supabase.

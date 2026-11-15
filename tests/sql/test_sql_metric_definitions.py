@@ -12,7 +12,6 @@ from core.analytics.metric_ontology import METRIC_ONTOLOGY, get_metric_definitio
 from core.analytics.text_to_sql import (APPROVED_COLUMNS, SQLValidationError, SQLSecurityError,
     SQLSchemaMismatchError, build_sql_prompt, decode_query_plan)
 from core.sql_agent.analytics_agent import AnalyticsAgent
-from core.agents.orchestration.response import compose_single_result
 from core.sql_agent.agent import SQLAnalyticsAgent
 from core.models.agents import AgentRequest, VerifiedIdentity
 
@@ -312,13 +311,14 @@ class MetricAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.metadata["metrics"]["stockout_rate"]["unit"], "percent")
         self.assertTrue(any("fractions" in note for note in result.metadata["limitations"]))
 
-    async def test_sql_specialist_keeps_metric_limitations_as_metadata(self):
+    async def test_summary_receives_enforced_units_and_limitations(self):
         query = json.dumps({"sql": "SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s LIMIT 1"})
         llm = self.provider(query, "Revenue is 200 in unspecified currency.")
         repository = AsyncMock()
         repository.execute_approved_query.return_value = [{"revenue": 200}]
         result = await AnalyticsAgent(SQLAnalyticsAgent(repository, llm=llm)).run(self.request("Total revenue"))
-        self.assertEqual(len(llm.prompts), 1)
+        self.assertIn("dataset_currency_unknown", llm.prompts[-1])
+        self.assertIn("Canonical metric definitions", llm.prompts[-1])
         self.assertIn("currency", " ".join(result.metadata["limitations"]).lower())
 
     async def test_null_aggregate_is_explained_without_claiming_no_data(self):
@@ -330,13 +330,12 @@ class MetricAgentTest(unittest.IsolatedAsyncioTestCase):
         repository = AsyncMock()
         repository.execute_approved_query.return_value = [{"revenue": None}]
 
-        raw_result = await AnalyticsAgent(SQLAnalyticsAgent(repository, llm=llm)).run(
+        result = await AnalyticsAgent(SQLAnalyticsAgent(repository, llm=llm)).run(
             self.request("Doanh thu tháng 3 năm nay")
         )
-        result = await compose_single_result(self.request("Doanh thu tháng 3 năm nay"), "sql", raw_result, provider=None)
 
-        self.assertIn("kết quả revenue là NULL", result.answer)
-        self.assertIn("không đồng nghĩa với doanh thu bằng không", result.answer)
+        self.assertIn("trả về NULL", result.answer)
+        self.assertIn("chưa đủ để kết luận", result.answer)
         self.assertIn("không có bản ghi phù hợp", result.answer)
         self.assertNotIn("no revenue for this month", result.answer)
         self.assertEqual(len(llm.prompts), 1)

@@ -9,7 +9,7 @@ from core.models.agents import (
     Evidence,
 )
 from core.rag.rag_service import RAGService
-from core.agents.orchestration.execution import authorize
+from core.agents.decision_support.execution import authorize
 from core.agents.runtime import deadline, remaining, run_sync
 
 
@@ -41,9 +41,7 @@ class KnowledgeAgent(BaseAgent):
     ) -> AgentResult:
         authorize(request, 'knowledge')
         multiquery = os.getenv("KNOWLEDGE_MULTIQUERY_ENABLED", "0") == "1"
-        # Retrieval work shares this budget with the Knowledge answer model.
-        # Leave the router's 120s ceiling room for final response synthesis.
-        timeout = 100.0 if multiquery else 90.0
+        timeout = 90.0 if multiquery else 60.0
         token = deadline.set(time.monotonic() + remaining(timeout))
         try:
             result = await run_sync(
@@ -58,6 +56,7 @@ class KnowledgeAgent(BaseAgent):
         finally:
             deadline.reset(token)
         cited = set(result.source_ids)
+
         evidence = [
             Evidence(
                 citation_id=context["source_id"],
@@ -78,9 +77,9 @@ class KnowledgeAgent(BaseAgent):
             if context["source_id"] in cited
         ]
 
-        metadata = {"ok": not result.insufficient_context,
-                    "insufficient_context": result.insufficient_context}
+        metadata = {"ok": not result.insufficient_context, "insufficient_context": result.insufficient_context}
         if result.contexts:
+            # For the UI's run details; kept even when nothing is cited (e.g. a withheld answer).
             details = result.contexts[0].get("retrieval_details") or {}
             metadata["search"] = {
                 "lexical_queries": details.get("lexical_queries"),
@@ -92,6 +91,7 @@ class KnowledgeAgent(BaseAgent):
         if result.verification is not None:
             metadata["claim_verification"] = result.verification.model_dump()
             metadata["ok"] = metadata["ok"] and result.verification.status == "supported"
+
         return AgentResult(
             answer=result.answer,
             agent="knowledge",

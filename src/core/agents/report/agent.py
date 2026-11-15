@@ -86,7 +86,7 @@ class ReportAgent:
                 accept_supported_scope=accept_supported_scope)
         if source_mode in {'orchestrated', 'combined'} and self.source_router is None:
             from core.agents.sql.analytics_agent import AnalyticsAgent
-            from core.agents.orchestration.router import AgentRouter
+            from core.agents.decision_support.router import AgentRouter
             analytics = (self.analytics_agent if isinstance(self.analytics_agent, AnalyticsAgent)
                          else AnalyticsAgent(self.analytics_agent))
             self.source_router = AgentRouter(None, self.knowledge_agent, analytics, llm=self._provider())

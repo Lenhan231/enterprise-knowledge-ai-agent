@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 from datetime import date
 from decimal import Decimal, InvalidOperation
@@ -10,14 +11,12 @@ from typing import Any
 from core.agents.base import BaseAgent
 from core.agents.sql.agent import SQLAnalyticsAgent, payload_to_agent_result
 from core.models.agents import AgentResult
-from core.agents.runtime import generate
 from core.latency import measure
+from core.agents.runtime import generate
 from core.prompts.agents import ANALYTICS_SUMMARY_PROMPT
 
 
 class AnalyticsAgent(BaseAgent):
-    """Run SQL, summarize its validated rows, and preserve the original query data."""
-
     def __init__(self, sql_agent: SQLAnalyticsAgent) -> None:
         self.sql_agent = sql_agent
 
@@ -37,7 +36,7 @@ class AnalyticsAgent(BaseAgent):
                         if all(row.get(column) is None for row in rows)]
         if null_columns:
             columns = ", ".join(null_columns)
-            if any(char in question for char in "ăâđêôơưáàảãấầẩẫậắằẳẵặếềểễệốồổỗộớờởỡợứừửữựýỳỷỹỵ"):
+            if any(char in question for char in "ăâđêôơưáàảãạấầẩẫậắằẳẵặếềểễệốồổỗộớờởỡợứừửữựýỳỷỹỵ"):
                 answer = (f"Truy vấn đã chạy nhưng {columns} trả về NULL. Điều này chưa đủ để kết luận "
                           "không có doanh thu: có thể không có bản ghi phù hợp hoặc các bản ghi đều thiếu giá trị này.")
             else:
@@ -56,10 +55,10 @@ class AnalyticsAgent(BaseAgent):
             return {**result, "answer": answer}
         prompt = ANALYTICS_SUMMARY_PROMPT.format(
             question=question,
-            citations=", ".join(citations),
-            metrics=json.dumps(result.get("metadata", {}).get("metrics", {}), ensure_ascii=False),
+            citations=', '.join(citations),
+            metrics=json.dumps(result.get('metadata', {}).get('metrics', {}), ensure_ascii=False),
             limitations=json.dumps(limitations, ensure_ascii=False),
-            interpretation=json.dumps(result.get("metadata", {}).get("semantic_interpretation"), ensure_ascii=False),
+            interpretation=json.dumps(result.get('metadata',{}).get('semantic_interpretation'),ensure_ascii=False),
             rows=json.dumps(rows, default=str, ensure_ascii=False),
         )
         try:
@@ -69,7 +68,7 @@ class AnalyticsAgent(BaseAgent):
                 raise ValueError("empty analytics summary")
             answer = answer.strip()[:4_000]
         except Exception:
-            answer = self._fallback_answer(rows, sources)
+            answer = self._fallback_answer(result["rows"], sources)
         if citations:
             answer += "\n\nSources: " + "; ".join(citations)
         return {**result, "answer": answer}
@@ -103,7 +102,7 @@ class AnalyticsAgent(BaseAgent):
                 rate = f" ({Decimal(str(fraction)) * 100:+.2f}%)"
             except (InvalidOperation, ValueError):
                 rate = ""
-        if any(char in question for char in "ăâđêôơưáàảãấầẩẫậắằẳẵặếềểễệốồổỗỡớờởợứừửữựýỳỷỹỵ"):
+        if any(char in question for char in "ăâđêôơưáàảãạấầẩẫậắằẳẵặếềểễệốồổỗộớờởỡợứừửữựýỳỷỹỵ"):
             direction = "tăng" if change > 0 else "giảm" if change < 0 else "không đổi"
             suffix = f" {direction} {delta}{rate} so với tháng trước." if change else " không đổi so với tháng trước."
             return (f"Doanh thu tháng {month_label(row['month'])} là {amount(current)}; tháng "

@@ -331,8 +331,7 @@ class SQLAnalyticsAgent(BaseAgent):
             elif promotion_metric == "active_promotion_count":
                 tables = {"commerce.promotions"}
             else:
-                schema_question = question if original_question.casefold() in question.casefold() else question + '\n' + original_question
-                tables = relevant_schema_tables(schema_question, {name:get_metric_definition(name) for name in metric_names}, table_columns)
+                tables = relevant_schema_tables(question, {name:get_metric_definition(name) for name in metric_names}, table_columns)
             if (direct is None and 'commerce.inventory' in tables and all(
                     get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
                     and re.search(r'\bcurrent\b|\btoday\b|hiện tại|hôm nay', re.sub(r"'(?:[^']|'')*'", '', question), re.I)
@@ -463,7 +462,7 @@ class SQLAnalyticsAgent(BaseAgent):
                     definitions = ({"revenue": get_metric_definition("revenue")}
                                    if completed_months_plan is not None or month_comparison_plan is not None or explicit_month_plan is not None else
                                    validate_metric_definitions(plan.sql, metric_names, plan.parameters, table_columns,
-                                       question=interpretation.date_question() if interpretation and interpretation.domain == 'inventory' else original_question))
+                                       question=interpretation.date_question() if interpretation and interpretation.domain == 'inventory' else question))
                     if promotion_metric == "promotion_revenue":
                         definitions = {"promotion_revenue": {
                             "unit": "currency", "aggregation": "sum",
@@ -563,7 +562,6 @@ class SQLAnalyticsAgent(BaseAgent):
                 "ok": False, "operation": "text_to_sql", "rows": [],
                 "answer": "No matching rows were found in the approved data sources.",
                 "sql": plan.sql, "parameters": list(plan.parameters), "query_status": "executed",
-                "evidence": [{"source": source, "metadata": {"metrics": definitions}} for source in validated.sources],
                 "limitations": limitations, "metadata": metadata,
             }
         return {

@@ -79,6 +79,8 @@ class AgentRouter:
                     store = self.report_conversations if report_headings is not None else self.conversations
                     async with store.session(request) as history:
                         execution.sql_context = self._sql_context_from_history(history)
+                        # Reports build their own section questions, so only chat turns get the user's wording.
+                        execution.standalone = not history and report_headings is None and forced_plan is None
                         graph_input = {'request': request, 'history': list(history),
                             'execution': execution, 'revisions': 0, 'report_headings': report_headings}
                         if forced_plan is not None:

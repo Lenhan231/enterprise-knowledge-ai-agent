@@ -59,3 +59,9 @@ node --check src/app/static/dashboard.js
 ```
 
 The integration is based on main rather than an older branch snapshot, preserving newer SQL/Auto and web UI changes. Full-suite failures are compared with a clean-main baseline; a passing focused suite is not a claim that the entire repository is green. Visual-browser and live-provider testing are separate from mocked regression checks.
+
+## Table fields and environment consistency
+
+Tables may explicitly select grouping columns (dates, categories, IDs) alongside their measures; those fields remain forbidden as numeric chart/KPI/summary measures. The table grouping metadata does not request client-side aggregation: the SQL result still supplies the observations. This distinction prevents valid chart-plus-table requests from being rejected depending on which equivalent table mapping the model returns.
+
+SQL defaults to Groq in both the server and local launcher. With no SQL_GROQ_MODEL override, Groq uses GROQ_MODEL (default qwen/qwen3.8-27b). The example environment now leaves SQL_GROQ_MODEL empty instead of selecting another model. Explicit deployment overrides remain authoritative; source code does not rewrite a running server's environment. For exact local/hosted parity, configure SQL_LLM_PROVIDER=groq and SQL_GROQ_MODEL=qwen/qwen3.8-27b in both environments. The model used by a hosted server cannot be inferred from its Git branch or from a validation error alone.

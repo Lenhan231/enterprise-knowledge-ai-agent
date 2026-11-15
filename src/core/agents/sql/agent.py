@@ -740,7 +740,7 @@ class SQLAnalyticsAgent(BaseAgent):
 
     def _provider(self) -> LLMInterface:
         if self.llm is None:
-            provider_name = os.getenv("SQL_LLM_PROVIDER", "auto").strip().casefold()
+            provider_name = os.getenv("SQL_LLM_PROVIDER", "groq").strip().casefold()
             if provider_name == "groq":
                 from core.llm.groq_provider import GroqProvider
                 self.llm = GroqProvider(model=os.getenv("SQL_GROQ_MODEL") or None)

@@ -127,3 +127,50 @@ class DashboardRequirementsTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(['bar'], [tile.kind for tile in doc.tiles])
         self.provider.generate.assert_called_once()
         self.repo.execute_approved_query.assert_awaited_once()
+
+    async def test_table_can_select_grouping_columns_alongside_chart_measures(self):
+        for dimension, measure in [('month', 'revenue'), ('period', 'value')]:
+            with self.subTest(dimension=dimension, measure=measure):
+                value = response()['queries'][0]
+                value['sql'] = value['sql'].replace('AS month', 'AS ' + dimension).replace('AS revenue', 'AS ' + measure)
+                value['parameters'] = ['2026-07-01', '2026-10-01']
+                value['outputs'] = [
+                    {'kind': 'line', 'query': 0, 'dimension': dimension, 'measures': [measure]},
+                    {'kind': 'table', 'query': 0, 'measures': [dimension, measure]}]
+                self.provider.generate.reset_mock()
+                self.provider.generate.return_value = json.dumps(value)
+                self.repo.execute_approved_query.side_effect = None
+                self.repo.execute_approved_query.return_value = [
+                    {dimension: '2026-07-01', measure: 10}, {dimension: '2026-09-01', measure: 20}]
+                doc = await self.agent.build(self.request, 'Create a dashboard showing the monthly revenue trend and a table of the underlying monthly observations for July to September 2026.')
+                self.assertEqual('complete', doc.status, [r.message for r in doc.results])
+                self.assertEqual(['line', 'table'], [tile.kind for tile in doc.tiles])
+                self.assertEqual([dimension, measure], doc.tiles[1].measures)
+                self.provider.generate.assert_called_once()
+
+    async def test_latest_inventory_chart_and_category_observation_table(self):
+        mapping = {'metrics': ['stockout_rate'], 'dimensions': ['category'], 'time': {'mode': 'latest'},
+            'outputs': [{'kind': 'bar', 'query': 0, 'dimension': 'category', 'measures': ['stockout_rate']},
+                        {'kind': 'table', 'query': 0, 'measures': ['snapshot_date', 'category', 'stockout_rate']}]}
+        self.provider.generate.return_value = json.dumps(mapping)
+        self.repo.execute_approved_query.side_effect = None
+        self.repo.execute_approved_query.return_value = [
+            {'snapshot_date': '2022-12-31', 'category': 'A', 'stockout_rate': 0.2},
+            {'snapshot_date': '2022-12-31', 'category': 'B', 'stockout_rate': 0.3}]
+        doc = await self.agent.build(self.request, 'Compare stockout rates across product categories in the latest inventory snapshot and include a table of category-level observations.')
+        self.assertEqual('complete', doc.status, [r.message for r in doc.results])
+        self.assertEqual(['bar', 'table'], [tile.kind for tile in doc.tiles])
+        self.provider.generate.assert_called_once()
+        self.repo.execute_approved_query.assert_awaited_once()
+
+    async def test_grouped_columns_remain_invalid_numeric_measures(self):
+        for kind in ('line', 'kpi', 'summary'):
+            with self.subTest(kind=kind):
+                value = response()['queries'][0]
+                value['outputs'] = [{'kind': kind, 'query': 0, 'measures': ['month']}]
+                if kind == 'line':
+                    value['outputs'][0]['dimension'] = 'month'
+                self.provider.generate.return_value = json.dumps(value)
+                doc = await self.agent.build(self.request, 'Monthly revenue in 2026')
+                self.assertEqual('clarification_required', doc.results[0].status)
+                self.repo.execute_approved_query.assert_not_awaited()

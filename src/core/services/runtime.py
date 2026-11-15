@@ -7,10 +7,12 @@ import os
 import secrets
 import time
 from contextlib import asynccontextmanager
+from queue import Queue
 from typing import Literal
-from threading import Lock
+from threading import Lock, Thread
 
 from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 LOCK = Lock()
@@ -100,26 +102,62 @@ class Retrieve(BaseModel):
 
 
 @app.post("/retrieve")
-def retrieve(body: Retrieve):
+def retrieve(body: Retrieve, stream: bool = False):
     if os.getenv("SERVICE_KIND") != "retrieval":
         raise HTTPException(404)
+    if not stream:
+        return _run_retrieval(body, [])
+    # NDJSON: one {"stage", "state", "elapsed_ms"} line per stage as it happens, then {"result"} or {"error"}.
+    lines: Queue = Queue()
+    events: list[dict] = []
+
+    def notify(stage: str, state: str):
+        line = {"stage": stage, "state": state}
+        if state != "started" and events and events[-1]["stage"] == stage:
+            line["elapsed_ms"] = events[-1]["elapsed_ms"]  # measure() records the event before notifying
+        lines.put(line)
+
+    def work():
+        try:
+            lines.put({"result": _run_retrieval(body, events, notify).model_dump(mode="json")})
+        except Exception:
+            logger.exception("Streaming retrieval failed")
+            lines.put({"error": "Retrieval failed"})
+        finally:
+            lines.put(None)
+
+    Thread(target=work, daemon=True).start()
+    return StreamingResponse((json.dumps(line) + "\n" for line in iter(lines.get, None)),
+                             media_type="application/x-ndjson")
+
+
+def _run_retrieval(body: Retrieve, events: list[dict], notify=None):
+    from core.latency import latency_events, stage_listener
     from core.retrieval.retrieval import RetrievalRequest
     from core.retrieval.retrieval import RetrievalResponse
 
-    result = app.state.retrieval_service.retrieve(
-        RetrievalRequest(query=body.query, top_k=body.top_k),
-        company=body.company,
-        roles=body.roles,
-        method=body.method,
-        dense_weight=body.dense_weight,
-        bm25_weight=body.bm25_weight,
-        rrf_k=body.rrf_k,
-        document_ids=body.document_ids,
-        metadata_filter=body.metadata_filter,
-        query_language=body.query_language,
-        document_languages=body.document_languages,
-    )
-    return RetrievalResponse.model_validate(result)
+    # Stage timings would otherwise stay in this process; the caller replays them (remote_service.py).
+    token, listener_token = latency_events.set(events), stage_listener.set(notify)
+    try:
+        result = app.state.retrieval_service.retrieve(
+            RetrievalRequest(query=body.query, top_k=body.top_k),
+            company=body.company,
+            roles=body.roles,
+            method=body.method,
+            dense_weight=body.dense_weight,
+            bm25_weight=body.bm25_weight,
+            rrf_k=body.rrf_k,
+            document_ids=body.document_ids,
+            metadata_filter=body.metadata_filter,
+            query_language=body.query_language,
+            document_languages=body.document_languages,
+        )
+    finally:
+        latency_events.reset(token)
+        stage_listener.reset(listener_token)
+    response = RetrievalResponse.model_validate(result)
+    response.retrieval_details["stage_events"] = events
+    return response
 
 
 @app.post("/embed")

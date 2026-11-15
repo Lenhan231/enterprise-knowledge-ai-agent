@@ -9,10 +9,81 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
+from core.latency import STAGES, latency_events, stage_listener
 from core.retrieval.retrieval import RetrievalRequest, RetrievalResponse
-from core.services.client import post
 
 remote_session_context = contextvars.ContextVar("remote_retrieval_session", default=None)
+_MAX_RESPONSE_BYTES = 64 * 1024 * 1024  # same cap as core.services.client.post
+
+
+def _elapsed(event: dict) -> float | None:
+    try:
+        return max(0.0, float(event.get("elapsed_ms") or 0))
+    except (TypeError, ValueError):
+        return None
+
+
+def _replay_stage_events(response: RetrievalResponse) -> RetrievalResponse:
+    """Add the retrieval service's stage timings to this request's timings and progress stream."""
+    events = latency_events.get()
+    if events is None:
+        return response  # nothing records timings here (e.g. the public proxy), so pass them on unchanged
+    listener = stage_listener.get()
+    for event in response.retrieval_details.pop("stage_events", None) or []:
+        if not isinstance(event, dict) or event.get("stage") not in STAGES or (elapsed := _elapsed(event)) is None:
+            continue
+        status = "completed" if event.get("status") == "completed" else "failed"
+        events.append({"stage": event["stage"], "elapsed_ms": elapsed, "status": status})
+        if listener:
+            listener(event["stage"], "started")
+            listener(event["stage"], status)
+    return response
+
+
+def _post_streaming(url: str, payload: dict, timeout: float) -> RetrievalResponse:
+    """Call /retrieve?stream=1 and forward each stage to this request as it happens (so the page shows it live)."""
+    token = os.environ.get("INTERNAL_SERVICE_TOKEN", "")
+    if not token:
+        raise RuntimeError("INTERNAL_SERVICE_TOKEN is required")
+    request = Request(url + "/retrieve?stream=1", data=json.dumps(payload).encode(), method="POST",
+                      headers={"Content-Type": "application/json", "Authorization": "Bearer " + token})
+    events, listener = latency_events.get(), stage_listener.get()
+    try:
+        with urlopen(request, timeout=timeout) as response:
+            if "ndjson" not in response.headers.get("Content-Type", ""):
+                # An older retrieval service ignores stream=1 and answers with one JSON body.
+                content = response.read(_MAX_RESPONSE_BYTES + 1)
+                if len(content) > _MAX_RESPONSE_BYTES:
+                    raise RuntimeError("Internal service response exceeds limit")
+                return _replay_stage_events(RetrievalResponse.model_validate(json.loads(content)))
+            seen, received = [], 0
+            for raw in response:
+                received += len(raw)
+                if received > _MAX_RESPONSE_BYTES:
+                    raise RuntimeError("Internal service response exceeds limit")
+                line = json.loads(raw)
+                if "result" in line:
+                    result = RetrievalResponse.model_validate(line["result"])
+                    if events is None:
+                        result.retrieval_details["stage_events"] = seen  # pass on, as the non-streaming path does
+                    else:
+                        result.retrieval_details.pop("stage_events", None)
+                    return result
+                if "error" in line:
+                    raise RuntimeError("Internal backend service unavailable or invalid response")
+                stage, state = line.get("stage"), line.get("state")
+                if stage not in STAGES or state not in {"started", "completed", "failed"}:
+                    continue
+                if listener:
+                    listener(stage, state)
+                if state != "started" and (elapsed := _elapsed(line)) is not None:
+                    event = {"stage": stage, "elapsed_ms": elapsed, "status": state}
+                    seen.append(event)
+                    if events is not None:
+                        events.append(event)
+    except (URLError, TimeoutError, ValueError) as error:
+        raise RuntimeError("Internal backend service unavailable or invalid response") from error
+    raise RuntimeError("Internal backend service unavailable or invalid response")  # stream ended without a result
 
 
 class RemoteRetrievalService:
@@ -53,9 +124,8 @@ class RemoteRetrievalService:
         }
         timeout = float(os.getenv("RETRIEVAL_SERVICE_TIMEOUT_SECONDS", "90"))
         if os.getenv("RETRIEVAL_SERVICE_AUTH", "internal") == "session":
-            return self._retrieve_with_session(payload, timeout)
-        result = post(self.url, "/retrieve", payload, timeout=timeout)
-        return RetrievalResponse.model_validate(result)
+            return _replay_stage_events(self._retrieve_with_session(payload, timeout))
+        return _post_streaming(self.url, payload, timeout)
 
     def _retrieve_with_session(self, payload: dict, timeout: float) -> RetrievalResponse:
         context = remote_session_context.get()

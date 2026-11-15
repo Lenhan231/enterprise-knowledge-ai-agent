@@ -1,7 +1,7 @@
 policy:
   document_id: VSC-OPS-POL-001
   version: '1.0'
-  sha256: bf55be948913d0f54ea873cf59d305081939f3391c8530d973c0b943f8bc1a0d
+  sha256: e11a1baca9f2efaedb1715232dc30116593dd6b4efaa16cab57e01f3e4ddc823
   status: approved
   source: artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md
   approves_metric_formulas: false

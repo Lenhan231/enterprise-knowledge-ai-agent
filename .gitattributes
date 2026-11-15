@@ -11,3 +11,4 @@
 /artifacts/evaluation/colab-translated-hybrid-fresh-v1/**/*.txt text eol=lf
 /artifacts/evaluation/vietstyle-bilingual-20261019/dense-evidence-benchmark-v1/**/*.json text eol=lf
 /artifacts/evaluation/vietstyle-bilingual-20261019/dense-evidence-benchmark-v1/**/*.jsonl text eol=lf
+/artifacts/datasets/vietstyle-operations-vi-v1/VietStyle_Enterprise_Operating_Policy_v1.0_VN.md text eol=lf

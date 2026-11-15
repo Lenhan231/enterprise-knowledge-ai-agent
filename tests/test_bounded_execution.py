@@ -151,7 +151,9 @@ class BoundedExecutionTest(unittest.IsolatedAsyncioTestCase):
                 await asyncio.sleep(5)
                 return source_result('knowledge')
         tasks = [task('s', 'sql', 'Count orders'), task('k', 'knowledge', 'Order processing policy')]
-        router = AgentRouter(None, Slow(None), FakeAgent(source_result('analytics', rows=[{'count': 3}])),
+        sql_result = source_result('analytics', rows=[{'count': 3}])
+        sql_result.answer = 'There are 3 stockouts [S1].'
+        router = AgentRouter(None, Slow(None), FakeAgent(sql_result),
                              llm=FakeProvider(tasks), request_timeout=0.5)
         result = await router.run(AgentRequest(question='Orders and policy', identity=IDENTITY))
         self.assertEqual(result.metadata['status'], 'partial')

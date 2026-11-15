@@ -240,24 +240,9 @@ class AgentRouter:
 
     async def _combine(self, state):
         plan, execution = state['plan'], state['execution']
-        direct_fallback = None
-        if plan.fallback and len(plan.tasks) == 1:
-            outcome = execution.outcomes.get(plan.tasks[0].id)
-            if outcome and outcome.status == 'complete' and outcome.result:
-                direct_fallback = outcome.result
-        if direct_fallback is not None and state.get('report_headings') is None:
-            selected_route = 'analytics' if plan.tasks[0].agent == 'sql' else plan.tasks[0].agent
-            result = direct_fallback.model_copy(update={'metadata': {
-                **direct_fallback.metadata,
-                'selected_route': selected_route,
-                'planning_fallback': True,
-                'task_trace': execution.trace,
-                'specialist_invocations': execution.invocations,
-            }})
-        else:
-            with measure('answer_synthesis'):
-                result = (execution.collected_sources(plan) if state.get('report_headings') is not None
-                          else await assemble_response(state['request'], plan, execution, self._provider()))
+        with measure('answer_synthesis'):
+            result = (execution.collected_sources(plan) if state.get('report_headings') is not None
+                      else await assemble_response(state['request'], plan, execution, self._provider()))
         result.metadata['revisions'] = state['revisions']
         return {'result': result}
 

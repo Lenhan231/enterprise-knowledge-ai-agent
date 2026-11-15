@@ -57,21 +57,79 @@ with patch("core.services.client.post", return_value={"elements": [], "tables": 
             self.assertEqual(call.call_args.args[1], "/embed")
         _load_backend.cache_clear()
 
-    def test_remote_retrieval_preserves_scope_and_response_contract(self):
+    @staticmethod
+    def _http_response(body: bytes, content_type: str):
+        response = io.BytesIO(body)
+        response.headers = {"Content-Type": content_type}
+        return response
+
+    def _retrieve_remote(self, response, record=True, **kwargs):
+        """Run RemoteRetrievalService.retrieve against a fake HTTP response; returns (result, events, heard, request)."""
+        from core.latency import latency_events, stage_listener
         from core.retrieval.remote_service import RemoteRetrievalService
-        from core.retrieval.retrieval import RetrievalRequest, RetrievalResponse
+        from core.retrieval.retrieval import RetrievalRequest
+        events, heard, sent = [], [], []
+        tokens = (latency_events.set(events if record else None), stage_listener.set(lambda *a: heard.append(a)))
+        try:
+            with patch.dict(os.environ, {"INTERNAL_SERVICE_TOKEN": "t"}), \
+                    patch("core.retrieval.remote_service.urlopen",
+                          side_effect=lambda request, timeout: sent.append(request) or response):
+                result = RemoteRetrievalService("http://retrieval-api:8000").retrieve(
+                    RetrievalRequest(query="policy", top_k=3), roles=["admin"], **kwargs)
+        finally:
+            latency_events.reset(tokens[0])
+            stage_listener.reset(tokens[1])
+        return result, events, heard, sent[0]
+
+    def test_remote_retrieval_preserves_scope_and_response_contract(self):
+        from core.retrieval.retrieval import RetrievalResponse
         expected = RetrievalResponse(query="policy", method="hybrid", latency_ms=2, results=[])
-        with patch("core.retrieval.remote_service.post", return_value=expected.model_dump(mode="json")) as call:
-            service = RemoteRetrievalService("http://retrieval-api:8000")
-            result = service.retrieve(
-                RetrievalRequest(query="policy", top_k=3), company="Example",
-                roles=["admin"], method="hybrid", document_ids=["DOC-1"],
-            )
+        response = self._http_response(json.dumps(expected.model_dump(mode="json")).encode(), "application/json")
+        result, _, _, request = self._retrieve_remote(response, company="Example", method="hybrid", document_ids=["DOC-1"])
         self.assertEqual(result, expected)
-        self.assertEqual(call.call_args.args[:2], ("http://retrieval-api:8000", "/retrieve"))
-        self.assertEqual(call.call_args.args[2]["roles"], ["admin"])
-        self.assertEqual(call.call_args.args[2]["company"], "Example")
-        self.assertEqual(call.call_args.args[2]["document_ids"], ["DOC-1"])
+        self.assertEqual(request.full_url, "http://retrieval-api:8000/retrieve?stream=1")
+        self.assertEqual(request.get_header("Authorization"), "Bearer t")
+        sent = json.loads(request.data)
+        self.assertEqual((sent["roles"], sent["company"], sent["document_ids"]), (["admin"], "Example", ["DOC-1"]))
+
+    def test_remote_retrieval_streams_stages_as_they_happen(self):
+        from core.retrieval.retrieval import RetrievalResponse
+        final = RetrievalResponse(query="policy", latency_ms=2, results=[], retrieval_details={"reranker_model": "m"})
+        lines = [{"stage": "embedding", "state": "started"}, {"stage": "embedding", "state": "completed", "elapsed_ms": 12.5},
+                 {"stage": "reranking", "state": "started"}, {"stage": "not_a_stage", "state": "started"},
+                 {"stage": "reranking", "state": "completed", "elapsed_ms": 900},
+                 {"result": final.model_dump(mode="json")}]
+        body = "".join(json.dumps(line) + "\n" for line in lines).encode()
+
+        result, events, heard, _ = self._retrieve_remote(self._http_response(body, "application/x-ndjson"))
+        self.assertEqual(heard, [("embedding", "started"), ("embedding", "completed"),
+                                 ("reranking", "started"), ("reranking", "completed")])
+        self.assertEqual([(e["stage"], e["elapsed_ms"]) for e in events], [("embedding", 12.5), ("reranking", 900.0)])
+        self.assertEqual(result.retrieval_details, {"reranker_model": "m"})
+
+        # Nothing records timings here (the public proxy): the stages travel on with the result.
+        passed, _, _, _ = self._retrieve_remote(self._http_response(body, "application/x-ndjson"), record=False)
+        self.assertEqual([e["stage"] for e in passed.retrieval_details["stage_events"]], ["embedding", "reranking"])
+
+        for broken in (b'{"stage": "embedding", "state": "started"}\n{"error": "Retrieval failed"}\n',
+                       b'{"stage": "embedding", "state": "started"}\n'):
+            with self.assertRaises(RuntimeError):
+                self._retrieve_remote(self._http_response(broken, "application/x-ndjson"))
+
+    def test_remote_retrieval_replays_timings_from_an_older_service(self):
+        from core.retrieval.retrieval import RetrievalResponse
+        remote = [{"stage": "embedding", "elapsed_ms": 12.5, "status": "completed"},
+                  {"stage": "reranking", "elapsed_ms": 900, "status": "completed"},
+                  {"stage": "not_a_stage", "elapsed_ms": 1, "status": "completed"},
+                  {"stage": "database_retrieval", "elapsed_ms": "bad", "status": "completed"}]
+        payload = RetrievalResponse(query="policy", latency_ms=2, results=[],
+                                    retrieval_details={"stage_events": remote, "reranker_model": "m"}).model_dump(mode="json")
+        response = self._http_response(json.dumps(payload).encode(), "application/json")
+        result, events, heard, _ = self._retrieve_remote(response)
+        self.assertEqual([e["stage"] for e in events], ["embedding", "reranking"])
+        self.assertIn(("reranking", "completed"), heard)
+        self.assertNotIn("stage_events", result.retrieval_details)
+        self.assertEqual(result.retrieval_details["reranker_model"], "m")
 
     def test_remote_retrieval_refuses_unscoped_search(self):
         from core.retrieval.remote_service import RemoteRetrievalService
@@ -214,10 +272,15 @@ class InternalRuntimeTest(unittest.TestCase):
         from core.retrieval.retrieval import RetrievalResponse
         from core.services.runtime import app
 
+        from core.latency import measure
+
+        def fake_retrieve(*args, **kwargs):
+            with measure("reranking"):
+                pass
+            return RetrievalResponse(query="policy", method="hybrid", latency_ms=1, results=[])
+
         service = Mock()
-        service.retrieve.return_value = RetrievalResponse(
-            query="policy", method="hybrid", latency_ms=1, results=[],
-        )
+        service.retrieve.side_effect = fake_retrieve
         previous = getattr(app.state, "retrieval_service", None)
         app.state.retrieval_service = service
         self.addCleanup(
@@ -233,8 +296,25 @@ class InternalRuntimeTest(unittest.TestCase):
         self.assertEqual(unauthorized.status_code, 401)
         self.assertEqual(response.status_code, 200, response.text)
         self.assertEqual(response.json()["query"], "policy")
+        stages = response.json()["retrieval_details"]["stage_events"]
+        self.assertEqual([(e["stage"], e["status"]) for e in stages], [("reranking", "completed")])
         self.assertEqual(service.retrieve.call_args.kwargs["roles"], ["admin"])
         self.assertEqual(service.retrieve.call_args.kwargs["company"], "Example")
+
+        with patch.dict(os.environ, {"SERVICE_KIND": "retrieval"}):
+            streamed = self.client.post("/retrieve?stream=1", headers=self.headers,
+                                        json={"query": "policy", "roles": ["admin"]})
+        self.assertIn("ndjson", streamed.headers["content-type"])
+        lines = [json.loads(line) for line in streamed.text.splitlines()]
+        self.assertEqual([(l["stage"], l["state"]) for l in lines[:2]], [("reranking", "started"), ("reranking", "completed")])
+        self.assertIn("elapsed_ms", lines[1])
+        self.assertEqual(lines[2]["result"]["query"], "policy")
+
+        service.retrieve.side_effect = RuntimeError("database password=secret")
+        with patch.dict(os.environ, {"SERVICE_KIND": "retrieval"}), self.assertLogs("core.services.runtime", "ERROR"):
+            failed = self.client.post("/retrieve?stream=1", headers=self.headers,
+                                      json={"query": "policy", "roles": ["admin"]})
+        self.assertEqual([json.loads(line) for line in failed.text.splitlines()], [{"error": "Retrieval failed"}])
 
     def test_parser_rejects_invalid_base64(self):
         with patch.dict(os.environ, {"SERVICE_KIND": "document-processing"}):

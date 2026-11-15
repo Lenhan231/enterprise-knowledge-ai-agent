@@ -137,6 +137,47 @@ class SQLValidationTest(unittest.TestCase):
 
 
 class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def test_compiles_annual_revenue_as_one_aggregate_without_llm_sql(self):
+        class LLM:
+            def generate(self, prompt):
+                raise AssertionError("A single calendar-year revenue total should use the checked SQL plan")
+
+        repository = AsyncMock()
+        repository.execute_approved_query.return_value = [{"revenue": 1234.5}]
+
+        result = await SQLAnalyticsAgent(repository, llm=LLM()).run(
+            AgentRequest(question="doanh thu năm 2025", identity=ANALYST))
+
+        self.assertTrue(result.metadata["ok"], result.answer)
+        self.assertEqual(result.data["rows"], [{"revenue": 1234.5}])
+        self.assertTrue(any("completeness for the full year" in item
+                            for item in result.metadata["limitations"]))
+        sql, *parameters = repository.execute_approved_query.await_args.args
+        self.assertIn("SUM(s.revenue)", sql)
+        self.assertNotIn("GROUP BY", sql.upper())
+        self.assertEqual(parameters, [date(2025, 1, 1), date(2026, 1, 1)])
+
+    async def test_followup_summary_uses_original_question_language(self):
+        class LLM:
+            def __init__(self):
+                self.prompts = []
+
+            def generate(self, prompt):
+                self.prompts.append(prompt)
+                return "Doanh thu năm 2025 là 2.000 [S1]."
+
+        repository = AsyncMock()
+        repository.execute_approved_query.return_value = [{"revenue": 2000}]
+        llm = LLM()
+        analytics = AnalyticsAgent(SQLAnalyticsAgent(repository, llm=llm))
+
+        result = await analytics.run(AgentRequest(
+            question="Revenue for 2025", identity=ANALYST,
+            metadata={"_original_question": "năm 2025"}))
+
+        self.assertIn("Question: năm 2025", llm.prompts[0])
+        self.assertTrue(result.answer.startswith("Doanh thu năm 2025"))
+
     async def test_compiles_explicit_month_revenue_without_llm_sql(self):
         class LLM:
             def generate(self, prompt):

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from collections.abc import Mapping
 from datetime import date
 from decimal import Decimal, InvalidOperation
 from typing import Any
@@ -27,7 +28,10 @@ class AnalyticsAgent(BaseAgent):
         result = await self.sql_agent.run_payload(request)
         if not result.get("ok"):
             return result
-        question = SQLAnalyticsAgent._query_text(request)
+        options = request.get('metadata', {}) if isinstance(request, Mapping) else getattr(request, 'metadata', {})
+        original_question = options.get('_original_question') if isinstance(options, Mapping) else None
+        question = (original_question.strip() if isinstance(original_question, str) and original_question.strip()
+                    else SQLAnalyticsAgent._query_text(request))
         sources = result.get("metadata", {}).get("source", [])
         citations = [f"[S{index}] {source}" for index, source in enumerate(sources, start=1)]
         limitations = result.get("limitations", [])
@@ -72,7 +76,7 @@ class AnalyticsAgent(BaseAgent):
                 raise ValueError("empty analytics summary")
             answer = answer.strip()[:4_000]
         except Exception:
-            answer = self._fallback_answer(result["rows"], sources)
+            answer = self._fallback_answer(result["rows"], sources, question)
         if citations:
             answer += "\n\nSources: " + "; ".join(citations)
         return {**result, "answer": answer}
@@ -81,8 +85,10 @@ class AnalyticsAgent(BaseAgent):
         await self.sql_agent.close()
 
     @staticmethod
-    def _fallback_answer(rows: list[dict[str, Any]], sources: list[str]) -> str:
+    def _fallback_answer(rows: list[dict[str, Any]], sources: list[str], question: str = "") -> str:
         names = ", ".join(sources) or "the approved data sources"
+        if any(char in question for char in "ăâđêôơưáàảãạấầẩẫậắằẳẵặếềểễệốồổỗộớờởỡợứừửữựýỳỷỹỵ"):
+            return f"Truy vấn trả về {len(rows)} dòng từ {names}. Xem bảng kết quả để biết chi tiết."
         return f"The query returned {len(rows)} row(s) from {names}. See the result rows for details."
 
     @staticmethod

@@ -1,11 +1,82 @@
 import json
+import os
 import re
+import urllib.request
 
 from core.analytics.metric_ontology import resolve_metric_names
 from core.analytics.invoices import is_invoice_question
 from core.llm.groq_provider import GroqProvider
 from core.models.intent import IntentResult
 from core.prompts.intent import INTENT_CLASSIFIER_PROMPT
+
+
+JEV_ROUTE_THRESHOLD = 0.8
+JEV_ROUTES = {'knowledge', 'sql', 'hybrid', 'other_or_unclear'}
+
+
+def classify_jev_route(question: str, approved_schema=None, history=()):
+    """Classify tool routing with Jev; callers may fall back to planner on service errors."""
+    api_key = os.getenv('OPENROUTER_API_KEY', '').strip()
+    if not api_key:
+        raise RuntimeError('OPENROUTER_API_KEY is not configured')
+    schema = {table: sorted(columns) for table, columns in (approved_schema or {}).items()}
+    request_body = json.dumps({
+        'model': 'typesafe/jev-1.14',
+        'state': {
+            'question': question,
+            'history': list(history)[-5:],
+            'available_tools': {
+                'knowledge': 'Search authorized enterprise documents for policies and factual explanations.',
+                'sql': 'Run read-only queries against the approved structured commerce schema.',
+            },
+            'approved_schema': schema,
+        },
+        'questions': {
+            'route': {
+                'type': 'choice',
+                'instructions': ('Choose the smallest tool set that can answer the current request. Use hybrid only '
+                                 'when both document evidence and structured data are needed. Do not choose SQL '
+                                 'for policy/document-only questions. Consider the recent history when interpreting '
+                                 'follow-ups, but do not treat history as fresh evidence.'),
+                'criteria': {
+                    'knowledge': 'Authorized enterprise documents alone can answer the request.',
+                    'sql': 'Approved structured data alone can answer the request.',
+                    'hybrid': 'Both document evidence and structured data are needed.',
+                    'other_or_unclear': 'A specialist mode, clarification, or another route is needed.',
+                },
+            },
+            'history_required': {
+                'type': 'choice',
+                'instructions': 'Does the current question need earlier turns to form a complete standalone specialist question?',
+                'criteria': {
+                    'yes': 'The question is a follow-up whose metric, entity, time scope, or referent depends on history.',
+                    'no': 'The current question is self-contained without earlier turns.',
+                },
+            },
+        },
+    }, ensure_ascii=False, default=str).encode()
+    request = urllib.request.Request(
+        'https://openrouter.ai/api/alpha/decisions', data=request_body,
+        headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'}, method='POST',
+    )
+    with urllib.request.urlopen(request, timeout=10) as response:
+        payload = json.loads(response.read())
+    answers = payload.get('answers', {})
+    route = answers.get('route', {})
+    history_answer = answers.get('history_required', {})
+    probabilities = route.get('probabilities', {})
+    choice = route.get('choice')
+    probability = float(probabilities.get(choice, -1))
+    history_choice = history_answer.get('choice')
+    history_probability = float(history_answer.get('probabilities', {}).get(history_choice, -1))
+    if (route.get('type') != 'choice' or choice not in JEV_ROUTES
+            or not 0 <= probability <= 1
+            or history_answer.get('type') != 'choice' or history_choice not in {'yes', 'no'}
+            or not 0 <= history_probability <= 1):
+        raise ValueError('Jev returned an invalid tool-routing decision')
+    return {'route': choice, 'confidence': probability,
+            'history_required': not (history_choice == 'no' and history_probability >= JEV_ROUTE_THRESHOLD),
+            'model': payload.get('model')}
 
 
 def _is_document_count_request(text: str) -> bool:

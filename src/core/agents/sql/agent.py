@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import inspect
 import json
 import os
@@ -38,7 +37,7 @@ from core.database.commerce_repository import CommerceRepository
 from core.llm.llm_interface import LLMInterface
 from core.models.agents import AgentResult, Evidence, VerifiedIdentity
 from core.latency import measure
-from core.agents.runtime import generate
+from core.agents.runtime import generate, generate_with_local_codex
 
 
 class AnalyticsPermissionDenied(PermissionError):
@@ -474,6 +473,7 @@ class SQLAnalyticsAgent(BaseAgent):
         except Exception as error:
             return self._generation_error(error)
         dashboard_outputs = None
+        unverified_metric = None
         for attempt in range(2):
             try:
                 if promotion_plan is not None and not dashboard_build:
@@ -578,6 +578,15 @@ class SQLAnalyticsAgent(BaseAgent):
                         dashboard_clarifications=options.get('_dashboard_clarifications'),
                     )
                     continue
+                if (isinstance(error, MetricDefinitionError) and not error.clarification
+                        and options.get('_auto_mode') is True and not dashboard_build
+                        and not (interpretation and interpretation.domain == 'inventory')):
+                    # The SQL already passed the read-only, schema, and join checks above.
+                    # Keep its rows available to Auto, but label the requested metric as unverified.
+                    unverified_metric = {'status': 'unverified', 'code': error.code,
+                                         'reason': str(error)}
+                    definitions = {}
+                    break
                 if options.get('_dashboard_request') is True and options.get('_dashboard_allow_multiple') is True:
                     error = MetricDefinitionError('Please clarify the requested measures, grouping, scope or representation. ' + str(error)[:800],
                                                   code='dashboard_requirements', clarification=True)
@@ -597,6 +606,8 @@ class SQLAnalyticsAgent(BaseAgent):
 
         payload = await self._execute_plan(plan, definitions, table_columns, approved_joins,
                                            primary_keys, date_columns, interpretation)
+        if unverified_metric is not None:
+            payload.setdefault('metadata', {})['metric_validation'] = unverified_metric
         if plan is annual_revenue_plan and payload.get("query_status") == "executed":
             payload["limitations"].append(
                 "This is the sum of matching records for the calendar year; source-data completeness for the full year is not established."
@@ -767,7 +778,7 @@ class SQLAnalyticsAgent(BaseAgent):
                 fallback_type = GroqProvider
                 fallback_kwargs = {}
             else:
-                raise
+                return await generate_with_local_codex(prompt, primary_error)
             try:
                 fallback = getattr(self, "_fallback_llm", None)
                 if fallback is None:
@@ -775,7 +786,10 @@ class SQLAnalyticsAgent(BaseAgent):
                     self._fallback_llm = fallback
             except Exception:
                 raise primary_error
-            return await generate(fallback, prompt, timeout=60)
+            try:
+                return await generate(fallback, prompt, timeout=60)
+            except Exception as fallback_error:
+                return await generate_with_local_codex(prompt, fallback_error)
 
     @staticmethod
     def _authorize(request: Any) -> None:

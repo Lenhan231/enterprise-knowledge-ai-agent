@@ -135,6 +135,26 @@ def _scalar_sql_finding(item, question):
     return f'{label}{period}: {rendered} {refs}.'
 
 
+def _unverified_metric_sql_finding(item, question):
+    """Summarize executed rows plainly when metric validation was inconclusive."""
+    if (item.get('metric_validation') or {}).get('status') != 'unverified':
+        return None
+    rows = item['data'].get('rows', [])
+    citations = list(dict.fromkeys(e['citation_id'] for e in item['evidence'] if e.get('citation_id')))
+    if not rows or not citations:
+        return None
+    refs = ' '.join(f'[{citation}]' for citation in citations)
+    findings = []
+    for row in rows[:5]:
+        findings.append('; '.join(f'{name}={value}' for name, value in row.items()))
+    details = ' | '.join(findings)
+    if _is_vietnamese(question):
+        return (f'Kết quả truy vấn: {details} {refs}. Định nghĩa metric chưa được xác minh; '
+                'kết quả chỉ phản ánh các trường và phép tính của truy vấn, không phải metric nghiệp vụ đã được phê duyệt.')
+    return (f'Query result: {details} {refs}. The metric definition is unverified; '
+            'this reflects the query fields and calculation, not an approved business metric.')
+
+
 def _calendar_year_comparison_sql_finding(item, question):
     """Safely summarize exactly two requested year buckets if LLM synthesis fails."""
     if not re.search(r'\b(?:compare|comparison|versus|vs\.?|year.over.year)\b|so sánh|đối chiếu', question, re.I):
@@ -227,6 +247,12 @@ async def assemble_response(request, plan, execution, provider):
     for outcome in active:
         if outcome.result:
             limitations.extend(outcome.result.metadata.get('limitations', []))
+            metric_validation = outcome.result.metadata.get('metric_validation')
+            if isinstance(metric_validation, dict) and metric_validation.get('status') == 'unverified':
+                if _is_vietnamese(request.question):
+                    limitations.append('Định nghĩa metric chưa được xác minh; kết quả chỉ phản ánh công thức của truy vấn và không được xem là chỉ số nghiệp vụ chuẩn.')
+                else:
+                    limitations.append('The metric definition is unverified; results reflect the generated query and are not a canonical business metric.')
         if outcome.status != 'complete':
             limitations.append(f'{outcome.task.agent} task {outcome.task.id}: {outcome.status}.')
             if outcome.result:
@@ -246,14 +272,17 @@ async def assemble_response(request, plan, execution, provider):
             local.append(source)
         answer = re.sub(r'\[(S\d+)\]', lambda m: f'[{mapping.get(m[1], "UNKNOWN")}]', result.answer)
         inputs.append({'task_id': outcome.task.id, 'agent': outcome.task.agent, 'answer': answer,
-                       'data': result.data, 'evidence': [e.model_dump() for e in local]})
+                       'data': result.data,
+                       'metric_validation': result.metadata.get('metric_validation'),
+                       'evidence': [e.model_dump() for e in local]})
         key = outcome.task.agent
         if key in data:
             key = 'task:' + outcome.task.id
         data[key] = result.data
     fallback = True
     answer = ''
-    if len(usable) == 1 and len(plan.tasks) == 1 and status == 'complete':
+    if (len(usable) == 1 and len(plan.tasks) == 1 and status == 'complete'
+            and (inputs[0].get('metric_validation') or {}).get('status') != 'unverified'):
         deterministic_answer = (_month_over_month_sql_finding(inputs[0], request.question)
                                 or _scalar_sql_finding(inputs[0], request.question)
                                 if inputs[0]['agent'] == 'sql' else None)
@@ -318,6 +347,11 @@ async def assemble_response(request, plan, execution, provider):
                 if answer:
                     continue
                 rows = item['data'].get('rows', [])
+                unverified = _unverified_metric_sql_finding(item, request.question)
+                if unverified:
+                    scalar_answer = unverified
+                    blocks.append(unverified)
+                    continue
                 scalar = (_calendar_year_comparison_sql_finding(item, request.question)
                           or _month_over_month_sql_finding(item, request.question)
                           or _scalar_sql_finding(item, request.question))

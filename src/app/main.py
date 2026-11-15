@@ -9,6 +9,7 @@ import re
 import time
 import secrets
 import uuid
+import unicodedata
 from typing import Annotated, Literal
 import jwt
 
@@ -78,6 +79,17 @@ def _storage_client():
     if os.getenv("SUPABASE_DOCUMENT_BUCKET", "enterprise-documents") != "enterprise-documents":
         raise HTTPException(503, "SUPABASE_DOCUMENT_BUCKET must match the private enterprise-documents bucket")
     return create_client(url, key), os.getenv("SUPABASE_DOCUMENT_BUCKET", "enterprise-documents")
+
+
+def _storage_filename(filename: str) -> str:
+    """Return a conservative ASCII object name while keeping the original UI name."""
+    suffix = Path(filename).suffix.lower()
+    stem = filename[:-len(suffix)] if suffix else filename
+    stem = stem.translate(str.maketrans({"Đ": "D", "đ": "d"}))
+    stem = unicodedata.normalize("NFKD", stem).encode("ascii", "ignore").decode("ascii")
+    stem = re.sub(r"[^A-Za-z0-9_-]+", "_", stem).strip("_-")
+    stem = re.sub(r"[_-]{2,}", "_", stem)[:180].rstrip("_-")
+    return f"{stem or 'document'}{suffix}"
 
 
 def _role_accounts() -> dict[str, tuple[str, str]]:
@@ -482,7 +494,13 @@ async def upload_document(
         raise HTTPException(415, "File content does not match its extension")
 
     document_id = f"UPLOAD-{uuid.uuid4().hex}"
-    storage_path = f"{document_id}/{filename}"
+    storage_filename = _storage_filename(filename)
+    storage_path = f"{document_id}/{storage_filename}"
+    if storage_filename != filename:
+        logger.info(
+            "Normalized upload filename for storage: document_id=%s original_filename=%r storage_filename=%r",
+            document_id, filename, storage_filename,
+        )
     content_type = {".pdf": "application/pdf", ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
                     ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -490,23 +508,10 @@ async def upload_document(
                     ".txt": "text/plain", ".md": "text/markdown", ".png": "image/png",
                     ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".tif": "image/tiff", ".tiff": "image/tiff"}[extension]
     source_hash = hashlib.sha256(content).hexdigest()
-    storage, bucket = _storage_client()
     repository = None
-    uploaded = False
     registered = False
+    stage = "register_document"
     try:
-        storage.storage.from_(bucket).upload(
-            storage_path, content,
-            {"content-type": content_type, "upsert": "false"},
-        )
-        uploaded = True
-        try:
-            check = DocumentRepository()
-        except Exception:
-            storage.storage.from_(bucket).remove([storage_path])
-            raise
-        else:
-            check.close()
         repository = DocumentRepository()
         repository.register_upload({
             "document_id": document_id,
@@ -526,6 +531,15 @@ async def upload_document(
             "processing_status": "uploaded",
         })
         registered = True
+
+        stage = "store_source_file"
+        storage, bucket = _storage_client()
+        storage.storage.from_(bucket).upload(
+            storage_path, content,
+            {"content-type": content_type, "upsert": "false"},
+        )
+
+        stage = "mark_processing"
         repository.update_processing_status(document_id, "processing")
         metadata = {
             "document_id": document_id,
@@ -562,6 +576,7 @@ async def upload_document(
                 "vision_captioning": os.getenv("DOCUMENT_VISION_CAPTIONS", "false").strip().lower() == "true",
                 "ocr_language": ocr_language,
             }
+            stage = "parse_document"
             parsed = post_internal_service(processing_url, "/parse", {
                 "filename": filename,
                 "content": base64.b64encode(content).decode("ascii"),
@@ -570,6 +585,7 @@ async def upload_document(
             }, timeout=int(os.getenv("DOCUMENT_PROCESSING_TIMEOUT_SECONDS", "600")))
             outputs_repository = DocumentProcessingOutputRepository()
             try:
+                stage = "save_parser_output"
                 outputs_repository.replace_document(document_id, parsed)
             finally:
                 outputs_repository.close()
@@ -596,6 +612,7 @@ async def upload_document(
                     "indexed_chunk_count": 0,
                 }
 
+            stage = "chunk_document"
             from core.chunking.processor import ChunkingProcessor
             processed = ChunkingProcessor(parser_config).process(parsed)
         except ValueError as error:
@@ -621,6 +638,7 @@ async def upload_document(
         from core.database.parser_chunks_repository import ParserChunksRepository
         from core.database.structured_store import StructuredDataStore
 
+        stage = "save_parser_chunks"
         parsed_repository = ParserChunksRepository()
         try:
             parsed_repository.replace_document(document_id, chunks)
@@ -634,6 +652,7 @@ async def upload_document(
 
         from core.embeddings.embedding_service import EmbeddingService
         from core.database.document_chunks_repository import DocumentChunkRepository
+        stage = "create_embeddings"
         embedding_service = EmbeddingService()
         from core.tokenization.token_counter import TokenCounter
         from core.tokenization.embedding_chunker import build_embedding_chunks
@@ -646,6 +665,7 @@ async def upload_document(
             embedding_service.model_name,
         )
         vectors = embedding_service.embed_documents([chunk["text"] for chunk in chunks])
+        stage = "index_document"
         chunk_repository = DocumentChunkRepository()
         try:
             chunk_repository.replace_document(document_id, [
@@ -655,6 +675,7 @@ async def upload_document(
             ])
         finally:
             chunk_repository.close()
+        stage = "mark_ready"
         repository.update_processing_status(document_id, "ready")
         return {
             "document_id": document_id, "storage_path": storage_path,
@@ -663,26 +684,44 @@ async def upload_document(
             "indexed_chunk_count": len(chunks), "ocr_chunk_count": ocr_chunk_count,
             "table_count": len(processed.get("tables", [])),
         }
-    except HTTPException:
+    except HTTPException as error:
         if registered and repository is not None:
             try:
                 repository.update_processing_status(document_id, "failed")
             except Exception:
                 logger.exception("Failed to record rejected upload %s", document_id)
+        logger.warning(
+            "Document upload stopped: document_id=%s stage=%s original_filename=%r http_status=%s detail=%s",
+            document_id, stage, filename, error.status_code, error.detail,
+        )
         raise
     except Exception as error:
-        if uploaded and not registered:
-            try:
-                storage.storage.from_(bucket).remove([storage_path])
-            except Exception:
-                logger.exception("Failed cleaning unregistered storage upload %s", document_id)
-        elif repository is not None:
+        if registered and repository is not None:
             try:
                 repository.update_processing_status(document_id, "failed")
             except Exception:
                 logger.exception("Failed to record failed status for %s", document_id)
-        logger.exception("Upload or processing failed for %s", document_id)
-        raise HTTPException(503, "Upload or processing failed; see document status and app logs") from error
+        logger.exception(
+            "Document upload failed: document_id=%s stage=%s original_filename=%r storage_filename=%r error_type=%s",
+            document_id, stage, filename, storage_filename, type(error).__name__,
+        )
+        user_stage = {
+            "register_document": "registering the document",
+            "store_source_file": "saving the original file",
+            "mark_processing": "starting document processing",
+            "parse_document": "extracting text and tables",
+            "save_parser_output": "saving extracted content",
+            "chunk_document": "splitting the document into passages",
+            "save_parser_chunks": "saving document passages",
+            "create_embeddings": "creating search embeddings",
+            "index_document": "indexing the document for search",
+            "mark_ready": "finishing the document index",
+        }.get(stage, stage.replace("_", " "))
+        raise HTTPException(
+            503,
+            f"Document upload failed while {user_stage}. Reference ID: {document_id}. "
+            "Check the document status or share the reference ID with support.",
+        ) from error
     finally:
         if repository is not None:
             repository.close()

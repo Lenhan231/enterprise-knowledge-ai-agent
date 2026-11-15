@@ -2,6 +2,8 @@ import os
 import subprocess
 import sys
 import unittest
+import json
+import io
 from pathlib import Path
 from unittest.mock import Mock, patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -78,6 +80,76 @@ with patch("core.services.client.post", return_value={"elements": [], "tables": 
             RemoteRetrievalService("http://retrieval-api:8000").retrieve(
                 RetrievalRequest(query="policy"), roles=None,
             )
+
+    def test_public_remote_retrieval_uses_matching_session_and_server_scoped_identity(self):
+        from core.retrieval.remote_service import RemoteRetrievalService, remote_session_context
+        from core.retrieval.retrieval import RetrievalRequest, RetrievalResponse
+        expected = RetrievalResponse(query="policy", method="hybrid", latency_ms=2, results=[])
+        requests = []
+
+        def open_url(request, timeout):
+            requests.append(request)
+            payload = ({"username": "alice", "role": "employee"}
+                       if request.full_url.endswith("/api/auth/me")
+                       else expected.model_dump(mode="json"))
+            return io.BytesIO(json.dumps(payload).encode())
+
+        context = remote_session_context.set({"token": "session-token", "subject": "alice", "role": "employee"})
+        try:
+            with patch.dict(os.environ, {"RETRIEVAL_SERVICE_AUTH": "session"}), \
+                    patch("core.retrieval.remote_service.urlopen", side_effect=open_url):
+                result = RemoteRetrievalService("https://api.example/api/retrieval").retrieve(
+                    RetrievalRequest(query="policy", top_k=3), roles=["employee"], method="hybrid",
+                )
+        finally:
+            remote_session_context.reset(context)
+
+        self.assertEqual(result, expected)
+        self.assertEqual(requests[0].full_url, "https://api.example/api/auth/me")
+        self.assertEqual(requests[1].full_url, "https://api.example/api/retrieval/retrieve")
+        self.assertEqual(requests[1].get_header("Authorization"), "Bearer session-token")
+        self.assertNotIn("roles", json.loads(requests[1].data))
+
+    def test_public_remote_retrieval_rejects_a_different_remote_identity(self):
+        from core.retrieval.remote_service import RemoteRetrievalService, remote_session_context
+        from core.retrieval.retrieval import RetrievalRequest
+        context = remote_session_context.set({"token": "session-token", "subject": "alice", "role": "employee"})
+        try:
+            with patch.dict(os.environ, {"RETRIEVAL_SERVICE_AUTH": "session"}), \
+                    patch("core.retrieval.remote_service.urlopen", return_value=io.BytesIO(
+                        b'{"username":"admin","role":"admin"}')) as open_url:
+                with self.assertRaisesRegex(PermissionError, "does not match"):
+                    RemoteRetrievalService("https://api.example/api/retrieval").retrieve(
+                        RetrievalRequest(query="policy"), roles=["employee"],
+                    )
+            open_url.assert_called_once()
+        finally:
+            remote_session_context.reset(context)
+
+    def test_public_retrieval_proxy_uses_authenticated_user_role(self):
+        import jwt
+        from fastapi.testclient import TestClient
+        from app.main import app
+        from core.retrieval.retrieval import RetrievalResponse
+        secret = "a" * 32
+        token = jwt.encode({"sub": "alice", "role": "employee"}, secret, algorithm="HS256")
+        result = RetrievalResponse(query="policy", method="translated_hybrid_rerank", latency_ms=1, results=[])
+        with patch.dict(os.environ, {"AUTH_SECRET_KEY": secret,
+                                     "RETRIEVAL_SERVICE_URL": "http://retrieval-api:8000",
+                                     "RETRIEVAL_SERVICE_AUTH": "internal"}), \
+                patch("core.retrieval.remote_service.RemoteRetrievalService.retrieve", return_value=result) as retrieve:
+            client = TestClient(app)
+            denied = client.post("/api/retrieval/retrieve", json={"query": "policy"})
+            response = client.post("/api/retrieval/retrieve", headers={"Authorization": "Bearer " + token},
+                                   json={"query": "policy"})
+            forged = client.post("/api/retrieval/retrieve", headers={"Authorization": "Bearer " + token},
+                                 json={"query": "policy", "roles": ["admin"]})
+
+        self.assertEqual(denied.status_code, 401)
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(forged.status_code, 422)
+        self.assertEqual(response.json()["query"], "policy")
+        self.assertEqual(retrieve.call_args.kwargs["roles"], ["employee"])
 
     def test_parser_delegates_without_local_docling(self):
         from document_processing.document_processor import DocumentProcessor

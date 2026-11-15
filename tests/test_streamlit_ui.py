@@ -1,14 +1,18 @@
 import json
+import os
 import sys
 import unittest
 from urllib.error import HTTPError
 from io import BytesIO
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.agents.streamlit_ui import (AGENT_MODES, ReportConfirmationRequired, display_result,
-                                      submit_chat, submit_report, submit_sql_assistant)
+                                      _remote_retrieval_login, submit_chat, submit_chat_stream,
+                                      submit_report, submit_sql_assistant)
 
 
 class _Response:
@@ -65,9 +69,11 @@ class StreamlitClientTest(unittest.TestCase):
             return _BinaryResponse(b"# Report\n", "text/markdown; charset=utf-8")
 
         payload, content_type, status = submit_report("Create report", "template.md", b"# Report\n",
-                                              api_url="http://api.test", opener=opener)
+                                              api_url="http://api.test", opener=opener,
+                                              remote_retrieval_session="remote-session")
         request, timeout = captured[0]
         self.assertEqual(request.full_url, "http://api.test/api/report")
+        self.assertEqual(request.get_header("X-remote-retrieval-session"), "remote-session")
         self.assertIn(b'name="question"', request.data)
         self.assertIn(b'name="template"; filename="template.md"', request.data)
         self.assertIn(b"# Report\n", request.data)
@@ -137,19 +143,75 @@ class StreamlitClientTest(unittest.TestCase):
             requests.append((request, timeout))
             return _Response({"answer": "Policy result", "agent": "knowledge", "evidence": [], "data": {}})
 
-        result = submit_chat("What does the policy say?", "knowledge", api_url="http://api.test/", opener=opener)
+        result = submit_chat("What does the policy say?", "knowledge", api_url="http://api.test/",
+                             opener=opener, remote_retrieval_session="remote-session")
 
         request, timeout = requests[0]
         self.assertEqual(request.full_url, "http://api.test/api/chat")
         self.assertEqual(json.loads(request.data), {
             "question": "What does the policy say?", "agent_mode": "knowledge", "metadata": {},
         })
+        self.assertEqual(request.get_header("X-remote-retrieval-session"), "remote-session")
         self.assertEqual(timeout, 135)
         self.assertEqual(result["answer"], "Policy result")
 
     def test_submit_chat_rejects_unknown_modes(self):
         with self.assertRaises(ValueError):
             submit_chat("question", "unknown")
+
+    def test_streamlit_forwards_remote_retrieval_session_to_local_agent(self):
+        requests = []
+
+        class StreamResponse:
+            def __enter__(self): return self
+            def __exit__(self, *_args): return False
+            def __iter__(self):
+                return iter([
+                    b'event: result\n',
+                    b'data: {"answer":"done"}\n',
+                    b'\n',
+                ])
+
+        def opener(request, timeout):
+            requests.append((request, timeout))
+            return StreamResponse()
+
+        submit_chat_stream("policy", "knowledge", api_url="http://local.test", opener=opener,
+                           remote_retrieval_session="remote-session")
+
+        self.assertEqual(requests[0][0].get_header("X-remote-retrieval-session"), "remote-session")
+        self.assertEqual(requests[0][1], 300)
+
+    def test_remote_retrieval_login_requires_matching_identity_and_returns_session(self):
+        class FakeCookieJar:
+            def __iter__(self):
+                return iter([SimpleNamespace(name="enterprise_session", value="remote-session")])
+
+        class FakeOpener:
+            def open(self, request, timeout):
+                self.request = request
+                self.timeout = timeout
+                return _Response({"username": "alice", "role": "employee"})
+
+        opener = FakeOpener()
+        with patch.dict(os.environ, {
+            "RETRIEVAL_SERVICE_AUTH": "session",
+            "RETRIEVAL_SERVICE_URL": "https://api.example/api/retrieval",
+        }), patch("core.agents.streamlit_ui.CookieJar", return_value=FakeCookieJar()), \
+                patch("core.agents.streamlit_ui.build_opener", return_value=opener):
+            session = _remote_retrieval_login("alice", "password", {"username": "alice", "role": "employee"})
+
+        self.assertEqual(session, "remote-session")
+        self.assertEqual(opener.request.full_url, "https://api.example/api/auth/login")
+        self.assertEqual(json.loads(opener.request.data), {"username": "alice", "password": "password"})
+
+        with patch.dict(os.environ, {
+            "RETRIEVAL_SERVICE_AUTH": "session",
+            "RETRIEVAL_SERVICE_URL": "https://api.example/api/retrieval",
+        }), patch("core.agents.streamlit_ui.CookieJar", return_value=FakeCookieJar()), \
+                patch("core.agents.streamlit_ui.build_opener", return_value=opener):
+            with self.assertRaisesRegex(RuntimeError, "same account and role"):
+                _remote_retrieval_login("alice", "password", {"username": "alice", "role": "admin"})
 
     def test_sql_assistant_sends_draft_and_approved_requests_to_dedicated_route(self):
         requests = []

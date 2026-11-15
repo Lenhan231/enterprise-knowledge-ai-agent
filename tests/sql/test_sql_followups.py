@@ -185,6 +185,31 @@ class OriginalQuestionContextTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn('cao hơn', answer.answer)
         self.assertFalse(answer.metadata['fallback'])
 
+    async def test_year_comparison_uses_grounded_answer_if_synthesis_stays_invalid(self):
+        question = 'compare the revenue of 2025 and 2026'
+        task = AgentTask(id='fallback', agent='sql', question=question)
+        plan = AgentPlan(objective=question, tasks=[task])
+        result = AgentResult(answer='Query completed.', agent='sql_analytics',
+            evidence=[Evidence(citation_id='S1', source_type='database', source='commerce.sales')],
+            data={'rows': [
+                {'year': '2025', 'revenue': '3369646.71'},
+                {'year': '2026', 'revenue': '18881151.90'},
+            ]}, metadata={'ok': True})
+        execution = SimpleNamespace(
+            outcomes={'fallback': TaskOutcome(task, 'complete', result)}, trace=[], invocations=1)
+
+        class Provider:
+            async def generate(self, _prompt, **_kwargs):
+                return 'not valid JSON'
+
+        answer = await assemble_response(
+            AgentRequest(question=question, identity=IDENTITY), plan, execution, Provider())
+
+        self.assertIn('Revenue was higher in 2026', answer.answer)
+        self.assertIn('18,881,151.90', answer.answer)
+        self.assertIn('3,369,646.71', answer.answer)
+        self.assertFalse(answer.metadata['fallback'])
+
     def test_null_fallback_recognizes_common_vietnamese_accent_in_followup(self):
         item = {'agent':'sql', 'data':{'rows':[{'revenue':None}]},
                 'evidence':[{'citation_id':'S1'}]}

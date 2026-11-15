@@ -135,6 +135,54 @@ def _scalar_sql_finding(item, question):
     return f'{label}{period}: {rendered} {refs}.'
 
 
+def _calendar_year_comparison_sql_finding(item, question):
+    """Safely summarize exactly two requested year buckets if LLM synthesis fails."""
+    if not re.search(r'\b(?:compare|comparison|versus|vs\.?|year.over.year)\b|so sánh|đối chiếu', question, re.I):
+        return None
+    years = sorted({int(value) for value in re.findall(r'\b((?:19|20)\d{2})\b', question)})
+    rows = item['data'].get('rows', [])
+    citations = [e['citation_id'] for e in item['evidence'] if e.get('citation_id')]
+    if len(years) != 2 or len(rows) != 2 or not citations:
+        return None
+    year_column = next((key for key in rows[0] if key.casefold() in {'year', 'calendar_year'}), None)
+    if year_column is None or any(year_column not in row for row in rows):
+        return None
+    try:
+        by_year = {int(str(row[year_column])[:4]): row for row in rows}
+    except (TypeError, ValueError):
+        return None
+    if set(by_year) != set(years):
+        return None
+    value_columns = [key for key in rows[0] if key != year_column and all(key in row for row in rows)]
+    numeric_columns = []
+    for column in value_columns:
+        try:
+            values = {year: Decimal(str(by_year[year][column])) for year in years}
+        except (InvalidOperation, TypeError, ValueError):
+            continue
+        if all(by_year[year][column] is not None for year in years):
+            numeric_columns.append((column, values))
+    if len(numeric_columns) != 1:
+        return None
+    column, values = numeric_columns[0]
+    earlier, later = years
+    left, right = format(values[earlier], ',f'), format(values[later], ',f')
+    label = {'revenue': 'Doanh thu' if _is_vietnamese(question) else 'Revenue',
+             'cogs': 'Giá vốn' if _is_vietnamese(question) else 'COGS'}.get(column.casefold(), column)
+    refs = ' '.join(f'[{citation}]' for citation in citations)
+    if values[later] == values[earlier]:
+        if _is_vietnamese(question):
+            return f'{label} hai năm {earlier} và {later} bằng nhau: {left} {refs}.'
+        return f'{label} was equal in {earlier} and {later}: {left} {refs}.'
+    if _is_vietnamese(question):
+        higher, lower = (later, earlier) if values[later] > values[earlier] else (earlier, later)
+        return (f'{label} năm {higher} cao hơn năm {lower}: '
+                f'{format(values[higher], ",f")} so với {format(values[lower], ",f")} {refs}.')
+    higher, lower = (later, earlier) if values[later] > values[earlier] else (earlier, later)
+    return (f'{label} was higher in {higher} ({format(values[higher], ",f")}) '
+            f'than in {lower} ({format(values[lower], ",f")}) {refs}.')
+
+
 def _month_over_month_sql_finding(item, question):
     rows = item['data'].get('rows', [])
     if len(rows) != 1:
@@ -270,7 +318,8 @@ async def assemble_response(request, plan, execution, provider):
                 if answer:
                     continue
                 rows = item['data'].get('rows', [])
-                scalar = (_month_over_month_sql_finding(item, request.question)
+                scalar = (_calendar_year_comparison_sql_finding(item, request.question)
+                          or _month_over_month_sql_finding(item, request.question)
                           or _scalar_sql_finding(item, request.question))
                 if scalar:
                     scalar_answer = scalar

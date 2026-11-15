@@ -199,7 +199,8 @@ def build_sql_prompt(
            ' A concrete snapshot in the validated interpretation may have been resolved by the server from latest; '
            'use that concrete date, not a MAX subquery, when time.mode is snapshot.'
            if interpretation is not None else '')
-        + (SQL_REPAIR_PROMPT.format(validation_error=validation_error, previous_response=previous_response)
+        + (SQL_REPAIR_PROMPT.format(validation_error=validation_error, previous_response=previous_response,
+                                    max_rows=MAX_RESULT_ROWS)
            if validation_error is not None else "")
     )
     excerpts = {

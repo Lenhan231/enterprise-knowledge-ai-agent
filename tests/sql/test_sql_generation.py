@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from core.analytics.text_to_sql import (SQLValidationError, current_year_month_range,
                                         decode_query_plan, validate_commerce_sql,
+                                        build_sql_prompt,
                                         validate_current_year_month_range,
                                         validate_current_month_total_query)
 from core.sql_agent.agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
@@ -22,6 +23,27 @@ ANALYST = VerifiedIdentity(subject="analyst-1", permissions={"analytics:read"})
 
 
 class SQLValidationTest(unittest.TestCase):
+    def test_generation_and_repair_prompts_require_a_final_limit(self):
+        prompt = build_sql_prompt('Compare revenue for 2025 and 2026')
+        self.assertIn('final SELECT MUST contain an explicit LIMIT between 1 and 200', prompt)
+        self.assertIn("DATE_PART('year', alias.date)", prompt)
+        self.assertIn('aggregate that table once by year', prompt)
+        repaired = build_sql_prompt('Compare revenue for 2025 and 2026',
+                                    validation_error='The final SELECT needs LIMIT 1..200.',
+                                    previous_response='SELECT ...')
+        self.assertIn('including grouped and comparison queries', repaired)
+        self.assertIn('LIMIT 1..200', repaired)
+        self.assertIn('never PostgreSQL :: casts', repaired)
+
+    def test_year_extract_uses_function_syntax_not_a_postgres_cast(self):
+        invalid = ("SELECT s.date::DATE_PART('year') AS year FROM commerce.sales AS s LIMIT 1")
+        with self.assertRaisesRegex(SQLValidationError, 'Only DATE and NUMERIC casts are approved'):
+            validate_commerce_sql(invalid)
+        valid = ("SELECT EXTRACT(YEAR FROM s.date) AS year, SUM(s.revenue) AS revenue "
+                 "FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 "
+                 "GROUP BY 1 ORDER BY 1 LIMIT 200")
+        self.assertEqual(validate_commerce_sql(valid).sources, ('commerce.sales',))
+
     def test_current_year_month_uses_server_year_and_half_open_dates(self):
         expected = (date(2026, 3, 1), date(2026, 4, 1))
         self.assertEqual(current_year_month_range("Doanh thu tháng 3 năm nay", date(2026, 11, 14)), expected)
@@ -137,6 +159,25 @@ class SQLValidationTest(unittest.TestCase):
 
 
 class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def test_current_year_in_latest_turn_overrides_planner_carried_prior_year(self):
+        current_year = date.today().year
+        sql = ('SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s '
+               'WHERE s.date >= $1 AND s.date < $2 LIMIT 1')
+
+        class LLM:
+            def generate(self, prompt):
+                raise AssertionError('Current year revenue uses the checked SQL plan')
+
+        repository = AsyncMock()
+        repository.execute_approved_query.return_value = [{'revenue': 42}]
+        result = await SQLAnalyticsAgent(repository, llm=LLM()).run(AgentRequest(
+            question='Doanh thu năm 2025', identity=ANALYST,
+            metadata={'_original_question': 'năm nay'}))
+
+        self.assertTrue(result.metadata['ok'], result.answer)
+        repository.execute_approved_query.assert_awaited_once_with(
+            sql, date(current_year, 1, 1), date(current_year + 1, 1, 1))
+
     async def test_compiles_annual_revenue_as_one_aggregate_without_llm_sql(self):
         class LLM:
             def generate(self, prompt):
@@ -326,6 +367,79 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn("SQL placeholders must match", llm.prompts[1])
         repository.execute_approved_query.assert_awaited_once_with(
             good_sql, date(2021, 1, 1), date(2022, 1, 1))
+
+    async def test_retries_comparison_query_when_final_limit_is_missing(self):
+        invalid_sql = (
+            "SELECT DATE_PART('year', s.date) AS year, SUM(s.revenue) AS revenue "
+            "FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 GROUP BY 1 ORDER BY 1"
+        )
+        valid_sql = invalid_sql + ' LIMIT 200'
+
+        class LLM:
+            def __init__(self):
+                self.prompts = []
+                self.responses = [
+                    json.dumps({'sql': invalid_sql, 'parameters': ['2025-01-01', '2027-01-01']}),
+                    json.dumps({'sql': valid_sql, 'parameters': ['2025-01-01', '2027-01-01']}),
+                ]
+
+            def generate(self, prompt):
+                if prompt.startswith('Interpret the question BEFORE'):
+                    return json.dumps({'domain': 'other'})
+                self.prompts.append(prompt)
+                return self.responses.pop(0)
+
+        repository = AsyncMock()
+        repository.execute_approved_query.return_value = [
+            {'year': 2025, 'revenue': 10}, {'year': 2026, 'revenue': 20}]
+        llm = LLM()
+        result = await SQLAnalyticsAgent(repository, llm=llm).run(AgentRequest(
+            question='Compare revenue for 2025 and 2026', identity=ANALYST))
+
+        self.assertTrue(result.metadata['ok'], result.answer)
+        self.assertEqual(len(llm.prompts), 2)
+        self.assertIn('final SELECT MUST contain an explicit LIMIT', llm.prompts[0])
+        self.assertIn('The final SELECT needs LIMIT 1..200', llm.prompts[1])
+        repository.execute_approved_query.assert_awaited_once_with(
+            valid_sql, date(2025, 1, 1), date(2027, 1, 1))
+
+    async def test_retries_year_comparison_at_daily_grain(self):
+        invalid_sql = (
+            'SELECT CAST(s.date AS DATE) AS date, SUM(s.revenue) AS sum '
+            'FROM commerce.sales AS s WHERE EXTRACT(YEAR FROM s.date) = $1 '
+            'OR EXTRACT(YEAR FROM s.date) = $2 GROUP BY 1 ORDER BY 1 DESC LIMIT 1'
+        )
+        valid_sql = (
+            'SELECT EXTRACT(YEAR FROM s.date) AS year, SUM(s.revenue) AS revenue '
+            'FROM commerce.sales AS s WHERE EXTRACT(YEAR FROM s.date) = $1 '
+            'OR EXTRACT(YEAR FROM s.date) = $2 GROUP BY 1 ORDER BY 1 LIMIT 200'
+        )
+
+        class LLM:
+            def __init__(self):
+                self.prompts = []
+                self.responses = [
+                    json.dumps({'sql': invalid_sql, 'parameters': [2025, 2026]}),
+                    json.dumps({'sql': valid_sql, 'parameters': [2025, 2026]}),
+                ]
+
+            def generate(self, prompt):
+                if prompt.startswith('Interpret the question BEFORE'):
+                    return json.dumps({'domain': 'other'})
+                self.prompts.append(prompt)
+                return self.responses.pop(0)
+
+        repository = AsyncMock()
+        repository.execute_approved_query.return_value = [
+            {'year': 2025, 'revenue': 10}, {'year': 2026, 'revenue': 20}]
+        llm = LLM()
+        result = await SQLAnalyticsAgent(repository, llm=llm).run(AgentRequest(
+            question='compare the revenue of 2025 and 2026', identity=ANALYST))
+
+        self.assertTrue(result.metadata['ok'], result.answer)
+        self.assertEqual(len(llm.prompts), 2)
+        self.assertIn('separate aggregate per year', llm.prompts[1])
+        repository.execute_approved_query.assert_awaited_once_with(valid_sql, 2025, 2026)
 
     async def test_passes_native_date_parameters_to_repository(self):
         sql = (

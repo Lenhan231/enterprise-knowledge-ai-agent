@@ -16,6 +16,24 @@ from core.analytics.text_to_sql import APPROVED_COLUMNS
 
 
 class InterpretationRegressionTest(unittest.TestCase):
+    def test_year_comparison_rejects_daily_grain_and_one_row_limit(self):
+        question = 'compare the revenue of 2025 and 2026'
+        invalid = (
+            'SELECT CAST(s.date AS DATE), SUM(s.revenue) FROM commerce.sales AS s '
+            'WHERE EXTRACT(YEAR FROM s.date) = $1 OR EXTRACT(YEAR FROM s.date) = $2 '
+            'GROUP BY 1 ORDER BY 1 DESC LIMIT 1'
+        )
+        with self.assertRaisesRegex(MetricDefinitionError, 'separate aggregate per year'):
+            validate_metric_definitions(invalid, {'revenue'}, (2025, 2026), APPROVED_COLUMNS,
+                                        question=question)
+
+        valid = (
+            'SELECT EXTRACT(YEAR FROM s.date) AS year, SUM(s.revenue) AS revenue '
+            'FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 '
+            'GROUP BY 1 ORDER BY 1 LIMIT 200'
+        )
+        validate_metric_definitions(valid, {'revenue'}, (), APPROVED_COLUMNS, question=question)
+
     def test_security_gate_stays_hard_and_schema_mismatch_is_separate(self):
         with self.assertRaises(SQLSecurityError):
             validate_sql_security('DELETE FROM commerce.sales')

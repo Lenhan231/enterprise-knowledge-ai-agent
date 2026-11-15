@@ -1,1 +1,1 @@
-"""Compatibility package for the renamed orchestration modules."""
+"""Agent planning, execution and evidence synthesis."""

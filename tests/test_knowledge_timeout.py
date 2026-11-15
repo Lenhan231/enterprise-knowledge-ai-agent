@@ -2,12 +2,12 @@ import asyncio
 import os
 import time
 import unittest
-from types import SimpleNamespace
 from unittest.mock import patch
 
 from core.agents.knowledge_agent import KnowledgeAgent
 from core.agents.runtime import deadline, remaining, run_sync
 from core.models.agents import AgentRequest, VerifiedIdentity
+from core.rag.rag_service import RAGResult
 
 
 class KnowledgeTimeoutTest(unittest.IsolatedAsyncioTestCase):
@@ -15,15 +15,14 @@ class KnowledgeTimeoutTest(unittest.IsolatedAsyncioTestCase):
         return AgentRequest(question="Policy?", identity=VerifiedIdentity(
             subject="test", permissions={"documents:read"}, document_roles={"employee"}))
 
-    async def test_knowledge_agent_leaves_router_time_for_final_synthesis(self):
-        for flag, seconds in (("0", 90), ("1", 100)):
+    async def test_multiquery_gets_90_seconds_and_legacy_keeps_60(self):
+        for flag, seconds in (("0", 60), ("1", 90)):
             observed = []
 
             class Rag:
                 def generate_answer(self, question, **kwargs):
                     observed.append((remaining(1000), kwargs))
-                    return SimpleNamespace(answer="No matching documents.", contexts=[], source_ids=[],
-                                           insufficient_context=True, verification=None)
+                    return RAGResult(answer="No evidence", insufficient_context=True)
 
             with self.subTest(flag=flag), patch.dict(os.environ, {"KNOWLEDGE_MULTIQUERY_ENABLED": flag}), \
                  patch("core.agents.runtime.asyncio.wait_for", wraps=asyncio.wait_for) as wait:

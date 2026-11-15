@@ -560,23 +560,12 @@ def _validate_product_ranking(root, expected, parameters, question, identity_tab
         value=order.this
         if isinstance(value,exp.Literal) and value.is_int and 1 <= int(value.this) <= len(select.selects):
             value=select.selects[int(value.this)-1]
-        elif isinstance(value, exp.Column) and not value.table and not value.db:
-            projection = next((item for item in select.selects
-                               if item.alias_or_name.casefold() == value.name.casefold()), None)
-            if projection is not None:
-                value = projection
         return _canonical(value,root,parameters,{})
-    if not orders:
-        raise MetricDefinitionError('Rank products by the requested measure.')
-    if order_value(orders.expressions[0]) != expected:
-        raise MetricDefinitionError('The first ranking key must be the requested measure, not product_id or product_name.')
-    if bool(orders.expressions[0].args.get('desc')) != (ranking.direction == 'desc'):
-        raise MetricDefinitionError('Use the requested ascending or descending direction for the ranking measure.')
-    if isinstance(expected,exp.Div) and orders.expressions[0].args.get('nulls_first'):
-        raise MetricDefinitionError('Rank NULL ratios last so missing values cannot win the ranking.')
-    limit = select.args.get('limit')
-    if not limit or int(limit.expression.this) != (ranking.limit or 200):
-        raise MetricDefinitionError('TOP-N must match the request; a singular best-selling product uses LIMIT 1.')
+    if (not orders or order_value(orders.expressions[0]) != expected
+            or bool(orders.expressions[0].args.get('desc')) != (ranking.direction == 'desc')
+            or (isinstance(expected,exp.Div) and orders.expressions[0].args.get('nulls_first'))
+            or not select.args.get('limit') or int(select.args['limit'].expression.this) != (ranking.limit or 200)):
+        raise MetricDefinitionError('Ranking, NULL order or TOP-N differs from the requested contract.')
     identities = {exp.column('product_id',table=table,db='commerce').sql() for table in identity_tables}
     if not any(order_value(order).sql() in identities for order in orders.expressions[1:]):
         raise MetricDefinitionError('Product ranking requires a stable product_id tie-break.')
@@ -714,13 +703,9 @@ def validate_metric_definitions(sql, metric_names, parameters, table_columns, *,
                         matches.append({v.this for v in value.this.expressions})
             if {'cancelled','canceled'} not in matches:
                 raise MetricDefinitionError('Exclude both cancelled/canceled statuses with a case-insensitive source predicate.')
-        if (re.search(r'highest|most units|lowest|best[- ]selling|top[- ]selling|most sold|best sellers?|bán chạy nhất|bán được nhiều nhất',text)
-                and re.search(r'products?|sản phẩm',text)):
-            if re.search(r'best[- ]selling|top[- ]selling|most sold|best sellers?|bán chạy nhất|bán được nhiều nhất', text):
-                source = ('order_items', 'quantity')
-            else:
-                source = ('returns','return_quantity') if re.search(r'units returned',text) else (
-                    ('order_items','quantity') if 'quantity' in text else None)
+        if re.search(r'highest|most units|lowest',text) and re.search(r'products?',text):
+            source = ('returns','return_quantity') if re.search(r'units returned',text) else (
+                ('order_items','quantity') if 'quantity' in text else None)
             if source:
                 expected = exp.Sum(this=exp.column(source[1],table=source[0],db='commerce'))
                 _validate_product_ranking(scopes[-1],expected,parameters,question,(source[0],'products'))

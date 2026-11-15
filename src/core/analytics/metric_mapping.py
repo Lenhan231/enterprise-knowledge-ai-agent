@@ -245,11 +245,6 @@ def requested_ranking_limit(question):
     count = re.search(r'\b(?:top|bottom|first|last|limit)\s+(\d+|'+'|'.join(words)+r')\b|\b(\d+)\s+(?:products?|categories|rows?|sản phẩm)\b', question, re.I)
     value = next(value for value in count.groups() if value).casefold() if count else None
     limit = (words[value] if value in words else int(value)) if value else None
-    if limit is None and re.search(
-            r'\b(?:best[- ]selling|top[- ]selling)\s+(?:product|seller)\b|'
-            r'\b(?:best|top)\s+seller\b|'
-            r'\bsản phẩm bán chạy nhất\b', question, re.I):
-        limit = 1
     if limit is not None and not 1 <= limit <= 200:
         _error('Detail rankings support 1 to 200 rows.', 'interpretation_invalid')
     return limit

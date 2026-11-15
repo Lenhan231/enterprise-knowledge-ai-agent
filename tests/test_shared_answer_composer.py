@@ -2,14 +2,16 @@ import json
 import sys
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.agents.knowledge.agent import KnowledgeAgent
-from core.agents.orchestration.execution import outcome_status
-from core.agents.orchestration.response import compose_single_result
+from core.agents.orchestration.execution import TaskOutcome, outcome_status
+from core.agents.orchestration.response import assemble_response, compose_single_result
 from core.models.agents import AgentRequest, AgentResult, Evidence, VerifiedIdentity
+from core.models.agent_plan import AgentPlan, AgentTask
 
 
 class ContextOnlyRag:
@@ -40,6 +42,31 @@ class Provider:
 
 
 class SharedAnswerComposerTest(unittest.IsolatedAsyncioTestCase):
+    async def test_task_coverage_uses_citations_not_model_task_name_guess(self):
+        task = AgentTask(id="k", agent="knowledge", question="Who approves this purchase?")
+        plan = AgentPlan(objective=task.question, tasks=[task])
+        specialist_result = AgentResult(
+            answer="", agent="knowledge",
+            evidence=[Evidence(source_type="document", source="policy.pdf",
+                               content="The department head and Finance approve the purchase.")],
+        )
+        execution = SimpleNamespace(
+            outcomes={"k": TaskOutcome(task, "complete", result=specialist_result)},
+            trace=[], invocations=1,
+        )
+        provider = Provider({
+            "answer": "The department head and Finance approve it [S1].",
+            "used_tasks": ["knowledge"],  # Agent label, while the planner task ID is "k".
+        })
+
+        result = await assemble_response(
+            AgentRequest(question=task.question), plan, execution, provider,
+        )
+
+        self.assertEqual(result.answer, provider.answer["answer"])
+        self.assertFalse(result.metadata["fallback"])
+        self.assertIn('Valid task IDs for used_tasks: ["k"]', provider.prompt)
+
     async def test_knowledge_agent_returns_context_without_answer_generation(self):
         rag = ContextOnlyRag()
         agent = KnowledgeAgent(rag)

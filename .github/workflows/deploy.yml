@@ -50,6 +50,8 @@ jobs:
   home-pc:
     name: Laptop home-pc (main backend)
     needs: vps
+    # The laptop may be switched off or asleep; the page then uses the VPS. Its job stays red in the run to show it.
+    continue-on-error: true
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:

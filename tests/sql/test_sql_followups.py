@@ -9,7 +9,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'src'))
-from core.analytics.metric_mapping import decode_sql_turn
+from core.analytics.metric_mapping import build_metric_mapping_prompt, decode_sql_turn
 from core.analytics.metric_validation import MetricDefinitionError
 from core.agents.execution import Execution, TaskOutcome
 from core.agents.response import (_failure_answer, _month_over_month_sql_finding, _null_sql_findings,
@@ -41,6 +41,27 @@ class FailureMessageTest(unittest.TestCase):
 
 
 class SQLPatchTest(unittest.TestCase):
+    def test_segment_priority_followup_ranks_existing_sell_through_signal(self):
+        accepted = {
+            'metrics': ['sell_through_rate', 'stockout_days'],
+            'dimensions': ['segment'],
+            'time': {'mode': 'snapshot', 'start': '2026-11-13'},
+        }
+        state = {'accepted': accepted, 'pending': None}
+        mapping, used = decode_sql_turn(json.dumps({
+            'action': 'followup',
+            'changes': {'ranking': {'metric': 'sell_through_rate', 'direction': 'desc'}},
+        }), 'biết rồi nhưng nên đẩy mạnh segment nào', state)
+
+        self.assertTrue(used)
+        self.assertEqual(mapping.metrics, accepted['metrics'])
+        self.assertEqual(mapping.dimensions, ['segment'])
+        self.assertEqual(mapping.time.start, '2026-11-13')
+        self.assertEqual(mapping.ranking.metric, 'sell_through_rate')
+        prompt = build_metric_mapping_prompt('biết rồi nhưng nên đẩy mạnh segment nào', context=state)
+        self.assertIn('sell_through_rate descending as a demand proxy', prompt)
+        self.assertIn('Do not claim this proves revenue, margin or profit', prompt)
+
     def test_mixed_language_filter_patch_and_snapshot_refresh(self):
         mapping,used=self.decode({'action':'followup','changes':{'filters':[{'field':'color','operator':'eq','value':'blue'}]}},
                                  question='Chỉ lấy blue products thôi')

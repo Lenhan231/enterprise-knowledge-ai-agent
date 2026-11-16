@@ -189,6 +189,11 @@ def validate_metric_request(question, metric_names):
         if definition['approval_status'] not in {'team_accepted', 'business_approved'}:
             raise MetricDefinitionError('This inventory definition has not been accepted for use.',
                                         code='metric_unapproved', clarification=True)
+    relative_month = (not re.search(r'compar|versus|\bvs\b|so sánh|đối chiếu', question)
+                      and re.search(r'\b(?:last|previous) month\b|tháng trước', question))
+    if relative_month and inventory and set(metric_names) != {'inventory_units_sold'}:
+        raise MetricDefinitionError('Specify an exact snapshot for inventory balances; only recorded units sold can use the prior-month observation.',
+                                    code='snapshot_required', clarification=True)
     if inventory and re.search(r'latest|mới nhất|gần nhất', question, re.I) and re.search(r'\b(?:19|20)\d{2}\b', question):
         raise MetricDefinitionError('Do you want the latest dataset snapshot or a snapshot within the specified period?',
                                     code='ambiguous_snapshot', clarification=True)

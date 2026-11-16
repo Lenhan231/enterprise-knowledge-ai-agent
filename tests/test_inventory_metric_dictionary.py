@@ -99,11 +99,11 @@ class InventoryEnforcementTest(unittest.TestCase):
     def test_invalid_ambiguous_and_localized_date_requests(self):
         from core.analytics.metric_validation import validate_metric_request
         for question, code in [('Stock on hand on 2022-02-30','invalid_date_scope'),
-                               ('Stock on hand at latest snapshot in 2022','ambiguous_snapshot')]:
+                               ('Stock on hand at latest snapshot in 2022','ambiguous_snapshot'),
+                               ('Stock on hand last month','snapshot_required')]:
             with self.subTest(question=question), self.assertRaises(MetricDefinitionError) as error:
                 validate_metric_request(question,{'stock_on_hand'})
             self.assertEqual(error.exception.code,code)
-        validate_metric_request('Stock on hand last month', {'stock_on_hand'})
         sql = "SELECT i.snapshot_date,SUM(i.stock_on_hand) FROM commerce.inventory AS i WHERE i.snapshot_date='2022-12-31' GROUP BY i.snapshot_date LIMIT 200"
         self.check(sql,{'stock_on_hand'},'Stock on hand on 31/12/2022')
 

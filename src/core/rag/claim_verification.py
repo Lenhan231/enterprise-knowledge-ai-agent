@@ -73,6 +73,38 @@ def _is_source_gap_note(tail):
     return bool(sentences) and not re.search(r"\d", tail) and all(_SOURCE_GAP.search(s) for s in sentences)
 
 
+# "..., but purchases need the line manager" is a claim hiding behind a gap note, so it is audited.
+_GAP_CONTRAST = re.compile(r"\b(?:nhưng|tuy nhiên|song|ngoài ra|but|however)\b", re.IGNORECASE)
+_SCALES = {"tỷ": 10**9, "tỉ": 10**9, "triệu": 10**6, "tr": 10**6, "củ": 10**6,
+           "nghìn": 10**3, "ngàn": 10**3, "k": 10**3}
+
+
+def _numbers(text):
+    """Integers written in the text, with '3tr' / '4tr5' / '3 củ' also read as amounts."""
+    values = set()
+    for digits, unit, tail in re.findall(r"(\d[\d.,]*)\s*(tỷ|tỉ|triệu|tr|củ|nghìn|ngàn|k)?(\d)?(?!\w)", text, re.IGNORECASE):
+        plain = digits.rstrip(".,")
+        whole = int(re.sub(r"[.,]", "", plain))
+        values.add(whole)
+        if unit:
+            scale = _SCALES[unit.lower()]
+            values.add(whole * scale + (int(tail) * scale // 10 if tail else 0))
+    return values
+
+
+def is_source_gap_answer(answer: str, question: str) -> bool:
+    """The whole draft only says the supplied sources do not answer the question: there is no claim to audit.
+
+    Each sentence must be a 'the documents do not state ...' note without a contrast clause, and every number
+    must repeat one from the question, so any policy statement still goes to the claim check.
+    """
+    text = re.sub(r"\[S\d+\]", " ", answer)
+    sentences = [s.strip(" \t\r\n|*_`)]}.,;:") for s in re.split(r"(?<=[.!?])\s+|\n+", text)]
+    sentences = [s for s in sentences if s]
+    return (bool(sentences) and all(_SOURCE_GAP.search(s) and not _GAP_CONTRAST.search(s) for s in sentences)
+            and _numbers(text) <= _numbers(question))
+
+
 def evidence_units(content):
     """Split a source per line, then at . ! ? followed by whitespace; numbers like 1.5 stay whole."""
     return [part for line in content.splitlines() for part in re.split(r"(?<=[.!?])\s+", line.strip()) if part]

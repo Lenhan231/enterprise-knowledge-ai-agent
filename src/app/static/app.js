@@ -1305,9 +1305,15 @@ function renderAnswerBody(answer) {
 function answerOutcome(data, citations) {
   const check = data.claim_verification;
   const pill = (kind, text) => `<p class="answer-status ${kind}">${escapeHtml(text)}</p>`;
-  const rephrase = '<div class="answer-next"><button type="button" class="secondary-button answer-rephrase">Rephrase the question</button></div>';
-  const nearest = Array.isArray(data.nearest_documents) && data.nearest_documents.length
-    ? `<p class="analysis-caveat">Closest documents found: ${data.nearest_documents.map(escapeHtml).join("; ")}</p>` : "";
+  // Where the user can look next: section first, then a readable file name ("Operating Policy v1.0 VN").
+  const documentLabel = (name) => String(name || "").replace(/\.[a-z0-9]+$/i, "").replace(/[_-]+/g, " ").trim();
+  const nearby = Array.isArray(data.nearest_documents) && data.nearest_documents.length ? `
+    <div class="answer-nearby">
+      <p class="answer-nearby-title">Closest sections in your documents</p>
+      <ul>${data.nearest_documents.map((item) => `<li><strong>${escapeHtml(item.section || documentLabel(item.document))}</strong>${item.section ? `<span>${escapeHtml(documentLabel(item.document))}</span>` : ""}</li>`).join("")}</ul>
+      <p class="answer-nearby-hint">Try naming the policy or procedure, or ask the department that owns it.</p>
+    </div>` : "";
+  const rephrase = `<div class="answer-next">${nearby}<button type="button" class="secondary-button answer-rephrase">Rephrase the question</button></div>`;
   if (check?.status === "supported" && citations.length) {
     return { badge: `<p class="answer-verified">${SEAL_MARK}Every claim checked against its cited source${check.claim_count ? ` · ${formatNumber(check.claim_count)} claims` : ""}</p>`, next: "" };
   }
@@ -1316,10 +1322,10 @@ function answerOutcome(data, citations) {
   }
   if (data.citation_validation_failed || (check && check.status !== "supported")) {
     const reason = VERIFICATION_REASONS[check?.reason] || "the answer could not be matched to its sources";
-    return { title: "Answer withheld", gap: true, badge: pill("is-withheld", `Withheld: ${reason}`) + nearest, next: rephrase };
+    return { title: "Answer withheld", gap: true, badge: pill("is-withheld", `Withheld: ${reason}`), next: rephrase };
   }
   if (data.insufficient_context) {
-    return { title: "Not in your documents", gap: true, badge: pill("is-gap", "Not covered by the documents you can access. Try naming the policy or procedure, or ask the department that owns it.") + nearest, next: rephrase };
+    return { title: "Not in your documents", gap: true, badge: pill("is-gap", "Not covered by the documents you can access"), next: rephrase };
   }
   if (data.status === "partial") return { gap: true, badge: pill("is-gap", "Partial answer: some parts are not covered"), next: "" };
   return { badge: "", next: "" };

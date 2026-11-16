@@ -213,6 +213,13 @@
 :root .answer-next{display:flex;flex-wrap:wrap;gap:8px;margin:-4px 0 18px}
 :root .chat-turn .answer-next{padding-left:37px}
 :root .general-chat .chat-turn .answer-next{padding-left:0}
+:root .answer-nearby{flex-basis:100%;max-width:62ch;margin:2px 0 6px;padding:2px 0 2px 14px;border-left:2px solid var(--line-strong);color:var(--muted);font:400 13.5px/1.5 var(--font)}
+:root .answer-nearby-title{margin:0 0 6px;color:var(--ink-2);font-weight:600}
+:root .answer-nearby ul{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+:root .answer-nearby li{display:flex;flex-direction:column}
+:root .answer-nearby li strong{color:var(--ink);font-weight:500}
+:root .answer-nearby li span{font-size:12.5px}
+:root .answer-nearby-hint{margin:10px 0 0}
 :root .answer-diagnostic{margin:0 0 16px;color:var(--muted);font-size:13px}
 :root .answer-diagnostic code{display:block;margin-top:6px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12.5px}
 :root .citations h4{color:var(--muted);font:500 13px/1.3 var(--font);letter-spacing:0;text-transform:none}

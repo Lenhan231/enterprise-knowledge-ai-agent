@@ -28,7 +28,9 @@ Copy each backend's SQLite database before replacing its container. Import it wi
 ```
 
 `scripts/deploy/deploy.sh` performs an online SQLite backup before restarting each backend, retains the
-private backup under `artifacts/local/dashboard-backups`, and imports it after the new image starts.
+private backup under `${XDG_STATE_HOME:-$HOME/.local/state}/enterprise-knowledge-ai-agent/dashboard-backups`,
+and imports it after the new image starts. Backups belong to the deploy user even when container-mounted
+artifact directories belong to root. Container commands do not consume the script's SSH stdin.
 
 Import retains IDs, owners, revisions, timestamps, documents and HTML. It never replaces records already
 in Supabase, never deletes the source, and can be repeated. Existing records with divergent local edits

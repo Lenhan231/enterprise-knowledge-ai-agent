@@ -35,6 +35,8 @@ class BusinessOntologyTest(unittest.TestCase):
         prompt = build_sql_prompt('Revenue by month during 2022')
         self.assertIn('VSC-OPS-POL-001', prompt)
         self.assertIn('request_contract', prompt)
+        self.assertIn('independent fact tables', prompt)
+        self.assertIn('complete grouped keys', prompt)
         plan = decode_query_plan(json.dumps({'sql': 'SELECT s.revenue AS revenue, s.cogs AS extra FROM commerce.sales s LIMIT 1',
             'parameters': [], 'explanation': 'Revenue only', 'request_contract': {'columns': ['revenue']}}))
         self.assertIn('requested output contract', plan.request_contract_warning)

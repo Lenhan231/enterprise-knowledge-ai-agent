@@ -127,8 +127,9 @@ benefits from the existing translation cache; it is not a load or quality test.
 Commerce SQL planning uses the existing metric ontology for recognized metric
 names and aliases. Before execution, the agent checks canonical formulas,
 source-column lineage, supported output dimensions, required filters and
-explicit single-snapshot rules. A canonical mismatch gets one repair attempt
-and then fails without executing. Generic read-only queries keep their existing path.
+explicit single-snapshot rules. A canonical mismatch may execute as `unverified`
+after the read-only security checks pass. Generic read-only queries keep their
+existing path.
 Verified definitions are returned under `metadata.metrics` and supplied to the
 answer summarizer with currency and ratio-scale limitations.
 
@@ -136,8 +137,11 @@ For cross-domain inventory and sales analysis, aggregate each fact at its own
 grain, validate canonical source metrics independently, then join only on
 complete approved keys. A derived measure with no approved contract may run as
 `unverified` after those checks; retrieved Knowledge text is evidence, not
-metric approval. This status never bypasses read-only security, live schema,
-approved joins, fanout checks, or exact inventory snapshot-date requirements.
+metric approval. Unverified SQL still must pass read-only security, configured
+source scope, and bounded-result checks. Schema, approved-join, fanout, and other
+non-security validation failures are reported as `unverified` and the SQL is
+attempted; the database may reject it when tables or columns do not exist.
+Canonical inventory queries still enforce exact snapshot-date requirements.
 
 The shared SQL validator also checks join multiplicity against declared Commerce
 primary keys. SUM, AVG and plain COUNT are rejected when joins can duplicate

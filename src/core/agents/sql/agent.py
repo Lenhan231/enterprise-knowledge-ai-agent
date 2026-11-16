@@ -880,6 +880,9 @@ class SQLAnalyticsAgent(BaseAgent):
             "limitations": ["The generated query did not pass planning or SQL validation."],
             "metadata": {"error_type": type(error).__name__},
         }
+        if isinstance(error, (SQLValidationError, MetricDefinitionError)):
+            # Keep the validator's reason for the Auto/Streamlit execution trace.
+            result["metadata"]["error_detail"] = str(error)[:800]
         if isinstance(error, MetricDefinitionError):
             result['metadata']['metric_error_code'] = error.code
             if error.clarification:

@@ -19,6 +19,7 @@ class TaskOutcome:
     attempts: int = 0
     elapsed_ms: int = 0
     error_type: str | None = None
+    error_detail: str | None = None
 
 
 def authorize(request, agent):
@@ -116,6 +117,7 @@ class Execution:
                     outcome.result = AgentResult.model_validate(result)
                     outcome.status = outcome_status(outcome.result)
                     outcome.error_type = outcome.result.metadata.get('error_type')
+                    outcome.error_detail = outcome.result.metadata.get('error_detail')
                     if outcome.error_type not in {'RateLimitError', 'APIConnectionError', 'ServiceUnavailableError'}:
                         break
                 except PermissionError:
@@ -189,7 +191,8 @@ class Execution:
     def trace_item(outcome):
         return {'id': outcome.task.id, 'agent': outcome.task.agent, 'depends_on': outcome.task.depends_on,
                 'status': outcome.status, 'attempts': outcome.attempts,
-                'elapsed_ms': outcome.elapsed_ms, 'error_type': outcome.error_type}
+                'elapsed_ms': outcome.elapsed_ms, 'error_type': outcome.error_type,
+                'error_detail': outcome.error_detail}
 
     def revision_context(self, plan):
         return {'plan': plan.model_dump(), 'outcomes': [

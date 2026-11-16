@@ -47,6 +47,19 @@ class FakeAgent:
 
 
 class BoundedExecutionTest(unittest.IsolatedAsyncioTestCase):
+    async def test_task_trace_preserves_sql_validation_detail(self):
+        sql = FakeAgent(AgentResult(
+            answer='Could not validate the query.', agent='analytics',
+            metadata={'ok': False, 'error_type': 'SQLValidationError',
+                      'error_detail': 'JOIN does not match an approved relationship.'},
+        ))
+        result = await AgentRouter(None, FakeAgent(None), sql,
+                                   llm=FakeProvider([task('s', 'sql', 'Delivery time by region')])).run(
+            AgentRequest(question='Delivery time by region', identity=IDENTITY))
+        trace = result.metadata['task_trace'][0]
+        self.assertEqual(trace['error_type'], 'SQLValidationError')
+        self.assertEqual(trace['error_detail'], 'JOIN does not match an approved relationship.')
+
     async def test_mixed_request_is_decomposed_and_identity_preserved_for_both_aliases(self):
         tasks = [task('k', 'knowledge', 'Stockout approval policy'), task('s', 'sql', 'Count stockouts in 2022')]
         for mode in ['auto', 'agentic']:

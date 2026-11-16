@@ -269,6 +269,9 @@ class StreamlitClientTest(unittest.TestCase):
             def caption(self, value):
                 self.text.append(value)
 
+            def warning(self, value):
+                self.text.append(value)
+
             def code(self, value, **_kwargs):
                 self.codes.append(value)
 
@@ -281,16 +284,69 @@ class StreamlitClientTest(unittest.TestCase):
             "data": {"sql": {"rows": [{"orders": 4}], "attempted_sql": "DELETE FROM commerce.orders",
                               "parameters": ["2026-03-01", "2026-04-01"], "query_status": "rejected"}},
             "evidence": [{"citation_id": "S1", "source": "commerce.orders"}],
-            "metadata": {"limitations": ["Limited to current schema."]},
-        })
+            "metadata": {"limitations": ["Limited to current schema."], "task_trace": [
+                {"id": "fallback", "agent": "sql", "status": "failed", "attempts": 1,
+                 "error_type": "SQLValidationError", "error_detail": "JOIN does not match an approved relationship."}
+            ]},
+        }, question="thời gian giao hàng trung bình")
 
-        self.assertEqual(st.tables, [[{"orders": 4}]])
+        self.assertEqual(st.tables[0], [{"Orders": 4}])
+        self.assertEqual(st.tables[1][0]["error_type"], "SQLValidationError")
         self.assertIn("Combined answer", st.text)
         self.assertIn("**S1 · commerce.orders**", st.text)
-        self.assertIn("Limitation: Limited to current schema.", st.text)
-        self.assertEqual(st.codes, ["DELETE FROM commerce.orders"])
-        self.assertIn('Parameters: ["2026-03-01", "2026-04-01"]', st.text)
+        self.assertIn("Lưu ý: Limited to current schema.", st.text)
+        self.assertEqual(st.codes, ["DELETE FROM commerce.orders", "JOIN does not match an approved relationship."])
+        self.assertTrue(any("Lý do lỗi · fallback" in item for item in st.text))
+        self.assertIn('Tham số: ["2026-03-01", "2026-04-01"]', st.text)
         self.assertIn("Query status: rejected", st.downloads[0][1])
+
+    def test_unverified_metric_results_are_presented_as_readable_vietnamese_table(self):
+        class Expander:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return False
+
+        class FakeStreamlit:
+            def __init__(self):
+                self.tables = []
+                self.text = []
+
+            def markdown(self, value):
+                self.text.append(value)
+
+            def subheader(self, value):
+                self.text.append(value)
+
+            def warning(self, value):
+                self.text.append(value)
+
+            def caption(self, value):
+                self.text.append(value)
+
+            def dataframe(self, rows, **_kwargs):
+                self.tables.append(rows)
+
+            def expander(self, _label):
+                return Expander()
+
+        st = FakeStreamlit()
+        display_result(st, {
+            'answer': 'Evidence fallback — review the supported findings and gaps below.',
+            'data': {'sql': {'rows': [{'product_name': 'Grid Runner', 'total_quantity_sold': 152}]}},
+            'evidence': [],
+            'metadata': {'fallback': True, 'limitations': [
+                'Định nghĩa metric chưa được xác minh; kết quả chỉ phản ánh truy vấn.'
+            ]},
+        }, question='sản phẩm bán chạy nhất tháng trước')
+
+        rendered_text = '\n'.join(st.text)
+        self.assertIn('Định nghĩa metric chưa được xác minh', rendered_text)
+        self.assertIn('Truy vấn đã chạy;', rendered_text)
+        self.assertNotIn('Evidence fallback', rendered_text)
+        self.assertIn('Kết quả truy vấn', rendered_text)
+        self.assertEqual(st.tables, [[{'Tên sản phẩm': 'Grid Runner', 'Tổng lượng theo truy vấn': 152}]])
 
 
 if __name__ == "__main__":

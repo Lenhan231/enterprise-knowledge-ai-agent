@@ -54,8 +54,10 @@ if [ -n "$legacy_container" ]; then
     exit 6
   fi
   umask 077
-  mkdir -p artifacts/local/dashboard-backups
-  legacy_backup="artifacts/local/dashboard-backups/$(date -u +%Y%m%dT%H%M%SZ).sqlite3"
+  backup_directory="${XDG_STATE_HOME:-$HOME/.local/state}/enterprise-knowledge-ai-agent/dashboard-backups"
+  mkdir -p "$backup_directory"
+  chmod 700 "$backup_directory"
+  legacy_backup=$(mktemp "$backup_directory/XXXXXXXX.sqlite3")
   docker compose exec -T backend-api python -c '
 import os, pathlib, sqlite3, sys, tempfile
 from contextlib import closing
@@ -66,7 +68,7 @@ if source.is_file():
         with closing(sqlite3.connect("file:" + str(source) + "?mode=ro", uri=True)) as reader, closing(sqlite3.connect(target)) as writer:
             reader.backup(writer)
         sys.stdout.buffer.write(target.read_bytes())
-' > "$legacy_backup"
+' < /dev/null > "$legacy_backup"
 fi
 
 say "Building and restarting changed services"
@@ -79,7 +81,7 @@ if [ -n "$legacy_backup" ] && [ -s "$legacy_backup" ]; then
 import json, sys
 from core.dashboards.postgres_store import PostgresDashboardStore
 print(json.dumps(PostgresDashboardStore().import_sqlite(sys.argv[1])))
-' /tmp/dashboard-migration.sqlite3
+' /tmp/dashboard-migration.sqlite3 < /dev/null
 fi
 
 docker compose exec -T backend-api python -c '
@@ -90,7 +92,7 @@ store = create_dashboard_store()
 assert isinstance(store, PostgresDashboardStore), "Production dashboards require shared PostgreSQL storage"
 store.list("deployment-check-" + uuid4().hex)
 print("Shared dashboard storage is ready")
-'
+' < /dev/null
 
 say "Waiting for $HEALTH_URL (up to ${HEALTH_WAIT_SECONDS}s)"
 deadline=$((SECONDS + HEALTH_WAIT_SECONDS))

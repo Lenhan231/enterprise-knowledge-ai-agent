@@ -250,3 +250,36 @@ class NeighbourExpansionTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class AmountNormalizationTest(unittest.TestCase):
+    """#54: '3 củ' became '3 bulbs' and '7 củ' '70 million' in translation; search gets the policy's own form."""
+
+    def test_everyday_amounts_are_written_as_policies_write_them(self):
+        from core.retrieval.retrieval_service import normalize_amounts
+        cases = {
+            "3 củ thì đưa ai duyệt": "3.000.000 VND thì đưa ai duyệt",
+            "bàn ghế mua 3tr thì đưa ai duyệt": "bàn ghế mua 3.000.000 VND thì đưa ai duyệt",
+            "mua 3 tr": "mua 3.000.000 VND",
+            "Mua đồ 4tr5 có cần 2 báo giá ko?": "Mua đồ 4.500.000 VND có cần 2 báo giá ko?",
+            "ăn trưa 500k": "ăn trưa 500.000 VND",
+            "khoản 1,5 tỷ": "khoản 1.500.000.000 VND",
+            "mua máy in 7 củ": "mua máy in 7.000.000 VND",
+            "120 triệu cần mấy báo giá": "120.000.000 VND cần mấy báo giá",
+        }
+        for question, expected in cases.items():
+            self.assertEqual(normalize_amounts(question), expected, question)
+        for unchanged in ("nghỉ phép 3 ngày", "Q2 2026", "5.000.000 VND", "mua 3 kg", "tháng 11 trả lương"):
+            self.assertEqual(normalize_amounts(unchanged), unchanged, unchanged)
+
+    def test_search_uses_the_written_amount_but_reports_the_users_question(self):
+        from unittest.mock import MagicMock
+        from core.retrieval.retrieval import RetrievalRequest
+        from core.retrieval.retrieval_service import RetrievalService
+        repository, embedding = MagicMock(), MagicMock()
+        repository.similarity_search.return_value = []
+        embedding.embed_query.return_value = [0.1]
+        result = RetrievalService(embedding, repository, MagicMock()).retrieve(
+            RetrievalRequest(query="mua máy in 7 củ", top_k=3), roles=["admin"], method="dense")
+        embedding.embed_query.assert_called_once_with("mua máy in 7.000.000 VND")
+        self.assertEqual(result.query, "mua máy in 7 củ")

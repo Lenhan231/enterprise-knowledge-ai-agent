@@ -35,9 +35,16 @@ class BusinessOntologyTest(unittest.TestCase):
         prompt = build_sql_prompt('Revenue by month during 2022')
         self.assertIn('VSC-OPS-POL-001', prompt)
         self.assertIn('request_contract', prompt)
+        plan = decode_query_plan(json.dumps({'sql': 'SELECT s.revenue AS revenue, s.cogs AS extra FROM commerce.sales s LIMIT 1',
+            'parameters': [], 'explanation': 'Revenue only', 'request_contract': {'columns': ['revenue']}}))
+        self.assertIn('requested output contract', plan.request_contract_warning)
+        self.assertIsNone(plan.request_contract)
+        self.assertIn('AS extra', plan.sql)
+
+    def test_invalid_output_contract_does_not_bypass_sql_safety(self):
         with self.assertRaises(SQLValidationError):
-            decode_query_plan(json.dumps({'sql': 'SELECT s.revenue AS revenue, s.cogs AS extra FROM commerce.sales s LIMIT 1',
-                'parameters': [], 'explanation': 'Revenue only', 'request_contract': {'columns': ['revenue']}}))
+            decode_query_plan(json.dumps({'sql': 'DELETE FROM commerce.sales', 'parameters': [],
+                'explanation': 'Delete rows', 'request_contract': {'columns': ['revenue']}}))
 
     def test_context_is_policy_cited_and_schema_scoped(self):
         context = policy_context({'commerce.inventory', 'commerce.products'})
@@ -88,21 +95,21 @@ class OntologyAgentTest(unittest.IsolatedAsyncioTestCase):
             await agent.close()
         provider.close.assert_called_once()
 
-    async def test_invalid_contract_repairs_before_any_business_query(self):
+    async def test_invalid_contract_is_advisory_and_query_still_runs(self):
         repository = Mock()
         repository.get_schema = AsyncMock(return_value={})
         repository.execute_approved_query = AsyncMock(return_value=[{'sessions': 12}])
         provider = Mock()
-        provider.generate.side_effect = [json.dumps({
+        provider.generate.return_value = json.dumps({
             'sql': 'SELECT SUM(w.sessions) AS sessions, SUM(w.page_views) AS extra FROM commerce.web_traffic w LIMIT 1',
-            'parameters': [], 'explanation': 'sessions only', 'request_contract': {'columns': ['sessions']}}),
-            json.dumps({'sql': 'SELECT SUM(w.sessions) AS sessions FROM commerce.web_traffic w LIMIT 1',
-                'parameters': [], 'explanation': 'sessions only', 'request_contract': {'columns': ['sessions']}})]
+            'parameters': [], 'explanation': 'sessions only', 'request_contract': {'columns': ['sessions']}})
         agent = SQLAnalyticsAgent(repository, llm=provider)
         result = await agent.run_payload(AgentRequest(question='Total recorded sessions',
             identity=VerifiedIdentity(subject='test', permissions={'analytics:read'})))
         self.assertTrue(result['ok'], result)
         repository.execute_approved_query.assert_awaited_once()
-        self.assertEqual(provider.generate.call_count, 2)
+        self.assertEqual(provider.generate.call_count, 1)
         self.assertEqual(result['metadata']['source'], ['commerce.web_traffic'])
-        self.assertNotIn('extra', result['sql'])
+        self.assertIn('extra', result['sql'])
+        self.assertEqual(result['metadata']['request_contract_status'], 'ignored')
+        self.assertIn('output mapping did not match', result['limitations'][-1])

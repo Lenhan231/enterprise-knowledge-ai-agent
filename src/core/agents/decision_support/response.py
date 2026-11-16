@@ -233,6 +233,39 @@ def _month_over_month_sql_finding(item, question):
     return (f'Revenue for {current_date:%B %Y}: {current}; {previous_date:%B %Y}: {previous}{delta} {refs}.')
 
 
+def _failure_answer(outcomes, question):
+    """Explain the strongest known failure without conflating validation and access errors."""
+    failures = [outcome for outcome in outcomes if outcome.status not in {'complete', 'partial'}]
+    errors = [(outcome.error_type or (outcome.result.metadata.get('error_type') if outcome.result else None),
+               outcome.error_detail or (outcome.result.metadata.get('error_detail') if outcome.result else None))
+              for outcome in failures]
+    error_types = {kind for kind, _ in errors if kind}
+    vietnamese = _is_vietnamese(question)
+    if error_types & {'AnalyticsPermissionDenied', 'PermissionError'}:
+        return ('Bạn không có quyền truy cập dữ liệu này.' if vietnamese
+                else 'You do not have permission to access this data.')
+    if 'SQLSecurityError' in error_types:
+        return ('Truy vấn bị chặn vì không vượt qua kiểm tra an toàn SQL.' if vietnamese
+                else 'The query was blocked because it did not pass SQL safety checks.')
+    validation_types = {'SQLValidationError', 'SQLSchemaMismatchError', 'MetricDefinitionError'}
+    if error_types & validation_types:
+        detail = next((detail for kind, detail in errors if kind in validation_types and detail), None)
+        prefix = ('Truy vấn chưa chạy vì không vượt qua kiểm tra SQL.' if vietnamese
+                  else 'The query was not run because it failed SQL validation.')
+        return f'{prefix} {detail}' if detail else prefix
+    if error_types & {'TimeoutError', 'InvocationBudget'}:
+        return ('Yêu cầu hết thời gian xử lý trước khi hoàn tất.' if vietnamese
+                else 'The request timed out before it could be completed.')
+    if error_types & {'RateLimitError', 'APIConnectionError', 'ServiceUnavailableError', 'ConnectionError'}:
+        return ('Dịch vụ xử lý đang quá tải hoặc tạm thời không kết nối được. Vui lòng thử lại.' if vietnamese
+                else 'The processing service is busy or temporarily unavailable. Please try again.')
+    if error_types & {'PlanningError', 'NoProgress'}:
+        return ('Hệ thống chưa lập được kế hoạch truy vấn phù hợp cho yêu cầu này.' if vietnamese
+                else 'The system could not create a suitable query plan for this request.')
+    return ('Chưa thể hoàn tất yêu cầu do một tác vụ xử lý thất bại hoặc hết thời gian.' if vietnamese
+            else 'The request could not be completed because a task failed or timed out.')
+
+
 async def assemble_response(request, plan, execution, provider):
     active = [execution.outcomes[t.id] for t in plan.tasks if t.id in execution.outcomes]
     usable = [o for o in active if o.result and o.result.evidence and o.status in {'complete', 'partial'}]
@@ -241,12 +274,16 @@ async def assemble_response(request, plan, execution, provider):
     if not usable and any(o.status == 'clarification_required' for o in active):
         status = 'clarification_required'
     evidence, inputs, data, limitations = [], [], {}, []
+    generic_validation_limit = 'The generated query did not pass planning or SQL validation.'
     for task in plan.tasks:
         if task.id not in execution.outcomes:
             limitations.append(f'{task.agent} task {task.id}: incomplete.')
     for outcome in active:
         if outcome.result:
-            limitations.extend(outcome.result.metadata.get('limitations', []))
+            result_limitations = outcome.result.metadata.get('limitations', [])
+            if outcome.error_type or outcome.result.metadata.get('error_type'):
+                result_limitations = [item for item in result_limitations if item != generic_validation_limit]
+            limitations.extend(result_limitations)
             metric_validation = outcome.result.metadata.get('metric_validation')
             if isinstance(metric_validation, dict) and metric_validation.get('status') == 'unverified':
                 if _is_vietnamese(request.question):
@@ -388,7 +425,7 @@ async def assemble_response(request, plan, execution, provider):
             limitations = [item for item in limitations
                            if item != f'knowledge task {active[0].task.id}: {active[0].status}.']
         else:
-            answer = 'No supported answer could be completed. A task failed or its deadline/evidence budget was exhausted.'
+            answer = _failure_answer(active, request.question)
     if limitations:
         answer += '\n\nLimitations: ' + ' '.join(dict.fromkeys(limitations))
     agent_names = {task.agent for task in plan.tasks}

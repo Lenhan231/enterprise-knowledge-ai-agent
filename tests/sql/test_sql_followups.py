@@ -12,7 +12,8 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'src'))
 from core.analytics.metric_mapping import decode_sql_turn
 from core.analytics.metric_validation import MetricDefinitionError
 from core.agents.execution import Execution, TaskOutcome
-from core.agents.response import _month_over_month_sql_finding, _null_sql_findings, _scalar_sql_finding, assemble_response
+from core.agents.response import (_failure_answer, _month_over_month_sql_finding, _null_sql_findings,
+                                  _scalar_sql_finding, assemble_response)
 from core.agents.router import AgentRouter
 from core.sql_agent.agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
 from core.models.agent_plan import AgentPlan, AgentTask
@@ -21,6 +22,22 @@ from core.models.agents import AgentRequest, AgentResult, Evidence, VerifiedIden
 BASE = {'metrics':['stock_on_hand'],'dimensions':['category'],'time':{'mode':'snapshot','start':'2022-12-31'}}
 STATE = {'accepted':BASE,'pending':None}
 IDENTITY = VerifiedIdentity(subject='test',permissions={'analytics:read'})
+
+
+class FailureMessageTest(unittest.TestCase):
+    def test_failure_message_distinguishes_access_validation_and_safety(self):
+        def outcome(error_type, detail=None):
+            return SimpleNamespace(status='failed', error_type=error_type, error_detail=detail, result=None)
+
+        question = 'xem doanh thu ở khu vực'
+        self.assertIn('không có quyền', _failure_answer([outcome('AnalyticsPermissionDenied')], question))
+        validation = _failure_answer(
+            [outcome('SQLValidationError', 'JOIN does not match an approved relationship.')],
+            'doanh thu theo khu vực')
+        self.assertIn('không vượt qua kiểm tra SQL', validation)
+        self.assertIn('JOIN does not match', validation)
+        self.assertIn('an toàn SQL', _failure_answer([outcome('SQLSecurityError')], question))
+        self.assertIn('hết thời gian', _failure_answer([outcome('TimeoutError')], question))
 
 
 class SQLPatchTest(unittest.TestCase):

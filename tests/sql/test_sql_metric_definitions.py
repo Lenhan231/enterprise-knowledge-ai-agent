@@ -267,17 +267,15 @@ class MetricAgentTest(unittest.IsolatedAsyncioTestCase):
         blocked = SQLAnalyticsAgent._generation_error(SQLValidationError('JOIN does not match an approved relationship.'))
         self.assertEqual(blocked['metadata']['error_detail'], 'JOIN does not match an approved relationship.')
 
-    async def test_repeated_live_schema_mismatch_asks_before_any_query_runs(self):
+    async def test_repeated_live_schema_mismatch_executes_as_unverified(self):
         sql = 'SELECT SUM(s.net_sales) AS revenue FROM commerce.sales AS s LIMIT 1'
         llm = self.provider(*(json.dumps({'sql': sql}) for _ in range(2)))
         repository = AsyncMock()
         result = await SQLAnalyticsAgent(repository, llm=llm).run(self.request('Total revenue'))
-        self.assertTrue(result.metadata['clarification_required'])
-        self.assertTrue(result.metadata['schema_confirmation_required'])
-        self.assertIn('commerce.sales.net_sales', result.answer)
-        self.assertIn('Available columns are: cogs, date, revenue', result.answer)
+        self.assertEqual(result.metadata['metric_validation']['status'], 'unverified')
+        self.assertEqual(result.metadata['metric_validation']['code'], 'sql_validation_failed')
         self.assertIn('not in the discovered schema', llm.prompts[1])
-        repository.execute_approved_query.assert_not_awaited()
+        repository.execute_approved_query.assert_awaited_once_with(sql)
 
     def request(self, question):
         return AgentRequest(question=question, identity=VerifiedIdentity(subject="analyst", permissions={"analytics:read"}))
@@ -307,15 +305,16 @@ class MetricAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn("metric", llm.prompts[1].lower())
         self.assertEqual(result.metadata["metrics"]["revenue"]["currency"], "dataset_currency_unknown")
 
-    async def test_repeated_metric_violation_never_executes(self):
+    async def test_repeated_metric_violation_executes_as_unverified(self):
         wrong = json.dumps({
             "sql": "SELECT SUM(s.revenue) AS gross_profit FROM commerce.sales AS s LIMIT 1",
             "metrics": {"gross_profit": {"formula": "SUM(revenue)"}},
         })
         repository = AsyncMock()
         result = await SQLAnalyticsAgent(repository, llm=self.provider(wrong, wrong)).run(self.request("Gross profit"))
-        self.assertFalse(result.metadata["ok"])
-        repository.execute_approved_query.assert_not_awaited()
+        self.assertEqual(result.metadata['metric_validation']['status'], 'unverified')
+        self.assertEqual(result.metadata['metric_validation']['code'], 'metric_validation_failed')
+        repository.execute_approved_query.assert_awaited_once()
 
     async def test_repaired_revenue_returns_the_fixture_total_not_the_average(self):
         with sqlite3.connect(":memory:") as database:

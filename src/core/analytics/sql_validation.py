@@ -129,6 +129,10 @@ class SQLSchemaMismatchError(SQLValidationError):
         super().__init__(f"Column {table}.{column} is not in the discovered schema. Available columns: {choices}.")
 
 
+class SQLJoinValidationError(SQLValidationError):
+    """A query's relationship or join-grain checks did not pass."""
+
+
 @dataclass(frozen=True)
 class ValidatedSQL:
     sql: str
@@ -360,17 +364,17 @@ def validate_sql_schema(sql: str, *, allowed_sources=None, schema_columns=None, 
         if isinstance(expression, exp.And):
             return (*join_equalities(expression.this, relations), *join_equalities(expression.expression, relations))
         if not isinstance(expression, exp.EQ):
-            raise SQLValidationError("JOIN conditions must use approved equality keys.")
+            raise SQLJoinValidationError("JOIN conditions must use approved equality keys.")
         left, right = expression.this, expression.expression
         if not isinstance(left, exp.Column) or not isinstance(right, exp.Column):
-            raise SQLValidationError("JOIN conditions must compare approved columns.")
+            raise SQLJoinValidationError("JOIN conditions must compare approved columns.")
         left_relation = relations.get(left.table.casefold())
         right_relation = relations.get(right.table.casefold())
         if not left_relation or not right_relation or not left_relation[0] or not right_relation[0]:
-            raise SQLValidationError("JOINs must connect approved base tables.")
+            raise SQLJoinValidationError("JOINs must connect approved base tables.")
         edge = _edge(left_relation[0], _column_name(left), right_relation[0], _column_name(right))
         if edge not in approved_joins:
-            raise SQLValidationError("JOIN does not match an approved relationship.")
+            raise SQLJoinValidationError("JOIN does not match an approved relationship.")
         return (expression,)
 
     def join_predicates(expression):
@@ -384,33 +388,33 @@ def validate_sql_schema(sql: str, *, allowed_sources=None, schema_columns=None, 
     for exists in tree.find_all(exp.Exists):
         scope = scopes_by_select.get(id(exists.this))
         if not scope or not scope.external_columns:
-            raise SQLValidationError('EXISTS must express a correlated approved-key presence check.')
+            raise SQLJoinValidationError('EXISTS must express a correlated approved-key presence check.')
         for column in scope.external_columns:
             equality = column.parent
             if not isinstance(equality, exp.EQ) or not isinstance(equality.this, exp.Column) or not isinstance(equality.expression, exp.Column):
-                raise SQLValidationError('EXISTS correlations must use approved equality keys.')
+                raise SQLJoinValidationError('EXISTS correlations must use approved equality keys.')
             other = equality.expression if equality.this is column else equality.this
             parent = scope.parent
             while parent and column.table not in parent.sources:
                 parent = parent.parent
             origins = (column_origin(parent, column) if parent else None, column_origin(scope, other))
             if not all(origins) or frozenset(origins) not in approved_joins or equality.find_ancestor(exp.Or):
-                raise SQLValidationError('EXISTS correlation does not match an approved relationship.')
+                raise SQLJoinValidationError('EXISTS correlation does not match an approved relationship.')
     for join in tree.find_all(exp.Join):
         if (join.kind or "").casefold() == "cross" or not join.args.get("on"):
-            raise SQLValidationError("CROSS JOIN and JOIN without ON are not allowed.")
+            raise SQLJoinValidationError("CROSS JOIN and JOIN without ON are not allowed.")
         keys = 0
         predicates = list(join_predicates(join.args['on']))
         select = join.find_ancestor(exp.Select)
         scope = scopes_by_select[id(select)]
         relations = scope_relations[id(select)]
         if join.this.alias_or_name.casefold() not in {c.table.casefold() for p in predicates for c in p.find_all(exp.Column)}:
-            raise SQLValidationError('JOIN condition must connect the joined relation.')
+            raise SQLJoinValidationError('JOIN condition must connect the joined relation.')
         if any(isinstance(p, exp.EQ) and any(
                 isinstance(c, exp.Column) and not relations[c.table.casefold()][0]
                 for c in (p.this, p.expression)) for p in predicates):
             if not all(isinstance(p, exp.EQ) for p in predicates) or not approved_derived_join(scope, predicates, approved_joins, primary_keys):
-                raise SQLValidationError('Derived joins require complete grouped keys and approved dimension lineage.')
+                raise SQLJoinValidationError('Derived joins require complete grouped keys and approved dimension lineage.')
             continue
         for predicate in predicates:
             # Snapshot filters belong in ON for an outer join to preserve missing observations.
@@ -423,9 +427,9 @@ def validate_sql_schema(sql: str, *, allowed_sources=None, schema_columns=None, 
                     continue
             keys += len(join_equalities(predicate, relations))
         if not keys:
-            raise SQLValidationError('JOIN requires an approved relationship in addition to any date filters.')
+            raise SQLJoinValidationError('JOIN requires an approved relationship in addition to any date filters.')
 
-    validate_join_aggregations(tree, SQLValidationError, primary_keys)
+    validate_join_aggregations(tree, SQLJoinValidationError, primary_keys)
     validate_invoice_currency(tree, SQLValidationError)
 
     def owning_select(node):

@@ -157,7 +157,7 @@ GROUP BY tc.customer_id LIMIT 1"""
 
 
 class JoinRepairTest(unittest.IsolatedAsyncioTestCase):
-    async def test_repeated_unsafe_plan_never_executes(self):
+    async def test_repeated_unsafe_plan_executes_as_unverified(self):
         class Provider:
             def generate(self, prompt):
                 if prompt.startswith("Interpret the question BEFORE"):
@@ -166,8 +166,9 @@ class JoinRepairTest(unittest.IsolatedAsyncioTestCase):
         repository = AsyncMock()
         result = await SQLAnalyticsAgent(repository, llm=Provider()).run(AgentRequest(
             question='Total payment value', identity=VerifiedIdentity(subject='test', permissions={'analytics:read'})))
-        self.assertFalse(result.metadata['ok'])
-        repository.execute_approved_query.assert_not_awaited()
+        self.assertEqual(result.metadata['metric_validation']['status'], 'unverified')
+        self.assertEqual(result.metadata['metric_validation']['code'], 'sql_validation_failed')
+        repository.execute_approved_query.assert_awaited_once()
 
     async def test_unsafe_plan_is_repaired_before_repository_execution(self):
         unsafe = f'SELECT SUM(p.payment_value) AS total {JOIN} LIMIT 1'

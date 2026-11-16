@@ -228,6 +228,7 @@ class AgentRouter:
             jev_routed = False
             if plan is None:
                 latest_turn = state['history'][-1] if state['history'] else {}
+                short_followup = bool(state['history'] and len(request.question.split()) <= 8)
                 pending_clarification = bool(
                     isinstance(latest_turn.get('clarification'), str)
                     and latest_turn['clarification'].strip()
@@ -239,6 +240,7 @@ class AgentRouter:
                     route = None
                 if (route and route['route'] in {'knowledge', 'sql'}
                         and route['confidence'] >= JEV_ROUTE_THRESHOLD and not route['history_required']
+                        and not short_followup
                         and state.get('report_headings') is None and not pending_clarification):
                     agent = route['route']
                     task_id = 'k' if agent == 'knowledge' else 's'

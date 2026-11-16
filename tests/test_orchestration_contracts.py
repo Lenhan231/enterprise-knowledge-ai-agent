@@ -5,18 +5,42 @@ import threading
 import time
 import unittest
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from core.agents.runtime import deadline, run_sync
 from core.agents.knowledge_agent import KnowledgeAgent
 from core.agents.router import AgentRouter
 from core.agents.response import _supported_numbers
+from core.models.agent_plan import AgentPlan
 from core.models.agents import AgentRequest, AgentResult, Evidence, VerifiedIdentity
 from test_bounded_execution import FakeAgent, FakeProvider, IDENTITY, source_result, task
 
 
 class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
+    async def test_short_followup_uses_planner_when_jev_misses_history_dependency(self):
+        router = AgentRouter(None, None, None, llm=FakeProvider([]))
+        request = AgentRequest(question='giờ nên đẩy mạnh vào segment nào nhỉ', identity=IDENTITY)
+        resolved = AgentPlan.model_validate({
+            'objective': 'Recommend a product segment using the prior quarterly revenue analysis',
+            'tasks': [{'id': 's', 'agent': 'sql',
+                       'question': 'Compare quarterly product revenue by segment'}],
+        })
+        with patch('core.agents.decision_support.router.classify_jev_route', return_value={
+                'route': 'sql', 'confidence': 0.99, 'history_required': False}), \
+             patch('core.agents.decision_support.router.plan_request',
+                   new=AsyncMock(return_value=resolved)) as plan_request:
+            state = await router._plan({
+                'request': request,
+                'history': [{'question': 'quarterly revenue by product segment',
+                             'scope': 'quarterly product revenue by segment'}],
+                'execution': Mock(),
+                'report_headings': None,
+            })
+
+        self.assertEqual(state['plan'], resolved)
+        plan_request.assert_awaited_once()
+
     async def test_sql_outage_fallback_still_uses_auto_response_layer(self):
         question = 'doanh thu năm 2025'
         router = AgentRouter(None, None, FakeAgent(source_result('analytics', rows=[{'revenue': 123}])),

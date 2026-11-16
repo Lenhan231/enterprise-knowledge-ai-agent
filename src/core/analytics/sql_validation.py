@@ -7,7 +7,7 @@ import re
 import os
 import calendar
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, timedelta
 from typing import Any
 
 from sqlglot import exp, parse
@@ -685,6 +685,71 @@ def current_year_month_range(question: str, today: date | None = None) -> tuple[
     start = date(today.year, month, 1)
     end = date(today.year + (month == 12), month % 12 + 1, 1)
     return start, end
+
+
+def rolling_days_range(question: str, today: date | None = None) -> tuple[date, date] | None:
+    """Resolve an explicit rolling N-day window to a half-open date range."""
+    text = question.casefold()
+    match = re.search(r'\b(?:last|past|previous|most recent)\s+(\d+)\s+days?\b', text)
+    if not match:
+        match = re.search(r'\b(\d+)\s+ngày\s+(?:gần nhất|qua|vừa qua)\b', text)
+    if not match:
+        return None
+    count = int(match.group(1))
+    if not 1 <= count <= 366:
+        return None
+    today = today or date.today()
+    return today - timedelta(days=count - 1), today + timedelta(days=1)
+
+
+def _rolling_date_parameter_bounds(sql: str, date_columns=None):
+    tree = parse(sql, read='postgres')[0]
+    sources = {(table.alias_or_name or table.name).casefold(): _source_name(table)
+               for table in tree.find_all(exp.Table) if table.db}
+    allowed_dates = APPROVED_DATE_COLUMNS if date_columns is None else APPROVED_DATE_COLUMNS | set(date_columns)
+    bounds = {'lower': set(), 'upper': set()}
+    for comparison in tree.find_all((exp.GTE, exp.LT)):
+        if not isinstance(comparison.this, exp.Column) or not isinstance(comparison.expression, exp.Parameter):
+            continue
+        column = comparison.this
+        if (sources.get(column.table.casefold()), _column_name(column)) not in allowed_dates:
+            continue
+        index = int(comparison.expression.this.this)
+        bounds['lower' if isinstance(comparison, exp.GTE) else 'upper'].add(index)
+    return bounds
+
+
+def resolve_rolling_days_parameters(sql: str, parameters: tuple, question: str,
+                                    date_columns=None, today: date | None = None) -> tuple:
+    expected = rolling_days_range(question, today)
+    if expected is None or not sql:
+        return parameters
+    bounds = _rolling_date_parameter_bounds(sql, date_columns)
+    lower, upper = bounds['lower'], bounds['upper']
+    if len(lower) != 1 or len(upper) != 1 or lower == upper:
+        raise SQLValidationError('Rolling date windows must use source_date >= start and source_date < end with bound parameters.')
+    lower_index, upper_index = next(iter(lower)), next(iter(upper))
+    if max(lower_index, upper_index) > len(parameters):
+        raise SQLValidationError('Rolling date window placeholders are invalid.')
+    resolved = list(parameters)
+    resolved[lower_index - 1], resolved[upper_index - 1] = expected
+    return tuple(resolved)
+
+
+def validate_rolling_days_range(sql: str, parameters: tuple, question: str,
+                                date_columns=None, today: date | None = None) -> None:
+    expected = rolling_days_range(question, today)
+    if expected is None or not sql:
+        return
+    bounds = _rolling_date_parameter_bounds(sql, date_columns)
+    lower, upper = bounds['lower'], bounds['upper']
+    if len(lower) != 1 or len(upper) != 1 or lower == upper:
+        raise SQLValidationError('Rolling date windows must use source_date >= start and source_date < end with bound parameters.')
+    lower_index, upper_index = next(iter(lower)), next(iter(upper))
+    if max(lower_index, upper_index) > len(parameters) or (
+            parameters[lower_index - 1], parameters[upper_index - 1]) != expected:
+        start, end = expected
+        raise SQLValidationError(f'Rolling date filters must bind {start.isoformat()} (inclusive) and {end.isoformat()} (exclusive).')
 
 
 def validate_current_year_month_range(sql: str, parameters: tuple, question: str,

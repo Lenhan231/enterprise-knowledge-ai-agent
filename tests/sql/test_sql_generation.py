@@ -12,7 +12,9 @@ from core.analytics.text_to_sql import (SQLValidationError, current_year_month_r
                                         decode_query_plan, validate_commerce_sql,
                                         build_sql_prompt,
                                         validate_current_year_month_range,
-                                        validate_current_month_total_query)
+                                        validate_current_month_total_query,
+                                        rolling_days_range, resolve_rolling_days_parameters,
+                                        validate_rolling_days_range)
 from core.sql_agent.agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
 from core.sql_agent.analytics_agent import AnalyticsAgent
 from core.database.commerce_repository import CommerceRepository
@@ -58,6 +60,29 @@ class SQLValidationTest(unittest.TestCase):
         with self.assertRaisesRegex(SQLValidationError, "Current-year month filters must bind"):
             validate_current_year_month_range(sql, (date(2024, 3, 1), date(2024, 3, 31)),
                                               "Doanh thu tháng 3 năm nay", today=date(2026, 11, 14))
+
+    def test_rolling_days_confirmation_resolves_to_bound_half_open_range(self):
+        expected = (date(2026, 10, 18), date(2026, 11, 17))
+        self.assertEqual(rolling_days_range('last 30 days', date(2026, 11, 16)), expected)
+        self.assertEqual(rolling_days_range('30 ngày gần nhất', date(2026, 11, 16)), expected)
+        sql = ('SELECT p.segment, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS revenue '
+               'FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id = o.order_id '
+               'JOIN commerce.products AS p ON p.product_id = oi.product_id '
+               'WHERE o.order_date >= $1 AND o.order_date < $2 GROUP BY 1 LIMIT 200')
+        parameters = resolve_rolling_days_parameters(sql, ('1900-01-01', '1900-02-01'),
+                                                     'last 30 days', today=date(2026, 11, 16))
+        self.assertEqual(parameters, expected)
+        validate_rolling_days_range(sql, parameters, 'last 30 days', today=date(2026, 11, 16))
+        with self.assertRaisesRegex(SQLValidationError, 'Rolling date filters'):
+            validate_rolling_days_range(sql, ('2026-10-01', '2026-11-01'),
+                                        'last 30 days', today=date(2026, 11, 16))
+
+    def test_sql_prompt_resolves_confirmed_rolling_period_instead_of_asking_again(self):
+        prompt = build_sql_prompt('Compare product revenue by segment', relative_time_question='last 30 days')
+        expected = rolling_days_range('last 30 days')
+        self.assertIn(expected[0].isoformat(), prompt)
+        self.assertIn(expected[1].isoformat(), prompt)
+        self.assertIn('do not ask the user to restate this range', prompt)
 
     def test_current_month_single_total_rejects_daily_grouping_only(self):
         daily = (

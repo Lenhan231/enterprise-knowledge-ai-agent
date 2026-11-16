@@ -36,8 +36,10 @@ from core.analytics.text_to_sql import (
     validate_commerce_sql,
     validate_sql_security,
     validate_current_year_month_range,
+    validate_rolling_days_range,
     validate_latest_month_query,
     resolve_current_year_month_parameters,
+    resolve_rolling_days_parameters,
     validate_current_month_total_query,
     relevant_schema_tables,
 )
@@ -578,6 +580,8 @@ class SQLAnalyticsAgent(BaseAgent):
                         allow_unverified=True)
                     resolved_parameters = resolve_current_year_month_parameters(
                         plan.sql or '', plan.parameters, original_question, date_columns=date_columns)
+                    resolved_parameters = resolve_rolling_days_parameters(
+                        plan.sql or '', resolved_parameters, original_question, date_columns=date_columns)
                     if resolved_parameters != plan.parameters:
                         plan = QueryPlan(sql=plan.sql, parameters=resolved_parameters,
                                          explanation=plan.explanation, clarification=plan.clarification,
@@ -585,6 +589,8 @@ class SQLAnalyticsAgent(BaseAgent):
                                          request_contract_warning=plan.request_contract_warning)
                     validate_current_year_month_range(plan.sql or '', plan.parameters, original_question,
                                                       date_columns=date_columns)
+                    validate_rolling_days_range(plan.sql or '', plan.parameters, original_question,
+                                                date_columns=date_columns)
                     if plan.sql:
                         validate_current_month_total_query(plan.sql, original_question,
                                                            date_columns=date_columns)

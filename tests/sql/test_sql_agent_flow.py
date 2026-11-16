@@ -352,7 +352,7 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result['metadata']['metric_validation']['status'], 'unverified')
         repository.execute_approved_query.assert_awaited_once_with(sql)
 
-    async def test_auto_never_downgrades_a_canonical_metric_formula_failure(self):
+    async def test_auto_never_downgrades_a_direct_canonical_metric_formula_failure(self):
         wrong = "SELECT AVG(s.revenue) AS revenue FROM commerce.sales AS s LIMIT 1"
         question = 'Total revenue'
         provider = FakeProvider([json.dumps({'sql': wrong}), json.dumps({'sql': wrong})])
@@ -371,6 +371,50 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result['query_status'], 'rejected', result)
         self.assertNotIn('metric_validation', result['metadata'])
         repository.execute_approved_query.assert_not_awaited()
+
+    async def test_comparison_cte_with_canonical_component_runs_unverified(self):
+        sql = """WITH product_revenue AS (
+  SELECT p.product_id AS product_id, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS total_revenue
+  FROM commerce.orders AS o
+  JOIN commerce.order_items AS oi ON oi.order_id = o.order_id
+  JOIN commerce.products AS p ON p.product_id = oi.product_id
+  WHERE o.order_status = 'delivered' AND o.order_date >= $1 AND o.order_date < $2
+  GROUP BY 1
+), product_ratings AS (
+  SELECT p.product_id AS product_id, AVG(r.rating) AS average_rating, COUNT(r.review_id) AS review_count
+  FROM commerce.reviews AS r JOIN commerce.products AS p ON p.product_id = r.product_id
+  WHERE r.review_date >= $1 AND r.review_date < $2 GROUP BY 1
+), product_groups AS (
+  SELECT pr.product_id, pr.total_revenue, COALESCE(rt.average_rating, 0) AS average_rating,
+         COALESCE(rt.review_count, 0) AS review_count
+  FROM product_revenue AS pr LEFT JOIN product_ratings AS rt ON rt.product_id = pr.product_id
+)
+SELECT CASE WHEN pg.average_rating >= 4 THEN '4 sao trở lên' ELSE 'Dưới 4 sao' END AS rating_group,
+       COUNT(pg.product_id) AS product_count, SUM(pg.total_revenue) AS total_revenue,
+       AVG(pg.total_revenue) AS average_revenue_per_product, SUM(pg.review_count) AS review_count
+FROM product_groups AS pg GROUP BY 1 ORDER BY 1 LIMIT 2"""
+        question = ('Trong năm 2026, so sánh sản phẩm có điểm đánh giá trung bình từ 4 sao trở lên '
+                    'với nhóm dưới 4 sao về doanh thu sau chiết khấu, doanh thu trung bình mỗi sản phẩm '
+                    'và lượt đánh giá.')
+        params = ['2026-01-01', '2027-01-01']
+        provider = FakeProvider([json.dumps({'sql': sql, 'parameters': params})])
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        selected = {'commerce.orders', 'commerce.order_items', 'commerce.products', 'commerce.reviews'}
+
+        with patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': selected, 'required_tables': selected, 'candidate_tables': selected}):
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+                metadata={'_auto_mode': True, '_original_question': question},
+            ))
+
+        self.assertEqual(result['query_status'], 'executed', result)
+        self.assertEqual(result['metadata']['metric_validation']['status'], 'unverified')
+        self.assertEqual(result['metadata']['metric_validation']['code'], 'derived_metric_formula_mismatch')
+        repository.execute_approved_query.assert_awaited_once_with(
+            sql, date(2026, 1, 1), date(2027, 1, 1))
 
     async def test_auto_unverified_custom_metric_cannot_bypass_an_unapproved_join(self):
         sql = (

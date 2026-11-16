@@ -855,7 +855,16 @@ def validate_metric_definitions(sql, metric_names, parameters, table_columns, *,
             if _is_rank_of_metric(expression, formulas, metric_names):
                 continue
             if label in definitions or any(column.sql() in measure_columns for column in expression.find_all(exp.Column)):
-                raise MetricDefinitionError("Aggregate does not match a canonical metric formula")
+                derived_cte = any(
+                    scope is not root and any(
+                        projection.find(exp.AggFunc) for projection in scope.expression.selects
+                    )
+                    for scope in used_scopes.values()
+                )
+                raise MetricDefinitionError(
+                    "Aggregate does not match a canonical metric formula",
+                    code='derived_metric_formula_mismatch' if derived_cte else 'formula_violation',
+                )
             continue
         if label in definitions and label not in matches:
             raise MetricDefinitionError(f"Output label {label} conflicts with its canonical metric formula")

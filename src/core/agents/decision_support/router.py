@@ -11,7 +11,9 @@ from langgraph.graph import END, START, StateGraph
 
 from core.agents.decision_support.conversation_context import ConversationStore
 from core.agents.decision_support.execution import Execution, authorize
-from core.agents.intent_classifier import JEV_ROUTE_THRESHOLD, classify_jev_route, IntentClassifier
+from core.agents.intent_classifier import (
+    JEV_ROUTE_THRESHOLD, classify_jev_route, IntentClassifier, is_product_profit_recommendation,
+)
 from core.agents.decision_support.planning import plan_request
 from core.agents.decision_support.response import assemble_response
 from core.agents.runtime import deadline, remaining
@@ -239,6 +241,7 @@ class AgentRouter:
                 except Exception:
                     route = None
                 if (route and route['route'] in {'knowledge', 'sql'}
+                        and not is_product_profit_recommendation(request.question)
                         and route['confidence'] >= JEV_ROUTE_THRESHOLD and not route['history_required']
                         and not short_followup
                         and state.get('report_headings') is None and not pending_clarification):

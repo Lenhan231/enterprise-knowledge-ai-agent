@@ -2,6 +2,7 @@ import json
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from core.models.agent_plan import AgentPlan
@@ -60,8 +61,9 @@ class RequestPlanningTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_clear_mixed_request_does_not_broadcast_on_provider_failure(self):
         llm = Provider(RuntimeError('offline'), RuntimeError('offline'))
-        with self.assertRaisesRegex(ValueError, 'planning'):
-            await plan_request(AgentRequest(question='Compare revenue and policy documents'), llm)
+        with patch('core.agents.planning.generate_with_local_codex', side_effect=RuntimeError('offline')):
+            with self.assertRaisesRegex(ValueError, 'planning'):
+                await plan_request(AgentRequest(question='Compare revenue and policy documents'), llm)
 
     async def test_single_analytics_request_skips_the_planner_model(self):
         llm = Provider(RuntimeError('offline'))
@@ -71,6 +73,34 @@ class RequestPlanningTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([task.agent for task in result.tasks], ['sql'])
         self.assertEqual(result.tasks[0].question, question)
         self.assertFalse(llm.prompts)
+
+    async def test_product_profit_recommendation_keeps_both_evidence_sources(self):
+        question = 'Doanh nghiệp nên ưu tiên nhập thêm, quảng bá hoặc ngừng bán những sản phẩm nào để cải thiện lợi nhuận?'
+        from core.agents.intent_classifier import IntentClassifier
+        intent = IntentClassifier.fallback(question)
+        self.assertTrue(intent.needs_knowledge)
+        self.assertTrue(intent.needs_sql)
+        llm = Provider(plan({'id': 'k', 'agent': 'knowledge', 'question': question}))
+
+        result = await plan_request(AgentRequest(question=question), llm)
+
+        self.assertEqual({task.agent for task in result.tasks}, {'knowledge', 'sql'})
+        self.assertEqual(len(result.tasks), 2)
+        self.assertTrue(all(task.question == question for task in result.tasks))
+
+    async def test_business_decision_followup_keeps_sql_and_policy_tasks(self):
+        question = 'nên ngừng bán sản phẩm nào để cải thiện lợi nhuận?'
+        llm = Provider(plan(
+            {'id': 's', 'agent': 'sql', 'question': 'Rank products by recent net revenue and gross profit'},
+            {'id': 'k', 'agent': 'knowledge', 'question': 'Find policy for replenishment, promotion, and discontinuation'},
+            objective=question,
+        ))
+        history = [{'question': 'current product profitability', 'scope': 'product revenue and gross profit'}]
+
+        result = await plan_request(AgentRequest(question=question), llm, history=history)
+
+        self.assertEqual({task.agent for task in result.tasks}, {'knowledge', 'sql'})
+        self.assertIn('product revenue and gross profit', llm.prompts[0])
 
     async def test_followup_planning_uses_history_for_any_tool(self):
         cases = [

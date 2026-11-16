@@ -197,6 +197,18 @@ def _is_document_count_request(text: str) -> bool:
     return explicit_count or report_count
 
 
+def is_product_profit_recommendation(question: str) -> bool:
+    text = question.casefold()
+    return (
+        any(term in text for term in ("product", "products", "sản phẩm"))
+        and any(term in text for term in (
+            "replenish", "reorder", "promote", "discontinue", "stop selling",
+            "nhập thêm", "bổ sung", "quảng bá", "ngừng bán",
+        ))
+        and any(term in text for term in ("profit", "profitable", "margin", "lợi nhuận", "sinh lời"))
+    )
+
+
 class IntentClassifier:
     def __init__(self, llm: GroqProvider | None = None):
         self.llm = llm or GroqProvider()
@@ -244,7 +256,8 @@ class IntentClassifier:
             and bool(commerce_metrics)
             and len(years) >= 2
         )
-        analytics = is_invoice_question(text) or metadata_counts or structured_lookup or bool(commerce_metrics) or any(
+        product_profit_recommendation = is_product_profit_recommendation(question)
+        analytics = product_profit_recommendation or is_invoice_question(text) or metadata_counts or structured_lookup or bool(commerce_metrics) or any(
             term in text for term in ("trend", "compare", "growth", "tăng trưởng", "so sánh", "thống kê")
         )
         dashboard = any(term in text for term in (
@@ -259,7 +272,7 @@ class IntentClassifier:
                 "viết báo cáo", "lập báo cáo", "tạo báo cáo",
             ))
         )
-        requires_knowledge = why_metric_changed or any(term in text for term in (
+        requires_knowledge = product_profit_recommendation or why_metric_changed or any(term in text for term in (
             "policy", "procedure", "document", "chính sách", "quy trình", "tài liệu",
         ))
         intent = (

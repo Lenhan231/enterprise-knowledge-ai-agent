@@ -47,6 +47,31 @@ class FakeAgent:
 
 
 class BoundedExecutionTest(unittest.IsolatedAsyncioTestCase):
+    async def test_decision_support_runs_sql_and_knowledge_for_product_profit_recommendation(self):
+        question = 'Doanh nghiệp nên ưu tiên nhập thêm, quảng bá hoặc ngừng bán những sản phẩm nào để cải thiện lợi nhuận?'
+
+        class SynthesisProvider:
+            async def generate(self, prompt):
+                return json.dumps({
+                    'answer': 'Policy requires a review before replenishment [S1]. SQL evidence identifies products to compare [S2].',
+                    'used_tasks': ['knowledge', 'sql'],
+                })
+
+        knowledge = FakeAgent(source_result('knowledge', content='Replenishment requires review.'))
+        sql = FakeAgent(source_result('analytics', rows=[{'product_id': 1, 'gross_profit': 20}]))
+        router = AgentRouter(None, knowledge, sql, llm=SynthesisProvider())
+
+        result = await router.run_mode(
+            AgentRequest(question=question, identity=IDENTITY), 'decision_support')
+
+        self.assertEqual(result.metadata['selected_route'], 'decision_support')
+        self.assertEqual(result.metadata['status'], 'complete')
+        self.assertEqual(len(knowledge.requests), 1)
+        self.assertEqual(len(sql.requests), 1)
+        self.assertEqual(knowledge.requests[0].question, question)
+        self.assertEqual(sql.requests[0].question, question)
+        self.assertEqual([item.citation_id for item in result.evidence], ['S1', 'S2'])
+
     async def test_task_trace_preserves_sql_validation_detail(self):
         sql = FakeAgent(AgentResult(
             answer='Could not validate the query.', agent='analytics',

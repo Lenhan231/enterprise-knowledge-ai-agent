@@ -322,7 +322,7 @@ async def assemble_response(request, plan, execution, provider):
     specialist = {}
     claim_checked = False
     if len(plan.tasks) == 1 and len(active) == 1 and active[0].task.agent == 'knowledge' and active[0].result:
-        specialist = {key: active[0].result.metadata[key] for key in ('claim_verification', 'insufficient_context', 'search')
+        specialist = {key: active[0].result.metadata[key] for key in ('claim_verification', 'insufficient_context', 'search', 'nearest_documents')
                       if key in active[0].result.metadata}
         claim_checked = (specialist.get('claim_verification') or {}).get('status') == 'supported'
     if (len(usable) == 1 and len(plan.tasks) == 1 and status == 'complete'

@@ -43,6 +43,8 @@ class VerificationOutcome(BaseModel):
     reason: str
     claim_count: int = 0
     arithmetic_checked: int = 0
+    # The auditor itself failed (LLM error, timeout, malformed review): nothing judged the draft wrong.
+    audit_failed: bool = False
 
 
 def claim_blocks(answer):
@@ -170,7 +172,8 @@ def verify_answer(llm, question: str, answer: str, contexts: list[dict]) -> Veri
                     raise
         return outcome.model_copy(update={"arithmetic_checked": checked})
     except (APIError, ValueError, RuntimeError, TimeoutError) as error:
-        return VerificationOutcome(status="unavailable", reason=type(error).__name__, arithmetic_checked=checked)
+        return VerificationOutcome(status="unavailable", reason=type(error).__name__, arithmetic_checked=checked,
+                                   audit_failed=True)
     finally:
         if token is not None:
             deadline.reset(token)

@@ -75,7 +75,11 @@ docker compose up -d --build
 if [ -n "$legacy_backup" ] && [ -s "$legacy_backup" ]; then
   say "Copying legacy dashboards to shared storage (local backup retained)"
   docker cp "$legacy_backup" "$(docker compose ps -q backend-api):/tmp/dashboard-migration.sqlite3"
-  docker compose exec -T backend-api python scripts/agents/migrate_dashboard_storage.py /tmp/dashboard-migration.sqlite3
+  docker compose exec -T backend-api python -c '
+import json, sys
+from core.dashboards.postgres_store import PostgresDashboardStore
+print(json.dumps(PostgresDashboardStore().import_sqlite(sys.argv[1])))
+' /tmp/dashboard-migration.sqlite3
 fi
 
 docker compose exec -T backend-api python -c '

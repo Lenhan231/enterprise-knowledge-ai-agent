@@ -93,7 +93,7 @@ class RAGResult(BaseModel):
     insufficient_context: bool = False
     prompt_sha256: str | None = None
     verification: VerificationOutcome | None = None
-    withheld_draft: str | None = None  # the generated answer that was not shown; for diagnosis only, never returned to users
+    withheld_draft: str | None = None  # the generated answer that was not shown; returned only to agents:diagnostics
 
 
 def _format_contexts(contexts: list[dict]) -> str:

@@ -1361,7 +1361,9 @@ function answerOutcome(data, citations) {
   if (data.citation_validation_failed || (check && check.status !== "supported")) {
     const reason = (vi && VERIFICATION_REASONS_VI[check?.reason])
       || (vi ? "chưa đối chiếu được với nguồn" : VERIFICATION_REASONS[check?.reason] || "the answer could not be matched to its sources");
-    return { title: text.withheldTitle, gap: true, badge: pill("is-withheld", text.withheld(reason)), next: rephrase };
+    // Only admins receive withheld_draft; it is shown collapsed and marked as not checked.
+    const draft = data.withheld_draft ? `<details class="answer-diagnostic"><summary>Admin: withheld draft (not shown to users)</summary><p>${escapeHtml(data.withheld_draft)}</p></details>` : "";
+    return { title: text.withheldTitle, gap: true, badge: pill("is-withheld", text.withheld(reason)) + draft, next: rephrase };
   }
   if (data.insufficient_context) {
     return { title: text.gapTitle, gap: true, badge: pill("is-gap", text.gap), next: rephrase };

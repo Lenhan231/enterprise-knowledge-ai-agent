@@ -283,12 +283,12 @@ class KnowledgeVerificationIntegrationTest(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(rag.llm.generate.call_count, 2 if flag == "1" else 1)
             self.assertEqual("claim_verification" in result.metadata, flag == "1")
 
-    async def _run_with_audit(self, draft, *responses):
+    async def _run_with_audit(self, draft, *responses, permissions=frozenset({"documents:read"})):
         rag = RAGService.__new__(RAGService)
         rag.retrieve_contexts = Mock(return_value=[SOURCE])
         rag.llm = Mock()
         rag.llm.generate.side_effect = [draft, *responses]
-        identity = VerifiedIdentity(subject="test", permissions={"documents:read"}, document_roles={"employee"})
+        identity = VerifiedIdentity(subject="test", permissions=permissions, document_roles={"employee"})
         with patch.dict(os.environ, {"KNOWLEDGE_MULTIQUERY_ENABLED": "0", "KNOWLEDGE_CLAIM_VERIFICATION_ENABLED": "1"}):
             return await KnowledgeAgent(rag).run(AgentRequest(question="Profit?", identity=identity))
 
@@ -303,6 +303,16 @@ class KnowledgeVerificationIntegrationTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.evidence, [])
         self.assertEqual(result.metadata["nearest_documents"], [{"document": "report.pdf", "section": "Results"}])
         self.assertNotIn(draft, result.model_dump_json())
+
+    async def test_only_diagnostics_permission_receives_the_withheld_draft(self):
+        draft = "Profit in 2024 was VND 100 billion [S1]."
+        rejected = json.dumps(review(verdict="contradicted", evidence=None))
+        admin = await self._run_with_audit(draft, rejected, permissions=frozenset({"documents:read", "agents:diagnostics"}))
+        self.assertEqual(admin.answer, VERIFICATION_UNAVAILABLE_ANSWER)
+        self.assertEqual(admin.metadata["withheld_draft"], draft)
+        self.assertEqual(admin.evidence, [])
+        employee = await self._run_with_audit(draft, rejected)
+        self.assertNotIn("withheld_draft", employee.metadata)
 
     async def test_failed_audit_shows_the_draft_with_its_sources_marked_unverified(self):
         for responses in (("invalid JSON", "invalid JSON"), (RuntimeError("provider overloaded"),)):

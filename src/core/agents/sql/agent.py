@@ -585,7 +585,7 @@ class SQLAnalyticsAgent(BaseAgent):
                                                            date_columns=date_columns)
                         validate_latest_month_query(plan.sql, question)
                     if plan.clarification and attempt == 0 and approved_join_path(required_tables, approved_joins) and re.search(
-                            r'join|relationship', plan.clarification, re.I):
+                            r'join|relationship|relation|quan hệ|liên kết|khóa nối|kết nối', plan.clarification, re.I):
                         raise SQLValidationError('An approved bridge path exists in the supplied schema. '
                             'Use that path with independent aggregates or correlated EXISTS as appropriate; '
                             'do not introduce direct fact joins or ask the user to approve an existing relationship.')

@@ -172,6 +172,43 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn('Requested metrics: {"metrics": []}', provider.prompts[0])
         repository.execute_approved_query.assert_awaited_once_with(sql)
 
+    async def test_vietnamese_bridge_clarification_retries_through_orders(self):
+        question = (
+            "Trong năm 2026, theo khu vực và kênh thu hút khách hàng, tính số đơn giao thành công "
+            "và thời gian giao hàng trung bình; chỉ tính đơn đã giao và có ngày giao hợp lệ."
+        )
+        sql = (
+            "SELECT g.region, c.acquisition_channel, COUNT(DISTINCT o.order_id) AS delivered_orders, "
+            "AVG(s.delivery_date - s.ship_date) AS average_delivery_days "
+            "FROM commerce.shipments AS s "
+            "JOIN commerce.orders AS o ON s.order_id = o.order_id "
+            "JOIN commerce.customers AS c ON o.customer_id = c.customer_id "
+            "JOIN commerce.geography AS g ON o.zip = g.zip "
+            "WHERE o.order_status = 'delivered' AND s.ship_date IS NOT NULL "
+            "AND s.delivery_date IS NOT NULL AND o.order_date >= $1 AND o.order_date < $2 "
+            "GROUP BY 1, 2 ORDER BY 1, 4 LIMIT 200"
+        )
+        provider = FakeProvider([
+            json.dumps({'clarification': 'Schema không có khóa nối trực tiếp giữa customers và shipments.'}),
+            json.dumps({'sql': sql, 'parameters': ['2026-01-01', '2027-01-01'],
+                        'explanation': 'Delivery ranking by region and acquisition channel.'}),
+        ])
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        selected = {'commerce.customers', 'commerce.orders', 'commerce.shipments', 'commerce.geography'}
+
+        with patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': selected, 'required_tables': selected, 'candidate_tables': selected}):
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertEqual(result['query_status'], 'executed', result)
+        self.assertEqual(len(provider.prompts), 2)
+        repository.execute_approved_query.assert_awaited_once_with(
+            sql, date(2026, 1, 1), date(2027, 1, 1))
+
     async def test_product_best_seller_uses_selected_transaction_schema(self):
         provider = FakeProvider([json.dumps({'clarification': 'Please clarify the requested metric.'})])
         repository = FakeRepository()

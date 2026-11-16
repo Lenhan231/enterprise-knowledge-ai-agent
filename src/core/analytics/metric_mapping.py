@@ -308,9 +308,22 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
         if not any(definition.get('source_columns') == METRIC_ONTOLOGY[selected].get('source_columns')
                    for selected in mapping.metrics):
             _error('The interpretation omitted or substituted requested metric '+name+'.','interpretation_mismatch')
-    if mapping.time is None:
+    try:
+        expected_time = inventory_time_scope(question)
+    except ValueError as error:
+        raise MetricDefinitionError('Specify a valid historical period.', code='invalid_date_scope', clarification=True) from error
+    if mapping.time is None and not expected_time:
         _error('The inventory records are historical. Which snapshot should I use?','snapshot_required')
     temporal = mapping.time
+    if expected_time:
+        # The user question is authoritative for dates; do not let an LLM-selected
+        # snapshot or a redundant snapshot_date filter change a relative period.
+        mode, start, end = expected_time
+        temporal = MetricTime(mode=mode, start=start, end=end)
+        mapping.time = temporal
+        if mode == 'snapshot':
+            mapping.filters = [item for item in mapping.filters if not (
+                item.field == 'snapshot_date' and item.operator == 'eq' and str(item.value) == start)]
     comparison = inventory_comparison_dates(question)
     if comparison and temporal.mode == 'range' and (temporal.start, temporal.end) == comparison:
         temporal.mode = 'comparison'
@@ -338,10 +351,6 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
     except ValueError as error:
         raise MetricDefinitionError('Specify valid historical ISO snapshot dates or an ordered inclusive range.',
                                     code='invalid_date_scope',clarification=True) from error
-    try:
-        expected_time = inventory_time_scope(question)
-    except ValueError as error:
-        raise MetricDefinitionError('Specify a valid historical period.', code='invalid_date_scope', clarification=True) from error
     if expected_time and (('range' if temporal.mode == 'comparison' else temporal.mode), temporal.start, temporal.end) != expected_time:
         _error('The interpretation changed the requested historical period.', 'invalid_date_scope')
     if not expected_time and re.search(r'last month|last year|tháng trước|năm ngoái', _normalize(question)):

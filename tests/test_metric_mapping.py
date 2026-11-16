@@ -2,6 +2,7 @@ import copy
 import json
 import sys
 import unittest
+from datetime import date, timedelta
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock, patch
 
@@ -122,6 +123,28 @@ class MetricMappingTest(unittest.TestCase):
 
 
 class MappingAgentTest(unittest.IsolatedAsyncioTestCase):
+    def test_relative_last_month_is_resolved_to_previous_month_snapshot(self):
+        from core.analytics.metric_mapping import compile_inventory_query
+        from core.analytics.metric_validation import inventory_time_scope
+        question = 'sản phẩm bán chạy nhất tháng trước'
+        today = date.today()
+        last_month_end = (date(today.year, today.month, 1) - timedelta(days=1)).isoformat()
+        self.assertEqual(inventory_time_scope(question, today=today), ('snapshot', last_month_end, None))
+        payload = {
+            'domain': 'inventory', 'metrics': ['inventory_units_sold'],
+            'dimensions': ['product_id', 'product_name'], 'representation': 'product',
+            'time': {'mode': 'latest'},
+            'filters': [{'field': 'snapshot_date', 'operator': 'eq', 'value': last_month_end}],
+            'ranking': {'metric': 'inventory_units_sold', 'direction': 'desc', 'limit': None},
+        }
+        mapping = decode_metric_mapping(json.dumps(payload), question)
+        self.assertEqual(mapping.time.model_dump(), {
+            'mode': 'snapshot', 'start': last_month_end, 'end': None})
+        self.assertEqual(mapping.filters, [])
+        sql, parameters = compile_inventory_query(mapping)
+        self.assertIn('snapshot_date = $1', sql)
+        self.assertEqual(parameters, (date.fromisoformat(last_month_end),))
+
     async def test_permission_is_checked_before_mapping(self):
         from core.sql_agent.agent import SQLAnalyticsAgent,AnalyticsPermissionDenied
         from core.models.agents import AgentRequest

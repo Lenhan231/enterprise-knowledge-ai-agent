@@ -142,6 +142,7 @@ class QueryPlan:
     explanation: str = ""
     clarification: str | None = None
     request_contract: dict | None = None
+    request_contract_warning: str | None = None
 
 
 def _source_name(table: exp.Table) -> str:
@@ -585,9 +586,17 @@ def decode_query_plan(raw: str, schema_columns=None, *, allowed_sources=None, ap
         validate_commerce_sql(sql, allowed_sources=allowed_sources, schema_columns=schema_columns,
             approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns)
     contract = payload.get('request_contract')
+    contract_warning = None
     if contract is not None:
-        validate_request_contract(sql, contract, parameters)
-    return QueryPlan(sql=sql, parameters=tuple(parameters), explanation=explanation.strip(), request_contract=contract)
+        try:
+            validate_request_contract(sql, contract, parameters)
+        except SQLValidationError as error:
+            # Output metadata is advisory. A mismatch must not block an otherwise
+            # safe, schema-valid read query; surface the mismatch after execution.
+            contract_warning = str(error)
+            contract = None
+    return QueryPlan(sql=sql, parameters=tuple(parameters), explanation=explanation.strip(),
+                     request_contract=contract, request_contract_warning=contract_warning)
 
 
 def _date_parameter_indexes(sql: str, date_columns=None) -> set[int]:

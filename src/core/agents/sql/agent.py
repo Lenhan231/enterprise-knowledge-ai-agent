@@ -29,6 +29,7 @@ from core.analytics.text_to_sql import (
     SQLValidationError,
     SQLSecurityError,
     SQLSchemaMismatchError,
+    SQLJoinValidationError,
     build_sql_prompt,
     decode_query_plan,
     parse_json_response,
@@ -447,8 +448,9 @@ class SQLAnalyticsAgent(BaseAgent):
             }
             cross_domain = (
                 'commerce.inventory' in metric_sources
-                and any(source not in {'commerce.inventory', 'commerce.products'}
-                        for source in metric_sources)
+                and (any(source not in {'commerce.inventory', 'commerce.products'}
+                         for source in metric_sources)
+                     or bool(required_tables - {'commerce.inventory', 'commerce.products'}))
                 and 'commerce.inventory' in table_columns
             )
             if (direct is None and not cross_domain and (context is not None
@@ -649,8 +651,10 @@ class SQLAnalyticsAgent(BaseAgent):
                             [(question, plan, definitions)], question, date_columns)
                 break
             except (SQLValidationError, MetricDefinitionError) as error:
-                if (isinstance(error, SQLValidationError) and not isinstance(error, SQLSecurityError)
-                        and plan is not None and plan.sql):
+                if (isinstance(error, (SQLSchemaMismatchError, SQLJoinValidationError))
+                        and plan is not None and plan.sql
+                        and (attempt == 1 or direct is not None
+                             or (interpretation and interpretation.domain == 'inventory'))):
                     definitions = {}
                     unverified_sql = True
                     unverified_metric = {
@@ -672,6 +676,7 @@ class SQLAnalyticsAgent(BaseAgent):
                     }
                     break
                 if (isinstance(error, MetricDefinitionError) and error.code == 'derived_metric_formula_mismatch'
+                        and attempt == 1
                         and not self.inventory_only and direct is None and promotion_plan is None
                         and promotion_metric is None and not explicit_order_item_formula
                         and interpretation is None and not dashboard_build
@@ -688,6 +693,7 @@ class SQLAnalyticsAgent(BaseAgent):
                     }
                     break
                 if (isinstance(error, MetricDefinitionError) and not error.clarification
+                        and attempt == 1
                         and not self.inventory_only and direct is None and promotion_plan is None
                         and promotion_metric is None and not explicit_order_item_formula
                         and interpretation is None and not dashboard_build

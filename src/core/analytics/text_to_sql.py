@@ -20,6 +20,7 @@ from core.analytics.sql_validation import (
     MAX_RESULT_ROWS,
     QueryPlan,
     SQLSchemaMismatchError,
+    SQLJoinValidationError,
     SQLSecurityError,
     SQLValidationError,
     ValidatedSQL,

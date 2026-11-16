@@ -45,8 +45,48 @@ else
   git log --oneline "$before..$target" | head -30
 fi
 
+# Snapshot SQLite while the old container is still running; its writable layer will be replaced.
+legacy_backup=
+legacy_container=$(docker compose ps -aq backend-api)
+if [ -n "$legacy_container" ]; then
+  if [ "$(docker inspect --format '{{.State.Running}}' "$legacy_container")" != true ]; then
+    echo "Start the existing backend before deploying so its saved dashboards can be backed up." >&2
+    exit 6
+  fi
+  umask 077
+  mkdir -p artifacts/local/dashboard-backups
+  legacy_backup="artifacts/local/dashboard-backups/$(date -u +%Y%m%dT%H%M%SZ).sqlite3"
+  docker compose exec -T backend-api python -c '
+import os, pathlib, sqlite3, sys, tempfile
+from contextlib import closing
+source = pathlib.Path(os.getenv("DASHBOARD_STORAGE_DIR", "artifacts/local/dashboards")) / "dashboards.sqlite3"
+if source.is_file():
+    with tempfile.TemporaryDirectory() as directory:
+        target = pathlib.Path(directory) / "dashboards.sqlite3"
+        with closing(sqlite3.connect("file:" + str(source) + "?mode=ro", uri=True)) as reader, closing(sqlite3.connect(target)) as writer:
+            reader.backup(writer)
+        sys.stdout.buffer.write(target.read_bytes())
+' > "$legacy_backup"
+fi
+
 say "Building and restarting changed services"
 docker compose up -d --build
+
+if [ -n "$legacy_backup" ] && [ -s "$legacy_backup" ]; then
+  say "Copying legacy dashboards to shared storage (local backup retained)"
+  docker cp "$legacy_backup" "$(docker compose ps -q backend-api):/tmp/dashboard-migration.sqlite3"
+  docker compose exec -T backend-api python scripts/agents/migrate_dashboard_storage.py /tmp/dashboard-migration.sqlite3
+fi
+
+docker compose exec -T backend-api python -c '
+from uuid import uuid4
+from core.dashboards.store import create_dashboard_store
+from core.dashboards.postgres_store import PostgresDashboardStore
+store = create_dashboard_store()
+assert isinstance(store, PostgresDashboardStore), "Production dashboards require shared PostgreSQL storage"
+store.list("deployment-check-" + uuid4().hex)
+print("Shared dashboard storage is ready")
+'
 
 say "Waiting for $HEALTH_URL (up to ${HEALTH_WAIT_SECONDS}s)"
 deadline=$((SECONDS + HEALTH_WAIT_SECONDS))

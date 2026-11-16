@@ -33,4 +33,5 @@ ponytail.md
 /.pytest_cache
 /artifacts/local/chunking-preview/
 /artifacts/local/
+/supabase/.temp/
 

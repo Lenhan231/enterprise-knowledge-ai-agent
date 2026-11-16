@@ -9,7 +9,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'src'))
-from core.analytics.metric_mapping import build_metric_mapping_prompt, decode_sql_turn
+from core.analytics.metric_mapping import build_metric_mapping_prompt, compile_inventory_query, decode_sql_turn
 from core.analytics.metric_validation import MetricDefinitionError
 from core.agents.execution import Execution, TaskOutcome
 from core.agents.response import (_failure_answer, _month_over_month_sql_finding, _null_sql_findings,
@@ -41,6 +41,35 @@ class FailureMessageTest(unittest.TestCase):
 
 
 class SQLPatchTest(unittest.TestCase):
+    def test_clear_segment_priority_followup_survives_malformed_model_interpretation(self):
+        accepted = {
+            'metrics': ['sell_through_rate', 'stockout_days'],
+            'dimensions': ['segment'],
+            'time': {'mode': 'snapshot', 'start': '2026-11-13'},
+        }
+        mapping, used = decode_sql_turn(
+            'not valid SQLTurn JSON',
+            'biết rồi nhưng nên đẩy mạnh segment nào nhỉ',
+            {'accepted': accepted, 'pending': None},
+        )
+
+        self.assertTrue(used)
+        self.assertEqual(mapping.metrics, accepted['metrics'])
+        self.assertEqual(mapping.dimensions, ['segment'])
+        self.assertEqual(mapping.time.start, '2026-11-13')
+        self.assertEqual(mapping.ranking.metric, 'sell_through_rate')
+        self.assertEqual(mapping.ranking.direction, 'desc')
+        sql, parameters = compile_inventory_query(mapping)
+        self.assertIn('ORDER BY AVG(commerce.inventory.sell_through_rate) DESC', sql)
+        self.assertIn('2026-11-13', [str(value) for value in parameters])
+        for context in (
+            {'accepted': {**accepted, 'metrics': ['stockout_days']}, 'pending': None},
+            {'accepted': accepted, 'pending': {'question': 'Which snapshot?', 'clarification': 'Choose a snapshot.'}},
+        ):
+            with self.subTest(context=context), self.assertRaises(MetricDefinitionError):
+                decode_sql_turn('not valid SQLTurn JSON',
+                                'biết rồi nhưng nên đẩy mạnh segment nào nhỉ', context)
+
     def test_segment_priority_followup_ranks_existing_sell_through_signal(self):
         accepted = {
             'metrics': ['sell_through_rate', 'stockout_days'],

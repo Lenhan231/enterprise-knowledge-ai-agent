@@ -36,13 +36,17 @@ def inventory_explicit_dates(question):
     return sorted(set(dates))
 
 
-def inventory_time_scope(question):
+def inventory_time_scope(question, today=None):
     """Resolve explicit historical periods; ranges retain separate snapshot observations."""
     question = _inventory_question(question)
     dates = inventory_explicit_dates(question)
     if dates:
         return ('snapshot', dates[0].isoformat(), None) if len(dates) == 1 else (
             'range', dates[0].isoformat(), dates[-1].isoformat())
+    if (not re.search(r'compar|versus|\bvs\b|so sánh|đối chiếu', question)
+            and re.search(r'\b(?:last|previous) month\b|tháng trước', question)):
+        today = today or date.today()
+        return ('snapshot', (date(today.year, today.month, 1) - timedelta(days=1)).isoformat(), None)
     month = re.search(r'\b('+'|'.join(calendar.month_name[1:]).lower()+r')\s+((?:19|20)\d{2})\b', question)
     numeric = re.search(r'tháng\s+(\d{1,2})\s+(?:năm\s+)?((?:19|20)\d{2})\b', question)
     quarter = re.search(r'(?:\bq|quarter\s*|quý\s*)([1-4])\s+(?:of\s+|năm\s+)?((?:19|20)\d{2})\b', question)
@@ -202,7 +206,8 @@ def validate_metric_request(question, metric_names):
                 scope = None
             if scope is None:
                 raise MetricDefinitionError('Specify an exact historical snapshot date or ISO date range for that period.', code='snapshot_required', clarification=True)
-    if inventory and not re.search(r'\b(?:19|20)\d{2}\b|latest|histor|trend|snapshot_date|mới nhất|gần nhất|lịch sử|xu hướng', question, re.I):
+    if inventory and not inventory_time_scope(question) and not re.search(
+            r'\b(?:19|20)\d{2}\b|latest|histor|trend|snapshot_date|mới nhất|gần nhất|lịch sử|xu hướng', question, re.I):
         raise MetricDefinitionError('The available inventory records are historical. Which snapshot should I use?',
                                     code='snapshot_required', clarification=True)
 

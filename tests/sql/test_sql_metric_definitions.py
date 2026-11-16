@@ -148,6 +148,28 @@ class MetricEnforcementTest(unittest.TestCase):
             "SELECT AVG(sh.delivery_date - sh.ship_date) AS delivery_time, COUNT(sh.order_id) AS shipments "
             "FROM commerce.shipments AS sh LIMIT 1", {"delivery_time"})
 
+    def test_rank_can_order_by_a_verified_metric_from_a_cte(self):
+        sql = (
+            "WITH channel_metrics AS ("
+            "SELECT geo.region AS region, cust.acquisition_channel AS acquisition_channel, "
+            "COUNT(DISTINCT ship.order_id) AS successful_delivered_orders, "
+            "AVG(ship.delivery_date - ship.ship_date) AS avg_delivery_time_days "
+            "FROM commerce.shipments AS ship "
+            "JOIN commerce.orders AS ord ON ord.order_id = ship.order_id "
+            "JOIN commerce.customers AS cust ON cust.customer_id = ord.customer_id "
+            "JOIN commerce.geography AS geo ON geo.zip = ord.zip "
+            "WHERE ord.order_status = $1 AND ship.delivery_date IS NOT NULL "
+            "AND ship.ship_date >= $2 AND ship.ship_date < $3 GROUP BY 1, 2), "
+            "ranked_channels AS (SELECT cm.region, cm.acquisition_channel, "
+            "cm.successful_delivered_orders, cm.avg_delivery_time_days, "
+            "RANK() OVER (PARTITION BY cm.region ORDER BY cm.avg_delivery_time_days) AS rank_in_region "
+            "FROM channel_metrics AS cm) "
+            "SELECT rc.region, rc.acquisition_channel, rc.successful_delivered_orders, "
+            "rc.avg_delivery_time_days, rc.rank_in_region FROM ranked_channels AS rc "
+            "ORDER BY 1, 5 LIMIT 200"
+        )
+        self.validate(sql, {"delivery_time"}, ("delivered", "2026-01-01", "2027-01-01"))
+
     def test_canonical_examples_for_every_existing_metric_pass_both_validators(self):
         sales = " FROM commerce.sales AS s LIMIT 1"
         inventory = " FROM commerce.inventory AS i WHERE i.snapshot_date = $1 LIMIT 1"

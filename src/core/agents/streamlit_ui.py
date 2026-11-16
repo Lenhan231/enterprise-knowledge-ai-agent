@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import uuid
 from collections.abc import Mapping
 from urllib.error import HTTPError, URLError
@@ -196,8 +197,14 @@ def submit_report(question: str, filename: str | None = None, content: bytes | N
         raise RuntimeError("Could not connect to the FastAPI backend.") from None
 
 
-def display_result(st: Any, result: Mapping[str, Any], *, key_prefix: str | None = None) -> None:
+def display_result(st: Any, result: Mapping[str, Any], *, key_prefix: str | None = None,
+                   question: str = "") -> None:
     metadata = result.get("metadata") or {}
+    vietnamese = bool(re.search(r'[ăâđêôơưáàảãạấầẩẫậắằẳẵặéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]',
+                                question.casefold()))
+    limitations = metadata.get("limitations") or []
+    metric_warning = next((item for item in limitations
+                           if 'metric' in item.casefold() or 'định nghĩa metric' in item.casefold()), None)
     if metadata.get('context_used'):
         scope = metadata.get('semantic_interpretation') or {}
         temporal = scope.get('time') or {}
@@ -206,28 +213,55 @@ def display_result(st: Any, result: Mapping[str, Any], *, key_prefix: str | None
         if filters:
             st.caption('Filters: '+', '.join(f"{f['field']} {f['operator']} {f['value']}" for f in filters))
     if metadata.get("status"):
-        st.caption("Status: " + metadata["status"].replace("_", " ") +
-                   (" · evidence fallback" if metadata.get("fallback") else ""))
-    st.markdown(result.get("answer", "No answer returned."))
+        status = metadata["status"]
+        if vietnamese:
+            status = {'complete': 'Hoàn tất', 'partial': 'Hoàn tất một phần',
+                      'failed': 'Thất bại', 'clarification_required': 'Cần làm rõ'}.get(
+                          status, status.replace('_', ' ').capitalize())
+            status = 'Trạng thái: ' + status
+            if metadata.get('fallback'):
+                status += ' · câu trả lời dự phòng'
+        else:
+            status = 'Status: ' + status.replace('_', ' ')
+            if metadata.get('fallback'):
+                status += ' · evidence fallback'
+        st.caption(status)
+    if metric_warning:
+        st.warning(metric_warning)
+    answer = result.get("answer", "No answer returned.")
+    if metric_warning and str(answer).casefold().startswith('evidence fallback'):
+        answer = ('Truy vấn đã chạy; bảng bên dưới hiển thị dữ liệu theo các trường và phép tính mà truy vấn trả về.'
+                  if vietnamese else
+                  'The query ran; the table below shows the fields and values returned by that query.')
+    st.markdown(answer)
     dashboard = (result.get("data") or {}).get("dashboard")
     if isinstance(dashboard, Mapping) and dashboard.get("outline_id") == "inventory_control":
         _display_inventory_dashboard(st, dashboard, key_prefix=key_prefix)
     else:
-        _display_data(st, result.get("data") or {}, key_prefix=key_prefix)
+        _display_data(st, result.get("data") or {}, key_prefix=key_prefix, vietnamese=vietnamese)
     evidence = result.get("evidence") or []
     if evidence:
-        with st.expander("Sources"):
+        with st.expander("Nguồn" if vietnamese else "Sources"):
             for item in evidence:
                 st.markdown(f"**{item.get('citation_id', '')} · {item.get('source', '')}**")
                 if item.get("content"):
                     st.caption(item["content"])
-    limitations = result.get("metadata", {}).get("limitations") or []
     for limitation in limitations:
-        st.caption(f"Limitation: {limitation}")
+        if limitation != metric_warning:
+            st.caption(("Lưu ý: " if vietnamese else "Limitation: ") + limitation)
     if metadata.get("task_trace"):
-        with st.expander("Execution details"):
-            st.dataframe(metadata["task_trace"], use_container_width=True, hide_index=True,
+        with st.expander("Chi tiết xử lý" if vietnamese else "Execution details"):
+            trace = metadata["task_trace"]
+            st.dataframe([{key: value for key, value in item.items() if key != "error_detail"}
+                          for item in trace], use_container_width=True, hide_index=True,
                          **({'key':key_prefix+':trace'} if key_prefix else {}))
+            for item in trace:
+                detail = item.get("error_detail")
+                if detail:
+                    label = f"Lý do lỗi · {item.get('id', item.get('agent', 'task'))}" if vietnamese else \
+                            f"Error detail · {item.get('id', item.get('agent', 'task'))}"
+                    st.markdown(f"**{label}**")
+                    st.code(detail)
 
 
 def _display_inventory_dashboard(st: Any, dashboard: Mapping[str, Any], *, key_prefix: str | None = None) -> None:
@@ -266,27 +300,43 @@ def _display_inventory_dashboard(st: Any, dashboard: Mapping[str, Any], *, key_p
         st.caption("No flagged inventory exceptions in this snapshot.")
 
 
-def _display_data(st: Any, value: Any, label: str = "Results", *, key_prefix: str | None = None) -> None:
+def _display_data(st: Any, value: Any, label: str = "Results", *, key_prefix: str | None = None,
+                  vietnamese: bool = False) -> None:
     if isinstance(value, Mapping):
         sql = value.get("sql") or value.get("attempted_sql")
         if isinstance(sql, str):
             status = value.get("query_status", "executed")
             parameters = json.dumps(value.get("parameters", []), ensure_ascii=False)
             export = f"-- Query status: {status}\n-- Parameters (JSON): {parameters}\n{sql}\n"
-            with st.expander(f"SQL query · {status}"):
+            display_status = ({'executed': 'đã chạy', 'rejected': 'bị từ chối'}.get(status, status)
+                              if vietnamese else status)
+            with st.expander(f"{'Truy vấn SQL' if vietnamese else 'SQL query'} · {display_status}"):
                 st.code(sql, language="sql")
                 if value.get("parameters"):
-                    st.caption("Parameters: " + parameters)
-                st.download_button("Download SQL", export, file_name="query.sql", mime="text/plain",
+                    st.caption(("Tham số: " if vietnamese else "Parameters: ") + parameters)
+                st.download_button("Tải SQL" if vietnamese else "Download SQL", export,
+                                   file_name="query.sql", mime="text/plain",
                                    **({'key':key_prefix+':sql'} if key_prefix else {}))
         rows = value.get("rows")
         if isinstance(rows, list) and rows and all(isinstance(row, Mapping) for row in rows):
-            st.subheader(label)
-            st.dataframe(rows, use_container_width=True, hide_index=True,
+            display_label = ("Kết quả truy vấn" if vietnamese and label.casefold() == 'sql'
+                             else "Query results" if label.casefold() == 'sql' else label)
+            st.subheader(display_label)
+            headers_vi = {
+                'product_name': 'Tên sản phẩm', 'product_id': 'Mã sản phẩm',
+                'category': 'Danh mục', 'revenue': 'Doanh thu', 'quantity': 'Số lượng',
+                'total_quantity': 'Tổng số lượng', 'total_quantity_sold': 'Tổng lượng theo truy vấn',
+                'year': 'Năm', 'date': 'Ngày',
+            }
+            display_rows = ([{headers_vi.get(str(key).casefold(), str(key).replace('_', ' ').capitalize()): item
+                              for key, item in row.items()} for row in rows]
+                            if vietnamese else rows)
+            st.dataframe(display_rows, use_container_width=True, hide_index=True,
                          **({'key':key_prefix+':rows'} if key_prefix else {}))
         for key, nested in value.items():
             if key != "rows" and isinstance(nested, Mapping):
-                _display_data(st, nested, key.title(), key_prefix=key_prefix+':'+key if key_prefix else None)
+                _display_data(st, nested, key.title(), key_prefix=key_prefix+':'+key if key_prefix else None,
+                              vietnamese=vietnamese)
 
 
 def reset_conversation(state, *, sign_out=False):
@@ -460,7 +510,7 @@ def main() -> None:
             if 'error' in turn:
                 st.error(turn['error'])
             else:
-                display_result(st,turn['result'],key_prefix=turn['id'])
+                display_result(st,turn['result'],key_prefix=turn['id'],question=turn['question'])
     question = st.chat_input('Ask a question',max_chars=2000,key='chat_input:'+st.session_state['conversation_id'])
     if question and question.strip():
         conversation_id = st.session_state['conversation_id']

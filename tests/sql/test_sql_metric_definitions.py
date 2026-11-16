@@ -234,6 +234,10 @@ class MetricAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn('schema_confirmation_required', blocked['metadata'])
         self.assertNotIn('clarification_required', blocked['metadata'])
 
+    def test_validation_failure_keeps_reason_for_execution_trace(self):
+        blocked = SQLAnalyticsAgent._generation_error(SQLValidationError('JOIN does not match an approved relationship.'))
+        self.assertEqual(blocked['metadata']['error_detail'], 'JOIN does not match an approved relationship.')
+
     async def test_repeated_live_schema_mismatch_asks_before_any_query_runs(self):
         sql = 'SELECT SUM(s.net_sales) AS revenue FROM commerce.sales AS s LIMIT 1'
         llm = self.provider(*(json.dumps({'sql': sql}) for _ in range(2)))

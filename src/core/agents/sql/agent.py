@@ -437,9 +437,17 @@ class SQLAnalyticsAgent(BaseAgent):
                         result['metadata'].update(status='unsupported',latest_available_snapshot=str(latest) if latest else None,
                             availability_source='MAX(commerce.inventory.snapshot_date)')
                         return result
-            cross_domain = ('commerce.inventory' in required_tables
-                            and bool(required_tables & {'commerce.orders', 'commerce.order_items'})
-                            and bool(re.search(r'\borders\b|\bordered\b|\border(?!\s+by)\b|đơn hàng', question, re.I)))
+            metric_sources = {
+                source
+                for name in metric_names
+                for source in re.findall(r'commerce\.\w+', get_metric_definition(name).get('source', ''))
+            }
+            cross_domain = (
+                'commerce.inventory' in metric_sources
+                and any(source not in {'commerce.inventory', 'commerce.products'}
+                        for source in metric_sources)
+                and 'commerce.inventory' in table_columns
+            )
             if (direct is None and not cross_domain and (context is not None
                     or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
                     or (not metric_names and 'commerce.inventory' in required_tables))):
@@ -480,7 +488,7 @@ class SQLAnalyticsAgent(BaseAgent):
                 resolved_latest = True
             metric_evidence = {}
             metric_lookup = {}
-            if (not metric_names and direct is None and promotion_plan is None
+            if ((not metric_names or cross_domain) and direct is None and promotion_plan is None
                     and not explicit_order_item_formula and self.metric_retriever is not None):
                 with measure('metric_retrieval'):
                     try:
@@ -635,6 +643,17 @@ class SQLAnalyticsAgent(BaseAgent):
                             [(question, plan, definitions)], question, date_columns)
                 break
             except (SQLValidationError, MetricDefinitionError) as error:
+                if (isinstance(error, MetricDefinitionError) and error.code == 'cross_domain_unverified'
+                        and cross_domain and not self.inventory_only and interpretation is None and not dashboard_build):
+                    definitions = getattr(error, 'verified_definitions', {})
+                    unverified_metric = {
+                        'status': 'unverified', 'code': error.code,
+                        'reason': ('Canonical source metrics were validated independently. The derived cross-domain '
+                                   'count, month-over-month change and association have no approved contract; '
+                                   'describe co-movement without claiming causation.'),
+                        'knowledge_lookup': metric_lookup.get('rag_fallback', 'not_configured'),
+                    }
+                    break
                 if (isinstance(error, MetricDefinitionError) and error.code == 'derived_metric_formula_mismatch'
                         and not self.inventory_only and direct is None and promotion_plan is None
                         and promotion_metric is None and not explicit_order_item_formula

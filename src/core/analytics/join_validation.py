@@ -30,6 +30,7 @@ def grouped_key(scope, primary_keys=PRIMARY_KEYS):
     projections = scope.expression.selects
     names = set()
     origins = {}
+    buckets = {}
     for value in scope.expression.args['group'].expressions:
         if isinstance(value, exp.Literal) and value.is_int:
             index = int(value.this) - 1
@@ -45,6 +46,14 @@ def grouped_key(scope, primary_keys=PRIMARY_KEYS):
         expression = projection.unalias()
         if isinstance(expression, exp.Column):
             origins[name] = column_origin(scope, expression)
+        bucket_expression = expression
+        while isinstance(bucket_expression, (exp.Cast, exp.Paren)):
+            bucket_expression = bucket_expression.this
+        if isinstance(bucket_expression, exp.TimestampTrunc) and isinstance(bucket_expression.this, exp.Column):
+            origin = column_origin(scope, bucket_expression.this)
+            unit = bucket_expression.args.get('unit')
+            if origin and unit:
+                buckets[name] = (unit.this.casefold(), origin)
     joined_dimensions = {}
     for join in scope.expression.args.get('joins', ()):
         for equality in join.args.get('on', exp.And()).find_all(exp.EQ):
@@ -72,6 +81,13 @@ def grouped_key(scope, primary_keys=PRIMARY_KEYS):
         dependent.update(other for other, other_origin in origins.items()
                          if other != name and other_origin and other_origin[0] in determined_tables)
     names -= dependent
+    # The reviewed Commerce inventory contract describes monthly observations:
+    # within this source, a month bucket determines its exact snapshot date.
+    monthly_inventory = any(unit == 'month' and origin == ('commerce.inventory', 'snapshot_date')
+                            for unit, origin in buckets.values())
+    if monthly_inventory:
+        names -= {name for name, origin in origins.items()
+                  if origin == ('commerce.inventory', 'snapshot_date')}
     return names or None
 
 
@@ -210,9 +226,22 @@ def approved_derived_join(scope, equalities, approved_joins, primary_keys=PRIMAR
         for alias, name, *_ in (left_key, right_key):
             keys.setdefault(alias, set()).add(name)
         if (left_key[2] and left_key[2] == right_key[2]
-                and left_key[5] and left_key[5] == right_key[5]
                 and not left_key[3] and not right_key[3]):
-            continue
+            same_date_lineage = left_key[5] and left_key[5] == right_key[5]
+            aligned_calendar_buckets = (
+                left_key[2] in {'day', 'week', 'month', 'quarter', 'year'}
+                and left_key[5] and right_key[5]
+                and left_key[5][0].startswith('commerce.')
+                and right_key[5][0].startswith('commerce.')
+                and left_key[5][1] in {'date', 'snapshot_date', 'order_date', 'return_date',
+                                      'ship_date', 'delivery_date', 'review_date', 'invoice_date',
+                                      'signup_date', 'start_date', 'end_date'}
+                and right_key[5][1] in {'date', 'snapshot_date', 'order_date', 'return_date',
+                                       'ship_date', 'delivery_date', 'review_date', 'invoice_date',
+                                       'signup_date', 'start_date', 'end_date'}
+            )
+            if same_date_lineage or aligned_calendar_buckets:
+                continue
         if left_key[3] or right_key[3]:
             if (not left_key[3] or not right_key[3]) and left_key[2] == right_key[2] == 'month' \
                     and {left_key[3], right_key[3]} in ({None, 'month'}, {None, 'year'}) \

@@ -162,6 +162,20 @@ def build_sql_prompt(
             'missing measures NULL. For stockout_flag presence, preserve snapshot_date and product identity and use EXISTS. '
             'Do not treat missing inventory observations as zero or infer inventory units_sold equals ordered quantities.'
         )
+    if 'commerce.inventory' in tables and {'commerce.orders', 'commerce.order_items'} <= tables:
+        prompt_rules.append(
+            '\nCross-domain monthly analysis: aggregate each fact independently at the requested common keys before joining. '
+            'For inventory, preserve exact snapshot_date groups; when reporting by month, include snapshot_date, derive its month, '
+            'and sum stockout_days only within that snapshot/category. A count of out-of-stock products is '
+            'COUNT(DISTINCT inventory.product_id) FILTER (WHERE inventory.stockout_flag IS TRUE), not all observed products. '
+            'For product revenue use the supplied canonical formula and required filters in its own order_items/orders/products CTE. '
+            'Join the aggregates on the complete month and category keys; never join raw inventory rows to order-item rows. '
+            'For requested month-over-month percentage change, use 100 * (current_revenue - previous_revenue) / '
+            'NULLIF(previous_revenue, 0), with the previous month derived per category and a NULL result when the denominator is absent or zero. '
+            'Rank top N independently within each requested month when the wording says each month. '
+            'If the derived percentage or cross-domain association has no approved metric contract, return the requested safe SQL '
+            'and let the system label the result unverified; describe co-movement only and never claim causation.'
+        )
     if re.search(r'\bduplicat\w*|trùng lặp', question, re.I):
         prompt_rules.append(
             '\nFor duplicate-row questions, excess rows are SUM(group_count-1), COALESCE to zero; '

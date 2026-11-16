@@ -78,7 +78,7 @@ async def generate_with_local_codex(prompt, provider_error):
     )
     try:
         stdout, stderr = await asyncio.wait_for(
-            process.communicate(prompt.encode('utf-8')), timeout=remaining(60)
+            process.communicate(prompt.encode('utf-8')), timeout=remaining(90)
         )
     except asyncio.TimeoutError as error:
         process.kill()

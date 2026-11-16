@@ -80,6 +80,26 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(result.metadata['ok'])
         self.assertTrue(result.metadata['insufficient_context'])
 
+    async def test_metric_definition_retrieval_is_role_scoped_and_never_approves_rag_text(self):
+        rag = Mock()
+        rag.retrieve_contexts.return_value = [{'content': 'Candidate metric guidance'}]
+        agent = KnowledgeAgent(rag)
+        result = await agent.retrieve_metric_definition(
+            AgentRequest(question='Revenue and stockout association', identity=IDENTITY),
+            'Revenue and stockout association',
+        )
+        self.assertEqual(result, [{'content': 'Candidate metric guidance'}])
+        args, kwargs = rag.retrieve_contexts.call_args
+        self.assertIn('formula, grain, source tables', args[0])
+        self.assertEqual(kwargs['roles'], ['admin'])
+        self.assertEqual(kwargs['limit'], 5)
+
+        unauthorized = AgentRequest(question='Revenue metric', identity=VerifiedIdentity(
+            subject='analyst', permissions={'analytics:read'}))
+        with self.assertRaises(PermissionError):
+            await agent.retrieve_metric_definition(unauthorized, 'Revenue metric')
+        self.assertEqual(rag.retrieve_contexts.call_count, 1)
+
     async def test_policy_to_sql_dependency_preserves_cited_threshold(self):
         tasks = [task('k', 'knowledge', 'Policy stockout threshold'),
                  task('s', 'sql', 'Count rows exceeding the cited threshold', depends_on=['k'],

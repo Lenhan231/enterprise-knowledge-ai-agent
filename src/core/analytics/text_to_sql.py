@@ -32,9 +32,12 @@ from core.analytics.sql_validation import (
     parse_json_response,
     relevant_schema_tables,
     resolve_current_year_month_parameters,
+    resolve_rolling_days_parameters,
+    rolling_days_range,
     validate_commerce_sql,
     validate_current_month_total_query,
     validate_current_year_month_range,
+    validate_rolling_days_range,
     validate_latest_month_query,
     validate_sql_schema,
     validate_sql_security,
@@ -144,6 +147,15 @@ def build_sql_prompt(
                 '\nFor one-month revenue questions, return the total for the full month in one row. '
                 'Do not group by individual dates unless the user asks for daily detail or a daily trend.'
             )
+    rolling_days = rolling_days_range(relative_time_question or question)
+    if rolling_days:
+        start, end = rolling_days
+        prompt_rules.append(
+            f'\nRelative date resolution: the current date is {date.today().isoformat()}; '
+            f'"last { (end - start).days } days" means the half-open date range '
+            f'{start.isoformat()} inclusive through {end.isoformat()} exclusive. '
+            'Bind these dates to the source date column; do not ask the user to restate this range.'
+        )
     if 'commerce.orders' in tables:
         prompt_rules.append(
             '\nApply every filter declared by a selected canonical metric definition automatically, even if the user did not repeat it; '

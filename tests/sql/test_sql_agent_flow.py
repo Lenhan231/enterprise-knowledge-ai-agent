@@ -446,13 +446,18 @@ FROM product_groups AS pg GROUP BY 1 ORDER BY 1 LIMIT 2"""
             sql, date(2026, 1, 1), date(2027, 1, 1))
 
     async def test_auto_unapproved_join_executes_as_unverified_after_security_passes(self):
+        class RepositoryWithUnverified(FakeRepository):
+            async def execute_unverified_query(self, sql, *parameters):
+                self.unverified_call = (sql, parameters)
+                return [{'average_shipping_fee': 12}]
+
         sql = (
             "SELECT AVG(s.shipping_fee) AS average_shipping_fee FROM commerce.shipments AS s "
             "JOIN commerce.customers AS c ON s.order_id = c.customer_id LIMIT 1"
         )
         question = 'What is the average shipping fee by customer?'
         provider = FakeProvider([json.dumps({'sql': sql}), json.dumps({'sql': sql})])
-        repository = FakeRepository()
+        repository = RepositoryWithUnverified()
         agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
         selected = {'commerce.shipments', 'commerce.customers'}
 
@@ -467,7 +472,8 @@ FROM product_groups AS pg GROUP BY 1 ORDER BY 1 LIMIT 2"""
         self.assertEqual(result['query_status'], 'executed', result)
         self.assertEqual(result['metadata']['metric_validation']['status'], 'unverified')
         self.assertEqual(result['metadata']['metric_validation']['code'], 'sql_validation_failed')
-        repository.execute_approved_query.assert_awaited_once()
+        self.assertEqual(repository.unverified_call, (sql, ()))
+        repository.execute_approved_query.assert_not_awaited()
 
     async def test_auto_schema_mismatch_executes_as_unverified_after_security_passes(self):
         sql = "SELECT s.missing_column AS value FROM commerce.shipments AS s LIMIT 1"

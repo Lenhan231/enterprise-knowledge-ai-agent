@@ -688,6 +688,42 @@ class RepositoryBoundaryTest(unittest.IsolatedAsyncioTestCase):
             self.assertGreater(options['timeout'], 0)
             self.assertLessEqual(options['timeout'], 2)
 
+    async def test_unverified_repository_path_skips_semantics_but_keeps_security(self):
+        class Connection:
+            def transaction(self, *, readonly=False):
+                class Transaction:
+                    async def __aenter__(self):
+                        return self
+                    async def __aexit__(self, *_args):
+                        return False
+                self.readonly = readonly
+                return Transaction()
+            async def execute(self, _sql, **_options):
+                pass
+            async def fetch(self, sql, *parameters, **_options):
+                self.query = sql
+                return [{'average_shipping_fee': 12}]
+
+        class Acquire:
+            async def __aenter__(self):
+                return connection
+            async def __aexit__(self, *_args):
+                return False
+
+        class Pool:
+            def acquire(self, **_options):
+                return Acquire()
+
+        connection = Connection()
+        repository = CommerceRepository(Pool())
+        sql = ('SELECT AVG(s.shipping_fee) AS average_shipping_fee FROM commerce.shipments AS s '
+               'JOIN commerce.customers AS c ON s.order_id = c.customer_id LIMIT 1')
+        self.assertEqual(await repository.execute_unverified_query(sql), [{'average_shipping_fee': 12}])
+        self.assertIn('JOIN commerce.customers', connection.query)
+        self.assertTrue(connection.readonly)
+        with self.assertRaises(SQLValidationError):
+            await repository.execute_unverified_query('DELETE FROM commerce.shipments')
+
 
 if __name__ == "__main__":
     unittest.main()

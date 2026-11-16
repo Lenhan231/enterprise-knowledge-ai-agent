@@ -13,7 +13,7 @@ from core.agents.conversation_context import ConversationStore
 from core.dashboards.agent import DashboardDocumentAgent
 from core.dashboards.models import BuildRequest, DashboardEdit, DashboardDocument, RefreshRequest, PendingDashboard, ClarificationTurn
 from core.dashboards.render import CSP, render_dashboard
-from core.dashboards.presentation import presentation_clarification, presentation_choice
+from core.dashboards.presentation import presentation_clarification, presentation_choice, presentation_only, set_representation, reconcile
 from core.dashboards.store import DashboardStore, Conflict
 
 router = APIRouter(prefix='/api/dashboards', tags=['dashboards'])
@@ -94,21 +94,30 @@ def pause_draft(draft, conversation_id, history):
     return clarification_reply(draft, conversation_id, can_reply=can_reply)
 
 
-async def run_draft(request, user, store, draft, conversation_id, history):
+async def run_draft(request, user, store, draft, conversation_id, history, *, max_chars):
     original = owned(store, user, draft.target_id) if draft.target_id else None
     if original:
         revision(original, draft.revision)
+    doc = None
     if draft.presentation_tile_id and draft.clarifications:
         reply = draft.clarifications[-1].reply
         kind = presentation_choice(reply)
         if kind:
             draft.presentation_choices[draft.presentation_tile_id] = kind
-    if draft.operation in {'create', 'rebuild'}:
+            cached = draft.presentation_document
+            tile = next((t for t in cached.tiles if t.id == draft.presentation_tile_id), None) if cached else None
+            if tile and presentation_only(reply, tile):
+                result = next(r for r in cached.results if r.id == tile.query_id)
+                set_representation(tile, kind, result)
+                cached.clarifications = draft.clarifications
+                doc = reconcile(cached)
+    draft.presentation_document = None
+    if doc is None and draft.operation in {'create', 'rebuild'}:
         doc = await build(request, user, description=draft.description, scope=draft.scope,
                           clarifications=draft.clarifications, presentation_choices=draft.presentation_choices)
         if original:
             doc.id, doc.created_at = original.id, original.created_at
-    else:
+    elif doc is None:
         doc = original.model_copy(deep=True)
         if draft.edit:
             doc = DashboardDocument.model_validate(doc.model_dump() | draft.edit.model_dump(exclude={'revision'}, exclude_unset=True))
@@ -126,6 +135,12 @@ async def run_draft(request, user, store, draft, conversation_id, history):
     chart_question = presentation_clarification(doc)
     if chart_question:
         draft.presentation_tile_id, draft.question = chart_question
+        draft.presentation_document = doc
+        if len(draft.model_dump_json()) > max_chars:
+            # shortcut: oversized interactive results require an explicit new request; use private draft storage if needed.
+            history.clear()
+            return JSONResponse({'status': 'failed', 'message': 'The result is too large to keep for interactive chart changes. Start a new dashboard and request a table directly.',
+                'description': draft.description, 'scope': draft.scope, 'conversation_id': None, 'can_reply': False}, headers={'Cache-Control': 'no-store'})
         return pause_draft(draft, conversation_id, history)
     failure = next((result for result in doc.results if result.status == 'failed'), None)
     if failure and not any(result.status in {'complete', 'empty'} for result in doc.results):
@@ -147,7 +162,7 @@ async def start_draft(request, user, store, conversations, draft, *, question=No
         if question is not None:
             draft.question = question
             return pause_draft(draft, identifier, history)
-        return await run_draft(request, user, store, draft, identifier, history)
+        return await run_draft(request, user, store, draft, identifier, history, max_chars=conversations.max_chars)
 
 
 @router.get('')
@@ -169,7 +184,7 @@ async def create_dashboard(body: BuildRequest, request: Request, user=Depends(pr
         if 'scope' in body.model_fields_set and body.scope != draft.scope:
             raise HTTPException(422, 'Keep the original scope while clarifying, or start a new dashboard request.')
         draft.clarifications.append(ClarificationTurn(question=draft.question, reply=body.description))
-        return await run_draft(request, user, store, draft, body.conversation_id, history)
+        return await run_draft(request, user, store, draft, body.conversation_id, history, max_chars=conversations.max_chars)
 
 
 @router.get('/{identifier}')

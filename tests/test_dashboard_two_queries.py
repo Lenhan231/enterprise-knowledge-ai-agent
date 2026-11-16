@@ -59,6 +59,17 @@ class TwoQueryDashboardTest(unittest.IsolatedAsyncioTestCase):
         for call in self.provider.generate.call_args_list[1:]:
             self.assertNotIn('Independent dashboard queries', call.args[0])
 
+    async def test_chart_dimension_repeated_in_grouping_needs_no_repair(self):
+        declared = outputs()
+        declared[1]['group_by'] = [declared[1]['dimension']]
+        self.provider.generate.return_value = json.dumps({'queries': plans(), 'outputs': declared})
+        doc = await self.build()
+        self.assertEqual('complete', doc.status, [r.message for r in doc.results])
+        self.assertEqual(['kpi', 'line'], [tile.kind for tile in doc.tiles])
+        self.assertEqual([], doc.results[1].payload['metadata']['dashboard_outputs'][0]['group_by'])
+        self.provider.generate.assert_called_once()
+        self.assertEqual(2, self.repo.execute_approved_query.await_count)
+
     async def test_database_failure_keeps_other_result_and_provenance(self):
         self.repo.execute_approved_query.side_effect = [RuntimeError('private database detail'), [{'month': '2026-01-01', 'sessions': 5}, {'month': '2026-02-01', 'sessions': 6}]]
         doc = await self.build()
@@ -90,7 +101,7 @@ class TwoQueryDashboardTest(unittest.IsolatedAsyncioTestCase):
                     items[1]['depends_on'] = 'q0'
                 self.provider.generate.return_value = json.dumps({'queries': items, 'outputs': outputs()})
                 doc = await self.build()
-                self.assertEqual('clarification_required', doc.results[0].status)
+                self.assertEqual('failed', doc.results[0].status)
                 self.repo.execute_approved_query.assert_not_awaited()
 
     async def test_bundle_not_enabled_for_ordinary_sql_call(self):
@@ -115,7 +126,7 @@ class TwoQueryDashboardTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_missing_requested_metric_rejects_entire_bundle(self):
         doc = await self.agent.build(self.request, self.description + ' and total revenue from commerce.sales', self.scope)
-        self.assertEqual('clarification_required', doc.results[0].status)
+        self.assertEqual('failed', doc.results[0].status)
         self.repo.execute_approved_query.assert_not_awaited()
 
     async def test_independent_existing_sources_keep_metrics_separate(self):

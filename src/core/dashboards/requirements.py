@@ -7,6 +7,32 @@ from core.analytics.metric_validation import MetricDefinitionError, validate_ind
 from core.analytics.sql_validation import APPROVED_DATE_COLUMNS
 from core.dashboards.models import DashboardOutput
 from core.dashboards.presentation import aggregate_outputs, output_roles
+import re
+
+
+def validate_requested_kinds(outputs, question, clarifications=()):
+    patterns = {
+        'line': r'\bline[ -]*charts?\b|biểu đồ đường',
+        'bar': r'\bbar[ -]*charts?\b|biểu đồ (?:cột|thanh)',
+        'donut': r'\bdonut\b|\bdoughnut\b|biểu đồ tròn',
+        'table': r'\b(?:include|show|display|add|use|with|and|as)\s+(?:an?\s+)?(?:data\s+)?table\b|hiển thị.*\bbảng\b',
+        'kpi': r'\bkpis?\b',
+        'summary': r'statistical summar|summary statistics?|descriptive statistics?|thống kê mô tả|tóm tắt thống kê',
+    }
+    requested = {kind for kind, pattern in patterns.items() if re.search(pattern, question, re.I)}
+    for turn in clarifications:
+        reply = turn['reply']
+        choices = {kind for kind, pattern in patterns.items() if re.search(pattern, reply, re.I)}
+        if choices:
+            if re.search(r'\bonly\b|\binstead\b|chỉ|thay', reply, re.I):
+                requested = choices
+            elif choices & {'line', 'bar', 'donut'}:
+                requested = (requested - {'line', 'bar', 'donut'}) | choices
+    missing = requested - {output.get('kind') for output in outputs if isinstance(output, dict)}
+    if missing:
+        raise MetricDefinitionError('The generated outputs omitted explicitly requested representations: '
+                                    + ', '.join(sorted(missing)) + '. Preserve each requested representation and its measures.',
+                                    code='dashboard_requirements')
 
 
 def require(condition, message):
@@ -48,6 +74,9 @@ def validate_outputs(raw, plans, question, date_columns=None):
         columns = set(projections)
         fields = set(output.measures + output.group_by + ([output.dimension] if output.dimension else []))
         require(fields <= columns, 'A requested output refers to measures or dimensions absent from its query. Please clarify which fields to show.')
+        if output.kind in {'line', 'bar', 'donut'} and output.group_by:
+            require(output.group_by == [output.dimension], 'Chart grouping must match its single returned dimension; additional grouping is unsupported.')
+            output = output.model_copy(update={'group_by': []})
         require(output.kind == 'table' or not output.group_by, 'Statistics within each group are not supported yet. Choose a summary across returned observations, or request grouped aggregates as a table.')
         require(output.kind == 'table' or bool(output.measures), 'Each chart, KPI or summary needs its own requested measures.')
         require(output.kind == 'table' or not set(output.measures) & grouped,
@@ -76,5 +105,9 @@ def validate_outputs(raw, plans, question, date_columns=None):
         if not sources:
             sources = {table.db + '.' + table.name for table in parse_one(plan.sql, read='postgres').find_all(exp.Table) if table.db}
         dated = {source for source in sources if any(table == source for table, _ in dates)}
-        validate_independent_query_period(plan.sql, plan.parameters, question, dated or sources, dates)
+        if definitions and all('count_kind' in value for value in definitions.values()):
+            from core.analytics.counting import validate_count_period
+            validate_count_period(plan, question, dated or sources, dates)
+        else:
+            validate_independent_query_period(plan.sql, plan.parameters, question, dated or sources, dates)
     return query_outputs

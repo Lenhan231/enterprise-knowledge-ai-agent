@@ -90,6 +90,78 @@ class DashboardClarificationApiTest(unittest.TestCase):
         self.assertEqual('2026', doc['scope'])
         self.sql._provider.assert_not_called()
 
+    def test_declared_chart_choices_reuse_the_result_without_measure_drift(self):
+        for measure in ('product_count', 'observed_items'):
+            for reply, kind in [('display it all in a table', 'table'), ('Use a bar chart', 'bar')]:
+                with self.subTest(measure=measure, reply=reply):
+                    self.sql.run_payload.reset_mock()
+                    payload = {'ok': True, 'query_status': 'executed',
+                        'sql': f'SELECT p.category, COUNT(DISTINCT p.product_id) AS {measure} FROM commerce.products p GROUP BY 1 LIMIT 200',
+                        'rows': [{'category': 'A', measure: 2}, {'category': 'B', measure: 3}],
+                        'metadata': {'dashboard_outputs': [{'id': 'output0', 'kind': 'donut', 'query': 0,
+                            'dimension': 'category', 'measures': [measure]}]}}
+                    self.sql.run_payload.return_value = payload
+                    pending = self.client.post('/api/dashboards', json={'description': 'Donut of distinct products by category'}).json()
+                    self.assertEqual('clarification_required', pending['status'])
+                    original = json.loads(json.dumps(payload))
+                    # A second generation would be able to drift; it must never happen.
+                    self.sql.run_payload.return_value = {'ok': False, 'answer': 'Unexpected requery'}
+                    completed = self.client.post('/api/dashboards', json={'description': reply, 'conversation_id': pending['conversation_id']})
+                    self.assertEqual(201, completed.status_code, completed.text)
+                    doc = completed.json()['dashboard']
+                    self.assertEqual('complete', doc['status'])
+                    self.assertEqual(kind, doc['tiles'][0]['kind'])
+                    self.assertEqual(original['sql'], doc['results'][0]['payload']['sql'])
+                    self.assertEqual(original['rows'], doc['results'][0]['payload']['rows'])
+                    if kind == 'bar': self.assertEqual([measure], doc['tiles'][0]['measures'])
+                    self.sql.run_payload.assert_awaited_once()
+
+    def test_explicit_measure_change_requeries_and_honors_choice_with_declared_outputs(self):
+        def payload(measure, expression, source):
+            return {'ok': True, 'query_status': 'executed',
+                'sql': f'SELECT t.category, {expression} AS {measure} FROM {source} t GROUP BY 1 LIMIT 200',
+                'rows': [{'category': 'A', measure: 2}, {'category': 'B', measure: 3}],
+                'metadata': {'dashboard_outputs': [{'id': 'output0', 'kind': 'donut', 'query': 0,
+                    'dimension': 'category', 'measures': [measure]}]}}
+        self.sql.run_payload.side_effect = [payload('product_count', 'COUNT(DISTINCT t.product_id)', 'commerce.products'),
+            payload('stock_on_hand', 'SUM(t.stock_on_hand)', 'commerce.inventory')]
+        pending = self.client.post('/api/dashboards', json={'description': 'Donut of distinct products by category'}).json()
+        completed = self.client.post('/api/dashboards', json={'description': 'stock on hand in a bar chart',
+            'conversation_id': pending['conversation_id']})
+        self.assertEqual(201, completed.status_code, completed.text)
+        tile = completed.json()['dashboard']['tiles'][0]
+        self.assertEqual(('bar', ['stock_on_hand']), (tile['kind'], tile['measures']))
+        self.assertEqual(2, self.sql.run_payload.await_count)
+
+    def test_large_presentation_result_does_not_create_an_unusable_conversation(self):
+        self.sql.run_payload.return_value = {'ok': True, 'query_status': 'executed',
+            'sql': 'SELECT p.category, COUNT(DISTINCT p.product_id) AS n FROM commerce.products p GROUP BY 1 LIMIT 200',
+            'rows': [{'category': str(i) + 'x' * 250, 'n': i + 1} for i in range(200)],
+            'metadata': {'dashboard_outputs': [{'id': 'output0', 'kind': 'donut', 'query': 0, 'dimension': 'category', 'measures': ['n']}]}}
+        response = self.client.post('/api/dashboards', json={'description': 'Donut of products by category'}).json()
+        self.assertEqual('failed', response['status'])
+        self.assertFalse(response['can_reply'])
+        self.assertIsNone(response['conversation_id'])
+        self.assertIn('too large', response['message'])
+        self.assertEqual([], self.store.list('alice'))
+
+    def test_request_for_multiple_outputs_does_not_force_both_into_a_table(self):
+        payload = {'ok': True, 'query_status': 'executed',
+            'sql': 'SELECT p.category, COUNT(DISTINCT p.product_id) AS n FROM commerce.products p GROUP BY 1 LIMIT 200',
+            'rows': [{'category': 'A', 'n': 2}, {'category': 'B', 'n': 3}],
+            'metadata': {'dashboard_outputs': [{'id': 'output0', 'kind': 'donut', 'query': 0, 'dimension': 'category', 'measures': ['n']}]}}
+        self.sql.run_payload.return_value = payload
+        pending = self.client.post('/api/dashboards', json={'description': 'Donut of distinct products by category'}).json()
+        changed = json.loads(json.dumps(payload))
+        changed['metadata']['dashboard_outputs'] = [
+            {'id': 'output0', 'kind': 'bar', 'query': 0, 'dimension': 'category', 'measures': ['n']},
+            {'id': 'output1', 'kind': 'table', 'query': 0, 'dimension': None, 'measures': []}]
+        self.sql.run_payload.return_value = changed
+        response = self.client.post('/api/dashboards', json={'description': 'Use a bar chart and a table', 'conversation_id': pending['conversation_id']})
+        self.assertEqual(201, response.status_code, response.text)
+        self.assertEqual(['bar', 'table'], [t['kind'] for t in response.json()['dashboard']['tiles']])
+        self.assertEqual(2, self.sql.run_payload.await_count)
+
     def test_refresh_chart_mismatch_changes_only_selected_tile_after_reply(self):
         old = document()
         old.description = old.queries[0].question = 'Line chart of revenue by category'
@@ -111,11 +183,14 @@ class DashboardClarificationApiTest(unittest.TestCase):
         self.assertEqual('bar', saved['tiles'][0]['kind'])
         self.assertEqual('Keep my title', saved['tiles'][0]['title'])
         self.assertEqual('complete', saved['status'])
+        self.sql.run_payload.assert_awaited_once()
 
     def test_two_chart_clarifications_keep_each_previous_choice(self):
         payload = {'ok': True, 'query_status': 'executed',
             'sql': 'SELECT category, SUM(revenue) AS revenue FROM commerce.sales GROUP BY 1 LIMIT 200',
-            'rows': [{'category': 'A', 'revenue': 10}, {'category': 'B', 'revenue': 20}]}
+            'rows': [{'category': 'A', 'revenue': 10}, {'category': 'B', 'revenue': 20}],
+            'metadata': {'dashboard_outputs': [{'id': 'output0', 'kind': 'line', 'query': 0,
+                'dimension': 'category', 'measures': ['revenue']}]}}
         self.sql.run_payload.return_value = {'datasets': [
             {'question': 'Line chart of revenue by category', 'payload': payload},
             {'question': 'Line chart of revenue by another category', 'payload': payload}]}
@@ -128,6 +203,23 @@ class DashboardClarificationApiTest(unittest.TestCase):
                                    'conversation_id': pending['conversation_id']})
         self.assertEqual(201, response.status_code, response.text)
         self.assertEqual(['table', 'bar'], [t['kind'] for t in response.json()['dashboard']['tiles']])
+        self.sql.run_payload.assert_awaited_once()
+
+    def test_cached_presentation_results_remain_private_and_expire(self):
+        self.sql.run_payload.return_value = {'ok': True, 'query_status': 'executed',
+            'sql': 'SELECT p.category, COUNT(DISTINCT p.product_id) AS n FROM commerce.products p GROUP BY 1 LIMIT 200',
+            'rows': [{'category': 'A', 'n': 2}, {'category': 'B', 'n': 3}],
+            'metadata': {'dashboard_outputs': [{'id': 'output0', 'kind': 'donut', 'query': 0, 'dimension': 'category', 'measures': ['n']}]}}
+        pending = self.client.post('/api/dashboards', json={'description': 'Donut of distinct products by category'}).json()
+        self.assertNotIn('presentation_document', pending)
+        body = {'description': 'Use a table', 'conversation_id': pending['conversation_id']}
+        self.user = {'sub': 'bob', 'role': 'admin'}
+        self.assertEqual(409, self.client.post('/api/dashboards', json=body).status_code)
+        self.user = {'sub': 'alice', 'role': 'admin'}
+        self.time[0] += 1801
+        self.assertEqual(409, self.client.post('/api/dashboards', json=body).status_code)
+        self.sql.run_payload.assert_awaited_once()
+        self.assertEqual([], self.store.list('alice'))
 
     def test_mixed_chart_request_resumes_after_date_clarification(self):
         description = 'a line chart of traffic session and a bar chart of traffic page views'
@@ -183,13 +275,14 @@ class DashboardClarificationApiTest(unittest.TestCase):
             self.assertEqual(1, provider.generate.call_count)
             reopened = self.client.get('/api/dashboards/' + saved['id']).json()['dashboard']
             self.assertEqual(saved, reopened)
-            provider.generate.return_value = json.dumps(planned['queries'][0])
+            provider.generate.side_effect = lambda prompt, **kwargs: json.dumps(
+                planned['queries'][1] if planned['queries'][1]['question'] in prompt else planned['queries'][0])
             refreshed = self.client.post('/api/dashboards/' + saved['id'] + '/refresh', json={'revision': saved['revision']})
             self.assertEqual(200, refreshed.status_code, refreshed.text)
             self.assertIn('dashboard', refreshed.json(), refreshed.text)
             self.assertEqual(saved['tiles'], refreshed.json()['dashboard']['tiles'])
             self.assertEqual('complete', refreshed.json()['dashboard']['status'])
-            self.assertEqual(2, provider.generate.call_count)  # Annual KPI refresh uses main's deterministic query.
+            self.assertLessEqual(provider.generate.call_count, 3)  # At most one generation per refresh dataset; compilers may avoid it.
 
     def test_bad_requirement_mapping_stays_in_chat_without_executing(self):
         from core.agents.sql.agent import SQLAnalyticsAgent
@@ -203,10 +296,73 @@ class DashboardClarificationApiTest(unittest.TestCase):
             result = self.client.post('/api/dashboards', json={
                 'description': 'Monthly revenue in 2026 with line chart, total revenue KPI and statistical summary'})
         self.assertEqual(200, result.status_code)
-        self.assertEqual('clarification_required', result.json()['status'])
-        self.assertIn('overall aggregate', result.json()['message'])
+        self.assertEqual('failed', result.json()['status'])
+        self.assertIn('after repair', result.json()['message'])
+        self.assertIsNone(result.json()['conversation_id'])
+        self.assertEqual(2, provider.generate.call_count)
         self.assertEqual([], self.store.list('alice'))
         repo.execute_approved_query.assert_not_awaited()
+
+    def test_count_contract_saves_three_kpis_with_one_dataset(self):
+        from core.agents.sql.agent import SQLAnalyticsAgent
+        from test_count_runtime import response as count_response, QUESTION
+        provider = SimpleNamespace(generate=Mock(return_value=json.dumps(count_response())))
+        repo = SimpleNamespace(execute_approved_query=AsyncMock(return_value=[
+            {'snapshot_date': '2026-05-31', 'sku_count': 3, 'out_count': 2, 'over_count': 2}]))
+        real = SQLAnalyticsAgent(repo, llm=provider, inventory_only=False)
+        with patch('app.dashboards._get_runtime', AsyncMock(return_value=SimpleNamespace(analytics_agent=real))):
+            result = self.client.post('/api/dashboards', json={'description': QUESTION})
+        self.assertEqual(201, result.status_code, result.text)
+        dashboard = result.json()['dashboard']
+        self.assertEqual(['kpi'] * 3, [tile['kind'] for tile in dashboard['tiles']])
+        self.assertEqual(1, len(dashboard['queries']))
+        provider.generate.assert_called_once()
+        repo.execute_approved_query.assert_awaited_once()
+
+    def test_generated_flag_grain_failure_does_not_open_clarification(self):
+        from core.agents.sql.agent import SQLAnalyticsAgent
+        from test_count_runtime import QUESTION
+        provider = SimpleNamespace(generate=Mock(return_value=json.dumps({
+            'metrics': ['observed_product_count', 'stockout_indicator', 'overstock_indicator'],
+            'representation': 'aggregate', 'time': {'mode': 'latest'}})))
+        repo = SimpleNamespace(execute_approved_query=AsyncMock())
+        real = SQLAnalyticsAgent(repo, llm=provider, inventory_only=False)
+        with patch('app.dashboards._get_runtime', AsyncMock(return_value=SimpleNamespace(analytics_agent=real))):
+            result = self.client.post('/api/dashboards', json={'description': QUESTION})
+        body = result.json()
+        self.assertEqual('failed', body['status'])
+        self.assertIsNone(body['conversation_id'])
+        self.assertIn('after repair', body['message'])
+        self.assertNotIn('Stored product', body['message'])
+        self.assertEqual([], self.store.list('alice'))
+        repo.execute_approved_query.assert_not_awaited()
+
+    def test_latest_count_clarification_adds_period_without_changing_to_all_snapshots(self):
+        from core.agents.sql.agent import SQLAnalyticsAgent
+        from test_count_runtime import response as count_response, QUESTION
+        planned = count_response()
+        planned['count_query']['time'] = {'mode': 'latest', 'start': '2026-01-01', 'end': '2026-12-31'}
+        provider = SimpleNamespace(generate=Mock(side_effect=[
+            json.dumps({'clarification': 'Which date field should define the latest inventory snapshot?'}), json.dumps(planned)]))
+        repo = SimpleNamespace(execute_approved_query=AsyncMock(return_value=[
+            {'snapshot_date': '2026-11-13', 'sku_count': 97, 'out_count': 4, 'over_count': 6}]))
+        real = SQLAnalyticsAgent(repo, llm=provider, inventory_only=False)
+        with patch('app.dashboards._get_runtime', AsyncMock(return_value=SimpleNamespace(analytics_agent=real))):
+            first = self.client.post('/api/dashboards', json={'description': QUESTION}).json()
+            self.assertEqual('clarification_required', first['status'])
+            repo.execute_approved_query.assert_not_awaited()
+            completed = self.client.post('/api/dashboards', json={
+                'description': 'Jan to Dec 2026', 'conversation_id': first['conversation_id']})
+        self.assertEqual(201, completed.status_code, completed.text)
+        dashboard = completed.json()['dashboard']
+        self.assertEqual(QUESTION, dashboard['description'])
+        self.assertEqual(['kpi'] * 3, [tile['kind'] for tile in dashboard['tiles']])
+        count = dashboard['results'][0]['payload']['metadata']['count_query']
+        self.assertEqual('latest', count['time']['mode'])
+        self.assertEqual('snapshot_date', count['time']['field'])
+        self.assertEqual('2026-01-01', count['time']['start'])
+        self.assertEqual(2, provider.generate.call_count)
+        repo.execute_approved_query.assert_awaited_once()
 
     def test_clarification_stays_transient_then_reply_builds_once_with_original_scope(self):
         response = self.start()

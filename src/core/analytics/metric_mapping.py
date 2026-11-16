@@ -312,13 +312,24 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
         expected_time = inventory_time_scope(question)
     except ValueError as error:
         raise MetricDefinitionError('Specify a valid historical period.', code='invalid_date_scope', clarification=True) from error
+    relative_month = (not re.search(r'compar|versus|\bvs\b|so sánh|đối chiếu', question, re.I)
+                      and re.search(r'\b(?:last|previous) month\b|tháng trước', _normalize(question)))
+    movement_month = relative_month and set(mapping.metrics) == {'inventory_units_sold'}
+    if relative_month and not movement_month:
+        _error('Relative month selection is supported for recorded units sold; specify an exact snapshot for inventory balances.',
+               'snapshot_required')
     if mapping.time is None and not expected_time:
         _error('The inventory records are historical. Which snapshot should I use?','snapshot_required')
     temporal = mapping.time
     if expected_time:
-        # The user question is authoritative for dates; do not let an LLM-selected
-        # snapshot or a redundant snapshot_date filter change a relative period.
         mode, start, end = expected_time
+        actual_time = (('range' if temporal.mode == 'comparison' else temporal.mode), temporal.start, temporal.end) if temporal else None
+        if temporal and temporal.mode == 'snapshot' and temporal.start and temporal.end == temporal.start:
+            actual_time = ('snapshot', temporal.start, None)
+        if actual_time != expected_time and not movement_month:
+            _error('The interpretation changed the requested historical period.', 'invalid_date_scope')
+        # The relative month in the user's question overrides the model's guessed
+        # period for this movement metric, including any duplicate snapshot filter.
         temporal = MetricTime(mode=mode, start=start, end=end)
         mapping.time = temporal
         if mode == 'snapshot':

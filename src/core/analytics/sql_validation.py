@@ -534,7 +534,7 @@ def _normalize_unambiguous_sql(sql, schema_columns=None):
 
 
 def decode_query_plan(raw: str, schema_columns=None, *, allowed_sources=None, approved_joins=None,
-                      primary_keys=None, date_columns=None) -> QueryPlan:
+                      primary_keys=None, date_columns=None, allow_unverified=False) -> QueryPlan:
     try:
         payload = parse_json_response(raw)
     except (TypeError, json.JSONDecodeError) as error:
@@ -556,8 +556,13 @@ def decode_query_plan(raw: str, schema_columns=None, *, allowed_sources=None, ap
     if len(parameters) > 32 or any(not isinstance(value, (str, int, float, bool, type(None))) for value in parameters):
         raise SQLValidationError("Query parameters must be at most 32 scalar JSON values.")
     sql = _normalize_unambiguous_sql(sql, schema_columns)
-    validated = validate_commerce_sql(sql, allowed_sources=allowed_sources, schema_columns=schema_columns,
-        approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns)
+    if allow_unverified:
+        # Keep the hard read-only/source boundary while allowing the agent to
+        # label schema and relationship validation failures as unverified.
+        validate_sql_security(sql, allowed_sources=allowed_sources)
+    else:
+        validate_commerce_sql(sql, allowed_sources=allowed_sources, schema_columns=schema_columns,
+            approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns)
     parameter_indexes = sorted({
         int(node.this.this)
         for node in parse(sql, read="postgres")[0].find_all(exp.Parameter)
@@ -583,8 +588,11 @@ def decode_query_plan(raw: str, schema_columns=None, *, allowed_sources=None, ap
             changed = True
     if changed:
         sql = tree.sql(dialect='postgres')
-        validate_commerce_sql(sql, allowed_sources=allowed_sources, schema_columns=schema_columns,
-            approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns)
+        if allow_unverified:
+            validate_sql_security(sql, allowed_sources=allowed_sources)
+        else:
+            validate_commerce_sql(sql, allowed_sources=allowed_sources, schema_columns=schema_columns,
+                approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns)
     contract = payload.get('request_contract')
     contract_warning = None
     if contract is not None:

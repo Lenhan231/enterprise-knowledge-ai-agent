@@ -298,6 +298,34 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         repository.execute_approved_query.assert_awaited_once_with(
             sql, date(2026, 10, 1), date(2026, 11, 1))
 
+    async def test_metric_dimension_mismatch_executes_as_unverified_after_sql_safety_passes(self):
+        sql = (
+            "SELECT p.product_id, p.product_name, COUNT(DISTINCT o.order_id) AS order_count "
+            "FROM commerce.orders AS o "
+            "JOIN commerce.order_items AS oi ON oi.order_id=o.order_id "
+            "JOIN commerce.products AS p ON p.product_id=oi.product_id "
+            "GROUP BY p.product_id, p.product_name "
+            "ORDER BY order_count DESC, p.product_id LIMIT 1"
+        )
+        question = 'Sản phẩm nào có số đơn hàng cao nhất?'
+        self.assertEqual(resolve_metric_names(question), {'order_count'})
+        provider = FakeProvider([json.dumps({'sql': sql})])
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        selected = {'commerce.orders', 'commerce.order_items', 'commerce.products'}
+        with patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': selected, 'required_tables': selected, 'candidate_tables': selected}):
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertEqual(result['query_status'], 'executed', result)
+        self.assertEqual(result['metadata']['metric_validation']['status'], 'unverified')
+        self.assertEqual(result['metadata']['metric_validation']['code'], 'metric_validation_failed')
+        self.assertIn('output dimension', result['metadata']['metric_validation']['reason'])
+        repository.execute_approved_query.assert_awaited_once_with(sql)
+
     async def test_auto_executes_unverified_metric_after_knowledge_miss(self):
         sql = (
             "SELECT p.product_id, p.product_name, SUM(oi.quantity) AS total_quantity_sold "
@@ -352,7 +380,7 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result['metadata']['metric_validation']['status'], 'unverified')
         repository.execute_approved_query.assert_awaited_once_with(sql)
 
-    async def test_auto_never_downgrades_a_direct_canonical_metric_formula_failure(self):
+    async def test_auto_runs_a_canonical_metric_formula_failure_as_unverified(self):
         wrong = "SELECT AVG(s.revenue) AS revenue FROM commerce.sales AS s LIMIT 1"
         question = 'Total revenue'
         provider = FakeProvider([json.dumps({'sql': wrong}), json.dumps({'sql': wrong})])
@@ -368,9 +396,10 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
                 metadata={'_auto_mode': True, '_original_question': question},
             ))
 
-        self.assertEqual(result['query_status'], 'rejected', result)
-        self.assertNotIn('metric_validation', result['metadata'])
-        repository.execute_approved_query.assert_not_awaited()
+        self.assertEqual(result['query_status'], 'executed', result)
+        self.assertEqual(result['metadata']['metric_validation']['status'], 'unverified')
+        self.assertEqual(result['metadata']['metric_validation']['code'], 'metric_validation_failed')
+        repository.execute_approved_query.assert_awaited_once_with(wrong)
 
     async def test_comparison_cte_with_canonical_component_runs_unverified(self):
         sql = """WITH product_revenue AS (
@@ -416,7 +445,7 @@ FROM product_groups AS pg GROUP BY 1 ORDER BY 1 LIMIT 2"""
         repository.execute_approved_query.assert_awaited_once_with(
             sql, date(2026, 1, 1), date(2027, 1, 1))
 
-    async def test_auto_unverified_custom_metric_cannot_bypass_an_unapproved_join(self):
+    async def test_auto_unapproved_join_executes_as_unverified_after_security_passes(self):
         sql = (
             "SELECT AVG(s.shipping_fee) AS average_shipping_fee FROM commerce.shipments AS s "
             "JOIN commerce.customers AS c ON s.order_id = c.customer_id LIMIT 1"
@@ -435,10 +464,31 @@ FROM product_groups AS pg GROUP BY 1 ORDER BY 1 LIMIT 2"""
                 metadata={'_auto_mode': True, '_original_question': question},
             ))
 
-        self.assertEqual(result['query_status'], 'rejected', result)
-        self.assertEqual(result['metadata']['error_type'], 'SQLValidationError')
-        self.assertNotIn('metric_validation', result['metadata'])
-        repository.execute_approved_query.assert_not_awaited()
+        self.assertEqual(result['query_status'], 'executed', result)
+        self.assertEqual(result['metadata']['metric_validation']['status'], 'unverified')
+        self.assertEqual(result['metadata']['metric_validation']['code'], 'sql_validation_failed')
+        repository.execute_approved_query.assert_awaited_once()
+
+    async def test_auto_schema_mismatch_executes_as_unverified_after_security_passes(self):
+        sql = "SELECT s.missing_column AS value FROM commerce.shipments AS s LIMIT 1"
+        question = 'What is the missing shipment value?'
+        provider = FakeProvider([json.dumps({'sql': sql})])
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        selected = {'commerce.shipments'}
+
+        with patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': selected, 'required_tables': selected, 'candidate_tables': selected}):
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+                metadata={'_auto_mode': True, '_original_question': question},
+            ))
+
+        self.assertEqual(result['query_status'], 'executed', result)
+        self.assertEqual(result['metadata']['metric_validation']['status'], 'unverified')
+        self.assertEqual(result['metadata']['metric_validation']['code'], 'sql_validation_failed')
+        repository.execute_approved_query.assert_awaited_once()
 
     async def test_auto_unverified_custom_metric_cannot_bypass_sql_security(self):
         sql = (

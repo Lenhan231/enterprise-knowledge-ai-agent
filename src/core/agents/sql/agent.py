@@ -9,6 +9,7 @@ import os
 import re
 from collections.abc import Mapping
 from datetime import date
+from types import SimpleNamespace
 from typing import Any
 
 from sqlglot import exp, parse_one
@@ -26,11 +27,13 @@ from core.analytics.text_to_sql import (
     approved_join_path,
     QueryPlan,
     SQLValidationError,
+    SQLSecurityError,
     SQLSchemaMismatchError,
     build_sql_prompt,
     decode_query_plan,
     parse_json_response,
     validate_commerce_sql,
+    validate_sql_security,
     validate_current_year_month_range,
     validate_latest_month_query,
     resolve_current_year_month_parameters,
@@ -510,6 +513,7 @@ class SQLAnalyticsAgent(BaseAgent):
                 }
                 context_info['metric_lookup_status'] = metric_lookup
             unverified_metric = None
+            unverified_sql = False
             prompt = build_sql_prompt(question, metric_names=metric_names,
                 allowed_sources=query_sources, schema_columns=table_columns, approved_joins=approved_joins,
                 primary_keys=primary_keys,
@@ -527,6 +531,7 @@ class SQLAnalyticsAgent(BaseAgent):
             return self._generation_error(error)
         dashboard_outputs = None
         for attempt in range(2):
+            plan = None
             try:
                 if promotion_plan is not None and not dashboard_build:
                     plan = promotion_plan
@@ -567,7 +572,8 @@ class SQLAnalyticsAgent(BaseAgent):
                             return {'ok': all(item['payload'].get('ok') for item in datasets),
                                     'operation': 'text_to_sql', 'datasets': datasets}
                     plan = decode_query_plan(raw, table_columns, allowed_sources=set(table_columns),
-                        approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns)
+                        approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns,
+                        allow_unverified=True)
                     resolved_parameters = resolve_current_year_month_parameters(
                         plan.sql or '', plan.parameters, original_question, date_columns=date_columns)
                     if resolved_parameters != plan.parameters:
@@ -643,6 +649,17 @@ class SQLAnalyticsAgent(BaseAgent):
                             [(question, plan, definitions)], question, date_columns)
                 break
             except (SQLValidationError, MetricDefinitionError) as error:
+                if (isinstance(error, SQLValidationError) and not isinstance(error, SQLSecurityError)
+                        and plan is not None and plan.sql):
+                    definitions = {}
+                    unverified_sql = True
+                    unverified_metric = {
+                        'status': 'unverified', 'code': 'sql_validation_failed',
+                        'reason': ('SQL passed read-only security checks, but schema, relationship, or query-shape '
+                                   'validation did not pass: ' + str(error)),
+                        'knowledge_lookup': metric_lookup.get('rag_fallback', 'not_configured'),
+                    }
+                    break
                 if (isinstance(error, MetricDefinitionError) and error.code == 'cross_domain_unverified'
                         and cross_domain and not self.inventory_only and interpretation is None and not dashboard_build):
                     definitions = getattr(error, 'verified_definitions', {})
@@ -667,6 +684,22 @@ class SQLAnalyticsAgent(BaseAgent):
                         'status': 'unverified', 'code': error.code,
                         'reason': ('The SQL passed safety and schema checks, but its aggregate formula '
                                    'does not match the canonical metric definition.'),
+                        'knowledge_lookup': metric_lookup.get('rag_fallback', 'skipped_recognized_metric'),
+                    }
+                    break
+                if (isinstance(error, MetricDefinitionError) and not error.clarification
+                        and not self.inventory_only and direct is None and promotion_plan is None
+                        and promotion_metric is None and not explicit_order_item_formula
+                        and interpretation is None and not dashboard_build
+                        and not any((annual_revenue_plan, completed_months_plan,
+                                     month_comparison_plan, explicit_month_plan))):
+                    # SQL safety, live schema, approved joins and join-grain checks
+                    # already passed. Keep semantically unverified results available.
+                    definitions = {}
+                    unverified_metric = {
+                        'status': 'unverified', 'code': 'metric_validation_failed',
+                        'reason': ('SQL passed safety and schema checks, but metric validation did not pass: '
+                                   + str(error)),
                         'knowledge_lookup': metric_lookup.get('rag_fallback', 'skipped_recognized_metric'),
                     }
                     break
@@ -702,7 +735,8 @@ class SQLAnalyticsAgent(BaseAgent):
 
         payload = await self._execute_plan(plan, definitions, table_columns, approved_joins,
                                            primary_keys, date_columns, interpretation,
-                                           allowed_sources=set(table_columns))
+                                           allowed_sources=set(table_columns),
+                                           allow_unverified=unverified_sql)
         if plan.request_contract_warning:
             payload.setdefault('metadata', {}).update(
                 request_contract_status='ignored',
@@ -777,12 +811,21 @@ class SQLAnalyticsAgent(BaseAgent):
         return bundle
 
     async def _execute_plan(self, plan, definitions, table_columns, approved_joins,
-                            primary_keys, date_columns, interpretation=None, *, allowed_sources=None):
+                            primary_keys, date_columns, interpretation=None, *, allowed_sources=None,
+                            allow_unverified=False):
         try:
-            validated = validate_commerce_sql(plan.sql or "", allowed_sources=(
-                set(table_columns) if allowed_sources is None else allowed_sources),
-                schema_columns=table_columns, approved_joins=approved_joins,
-                primary_keys=primary_keys, date_columns=date_columns)
+            effective_sources = set(table_columns) if allowed_sources is None else allowed_sources
+            if allow_unverified:
+                tree = validate_sql_security(plan.sql or "", allowed_sources=effective_sources)
+                sources = tuple(dict.fromkeys(
+                    f"{table.db}.{table.name}".casefold()
+                    for table in tree.find_all(exp.Table) if table.db
+                ))
+                validated = SimpleNamespace(sources=sources)
+            else:
+                validated = validate_commerce_sql(plan.sql or "", allowed_sources=effective_sources,
+                    schema_columns=table_columns, approved_joins=approved_joins,
+                    primary_keys=primary_keys, date_columns=date_columns)
         except Exception as error:
             return self._generation_error(error, plan.sql, plan.parameters)
         try:

@@ -283,7 +283,22 @@ def approved_derived_join(scope, equalities, approved_joins, primary_keys=PRIMAR
         for unique_alias, columns in keys.items()
         for detail_alias in keys if detail_alias != unique_alias
     )
-    return base_key_is_complete or many_to_one_detail_join or (bool(keys) and all(
+    single_row_detail_join = (
+        not any(projection.find(exp.AggFunc) for projection in scope.expression.selects)
+        and any(
+            bool(columns)
+            and isinstance(scope.sources.get(alias), Scope)
+            and (limit := scope.sources[alias].expression.args.get('limit')) is not None
+            and isinstance(limit.expression, exp.Literal)
+            and limit.expression.is_int
+            and int(limit.expression.this) <= 1
+            for alias, columns in keys.items()
+        )
+    )
+    # A one-row ranked CTE can safely filter or decorate detail rows by its
+    # approved key. Keep the full grouped-key requirement whenever this SELECT
+    # aggregates the expanded rows, where repeated measures could be inflated.
+    return base_key_is_complete or many_to_one_detail_join or single_row_detail_join or (bool(keys) and all(
         has_complete_key(alias, columns) for alias, columns in keys.items()
     ))
 

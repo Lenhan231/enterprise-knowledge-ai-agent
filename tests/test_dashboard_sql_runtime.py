@@ -12,6 +12,15 @@ from core.models.agents import AgentRequest, VerifiedIdentity
 
 
 class DashboardSQLRuntimeTest(unittest.IsolatedAsyncioTestCase):
+    async def test_invalid_sql_is_reported_before_misleading_output_mapping(self):
+        agent = DashboardSQLAgent(SimpleNamespace(), llm=SimpleNamespace(), inventory_only=False)
+        agent._question, agent._responses, agent._clarifications = 'Product observations and summary', [], []
+        from core.analytics.sql_validation import SQLValidationError
+        with self.assertRaisesRegex(SQLValidationError, 'Exactly one SELECT'):
+            await agent._response(json.dumps({'sql': 'SELECT p.product_id FROM commerce.products p LIMIT 1; SELECT p.category FROM commerce.products p LIMIT 1',
+                'parameters': [], 'outputs': [{'kind': 'table', 'query': 0},
+                                            {'kind': 'summary', 'query': 1, 'measures': ['products']}]}))
+
     async def test_separate_dashboard_builds_reuse_main_provider_and_cooldowns(self):
         from core.dashboards.agent import DashboardDocumentAgent
         provider = SimpleNamespace(generate=Mock(return_value=json.dumps({

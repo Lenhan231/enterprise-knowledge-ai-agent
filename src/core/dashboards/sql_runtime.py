@@ -11,7 +11,7 @@ from core.analytics.counting import COUNT_QUERY_INSTRUCTIONS, compile_count_quer
 from core.analytics.metric_mapping import decode_metric_mapping, compile_inventory_query
 from core.analytics.metric_ontology import METRIC_ONTOLOGY
 from core.analytics.metric_validation import MetricDefinitionError, validate_metric_definitions, inventory_time_scope, inventory_month_selection
-from core.analytics.sql_validation import APPROVED_DATE_COLUMNS, INVENTORY_SOURCES, QueryPlan, SQLValidationError
+from core.analytics.sql_validation import APPROVED_DATE_COLUMNS, INVENTORY_SOURCES, QueryPlan, SQLValidationError, validate_sql_security
 from core.dashboards.requirements import validate_outputs, validate_requested_kinds
 from core.prompts.sql import DASHBOARD_OUTPUT_INSTRUCTIONS
 from core.dashboards.generation import SQLResponse, InventoryResponse, CountResponseFormat, OutputResponse, response_schema, OUTPUT_RULES, normalize_generation
@@ -213,6 +213,9 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
             raise CountResponse(response)
         if not isinstance(response, dict) or 'metrics' not in response:
             if isinstance(response, dict) and ('sql' in response or 'queries' in response):
+                for dataset in response.get('queries', [response]):
+                    if isinstance(dataset, dict) and isinstance(dataset.get('sql'), str):
+                        validate_sql_security(dataset['sql'])
                 try:
                     validate_requested_kinds(response.get('outputs') or [], self._question, self._clarifications)
                 except MetricDefinitionError as error:

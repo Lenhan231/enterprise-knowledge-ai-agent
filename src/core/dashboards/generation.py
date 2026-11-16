@@ -253,6 +253,10 @@ Dashboard response rules (override legacy presentation examples):
 Wrap the complete response in {"result": ...}; result includes operation="sql", "queries",
 "inventory", "count" or "clarification" with its matching fields. Put the plan inside result.
 Return SQL with parameters, explanation and outputs, or queries plus outputs for two datasets. Every query must
+contain exactly one SELECT statement and explicitly selected columns. Never concatenate statements in a sql
+string. A single SQL dataset uses query: 0 for every output, including its descriptive summaries.
+Put period predicates directly on source dates in WHERE; do not create a parameter CTE or join to parameters.
+Every query must
 include all requested date/filter bounds, including an overall KPI query. Multiple charts at
 the same grain share one dataset; use a second independent query only for a different grain.
 Return every requested representation in outputs. An overall KPI requires an aggregate SQL

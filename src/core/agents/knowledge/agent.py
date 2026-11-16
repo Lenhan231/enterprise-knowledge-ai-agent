@@ -102,7 +102,11 @@ class KnowledgeAgent(BaseAgent):
             }
         if result.verification is not None:
             metadata["claim_verification"] = result.verification.model_dump()
-            metadata["ok"] = metadata["ok"] and result.verification.status == "supported"
+            metadata["ok"] = metadata["ok"] and (result.verification.status == "supported"
+                                                 or result.verification.audit_failed)
+        if result.contexts and not evidence:
+            # Not covered or withheld: name the closest documents (already role-scoped) so the user has a next step.
+            metadata["nearest_documents"] = list(dict.fromkeys(c["document_name"] for c in result.contexts))[:3]
 
         return AgentResult(
             answer=result.answer,

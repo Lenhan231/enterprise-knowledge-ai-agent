@@ -283,19 +283,37 @@ class KnowledgeVerificationIntegrationTest(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(rag.llm.generate.call_count, 2 if flag == "1" else 1)
             self.assertEqual("claim_verification" in result.metadata, flag == "1")
 
+    async def _run_with_audit(self, draft, *responses):
+        rag = RAGService.__new__(RAGService)
+        rag.retrieve_contexts = Mock(return_value=[SOURCE])
+        rag.llm = Mock()
+        rag.llm.generate.side_effect = [draft, *responses]
+        identity = VerifiedIdentity(subject="test", permissions={"documents:read"}, document_roles={"employee"})
+        with patch.dict(os.environ, {"KNOWLEDGE_MULTIQUERY_ENABLED": "0", "KNOWLEDGE_CLAIM_VERIFICATION_ENABLED": "1"}):
+            return await KnowledgeAgent(rag).run(AgentRequest(question="Profit?", identity=identity))
+
     async def test_rejected_draft_is_not_returned_or_exposed_as_evidence(self):
         draft = "Profit in 2024 was VND 100 billion [S1]."
-        for response in (json.dumps(review(verdict="contradicted", evidence=None)), "invalid JSON"):
-            rag = RAGService.__new__(RAGService)
-            rag.retrieve_contexts = Mock(return_value=[SOURCE])
-            rag.llm = Mock()
-            rag.llm.generate.side_effect = [draft, response, response]  # a malformed audit is retried once
-            identity = VerifiedIdentity(subject="test", permissions={"documents:read"}, document_roles={"employee"})
-            with patch.dict(os.environ, {"KNOWLEDGE_MULTIQUERY_ENABLED": "0", "KNOWLEDGE_CLAIM_VERIFICATION_ENABLED": "1"}):
-                result = await KnowledgeAgent(rag).run(AgentRequest(question="Profit?", identity=identity))
-            self.assertEqual(result.answer, VERIFICATION_UNAVAILABLE_ANSWER)
-            self.assertFalse(result.metadata["ok"])
-            self.assertFalse(result.metadata["insufficient_context"])
-            self.assertIn(result.metadata["claim_verification"]["status"], {"rejected", "unavailable"})
-            self.assertEqual(result.evidence, [])
-            self.assertNotIn(draft, result.model_dump_json())
+        result = await self._run_with_audit(draft, json.dumps(review(verdict="contradicted", evidence=None)))
+        self.assertEqual(result.answer, VERIFICATION_UNAVAILABLE_ANSWER)
+        self.assertFalse(result.metadata["ok"])
+        self.assertFalse(result.metadata["insufficient_context"])
+        self.assertEqual(result.metadata["claim_verification"]["status"], "rejected")
+        self.assertFalse(result.metadata["claim_verification"]["audit_failed"])
+        self.assertEqual(result.evidence, [])
+        self.assertEqual(result.metadata["nearest_documents"], ["report.pdf"])
+        self.assertNotIn(draft, result.model_dump_json())
+
+    async def test_failed_audit_shows_the_draft_with_its_sources_marked_unverified(self):
+        for responses in (("invalid JSON", "invalid JSON"), (RuntimeError("provider overloaded"),)):
+            result = await self._run_with_audit(ANSWER, *responses)
+            self.assertEqual(result.answer, ANSWER)
+            self.assertEqual([e.citation_id for e in result.evidence], ["S1"])
+            check = result.metadata["claim_verification"]
+            self.assertEqual((check["status"], check["audit_failed"]), ("unavailable", True))
+            self.assertNotIn("nearest_documents", result.metadata)
+
+    async def test_uncited_draft_is_still_withheld_even_though_no_audit_ran(self):
+        result = await self._run_with_audit("Profit was VND 100 billion.")
+        self.assertEqual(result.answer, VERIFICATION_UNAVAILABLE_ANSWER)
+        self.assertFalse(result.metadata["claim_verification"]["audit_failed"])

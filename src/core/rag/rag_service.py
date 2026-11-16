@@ -318,6 +318,10 @@ class RAGService:
         if verify_claims:
             cited_contexts = [c for c in contexts if c["source_id"] in source_ids]
             verification = verify_answer(self.llm, question, answer, cited_contexts)
+            if verification.audit_failed:
+                # Shown with its sources and an "unverified" banner; only a failed audit, never a rejected claim.
+                return RAGResult(answer=answer, contexts=contexts, source_ids=source_ids,
+                                 prompt_sha256=prompt_sha256, verification=verification)
             if verification.status != "supported":
                 return RAGResult(answer=VERIFICATION_UNAVAILABLE_ANSWER, contexts=contexts, withheld_draft=answer,
                                  prompt_sha256=prompt_sha256, verification=verification)

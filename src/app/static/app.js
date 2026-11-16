@@ -1306,15 +1306,20 @@ function answerOutcome(data, citations) {
   const check = data.claim_verification;
   const pill = (kind, text) => `<p class="answer-status ${kind}">${escapeHtml(text)}</p>`;
   const rephrase = '<div class="answer-next"><button type="button" class="secondary-button answer-rephrase">Rephrase the question</button></div>';
+  const nearest = Array.isArray(data.nearest_documents) && data.nearest_documents.length
+    ? `<p class="analysis-caveat">Closest documents found: ${data.nearest_documents.map(escapeHtml).join("; ")}</p>` : "";
   if (check?.status === "supported" && citations.length) {
     return { badge: `<p class="answer-verified">${SEAL_MARK}Every claim checked against its cited source${check.claim_count ? ` · ${formatNumber(check.claim_count)} claims` : ""}</p>`, next: "" };
   }
+  if (check?.audit_failed && citations.length) {
+    return { title: "Answer not verified", badge: pill("is-withheld", "Not verified: the claim check could not run. Compare it with the sources below or confirm with the department responsible."), next: "" };
+  }
   if (data.citation_validation_failed || (check && check.status !== "supported")) {
     const reason = VERIFICATION_REASONS[check?.reason] || "the answer could not be matched to its sources";
-    return { title: "Answer withheld", gap: true, badge: pill("is-withheld", `Withheld: ${reason}`), next: rephrase };
+    return { title: "Answer withheld", gap: true, badge: pill("is-withheld", `Withheld: ${reason}`) + nearest, next: rephrase };
   }
   if (data.insufficient_context) {
-    return { title: "Not in your documents", gap: true, badge: pill("is-gap", "Not covered by the documents you can access"), next: rephrase };
+    return { title: "Not in your documents", gap: true, badge: pill("is-gap", "Not covered by the documents you can access. Try naming the policy or procedure, or ask the department that owns it.") + nearest, next: rephrase };
   }
   if (data.status === "partial") return { gap: true, badge: pill("is-gap", "Partial answer: some parts are not covered"), next: "" };
   return { badge: "", next: "" };
@@ -1964,7 +1969,7 @@ function renderRunDetails(data) {
   }
   const check = data.claim_verification;
   if (check) {
-    const verdict = check.status === "supported" ? "Passed" : "Answer withheld";
+    const verdict = check.status === "supported" ? "Passed" : check.audit_failed ? "Could not run (answer shown unverified)" : "Answer withheld";
     const reason = VERIFICATION_REASONS[check.reason] || check.reason || "";
     const counted = [check.claim_count ? `${formatNumber(check.claim_count)} claims checked` : "",
       check.arithmetic_checked ? `${formatNumber(check.arithmetic_checked)} calculations checked` : ""].filter(Boolean);

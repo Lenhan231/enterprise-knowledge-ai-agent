@@ -10,7 +10,9 @@ import os
 import asyncio
 from typing import Any
 
-from core.analytics.text_to_sql import INVENTORY_SOURCES, inventory_scope_enabled, validate_commerce_sql
+from core.analytics.text_to_sql import (
+    INVENTORY_SOURCES, inventory_scope_enabled, validate_commerce_sql, validate_sql_security,
+)
 from core.agents.sql.schema import configured_schemas, discover_schema
 
 try:
@@ -34,6 +36,12 @@ class LazyCommerceRepository:
             if self.repository is None:
                 self.repository = await create_repository_from_env()
         return await self.repository.execute_approved_query(query, *args)
+
+    async def execute_unverified_query(self, query, *args):
+        async with self.lock:
+            if self.repository is None:
+                self.repository = await create_repository_from_env()
+        return await self.repository.execute_unverified_query(query, *args)
 
     async def get_schema(self):
         async with self.lock:
@@ -96,6 +104,11 @@ class CommerceRepository:
             schema_columns=self.schema_metadata.get('tables'), approved_joins=self.schema_metadata.get('joins'),
             primary_keys=self.schema_metadata.get('primary_keys'), date_columns=self.schema_metadata.get('date_columns'))
         return await self._fetch(validated.sql, *args)
+
+    async def execute_unverified_query(self, query: str, *args: Any) -> list[dict[str, Any]]:
+        """Execute a bounded read query after security checks, without semantic checks."""
+        validated = validate_sql_security(query, allowed_sources=self.allowed_sources)
+        return await self._fetch(validated.sql(dialect='postgres'), *args)
 
     async def get_schema(self) -> dict:
         """Refresh the live table/column and declared relationship metadata."""

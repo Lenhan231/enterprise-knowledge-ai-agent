@@ -13,7 +13,7 @@ from openai import APIError
 from pydantic import BaseModel, Field, StringConstraints, field_validator
 
 from core.llm.groq_provider import GroqProvider
-from core.rag.claim_verification import VerificationOutcome, VERIFICATION_UNAVAILABLE_ANSWER, verify_answer
+from core.rag.claim_verification import VerificationOutcome, VERIFICATION_UNAVAILABLE_ANSWER, is_source_gap_answer, verify_answer
 from core.latency import measure
 from core.agents.runtime import deadline, remaining
 from core.prompts.knowledge_search import SEARCH_PLAN_PROMPT, SEARCH_PLAN_PROMPT_THREE
@@ -290,7 +290,9 @@ class RAGService:
         with measure("answer_generation"):
             answer = _normalize_source_citations(self.llm.generate(prompt).strip())
 
-        if answer == INSUFFICIENT_ANSWER:
+        # A draft that only says "the supplied documents do not state this" (often citing every source) makes no
+        # claim: auditing it either fails on evidence limits ("withheld") or stamps a seal on a retrieval miss.
+        if answer == INSUFFICIENT_ANSWER or is_source_gap_answer(answer, question):
             return RAGResult(
                 answer=INSUFFICIENT_ANSWER,
                 contexts=contexts,

@@ -576,7 +576,8 @@ class SQLAnalyticsAgent(BaseAgent):
                     if resolved_parameters != plan.parameters:
                         plan = QueryPlan(sql=plan.sql, parameters=resolved_parameters,
                                          explanation=plan.explanation, clarification=plan.clarification,
-                                         request_contract=plan.request_contract)
+                                         request_contract=plan.request_contract,
+                                         request_contract_warning=plan.request_contract_warning)
                     validate_current_year_month_range(plan.sql or '', plan.parameters, original_question,
                                                       date_columns=date_columns)
                     if plan.sql:
@@ -669,6 +670,14 @@ class SQLAnalyticsAgent(BaseAgent):
         payload = await self._execute_plan(plan, definitions, table_columns, approved_joins,
                                            primary_keys, date_columns, interpretation,
                                            allowed_sources=set(table_columns))
+        if plan.request_contract_warning:
+            payload.setdefault('metadata', {}).update(
+                request_contract_status='ignored',
+                request_contract_warning=plan.request_contract_warning,
+            )
+            payload.setdefault('limitations', []).append(
+                'SQL passed read-only and schema checks and was executed. The requested output mapping did not match the generated columns, so the returned rows follow the SQL SELECT output.'
+            )
         if unverified_metric is not None:
             payload.setdefault('metadata', {})['metric_validation'] = unverified_metric
         if plan is annual_revenue_plan and payload.get("query_status") == "executed":

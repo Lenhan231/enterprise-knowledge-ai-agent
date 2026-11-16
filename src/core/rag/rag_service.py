@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field, StringConstraints, field_validator
 
 from core.llm.groq_provider import GroqProvider
 from core.rag.claim_verification import VerificationOutcome, VERIFICATION_UNAVAILABLE_ANSWER, is_source_gap_answer, verify_answer
+from core.retrieval.amounts import annotate_amounts
 from core.latency import measure
 from core.agents.runtime import deadline, remaining
 from core.prompts.knowledge_search import SEARCH_PLAN_PROMPT, SEARCH_PLAN_PROMPT_THREE
@@ -282,6 +283,9 @@ class RAGService:
                          if isinstance(c.get("retrieval_details"), dict)), None)
         if os.getenv("QUERY_NORMALIZATION_ENABLED", "0") == "1" and restored and restored.strip() != question.strip():
             question = f"{restored}\n(Người dùng gõ: {question})"
+        # '3 củ' alone led the answer model to 'not covered' although Appendix B was retrieved; spell the amount out
+        # next to the user's words (questions without an amount keep the evaluated prompt byte-identical).
+        question = annotate_amounts(question)
         prompt = template.format(
             context=_format_contexts(contexts)[:MAX_CONTEXT_CHARS],
             question=question,

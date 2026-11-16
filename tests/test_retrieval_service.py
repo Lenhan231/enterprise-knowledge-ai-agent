@@ -256,7 +256,7 @@ class AmountNormalizationTest(unittest.TestCase):
     """#54: '3 củ' became '3 bulbs' and '7 củ' '70 million' in translation; search gets the policy's own form."""
 
     def test_everyday_amounts_are_written_as_policies_write_them(self):
-        from core.retrieval.retrieval_service import normalize_amounts
+        from core.retrieval.amounts import annotate_amounts, normalize_amounts
         cases = {
             "3 củ thì đưa ai duyệt": "3.000.000 VND thì đưa ai duyệt",
             "bàn ghế mua 3tr thì đưa ai duyệt": "bàn ghế mua 3.000.000 VND thì đưa ai duyệt",
@@ -271,6 +271,11 @@ class AmountNormalizationTest(unittest.TestCase):
             self.assertEqual(normalize_amounts(question), expected, question)
         for unchanged in ("nghỉ phép 3 ngày", "Q2 2026", "5.000.000 VND", "mua 3 kg", "tháng 11 trả lương"):
             self.assertEqual(normalize_amounts(unchanged), unchanged, unchanged)
+
+    def test_answer_model_sees_the_users_words_with_the_amount_spelled_out(self):
+        from core.retrieval.amounts import annotate_amounts
+        self.assertEqual(annotate_amounts("bàn ghế mua 3 củ thì đưa ai duyệt"), "bàn ghế mua 3 củ (3.000.000 VND) thì đưa ai duyệt")
+        self.assertEqual(annotate_amounts("nghỉ phép 3 ngày"), "nghỉ phép 3 ngày")
 
     def test_search_uses_the_written_amount_but_reports_the_users_question(self):
         from unittest.mock import MagicMock

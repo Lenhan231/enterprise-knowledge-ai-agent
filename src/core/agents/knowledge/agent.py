@@ -106,7 +106,9 @@ class KnowledgeAgent(BaseAgent):
                                                  or result.verification.audit_failed)
         if result.contexts and not evidence:
             # Not covered or withheld: name the closest documents (already role-scoped) so the user has a next step.
-            metadata["nearest_documents"] = list(dict.fromkeys(c["document_name"] for c in result.contexts))[:3]
+            metadata["nearest_documents"] = list(dict.fromkeys(
+                " · ".join(filter(None, (c["document_name"], (c.get("metadata") or {}).get("section_title"))))
+                for c in result.contexts))[:3]
 
         return AgentResult(
             answer=result.answer,

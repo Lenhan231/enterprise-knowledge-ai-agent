@@ -9,9 +9,9 @@ from core.prompts.agents import PLANNING_PROMPT, PLANNING_REPAIR_PROMPT
 
 
 async def plan_request(request, provider, *, history=(), previous=None, report_headings=None, sql_schema=None):
+    from core.agents.intent_classifier import IntentClassifier, is_product_profit_recommendation
+    intent = IntentClassifier.fallback(request.question)
     if not history and previous is None and report_headings is None:
-        from core.agents.intent_classifier import IntentClassifier
-        intent = IntentClassifier.fallback(request.question)
         unresolved_reference = bool(re.search(
             r'\b(that|the other one|this one|those|them)\b|cái đó|cái còn lại|cái kia',
             request.question, re.I,
@@ -51,7 +51,20 @@ async def plan_request(request, provider, *, history=(), previous=None, report_h
                 trusted = AgentPlan.model_validate(previous['plan'])
                 payload['tasks'] = [task.model_dump() for task in trusted.tasks if task.id in completed] + [
                     task for task in payload.get('tasks', []) if task.get('id') not in completed]
-            return AgentPlan.model_validate(payload)
+            result = AgentPlan.model_validate(payload)
+            if is_product_profit_recommendation(request.question) and not result.clarification:
+                present = {task.agent for task in result.tasks}
+                tasks = [task.model_dump() for task in result.tasks]
+                for agent, prefix in (('knowledge', 'k'), ('sql', 's')):
+                    if agent not in present:
+                        task_id = prefix
+                        suffix = 2
+                        while any(task['id'] == task_id for task in tasks):
+                            task_id = f'{prefix}{suffix}'
+                            suffix += 1
+                        tasks.append({'id': task_id, 'agent': agent, 'question': request.question})
+                result = AgentPlan(objective=result.objective, fallback=result.fallback, tasks=tasks)
+            return result
         except PermissionError:
             raise
         except Exception:

@@ -18,6 +18,28 @@ from test_bounded_execution import FakeAgent, FakeProvider, IDENTITY, source_res
 
 
 class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
+    async def test_jev_single_tool_route_cannot_drop_business_sql_evidence(self):
+        question = 'Doanh nghiệp nên ưu tiên nhập thêm, quảng bá hoặc ngừng bán những sản phẩm nào để cải thiện lợi nhuận?'
+        router = AgentRouter(None, None, None, llm=FakeProvider([]))
+        resolved = AgentPlan.model_validate({
+            'objective': question,
+            'tasks': [
+                {'id': 'k', 'agent': 'knowledge', 'question': question},
+                {'id': 's', 'agent': 'sql', 'question': question},
+            ],
+        })
+        with patch('core.agents.decision_support.router.classify_jev_route', return_value={
+                'route': 'knowledge', 'confidence': 0.99, 'history_required': False}), \
+             patch('core.agents.decision_support.router.plan_request',
+                   new=AsyncMock(return_value=resolved)) as plan_request:
+            state = await router._plan({
+                'request': AgentRequest(question=question, identity=IDENTITY),
+                'history': [], 'execution': Mock(), 'report_headings': None,
+            })
+
+        self.assertEqual(state['plan'], resolved)
+        plan_request.assert_awaited_once()
+
     async def test_short_followup_uses_planner_when_jev_misses_history_dependency(self):
         router = AgentRouter(None, None, None, llm=FakeProvider([]))
         request = AgentRequest(question='giờ nên đẩy mạnh vào segment nào nhỉ', identity=IDENTITY)

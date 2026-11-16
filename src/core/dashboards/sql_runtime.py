@@ -25,6 +25,10 @@ class CountResponse(Exception):
 class DashboardSQLAgent(SQLAnalyticsAgent):
     async def run_payload(self, request):
         # Refresh can execute two saved datasets concurrently; repair state belongs to one request.
+        self._authorize(request)
+        upstream = getattr(self, '_upstream_agent', None)
+        if upstream is not None:
+            self.llm = upstream._provider()
         session = copy(self)
         session._dashboard_provider = None
         return await super(DashboardSQLAgent, session).run_payload(request)
@@ -45,6 +49,7 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
         result = copy(agent)
         result.__class__ = cls
         result._dashboard_provider = None
+        result._upstream_agent = agent
         return result
 
     def _provider(self):

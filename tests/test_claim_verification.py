@@ -301,7 +301,7 @@ class KnowledgeVerificationIntegrationTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.metadata["claim_verification"]["status"], "rejected")
         self.assertFalse(result.metadata["claim_verification"]["audit_failed"])
         self.assertEqual(result.evidence, [])
-        self.assertEqual(result.metadata["nearest_documents"], ["report.pdf · Results"])
+        self.assertEqual(result.metadata["nearest_documents"], [{"document": "report.pdf", "section": "Results"}])
         self.assertNotIn(draft, result.model_dump_json())
 
     async def test_failed_audit_shows_the_draft_with_its_sources_marked_unverified(self):

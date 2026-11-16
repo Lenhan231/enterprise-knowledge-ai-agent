@@ -635,6 +635,22 @@ class SQLAnalyticsAgent(BaseAgent):
                             [(question, plan, definitions)], question, date_columns)
                 break
             except (SQLValidationError, MetricDefinitionError) as error:
+                if (isinstance(error, MetricDefinitionError) and error.code == 'derived_metric_formula_mismatch'
+                        and not self.inventory_only and direct is None and promotion_plan is None
+                        and promotion_metric is None and not explicit_order_item_formula
+                        and interpretation is None and not dashboard_build
+                        and not any((annual_revenue_plan, completed_months_plan,
+                                     month_comparison_plan, explicit_month_plan))):
+                    # SQL safety, schema, approved joins and query-grain checks already passed.
+                    # Keep the query result available, but do not present this derived formula as canonical.
+                    definitions = {}
+                    unverified_metric = {
+                        'status': 'unverified', 'code': error.code,
+                        'reason': ('The SQL passed safety and schema checks, but its aggregate formula '
+                                   'does not match the canonical metric definition.'),
+                        'knowledge_lookup': metric_lookup.get('rag_fallback', 'skipped_recognized_metric'),
+                    }
+                    break
                 if attempt == 0 and (direct is None or dashboard_build) and not (interpretation and interpretation.domain == 'inventory'):
                     prompt = build_sql_prompt(
                         question, validation_error=str(error), previous_response=str(raw),

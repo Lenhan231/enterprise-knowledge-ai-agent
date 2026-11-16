@@ -61,7 +61,7 @@ class MetricMapping(_StrictModel):
 class SQLRankingChange(_StrictModel):
     metric: str | None = None
     direction: Literal['asc','desc'] | None = None
-    limit: int = Field(ge=1,le=200)
+    limit: int | None = Field(default=None,ge=1,le=200)
 
 
 class SQLChanges(_StrictModel):
@@ -220,6 +220,10 @@ def build_metric_mapping_prompt(question, *, context=None):
              'refinements: provide changes containing ONLY explicitly changed slots. Do not emit null slots except ranking=null to clear ranking. Omitted slots inherit; filters replace '
              'conditions on that field only. remove_filters clears named fields; clear_filters clears all. ranking=null removes ranking. '
              'For top/bottom include direction desc/asc. With multiple metrics ask which ranking metric if unclear. '
+             'For a follow-up asking which product segment to promote or prioritize, if accepted metrics include '
+             'sell_through_rate, use sell_through_rate descending as a demand proxy and preserve the accepted '
+             'snapshot scope; retain stockout_days when it is already selected and explain that stockouts constrain '
+             'availability. Do not claim this proves revenue, margin or profit. '
              'Pinned snapshot dates remain unchanged unless explicitly changed or refreshed to latest. '
              'If pending is present, action=answer resolves that question: provide a full mapping when pending.base is null, '
              'otherwise provide changes incorporating the pending question and this reply. Do not revive an unrelated old scope. '

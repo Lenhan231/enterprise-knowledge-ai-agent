@@ -79,6 +79,50 @@ class JoinDuplicationTest(unittest.TestCase):
         validate_commerce_sql(f'WITH counts AS (SELECT COUNT(DISTINCT p.order_id) AS total {JOIN}) '
                               'SELECT SUM(c.total) AS total FROM counts AS c LIMIT 1')
 
+    def test_ranked_single_customer_can_join_to_category_detail_without_reaggregating(self):
+        sql = """WITH customer_orders AS (
+  SELECT o.customer_id, COUNT(DISTINCT o.order_id) AS order_count
+  FROM commerce.orders AS o GROUP BY o.customer_id
+), top_customer AS (
+  SELECT co.customer_id, co.order_count FROM customer_orders AS co
+  ORDER BY co.order_count DESC, co.customer_id LIMIT 1
+), customer_order_items AS (
+  SELECT o.customer_id, p.category, oi.order_id
+  FROM commerce.orders AS o
+  JOIN commerce.order_items AS oi ON oi.order_id = o.order_id
+  JOIN commerce.products AS p ON p.product_id = oi.product_id
+  JOIN top_customer AS tc ON tc.customer_id = o.customer_id
+), category_counts AS (
+  SELECT ci.customer_id, ci.category, COUNT(DISTINCT ci.order_id) AS category_order_count
+  FROM customer_order_items AS ci GROUP BY ci.customer_id, ci.category
+)
+SELECT tc.customer_id, tc.order_count, cc.category, cc.category_order_count
+FROM top_customer AS tc
+JOIN category_counts AS cc ON cc.customer_id = tc.customer_id
+ORDER BY cc.category_order_count DESC LIMIT 200"""
+        validate_commerce_sql(sql)
+
+    def test_ranked_single_customer_join_cannot_hide_post_join_aggregate(self):
+        sql = """WITH customer_orders AS (
+  SELECT o.customer_id, COUNT(DISTINCT o.order_id) AS order_count
+  FROM commerce.orders AS o GROUP BY o.customer_id
+), top_customer AS (
+  SELECT co.customer_id, co.order_count FROM customer_orders AS co
+  ORDER BY co.order_count DESC, co.customer_id LIMIT 1
+), category_counts AS (
+  SELECT o.customer_id, p.category, COUNT(DISTINCT o.order_id) AS category_order_count
+  FROM commerce.orders AS o
+  JOIN commerce.order_items AS oi ON oi.order_id = o.order_id
+  JOIN commerce.products AS p ON p.product_id = oi.product_id
+  GROUP BY o.customer_id, p.category
+)
+SELECT tc.customer_id, SUM(cc.category_order_count) AS total
+FROM top_customer AS tc
+JOIN category_counts AS cc ON cc.customer_id = tc.customer_id
+GROUP BY tc.customer_id LIMIT 1"""
+        with self.assertRaisesRegex(SQLValidationError, 'Derived joins require complete grouped keys'):
+            validate_commerce_sql(sql)
+
     def test_scalar_subquery_aggregate_cannot_hide_raw_duplicated_rows(self):
         for expression in ('SUM(d.value)', 'COUNT(*)'):
             sql = ('WITH detail AS (SELECT p.payment_value + '

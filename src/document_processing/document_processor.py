@@ -25,6 +25,12 @@ _INVOICE_EXTRACTION_CONFIG_KEYS = frozenset({
     "invoice_provider",
     "gemini_invoice_model",
     "groq_invoice_model",
+    "xiaomi_invoice_model",
+    "xiaomi_invoice_revision",
+    "xiaomi_python",
+    "xiaomi_device",
+    "xiaomi_max_new_tokens",
+    "xiaomi_timeout_seconds",
     "invoice_model",
     "invoice_model_revision",
     "invoice_adapter",
@@ -146,9 +152,22 @@ class DocumentProcessor:
             return result
         if intent == "invoice":
             from document_processing.docling_adapter.processor import DoclingProcessor
-            from document_processing.invoice_text_processor import InvoiceTextProcessor
+            provider = str(
+                self.config.get("invoice_provider")
+                or os.environ.get("DOCUMENT_PROCESSING_INVOICE_PROVIDER")
+                or "modal"
+            ).strip().lower()
+            if provider == "xiaomi":
+                from document_processing.xiaomi_ocr_processor import XiaomiOCRInvoiceProcessor
 
-            engine = "docling_qwen_invoice_text"
+                extraction_processor = XiaomiOCRInvoiceProcessor(self.config)
+                engine = "docling_xiaomi_ocr_invoice"
+            else:
+                from document_processing.invoice_text_processor import InvoiceTextProcessor
+
+                extraction_processor = InvoiceTextProcessor(self.config)
+                engine = "docling_qwen_invoice_text"
+
             processor_config = {**self.config, "parser_engine": "docling", "intent": "document"}
             parser_content = render_svg(content) if suffix == ".svg" else render_webp(content) if suffix == ".webp" else content
             parser_metadata = {**common, "format": "PNG"} if suffix in {".svg", ".webp"} else common
@@ -220,10 +239,15 @@ class DocumentProcessor:
                 }, separators=(",", ":")),
             )
             extraction_started = time.perf_counter()
-            extraction = InvoiceTextProcessor(self.config).process(
-                result.get("elements", []), result.get("tables", []),
-                reference_id=metadata.get("invoice_id"),
-            )
+            if provider == "xiaomi":
+                extraction = extraction_processor.process(
+                    filename, content, reference_id=metadata.get("invoice_id"),
+                )
+            else:
+                extraction = extraction_processor.process(
+                    result.get("elements", []), result.get("tables", []),
+                    reference_id=metadata.get("invoice_id"),
+                )
             _LOGGER.info(
                 "DOCUMENT_PROCESS_COMPONENT %s",
                 json.dumps({

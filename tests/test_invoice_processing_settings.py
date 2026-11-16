@@ -41,6 +41,39 @@ class InvoiceProcessingSettingsTest(unittest.TestCase):
         self.assertEqual(config["docling_layout_num_threads"], 2)
         repository_type.return_value.close.assert_called_once_with()
 
+    def test_invoice_upload_routes_xiaomi_as_visual_invoice_provider(self):
+        parsed = {
+            "invoice_extraction": {
+                "status": "review_required",
+                "model": "xiaomi-research/Xiaomi-OCR-0",
+                "fields": {},
+            },
+            "elements": [],
+            "tables": [],
+        }
+        with (
+            patch.dict(os.environ, {"DOCUMENT_PROCESSING_URL": "http://document-processing"}),
+            patch("app.main.post_internal_service", return_value=parsed) as post,
+            patch("core.database.invoice_repository.InvoiceRepository") as repository_type,
+        ):
+            _process_invoice_upload(
+                invoice_id="INV-xiaomi",
+                filename="invoice.png",
+                content=b"image",
+                uploaded_by="tester",
+                source_sha256="b" * 64,
+                model_provider="xiaomi",
+            )
+
+        config = post.call_args.args[2]["config"]
+        self.assertEqual(config["invoice_provider"], "xiaomi")
+        self.assertEqual(post.call_args.kwargs["timeout"], 1800)
+        self.assertEqual(
+            repository_type.return_value.save_result.call_args.kwargs["extraction_model"],
+            "xiaomi-research/Xiaomi-OCR-0",
+        )
+        repository_type.return_value.close.assert_called_once_with()
+
 
 if __name__ == "__main__":
     unittest.main()

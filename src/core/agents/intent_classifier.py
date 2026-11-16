@@ -12,7 +12,7 @@ from core.prompts.intent import INTENT_CLASSIFIER_PROMPT
 
 
 JEV_ROUTE_THRESHOLD = 0.8
-JEV_ROUTES = {'knowledge', 'sql', 'hybrid', 'other_or_unclear'}
+JEV_ROUTES = {'knowledge', 'sql', 'plan_required'}
 JEV_TABLE_LIMIT = 5
 
 
@@ -36,15 +36,16 @@ def classify_jev_route(question: str, approved_schema=None, history=()):
         'questions': {
             'route': {
                 'type': 'choice',
-                'instructions': ('Choose the smallest tool set that can answer the current request. Use hybrid only '
-                                 'when both document evidence and structured data are needed. Do not choose SQL '
-                                 'for policy/document-only questions. Consider the recent history when interpreting '
+                'instructions': ('Choose a direct specialist route only when one tool alone can answer the current '
+                                 'request. Use plan_required when multiple tools may be needed, the request needs '
+                                 'clarification, or no direct specialist route is clear. Do not choose SQL for '
+                                 'policy/document-only questions. Consider recent history when interpreting '
                                  'follow-ups, but do not treat history as fresh evidence.'),
                 'criteria': {
                     'knowledge': 'Authorized enterprise documents alone can answer the request.',
                     'sql': 'Approved structured data alone can answer the request.',
-                    'hybrid': 'Both document evidence and structured data are needed.',
-                    'other_or_unclear': 'A specialist mode, clarification, or another route is needed.',
+                    'plan_required': ('Both document evidence and structured data may be needed, the request '
+                                      'needs clarification, or another route must be planned.'),
                 },
             },
             'history_required': {

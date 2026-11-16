@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from core.agents.runtime import deadline, run_sync
 from core.agents.knowledge_agent import KnowledgeAgent
 from core.agents.router import AgentRouter
+from core.agents.intent_classifier import JEV_ROUTES
 from core.agents.response import _supported_numbers
 from core.models.agent_plan import AgentPlan
 from core.models.agents import AgentRequest, AgentResult, Evidence, VerifiedIdentity
@@ -18,6 +19,29 @@ from test_bounded_execution import FakeAgent, FakeProvider, IDENTITY, source_res
 
 
 class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
+    async def test_jev_plan_required_route_uses_planner_for_tool_selection(self):
+        router = AgentRouter(None, None, None, llm=FakeProvider([]))
+        question = 'What should we do with products that have low margin and high inventory?'
+        resolved = AgentPlan.model_validate({
+            'objective': question,
+            'tasks': [
+                {'id': 'k', 'agent': 'knowledge', 'question': question},
+                {'id': 's', 'agent': 'sql', 'question': question},
+            ],
+        })
+        with patch('core.agents.decision_support.router.classify_jev_route', return_value={
+                'route': 'plan_required', 'confidence': 0.99, 'history_required': False}), \
+             patch('core.agents.decision_support.router.plan_request',
+                   new=AsyncMock(return_value=resolved)) as plan_request:
+            state = await router._plan({
+                'request': AgentRequest(question=question, identity=IDENTITY),
+                'history': [], 'execution': Mock(), 'report_headings': None,
+            })
+
+        self.assertEqual(JEV_ROUTES, {'knowledge', 'sql', 'plan_required'})
+        self.assertEqual(state['plan'], resolved)
+        plan_request.assert_awaited_once()
+
     async def test_jev_single_tool_route_cannot_drop_business_sql_evidence(self):
         question = 'Doanh nghiệp nên ưu tiên nhập thêm, quảng bá hoặc ngừng bán những sản phẩm nào để cải thiện lợi nhuận?'
         router = AgentRouter(None, None, None, llm=FakeProvider([]))

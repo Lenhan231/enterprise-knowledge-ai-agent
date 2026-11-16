@@ -220,12 +220,12 @@ METRIC_ONTOLOGY = {
     },
     "delivery_time": {
         "aliases": ("delivery time", "shipping time", "thời gian giao hàng"),
-        "source": "commerce.shipments + commerce.orders + commerce.geography khi lọc theo region",
+        "source": "commerce.shipments + commerce.orders + commerce.customers + commerce.geography",
         "formula": "AVG(delivery_date - ship_date)",
         "grain": "shipment",
         "aggregation": "mean",
         "unit": "days",
-        "dimensions": ("ship_date", "region"),
+        "dimensions": ("ship_date", "region", "acquisition_channel"),
     },
     "promotion_discount": {
         "aliases": ("promotion discount", "discount", "khuyến mãi", "mức giảm giá"),

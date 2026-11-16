@@ -209,6 +209,47 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         repository.execute_approved_query.assert_awaited_once_with(
             sql, date(2026, 1, 1), date(2027, 1, 1))
 
+    async def test_delivery_time_rank_query_validates_canonical_metric_through_ctes(self):
+        question = (
+            "Trong năm 2026, ở từng khu vực, kênh thu hút khách hàng nào có thời gian giao hàng trung bình "
+            "ngắn nhất? Chỉ xét đơn đã giao thành công và có ngày giao hợp lệ. Hiển thị số đơn giao thành công, "
+            "thời gian giao hàng trung bình và thứ hạng trong từng khu vực."
+        )
+        sql = (
+            "WITH channel_metrics AS (SELECT geo.region AS region, cust.acquisition_channel AS acquisition_channel, "
+            "COUNT(DISTINCT ship.order_id) AS successful_delivered_orders, "
+            "AVG(ship.delivery_date - ship.ship_date) AS avg_delivery_time_days "
+            "FROM commerce.shipments AS ship "
+            "JOIN commerce.orders AS ord ON ord.order_id = ship.order_id "
+            "JOIN commerce.customers AS cust ON cust.customer_id = ord.customer_id "
+            "JOIN commerce.geography AS geo ON geo.zip = ord.zip "
+            "WHERE ord.order_status = $1 AND ship.delivery_date IS NOT NULL "
+            "AND ship.ship_date >= $2 AND ship.ship_date < $3 GROUP BY 1, 2), "
+            "ranked_channels AS (SELECT region, acquisition_channel, successful_delivered_orders, "
+            "avg_delivery_time_days, RANK() OVER (PARTITION BY region ORDER BY avg_delivery_time_days) AS rank_in_region "
+            "FROM channel_metrics) SELECT region, acquisition_channel, successful_delivered_orders, "
+            "avg_delivery_time_days, rank_in_region FROM ranked_channels ORDER BY 1, 5 LIMIT 200"
+        )
+        provider = FakeProvider([json.dumps({
+            'sql': sql, 'parameters': ['delivered', '2026-01-01', '2027-01-01'],
+        })])
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        selected = {'commerce.customers', 'commerce.orders', 'commerce.shipments', 'commerce.geography'}
+
+        with patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': selected, 'required_tables': selected, 'candidate_tables': selected}):
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertEqual(result['query_status'], 'executed', result)
+        self.assertEqual(result['metadata']['metrics']['delivery_time']['unit'], 'days')
+        executed_sql, *parameters = repository.execute_approved_query.await_args.args
+        self.assertIn('ranked_channels.region', executed_sql)
+        self.assertEqual(parameters, ['delivered', date(2026, 1, 1), date(2027, 1, 1)])
+
     async def test_product_best_seller_uses_selected_transaction_schema(self):
         provider = FakeProvider([json.dumps({'clarification': 'Please clarify the requested metric.'})])
         repository = FakeRepository()
@@ -229,8 +270,8 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn('commerce.products:', provider.prompts[0])
         self.assertNotIn('Interpret the question BEFORE generating SQL', provider.prompts[0])
 
-    async def test_supporting_inventory_table_cannot_be_added_as_extra_filter(self):
-        invalid_sql = (
+    async def test_custom_metric_runs_unverified_with_a_sql_safe_supporting_filter(self):
+        sql = (
             "SELECT p.product_id, p.product_name, SUM(oi.quantity) AS total_quantity_sold "
             "FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id=o.order_id "
             "JOIN commerce.products AS p ON p.product_id=oi.product_id "
@@ -238,12 +279,7 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
             "AND EXISTS (SELECT 1 FROM commerce.inventory AS i WHERE i.product_id=p.product_id) "
             "GROUP BY 1, 2 ORDER BY 3 DESC, 1 LIMIT 1"
         )
-        valid_sql = invalid_sql.replace(
-            " AND EXISTS (SELECT 1 FROM commerce.inventory AS i WHERE i.product_id=p.product_id)", "")
-        provider = FakeProvider([
-            json.dumps({'sql': sql, 'parameters': ['2026-10-01', '2026-11-01']})
-            for sql in (invalid_sql, valid_sql)
-        ])
+        provider = FakeProvider([json.dumps({'sql': sql, 'parameters': ['2026-10-01', '2026-11-01']})])
         repository = FakeRepository()
         agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
         selected = {'commerce.order_items', 'commerce.orders', 'commerce.products'}
@@ -256,9 +292,11 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
             ))
 
         self.assertEqual(result['query_status'], 'executed')
-        self.assertEqual(provider.response_index, 2)
+        self.assertEqual(result['metadata']['metric_validation']['status'], 'unverified')
+        self.assertEqual(provider.response_index, 1)
         self.assertNotIn('commerce.inventory:', provider.prompts[0])
-        repository.execute_approved_query.assert_awaited_once()
+        repository.execute_approved_query.assert_awaited_once_with(
+            sql, date(2026, 10, 1), date(2026, 11, 1))
 
     async def test_auto_executes_unverified_metric_after_knowledge_miss(self):
         sql = (
@@ -294,6 +332,93 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn('commerce.inventory:', provider.prompts[0])
         metric_retriever.assert_awaited_once()
         repository.execute_approved_query.assert_awaited_once()
+
+    async def test_sql_mode_marks_a_safe_custom_aggregate_unverified(self):
+        sql = "SELECT AVG(s.shipping_fee) AS average_shipping_fee FROM commerce.shipments AS s LIMIT 1"
+        question = 'What is the average recorded shipping fee?'
+        provider = FakeProvider([json.dumps({'sql': sql})])
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        selected = {'commerce.shipments'}
+
+        with patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': selected, 'required_tables': selected, 'candidate_tables': selected}):
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertEqual(result['query_status'], 'executed', result)
+        self.assertEqual(result['metadata']['metric_validation']['status'], 'unverified')
+        repository.execute_approved_query.assert_awaited_once_with(sql)
+
+    async def test_auto_never_downgrades_a_canonical_metric_formula_failure(self):
+        wrong = "SELECT AVG(s.revenue) AS revenue FROM commerce.sales AS s LIMIT 1"
+        question = 'Total revenue'
+        provider = FakeProvider([json.dumps({'sql': wrong}), json.dumps({'sql': wrong})])
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        selected = {'commerce.sales'}
+
+        with patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': selected, 'required_tables': selected, 'candidate_tables': selected}):
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+                metadata={'_auto_mode': True, '_original_question': question},
+            ))
+
+        self.assertEqual(result['query_status'], 'rejected', result)
+        self.assertNotIn('metric_validation', result['metadata'])
+        repository.execute_approved_query.assert_not_awaited()
+
+    async def test_auto_unverified_custom_metric_cannot_bypass_an_unapproved_join(self):
+        sql = (
+            "SELECT AVG(s.shipping_fee) AS average_shipping_fee FROM commerce.shipments AS s "
+            "JOIN commerce.customers AS c ON s.order_id = c.customer_id LIMIT 1"
+        )
+        question = 'What is the average shipping fee by customer?'
+        provider = FakeProvider([json.dumps({'sql': sql}), json.dumps({'sql': sql})])
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        selected = {'commerce.shipments', 'commerce.customers'}
+
+        with patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': selected, 'required_tables': selected, 'candidate_tables': selected}):
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+                metadata={'_auto_mode': True, '_original_question': question},
+            ))
+
+        self.assertEqual(result['query_status'], 'rejected', result)
+        self.assertEqual(result['metadata']['error_type'], 'SQLValidationError')
+        self.assertNotIn('metric_validation', result['metadata'])
+        repository.execute_approved_query.assert_not_awaited()
+
+    async def test_auto_unverified_custom_metric_cannot_bypass_sql_security(self):
+        sql = (
+            "SELECT AVG(s.shipping_fee) AS average_shipping_fee FROM commerce.shipments AS s; "
+            "DELETE FROM commerce.shipments"
+        )
+        question = 'What is the average shipping fee?'
+        provider = FakeProvider([json.dumps({'sql': sql}), json.dumps({'sql': sql})])
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        selected = {'commerce.shipments'}
+
+        with patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': selected, 'required_tables': selected, 'candidate_tables': selected}):
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+                metadata={'_auto_mode': True, '_original_question': question},
+            ))
+
+        self.assertEqual(result['query_status'], 'rejected', result)
+        self.assertEqual(result['metadata']['error_type'], 'SQLSecurityError')
+        self.assertNotIn('metric_validation', result['metadata'])
+        repository.execute_approved_query.assert_not_awaited()
 
     async def test_returned_vs_sold_prompt_includes_order_item_schema_and_executes(self):
         question = "so sánh số lượng trả hàng với số lượng đã bán"

@@ -11,6 +11,8 @@ from collections.abc import Mapping
 from datetime import date
 from typing import Any
 
+from sqlglot import exp, parse_one
+
 from core.agents.base import BaseAgent
 from core.agents.intent_classifier import select_jev_schema_tables
 from core.analytics.field_retrieval import field_contract, compile_field_query
@@ -500,19 +502,6 @@ class SQLAnalyticsAgent(BaseAgent):
                 }
                 context_info['metric_lookup_status'] = metric_lookup
             unverified_metric = None
-            if (options.get('_auto_mode') is True and not dashboard_build and not metric_names
-                    and direct is None and promotion_plan is None and not explicit_order_item_formula
-                    and interpretation is None):
-                lookup_status = metric_lookup.get('rag_fallback', 'not_configured')
-                reason = (
-                    'Knowledge returned context, but no approved metric formula was identified for this request.'
-                    if lookup_status == 'found' else
-                    'No approved metric definition was found in Knowledge; the query result is an unverified calculation.'
-                )
-                unverified_metric = {
-                    'status': 'unverified', 'code': 'metric_definition_unresolved',
-                    'reason': reason, 'knowledge_lookup': lookup_status,
-                }
             prompt = build_sql_prompt(question, metric_names=metric_names,
                 allowed_sources=query_sources, schema_columns=table_columns, approved_joins=approved_joins,
                 primary_keys=primary_keys,
@@ -590,21 +579,39 @@ class SQLAnalyticsAgent(BaseAgent):
                             'Use that path with independent aggregates or correlated EXISTS as appropriate; '
                             'do not introduce direct fact joins or ask the user to approve an existing relationship.')
                 if plan.sql:
-                    validate_commerce_sql(plan.sql, allowed_sources=set(table_columns), schema_columns=table_columns,
+                    validated_sql = validate_commerce_sql(plan.sql, allowed_sources=set(table_columns), schema_columns=table_columns,
                         approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns)
-                    if cross_domain and not {'commerce.inventory','commerce.orders','commerce.order_items'} <= set(validate_commerce_sql(
-                            plan.sql, allowed_sources=set(table_columns), schema_columns=table_columns, approved_joins=approved_joins,
-                            primary_keys=primary_keys, date_columns=date_columns).sources):
+                    if cross_domain and not {'commerce.inventory','commerce.orders','commerce.order_items'} <= set(validated_sql.sources):
                         raise SQLValidationError('The requested cross-domain contract must retain inventory, orders and order_items.')
-                    if unverified_metric is not None:
-                        # The query has passed SQL safety/schema/join validation, but no canonical
-                        # metric was identified. Keep its rows for Auto to qualify in synthesis.
-                        definitions = {}
-                    else:
+                    if metric_names or any((annual_revenue_plan, completed_months_plan,
+                                            month_comparison_plan, explicit_month_plan)):
                         definitions = ({"revenue": get_metric_definition("revenue")}
                                        if not dashboard_build and (annual_revenue_plan is not None or completed_months_plan is not None or month_comparison_plan is not None or explicit_month_plan) else
                                        validate_metric_definitions(plan.sql, metric_names, plan.parameters, table_columns,
                                            question=interpretation.date_question() if interpretation and interpretation.domain == 'inventory' else question))
+                    else:
+                        # Non-canonical analyses still pass SQL safety, schema, join and query-grain checks.
+                        # The ontology validates only metrics that it explicitly defines.
+                        definitions = {}
+                        custom_metric_query = (
+                            direct is None and promotion_plan is None and promotion_metric is None
+                            and not explicit_order_item_formula and interpretation is None and not dashboard_build
+                            and not any((annual_revenue_plan, completed_months_plan, month_comparison_plan,
+                                         explicit_month_plan))
+                        )
+                        has_aggregate = any(isinstance(node, exp.AggFunc)
+                                            for node in parse_one(plan.sql, read='postgres').find_all(exp.AggFunc))
+                        if custom_metric_query and has_aggregate:
+                            lookup_status = metric_lookup.get('rag_fallback', 'not_configured')
+                            reason = (
+                                'Knowledge returned context, but no approved metric formula was identified for this request.'
+                                if lookup_status == 'found' else
+                                'No approved metric definition was found in Knowledge; the query result is an unverified calculation.'
+                            )
+                            unverified_metric = {
+                                'status': 'unverified', 'code': 'metric_definition_unresolved',
+                                'reason': reason, 'knowledge_lookup': lookup_status,
+                            }
                     if promotion_metric == "promotion_revenue":
                         definitions = {"promotion_revenue": {
                             "unit": "currency", "aggregation": "sum",
@@ -641,15 +648,6 @@ class SQLAnalyticsAgent(BaseAgent):
                         dashboard_clarifications=options.get('_dashboard_clarifications'),
                     )
                     continue
-                if (isinstance(error, MetricDefinitionError) and not error.clarification
-                        and options.get('_auto_mode') is True and not dashboard_build
-                        and not (interpretation and interpretation.domain == 'inventory')):
-                    # The SQL already passed the read-only, schema, and join checks above.
-                    # Keep its rows available to Auto, but label the requested metric as unverified.
-                    unverified_metric = {'status': 'unverified', 'code': error.code,
-                                         'reason': str(error)}
-                    definitions = {}
-                    break
                 if options.get('_dashboard_request') is True and options.get('_dashboard_allow_multiple') is True:
                     error = MetricDefinitionError('Please clarify the requested measures, grouping, scope or representation. ' + str(error)[:800],
                                                   code='dashboard_requirements', clarification=True)

@@ -270,6 +270,17 @@ def _canonical(node, scope, parameters, used_scopes, path=()):
     return result
 
 
+def _is_rank_of_metric(expression, formulas, metric_names):
+    if not isinstance(expression, exp.Window) or not isinstance(
+            expression.this, (exp.Rank, exp.DenseRank, exp.RowNumber)):
+        return False
+    order = expression.args.get('order')
+    if not order or not order.expressions:
+        return False
+    ordered_metric = order.expressions[0].this
+    return any(ordered_metric == formulas[name] for name in metric_names)
+
+
 def _conjuncts(node):
     if isinstance(node, (exp.Where, exp.Paren)):
         yield from _conjuncts(node.this)
@@ -841,6 +852,8 @@ def validate_metric_definitions(sql, metric_names, parameters, table_columns, *,
         matches = {name for name, formula in formulas.items() if expression == formula}
         label = projection.alias.casefold()
         if not matches:
+            if _is_rank_of_metric(expression, formulas, metric_names):
+                continue
             if label in definitions or any(column.sql() in measure_columns for column in expression.find_all(exp.Column)):
                 raise MetricDefinitionError("Aggregate does not match a canonical metric formula")
             continue

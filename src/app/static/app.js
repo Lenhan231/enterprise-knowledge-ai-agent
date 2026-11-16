@@ -1302,32 +1302,71 @@ function renderAnswerBody(answer) {
 
 // How an answer measured up: verified (the seal), withheld by the claim check, not covered, or partial.
 // Withholding is the product keeping its promise, so it reads as amber information, never as an error.
+// A Vietnamese answer gets Vietnamese labels around it, so one answer does not read in two languages.
+const VI_LETTERS = /[ăâđêôơưàáảãạằắẳẵặầấẩẫậèéẻẽẹềếểễệìíỉĩịòóỏõọồốổỗộờớởỡợùúủũụừứửữựỳýỷỹỵ]/i;
+const OUTCOME_TEXT = {
+  en: {
+    verified: "Every claim checked against its cited source", claims: "claims",
+    unverifiedTitle: "Answer not verified",
+    unverified: "Not verified: the claim check could not run. Compare it with the sources below or confirm with the department responsible.",
+    withheldTitle: "Answer withheld", withheld: (reason) => `Withheld: ${reason}`,
+    gapTitle: "Not in your documents", gap: "Not covered by the documents you can access",
+    partial: "Partial answer: some parts are not covered",
+    nearbyTitle: "Closest sections in your documents",
+    nearbyHint: "Try naming the policy or procedure, or ask the department that owns it.",
+    rephrase: "Rephrase the question",
+  },
+  vi: {
+    verified: "Mọi ý đã được đối chiếu với nguồn trích dẫn", claims: "ý",
+    unverifiedTitle: "Câu trả lời chưa được kiểm chứng",
+    unverified: "Chưa kiểm chứng được do bước kiểm tra tạm thời lỗi. Hãy đối chiếu với nguồn bên dưới hoặc hỏi bộ phận phụ trách.",
+    withheldTitle: "Chưa hiển thị câu trả lời", withheld: (reason) => `Chưa hiển thị: ${reason}`,
+    gapTitle: "Chưa có trong tài liệu", gap: "Ngoài phạm vi tài liệu bạn được truy cập",
+    partial: "Trả lời một phần: có ý chưa có trong tài liệu",
+    nearbyTitle: "Các mục gần nhất trong tài liệu",
+    nearbyHint: "Thử nêu tên quy định hoặc quy trình, hoặc hỏi bộ phận phụ trách.",
+    rephrase: "Hỏi lại cách khác",
+  },
+};
+const VERIFICATION_REASONS_VI = {
+  insufficient: "có ý chưa được nguồn xác nhận",
+  contradicted: "có ý mâu thuẫn với nguồn",
+  unsupported_arithmetic: "phép tính không khớp với nguồn",
+  uncited_answer: "câu trả lời không trích dẫn nguồn",
+};
 function answerOutcome(data, citations) {
   const check = data.claim_verification;
-  const pill = (kind, text) => `<p class="answer-status ${kind}">${escapeHtml(text)}</p>`;
+  const vi = VI_LETTERS.test(data.answer || "");
+  const text = OUTCOME_TEXT[vi ? "vi" : "en"];
+  const pill = (kind, label) => `<p class="answer-status ${kind}">${escapeHtml(label)}</p>`;
   // Where the user can look next: section first, then a readable file name ("Operating Policy v1.0 VN").
   const documentLabel = (name) => String(name || "").replace(/\.[a-z0-9]+$/i, "").replace(/[_-]+/g, " ").trim();
-  const nearby = Array.isArray(data.nearest_documents) && data.nearest_documents.length ? `
+  const listed = Array.isArray(data.nearest_documents) ? data.nearest_documents : [];
+  // Bilingual corpora hold each policy twice; show the copy in the answer's language when there is one.
+  const sameLanguage = listed.filter((item) => /(^|[^A-Z])VN([^A-Z]|$)/.test(item.document || "") === vi);
+  const nearest = sameLanguage.length ? sameLanguage : listed;
+  const nearby = nearest.length ? `
     <div class="answer-nearby">
-      <p class="answer-nearby-title">Closest sections in your documents</p>
-      <ul>${data.nearest_documents.map((item) => `<li><strong>${escapeHtml(item.section || documentLabel(item.document))}</strong>${item.section ? `<span>${escapeHtml(documentLabel(item.document))}</span>` : ""}</li>`).join("")}</ul>
-      <p class="answer-nearby-hint">Try naming the policy or procedure, or ask the department that owns it.</p>
+      <p class="answer-nearby-title">${text.nearbyTitle}</p>
+      <ul>${nearest.map((item) => `<li><strong>${escapeHtml(item.section || documentLabel(item.document))}</strong>${item.section ? `<span>${escapeHtml(documentLabel(item.document))}</span>` : ""}</li>`).join("")}</ul>
+      <p class="answer-nearby-hint">${text.nearbyHint}</p>
     </div>` : "";
-  const rephrase = `<div class="answer-next">${nearby}<button type="button" class="secondary-button answer-rephrase">Rephrase the question</button></div>`;
+  const rephrase = `<div class="answer-next">${nearby}<button type="button" class="secondary-button answer-rephrase">${text.rephrase}</button></div>`;
   if (check?.status === "supported" && citations.length) {
-    return { badge: `<p class="answer-verified">${SEAL_MARK}Every claim checked against its cited source${check.claim_count ? ` · ${formatNumber(check.claim_count)} claims` : ""}</p>`, next: "" };
+    return { badge: `<p class="answer-verified">${SEAL_MARK}${text.verified}${check.claim_count ? ` · ${formatNumber(check.claim_count)} ${text.claims}` : ""}</p>`, next: "" };
   }
   if (check?.audit_failed && citations.length) {
-    return { title: "Answer not verified", badge: pill("is-withheld", "Not verified: the claim check could not run. Compare it with the sources below or confirm with the department responsible."), next: "" };
+    return { title: text.unverifiedTitle, badge: pill("is-withheld", text.unverified), next: "" };
   }
   if (data.citation_validation_failed || (check && check.status !== "supported")) {
-    const reason = VERIFICATION_REASONS[check?.reason] || "the answer could not be matched to its sources";
-    return { title: "Answer withheld", gap: true, badge: pill("is-withheld", `Withheld: ${reason}`), next: rephrase };
+    const reason = (vi && VERIFICATION_REASONS_VI[check?.reason])
+      || (vi ? "chưa đối chiếu được với nguồn" : VERIFICATION_REASONS[check?.reason] || "the answer could not be matched to its sources");
+    return { title: text.withheldTitle, gap: true, badge: pill("is-withheld", text.withheld(reason)), next: rephrase };
   }
   if (data.insufficient_context) {
-    return { title: "Not in your documents", gap: true, badge: pill("is-gap", "Not covered by the documents you can access"), next: rephrase };
+    return { title: text.gapTitle, gap: true, badge: pill("is-gap", text.gap), next: rephrase };
   }
-  if (data.status === "partial") return { gap: true, badge: pill("is-gap", "Partial answer: some parts are not covered"), next: "" };
+  if (data.status === "partial") return { gap: true, badge: pill("is-gap", text.partial), next: "" };
   return { badge: "", next: "" };
 }
 

@@ -36,6 +36,13 @@ class MetricPlanningTest(unittest.TestCase):
         self.assertIn("commerce.order_items", prompt)
         self.assertIn("orders.order_status = 'delivered'", prompt)
 
+    def test_shared_period_applies_to_each_measure_source_date(self):
+        question = ('Trong năm 2026, so sánh doanh thu sau chiết khấu theo nhóm điểm đánh giá trung bình '
+                    'và số lượt đánh giá.')
+        prompt = build_sql_prompt(question, metric_names={'product_revenue', 'rating'})
+        self.assertIn('orders.order_date for revenue and reviews.review_date for ratings', prompt)
+        self.assertIn('commerce.reviews.review_date', prompt)
+
     def test_returned_order_count_resolves_to_distinct_order_metric(self):
         for question in (
             "cung cấp thông tin về số lượng đơn bị trả lại",

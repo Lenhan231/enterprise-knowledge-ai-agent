@@ -199,6 +199,7 @@ METRIC_ONTOLOGY = {
         "aggregation": "mean",
         "unit": "score",
         "dimensions": ("review_date", "product_id"),
+        "time_scope": "When the question gives a period for the analysis, apply the same period to commerce.reviews.review_date. Without a requested period, use all available reviews.",
     },
     "sessions": {
         "aliases": ("sessions", "website sessions", "lượt truy cập", "phiên truy cập"),

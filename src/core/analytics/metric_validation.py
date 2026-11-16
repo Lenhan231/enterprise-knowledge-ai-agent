@@ -20,8 +20,14 @@ class MetricDefinitionError(ValueError):
 
 
 def _inventory_question(question):
+    question = _normalize(question)
+    months = {name.casefold(): calendar.month_name[index].casefold()
+              for index, name in enumerate(calendar.month_abbr) if name}
+    question = re.sub(
+        r'(?<![\w.])(' + '|'.join(months) + r')\.?(?=\s*(?:\d|through\b|to\b|until\b|and\b|[-–—]))',
+        lambda match: months[match[1]], question)
     return re.sub(r'\b(\d{1,2})/(\d{1,2})/((?:19|20)\d{2})\b',
-                  lambda match: f'{match[3]}-{int(match[2]):02}-{int(match[1]):02}', _normalize(question))
+                  lambda match: f'{match[3]}-{int(match[2]):02}-{int(match[1]):02}', question)
 
 
 def inventory_explicit_dates(question):
@@ -34,6 +40,14 @@ def inventory_explicit_dates(question):
         if year:
             dates.append(date(int(year), months[month], int(day)))
     return sorted(set(dates))
+
+
+def inventory_month_selection(question):
+    text = _inventory_question(question)
+    names = {name.casefold(): index for index, name in enumerate(calendar.month_name) if name}
+    token = r'\b(?:' + '|'.join(names) + r')\b'
+    match = re.search(token + r'(?:\s*(?:,\s*(?:and\s+)?|and\s+|&\s*)' + token + r')+\s+(?:19|20)\d{2}\b', text)
+    return {names[value] for value in re.findall(token, match[0])} if match else set()
 
 
 def inventory_time_scope(question, today=None):
@@ -54,9 +68,12 @@ def inventory_time_scope(question, today=None):
     if len(years) != 1:
         return None
     year = int(next(iter(years)))
-    month_range = re.search(r'\b('+'|'.join(calendar.month_name[1:]).lower()+r')\s*(?:through|to|until|[-–—])\s*('+'|'.join(calendar.month_name[1:]).lower()+r')\b', question)
+    month_range = re.search(r'\b('+'|'.join(calendar.month_name[1:]).lower()+r')(?:\s+(?:19|20)\d{2})?\s*(?:through|to|until|[-–—])\s*('+'|'.join(calendar.month_name[1:]).lower()+r')\b', question)
     numeric_range = re.search(r'tháng\s+(\d{1,2})\s*(?:đến|tới|[-–—])\s*(?:tháng\s+)?(\d{1,2})', question)
-    if month_range:
+    selection = inventory_month_selection(question)
+    if selection:
+        first, last = min(selection), max(selection)
+    elif month_range:
         first, last = (list(calendar.month_name).index(value.title()) for value in month_range.groups())
     elif numeric_range:
         first, last = map(int, numeric_range.groups())
@@ -570,6 +587,22 @@ def validate_independent_query_period(sql, parameters, question, sources, date_c
             if any(isinstance(table, exp.Table) and table.db + '.' + table.name == source
                    for table in scope.sources.values()):
                 _validate_source_period(scope, source.split('.')[1], next(iter(fields)), parameters, question)
+                selected = inventory_month_selection(question)
+                if selected and selected != set(range(min(selected), max(selected) + 1)):
+                    column = exp.column(next(iter(fields)), table=source.split('.')[1], db='commerce')
+                    proven = False
+                    for predicate in _conjuncts(scope.expression.args.get('where')):
+                        if not isinstance(predicate, exp.In) or predicate.args.get('query'):
+                            continue
+                        value = _canonical(predicate, scope, parameters, {})
+                        if (isinstance(value.this, exp.Extract) and value.this.this.name == 'MONTH'
+                                and value.this.expression == column
+                                and all(isinstance(item, exp.Literal) and item.is_int for item in value.expressions)):
+                            proven = {int(item.this) for item in value.expressions} == selected
+                            if proven:
+                                break
+                    if not proven:
+                        raise MetricDefinitionError('Retain the explicitly selected months using a source-date month IN filter.', code='invalid_date_scope')
 
 
 def _validate_contract_population(scope, required_tables, date_column, parameters):

@@ -782,8 +782,9 @@ def _process_invoice_upload(
                 )),
             },
         }, timeout=int(os.getenv(
-            "DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS",
-            "1800" if model_provider == "xiaomi" else "600",
+            "DOCUMENT_PROCESSING_XIAOMI_TIMEOUT_SECONDS", "1800",
+        ) if model_provider == "xiaomi" else os.getenv(
+            "DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS", "600",
         )))
         logger.info("INVOICE_UPLOAD_COMPONENT %s", json.dumps({
             "component": "document_processing_request", "invoice_id": invoice_id,

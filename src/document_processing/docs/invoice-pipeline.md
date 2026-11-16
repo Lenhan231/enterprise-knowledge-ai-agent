@@ -80,9 +80,10 @@ reviewable evidence. The normal document upload remains on its existing
 parser/chunking/indexing route.
 
 Xiaomi inference runs in an isolated Python environment so the main parser
-dependencies are not changed. Create `.venv-xiaomi` with Python 3.13 and the
-verified Transformers 5.17 / PyTorch 2.14 stack, or set
-`DOCUMENT_PROCESSING_XIAOMI_PYTHON` to an equivalent interpreter:
+dependencies are not changed. The document-processing Docker image includes
+this runtime at `/opt/xiaomi/bin/python`. For local runs, create `.venv-xiaomi`
+with Python 3.13 and the verified Transformers 5.17 / PyTorch 2.14 stack, or
+set `DOCUMENT_PROCESSING_XIAOMI_PYTHON` to an equivalent interpreter:
 
 ```bash
 uv venv --python 3.13 .venv-xiaomi
@@ -90,11 +91,11 @@ uv pip install --python .venv-xiaomi/bin/python \
   "transformers==5.17.0" "torch==2.14.0" "torchvision==0.29.0" pillow
 ```
 
-The runtime downloads `xiaomi-research/Xiaomi-OCR-0` on first use. Set
-`DOCUMENT_PROCESSING_XIAOMI_DEVICE=cpu` or `cuda` to override automatic device
-selection; `DOCUMENT_PROCESSING_XIAOMI_TIMEOUT_SECONDS` controls the worker
-timeout. Xiaomi results use the same `invoice.v1` schema and remain
-`review_required`.
+The runtime downloads `xiaomi-research/Xiaomi-OCR-0` on first use. Docker uses
+CPU inference by default; set `DOCUMENT_PROCESSING_XIAOMI_DEVICE=cpu` or `cuda`
+to choose the device in other deployments. `DOCUMENT_PROCESSING_XIAOMI_TIMEOUT_SECONDS`
+controls the worker timeout. Xiaomi results use the same `invoice.v1` schema
+and remain `review_required`.
 
 The first local inference may download base and adapter weights into `/models`;
 subsequent loads use the persistent model cache. Modal loads the base and adapter

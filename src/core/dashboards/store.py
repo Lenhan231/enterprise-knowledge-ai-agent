@@ -14,6 +14,20 @@ class Conflict(ValueError):
     pass
 
 
+class StoreUnavailable(RuntimeError):
+    pass
+
+
+def create_dashboard_store():
+    backend = os.getenv('DASHBOARD_STORAGE_BACKEND', 'postgres' if os.getenv('DATABASE_URL') else 'sqlite')
+    if backend == 'sqlite':
+        return DashboardStore()
+    if backend != 'postgres' or not os.getenv('DATABASE_URL'):
+        raise StoreUnavailable('Dashboard database is not configured.')
+    from core.dashboards.postgres_store import PostgresDashboardStore
+    return PostgresDashboardStore()
+
+
 class DashboardStore:
     def __init__(self, directory=None):
         self.directory = Path(directory or os.getenv('DASHBOARD_STORAGE_DIR', 'artifacts/local/dashboards'))
@@ -52,7 +66,8 @@ class DashboardStore:
     def create(self, subject, document):
         return self.save(subject, document, expected_revision=None)
 
-    def save(self, subject, document, expected_revision):
+    @staticmethod
+    def prepare(document, expected_revision):
         doc = document.model_copy(deep=True)
         reconcile(doc)
         doc.revision = 1 if expected_revision is None else expected_revision + 1
@@ -60,6 +75,10 @@ class DashboardStore:
         encoded, html = doc.model_dump_json(), render_dashboard(doc)
         if len(encoded.encode()) + len(html.encode()) > 2_000_000:
             raise ValueError('Dashboard exceeds the 2 MB saved artifact limit. Request fewer observations.')
+        return doc, encoded, html
+
+    def save(self, subject, document, expected_revision):
+        doc, encoded, html = self.prepare(document, expected_revision)
         owner = self.owner(subject)
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')

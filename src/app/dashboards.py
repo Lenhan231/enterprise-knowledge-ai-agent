@@ -14,7 +14,7 @@ from core.dashboards.agent import DashboardDocumentAgent
 from core.dashboards.models import BuildRequest, DashboardEdit, DashboardDocument, RefreshRequest, PendingDashboard, ClarificationTurn
 from core.dashboards.render import CSP, render_dashboard
 from core.dashboards.presentation import presentation_clarification, presentation_choice, presentation_only, set_representation, reconcile
-from core.dashboards.store import DashboardStore, Conflict
+from core.dashboards.store import create_dashboard_store, Conflict, StoreUnavailable
 
 router = APIRouter(prefix='/api/dashboards', tags=['dashboards'])
 principal = require_permission('view_analytics')
@@ -23,8 +23,16 @@ _build_slots = asyncio.Semaphore(2)
 
 
 @lru_cache(maxsize=1)
+def _get_store():
+    return create_dashboard_store()
+
+
 def get_store():
-    return DashboardStore()
+    try:
+        yield _get_store()
+    except StoreUnavailable:
+        logger.warning('Shared dashboard storage is unavailable')
+        raise HTTPException(503, 'Saved dashboards are temporarily unavailable. Please retry.') from None
 
 
 @lru_cache(maxsize=1)
@@ -32,8 +40,8 @@ def get_conversations():
     return ConversationStore(max_turns=1, max_chars=40_000)
 
 
-def owned(store, user, identifier):
-    doc = store.get(user['sub'], identifier)
+async def owned(store, user, identifier):
+    doc = await asyncio.to_thread(store.get, user['sub'], identifier)
     if doc is None:
         raise HTTPException(404, 'Dashboard not found')
     return doc
@@ -71,9 +79,9 @@ async def build(request, user, *, description=None, scope='', document=None, cla
         raise HTTPException(503, 'Dashboard data is unavailable. Check the SQL provider and data connection, then retry.')
 
 
-def persist(store, user, doc, expected=None):
+async def persist(store, user, doc, expected=None):
     try:
-        return store.save(user['sub'], doc, expected)
+        return await asyncio.to_thread(store.save, user['sub'], doc, expected)
     except Conflict as error:
         raise HTTPException(409, str(error))
     except ValueError as error:
@@ -95,7 +103,7 @@ def pause_draft(draft, conversation_id, history):
 
 
 async def run_draft(request, user, store, draft, conversation_id, history, *, max_chars):
-    original = owned(store, user, draft.target_id) if draft.target_id else None
+    original = await owned(store, user, draft.target_id) if draft.target_id else None
     if original:
         revision(original, draft.revision)
     doc = None
@@ -150,7 +158,7 @@ async def run_draft(request, user, store, draft, conversation_id, history, *, ma
         return JSONResponse({'status': 'failed', 'message': failure.message or 'The data query could not complete. Try again.',
             'scope': draft.scope, 'description': draft.description,
             'conversation_id': conversation_id if history else None, 'can_reply': can_reply}, headers={'Cache-Control': 'no-store'})
-    result = bundle(persist(store, user, doc, original.revision if original else None), 200 if original else 201)
+    result = bundle(await persist(store, user, doc, original.revision if original else None), 200 if original else 201)
     history.clear()
     return result
 
@@ -167,7 +175,7 @@ async def start_draft(request, user, store, conversations, draft, *, question=No
 
 @router.get('')
 async def list_dashboards(user=Depends(principal), store=Depends(get_store)):
-    return JSONResponse({'dashboards': store.list(user['sub'])}, headers={'Cache-Control': 'no-store'})
+    return JSONResponse({'dashboards': await asyncio.to_thread(store.list, user['sub'])}, headers={'Cache-Control': 'no-store'})
 
 
 @router.post('', dependencies=[Depends(_require_same_origin)])
@@ -189,7 +197,7 @@ async def create_dashboard(body: BuildRequest, request: Request, user=Depends(pr
 
 @router.get('/{identifier}')
 async def get_dashboard(identifier: str, request: Request, user=Depends(principal), store=Depends(get_store), conversations=Depends(get_conversations)):
-    doc = owned(store, user, identifier)
+    doc = await owned(store, user, identifier)
     pending = next((result for result in doc.results if result.status == 'clarification_required'), None)
     if pending:
         return await start_draft(request, user, store, conversations,
@@ -201,7 +209,7 @@ async def get_dashboard(identifier: str, request: Request, user=Depends(principa
 
 @router.patch('/{identifier}', dependencies=[Depends(_require_same_origin)])
 async def edit_dashboard(identifier: str, body: DashboardEdit, request: Request, user=Depends(principal), store=Depends(get_store), conversations=Depends(get_conversations)):
-    doc = owned(store, user, identifier)
+    doc = await owned(store, user, identifier)
     revision(doc, body.revision)
     try:
         updated = DashboardDocument.model_validate(doc.model_dump() | body.model_dump(exclude={'revision'}, exclude_unset=True))
@@ -211,12 +219,12 @@ async def edit_dashboard(identifier: str, body: DashboardEdit, request: Request,
         return await start_draft(request, user, store, conversations, PendingDashboard(
             description=doc.description, scope=updated.scope, operation='edit', target_id=doc.id,
             revision=doc.revision, edit=body, clarifications=doc.clarifications))
-    return bundle(persist(store, user, updated, doc.revision))
+    return bundle(await persist(store, user, updated, doc.revision))
 
 
 @router.post('/{identifier}/refresh', dependencies=[Depends(_require_same_origin)])
 async def refresh_dashboard(identifier: str, body: RefreshRequest, request: Request, user=Depends(principal), store=Depends(get_store), conversations=Depends(get_conversations)):
-    doc = owned(store, user, identifier)
+    doc = await owned(store, user, identifier)
     revision(doc, body.revision)
     scope = doc.scope if body.scope is None else body.scope
     return await start_draft(request, user, store, conversations, PendingDashboard(
@@ -228,7 +236,7 @@ async def refresh_dashboard(identifier: str, body: RefreshRequest, request: Requ
 
 @router.get('/{identifier}/html')
 async def get_html(identifier: str, download: bool = False, user=Depends(principal), store=Depends(get_store)):
-    doc = owned(store, user, identifier)
+    doc = await owned(store, user, identifier)
     headers = {'Cache-Control': 'no-store', 'Content-Security-Policy': CSP + '; sandbox',
                'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer'}
     if download:
@@ -238,10 +246,10 @@ async def get_html(identifier: str, download: bool = False, user=Depends(princip
 
 @router.delete('/{identifier}', dependencies=[Depends(_require_same_origin)])
 async def delete_dashboard(identifier: str, revision_number: int = Query(alias='revision', ge=1), user=Depends(principal), store=Depends(get_store)):
-    doc = owned(store, user, identifier)
+    doc = await owned(store, user, identifier)
     revision(doc, revision_number)
     try:
-        store.delete(user['sub'], identifier, revision_number)
+        await asyncio.to_thread(store.delete, user['sub'], identifier, revision_number)
     except Conflict as error:
         raise HTTPException(409, str(error))
     return JSONResponse({'deleted': True}, headers={'Cache-Control': 'no-store'})

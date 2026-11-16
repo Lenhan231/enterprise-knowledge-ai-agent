@@ -6,6 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from core.analytics.business_ontology import policy_context, validate_request_contract
+from core.analytics.commerce_decision_support import COMMERCE_DECISION_PROFILES, resolve_commerce_decision_domain
 from core.analytics.text_to_sql import SQLValidationError, build_sql_prompt, decode_query_plan
 from unittest.mock import AsyncMock, Mock, patch
 from core.sql_agent.agent import SQLAnalyticsAgent
@@ -13,6 +14,18 @@ from core.models.agents import AgentRequest, VerifiedIdentity
 
 
 class BusinessOntologyTest(unittest.TestCase):
+    def test_promotion_business_support_separates_observed_sales_from_causal_lift(self):
+        question = 'Should we scale the promotion with the highest attributed revenue, and does that prove lift?'
+        self.assertEqual(resolve_commerce_decision_domain(question), 'promotion_planning')
+        profile = COMMERCE_DECISION_PROFILES['promotion_planning']
+        self.assertIn('incrementality causal lift', profile['retrieval_query'])
+        self.assertTrue(any('not a causal uplift estimate' in item for item in profile['limitations']))
+        self.assertTrue(any('ROI and incremental profitability cannot be established' in item
+                            for item in profile['limitations']))
+        prompt = build_sql_prompt(question, schema_tables={
+            'commerce.promotions', 'commerce.orders', 'commerce.order_items', 'commerce.products'})
+        self.assertIn('commerce.promotions', prompt)
+
     def test_chart_contracts_are_bounded_and_reference_only_returned_fields(self):
         sql = 'SELECT category, SUM(amount) AS amount, SUM(quantity) AS quantity FROM commerce.items GROUP BY 1 LIMIT 200'
         contract = {'columns': ['category', 'amount', 'quantity'], 'dimensions': ['category'], 'chart_type': None,

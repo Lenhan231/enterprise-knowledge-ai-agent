@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import os
+import re
+from decimal import Decimal
 from time import perf_counter
 from typing import Literal
 
@@ -16,6 +18,26 @@ from core.retrieval.retrieval import (
 
 # Dense search's best passages always reach the reranker, on top of the fused candidates (#54).
 RERANK_DENSE_EXTRA = 10
+
+_AMOUNT_SCALES = {"tỷ": 10**9, "tỉ": 10**9, "triệu": 10**6, "tr": 10**6, "củ": 10**6,
+                  "nghìn": 10**3, "ngàn": 10**3, "k": 10**3}
+_AMOUNT = re.compile(r"(?<![\w.,])(\d+(?:[.,]\d+)?)\s*(tỷ|tỉ|triệu|tr|củ|nghìn|ngàn|k)(\d)?(?!\w)", re.IGNORECASE)
+
+
+def normalize_amounts(query: str) -> str:
+    """Write everyday amounts the way policies do: '3 củ' / '3tr' -> '3.000.000 VND', '4tr5' -> '4.500.000 VND'.
+
+    The translator read '3 củ' as '3 bulbs' and '7 củ' as '70 million'; search also matches the policy's own form.
+    shortcut: '<number> củ' is always money here (a policy assistant); revisit if produce/inventory items are asked by count.
+    """
+    def expand(match):
+        number, unit, tail = match.groups()
+        scale = _AMOUNT_SCALES[unit.lower()]
+        value = Decimal(number.replace(",", ".")) * scale + (Decimal(tail) * scale / 10 if tail else 0)
+        if value != value.to_integral_value():
+            return match.group(0)
+        return f"{int(value):,}".replace(",", ".") + " VND"
+    return _AMOUNT.sub(expand, query)
 
 
 def _expand_neighbours(repository, chunks, radius, company, roles):
@@ -82,6 +104,11 @@ class RetrievalService:
             raise TypeError("request must be a RetrievalRequest")
         if method not in {"dense", "bm25", "hybrid", "parent", "translated_hybrid", "translated_hybrid_rerank"}:
             raise ValueError("method must be dense, bm25, hybrid, parent, translated_hybrid, or translated_hybrid_rerank")
+        # Only the search query changes; answer generation and the claim check keep the user's own question.
+        original_query = request.query
+        search_query = normalize_amounts(request.query)
+        if search_query != request.query:
+            request = request.model_copy(update={"query": search_query})
         started = perf_counter()
         query_embedding = None
         if method != "bm25":
@@ -171,8 +198,10 @@ class RetrievalService:
                 metadata=metadata,
                 retrieval_method=method,
             ))
+        if search_query != original_query:
+            retrieval_details["amount_normalized_query"] = search_query
         return RetrievalResponse(
-            query=request.query,
+            query=original_query,
             latency_ms=(perf_counter() - started) * 1000,
             results=results,
             method=method,

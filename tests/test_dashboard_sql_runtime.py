@@ -12,6 +12,25 @@ from core.models.agents import AgentRequest, VerifiedIdentity
 
 
 class DashboardSQLRuntimeTest(unittest.IsolatedAsyncioTestCase):
+    async def test_separate_dashboard_builds_reuse_main_provider_and_cooldowns(self):
+        from core.dashboards.agent import DashboardDocumentAgent
+        provider = SimpleNamespace(generate=Mock(return_value=json.dumps({
+            'sql': 'SELECT SUM(s.revenue) AS revenue FROM commerce.sales s LIMIT 1', 'parameters': [],
+            'outputs': [{'kind': 'kpi', 'query': 0, 'measures': ['revenue']}]})))
+        main = SQLAnalyticsAgent(SimpleNamespace(execute_approved_query=AsyncMock(return_value=[{'revenue': 3}])),
+                                 inventory_only=False)
+        def factory(agent):
+            if agent.llm is None:
+                agent.llm = provider
+            return agent.llm
+        request = AgentRequest(question='Revenue KPI', identity=VerifiedIdentity(subject='test', permissions={'analytics:read'}))
+        with patch.object(SQLAnalyticsAgent, '_provider', factory):
+            for _ in range(2):
+                result = await DashboardDocumentAgent(main).build(request, 'Revenue KPI')
+                self.assertEqual('complete', result.status)
+        self.assertIs(provider, main.llm)
+        self.assertEqual(2, provider.generate.call_count)
+
     async def test_unverified_metric_results_cannot_be_displayed_on_refresh(self):
         agent = DashboardSQLAgent(SimpleNamespace(), llm=SimpleNamespace(), inventory_only=False)
         request = AgentRequest(question='Revenue', identity=VerifiedIdentity(subject='test', permissions={'analytics:read'}),

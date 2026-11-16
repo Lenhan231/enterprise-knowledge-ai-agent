@@ -86,6 +86,8 @@ def _agent_request(user: dict, question: str, **values):
     permissions = {"analytics:read"} if "view_analytics" in ROLE_PERMISSIONS[user["role"]] else set()
     if "ask_documents" in ROLE_PERMISSIONS[user["role"]]:
         permissions.add("documents:read")
+    if "view_agent_monitoring" in ROLE_PERMISSIONS[user["role"]]:
+        permissions.add("agents:diagnostics")  # e.g. the draft a claim check withheld
     identity = VerifiedIdentity(subject=user["sub"], permissions=frozenset(permissions),
                                 document_roles={user["role"]} if "documents:read" in permissions else set())
     return AgentRequest(question=question, user_id=user["sub"], identity=identity, **values)

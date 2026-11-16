@@ -6,6 +6,9 @@ from unittest.mock import AsyncMock, Mock
 from core.agents.sql.agent import SQLAnalyticsAgent
 from core.dashboards.agent import DashboardDocumentAgent
 from core.models.agents import AgentRequest, VerifiedIdentity
+from core.analytics.sql_validation import QueryPlan
+from core.analytics.metric_validation import MetricDefinitionError
+from core.dashboards.requirements import validate_outputs
 
 
 def response():
@@ -23,6 +26,28 @@ def response():
 
 
 class DashboardRequirementsTest(unittest.IsolatedAsyncioTestCase):
+    def test_chart_grouping_can_repeat_its_dimension_for_any_alias(self):
+        for kind in ('line', 'bar', 'donut'):
+            for dimension in ('month', 'period', 'segment'):
+                with self.subTest(kind=kind, dimension=dimension):
+                    plan = QueryPlan(sql=f'SELECT p.category AS {dimension}, COUNT(*) AS observations FROM commerce.products p GROUP BY 1 LIMIT 200')
+                    raw = [{'kind': kind, 'query': 0, 'dimension': dimension,
+                            'measures': ['observations'], 'group_by': [dimension]}]
+                    outputs = validate_outputs(raw, [('Compare observations', plan, {})], 'Compare observations')
+                    self.assertEqual([], outputs[0][0]['group_by'])
+                    self.assertEqual(dimension, outputs[0][0]['dimension'])
+                    self.assertEqual([dimension], raw[0]['group_by'])
+
+    def test_chart_grouping_cannot_add_another_dimension_or_measure(self):
+        plan = QueryPlan(sql='SELECT p.category AS segment, p.color AS label, COUNT(*) AS observations FROM commerce.products p GROUP BY 1, 2 LIMIT 200')
+        for kind in ('line', 'bar', 'donut', 'summary', 'kpi'):
+            for groups in (['label'], ['segment', 'label'], ['observations']):
+                with self.subTest(kind=kind, groups=groups):
+                    raw = [{'kind': kind, 'query': 0, 'dimension': 'segment' if kind in {'line', 'bar', 'donut'} else None,
+                            'measures': ['observations'], 'group_by': groups}]
+                    with self.assertRaises(MetricDefinitionError):
+                        validate_outputs(raw, [('Compare observations', plan, {})], 'Compare observations')
+
     def setUp(self):
         self.provider = SimpleNamespace(generate=Mock(return_value=json.dumps(response())))
         self.repo = SimpleNamespace(execute_approved_query=AsyncMock(side_effect=[
@@ -43,6 +68,50 @@ class DashboardRequirementsTest(unittest.IsolatedAsyncioTestCase):
         self.provider.generate.assert_called_once()
         self.assertEqual(2, self.repo.execute_approved_query.await_count)
 
+    async def test_dashboard_output_kinds_are_accepted_by_sql_contract(self):
+        for kind in ('kpi', 'summary'):
+            with self.subTest(kind=kind):
+                value = response()
+                value['queries'][1]['request_contract'] = {
+                    'columns': ['revenue'], 'dimensions': [], 'chart_type': kind}
+                self.provider.generate.return_value = json.dumps(value)
+                self.repo.execute_approved_query.side_effect = [
+                    [{'month': '2026-01-01', 'revenue': 10}, {'month': '2026-02-01', 'revenue': 20}], [{'revenue': 300}]]
+                doc = await self.build()
+                self.assertEqual('complete', doc.status, [r.message for r in doc.results])
+
+    async def test_inventory_output_repair_preserves_validated_mapping(self):
+        valid = [{'kind': 'bar', 'query': 0, 'dimension': 'category', 'measures': ['stockout_rate']},
+                 {'kind': 'table', 'query': 0, 'measures': ['category', 'stockout_rate']}]
+        for invalid in (None, [{'kind': 'kpi', 'query': 0, 'measures': ['stockout_rate']}]):
+            with self.subTest(invalid=invalid):
+                mapping = {'metrics': ['stockout_rate'], 'dimensions': ['category'],
+                           'time': {'mode': 'latest'}, 'outputs': invalid}
+                self.provider.generate.reset_mock()
+                self.provider.generate.side_effect = [json.dumps(mapping), json.dumps({'outputs': valid})]
+                self.repo.execute_approved_query.reset_mock()
+                self.repo.execute_approved_query.side_effect = None
+                self.repo.execute_approved_query.return_value = [
+                    {'snapshot_date': '2026-05-31', 'category': 'A', 'stockout_rate': 0.2}]
+                doc = await self.agent.build(self.request, 'Compare stockout rates by category at the latest inventory snapshot with a table')
+                self.assertEqual('complete', doc.status, [r.message for r in doc.results])
+                self.assertEqual(['bar', 'table'], [t.kind for t in doc.tiles])
+                self.assertEqual(2, self.provider.generate.call_count)
+                self.repo.execute_approved_query.assert_awaited_once()
+                self.assertIn('stockout_rate', self.provider.generate.call_args.args[0])
+
+    async def test_inventory_repair_is_bounded_and_rejects_mapping_changes(self):
+        mapping = {'metrics': ['stockout_rate'], 'dimensions': ['category'], 'time': {'mode': 'latest'}}
+        for repaired in ({'outputs': []}, {'outputs': [{'kind': 'table', 'query': 0}], 'metrics': ['stock_on_hand']}):
+            with self.subTest(repaired=repaired):
+                self.provider.generate.reset_mock()
+                self.provider.generate.side_effect = [json.dumps(mapping), json.dumps(repaired)]
+                doc = await self.agent.build(self.request, 'Stockout rates by category at the latest inventory snapshot')
+                self.assertEqual('failed', doc.results[0].status)
+                self.assertEqual(2, self.provider.generate.call_count)
+                self.assertNotIn('Please clarify', doc.results[0].message)
+                self.repo.execute_approved_query.assert_not_awaited()
+
     async def test_invalid_or_unsupported_requirements_never_execute(self):
         for defect in ('kpi_grain', 'missing_query', 'measure', 'grouped_summary', 'unsupported', 'too_many', 'missing_manifest', 'wrong_period'):
             with self.subTest(defect=defect):
@@ -57,7 +126,7 @@ class DashboardRequirementsTest(unittest.IsolatedAsyncioTestCase):
                 else: value['queries'][1]['parameters'][1] = '2026-06-01'
                 self.provider.generate.return_value = json.dumps(value)
                 doc = await self.build()
-                self.assertEqual('clarification_required', doc.results[0].status)
+                self.assertEqual('failed', doc.results[0].status)
                 self.repo.execute_approved_query.assert_not_awaited()
 
     async def test_summary_can_bind_a_measure_without_any_chart(self):
@@ -172,5 +241,5 @@ class DashboardRequirementsTest(unittest.IsolatedAsyncioTestCase):
                     value['outputs'][0]['dimension'] = 'month'
                 self.provider.generate.return_value = json.dumps(value)
                 doc = await self.agent.build(self.request, 'Monthly revenue in 2026')
-                self.assertEqual('clarification_required', doc.results[0].status)
+                self.assertEqual('failed', doc.results[0].status)
                 self.repo.execute_approved_query.assert_not_awaited()

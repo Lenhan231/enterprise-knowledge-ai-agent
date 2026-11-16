@@ -10,6 +10,7 @@ from sqlglot.lineage import lineage
 from core.dashboards.render import number, tile_presentation
 from core.dashboards.models import TileSpec
 from core.agents.dashboard_agent import requested_chart_type
+from core.analytics.metric_ontology import METRIC_ONTOLOGY, _normalize
 
 
 def canonical(name):
@@ -79,12 +80,47 @@ def table_requested(question):
 
 
 def presentation_choice(question):
-    if table_requested(question):
-        return 'table'
     try:
-        return requested_chart_type(question)
+        chart = requested_chart_type(question)
     except ValueError:
         return None
+    if chart and re.search(r'\btable\b|\bbảng\b', question, re.I):
+        return None
+    if table_requested(question):
+        return None if chart else 'table'
+    return chart
+
+
+def presentation_only(reply, tile):
+    """Recognize display commands; unfamiliar/data-changing text returns to query planning."""
+    if not presentation_choice(reply) or any(mark in reply for mark in ('"', "'", '=', '<', '>')):
+        return False
+    aliases = set(tile.measures)
+    for name in tile.measures:
+        known = METRIC_ONTOLOGY.get(canonical(name), {}).get('aliases', ())
+        if isinstance(known, dict):
+            aliases.update(alias for values in known.values() for alias in values)
+        else:
+            aliases.update(known)
+    text = _normalize(reply).replace('_', ' ')
+    for alias in sorted(aliases, key=len, reverse=True):
+        text = re.sub(r'(?<!\w)' + re.escape(_normalize(alias).replace('_', ' ')) + r'(?!\w)', ' ', text)
+    display_words = set(('use show display render switch change convert put make please instead just '
+        'a an the chart charts line bar donut doughnut pie table it this that these those all data '
+        'result results observations in as to of and me '
+        'hiển thị chuyển sang dạng bảng biểu đồ cột thanh đường tròn toàn bộ dữ liệu kết quả này bằng vui lòng giúp tôi thay thế').split())
+    words = re.findall(r'\w+', text)
+    return bool(words) and set(words) <= display_words
+
+
+def set_representation(tile, kind, result):
+    generated_title = (tile.kind.title() + ': ' + ', '.join(tile.measures).replace('_', ' '))[:120]
+    if tile.title == generated_title:
+        tile.title = (kind.title() + ': ' + ', '.join(tile.measures).replace('_', ' '))[:120]
+    tile.kind = kind
+    if kind == 'table':
+        tile.measures, tile.dimension = [], None
+    result.payload.get('metadata', {}).pop('_presentation_clarification', None)
 
 
 def automatic_tiles(result, question):

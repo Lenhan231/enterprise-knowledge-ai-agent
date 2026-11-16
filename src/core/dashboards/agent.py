@@ -6,7 +6,7 @@ import time
 from core.agents.runtime import deadline
 from core.analytics.metric_validation import inventory_time_scope
 from core.dashboards.models import BuildRequest, DashboardDocument, QueryResult, QuerySpec, TileSpec, now
-from core.dashboards.presentation import automatic_tiles, summary_tiles, bind_fields, reconcile, presentation_choice
+from core.dashboards.presentation import automatic_tiles, summary_tiles, bind_fields, reconcile, presentation_choice, set_representation
 from core.sql_agent.agent import SQLAnalyticsAgent
 
 logger = logging.getLogger(__name__)
@@ -14,7 +14,9 @@ logger = logging.getLogger(__name__)
 
 class DashboardDocumentAgent:
     def __init__(self, sql_agent):
-        self.sql_agent = sql_agent
+        from core.dashboards.sql_runtime import DashboardSQLAgent
+        self.sql_agent = (DashboardSQLAgent.from_agent(sql_agent)
+                          if type(sql_agent) is SQLAnalyticsAgent else sql_agent)
 
     async def execute(self, request, document, *, allow_multiple=False):
         semaphore = asyncio.Semaphore(2)
@@ -113,11 +115,8 @@ class DashboardDocumentAgent:
                             tiles = [TileSpec(id='data', title=result.question[:120], kind='table', query_id=result.id, span=2)]
                         tiles = [tile.model_copy(update={'id': result.id + '_' + tile.id}) for tile in tiles]
                     for tile in tiles:
-                        if not declared and tile.id in (presentation_choices or {}):
-                            result.payload.get('metadata', {}).pop('_presentation_clarification', None)
-                            tile.kind = presentation_choices[tile.id]
-                            if tile.kind == 'table':
-                                tile.measures, tile.dimension = [], None
+                        if tile.id in (presentation_choices or {}):
+                            set_representation(tile, presentation_choices[tile.id], result)
                     summaries = [] if declared else summary_tiles(result, summary_question, tiles)
                     if len(document.results) > 1:
                         for summary in summaries:

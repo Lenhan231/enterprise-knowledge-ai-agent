@@ -118,3 +118,4 @@ class PendingDashboard(StrictModel):
     edit: DashboardEdit | None = None
     presentation_tile_id: str | None = Field(default=None, pattern=r'^[a-z][a-z0-9_-]{0,31}$')
     presentation_choices: dict[str, Literal['line', 'bar', 'donut', 'table']] = Field(default_factory=dict, max_length=8)
+    presentation_document: DashboardDocument | None = None

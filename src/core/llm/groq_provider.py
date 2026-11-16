@@ -2,6 +2,7 @@ import os
 import re
 import threading
 import time
+from types import SimpleNamespace
 
 from dotenv import load_dotenv
 from openai import InternalServerError, OpenAI, RateLimitError
@@ -39,7 +40,7 @@ class GroqProvider(LLMInterface):
         self._lock = threading.Lock()
         self._last_rate_error = None
 
-    def generate(self, prompt: str, *, max_output_tokens: int = 1000) -> str:
+    def generate(self, prompt: str, *, max_output_tokens: int = 1000, response_schema: dict | None = None) -> str:
         if not 1 <= max_output_tokens <= 4096:
             raise ValueError("Output token budget must be between 1 and 4096")
         self.last_usage = None
@@ -56,7 +57,7 @@ class GroqProvider(LLMInterface):
             if cooling:
                 continue
             try:
-                response = self._create(index, prompt, max_output_tokens)
+                response = self._create(index, prompt, max_output_tokens, **({'response_schema': response_schema} if response_schema else {}))
                 with self._lock:
                     self._active = index
                 break
@@ -82,7 +83,7 @@ class GroqProvider(LLMInterface):
                     delay = float(match.group(1)) if match else None
                 if delay is not None and 0 <= delay <= 10 and remaining(60) > delay + 1:
                     time.sleep(delay + 1)
-                    response = self._create(last_rate_index, prompt, max_output_tokens)
+                    response = self._create(last_rate_index, prompt, max_output_tokens, **({'response_schema': response_schema} if response_schema else {}))
                     with self._lock:
                         self._active = last_rate_index
         if response is None:
@@ -103,10 +104,26 @@ class GroqProvider(LLMInterface):
             )
         return answer
 
-    def _create(self, index, prompt, max_output_tokens):
+    def _create(self, index, prompt, max_output_tokens, *, response_schema=None):
         for attempt in range(2):
             client = self._clients[index].with_options(timeout=remaining(60), max_retries=0)
             try:
+                if response_schema:
+                    schema = response_schema.copy()
+                    instruction = schema.pop('description', 'Return only a response matching the supplied JSON schema.')
+                    result = client.chat.completions.create(
+                        model=self.model_name, messages=[{'role': 'system', 'content': instruction},
+                            {'role': 'user', 'content': prompt}],
+                        temperature=self.temperature, reasoning_effort=self.reasoning_effort,
+                        max_completion_tokens=max_output_tokens,
+                        response_format={'type': 'json_schema', 'json_schema': {
+                            'name': 'dashboard_response', 'strict': True, 'schema': schema}},
+                    )
+                    usage = result.usage
+                    return SimpleNamespace(output_text=result.choices[0].message.content or '',
+                        usage=None if usage is None else SimpleNamespace(
+                            input_tokens=usage.prompt_tokens, output_tokens=usage.completion_tokens,
+                            total_tokens=usage.total_tokens))
                 return client.responses.create(
                     model=self.model_name, input=prompt, temperature=self.temperature,
                     reasoning={"effort": self.reasoning_effort}, max_output_tokens=max_output_tokens,

@@ -242,7 +242,8 @@ def _field(name):
 def requested_ranking_limit(question):
     """A safety ceiling is not an inferred user request for top N."""
     words = dict(zip('one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty'.split(), range(1,21)))
-    count = re.search(r'\b(?:top|bottom|first|last|limit)\s+(\d+|'+'|'.join(words)+r')\b|\b(\d+)\s+(?:products?|categories|rows?|sản phẩm)\b', question, re.I)
+    count = re.search(r'\b(?:top|bottom|first|last|limit)\s+(\d+|'+'|'.join(words)+r')\b|'
+                      r'\b(\d+)\s+(?:products?|categories|rows?|sản phẩm|danh mục|nhóm)\b', question, re.I)
     value = next(value for value in count.groups() if value).casefold() if count else None
     limit = (words[value] if value in words else int(value)) if value else None
     if limit is not None and not 1 <= limit <= 200:
@@ -378,7 +379,8 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
         _error('This metric does not support the requested grouping.','unsupported_dimension')
     if (mapping.representation == 'aggregate' and temporal.mode == 'range'
             and re.search(r'\btotal\b|\btổng\b', question, re.I)
-            and not re.search(r'monthly|(?:each|per|by|separate) (?:separate )?(?:exact )?snapshot|hàng tháng|từng snapshot|từng kỳ',question,re.I)):
+            and not re.search(r'monthly|(?:each|per|by|separate) (?:separate )?(?:exact )?snapshot|'
+                              r'hàng tháng|từng tháng|mỗi tháng|theo tháng|từng snapshot|từng kỳ',question,re.I)):
         _error('The canonical inventory definitions permit one snapshot or separate snapshot groups, '
                'not a combined total across dates. Choose a snapshot or request monthly observations.', 'incompatible_grain')
     if re.search(r'non[ -]?null|not null|không (?:rỗng|null)', question, re.I) and len(mapping.metrics) == 1:

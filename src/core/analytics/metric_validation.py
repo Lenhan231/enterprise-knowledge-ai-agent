@@ -43,7 +43,7 @@ def inventory_time_scope(question, today=None):
     if dates:
         return ('snapshot', dates[0].isoformat(), None) if len(dates) == 1 else (
             'range', dates[0].isoformat(), dates[-1].isoformat())
-    if (not re.search(r'compar|versus|\bvs\b|so sánh|đối chiếu', question)
+    if (not re.search(r'compar|versus|\bvs\b|so sánh|đối chiếu|so với|month.over.month|\b(?:every|each) month\b|(?:từng|mỗi) tháng', question)
             and re.search(r'\b(?:last|previous) month\b|tháng trước', question)):
         today = today or date.today()
         return ('snapshot', (date(today.year, today.month, 1) - timedelta(days=1)).isoformat(), None)
@@ -189,7 +189,7 @@ def validate_metric_request(question, metric_names):
         if definition['approval_status'] not in {'team_accepted', 'business_approved'}:
             raise MetricDefinitionError('This inventory definition has not been accepted for use.',
                                         code='metric_unapproved', clarification=True)
-    relative_month = (not re.search(r'compar|versus|\bvs\b|so sánh|đối chiếu', question)
+    relative_month = (not re.search(r'compar|versus|\bvs\b|so sánh|đối chiếu|so với|month.over.month|\b(?:every|each) month\b|(?:từng|mỗi) tháng', question)
                       and re.search(r'\b(?:last|previous) month\b|tháng trước', question))
     if relative_month and inventory and set(metric_names) != {'inventory_units_sold'}:
         raise MetricDefinitionError('Specify an exact snapshot for inventory balances; only recorded units sold can use the prior-month observation.',
@@ -714,6 +714,39 @@ def _cross_domain_inventory(sql, metric_names, parameters, table_columns, questi
                                if source.name == 'inventory')
         isolated.select(exp.alias_(exp.column('stockout_flag', table=inventory_alias), 'stockout_indicator'), copy=False)
         return _validate_inventory_metrics(isolated.sql(dialect='postgres'), metric_names, parameters, table_columns, question)
+    inventory_metrics = {name for name in metric_names
+                         if get_metric_definition(name).get('domain') == 'inventory_management'}
+    business_metrics = set(metric_names) - inventory_metrics
+    if inventory_metrics and business_metrics:
+        # Validate each canonical fact metric at its own grain. Extra cross-domain
+        # projections are allowed only after SQL safety/join validation by the caller.
+        inventory_select = scope.expression.copy()
+        inventory_formulas = {_formula(get_metric_definition(name), table_columns)
+                              for name in inventory_metrics}
+        inventory_select.set('expressions', [projection for projection in inventory_select.selects
+            if not projection.find(exp.AggFunc)
+            or _canonical(projection, scope, parameters, {}) in inventory_formulas])
+        verified = _validate_inventory_metrics(
+            inventory_select.sql(dialect='postgres'), inventory_metrics, parameters,
+            table_columns, question)
+        for name in business_metrics:
+            definition = get_metric_definition(name)
+            expected_tables = set(re.findall(r'commerce\.\w+', definition.get('source', '')))
+            candidates = [candidate for candidate in scopes if expected_tables and expected_tables <= {
+                f'commerce.{source.name}' for _, source in candidate.selected_sources.values()
+                if isinstance(source, exp.Table)}]
+            if len(candidates) != 1:
+                raise MetricDefinitionError(
+                    f'Could not isolate the source rows for canonical metric {name}.')
+            source_definitions = validate_metric_definitions(
+                candidates[0].expression.sql(dialect='postgres'), {name}, parameters,
+                table_columns, question=question)
+            verified[name] = source_definitions[name]
+        error = MetricDefinitionError(
+            'Canonical source metrics were validated independently; the derived cross-domain calculation has no approved contract.',
+            code='cross_domain_unverified')
+        error.verified_definitions = verified
+        raise error
     raise MetricDefinitionError('This cross-domain inventory calculation has no verified contract. '
                                 'Use independent movement comparisons or stockout/order existence checks.',
                                 code='incompatible_grain', clarification=True)

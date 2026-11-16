@@ -35,6 +35,18 @@ class KnowledgeAgent(BaseAgent):
                          "chunk_id": item.get("chunk_id"), "chunk_index": item["chunk_index"]})
                 for item in contexts]
 
+    async def retrieve_metric_definition(self, request: AgentRequest, metric_name: str) -> list[dict]:
+        """Retrieve role-scoped metric guidance without turning retrieved text into approval."""
+        authorize(request, 'knowledge')
+        query = ('business metric definition, formula, grain, source tables, required filters and time semantics: '
+                 + metric_name)
+        return await run_sync(
+            self.rag.retrieve_contexts, query, limit=5,
+            roles=sorted(request.identity.document_roles),
+            retrieval_method=request.metadata.get("retrieval_method", "translated_hybrid_rerank"),
+            _timeout=15,
+        )
+
     async def run(
         self,
         request: AgentRequest,

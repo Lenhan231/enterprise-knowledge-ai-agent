@@ -3,7 +3,7 @@ import sqlite3
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
@@ -358,8 +358,116 @@ class CrossDomainInventoryTest(unittest.TestCase):
                 {'stockout_indicator'}, (), APPROVED_COLUMNS,
                 question='Products with stockout_flag=true in December 2022 and any customer orders that month')
 
+    def test_monthly_stockout_revenue_analysis_keeps_verified_components_unverified(self):
+        from datetime import date
+        from core.analytics.metric_ontology import resolve_metric_names
+        from core.analytics.metric_validation import inventory_time_scope
+
+        question = ('Trong từng tháng của năm 2026, ba danh mục sản phẩm có tổng số ngày hết hàng cao nhất là gì? '
+            'Với mỗi danh mục và tháng, hãy tính tổng số ngày hết hàng, số sản phẩm từng hết hàng, '
+            'doanh thu bán hàng thực tế và phần trăm thay đổi doanh thu so với tháng trước. '
+            'Phân tích liệu mức độ hết hàng có tương quan với sự sụt giảm doanh thu hay không.')
+        sql = ("WITH inventory_month AS (SELECT DATE_TRUNC('month',i.snapshot_date)::date AS month, "
+            'i.snapshot_date AS snapshot_date,p.category AS category,SUM(i.stockout_days) AS stockout_days, '
+            'COUNT(DISTINCT i.product_id) FILTER (WHERE i.stockout_flag IS TRUE) AS stockout_product_count '
+            'FROM commerce.inventory AS i JOIN commerce.products AS p ON p.product_id=i.product_id '
+            'WHERE i.snapshot_date >= $1 AND i.snapshot_date < $2 GROUP BY 1,2,3), '
+            "monthly_revenue AS (SELECT DATE_TRUNC('month',o.order_date)::date AS month,p.category AS category, "
+            'SUM(oi.quantity*oi.unit_price-oi.discount_amount) AS product_revenue '
+            'FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id=o.order_id '
+            'JOIN commerce.products AS p ON p.product_id=oi.product_id '
+            "WHERE o.order_status='delivered' AND o.order_date >= $1 AND o.order_date < $2 GROUP BY 1,2), "
+            'combined AS (SELECT i.month,i.snapshot_date,i.category,i.stockout_days,i.stockout_product_count, '
+            'r.product_revenue,LAG(r.product_revenue) OVER (PARTITION BY i.category ORDER BY i.month) AS prior_revenue '
+            'FROM inventory_month AS i LEFT JOIN monthly_revenue AS r ON r.month=i.month AND r.category=i.category), '
+            'ranked AS (SELECT c.month,c.snapshot_date,c.category,c.stockout_days,c.stockout_product_count, '
+            'c.product_revenue,c.prior_revenue,CASE WHEN c.prior_revenue IS NULL OR c.prior_revenue=0 THEN NULL '
+            'ELSE 100.0*(c.product_revenue-c.prior_revenue)/c.prior_revenue END AS revenue_change_percent, '
+            'RANK() OVER (PARTITION BY c.month ORDER BY c.stockout_days DESC) AS category_rank FROM combined AS c) '
+            'SELECT r.month,r.snapshot_date,r.category,r.stockout_days,r.stockout_product_count,r.product_revenue, '
+            'r.revenue_change_percent,r.category_rank FROM ranked AS r WHERE r.category_rank<=3 '
+            'ORDER BY r.month,r.category_rank LIMIT 200')
+
+        self.assertEqual(resolve_metric_names(question), {'stockout_days', 'product_revenue'})
+        self.assertEqual(inventory_time_scope(question), ('range', '2026-01-01', '2026-12-31'))
+        validate_commerce_sql(sql, schema_columns=APPROVED_COLUMNS)
+        with self.assertRaises(MetricDefinitionError) as caught:
+            validate_metric_definitions(sql, {'stockout_days', 'product_revenue'},
+                (date(2026, 1, 1), date(2027, 1, 1)), APPROVED_COLUMNS, question=question)
+        self.assertEqual(caught.exception.code, 'cross_domain_unverified')
+        self.assertEqual(set(caught.exception.verified_definitions), {'stockout_days', 'product_revenue'})
+
+        invalid_formula = sql.replace('SUM(oi.quantity*oi.unit_price-oi.discount_amount)',
+                                      'SUM(oi.quantity*oi.unit_price)')
+        with self.assertRaises(MetricDefinitionError) as invalid:
+            validate_metric_definitions(invalid_formula, {'stockout_days', 'product_revenue'},
+                (date(2026, 1, 1), date(2027, 1, 1)), APPROVED_COLUMNS, question=question)
+        self.assertNotEqual(invalid.exception.code, 'cross_domain_unverified')
+
+        unsafe_join = sql.replace('r.month=i.month AND r.category=i.category', 'r.month=i.month')
+        with self.assertRaises(SQLValidationError):
+            validate_commerce_sql(unsafe_join, schema_columns=APPROVED_COLUMNS)
+
 
 class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def test_exact_monthly_stockout_question_executes_with_unverified_derived_measures(self):
+        from core.agents.sql.agent import SQLAnalyticsAgent as CurrentSQLAnalyticsAgent
+        from core.analytics.join_validation import PRIMARY_KEYS
+        from core.analytics.text_to_sql import APPROVED_COLUMNS, APPROVED_DATE_COLUMNS, APPROVED_JOINS
+        from core.models.agents import AgentRequest, VerifiedIdentity
+
+        question = ('Trong từng tháng của năm 2026, ba danh mục sản phẩm có tổng số ngày hết hàng cao nhất là gì? '
+            'Với mỗi danh mục và tháng, hãy tính tổng số ngày hết hàng, số sản phẩm từng hết hàng, '
+            'doanh thu bán hàng thực tế và phần trăm thay đổi doanh thu so với tháng trước. '
+            'Phân tích liệu mức độ hết hàng có tương quan với sự sụt giảm doanh thu hay không.')
+        sql = ("WITH inventory_month AS (SELECT DATE_TRUNC('month',i.snapshot_date)::date AS month, "
+            'i.snapshot_date AS snapshot_date,p.category AS category,SUM(i.stockout_days) AS stockout_days, '
+            'COUNT(DISTINCT i.product_id) FILTER (WHERE i.stockout_flag IS TRUE) AS stockout_product_count '
+            'FROM commerce.inventory AS i JOIN commerce.products AS p ON p.product_id=i.product_id '
+            'WHERE i.snapshot_date >= $1 AND i.snapshot_date < $2 GROUP BY 1,2,3), '
+            "monthly_revenue AS (SELECT DATE_TRUNC('month',o.order_date)::date AS month,p.category AS category, "
+            'SUM(oi.quantity*oi.unit_price-oi.discount_amount) AS product_revenue '
+            'FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id=o.order_id '
+            'JOIN commerce.products AS p ON p.product_id=oi.product_id '
+            "WHERE o.order_status='delivered' AND o.order_date >= $1 AND o.order_date < $2 GROUP BY 1,2), "
+            'combined AS (SELECT i.month,i.snapshot_date,i.category,i.stockout_days,i.stockout_product_count, '
+            'r.product_revenue,LAG(r.product_revenue) OVER (PARTITION BY i.category ORDER BY i.month) AS prior_revenue '
+            'FROM inventory_month AS i LEFT JOIN monthly_revenue AS r ON r.month=i.month AND r.category=i.category), '
+            'ranked AS (SELECT c.month,c.snapshot_date,c.category,c.stockout_days,c.stockout_product_count, '
+            'c.product_revenue,c.prior_revenue,CASE WHEN c.prior_revenue IS NULL OR c.prior_revenue=0 THEN NULL '
+            'ELSE 100.0*(c.product_revenue-c.prior_revenue)/c.prior_revenue END AS revenue_change_percent, '
+            'RANK() OVER (PARTITION BY c.month ORDER BY c.stockout_days DESC) AS category_rank FROM combined AS c) '
+            'SELECT r.month,r.snapshot_date,r.category,r.stockout_days,r.stockout_product_count,r.product_revenue, '
+            'r.revenue_change_percent,r.category_rank FROM ranked AS r WHERE r.category_rank<=3 '
+            'ORDER BY r.month,r.category_rank LIMIT 200')
+        provider, repository = Mock(), AsyncMock()
+        metric_retriever = AsyncMock(return_value=[{'content': 'Candidate cross-domain metric guidance.'}])
+        provider.generate.return_value = json.dumps({'sql': sql, 'parameters': ['2026-01-01', '2027-01-01']})
+        repository.get_schema.return_value = {
+            'tables': APPROVED_COLUMNS, 'primary_keys': PRIMARY_KEYS,
+            'joins': APPROVED_JOINS, 'date_columns': APPROVED_DATE_COLUMNS,
+        }
+        repository.execute_approved_query.return_value = [{
+            'month': '2026-10-01', 'snapshot_date': '2026-10-31', 'category': 'Outdoor',
+            'stockout_days': 15, 'stockout_product_count': 12, 'product_revenue': 452587.34,
+            'revenue_change_percent': -20.26, 'category_rank': 1,
+        }]
+        agent = CurrentSQLAnalyticsAgent(repository, llm=provider, inventory_only=False,
+                                         metric_retriever=metric_retriever)
+        selected = {'commerce.inventory', 'commerce.products', 'commerce.orders', 'commerce.order_items'}
+        with patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': selected, 'required_tables': selected, 'candidate_tables': selected}):
+            result = await agent.run(AgentRequest(question=question, identity=VerifiedIdentity(
+                subject='analyst', permissions={'analytics:read'})))
+
+        self.assertEqual(result.data['query_status'], 'executed')
+        self.assertEqual(result.metadata['metric_validation']['status'], 'unverified')
+        self.assertEqual(result.metadata['metric_validation']['code'], 'cross_domain_unverified')
+        self.assertEqual(result.metadata['metric_validation']['knowledge_lookup'], 'found')
+        metric_retriever.assert_awaited_once()
+        self.assertIn('Candidate cross-domain metric guidance.', provider.generate.call_args.args[0])
+        repository.execute_approved_query.assert_awaited_once()
+
     async def test_current_period_unavailability_is_verified_without_a_provider(self):
         from datetime import date
         from core.sql_agent.agent import SQLAnalyticsAgent

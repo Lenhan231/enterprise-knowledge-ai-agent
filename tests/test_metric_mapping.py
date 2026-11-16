@@ -87,6 +87,19 @@ class MetricMappingTest(unittest.TestCase):
         with self.assertRaises(MetricDefinitionError):
             decode_metric_mapping('```json\n'+json.dumps({**MAPPING,'sql':'SELECT 1'})+'\n```','Fewest pieces at latest observation')
 
+    def test_monthly_inventory_totals_are_separate_snapshot_groups(self):
+        question = 'Trong từng tháng của năm 2026, 3 danh mục có tổng số ngày hết hàng cao nhất là gì?'
+        payload = {'metrics':['stockout_days'], 'dimensions':['category'], 'representation':'aggregate',
+                   'time':{'mode':'range','start':'2026-01-01','end':'2026-12-31'},
+                   'ranking':{'metric':'stockout_days','direction':'desc','limit':3}}
+        mapping = decode_metric_mapping(json.dumps(payload), question)
+        self.assertEqual(mapping.time.mode, 'range')
+        self.assertEqual(mapping.dimensions, ['category'])
+        self.assertEqual(mapping.ranking.limit, 3)
+        from core.analytics.text_to_sql import build_sql_prompt
+        self.assertIn('rank independently inside each month',
+                      build_sql_prompt(question, metric_names={'stockout_days'}))
+
     def test_dates_and_domain_cannot_bypass_inventory_rules(self):
         with self.assertRaises(MetricDefinitionError):self.decode({'domain':'other'},question='Stock on hand latest snapshot')
         with self.assertRaises(MetricDefinitionError):self.decode(question='Stock on hand latest snapshot in 2022')

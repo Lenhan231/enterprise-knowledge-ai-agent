@@ -111,7 +111,10 @@ class Execution:
                     break
                 self.invocations += 1
                 outcome.attempts += 1
-                token = deadline.set(time.monotonic() + remaining(60))
+                # SQL may spend one model call drafting and a second repairing; leave it
+                # enough of the router's 120s request budget to finish that repair.
+                task_budget = 90 if task.agent == 'sql' else 60
+                token = deadline.set(time.monotonic() + remaining(task_budget))
                 try:
                     result = await asyncio.wait_for(self.agents[task.agent].run(subrequest), remaining())
                     outcome.result = AgentResult.model_validate(result)
@@ -122,8 +125,9 @@ class Execution:
                         break
                 except PermissionError:
                     raise
-                except TimeoutError:
+                except TimeoutError as error:
                     outcome.status, outcome.error_type = 'timed_out', 'TimeoutError'
+                    outcome.error_detail = str(error) or 'Task deadline exhausted.'
                     break
                 except ConnectionError:
                     outcome.error_type = 'ConnectionError'

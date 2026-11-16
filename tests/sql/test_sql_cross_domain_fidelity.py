@@ -9,7 +9,7 @@ import unittest
 ROOT=Path(__file__).resolve().parents[2]
 WORK=Path(os.environ.get('SQL_CROSS_DOMAIN_ROOT',ROOT))
 sys.path[:0]=[str(WORK),str(WORK/'src')]
-from core.analytics.text_to_sql import decode_query_plan,APPROVED_COLUMNS
+from core.analytics.text_to_sql import decode_query_plan,APPROVED_COLUMNS,validate_commerce_sql
 from core.analytics.metric_validation import validate_metric_definitions,MetricDefinitionError
 from sqlglot import exp,parse_one
 
@@ -54,16 +54,23 @@ def fixture():
     CREATE TABLE commerce.inventory(snapshot_date TEXT,product_id INT,units_sold INT,stockout_flag BOOLEAN,
     PRIMARY KEY(snapshot_date,product_id));
     CREATE TABLE commerce.orders(order_id INT PRIMARY KEY,order_date TEXT,order_status TEXT);
-    CREATE TABLE commerce.order_items(order_item_id INT PRIMARY KEY,order_id INT,product_id INT,quantity INT CHECK(quantity>0));
+    CREATE TABLE commerce.order_items(order_item_id INT PRIMARY KEY,order_id INT,product_id INT,quantity INT CHECK(quantity>0),
+    unit_price NUMERIC DEFAULT 1,discount_amount NUMERIC DEFAULT 0);
     CREATE TABLE commerce.returns(return_id INT PRIMARY KEY,order_id INT,product_id INT,return_date TEXT,return_quantity INT);
+    CREATE TABLE commerce.reviews(review_id INT PRIMARY KEY,product_id INT,rating INT,review_date TEXT);
     INSERT INTO commerce.products VALUES(1,'same','A'),(2,'same','A'),(3,'third','B'),(4,'order-only','D'),(5,'old-order','C'),(6,'inventory-only','E');
     INSERT INTO commerce.inventory VALUES('2022-12-15',1,4,1),('2022-12-31',1,6,1),('2022-12-31',2,3,1),
     ('2022-12-31',3,2,0),('2022-12-31',5,7,1),('2022-12-31',6,0,1),('2022-11-30',1,99,1);
     INSERT INTO commerce.orders VALUES(1,'2022-12-05','cancelled'),(2,'2022-12-10','completed'),
     (3,'2022-12-11','completed'),(4,'2022-11-01','completed'),(5,'2023-01-01','completed');
-    INSERT INTO commerce.order_items VALUES(1,1,1,1),(2,2,1,1),(3,3,1,6),(4,2,2,4),(5,3,3,2),(6,3,4,5),(7,4,5,10),(8,5,1,100);
+    INSERT INTO commerce.order_items(order_item_id,order_id,product_id,quantity) VALUES
+    (1,1,1,1),(2,2,1,1),(3,3,1,6),(4,2,2,4),(5,3,3,2),(6,3,4,5),(7,4,5,10),(8,5,1,100);
     INSERT INTO commerce.returns VALUES(1,1,1,'2022-12-05',1),(2,2,1,'2022-12-20',2),
     (3,2,2,'2022-12-20',2),(4,3,3,'2022-12-20',1),(5,4,5,'2022-12-20',1),(6,5,1,'2023-01-01',100);''')
+    db.executemany('INSERT INTO commerce.reviews VALUES(?,?,?,?)', [
+        (1, 1, 5, '2022-12-02'), (2, 1, 4, '2022-12-12'),
+        (3, 2, 3, '2022-12-03'), (4, 3, 2, '2022-12-15'),
+    ])
     return db
 
 
@@ -78,6 +85,44 @@ def execute_fixture(db,sql):
 
 
 class CrossDomainFixtureTruthTest(unittest.TestCase):
+    def test_rating_segment_comparison_aggregates_facts_before_joining(self):
+        sql = """WITH product_revenue AS (
+          SELECT oi.product_id, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS product_revenue
+          FROM commerce.order_items oi JOIN commerce.orders o ON o.order_id=oi.order_id
+          WHERE o.order_status='completed' AND o.order_date>=DATE '2022-01-01' AND o.order_date<DATE '2023-01-01'
+          GROUP BY 1
+        ), product_ratings AS (
+          SELECT r.product_id, AVG(r.rating) AS average_rating, COUNT(r.review_id) AS review_count
+          FROM commerce.reviews r WHERE r.review_date>=DATE '2022-01-01' AND r.review_date<DATE '2023-01-01'
+          GROUP BY 1
+        ), product_groups AS (
+          SELECT pr.product_id, pr.product_revenue, COALESCE(rt.average_rating,0) AS average_rating,
+                 COALESCE(rt.review_count,0) AS review_count
+          FROM product_revenue pr LEFT JOIN product_ratings rt ON rt.product_id=pr.product_id
+        )
+        SELECT CASE WHEN pg.average_rating>=4 THEN '4+' ELSE 'under 4' END AS rating_group,
+               COUNT(pg.product_id) AS product_count, SUM(pg.product_revenue) AS revenue,
+               SUM(pg.review_count) AS review_count
+        FROM product_groups pg GROUP BY 1 ORDER BY 1 LIMIT 200"""
+        validate_commerce_sql(sql, schema_columns=APPROVED_COLUMNS)
+        with fixture() as db:
+            db.execute('UPDATE commerce.order_items SET unit_price=CASE order_item_id '
+                       'WHEN 2 THEN 40 WHEN 3 THEN 10 WHEN 4 THEN 2.5 WHEN 5 THEN 2.5 '
+                       'ELSE 1 END')
+            rows = execute_fixture(db, sql)
+            self.assertEqual(rows, [
+                {'rating_group': '4+', 'product_count': 1, 'revenue': 100, 'review_count': 2},
+                {'rating_group': 'under 4', 'product_count': 4, 'revenue': 30, 'review_count': 2},
+            ])
+            unsafe_rows = execute_fixture(db, """SELECT CASE WHEN r.rating>=4 THEN '4+' ELSE 'under 4' END AS rating_group,
+                COUNT(DISTINCT oi.product_id) AS product_count,
+                SUM(oi.quantity*oi.unit_price-oi.discount_amount) AS revenue,COUNT(r.review_id) AS review_count
+                FROM commerce.order_items oi JOIN commerce.orders o ON o.order_id=oi.order_id
+                JOIN commerce.reviews r ON r.product_id=oi.product_id
+                WHERE o.order_status='completed' AND o.order_date>='2022-01-01' AND o.order_date<'2023-01-01'
+                GROUP BY 1 ORDER BY 1 LIMIT 200""")
+            self.assertNotEqual(rows, unsafe_rows)
+
     def test_extra_november_return_exposes_annual_population_narrowing(self):
         with fixture() as db:
             db.execute("INSERT INTO commerce.returns VALUES(7,2,1,'2022-11-15',4)")

@@ -98,6 +98,9 @@ def decode_sql_turn(raw, question, context):
     action = 'new'
     try:
         state = SQLConversationState.model_validate(context)
+        priority = _segment_priority_followup(question, state)
+        if priority is not None:
+            return priority, True
         turn = SQLTurn.model_validate(parse_json_response(raw))
         action = turn.action
         if turn.clarification:
@@ -152,6 +155,27 @@ def decode_sql_turn(raw, question, context):
     except (ValidationError,ValueError,TypeError) as error:
         raise MetricDefinitionError('The conversation interpretation was invalid. Restate the inventory measure and snapshot.',
                                     code='interpretation_invalid',clarification=True) from error
+
+
+def _segment_priority_followup(question, state):
+    """Compile the already-supported segment-priority follow-up from accepted context."""
+    accepted = state.accepted
+    text = _normalize(question)
+    asks_priority = bool(re.search(
+        r'\b(?:which|what)\s+(?:product\s+)?segments?\b.*\b(?:promot|prioriti|push)'
+        r'|\b(?:promot|prioriti|push)\b.*\bsegments?\b'
+        r'|\bnên\s+(?:đẩy\s+mạnh|ưu\s+tiên|thúc\s+đẩy)\s+(?:segment|phân\s+khúc)\s+nào\b',
+        text,
+    ))
+    if (not asks_priority or accepted is None or state.pending is not None
+            or accepted.domain != 'inventory'
+            or 'sell_through_rate' not in accepted.metrics
+            or 'segment' not in accepted.dimensions):
+        return None
+    payload = accepted.model_dump()
+    payload['ranking'] = {'metric': 'sell_through_rate', 'direction': 'desc', 'limit': None}
+    mapping = decode_metric_mapping(json.dumps(payload), question, preserve_ranking_limit=True)
+    return mapping
 
 
 def _error(message, code='interpretation_invalid'):

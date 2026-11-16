@@ -103,6 +103,19 @@ class RequestPlanningTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn('Do not ask which metric', llm.prompts[0])
         self.assertEqual(result.tasks[0].question, 'So sánh doanh thu năm nay với năm ngoái')
 
+    async def test_date_clarification_answer_keeps_business_question_and_confirmation(self):
+        resolved = 'Compare product revenue by segment for the last 30 days'
+        llm = Provider(plan({'id': 's', 'agent': 'sql', 'question': resolved}, objective=resolved))
+        history = [{'question': 'giờ nên đẩy mạnh segment sản phẩm nào nhỉ',
+                    'scope': 'Recommend a product segment from the previous sales analysis',
+                    'clarification': 'Confirm that the requested period is the most recent 30 days.'}]
+
+        result = await plan_request(AgentRequest(question='last 30 days'), llm, history=history)
+
+        self.assertEqual(result.tasks[0].question, resolved)
+        self.assertIn('giờ nên đẩy mạnh segment sản phẩm nào nhỉ', llm.prompts[0])
+        self.assertIn('Confirm that the requested period is the most recent 30 days.', llm.prompts[0])
+
     async def test_clarification_without_objective_is_normalized_instead_of_failing(self):
         llm = Provider({'clarification': 'Bạn muốn so sánh khoảng thời gian nào?'})
         result = await plan_request(AgentRequest(question='so sánh thêm'), llm,

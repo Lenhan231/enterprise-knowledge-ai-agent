@@ -6,6 +6,38 @@ from core.llm.groq_provider import GroqProvider
 
 
 class StructuredDashboardGenerationTest(unittest.TestCase):
+    def test_missing_requested_summary_reuses_one_unambiguous_chart_without_changing_queries(self):
+        from copy import deepcopy
+        from core.dashboards.generation import normalize_generation
+        chart = "SELECT DATE_TRUNC('month', s.date) AS period, SUM(s.revenue) AS amount FROM commerce.sales s WHERE s.date >= $1 AND s.date < $2 GROUP BY 1 ORDER BY 1 LIMIT 200"
+        total = 'SELECT SUM(s.revenue) AS overall FROM commerce.sales s WHERE s.date >= $1 AND s.date < $2 LIMIT 1'
+        queries = [{'question': q, 'sql': sql, 'parameters': ['2031-04-01', '2031-07-01'], 'explanation': q}
+                   for q, sql in [('Monthly revenue in Q2 2031', chart), ('Overall revenue in Q2 2031', total)]]
+        data = {'queries': queries, 'outputs': [
+            {'kind': 'line', 'query': 0, 'dimension': 'period', 'measures': ['amount']},
+            {'kind': 'kpi', 'query': 1, 'measures': ['overall']},
+            {'kind': 'table', 'query': 0, 'measures': ['period', 'amount']}]}
+        before = deepcopy(data)
+        result = normalize_generation(data, summarize_returned=True)
+        self.assertEqual(queries, result['queries'])
+        self.assertEqual(before, data)
+        self.assertEqual({'kind': 'summary', 'query': 0, 'dimension': None,
+                          'measures': ['amount'], 'group_by': []}, result['outputs'][-1])
+        self.assertEqual(result, normalize_generation(result, summarize_returned=True))
+        self.assertEqual(3, len(normalize_generation(data)['outputs']))
+        ambiguous = deepcopy(before)
+        ambiguous['queries'].append(deepcopy(queries[0]))
+        ambiguous['outputs'].append({'kind': 'bar', 'query': 2, 'dimension': 'period', 'measures': ['amount']})
+        self.assertEqual(4, len(normalize_generation(ambiguous, summarize_returned=True)['outputs']))
+        bounded = deepcopy(before)
+        bounded['outputs'] *= 3
+        bounded['outputs'].pop()
+        self.assertEqual(8, len(normalize_generation(bounded, summarize_returned=True)['outputs']))
+        data['queries'][0]['sql'] = chart.replace('SUM(s.revenue)', 's.revenue')
+        self.assertEqual(3, len(normalize_generation(data, summarize_returned=True)['outputs']))
+        data['queries'][0]['sql'] = None
+        self.assertEqual(3, len(normalize_generation(data, summarize_returned=True)['outputs']))
+
     def test_single_dataset_response_schemas_bind_all_outputs_to_query_zero(self):
         from core.dashboards.generation import response_schema, CountResponseFormat, InventoryResponse, OutputResponse, SQLResponse
         for model in (CountResponseFormat, InventoryResponse, OutputResponse, SQLResponse):

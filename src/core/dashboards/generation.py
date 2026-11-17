@@ -19,6 +19,7 @@ SYSTEM_RULES = (
     'Include only requested outputs. Monthly or category measures alone do not request overall KPI tiles. '
     'An explicitly requested overall total is a scalar KPI unless the user specifies another representation. '
     'Descriptive statistics are computed from returned observations by the renderer; do not query them separately. '
+    'An underlying observation table reuses the chart dataset unless raw source records are explicitly requested. '
     'Do not ask to confirm supplied chart types, measures, columns or time scope. '
     'Ask a focused business clarification only when required information is genuinely missing.'
 )
@@ -149,7 +150,7 @@ def response_schema(model, *, allow_kpi=True):
 
 
 def normalize_generation(value, *, summarize_returned=False):
-    """Normalize transport nesting only; all SQL and output checks still run afterward."""
+    """Normalize transport and unambiguous returned summaries; all validators still run afterward."""
     result = deepcopy(value)
     if not isinstance(result, dict):
         return result
@@ -194,7 +195,34 @@ def normalize_generation(value, *, summarize_returned=False):
             pass  # Preserve malformed plans for the normal validator and bounded repair.
         else:
             result = candidate
+    if summarize_returned:
+        _complete_returned_summary(result)
     return result
+
+
+def _complete_returned_summary(result):
+    from core.dashboards.presentation import aggregate_outputs, output_roles
+    outputs = result.get('outputs')
+    queries = result.get('queries', [result])
+    if (not isinstance(outputs, list) or not isinstance(queries, list) or len(outputs) >= 8
+            or not all(isinstance(output, dict) for output in outputs)
+            or any(output.get('kind') == 'summary' for output in outputs)):
+        return
+    candidates = {}
+    for output in outputs:
+        index, measures = output.get('query'), output.get('measures')
+        if (output.get('kind') not in {'line', 'bar', 'donut'} or type(index) is not int
+                or not 0 <= index < len(queries) or not isinstance(queries[index], dict)
+                or not isinstance(queries[index].get('sql'), str)
+                or not isinstance(measures, list) or not measures or not all(isinstance(m, str) for m in measures)):
+            continue
+        _, grouped = output_roles(queries[index])
+        if set(measures) <= aggregate_outputs(queries[index]) - grouped:
+            candidates[index, tuple(measures)] = {'kind': 'summary', 'query': index, 'dimension': None,
+                                                 'measures': measures.copy(), 'group_by': []}
+    # shortcut: complete only one unambiguous observation set; multiple targets still need an explicit manifest.
+    if len(candidates) == 1:
+        outputs.append(next(iter(candidates.values())))
 
 
 def _reuse_summary_observations(result):

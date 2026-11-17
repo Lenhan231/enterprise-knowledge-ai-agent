@@ -70,6 +70,26 @@ class TwoQueryDashboardTest(unittest.IsolatedAsyncioTestCase):
         self.provider.generate.assert_called_once()
         self.assertEqual(2, self.repo.execute_approved_query.await_count)
 
+    async def test_missing_summary_preserves_valid_total_and_observation_queries_without_repair(self):
+        self.description += ', with a statistical summary and the underlying observation table'
+        declared = outputs() + [{'kind': 'table', 'query': 1, 'measures': ['month', 'sessions']}]
+        self.provider.generate.return_value = json.dumps({'queries': plans(), 'outputs': declared})
+        self.repo.execute_approved_query.side_effect = [
+            [{'sessions': 111}], [{'month': '2026-01-01', 'sessions': 30}, {'month': '2026-02-01', 'sessions': 70}]]
+        doc = await self.build()
+        self.assertEqual('complete', doc.status, [r.message for r in doc.results])
+        self.assertEqual(['kpi', 'line', 'table', 'summary'], [tile.kind for tile in doc.tiles])
+        self.assertEqual(['q0', 'q1', 'q1', 'q1'], [tile.query_id for tile in doc.tiles])
+        self.assertEqual(111, doc.results[0].payload['rows'][0]['sessions'])
+        self.provider.generate.assert_called_once()
+        self.assertEqual(2, self.repo.execute_approved_query.await_count)
+
+    def test_underlying_observation_table_is_an_explicit_representation(self):
+        from core.dashboards.requirements import requested_kinds
+        self.assertEqual({'summary', 'table'}, requested_kinds(
+            'Monthly sessions, a statistical summary, and the underlying observation table'))
+        self.assertNotIn('table', requested_kinds('Monthly sessions from the web traffic table'))
+
     async def test_database_failure_keeps_other_result_and_provenance(self):
         self.repo.execute_approved_query.side_effect = [RuntimeError('private database detail'), [{'month': '2026-01-01', 'sessions': 5}, {'month': '2026-02-01', 'sessions': 6}]]
         doc = await self.build()

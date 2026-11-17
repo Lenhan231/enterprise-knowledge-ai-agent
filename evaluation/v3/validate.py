@@ -114,6 +114,13 @@ def main(chunks_path, set_dir="artifacts/evaluation/vietstyle-v3"):
             if score >= 0.5:
                 warnings.append(f"near-duplicate ({score:.2f}): {grams[a][0]}:{grams[a][1]['id']} ~ "
                                 f"{grams[b][0]}:{grams[b][1]['id']}")
+    manifest = set_dir / "MANIFEST.json"
+    if manifest.exists():
+        import hashlib
+        for name, expected in json.load(open(manifest, encoding="utf-8"))["locked"].items():
+            actual = hashlib.sha256((set_dir / name).read_bytes()).hexdigest()
+            if actual != expected:
+                errors.append(f"{name} changed after it was locked (sha256 {actual[:12]} != {expected[:12]})")
     for line in warnings:
         print("WARN ", line)
     for line in errors:

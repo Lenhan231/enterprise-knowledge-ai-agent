@@ -83,8 +83,20 @@ Each set has 60 questions, 5 per category.
 ## Known corpus fact that affects RBAC items
 The VN and EN Operating Policy are `allowed_roles = {employee}`. Admin sees everything, and every other role (finance_analyst, procurement, operations, executive, …) cannot retrieve the policy. RBAC items test this behaviour as it is configured. The report flags it as a probable misconfiguration.
 
+## Pooled gold (added before the lock)
+Authoring gold covers the passages the author picked. Because the policy repeats rules across sections and languages, more passages answer some questions, so they were found by pooling:
+1. **Candidates:** the top 10 passages from dense, BM25, hybrid and translated_hybrid_rerank were pooled for every item, minus existing gold and page furniture (2,094 candidates).
+2. **Judge:** Groq `openai/gpt-oss-120b` graded each candidate 0/1/2 (`evaluation/v3/judge_pool.py`).
+3. **Pilot:** a pilot on 5 items agreed with a manual check on 74/75 labels.
+4. **Grade-2 check:** every grade-2 proposal was then read by hand. 18 of 73 were too lenient and were downgraded to grade 1.
+5. **Approval:** the human approved the bundle on 17 Nov 2026 (`pooled_gold.json`, `POOL-PROPOSALS.md`).
+
+Pooled passages carry `"source": "pool"` in the gold list. Some come from the other set's topics, because the policy repeats the rule there, for example independent bank-change verification under both vendor onboarding and invoice matching. The validator reports these as warnings, and the report states the overlap as a limitation.
+
 ## Metrics
 - **Retrieval:** Recall@K, Precision@K, MRR and nDCG@K, for K = 1, 5, 10.
+  - Recall, Precision and MRR count only grade-2 passages ("answers it").
+  - nDCG uses graded relevance, with grade 2 and grade 1.
 - **Generation:** Faithfulness, Answer Relevancy and Context Precision (RAGAS); must_include accuracy; outcome accuracy (answer, not_covered or clarify).
 - **Hallucination rate:** answers with at least one unsupported claim. Also reported: wrong-seal rate (unsupported but sealed), wrongly-withheld rate, and the flip rate over 3 repeats.
 - **System:** p50 and p95 response time, retrieval latency, throughput at 1/2/4/8 concurrent users, and GPU utilization (local runs).

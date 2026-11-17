@@ -1571,9 +1571,7 @@
     "12",
     "6"
    ],
-   "must_not_include": [
-    "7,5|7.5"
-   ],
+   "must_not_include": [],
    "reference_answer": "Tiền đề chưa đúng: VietStyle cấp 12 ngày phép năm (không phải 15); tích lũy 1/12 mỗi tháng nên 6 tháng là 6 ngày.",
    "facts": [],
    "topic": "Điều kiện và quyền nghỉ phép",

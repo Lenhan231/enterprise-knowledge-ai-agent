@@ -41,7 +41,7 @@ class CountRuntimeTest(unittest.IsolatedAsyncioTestCase):
         value = response()
         value.pop('outputs')
         self.provider.generate.return_value = json.dumps(value)
-        doc = await self.agent.build(self.request, QUESTION)
+        doc = await self.agent.build(self.request, QUESTION + ' with KPI tiles')
         self.assertEqual('failed', doc.results[0].status)
         self.assertEqual('generation_failed', doc.results[0].payload['metadata']['status'])
         self.assertFalse(doc.results[0].payload['metadata']['clarification_required'])
@@ -73,13 +73,94 @@ class CountRuntimeTest(unittest.IsolatedAsyncioTestCase):
         repaired = {'outputs': [{'kind': 'bar', 'query': 0, 'dimension': 'category', 'measures': measures}]}
         self.provider.generate.side_effect = [json.dumps(value), json.dumps(repaired)]
         self.repo.execute_approved_query.return_value[0]['category'] = 'A'
-        doc = await self.agent.build(self.request, QUESTION + ' for each category')
+        doc = await self.agent.build(self.request, QUESTION + ' for each category with a bar chart')
         self.assertEqual('complete', doc.status, [r.message for r in doc.results])
         self.assertEqual(['category'], doc.results[0].payload['metadata']['count_query']['dimensions'])
         self.assertEqual(['bar'], [t.kind for t in doc.tiles])
         self.assertIn('Repair only the outputs', self.provider.generate.call_args.args[0])
         self.assertEqual(2, self.provider.generate.call_count)
         self.repo.execute_approved_query.assert_awaited_once()
+
+    async def test_count_output_positions_are_not_dataset_indices(self):
+        value = response()
+        value['count_query']['dimensions'] = ['category']
+        value['outputs'] = [
+            {'kind': 'bar', 'query': 0, 'dimension': 'category', 'measures': ['out_count']},
+            {'kind': 'bar', 'query': 1, 'dimension': 'category', 'measures': ['over_count']}]
+        for repaired_index in (0, 1):
+            with self.subTest(repaired_index=repaired_index):
+                repaired = json.loads(json.dumps({'outputs': value['outputs']}))
+                repaired['outputs'][1]['query'] = repaired_index
+                self.provider.generate.side_effect = [json.dumps(value), json.dumps(repaired)]
+                self.repo.execute_approved_query.reset_mock()
+                self.repo.execute_approved_query.return_value[0]['category'] = 'A'
+                doc = await self.agent.build(self.request, QUESTION + ' for each category with bar charts')
+                if repaired_index == 0:
+                    self.assertEqual('complete', doc.status, [r.message for r in doc.results])
+                    self.assertEqual(['q0', 'q0'], [t.query_id for t in doc.tiles])
+                    self.repo.execute_approved_query.assert_awaited_once()
+                    self.assertIn('Every output must use query: 0', self.provider.generate.call_args.args[0])
+                else:
+                    self.assertEqual('failed', doc.status)
+                    self.assertIn('dataset index 1', doc.results[0].message)
+                    self.assertIn('available dataset indices: [0]', doc.results[0].message)
+                    self.assertNotIn('within 3', doc.results[0].message)
+                    self.repo.execute_approved_query.assert_not_awaited()
+
+    async def test_output_repair_cannot_silently_remove_an_explicit_kpi_request(self):
+        value = response()
+        value['count_query']['dimensions'] = ['category']
+        self.provider.generate.side_effect = [json.dumps(value), json.dumps({'outputs': [
+            {'kind': 'bar', 'query': 0, 'dimension': 'category', 'measures': ['out_count', 'over_count']}]})]
+        doc = await self.agent.build(self.request, QUESTION + ' by category with an overall KPI')
+        self.assertEqual('failed', doc.status)
+        self.assertIn('omitted explicitly requested representations: kpi', doc.results[0].message)
+        self.repo.execute_approved_query.assert_not_awaited()
+
+    async def test_unrequested_invalid_kpis_do_not_block_a_valid_chart_of_the_same_counts(self):
+        value = response()
+        value['count_query']['dimensions'] = ['category']
+        value['outputs'].append({'kind': 'bar', 'query': 0, 'dimension': 'category',
+                                 'measures': [c['alias'] for c in value['count_query']['counts']]})
+        self.provider.generate.return_value = json.dumps(value)
+        self.repo.execute_approved_query.return_value[0]['category'] = 'A'
+        doc = await self.agent.build(self.request, QUESTION + ' for each category')
+        self.assertEqual('complete', doc.status, [r.message for r in doc.results])
+        self.assertEqual(['bar'], [t.kind for t in doc.tiles])
+        self.provider.generate.assert_called_once()
+        self.repo.execute_approved_query.assert_awaited_once()
+
+    async def test_count_plan_cannot_omit_an_explicit_grouping(self):
+        for grouping in ('for each category', 'by category', 'per category', 'theo danh mục',
+                         'per segment', 'by category and segment'):
+            with self.subTest(grouping=grouping):
+                self.provider.generate.reset_mock()
+                self.provider.generate.return_value = json.dumps(response())
+                self.repo.execute_approved_query.reset_mock()
+                doc = await self.agent.build(self.request, QUESTION + ' ' + grouping)
+                self.assertEqual('failed', doc.status)
+                self.assertIn('omitted requested grouping', doc.results[0].message)
+                self.repo.execute_approved_query.assert_not_awaited()
+
+    async def test_count_presentation_defaults_need_no_model_outputs_or_output_repair(self):
+        cases = [(['category'], 'latest', 'Counts for each category at latest inventory snapshot', 'bar'),
+                 (['category', 'segment'], 'latest', 'Counts by category and segment at latest inventory snapshot', 'table'),
+                 ([], 'history', 'Inventory counts across snapshots', 'line')]
+        for dimensions, mode, question, kind in cases:
+            with self.subTest(kind=kind):
+                value = response()
+                value.pop('outputs')
+                value['count_query']['dimensions'] = dimensions
+                value['count_query']['time']['mode'] = mode
+                self.provider.generate.return_value = json.dumps(value)
+                self.provider.generate.reset_mock()
+                self.repo.execute_approved_query.return_value = [
+                    {'snapshot_date': '2026-04-30', 'category': 'A', 'segment': 'B', 'sku_count': 3, 'out_count': 2, 'over_count': 2},
+                    {'snapshot_date': '2026-05-31', 'category': 'C', 'segment': 'D', 'sku_count': 4, 'out_count': 1, 'over_count': 2}]
+                doc = await self.agent.build(self.request, question)
+                self.assertEqual('complete', doc.status, [r.message for r in doc.results])
+                self.assertEqual([kind], [tile.kind for tile in doc.tiles])
+                self.provider.generate.assert_called_once()
 
     def test_inventory_count_routing_does_not_capture_rates_other_metrics_or_cross_domain_requests(self):
         for question in ('Stockout rate by category at latest snapshot',

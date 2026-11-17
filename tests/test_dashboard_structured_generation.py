@@ -6,6 +6,22 @@ from core.llm.groq_provider import GroqProvider
 
 
 class StructuredDashboardGenerationTest(unittest.TestCase):
+    def test_single_dataset_response_schemas_bind_all_outputs_to_query_zero(self):
+        from core.dashboards.generation import response_schema, CountResponseFormat, InventoryResponse, OutputResponse, SQLResponse
+        for model in (CountResponseFormat, InventoryResponse, OutputResponse, SQLResponse):
+            with self.subTest(model=model.__name__):
+                schema = response_schema(model)
+                refs = [d['properties']['query'] for d in schema['$defs'].values()
+                        if 'query' in d.get('properties', {})]
+                self.assertTrue(refs)
+                self.assertTrue(all(r['maximum'] == (2 if model is SQLResponse else 0) for r in refs))
+                if model is not SQLResponse:
+                    for node in [schema, *schema['$defs'].values()]:
+                        if 'outputs' in node.get('properties', {}):
+                            self.assertEqual({'$ref': '#/$defs/DashboardOutput'}, node['properties']['outputs']['items'])
+        grouped = response_schema(OutputResponse, allow_kpi=False)
+        self.assertNotIn('kpi', grouped['$defs']['DashboardOutput']['properties']['kind']['enum'])
+
     def test_summary_of_returned_observations_reuses_chart_query_only_when_population_matches(self):
         from core.dashboards.generation import normalize_generation
         chart = "SELECT DATE_TRUNC('month', s.date) AS month, SUM(s.revenue) AS revenue FROM commerce.sales s WHERE s.date >= $1 AND s.date < $2 GROUP BY 1 LIMIT 200"

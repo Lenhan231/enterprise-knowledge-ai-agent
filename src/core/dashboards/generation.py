@@ -109,9 +109,23 @@ class OutputResponse(ResponseModel):
     outputs: list[Output] = Field(min_length=1, max_length=8)
 
 
-def response_schema(model):
+def response_schema(model, *, allow_kpi=True):
     schema = model.model_json_schema()
     schema['description'] = SYSTEM_RULES
+    single_dataset = model in {InventoryResponse, CountResponseFormat, OutputResponse}
+    if single_dataset:
+        schema['description'] += (' This contract has exactly one server-compiled dataset, not a SQL bundle. '
+                                  'Every output must use query: 0, irrespective of its position or measures. '
+                                  'Do not generate SQL or additional datasets.')
+        # Groq cannot disambiguate output unions with both kind and a fixed query reference.
+        schema['$defs']['DashboardOutput'] = DashboardOutput.model_json_schema()
+        if not allow_kpi:
+            schema['$defs']['DashboardOutput']['properties']['kind']['enum'].remove('kpi')
+        for output in (ChartOutput, KPIOutput, SummaryOutput, TableOutput):
+            schema['$defs'].pop(output.__name__, None)
+        for node in [schema, *schema['$defs'].values()]:
+            if 'outputs' in node.get('properties', {}):
+                node['properties']['outputs']['items'] = {'$ref': '#/$defs/DashboardOutput'}
 
     def strict(node):
         if isinstance(node, dict):
@@ -122,6 +136,8 @@ def response_schema(model):
             if node.get('type') == 'object':
                 node['required'] = list(node.get('properties', {}))
                 node['additionalProperties'] = False
+                if single_dataset and 'query' in node.get('properties', {}):
+                    node['properties']['query']['maximum'] = 0
             for value in node.values():
                 strict(value)
         elif isinstance(node, list):

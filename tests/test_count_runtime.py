@@ -76,7 +76,9 @@ class CountRuntimeTest(unittest.IsolatedAsyncioTestCase):
         doc = await self.agent.build(self.request, QUESTION)
         self.assertEqual('failed', doc.results[0].status)
         self.assertEqual('generation_failed', doc.results[0].payload['metadata']['status'])
-        self.assertNotIn('Stored product values', doc.results[0].message)
+        self.assertIn('Stored product values require product-level output', doc.results[0].message)
+        self.assertIn('No dashboard data query was executed', doc.results[0].message)
+        self.assertFalse(doc.results[0].payload['metadata']['clarification_required'])
         self.assertEqual(2, self.provider.generate.call_count)
         self.repo.execute_approved_query.assert_not_awaited()
 

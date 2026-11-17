@@ -7,6 +7,7 @@ gold (gain 2^grade - 1). RBAC denial items: leak rate = a forbidden document app
 """
 import json
 import math
+import random
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -55,8 +56,15 @@ def score(set_name, run_path):
             overall[name].append(value)
             by_category[item["category"]][name].append(value)
     mean = lambda values: round(sum(values) / len(values), 4) if values else None
+    rng = random.Random(13)  # fixed seed: the same run always gets the same interval
+
+    def interval(values, rounds=2000):
+        """95% bootstrap interval of the mean over items; 53 items make differences under ~0.06 unreliable."""
+        means = sorted(sum(rng.choice(values) for _ in values) / len(values) for _ in range(rounds))
+        return [round(means[int(0.025 * rounds)], 3), round(means[int(0.975 * rounds)], 3)]
     return {"run": Path(run_path).stem, "items": len(rows), "scored": len(overall["mrr"]),
             "metrics": {k: mean(v) for k, v in overall.items()},
+            "ci95": {k: interval(overall[k]) for k in ("hit@1", "hit@5", "mrr", "ndcg@10")},
             "by_category": {c: {k: mean(v) for k, v in m.items() if k in ("hit@5", "mrr", "ndcg@10")} for c, m in sorted(by_category.items())},
             "rbac_leak_rate": leaks / denials if denials else None,
             "latency_ms": {"p50": percentile(latency, 0.5), "p95": percentile(latency, 0.95)}}
@@ -74,6 +82,7 @@ def main(argv):
     for r in results:
         print(f"{r['run'][:38]:38s} " + " ".join(f"{r['metrics'][c]:>11.3f}" for c in cols)
               + f"   {r['rbac_leak_rate']:.2f}  {r['latency_ms']['p50']:>5.0f}  {r['latency_ms']['p95']:>5.0f}")
+    print("95% CI (bootstrap): " + "; ".join(f"{r['run']}: MRR {r['ci95']['mrr']}, nDCG@10 {r['ci95']['ndcg@10']}" for r in results))
     if out:
         json.dump(results, open(out, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 

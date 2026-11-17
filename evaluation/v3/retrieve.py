@@ -25,6 +25,9 @@ def main(set_name, method, top_k, out_path):
     if os.getenv("EVAL_DENSE_EXTRA") is not None:
         # Experiment switch: the number of dense passages added to reranking (#54); production uses the module default.
         retrieval_service.RERANK_DENSE_EXTRA = int(os.environ["EVAL_DENSE_EXTRA"])
+    # Experiment switches for fusion (experiment 4); unset means the production defaults in RetrievalService.retrieve.
+    fusion = {name: cast(os.environ[env]) for name, env, cast in (("dense_weight", "EVAL_DENSE_WEIGHT", float),
+              ("bm25_weight", "EVAL_BM25_WEIGHT", float), ("rrf_k", "EVAL_RRF_K", int)) if os.getenv(env)}
     service = RetrievalService()
     done = set()
     if Path(out_path).exists():  # resume after a quota stop without redoing finished items
@@ -36,7 +39,7 @@ def main(set_name, method, top_k, out_path):
                     continue
                 started = time.perf_counter()
                 response = service.retrieve(RetrievalRequest(query=item["question"], top_k=int(top_k)),
-                                            roles=[item["role"]], method=method)
+                                            roles=[item["role"]], method=method, **fusion)
                 out.write(json.dumps({
                     "id": item["id"], "method": method, "role": item["role"],
                     "latency_ms": round((time.perf_counter() - started) * 1000, 1),

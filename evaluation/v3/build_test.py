@@ -11,18 +11,18 @@ DECK = "05_Inventory_Policy_Training_Deck.pptx"
 
 ITEMS = [
     # lookup
-    item("lookup", "Nghỉ phép theo kế hoạch phải gửi đề nghị trước ít nhất bao lâu?", g(97), ["năm ngày làm việc|5 ngày làm việc"],
-         "Nghỉ theo kế hoạch nên được đề nghị ít nhất năm ngày làm việc trước ngày đầu nghỉ.", topic="Nộp yêu cầu nghỉ và thời hạn báo trước"),
+    item("lookup", "Muốn nghỉ phép thì phải hỏi trước bao lâu?", g(97), ["năm ngày làm việc|5 ngày làm việc"],
+         "Nghỉ theo kế hoạch nên được đề nghị ít nhất năm ngày làm việc trước ngày đầu nghỉ; nghỉ khẩn, do bệnh hoặc được pháp luật bảo vệ thì báo sớm nhất có thể và không mất hiệu lực vì thiếu thời gian báo trước.", topic="Nộp yêu cầu nghỉ và thời hạn báo trước"),
     item("lookup", "Sự cố bảo mật mức Cao phải báo cho Bảo mật trong bao lâu?", g(599), ["một giờ|1 giờ"],
          "Mức Cao (khả năng truy cập trái phép hoặc suy giảm dịch vụ đáng kể): báo Bảo mật và chủ hệ thống trong một giờ.",
          topic="Phân loại và ứng phó sự cố"),
-    item("lookup", "Nhà cung cấp trọng yếu phải được rà soát hiệu quả bao lâu một lần?", g(343), ["hằng năm"],
+    item("lookup", "phải kiểm tra nhà cung cấp bao lâu 1 lần", g(343), ["hằng năm"],
          "Rà nhà cung cấp trọng yếu ít nhất hằng năm và sau lỗi lặp về chất lượng, giao hàng, bảo mật hoặc hóa đơn.",
          topic="Hiệu quả mua sắm và rà soát nhà cung cấp"),
     item("lookup", "Dữ liệu trong công ty được chia thành những mức phân loại nào?", g(568, 569, 570, 571),
          ["Công khai", "Nội bộ", "Mật", "Hạn chế"],
          "Bốn mức: Công khai, Nội bộ, Mật và Hạn chế; xử lý theo mức phân loại cao nhất áp dụng.", topic="Phân loại, xử lý và chia sẻ dữ liệu"),
-    item("lookup", "Chủ lĩnh vực phải rà soát chính sách vận hành bao lâu một lần?", g(712), ["hằng năm"],
+    item("lookup", "phải rà soát chính sách bao lâu 1 lần?", g(712, 72), ["hằng năm"],
          "Ít nhất hằng năm và sau thay đổi trọng yếu về luật, mô hình dữ liệu, quy trình nhà cung cấp, kiểm soát tồn, kiến trúc bảo mật hoặc ứng phó sự cố.",
          topic="Rà quản trị, kiểm toán và cải tiến liên tục"),
 
@@ -64,9 +64,9 @@ ITEMS = [
          facts=["F1.lodging"], topic="Hạn mức chi phí, ăn uống và công tác"),
 
     # multi_part
-    item("multi_part", "Nghỉ phép theo kế hoạch cần báo trước bao lâu, và đơn nghỉ phải có những thông tin gì?", g(97, 98),
+    item("multi_part", "Nghỉ phép cần báo trước bao lâu, và đơn nghỉ phải có những thông tin gì?", g(97, 98),
          ["năm ngày làm việc|5 ngày làm việc", "loại nghỉ", "bàn giao"],
-         "Báo trước ít nhất năm ngày làm việc; cung cấp mã nhân viên, loại nghỉ, ngày bắt đầu/kết thúc, số giờ nghỉ, cách liên hệ và kế hoạch bàn giao.",
+         "Nghỉ theo kế hoạch báo trước ít nhất năm ngày làm việc (nghỉ khẩn hoặc ốm báo sớm nhất có thể); cung cấp mã nhân viên, loại nghỉ, ngày bắt đầu/kết thúc, số giờ nghỉ, cách liên hệ và kế hoạch bàn giao.",
          topic="Nộp yêu cầu nghỉ và thời hạn báo trước"),
     item("multi_part", "Sự cố mức Trung bình và mức Thấp lần lượt phải báo trong bao lâu?", g(600, 601),
          ["bốn giờ làm việc|4 giờ làm việc", "cuối ngày làm việc"],
@@ -75,7 +75,7 @@ ITEMS = [
          ["ngân sách", "phiên bản"],
          "Chỉ phát hành PO sau khi hoàn tất kiểm tra yêu cầu, nhà cung cấp, nguồn cung, ngân sách và duyệt; sửa PO sau phát hành phải có phiên bản, gửi nhà cung cấp và lưu các bản trước.",
          topic="Tạo và phát hành đơn mua hàng"),
-    item("multi_part", "Trước khi chia sẻ dữ liệu ra bên ngoài cần xác nhận gì, và có được tải dữ liệu Hạn chế lên dịch vụ AI chưa được duyệt không?",
+    item("multi_part", "Trước khi chia sẻ dữ liệu ra bên ngoài cần xác nhận gì, và có được tải dữ liệu Hạn chế lên AI không?",
          g(572, 573), ["mục đích", "không"],
          "Trước chia sẻ ngoài phải xác nhận mục đích, người nhận, tối thiểu hóa và phê duyệt; không tải dữ liệu Hạn chế lên dịch vụ AI chưa được duyệt.",
          topic="Phân loại, xử lý và chia sẻ dữ liệu"),
@@ -93,7 +93,7 @@ ITEMS = [
          ["không|chưa", "PO"],
          "Chưa: yêu cầu không phải cam kết và phê duyệt không phải bằng chứng đã thực hiện; 'đã cam kết' là khi phát hành cam kết hợp lệ như PO, và PO chỉ phát hành sau khi hoàn tất kiểm tra yêu cầu, nhà cung cấp, nguồn cung, ngân sách và duyệt.",
          topic="Định nghĩa và trạng thái giao dịch"),
-    item("multi_passage", "Tác tử AI có được phát hành PO hay trả hóa đơn không, và nếu hai nguồn đã duyệt mâu thuẫn thì xử lý ra sao?",
+    item("multi_passage", "AI có được phát hành PO hay trả hóa đơn không, và nếu hai nguồn đã duyệt mâu thuẫn thì xử lý ra sao?",
          g(629, 74, (VN, 636, 1)), ["không", "chuyển"],
          "Không: tác tử AI không được duyệt chi, phát hành PO, trả hóa đơn, điều chỉnh tồn hay cấp quyền trừ luồng được phê duyệt riêng; nếu hai nguồn đã duyệt mâu thuẫn, tạm dừng hành động tự động liên quan và chuyển chủ sở hữu chịu trách nhiệm.",
          topic="Quản lý thay đổi, an toàn tác tử AI và kiểm soát phát hành"),
@@ -135,7 +135,7 @@ ITEMS = [
          outcome="not_covered", topic="(absent)"),
 
     # false_premise
-    item("false_premise", "Yêu cầu mua đã được duyệt rồi nên coi như đơn hàng đã đặt xong đúng không?", g(33, 36), ["không|chưa"],
+    item("false_premise", "Yêu cầu mua đã được duyệt rồi thì coi như là đơn hàng đã đặt xong đúng không?", g(33, 36), ["không|chưa"],
          "Không: phê duyệt không phải bằng chứng đã thực hiện; chỉ 'đã cam kết' khi phát hành cam kết hợp lệ như PO, và 'đã hoàn thành' khi sự kiện thực tế đã diễn ra và được đối chiếu.",
          topic="Định nghĩa và trạng thái giao dịch"),
     item("false_premise", "Hạn mức khách sạn ở đâu cũng là 2,5 triệu một đêm phải không?", g(179, 185), ["1.800.000", "thành phố lớn"],

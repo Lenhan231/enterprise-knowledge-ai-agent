@@ -5,7 +5,7 @@
   {
    "id": "T001",
    "category": "lookup",
-   "question": "Nghỉ phép theo kế hoạch phải gửi đề nghị trước ít nhất bao lâu?",
+   "question": "Muốn nghỉ phép thì phải hỏi trước bao lâu?",
    "role": "employee",
    "language": "vi",
    "history": [],
@@ -26,7 +26,7 @@
     "năm ngày làm việc|5 ngày làm việc"
    ],
    "must_not_include": [],
-   "reference_answer": "Nghỉ theo kế hoạch nên được đề nghị ít nhất năm ngày làm việc trước ngày đầu nghỉ.",
+   "reference_answer": "Nghỉ theo kế hoạch nên được đề nghị ít nhất năm ngày làm việc trước ngày đầu nghỉ; nghỉ khẩn, do bệnh hoặc được pháp luật bảo vệ thì báo sớm nhất có thể và không mất hiệu lực vì thiếu thời gian báo trước.",
    "facts": [],
    "topic": "Nộp yêu cầu nghỉ và thời hạn báo trước",
    "forbidden_documents": []
@@ -58,7 +58,7 @@
   {
    "id": "T003",
    "category": "lookup",
-   "question": "Nhà cung cấp trọng yếu phải được rà soát hiệu quả bao lâu một lần?",
+   "question": "phải kiểm tra nhà cung cấp bao lâu 1 lần",
    "role": "employee",
    "language": "vi",
    "history": [],
@@ -134,7 +134,7 @@
   {
    "id": "T005",
    "category": "lookup",
-   "question": "Chủ lĩnh vực phải rà soát chính sách vận hành bao lâu một lần?",
+   "question": "phải rà soát chính sách bao lâu 1 lần?",
    "role": "employee",
    "language": "vi",
    "history": [],
@@ -143,6 +143,11 @@
     {
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
      "chunk_index": 712,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 72,
      "grade": 2
     },
     {
@@ -524,7 +529,7 @@
   {
    "id": "T016",
    "category": "multi_part",
-   "question": "Nghỉ phép theo kế hoạch cần báo trước bao lâu, và đơn nghỉ phải có những thông tin gì?",
+   "question": "Nghỉ phép cần báo trước bao lâu, và đơn nghỉ phải có những thông tin gì?",
    "role": "employee",
    "language": "vi",
    "history": [],
@@ -552,7 +557,7 @@
     "bàn giao"
    ],
    "must_not_include": [],
-   "reference_answer": "Báo trước ít nhất năm ngày làm việc; cung cấp mã nhân viên, loại nghỉ, ngày bắt đầu/kết thúc, số giờ nghỉ, cách liên hệ và kế hoạch bàn giao.",
+   "reference_answer": "Nghỉ theo kế hoạch báo trước ít nhất năm ngày làm việc (nghỉ khẩn hoặc ốm báo sớm nhất có thể); cung cấp mã nhân viên, loại nghỉ, ngày bắt đầu/kết thúc, số giờ nghỉ, cách liên hệ và kế hoạch bàn giao.",
    "facts": [],
    "topic": "Nộp yêu cầu nghỉ và thời hạn báo trước",
    "forbidden_documents": []
@@ -625,7 +630,7 @@
   {
    "id": "T019",
    "category": "multi_part",
-   "question": "Trước khi chia sẻ dữ liệu ra bên ngoài cần xác nhận gì, và có được tải dữ liệu Hạn chế lên dịch vụ AI chưa được duyệt không?",
+   "question": "Trước khi chia sẻ dữ liệu ra bên ngoài cần xác nhận gì, và có được tải dữ liệu Hạn chế lên AI không?",
    "role": "employee",
    "language": "vi",
    "history": [],
@@ -764,7 +769,7 @@
   {
    "id": "T023",
    "category": "multi_passage",
-   "question": "Tác tử AI có được phát hành PO hay trả hóa đơn không, và nếu hai nguồn đã duyệt mâu thuẫn thì xử lý ra sao?",
+   "question": "AI có được phát hành PO hay trả hóa đơn không, và nếu hai nguồn đã duyệt mâu thuẫn thì xử lý ra sao?",
    "role": "employee",
    "language": "vi",
    "history": [],
@@ -1078,7 +1083,7 @@
   {
    "id": "T036",
    "category": "false_premise",
-   "question": "Yêu cầu mua đã được duyệt rồi nên coi như đơn hàng đã đặt xong đúng không?",
+   "question": "Yêu cầu mua đã được duyệt rồi thì coi như là đơn hàng đã đặt xong đúng không?",
    "role": "employee",
    "language": "vi",
    "history": [],

@@ -162,8 +162,8 @@ ITEMS = [
          "Tài liệu không đề cập bảo hiểm sức khỏe.", outcome="not_covered", topic="(absent)"),
 
     # false_premise: the question assumes something the documents contradict, or asks for an unsupported conclusion
+    # A favourable contract can exceed 12 days (rule 82), so mentioning 15 x 6/12 as that case is allowed (judge run 17 Nov).
     item("false_premise", "Vì phép năm là 15 ngày, tôi làm 6 tháng thì được bao nhiêu ngày?", g(82, 84), ["12", "6"],
-         must_not=["7,5|7.5"],
          reference="Tiền đề chưa đúng: VietStyle cấp 12 ngày phép năm (không phải 15); tích lũy 1/12 mỗi tháng nên 6 tháng là 6 ngày.",
          topic="Điều kiện và quyền nghỉ phép"),
     item("false_premise", "Đơn mua dưới 5 triệu thì tôi tự duyệt cho mình được đúng không?", g(21, 49, 274), ["không"],

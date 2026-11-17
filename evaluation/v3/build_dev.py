@@ -257,6 +257,11 @@ ITEMS = [
 
 def write(set_name, prefix, items):
     pairs = {int(k): v for k, v in json.load(open(HERE / "rule_pairs.json")).items()}
+    pooled = {}
+    if (HERE / "pooled_gold.json").exists():
+        for extra in json.load(open(HERE / "pooled_gold.json", encoding="utf-8")):
+            if extra.get("approved"):
+                pooled.setdefault(extra["id"], []).append(extra)
     out = []
     for number, entry in enumerate(items, 1):
         gold, seen = list(entry["gold"]), {(x["document"], x["chunk_index"]) for x in entry["gold"]}
@@ -265,7 +270,13 @@ def write(set_name, prefix, items):
             if en is not None and (EN, en) not in seen:
                 gold.append({"document": EN, "chunk_index": en, "grade": 1})
                 seen.add((EN, en))
-        out.append({"id": f"{prefix}{number:03d}", **entry, "gold": gold})
+        item_id = f"{prefix}{number:03d}"
+        # Human-approved passages from pooled relevance judging (judge job 2); never part of authoring.
+        for extra in pooled.get(item_id, []):
+            if (extra["document"], extra["chunk_index"]) not in seen:
+                gold.append({"document": extra["document"], "chunk_index": extra["chunk_index"], "grade": extra["grade"], "source": "pool"})
+                seen.add((extra["document"], extra["chunk_index"]))
+        out.append({"id": item_id, **entry, "gold": gold})
     json.dump({"set": f"vietstyle-{set_name}-v3", "spec": "SPEC.md", "items": out},
               open(HERE / f"{set_name}-v3.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(len(out), set_name, "items written")

@@ -83,6 +83,11 @@ def main(chunks_path, set_dir="artifacts/evaluation/vietstyle-v3"):
                 if g["grade"] not in (1, 2):
                     errors.append(f"{where}: grade must be 1 or 2")
                 home = owner.get(key)
+                if g.get("source") == "pool":
+                    # Judged relevant after authoring: the policy repeats some rules across topics, so this is reported, not refused.
+                    if home not in (name, "shared_by_fact"):
+                        warnings.append(f"{where}: pooled gold {key} comes from {home} topics (repeated fact)")
+                    continue
                 if home not in (name, "shared_by_fact"):
                     errors.append(f"{where}: gold {key} belongs to {home}, not {name}")
                 roles = set((corpus[key].get("document") or {}).get("allowed_roles") or [])
@@ -96,8 +101,8 @@ def main(chunks_path, set_dir="artifacts/evaluation/vietstyle-v3"):
                     errors.append(f"{where}: fact {fact} belongs to {other}")
 
     if len(sets) == 2:
-        dev_gold = {(g["document"], g["chunk_index"]) for i in sets["dev"] for g in i.get("gold", [])}
-        test_gold = {(g["document"], g["chunk_index"]) for i in sets["test"] for g in i.get("gold", [])}
+        dev_gold = {(g["document"], g["chunk_index"]) for i in sets["dev"] for g in i.get("gold", []) if g.get("source") != "pool"}
+        test_gold = {(g["document"], g["chunk_index"]) for i in sets["test"] for g in i.get("gold", []) if g.get("source") != "pool"}
         for key in sorted((dev_gold & test_gold) - {k for k, v in owner.items() if v == "shared_by_fact"}):
             errors.append(f"gold passage {key} is used by both dev and test")
     everything = [(n, i) for n, items in sets.items() for i in items]

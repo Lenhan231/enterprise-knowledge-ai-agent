@@ -50,6 +50,8 @@ Each set has 60 questions, 5 per category.
 - **Translation pairs:** when a rule exists in both VN and EN, the copy in the question's language has grade 2 and the other copy has grade 1.
 - **Not-covered items:** `not_covered` items have no gold passages; for these items, retrieval metrics are reported separately.
 - **Required text:** `must_include` lists short exact strings, or alternatives separated by `|`, that a correct answer must contain. `must_not_include` catches the most likely wrong answer.
+- **Matching rule:** matching ignores case and runs after Unicode NFC normalization. A number (for example `7`, `12`, `400.000`) only matches as a whole number, never inside a longer one, so `7` does not match `17`.
+- **Natural phrasing:** questions keep how employees actually ask, with dates given without a year and no public-holiday caveats. The reference answer assumes the current year and an ordinary working week.
 
 ## Splitting dev and test (no leakage)
 1. **Split by topic.** Each main policy topic (for example "Điều kiện và quyền nghỉ phép", leave eligibility and entitlement) belongs to one set, in both languages at once. `split.json` lists the assignment.

@@ -456,12 +456,13 @@ Review:
 Review: 
 
 ### T047 · role `employee` · vi · expected **answer**
-**Q:** ê bro, khách sạn ở HN hết 2tr2 một đêm thì đc hoàn hết ko?
+**Q:** ê bro, đi công tác ở tỉnh, ks hết 2tr2 một đêm thì đc hoàn hết ko?
 
-**Expected:** Tùy danh sách thành phố lớn do Tài chính công bố: nếu Hà Nội là thành phố lớn được chỉ định thì hạn 2.500.000 VND/đêm (2.200.000 được hoàn đủ); nếu không thì hạn 1.800.000 VND/đêm và phần vượt cần ngoại lệ duyệt trước.
-- must include: `2.500.000|2,5` · `1.800.000|1,8`
+**Expected:** Không hoàn hết: lưu trú nội địa thông thường tối đa 1.800.000 VND/phòng/đêm, nên vượt 400.000 VND mỗi đêm; phần vượt cần ngoại lệ bằng văn bản được duyệt trước.
+- must include: `1.800.000|1,8`
+- must not include: `2.500.000 được hoàn`
 - gold VN#179: _Hạn mức chi phí, ăn uống và công tác Quy tắc bắt buộc. Trừ khi hợp đồng hoặc kế hoạch công tác đã duyệt đặt hạn thấp hơn, ăn uống tại địa phương được hoàn tối đa 300.000 VND/người/bữa; lưu trú công tác qua đêm tối đa 1.800.000 VND/phòng/đêm ở địa điểm nội địa thông thường và 2.500.000 VND tại thành phố lớn được chỉ định._
-- gold VN#185: _Yêu cầu kiểm soát Tài chính công bố danh sách thành phố lớn hiện hành và rà hạn mức hằng năm._
+- gold VN#182: _Quy trình bắt buộc Vượt hạn cần ngoại lệ bằng văn bản được duyệt trước; cấm chia nhỏ đề nghị._
 
 Review: 
 

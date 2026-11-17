@@ -1437,7 +1437,7 @@
   {
    "id": "T047",
    "category": "noisy",
-   "question": "ê bro, khách sạn ở HN hết 2tr2 một đêm thì đc hoàn hết ko?",
+   "question": "ê bro, đi công tác ở tỉnh, ks hết 2tr2 một đêm thì đc hoàn hết ko?",
    "role": "employee",
    "language": "vi",
    "history": [],
@@ -1450,7 +1450,7 @@
     },
     {
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
-     "chunk_index": 185,
+     "chunk_index": 182,
      "grade": 2
     },
     {
@@ -1460,11 +1460,12 @@
     }
    ],
    "must_include": [
-    "2.500.000|2,5",
     "1.800.000|1,8"
    ],
-   "must_not_include": [],
-   "reference_answer": "Tùy danh sách thành phố lớn do Tài chính công bố: nếu Hà Nội là thành phố lớn được chỉ định thì hạn 2.500.000 VND/đêm (2.200.000 được hoàn đủ); nếu không thì hạn 1.800.000 VND/đêm và phần vượt cần ngoại lệ duyệt trước.",
+   "must_not_include": [
+    "2.500.000 được hoàn"
+   ],
+   "reference_answer": "Không hoàn hết: lưu trú nội địa thông thường tối đa 1.800.000 VND/phòng/đêm, nên vượt 400.000 VND mỗi đêm; phần vượt cần ngoại lệ bằng văn bản được duyệt trước.",
    "facts": [
     "F1.lodging"
    ],

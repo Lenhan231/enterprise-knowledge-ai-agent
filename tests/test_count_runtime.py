@@ -37,6 +37,59 @@ class CountRuntimeTest(unittest.IsolatedAsyncioTestCase):
         self.provider.generate.assert_called_once()
         self.repo.execute_approved_query.assert_awaited_once()
 
+    async def test_missing_outputs_after_count_repair_is_generation_failure_not_user_clarification(self):
+        value = response()
+        value.pop('outputs')
+        self.provider.generate.return_value = json.dumps(value)
+        doc = await self.agent.build(self.request, QUESTION)
+        self.assertEqual('failed', doc.results[0].status)
+        self.assertEqual('generation_failed', doc.results[0].payload['metadata']['status'])
+        self.assertFalse(doc.results[0].payload['metadata']['clarification_required'])
+        self.assertIn('did not provide any dashboard outputs', doc.results[0].message)
+        self.assertEqual(2, self.provider.generate.call_count)
+        self.repo.execute_approved_query.assert_not_awaited()
+
+    def test_inventory_count_contract_also_applies_when_main_selects_sql_generation(self):
+        from core.analytics.sql_validation import APPROVED_COLUMNS
+        from core.dashboards.generation import CountResponseFormat
+        from core.llm.groq_provider import GroqProvider
+        self.sql._question = 'Count distinct SKUs with stockout_flag=true and reorder_flag=true by category at the latest snapshot'
+        self.sql._columns, self.sql._dates = APPROVED_COLUMNS, ()
+        self.sql._clarifications = []
+        prompt = self.sql._prompt('Generate one read-only PostgreSQL SELECT')
+        self.assertIn('Interpret this structural count request', prompt)
+        self.assertIn('Declare each requested grouping field in dimensions', prompt)
+        provider = GroqProvider(api_keys=['test'])
+        try:
+            options = self.sql._options(provider, 'Generate one read-only PostgreSQL SELECT', {})
+        finally:
+            provider.close()
+        self.assertEqual(CountResponseFormat.model_json_schema()['title'], options['response_schema']['title'])
+
+    async def test_grouped_count_output_repair_preserves_the_validated_data_plan(self):
+        value = response()
+        value['count_query']['dimensions'] = ['category']
+        measures = [c['alias'] for c in value['count_query']['counts']]
+        repaired = {'outputs': [{'kind': 'bar', 'query': 0, 'dimension': 'category', 'measures': measures}]}
+        self.provider.generate.side_effect = [json.dumps(value), json.dumps(repaired)]
+        self.repo.execute_approved_query.return_value[0]['category'] = 'A'
+        doc = await self.agent.build(self.request, QUESTION + ' for each category')
+        self.assertEqual('complete', doc.status, [r.message for r in doc.results])
+        self.assertEqual(['category'], doc.results[0].payload['metadata']['count_query']['dimensions'])
+        self.assertEqual(['bar'], [t.kind for t in doc.tiles])
+        self.assertIn('Repair only the outputs', self.provider.generate.call_args.args[0])
+        self.assertEqual(2, self.provider.generate.call_count)
+        self.repo.execute_approved_query.assert_awaited_once()
+
+    def test_inventory_count_routing_does_not_capture_rates_other_metrics_or_cross_domain_requests(self):
+        for question in ('Stockout rate by category at latest snapshot',
+                         'SKU count and stock on hand at latest snapshot',
+                         'Count stockout SKUs and show revenue in 2031',
+                         'Count stockout SKUs from commerce.inventory and commerce.orders'):
+            with self.subTest(question=question):
+                self.sql._question = question
+                self.assertFalse(self.sql._inventory_count_intent())
+
     async def test_raw_flag_mapping_is_repaired_not_sent_as_user_clarification(self):
         self.provider.generate.side_effect = [json.dumps({'metrics': ['observed_product_count', 'stockout_indicator', 'overstock_indicator'],
             'representation': 'aggregate', 'time': {'mode': 'latest'}}), json.dumps(response())]

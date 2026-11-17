@@ -58,8 +58,9 @@ def scalar_result(sql):
 
 
 def validate_outputs(raw, plans, question, date_columns=None):
-    require(isinstance(raw, list) and 1 <= len(raw) <= 8,
-            f'A dashboard supports one to eight outputs across at most {MAX_DATASETS} independent datasets.')
+    require(raw is not None and raw != [], 'The generated plan did not provide any dashboard outputs.')
+    require(isinstance(raw, list), 'The generated dashboard outputs must be a list.')
+    require(len(raw) <= 8, 'The generated plan exceeds the limit of eight dashboard outputs.')
     try:
         outputs = [DashboardOutput.model_validate(value) for value in raw]
     except ValidationError as error:

@@ -28,7 +28,7 @@ the [architecture](architecture.md), [Docling](docling-pipeline.md), and
 | --- | --- | --- |
 | `filename` | element/table metadata and run metadata | Original uploaded filename |
 | `format` | element/table metadata and run metadata | File format, such as `PDF`, `DOCX`, or `CSV` |
-| `pipeline_id` | element/table metadata and run metadata | Selected route, e.g. `docling`, `docling_qwen_invoice_text`, or `vintern_image_caption` |
+| `pipeline_id` | element/table metadata and run metadata | Selected route, e.g. `docling`, `docling_qwen_invoice_text`, `docling_xiaomi_ocr_invoice`, or `vintern_image_caption` |
 | `parser_engine` | element/table metadata and run metadata | Parser route selected by the caller |
 | `parser` | element/table metadata | Component that produced the content, commonly `docling` or `vintern_*` |
 | `text_extraction_method` | element/table metadata | Method used to produce text, such as `docling.native`, `docling.vietocr`, or `docling.tesseract` |
@@ -62,6 +62,13 @@ downstream chunking.
   model output and inference metrics remain in extraction metadata.
 - Docling elements and structured tables retain their normal OCR/parser
   provenance; the text model does not emit or alter those results.
+
+### Xiaomi-OCR-0 invoice extraction
+
+- Run metadata records `pipeline_id="docling_xiaomi_ocr_invoice"` and
+  `parser_engine="docling"`, plus model/revision and review status.
+- The vision-language model reads the original page images and emits the same
+  `invoice.v1` fields; Docling OCR elements and tables remain separate evidence.
 
 ### Vintern
 

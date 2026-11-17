@@ -781,7 +781,11 @@ def _process_invoice_upload(
                     "DOCUMENT_PROCESSING_INVOICE_LAYOUT_THREADS", "2",
                 )),
             },
-        }, timeout=int(os.getenv("DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS", "600")))
+        }, timeout=int(os.getenv(
+            "DOCUMENT_PROCESSING_XIAOMI_TIMEOUT_SECONDS", "1800",
+        ) if model_provider == "xiaomi" else os.getenv(
+            "DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS", "600",
+        )))
         logger.info("INVOICE_UPLOAD_COMPONENT %s", json.dumps({
             "component": "document_processing_request", "invoice_id": invoice_id,
             "elapsed_ms": round((time.perf_counter() - stage_started) * 1000, 2),
@@ -845,8 +849,8 @@ async def upload_invoice(
     """OCR an invoice and save its reviewable JSON outside the document corpus."""
     _require_same_origin(request)
     model_provider = model_provider.strip().lower()
-    if model_provider not in {"gemini", "groq", "modal"}:
-        raise HTTPException(422, "Choose Gemini, Groq GPT-OSS 120B, or the fine-tuned Qwen Modal model")
+    if model_provider not in {"gemini", "groq", "modal", "xiaomi"}:
+        raise HTTPException(422, "Choose Gemini, Groq GPT-OSS 120B, Qwen on Modal, or Xiaomi-OCR-0")
     filename = Path((file.filename or "").replace("\\", "/")).name
     extension = Path(filename).suffix.lower()
     supported = {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"}
@@ -1027,7 +1031,7 @@ def _invoice_for_user(repository, invoice_id: str, user: dict) -> dict:
 
 
 class InvoiceRetryRequest(BaseModel):
-    model_provider: Literal["gemini", "groq", "modal"]
+    model_provider: Literal["gemini", "groq", "modal", "xiaomi"]
 
 
 @app.post("/api/invoices/{invoice_id}/retry", status_code=202)

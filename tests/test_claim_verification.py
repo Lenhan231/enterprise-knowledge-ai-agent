@@ -11,7 +11,8 @@ from core.latency import latency_events, snapshot
 from core.models.agents import AgentRequest, VerifiedIdentity
 from core.prompts.Knowledge import INSUFFICIENT_ANSWER
 from core.rag.claim_verification import (
-    AUDIT_MAX_OUTPUT_TOKENS, AnswerReview, VERIFICATION_UNAVAILABLE_ANSWER, claim_blocks, evidence_units, validate_review, verify_answer,
+    AUDIT_MAX_OUTPUT_TOKENS, AnswerReview, VERIFICATION_UNAVAILABLE_ANSWER, claim_blocks, evidence_units, is_source_gap_answer,
+    validate_review, verify_answer,
 )
 from core.rag.rag_service import RAGService
 
@@ -197,6 +198,34 @@ class ClaimVerificationTest(unittest.TestCase):
         self.assertIsNone(result.verification)
         self.assertEqual(rag.llm.generate.call_count, 1)
 
+    def test_whole_draft_saying_the_sources_do_not_cover_it_is_not_covered_not_withheld(self):
+        # The real draft from the 2026-11-16 incident: retrieval missed Appendix B and the draft cited all 8 sources.
+        gap = ('Các tài liệu được cung cấp không nêu rõ quy trình phê duyệt cho việc mua hàng cụ thể là "bàn ghế" với '
+               'giá trị 3.000.000 VND, do đó không thể xác định chính xác người duyệt cho giao dịch này dựa trên nguồn '
+               'hiện có. [S1] [S2] [S3] [S4] [S5] [S6] [S7] [S8]')
+        self.assertTrue(is_source_gap_answer(gap, "bàn ghế mua 3tr thì đưa ai duyệt"))
+        self.assertTrue(is_source_gap_answer(
+            'Các tài liệu được cung cấp không nêu rõ quy định về việc ai là người duyệt cho trường hợp "3 củ" [S1].',
+            "3 củ thì đưa ai duyệt"))
+        rag = RAGService.__new__(RAGService)
+        rag.llm = Mock()
+        rag.llm.generate.return_value = "Tài liệu không nêu người duyệt khoản này [S1]."
+        result = rag.generate_from_contexts("Ai duyệt?", [SOURCE], verify_claims=True)
+        self.assertTrue(result.insufficient_context)
+        self.assertEqual(result.answer, INSUFFICIENT_ANSWER)
+        self.assertIsNone(result.verification)
+        self.assertEqual(rag.llm.generate.call_count, 1)  # no audit call
+
+    def test_any_policy_statement_next_to_a_gap_note_is_still_audited(self):
+        question = "bàn ghế mua 3tr thì đưa ai duyệt"
+        for draft in (
+            "Tài liệu không nêu riêng bàn ghế. Khoản đến 5.000.000 VND do quản lý trực tiếp duyệt [S1].",  # claim sentence
+            "Tài liệu không nêu riêng bàn ghế, nhưng mua sắm cần quản lý trực tiếp duyệt [S1].",          # claim after 'nhưng'
+            "Tài liệu không nêu riêng bàn ghế; hạn mức là 5.000.000 VND [S1].",                           # number not asked
+            "Khoản này do quản lý trực tiếp duyệt [S1].",                                                  # plain claim
+        ):
+            self.assertFalse(is_source_gap_answer(draft, question), draft)
+
     def test_only_cited_authorized_contexts_enter_verifier(self):
         rag = RAGService.__new__(RAGService)
         rag.llm = Mock()
@@ -254,19 +283,47 @@ class KnowledgeVerificationIntegrationTest(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(rag.llm.generate.call_count, 2 if flag == "1" else 1)
             self.assertEqual("claim_verification" in result.metadata, flag == "1")
 
+    async def _run_with_audit(self, draft, *responses, permissions=frozenset({"documents:read"})):
+        rag = RAGService.__new__(RAGService)
+        rag.retrieve_contexts = Mock(return_value=[SOURCE])
+        rag.llm = Mock()
+        rag.llm.generate.side_effect = [draft, *responses]
+        identity = VerifiedIdentity(subject="test", permissions=permissions, document_roles={"employee"})
+        with patch.dict(os.environ, {"KNOWLEDGE_MULTIQUERY_ENABLED": "0", "KNOWLEDGE_CLAIM_VERIFICATION_ENABLED": "1"}):
+            return await KnowledgeAgent(rag).run(AgentRequest(question="Profit?", identity=identity))
+
     async def test_rejected_draft_is_not_returned_or_exposed_as_evidence(self):
         draft = "Profit in 2024 was VND 100 billion [S1]."
-        for response in (json.dumps(review(verdict="contradicted", evidence=None)), "invalid JSON"):
-            rag = RAGService.__new__(RAGService)
-            rag.retrieve_contexts = Mock(return_value=[SOURCE])
-            rag.llm = Mock()
-            rag.llm.generate.side_effect = [draft, response, response]  # a malformed audit is retried once
-            identity = VerifiedIdentity(subject="test", permissions={"documents:read"}, document_roles={"employee"})
-            with patch.dict(os.environ, {"KNOWLEDGE_MULTIQUERY_ENABLED": "0", "KNOWLEDGE_CLAIM_VERIFICATION_ENABLED": "1"}):
-                result = await KnowledgeAgent(rag).run(AgentRequest(question="Profit?", identity=identity))
-            self.assertEqual(result.answer, VERIFICATION_UNAVAILABLE_ANSWER)
-            self.assertFalse(result.metadata["ok"])
-            self.assertFalse(result.metadata["insufficient_context"])
-            self.assertIn(result.metadata["claim_verification"]["status"], {"rejected", "unavailable"})
-            self.assertEqual(result.evidence, [])
-            self.assertNotIn(draft, result.model_dump_json())
+        result = await self._run_with_audit(draft, json.dumps(review(verdict="contradicted", evidence=None)))
+        self.assertEqual(result.answer, VERIFICATION_UNAVAILABLE_ANSWER)
+        self.assertFalse(result.metadata["ok"])
+        self.assertFalse(result.metadata["insufficient_context"])
+        self.assertEqual(result.metadata["claim_verification"]["status"], "rejected")
+        self.assertFalse(result.metadata["claim_verification"]["audit_failed"])
+        self.assertEqual(result.evidence, [])
+        self.assertEqual(result.metadata["nearest_documents"], [{"document": "report.pdf", "section": "Results"}])
+        self.assertNotIn(draft, result.model_dump_json())
+
+    async def test_only_diagnostics_permission_receives_the_withheld_draft(self):
+        draft = "Profit in 2024 was VND 100 billion [S1]."
+        rejected = json.dumps(review(verdict="contradicted", evidence=None))
+        admin = await self._run_with_audit(draft, rejected, permissions=frozenset({"documents:read", "agents:diagnostics"}))
+        self.assertEqual(admin.answer, VERIFICATION_UNAVAILABLE_ANSWER)
+        self.assertEqual(admin.metadata["withheld_draft"], draft)
+        self.assertEqual(admin.evidence, [])
+        employee = await self._run_with_audit(draft, rejected)
+        self.assertNotIn("withheld_draft", employee.metadata)
+
+    async def test_failed_audit_shows_the_draft_with_its_sources_marked_unverified(self):
+        for responses in (("invalid JSON", "invalid JSON"), (RuntimeError("provider overloaded"),)):
+            result = await self._run_with_audit(ANSWER, *responses)
+            self.assertEqual(result.answer, ANSWER)
+            self.assertEqual([e.citation_id for e in result.evidence], ["S1"])
+            check = result.metadata["claim_verification"]
+            self.assertEqual((check["status"], check["audit_failed"]), ("unavailable", True))
+            self.assertNotIn("nearest_documents", result.metadata)
+
+    async def test_uncited_draft_is_still_withheld_even_though_no_audit_ran(self):
+        result = await self._run_with_audit("Profit was VND 100 billion.")
+        self.assertEqual(result.answer, VERIFICATION_UNAVAILABLE_ANSWER)
+        self.assertFalse(result.metadata["claim_verification"]["audit_failed"])

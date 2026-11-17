@@ -58,8 +58,15 @@ def up():
     print("started", CONTAINER)
 
 
-def load(db, chunks_path):
+def load(db, chunks_path, vectors_path=None):
+    """Load the exported chunks; with vectors_path (.npy, one row per chunk in file order) use those vectors instead."""
     rows = [json.loads(line) for line in open(chunks_path, encoding="utf-8")]
+    if vectors_path:
+        import numpy as np
+        vectors = np.load(vectors_path)
+        assert len(vectors) == len(rows), (len(vectors), len(rows))
+        for row, vector in zip(rows, vectors):
+            row["embedding"] = "[" + ",".join(f"{v:.7g}" for v in vector) + "]"
     dim = len(json.loads(rows[0]["embedding"]))
     with psycopg.connect(url(), autocommit=True) as admin:
         admin.execute(f'DROP DATABASE IF EXISTS "{db}"')

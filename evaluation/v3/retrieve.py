@@ -31,7 +31,13 @@ def main(set_name, method, top_k, out_path):
     if os.getenv("EVAL_NO_AMOUNT_NORMALIZATION") == "1":
         # Experiment switch (experiment 5): search the amounts exactly as typed ("3 củ"), as before #54's fix.
         retrieval_service.normalize_amounts = lambda query: query
-    service = RetrievalService()
+    embedder = None
+    if os.getenv("EVAL_EMBED_MODEL"):
+        # Experiment 2: query embeddings from the same model that filled this DATABASE_URL (see embedders.py).
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from embedders import Embedder
+        embedder = Embedder(os.environ["EVAL_EMBED_MODEL"])
+    service = RetrievalService(embedding_service=embedder)
     done = set()
     if Path(out_path).exists():  # resume after a quota stop without redoing finished items
         done = {json.loads(line)["id"] for line in open(out_path, encoding="utf-8")}

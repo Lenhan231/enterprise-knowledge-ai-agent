@@ -11,7 +11,7 @@ For each item, check: is the question natural? Does the expected answer match th
 - must include: `năm ngày làm việc|5 ngày làm việc`
 - gold VN#97: _Nộp yêu cầu nghỉ và thời hạn báo trước Quy tắc bắt buộc. Nghỉ theo kế hoạch nên được đề nghị ít nhất năm ngày làm việc trước ngày đầu nghỉ. Nghỉ khẩn, do bệnh hoặc được pháp luật bảo vệ phải báo sớm nhất có thể một cách hợp lý và không mất hiệu lực vì thiếu thời gian báo trước._
 
-Review: 
+Review: Muốn nghỉ phép thì phải hỏi trước bao lâu?
 
 ### T002 · role `employee` · vi · expected **answer**
 **Q:** Sự cố bảo mật mức Cao phải báo cho Bảo mật trong bao lâu?
@@ -20,7 +20,7 @@ Review:
 - must include: `một giờ|1 giờ`
 - gold VN#599: _Quy trình bắt buộc Cao: khả năng truy cập trái phép hoặc suy giảm dịch vụ đáng kể; báo Bảo mật và chủ hệ thống trong một giờ._
 
-Review: 
+Review: oke
 
 ### T003 · role `employee` · vi · expected **answer**
 **Q:** Nhà cung cấp trọng yếu phải được rà soát hiệu quả bao lâu một lần?
@@ -29,7 +29,7 @@ Review:
 - must include: `hằng năm`
 - gold VN#343: _Hiệu quả mua sắm và rà soát nhà cung cấp Quy tắc bắt buộc. Rà nhà cung cấp trọng yếu ít nhất hằng năm và sau lỗi lặp về chất lượng, giao hàng, bảo mật hoặc hóa đơn._
 
-Review: 
+Review: phải kiểm tra nhà cung cấp bao lâu 1 lần
 
 ### T004 · role `employee` · vi · expected **answer**
 **Q:** Dữ liệu trong công ty được chia thành những mức phân loại nào?
@@ -41,7 +41,7 @@ Review:
 - gold VN#570: _Quy trình bắt buộc Mật: thông tin nhạy cảm thương mại hoặc liên quan khách/nhân viên, chỉ truy cập theo nhu cầu cần biết._
 - gold VN#571: _Quy trình bắt buộc Hạn chế: thông tin đăng nhập, thanh toán, giấy tờ định danh, y tế và nội dung nhạy cảm bảo mật._
 
-Review: 
+Review: oke
 
 ### T005 · role `employee` · vi · expected **answer**
 **Q:** Chủ lĩnh vực phải rà soát chính sách vận hành bao lâu một lần?
@@ -50,7 +50,7 @@ Review:
 - must include: `hằng năm`
 - gold VN#712: _Rà quản trị, kiểm toán và cải tiến liên tục Quy tắc bắt buộc. Chủ lĩnh vực rà ít nhất hằng năm và sau thay đổi trọng yếu về luật, mô hình dữ liệu, quy trình nhà cung cấp, kiểm soát tồn, kiến trúc bảo mật hoặc ứng phó sự cố._
 
-Review: 
+Review: phải rà soát chính sách bao lâu 1 lần?
 
 ## amount
 
@@ -63,7 +63,7 @@ Review:
 - gold VN#274: _Ma trận phê duyệt và ngưỡng tiền Quy tắc bắt buộc. Thẩm quyền mặc định cho một cam kết: đến 5.000.000 VND-quản lý trực tiếp; 5.000.001-50.000.000 VND-trưởng bộ phận; 50.000.001-200.000.000 VND-trưởng bộ phận cùng Mua sắm và Tài chính; trên 200.000.000 VND-Hội đồng Điều hành Vận hành cùng Tài chính._
 - gold VN#730: _Phụ lục B - Hạn mức phê duyệt và bảng quyết định vận hành Columns: Tổng cam kết | Phê duyệt bắt buộc | Điều kiện bổ sung Row 1: Tổng cam kết: Đến 5.000.000 VND | Phê duyệt bắt buộc: Quản lý trực tiếp | Điều kiện bổ sung: Một báo giá có hồ sơ; ngân sách xác nhận. Row 2: Tổng cam kết: 5.000.001-50.000.000 VND | Phê duyệt bắt buộc: Trưởng bộ phận | Điều kiện bổ sung: Ít nhất hai báo giá tương đương nếu thị trường cho ph_
 
-Review: 
+Review: oke
 
 ### T007 · role `employee` · vi · expected **answer**
 **Q:** Hợp đồng 1,2 tỷ thì cấp nào phê duyệt?
@@ -73,7 +73,7 @@ Review:
 - gold VN#274: _Ma trận phê duyệt và ngưỡng tiền Quy tắc bắt buộc. Thẩm quyền mặc định cho một cam kết: đến 5.000.000 VND-quản lý trực tiếp; 5.000.001-50.000.000 VND-trưởng bộ phận; 50.000.001-200.000.000 VND-trưởng bộ phận cùng Mua sắm và Tài chính; trên 200.000.000 VND-Hội đồng Điều hành Vận hành cùng Tài chính._
 - gold VN#730: _Phụ lục B - Hạn mức phê duyệt và bảng quyết định vận hành Columns: Tổng cam kết | Phê duyệt bắt buộc | Điều kiện bổ sung Row 1: Tổng cam kết: Đến 5.000.000 VND | Phê duyệt bắt buộc: Quản lý trực tiếp | Điều kiện bổ sung: Một báo giá có hồ sơ; ngân sách xác nhận. Row 2: Tổng cam kết: 5.000.001-50.000.000 VND | Phê duyệt bắt buộc: Trưởng bộ phận | Điều kiện bổ sung: Ít nhất hai báo giá tương đương nếu thị trường cho ph_
 
-Review: 
+Review: oke
 
 ### T008 · role `employee` · vi · expected **answer**
 **Q:** Gói mua 60tr thì cần bao nhiêu báo giá?
@@ -83,7 +83,7 @@ Review:
 - gold VN#261: _Tìm nguồn cạnh tranh và đánh giá báo giá Quy tắc bắt buộc. Cam kết dự toán đến 5.000.000 VND có thể dùng một báo giá được lập hồ sơ. Từ 5.000.001 đến 50.000.000 VND cần tìm ít nhất hai báo giá tương đương nếu thị trường cho phép. Trên 50.000.000 VND cần ít nhất ba báo giá bằng văn bản hoặc giải trình chỉ định nguồn được lập hồ sơ._
 - gold VN#730: _Phụ lục B - Hạn mức phê duyệt và bảng quyết định vận hành Columns: Tổng cam kết | Phê duyệt bắt buộc | Điều kiện bổ sung Row 1: Tổng cam kết: Đến 5.000.000 VND | Phê duyệt bắt buộc: Quản lý trực tiếp | Điều kiện bổ sung: Một báo giá có hồ sơ; ngân sách xác nhận. Row 2: Tổng cam kết: 5.000.001-50.000.000 VND | Phê duyệt bắt buộc: Trưởng bộ phận | Điều kiện bổ sung: Ít nhất hai báo giá tương đương nếu thị trường cho ph_
 
-Review: 
+Review: oke
 
 ### T009 · role `employee` · vi · expected **answer**
 **Q:** Bữa trưa khi đi công tác hết 350k thì được hoàn bao nhiêu?
@@ -93,7 +93,7 @@ Review:
 - gold VN#179: _Hạn mức chi phí, ăn uống và công tác Quy tắc bắt buộc. Trừ khi hợp đồng hoặc kế hoạch công tác đã duyệt đặt hạn thấp hơn, ăn uống tại địa phương được hoàn tối đa 300.000 VND/người/bữa; lưu trú công tác qua đêm tối đa 1.800.000 VND/phòng/đêm ở địa điểm nội địa thông thường và 2.500.000 VND tại thành phố lớn được chỉ định._
 - gold VN#182: _Quy trình bắt buộc Vượt hạn cần ngoại lệ bằng văn bản được duyệt trước; cấm chia nhỏ đề nghị._
 
-Review: 
+Review: oke
 
 ### T010 · role `employee` · vi · expected **answer**
 **Q:** Cam kết đúng 200 triệu thì ai duyệt?
@@ -104,7 +104,7 @@ Review:
 - gold VN#274: _Ma trận phê duyệt và ngưỡng tiền Quy tắc bắt buộc. Thẩm quyền mặc định cho một cam kết: đến 5.000.000 VND-quản lý trực tiếp; 5.000.001-50.000.000 VND-trưởng bộ phận; 50.000.001-200.000.000 VND-trưởng bộ phận cùng Mua sắm và Tài chính; trên 200.000.000 VND-Hội đồng Điều hành Vận hành cùng Tài chính._
 - gold VN#730: _Phụ lục B - Hạn mức phê duyệt và bảng quyết định vận hành Columns: Tổng cam kết | Phê duyệt bắt buộc | Điều kiện bổ sung Row 1: Tổng cam kết: Đến 5.000.000 VND | Phê duyệt bắt buộc: Quản lý trực tiếp | Điều kiện bổ sung: Một báo giá có hồ sơ; ngân sách xác nhận. Row 2: Tổng cam kết: 5.000.001-50.000.000 VND | Phê duyệt bắt buộc: Trưởng bộ phận | Điều kiện bổ sung: Ít nhất hai báo giá tương đương nếu thị trường cho ph_
 
-Review: 
+Review: oke
 
 ## calculation
 
@@ -115,7 +115,7 @@ Review:
 - must include: `7.500.000|7,5 triệu`
 - gold VN#179: _Hạn mức chi phí, ăn uống và công tác Quy tắc bắt buộc. Trừ khi hợp đồng hoặc kế hoạch công tác đã duyệt đặt hạn thấp hơn, ăn uống tại địa phương được hoàn tối đa 300.000 VND/người/bữa; lưu trú công tác qua đêm tối đa 1.800.000 VND/phòng/đêm ở địa điểm nội địa thông thường và 2.500.000 VND tại thành phố lớn được chỉ định._
 
-Review: 
+Review: oke
 
 ### T012 · role `employee` · vi · expected **answer**
 **Q:** Mua 4 máy chủ, mỗi máy 60 triệu thì ai duyệt?
@@ -125,7 +125,7 @@ Review:
 - gold VN#274: _Ma trận phê duyệt và ngưỡng tiền Quy tắc bắt buộc. Thẩm quyền mặc định cho một cam kết: đến 5.000.000 VND-quản lý trực tiếp; 5.000.001-50.000.000 VND-trưởng bộ phận; 50.000.001-200.000.000 VND-trưởng bộ phận cùng Mua sắm và Tài chính; trên 200.000.000 VND-Hội đồng Điều hành Vận hành cùng Tài chính._
 - gold VN#730: _Phụ lục B - Hạn mức phê duyệt và bảng quyết định vận hành Columns: Tổng cam kết | Phê duyệt bắt buộc | Điều kiện bổ sung Row 1: Tổng cam kết: Đến 5.000.000 VND | Phê duyệt bắt buộc: Quản lý trực tiếp | Điều kiện bổ sung: Một báo giá có hồ sơ; ngân sách xác nhận. Row 2: Tổng cam kết: 5.000.001-50.000.000 VND | Phê duyệt bắt buộc: Trưởng bộ phận | Điều kiện bổ sung: Ít nhất hai báo giá tương đương nếu thị trường cho ph_
 
-Review: 
+Review: oke
 
 ### T013 · role `employee` · vi · expected **answer**
 **Q:** Đi công tác 2 ngày, mỗi ngày ăn 2 bữa thì tối đa được hoàn bao nhiêu tiền ăn?
@@ -134,7 +134,7 @@ Review:
 - must include: `1.200.000|1,2 triệu`
 - gold VN#179: _Hạn mức chi phí, ăn uống và công tác Quy tắc bắt buộc. Trừ khi hợp đồng hoặc kế hoạch công tác đã duyệt đặt hạn thấp hơn, ăn uống tại địa phương được hoàn tối đa 300.000 VND/người/bữa; lưu trú công tác qua đêm tối đa 1.800.000 VND/phòng/đêm ở địa điểm nội địa thông thường và 2.500.000 VND tại thành phố lớn được chỉ định._
 
-Review: 
+Review: oke
 
 ### T014 · role `employee` · vi · expected **answer**
 **Q:** Cùng một nhu cầu mà chia làm 3 lô 30 triệu, 15 triệu và 10 triệu thì cần mấy báo giá?
@@ -144,7 +144,7 @@ Review:
 - gold VN#261: _Tìm nguồn cạnh tranh và đánh giá báo giá Quy tắc bắt buộc. Cam kết dự toán đến 5.000.000 VND có thể dùng một báo giá được lập hồ sơ. Từ 5.000.001 đến 50.000.000 VND cần tìm ít nhất hai báo giá tương đương nếu thị trường cho phép. Trên 50.000.000 VND cần ít nhất ba báo giá bằng văn bản hoặc giải trình chỉ định nguồn được lập hồ sơ._
 - gold VN#730: _Phụ lục B - Hạn mức phê duyệt và bảng quyết định vận hành Columns: Tổng cam kết | Phê duyệt bắt buộc | Điều kiện bổ sung Row 1: Tổng cam kết: Đến 5.000.000 VND | Phê duyệt bắt buộc: Quản lý trực tiếp | Điều kiện bổ sung: Một báo giá có hồ sơ; ngân sách xác nhận. Row 2: Tổng cam kết: 5.000.001-50.000.000 VND | Phê duyệt bắt buộc: Trưởng bộ phận | Điều kiện bổ sung: Ít nhất hai báo giá tương đương nếu thị trường cho ph_
 
-Review: 
+Review: oke
 
 ### T015 · role `employee` · vi · expected **answer**
 **Q:** Ở khách sạn nội địa thông thường 2 đêm, mỗi đêm 2 triệu thì phần vượt hạn mức là bao nhiêu?
@@ -154,7 +154,7 @@ Review:
 - gold VN#179: _Hạn mức chi phí, ăn uống và công tác Quy tắc bắt buộc. Trừ khi hợp đồng hoặc kế hoạch công tác đã duyệt đặt hạn thấp hơn, ăn uống tại địa phương được hoàn tối đa 300.000 VND/người/bữa; lưu trú công tác qua đêm tối đa 1.800.000 VND/phòng/đêm ở địa điểm nội địa thông thường và 2.500.000 VND tại thành phố lớn được chỉ định._
 - gold VN#182: _Quy trình bắt buộc Vượt hạn cần ngoại lệ bằng văn bản được duyệt trước; cấm chia nhỏ đề nghị._
 
-Review: 
+Review: oke
 
 ## multi_part
 
@@ -166,7 +166,7 @@ Review:
 - gold VN#97: _Nộp yêu cầu nghỉ và thời hạn báo trước Quy tắc bắt buộc. Nghỉ theo kế hoạch nên được đề nghị ít nhất năm ngày làm việc trước ngày đầu nghỉ. Nghỉ khẩn, do bệnh hoặc được pháp luật bảo vệ phải báo sớm nhất có thể một cách hợp lý và không mất hiệu lực vì thiếu thời gian báo trước._
 - gold VN#98: _Quy trình bắt buộc Cung cấp mã nhân viên, loại nghỉ, ngày bắt đầu/kết thúc, số giờ nghỉ cả ngày hoặc một phần ngày, cách liên hệ và kế hoạch bàn giao._
 
-Review: 
+Review: Nghỉ phép cần báo trước bao lâu, và đơn nghỉ phải có những thông tin gì?
 
 ### T017 · role `employee` · vi · expected **answer**
 **Q:** Sự cố mức Trung bình và mức Thấp lần lượt phải báo trong bao lâu?
@@ -176,7 +176,7 @@ Review:
 - gold VN#600: _Quy trình bắt buộc Trung bình: ảnh hưởng giới hạn, có biện pháp khoanh vùng; báo trong bốn giờ làm việc._
 - gold VN#601: _Quy trình bắt buộc Thấp: vấn đề nhỏ, chưa có bằng chứng lộ dữ liệu; báo trước cuối ngày làm việc._
 
-Review: 
+Review: oke
 
 ### T018 · role `employee` · vi · expected **answer**
 **Q:** Trước khi phát hành PO phải hoàn tất những kiểm tra gì, và nếu sửa PO sau khi phát hành thì sao?
@@ -186,7 +186,7 @@ Review:
 - gold VN#288: _Tạo và phát hành đơn mua hàng Quy tắc bắt buộc. Chỉ phát hành PO sau khi hoàn tất kiểm tra yêu cầu, nhà cung cấp, nguồn cung, ngân sách và duyệt._
 - gold VN#293: _Yêu cầu kiểm soát Sửa PO sau phát hành phải có phiên bản và gửi nhà cung cấp; lưu các bản trước._
 
-Review: 
+Review: oke
 
 ### T019 · role `employee` · vi · expected **answer**
 **Q:** Trước khi chia sẻ dữ liệu ra bên ngoài cần xác nhận gì, và có được tải dữ liệu Hạn chế lên dịch vụ AI chưa được duyệt không?
@@ -196,7 +196,7 @@ Review:
 - gold VN#572: _Quy trình bắt buộc Trước chia sẻ ngoài, xác nhận mục đích, người nhận, tối thiểu hóa và phê duyệt._
 - gold VN#573: _Yêu cầu kiểm soát Không tải dữ liệu Hạn chế lên dịch vụ AI chưa được duyệt._
 
-Review: 
+Review: Trước khi chia sẻ dữ liệu ra bên ngoài cần xác nhận gì, và có được tải dữ liệu Hạn chế lên AI không?
 
 ### T020 · role `employee` · vi · expected **answer**
 **Q:** Khi nhân viên nghỉ việc thì xử lý quyền truy cập thế nào, và xóa tài khoản có lập tức vô hiệu token không?
@@ -206,7 +206,7 @@ Review:
 - gold VN#541: _Quy trình bắt buộc Nghỉ việc: khóa truy cập tương tác và thu hồi token/khóa theo quy trình nghỉ việc._
 - gold VN#544: _Yêu cầu kiểm soát Xóa người dùng chưa chắc lập tức vô hiệu token hiện có._
 
-Review: 
+Review: oke
 
 ## multi_passage
 
@@ -218,7 +218,7 @@ Review:
 - gold VN#482: _Xếp kho, trách nhiệm giữ và trạng thái tồn Quy tắc bắt buộc. Hàng giữ kiểm định, hỏng, thu hồi hoặc hạn chế khác không được tính là hàng có thể bán._
 - gold VN#431: _Yêu cầu kiểm soát Không đánh dấu hàng hỏng chỉ để loại dư hàng.  Kiểm quy tắc khuyến mãi và tồn trước giảm giá.  Ghi giảm cần đếm/bằng chứng độc lập và phê duyệt._
 
-Review: 
+Review: oke
 
 ### T022 · role `employee` · vi · expected **answer**
 **Q:** Yêu cầu mua đã được phê duyệt thì đã là cam kết chưa, và khi nào mới được phát hành PO?
@@ -229,7 +229,7 @@ Review:
 - gold VN#36: _Quy trình bắt buộc Đã cam kết: đã phát hành cam kết nghiệp vụ hợp lệ, chẳng hạn đơn mua hàng đã phát hành._
 - gold VN#288: _Tạo và phát hành đơn mua hàng Quy tắc bắt buộc. Chỉ phát hành PO sau khi hoàn tất kiểm tra yêu cầu, nhà cung cấp, nguồn cung, ngân sách và duyệt._
 
-Review: 
+Review: oke
 
 ### T023 · role `employee` · vi · expected **answer**
 **Q:** Tác tử AI có được phát hành PO hay trả hóa đơn không, và nếu hai nguồn đã duyệt mâu thuẫn thì xử lý ra sao?
@@ -239,7 +239,7 @@ Review:
 - gold VN#629: _Quản lý thay đổi, an toàn tác tử AI và kiểm soát phát hành Quy tắc bắt buộc. Tác tử AI có thể truy chính sách đã duyệt, hỏi dữ liệu được phép và soạn đề xuất. Không được duyệt chi, phát hành PO, trả hóa đơn, điều chỉnh tồn hay cấp quyền, trừ luồng được phê duyệt và kiểm toán riêng cho phép rõ hành động đó._
 - gold VN#74: _Yêu cầu kiểm soát Nếu hai nguồn đã duyệt mâu thuẫn, tạm dừng hành động tự động liên quan và chuyển chủ sở hữu chịu trách nhiệm xử lý._
 
-Review: 
+Review: AI có được phát hành PO hay trả hóa đơn không, và nếu hai nguồn đã duyệt mâu thuẫn thì xử lý ra sao?
 
 ### T024 · role `employee` · vi · expected **answer**
 **Q:** Người đề nghị hoàn chi có được là người duyệt duy nhất không, và người đếm có được tự duyệt điều chỉnh tồn trọng yếu không?
@@ -249,7 +249,7 @@ Review:
 - gold VN#197: _Yêu cầu kiểm soát Người đề nghị không được là người duyệt duy nhất.  Không đánh dấu đã chi chỉ dựa vào lệnh thanh toán._
 - gold VN#459: _Yêu cầu kiểm soát Người đếm không được là người duyệt duy nhất cho điều chỉnh trọng yếu._
 
-Review: 
+Review: oke
 
 ### T025 · role `employee` · vi · expected **answer**
 **Q:** Phát hiện kiểm toán trọng yếu chưa xử lý thì chuyển cho ai, và bản chính sách lỗi thời có còn được truy xuất không?
@@ -259,7 +259,7 @@ Review:
 - gold VN#717: _Yêu cầu kiểm soát Phát hiện trọng yếu chưa xử lý chuyển Hội đồng Điều hành Vận hành._
 - gold VN#73: _Yêu cầu kiểm soát Rút bản lỗi thời khỏi truy xuất đang hoạt động nhưng giữ bản phục vụ kiểm toán._
 
-Review: 
+Review: oke
 
 ## table
 
@@ -270,7 +270,7 @@ Review:
 - must include: `ngày đầu` · `trùng`
 - gold VN#737: _Phụ lục C - Biểu mẫu chuẩn và kiểm tra tối thiểu Columns: Biểu mẫu | Trường tối thiểu | Kiểm tra / điều kiện chặn Row 1: Biểu mẫu: Yêu cầu nghỉ phép | Trường tối thiểu: Mã nhân viên; loại nghỉ; ngày đầu/cuối; cả/một phần ngày; bàn giao; thời điểm nộp. | Kiểm tra / điều kiện chặn: Ngày cuối >= ngày đầu; rà trùng; nghỉ được bảo vệ chuyển Nhân sự. Row 2: Biểu mẫu: Đề nghị hoàn chi phí | Trường tối thiểu: Người đề nghị; _
 
-Review: 
+Review: oke
 
 ### T027 · role `employee` · vi · expected **answer**
 **Q:** Theo Phụ lục C, đơn mua hàng phải có những trường tối thiểu nào?
@@ -279,7 +279,7 @@ Review:
 - must include: `Số PO` · `đơn giá`
 - gold VN#738: _Phụ lục C - Biểu mẫu chuẩn và kiểm tra tối thiểu Columns: Biểu mẫu | Trường tối thiểu | Kiểm tra / điều kiện chặn Row 4: Biểu mẫu: Đơn mua hàng | Trường tối thiểu: Số PO; nhà cung cấp; ngày phát hành; tiền tệ; dòng hàng; số lượng; đơn giá; điều kiện giao/thanh toán. | Kiểm tra / điều kiện chặn: Chỉ phát hành sau duyệt; tổng khớp thẩm quyền; sửa có phiên bản._
 
-Review: 
+Review: oke
 
 ### T028 · role `employee` · vi · expected **answer**
 **Q:** Trong Exception Log, sản phẩm VietMotion RP-09 có calculated DOS là bao nhiêu?
@@ -288,7 +288,7 @@ Review:
 - must include: `25440|25.440`
 - gold 04_Inventory_Control_and#435: _Exception Log Columns: Snapshot Date | Product ID | Product Name | Category | On-hand | Units Sold Latest | Avg Monthly Demand (3 snapshots) | Calculated DOS | Fill Rate | Priority | Review Status Row 1: Snapshot Date: 2022-12-31 | Product ID: 2212 | Product Name: VietMotion RP-09 | Category: Outdoor | On-hand: 848 | Units Sold Latest: 1 | Avg Monthly Demand (3 snapshots): 1 | Calculated DOS: 25440 | Fill Rate: 0.933_
 
-Review: 
+Review: oke
 
 ### T029 · role `employee` · vi · expected **answer**
 **Q:** Theo SOP kiểm kê, khi không có chênh lệch thì ai duyệt đóng phiếu?
@@ -297,7 +297,7 @@ Review:
 - must include: `Warehouse Supervisor`
 - gold 02_SOP_Cycle_Count_and_S#7: _Columns: Tình huống | Hành động tối thiểu | Người duyệt Row 1: Tình huống: Không chênh lệch | Hành động tối thiểu: Đóng phiếu; lưu audit trail | Người duyệt: Warehouse Supervisor Row 2: Tình huống: Chênh lệch nhỏ, có nguyên nhân rõ và bằng chứng | Hành động tối thiểu: Recount + biên bản; cập nhật sau duyệt | Người duyệt: Inventory Controller / Supervisor Row 3: Tình huống: Chênh lệch lặp lại, giá trị lớn hoặc vượt ng_
 
-Review: 
+Review: oke
 
 ### T030 · role `employee` · vi · expected **answer**
 **Q:** Theo Phụ lục B, cam kết trên 200 triệu cần điều kiện bổ sung gì?
@@ -306,7 +306,7 @@ Review:
 - must include: `Đánh giá nguồn cung|đánh giá nguồn cung` · `rủi ro`
 - gold VN#730: _Phụ lục B - Hạn mức phê duyệt và bảng quyết định vận hành Columns: Tổng cam kết | Phê duyệt bắt buộc | Điều kiện bổ sung Row 1: Tổng cam kết: Đến 5.000.000 VND | Phê duyệt bắt buộc: Quản lý trực tiếp | Điều kiện bổ sung: Một báo giá có hồ sơ; ngân sách xác nhận. Row 2: Tổng cam kết: 5.000.001-50.000.000 VND | Phê duyệt bắt buộc: Trưởng bộ phận | Điều kiện bổ sung: Ít nhất hai báo giá tương đương nếu thị trường cho ph_
 
-Review: 
+Review: oke
 
 ## not_covered
 
@@ -315,35 +315,35 @@ Review:
 
 **Expected:** Tài liệu được phép truy cập không quy định nghỉ thai sản.
 
-Review: 
+Review: oke
 
 ### T032 · role `employee` · vi · expected **not_covered**
 **Q:** Giờ làm việc hành chính của công ty bắt đầu lúc mấy giờ?
 
 **Expected:** Tài liệu không quy định giờ làm việc.
 
-Review: 
+Review: oke
 
 ### T033 · role `employee` · vi · expected **not_covered**
 **Q:** Nhân viên được phụ cấp điện thoại bao nhiêu mỗi tháng?
 
 **Expected:** Tài liệu không đề cập phụ cấp điện thoại.
 
-Review: 
+Review: oke
 
 ### T034 · role `employee` · vi · expected **not_covered**
 **Q:** Công ty có xe đưa đón nhân viên không?
 
 **Expected:** Tài liệu không đề cập xe đưa đón.
 
-Review: 
+Review: oke
 
 ### T035 · role `employee` · vi · expected **not_covered**
 **Q:** Có được tạm ứng lương giữa tháng không?
 
 **Expected:** Tài liệu không đề cập tạm ứng lương.
 
-Review: 
+Review: oke
 
 ## false_premise
 
@@ -355,7 +355,7 @@ Review:
 - gold VN#33: _Định nghĩa và trạng thái giao dịch Quy tắc bắt buộc. Yêu cầu không phải cam kết; phê duyệt không phải bằng chứng đã thực hiện; một hàng dữ liệu phân tích chưa chắc chứng minh trạng thái vật lý hoặc tài chính hiện tại._
 - gold VN#36: _Quy trình bắt buộc Đã cam kết: đã phát hành cam kết nghiệp vụ hợp lệ, chẳng hạn đơn mua hàng đã phát hành._
 
-Review: 
+Review:  Yêu cầu mua đã được duyệt rồi thì coi như là đơn hàng đã đặt xong đúng không?
 
 ### T037 · role `employee` · vi · expected **answer**
 **Q:** Hạn mức khách sạn ở đâu cũng là 2,5 triệu một đêm phải không?
@@ -365,7 +365,7 @@ Review:
 - gold VN#179: _Hạn mức chi phí, ăn uống và công tác Quy tắc bắt buộc. Trừ khi hợp đồng hoặc kế hoạch công tác đã duyệt đặt hạn thấp hơn, ăn uống tại địa phương được hoàn tối đa 300.000 VND/người/bữa; lưu trú công tác qua đêm tối đa 1.800.000 VND/phòng/đêm ở địa điểm nội địa thông thường và 2.500.000 VND tại thành phố lớn được chỉ định._
 - gold VN#185: _Yêu cầu kiểm soát Tài chính công bố danh sách thành phố lớn hiện hành và rà hạn mức hằng năm._
 
-Review: 
+Review: oke
 
 ### T038 · role `employee` · vi · expected **answer**
 **Q:** Nghỉ ốm đột xuất mà không báo trước 5 ngày thì đơn nghỉ bị mất hiệu lực đúng không?
@@ -374,7 +374,7 @@ Review:
 - must include: `không`
 - gold VN#97: _Nộp yêu cầu nghỉ và thời hạn báo trước Quy tắc bắt buộc. Nghỉ theo kế hoạch nên được đề nghị ít nhất năm ngày làm việc trước ngày đầu nghỉ. Nghỉ khẩn, do bệnh hoặc được pháp luật bảo vệ phải báo sớm nhất có thể một cách hợp lý và không mất hiệu lực vì thiếu thời gian báo trước._
 
-Review: 
+Review: oke
 
 ### T039 · role `employee` · vi · expected **answer**
 **Q:** Khi tồn kho thấp thì AI agent được tự phát hành PO để bổ sung đúng không?
@@ -384,7 +384,7 @@ Review:
 - gold VN#629: _Quản lý thay đổi, an toàn tác tử AI và kiểm soát phát hành Quy tắc bắt buộc. Tác tử AI có thể truy chính sách đã duyệt, hỏi dữ liệu được phép và soạn đề xuất. Không được duyệt chi, phát hành PO, trả hóa đơn, điều chỉnh tồn hay cấp quyền, trừ luồng được phê duyệt và kiểm toán riêng cho phép rõ hành động đó._
 - gold VN#398: _Tín hiệu đặt lại và rà bổ sung hàng Quy tắc bắt buộc. Hàng có reorder_flag=true, stockout_flag=true hoặc days_of_supply thấp kích hoạt rà bổ sung, không tự tạo PO._
 
-Review: 
+Review: oke
 
 ### T040 · role `employee` · vi · expected **answer**
 **Q:** Đã đổi lịch làm rồi thì coi như chứng minh được là có làm thêm giờ đúng không?
@@ -394,7 +394,7 @@ Review:
 - gold VN#156: _Yêu cầu kiểm soát Đổi lịch không chứng minh đã làm thêm.  Không dùng "nghỉ bù" không chính thức thay khoản lương pháp luật bắt buộc, trừ khi được phép và lập hồ sơ._
 - gold VN#154: _Quy trình bắt buộc Nhân viên ghi giờ thực tế vào hệ thống chấm công.  Quản lý xác nhận giờ thực và giải thích lệch so với dự kiến đã duyệt._
 
-Review: 
+Review: oke
 
 ## language
 
@@ -405,7 +405,7 @@ Review:
 - must include: `five|5`
 - gold EN#94: _Leave request submission and notice Mandatory rule. Planned leave should be submitted at least five working days before the first day. Emergency, illness-related or legally protected leave must be reported as soon as reasonably practicable and is not invalidated by missing advance notice._
 
-Review: 
+Review: oke
 
 ### T042 · role `employee` · en · expected **answer**
 **Q:** What is the reimbursement limit for a local meal?
@@ -414,7 +414,7 @@ Review:
 - must include: `300,000|300.000`
 - gold EN#182: _Expense limits, meals and travel Mandatory rule. Unless a contract or approved travel plan sets a stricter cap, local meals are reimbursable up to VND 300,000 per person per meal; overnight travel lodging is capped at VND 1,800,000 per room-night in ordinary domestic locations and VND 2,500,000 in designated major-city locations._
 
-Review: 
+Review: oke
 
 ### T043 · role `employee` · mixed · expected **answer**
 **Q:** Incident mức High thì phải report trong bao lâu?
@@ -423,7 +423,7 @@ Review:
 - must include: `một giờ|1 giờ|one hour`
 - gold VN#599: _Quy trình bắt buộc Cao: khả năng truy cập trái phép hoặc suy giảm dịch vụ đáng kể; báo Bảo mật và chủ hệ thống trong một giờ._
 
-Review: 
+Review: oke
 
 ### T044 · role `employee` · en · expected **answer**
 **Q:** Who must approve a commitment above VND 200 million?
@@ -433,7 +433,7 @@ Review:
 - gold EN#286: _Approval matrix and monetary thresholds Mandatory rule. The default delegated authority for a single commitment is: up to VND 5,000,000-line manager; VND 5,000,001-50,000,000-department head; VND 50,000,001-200,000,000-department head plus Procurement and Finance; above VND 200,000,000-Executive Operations Council plus Finance._
 - gold EN#781: _Appendix B - Approval limits and operational decision table Columns: Total commitment | Required approval | Additional condition Row 1: Total commitment: Up to VND 5,000,000 | Required approval: Line manager | Additional condition: One documented quote; budget confirmed. Row 2: Total commitment: VND 5,000,001-50,000,000 | Required approval: Department head | Additional condition: At least two comparable quotes where _
 
-Review: 
+Review: oke
 
 ### T045 · role `employee` · mixed · expected **answer**
 **Q:** Three-way match gồm những chứng từ nào?
@@ -442,7 +442,7 @@ Review:
 - must include: `PO` · `hóa đơn` · `nhận`
 - gold VN#314: _Đối chiếu hóa đơn và kiểm soát thanh toán Quy tắc bắt buộc. Kiểm soát chuẩn là đối chiếu ba bên giữa PO đã phát hành, biên bản nhận được chấp nhận và hóa đơn nhà cung cấp. Dịch vụ cần xác nhận nghiệm thu dịch vụ thay phiếu nhận hàng._
 
-Review: 
+Review: oke
 
 ## noisy
 
@@ -453,7 +453,7 @@ Review:
 - must include: `duyệt trước|duyet truoc`
 - gold VN#152: _Làm thêm, đổi lịch và bỏ ca Quy tắc bắt buộc. Làm thêm cần duyệt trước, trừ khẩn cấp hoặc quy định pháp luật khiến không thể duyệt trước; nhân viên phải báo giờ thực tế kịp thời._
 
-Review: 
+Review: oke
 
 ### T047 · role `employee` · vi · expected **answer**
 **Q:** ê bro, đi công tác ở tỉnh, ks hết 2tr2 một đêm thì đc hoàn hết ko?
@@ -464,7 +464,7 @@ Review:
 - gold VN#179: _Hạn mức chi phí, ăn uống và công tác Quy tắc bắt buộc. Trừ khi hợp đồng hoặc kế hoạch công tác đã duyệt đặt hạn thấp hơn, ăn uống tại địa phương được hoàn tối đa 300.000 VND/người/bữa; lưu trú công tác qua đêm tối đa 1.800.000 VND/phòng/đêm ở địa điểm nội địa thông thường và 2.500.000 VND tại thành phố lớn được chỉ định._
 - gold VN#182: _Quy trình bắt buộc Vượt hạn cần ngoại lệ bằng văn bản được duyệt trước; cấm chia nhỏ đề nghị._
 
-Review: 
+Review: oke
 
 ### T048 · role `employee` · vi · expected **answer**
 **Q:** hóa đơn ncc bị trùng số thì sử lý sao ạ
@@ -473,7 +473,7 @@ Review:
 - must include: `rà soát|giữ`
 - gold VN#320: _Yêu cầu kiểm soát Số hóa đơn trùng hoặc số tiền/ngày lặp phải giữ rà soát._
 
-Review: 
+Review: oke
 
 ### T049 · role `employee` · vi · expected **answer**
 **Q:** nhan vien moi thi khi nao moi duoc cap quyen
@@ -482,7 +482,7 @@ Review:
 - must include: `xác minh danh tính|xac minh danh tinh`
 - gold VN#539: _Quy trình bắt buộc Nhân viên mới: chỉ cấp vai trò đã duyệt sau xác minh danh tính._
 
-Review: 
+Review: oke
 
 ### T050 · role `employee` · vi · expected **answer**
 **Q:** sp trong kho bị lệch tên danh mục thì lấy theo bảng nào vậy m
@@ -492,7 +492,7 @@ Review:
 - gold VN#376: _Yêu cầu kiểm soát Không tạo product_id giả để nối thành công.  Nếu inventory.product_name hoặc category khác products, lấy products làm metadata danh mục và đánh dấu lệch._
 - gold VN#371: _Danh tính sản phẩm, đổi danh mục và nối dữ liệu Quy tắc bắt buộc. Dùng product_id làm khóa chuẩn. Tên, loại, phân khúc, kích thước và màu là thuộc tính mô tả, không thay khóa._
 
-Review: 
+Review: oke
 
 ## rbac
 
@@ -502,7 +502,7 @@ Review:
 **Expected:** Vai trò executive không được xem SOP kiểm kê (02); câu trả lời phải là không có trong tài liệu được phép.
 - must not use: 02_SOP_Cycle_Count_and_Stock_Adjustment.pdf
 
-Review: 
+Review: oke
 
 ### T052 · role `operations` · vi · expected **answer**
 **Q:** Trong SOP kiểm kê và điều chỉnh tồn, tỷ lệ chênh lệch tính thế nào?
@@ -511,7 +511,7 @@ Review:
 - must include: `max`
 - gold 02_SOP_Cycle_Count_and_S#2: _5. Ngưỡng xử lý và phê duyệt • Đóng băng giao dịch tại vị trí cần đếm hoặc ghi lại mọi giao dịch phát sinh trong cửa sổ đếm. • Chuẩn bị thiết bị quét, nhãn cách ly, biểu mẫu ghi nhận, camera và phương án xử lý hàng đang pick / pack / chuyển kho. 4. Thực hiện đếm và đối chiếu • Đếm theo SKU + size + color + vị trí; không gộp các biến thể gần giống nhau. • Ghi số lượng thực tế, đơn vị tính, người đếm, thời điểm và tình_
 
-Review: 
+Review: oke
 
 ### T053 · role `procurement` · vi · expected **not_covered**
 **Q:** Theo deck đào tạo chính sách tồn kho, mô hình vận hành gồm những bước nào?
@@ -519,7 +519,7 @@ Review:
 **Expected:** Vai trò procurement không được xem deck đào tạo (05); câu trả lời phải là không có trong tài liệu được phép.
 - must not use: 05_Inventory_Policy_Training_Deck.pptx
 
-Review: 
+Review: oke
 
 ### T054 · role `legal_compliance` · vi · expected **answer**
 **Q:** Mô hình vận hành trong deck đào tạo tồn kho gồm các bước gì?
@@ -528,7 +528,7 @@ Review:
 - must include: `PLAN` · `APPROVE` · `RECEIVE` · `CONTROL` · `LEARN`
 - gold 05_Inventory_Policy_Trai#2: _02 | Mô hình vận hành Tách quyền ra quyết định khỏi thao tác nhập liệu. PLAN Forecast / campaign ROP & target stock → APPROVE Budget / supplier PO authorization → RECEIVE PO match QC & put-away → CONTROL Cycle count Exception handling → LEARN KPI / root cause Forecast update Nguyên tắc kiểm soát: người đếm ≠ người nhập điều chỉnh ≠ người duyệt. AI Agent chỉ đọc dữ liệu được phân quyền và đề xuất; không tự phát hành P_
 
-Review: 
+Review: oke
 
 ### T055 · role `finance_analyst` · vi · expected **answer**
 **Q:** Theo README của Inventory Planner, tín hiệu stockout được xác định thế nào?
@@ -537,7 +537,7 @@ Review:
 - must include: `14`
 - gold 04_Inventory_Control_and#1: _README Columns: Mục | Nội dung Row 8: Mục: Inventory position | Nội dung: On-hand + Open PO − Backorder. Dataset không có Open PO / Backorder; workbook mặc định 0 và yêu cầu nhập số thực tế. Row 9: Mục: Stockout signal | Nội dung: stockout_days ≥ 1 hoặc fill_rate < 95% hoặc calculated days of supply ≤ 14 ngày. Row 10: Mục: Overstock signal | Nội dung: Calculated days of supply > 120 ngày. >180 ngày cần kế hoạch xử lý_
 
-Review: 
+Review: oke
 
 ## follow_up
 
@@ -551,7 +551,7 @@ Review:
 - gold VN#274: _Ma trận phê duyệt và ngưỡng tiền Quy tắc bắt buộc. Thẩm quyền mặc định cho một cam kết: đến 5.000.000 VND-quản lý trực tiếp; 5.000.001-50.000.000 VND-trưởng bộ phận; 50.000.001-200.000.000 VND-trưởng bộ phận cùng Mua sắm và Tài chính; trên 200.000.000 VND-Hội đồng Điều hành Vận hành cùng Tài chính._
 - gold VN#730: _Phụ lục B - Hạn mức phê duyệt và bảng quyết định vận hành Columns: Tổng cam kết | Phê duyệt bắt buộc | Điều kiện bổ sung Row 1: Tổng cam kết: Đến 5.000.000 VND | Phê duyệt bắt buộc: Quản lý trực tiếp | Điều kiện bổ sung: Một báo giá có hồ sơ; ngân sách xác nhận. Row 2: Tổng cam kết: 5.000.001-50.000.000 VND | Phê duyệt bắt buộc: Trưởng bộ phận | Điều kiện bổ sung: Ít nhất hai báo giá tương đương nếu thị trường cho ph_
 
-Review: 
+Review: oke
 
 ### T057 · role `employee` · vi · expected **answer**
 > (previous turn) **Q:** Ăn uống khi đi công tác được hoàn tối đa bao nhiêu?  
@@ -562,7 +562,7 @@ Review:
 - must include: `1.800.000` · `2.500.000`
 - gold VN#179: _Hạn mức chi phí, ăn uống và công tác Quy tắc bắt buộc. Trừ khi hợp đồng hoặc kế hoạch công tác đã duyệt đặt hạn thấp hơn, ăn uống tại địa phương được hoàn tối đa 300.000 VND/người/bữa; lưu trú công tác qua đêm tối đa 1.800.000 VND/phòng/đêm ở địa điểm nội địa thông thường và 2.500.000 VND tại thành phố lớn được chỉ định._
 
-Review: 
+Review: oke
 
 ### T058 · role `employee` · vi · expected **answer**
 > (previous turn) **Q:** Sự cố mức Cao phải báo trong bao lâu?  
@@ -573,7 +573,7 @@ Review:
 - must include: `ngay`
 - gold VN#598: _Quy trình bắt buộc Nghiêm trọng: xâm phạm đang diễn ra, lộ rộng dữ liệu Hạn chế, gian lận tài chính trọng yếu hoặc dừng dịch vụ thiết yếu; liên hệ trưởng Bảo mật ngay._
 
-Review: 
+Review: oke
 
 ### T059 · role `employee` · vi · expected **answer**
 > (previous turn) **Q:** Ngoại lệ chính sách có tự hết hạn không?  
@@ -585,7 +585,7 @@ Review:
 - gold VN#659: _Duyệt, hết hạn và đóng ngoại lệ Quy tắc bắt buộc. Mỗi ngoại lệ có chủ cụ thể, phạm vi rõ, hồ sơ duyệt, ngày đầu và hết hạn. Tự hết hiệu lực trừ khi cùng cấp hoặc cao hơn gia hạn trước hết hạn._
 - gold VN#662: _Quy trình bắt buộc Trước hết hạn, trở lại tuân chuẩn hoặc xin gia hạn với bằng chứng rủi ro cập nhật._
 
-Review: 
+Review: oke
 
 ### T060 · role `employee` · vi · expected **answer**
 > (previous turn) **Q:** Hàng dư thừa thì xử lý thế nào?  
@@ -596,4 +596,4 @@ Review:
 - must include: `Kinh doanh` · `Tài chính`
 - gold VN#430: _Quy trình bắt buộc Được cấp Kinh doanh và Tài chính cần thiết duyệt trước đổi giá hoặc xử lý hàng.  Theo dõi kết quả và rà lại sau kỳ được xác định._
 
-Review: 
+Review: oke

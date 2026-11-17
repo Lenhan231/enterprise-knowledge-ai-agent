@@ -39,10 +39,16 @@ Vintern with Docling OCR.
 | Docling output mapping | `docling_adapter/result_mapper.py` |
 | Invoice/caption preprocessing and output shaping | `vintern_processor.py` |
 | Vintern model loading and inference | `vintern_worker.py` |
+| Xiaomi-OCR-0 invoice extraction | `xiaomi_ocr_processor.py` and `xiaomi_ocr_worker.py` |
 | Upload Test API | `src/app/upload_test.py` |
 | Production upload caller | `src/app/main.py` |
 
 For local commands and image build notes, see [development](docs/development.md).
+
+Xiaomi-OCR-0 invoice mode (`invoice_provider=xiaomi`) reads original invoice
+pages in an isolated Transformers environment. Configure
+`DOCUMENT_PROCESSING_XIAOMI_PYTHON` or create `.venv-xiaomi`; see the
+[invoice pipeline](docs/invoice-pipeline.md) for setup and device settings.
 
 ## CPU OCR performance
 

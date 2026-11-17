@@ -2,10 +2,14 @@ FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
+    UV_PYTHON_INSTALL_DIR=/opt/uv-python \
+    UV_CACHE_DIR=/tmp/uv-cache \
     PYTHONPATH=/app/src \
     HF_HOME=/models \
     PADDLE_PDX_CACHE_HOME=/models/paddlex \
     DOCUMENT_PROCESSING_VINTERN_PYTHON=/opt/vintern/bin/python \
+    DOCUMENT_PROCESSING_XIAOMI_PYTHON=/opt/xiaomi/bin/python \
+    DOCUMENT_PROCESSING_XIAOMI_DEVICE=cpu \
     DOCUMENT_PROCESSING_OCR_ENGINE=vietocr \
     SERVICE_KIND=document-processing \
     EMBEDDING_BACKEND=local \
@@ -38,6 +42,17 @@ RUN python -m venv /opt/vintern \
     && /opt/vintern/bin/python -m pip install --no-cache-dir \
         "transformers==4.57.6" "accelerate==1.15.0" "peft==0.21.2" \
         "timm==1.0.30" "einops==0.8.2" "sentencepiece"
+
+RUN python -m pip install --no-cache-dir uv \
+    && uv python install 3.13 \
+    && uv venv --python 3.13 /opt/xiaomi \
+    && uv pip install --python /opt/xiaomi/bin/python \
+        --index-url https://download.pytorch.org/whl/cpu \
+        "torch==2.14.0" "torchvision==0.29.0" \
+    && uv pip install --python /opt/xiaomi/bin/python \
+        "transformers==5.17.0" "accelerate==1.15.0" "pillow==12.3.0" \
+    && uv cache clean \
+    && rm -rf /tmp/uv-cache
 
 COPY src ./src
 

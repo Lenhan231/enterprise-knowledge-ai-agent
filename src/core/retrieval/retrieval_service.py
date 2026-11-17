@@ -9,6 +9,7 @@ from typing import Literal
 from core.database.document_chunks_repository import DocumentChunkRepository
 from core.latency import measure
 from core.embeddings import EmbeddingService
+from core.retrieval.amounts import normalize_amounts
 from core.retrieval.methods import parent, translated_hybrid
 from core.retrieval.retrieval import (
     RankedChunk, RetrievalRequest, RetrievalResponse, SourceLocation, make_chunk_id,
@@ -82,6 +83,11 @@ class RetrievalService:
             raise TypeError("request must be a RetrievalRequest")
         if method not in {"dense", "bm25", "hybrid", "parent", "translated_hybrid", "translated_hybrid_rerank"}:
             raise ValueError("method must be dense, bm25, hybrid, parent, translated_hybrid, or translated_hybrid_rerank")
+        # Only the search query changes; answer generation and the claim check keep the user's own question.
+        original_query = request.query
+        search_query = normalize_amounts(request.query)
+        if search_query != request.query:
+            request = request.model_copy(update={"query": search_query})
         started = perf_counter()
         query_embedding = None
         if method != "bm25":
@@ -171,8 +177,10 @@ class RetrievalService:
                 metadata=metadata,
                 retrieval_method=method,
             ))
+        if search_query != original_query:
+            retrieval_details["amount_normalized_query"] = search_query
         return RetrievalResponse(
-            query=request.query,
+            query=original_query,
             latency_ms=(perf_counter() - started) * 1000,
             results=results,
             method=method,

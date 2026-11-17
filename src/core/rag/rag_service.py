@@ -13,7 +13,8 @@ from openai import APIError
 from pydantic import BaseModel, Field, StringConstraints, field_validator
 
 from core.llm.groq_provider import GroqProvider
-from core.rag.claim_verification import VerificationOutcome, VERIFICATION_UNAVAILABLE_ANSWER, verify_answer
+from core.rag.claim_verification import VerificationOutcome, VERIFICATION_UNAVAILABLE_ANSWER, is_source_gap_answer, verify_answer
+from core.retrieval.amounts import annotate_amounts
 from core.latency import measure
 from core.agents.runtime import deadline, remaining
 from core.prompts.knowledge_search import SEARCH_PLAN_PROMPT, SEARCH_PLAN_PROMPT_THREE
@@ -92,7 +93,7 @@ class RAGResult(BaseModel):
     insufficient_context: bool = False
     prompt_sha256: str | None = None
     verification: VerificationOutcome | None = None
-    withheld_draft: str | None = None  # the generated answer that was not shown; for diagnosis only, never returned to users
+    withheld_draft: str | None = None  # the generated answer that was not shown; returned only to agents:diagnostics
 
 
 def _format_contexts(contexts: list[dict]) -> str:
@@ -282,6 +283,9 @@ class RAGService:
                          if isinstance(c.get("retrieval_details"), dict)), None)
         if os.getenv("QUERY_NORMALIZATION_ENABLED", "0") == "1" and restored and restored.strip() != question.strip():
             question = f"{restored}\n(Người dùng gõ: {question})"
+        # '3 củ' alone led the answer model to 'not covered' although Appendix B was retrieved; spell the amount out
+        # next to the user's words (questions without an amount keep the evaluated prompt byte-identical).
+        question = annotate_amounts(question)
         prompt = template.format(
             context=_format_contexts(contexts)[:MAX_CONTEXT_CHARS],
             question=question,
@@ -290,7 +294,9 @@ class RAGService:
         with measure("answer_generation"):
             answer = _normalize_source_citations(self.llm.generate(prompt).strip())
 
-        if answer == INSUFFICIENT_ANSWER:
+        # A draft that only says "the supplied documents do not state this" (often citing every source) makes no
+        # claim: auditing it either fails on evidence limits ("withheld") or stamps a seal on a retrieval miss.
+        if answer == INSUFFICIENT_ANSWER or is_source_gap_answer(answer, question):
             return RAGResult(
                 answer=INSUFFICIENT_ANSWER,
                 contexts=contexts,
@@ -312,6 +318,10 @@ class RAGService:
         if verify_claims:
             cited_contexts = [c for c in contexts if c["source_id"] in source_ids]
             verification = verify_answer(self.llm, question, answer, cited_contexts)
+            if verification.audit_failed:
+                # Shown with its sources and an "unverified" banner; only a failed audit, never a rejected claim.
+                return RAGResult(answer=answer, contexts=contexts, source_ids=source_ids,
+                                 prompt_sha256=prompt_sha256, verification=verification)
             if verification.status != "supported":
                 return RAGResult(answer=VERIFICATION_UNAVAILABLE_ANSWER, contexts=contexts, withheld_draft=answer,
                                  prompt_sha256=prompt_sha256, verification=verification)

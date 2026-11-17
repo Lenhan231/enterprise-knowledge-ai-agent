@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles.css?v=redesign-20261115a">
-  <link rel="stylesheet" href="/static/redesign.css?v=redesign-20261115a">
+  <link rel="stylesheet" href="/static/redesign.css?v=knowledge-gaps-20261116b">
   <script>
     (function() {
       const saved = localStorage.getItem("app_theme");
@@ -316,8 +316,9 @@
                   <option value="gemini" selected>Gemini 3.1 Flash-Lite</option>
                   <option value="groq">GPT-OSS 120B · Groq</option>
                   <option value="modal">Qwen3-0.6B fine-tuned · Modal GPU</option>
+                  <option value="xiaomi">Xiaomi-OCR-0 · visual OCR</option>
                 </select>
-                <small class="upload-field-hint">Choose which model extracts invoice details. OCR stays the same.</small>
+                <small class="upload-field-hint">Choose the invoice extractor. Xiaomi-OCR-0 reads the original page image; Docling still supplies reviewable OCR and tables.</small>
               </div>
               <div class="upload-field upload-field-wide">
                 <label id="upload-file-label" for="upload-file">Document file</label>
@@ -547,7 +548,7 @@
     </form>
   </dialog>
   <link rel="stylesheet" href="/static/dashboard.css?v=20261115-output-contract">
-  <script src="/static/app.js?v=redesign-20261115a" defer></script>
+  <script src="/static/app.js?v=knowledge-gaps-20261116b" defer></script>
   <script src="/static/dashboard.js?v=20261115-output-contract-reconcile" defer></script>
 </body>
 </html>

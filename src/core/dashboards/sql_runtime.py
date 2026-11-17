@@ -1,5 +1,6 @@
 """Dashboard-only extensions; the canonical SQL runtime remains unchanged."""
 from copy import copy
+from datetime import date, timedelta
 from functools import partial
 import inspect
 import json
@@ -8,11 +9,12 @@ import re
 from core.agents.runtime import generate
 from core.agents.sql.agent import SQLAnalyticsAgent, parse_json_response
 from core.analytics.counting import COUNT_QUERY_INSTRUCTIONS, compile_count_query
-from core.analytics.metric_mapping import decode_metric_mapping, compile_inventory_query
+from core.analytics.metric_mapping import decode_metric_mapping, compile_inventory_query, _required_metrics
 from core.analytics.metric_ontology import METRIC_ONTOLOGY
 from core.analytics.metric_validation import MetricDefinitionError, validate_metric_definitions, inventory_time_scope, inventory_month_selection
-from core.analytics.sql_validation import APPROVED_DATE_COLUMNS, INVENTORY_SOURCES, QueryPlan, SQLValidationError, validate_sql_security
+from core.analytics.sql_validation import APPROVED_DATE_COLUMNS, INVENTORY_SOURCES, QueryPlan, SQLValidationError, validate_sql_security, decode_query_plan
 from core.dashboards.requirements import validate_outputs, validate_requested_kinds
+from core.dashboards.models import MAX_DATASETS
 from core.prompts.sql import DASHBOARD_OUTPUT_INSTRUCTIONS
 from core.dashboards.generation import SQLResponse, InventoryResponse, CountResponseFormat, OutputResponse, response_schema, OUTPUT_RULES, normalize_generation
 
@@ -117,10 +119,10 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
         except Exception as error:
             return self._recover_format_error(error)
 
-    def _prompt(self, prompt, *, count_repair=False):
+    def _prompt(self, prompt, *, inventory_repair=False):
         if 'Repair only the outputs' in prompt:
             return prompt
-        if not count_repair and 'Catalog candidates (selection summaries only):' not in prompt:
+        if not inventory_repair and 'Catalog candidates (selection summaries only):' not in prompt:
             if not hasattr(self, '_columns') or 'Repair only the outputs' in prompt:
                 return prompt + OUTPUT_RULES
             from core.analytics.text_to_sql import build_sql_prompt
@@ -130,8 +132,10 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
             context = re.sub(r'Return only JSON: .*? Never use writes',
                              'Follow the dashboard response schema below. Never use writes', context, count=1)
             context = context.split('\nInclude request_contract in SQL JSON:', 1)[0]
+            # Main's single-result CTE advice conflicts with independent dashboard datasets.
+            context = re.sub(r'When a request needs measures from independent fact tables[^\n]*', '', context)
             context = context.replace('Generate one read-only PostgreSQL SELECT',
-                                      'Generate one or two independent read-only PostgreSQL SELECTs', 1)
+                                      f'Generate up to {MAX_DATASETS} independent read-only PostgreSQL SELECTs', 1)
             mentioned = {}
             for source, columns in self._columns.items():
                 for field in columns:
@@ -142,8 +146,13 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
                     if re.search(r'(?<!\w)' + spelling + r'(?!\w)', self._question, re.I):
                         mentioned.setdefault(field, []).append(source)
             context += '\nExplicitly mentioned source fields (including grammatical singulars): ' + json.dumps(mentioned)
+            period = inventory_time_scope(self._question)
             context += '\nServer-resolved period and selected months: ' + json.dumps({
-                'period': inventory_time_scope(self._question), 'selected_months': sorted(inventory_month_selection(self._question))})
+                'period': period, 'selected_months': sorted(inventory_month_selection(self._question))})
+            if period and period[0] == 'range':
+                context += '\nRequired source-date WHERE bounds: ' + json.dumps({
+                    'start_inclusive': period[1],
+                    'end_exclusive': (date.fromisoformat(period[2] or period[1]) + timedelta(days=1)).isoformat()})
             context += '\nClarification history: ' + json.dumps(getattr(self, '_clarifications', []))
             context += '\nUse explicitly mentioned recorded fields without asking for confirmation. Selected months require EXTRACT(MONTH FROM the source date) IN those month numbers, in addition to the period bounds.'
             if 'The previous plan failed validation:' in prompt:
@@ -154,6 +163,11 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
                                 if table == source and field in columns) for source, columns in sources.items()}
         catalog = {name: {key: value.get(key) for key in ('description', 'aggregation', 'formula', 'dimensions')}
                    for name, value in METRIC_ONTOLOGY.items() if value.get('domain') == 'inventory_management'}
+        context = '\nRequest context: ' + json.dumps({'requested_metrics': sorted(_required_metrics(self._question)),
+            'clarification_history': getattr(self, '_clarifications', [])})
+        context += ('\nUse the supplied answers to resolve slots; do not repeat answered questions. '
+                    'Requested charts and observation tables use the requested metrics unless the user explicitly assigns different ones. '
+                    'Do not ask for the same measure separately for a chart and its observation table.\n')
         if self._count_intent():
             return ('Interpret this structural count request using only recorded entity fields. '
                 'Choose the entity catalog, not a historical observation table, unless the user requested observations or a snapshot. '
@@ -161,19 +175,19 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
                 'Declare each requested grouping field in dimensions. Return exactly the requested counts, with independent conditions, no extra counts. '
                 'Return {"result": {"operation": "count", "count_query": ..., "outputs": [...]}} or a specific clarification. '
                 'Do not generate SQL or a metric interpretation.\n'
-                + self._question + '\n' + COUNT_QUERY_INSTRUCTIONS
+                + self._question + context + COUNT_QUERY_INSTRUCTIONS
                 + '\nChart outputs need dimension plus one to four count aliases; table outputs may show all columns. '
                   'An overall scalar count can be a KPI. Preserve every requested representation. '
                 + json.dumps({'approved_sources': sources, 'date_fields': dates})
-                + ('\nRepair context: ' + prompt if count_repair else ''))
+                + ('\nRepair context: ' + prompt if inventory_repair else ''))
         return ('Interpret this dashboard request with the approved inventory catalog and source fields.\n'
-            + self._question + '\n'
+            + self._question + context
             + json.dumps({'catalog': catalog}) + '\n'
             + OUTPUT_RULES
             + '\nReturn a flat inventory interpretation with outputs, or clarification only. '
               'For inventory time, use latest if explicitly requested. Only ask for a snapshot when the user omitted it. '
               'A vague category chart without a measure needs a business question about the measure, not a guessed stock metric. '
-            + ('\nRepair context: ' + prompt if count_repair else '')
+            + ('\nRepair context: ' + prompt if inventory_repair else '')
             + '\nChoose suitable representations if unspecified: scalar counts can use KPIs; '
               'comparisons and trends need a suitable chart. Explicit observation tables are additional outputs. '
               'Do not add unrequested KPIs or summaries. Chart group_by must be empty. '
@@ -237,7 +251,7 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
             if not repairable:
                 return raw
             if len(self._responses) >= 2:
-                raise MetricDefinitionError('The generated inventory interpretation could not be repaired.', code='interpretation_mismatch')
+                raise MetricDefinitionError('The generated inventory interpretation could not be repaired: ' + str(error)[:300], code='interpretation_mismatch')
             if code == 'dashboard_requirements':
                 repaired = parse_json_response(await self._repair(
                     self._prompt(DASHBOARD_OUTPUT_INSTRUCTIONS + '\nRepair only the outputs for this validated interpretation. Return exactly {"outputs": [...]}.\n'
@@ -253,15 +267,107 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
             repair = (('Return the count_query response schema only, with outputs; do not use the legacy metric mapping.\n' if counts else
                        'Repair the complete typed inventory interpretation and its outputs.\n')
                 + json.dumps({'request': self._question, 'previous_response': response, 'validation_error': str(error)}))
-            repaired = await self._repair(self._prompt(repair, count_repair=counts), CountResponseFormat if counts else InventoryResponse)
+            repaired = await self._repair(self._prompt(repair, inventory_repair=True), CountResponseFormat if counts else InventoryResponse)
             return await self._response(repaired)
         return raw
+
+    def _decode_dashboard_queries(self, raw, question, options, metric_names, allowed_sources,
+                                  table_columns, approved_joins, primary_keys, date_columns):
+        response = parse_json_response(raw)
+        parent = super()._decode_dashboard_queries
+        arguments = (table_columns, approved_joins, primary_keys, date_columns)
+        if not isinstance(response, dict) or 'queries' not in response:
+            return parent(raw, question, options, metric_names, allowed_sources, *arguments)
+        items = response['queries']
+        if not isinstance(items, list) or not 1 <= len(items) <= MAX_DATASETS:
+            raise SQLValidationError(f'A dashboard accepts at most {MAX_DATASETS} independent queries.')
+        if set(response) - {'queries', 'outputs'}:
+            raise SQLValidationError('Each data query must own its parameters and explanation; do not put them at the dashboard level.')
+        expected = inventory_time_scope(question)
+        selected = inventory_month_selection(question)
+        for item in items:
+            if not isinstance(item, dict) or not isinstance(item.get('question'), str):
+                raise SQLValidationError('Each independent query needs its own self-contained question.')
+            scoped = item['question'] + '\n' + (options.get('_dashboard_scope') or '')
+            if ((expected and inventory_time_scope(scoped) != expected)
+                    or (selected and inventory_month_selection(scoped) != selected)):
+                raise SQLValidationError('Each saved dataset question must retain the requested period and selected months, so refresh cannot change its scope.')
+        if len(items) <= 2:
+            return parent(raw, question, options, metric_names, allowed_sources, *arguments)
+        # Reuse all of main's per-query guards; only the dashboard's total bound changes.
+        bundle, names, sources = [], set(), set()
+        from core.analytics.metric_ontology import resolve_metric_names
+        from sqlglot import parse_one, exp
+        for item in items:
+            metric_question = item['question']
+            for source in table_columns:
+                metric_question = re.sub(r'\b' + re.escape(source) + r'\b', '', metric_question, flags=re.I)
+            requested = resolve_metric_names(metric_question)
+            if requested - metric_names:
+                raise SQLValidationError('Independent queries cannot introduce unrequested canonical metrics.')
+            checked = parent(json.dumps({'queries': [item], 'outputs': []}), item['question'], options,
+                             requested, allowed_sources, *arguments)
+            names.update(requested)
+            for _, plan, _ in checked:
+                sources.update(table.db + '.' + table.name for table in parse_one(plan.sql, read='postgres').find_all(exp.Table) if table.db)
+            bundle.extend(checked)
+        if names != metric_names:
+            raise SQLValidationError('Independent queries must retain every requested canonical metric.')
+        explicit_sources = set(re.findall(r'\bcommerce\.\w+', re.sub(r"'(?:[^']|'')*'", '', question).casefold()))
+        if not explicit_sources <= sources:
+            raise SQLValidationError('Independent queries must retain every explicitly requested source.')
+        if len({item[0].casefold() for item in bundle}) != len(bundle) or len({(item[1].sql, item[1].parameters) for item in bundle}) != len(bundle):
+            raise SQLValidationError('Reuse a dataset instead of duplicating its query.')
+        return bundle
+
+    @staticmethod
+    def _validation_message(detail, question):
+        detail = detail.removeprefix('Please clarify the requested measures, grouping, scope or representation. ').strip()[:700]
+        if re.search(r'[ăâđêôơưáàảãạấầẩẫậắằẳẵặếềểễệốồổỗộớờởỡợứừửữựýỳỷỹỵ]', question, re.I):
+            return ('Mình chưa tạo được dashboard vì kế hoạch dữ liệu hoặc cách hiển thị chưa hợp lệ. '
+                    f'Nguyên nhân kiểm tra: {detail} Chưa thực thi query dữ liệu dashboard. Yêu cầu bạn đã nhập vẫn được giữ nguyên.')
+        return (f'I could not build the dashboard because its data/output plan failed validation. Reason: {detail} '
+                'No dashboard data query was executed. Your original request is retained.')
+
+    async def _resolve_snapshot(self, request, context_info, columns, date_columns):
+        latest = r'\b(?:latest(?:\s+available)?|most recent)\b|mới nhất(?:\s+hiện có)?|gần nhất'
+        names = _required_metrics(self._question)
+        if (not re.search(latest, self._question, re.I) or not names or self._count_intent()
+                or any(METRIC_ONTOLOGY[name].get('domain') != 'inventory_management' for name in names)):
+            return request
+        period = inventory_time_scope(self._question)
+        if not period or period[0] != 'range':
+            return request
+        start, end = period[1], period[2] or period[1]
+        stop = (date.fromisoformat(end) + timedelta(days=1)).isoformat()
+        plan = decode_query_plan(json.dumps({
+            'sql': 'SELECT MAX(i.snapshot_date) AS snapshot_date FROM commerce.inventory AS i WHERE i.snapshot_date >= $1 AND i.snapshot_date < $2 LIMIT 1',
+            'parameters': [start, stop]}), schema_columns=columns, allowed_sources=set(columns), date_columns=date_columns)
+        rows = await self.repository.execute_approved_query(plan.sql, *plan.parameters)
+        snapshot = str(rows[0].get('snapshot_date')) if rows else ''
+        try:
+            valid = date.fromisoformat(start) <= date.fromisoformat(snapshot) <= date.fromisoformat(end)
+        except ValueError:
+            valid = False
+        if not valid:
+            raise MetricDefinitionError('No inventory snapshot is available within the requested period. No dashboard data query was executed.',
+                                        code='dashboard_snapshot_unavailable')
+        context_info['dashboard_snapshot_scope'] = {'requested_question': self._question, 'start': start,
+                                                    'end': end, 'snapshot_date': snapshot}
+        self._question = re.sub(latest, 'snapshot ' + snapshot, self._question, flags=re.I)
+        return request.model_copy(update={'question': self._question})
 
     async def _run_payload(self, request, context_info, table_columns, approved_joins, primary_keys, date_columns):
         self._columns, self._dates = table_columns, date_columns
         self._joins, self._keys = approved_joins, primary_keys
         self._clarifications = request.metadata.get('_dashboard_clarifications', [])
         self._question, self._responses = self._query_text(request), []
+        try:
+            request = await self._resolve_snapshot(request, context_info, table_columns, date_columns)
+        except (MetricDefinitionError, SQLValidationError) as error:
+            return self._generation_error(error)
+        except Exception as error:
+            return self._database_error(error, None, ())
         result = await super()._run_payload(request, context_info, table_columns, approved_joins, primary_keys, date_columns)
         datasets = [item['payload'] for item in result['datasets']] if 'datasets' in result else [result]
         for payload in datasets:
@@ -272,8 +378,8 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
             result['ok'] = all(payload.get('ok') for payload in datasets)
         response = result.pop('_dashboard_count_response', None)
         if response is None:
-            if result.get('metadata', {}).get('metric_error_code') == 'dashboard_requirements' and len(self._responses) >= 2:
-                result['answer'] = 'The dashboard plan could not be validated after repair. Please retry the request.'
+            if result.get('metadata', {}).get('metric_error_code') == 'dashboard_requirements':
+                result['answer'] = self._validation_message(result['metadata'].get('error_detail', ''), self._question)
                 result['metadata'].update(status='generation_failed', clarification_required=False)
             return result
         for attempt in range(2):
@@ -285,7 +391,7 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
                 try:
                     raw = await self._repair(self._prompt(
                         'Repair this count_query and outputs without changing the requested population, measures or dates.\n'
-                        + json.dumps({'request': self._question, 'previous_response': response, 'validation_error': str(error)}), count_repair=True), CountResponseFormat)
+                        + json.dumps({'request': self._question, 'previous_response': response, 'validation_error': str(error)}), inventory_repair=True), CountResponseFormat)
                     self._responses.append(raw)
                     response = parse_json_response(raw)
                     if isinstance(response, dict) and 'result' in response:
@@ -324,8 +430,9 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
         result = SQLAnalyticsAgent._generation_error(error, sql, parameters, question=question)
         code = getattr(error, 'code', None)
         if code in {'interpretation_invalid', 'interpretation_mismatch', 'count_plan_invalid'}:
-            result.update(answer='The request could not be converted into a valid data query after repair. No data query was executed. Please retry.')
+            result.update(answer=DashboardSQLAgent._validation_message(str(error), question))
             result['metadata'].update(status='generation_failed', clarification_required=False)
-        elif code in {'count_unsupported', 'metric_unsupported', 'incompatible_grain'}:
+        elif code in {'count_unsupported', 'metric_unsupported', 'incompatible_grain', 'dashboard_snapshot_unavailable'}:
+            result.update(answer=str(error), query_status='unsupported')
             result['metadata'].update(status='unsupported', clarification_required=False)
         return result

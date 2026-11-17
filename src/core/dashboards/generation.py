@@ -7,11 +7,17 @@ from sqlglot.errors import ParseError, TokenError
 
 from core.analytics.counting import CountQuery
 from core.analytics.metric_mapping import MetricMapping
-from core.dashboards.models import DashboardOutput
+from core.dashboards.models import DashboardOutput, MAX_DATASETS
 
 SYSTEM_RULES = (
     'You are a dashboard data planner. Follow the approved data rules and JSON schema. '
-    'Return every requested representation. Reuse one dataset for outputs at the same grain. '
+    'Return every requested representation. Reuse a dataset when source set, grain and filters match. '
+    f'You may return up to {MAX_DATASETS} independent SQL datasets in one response. '
+    'Allocate a separate dataset for each independent fact source and requested grain. '
+    'Independent charts from different fact sources MUST use independent datasets, even at the same time grain. '
+    'Never join independent chart sources together, including through monthly CTEs. '
+    'Include only requested outputs. Monthly or category measures alone do not request overall KPI tiles. '
+    'An explicitly requested overall total is a scalar KPI unless the user specifies another representation. '
     'Descriptive statistics are computed from returned observations by the renderer; do not query them separately. '
     'Do not ask to confirm supplied chart types, measures, columns or time scope. '
     'Ask a focused business clarification only when required information is genuinely missing.'
@@ -67,7 +73,7 @@ class SingleSQL(ResponseModel):
 
 class SQLBundle(ResponseModel):
     operation: Literal['queries']
-    queries: list[Dataset] = Field(min_length=1, max_length=2)
+    queries: list[Dataset] = Field(min_length=1, max_length=MAX_DATASETS)
     outputs: list[Output] = Field(max_length=8)
 
 
@@ -247,18 +253,23 @@ def _reuse_summary_observations(result):
                 result['outputs'].append(normalized)
 
 
-OUTPUT_RULES = '''
+OUTPUT_RULES = f'''
 Dashboard data request: generate SQL-backed datasets and the requested representations.
 Dashboard response rules (override legacy presentation examples):
-Wrap the complete response in {"result": ...}; result includes operation="sql", "queries",
+Wrap the complete response in {{"result": ...}}; result includes operation="sql", "queries",
 "inventory", "count" or "clarification" with its matching fields. Put the plan inside result.
-Return SQL with parameters, explanation and outputs, or queries plus outputs for two datasets. Every query must
+Return SQL with parameters, explanation and outputs, or queries plus outputs for up to {MAX_DATASETS} independent datasets.
+Every dataset owns its question, SQL, parameters and explanation. Each question must retain the requested
+period and filters so refreshing that saved dataset preserves the original scope. Every query must
 contain exactly one SELECT statement and explicitly selected columns. Never concatenate statements in a sql
 string. A single SQL dataset uses query: 0 for every output, including its descriptive summaries.
 Put period predicates directly on source dates in WHERE; do not create a parameter CTE or join to parameters.
 Every query must
-include all requested date/filter bounds, including an overall KPI query. Multiple charts at
-the same grain share one dataset; use a second independent query only for a different grain.
+include all requested date/filter bounds, including an overall KPI query. Outputs with the same source set,
+grain and filters share one dataset. Independent charts from different fact sources use separate datasets;
+this is required even when the chart sources share a month axis. Do not join their raw facts or aggregated
+CTEs to combine chart datasets. Keep approved dimension joins needed to calculate a requested metric.
+An overall KPI uses its own overall aggregate dataset, separate from grouped observations.
 Return every requested representation in outputs. An overall KPI requires an aggregate SQL
 row, never a raw source value. The renderer computes descriptive summaries from returned chart aggregates;
 do not add window statistics or a second summary query. Output group_by is empty for charts

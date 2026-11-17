@@ -40,9 +40,43 @@ def percentile(values, q):
     return values[min(len(values) - 1, int(round(q * (len(values) - 1))))] if values else None
 
 
-def score(set_name, run_path):
+def _tokens(text):
+    import re
+    body = re.sub(r"^Section: [^\n]*\n", "", text)  # a shared heading alone is not relevance
+    return set(re.findall(r"\w+", body.casefold()))
+
+
+def overlap_rows(rows, items, corpus_path, variant_path, threshold=0.8):
+    """Chunking experiments: map each retrieved variant chunk to the gold passage whose body it contains (>= threshold
+    of the gold tokens), so gold defined on production chunk ids still applies to other chunkings."""
+    production_rows = [json.loads(line) for line in open(corpus_path, encoding="utf-8")]
+    production = {(r["document_name"], r["chunk_index"]): _tokens(r["content"]) for r in production_rows}
+    by_text = {(r["document_name"], r["content"]): (r["document_name"], r["chunk_index"]) for r in production_rows}
+    variant_rows = {(r["document_name"], r["chunk_index"]): r["content"] for r in map(json.loads, open(variant_path, encoding="utf-8"))}
+    variant = {key: _tokens(text) for key, text in variant_rows.items()}
+    for row in rows:
+        gold = [(g["document"], g["chunk_index"]) for g in items[row["id"]]["gold"]]
+        mapped, used = [], set()
+        for hit in row["ranked"]:
+            chunk = variant[(hit["document"], hit["chunk_index"])]
+            exact = by_text.get((hit["document"], variant_rows[(hit["document"], hit["chunk_index"])]))
+            if exact in gold and exact not in used:  # an unchanged chunk keeps its own identity
+                match = exact
+            else:
+                match = next((key for key in gold if key not in used and key[0] == hit["document"] and production[key]
+                              and len(production[key] & chunk) / len(production[key]) >= threshold), None)
+            if match:
+                used.add(match)
+            mapped.append({"document": match[0], "chunk_index": match[1]} if match else {"document": hit["document"], "chunk_index": -1})
+        row["ranked"] = mapped
+    return rows
+
+
+def score(set_name, run_path, corpus_path=None, variant_path=None):
     items = {i["id"]: i for i in json.load(open(HERE / f"{set_name}-v3.json", encoding="utf-8"))["items"]}
     rows = [json.loads(line) for line in open(run_path, encoding="utf-8")]
+    if variant_path:
+        rows = overlap_rows(rows, items, corpus_path, variant_path)
     overall, by_category, leaks, denials, latency = defaultdict(list), defaultdict(lambda: defaultdict(list)), 0, 0, []
     for row in rows:
         item = items[row["id"]]
@@ -75,8 +109,13 @@ def main(argv):
     if "--json" in argv:
         out = argv[argv.index("--json") + 1]
         argv = argv[:argv.index("--json")]
+    corpus = variants = None
+    if "--overlap" in argv:  # --overlap <production chunks.jsonl> <variant chunks.jsonl per run, comma-separated>
+        i = argv.index("--overlap")
+        corpus, variants = argv[i + 1], argv[i + 2].split(",")
+        argv = argv[:i] + argv[i + 3:]
     set_name, runs = argv[0], argv[1:]
-    results = [score(set_name, run) for run in runs]
+    results = [score(set_name, run, corpus, variants[n] if variants else None) for n, run in enumerate(runs)]
     cols = ["hit@1", "hit@5", "hit@10", "recall@5", "precision@5", "mrr", "ndcg@5", "ndcg@10"]
     print(f"{'run':38s} " + " ".join(f"{c:>11s}" for c in cols) + "   leak  p50ms  p95ms")
     for r in results:

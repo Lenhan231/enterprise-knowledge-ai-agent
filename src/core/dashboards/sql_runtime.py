@@ -99,7 +99,7 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
         from core.llm.groq_provider import GroqProvider
         if isinstance(backend, GroqProvider):
             model = (InventoryResponse if 'Catalog candidates (selection summaries only):' in prompt else SQLResponse)
-            if model is InventoryResponse and self._count_intent():
+            if self._inventory_count_intent() or model is InventoryResponse and self._count_intent():
                 model = CountResponseFormat
             kwargs = {**kwargs, 'max_output_tokens': 2048, 'response_schema': response_schema(model)}
         return kwargs
@@ -107,6 +107,17 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
     def _count_intent(self):
         return (bool(re.search(r'\bcounts?\b|number of|how many|đếm|bao nhiêu', self._question, re.I))
                 and not re.search(r'\brates?\b|tỷ lệ|tỉ lệ', self._question, re.I))
+
+    def _inventory_count_intent(self):
+        if not getattr(self, '_question', ''):
+            return False
+        names = _required_metrics(self._question)
+        sources = set(re.findall(r'\bcommerce\.\w+', self._question.casefold()))
+        return (self._count_intent() and bool(names) and sources <= INVENTORY_SOURCES
+                and all(METRIC_ONTOLOGY[name].get('domain') == 'inventory_management'
+                        and (METRIC_ONTOLOGY[name].get('aggregation') == 'count_distinct'
+                             or METRIC_ONTOLOGY[name].get('aggregation') == 'value'
+                             and METRIC_ONTOLOGY[name].get('unit') == 'boolean') for name in names))
 
     async def _repair(self, prompt, model):
         from core.llm.groq_provider import GroqProvider
@@ -122,7 +133,7 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
     def _prompt(self, prompt, *, inventory_repair=False):
         if 'Repair only the outputs' in prompt:
             return prompt
-        if not inventory_repair and 'Catalog candidates (selection summaries only):' not in prompt:
+        if not inventory_repair and not self._inventory_count_intent() and 'Catalog candidates (selection summaries only):' not in prompt:
             if not hasattr(self, '_columns') or 'Repair only the outputs' in prompt:
                 return prompt + OUTPUT_RULES
             from core.analytics.text_to_sql import build_sql_prompt
@@ -389,6 +400,21 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
                 if attempt or len(self._responses) >= 2 or (getattr(error, 'clarification', False) and getattr(error, 'code', None) != 'dashboard_requirements'):
                     return self._generation_error(error)
                 try:
+                    if getattr(error, 'code', None) == 'dashboard_requirements':
+                        raw = await self._repair(
+                            'Repair only the outputs for this validated count query. Return exactly {"outputs": [...]}. '
+                            'The count query, grouping, population and snapshot are fixed. Do not change them. '
+                            'Grouped counts use a chart or table, not an overall KPI. Preserve explicitly requested outputs; '
+                            'do not add unrequested KPIs or counts.\n'
+                            + json.dumps({'request': self._question, 'previous_response': response, 'validation_error': str(error)}),
+                            OutputResponse)
+                        self._responses.append(raw)
+                        repaired = parse_json_response(raw)
+                        if not isinstance(repaired, dict) or set(repaired) != {'outputs'}:
+                            raise MetricDefinitionError('The output repair did not return the required outputs list. Original failure: ' + str(error),
+                                                        code='dashboard_requirements')
+                        response = {**response, 'outputs': repaired['outputs']}
+                        continue
                     raw = await self._repair(self._prompt(
                         'Repair this count_query and outputs without changing the requested population, measures or dates.\n'
                         + json.dumps({'request': self._question, 'previous_response': response, 'validation_error': str(error)}), inventory_repair=True), CountResponseFormat)
@@ -429,7 +455,7 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
             return {'_dashboard_count_response': error.response}
         result = SQLAnalyticsAgent._generation_error(error, sql, parameters, question=question)
         code = getattr(error, 'code', None)
-        if code in {'interpretation_invalid', 'interpretation_mismatch', 'count_plan_invalid'}:
+        if code in {'interpretation_invalid', 'interpretation_mismatch', 'count_plan_invalid', 'dashboard_requirements'}:
             result.update(answer=DashboardSQLAgent._validation_message(str(error), question))
             result['metadata'].update(status='generation_failed', clarification_required=False)
         elif code in {'count_unsupported', 'metric_unsupported', 'incompatible_grain', 'dashboard_snapshot_unavailable'}:

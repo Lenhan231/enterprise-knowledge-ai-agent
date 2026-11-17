@@ -104,3 +104,10 @@ Validation failures report their actual bounded cause and preserve the original 
 the user to clarify already supplied requirements. This adds no explanatory model call. Genuine business
 clarifications still use the interactive draft flow. Redundant chart styles chosen automatically can be
 consolidated before rendering; explicit user chart choices and saved layout edits are preserved.
+
+Explicit inventory entity/boolean-flag counts use the typed count contract even when upstream selects SQL
+generation. Routing uses the metric catalog, not particular flag names; rates, other aggregate metrics and
+explicit non-inventory sources keep their existing paths. If a compiled count query has invalid outputs,
+its bounded repair changes only outputs, preserving its grouping, population and time scope. Missing,
+malformed and excessive output lists have distinct errors; exhausted output repair is a generation failure,
+not a request for business clarification.

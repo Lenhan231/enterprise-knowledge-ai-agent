@@ -123,6 +123,56 @@ def set_representation(tile, kind, result):
     result.payload.get('metadata', {}).pop('_presentation_clarification', None)
 
 
+def _chart_groups(tile, result):
+    """Partition only when the same renderer accepts every measure and resulting chart."""
+    if (tile.kind not in {'line', 'bar', 'donut'} or len(tile.measures) < 2
+            or tile_presentation(tile, result)[1] == 'complete'):
+        return []
+    groups = []
+    for measure in tile.measures:
+        if tile_presentation(tile.model_copy(update={'measures': [measure]}), result)[1] != 'complete':
+            return []
+        for group in groups:
+            if tile_presentation(tile.model_copy(update={'measures': [*group, measure]}), result)[1] == 'complete':
+                group.append(measure)
+                break
+        else:
+            groups.append([measure])
+    if len(groups) != 2:
+        return []
+    return [tile.model_copy(update={'id': tile.id if index == 0 else tile.id[:29] + '_1',
+                'title': (tile.kind.title() + ': ' + ', '.join(group).replace('_', ' '))[:120],
+                'measures': group}) for index, group in enumerate(groups)]
+
+
+def automatic_chart_tiles(tiles, result, question):
+    """Consolidate redundant automatic styles; explicit user chart choices are never rewritten."""
+    try:
+        if requested_chart_type(question):
+            return tiles
+    except ValueError:
+        return tiles
+    bind_fields(SimpleNamespace(tiles=tiles, results=[result]))
+    groups = {}
+    for tile in tiles:
+        if tile.kind in {'line', 'bar', 'donut'}:
+            groups.setdefault((tile.query_id, tile.dimension, tuple(sorted(tile.measures))), []).append(tile)
+    replacements, removed = {}, set()
+    for (_, dimension, _), group in groups.items():
+        if len(group) < 2 or not dimension:
+            continue
+        rows = result.payload.get('rows') or []
+        preferred = 'line' if temporal([row.get(dimension) for row in rows]) else 'bar'
+        for kind in dict.fromkeys((preferred, 'bar')):
+            candidate = group[0].model_copy(update={'kind': kind})
+            if tile_presentation(candidate, result)[1] == 'complete' or _chart_groups(candidate, result):
+                candidate.title = (kind.title() + ': ' + ', '.join(candidate.measures).replace('_', ' '))[:120]
+                replacements[group[0].id] = candidate
+                removed.update(tile.id for tile in group[1:])
+                break
+    return [replacements.get(tile.id, tile) for tile in tiles if tile.id not in removed]
+
+
 def automatic_tiles(result, question):
     table = TileSpec(id='data', title='Source data', kind='table', query_id=result.id, span=2)
     rows = result.payload.get('rows') or []
@@ -165,6 +215,8 @@ def automatic_tiles(result, question):
         candidate.kind = 'line'
     _, status, reason = tile_presentation(candidate, result)
     if status != 'complete':
+        if _chart_groups(candidate, result):
+            return [candidate]
         result.message = (result.message + '\n' + reason).strip()[:1200]
         return [candidate] if requested else [table]
     return [candidate]
@@ -215,26 +267,41 @@ def presentation_clarification(document):
             continue
         alternatives = []
         for kind in ('line', 'bar', 'donut', 'table'):
-            if kind == tile.kind:
-                continue
             candidate = tile.model_copy(update={'kind': kind})
             if kind == 'table':
                 candidate.measures, candidate.dimension = [], None
-            if tile_presentation(candidate, result)[1] == 'complete':
+            if kind != tile.kind and tile_presentation(candidate, result)[1] == 'complete':
                 alternatives.append(kind + (' chart' if kind != 'table' else ''))
+            elif _chart_groups(candidate, result):
+                alternatives.append('separate ' + kind + ' charts, grouped by compatible measures')
         columns = ', '.join((result.payload.get('rows') or [{}])[0])[:300]
         measures = ', '.join(tile.measures)[:160]
         label = tile.kind + ' chart' if tile.kind in {'line', 'bar', 'donut'} else tile.kind + ' output'
         question = (f'SQL completed for {tile.query_id}, but the requested {label} is not suitable. '
                 f'{reason[:300]} Requested measures: {measures}. Returned columns: {columns}. '
                 f'Supported with these results: {", ".join(alternatives)}. '
-                'Which representation would you like? You can also name one to four measures with a comparable unit for a chart.')[:1200]
+                'Which representation would you like? For different chart types, specify the measures for each chart. '
+                'Keep at most two charts per dataset; measures sharing one chart need a comparable unit.')[:1200]
         return tile.id, question
     return None
 
 
 def reconcile(document):
     bind_fields(document)
+    results = {result.id: result for result in document.results}
+    question = document.description
+    for turn in document.clarifications:
+        if presentation_choice(turn.reply):
+            question = turn.reply
+    single_chart = re.search(r'\b(?:one|single|1)\s+(?:(?:line|bar|donut|doughnut)\s+)?chart\b(?!\s+(?:per|for each)\b)', question, re.I)
+    for tile in list(document.tiles):
+        groups = [] if single_chart else _chart_groups(tile, results.get(tile.query_id))
+        chart_count = sum(t.query_id == tile.query_id and t.kind in {'line', 'bar', 'donut'} for t in document.tiles)
+        other_ids = {t.id for t in document.tiles if t is not tile}
+        if (groups and chart_count - 1 + len(groups) <= 2 and len(document.tiles) - 1 + len(groups) <= 8
+                and not other_ids & {t.id for t in groups}):
+            index = document.tiles.index(tile)
+            document.tiles[index:index + 1] = groups
     used = {tile.query_id for tile in document.tiles}
     document.queries = [query for query in document.queries if query.id in used]
     document.results = [result for result in document.results if result.id in used]

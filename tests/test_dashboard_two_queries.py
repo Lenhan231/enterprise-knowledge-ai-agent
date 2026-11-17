@@ -80,11 +80,11 @@ class TwoQueryDashboardTest(unittest.IsolatedAsyncioTestCase):
         self.provider.generate.assert_called_once()
 
     async def test_bad_bundle_never_executes_either_query(self):
-        for kind in ('three', 'write', 'private', 'period', 'conflict', 'metric', 'duplicate', 'reference'):
+        for kind in ('duplicate_third', 'write', 'private', 'period', 'conflict', 'metric', 'duplicate', 'reference'):
             with self.subTest(kind=kind):
                 items = plans()
-                if kind == 'three':
-                    items.append(dict(items[0], question='Another total'))
+                if kind == 'duplicate_third':
+                    items.append(dict(items[0], question='Another sessions total'))
                 elif kind == 'write':
                     items[1]['sql'] = 'DELETE FROM commerce.web_traffic'
                 elif kind == 'private':

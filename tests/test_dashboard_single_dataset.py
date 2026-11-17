@@ -88,14 +88,17 @@ class SingleDatasetDashboardTest(unittest.IsolatedAsyncioTestCase):
         doc = await self.agent.build(self.request, 'Product details')
         self.assertEqual(['table'], [tile.kind for tile in doc.tiles])
 
-    async def test_mixed_units_use_table_and_do_not_get_combined_chart(self):
+    async def test_mixed_units_use_separate_charts_without_another_query(self):
         self.sql.run_payload.return_value.update(
             sql='SELECT category, AVG(rating) AS rating, COUNT(*) AS review_count FROM commerce.reviews GROUP BY 1 LIMIT 200',
             rows=[{'category': 'A', 'rating': 4, 'review_count': 10}],
             metadata={'metrics': {'rating': {'unit': 'score'}, 'review_count': {'unit': 'reviews'}}})
         doc = await self.agent.build(self.request, 'Rating and reviews by category')
-        self.assertEqual(['table'], [tile.kind for tile in doc.tiles])
-        self.assertIn('comparable unit', doc.results[0].message)
+        self.assertEqual(['bar', 'bar'], [tile.kind for tile in doc.tiles])
+        self.assertEqual([['rating'], ['review_count']], [tile.measures for tile in doc.tiles])
+        self.assertEqual('complete', doc.status)
+        self.sql.run_payload.assert_awaited_once()
+        self.provider.assert_not_called()
 
     async def test_explicit_ineligible_chart_retains_fallback_reason(self):
         self.sql.run_payload.return_value.update(

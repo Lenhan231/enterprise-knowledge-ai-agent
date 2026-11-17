@@ -5,8 +5,8 @@ import time
 
 from core.agents.runtime import deadline
 from core.analytics.metric_validation import inventory_time_scope
-from core.dashboards.models import BuildRequest, DashboardDocument, QueryResult, QuerySpec, TileSpec, now
-from core.dashboards.presentation import automatic_tiles, summary_tiles, bind_fields, reconcile, presentation_choice, set_representation
+from core.dashboards.models import BuildRequest, DashboardDocument, QueryResult, QuerySpec, TileSpec, now, MAX_DATASETS, MAX_CONCURRENT_QUERIES
+from core.dashboards.presentation import automatic_tiles, automatic_chart_tiles, summary_tiles, bind_fields, reconcile, presentation_choice, set_representation
 from core.sql_agent.agent import SQLAnalyticsAgent
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ class DashboardDocumentAgent:
                           if type(sql_agent) is SQLAnalyticsAgent else sql_agent)
 
     async def execute(self, request, document, *, allow_multiple=False):
-        semaphore = asyncio.Semaphore(2)
+        semaphore = asyncio.Semaphore(MAX_CONCURRENT_QUERIES)
         questions = {}
         for spec in document.queries:
             if document.scope:
@@ -43,7 +43,7 @@ class DashboardDocumentAgent:
                 try:
                     payload = await asyncio.wait_for(self.sql_agent.run_payload(child), max(1, deadline.get() - time.monotonic()))
                     if 'datasets' in payload:
-                        if not allow_multiple or not isinstance(payload['datasets'], list) or not 1 <= len(payload['datasets']) <= 2:
+                        if not allow_multiple or not isinstance(payload['datasets'], list) or not 1 <= len(payload['datasets']) <= MAX_DATASETS:
                             raise ValueError('Unexpected independent query bundle')
                         datasets = []
                         for index, item in enumerate(payload['datasets']):
@@ -110,6 +110,8 @@ class DashboardDocumentAgent:
                                 measures=output['measures'], dimension=output['dimension'], span=1 if output['kind'] == 'kpi' else 2))
                     else:
                         tiles = automatic_tiles(result, question)
+                    if not presentation_choices:
+                        tiles = automatic_chart_tiles(tiles, result, summary_question)
                     if len(document.results) > 1:
                         if not declared and len(tiles) > 4:
                             tiles = [TileSpec(id='data', title=result.question[:120], kind='table', query_id=result.id, span=2)]

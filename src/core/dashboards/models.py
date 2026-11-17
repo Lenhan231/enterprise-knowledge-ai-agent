@@ -4,6 +4,9 @@ from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+MAX_DATASETS = 3
+MAX_CONCURRENT_QUERIES = 2
+
 
 def now():
     return datetime.now(timezone.utc)
@@ -29,7 +32,7 @@ class TileSpec(StrictModel):
 
 
 class DashboardOutput(StrictModel):
-    query: int = Field(strict=True, ge=0, le=1)
+    query: int = Field(strict=True, ge=0, le=MAX_DATASETS - 1)
     kind: Literal['kpi', 'bar', 'line', 'donut', 'table', 'summary']
     dimension: str | None = Field(default=None, max_length=128)
     measures: list[str] = Field(default_factory=list, max_length=4)

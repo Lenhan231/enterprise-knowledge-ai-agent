@@ -7,6 +7,7 @@ searched with its own role, exactly as the question is asked (follow-ups without
 receives them). Output lines: {"id", "method", "role", "latency_ms", "ranked": [{"document", "chunk_index", "score"}]}.
 """
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -15,11 +16,15 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from core.retrieval.retrieval import RetrievalRequest  # noqa: E402
+from core.retrieval import retrieval_service  # noqa: E402
 from core.retrieval.retrieval_service import RetrievalService  # noqa: E402
 
 
 def main(set_name, method, top_k, out_path):
     items = json.load(open(ROOT / f"artifacts/evaluation/vietstyle-v3/{set_name}-v3.json", encoding="utf-8"))["items"]
+    if os.getenv("EVAL_DENSE_EXTRA") is not None:
+        # Experiment switch: the number of dense passages added to reranking (#54); production uses the module default.
+        retrieval_service.RERANK_DENSE_EXTRA = int(os.environ["EVAL_DENSE_EXTRA"])
     service = RetrievalService()
     done = set()
     if Path(out_path).exists():  # resume after a quota stop without redoing finished items

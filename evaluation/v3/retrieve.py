@@ -28,6 +28,9 @@ def main(set_name, method, top_k, out_path):
     # Experiment switches for fusion (experiment 4); unset means the production defaults in RetrievalService.retrieve.
     fusion = {name: cast(os.environ[env]) for name, env, cast in (("dense_weight", "EVAL_DENSE_WEIGHT", float),
               ("bm25_weight", "EVAL_BM25_WEIGHT", float), ("rrf_k", "EVAL_RRF_K", int)) if os.getenv(env)}
+    if os.getenv("EVAL_NO_AMOUNT_NORMALIZATION") == "1":
+        # Experiment switch (experiment 5): search the amounts exactly as typed ("3 củ"), as before #54's fix.
+        retrieval_service.normalize_amounts = lambda query: query
     service = RetrievalService()
     done = set()
     if Path(out_path).exists():  # resume after a quota stop without redoing finished items

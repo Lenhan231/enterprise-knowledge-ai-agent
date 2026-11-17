@@ -111,3 +111,17 @@ explicit non-inventory sources keep their existing paths. If a compiled count qu
 its bounded repair changes only outputs, preserving its grouping, population and time scope. Missing,
 malformed and excessive output lists have distinct errors; exhausted output repair is a generation failure,
 not a request for business clarification.
+
+Compiled inventory/count responses and output-only repairs have one dataset, so their provider schema
+binds every output to query index zero. Multi-query SQL responses retain their separate index range.
+The single-dataset provider schema uses a common output shape to avoid Groq's ambiguous union
+discriminator; the existing server checks still enforce each output kind's measures and dimensions.
+Output repair excludes overall KPI types when the validated SQL is not scalar. It cannot silently remove
+an explicitly requested representation. Invalid references report the actual available dataset indices.
+
+For compiled counts without an explicit representation request, the server selects defaults from the
+validated SQL grain: scalar results use KPIs, one grouped field with up to four counts uses a line chart
+for an approved source date or a bar chart otherwise, and wider/multiple-group results use a table.
+This does not require output repair or another model call. Explicit representation requests retain their
+manifest validation. Explicit raw grouping fields, recognized through the existing field-language aliases
+and approved schema, must remain in the count interpretation before any data query executes.

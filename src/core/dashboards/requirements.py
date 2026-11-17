@@ -5,12 +5,12 @@ from sqlglot.optimizer.scope import Scope, traverse_scope
 
 from core.analytics.metric_validation import MetricDefinitionError, validate_independent_query_period
 from core.analytics.sql_validation import APPROVED_DATE_COLUMNS
-from core.dashboards.models import DashboardOutput, MAX_DATASETS
+from core.dashboards.models import DashboardOutput
 from core.dashboards.presentation import aggregate_outputs, output_roles
 import re
 
 
-def validate_requested_kinds(outputs, question, clarifications=()):
+def requested_kinds(question, clarifications=()):
     patterns = {
         'line': r'\bline[ -]*charts?\b|biểu đồ đường',
         'bar': r'\bbar[ -]*charts?\b|biểu đồ (?:cột|thanh)',
@@ -28,7 +28,11 @@ def validate_requested_kinds(outputs, question, clarifications=()):
                 requested = choices
             elif choices & {'line', 'bar', 'donut'}:
                 requested = (requested - {'line', 'bar', 'donut'}) | choices
-    missing = requested - {output.get('kind') for output in outputs if isinstance(output, dict)}
+    return requested
+
+
+def validate_requested_kinds(outputs, question, clarifications=()):
+    missing = requested_kinds(question, clarifications) - {output.get('kind') for output in outputs if isinstance(output, dict)}
     if missing:
         raise MetricDefinitionError('The generated outputs omitted explicitly requested representations: '
                                     + ', '.join(sorted(missing)) + '. Preserve each requested representation and its measures.',
@@ -69,7 +73,9 @@ def validate_outputs(raw, plans, question, date_columns=None):
     seen = set()
     query_outputs = {index: [] for index in range(len(plans))}
     for index, output in enumerate(outputs):
-        require(output.query in query_outputs, f'A requested output has no data query. Keep the plan within {MAX_DATASETS} independent datasets.')
+        require(output.query in query_outputs,
+                f'Generated output {index + 1} references dataset index {output.query}; '
+                f'available dataset indices: {list(query_outputs)}. An output position is not a dataset index.')
         _, plan, _ = plans[output.query]
         projections, grouped = output_roles({'sql': plan.sql})
         columns = set(projections)

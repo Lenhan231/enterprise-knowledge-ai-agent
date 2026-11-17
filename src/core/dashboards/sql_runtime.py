@@ -13,8 +13,9 @@ from core.analytics.metric_mapping import decode_metric_mapping, compile_invento
 from core.analytics.metric_ontology import METRIC_ONTOLOGY
 from core.analytics.metric_validation import MetricDefinitionError, validate_metric_definitions, inventory_time_scope, inventory_month_selection
 from core.analytics.sql_validation import APPROVED_DATE_COLUMNS, INVENTORY_SOURCES, QueryPlan, SQLValidationError, validate_sql_security, decode_query_plan
-from core.dashboards.requirements import validate_outputs, validate_requested_kinds
+from core.dashboards.requirements import validate_outputs, validate_requested_kinds, scalar_result, requested_kinds
 from core.dashboards.models import MAX_DATASETS
+from core.dashboards.presentation import output_roles
 from core.prompts.sql import DASHBOARD_OUTPUT_INSTRUCTIONS
 from core.dashboards.generation import SQLResponse, InventoryResponse, CountResponseFormat, OutputResponse, response_schema, OUTPUT_RULES, normalize_generation
 
@@ -119,12 +120,21 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
                              or METRIC_ONTOLOGY[name].get('aggregation') == 'value'
                              and METRIC_ONTOLOGY[name].get('unit') == 'boolean') for name in names))
 
-    async def _repair(self, prompt, model):
+    def _count_groupings(self):
+        from core.analytics.field_retrieval import _field_language
+        fields = '|'.join(re.escape(field) for field in sorted(
+            {field for columns in self._columns.values() for field in columns}, key=len, reverse=True))
+        text = re.sub(r"'(?:[^']|'')*'", '', _field_language(self._question))
+        pattern = r'\b(?:by|per|for each|theo|từng|mỗi)\s+((?:' + fields + r')(?:\s*(?:,|and|và)\s*(?:' + fields + r'))*)\b'
+        return {field for match in re.finditer(pattern, text) for field in re.findall(r'\b(?:' + fields + r')\b', match[1])}
+
+    async def _repair(self, prompt, model, *, allow_kpi=True):
         from core.llm.groq_provider import GroqProvider
         backend = super()._provider()
         provider = copy(backend)
         if isinstance(backend, GroqProvider):
-            provider.generate = partial(backend.generate, max_output_tokens=2048, response_schema=response_schema(model))
+            provider.generate = partial(backend.generate, max_output_tokens=2048,
+                                        response_schema=response_schema(model, allow_kpi=allow_kpi))
         try:
             return await generate(provider, prompt, timeout=30)
         except Exception as error:
@@ -187,7 +197,10 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
                 'Return {"result": {"operation": "count", "count_query": ..., "outputs": [...]}} or a specific clarification. '
                 'Do not generate SQL or a metric interpretation.\n'
                 + self._question + context + COUNT_QUERY_INSTRUCTIONS
-                + '\nChart outputs need dimension plus one to four count aliases; table outputs may show all columns. '
+                + '\nRequired explicitly requested grouping fields: ' + json.dumps(sorted(self._count_groupings()))
+                + '\nThis count plan produces exactly one dataset. Every output must use query: 0; '
+                  'output positions and count aliases are not dataset indices. '
+                  'Chart outputs need dimension plus one to four count aliases; table outputs may show all columns. '
                   'An overall scalar count can be a KPI. Preserve every requested representation. '
                 + json.dumps({'approved_sources': sources, 'date_fields': dates})
                 + ('\nRepair context: ' + prompt if inventory_repair else ''))
@@ -266,7 +279,8 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
             if code == 'dashboard_requirements':
                 repaired = parse_json_response(await self._repair(
                     self._prompt(DASHBOARD_OUTPUT_INSTRUCTIONS + '\nRepair only the outputs for this validated interpretation. Return exactly {"outputs": [...]}.\n'
-                        + json.dumps({'question': self._question, 'interpretation': mapping, 'sql': sql, 'error': str(error)})), OutputResponse))
+                        + json.dumps({'question': self._question, 'interpretation': mapping, 'sql': sql, 'error': str(error)})),
+                    OutputResponse, allow_kpi=scalar_result(sql)))
                 self._responses.append(json.dumps(repaired))
                 if isinstance(repaired, dict) and set(repaired) == {'outputs'}:
                     response['outputs'] = repaired['outputs']
@@ -401,13 +415,15 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
                     return self._generation_error(error)
                 try:
                     if getattr(error, 'code', None) == 'dashboard_requirements':
+                        plan, _, _ = compile_count_query(response['count_query'], table_columns, self._question, date_columns)
                         raw = await self._repair(
                             'Repair only the outputs for this validated count query. Return exactly {"outputs": [...]}. '
                             'The count query, grouping, population and snapshot are fixed. Do not change them. '
+                            'Every output must use query: 0; this compiled count query is the only dataset. '
                             'Grouped counts use a chart or table, not an overall KPI. Preserve explicitly requested outputs; '
                             'do not add unrequested KPIs or counts.\n'
                             + json.dumps({'request': self._question, 'previous_response': response, 'validation_error': str(error)}),
-                            OutputResponse)
+                            OutputResponse, allow_kpi=scalar_result(plan.sql))
                         self._responses.append(raw)
                         repaired = parse_json_response(raw)
                         if not isinstance(repaired, dict) or set(repaired) != {'outputs'}:
@@ -432,6 +448,9 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
         if not isinstance(response, dict) or set(response) - {'count_query', 'outputs'} or 'count_query' not in response:
             raise MetricDefinitionError('Return a count_query and its outputs only.', code='count_plan_invalid')
         plan, definitions, spec = compile_count_query(response['count_query'], columns, self._question, dates)
+        missing = self._count_groupings() - set(spec.dimensions)
+        if missing:
+            raise MetricDefinitionError('The generated count plan omitted requested grouping: ' + ', '.join(sorted(missing)), code='count_plan_invalid')
         if self.inventory_only and spec.source not in INVENTORY_SOURCES:
             raise MetricDefinitionError('This deployment supports inventory counts only.', code='count_unsupported')
         if spec.source != 'commerce.inventory':
@@ -439,8 +458,22 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
             names = {name for name in resolve_metric_names(self._question)
                      if METRIC_ONTOLOGY[name].get('domain') != 'inventory_management'}
             validate_metric_definitions(plan.sql, names, plan.parameters, columns, question=self._question)
-        declared = validate_outputs(response.get('outputs'), [(self._question, plan, definitions)], self._question, dates)[0]
-        validate_requested_kinds(response.get('outputs') or [], self._question, self._clarifications)
+        outputs = response.get('outputs')
+        if not requested_kinds(self._question, self._clarifications):
+            # Presentation defaults come from the compiled grain, not a second model decision.
+            measures = [count.alias for count in spec.counts]
+            _, grouped = output_roles({'sql': plan.sql})
+            if scalar_result(plan.sql):
+                outputs = [{'kind': 'kpi', 'query': 0, 'measures': [measure]} for measure in measures]
+            elif len(grouped) == 1 and len(measures) <= 4:
+                dimension = next(iter(grouped))
+                temporal = dimension in {field for source, field in APPROVED_DATE_COLUMNS | set(dates or ()) if source == spec.source}
+                outputs = [{'kind': 'line' if temporal else 'bar', 'query': 0,
+                            'dimension': dimension, 'measures': measures}]
+            else:
+                outputs = [{'kind': 'table', 'query': 0}]
+        declared = validate_outputs(outputs, [(self._question, plan, definitions)], self._question, dates)[0]
+        validate_requested_kinds(outputs or [], self._question, self._clarifications)
         result = await self._execute_plan(plan, definitions, columns, joins, keys, dates)
         if (result.get('ok') and spec.source == 'commerce.inventory' and spec.time.mode == 'latest'
                 and result.get('rows') and all(row.get('snapshot_date') is None for row in result['rows'])):

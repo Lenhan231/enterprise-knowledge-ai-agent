@@ -1,0 +1,14 @@
+{
+ "locked_at": "2026-11-17",
+ "locked_by": "human review + approved pooled gold",
+ "rule": "test-v3.json is frozen: run each configuration on it once for the report; never tune on it. Any edit needs a new version (test-v4).",
+ "locked": {
+  "test-v3.json": "b5bf399be721a1fb15dd8fa2b7008bd9f87389b45d6378305d4effedeaa49105"
+ },
+ "reference_hashes": {
+  "dev-v3.json": "c4f16a4b8c47bb425332cb3d872757804747e6142696065b9cf78ab3af4ae50c",
+  "SPEC.md": "c42618def613d97966a2a2dca31ac2f00eccd4024a0f988f675a07ce1c96d7af",
+  "split.json": "e0483d187fff016dddaab8b393bf243094aa0149c6996f3402fc13cca382cef0",
+  "pooled_gold.json": "f94d9124dacf006d65ac7239a832b5646d69f2501d47dccc86aa06265c8f9adc"
+ }
+}

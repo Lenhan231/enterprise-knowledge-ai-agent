@@ -20,6 +20,12 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 79,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 84,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -73,6 +79,12 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
      "chunk_index": 331,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 349,
+     "grade": 2,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -102,6 +114,18 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
      "chunk_index": 210,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 537,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 565,
+     "grade": 2,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -171,6 +195,24 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 286,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 781,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 272,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 261,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -209,6 +251,18 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 272,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 286,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 781,
+     "grade": 2,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -245,6 +299,24 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 286,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 261,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 272,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 781,
+     "grade": 2,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -281,6 +353,12 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 286,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 781,
+     "grade": 2,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -320,6 +398,12 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 286,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 781,
+     "grade": 2,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -363,6 +447,12 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 286,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 781,
+     "grade": 2,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -403,6 +493,12 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 79,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 81,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -471,6 +567,12 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 286,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 781,
+     "grade": 2,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -506,6 +608,12 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
      "chunk_index": 333,
      "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 349,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -541,6 +649,30 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 79,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 111,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 115,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 84,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 81,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -571,6 +703,30 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
      "chunk_index": 169,
      "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 164,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 172,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 687,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 737,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -606,6 +762,30 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
      "chunk_index": 253,
      "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 247,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 321,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 338,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 258,
+     "grade": 2,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -641,6 +821,42 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 591,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 556,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 561,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 529,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 545,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 560,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 209,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -681,6 +897,30 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 499,
      "grade": 1
+    },
+    {
+     "document": "01_Inventory_Management_Policy_Manual.docx",
+     "chunk_index": 11,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 467,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 503,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 498,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -717,6 +957,48 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 46,
      "grade": 1
+    },
+    {
+     "document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "chunk_index": 2,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "chunk_index": 3,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "chunk_index": 5,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "03_Policy_Rules_Registry.csv",
+     "chunk_index": 4,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "chunk_index": 7,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "chunk_index": 6,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 459,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -752,6 +1034,24 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 715,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 736,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 71,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 731,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -791,6 +1091,42 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 406,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 11,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "01_Inventory_Management_Policy_Manual.docx",
+     "chunk_index": 3,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "01_Inventory_Management_Policy_Manual.docx",
+     "chunk_index": 14,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 357,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 725,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 11,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -821,6 +1157,18 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
      "chunk_index": 559,
      "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 529,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 597,
+     "grade": 2,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -860,6 +1208,66 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 108,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 699,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 629,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 118,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 109,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "05_Inventory_Policy_Training_Deck.pptx",
+     "chunk_index": 2,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 698,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "03_Policy_Rules_Registry.csv",
+     "chunk_index": 11,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 23,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "chunk_index": 8,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 745,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -884,6 +1292,24 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
      "chunk_index": 726,
      "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 43,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 518,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 777,
+     "grade": 2,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -908,6 +1334,24 @@
      "document": "01_Inventory_Management_Policy_Manual.docx",
      "chunk_index": 6,
      "grade": 2
+    },
+    {
+     "document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "chunk_index": 4,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "03_Policy_Rules_Registry.csv",
+     "chunk_index": 3,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "05_Inventory_Policy_Training_Deck.pptx",
+     "chunk_index": 4,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -933,6 +1377,18 @@
      "document": "01_Inventory_Management_Policy_Manual.docx",
      "chunk_index": 8,
      "grade": 2
+    },
+    {
+     "document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "chunk_index": 1,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "chunk_index": 1,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -982,6 +1438,18 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
      "chunk_index": 742,
      "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 3,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 3,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -1144,6 +1612,30 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 286,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 781,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 730,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 677,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 197,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -1180,6 +1672,60 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 375,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 11,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "05_Inventory_Policy_Training_Deck.pptx",
+     "chunk_index": 1,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 25,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 462,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 447,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 365,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 476,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 725,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 490,
+     "grade": 2,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -1245,6 +1791,30 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 406,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 384,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 361,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 389,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 405,
+     "grade": 2,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -1275,6 +1845,12 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
      "chunk_index": 82,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 81,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -1338,6 +1914,24 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 263,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 258,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 338,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 321,
+     "grade": 2,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -1377,6 +1971,24 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 594,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 555,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 593,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 552,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -1411,6 +2023,12 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 21,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 107,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -1480,6 +2098,42 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 530,
      "grade": 1
+    },
+    {
+     "document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "chunk_index": 6,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "03_Policy_Rules_Registry.csv",
+     "chunk_index": 6,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "05_Inventory_Policy_Training_Deck.pptx",
+     "chunk_index": 5,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 502,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 726,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 500,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -1509,6 +2163,36 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 108,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 686,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 111,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 109,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 115,
+     "grade": 1,
+     "source": "pool"
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 123,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -1558,6 +2242,24 @@
      "document": "01_Inventory_Management_Policy_Manual.docx",
      "chunk_index": 12,
      "grade": 2
+    },
+    {
+     "document": "05_Inventory_Policy_Training_Deck.pptx",
+     "chunk_index": 6,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "03_Policy_Rules_Registry.csv",
+     "chunk_index": 7,
+     "grade": 2,
+     "source": "pool"
+    },
+    {
+     "document": "01_Inventory_Management_Policy_Manual.docx",
+     "chunk_index": 5,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -1716,6 +2418,12 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
      "chunk_index": 272,
      "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 781,
+     "grade": 2,
+     "source": "pool"
     }
    ],
    "must_include": [
@@ -1788,6 +2496,12 @@
      "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
      "chunk_index": 169,
      "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 195,
+     "grade": 1,
+     "source": "pool"
     }
    ],
    "must_include": [

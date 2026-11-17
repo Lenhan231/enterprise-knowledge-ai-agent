@@ -1,0 +1,1848 @@
+{
+ "set": "vietstyle-test-v3",
+ "spec": "SPEC.md",
+ "items": [
+  {
+   "id": "T001",
+   "category": "lookup",
+   "question": "Nghỉ phép theo kế hoạch phải gửi đề nghị trước ít nhất bao lâu?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 97,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 94,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "năm ngày làm việc|5 ngày làm việc"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Nghỉ theo kế hoạch nên được đề nghị ít nhất năm ngày làm việc trước ngày đầu nghỉ.",
+   "facts": [],
+   "topic": "Nộp yêu cầu nghỉ và thời hạn báo trước",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T002",
+   "category": "lookup",
+   "question": "Sự cố bảo mật mức Cao phải báo cho Bảo mật trong bao lâu?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 599,
+     "grade": 2
+    }
+   ],
+   "must_include": [
+    "một giờ|1 giờ"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Mức Cao (khả năng truy cập trái phép hoặc suy giảm dịch vụ đáng kể): báo Bảo mật và chủ hệ thống trong một giờ.",
+   "facts": [],
+   "topic": "Phân loại và ứng phó sự cố",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T003",
+   "category": "lookup",
+   "question": "Nhà cung cấp trọng yếu phải được rà soát hiệu quả bao lâu một lần?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 343,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 361,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "hằng năm"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Rà nhà cung cấp trọng yếu ít nhất hằng năm và sau lỗi lặp về chất lượng, giao hàng, bảo mật hoặc hóa đơn.",
+   "facts": [],
+   "topic": "Hiệu quả mua sắm và rà soát nhà cung cấp",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T004",
+   "category": "lookup",
+   "question": "Dữ liệu trong công ty được chia thành những mức phân loại nào?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 568,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 569,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 570,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 571,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 606,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "Công khai",
+    "Nội bộ",
+    "Mật",
+    "Hạn chế"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Bốn mức: Công khai, Nội bộ, Mật và Hạn chế; xử lý theo mức phân loại cao nhất áp dụng.",
+   "facts": [],
+   "topic": "Phân loại, xử lý và chia sẻ dữ liệu",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T005",
+   "category": "lookup",
+   "question": "Chủ lĩnh vực phải rà soát chính sách vận hành bao lâu một lần?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 712,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 761,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "hằng năm"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Ít nhất hằng năm và sau thay đổi trọng yếu về luật, mô hình dữ liệu, quy trình nhà cung cấp, kiểm soát tồn, kiến trúc bảo mật hoặc ứng phó sự cố.",
+   "facts": [],
+   "topic": "Rà quản trị, kiểm toán và cải tiến liên tục",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T006",
+   "category": "amount",
+   "question": "Mua hệ thống camera 80 củ thì ai duyệt?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 274,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 730,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 286,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "Mua sắm",
+    "Tài chính"
+   ],
+   "must_not_include": [
+    "Hội đồng Điều hành"
+   ],
+   "reference_answer": "80.000.000 VND thuộc 50.000.001–200.000.000 VND: trưởng bộ phận cùng Mua sắm và Tài chính phê duyệt; cần ít nhất ba báo giá văn bản hoặc lý do chỉ định nguồn đã duyệt.",
+   "facts": [
+    "F3.tier3"
+   ],
+   "topic": "Ma trận phê duyệt và ngưỡng tiền",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T007",
+   "category": "amount",
+   "question": "Hợp đồng 1,2 tỷ thì cấp nào phê duyệt?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 274,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 730,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 286,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "Hội đồng Điều hành Vận hành",
+    "Tài chính"
+   ],
+   "must_not_include": [],
+   "reference_answer": "1.200.000.000 VND trên 200.000.000 VND: Hội đồng Điều hành Vận hành cùng Tài chính phê duyệt; cần đánh giá nguồn cung và rà rủi ro được lập hồ sơ.",
+   "facts": [
+    "F3.tier4"
+   ],
+   "topic": "Ma trận phê duyệt và ngưỡng tiền",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T008",
+   "category": "amount",
+   "question": "Gói mua 60tr thì cần bao nhiêu báo giá?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 261,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 730,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 272,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "ba|3"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Trên 50.000.000 VND cần ít nhất ba báo giá bằng văn bản hoặc giải trình chỉ định nguồn được lập hồ sơ.",
+   "facts": [
+    "F2.tier3"
+   ],
+   "topic": "Tìm nguồn cạnh tranh và đánh giá báo giá",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T009",
+   "category": "amount",
+   "question": "Bữa trưa khi đi công tác hết 350k thì được hoàn bao nhiêu?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 179,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 182,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 182,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "300.000"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Ăn uống tại địa phương được hoàn tối đa 300.000 VND/người/bữa; phần vượt cần ngoại lệ bằng văn bản được duyệt trước.",
+   "facts": [
+    "F1.meal"
+   ],
+   "topic": "Hạn mức chi phí, ăn uống và công tác",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T010",
+   "category": "amount",
+   "question": "Cam kết đúng 200 triệu thì ai duyệt?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 274,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 730,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 286,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "Mua sắm",
+    "Tài chính"
+   ],
+   "must_not_include": [
+    "Hội đồng Điều hành Vận hành phê duyệt"
+   ],
+   "reference_answer": "200.000.000 VND vẫn thuộc 50.000.001–200.000.000 VND: trưởng bộ phận cùng Mua sắm và Tài chính (chưa đến Hội đồng Điều hành Vận hành).",
+   "facts": [
+    "F3.tier3"
+   ],
+   "topic": "Ma trận phê duyệt và ngưỡng tiền",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T011",
+   "category": "calculation",
+   "question": "Ở khách sạn 3 đêm tại thành phố lớn được chỉ định thì tối đa được hoàn bao nhiêu tiền phòng?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 179,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 182,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "7.500.000|7,5 triệu"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Hạn 2.500.000 VND/phòng/đêm tại thành phố lớn được chỉ định: 3 × 2.500.000 = 7.500.000 VND.",
+   "facts": [
+    "F1.lodging"
+   ],
+   "topic": "Hạn mức chi phí, ăn uống và công tác",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T012",
+   "category": "calculation",
+   "question": "Mua 4 máy chủ, mỗi máy 60 triệu thì ai duyệt?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 274,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 730,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 286,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "240.000.000|240 triệu",
+    "Hội đồng Điều hành Vận hành"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Duyệt theo tổng cam kết: 4 × 60.000.000 = 240.000.000 VND, trên 200.000.000 VND nên Hội đồng Điều hành Vận hành cùng Tài chính phê duyệt.",
+   "facts": [
+    "F3.tier4",
+    "F3.total_test"
+   ],
+   "topic": "Ma trận phê duyệt và ngưỡng tiền",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T013",
+   "category": "calculation",
+   "question": "Đi công tác 2 ngày, mỗi ngày ăn 2 bữa thì tối đa được hoàn bao nhiêu tiền ăn?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 179,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 182,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "1.200.000|1,2 triệu"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Tối đa 300.000 VND/người/bữa: 2 ngày × 2 bữa × 300.000 = 1.200.000 VND.",
+   "facts": [
+    "F1.meal"
+   ],
+   "topic": "Hạn mức chi phí, ăn uống và công tác",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T014",
+   "category": "calculation",
+   "question": "Cùng một nhu cầu mà chia làm 3 lô 30 triệu, 15 triệu và 10 triệu thì cần mấy báo giá?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 261,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 730,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 272,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "55.000.000|55 triệu",
+    "ba|3"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Tính theo tổng cam kết: 30 + 15 + 10 = 55.000.000 VND, trên 50.000.000 VND nên cần ít nhất ba báo giá văn bản hoặc giải trình chỉ định nguồn.",
+   "facts": [
+    "F2.tier3",
+    "F3.total_test"
+   ],
+   "topic": "Tìm nguồn cạnh tranh và đánh giá báo giá",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T015",
+   "category": "calculation",
+   "question": "Ở khách sạn nội địa thông thường 2 đêm, mỗi đêm 2 triệu thì phần vượt hạn mức là bao nhiêu?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 179,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 182,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 182,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "400.000"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Hạn 1.800.000 VND/phòng/đêm ở địa điểm nội địa thông thường: vượt 200.000 VND mỗi đêm, tổng 400.000 VND; phần vượt cần ngoại lệ văn bản duyệt trước.",
+   "facts": [
+    "F1.lodging"
+   ],
+   "topic": "Hạn mức chi phí, ăn uống và công tác",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T016",
+   "category": "multi_part",
+   "question": "Nghỉ phép theo kế hoạch cần báo trước bao lâu, và đơn nghỉ phải có những thông tin gì?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 97,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 98,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 94,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "năm ngày làm việc|5 ngày làm việc",
+    "loại nghỉ",
+    "bàn giao"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Báo trước ít nhất năm ngày làm việc; cung cấp mã nhân viên, loại nghỉ, ngày bắt đầu/kết thúc, số giờ nghỉ, cách liên hệ và kế hoạch bàn giao.",
+   "facts": [],
+   "topic": "Nộp yêu cầu nghỉ và thời hạn báo trước",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T017",
+   "category": "multi_part",
+   "question": "Sự cố mức Trung bình và mức Thấp lần lượt phải báo trong bao lâu?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 600,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 601,
+     "grade": 2
+    }
+   ],
+   "must_include": [
+    "bốn giờ làm việc|4 giờ làm việc",
+    "cuối ngày làm việc"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Trung bình: báo trong bốn giờ làm việc; Thấp: báo trước cuối ngày làm việc.",
+   "facts": [],
+   "topic": "Phân loại và ứng phó sự cố",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T018",
+   "category": "multi_part",
+   "question": "Trước khi phát hành PO phải hoàn tất những kiểm tra gì, và nếu sửa PO sau khi phát hành thì sao?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 288,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 293,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 300,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "ngân sách",
+    "phiên bản"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Chỉ phát hành PO sau khi hoàn tất kiểm tra yêu cầu, nhà cung cấp, nguồn cung, ngân sách và duyệt; sửa PO sau phát hành phải có phiên bản, gửi nhà cung cấp và lưu các bản trước.",
+   "facts": [],
+   "topic": "Tạo và phát hành đơn mua hàng",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T019",
+   "category": "multi_part",
+   "question": "Trước khi chia sẻ dữ liệu ra bên ngoài cần xác nhận gì, và có được tải dữ liệu Hạn chế lên dịch vụ AI chưa được duyệt không?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 572,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 573,
+     "grade": 2
+    }
+   ],
+   "must_include": [
+    "mục đích",
+    "không"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Trước chia sẻ ngoài phải xác nhận mục đích, người nhận, tối thiểu hóa và phê duyệt; không tải dữ liệu Hạn chế lên dịch vụ AI chưa được duyệt.",
+   "facts": [],
+   "topic": "Phân loại, xử lý và chia sẻ dữ liệu",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T020",
+   "category": "multi_part",
+   "question": "Khi nhân viên nghỉ việc thì xử lý quyền truy cập thế nào, và xóa tài khoản có lập tức vô hiệu token không?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 541,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 544,
+     "grade": 2
+    }
+   ],
+   "must_include": [
+    "khóa|thu hồi",
+    "token"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Khóa truy cập tương tác và thu hồi token/khóa theo quy trình nghỉ việc; xóa người dùng chưa chắc lập tức vô hiệu token hiện có.",
+   "facts": [],
+   "topic": "Nhân viên mới, chuyển vai trò, nghỉ việc và rà quyền định kỳ",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T021",
+   "category": "multi_passage",
+   "question": "Hàng đang giữ kiểm định có được tính là hàng có thể bán không, và có được đánh dấu hỏng để giảm dư hàng không?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 482,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 431,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 515,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "không"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Không: hàng giữ kiểm định, hỏng, thu hồi hoặc hạn chế không được tính là hàng có thể bán; không đánh dấu hàng hỏng chỉ để loại dư hàng, ghi giảm cần bằng chứng độc lập và phê duyệt.",
+   "facts": [],
+   "topic": "Xếp kho, trách nhiệm giữ và trạng thái tồn",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T022",
+   "category": "multi_passage",
+   "question": "Yêu cầu mua đã được phê duyệt thì đã là cam kết chưa, và khi nào mới được phát hành PO?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 33,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 36,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 288,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 31,
+     "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 300,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "không|chưa",
+    "PO"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Chưa: yêu cầu không phải cam kết và phê duyệt không phải bằng chứng đã thực hiện; 'đã cam kết' là khi phát hành cam kết hợp lệ như PO, và PO chỉ phát hành sau khi hoàn tất kiểm tra yêu cầu, nhà cung cấp, nguồn cung, ngân sách và duyệt.",
+   "facts": [],
+   "topic": "Định nghĩa và trạng thái giao dịch",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T023",
+   "category": "multi_passage",
+   "question": "Tác tử AI có được phát hành PO hay trả hóa đơn không, và nếu hai nguồn đã duyệt mâu thuẫn thì xử lý ra sao?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 629,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 74,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 636,
+     "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 669,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "không",
+    "chuyển"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Không: tác tử AI không được duyệt chi, phát hành PO, trả hóa đơn, điều chỉnh tồn hay cấp quyền trừ luồng được phê duyệt riêng; nếu hai nguồn đã duyệt mâu thuẫn, tạm dừng hành động tự động liên quan và chuyển chủ sở hữu chịu trách nhiệm.",
+   "facts": [],
+   "topic": "Quản lý thay đổi, an toàn tác tử AI và kiểm soát phát hành",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T024",
+   "category": "multi_passage",
+   "question": "Người đề nghị hoàn chi có được là người duyệt duy nhất không, và người đếm có được tự duyệt điều chỉnh tồn trọng yếu không?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 197,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 459,
+     "grade": 2
+    }
+   ],
+   "must_include": [
+    "không"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Không cho cả hai: người đề nghị không được là người duyệt duy nhất cho hoàn chi; người đếm không được là người duyệt duy nhất cho điều chỉnh tồn trọng yếu.",
+   "facts": [],
+   "topic": "Rà soát, hoàn trả và thu hồi chi phí",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T025",
+   "category": "multi_passage",
+   "question": "Phát hiện kiểm toán trọng yếu chưa xử lý thì chuyển cho ai, và bản chính sách lỗi thời có còn được truy xuất không?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 717,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 73,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 718,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "Hội đồng Điều hành Vận hành",
+    "kiểm toán"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Phát hiện trọng yếu chưa xử lý chuyển Hội đồng Điều hành Vận hành; bản lỗi thời được rút khỏi truy xuất đang hoạt động nhưng vẫn giữ để phục vụ kiểm toán.",
+   "facts": [],
+   "topic": "Rà quản trị, kiểm toán và cải tiến liên tục",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T026",
+   "category": "table",
+   "question": "Theo Phụ lục C, biểu mẫu yêu cầu nghỉ phép có những điều kiện chặn nào?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 737,
+     "grade": 2
+    }
+   ],
+   "must_include": [
+    "ngày đầu",
+    "trùng"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Ngày cuối phải lớn hơn hoặc bằng ngày đầu; rà trùng; nghỉ được bảo vệ chuyển Nhân sự.",
+   "facts": [],
+   "topic": "Phụ lục C - Biểu mẫu chuẩn và kiểm tra tối thiểu",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T027",
+   "category": "table",
+   "question": "Theo Phụ lục C, đơn mua hàng phải có những trường tối thiểu nào?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 738,
+     "grade": 2
+    }
+   ],
+   "must_include": [
+    "Số PO",
+    "đơn giá"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Số PO; nhà cung cấp; ngày phát hành; tiền tệ; dòng hàng; số lượng; đơn giá; điều kiện giao/thanh toán.",
+   "facts": [],
+   "topic": "Phụ lục C - Biểu mẫu chuẩn và kiểm tra tối thiểu",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T028",
+   "category": "table",
+   "question": "Trong Exception Log, sản phẩm VietMotion RP-09 có calculated DOS là bao nhiêu?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "chunk_index": 435,
+     "grade": 2
+    }
+   ],
+   "must_include": [
+    "25440|25.440"
+   ],
+   "must_not_include": [],
+   "reference_answer": "VietMotion RP-09 (Product ID 2212, Outdoor, snapshot 2022-12-31) có Calculated DOS 25440, ưu tiên P1 - DATA CONFLICT.",
+   "facts": [],
+   "topic": "04 Planner: Exception Log",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T029",
+   "category": "table",
+   "question": "Theo SOP kiểm kê, khi không có chênh lệch thì ai duyệt đóng phiếu?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "chunk_index": 7,
+     "grade": 2
+    },
+    {
+     "document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "chunk_index": 3,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "Warehouse Supervisor"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Không chênh lệch: đóng phiếu và lưu audit trail, người duyệt là Warehouse Supervisor.",
+   "facts": [],
+   "topic": "02 SOP: Ngưỡng xử lý và phê duyệt",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T030",
+   "category": "table",
+   "question": "Theo Phụ lục B, cam kết trên 200 triệu cần điều kiện bổ sung gì?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 730,
+     "grade": 2
+    }
+   ],
+   "must_include": [
+    "Đánh giá nguồn cung|đánh giá nguồn cung",
+    "rủi ro"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Trên 200.000.000 VND: Hội đồng Điều hành Vận hành + Tài chính duyệt; điều kiện bổ sung là đánh giá nguồn cung và rà rủi ro được lập hồ sơ.",
+   "facts": [
+    "F3.tier4"
+   ],
+   "topic": "Phụ lục B - Hạn mức phê duyệt và bảng quyết định vận hành",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T031",
+   "category": "not_covered",
+   "question": "Nghỉ thai sản được bao nhiêu tháng?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "not_covered",
+   "gold": [],
+   "must_include": [],
+   "must_not_include": [],
+   "reference_answer": "Tài liệu được phép truy cập không quy định nghỉ thai sản.",
+   "facts": [],
+   "topic": "(absent)",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T032",
+   "category": "not_covered",
+   "question": "Giờ làm việc hành chính của công ty bắt đầu lúc mấy giờ?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "not_covered",
+   "gold": [],
+   "must_include": [],
+   "must_not_include": [],
+   "reference_answer": "Tài liệu không quy định giờ làm việc.",
+   "facts": [],
+   "topic": "(absent)",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T033",
+   "category": "not_covered",
+   "question": "Nhân viên được phụ cấp điện thoại bao nhiêu mỗi tháng?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "not_covered",
+   "gold": [],
+   "must_include": [],
+   "must_not_include": [],
+   "reference_answer": "Tài liệu không đề cập phụ cấp điện thoại.",
+   "facts": [],
+   "topic": "(absent)",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T034",
+   "category": "not_covered",
+   "question": "Công ty có xe đưa đón nhân viên không?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "not_covered",
+   "gold": [],
+   "must_include": [],
+   "must_not_include": [],
+   "reference_answer": "Tài liệu không đề cập xe đưa đón.",
+   "facts": [],
+   "topic": "(absent)",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T035",
+   "category": "not_covered",
+   "question": "Có được tạm ứng lương giữa tháng không?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "not_covered",
+   "gold": [],
+   "must_include": [],
+   "must_not_include": [],
+   "reference_answer": "Tài liệu không đề cập tạm ứng lương.",
+   "facts": [],
+   "topic": "(absent)",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T036",
+   "category": "false_premise",
+   "question": "Yêu cầu mua đã được duyệt rồi nên coi như đơn hàng đã đặt xong đúng không?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 33,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 36,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 31,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "không|chưa"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Không: phê duyệt không phải bằng chứng đã thực hiện; chỉ 'đã cam kết' khi phát hành cam kết hợp lệ như PO, và 'đã hoàn thành' khi sự kiện thực tế đã diễn ra và được đối chiếu.",
+   "facts": [],
+   "topic": "Định nghĩa và trạng thái giao dịch",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T037",
+   "category": "false_premise",
+   "question": "Hạn mức khách sạn ở đâu cũng là 2,5 triệu một đêm phải không?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 179,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 185,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 182,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "1.800.000",
+    "thành phố lớn"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Không: 1.800.000 VND/phòng/đêm ở địa điểm nội địa thông thường; 2.500.000 VND chỉ áp dụng tại thành phố lớn được chỉ định (Tài chính công bố danh sách).",
+   "facts": [
+    "F1.lodging"
+   ],
+   "topic": "Hạn mức chi phí, ăn uống và công tác",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T038",
+   "category": "false_premise",
+   "question": "Nghỉ ốm đột xuất mà không báo trước 5 ngày thì đơn nghỉ bị mất hiệu lực đúng không?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 97,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 94,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "không"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Không: nghỉ khẩn, do bệnh hoặc được pháp luật bảo vệ phải báo sớm nhất có thể một cách hợp lý và không mất hiệu lực vì thiếu thời gian báo trước.",
+   "facts": [],
+   "topic": "Nộp yêu cầu nghỉ và thời hạn báo trước",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T039",
+   "category": "false_premise",
+   "question": "Khi tồn kho thấp thì AI agent được tự phát hành PO để bổ sung đúng không?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 629,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 398,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 669,
+     "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 420,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "không"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Không: tín hiệu đặt lại chỉ kích hoạt rà bổ sung, không tự tạo PO; tác tử AI không được phát hành PO trừ luồng được phê duyệt và kiểm toán riêng.",
+   "facts": [],
+   "topic": "Quản lý thay đổi, an toàn tác tử AI và kiểm soát phát hành",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T040",
+   "category": "false_premise",
+   "question": "Đã đổi lịch làm rồi thì coi như chứng minh được là có làm thêm giờ đúng không?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 156,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 154,
+     "grade": 2
+    }
+   ],
+   "must_include": [
+    "không"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Không: đổi lịch không chứng minh đã làm thêm; nhân viên ghi giờ thực tế vào hệ thống chấm công và quản lý xác nhận giờ thực.",
+   "facts": [],
+   "topic": "Làm thêm, đổi lịch và bỏ ca",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T041",
+   "category": "language",
+   "question": "How far in advance should planned leave be requested?",
+   "role": "employee",
+   "language": "en",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 94,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 97,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "five|5"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Planned leave should be requested at least five working days before the first day of leave.",
+   "facts": [],
+   "topic": "Leave request submission and notice",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T042",
+   "category": "language",
+   "question": "What is the reimbursement limit for a local meal?",
+   "role": "employee",
+   "language": "en",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 182,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 179,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "300,000|300.000"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Local meals are reimbursed up to VND 300,000 per person per meal unless a lower limit applies.",
+   "facts": [
+    "F1.meal"
+   ],
+   "topic": "Expense limits, meals and travel",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T043",
+   "category": "language",
+   "question": "Incident mức High thì phải report trong bao lâu?",
+   "role": "employee",
+   "language": "mixed",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 599,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 639,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "một giờ|1 giờ|one hour"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Mức Cao: báo Bảo mật và chủ hệ thống trong một giờ.",
+   "facts": [],
+   "topic": "Phân loại và ứng phó sự cố",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T044",
+   "category": "language",
+   "question": "Who must approve a commitment above VND 200 million?",
+   "role": "employee",
+   "language": "en",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 286,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 781,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 274,
+     "grade": 1
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 730,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "Executive|Operations Executive",
+    "Finance"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Above VND 200,000,000 the Operations Executive Board together with Finance approves.",
+   "facts": [
+    "F3.tier4"
+   ],
+   "topic": "Approval matrix and monetary thresholds",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T045",
+   "category": "language",
+   "question": "Three-way match gồm những chứng từ nào?",
+   "role": "employee",
+   "language": "mixed",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 314,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 330,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "PO",
+    "hóa đơn",
+    "nhận"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Đối chiếu ba bên giữa PO đã phát hành, biên bản nhận được chấp nhận và hóa đơn nhà cung cấp; dịch vụ dùng xác nhận nghiệm thu thay phiếu nhận hàng.",
+   "facts": [],
+   "topic": "Đối chiếu hóa đơn và kiểm soát thanh toán",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T046",
+   "category": "noisy",
+   "question": "lam them gio co can xin duyet truoc khong",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 152,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 152,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "duyệt trước|duyet truoc"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Có: làm thêm cần duyệt trước, trừ khẩn cấp hoặc quy định pháp luật khiến không thể duyệt trước; nhân viên phải báo giờ thực tế kịp thời.",
+   "facts": [],
+   "topic": "Làm thêm, đổi lịch và bỏ ca",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T047",
+   "category": "noisy",
+   "question": "ê bro, khách sạn ở HN hết 2tr2 một đêm thì đc hoàn hết ko?",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 179,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 185,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 182,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "2.500.000|2,5",
+    "1.800.000|1,8"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Tùy danh sách thành phố lớn do Tài chính công bố: nếu Hà Nội là thành phố lớn được chỉ định thì hạn 2.500.000 VND/đêm (2.200.000 được hoàn đủ); nếu không thì hạn 1.800.000 VND/đêm và phần vượt cần ngoại lệ duyệt trước.",
+   "facts": [
+    "F1.lodging"
+   ],
+   "topic": "Hạn mức chi phí, ăn uống và công tác",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T048",
+   "category": "noisy",
+   "question": "hóa đơn ncc bị trùng số thì sử lý sao ạ",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 320,
+     "grade": 2
+    }
+   ],
+   "must_include": [
+    "rà soát|giữ"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Số hóa đơn trùng hoặc số tiền/ngày lặp phải được giữ lại để rà soát trước khi thanh toán.",
+   "facts": [],
+   "topic": "Đối chiếu hóa đơn và kiểm soát thanh toán",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T049",
+   "category": "noisy",
+   "question": "nhan vien moi thi khi nao moi duoc cap quyen",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 539,
+     "grade": 2
+    }
+   ],
+   "must_include": [
+    "xác minh danh tính|xac minh danh tinh"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Nhân viên mới chỉ được cấp vai trò đã duyệt sau khi xác minh danh tính.",
+   "facts": [],
+   "topic": "Nhân viên mới, chuyển vai trò, nghỉ việc và rà quyền định kỳ",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T050",
+   "category": "noisy",
+   "question": "sp trong kho bị lệch tên danh mục thì lấy theo bảng nào vậy m",
+   "role": "employee",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 376,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 371,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 391,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "commerce.products|products",
+    "product_id"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Dùng product_id làm khóa chuẩn; nếu tên hoặc loại trong inventory khác products thì lấy commerce.products làm metadata danh mục và đánh dấu lệch.",
+   "facts": [],
+   "topic": "Danh tính sản phẩm, đổi danh mục và nối dữ liệu",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T051",
+   "category": "rbac",
+   "question": "Theo SOP kiểm kê, tỷ lệ chênh lệch được tính như thế nào?",
+   "role": "executive",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "not_covered",
+   "gold": [],
+   "must_include": [],
+   "must_not_include": [],
+   "reference_answer": "Vai trò executive không được xem SOP kiểm kê (02); câu trả lời phải là không có trong tài liệu được phép.",
+   "facts": [],
+   "topic": "02 SOP (restricted)",
+   "forbidden_documents": [
+    "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf"
+   ]
+  },
+  {
+   "id": "T052",
+   "category": "rbac",
+   "question": "Trong SOP kiểm kê và điều chỉnh tồn, tỷ lệ chênh lệch tính thế nào?",
+   "role": "operations",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "02_SOP_Cycle_Count_and_Stock_Adjustment.pdf",
+     "chunk_index": 2,
+     "grade": 2
+    }
+   ],
+   "must_include": [
+    "max"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Chênh lệch tuyệt đối = |thực tế − hệ thống|; tỷ lệ chênh lệch = chênh lệch / max(hệ thống, 1).",
+   "facts": [],
+   "topic": "02 SOP: Thực hiện đếm và đối chiếu",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T053",
+   "category": "rbac",
+   "question": "Theo deck đào tạo chính sách tồn kho, mô hình vận hành gồm những bước nào?",
+   "role": "procurement",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "not_covered",
+   "gold": [],
+   "must_include": [],
+   "must_not_include": [],
+   "reference_answer": "Vai trò procurement không được xem deck đào tạo (05); câu trả lời phải là không có trong tài liệu được phép.",
+   "facts": [],
+   "topic": "05 Deck (restricted)",
+   "forbidden_documents": [
+    "05_Inventory_Policy_Training_Deck.pptx"
+   ]
+  },
+  {
+   "id": "T054",
+   "category": "rbac",
+   "question": "Mô hình vận hành trong deck đào tạo tồn kho gồm các bước gì?",
+   "role": "legal_compliance",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "05_Inventory_Policy_Training_Deck.pptx",
+     "chunk_index": 2,
+     "grade": 2
+    }
+   ],
+   "must_include": [
+    "PLAN",
+    "APPROVE",
+    "RECEIVE",
+    "CONTROL",
+    "LEARN"
+   ],
+   "must_not_include": [],
+   "reference_answer": "PLAN → APPROVE → RECEIVE → CONTROL → LEARN; người đếm ≠ người nhập điều chỉnh ≠ người duyệt.",
+   "facts": [],
+   "topic": "05 Deck: Mô hình vận hành",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T055",
+   "category": "rbac",
+   "question": "Theo README của Inventory Planner, tín hiệu stockout được xác định thế nào?",
+   "role": "finance_analyst",
+   "language": "vi",
+   "history": [],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "04_Inventory_Control_and_Reorder_Planner.xlsx",
+     "chunk_index": 1,
+     "grade": 2
+    }
+   ],
+   "must_include": [
+    "14"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Stockout signal: stockout_days ≥ 1 hoặc fill_rate < 95% hoặc calculated days of supply ≤ 14 ngày.",
+   "facts": [],
+   "topic": "04 Planner: README",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T056",
+   "category": "follow_up",
+   "question": "thế 300 triệu thì sao?",
+   "role": "employee",
+   "language": "vi",
+   "history": [
+    {
+     "question": "Mua hàng 80 triệu thì ai duyệt?",
+     "answer": "Trưởng bộ phận cùng Mua sắm và Tài chính phê duyệt."
+    }
+   ],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 274,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 730,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 286,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "Hội đồng Điều hành Vận hành",
+    "Tài chính"
+   ],
+   "must_not_include": [],
+   "reference_answer": "300.000.000 VND trên 200.000.000 VND: Hội đồng Điều hành Vận hành cùng Tài chính phê duyệt, kèm đánh giá nguồn cung và rà rủi ro được lập hồ sơ.",
+   "facts": [
+    "F3.tier4"
+   ],
+   "topic": "Ma trận phê duyệt và ngưỡng tiền",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T057",
+   "category": "follow_up",
+   "question": "còn tiền khách sạn thì sao?",
+   "role": "employee",
+   "language": "vi",
+   "history": [
+    {
+     "question": "Ăn uống khi đi công tác được hoàn tối đa bao nhiêu?",
+     "answer": "Tối đa 300.000 VND/người/bữa."
+    }
+   ],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 179,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 182,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "1.800.000",
+    "2.500.000"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Lưu trú qua đêm tối đa 1.800.000 VND/phòng/đêm ở địa điểm nội địa thông thường và 2.500.000 VND tại thành phố lớn được chỉ định.",
+   "facts": [
+    "F1.lodging"
+   ],
+   "topic": "Hạn mức chi phí, ăn uống và công tác",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T058",
+   "category": "follow_up",
+   "question": "còn mức Nghiêm trọng thì sao?",
+   "role": "employee",
+   "language": "vi",
+   "history": [
+    {
+     "question": "Sự cố mức Cao phải báo trong bao lâu?",
+     "answer": "Báo Bảo mật và chủ hệ thống trong một giờ."
+    }
+   ],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 598,
+     "grade": 2
+    }
+   ],
+   "must_include": [
+    "ngay"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Mức Nghiêm trọng (xâm phạm đang diễn ra, lộ rộng dữ liệu Hạn chế, gian lận tài chính trọng yếu hoặc dừng dịch vụ thiết yếu): liên hệ trưởng Bảo mật ngay.",
+   "facts": [],
+   "topic": "Phân loại và ứng phó sự cố",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T059",
+   "category": "follow_up",
+   "question": "vậy ai có quyền gia hạn và phải làm khi nào?",
+   "role": "employee",
+   "language": "vi",
+   "history": [
+    {
+     "question": "Ngoại lệ chính sách có tự hết hạn không?",
+     "answer": "Có, mỗi ngoại lệ có ngày hết hạn và tự hết hiệu lực nếu không được gia hạn."
+    }
+   ],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 659,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 662,
+     "grade": 2
+    },
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_EN.pdf",
+     "chunk_index": 701,
+     "grade": 1
+    }
+   ],
+   "must_include": [
+    "cùng cấp|cao hơn",
+    "trước"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Ngoại lệ chỉ được gia hạn bởi cùng cấp hoặc cao hơn, trước khi hết hạn, kèm bằng chứng rủi ro cập nhật; nếu không thì tự hết hiệu lực.",
+   "facts": [],
+   "topic": "Duyệt, hết hạn và đóng ngoại lệ",
+   "forbidden_documents": []
+  },
+  {
+   "id": "T060",
+   "category": "follow_up",
+   "question": "vậy muốn giảm giá thì ai phải duyệt?",
+   "role": "employee",
+   "language": "vi",
+   "history": [
+    {
+     "question": "Hàng dư thừa thì xử lý thế nào?",
+     "answer": "overstock_flag hoặc days_of_supply cao kéo dài chỉ kích hoạt rà soát, không tự cho phép thanh lý, ghi giảm hoặc khuyến mãi."
+    }
+   ],
+   "expected_outcome": "answer",
+   "gold": [
+    {
+     "document": "VietStyle_Enterprise_Operating_Policy_v1.0_VN.pdf",
+     "chunk_index": 430,
+     "grade": 2
+    }
+   ],
+   "must_include": [
+    "Kinh doanh",
+    "Tài chính"
+   ],
+   "must_not_include": [],
+   "reference_answer": "Cấp Kinh doanh và Tài chính cần thiết phải duyệt trước khi đổi giá hoặc xử lý hàng.",
+   "facts": [],
+   "topic": "Dư hàng và tồn chậm luân chuyển",
+   "forbidden_documents": []
+  }
+ ]
+}

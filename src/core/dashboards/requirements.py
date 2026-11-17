@@ -15,7 +15,7 @@ def requested_kinds(question, clarifications=()):
         'line': r'\bline[ -]*charts?\b|biểu đồ đường',
         'bar': r'\bbar[ -]*charts?\b|biểu đồ (?:cột|thanh)',
         'donut': r'\bdonut\b|\bdoughnut\b|biểu đồ tròn',
-        'table': r'\b(?:include|show|display|add|use|with|and|as)\s+(?:an?\s+)?(?:data\s+)?table\b|hiển thị.*\bbảng\b',
+        'table': r'\b(?:include|show|display|add|use|with|and|as)\s+(?:(?:an?|the)\s+)?(?:(?:underlying|source|observation|observations|data|monthly)\s+)*table\b|hiển thị.*\bbảng\b',
         'kpi': r'\bkpis?\b',
         'summary': r'statistical summar|summary statistics?|descriptive statistics?|thống kê mô tả|tóm tắt thống kê',
     }

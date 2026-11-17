@@ -125,3 +125,9 @@ for an approved source date or a bar chart otherwise, and wider/multiple-group r
 This does not require output repair or another model call. Explicit representation requests retain their
 manifest validation. Explicit raw grouping fields, recognized through the existing field-language aliases
 and approved schema, must remain in the count interpretation before any data query executes.
+
+When descriptive statistics are explicitly requested but omitted from a SQL manifest, one unambiguous
+chart measure set with proven aggregate lineage can receive a summary on that same dataset. Existing
+queries, filters and KPI bindings remain unchanged; normal SQL/output validation still precedes execution.
+Raw fields, multiple candidate targets and full output budgets retain the existing repair path. Underlying
+observation-table wording is recognized as an explicit table request.

@@ -36,10 +36,14 @@ class _State(TypedDict, total=False):
 
 
 def _resolve_clarification_choice(reply: str, history: list):
-    selected = re.fullmatch(r"\s*(?:(?:option|choice|lựa chọn|phương án|chọn)\s*)?([1-3])[.)]?\s*", reply, re.I)
+    selected = re.fullmatch(
+        r"\s*(?:(?:option|choice|lựa chọn|phương án|chọn)\s*(?:số\s*)?)?"
+        r"(1|2|3|một|mot|hai|ba|one|two|three)[.)]?\s*", reply, re.I)
     if not selected or not history:
         return None
-    number = int(selected.group(1))
+    number = {'1': 1, 'một': 1, 'mot': 1, 'one': 1,
+              '2': 2, 'hai': 2, 'two': 2,
+              '3': 3, 'ba': 3, 'three': 3}[selected.group(1).casefold()]
     candidates = [history[-1]]
     if len(history) > 1 and str(history[-1].get('question', '')).strip() == reply.strip():
         candidates.insert(0, history[-2])

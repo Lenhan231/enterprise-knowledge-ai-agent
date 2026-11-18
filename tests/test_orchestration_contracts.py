@@ -255,6 +255,10 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(history[0]['clarification_plan'], clarification_plan.model_dump_json())
         self.assertEqual(_resolve_clarification_choice('1', history)[:3],
                          (original, 1, 'Tính SUM(products.cogs × quantity)'))
+        for reply in ('một', 'phương án một', 'lựa chọn số 1', 'one'):
+            with self.subTest(reply=reply):
+                self.assertEqual(_resolve_clarification_choice(reply, history)[:3],
+                                 (original, 1, 'Tính SUM(products.cogs × quantity)'))
         self.assertIsNone(_resolve_clarification_choice('4', history))
 
         request = AgentRequest(question='1', identity=IDENTITY,

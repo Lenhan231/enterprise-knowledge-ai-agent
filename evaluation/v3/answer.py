@@ -9,6 +9,7 @@ EVAL_PACE_SECONDS (default 8) waits between items; a rate limit pauses 10 minute
 """
 import json
 import os
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -19,7 +20,8 @@ sys.path.insert(0, str(ROOT / "src"))
 SETTINGS = ("GROQ_MODEL", "KNOWLEDGE_MULTIQUERY_ENABLED", "KNOWLEDGE_CLAIM_VERIFICATION_ENABLED", "KNOWLEDGE_TOP_K",
             "KNOWLEDGE_CONTEXT_RADIUS", "QUERY_NORMALIZATION_ENABLED", "KNOWLEDGE_COMPLETENESS_RULE",
             "KNOWLEDGE_CONTEXT_MAX_CHARS", "KNOWLEDGE_STRICT_CITATION_RULE", "KNOWLEDGE_AUDIT_MAX_OUTPUT_TOKENS",
-            "KNOWLEDGE_MULTIQUERY_MAX", "EMBEDDING_MODEL")
+            "KNOWLEDGE_MULTIQUERY_MAX", "EMBEDDING_MODEL", "KNOWLEDGE_LLM_PROVIDER", "KNOWLEDGE_CLOUDFLARE_MODEL",
+            "KNOWLEDGE_GROQ_MODEL", "RERANKER_MODEL", "RERANKER_QUANTIZE", "RERANKER_DEVICE")
 PROD_ENV = Path(os.getenv("EVAL_PROD_ENV", Path.home() / "projects/ekai-prod/.env"))
 
 
@@ -28,7 +30,7 @@ def load_settings():
         name, _, value = line.partition("=")
         if name in SETTINGS and name not in os.environ:
             os.environ[name] = value.strip()
-        elif name.startswith("GROQ_API_KEY") and name not in os.environ:  # keys are used, never printed
+        elif name.startswith(("GROQ_API_KEY", "CLOUDFLARE_")) and name not in os.environ:  # used, never printed
             os.environ[name] = value.strip()
 
 
@@ -38,7 +40,19 @@ class ClaimCheckRateLimited(Exception):
 
 def rate_limited(row):
     """The claim check swallows Groq rate limits and reports status 'unavailable', reason 'RateLimitError'."""
-    return "error" in row or str((row.get("verification") or {}).get("reason")) == "RateLimitError"
+    # Cloudflare reports HTTP 429 and timeouts as RuntimeError.
+    return "error" in row or str((row.get("verification") or {}).get("reason")) in ("RateLimitError", "RuntimeError")
+
+
+def wait_for_active_hours():
+    """EVAL_ACTIVE_HOURS=23-7 runs only between 23:00 and 07:00, to stay off quota the live site uses by day."""
+    window = os.getenv("EVAL_ACTIVE_HOURS")
+    if not window:
+        return
+    start, end = map(int, window.split("-"))
+    while not (time.localtime().tm_hour >= start or time.localtime().tm_hour < end if start > end
+               else start <= time.localtime().tm_hour < end):
+        time.sleep(300)
 
 
 def main(set_name, out_path, *only):
@@ -52,12 +66,15 @@ def main(set_name, out_path, *only):
     done = {json.loads(l)["id"] for l in open(out_path, encoding="utf-8")} if Path(out_path).exists() else set()
     rag = RAGService()
     config = {name: os.environ.get(name) for name in SETTINGS}
+    config["commit"] = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "--short", "HEAD"], capture_output=True,
+                                      text=True).stdout.strip()
     try:
         with open(out_path, "a", encoding="utf-8") as out:
             for item in items:
                 if item["id"] in done or (only and item["id"] not in only):
                     continue
                 for attempt in range(3):
+                    wait_for_active_hours()
                     started = time.perf_counter()
                     try:
                         # Same arguments as KnowledgeAgent.run (src/core/agents/knowledge/agent.py).
@@ -68,7 +85,9 @@ def main(set_name, out_path, *only):
                         if not rate_limited({"verification": result.verification.model_dump() if result.verification else None}):
                             break
                         raise ClaimCheckRateLimited()
-                    except (RateLimitError, ClaimCheckRateLimited):
+                    except (RateLimitError, ClaimCheckRateLimited, RuntimeError) as error:
+                        if isinstance(error, RuntimeError) and "HTTP 429" not in str(error) and "timed out" not in str(error):
+                            raise
                         print(item["id"], "rate limited; pausing 10 minutes", flush=True)
                         time.sleep(600)
                 else:
@@ -83,6 +102,7 @@ def main(set_name, out_path, *only):
                     "contexts": [{"source_id": c["source_id"], "document": c["document_name"], "chunk_index": c["chunk_index"],
                                   "content": c["content"]} for c in result.contexts],
                     "latency_ms": round((time.perf_counter() - started) * 1000), "config": config,
+                    "answered_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
                 }, ensure_ascii=False) + "\n")
                 out.flush()
                 status = (verification or {}).get("status") or ("not_covered" if result.insufficient_context else "no_check")

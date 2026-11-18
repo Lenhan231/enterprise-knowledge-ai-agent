@@ -3,12 +3,13 @@ import json
 import re
 from datetime import date
 
-from core.agents.runtime import generate, generate_with_local_codex
+from core.agents.runtime import CodexCLIProvider, generate, generate_with_local_codex
 from core.models.agent_plan import AgentPlan
 from core.prompts.agents import PLANNING_PROMPT, PLANNING_REPAIR_PROMPT
 
 
-async def plan_request(request, provider, *, history=(), previous=None, report_headings=None, sql_schema=None):
+async def plan_request(request, provider, *, history=(), previous=None, report_headings=None, sql_schema=None,
+                       selected_tools=None):
     from core.agents.intent_classifier import IntentClassifier, is_product_profit_recommendation
     intent = IntentClassifier.fallback(request.question)
     if not history and previous is None and report_headings is None:
@@ -16,7 +17,8 @@ async def plan_request(request, provider, *, history=(), previous=None, report_h
             r'\b(that|the other one|this one|those|them)\b|cái đó|cái còn lại|cái kia',
             request.question, re.I,
         ))
-        if (intent.intent == 'analytics' and intent.needs_sql and not intent.needs_knowledge
+        if (not selected_tools or 'knowledge' not in selected_tools) and (
+                intent.intent == 'analytics' and intent.needs_sql and not intent.needs_knowledge
                 and not unresolved_reference):
             return AgentPlan(objective=request.question, fallback=True, tasks=[{
                 'id': 'fallback', 'agent': 'sql', 'question': request.question}])
@@ -29,6 +31,7 @@ async def plan_request(request, provider, *, history=(), previous=None, report_h
                 'prior_resolved_scope': latest_turn.get('scope') or latest_turn.get('question'),
                 'prior_confirmed_sql_metrics': latest_metrics,
             },
+            'jev_selected_tools': list(selected_tools or []),
             'available_sql_schema': {table: sorted(columns) for table, columns in (APPROVED_COLUMNS if sql_schema is None else sql_schema).items()}}
     if report_headings is not None:
         data['report_headings'] = report_headings
@@ -37,8 +40,10 @@ async def plan_request(request, provider, *, history=(), previous=None, report_h
     for attempt in range(2):
         try:
             try:
-                raw = await generate(provider, prompt)
+                raw = await generate(provider, prompt, timeout=60)
             except Exception as provider_error:
+                if isinstance(provider, CodexCLIProvider):
+                    raise
                 raw = await generate_with_local_codex(prompt, provider_error)
             if not isinstance(raw, str) or len(raw) > 24_000:
                 raise ValueError('Invalid plan size')
@@ -52,17 +57,49 @@ async def plan_request(request, provider, *, history=(), previous=None, report_h
                 payload['tasks'] = [task.model_dump() for task in trusted.tasks if task.id in completed] + [
                     task for task in payload.get('tasks', []) if task.get('id') not in completed]
             result = AgentPlan.model_validate(payload)
-            if is_product_profit_recommendation(request.question) and not result.clarification:
+            required_tools = set(selected_tools or ())
+            if is_product_profit_recommendation(request.question):
+                required_tools.update(('knowledge', 'sql'))
+            if required_tools and not result.clarification:
                 present = {task.agent for task in result.tasks}
                 tasks = [task.model_dump() for task in result.tasks]
-                for agent, prefix in (('knowledge', 'k'), ('sql', 's')):
-                    if agent not in present:
-                        task_id = prefix
-                        suffix = 2
-                        while any(task['id'] == task_id for task in tasks):
-                            task_id = f'{prefix}{suffix}'
-                            suffix += 1
-                        tasks.append({'id': task_id, 'agent': agent, 'question': request.question})
+                missing = [agent for agent in ('knowledge', 'sql')
+                           if agent in required_tools and agent not in present]
+                if missing:
+                    completion_prompt = (
+                        'Complete an existing task plan by creating ONLY the missing specialist tasks. '
+                        'Return only JSON {"tasks":[{"id":"...","agent":"knowledge or sql",'
+                        '"question":"focused question","depends_on":[],"inputs":[]}]}. '
+                        'For Knowledge, ask only for cited decision criteria, policy constraints or operating '
+                        'guidance that can help interpret results. Do not ask it to calculate, select/rank entities, '
+                        'repeat SQL formulas, or answer the entire mixed request; omit SQL-only dates and arithmetic. '
+                        'For SQL, ask only for requested structured measures and calculations; do not ask it for policy '
+                        'or recommendations. Keep tasks independent unless a task truly needs another task result.\n'
+                        'Missing agents: ' + json.dumps(missing) + '\n'
+                        'Existing tasks: ' + json.dumps(tasks, ensure_ascii=False) + '\n'
+                        'Business request: ' + json.dumps(request.question, ensure_ascii=False)
+                    )
+                    try:
+                        completion_raw = await generate(provider, completion_prompt, timeout=30)
+                        completion = json.loads(completion_raw.strip().removeprefix('```json').removesuffix('```').strip())
+                        additions = AgentPlan(objective=result.objective,
+                                              tasks=completion.get('tasks', []), fallback=result.fallback).tasks
+                        if {task.agent for task in additions} != set(missing):
+                            raise ValueError('Planner completion omitted a required agent')
+                        tasks.extend(task.model_dump() for task in additions)
+                    except Exception:
+                        focus = {
+                            'knowledge': 'Retrieve cited decision criteria, policy constraints and operating guidance; do not calculate or select entities.',
+                            'sql': 'Retrieve the requested structured data and calculations; do not infer policy or causation.',
+                        }
+                        for agent in missing:
+                            task_id = 'k' if agent == 'knowledge' else 's'
+                            suffix = 2
+                            while any(task['id'] == task_id for task in tasks):
+                                task_id = ('k' if agent == 'knowledge' else 's') + str(suffix)
+                                suffix += 1
+                            tasks.append({'id': task_id, 'agent': agent,
+                                          'question': request.question + '\n\n' + focus[agent]})
                 result = AgentPlan(objective=result.objective, fallback=result.fallback, tasks=tasks)
             return result
         except PermissionError:
@@ -70,6 +107,18 @@ async def plan_request(request, provider, *, history=(), previous=None, report_h
         except Exception:
             if attempt == 0:
                 prompt += PLANNING_REPAIR_PROMPT
+    if selected_tools and not history and previous is None and report_headings is None:
+        selected = [agent for agent in ('knowledge', 'sql') if agent in selected_tools]
+        if selected:
+            focus = {
+                'knowledge': 'Focus on relevant cited policies or operating guidance; do not calculate metrics.',
+                'sql': 'Focus on requested numerical results from approved structured data; do not infer policies or causation.',
+            }
+            return AgentPlan(objective=request.question, fallback=True, tasks=[
+                {'id': 'k' if agent == 'knowledge' else 's', 'agent': agent,
+                 'question': request.question + '\n\n' + focus[agent]}
+                for agent in selected
+            ])
     if not history and previous is None:
         from core.agents.intent_classifier import IntentClassifier
         intent = IntentClassifier.fallback(request.question)

@@ -69,6 +69,8 @@ class KnowledgeAgent(BaseAgent):
             deadline.reset(token)
         cited = set(result.source_ids)
 
+        cited_contexts = (result.contexts if result.insufficient_context else
+                          [context for context in result.contexts if context["source_id"] in cited])
         evidence = [
             Evidence(
                 citation_id=context["source_id"],
@@ -85,8 +87,7 @@ class KnowledgeAgent(BaseAgent):
                     "retrieval_details": context.get("retrieval_details", {}),
                 },
             )
-            for context in result.contexts
-            if context["source_id"] in cited
+            for context in cited_contexts
         ]
 
         metadata = {"ok": not result.insufficient_context, "insufficient_context": result.insufficient_context}

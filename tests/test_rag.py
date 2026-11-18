@@ -11,6 +11,26 @@ from core.rag.rag_service import INSUFFICIENT_ANSWER, NO_MATCHING_DOCUMENTS_ANSW
 from core.retrieval.retrieval import RankedChunk, RetrievalResponse, SourceLocation, make_chunk_id
 
 
+class KnowledgeProviderSelectionTest(unittest.TestCase):
+    def test_auto_prefers_separate_cloudflare_knowledge_model_when_configured(self):
+        provider = object()
+        with patch.dict('os.environ', {'KNOWLEDGE_LLM_PROVIDER':'auto',
+            'CLOUDFLARE_ACCOUNT_ID':'account', 'CLOUDFLARE_WORKERS_API':'token'}, clear=True), \
+             patch('core.llm.Cloudflare_provider.CloudflareProvider', return_value=provider) as cloudflare:
+            service = RAGService(retrieval_service=FakeRetrieval([]))
+        self.assertIs(service.llm, provider)
+        cloudflare.assert_called_once_with(model='@cf/openai/gpt-oss-20b')
+
+    def test_groq_provider_remains_available_as_an_explicit_choice(self):
+        provider = object()
+        with patch.dict('os.environ', {'KNOWLEDGE_LLM_PROVIDER':'groq',
+            'KNOWLEDGE_GROQ_MODEL':'qwen/qwen3.8-27b'}, clear=True), \
+             patch('core.rag.rag_service.GroqProvider', return_value=provider) as groq:
+            service = RAGService(retrieval_service=FakeRetrieval([]))
+        self.assertIs(service.llm, provider)
+        groq.assert_called_once_with(model='qwen/qwen3.8-27b')
+
+
 class FakeRetrieval:
     def __init__(self, contexts):
         self.contexts = contexts

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import os
 import re
 import time
 from typing import TypedDict
@@ -16,7 +17,7 @@ from core.agents.intent_classifier import (
 )
 from core.agents.decision_support.planning import plan_request
 from core.agents.decision_support.response import assemble_response
-from core.agents.runtime import deadline, remaining
+from core.agents.runtime import deadline, remaining, run_sync
 from core.latency import measure
 from core.models.agents import AgentRequest, AgentResult
 from core.models.agent_plan import AgentPlan
@@ -34,6 +35,25 @@ class _State(TypedDict, total=False):
     report_headings: list[str] | None
 
 
+def _resolve_clarification_choice(reply: str, history: list):
+    selected = re.fullmatch(r"\s*(?:(?:option|choice|lựa chọn|phương án|chọn)\s*)?([1-3])[.)]?\s*", reply, re.I)
+    if not selected or not history:
+        return None
+    number = int(selected.group(1))
+    candidates = [history[-1]]
+    if len(history) > 1 and str(history[-1].get('question', '')).strip() == reply.strip():
+        candidates.insert(0, history[-2])
+    for turn in candidates:
+        choices = {
+            int(index): option.strip()
+            for index, option in re.findall(r"(?m)^\s*([1-3])[.)]\s+(.+?)\s*$", turn.get('clarification', ''))
+        }
+        scope = turn.get('scope') or turn.get('question')
+        if number in choices and isinstance(scope, str) and scope.strip():
+            return scope.strip(), number, choices[number], turn
+    return None
+
+
 class AgentRouter:
     def __init__(self, classifier, knowledge_agent, analytics_agent, dashboard_agent=None,
                  report_agent=None, *, llm=None, request_timeout=120):
@@ -46,6 +66,8 @@ class AgentRouter:
         self.sql_schema = schema if isinstance(schema, dict) else None
         self.dashboard_agent, self.report_agent = dashboard_agent, report_agent
         self.llm, self._owns_llm = llm, False
+        self._injected_llm = llm is not None
+        self.response_llm, self._owns_response_llm = None, False
         self.request_timeout = min(120, request_timeout)
         self.conversations = ConversationStore()
         self.report_conversations = ConversationStore()
@@ -95,7 +117,17 @@ class AgentRouter:
                         if record_context:
                             scope = state['plan'].objective if state.get('plan') else request.question
                             turn = {'question': request.question[:2000], 'scope': scope[:2000],
-                                    'clarification': result.answer[:500] if result.metadata.get('status') == 'clarification_required' else ''}
+                                    'clarification': result.answer[:2000] if result.metadata.get('status') == 'clarification_required' else ''}
+                            if result.metadata.get('status') == 'clarification_required' and state.get('plan'):
+                                tasks = state['plan'].tasks
+                                pending = [execution.outcomes.get(task.id) for task in tasks]
+                                if (len(tasks) == 1 and not tasks[0].depends_on and not tasks[0].inputs
+                                        and pending[0] and pending[0].status == 'clarification_required'):
+                                    turn['clarification_plan'] = AgentPlan(
+                                        objective=scope, tasks=tasks,
+                                        fallback=state['plan'].fallback,
+                                        uses_context=state['plan'].uses_context,
+                                    ).model_dump_json()
                             if report_headings is None:
                                 turn['sql_context'] = self._sql_context_after_execution(execution, history)
                                 metrics = next((outcome.result.metadata.get('metrics')
@@ -216,7 +248,7 @@ class AgentRouter:
             if result.data.get('query_status') == 'executed':
                 context = self._serialize_sql_context(result.metadata.get('semantic_interpretation'))
             turn = {'question': request.question[:2000], 'scope': request.question[:2000],
-                    'clarification': result.answer[:500] if status == 'clarification_required' else '',
+                    'clarification': result.answer[:2000] if status == 'clarification_required' else '',
                     'sql_context': context}
             metrics = result.metadata.get('metrics')
             if result.data.get('query_status') == 'executed' and isinstance(metrics, dict):
@@ -228,36 +260,64 @@ class AgentRouter:
             request = state['request']
             plan = state.get('forced_plan')
             jev_routed = False
+            resumed_clarification = False
             if plan is None:
-                latest_turn = state['history'][-1] if state['history'] else {}
-                short_followup = bool(state['history'] and len(request.question.split()) <= 8)
-                pending_clarification = bool(
-                    isinstance(latest_turn.get('clarification'), str)
-                    and latest_turn['clarification'].strip()
-                )
-                try:
-                    route = await run_sync(classify_jev_route, request.question, self.sql_schema,
-                                           state['history'], _timeout=12)
-                except Exception:
-                    route = None
-                if (route and route['route'] in {'knowledge', 'sql'}
-                        and not is_product_profit_recommendation(request.question)
-                        and route['confidence'] >= JEV_ROUTE_THRESHOLD and not route['history_required']
-                        and not short_followup
-                        and state.get('report_headings') is None and not pending_clarification):
-                    agent = route['route']
-                    task_id = 'k' if agent == 'knowledge' else 's'
-                    plan = AgentPlan(objective=request.question, fallback=True, tasks=[{
-                        'id': task_id, 'agent': agent, 'question': request.question}])
-                    jev_routed = True
-                else:
-                    plan = await plan_request(request, self._provider(), history=state['history'],
-                                              report_headings=state.get('report_headings'), sql_schema=self.sql_schema)
+                choice = _resolve_clarification_choice(request.question, state['history'])
+                if choice:
+                    scope, number, option, turn = choice
+                    request = request.model_copy(update={
+                        'question': f"{scope}\n\nUser clarification choice ({number}): {option}"
+                    })
+                    state['request'] = request
+                    state['execution'].request = request
+                    raw_plan = turn.get('clarification_plan')
+                    if isinstance(raw_plan, str):
+                        try:
+                            previous_plan = AgentPlan.model_validate_json(raw_plan)
+                            if (len(previous_plan.tasks) == 1 and not previous_plan.tasks[0].depends_on
+                                    and not previous_plan.tasks[0].inputs):
+                                task = previous_plan.tasks[0]
+                                task_question = (f"{task.question}\n\n"
+                                                 f"User clarification choice ({number}): {option}")
+                                if len(task_question) <= 2000:
+                                    plan = previous_plan.model_copy(update={
+                                        'objective': scope,
+                                        'tasks': [task.model_copy(update={'question': task_question})],
+                                    })
+                                    resumed_clarification = True
+                        except ValueError:
+                            pass
+                if plan is None:
+                    latest_turn = state['history'][-1] if state['history'] else {}
+                    short_followup = bool(state['history'] and len(request.question.split()) <= 8)
+                    pending_clarification = bool(
+                        isinstance(latest_turn.get('clarification'), str)
+                        and latest_turn['clarification'].strip()
+                    )
+                    try:
+                        route = await run_sync(classify_jev_route, request.question, self.sql_schema,
+                                               state['history'], _timeout=12)
+                    except Exception:
+                        route = None
+                    if (route and route['route'] in {'knowledge', 'sql'}
+                            and not is_product_profit_recommendation(request.question)
+                            and route['confidence'] >= JEV_ROUTE_THRESHOLD and not route['history_required']
+                            and not short_followup
+                            and state.get('report_headings') is None and not pending_clarification):
+                        agent = route['route']
+                        task_id = 'k' if agent == 'knowledge' else 's'
+                        plan = AgentPlan(objective=request.question, fallback=True, tasks=[{
+                            'id': task_id, 'agent': agent, 'question': request.question}])
+                        jev_routed = True
+                    else:
+                        plan = await plan_request(request, self._provider(), history=state['history'],
+                                                  report_headings=state.get('report_headings'), sql_schema=self.sql_schema,
+                                                  selected_tools=route.get('selected_tools', []) if route else None)
             explicit_sql = bool(re.search(
                 r'\b(select|sql|query|table|database|schema|from)\b|(?:truy vấn|bảng)',
                 request.question, re.I))
             analytics_intent = IntentClassifier.fallback(request.question).needs_sql
-            if state.get('forced_plan') is None and (any(task.agent == 'sql' for task in plan.tasks) or (
+            if state.get('forced_plan') is None and not resumed_clarification and (any(task.agent == 'sql' for task in plan.tasks) or (
                     plan.clarification and (explicit_sql or analytics_intent))):
                 sql_agent = getattr(self.analytics_agent, 'sql_agent', self.analytics_agent)
                 repository = getattr(sql_agent, 'repository', None)
@@ -272,7 +332,8 @@ class AgentRouter:
                     live_schema = schema.get('tables') if isinstance(schema, dict) else None
                     if live_schema and live_schema != self.sql_schema and not jev_routed:
                         plan = await plan_request(request, self._provider(), history=state['history'],
-                            report_headings=state.get('report_headings'), sql_schema=live_schema)
+                            report_headings=state.get('report_headings'), sql_schema=live_schema,
+                            selected_tools=route.get('selected_tools', []) if route else None)
         state['execution'].plan = plan
         if plan.clarification:
             return {'plan': plan, 'result': AgentResult(answer=plan.clarification, agent='agentic', metadata={
@@ -335,7 +396,8 @@ class AgentRouter:
         else:
             with measure('answer_synthesis'):
                 result = (execution.collected_sources(plan) if state.get('report_headings') is not None
-                          else await assemble_response(state['request'], plan, execution, self._provider()))
+                          else await assemble_response(state['request'], plan, execution,
+                                                       self._response_provider()))
         result.metadata['revisions'] = state['revisions']
         if state.get('forced_plan') is not None:
             result = result.model_copy(update={'agent': 'decision_support', 'metadata': {
@@ -349,13 +411,48 @@ class AgentRouter:
 
     def _provider(self):
         if self.llm is None:
-            sql_agent = getattr(self.analytics_agent, 'sql_agent', self.analytics_agent)
-            if sql_agent is not None and hasattr(sql_agent, '_provider'):
-                return sql_agent._provider()
-            from core.llm.groq_provider import GroqProvider
-            self.llm = GroqProvider()
+            provider = os.getenv('DECISION_PLANNER_LLM_PROVIDER', 'auto').strip().casefold()
+            cloudflare_ready = bool(os.getenv('CLOUDFLARE_ACCOUNT_ID') and
+                                    (os.getenv('CLOUDFLARE_API_TOKEN') or os.getenv('CLOUDFLARE_WORKERS_API')))
+            if provider not in {'auto', 'cloudflare', 'groq', 'codex_cli'}:
+                raise ValueError('DECISION_PLANNER_LLM_PROVIDER must be auto, cloudflare, groq or codex_cli')
+            if provider == 'codex_cli':
+                from core.agents.runtime import CodexCLIProvider
+                self.llm = CodexCLIProvider(timeout=60)
+            elif provider == 'cloudflare' or (provider == 'auto' and cloudflare_ready):
+                from core.llm.Cloudflare_provider import CloudflareProvider
+                self.llm = CloudflareProvider(
+                    model=os.getenv('DECISION_PLANNER_CLOUDFLARE_MODEL', '@cf/openai/gpt-oss-20b'))
+            else:
+                from core.llm.groq_provider import GroqProvider
+                self.llm = GroqProvider(model=os.getenv('DECISION_PLANNER_GROQ_MODEL') or None)
             self._owns_llm = True
         return self.llm
+
+    def _response_provider(self):
+        # Explicitly injected providers remain a single-model override for tests and callers.
+        if self._injected_llm:
+            return self.llm
+        if self.response_llm is not None:
+            return self.response_llm
+        provider = os.getenv('DECISION_RESPONSE_LLM_PROVIDER', 'auto').strip().casefold()
+        if provider == 'codex_cli':
+            self.response_llm = 'codex_cli'
+            return self.response_llm
+        has_cloudflare = bool(os.getenv('CLOUDFLARE_ACCOUNT_ID') and
+                              (os.getenv('CLOUDFLARE_API_TOKEN') or os.getenv('CLOUDFLARE_WORKERS_API')))
+        if provider not in {'auto', 'cloudflare', 'groq'}:
+            raise ValueError('DECISION_RESPONSE_LLM_PROVIDER must be auto, cloudflare, groq or codex_cli')
+        use_cloudflare = provider == 'cloudflare' or (provider == 'auto' and has_cloudflare)
+        if use_cloudflare:
+            from core.llm.Cloudflare_provider import CloudflareProvider
+            self.response_llm = CloudflareProvider(
+                model=os.getenv('DECISION_RESPONSE_CLOUDFLARE_MODEL', '@cf/openai/gpt-oss-20b'))
+        else:
+            from core.llm.groq_provider import GroqProvider
+            self.response_llm = GroqProvider(model=os.getenv('DECISION_RESPONSE_GROQ_MODEL') or None)
+        self._owns_response_llm = True
+        return self.response_llm
 
     async def close(self):
         seen = set()
@@ -370,5 +467,9 @@ class AgentRouter:
                     await result
         if self.classifier is not None and hasattr(self.classifier, 'close'):
             self.classifier.close()
-        if self._owns_llm and self.llm is not None and hasattr(self.llm, 'close'):
-            self.llm.close()
+        owned = [(self.llm, self._owns_llm), (self.response_llm, self._owns_response_llm)]
+        closed = set()
+        for provider, is_owned in owned:
+            if is_owned and provider is not None and id(provider) not in closed and hasattr(provider, 'close'):
+                provider.close()
+                closed.add(id(provider))

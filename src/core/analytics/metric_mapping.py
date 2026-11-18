@@ -32,10 +32,16 @@ class MetricTime(_StrictModel):
     end: str | None = Field(default=None,pattern=r'^\d{4}-\d{2}-\d{2}$')
 
 
+class MetricOrder(_StrictModel):
+    field: str
+    direction: Literal['asc','desc']
+
+
 class MetricRanking(_StrictModel):
     metric: str
     direction: Literal['asc','desc']
     limit: int | None = Field(default=None,ge=1,le=200)
+    then: list[MetricOrder] = Field(default_factory=list,max_length=5)
 
 
 class MetricMapping(_StrictModel):
@@ -62,6 +68,7 @@ class SQLRankingChange(_StrictModel):
     metric: str | None = None
     direction: Literal['asc','desc'] | None = None
     limit: int | None = Field(default=None,ge=1,le=200)
+    then: list[MetricOrder] = Field(default_factory=list,max_length=5)
 
 
 class SQLChanges(_StrictModel):
@@ -132,11 +139,15 @@ def decode_sql_turn(raw, question, context):
                 if ranking is None:
                     payload['ranking'] = None
                 else:
-                    metric = ranking.metric or (payload['metrics'][0] if len(payload['metrics']) == 1 else None)
+                    metric = ranking.metric or (base.ranking.metric if base.ranking else
+                                                payload['metrics'][0] if len(payload['metrics']) == 1 else None)
                     if not metric:
                         _error('Which metric should I rank?','metric_ambiguous')
                     direction = ranking.direction or (base.ranking.direction if base.ranking and base.ranking.metric == metric else 'desc')
-                    payload['ranking'] = {'metric':metric,'direction':direction,'limit':ranking.limit}
+                    then = (ranking.then if 'then' in ranking.model_fields_set else
+                            base.ranking.then if base.ranking and base.ranking.metric == metric else [])
+                    payload['ranking'] = {'metric':metric,'direction':direction,'limit':ranking.limit,
+                                          'then':[item.model_dump() for item in then]}
         else:
             if turn.mapping is None or turn.changes is not None:
                 _error('A new question needs a complete interpretation.','metric_ambiguous')
@@ -203,10 +214,19 @@ def snapshot_metric_bundle(question):
 
 def build_metric_mapping_prompt(question, *, context=None):
     candidates = {name: {'description':d['description'],'aggregation':d['aggregation'],
-                         'status':d['definition_status']}
+                         'status':d['definition_status'],'aliases':d.get('aliases',()),
+                         'source_fields': sorted({
+                             column
+                             for table, columns in d.get('source_columns', {}).items()
+                             if table == 'commerce.inventory'
+                             for column in columns
+                             if column not in {'snapshot_date','product_id','year','month'}
+                         })}
                   for name,d in METRIC_ONTOLOGY.items() if d.get('domain') == 'inventory_management'}
     return ('Interpret the question BEFORE generating SQL. Return one JSON object, no Markdown, SQL, formulas or new metric IDs.\n'
             'Map English, Vietnamese and mixed language, synonyms and paraphrases onto inventory catalog IDs. '
+            'Use the candidate aliases and source_fields: a listed source column is an alias for its catalog metric, '
+            'not an unknown metric ID. Map a requested stored field to that metric and return its value at product grain. '
             'Use domain=other only for requests entirely outside inventory analytics (e.g. list products, orders, payments). '
             'Structural observation queries (latest snapshot date only, distinct product counts, missing observations, duplicate keys) '
             'also use domain=other with every other slot empty. These are not stock or fulfillment KPIs. '
@@ -218,6 +238,8 @@ def build_metric_mapping_prompt(question, *, context=None):
             'Counting flagged products uses observed_product_count with a boolean indicator filter; '
             'rank categories by observed_product_count, never aggregate or rank a boolean indicator as a count. '
             'Ranking without an explicit row count uses limit=null; the independent safety ceiling is 200 rows. Never invent top 10. '
+            'Preserve every requested ranking key and direction. Put the primary metric in ranking and any explicitly requested '
+            'secondary keys in ranking.then in their spoken order; do not replace them with an identity-field tie-break. '
             'Explicit non-null population uses an is_not_null filter with value=null. '
             'Filters apply to source rows, not computed aggregates. Date ranges are inclusive. '
             'For stock_on_hand change between exactly two dates use time.mode=comparison, start=earlier date, end=later date, '
@@ -298,6 +320,8 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
     if mapping.ranking:
         name = mapping.ranking.metric
         mapping.ranking.metric = name if name in METRIC_ONTOLOGY else aliases.get(name, name)
+        for item in mapping.ranking.then:
+            item.field = item.field if item.field in METRIC_ONTOLOGY else aliases.get(item.field, item.field)
     if mapping.clarification:
         _error(mapping.clarification,'metric_ambiguous')
     if mapping.domain == 'other':
@@ -450,6 +474,11 @@ def decode_metric_mapping(raw, question, *, preserve_ranking_limit=False):
             limit=mapping.ranking.limit if mapping.ranking else None)
     if mapping.ranking and mapping.ranking.metric not in mapping.metrics:
         _error('Rank using one of the requested catalog metrics.')
+    if mapping.ranking:
+        sortable = set(mapping.metrics) | set(mapping.dimensions)
+        if any(item.field not in sortable or item.field == mapping.ranking.metric
+               for item in mapping.ranking.then):
+            _error('Tie-break ordering must use another requested metric or dimension.')
     if mapping.ranking and not preserve_ranking_limit:
         mapping.ranking.limit = requested_ranking_limit(question)
     if mapping.representation == 'product':
@@ -594,17 +623,23 @@ def validate_mapped_sql(plan, mapping, *, question=None):
         orders = tree.args.get('order')
         if not orders:
             _error('SQL omitted the requested ranking.','interpretation_mismatch')
-        first = orders.expressions[0]
-        value = first.this
-        if isinstance(value,exp.Literal) and value.is_int:
-            index = int(value.this)-1
-            if not 0 <= index < len(tree.selects):
-                _error('SQL ranking position is invalid.','interpretation_mismatch')
-            value = tree.selects[index]
-        definition = METRIC_ONTOLOGY[mapping.ranking.metric]
-        expected_order = _field(mapping.ranking.metric) if mapping.representation == 'product' else _formula(definition,APPROVED_COLUMNS)
-        if canonical(value) != expected_order or bool(first.args.get('desc')) != (mapping.ranking.direction == 'desc'):
-            _error('SQL ranking differs from the validated interpretation.','interpretation_mismatch')
+        expected_orders = [(mapping.ranking.metric, mapping.ranking.direction),
+                           *((item.field, item.direction) for item in mapping.ranking.then)]
+        if len(orders.expressions) < len(expected_orders):
+            _error('SQL omitted a requested tie-break ordering.','interpretation_mismatch')
+        for actual_order, (name, direction) in zip(orders.expressions, expected_orders):
+            value = actual_order.this
+            if isinstance(value, exp.Literal) and value.is_int:
+                index = int(value.this)-1
+                if not 0 <= index < len(tree.selects):
+                    _error('SQL ranking position is invalid.','interpretation_mismatch')
+                value = tree.selects[index]
+            if name in mapping.dimensions or mapping.representation == 'product':
+                expected_order = _field(name)
+            else:
+                expected_order = _formula(METRIC_ONTOLOGY[name], APPROVED_COLUMNS)
+            if canonical(value) != expected_order or bool(actual_order.args.get('desc')) != (direction == 'desc'):
+                _error('SQL ranking differs from the validated interpretation.','interpretation_mismatch')
 
 
 def _comparison_query(mapping):
@@ -662,6 +697,11 @@ def compile_inventory_query(mapping):
         name = mapping.ranking.metric
         value = _field(name) if mapping.representation == 'product' else _formula(METRIC_ONTOLOGY[name], APPROVED_COLUMNS)
         orders.append(exp.Ordered(this=value, desc=mapping.ranking.direction == 'desc'))
+        for item in mapping.ranking.then:
+            field = item.field
+            value = (_field(field) if field in mapping.dimensions or mapping.representation == 'product'
+                     else _formula(METRIC_ONTOLOGY[field], APPROVED_COLUMNS))
+            orders.append(exp.Ordered(this=value, desc=item.direction == 'desc'))
     if not _scalar_count(mapping):
         orders.extend(_field(d) for d in dimensions)
     if orders:

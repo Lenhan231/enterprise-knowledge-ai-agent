@@ -139,7 +139,8 @@ class CanonicalAgentTest(unittest.IsolatedAsyncioTestCase):
                 identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
             self.assertEqual(result.metadata.get('metric_error_code'), 'unsupported_dimension')
             self.assertIn('supplier',result.answer)
-            self.assertIn('alternative',result.answer)
+            supported_scope = 'thay thế' if any(ord(char) > 127 for char in question) else 'alternative'
+            self.assertIn(supported_scope,result.answer)
             provider.generate.assert_not_called()
             repo.execute_approved_query.assert_not_awaited()
 

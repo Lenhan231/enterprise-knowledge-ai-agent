@@ -410,6 +410,35 @@ class CrossDomainInventoryTest(unittest.TestCase):
 
 
 class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def test_logistics_schema_gap_is_reported_without_asking_for_clarification(self):
+        from core.agents.sql.agent import SQLAnalyticsAgent as CurrentSQLAnalyticsAgent
+        from core.analytics.join_validation import PRIMARY_KEYS
+        from core.analytics.sql_validation import APPROVED_JOINS
+        from core.analytics.text_to_sql import APPROVED_DATE_COLUMNS
+        from core.models.agents import AgentRequest, VerifiedIdentity
+
+        class Repository:
+            async def get_schema(self):
+                return {'tables': APPROVED_COLUMNS, 'primary_keys': PRIMARY_KEYS,
+                        'joins': APPROVED_JOINS, 'date_columns': APPROVED_DATE_COLUMNS}
+
+        provider = Mock()
+        question = ('Chỉ dựa trên schema commerce hiện có, có thể xếp hạng hãng vận chuyển và chọn '
+                    'tuyến giao hàng tốt nhất trên toàn quốc không? Trả lời có hoặc không, nêu các trường '
+                    'còn thiếu và không hỏi lại người dùng.')
+        agent = CurrentSQLAnalyticsAgent(Repository(), llm=provider, inventory_only=False)
+        result = await agent.run(AgentRequest(
+            question=question,
+            identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+        ))
+
+        self.assertEqual(result.metadata['status'], 'unsupported')
+        self.assertFalse(result.metadata.get('clarification_required', False))
+        self.assertEqual(result.metadata['unsupported_dimensions'], ['carrier', 'route/lane'])
+        self.assertIn('commerce.shipments', result.answer)
+        self.assertIn('carrier_id', result.answer)
+        provider.generate.assert_not_called()
+
     async def test_exact_monthly_stockout_question_executes_with_unverified_derived_measures(self):
         from core.agents.sql.agent import SQLAnalyticsAgent as CurrentSQLAnalyticsAgent
         from core.analytics.join_validation import PRIMARY_KEYS

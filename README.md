@@ -35,11 +35,7 @@ The UI reads the indexed corpus and live, role-scoped aggregates from Supabase.
 JEV selects whether to use Knowledge, SQL or both; the planner then creates the task plan.
 Planner models use `DECISION_PLANNER_LLM_PROVIDER` (auto selects Cloudflare when configured)
 and their component-specific model settings. Set it to `codex_cli` to use the authenticated
-local Codex CLI for planning. Knowledge
-uses its own model budget: `KNOWLEDGE_LLM_PROVIDER=auto` prefers Cloudflare
-Workers AI with `KNOWLEDGE_CLOUDFLARE_MODEL` (`@cf/openai/gpt-oss-20b` by default)
-when Cloudflare credentials are configured, and otherwise uses Groq with
-`KNOWLEDGE_GROQ_MODEL`. Final Auto answer synthesis uses
+local Codex CLI for planning. Final Auto answer synthesis uses
 `DECISION_RESPONSE_LLM_PROVIDER` (auto selects Cloudflare when configured) and
 its `DECISION_RESPONSE_CLOUDFLARE_MODEL` or `DECISION_RESPONSE_GROQ_MODEL`.
 For local development, `DECISION_RESPONSE_LLM_PROVIDER=codex_cli` uses the

@@ -65,6 +65,18 @@ class RequestPlanningTest(unittest.IsolatedAsyncioTestCase):
             with self.assertRaisesRegex(ValueError, 'planning'):
                 await plan_request(AgentRequest(question='Compare revenue and policy documents'), llm)
 
+    async def test_jev_selected_tools_get_bounded_fallback_when_planner_is_unavailable(self):
+        question = 'Which products should be campaign candidates based on sales, margin, stock, and returns?'
+        llm = Provider(RuntimeError('offline'), RuntimeError('offline'))
+        with patch('core.agents.planning.generate_with_local_codex', side_effect=RuntimeError('offline')):
+            result = await plan_request(AgentRequest(question=question), llm,
+                                        selected_tools=['knowledge', 'sql'])
+
+        self.assertTrue(result.fallback)
+        self.assertEqual({task.agent for task in result.tasks}, {'knowledge', 'sql'})
+        self.assertIn(question, result.tasks[0].question)
+        self.assertTrue(all('Focus on' in task.question for task in result.tasks))
+
     async def test_single_analytics_request_skips_the_planner_model(self):
         llm = Provider(RuntimeError('offline'))
         question = 'doanh thu tháng này sao'
@@ -74,19 +86,40 @@ class RequestPlanningTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.tasks[0].question, question)
         self.assertFalse(llm.prompts)
 
+    async def test_jev_selected_tools_survive_the_analytics_shortcut_and_plan(self):
+        question = 'Which products should be candidates for the next campaign based on sales and stock?'
+        llm = Provider(
+            plan({'id': 's', 'agent': 'sql', 'question': 'Rank campaign candidates from sales and stock'}),
+            {'tasks':[{'id':'k','agent':'knowledge',
+                       'question':'What documented criteria and guardrails guide campaign selection?',
+                       'depends_on':[],'inputs':[]}]})
+
+        result = await plan_request(AgentRequest(question=question), llm, selected_tools=['knowledge', 'sql'])
+
+        self.assertEqual({task.agent for task in result.tasks}, {'knowledge', 'sql'})
+        self.assertIn('jev_selected_tools', llm.prompts[0])
+        self.assertIn('Do not ask it to calculate', llm.prompts[1])
+        self.assertEqual(next(t.question for t in result.tasks if t.agent == 'knowledge'),
+                         'What documented criteria and guardrails guide campaign selection?')
+
     async def test_product_profit_recommendation_keeps_both_evidence_sources(self):
         question = 'Doanh nghiệp nên ưu tiên nhập thêm, quảng bá hoặc ngừng bán những sản phẩm nào để cải thiện lợi nhuận?'
         from core.agents.intent_classifier import IntentClassifier
         intent = IntentClassifier.fallback(question)
         self.assertTrue(intent.needs_knowledge)
         self.assertTrue(intent.needs_sql)
-        llm = Provider(plan({'id': 'k', 'agent': 'knowledge', 'question': question}))
+        llm = Provider(plan({'id': 'k', 'agent': 'knowledge', 'question': question}),
+                       {'tasks':[{'id':'s','agent':'sql','question':'Calculate product profitability and returns',
+                                  'depends_on':[],'inputs':[]}]})
 
         result = await plan_request(AgentRequest(question=question), llm)
 
         self.assertEqual({task.agent for task in result.tasks}, {'knowledge', 'sql'})
         self.assertEqual(len(result.tasks), 2)
-        self.assertTrue(all(task.question == question for task in result.tasks))
+        self.assertEqual(next(task.question for task in result.tasks if task.agent == 'knowledge'), question)
+        self.assertEqual(next(task.question for task in result.tasks if task.agent == 'sql'),
+                         'Calculate product profitability and returns')
+        self.assertEqual(len(llm.prompts), 2)
 
     async def test_business_decision_followup_keeps_sql_and_policy_tasks(self):
         question = 'nên ngừng bán sản phẩm nào để cải thiện lợi nhuận?'

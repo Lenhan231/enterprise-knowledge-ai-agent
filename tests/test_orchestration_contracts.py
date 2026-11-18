@@ -9,16 +9,143 @@ from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from core.agents.runtime import deadline, run_sync
+from core.agents.decision_support.execution import TaskOutcome
 from core.agents.knowledge_agent import KnowledgeAgent
 from core.agents.router import AgentRouter
-from core.agents.intent_classifier import JEV_ROUTES
+from core.agents.intent_classifier import JEV_ROUTES, classify_jev_route
 from core.agents.response import _supported_numbers
 from core.models.agent_plan import AgentPlan
 from core.models.agents import AgentRequest, AgentResult, Evidence, VerifiedIdentity
+from core.prompts.agents import SYNTHESIS_PROMPT
 from test_bounded_execution import FakeAgent, FakeProvider, IDENTITY, source_result, task
 
 
 class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        jev = patch('core.agents.decision_support.router.classify_jev_route',
+                    side_effect=RuntimeError('Jev disabled in unit test'))
+        jev.start()
+        self.addCleanup(jev.stop)
+
+    def test_jev_selects_tools_independently_above_half_probability(self):
+        payload = {'model': 'typesafe/jev-1.14', 'answers': {
+            'knowledge_required': {'type': 'choice', 'choice': 'yes',
+                                   'probabilities': {'yes': 0.72, 'no': 0.28}},
+            'sql_required': {'type': 'choice', 'choice': 'no',
+                             'probabilities': {'yes': 0.50, 'no': 0.50}},
+            'history_required': {'type': 'choice', 'choice': 'no',
+                                 'probabilities': {'yes': 0.01, 'no': 0.99}},
+        }}
+        response = Mock()
+        response.__enter__ = Mock(return_value=response)
+        response.__exit__ = Mock(return_value=False)
+        response.read.return_value = json.dumps(payload).encode()
+        with patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'}), \
+             patch('core.agents.intent_classifier.urllib.request.urlopen', return_value=response) as urlopen:
+            decision = classify_jev_route('Doanh thu và chính sách campaign')
+
+        request = urlopen.call_args.args[0]
+        sent = json.loads(request.data)
+        self.assertEqual(set(sent['questions']), {'knowledge_required', 'sql_required', 'history_required'})
+        self.assertIn('which promotion candidate', sent['questions']['knowledge_required']['instructions'])
+        self.assertEqual(decision['selected_tools'], ['knowledge'])
+        self.assertEqual(decision['route'], 'knowledge')
+        self.assertFalse(decision['history_required'])
+
+    def test_synthesis_preserves_exact_numbers_and_does_not_invent_ranks_or_units(self):
+        self.assertIn('copy numeric values exactly as supplied, without rounding', SYNTHESIS_PROMPT)
+        self.assertIn('Do not assign a currency/unit unless the evidence supplies it', SYNTHESIS_PROMPT)
+        self.assertIn('Do not call results top, highest, lowest, or ranked', SYNTHESIS_PROMPT)
+        self.assertIn('cite SQL task IDs for query values and Knowledge task IDs for policy/document claims', SYNTHESIS_PROMPT)
+
+    def test_planner_uses_general_model_instead_of_sql_specific_provider(self):
+        sql_provider = Mock(name='sql_provider')
+        sql = Mock()
+        sql._provider.return_value = sql_provider
+        planner_provider = Mock(name='planner_provider')
+
+        with patch.dict('os.environ', {'DECISION_PLANNER_LLM_PROVIDER': 'groq'}, clear=False), \
+             patch('core.llm.groq_provider.GroqProvider', return_value=planner_provider) as groq:
+            router = AgentRouter(None, None, sql)
+            self.assertIs(router._provider(), planner_provider)
+
+        groq.assert_called_once_with(model=None)
+        sql._provider.assert_not_called()
+        self.assertTrue(router._owns_llm)
+
+    def test_auto_planner_uses_cloudflare_when_credentials_are_configured(self):
+        planner = Mock(name='planner')
+        with patch.dict('os.environ', {
+                'DECISION_PLANNER_LLM_PROVIDER': 'auto',
+                'CLOUDFLARE_ACCOUNT_ID': 'account',
+                'CLOUDFLARE_API_TOKEN': 'token',
+                'DECISION_PLANNER_CLOUDFLARE_MODEL': '@cf/openai/gpt-oss-20b'}, clear=False), \
+             patch('core.llm.Cloudflare_provider.CloudflareProvider', return_value=planner) as cloudflare:
+            router = AgentRouter(None, None, None)
+            self.assertIs(router._provider(), planner)
+
+        cloudflare.assert_called_once_with(model='@cf/openai/gpt-oss-20b')
+
+    def test_planner_can_use_authenticated_local_codex_cli(self):
+        from core.agents.runtime import CodexCLIProvider
+
+        with patch.dict('os.environ', {'DECISION_PLANNER_LLM_PROVIDER': 'codex_cli'}, clear=False):
+            router = AgentRouter(None, None, None)
+            provider = router._provider()
+
+        self.assertIsInstance(provider, CodexCLIProvider)
+        self.assertTrue(router._owns_llm)
+
+    def test_auto_response_uses_separate_cloudflare_provider_when_configured(self):
+        planner = Mock(name='planner')
+        response = Mock(name='response')
+        with patch.dict('os.environ', {
+                'DECISION_RESPONSE_LLM_PROVIDER': 'auto',
+                'CLOUDFLARE_ACCOUNT_ID': 'account',
+                'CLOUDFLARE_API_TOKEN': 'token',
+                'DECISION_RESPONSE_CLOUDFLARE_MODEL': '@cf/openai/gpt-oss-20b'}, clear=False), \
+             patch('core.llm.Cloudflare_provider.CloudflareProvider', return_value=response) as cloudflare:
+            router = AgentRouter(None, None, None)
+            router.llm = planner
+            self.assertIs(router._provider(), planner)
+            self.assertIs(router._response_provider(), response)
+
+        cloudflare.assert_called_once_with(model='@cf/openai/gpt-oss-20b')
+        self.assertTrue(router._owns_response_llm)
+
+    def test_response_can_select_authenticated_local_codex_cli(self):
+        with patch.dict('os.environ', {'DECISION_RESPONSE_LLM_PROVIDER': 'codex_cli'}, clear=False):
+            router = AgentRouter(None, None, None)
+            self.assertEqual(router._response_provider(), 'codex_cli')
+        self.assertFalse(router._owns_response_llm)
+
+    def test_explicit_provider_injection_remains_single_model_override(self):
+        injected = Mock(name='injected')
+        with patch.dict('os.environ', {'DECISION_RESPONSE_LLM_PROVIDER': 'cloudflare'}, clear=False):
+            router = AgentRouter(None, None, None, llm=injected)
+            self.assertIs(router._response_provider(), injected)
+        self.assertFalse(router._owns_response_llm)
+
+    def test_jev_routes_both_tools_to_planner(self):
+        payload = {'answers': {
+            'knowledge_required': {'type': 'choice', 'choice': 'yes',
+                                   'probabilities': {'yes': 0.76, 'no': 0.24}},
+            'sql_required': {'type': 'choice', 'choice': 'yes',
+                             'probabilities': {'yes': 0.94, 'no': 0.06}},
+            'history_required': {'type': 'choice', 'choice': 'no',
+                                 'probabilities': {'yes': 0.01, 'no': 0.99}},
+        }}
+        response = Mock()
+        response.__enter__ = Mock(return_value=response)
+        response.__exit__ = Mock(return_value=False)
+        response.read.return_value = json.dumps(payload).encode()
+        with patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'}), \
+             patch('core.agents.intent_classifier.urllib.request.urlopen', return_value=response):
+            decision = classify_jev_route('Which products should we promote?')
+
+        self.assertEqual(decision['selected_tools'], ['knowledge', 'sql'])
+        self.assertEqual(decision['route'], 'plan_required')
+
     async def test_jev_plan_required_route_uses_planner_for_tool_selection(self):
         router = AgentRouter(None, None, None, llm=FakeProvider([]))
         question = 'What should we do with products that have low margin and high inventory?'
@@ -30,7 +157,8 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
             ],
         })
         with patch('core.agents.decision_support.router.classify_jev_route', return_value={
-                'route': 'plan_required', 'confidence': 0.99, 'history_required': False}), \
+                'route': 'plan_required', 'selected_tools': ['knowledge', 'sql'],
+                'confidence': 0.0, 'history_required': False}), \
              patch('core.agents.decision_support.router.plan_request',
                    new=AsyncMock(return_value=resolved)) as plan_request:
             state = await router._plan({
@@ -41,6 +169,7 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(JEV_ROUTES, {'knowledge', 'sql', 'plan_required'})
         self.assertEqual(state['plan'], resolved)
         plan_request.assert_awaited_once()
+        self.assertEqual(plan_request.await_args.kwargs['selected_tools'], ['knowledge', 'sql'])
 
     async def test_jev_single_tool_route_cannot_drop_business_sql_evidence(self):
         question = 'Doanh nghiệp nên ưu tiên nhập thêm, quảng bá hoặc ngừng bán những sản phẩm nào để cải thiện lợi nhuận?'
@@ -86,6 +215,68 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(state['plan'], resolved)
         plan_request.assert_awaited_once()
+
+    async def test_numbered_clarification_reply_restores_scope_and_selected_option(self):
+        from core.agents.decision_support.router import _resolve_clarification_choice
+
+        original = 'Trong năm 2026, 5 danh mục nào có doanh thu thuần cao nhất? Hiển thị COGS.'
+        clarification = (
+            'Bạn muốn tính COGS theo danh mục thế nào?\n\n'
+            '1. Tính SUM(products.cogs × quantity)\n'
+            '2. Bỏ COGS và gross margin\n'
+            '3. Hiển thị COGS toàn công ty riêng'
+        )
+        clarification_plan = AgentPlan.model_validate({
+            'objective': original,
+            'tasks': [{'id': 's', 'agent': 'sql', 'question': original}],
+        })
+        router = AgentRouter(None, None, None, llm=FakeProvider([]))
+        original_request = AgentRequest(question=original, identity=IDENTITY,
+                                        conversation_id='clarification-session')
+        clarification_result = AgentResult(
+            answer=clarification, agent='sql',
+            metadata={'ok': False, 'status': 'clarification_required'})
+        pending = Mock(plan=clarification_plan, outcomes={
+            's': TaskOutcome(clarification_plan.tasks[0], 'clarification_required',
+                             result=clarification_result)},
+            sql_context=None, trace=[], invocations=1)
+        initial_state = {
+            'result': AgentResult(answer=clarification, agent='agentic',
+                metadata={'ok': False, 'status': 'clarification_required'}),
+            'plan': clarification_plan,
+            'execution': pending,
+        }
+        with patch('core.agents.decision_support.router.Execution', return_value=pending), \
+             patch.object(router.graph, 'ainvoke', new=AsyncMock(return_value=initial_state)):
+            await router._run(original_request)
+
+        async with router.conversations.session(original_request) as stored_history:
+            history = list(stored_history)
+        self.assertEqual(history[0]['clarification_plan'], clarification_plan.model_dump_json())
+        self.assertEqual(_resolve_clarification_choice('1', history)[:3],
+                         (original, 1, 'Tính SUM(products.cogs × quantity)'))
+        self.assertIsNone(_resolve_clarification_choice('4', history))
+
+        request = AgentRequest(question='1', identity=IDENTITY,
+                               conversation_id='clarification-session')
+        execution = Mock()
+        execution.request = request
+        with patch('core.agents.decision_support.router.classify_jev_route') as classifier, \
+             patch('core.agents.decision_support.router.plan_request',
+                   new=AsyncMock()) as planner:
+            state = await router._plan({
+                'request': request, 'history': history, 'execution': execution,
+                'report_headings': None,
+            })
+
+        self.assertIn(original, execution.request.question)
+        self.assertIn('User clarification choice (1): Tính SUM(products.cogs × quantity)',
+                      execution.request.question)
+        self.assertEqual(state['plan'].tasks[0].question, execution.request.question)
+        self.assertEqual(state['plan'].objective, original)
+        self.assertEqual(state['plan'].tasks[0].agent, 'sql')
+        classifier.assert_not_called()
+        planner.assert_not_awaited()
 
     async def test_sql_outage_fallback_still_uses_auto_response_layer(self):
         question = 'doanh thu năm 2025'
@@ -173,13 +364,52 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
     async def test_policy_to_sql_dependency_preserves_cited_threshold(self):
         tasks = [task('k', 'knowledge', 'Policy stockout threshold'),
                  task('s', 'sql', 'Count rows exceeding the cited threshold', depends_on=['k'],
-                      inputs=[{'task_id': 'k', 'kind': 'evidence'}])]
+                      inputs=[{'task_id': 'k', 'kind': 'evidence', 'field': 'thresholds'}])]
         sql = FakeAgent(source_result('analytics', rows=[{'count': 3}]))
         knowledge = FakeAgent(source_result('knowledge', content='Approved reorder threshold: 5 units.'))
         await AgentRouter(None, knowledge, sql, llm=FakeProvider(tasks)).run(
             AgentRequest(question='Count rows above policy threshold', identity=IDENTITY))
-        self.assertIn('5 units', sql.requests[0].question)
-        self.assertIn('policy.pdf', sql.requests[0].question)
+        self.assertEqual(sql.requests[0].question, 'Count rows exceeding the cited threshold')
+        self.assertIn('5 units', sql.requests[0].metadata['_predecessor_evidence'])
+        self.assertIn('policy.pdf', sql.requests[0].metadata['_predecessor_evidence'])
+
+    async def test_policy_handoff_does_not_duplicate_long_evidence_content(self):
+        content = 'Approved reorder threshold: 5 units. ' + ('Policy detail. ' * 500)
+        tasks = [task('k', 'knowledge', 'Policy stockout threshold'),
+                 task('s', 'sql', 'Count rows exceeding the cited threshold', depends_on=['k'],
+                      inputs=[{'task_id': 'k', 'kind': 'evidence'}])]
+        sql = FakeAgent(source_result('analytics', rows=[{'count': 3}]))
+        knowledge = FakeAgent(source_result('knowledge', content=content))
+
+        await AgentRouter(None, knowledge, sql, llm=FakeProvider(tasks)).run(
+            AgentRequest(question='Count rows above policy threshold', identity=IDENTITY))
+
+        handoff = sql.requests[0].metadata['_predecessor_evidence']
+        self.assertIn('5 units', handoff)
+        self.assertIn('policy.pdf', handoff)
+        self.assertEqual(handoff.count('Policy detail.'), 500)
+
+    async def test_large_policy_evidence_is_bounded_without_losing_knowledge_summary(self):
+        knowledge_result = source_result('knowledge', content='Inventory policy. ' * 2_000)
+        knowledge_result.answer = 'Review stock above the policy threshold of 120 days [S1].'
+        knowledge_result.evidence = [
+            Evidence(citation_id=f'S{i}', source_type='document', source=f'policy-{i}.pdf',
+                     content='Policy detail. ' * 2_000)
+            for i in range(1, 6)
+        ]
+        tasks = [task('k', 'knowledge', 'Inventory policy'),
+                 task('s', 'sql', 'Find overstock products', depends_on=['k'],
+                      inputs=[{'task_id': 'k', 'kind': 'evidence', 'field': 'thresholds'}])]
+        sql = FakeAgent(source_result('analytics', rows=[{'product_id': 7}]))
+
+        await AgentRouter(None, FakeAgent(knowledge_result), sql, llm=FakeProvider(tasks)).run(
+            AgentRequest(question='Find overstock products using the policy threshold', identity=IDENTITY))
+
+        handoff = sql.requests[0].metadata['_predecessor_evidence']
+        self.assertIn('120 days', handoff)
+        self.assertIn('policy-1.pdf', handoff)
+        self.assertIn('excerpt shortened', handoff)
+        self.assertLess(len(handoff), 12_000)
 
     async def test_failed_dependency_blocks_child_and_unchanged_revision_stops(self):
         tasks = [task('s', 'sql', 'Count orders'), task('k', 'knowledge', 'Policy for returned rows',

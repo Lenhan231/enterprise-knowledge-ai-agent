@@ -8,7 +8,21 @@ from unittest.mock import AsyncMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from core.agents.runtime import deadline, generate_with_local_codex
+from core.agents.runtime import deadline, generate, generate_with_local_codex
+
+
+class ProviderGenerationBudgetTest(unittest.IsolatedAsyncioTestCase):
+    async def test_output_budget_is_passed_only_when_provider_supports_it(self):
+        class Bounded:
+            def generate(self, prompt, *, max_output_tokens=1000):
+                return f'{prompt}:{max_output_tokens}'
+
+        class Legacy:
+            async def generate(self, prompt):
+                return prompt
+
+        self.assertEqual(await generate(Bounded(), 'answer', max_output_tokens=400), 'answer:400')
+        self.assertEqual(await generate(Legacy(), 'answer', max_output_tokens=400), 'answer')
 
 
 class LocalCodexFallbackTest(unittest.IsolatedAsyncioTestCase):

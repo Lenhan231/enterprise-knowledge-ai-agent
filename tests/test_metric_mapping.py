@@ -46,6 +46,13 @@ class MetricMappingTest(unittest.TestCase):
         prompt=build_metric_mapping_prompt('so sánh với năm ngoái')
         self.assertIn('ask a specific clarification in the same language as the user question',prompt)
 
+    def test_mapping_prompt_lists_stored_field_aliases_with_catalog_ids(self):
+        prompt=build_metric_mapping_prompt('Show stockout_flag for each product')
+        candidates=json.loads(prompt.split('Catalog candidates (selection summaries only): ',1)[1].split('\n',1)[0])
+        self.assertIn('stockout_flag',candidates['stockout_indicator']['source_fields'])
+        self.assertIn('stockout flag',candidates['stockout_indicator']['aliases'])
+        self.assertIn('not an unknown metric ID',prompt)
+
     def test_unknown_metric_dimension_and_filters_are_rejected(self):
         for field,value in [('metrics',['predicted_stock']),('dimensions',['region']),
                             ('filters',[{'field':'customer_id','operator':'eq','value':1}])]:
@@ -99,6 +106,27 @@ class MetricMappingTest(unittest.TestCase):
         from core.analytics.text_to_sql import build_sql_prompt
         self.assertIn('rank independently inside each month',
                       build_sql_prompt(question, metric_names={'stockout_days'}))
+
+    def test_inventory_rankings_preserve_requested_secondary_sort_keys(self):
+        from core.analytics.metric_mapping import compile_inventory_query
+        question = ('Với snapshot tồn kho ngày 2026-10-31, sản phẩm nào cần ưu tiên rà soát nguy cơ thiếu hàng? '
+                    'Xếp theo stockout_days giảm dần, rồi days_of_supply tăng dần; hiển thị tồn kho, lượng bán '
+                    'và các cờ tồn kho.')
+        payload = {'metrics':['stockout_days','days_of_supply','stock_on_hand','inventory_units_sold',
+                              'stockout_indicator','overstock_indicator','reorder_indicator'],
+                   'dimensions':['product_id','product_name'], 'representation':'product',
+                   'time':{'mode':'snapshot','start':'2026-10-31'},
+                   'ranking':{'metric':'stockout_days','direction':'desc','limit':200,
+                              'then':[{'field':'days_of_supply','direction':'asc'}]}}
+        mapping = decode_metric_mapping(json.dumps(payload), question)
+        sql, parameters = compile_inventory_query(mapping)
+        self.assertLess(sql.index('stockout_days DESC'), sql.index('days_of_supply ASC'))
+        encoded = json.dumps({'sql':sql,'parameters':parameters}, default=str)
+        validate_mapped_sql(decode_query_plan(encoded), mapping, question=question)
+        with self.assertRaises(MetricDefinitionError):
+            validate_mapped_sql(decode_query_plan(json.dumps({
+                'sql':sql.replace('days_of_supply ASC','days_of_supply DESC'), 'parameters':parameters}, default=str)),
+                mapping, question=question)
 
     def test_dates_and_domain_cannot_bypass_inventory_rules(self):
         with self.assertRaises(MetricDefinitionError):self.decode({'domain':'other'},question='Stock on hand latest snapshot')
@@ -195,13 +223,38 @@ class MappingAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(provider.generate.call_count,1)
         repository.execute_approved_query.assert_awaited_once()
 
-    async def test_bad_interpretation_stops_before_sql_and_execution(self):
+    async def test_bad_interpretation_falls_through_to_sql_planning_before_clarifying(self):
         from core.sql_agent.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest,VerifiedIdentity
         provider,repository=Mock(),AsyncMock()
-        provider.generate.return_value=json.dumps({'clarification':'Which snapshot and low-stock threshold do you mean?'})
+        provider.generate.side_effect=[
+            json.dumps({'clarification':'Which snapshot and low-stock threshold do you mean?'}),
+            json.dumps({'clarification':'Which inventory measure and snapshot do you mean?'})]
         result=await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
             question='Which styles need attention?',identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
         self.assertTrue(result.metadata['clarification_required'])
-        self.assertEqual(provider.generate.call_count,1)
+        self.assertEqual(provider.generate.call_count,2)
         repository.execute_approved_query.assert_not_awaited()
+
+    async def test_metric_formula_mismatch_runs_safe_sql_as_unverified(self):
+        from core.sql_agent.agent import SQLAnalyticsAgent
+        from core.models.agents import AgentRequest,VerifiedIdentity
+        provider,repository=Mock(),AsyncMock()
+        sql=('SELECT p.category AS category, AVG(i.stock_on_hand) AS average_stock '
+             'FROM commerce.inventory AS i JOIN commerce.products AS p ON p.product_id=i.product_id '
+             'WHERE i.snapshot_date=(SELECT MAX(j.snapshot_date) FROM commerce.inventory AS j) '
+             'GROUP BY 1 ORDER BY 1 LIMIT 200')
+        provider.generate.side_effect=[
+            json.dumps({'clarification':'Specify a product-level representation.'}),
+            json.dumps({'sql':sql,'parameters':[]}),
+            json.dumps({'sql':sql,'parameters':[]}),
+        ]
+        repository.execute_approved_query.return_value=[{'category':'Outerwear','average_stock':12.5}]
+        result=await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
+            question='What is average stock_on_hand by category at the latest snapshot?',
+            identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
+
+        self.assertTrue(result.metadata['ok'],result.answer)
+        self.assertEqual(result.metadata['metric_validation']['status'],'unverified')
+        self.assertEqual(provider.generate.call_count,3)
+        repository.execute_approved_query.assert_awaited_once_with(sql)

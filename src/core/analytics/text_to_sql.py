@@ -49,11 +49,14 @@ def build_sql_prompt(
     metric_names: set[str] | None = None, interpretation: dict | None = None, allowed_sources=None,
     schema_columns=None, approved_joins=APPROVED_JOINS, primary_keys=PRIMARY_KEYS,
     metric_evidence: dict[str, list[dict]] | None = None, relative_time_question: str | None = None,
+    original_question: str | None = None,
     dashboard_request: bool = False,
     dashboard_allow_multiple: bool = False,
     dashboard_clarifications: list[dict[str, str]] | None = None,
     schema_tables: set[str] | None = None,
 ) -> str:
+    scope_question = (question if not original_question or original_question.strip() == question.strip()
+                      else question + '\n' + original_question.strip())
     metrics = sorted(resolve_metric_names(question) if metric_names is None else metric_names)
     definitions = {name: get_metric_definition(name) for name in metrics}
     stored_fields = {}
@@ -82,9 +85,40 @@ def build_sql_prompt(
         + json.dumps({table: sorted(primary_keys[table]) for table in sorted(tables) if table in primary_keys}),
         '\nExplicit calculations with clear operands are allowed. Aliases must be unique within each SELECT scope; '
         'nested CTEs and subqueries have their own alias scope. Use typed DATE values for transaction periods; '
-        'avoid EXTRACT on untyped parameters. An indirect approved join path does not require user confirmation; '
-        'preserve source grain and validated keys.'
+        'avoid EXTRACT on untyped parameters. When the question states a formula, preserve its exact operands, '
+        'operators, denominator, date scope and requested output; do not substitute a catalog formula or use NULL '
+        'placeholders for a requested calculation. An indirect approved join path does not require user confirmation; '
+        'preserve source grain and validated keys. When independent fact sources share an approved dimension path, '
+        'aggregate each fact separately at the requested common key, then join those aggregates through the listed '
+        'dimension relationship; do not require a direct fact-to-fact join or ask the user to approve the shared key.'
+        '\nPostgreSQL flag columns are BOOLEAN: compare them with TRUE/FALSE, never 1/0. Return only scalar parameters '
+        'referenced by SQL placeholders, in placeholder order; the parameter list must have exactly one value per '
+        'placeholder and contain no more than 32 values.'
     ]
+    if re.search(r'\b(?:each|separately|individual criteria|separate criteria)\b|từng tiêu chí riêng|riêng từng tiêu chí', scope_question, re.I):
+        prompt_rules.append(
+            '\nFor an entity-candidate request with multiple criteria that must be shown separately, return one row '
+            'per entity and one output column per requested criterion; do not ask whether to use separate result sets '
+            'or invent a combined score. Apply ordering only when requested; otherwise use a stable entity-key order.'
+        )
+    if ('commerce.returns' in tables and 'commerce.orders' in tables
+            and re.search(r'orders? in (?:(?:the|that|this) )?(?:requested )?period|orders? within (?:(?:the|that|this) )?(?:requested )?period|đơn hàng trong kỳ|đơn trong kỳ', scope_question, re.I)
+            and re.search(r'returns?.*(?:through|until|by)|hoàn trả.*(?:đến|tới)', scope_question, re.I)):
+        prompt_rules.append(
+            '\nWhen returns are requested for a sales-order cohort through a later return-event cutoff, the return '
+            'aggregation MUST join returns to orders and apply BOTH scopes: orders.order_date must match the '
+            'specified sales cohort exactly, and returns.return_date must match the separate event cutoff. The return-event cutoff '
+            'never replaces the sales-order cohort. Exclude returns for orders outside that cohort. Aggregate returned '
+            'quantities independently by the requested entity before joining to sales or inventory aggregates.'
+        )
+    if ('commerce.inventory' in tables and 'commerce.products' in tables
+            and re.search(r'inventory|stock|tồn kho', question, re.I)
+            and re.search(r'từng tiêu chí riêng|riêng từng tiêu chí|each criterion separately|separate criteria', scope_question, re.I)):
+        prompt_rules.append(
+            '\nWhen inventory is one of the separately requested product criteria and no exact inventory columns are '
+            'named, include the selected snapshot_date, stock_on_hand, days_of_supply, and recorded stockout/overstock '
+            'flags in the final output as available. Do not use inventory only as a source for another calculation.'
+        )
     if dashboard_request:
         prompt_rules.append(
             '\nDashboard data request: interpret the user description as data requirements: sources, metrics, '
@@ -218,7 +252,8 @@ def build_sql_prompt(
           'For independent boolean conditional counts, measure_filters maps each count alias to '
           '{"column": "recorded_flag_column", "equals": true}. Each count uses its own FILTER; '
           'do not intersect those independent filters in WHERE. Do not add unrequested measures to columns. '
-          'Metric formulas, periods and units still come from canonical metric contracts; ontology context grants no database access.'
+          'Use canonical metric contracts for recognized metrics. When the user supplies an explicit custom formula, '
+          'preserve it as a query calculation and do not claim it is canonical. Ontology context grants no database access.'
         + ('\nStored projection fields: '+json.dumps(stored_fields)+
            '. Select these directly from the inventory alias. Do not aggregate or GROUP BY in product representation. '
            'Product identity may use inventory.product_id or the joined products.product_id.\n' if stored_fields else '')
@@ -236,6 +271,11 @@ def build_sql_prompt(
                                     max_rows=MAX_RESULT_ROWS)
            if validation_error is not None else "")
     )
+    if original_question and original_question.strip() != question.strip():
+        prompt += ('\nThe original user request is authoritative for every applicable formula, date range, cohort, '
+                   'event cutoff, criterion and output constraint. The focused SQL task may narrow which data to '
+                   'retrieve, but must preserve the original request scope. Original request: '
+                   + original_question.strip())
     excerpts = {
         name: [
             {"source": item.get("document_name"), "content": str(item.get("content", ""))[:2_000]}

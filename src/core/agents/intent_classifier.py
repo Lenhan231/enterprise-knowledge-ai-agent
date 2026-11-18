@@ -11,7 +11,8 @@ from core.models.intent import IntentResult
 from core.prompts.intent import INTENT_CLASSIFIER_PROMPT
 
 
-JEV_ROUTE_THRESHOLD = 0.8
+JEV_ROUTE_THRESHOLD = 0.5
+JEV_HISTORY_THRESHOLD = 0.8
 JEV_ROUTES = {'knowledge', 'sql', 'plan_required'}
 JEV_TABLE_LIMIT = 5
 
@@ -34,18 +35,35 @@ def classify_jev_route(question: str, approved_schema=None, history=()):
             'approved_schema': schema,
         },
         'questions': {
-            'route': {
+            'knowledge_required': {
                 'type': 'choice',
-                'instructions': ('Choose a direct specialist route only when one tool alone can answer the current '
-                                 'request. Use plan_required when multiple tools may be needed, the request needs '
-                                 'clarification, or no direct specialist route is clear. Do not choose SQL for '
-                                 'policy/document-only questions. Consider recent history when interpreting '
-                                 'follow-ups, but do not treat history as fresh evidence.'),
+                'instructions': ('Decide independently whether searching authorized enterprise documents is needed '
+                                 'to answer the current request. Select yes when policy, operating guidance, or '
+                                 'document evidence would improve or ground the answer, including a request for a '
+                                 'business recommendation or action based on measured results. In those cases, SQL '
+                                 'may establish what happened while Knowledge supplies applicable constraints or '
+                                 'guidance. Examples include asking which products need replenishment review, which '
+                                 'promotion candidate to consider, or what action to take based on sales, margin, '
+                                 'inventory, returns or delivery evidence. Select no for a purely descriptive ranking '
+                                 'that requests no action, policy or operating guidance. Do not suppress this tool '
+                                 'because SQL may also be needed.'),
                 'criteria': {
-                    'knowledge': 'Authorized enterprise documents alone can answer the request.',
-                    'sql': 'Approved structured data alone can answer the request.',
-                    'plan_required': ('Both document evidence and structured data may be needed, the request '
-                                      'needs clarification, or another route must be planned.'),
+                    'yes': ('Knowledge evidence is needed or useful, especially to ground a requested business '
+                            'recommendation, action, or policy-constrained decision; use it alongside SQL when the '
+                            'question asks what the business should prioritize or review.'),
+                    'no': ('Knowledge evidence is not needed for a purely descriptive calculation, ranking or '
+                           'comparison with no requested action or policy interpretation.'),
+                },
+            },
+            'sql_required': {
+                'type': 'choice',
+                'instructions': ('Decide independently whether querying the approved structured commerce data is '
+                                 'needed to answer the current request. Select yes when the user asks about measured '
+                                 'business data, comparisons, rankings, counts, or trends. Do not suppress this tool '
+                                 'because Knowledge may also be needed.'),
+                'criteria': {
+                    'yes': 'Read-only SQL evidence is needed or useful for the current request.',
+                    'no': 'Structured data evidence is not needed for the current request.',
                 },
             },
             'history_required': {
@@ -65,20 +83,36 @@ def classify_jev_route(question: str, approved_schema=None, history=()):
     with urllib.request.urlopen(request, timeout=10) as response:
         payload = json.loads(response.read())
     answers = payload.get('answers', {})
-    route = answers.get('route', {})
+    knowledge_answer = answers.get('knowledge_required', {})
+    sql_answer = answers.get('sql_required', {})
     history_answer = answers.get('history_required', {})
-    probabilities = route.get('probabilities', {})
-    choice = route.get('choice')
-    probability = float(probabilities.get(choice, -1))
-    history_choice = history_answer.get('choice')
-    history_probability = float(history_answer.get('probabilities', {}).get(history_choice, -1))
-    if (route.get('type') != 'choice' or choice not in JEV_ROUTES
-            or not 0 <= probability <= 1
-            or history_answer.get('type') != 'choice' or history_choice not in {'yes', 'no'}
-            or not 0 <= history_probability <= 1):
+    tool_probabilities = {}
+    for tool, answer in (('knowledge', knowledge_answer), ('sql', sql_answer)):
+        if not isinstance(answer, dict):
+            raise ValueError('Jev returned an invalid tool-routing decision')
+        try:
+            probability = float(answer.get('probabilities', {}).get('yes', -1))
+        except (AttributeError, TypeError, ValueError):
+            probability = -1
+        if answer.get('type') != 'choice' or not 0 <= probability <= 1:
+            raise ValueError('Jev returned an invalid tool-routing decision')
+        tool_probabilities[tool] = probability
+    selected_tools = [tool for tool, probability in tool_probabilities.items()
+                      if probability > JEV_ROUTE_THRESHOLD]
+    route = selected_tools[0] if len(selected_tools) == 1 else 'plan_required'
+    confidence = tool_probabilities[selected_tools[0]] if len(selected_tools) == 1 else 0.0
+    if not isinstance(history_answer, dict):
         raise ValueError('Jev returned an invalid tool-routing decision')
-    return {'route': choice, 'confidence': probability,
-            'history_required': not (history_choice == 'no' and history_probability >= JEV_ROUTE_THRESHOLD),
+    history_choice = history_answer.get('choice')
+    try:
+        history_probability = float(history_answer.get('probabilities', {}).get(history_choice, -1))
+    except (AttributeError, TypeError, ValueError):
+        history_probability = -1
+    if (not isinstance(history_answer, dict) or history_answer.get('type') != 'choice'
+            or history_choice not in {'yes', 'no'} or not 0 <= history_probability <= 1):
+        raise ValueError('Jev returned an invalid tool-routing decision')
+    return {'route': route, 'selected_tools': selected_tools, 'confidence': confidence,
+            'history_required': not (history_choice == 'no' and history_probability >= JEV_HISTORY_THRESHOLD),
             'model': payload.get('model')}
 
 

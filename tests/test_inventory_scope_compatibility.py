@@ -69,10 +69,11 @@ class InventoryScopeCompatibilityTest(unittest.IsolatedAsyncioTestCase):
         pool=AsyncMock()
         discovered={'tables':{table:APPROVED_COLUMNS[table] for table in TABLES},
                     'primary_keys':{},'joins':frozenset(),'date_columns':frozenset()}
-        with patch.dict(os.environ,{'SQL_INVENTORY_ONLY':'true','ANALYTICS_DATABASE_URL':'postgresql://reader:unused@localhost/test'}), \
-             patch('core.database.commerce_repository.asyncpg.create_pool',new=AsyncMock(return_value=pool)), \
+        with patch.dict(os.environ,{'SQL_INVENTORY_ONLY':'true','ANALYTICS_DATABASE_URL':'postgresql://reader:unused@localhost:6543/test'}), \
+             patch('core.database.commerce_repository.asyncpg.create_pool',new=AsyncMock(return_value=pool)) as create_pool, \
              patch('core.database.commerce_repository.discover_schema',new=AsyncMock(return_value=discovered)), \
              patch('core.database.commerce_repository.verify_analytics_role',new=AsyncMock()) as verify:
             repo=await create_repository_from_env()
         self.assertEqual(set(repo.allowed_sources),TABLES)
         self.assertEqual(set(verify.await_args.kwargs['allowed_sources']),TABLES)
+        self.assertEqual(create_pool.await_args.kwargs['statement_cache_size'], 0)

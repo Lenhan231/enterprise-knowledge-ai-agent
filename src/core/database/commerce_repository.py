@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 import asyncio
 from typing import Any
+from urllib.parse import urlsplit
 
 from core.analytics.text_to_sql import (
     INVENTORY_SOURCES, inventory_scope_enabled, validate_commerce_sql, validate_sql_security,
@@ -158,11 +159,17 @@ async def create_repository_from_env() -> CommerceRepository:
     if not database_url:
         raise RuntimeError("Set ANALYTICS_DATABASE_URL to a least-privilege commerce reader")
 
+    pool_options = {}
+    # Supabase's transaction pooler (6543) may route each transaction to a new
+    # backend, so asyncpg's named prepared statements cannot be reused safely.
+    if urlsplit(database_url).port == 6543:
+        pool_options['statement_cache_size'] = 0
     pool = await asyncpg.create_pool(
         dsn=database_url,
         min_size=1,
         max_size=5,
         command_timeout=DEFAULT_TIMEOUT_MS / 1_000,
+        **pool_options,
     )
     try:
         schemas = configured_schemas(os.getenv('ANALYTICS_SCHEMAS'))

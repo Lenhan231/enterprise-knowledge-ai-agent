@@ -23,6 +23,7 @@ from core.dashboards.generation import SQLResponse, InventoryResponse, CountResp
 class CountResponse(Exception):
     def __init__(self, response):
         self.response = response
+        self.dashboard_count_response = True
 
 
 class DashboardSQLAgent(SQLAnalyticsAgent):

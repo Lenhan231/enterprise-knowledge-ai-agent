@@ -118,6 +118,32 @@ def assistant(repository, provider):
 
 
 class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
+    async def test_table_selection_and_prompt_keep_the_original_auto_scope(self):
+        task_question = 'Return product sales and return rate.'
+        original_question = (
+            'Campaign candidates by revenue, margin and inventory snapshot 2026-10-31; include returns '
+            'through 2026-11-13 for orders in that period.'
+        )
+        sql = 'SELECT p.product_id FROM commerce.products AS p LIMIT 10'
+        provider = FakeProvider([plan(sql)])
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        selected = {'commerce.orders', 'commerce.order_items', 'commerce.products',
+                    'commerce.returns', 'commerce.inventory'}
+
+        with patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': selected, 'required_tables': selected, 'candidate_tables': selected}) as select_tables:
+            await agent.run_payload(AgentRequest(
+                question=task_question,
+                metadata={'_original_question': original_question},
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertIn(original_question, select_tables.call_args.args[0])
+        self.assertIn(original_question, provider.prompts[0])
+        self.assertIn('orders.order_date must match the specified sales cohort exactly', provider.prompts[0])
+        self.assertIn('commerce.inventory:', provider.prompts[0])
+
     def test_recent_months_revenue_plan_accepts_vietnamese_gan_day(self):
         plan = _completed_months_revenue_plan(
             "doanh thu 5 tháng gần đây", {"revenue"}, today=date(2026, 11, 15)
@@ -138,8 +164,9 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
     async def test_explicit_order_item_formula_retries_unnecessary_join_clarification(self):
         question = (
             "Trong 90 ngày kết thúc tại MAX(orders.order_date), tìm 5 vùng (region) có gross profit cao nhất. "
-            "Tính revenue từ từng order_item sau discount_amount, trừ refund_amount; COGS theo quantity "
-            "thực giữ lại sau returns. Đối soát payments với order_items."
+            "Tính doanh thu sau giảm giá = quantity × unit_price − discount_amount; gross profit là "
+            "doanh thu sau giảm giá trừ giá vốn; COGS theo quantity thực giữ lại sau returns. "
+            "Đối soát với payments và trình bày từng tiêu chí riêng."
         )
         definitions = {name: get_metric_definition(name) for name in resolve_metric_names(question)}
         tables = relevant_schema_tables(question, definitions, APPROVED_COLUMNS)
@@ -151,7 +178,7 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
             "JOIN commerce.geography AS g ON o.zip=g.zip GROUP BY 1 ORDER BY 2 DESC LIMIT 5"
         )
         provider = FakeProvider([
-            json.dumps({"clarification": "Please confirm whether the approved geography join is acceptable."}),
+            json.dumps({"clarification": "Please confirm whether each measure needs its own result set."}),
             plan(sql),
         ])
         repository = FakeRepository()
@@ -170,6 +197,7 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result["query_status"], "executed")
         self.assertEqual(len(provider.prompts), 2)
         self.assertIn('Requested metrics: {"metrics": []}', provider.prompts[0])
+        self.assertIn('do not ask for clarification', provider.prompts[1])
         repository.execute_approved_query.assert_awaited_once_with(sql)
 
     async def test_vietnamese_bridge_clarification_retries_through_orders(self):
@@ -821,8 +849,9 @@ ORDER BY m.sessions DESC LIMIT 20""",
         groq.generate = Mock(side_effect=RuntimeError("request failed"))
         agent = SQLAnalyticsAgent(FakeRepository(), llm=groq, inventory_only=False)
         with patch.object(CloudflareProvider, "__init__", side_effect=AssertionError("No cross-provider fallback")) as cloudflare:
-            with self.assertRaises(RuntimeError):
-                await agent._generate_sql("same prompt")
+            with patch.dict(os.environ, {"CODEX_CLI_SQL_FALLBACK": "false"}):
+                with self.assertRaises(RuntimeError):
+                    await agent._generate_sql("same prompt")
             cloudflare.assert_not_called()
         groq.close()
 
@@ -853,6 +882,19 @@ ORDER BY m.sessions DESC LIMIT 20""",
 
         self.assertIs(selected, provider)
         groq.assert_called_once_with(model="openai/gpt-oss-20b")
+
+    async def test_sql_provider_can_select_authenticated_local_codex_cli(self):
+        from core.agents.runtime import CodexCLIProvider
+
+        agent = SQLAnalyticsAgent(FakeRepository(), inventory_only=False)
+        with patch.dict(os.environ, {"SQL_LLM_PROVIDER": "codex_cli"}, clear=False), \
+                patch("core.llm.groq_provider.GroqProvider") as groq, \
+                patch("core.llm.Cloudflare_provider.CloudflareProvider") as cloudflare:
+            selected = agent._provider()
+
+        self.assertIsInstance(selected, CodexCLIProvider)
+        groq.assert_not_called()
+        cloudflare.assert_not_called()
 
     async def test_sql_defaults_to_groq_even_if_cloudflare_credentials_exist(self):
         provider = FakeProvider([])

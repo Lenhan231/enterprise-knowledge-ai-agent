@@ -157,9 +157,9 @@ COMMERCE_UNAVAILABLE_DIMENSIONS = {
         "supplier lead time": {"columns": ("supplier_lead_time",), "aliases": ("supplier lead time", "lead time nhà cung cấp", "thời gian cung ứng")},
     },
     "nationwide_logistics": {
-        "carrier": {"columns": ("carrier", "carrier_id", "delivery_provider"), "aliases": ("carrier", "delivery provider", "shipping provider", "đơn vị vận chuyển", "nhà vận chuyển")},
+        "carrier": {"columns": ("carrier", "carrier_id", "delivery_provider"), "aliases": ("carrier", "delivery provider", "shipping provider", "đơn vị vận chuyển", "nhà vận chuyển", "hãng vận chuyển", "hãng giao hàng", "nhà giao hàng")},
         "warehouse/origin": {"columns": ("warehouse", "origin", "origin_warehouse"), "aliases": ("warehouse", "origin", "origin warehouse", "kho xuất phát", "kho hàng")},
-        "route/lane": {"columns": ("route", "lane", "shipping_route"), "aliases": ("route", "lane", "shipping route", "tuyến giao hàng", "tuyến vận chuyển")},
+        "route/lane": {"columns": ("route", "lane", "shipping_route"), "aliases": ("route", "lane", "shipping route", "tuyến giao", "tuyến giao hàng", "tuyến vận chuyển")},
         "capacity": {"columns": ("capacity", "route_capacity", "delivery_capacity"), "aliases": ("capacity", "route capacity", "delivery capacity", "năng lực giao hàng", "công suất")},
         "promised service level": {"columns": ("promised_sla", "service_level_agreement"), "aliases": ("promised sla", "service level agreement", "delivery sla", "cam kết giao hàng", "thời hạn cam kết")},
     },
@@ -169,6 +169,10 @@ COMMERCE_UNAVAILABLE_DIMENSIONS = {
 def unavailable_commerce_dimensions(question: str, domain: str, available_columns: set[str]) -> list[str]:
     """Find missing dimensions used to filter or group SQL, not fields named as decision inputs."""
     text = question.casefold()
+    schema_availability_question = bool(re.search(
+        r'\b(?:schema|data|dataset|fields?|columns?)\b.*\b(?:support|contain|include|available|enough|rank|choose)\b'
+        r'|\b(?:có thể|đủ dữ liệu|schema hiện có|schema commerce)\b', text
+    ))
     unavailable = []
     for dimension, definition in COMMERCE_UNAVAILABLE_DIMENSIONS.get(domain, {}).items():
         if set(definition["columns"]).intersection(available_columns):
@@ -178,7 +182,7 @@ def unavailable_commerce_dimensions(question: str, domain: str, available_column
                 rf"\b(?:by|per|each|across|between|among|for each|which|theo|mỗi|từng|giữa)\s+"
                 rf"(?:the\s+|các\s+)?{re.escape(alias)}s?\b",
                 text,
-            )
+            ) or (schema_availability_question and re.search(rf"(?<!\w){re.escape(alias)}(?!\w)", text))
             for alias in definition["aliases"]
         )
         if requested_as_slice:

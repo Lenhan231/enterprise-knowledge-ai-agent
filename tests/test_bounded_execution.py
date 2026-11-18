@@ -7,8 +7,10 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from core.agents.router import AgentRouter
+from core.agents.execution import Execution
 from core.agents.runtime import run_sync
 from core.models.agents import AgentRequest, AgentResult, Evidence, VerifiedIdentity
+from core.models.agent_plan import AgentPlan
 
 IDENTITY = VerifiedIdentity(subject='analyst', permissions={'analytics:read', 'documents:read'}, document_roles={'admin'})
 
@@ -96,6 +98,22 @@ class BoundedExecutionTest(unittest.IsolatedAsyncioTestCase):
         trace = result.metadata['task_trace'][0]
         self.assertEqual(trace['error_type'], 'SQLValidationError')
         self.assertEqual(trace['error_detail'], 'JOIN does not match an approved relationship.')
+
+    async def test_sql_execution_uses_its_90_second_task_budget(self):
+        class SlowSql(FakeAgent):
+            async def run(self, request):
+                await asyncio.sleep(0.05)
+                return source_result('analytics', rows=[{'count': 1}])
+
+        plan = AgentPlan(objective='Count orders', tasks=[task('s', 'sql', 'Count orders')])
+        execution = Execution(AgentRequest(question='Count orders', identity=IDENTITY),
+                              {'knowledge': FakeAgent(None), 'sql': SlowSql(None)})
+        # A short default deadline models the generic 60s cap; SQL explicitly gets 90s.
+        with patch('core.agents.decision_support.execution.remaining',
+                   side_effect=lambda default=60: 0.2 if default == 90 else 0.02):
+            await execution.run(plan)
+
+        self.assertEqual(execution.outcomes['s'].status, 'complete')
 
     async def test_mixed_request_is_decomposed_and_identity_preserved_for_both_aliases(self):
         tasks = [task('k', 'knowledge', 'Stockout approval policy'), task('s', 'sql', 'Count stockouts in 2022')]

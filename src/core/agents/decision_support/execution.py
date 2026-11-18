@@ -136,7 +136,8 @@ class Execution:
                 task_budget = 90 if task.agent == 'sql' else 60
                 token = deadline.set(time.monotonic() + remaining(task_budget))
                 try:
-                    result = await asyncio.wait_for(self.agents[task.agent].run(subrequest), remaining())
+                    result = await asyncio.wait_for(
+                        self.agents[task.agent].run(subrequest), remaining(task_budget))
                     outcome.result = AgentResult.model_validate(result)
                     outcome.status = outcome_status(outcome.result)
                     outcome.error_type = outcome.result.metadata.get('error_type')

@@ -353,6 +353,22 @@ class MetricAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn("Canonical metric definitions", llm.prompts[-1])
         self.assertIn("currency", " ".join(result.metadata["limitations"]).lower())
 
+    async def test_unverified_metric_skips_summary_generation(self):
+        wrong = json.dumps({
+            "sql": "SELECT SUM(s.revenue) AS gross_profit FROM commerce.sales AS s LIMIT 1",
+            "metrics": {"gross_profit": {"formula": "SUM(revenue)"}},
+        })
+        llm = self.provider(wrong, wrong)
+        repository = AsyncMock()
+        repository.execute_approved_query.return_value = [{"gross_profit": 200}]
+
+        result = await AnalyticsAgent(SQLAnalyticsAgent(repository, llm=llm)).run(self.request("Gross profit"))
+
+        self.assertEqual(result.metadata["metric_validation"]["status"], "unverified")
+        self.assertIn("See the result rows", result.answer)
+        self.assertEqual(len(llm.prompts), 2)  # initial SQL plus one repair, no summary call
+        repository.execute_approved_query.assert_awaited_once()
+
     async def test_null_aggregate_is_explained_without_claiming_no_data(self):
         year = date.today().year
         query = json.dumps({"sql": "SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s "

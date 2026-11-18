@@ -255,10 +255,24 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(history[0]['clarification_plan'], clarification_plan.model_dump_json())
         self.assertEqual(_resolve_clarification_choice('1', history)[:3],
                          (original, 1, 'Tính SUM(products.cogs × quantity)'))
-        for reply in ('một', 'phương án một', 'lựa chọn số 1', 'one'):
+        option_replies = (
+            ('một', 1, 'Tính SUM(products.cogs × quantity)'),
+            ('phương án một', 1, 'Tính SUM(products.cogs × quantity)'),
+            ('lựa chọn số 1', 1, 'Tính SUM(products.cogs × quantity)'),
+            ('one', 1, 'Tính SUM(products.cogs × quantity)'),
+            ('hai', 2, 'Bỏ COGS và gross margin'),
+            ('phương án hai', 2, 'Bỏ COGS và gross margin'),
+            ('lựa chọn số 2', 2, 'Bỏ COGS và gross margin'),
+            ('two', 2, 'Bỏ COGS và gross margin'),
+            ('ba', 3, 'Hiển thị COGS toàn công ty riêng'),
+            ('phương án ba', 3, 'Hiển thị COGS toàn công ty riêng'),
+            ('lựa chọn số 3', 3, 'Hiển thị COGS toàn công ty riêng'),
+            ('three', 3, 'Hiển thị COGS toàn công ty riêng'),
+        )
+        for reply, number, option in option_replies:
             with self.subTest(reply=reply):
                 self.assertEqual(_resolve_clarification_choice(reply, history)[:3],
-                                 (original, 1, 'Tính SUM(products.cogs × quantity)'))
+                                 (original, number, option))
         self.assertIsNone(_resolve_clarification_choice('4', history))
 
         request = AgentRequest(question='1', identity=IDENTITY,

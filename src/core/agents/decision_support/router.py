@@ -36,14 +36,15 @@ class _State(TypedDict, total=False):
 
 
 def _resolve_clarification_choice(reply: str, history: list):
+    if not history:
+        return None
     selected = re.fullmatch(
         r"\s*(?:(?:option|choice|lựa chọn|phương án|chọn)\s*(?:số\s*)?)?"
         r"(1|2|3|một|mot|hai|ba|one|two|three)[.)]?\s*", reply, re.I)
-    if not selected or not history:
-        return None
-    number = {'1': 1, 'một': 1, 'mot': 1, 'one': 1,
-              '2': 2, 'hai': 2, 'two': 2,
-              '3': 3, 'ba': 3, 'three': 3}[selected.group(1).casefold()]
+    number = ({'1': 1, 'một': 1, 'mot': 1, 'one': 1,
+               '2': 2, 'hai': 2, 'two': 2,
+               '3': 3, 'ba': 3, 'three': 3}[selected.group(1).casefold()]
+              if selected else None)
     candidates = [history[-1]]
     if len(history) > 1 and str(history[-1].get('question', '')).strip() == reply.strip():
         candidates.insert(0, history[-2])
@@ -52,9 +53,17 @@ def _resolve_clarification_choice(reply: str, history: list):
             int(index): option.strip()
             for index, option in re.findall(r"(?m)^\s*([1-3])[.)]\s+(.+?)\s*$", turn.get('clarification', ''))
         }
+        choice_number = number
+        if choice_number is None:
+            answer = re.sub(r"\W+", "", reply.casefold())
+            matches = [index for index, option in choices.items()
+                       if re.sub(r"\W+", "", option.casefold()) == answer]
+            if len(matches) != 1:
+                continue
+            choice_number = matches[0]
         scope = turn.get('scope') or turn.get('question')
-        if number in choices and isinstance(scope, str) and scope.strip():
-            return scope.strip(), number, choices[number], turn
+        if choice_number in choices and isinstance(scope, str) and scope.strip():
+            return scope.strip(), choice_number, choices[choice_number], turn
     return None
 
 

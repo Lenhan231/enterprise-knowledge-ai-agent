@@ -297,6 +297,42 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         classifier.assert_not_called()
         planner.assert_not_awaited()
 
+    async def test_binary_clarification_reply_restores_scope_without_replanning(self):
+        original = 'Lấy snapshot tồn kho mới nhất của từng sản phẩm và tính số lượng bán trong 30 ngày trước snapshot.'
+        plan = AgentPlan.model_validate({
+            'objective': original,
+            'tasks': [{'id': 's', 'agent': 'sql', 'question': original}],
+        })
+        turn = {
+            'question': original,
+            'scope': original,
+            'clarification': 'Bạn muốn dùng snapshot mới nhất của mỗi sản phẩm?\n\n1. Có\n2. Không',
+            'clarification_plan': plan.model_dump_json(),
+        }
+        router = AgentRouter(None, None, None, llm=FakeProvider([]))
+        request = AgentRequest(question='có', identity=IDENTITY,
+                               conversation_id='binary-clarification-session')
+        execution = Mock()
+        execution.request = request
+        with (
+            patch('core.agents.decision_support.router.classify_jev_route') as classifier,
+            patch('core.agents.decision_support.router.plan_request',
+                  new=AsyncMock()) as planner,
+        ):
+            state = await router._plan({
+                'request': request, 'history': [turn], 'execution': execution,
+                'report_headings': None,
+            })
+
+        self.assertEqual(state['plan'].objective, original)
+        self.assertIn('User clarification choice (1): Có', state['plan'].tasks[0].question)
+        self.assertIn(original, state['plan'].tasks[0].question)
+        classifier.assert_not_called()
+        planner.assert_not_awaited()
+        from core.agents.decision_support.router import _resolve_clarification_choice
+        self.assertEqual(_resolve_clarification_choice('không', [turn])[:3],
+                         (original, 2, 'Không'))
+
     async def test_sql_outage_fallback_still_uses_auto_response_layer(self):
         question = 'doanh thu năm 2025'
         router = AgentRouter(None, None, FakeAgent(source_result('analytics', rows=[{'revenue': 123}])),

@@ -32,11 +32,23 @@ def load_settings():
             os.environ[name] = value.strip()
 
 
+class ClaimCheckRateLimited(Exception):
+    pass
+
+
+def rate_limited(row):
+    """The claim check swallows Groq rate limits and reports status 'unavailable', reason 'RateLimitError'."""
+    return "error" in row or str((row.get("verification") or {}).get("reason")) == "RateLimitError"
+
+
 def main(set_name, out_path, *only):
     load_settings()
     from openai import RateLimitError
     from core.rag.rag_service import RAGService
     items = json.load(open(ROOT / f"artifacts/evaluation/vietstyle-v3/{set_name}-v3.json", encoding="utf-8"))["items"]
+    if Path(out_path).exists():  # a claim check cut short by a rate limit is not a result: drop it so it is redone
+        rows = [l for l in open(out_path, encoding="utf-8") if l.strip() and not rate_limited(json.loads(l))]
+        Path(out_path).write_text("".join(rows), encoding="utf-8")
     done = {json.loads(l)["id"] for l in open(out_path, encoding="utf-8")} if Path(out_path).exists() else set()
     rag = RAGService()
     config = {name: os.environ.get(name) for name in SETTINGS}
@@ -53,8 +65,10 @@ def main(set_name, out_path, *only):
                             item["question"], decompose=os.environ.get("KNOWLEDGE_MULTIQUERY_ENABLED") == "1",
                             verify_claims=os.environ.get("KNOWLEDGE_CLAIM_VERIFICATION_ENABLED") == "1",
                             roles=[item["role"]], retrieval_method="translated_hybrid_rerank")
-                        break
-                    except RateLimitError:
+                        if not rate_limited({"verification": result.verification.model_dump() if result.verification else None}):
+                            break
+                        raise ClaimCheckRateLimited()
+                    except (RateLimitError, ClaimCheckRateLimited):
                         print(item["id"], "rate limited; pausing 10 minutes", flush=True)
                         time.sleep(600)
                 else:

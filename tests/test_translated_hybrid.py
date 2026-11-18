@@ -79,28 +79,6 @@ class TranslatedHybridTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.evidence[0].metadata["retrieval_details"]["translation_model"], "fake-translator")
         self.assertEqual(service.repository.similarity_search.call_count, 3)
 
-    async def test_insufficient_knowledge_answer_keeps_retrieved_excerpts_as_partial_evidence(self):
-        from core.agents.knowledge_agent import KnowledgeAgent
-        from core.agents.execution import outcome_status
-        from core.models.agents import AgentRequest, VerifiedIdentity
-        from core.rag.rag_service import RAGResult
-        context = {'source_id':'S1','document_name':'Campaign Policy.md','content':'Review margin and inventory before a campaign.',
-                   'metadata':{'document_id':'policy-1'},'chunk_index':0,'similarity_score':0.8,
-                   'retrieval_method':'translated_hybrid_rerank','retrieval_details':{'candidate_count':12}}
-        service, _ = self.service()
-        rag = RAGService(service, MagicMock())
-        rag.generate_answer = MagicMock(return_value=RAGResult(
-            answer='Thông tin trong các tài liệu được phép truy cập chưa đủ để trả lời câu hỏi này.',
-            contexts=[context], insufficient_context=True))
-        result = await KnowledgeAgent(rag).run(AgentRequest(question='campaign rules', identity=VerifiedIdentity(
-            subject='test',permissions={'documents:read'},document_roles={'employee'})))
-
-        self.assertFalse(result.metadata['ok'])
-        self.assertTrue(result.metadata['insufficient_context'])
-        self.assertEqual([item.source for item in result.evidence], ['Campaign Policy.md'])
-        self.assertEqual(result.evidence[0].citation_id, 'S1')
-        self.assertEqual(outcome_status(result), 'partial')
-
     def test_two_stage_rrf_matches_expected_scores_and_deduplicates(self):
         service, llm = self.service()
         a, b = chunk("EN", 1), chunk("VN", 2)

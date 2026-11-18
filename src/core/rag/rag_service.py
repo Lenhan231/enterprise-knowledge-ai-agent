@@ -140,20 +140,7 @@ class RAGService:
             self.retrieval_service = RemoteRetrievalService()
         else:
             self.retrieval_service = RetrievalService()
-        self.llm = llm or self._default_llm()
-
-    @staticmethod
-    def _default_llm():
-        """Give Knowledge its own configurable model and avoid sharing planner/SQL quotas by default."""
-        provider = os.getenv('KNOWLEDGE_LLM_PROVIDER', 'auto').strip().casefold()
-        cloudflare_ready = bool(os.getenv('CLOUDFLARE_ACCOUNT_ID') and
-                                (os.getenv('CLOUDFLARE_API_TOKEN') or os.getenv('CLOUDFLARE_WORKERS_API')))
-        if provider not in {'auto', 'cloudflare', 'groq'}:
-            raise ValueError('KNOWLEDGE_LLM_PROVIDER must be auto, cloudflare or groq')
-        if provider == 'cloudflare' or (provider == 'auto' and cloudflare_ready):
-            from core.llm.Cloudflare_provider import CloudflareProvider
-            return CloudflareProvider(model=os.getenv('KNOWLEDGE_CLOUDFLARE_MODEL', '@cf/openai/gpt-oss-20b'))
-        return GroqProvider(model=os.getenv('KNOWLEDGE_GROQ_MODEL') or None)
+        self.llm = llm or GroqProvider()
 
     def retrieve_contexts(
         self,

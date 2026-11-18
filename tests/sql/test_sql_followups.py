@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 import unittest
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'src'))
 from core.analytics.metric_mapping import build_metric_mapping_prompt, compile_inventory_query, decode_sql_turn
@@ -117,6 +117,20 @@ class SQLPatchTest(unittest.TestCase):
         self.assertEqual(mapping.filters[0].value,'blue')
         self.assertEqual(mapping.ranking.metric,'stock_on_hand')
         self.assertEqual(mapping.ranking.limit,3)
+
+    def test_ranking_direction_followup_keeps_existing_secondary_order(self):
+        accepted = {'metrics':['stockout_days','days_of_supply'],
+                    'dimensions':['product_id','product_name'], 'representation':'product',
+                    'time':{'mode':'snapshot','start':'2026-10-31'},
+                    'ranking':{'metric':'stockout_days','direction':'desc','limit':None,
+                               'then':[{'field':'days_of_supply','direction':'asc'}]}}
+        mapping, used = decode_sql_turn(json.dumps({'action':'followup',
+            'changes':{'ranking':{'direction':'asc'}}}), 'Reverse the primary ordering',
+            {'accepted':accepted,'pending':None})
+        self.assertTrue(used)
+        self.assertEqual(mapping.ranking.direction,'asc')
+        self.assertEqual([item.model_dump() for item in mapping.ranking.then],
+                         [{'field':'days_of_supply','direction':'asc'}])
 
     def test_filter_replacement_removal_clear_and_ranking_removal(self):
         state=copy.deepcopy(STATE)
@@ -286,6 +300,26 @@ class OriginalQuestionContextTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn('cao hơn', answer.answer)
         self.assertFalse(answer.metadata['fallback'])
 
+    async def test_codex_cli_synthesis_accepts_case_insensitive_citation_ids(self):
+        question = 'Ứng viên sản phẩm theo doanh thu tùy chỉnh là gì?'
+        task = AgentTask(id='sql', agent='sql', question=question)
+        plan = AgentPlan(objective=question, tasks=[task])
+        result = AgentResult(answer='Query completed.', agent='sql_analytics',
+            evidence=[Evidence(citation_id='S1', source_type='database', source='commerce.order_items')],
+            data={'rows': [{'product_id': 609, 'revenue_after_discount': '191848.89'}]},
+            metadata={'ok': True, 'metric_validation': {'status': 'unverified'}})
+        execution = SimpleNamespace(
+            outcomes={'sql': TaskOutcome(task, 'complete', result)}, trace=[], invocations=1)
+        with patch('core.agents.decision_support.response.generate_with_codex_cli', new=AsyncMock(
+                return_value=json.dumps({'answer': 'Sản phẩm 609 có doanh thu 191848.89 [s1].',
+                                         'used_tasks': ['sql']}))):
+            answer = await assemble_response(
+                AgentRequest(question=question, identity=IDENTITY), plan, execution, 'codex_cli')
+
+        self.assertIn('[S1]', answer.answer)
+        self.assertIn('191848.89', answer.answer)
+        self.assertFalse(answer.metadata['fallback'])
+
     async def test_year_comparison_uses_grounded_answer_if_synthesis_stays_invalid(self):
         question = 'compare the revenue of 2025 and 2026'
         task = AgentTask(id='fallback', agent='sql', question=question)
@@ -407,3 +441,37 @@ class OriginalQuestionContextTest(unittest.IsolatedAsyncioTestCase):
             _scalar_sql_finding(item, 'doanh thu của tháng nào cao nhất để đưa ra chiến lược'),
             'Doanh thu tháng 3 năm 2026: 2,248,522.83 [S1].',
         )
+
+
+class ResponseSynthesisBudgetTest(unittest.IsolatedAsyncioTestCase):
+    async def test_large_sql_results_are_compacted_only_for_synthesis(self):
+        question = 'Which products have the most stockout days at the latest snapshot?'
+        task = AgentTask(id='s', agent='sql', question=question)
+        plan = AgentPlan(objective=question, tasks=[task])
+        rows = [{'snapshot_date':'2026-10-31','product_id':i+1,'product_name':f'Product-{i}',
+                 'stock_on_hand':i,'inventory_units_sold':i+2,'stockout_days':20-i%20,
+                 'days_of_supply':f'{i}.00','stockout_indicator':True,'overstock_indicator':False,
+                 'reorder_indicator':False} for i in range(97)]
+        result = AgentResult(answer='Query completed.', agent='analytics',
+            evidence=[Evidence(citation_id='S1', source_type='database', source='commerce.inventory',
+                               metadata={'metrics':{'stock_on_hand':{'definition':'m'*40_000}}})],
+            data={'rows':rows,'sql':'SELECT '+('x'*2000),'parameters':[],'query_status':'executed'},
+            metadata={'ok':True})
+        execution = SimpleNamespace(outcomes={'s':TaskOutcome(task,'complete',result)},trace=[],invocations=1)
+        provider = Mock()
+        provider.generate.return_value = json.dumps({
+            'answer':'Product-0 is listed first with 20 recorded stockout days [S1].',
+            'used_tasks':['s'],
+        })
+
+        response = await assemble_response(AgentRequest(question=question,identity=IDENTITY),plan,execution,provider)
+
+        self.assertFalse(response.metadata['fallback'])
+        self.assertEqual(len(response.data['sql']['rows']),97)
+        prompt = provider.generate.call_args.args[0]
+        self.assertIn('"rows_truncated": true',prompt)
+        self.assertIn('Product-19',prompt)
+        self.assertNotIn('Product-20',prompt)
+        self.assertIn('commerce.inventory',prompt)
+        self.assertNotIn('m'*100,prompt)
+        self.assertNotIn('x'*2000,prompt)

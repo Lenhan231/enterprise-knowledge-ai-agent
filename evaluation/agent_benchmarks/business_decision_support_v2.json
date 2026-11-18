@@ -1,0 +1,144 @@
+{
+  "dataset_id": "vietstyle-business-decision-support-v2",
+  "title": "VietStyle Business Decision Support benchmark (10 additional questions)",
+  "status": "ready_to_run",
+  "language": "vi",
+  "parent_dataset_id": "vietstyle-business-decision-support-v1",
+  "design_basis": "Additional cases cover independent fact aggregation, indirect approved joins, explicit business grain, return-event cohorts, and known schema gaps observed in v1.",
+  "data_scope": {
+    "orders_and_sales": "2025-11-14 to 2026-11-13",
+    "inventory_snapshots": "2025-11-30 to 2026-11-13",
+    "inventory_products_per_snapshot": 97,
+    "shipment_geography": "96 ZIP codes; current geography maps them to region East"
+  },
+  "evaluation_policy": [
+    "Run all questions through the local Auto endpoint and record the selected route and specialist task traces.",
+    "Do not ask for clarification when the question states its grain, date scope, grouping and requested output.",
+    "Aggregate independent facts before joining them at a shared key to avoid row multiplication.",
+    "An unverified calculation may run when the SQL is read-only, schema-valid and executable; label it as a query calculation.",
+    "A missing schema field is a data gap to report, not a reason to invent a field or ask the user to clarify an explicit yes/no question.",
+    "Do not claim causal promotion lift, nationwide coverage, late delivery or current inventory from these observations."
+  ],
+  "cases": [
+    {
+      "id": "INV-04",
+      "domain": "inventory_optimization",
+      "question": "Với snapshot tồn kho ngày 2026-10-31, liệt kê sản phẩm có stockout_flag hoặc reorder_flag=true. Hiển thị product_id, tên sản phẩm, stockout_days, units_sold, stock_on_hand, days_of_supply và từng cờ; sắp theo stockout_days giảm dần rồi days_of_supply tăng dần. Nêu tiêu chí nào cần rà soát theo policy, không tính số lượng cần đặt.",
+      "expected_agents": ["sql", "knowledge"],
+      "expected_behavior": "execute_and_recommend_review",
+      "expected_checks": [
+        "Filter to the exact 2026-10-31 snapshot and preserve product grain.",
+        "Return all requested columns and both flag conditions.",
+        "Use policy thresholds as review signals, not purchase authorization or quantity."
+      ]
+    },
+    {
+      "id": "INV-05",
+      "domain": "inventory_optimization",
+      "question": "So sánh từng sản phẩm thuộc danh mục Streetwear giữa hai snapshot 2026-09-30 và 2026-10-31. Trả riêng mỗi ngày các giá trị stock_on_hand, stockout_days, days_of_supply và reorder_flag; chỉ đưa ra một kết luận rà soát dựa trên thay đổi quan sát được, không cộng tồn kho của hai snapshot.",
+      "expected_agents": ["sql", "knowledge"],
+      "expected_behavior": "compare_snapshots_and_recommend_review",
+      "expected_checks": [
+        "Keep the two exact snapshot dates as separate observations per product.",
+        "Do not sum or average balances across snapshots.",
+        "Explain any review recommendation with cited policy and query evidence."
+      ]
+    },
+    {
+      "id": "PROMO-07",
+      "domain": "promotion_planning",
+      "question": "Trong giai đoạn 2026-08-01 đến hết 2026-09-30, xếp hạng sản phẩm có promo_id theo doanh thu dòng hàng sau giảm giá và lợi nhuận gộp ước tính. Dùng doanh thu = quantity × unit_price − discount_amount và lợi nhuận gộp ước tính = doanh thu − quantity × products.cogs; hiển thị promo_id và sản phẩm. Không gộp tiền hoàn trả vào campaign và không kết luận tác động nhân quả.",
+      "expected_agents": ["sql"],
+      "expected_behavior": "execute_unverified_observed_promotion_results",
+      "expected_checks": [
+        "Use recorded order_items.promo_id attribution and the requested order-date window.",
+        "Aggregate at promotion and product grain and label the supplied gross-profit formula unverified.",
+        "Do not describe observed sales as incremental campaign lift or ROI."
+      ]
+    },
+    {
+      "id": "PROMO-08",
+      "domain": "promotion_planning",
+      "question": "Xếp hạng các chương trình khuyến mãi có đơn hàng được ghi nhận từ 2026-01-01 đến 2026-11-13 theo số đơn phân biệt và doanh thu dòng hàng sau giảm giá. Hiển thị promo_id, promo_name, số đơn và doanh thu; không suy luận campaign làm tăng doanh thu.",
+      "expected_agents": ["sql"],
+      "expected_behavior": "execute_descriptive_campaign_comparison",
+      "expected_checks": [
+        "Use the recorded promotion-to-order_item relationship and the exact order-date window.",
+        "Count distinct orders rather than order-item rows.",
+        "Keep the conclusion descriptive and state that causal lift is not established."
+      ]
+    },
+    {
+      "id": "REV-01",
+      "domain": "returns_and_product_quality",
+      "question": "Trong năm 2026, so sánh doanh thu sau giảm giá giữa hai nhóm sản phẩm: rating trung bình từ 4 trở lên và dưới 4. Tính rating trung bình từ reviews trong năm 2026; tính doanh thu theo orders trong năm 2026 và order_status='delivered'. Mỗi sản phẩm chỉ thuộc một nhóm; hiển thị số sản phẩm, doanh thu tổng, doanh thu trung bình mỗi sản phẩm và số lượt review. Không nhân doanh thu do sản phẩm có nhiều review.",
+      "expected_agents": ["sql"],
+      "expected_behavior": "execute_separate_product_and_review_aggregates",
+      "expected_checks": [
+        "Aggregate product revenue and product review statistics independently before joining by product_id.",
+        "Use distinct product counts and avoid multiplying revenue by review rows.",
+        "Label the rating grouping and revenue calculation unverified if no approved contract defines them."
+      ]
+    },
+    {
+      "id": "CUST-01",
+      "domain": "customer_analytics",
+      "question": "Theo acquisition_channel của khách hàng, kênh nào có nhiều khách hàng mua lặp lại nhất trong năm 2026? Khách hàng mua lặp lại là người có ít nhất 2 order_id phân biệt. Hiển thị số khách mua lặp lại, số đơn của nhóm đó và tổng doanh thu sau giảm giá; lọc orders theo order_date trong năm 2026 và không tính customer_id bị thiếu.",
+      "expected_agents": ["sql"],
+      "expected_behavior": "execute_customer_grain_then_channel_aggregation",
+      "expected_checks": [
+        "Join customers to orders through customer_id and order_items through order_id.",
+        "Identify repeat buyers at customer grain before aggregating by acquisition_channel.",
+        "Do not duplicate order counts or revenue across line items."
+      ]
+    },
+    {
+      "id": "LOG-11",
+      "domain": "logistics",
+      "question": "Trong năm 2026, theo từng region và acquisition_channel, nhóm nào có thời gian giao thực tế trung bình ngắn nhất? Chỉ xét shipment có ship_date và delivery_date hợp lệ; hiển thị số shipment, thời gian giao trung bình và thứ hạng trong region. Quan hệ là shipments → orders → customers/geography; không cần quan hệ trực tiếp giữa customers và shipments.",
+      "expected_agents": ["sql"],
+      "expected_behavior": "execute_indirect_approved_joins_and_rank_within_region",
+      "expected_checks": [
+        "Join shipments to customers and geography through orders using approved keys.",
+        "Filter delivered shipments and the stated 2026 shipment date window.",
+        "Rank acquisition channels within each region and avoid claiming late-delivery performance."
+      ]
+    },
+    {
+      "id": "LOG-12",
+      "domain": "logistics",
+      "question": "Trong các shipment có delivery_date từ 2026-01-01 đến 2026-11-13, xếp hạng riêng từng cặp city và district theo tổng shipping_fee giảm dần. Hiển thị tổng phí, phí trung bình và số shipment; nếu dữ liệu chỉ có một region thì nêu rõ phạm vi đó.",
+      "expected_agents": ["sql"],
+      "expected_behavior": "execute_explicit_city_district_grouping",
+      "expected_checks": [
+        "Filter on the requested delivery_date range and group explicitly by both city and district.",
+        "Use shipping_fee from shipments and count shipment rows at shipment grain.",
+        "Do not infer nationwide coverage from the available geography."
+      ]
+    },
+    {
+      "id": "RET-01",
+      "domain": "returns_and_product_quality",
+      "question": "Với các đơn đặt từ 2026-09-01 đến hết 2026-10-31, tính theo product_id tổng quantity đã bán và tổng return_quantity phát sinh đến 2026-11-13; hiển thị thêm refund_amount và tỷ lệ return_quantity / quantity đã bán. Giữ riêng cohort theo order_date và cutoff theo return_date; không biến NULL thành 0.",
+      "expected_agents": ["sql"],
+      "expected_behavior": "execute_order_cohort_and_later_return_event_cutoff",
+      "expected_checks": [
+        "Filter the sales cohort on orders.order_date and the return-event cutoff on returns.return_date.",
+        "Aggregate sales and returns at product grain independently before joining.",
+        "Preserve NULL when a denominator or observed return value is absent and label the ratio unverified."
+      ]
+    },
+    {
+      "id": "DATA-01",
+      "domain": "logistics",
+      "question": "Chỉ dựa trên schema commerce hiện có, có thể xếp hạng hãng vận chuyển và chọn tuyến giao hàng tốt nhất trên toàn quốc không? Trả lời có hoặc không, nêu bảng liên quan và chính xác các trường còn thiếu; không hỏi lại người dùng.",
+      "expected_agents": ["sql"],
+      "expected_behavior": "answer_schema_data_gap_without_clarification",
+      "expected_checks": [
+        "Inspect relevant shipment and geography schema rather than only commerce.orders.",
+        "Report that shipments has no carrier or route field and geography does not establish nationwide coverage.",
+        "Do not invent fields, say shipments are late, or return clarification_required."
+      ]
+    }
+  ]
+}

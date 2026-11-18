@@ -6,7 +6,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from core.analytics.business_ontology import policy_context, validate_request_contract
-from core.analytics.commerce_decision_support import COMMERCE_DECISION_PROFILES, resolve_commerce_decision_domain
+from core.analytics.commerce_decision_support import (
+    COMMERCE_DECISION_PROFILES, resolve_commerce_decision_domain, unavailable_commerce_dimensions,
+)
 from core.analytics.text_to_sql import SQLValidationError, build_sql_prompt, decode_query_plan
 from unittest.mock import AsyncMock, Mock, patch
 from core.sql_agent.agent import SQLAnalyticsAgent
@@ -14,6 +16,15 @@ from core.models.agents import AgentRequest, VerifiedIdentity
 
 
 class BusinessOntologyTest(unittest.TestCase):
+    def test_schema_availability_question_reports_missing_logistics_dimensions(self):
+        question = ('Chỉ dựa trên schema commerce hiện có, có thể xếp hạng hãng vận chuyển và chọn '
+                    'tuyến giao hàng tốt nhất trên toàn quốc không?')
+        missing = unavailable_commerce_dimensions(
+            question, 'nationwide_logistics',
+            {'order_id', 'ship_date', 'delivery_date', 'shipping_fee', 'zip', 'city', 'district', 'region'},
+        )
+        self.assertEqual(missing, ['carrier', 'route/lane'])
+
     def test_promotion_business_support_separates_observed_sales_from_causal_lift(self):
         question = 'Should we scale the promotion with the highest attributed revenue, and does that prove lift?'
         self.assertEqual(resolve_commerce_decision_domain(question), 'promotion_planning')

@@ -1433,6 +1433,7 @@ dependencies = [
     { name = "langchain-experimental" },
     { name = "langchain-huggingface" },
     { name = "langgraph" },
+    { name = "mcp" },
     { name = "numpy" },
     { name = "openai" },
     { name = "pgvector" },
@@ -1488,6 +1489,7 @@ requires-dist = [
     { name = "langchain-huggingface", specifier = ">=1.2.2" },
     { name = "langchain-text-splitters", marker = "extra == 'docling'", specifier = ">=1.0.0" },
     { name = "langgraph", specifier = ">=1.2.4" },
+    { name = "mcp", specifier = "<2" },
     { name = "numpy", specifier = ">=2.3.5,<2.4" },
     { name = "onnxruntime", marker = "extra == 'docling'", specifier = ">=1.18,<2" },
     { name = "openai", specifier = "==2.41.0" },
@@ -2900,6 +2902,31 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/0f/d9/a1218a31fa2d8082eb893548990ad09a2005ebda1b2b89dad88a8308e51a/matplotlib-3.11.2-pp311-pypy311_pp73-macosx_10_15_x86_64.whl", hash = "sha256:854df8d7dfe9fdffcbaa6f39e44a6c24b409cb4d7561fbc09213b157d833f6a6", size = 9457702, upload-time = "2026-09-11T19:05:22.086Z" },
     { url = "https://files.pythonhosted.org/packages/68/d7/a9fde05d87c3c853f233ec20c5b5c3a1c86035e1ed4bfa397cd54d46ec90/matplotlib-3.11.2-pp311-pypy311_pp73-macosx_11_0_arm64.whl", hash = "sha256:eac4b07d4e3743b172451e122ea964f72f152879d4f9adcf3f3d33e518f12ead", size = 9287753, upload-time = "2026-09-11T19:05:24.677Z" },
     { url = "https://files.pythonhosted.org/packages/ec/79/ea2ae4eab84f011c1dc8145864f78e5a63adda8efb95557ef36cc38e6da2/matplotlib-3.11.2-pp311-pypy311_pp73-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:7ef7a53b66780e5d942923724f08577fbc5be1f7322da0f0f3f9dcaa45dd803d", size = 9848259, upload-time = "2026-09-11T19:05:27.455Z" },
+]
+
+[[package]]
+name = "mcp"
+version = "1.27.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+    { name = "httpx" },
+    { name = "httpx-sse" },
+    { name = "jsonschema" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "pyjwt", extra = ["crypto"] },
+    { name = "python-multipart" },
+    { name = "pywin32", marker = "sys_platform == 'win32'" },
+    { name = "sse-starlette" },
+    { name = "starlette" },
+    { name = "typing-extensions" },
+    { name = "typing-inspection" },
+    { name = "uvicorn", marker = "sys_platform != 'emscripten'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/27/3c/347cf965d313f5d41764e7d46bea6ffe7d9ef13b983cc429b0340962a082/mcp-1.27.2.tar.gz", hash = "sha256:8e02db104096d1c25b28e64bde29a5c32b31bc241710213e12fd4d84985bdfef", size = 621116, upload-time = "2026-05-29T17:16:04.039Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c9/11/252c6f971dc4f16af1d98a1c469d8ba523aab00d1bb76b4d3bc1ff32eacc/mcp-1.27.2-py3-none-any.whl", hash = "sha256:d6ff5160c6ca65d93013626efb3fc249de683c30b2d8570755ceddd490344de5", size = 220498, upload-time = "2026-05-29T17:16:02.442Z" },
 ]
 
 [[package]]
@@ -5825,6 +5852,19 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/fe/48/996687ba146c07deee6cc3528738e645d2e72805e023ed9672b483648378/sqlglot-30.19.0.tar.gz", hash = "sha256:6fcfbe93c5ee76e07faadf0930dd119eebb545c4f317f8e4f205f177305d8b08", size = 6042945, upload-time = "2026-09-22T15:19:58.64Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/10/94/094d83ec808b50374f33a3024c9e60ca3074595e1f9581c1692591fda81e/sqlglot-30.19.0-py3-none-any.whl", hash = "sha256:b4500fcced395359feea582f09d2d4433bf1f36362a3a9d0d6d5ebbc1f84242e", size = 756203, upload-time = "2026-09-22T15:19:56.761Z" },
+]
+
+[[package]]
+name = "sse-starlette"
+version = "3.7.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+    { name = "starlette" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/41/43/a232e3cd804293bd4f6d01e8895bc0f6f83ea148d712baf9d783c7d93d23/sse_starlette-3.7.0.tar.gz", hash = "sha256:326416da2ab52e9a41b3f409d3ff897eda45aa68c9f3b7b17d0913aab8d219c3", size = 43869, upload-time = "2026-11-07T11:15:49.389Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6a/11/25cabac0a24fa76f58637d8671b549c90d818d69d26beecf0c59a3b186e0/sse_starlette-3.7.0-py3-none-any.whl", hash = "sha256:f1d3136caa12d129284fca3d2ded79bc9af943320b6472712955fea52a6d3eea", size = 18432, upload-time = "2026-11-07T11:15:47.86Z" },
 ]
 
 [[package]]

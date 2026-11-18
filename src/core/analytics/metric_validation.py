@@ -211,7 +211,16 @@ def validate_metric_request(question, metric_names):
     if relative_month and inventory and set(metric_names) != {'inventory_units_sold'}:
         raise MetricDefinitionError('Specify an exact snapshot for inventory balances; only recorded units sold can use the prior-month observation.',
                                     code='snapshot_required', clarification=True)
-    if inventory and re.search(r'latest|mới nhất|gần nhất', question, re.I) and re.search(r'\b(?:19|20)\d{2}\b', question):
+    explicit_iso_dates = re.findall(r'\b\d{4}-\d{2}-\d{2}\b', question)
+    snapshot_period = None if explicit_iso_dates else inventory_time_scope(question)
+    explicit_period = bool(re.search(
+        r'\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|'
+        r'aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?|quarter|q[1-4]|quý|tháng\s+\d+)\b',
+        question, re.I))
+    if (inventory and re.search(r'latest|mới nhất|gần nhất', question, re.I)
+            and re.search(r'\b(?:19|20)\d{2}\b', question)
+            and not explicit_iso_dates
+            and (not explicit_period or not snapshot_period or snapshot_period[0] != 'range')):
         raise MetricDefinitionError('Do you want the latest dataset snapshot or a snapshot within the specified period?',
                                     code='ambiguous_snapshot', clarification=True)
     if inventory:

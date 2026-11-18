@@ -25,6 +25,36 @@ ANALYST = VerifiedIdentity(subject="analyst-1", permissions={"analytics:read"})
 
 
 class SQLValidationTest(unittest.TestCase):
+    def test_multiple_explicit_decision_criteria_use_entity_rows_without_clarification(self):
+        prompt = build_sql_prompt(
+            'Show product candidates by revenue, gross margin, inventory and returns for orders in the period, with returns through 2026-11-13. '
+            'Present each criterion separately; no combined score.',
+            schema_tables={'commerce.orders', 'commerce.order_items', 'commerce.returns',
+                           'commerce.products', 'commerce.inventory'},
+        )
+        self.assertIn('one row per entity', prompt)
+        self.assertIn('do not ask whether to use separate result sets', prompt)
+        self.assertIn('invent a combined score', prompt)
+        self.assertIn('preserve it as a query calculation', prompt)
+        self.assertIn('aggregate each fact separately', prompt)
+        self.assertIn('orders.order_date must match the specified sales cohort', prompt)
+        self.assertIn('include the selected snapshot_date, stock_on_hand, days_of_supply', prompt)
+
+    def test_original_request_scope_survives_a_narrow_sql_subtask(self):
+        original = (
+            'Compare product sales for orders from 2026-09-01 through 2026-10-31 and include returns '
+            'through 2026-11-13 for orders in that period.'
+        )
+        prompt = build_sql_prompt(
+            'Return product sales and return rate.',
+            original_question=original,
+            schema_tables={'commerce.orders', 'commerce.order_items', 'commerce.returns', 'commerce.products'},
+        )
+
+        self.assertIn(original, prompt)
+        self.assertIn('orders.order_date must match the specified sales cohort exactly', prompt)
+        self.assertIn('The return-event cutoff never replaces the sales-order cohort', prompt)
+
     def test_generation_and_repair_prompts_require_a_final_limit(self):
         prompt = build_sql_prompt('Compare revenue for 2025 and 2026')
         self.assertIn('final SELECT MUST contain an explicit LIMIT between 1 and 200', prompt)
@@ -36,6 +66,12 @@ class SQLValidationTest(unittest.TestCase):
         self.assertIn('including grouped and comparison queries', repaired)
         self.assertIn('LIMIT 1..200', repaired)
         self.assertIn('never PostgreSQL :: casts', repaired)
+
+    def test_prompt_uses_boolean_literals_and_only_placeholder_parameters(self):
+        prompt = build_sql_prompt('Show overstock_flag products and filter by snapshot date')
+        self.assertIn('BOOLEAN: compare them with TRUE/FALSE, never 1/0', prompt)
+        self.assertIn('exactly one value per placeholder', prompt)
+        self.assertIn('no more than 32 values', prompt)
 
     def test_year_extract_uses_function_syntax_not_a_postgres_cast(self):
         invalid = ("SELECT s.date::DATE_PART('year') AS year FROM commerce.sales AS s LIMIT 1")

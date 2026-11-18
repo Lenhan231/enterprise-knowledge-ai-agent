@@ -1,5 +1,5 @@
 from pathlib import Path
-from contextlib import asynccontextmanager
+from contextlib import AsyncExitStack, asynccontextmanager
 import hashlib
 import base64
 import json
@@ -30,6 +30,7 @@ from app.security import (
     _roles_with_permission, auth_scheme, require_permission, require_roles,
 )
 from app.agents import router as agents_router
+from app.mcp_tools import configure_host_app, server as mcp_server
 from app.dashboards import router as dashboards_router
 from app.retrieval import router as retrieval_router
 from app.upload_test import (
@@ -50,7 +51,9 @@ async def _lifespan(application: FastAPI):
     if os.getenv("RERANKER_PRELOAD") == "1":
         from core.retrieval.reranker import _load_model
         _load_model()
-    yield
+    async with AsyncExitStack() as stack:
+        await stack.enter_async_context(mcp_server.session_manager.run())
+        yield
     runtime = getattr(application.state, "agent_router", None)
     if runtime is not None:
         await runtime.close()
@@ -61,6 +64,7 @@ app.include_router(upload_test_router)
 app.include_router(agents_router)
 app.include_router(dashboards_router)
 app.include_router(retrieval_router)
+app.mount("/api/agents/mcp", configure_host_app(app), name="agent-mcp")
 
 APP_DIR = Path(__file__).resolve().parent
 STATIC_DIR = APP_DIR / "static"

@@ -3,9 +3,11 @@ import json
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from core.agents.router import AgentRouter
+from core.agents.runtime import run_sync
 from core.models.agents import AgentRequest, AgentResult, Evidence, VerifiedIdentity
 
 IDENTITY = VerifiedIdentity(subject='analyst', permissions={'analytics:read', 'documents:read'}, document_roles={'admin'})
@@ -47,6 +49,16 @@ class FakeAgent:
 
 
 class BoundedExecutionTest(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        jev = patch('core.agents.decision_support.router.classify_jev_route',
+                    side_effect=RuntimeError('Jev disabled in unit test'))
+        jev.start()
+        self.addCleanup(jev.stop)
+
+    async def test_run_sync_converts_stop_iteration_before_it_reaches_asyncio_future(self):
+        with self.assertRaisesRegex(RuntimeError, 'stopped unexpectedly'):
+            await run_sync(lambda: next(iter(())))
+
     async def test_decision_support_runs_sql_and_knowledge_for_product_profit_recommendation(self):
         question = 'Doanh nghiệp nên ưu tiên nhập thêm, quảng bá hoặc ngừng bán những sản phẩm nào để cải thiện lợi nhuận?'
 

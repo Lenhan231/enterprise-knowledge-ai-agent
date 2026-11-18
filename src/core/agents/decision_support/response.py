@@ -4,7 +4,7 @@ import re
 from datetime import date
 from decimal import Decimal, InvalidOperation
 
-from core.agents.runtime import generate
+from core.agents.runtime import generate, generate_with_codex_cli, remaining
 from core.models.agents import AgentResult
 from core.prompts.agents import SYNTHESIS_PROMPT
 from core.rag.arithmetic import verified_results
@@ -90,6 +90,30 @@ def _null_sql_findings(inputs, question):
     return (f"The query completed, but {columns} is NULL {refs}. "
             "This does not mean the value is zero; the result does not distinguish "
             "between no matching rows and matching rows with missing values.")
+
+
+def _synthesis_context(inputs):
+    """Keep LLM context bounded while leaving complete query rows in the returned Results data."""
+    row_limit = 20
+    while True:
+        compact = []
+        for item in inputs:
+            data = item['data']
+            if isinstance(data, dict) and isinstance(data.get('rows'), list):
+                rows = data['rows']
+                compact_data = {'rows': rows[:row_limit], 'rows_truncated': len(rows) > row_limit}
+                if 'query_status' in data:
+                    compact_data['query_status'] = data['query_status']
+            else:
+                compact_data = data
+            evidence = [{key: source[key] for key in ('citation_id', 'source_type', 'source', 'content')
+                         if source.get(key) is not None}
+                        for source in item['evidence']]
+            compact.append({**item, 'data': compact_data, 'evidence': evidence})
+        serialized = json.dumps(compact, ensure_ascii=False, default=str)
+        if len(serialized) <= 32_000 or row_limit == 1:
+            return compact, serialized
+        row_limit = max(1, row_limit // 2)
 
 
 def _scalar_sql_finding(item, question):
@@ -336,7 +360,7 @@ async def assemble_response(request, plan, execution, provider):
             answer = inputs[0]['answer']
             fallback = bool(usable[0].result.metadata.get('fallback', False))
     if usable and not answer:
-        serialized = json.dumps(inputs, ensure_ascii=False, default=str)
+        synthesis_inputs, serialized = _synthesis_context(inputs)
         if len(serialized) <= 32_000:
             prompt = SYNTHESIS_PROMPT.format(
                 question=request.question,
@@ -344,9 +368,24 @@ async def assemble_response(request, plan, execution, provider):
                 limitations=json.dumps(limitations, ensure_ascii=False),
                 results=serialized,
             )
+            citation_ids_by_task = {
+                item['task_id']: [source['citation_id'] for source in item['evidence']
+                                  if source.get('citation_id')]
+                for item in inputs
+            }
+            prompt += ('\nCitation IDs by task (use only these exact uppercase IDs for that task’s facts): '
+                       + json.dumps(citation_ids_by_task, ensure_ascii=False))
+            if any(isinstance(item.get('data'), dict) and item['data'].get('rows_truncated')
+                   for item in synthesis_inputs):
+                prompt += ('\nSome SQL datasets are row-limited in this synthesis context. Summarize only the '
+                           'provided observations and do not claim they represent rows omitted from the context; '
+                           'the complete query results remain available in the Results view.')
             for attempt in range(2):
                 try:
-                    raw = await generate(provider, prompt, timeout=20)
+                    if provider == 'codex_cli':
+                        raw = await generate_with_codex_cli(prompt, timeout=55)
+                    else:
+                        raw = await generate(provider, prompt, timeout=20, max_output_tokens=400)
                 except Exception:
                     break
                 try:
@@ -354,6 +393,8 @@ async def assemble_response(request, plan, execution, provider):
                     candidate = draft['answer']
                     if not isinstance(candidate, str) or not candidate.strip() or len(candidate) > 8000:
                         raise ValueError('Invalid synthesis')
+                    candidate = re.sub(r'\[(s\d+)\]', lambda match: f'[{match[1].upper()}]', candidate,
+                                       flags=re.IGNORECASE)
                     cited = set(re.findall(r'\[(S\d+)\]', candidate))
                     allowed = {e.citation_id for e in evidence}
                     if not cited or not cited <= allowed or set(draft['used_tasks']) != {o.task.id for o in usable}:

@@ -1,0 +1,143 @@
+{
+  "dataset_id": "vietstyle-business-decision-support-v1",
+  "title": "VietStyle Business Decision Support benchmark (10 questions)",
+  "status": "question_set_locked_not_run",
+  "language": "vi",
+  "data_scope": {
+    "orders_and_sales": "2025-11-14 to 2026-11-13",
+    "inventory_snapshots": "2025-11-30 to 2026-11-13",
+    "inventory_products_per_snapshot": 97,
+    "promotion_records": 9,
+    "shipment_geography": "96 ZIP codes; current geography maps them to region East"
+  },
+  "evaluation_policy": [
+    "Questions that request a decision should use SQL evidence and relevant Knowledge policy evidence.",
+    "A custom metric that passes SQL safety, schema and join checks may execute as unverified; lack of a canonical metric alone is not a clarification reason.",
+    "Unverified metrics must be labeled as query calculations, not approved business metrics.",
+    "Promotion comparisons are descriptive; do not claim incremental lift, causation or ROI without control and spend data.",
+    "Inventory policy thresholds marked simulation or draft must be identified as unapproved assumptions.",
+    "Logistics findings must state the observed geographic scope and must not call shipments late without a promised delivery date.",
+    "Do not invent missing schema fields, carriers, warehouses, routes or nationwide coverage."
+  ],
+  "cases": [
+    {
+      "id": "INV-01",
+      "domain": "inventory_optimization",
+      "question": "Với snapshot tồn kho ngày 2026-10-31, sản phẩm nào cần ưu tiên rà soát nguy cơ thiếu hàng? Xếp theo stockout_days giảm dần, rồi days_of_supply tăng dần; hiển thị tồn kho, lượng bán và các cờ tồn kho. Không tính số lượng PO cần đặt.",
+      "expected_agents": ["sql", "knowledge"],
+      "expected_behavior": "execute_and_recommend_review",
+      "expected_checks": [
+        "Use only the 2026-10-31 snapshot.",
+        "Show the requested evidence and do not invent a purchase quantity.",
+        "Cite the inventory review policy and state its approval status when using thresholds."
+      ]
+    },
+    {
+      "id": "INV-02",
+      "domain": "inventory_optimization",
+      "question": "Với snapshot tồn kho ngày 2026-10-31, sản phẩm nào cần xem xét xử lý tồn dư? Liệt kê sản phẩm có overstock_flag hoặc days_of_supply vượt ngưỡng trong policy, sắp theo days_of_supply giảm dần; hiển thị lượng bán và sell_through_rate.",
+      "expected_agents": ["sql", "knowledge"],
+      "expected_behavior": "execute_and_recommend_review",
+      "expected_checks": [
+        "Use only the 2026-10-31 snapshot and preserve product grain.",
+        "Identify policy thresholds as simulation or draft where applicable.",
+        "Do not treat an overstock flag alone as approval to markdown, dispose or write off inventory."
+      ]
+    },
+    {
+      "id": "INV-03",
+      "domain": "inventory_optimization",
+      "question": "So sánh snapshot tồn kho ngày 2026-09-30 với 2026-10-31 theo danh mục: số sản phẩm có cờ thiếu hàng, cờ dư hàng và days_of_supply trung bình. Danh mục nào nên được rà soát trước?",
+      "expected_agents": ["sql", "knowledge"],
+      "expected_behavior": "execute_and_recommend_review",
+      "expected_checks": [
+        "Return separate results for each exact snapshot date.",
+        "Do not sum inventory balances across snapshots.",
+        "Explain why the selected category merits review using cited policy and query evidence."
+      ]
+    },
+    {
+      "id": "PROMO-04",
+      "domain": "promotion_planning",
+      "question": "Trong campaign Back to School 2026 (01/08–30/09), sản phẩm nào có doanh thu dòng hàng sau giảm giá và lợi nhuận gộp ước tính cao nhất? Tính doanh thu sau giảm giá bằng quantity × unit_price − discount_amount; lợi nhuận gộp ước tính bằng doanh thu sau giảm giá − quantity × cogs. Hiển thị thêm tiền giảm và hoàn tiền liên quan; không kết luận campaign gây ra kết quả đó.",
+      "expected_agents": ["sql"],
+      "expected_behavior": "execute_unverified_and_rank_observed_results",
+      "expected_checks": [
+        "Aggregate order-item and return facts independently to avoid join fanout.",
+        "Label the supplied gross-profit calculation as unverified if it has no approved catalog definition.",
+        "Do not claim causal campaign lift."
+      ]
+    },
+    {
+      "id": "PROMO-05",
+      "domain": "promotion_planning",
+      "question": "Xếp hạng các campaign trong khoảng 2025-11-20 đến 2026-11-13 theo doanh thu sau giảm giá được gắn mã khuyến mãi và lợi nhuận gộp ước tính; hiển thị tiền giảm và hoàn tiền. Dùng doanh thu dòng hàng = quantity × unit_price − discount_amount và lợi nhuận gộp ước tính = doanh thu dòng hàng − quantity × cogs. Nêu rõ đây là kết quả quan sát, không phải doanh thu tăng thêm do campaign.",
+      "expected_agents": ["sql"],
+      "expected_behavior": "execute_unverified_and_compare_observed_results",
+      "expected_checks": [
+        "Use recorded promo attribution and the specified date range.",
+        "Aggregate returns independently from order-item sales before joining.",
+        "Label non-canonical calculations unverified and do not claim lift or ROI."
+      ]
+    },
+    {
+      "id": "PROMO-06",
+      "domain": "promotion_planning",
+      "question": "Sản phẩm nào là ứng viên cho campaign tới nếu xét doanh số, biên lợi nhuận, tồn kho và hoàn trả? Dùng đơn bán từ 2026-09-01 đến hết 2026-10-31, snapshot tồn kho 2026-10-31, và hoàn trả phát sinh đến 2026-11-13 cho các đơn trong kỳ. Tính doanh thu sau giảm giá = quantity × unit_price − discount_amount; lợi nhuận gộp ước tính = doanh thu sau giảm giá − quantity × cogs; tỷ lệ hoàn trả = tổng return_quantity / tổng quantity đã bán. Trình bày từng tiêu chí riêng, không tự đặt điểm tổng hợp.",
+      "expected_agents": ["sql"],
+      "expected_behavior": "execute_unverified_and_recommend_candidates",
+      "expected_checks": [
+        "Run SQL and Knowledge tasks; missing canonical definitions alone must not trigger clarification.",
+        "Aggregate the sales cohort, returns and inventory snapshot at compatible grains.",
+        "Label custom calculations unverified, present factors separately, and do not claim campaign causation."
+      ]
+    },
+    {
+      "id": "LOG-07",
+      "domain": "logistics",
+      "question": "Trong các shipment đã giao từ 2026-01-01 đến 2026-11-13, city hoặc district nào có thời gian giao thực tế trung bình dài nhất? Hiển thị số shipment và phí giao trung bình.",
+      "expected_agents": ["sql"],
+      "expected_behavior": "execute_and_compare_observed_results",
+      "expected_checks": [
+        "Restrict to shipments with a recorded delivery_date in the requested period.",
+        "State that available geography currently maps to region East.",
+        "Call this actual delivery duration, not a late-delivery rate."
+      ]
+    },
+    {
+      "id": "LOG-08",
+      "domain": "logistics",
+      "question": "Trong các shipment đã giao từ 2026-01-01 đến 2026-11-13, city hoặc district nào có tổng phí giao cao nhất? Hiển thị tổng phí, phí trung bình và số shipment.",
+      "expected_agents": ["sql"],
+      "expected_behavior": "execute_and_compare_observed_results",
+      "expected_checks": [
+        "Use recorded shipping_fee and delivered shipments only.",
+        "State the available geographic scope; do not describe it as nationwide."
+      ]
+    },
+    {
+      "id": "LOG-09",
+      "domain": "logistics",
+      "question": "Với shipment gửi từ 2026-10-01 đến 2026-11-13 nhưng chưa có delivery_date, city hoặc district nào có nhiều shipment nhất? Hiển thị số lượng và ghi rõ đây là shipment chưa có ngày giao được ghi nhận.",
+      "expected_agents": ["sql"],
+      "expected_behavior": "execute_and_report_data_gap",
+      "expected_checks": [
+        "Filter on missing delivery_date and the requested ship_date range.",
+        "Do not label shipments overdue or late without a promised delivery date.",
+        "State the available geographic scope."
+      ]
+    },
+    {
+      "id": "LIMIT-10",
+      "domain": "logistics",
+      "question": "Dữ liệu hiện tại có đủ để xếp hạng hãng vận chuyển và chọn tuyến giao tốt nhất trên toàn quốc không? Nếu chưa đủ, hãy nêu rõ còn thiếu trường dữ liệu nào.",
+      "expected_agents": ["sql"],
+      "expected_behavior": "explain_data_limit_without_fabrication",
+      "expected_checks": [
+        "Do not invent carrier, route, promised-date or nationwide-region fields.",
+        "Explain the observed schema and geography coverage gap.",
+        "Do not present supplier performance inferred from customer shipments."
+      ]
+    }
+  ]
+}

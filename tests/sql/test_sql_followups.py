@@ -207,7 +207,7 @@ class SQLConversationTest(unittest.IsolatedAsyncioTestCase):
 
 
 class OriginalQuestionContextTest(unittest.IsolatedAsyncioTestCase):
-    async def test_auto_synthesizes_query_rows_with_unverified_metric_caveat(self):
+    async def test_auto_returns_query_rows_without_extra_synthesis_when_metric_is_unverified(self):
         question = 'sản phẩm bán chạy nhất tháng trước'
         task = AgentTask(id='sql', agent='sql', question=question)
         plan = AgentPlan(objective=question, tasks=[task])
@@ -235,8 +235,8 @@ class OriginalQuestionContextTest(unittest.IsolatedAsyncioTestCase):
         answer = await assemble_response(
             AgentRequest(question=question, identity=IDENTITY), plan, execution, provider)
 
-        self.assertTrue(provider.called)
-        self.assertIn('unverified', provider.prompt)
+        self.assertFalse(provider.called)
+        self.assertIn('| product_name | total_quantity_sold |', answer.answer)
         self.assertIn('Grid Runner', answer.answer)
         self.assertIn('chưa được xác minh', answer.answer)
         self.assertFalse(answer.metadata['fallback'])

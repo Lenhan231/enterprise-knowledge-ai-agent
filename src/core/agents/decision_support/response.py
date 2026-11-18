@@ -160,7 +160,7 @@ def _scalar_sql_finding(item, question):
 
 
 def _unverified_metric_sql_finding(item, question):
-    """Summarize executed rows plainly when metric validation was inconclusive."""
+    """Show executed rows directly when metric validation was inconclusive."""
     if (item.get('metric_validation') or {}).get('status') != 'unverified':
         return None
     rows = item['data'].get('rows', [])
@@ -168,15 +168,13 @@ def _unverified_metric_sql_finding(item, question):
     if not rows or not citations:
         return None
     refs = ' '.join(f'[{citation}]' for citation in citations)
-    findings = []
-    for row in rows[:5]:
-        findings.append('; '.join(f'{name}={value}' for name, value in row.items()))
-    details = ' | '.join(findings)
     if _is_vietnamese(question):
-        return (f'Kết quả truy vấn: {details} {refs}. Định nghĩa metric chưa được xác minh; '
-                'kết quả chỉ phản ánh các trường và phép tính của truy vấn, không phải metric nghiệp vụ đã được phê duyệt.')
-    return (f'Query result: {details} {refs}. The metric definition is unverified; '
-            'this reflects the query fields and calculation, not an approved business metric.')
+        heading = f'Kết quả SQL (metric chưa được xác minh) {refs}:'
+        caveat = ('Các dòng dưới đây phản ánh công thức của truy vấn; metric chưa phải chỉ số nghiệp vụ đã được phê duyệt.')
+    else:
+        heading = f'SQL results (metric unverified) {refs}:'
+        caveat = 'These rows reflect the query formula; the metric is not an approved business definition.'
+    return f'{heading}\n\n{_markdown_sql_findings(rows[:10])}\n\n{caveat}'
 
 
 def _markdown_sql_findings(rows):
@@ -370,11 +368,14 @@ async def assemble_response(request, plan, execution, provider):
         specialist = {key: active[0].result.metadata[key] for key in ('claim_verification', 'insufficient_context', 'search', 'nearest_documents', 'withheld_draft')
                       if key in active[0].result.metadata}
         claim_checked = (specialist.get('claim_verification') or {}).get('status') == 'supported'
-    if (len(usable) == 1 and len(plan.tasks) == 1 and status == 'complete'
-            and (inputs[0].get('metric_validation') or {}).get('status') != 'unverified'):
-        deterministic_answer = (_month_over_month_sql_finding(inputs[0], request.question)
-                                or _scalar_sql_finding(inputs[0], request.question)
-                                if inputs[0]['agent'] == 'sql' else None)
+    if len(usable) == 1 and len(plan.tasks) == 1 and status == 'complete':
+        deterministic_answer = None
+        if inputs[0]['agent'] == 'sql':
+            if (inputs[0].get('metric_validation') or {}).get('status') == 'unverified':
+                deterministic_answer = _unverified_metric_sql_finding(inputs[0], request.question)
+            else:
+                deterministic_answer = (_month_over_month_sql_finding(inputs[0], request.question)
+                                        or _scalar_sql_finding(inputs[0], request.question))
         if deterministic_answer:
             answer, fallback = deterministic_answer, False
         elif inputs[0]['agent'] != 'sql':

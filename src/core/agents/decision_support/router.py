@@ -336,10 +336,11 @@ class AgentRouter:
                             selected_tools=route.get('selected_tools', []) if route else None)
         state['execution'].plan = plan
         if plan.clarification:
-            return {'plan': plan, 'result': AgentResult(answer=plan.clarification, agent='agentic', metadata={
+            return {'request': request, 'plan': plan,
+                    'result': AgentResult(answer=plan.clarification, agent='agentic', metadata={
                 'ok': False, 'status': 'clarification_required', 'clarification_required': True,
                 'selected_route': 'clarification', 'task_trace': []})}
-        return {'plan': plan}
+        return {'request': request, 'plan': plan}
 
     async def _execute(self, state):
         await state['execution'].run(state['plan'])

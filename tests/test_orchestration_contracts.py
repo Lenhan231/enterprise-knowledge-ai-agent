@@ -275,6 +275,7 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(state['plan'].tasks[0].question, execution.request.question)
         self.assertEqual(state['plan'].objective, original)
         self.assertEqual(state['plan'].tasks[0].agent, 'sql')
+        self.assertIn(original, state['request'].question)
         classifier.assert_not_called()
         planner.assert_not_awaited()
 

@@ -1,0 +1,907 @@
+{
+  "report_type": "sales_performance",
+  "title": "Sales Performance Report",
+  "schema_version": "1.1.0",
+  "source_contract": "commerce_schema_metric_contract_v1.md",
+  "strict_generation_rules": {
+    "template_structure": "IMMUTABLE",
+    "metric_catalog": "IMMUTABLE",
+    "dashboard_layout": "IMMUTABLE",
+    "decision_rule_catalog": "IMMUTABLE",
+    "llm_role": "Parse period and granularity; populate strictly predefined narrative slots with grounded observations only. Copy approved agent metrics and chart series. Deterministic code evaluates decisions.",
+    "allowed_runtime_mutations": [
+      "request.period.start",
+      "request.period.end_exclusive",
+      "request.granularity",
+      "request.dimension",
+      "request.dimension_value",
+      "metrics.*.value",
+      "metrics.*.status",
+      "metrics.*.evidence",
+      "dashboard.widgets.*.data",
+      "decisions.*.triggered",
+      "decisions.*.evidence",
+      "data_quality.*"
+    ],
+    "forbidden": [
+      "Invent metrics, narratives, dashboard charts, thresholds or unsupported breakdowns",
+      "Assume currency for synthetic commerce data",
+      "Infer causality from correlation",
+      "Join commerce.sales with order_items/orders to allocate sales by category/region",
+      "Combine commerce.invoices with synthetic commerce sales",
+      "Reinterpret inventory snapshots as daily movements",
+      "Use missing/undefined numeric data as zero",
+      "Bypass SQL allowlist, RBAC or document RLS",
+      "Treat synthetic demo data as real company performance"
+    ],
+    "authorization": "Each upstream tool call must be authorized for requester; no cross-role inference or fallback to service-role results.",
+    "calculation_policy": "SQL Agent calculates fixed metric formulas; Report Agent only copies validated results; no LLM arithmetic.",
+    "null_policy": "If unavailable/unsupported/ambiguous, value=null; status=not_available or unresolved; omit unsupported conclusions without changing structure.",
+    "period_policy": "Use [start,end_exclusive) for DATE comparisons. Year means calendar year; latest means latest observed source date. Record coverage separately.",
+    "dimension_policy": "Validate requested dimension against each metric's allowed_dimensions; unsupported combinations return not_available rather than approximate.",
+    "output_policy": "Output JSON only. Fixed key set and order. No Markdown. No new fields. Dashboard uses fixed widget ids/types/order. Decisions use deterministic triggers only.",
+    "narrative_slot_policy": "Only fill runtime_output_template.sections slots. Each string must be a brief factual observation linked to approved values and evidence; when evidence unavailable use null. Never insert conjectured causes or dynamic recommendations.",
+    "fixed_section_contract": "Sections and nested slot keys are immutable. The renderer, not the model, controls section headings and presentation.",
+    "decision_execution": "All rule conditions are evaluated by deterministic backend code; LLM may not set triggered, status or change actions."
+  },
+  "request": {
+    "period": {
+      "start": null,
+      "end_exclusive": null
+    },
+    "granularity": "month",
+    "dimension": "all",
+    "dimension_value": null
+  },
+  "data_quality": {
+    "coverage_start": null,
+    "coverage_end": null,
+    "partial_period": null,
+    "missing_or_unmatched_count": null,
+    "limitations": []
+  },
+  "metric_value_shape": {
+    "value": null,
+    "status": "pending",
+    "evidence": []
+  },
+  "evidence_shape": {
+    "source_table": "",
+    "query_id": "",
+    "filters": {},
+    "row_count": null,
+    "document_id": null,
+    "citation": null
+  },
+  "permitted_statuses": [
+    "pending",
+    "available",
+    "no_data",
+    "not_available",
+    "unresolved",
+    "access_denied"
+  ],
+  "supported_request": {
+    "dimensions": [
+      "all",
+      "category",
+      "region",
+      "product",
+      "order_source"
+    ],
+    "granularities": [
+      "month",
+      "quarter",
+      "year"
+    ]
+  },
+  "sections": [
+    "executive_summary",
+    "sales_kpis",
+    "performance_analysis",
+    "key_findings_and_explanations",
+    "decision_support"
+  ],
+  "agent_dependencies": [
+    "sql",
+    "dashboard"
+  ],
+  "metrics": [
+    {
+      "id": "company_revenue",
+      "label": "Company revenue",
+      "source": "commerce.sales",
+      "formula": "SUM(revenue)",
+      "allowed_dimensions": [
+        "all"
+      ],
+      "scope": "",
+      "unit": "unknown_currency_amount",
+      "grain": "daily_company",
+      "value": null,
+      "status": "pending",
+      "evidence": [],
+      "notes": null
+    },
+    {
+      "id": "company_cogs",
+      "label": "Company COGS",
+      "source": "commerce.sales",
+      "formula": "SUM(cogs)",
+      "allowed_dimensions": [
+        "all"
+      ],
+      "scope": "",
+      "unit": "unknown_currency_amount",
+      "grain": "daily_company",
+      "value": null,
+      "status": "pending",
+      "evidence": [],
+      "notes": null
+    },
+    {
+      "id": "company_gross_profit",
+      "label": "Company gross profit",
+      "source": "commerce.sales",
+      "formula": "SUM(revenue)-SUM(cogs)",
+      "allowed_dimensions": [
+        "all"
+      ],
+      "scope": "",
+      "unit": "unknown_currency_amount",
+      "grain": "daily_company",
+      "value": null,
+      "status": "pending",
+      "evidence": [],
+      "notes": null
+    },
+    {
+      "id": "company_gross_margin_pct",
+      "label": "Company gross margin",
+      "source": "commerce.sales",
+      "formula": "100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)",
+      "allowed_dimensions": [
+        "all"
+      ],
+      "scope": "",
+      "unit": "percent",
+      "grain": "daily_company",
+      "value": null,
+      "status": "pending",
+      "evidence": [],
+      "notes": "Derived ratio of defined company-level aggregates; NULL for zero denominator"
+    },
+    {
+      "id": "company_revenue_change_pct",
+      "label": "Company revenue period-over-period change",
+      "source": "commerce.sales",
+      "formula": "100*(revenue_current-revenue_prior)/NULLIF(revenue_prior,0)",
+      "allowed_dimensions": [
+        "all"
+      ],
+      "scope": "",
+      "unit": "percent",
+      "grain": "comparable_periods",
+      "value": null,
+      "status": "pending",
+      "evidence": [],
+      "notes": "Same length/comparable calendar period; set unavailable if prior coverage insufficient"
+    },
+    {
+      "id": "order_count",
+      "label": "Order count",
+      "source": "commerce.orders",
+      "formula": "COUNT(DISTINCT order_id)",
+      "allowed_dimensions": [
+        "all",
+        "region",
+        "order_source"
+      ],
+      "scope": "",
+      "unit": "orders",
+      "grain": "orders",
+      "value": null,
+      "status": "pending",
+      "evidence": [],
+      "notes": "No implicit status filter"
+    },
+    {
+      "id": "delivered_line_revenue",
+      "label": "Delivered order-line revenue",
+      "source": "commerce.order_items + commerce.orders",
+      "formula": "SUM(quantity*unit_price-discount_amount) WHERE orders.order_status = delivered",
+      "allowed_dimensions": [
+        "all",
+        "category",
+        "region",
+        "product",
+        "order_source"
+      ],
+      "scope": "",
+      "unit": "unknown_currency_amount",
+      "grain": "order_items",
+      "value": null,
+      "status": "pending",
+      "evidence": [],
+      "notes": "Never reconcile or mix with company_revenue; aggregate by order_date and approved joins"
+    },
+    {
+      "id": "delivered_average_order_value",
+      "label": "Delivered AOV",
+      "source": "commerce.order_items + commerce.orders",
+      "formula": "delivered_line_revenue / NULLIF(COUNT(DISTINCT delivered orders.order_id),0)",
+      "allowed_dimensions": [
+        "all",
+        "category",
+        "region",
+        "product",
+        "order_source"
+      ],
+      "scope": "",
+      "unit": "unknown_currency_amount_per_order",
+      "grain": "order_population",
+      "value": null,
+      "status": "pending",
+      "evidence": [],
+      "notes": "If dimension product/category, denominator is delivered orders containing that dimension; not company-level AOV"
+    },
+    {
+      "id": "promotion_discount",
+      "label": "Order-line discount total",
+      "source": "commerce.order_items + commerce.orders",
+      "formula": "SUM(discount_amount)",
+      "allowed_dimensions": [
+        "all",
+        "category",
+        "region",
+        "product",
+        "order_source"
+      ],
+      "scope": "",
+      "unit": "unknown_currency_amount",
+      "grain": "order_items",
+      "value": null,
+      "status": "pending",
+      "evidence": [],
+      "notes": "Descriptive discount only, not promotion ROI"
+    },
+    {
+      "id": "sessions",
+      "label": "Web sessions",
+      "source": "commerce.web_traffic",
+      "formula": "SUM(sessions)",
+      "allowed_dimensions": [
+        "all"
+      ],
+      "scope": "",
+      "unit": "sessions",
+      "grain": "date_traffic_source",
+      "value": null,
+      "status": "pending",
+      "evidence": [],
+      "notes": "Do not infer conversion/attribution to orders"
+    }
+  ],
+  "dashboard": {
+    "layout": "fixed",
+    "columns": 2,
+    "widgets": [
+      {
+        "id": "sales_kpis",
+        "type": "kpi_row",
+        "title": "Company financial KPIs",
+        "metric_ids": [
+          "company_revenue",
+          "company_gross_profit",
+          "company_gross_margin_pct",
+          "company_revenue_change_pct"
+        ],
+        "x_dimension": "period",
+        "data": [],
+        "notes": ""
+      },
+      {
+        "id": "sales_trend",
+        "type": "line",
+        "title": "Company revenue and gross profit",
+        "metric_ids": [
+          "company_revenue",
+          "company_gross_profit"
+        ],
+        "x_dimension": "period",
+        "data": [],
+        "notes": ""
+      },
+      {
+        "id": "order_kpis",
+        "type": "kpi_row",
+        "title": "Orders and delivered-line sales",
+        "metric_ids": [
+          "order_count",
+          "delivered_line_revenue",
+          "delivered_average_order_value"
+        ],
+        "x_dimension": "period",
+        "data": [],
+        "notes": ""
+      },
+      {
+        "id": "line_breakdown",
+        "type": "bar",
+        "title": "Delivered-line revenue by selected dimension",
+        "metric_ids": [
+          "delivered_line_revenue"
+        ],
+        "x_dimension": "dimension",
+        "data": [],
+        "notes": "If all selected, display single total; unsupported dimensions yield no data"
+      },
+      {
+        "id": "sales_discount",
+        "type": "line",
+        "title": "Line discounts over time",
+        "metric_ids": [
+          "promotion_discount"
+        ],
+        "x_dimension": "period",
+        "data": [],
+        "notes": ""
+      },
+      {
+        "id": "web_sessions",
+        "type": "line",
+        "title": "Website sessions (separate source)",
+        "metric_ids": [
+          "sessions"
+        ],
+        "x_dimension": "period",
+        "data": [],
+        "notes": "No conversion or revenue attribution"
+      }
+    ]
+  },
+  "decisions": [
+    {
+      "id": "S01",
+      "title": "Revenue decline",
+      "condition": "company_revenue_change_pct < 0 AND both periods have sufficient coverage",
+      "action": "Review company-level revenue trend and investigate; do not assert cause",
+      "required_metric_ids": [
+        "company_revenue_change_pct"
+      ],
+      "triggered": null,
+      "evidence": [],
+      "priority": "fixed_rule_order",
+      "status": "pending"
+    },
+    {
+      "id": "S02",
+      "title": "Nonpositive gross profit",
+      "condition": "company_gross_profit <= 0 AND company_revenue > 0",
+      "action": "Review company-level COGS and pricing conditions",
+      "required_metric_ids": [
+        "company_gross_profit",
+        "company_revenue"
+      ],
+      "triggered": null,
+      "evidence": [],
+      "priority": "fixed_rule_order",
+      "status": "pending"
+    },
+    {
+      "id": "S03",
+      "title": "Positive revenue with negative profit trend",
+      "condition": "company_revenue_change_pct > 0 AND gross_profit_current < gross_profit_prior AND comparable coverage",
+      "action": "Investigate increased cost pressure; avoid causal claims",
+      "required_metric_ids": [
+        "company_revenue_change_pct",
+        "company_gross_profit"
+      ],
+      "triggered": null,
+      "evidence": [],
+      "priority": "fixed_rule_order",
+      "status": "pending"
+    },
+    {
+      "id": "S04",
+      "title": "No decision trigger",
+      "condition": "none of S01-S03 triggered and required metrics available",
+      "action": "No predefined risk trigger; do not assert business health",
+      "required_metric_ids": [
+        "company_revenue",
+        "company_gross_profit"
+      ],
+      "triggered": null,
+      "evidence": [],
+      "priority": "fixed_rule_order",
+      "status": "pending"
+    }
+  ],
+  "runtime_output_template": {
+    "report_type": "sales_performance",
+    "request": {
+      "period": {
+        "start": null,
+        "end_exclusive": null
+      },
+      "granularity": "month",
+      "dimension": "all",
+      "dimension_value": null
+    },
+    "metrics": [
+      {
+        "id": "company_revenue",
+        "label": "Company revenue",
+        "source": "commerce.sales",
+        "formula": "SUM(revenue)",
+        "allowed_dimensions": [
+          "all"
+        ],
+        "scope": "",
+        "unit": "unknown_currency_amount",
+        "grain": "daily_company",
+        "value": null,
+        "status": "pending",
+        "evidence": [],
+        "notes": null
+      },
+      {
+        "id": "company_cogs",
+        "label": "Company COGS",
+        "source": "commerce.sales",
+        "formula": "SUM(cogs)",
+        "allowed_dimensions": [
+          "all"
+        ],
+        "scope": "",
+        "unit": "unknown_currency_amount",
+        "grain": "daily_company",
+        "value": null,
+        "status": "pending",
+        "evidence": [],
+        "notes": null
+      },
+      {
+        "id": "company_gross_profit",
+        "label": "Company gross profit",
+        "source": "commerce.sales",
+        "formula": "SUM(revenue)-SUM(cogs)",
+        "allowed_dimensions": [
+          "all"
+        ],
+        "scope": "",
+        "unit": "unknown_currency_amount",
+        "grain": "daily_company",
+        "value": null,
+        "status": "pending",
+        "evidence": [],
+        "notes": null
+      },
+      {
+        "id": "company_gross_margin_pct",
+        "label": "Company gross margin",
+        "source": "commerce.sales",
+        "formula": "100*(SUM(revenue)-SUM(cogs))/NULLIF(SUM(revenue),0)",
+        "allowed_dimensions": [
+          "all"
+        ],
+        "scope": "",
+        "unit": "percent",
+        "grain": "daily_company",
+        "value": null,
+        "status": "pending",
+        "evidence": [],
+        "notes": "Derived ratio of defined company-level aggregates; NULL for zero denominator"
+      },
+      {
+        "id": "company_revenue_change_pct",
+        "label": "Company revenue period-over-period change",
+        "source": "commerce.sales",
+        "formula": "100*(revenue_current-revenue_prior)/NULLIF(revenue_prior,0)",
+        "allowed_dimensions": [
+          "all"
+        ],
+        "scope": "",
+        "unit": "percent",
+        "grain": "comparable_periods",
+        "value": null,
+        "status": "pending",
+        "evidence": [],
+        "notes": "Same length/comparable calendar period; set unavailable if prior coverage insufficient"
+      },
+      {
+        "id": "order_count",
+        "label": "Order count",
+        "source": "commerce.orders",
+        "formula": "COUNT(DISTINCT order_id)",
+        "allowed_dimensions": [
+          "all",
+          "region",
+          "order_source"
+        ],
+        "scope": "",
+        "unit": "orders",
+        "grain": "orders",
+        "value": null,
+        "status": "pending",
+        "evidence": [],
+        "notes": "No implicit status filter"
+      },
+      {
+        "id": "delivered_line_revenue",
+        "label": "Delivered order-line revenue",
+        "source": "commerce.order_items + commerce.orders",
+        "formula": "SUM(quantity*unit_price-discount_amount) WHERE orders.order_status = delivered",
+        "allowed_dimensions": [
+          "all",
+          "category",
+          "region",
+          "product",
+          "order_source"
+        ],
+        "scope": "",
+        "unit": "unknown_currency_amount",
+        "grain": "order_items",
+        "value": null,
+        "status": "pending",
+        "evidence": [],
+        "notes": "Never reconcile or mix with company_revenue; aggregate by order_date and approved joins"
+      },
+      {
+        "id": "delivered_average_order_value",
+        "label": "Delivered AOV",
+        "source": "commerce.order_items + commerce.orders",
+        "formula": "delivered_line_revenue / NULLIF(COUNT(DISTINCT delivered orders.order_id),0)",
+        "allowed_dimensions": [
+          "all",
+          "category",
+          "region",
+          "product",
+          "order_source"
+        ],
+        "scope": "",
+        "unit": "unknown_currency_amount_per_order",
+        "grain": "order_population",
+        "value": null,
+        "status": "pending",
+        "evidence": [],
+        "notes": "If dimension product/category, denominator is delivered orders containing that dimension; not company-level AOV"
+      },
+      {
+        "id": "promotion_discount",
+        "label": "Order-line discount total",
+        "source": "commerce.order_items + commerce.orders",
+        "formula": "SUM(discount_amount)",
+        "allowed_dimensions": [
+          "all",
+          "category",
+          "region",
+          "product",
+          "order_source"
+        ],
+        "scope": "",
+        "unit": "unknown_currency_amount",
+        "grain": "order_items",
+        "value": null,
+        "status": "pending",
+        "evidence": [],
+        "notes": "Descriptive discount only, not promotion ROI"
+      },
+      {
+        "id": "sessions",
+        "label": "Web sessions",
+        "source": "commerce.web_traffic",
+        "formula": "SUM(sessions)",
+        "allowed_dimensions": [
+          "all"
+        ],
+        "scope": "",
+        "unit": "sessions",
+        "grain": "date_traffic_source",
+        "value": null,
+        "status": "pending",
+        "evidence": [],
+        "notes": "Do not infer conversion/attribution to orders"
+      }
+    ],
+    "dashboard": {
+      "layout": "fixed",
+      "columns": 2,
+      "widgets": [
+        {
+          "id": "sales_kpis",
+          "type": "kpi_row",
+          "title": "Company financial KPIs",
+          "metric_ids": [
+            "company_revenue",
+            "company_gross_profit",
+            "company_gross_margin_pct",
+            "company_revenue_change_pct"
+          ],
+          "x_dimension": "period",
+          "data": [],
+          "notes": ""
+        },
+        {
+          "id": "sales_trend",
+          "type": "line",
+          "title": "Company revenue and gross profit",
+          "metric_ids": [
+            "company_revenue",
+            "company_gross_profit"
+          ],
+          "x_dimension": "period",
+          "data": [],
+          "notes": ""
+        },
+        {
+          "id": "order_kpis",
+          "type": "kpi_row",
+          "title": "Orders and delivered-line sales",
+          "metric_ids": [
+            "order_count",
+            "delivered_line_revenue",
+            "delivered_average_order_value"
+          ],
+          "x_dimension": "period",
+          "data": [],
+          "notes": ""
+        },
+        {
+          "id": "line_breakdown",
+          "type": "bar",
+          "title": "Delivered-line revenue by selected dimension",
+          "metric_ids": [
+            "delivered_line_revenue"
+          ],
+          "x_dimension": "dimension",
+          "data": [],
+          "notes": "If all selected, display single total; unsupported dimensions yield no data"
+        },
+        {
+          "id": "sales_discount",
+          "type": "line",
+          "title": "Line discounts over time",
+          "metric_ids": [
+            "promotion_discount"
+          ],
+          "x_dimension": "period",
+          "data": [],
+          "notes": ""
+        },
+        {
+          "id": "web_sessions",
+          "type": "line",
+          "title": "Website sessions (separate source)",
+          "metric_ids": [
+            "sessions"
+          ],
+          "x_dimension": "period",
+          "data": [],
+          "notes": "No conversion or revenue attribution"
+        }
+      ]
+    },
+    "decisions": [
+      {
+        "id": "S01",
+        "title": "Revenue decline",
+        "condition": "company_revenue_change_pct < 0 AND both periods have sufficient coverage",
+        "action": "Review company-level revenue trend and investigate; do not assert cause",
+        "required_metric_ids": [
+          "company_revenue_change_pct"
+        ],
+        "triggered": null,
+        "evidence": [],
+        "priority": "fixed_rule_order",
+        "status": "pending"
+      },
+      {
+        "id": "S02",
+        "title": "Nonpositive gross profit",
+        "condition": "company_gross_profit <= 0 AND company_revenue > 0",
+        "action": "Review company-level COGS and pricing conditions",
+        "required_metric_ids": [
+          "company_gross_profit",
+          "company_revenue"
+        ],
+        "triggered": null,
+        "evidence": [],
+        "priority": "fixed_rule_order",
+        "status": "pending"
+      },
+      {
+        "id": "S03",
+        "title": "Positive revenue with negative profit trend",
+        "condition": "company_revenue_change_pct > 0 AND gross_profit_current < gross_profit_prior AND comparable coverage",
+        "action": "Investigate increased cost pressure; avoid causal claims",
+        "required_metric_ids": [
+          "company_revenue_change_pct",
+          "company_gross_profit"
+        ],
+        "triggered": null,
+        "evidence": [],
+        "priority": "fixed_rule_order",
+        "status": "pending"
+      },
+      {
+        "id": "S04",
+        "title": "No decision trigger",
+        "condition": "none of S01-S03 triggered and required metrics available",
+        "action": "No predefined risk trigger; do not assert business health",
+        "required_metric_ids": [
+          "company_revenue",
+          "company_gross_profit"
+        ],
+        "triggered": null,
+        "evidence": [],
+        "priority": "fixed_rule_order",
+        "status": "pending"
+      }
+    ],
+    "data_quality": {
+      "coverage_start": null,
+      "coverage_end": null,
+      "partial_period": null,
+      "missing_or_unmatched_count": null,
+      "limitations": []
+    },
+    "sections": {
+      "executive_summary": {
+        "revenue_overview": null,
+        "profitability_overview": null,
+        "order_activity": null
+      },
+      "sales_kpis": {
+        "company_revenue": null,
+        "company_cogs": null,
+        "company_gross_profit": null,
+        "company_gross_margin_pct": null,
+        "company_revenue_change_pct": null,
+        "order_count": null,
+        "delivered_line_revenue": null,
+        "delivered_average_order_value": null,
+        "promotion_discount": null,
+        "sessions": null
+      },
+      "performance_analysis": {
+        "company_revenue_trend": null,
+        "delivered_order_line_breakdown": null,
+        "discount_activity": null,
+        "web_traffic": null
+      },
+      "key_findings_and_explanations": {
+        "revenue_movement": null,
+        "profitability": null,
+        "order_activity": null
+      },
+      "decision_support": {
+        "rule_ids": [
+          "S01",
+          "S02",
+          "S03",
+          "S04"
+        ]
+      }
+    }
+  },
+  "report_specific_rules": {
+    "critical": "company-level sales metrics are all-dimension only; order-line dimensions must not change company revenue KPIs",
+    "decision_precedence": "S01 -> S02 -> S03 -> S04",
+    "policy": "No fabricated category gross profit, conversion, marketing ROI, or customer CLV"
+  },
+  "section_contract": [
+    {
+      "id": "executive_summary",
+      "title": "Executive Summary",
+      "fixed_slots": [
+        {
+          "id": "revenue_overview",
+          "metric_ids": [
+            "company_revenue",
+            "company_revenue_change_pct"
+          ]
+        },
+        {
+          "id": "profitability_overview",
+          "metric_ids": [
+            "company_gross_profit",
+            "company_gross_margin_pct"
+          ]
+        },
+        {
+          "id": "order_activity",
+          "metric_ids": [
+            "order_count"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sales_kpis",
+      "title": "Sales KPIs",
+      "fixed_metric_ids": [
+        "company_revenue",
+        "company_cogs",
+        "company_gross_profit",
+        "company_gross_margin_pct",
+        "company_revenue_change_pct",
+        "order_count",
+        "delivered_line_revenue",
+        "delivered_average_order_value",
+        "promotion_discount",
+        "sessions"
+      ]
+    },
+    {
+      "id": "performance_analysis",
+      "title": "Performance Analysis",
+      "fixed_slots": [
+        {
+          "id": "company_revenue_trend",
+          "widget_id": "sales_trend",
+          "metric_ids": [
+            "company_revenue"
+          ]
+        },
+        {
+          "id": "delivered_order_line_breakdown",
+          "widget_id": "line_breakdown",
+          "metric_ids": [
+            "delivered_line_revenue"
+          ]
+        },
+        {
+          "id": "discount_activity",
+          "widget_id": "sales_discount",
+          "metric_ids": [
+            "promotion_discount"
+          ]
+        },
+        {
+          "id": "web_traffic",
+          "widget_id": "web_sessions",
+          "metric_ids": [
+            "sessions"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "key_findings_and_explanations",
+      "title": "Key Findings & Explanations",
+      "fixed_slots": [
+        {
+          "id": "revenue_movement",
+          "metric_ids": [
+            "company_revenue_change_pct"
+          ]
+        },
+        {
+          "id": "profitability",
+          "metric_ids": [
+            "company_gross_profit",
+            "company_gross_margin_pct"
+          ]
+        },
+        {
+          "id": "order_activity",
+          "metric_ids": [
+            "order_count",
+            "delivered_average_order_value"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "decision_support",
+      "title": "Decision Support",
+      "fixed_rule_ids": [
+        "S01",
+        "S02",
+        "S03",
+        "S04"
+      ]
+    }
+  ]
+}

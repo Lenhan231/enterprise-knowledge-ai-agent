@@ -1,0 +1,40 @@
+#sales-report-output, .sales-report-view { margin-top: 1.5rem; overflow-wrap: anywhere; }
+.sales-report-section { border-top: 1px solid var(--line); margin-top: 1.5rem; padding-top: 1rem; }
+.sales-report-section h4 { margin: 1rem 0 .5rem; }
+.sales-report-kpis, .sales-report-widgets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.sales-report-kpis > div, .sales-report-widget { border: 1px solid var(--line); border-radius: .5rem; padding: 1rem; min-width: 0; }
+.sales-report-kpis dd { margin: .5rem 0; font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+.sales-report-kpis small { display: block; }
+.sales-report-widget svg { width: 100%; height: auto; }
+.sales-report-table { overflow-x: auto; }
+.sales-report-table table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+.sales-report-table th, .sales-report-table td { text-align: left; padding: .5rem; border-bottom: 1px solid var(--line); }
+#sales-report-output details, .sales-report-view details { margin: .75rem 0; }
+#sales-report-output summary, .sales-report-view summary { cursor: pointer; }
+@media (max-width: 767px) { .sales-report-kpis, .sales-report-widgets { grid-template-columns: minmax(0, 1fr); } }
+.reports-workspace { display:grid;grid-template-columns:15rem minmax(0,1fr);gap:1.5rem;align-items:start;margin-top:1.5rem; }
+.rw-main { min-width:0; }
+.reports-workspace #report-fold { margin-top:0; }
+.rw-sidebar { position:sticky;top:1.5rem;background:var(--surface);border:1px solid var(--line);border-radius:.75rem;padding:1rem; }
+.rw-sidebar h2 { font-size:1rem;margin:0 0 1rem; }
+.rw-sidebar button,.rw-toolbar button,#rw-edit-panel button { border:1px solid var(--line-strong);border-radius:.5rem;padding:.5rem .75rem;background:var(--surface);color:var(--ink);font:inherit;cursor:pointer; }
+#rw-library { display:grid;gap:.5rem;margin-top:1rem;max-height:65vh;overflow:auto; }
+#rw-library button { display:grid;gap:.5rem;text-align:left;overflow-wrap:anywhere; }
+#rw-library button[aria-current="true"] { border-color:var(--accent);background:var(--accent-soft); }
+#rw-library small { color:var(--muted); }
+.rw-toolbar { display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0; }
+.rw-toolbar button[aria-pressed="true"] { background:var(--accent);color:var(--on-accent); }
+#rw-editor label,#rw-edit-panel label { display:block;margin:.75rem 0 .5rem;font-weight:600; }
+#rw-editor input,#rw-edit-panel textarea,#rw-edit-panel select { box-sizing:border-box;width:100%;padding:.75rem;border:1px solid var(--line-strong);border-radius:.5rem;color:var(--ink);background:var(--surface-2);font:inherit; }
+#rw-edit-panel fieldset { margin:1rem 0;padding:1rem;border:1px solid var(--line);border-radius:.5rem;min-width:0; }
+#rw-edit-panel textarea { min-height:10rem;resize:vertical; }
+#report-workspace-status[data-error="true"] { color:var(--danger); }
+.sales-citation { margin-left:.25rem;font-size:.7em;white-space:nowrap; }
+.sales-citation a { color:var(--accent-ink);text-decoration:none;padding:.15rem; }
+.sales-report-period,.sales-chart-legend,.sales-edited-label { color:var(--muted); }
+.sales-widget-value { font-size:1.75rem;font-weight:700; }
+.sales-report-footnotes { border-top:2px solid var(--line);margin-top:2rem;padding-top:1rem;font-size:.85rem;color:var(--muted); }
+.sales-source,.sales-report-footnotes section { scroll-margin-top:4rem;padding:.5rem;border-radius:.5rem; }
+.sales-source:target,.sales-report-footnotes section:target { background:var(--accent-soft);outline:1px solid var(--accent); }
+.sales-data-note-link { font-size:.8rem;color:var(--muted); }
+@media(max-width:1000px) { .reports-workspace { grid-template-columns:minmax(0,1fr); }.rw-sidebar{position:static;}#rw-library{max-height:12rem;} }

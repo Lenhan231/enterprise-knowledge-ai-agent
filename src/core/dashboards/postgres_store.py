@@ -14,6 +14,8 @@ from core.dashboards.store import DashboardStore, Conflict, StoreUnavailable
 
 
 class PostgresDashboardStore(DashboardStore):
+    # Table identifiers come only from trusted artifact-store subclasses.
+    table = 'dashboard_private.dashboards'
     def __init__(self, database_url=None):
         self.database_url = database_url or os.getenv('DATABASE_URL')
         if not self.database_url:
@@ -32,7 +34,7 @@ class PostgresDashboardStore(DashboardStore):
                     cursor.execute('SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))', (owner,))
                 yield cursor
         except psycopg.errors.UniqueViolation as error:
-            raise Conflict('Dashboard already exists. Reopen it before saving.') from error
+            raise Conflict(f'{self.artifact_label} already exists. Reopen it before saving.') from error
         except psycopg.Error as error:
             raise StoreUnavailable('Dashboard storage is unavailable.') from error
         finally:
@@ -42,20 +44,20 @@ class PostgresDashboardStore(DashboardStore):
     def list(self, subject):
         owner = self.owner(subject)
         with self.connect_owner(owner) as cursor:
-            cursor.execute('SELECT id,title,revision,updated AS updated_at FROM dashboard_private.dashboards WHERE owner=%s ORDER BY updated DESC,id', (owner,))
+            cursor.execute(f'SELECT id,title,revision,updated AS updated_at FROM {self.table} WHERE owner=%s ORDER BY updated DESC,id', (owner,))
             return [{**row, 'updated_at': row['updated_at'].isoformat()} for row in cursor.fetchall()]
 
     def get(self, subject, identifier):
         owner = self.owner(subject)
         with self.connect_owner(owner) as cursor:
-            cursor.execute('SELECT document FROM dashboard_private.dashboards WHERE owner=%s AND id=%s', (owner, identifier))
+            cursor.execute(f'SELECT document FROM {self.table} WHERE owner=%s AND id=%s', (owner, identifier))
             row = cursor.fetchone()
-        return reconcile(DashboardDocument.model_validate_json(row['document'])) if row else None
+        return self.decode(row['document']) if row else None
 
     def html(self, subject, identifier):
         owner = self.owner(subject)
         with self.connect_owner(owner) as cursor:
-            cursor.execute('SELECT html FROM dashboard_private.dashboards WHERE owner=%s AND id=%s', (owner, identifier))
+            cursor.execute(f'SELECT html FROM {self.table} WHERE owner=%s AND id=%s', (owner, identifier))
             row = cursor.fetchone()
         return row['html'] if row else None
 
@@ -64,24 +66,24 @@ class PostgresDashboardStore(DashboardStore):
         owner = self.owner(subject)
         with self.connect_owner(owner, write=True) as cursor:
             if expected_revision is None:
-                cursor.execute('SELECT count(*) AS total FROM dashboard_private.dashboards WHERE owner=%s', (owner,))
+                cursor.execute(f'SELECT count(*) AS total FROM {self.table} WHERE owner=%s', (owner,))
                 if cursor.fetchone()['total'] >= 100:
-                    raise ValueError('Saved dashboard limit reached (100). Delete an old dashboard first.')
-                cursor.execute('INSERT INTO dashboard_private.dashboards (id,owner,revision,title,updated,document,html) VALUES (%s,%s,%s,%s,%s,%s,%s)',
+                    raise ValueError(f'Saved {self.artifact_label.lower()} limit reached (100). Delete an old {self.artifact_label.lower()} first.')
+                cursor.execute(f'INSERT INTO {self.table} (id,owner,revision,title,updated,document,html) VALUES (%s,%s,%s,%s,%s,%s,%s)',
                     (doc.id, owner, doc.revision, doc.title, doc.updated_at, encoded, html))
             else:
-                cursor.execute('UPDATE dashboard_private.dashboards SET revision=%s,title=%s,updated=%s,document=%s,html=%s WHERE owner=%s AND id=%s AND revision=%s',
+                cursor.execute(f'UPDATE {self.table} SET revision=%s,title=%s,updated=%s,document=%s,html=%s WHERE owner=%s AND id=%s AND revision=%s',
                     (doc.revision, doc.title, doc.updated_at, encoded, html, owner, doc.id, expected_revision))
                 if not cursor.rowcount:
-                    raise Conflict('Dashboard changed. Reopen it before saving.')
+                    raise Conflict(f'{self.artifact_label} changed. Reopen it before saving.')
         return doc
 
     def delete(self, subject, identifier, revision):
         owner = self.owner(subject)
         with self.connect_owner(owner, write=True) as cursor:
-            cursor.execute('DELETE FROM dashboard_private.dashboards WHERE owner=%s AND id=%s AND revision=%s', (owner, identifier, revision))
+            cursor.execute(f'DELETE FROM {self.table} WHERE owner=%s AND id=%s AND revision=%s', (owner, identifier, revision))
             if not cursor.rowcount:
-                raise Conflict('Dashboard changed. Reopen it before deleting.')
+                raise Conflict(f'{self.artifact_label} changed. Reopen it before deleting.')
 
     def import_sqlite(self, path):
         """Copy legacy records without changing IDs/owners/revisions or replacing shared records."""
@@ -94,7 +96,7 @@ class PostgresDashboardStore(DashboardStore):
         for owner in owners:
             records = [row for row in rows if row['owner'] == owner]
             with self.connect_owner(owner, write=True) as cursor:
-                cursor.execute('SELECT id FROM dashboard_private.dashboards WHERE owner=%s', (owner,))
+                cursor.execute(f'SELECT id FROM {self.table} WHERE owner=%s', (owner,))
                 existing = {row['id'] for row in cursor.fetchall()}
                 if len(existing | {row['id'] for row in records}) > 100:
                     raise ValueError('Import exceeds the saved dashboard limit for an owner; source was retained.')
@@ -102,7 +104,7 @@ class PostgresDashboardStore(DashboardStore):
                     doc = DashboardDocument.model_validate_json(row['document'])
                     if (doc.id, doc.revision, doc.title) != (row['id'], row['revision'], row['title']):
                         raise ValueError('Legacy dashboard metadata does not match its document; source was retained.')
-                    cursor.execute('INSERT INTO dashboard_private.dashboards (id,owner,revision,title,updated,document,html) VALUES (%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (id) DO NOTHING',
+                    cursor.execute(f'INSERT INTO {self.table} (id,owner,revision,title,updated,document,html) VALUES (%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (id) DO NOTHING',
                         (row['id'], owner, row['revision'], row['title'], row['updated'], row['document'], row['html']))
                     imported += cursor.rowcount
         return {'imported': imported, 'existing': len(rows) - imported}

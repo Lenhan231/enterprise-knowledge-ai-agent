@@ -8,10 +8,7 @@ Each task agent is knowledge or sql, with id and focused question. Optional depe
 Optional inputs is a list of {{"task_id":"predecessor", "kind":"rows or evidence", "field":"optional column"}}.
 Available agents: knowledge (policies, documents, explanations), sql (read-only structured commerce data).
 Current trusted workflow: {workflow}.
-Report and Dashboard are standalone modes, NOT available tools. In chat workflow, if asked specifically for
-those modes, explain in clarification that the user should select the standalone mode.
-In report_sources workflow the user is ALREADY inside the Report agent: collect the document/SQL evidence
-needed for the report question and supplied headings. Do not redirect to Report or generate the report here.
+{workflow_rules}
 Keep original language, entities, dates, every number, amount and quantity, metric definitions, filters and
 comparison scope; a knowledge task for a calculation must keep all of its inputs. Resolve follow-ups
 only from supplied conversation context; if a material referent is unknown, ask a targeted clarification.

@@ -29,6 +29,11 @@ def create_dashboard_store():
 
 
 class DashboardStore:
+    artifact_label = 'Dashboard'
+    @staticmethod
+    def decode(encoded):
+        return reconcile(DashboardDocument.model_validate_json(encoded))
+
     def __init__(self, directory=None):
         self.directory = Path(directory or os.getenv('DASHBOARD_STORAGE_DIR', 'artifacts/local/dashboards'))
         self.directory.mkdir(parents=True, exist_ok=True)
@@ -56,7 +61,7 @@ class DashboardStore:
     def get(self, subject, identifier):
         with self.connect() as db:
             row = db.execute('SELECT document FROM dashboards WHERE owner=? AND id=?', (self.owner(subject), identifier)).fetchone()
-        return reconcile(DashboardDocument.model_validate_json(row[0])) if row else None
+        return self.decode(row[0]) if row else None
 
     def html(self, subject, identifier):
         with self.connect() as db:
@@ -85,16 +90,16 @@ class DashboardStore:
             if expected_revision is None:
                 count = db.execute('SELECT count(*) FROM dashboards WHERE owner=?', (owner,)).fetchone()[0]
                 if count >= 100:
-                    raise ValueError('Saved dashboard limit reached (100). Delete an old dashboard first.')
+                    raise ValueError(f'Saved {self.artifact_label.lower()} limit reached (100). Delete an old {self.artifact_label.lower()} first.')
                 db.execute('INSERT INTO dashboards VALUES (?,?,?,?,?,?,?)', (doc.id, owner, doc.revision, doc.title, doc.updated_at.isoformat(), encoded, html))
             else:
                 changed = db.execute('UPDATE dashboards SET revision=?,title=?,updated=?,document=?,html=? WHERE owner=? AND id=? AND revision=?', (doc.revision, doc.title, doc.updated_at.isoformat(), encoded, html, owner, doc.id, expected_revision)).rowcount
                 if not changed:
-                    raise Conflict('Dashboard changed. Reopen it before saving.')
+                    raise Conflict(f'{self.artifact_label} changed. Reopen it before saving.')
         return doc
 
     def delete(self, subject, identifier, revision):
         with self.connect() as db:
             changed = db.execute('DELETE FROM dashboards WHERE owner=? AND id=? AND revision=?', (self.owner(subject), identifier, revision)).rowcount
             if not changed:
-                raise Conflict('Dashboard changed. Reopen it before deleting.')
+                raise Conflict(f'{self.artifact_label} changed. Reopen it before deleting.')

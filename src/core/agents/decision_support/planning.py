@@ -36,6 +36,13 @@ async def plan_request(request, provider, *, history=(), previous=None, report_h
     if report_headings is not None:
         data['report_headings'] = report_headings
     prompt = PLANNING_PROMPT.format(workflow='report_sources' if report_headings is not None else 'chat',
+                                    workflow_rules=(
+                                        'The user is ALREADY inside the Report agent. Collect document/SQL evidence for the report question and supplied headings. '
+                                        'Never ask the user to select or switch modes, and do not generate the report here. '
+                                        'Clarification may ask only for missing business scope or definitions.'
+                            if report_headings is not None else
+                                        'Report and Dashboard are standalone modes, NOT available tools. In chat workflow, if asked specifically '
+                                        'for those modes, explain in clarification that the user should select the standalone mode.'),
                                     data=json.dumps(data, ensure_ascii=False, default=str))
     for attempt in range(2):
         try:
@@ -57,6 +64,10 @@ async def plan_request(request, provider, *, history=(), previous=None, report_h
                 payload['tasks'] = [task.model_dump() for task in trusted.tasks if task.id in completed] + [
                     task for task in payload.get('tasks', []) if task.get('id') not in completed]
             result = AgentPlan.model_validate(payload)
+            if report_headings is not None and result.clarification and re.search(
+                    r'\bchat workflow\b|\b(?:select|switch to|open|choose)\b.{0,80}\b(?:standalone report|report (?:mode|interface|screen))\b',
+                    result.clarification, re.I | re.S):
+                raise ValueError('Report source planning cannot redirect to Report mode')
             required_tools = set(selected_tools or ())
             if is_product_profit_recommendation(request.question):
                 required_tools.update(('knowledge', 'sql'))

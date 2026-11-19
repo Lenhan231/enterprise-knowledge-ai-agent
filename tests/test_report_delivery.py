@@ -52,11 +52,16 @@ class ReportDeliveryTest(unittest.TestCase):
             token = jwt.encode({'sub': 'analyst', 'role': 'admin', 'exp': 4102444800}, SECRET, algorithm='HS256')
             with patch.dict(os.environ, {'AUTH_SECRET_KEY': SECRET}), patch('app.agents._record_agent_run'), TestClient(app) as client:
                 response = client.post(path, data={'question': 'Inventory report', 'template_choice': 'suggested',
-                    'accept_supported_scope': 'true'}, headers={'Authorization': 'Bearer '+token})
+                    'accept_supported_scope': 'true', 'report_type': 'inventory_risk'}, headers={'Authorization': 'Bearer '+token})
+                rejected = client.post(path, data={'question': 'Report', 'report_type': 'financial_forecast'},
+                    headers={'Authorization': 'Bearer '+token})
             self.assertEqual(response.status_code, 409)
+            self.assertEqual(rejected.status_code, 422)
             self.assertTrue(response.json()['detail']['scope_decision_required'])
             self.assertEqual(report.generate_from_template.await_args.kwargs['template_choice'], 'suggested')
             self.assertIs(report.generate_from_template.await_args.kwargs['accept_supported_scope'], True)
+            self.assertEqual(report.generate_from_template.await_args.args[0].metadata['report_type'], 'inventory_risk')
+            report.generate_from_template.assert_awaited_once()
 
     def test_both_apis_return_actionable_clarification_instead_of_503(self):
         clarification = "Do you mean refunded amount, returned units, or return rate?"

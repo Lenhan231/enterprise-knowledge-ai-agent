@@ -274,8 +274,9 @@ async def agent_chat_stream(
 @router.post("/report")
 async def generate_agent_report(
     http_request: Request, question: str = Form(...), template: UploadFile | None = File(None),
-    source_mode: Literal["documents", "analytics", "orchestrated", "combined"] = Form("documents"),
+    source_mode: Literal["documents", "analytics", "orchestrated", "combined"] | None = Form(None),
     output_format: Literal["markdown", "docx"] | None = Form(None),
+    report_type: Literal['sales_performance', 'inventory_risk'] | None = Form(None),
     template_choice: Literal['uploaded', 'suggested'] | None = Form(None),
     accept_supported_scope: bool = Form(False),
     conversation_id: str | None = Form(None, max_length=128),
@@ -296,9 +297,12 @@ async def generate_agent_report(
             raise HTTPException(413, "Report template exceeds 10 MiB")
         agent_request = _agent_request(user, AgentChatRequest(question=question).question,
                                        conversation_id=conversation_id)
+        if report_type:
+            agent_request.metadata['report_type'] = report_type
         from core.reports.sources import authorize_sources
         from core.reports.http import report_response
-        authorize_sources(agent_request, source_mode)
+        if source_mode is not None:
+            authorize_sources(agent_request, source_mode)
         runtime = await _get_runtime(http_request.app)
         filename = Path(template.filename or "").name if template else None
         result, output, media_type = await runtime.report_agent.generate_from_template(

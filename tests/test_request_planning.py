@@ -28,6 +28,30 @@ def plan(*tasks, objective='Compare 2021 and 2022 revenue with policy'):
 
 
 class RequestPlanningTest(unittest.IsolatedAsyncioTestCase):
+    async def test_report_sources_repair_chat_redirect_without_exposing_it(self):
+        redirect = {'clarification': "I'm in the chat workflow. Please select the standalone Report mode."}
+        payload = plan({'id': 's', 'agent': 'sql', 'question': 'Revenue in 2026'})
+        llm = Provider(redirect, payload)
+        result = await plan_request(AgentRequest(question='Create a business report in 2026'), llm,
+                                    report_headings=['Summary'])
+        self.assertIsNone(result.clarification)
+        self.assertEqual(result.tasks[0].question, 'Revenue in 2026')
+        self.assertEqual(len(llm.prompts), 2)
+        self.assertNotIn('In chat workflow, if asked specifically', llm.prompts[0])
+
+    async def test_report_sources_repeated_redirects_fail_instead_of_asking_to_switch_modes(self):
+        redirect = {'clarification': 'Please select the standalone Report mode.'}
+        llm = Provider(redirect, redirect)
+        with self.assertRaises(ValueError):
+            await plan_request(AgentRequest(question='Create a business report'), llm, report_headings=['Summary'])
+        self.assertEqual(len(llm.prompts), 2)
+
+    async def test_report_sources_preserve_real_business_clarifications(self):
+        llm = Provider({'clarification': 'Which year should the report cover?'})
+        result = await plan_request(AgentRequest(question='Create a business report'), llm, report_headings=['Summary'])
+        self.assertEqual(result.clarification, 'Which year should the report cover?')
+        self.assertEqual(len(llm.prompts), 1)
+
     def test_rejects_cycles_unknown_agents_and_forged_fields(self):
         invalid = [
             plan({'id': 'a', 'agent': 'sql', 'question': 'revenue', 'depends_on': ['a']}),

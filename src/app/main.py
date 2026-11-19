@@ -31,6 +31,7 @@ from app.security import (
 )
 from app.agents import router as agents_router
 from app.dashboards import router as dashboards_router
+from app.reports import router as reports_router
 from app.retrieval import router as retrieval_router
 from app.upload_test import (
     create_upload_test, get_upload_test_preview, inspect_upload_test,
@@ -62,6 +63,7 @@ app = FastAPI(title="Commerce Decision Support", lifespan=_lifespan)
 app.include_router(upload_test_router)
 app.include_router(agents_router)
 app.include_router(dashboards_router)
+app.include_router(reports_router)
 app.include_router(retrieval_router)
 
 APP_DIR = Path(__file__).resolve().parent

@@ -12,12 +12,40 @@ from zipfile import BadZipFile, ZipFile
 from docx import Document
 from docx.oxml import OxmlElement
 from docx.text.paragraph import Paragraph
+from lxml import etree
 
 
 MAX_TEMPLATE_BYTES = 10 * 1024 * 1024
 MAX_DOCX_EXPANDED_BYTES = 20 * 1024 * 1024
 _HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")
 _TABLE_SEPARATOR = re.compile(r"^\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)*\|?$")
+_PLACEHOLDER = re.compile(r'\{\{.*?\}\}', re.S)
+
+# shortcut: reviewed aliases only; extend this vocabulary when new business wording is confirmed.
+SECTION_ALIASES = {
+    'summary': ('summary', 'executive summary', 'business overview', 'overview', 'management summary'),
+    'sales': ('sales performance', 'sales results', 'commercial results', 'revenue analysis', 'sales analysis', 'order performance', 'orders'),
+    'inventory': ('inventory position', 'inventory levels', 'stock levels', 'category stock', 'stock on hand', 'inventory overview'),
+    'risk': ('risk assessment', 'inventory risk', 'inventory risks', 'stock risks', 'recorded exceptions', 'stockout analysis'),
+    'context': ('operating policy', 'policy context', 'policies and procedures', 'recommendations', 'recommended actions'),
+    'limitations': ('limitations', 'data gaps', 'data availability', 'scope and limitations'),
+}
+REPORT_CAPABILITIES = {
+    'sales_performance': {'summary', 'sales', 'context', 'limitations'},
+    'inventory_risk': {'summary', 'inventory', 'risk', 'context', 'limitations'},
+}
+
+
+def normalized_label(text):
+    return re.sub(r'[^\w]+', ' ', text.casefold().replace('_', ' ')).strip()
+
+
+def section_capability(heading, report_type):
+    label = normalized_label(heading)
+    if label in {'findings', 'key findings', 'kpis', 'key metrics'}:
+        return 'sales' if report_type == 'sales_performance' else 'inventory'
+    return next((capability for capability, aliases in SECTION_ALIASES.items()
+                 if capability in REPORT_CAPABILITIES[report_type] and label in (*aliases, capability)), None)
 
 
 @dataclass(frozen=True)
@@ -28,6 +56,12 @@ class ReportTemplate:
     table_headers: tuple[tuple[str, ...], ...]
     table_sections: tuple[str, ...] = ()
     marked: bool = False
+    preserve_static: bool = False
+
+    @property
+    def placeholders(self):
+        return tuple(['{{report:' + h + '}}' for h in self.headings] +
+                     (['{{report:rows}}'] if self.table_headers else [])) if self.marked else ()
 
 
 def default_report_template(output_format="markdown") -> ReportTemplate:
@@ -54,10 +88,18 @@ def _bounded_template(format, content, headings, tables, owners, marked=False):
         raise ValueError("Template supports at most 20 tables with 1 to 20 columns")
     if any(not owner for owner in owners):
         raise ValueError("Every table must follow a heading")
+    if any('{{' in text or '}}' in text for text in [*headings, *(cell for columns in tables for cell in columns)]):
+        raise ValueError('Template headings and table headers cannot contain placeholders')
     return ReportTemplate(format, content, tuple(headings), tuple(tables), tuple(owners), marked)
 
 
 def _validate_markers(blocks, headings):
+    allowed = {'{{report:' + heading + '}}' for heading in headings} | {'{{report:rows}}'}
+    for _, text in blocks:
+        if any(marker not in allowed for marker in _PLACEHOLDER.findall(text)):
+            raise ValueError('Unsupported template placeholder; use standalone {{report:Heading}} or {{report:rows}}')
+        if '{{' in _PLACEHOLDER.sub('', text) or '}}' in _PLACEHOLDER.sub('', text):
+            raise ValueError('Malformed template placeholder')
     marked = any('{{report:' in text for kind, text in blocks)
     if not marked:
         return False
@@ -141,6 +183,20 @@ def parse_report_template(filename: str, content: bytes) -> ReportTemplate:
             owners.append(owner)
             blocks.append(('table', '\n'.join(' | '.join(c.text for c in r.cells) for r in block.rows[1:])))
     marked = _validate_markers(blocks, headings)
+    # Headers, footers and text boxes are static, never fill regions.
+    for part in document.part.package.parts:
+        if part.partname.endswith('.xml'):
+            try:
+                root = etree.fromstring(part.blob, parser=etree.XMLParser(resolve_entities=False, no_network=True))
+            except etree.XMLSyntaxError as error:
+                raise ValueError('DOCX template XML could not be read') from error
+            if part is document.part:
+                static = root.xpath('//*[local-name()="txbxContent"]')
+                text = ''.join(''.join(node.itertext()) for node in static)
+            else:
+                text = ''.join(root.itertext())
+            if '{{' in text or '}}' in text:
+                raise ValueError('Unsupported placeholder outside a report fill region')
     return _bounded_template("docx", content, headings, table_headers, owners, marked)
 
 
@@ -157,6 +213,8 @@ def render_report_template(template: ReportTemplate, sections: dict[str, str],
             raise ValueError("Report table rows must match the template column count")
         if any(not isinstance(cell, str) for row in rows for cell in row):
             raise ValueError("Report table cells must be text")
+    if any('{{' in text or '}}' in text for text in [*sections.values(), *(cell for rows in tables for row in rows for cell in row)]):
+        raise ValueError('Unresolved report placeholder')
     if template.format == "markdown":
         return _render_markdown(template, sections, tables)
     return _render_docx(template, sections, tables)
@@ -204,7 +262,7 @@ def _render_markdown(template: ReportTemplate, sections: dict[str, str],
                     output.append(source_lines[index])
                 index += 1
             continue
-        if template.marked:
+        if template.marked or template.preserve_static:
             marker = re.fullmatch(r'\s*\{\{report:(.+)\}\}\s*', line)
             output.append(sections[marker.group(1)] if marker else line)
         index += 1
@@ -215,7 +273,7 @@ def _render_docx(template: ReportTemplate, sections: dict[str, str],
                  tables: list[list[list[str]]]) -> bytes:
     document = Document(BytesIO(template.content))
     for paragraph in list(document.paragraphs):
-        if not template.marked and not paragraph.style.name.startswith("Heading"):
+        if not template.marked and not template.preserve_static and not paragraph.style.name.startswith("Heading"):
             paragraph._p.getparent().remove(paragraph._p)
     anchors = [p for p in document.paragraphs if (
         p.text.strip().startswith('{{report:') if template.marked else p.style.name.startswith('Heading') and p.text.strip())]
@@ -232,7 +290,11 @@ def _render_docx(template: ReportTemplate, sections: dict[str, str],
                 inserted.style = "List Bullet"
                 text = text[2:]
             for index, part in enumerate(text.split("**")):
-                inserted.add_run(part).bold = bool(index % 2)
+                run = inserted.add_run(part)
+                if template.marked and paragraph.runs and paragraph.runs[0]._r.rPr is not None:
+                    run._r.insert(0, deepcopy(paragraph.runs[0]._r.rPr))
+                if index % 2:
+                    run.bold = True
             previous = element
         if template.marked:
             paragraph._p.getparent().remove(paragraph._p)

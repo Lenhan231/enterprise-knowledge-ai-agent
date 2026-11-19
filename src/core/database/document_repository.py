@@ -538,5 +538,15 @@ class DocumentRepository:
             )
             return cursor.fetchone()
 
+    def accessible_document_ids(self, identifiers: list[str], roles: list[str]) -> set[str]:
+        """Recheck current retrieval ACLs before serving a saved document excerpt."""
+        with self.conn.cursor() as cursor:
+            cursor.execute("""SELECT document_id FROM public.documents
+                              WHERE document_id = ANY(%s::text[]) AND processing_status = 'ready'
+                                AND knowledge_base_active IS TRUE
+                                AND (allowed_roles && %s::text[] OR 'admin' = ANY(%s::text[]))""",
+                           (identifiers, roles, roles))
+            return {row['document_id'] for row in cursor.fetchall()}
+
     def close(self) -> None:
         close_database_connection(self.conn)

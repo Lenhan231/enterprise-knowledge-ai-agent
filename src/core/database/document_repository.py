@@ -50,6 +50,10 @@ class DocumentRepository:
                                         SELECT 1 FROM public.document_processing_outputs output
                                         WHERE output.document_id = d.document_id
                                     ) AS has_processing_output,
+                                    EXISTS (
+                                        SELECT 1 FROM public.document_parser_chunks parser_chunk
+                                        WHERE parser_chunk.document_id = d.document_id
+                                    ) AS has_parser_chunks,
                                     d.allowed_roles,
                                     count(c.id)::int AS chunk_count,
                                     max(c.metadata->>'source_publisher') AS source_publisher,

@@ -826,6 +826,7 @@
 :root .knowledge-documents-list .knowledge-document-row{grid-template-columns:minmax(0,1fr) 232px}
 :root .knowledge-document-actions{display:grid;grid-template-columns:1fr;align-content:start;gap:8px}
 :root .knowledge-document-actions button{width:100%;justify-content:center;text-align:center}
+:root .knowledge-retry-note{padding:4px 8px;color:var(--ink-2);font-size:12px;line-height:1.4}
 @media(max-width:780px){
   :root .knowledge-documents-list .knowledge-document-row{grid-template-columns:1fr}
   :root .knowledge-document-actions{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}

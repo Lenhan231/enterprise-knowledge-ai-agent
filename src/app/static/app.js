@@ -257,7 +257,9 @@ function renderKnowledgeDocuments() {
       : uploadedSource
         ? `<a href="${escapeHtml(uploadedSource)}" target="_blank" rel="noopener noreferrer">Open uploaded file</a>`
         : href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Open source</a>` : "";
-    const canRetryEmbedding = doc.source_type === "user_upload" && doc.processing_status === "failed";
+    const isFailedUpload = doc.source_type === "user_upload" && doc.processing_status === "failed";
+    const canRetryEmbedding = isFailedUpload && doc.has_parser_chunks === true;
+    const needsReuploadForProcessing = isFailedUpload && doc.has_parser_chunks !== true;
     const reviewOpen = activeKnowledgeReview?.document_id === doc.document_id;
     return `<div class="knowledge-document-entry"><article class="knowledge-document-row ${doc.knowledge_base_active ? "" : "is-removed"}">
       <div class="knowledge-document-copy"><strong>${escapeHtml(doc.title)}</strong>
@@ -275,6 +277,7 @@ function renderKnowledgeDocuments() {
       <div class="knowledge-document-actions">
         ${doc.has_processing_output ? `<button class="secondary-button" type="button" data-review-elements="${escapeHtml(doc.document_id)}" aria-expanded="${reviewOpen ? "true" : "false"}">${reviewOpen ? "Hide element review" : "Review elements"}</button>` : ""}
         ${canRetryEmbedding ? `<button class="secondary-button" type="button" data-retry-embedding="${escapeHtml(doc.document_id)}">Retry embedding</button>` : ""}
+        ${needsReuploadForProcessing ? `<small class="knowledge-retry-note" role="note">No saved parser passages. Re-upload to process this file.</small>` : ""}
         ${doc.knowledge_base_active === false && doc.source_type === "user_upload" ? `<button class="danger-button" type="button" data-knowledge-delete="${escapeHtml(doc.document_id)}" data-title="${escapeHtml(doc.title)}">Delete permanently</button>` : ""}
         <button class="${doc.knowledge_base_active ? "danger-button" : "secondary-button"}" type="button" data-knowledge-toggle="${escapeHtml(doc.document_id)}" data-active="${doc.knowledge_base_active ? "true" : "false"}">${doc.knowledge_base_active ? "Remove from knowledge base" : "Restore to knowledge base"}</button>
       </div>

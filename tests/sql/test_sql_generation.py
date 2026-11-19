@@ -3,7 +3,7 @@ import sys
 import unittest
 from datetime import date
 from pathlib import Path
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
@@ -234,6 +234,14 @@ class SQLValidationTest(unittest.TestCase):
 
 
 class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
+        # These tests isolate the legacy SQL generation/recovery contract; structured
+        # intent behavior is exercised end-to-end in the dedicated intent suites.
+        self.intent_patcher = patch(
+            "core.agents.sql.agent.interpret_query_intent", new=AsyncMock(return_value=None))
+        self.intent_patcher.start()
+        self.addCleanup(self.intent_patcher.stop)
+
     async def test_current_year_in_latest_turn_overrides_planner_carried_prior_year(self):
         current_year = date.today().year
         sql = ('SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s '

@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 import sys
 import unittest
 from datetime import date
@@ -85,6 +86,40 @@ class FakeProvider:
 
     def generate(self, prompt, *, max_output_tokens=1000):
         self.prompts.append(prompt)
+        if prompt.startswith('Extract only the user-requested business intent.'):
+            request = json.loads(prompt[prompt.index('\n{') + 1:])
+            question = request['question']
+            metrics = sorted(resolve_metric_names(question))
+            custom = any(term in question.casefold() for term in (
+                'bán chạy nhất', 'best seller', 'best-selling', 'gross profit là',
+            ))
+            if custom:
+                metrics = []
+            current = date.fromisoformat(request['current_date'])
+            time_scope = {'mode': 'all', 'ranges': []}
+            year_match = re.search(r'\b(?:in|during|trong năm|năm)\s+(20\d{2})\b', question, re.I)
+            if year_match:
+                year = int(year_match.group(1))
+                time_scope = {'mode': 'range', 'ranges': [{
+                    'start': date(year, 1, 1).isoformat(),
+                    'end_exclusive': date(year + 1, 1, 1).isoformat(),
+                }]}
+            elif 'tháng trước' in question.casefold() or 'last month' in question.casefold():
+                end = date(current.year, current.month, 1)
+                start = date(end.year - 1, 12, 1) if end.month == 1 else date(end.year, end.month - 1, 1)
+                time_scope = {'mode': 'range', 'ranges': [{
+                    'start': start.isoformat(), 'end_exclusive': end.isoformat(),
+                }]}
+            return json.dumps({'intent': {
+                'original_question': question,
+                'operation': 'aggregate',
+                'metrics': metrics,
+                'unverified_metric_request': 'Explicit custom analysis in the request' if custom or not metrics else None,
+                'dimensions': [], 'filters': [], 'time_scope': time_scope,
+                'requested_sources': [], 'explicit_source_restriction': False,
+                'geographic_basis': None, 'geographic_coverage': None,
+                'ranking': None, 'unresolved_slots': [],
+            }})
         response = self.responses[min(self.response_index, len(self.responses) - 1)]
         self.response_index += 1
         if isinstance(response, BaseException):
@@ -140,9 +175,10 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
             ))
 
         self.assertIn(original_question, select_tables.call_args.args[0])
-        self.assertIn(original_question, provider.prompts[0])
-        self.assertIn('orders.order_date must match the specified sales cohort exactly', provider.prompts[0])
-        self.assertIn('commerce.inventory:', provider.prompts[0])
+        sql_prompt = provider.prompts[-1]
+        self.assertIn(original_question, sql_prompt)
+        self.assertIn('orders.order_date must match the specified sales cohort exactly', sql_prompt)
+        self.assertIn('commerce.inventory:', sql_prompt)
 
     def test_recent_months_revenue_plan_accepts_vietnamese_gan_day(self):
         plan = _completed_months_revenue_plan(
@@ -195,9 +231,9 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
             ))
 
         self.assertEqual(result["query_status"], "executed")
-        self.assertEqual(len(provider.prompts), 2)
-        self.assertIn('Requested metrics: {"metrics": []}', provider.prompts[0])
-        self.assertIn('do not ask for clarification', provider.prompts[1])
+        self.assertEqual(len(provider.prompts), 3)
+        self.assertIn('Requested metrics: {"metrics": []}', provider.prompts[-1])
+        self.assertIn('do not ask for clarification', provider.prompts[-1])
         repository.execute_approved_query.assert_awaited_once_with(sql)
 
     async def test_vietnamese_bridge_clarification_retries_through_orders(self):
@@ -213,7 +249,7 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
             "JOIN commerce.customers AS c ON o.customer_id = c.customer_id "
             "JOIN commerce.geography AS g ON o.zip = g.zip "
             "WHERE o.order_status = 'delivered' AND s.ship_date IS NOT NULL "
-            "AND s.delivery_date IS NOT NULL AND o.order_date >= $1 AND o.order_date < $2 "
+            "AND s.delivery_date IS NOT NULL AND s.ship_date >= $1 AND s.ship_date < $2 "
             "GROUP BY 1, 2 ORDER BY 1, 4 LIMIT 200"
         )
         provider = FakeProvider([
@@ -233,7 +269,7 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
             ))
 
         self.assertEqual(result['query_status'], 'executed', result)
-        self.assertEqual(len(provider.prompts), 2)
+        self.assertEqual(len(provider.prompts), 3)
         repository.execute_approved_query.assert_awaited_once_with(
             sql, date(2026, 1, 1), date(2027, 1, 1))
 
@@ -292,11 +328,11 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
             ))
 
         self.assertTrue(result['metadata']['clarification_required'])
-        self.assertEqual(len(provider.prompts), 1)
-        self.assertIn('commerce.order_items:', provider.prompts[0])
-        self.assertIn('commerce.orders:', provider.prompts[0])
-        self.assertIn('commerce.products:', provider.prompts[0])
-        self.assertNotIn('Interpret the question BEFORE generating SQL', provider.prompts[0])
+        self.assertEqual(len(provider.prompts), 2)
+        self.assertIn('commerce.order_items:', provider.prompts[-1])
+        self.assertIn('commerce.orders:', provider.prompts[-1])
+        self.assertIn('commerce.products:', provider.prompts[-1])
+        self.assertNotIn('Interpret the question BEFORE generating SQL', provider.prompts[-1])
 
     async def test_custom_metric_runs_unverified_with_a_sql_safe_supporting_filter(self):
         sql = (
@@ -322,7 +358,7 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result['query_status'], 'executed')
         self.assertEqual(result['metadata']['metric_validation']['status'], 'unverified')
         self.assertEqual(provider.response_index, 1)
-        self.assertNotIn('commerce.inventory:', provider.prompts[0])
+        self.assertNotIn('commerce.inventory:', provider.prompts[-1])
         repository.execute_approved_query.assert_awaited_once_with(
             sql, date(2026, 10, 1), date(2026, 11, 1))
 
@@ -348,11 +384,9 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
                 identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
             ))
 
-        self.assertEqual(result['query_status'], 'executed', result)
-        self.assertEqual(result['metadata']['metric_validation']['status'], 'unverified')
-        self.assertEqual(result['metadata']['metric_validation']['code'], 'metric_validation_failed')
-        self.assertIn('output dimension', result['metadata']['metric_validation']['reason'])
-        repository.execute_approved_query.assert_awaited_once_with(sql)
+        self.assertEqual(result['query_status'], 'rejected', result)
+        self.assertNotIn('metric_validation', result['metadata'])
+        repository.execute_approved_query.assert_not_awaited()
 
     async def test_auto_executes_unverified_metric_after_knowledge_miss(self):
         sql = (
@@ -385,7 +419,7 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result['rows'], repository.execute_approved_query.return_value)
         self.assertEqual(result['metadata']['metric_validation']['status'], 'unverified')
         self.assertEqual(result['metadata']['metric_validation']['knowledge_lookup'], 'not_found')
-        self.assertNotIn('commerce.inventory:', provider.prompts[0])
+        self.assertNotIn('commerce.inventory:', provider.prompts[-1])
         metric_retriever.assert_awaited_once()
         repository.execute_approved_query.assert_awaited_once()
 
@@ -408,7 +442,7 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result['metadata']['metric_validation']['status'], 'unverified')
         repository.execute_approved_query.assert_awaited_once_with(sql)
 
-    async def test_auto_runs_a_canonical_metric_formula_failure_as_unverified(self):
+    async def test_auto_rejects_a_canonical_metric_formula_failure(self):
         wrong = "SELECT AVG(s.revenue) AS revenue FROM commerce.sales AS s LIMIT 1"
         question = 'Total revenue'
         provider = FakeProvider([json.dumps({'sql': wrong}), json.dumps({'sql': wrong})])
@@ -424,12 +458,11 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
                 metadata={'_auto_mode': True, '_original_question': question},
             ))
 
-        self.assertEqual(result['query_status'], 'executed', result)
-        self.assertEqual(result['metadata']['metric_validation']['status'], 'unverified')
-        self.assertEqual(result['metadata']['metric_validation']['code'], 'metric_validation_failed')
-        repository.execute_approved_query.assert_awaited_once_with(wrong)
+        self.assertEqual(result['query_status'], 'rejected', result)
+        self.assertEqual(result['metadata']['metric_error_code'], 'formula_violation')
+        repository.execute_approved_query.assert_not_awaited()
 
-    async def test_comparison_cte_with_canonical_component_runs_unverified(self):
+    async def test_comparison_cte_with_canonical_component_is_not_published_as_verified(self):
         sql = """WITH product_revenue AS (
   SELECT p.product_id AS product_id, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS total_revenue
   FROM commerce.orders AS o
@@ -467,11 +500,9 @@ FROM product_groups AS pg GROUP BY 1 ORDER BY 1 LIMIT 2"""
                 metadata={'_auto_mode': True, '_original_question': question},
             ))
 
-        self.assertEqual(result['query_status'], 'executed', result)
-        self.assertEqual(result['metadata']['metric_validation']['status'], 'unverified')
-        self.assertEqual(result['metadata']['metric_validation']['code'], 'derived_metric_formula_mismatch')
-        repository.execute_approved_query.assert_awaited_once_with(
-            sql, date(2026, 1, 1), date(2027, 1, 1))
+        self.assertEqual(result['query_status'], 'rejected', result)
+        self.assertEqual(result['metadata']['metric_error_code'], 'derived_metric_formula_mismatch')
+        repository.execute_approved_query.assert_not_awaited()
 
     async def test_auto_unapproved_join_executes_as_unverified_after_security_passes(self):
         class RepositoryWithUnverified(FakeRepository):
@@ -567,10 +598,10 @@ LIMIT 1"""
         result = await agent.run_payload(request)
 
         self.assertEqual(result["query_status"], "executed", result)
-        self.assertIn("commerce.order_items:", provider.prompts[0])
-        self.assertIn("quantity", provider.prompts[0])
-        self.assertIn("commerce.returns:", provider.prompts[0])
-        self.assertIn("return_quantity", provider.prompts[0])
+        self.assertIn("commerce.order_items:", provider.prompts[-1])
+        self.assertIn("quantity", provider.prompts[-1])
+        self.assertIn("commerce.returns:", provider.prompts[-1])
+        self.assertIn("return_quantity", provider.prompts[-1])
         repository.execute_approved_query.assert_awaited_once()
 
     async def test_hard_prompts_across_commerce_tables_pass_sql_planning_and_validation(self):
@@ -792,8 +823,8 @@ ORDER BY m.sessions DESC LIMIT 20""",
             "commerce.products", "commerce.order_items", "commerce.orders",
         })
         self.assertEqual(len(provider.prompts), 2)
-        self.assertIn("failed validation", provider.prompts[1].lower())
-        self.assertIn("commerce.orders.order_date", provider.prompts[0])
+        self.assertIn("failed validation", provider.prompts[-1].lower())
+        self.assertIn("commerce.orders.order_date", provider.prompts[-2])
         repository.execute_approved_query.assert_not_awaited()
 
         executed = await run_sql_assistant(

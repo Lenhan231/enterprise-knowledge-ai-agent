@@ -5,7 +5,7 @@ import sys
 import unittest
 from datetime import date
 from pathlib import Path
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
@@ -21,6 +21,25 @@ from core.analytics.text_to_sql import APPROVED_COLUMNS, APPROVED_DATE_COLUMNS, 
 from core.analytics.join_validation import PRIMARY_KEYS
 from core.models.agents import AgentRequest, VerifiedIdentity
 from core.agents.sql.agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
+from core.agents.sql.query_intent import QueryIntent
+
+
+def revenue_intent(question, *, start='2025-06-01', end='2026-01-01', dimensions=None):
+    return QueryIntent.model_validate({
+        'original_question': question,
+        'operation': 'aggregate',
+        'metrics': ['revenue'],
+        'dimensions': dimensions or [],
+        'filters': [],
+        'time_scope': {'mode': 'range', 'ranges': [{
+            'start': date.fromisoformat(start), 'end_exclusive': date.fromisoformat(end)}]},
+        'requested_sources': [{'name': 'commerce.sales', 'provenance': 'ontology_required'}],
+        'explicit_source_restriction': False,
+        'geographic_basis': None,
+        'geographic_coverage': None,
+        'ranking': None,
+        'unresolved_slots': [],
+    })
 
 
 class SQLCompilerDispatchTest(unittest.TestCase):
@@ -364,6 +383,50 @@ class SQLCompilerDispatchFlowTest(unittest.IsolatedAsyncioTestCase):
         repository.get_schema.assert_awaited_once()
         select_tables.assert_awaited_once()
 
+    async def test_structured_inventory_intent_adapts_without_second_interpretation(self):
+        repository = type("Repository", (), {})()
+        repository.get_schema = AsyncMock(return_value={
+            "tables": APPROVED_COLUMNS, "joins": APPROVED_JOINS,
+            "primary_keys": PRIMARY_KEYS, "date_columns": APPROVED_DATE_COLUMNS,
+        })
+        repository.execute_approved_query = AsyncMock(return_value=[])
+        provider = type("Provider", (), {"generate": Mock()})()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        agent._generate_sql = AsyncMock(side_effect=AssertionError("inventory intent compiles without SQL generation"))
+        question = "Which blue styles have the fewest pieces left at latest snapshot?"
+        intent_response = json.dumps({"intent": {
+            "original_question": question, "operation": "rank", "metrics": ["stock_on_hand"],
+            "unverified_metric_request": None, "dimensions": ["product_id", "product_name"],
+            "filters": [{"field": "commerce.products.color", "operator": "eq", "value": "blue"}],
+            "time_scope": {"mode": "latest", "ranges": []},
+            "requested_sources": [
+                {"name": "commerce.inventory", "provenance": "ontology_required"},
+                {"name": "commerce.products", "provenance": "ontology_required"}],
+            "explicit_source_restriction": False, "geographic_basis": None,
+            "geographic_coverage": None,
+            "ranking": {"metric": "stock_on_hand", "direction": "asc", "limit": None},
+            "unresolved_slots": [],
+        }})
+        selection = {"tables": set(APPROVED_COLUMNS), "required_tables": set(),
+                     "candidate_tables": set(APPROVED_COLUMNS)}
+        with patch("core.agents.sql.intent_resolution.generate",
+                   new=AsyncMock(return_value=intent_response)) as interpret, \
+                patch("core.agents.sql.agent.asyncio.to_thread",
+                      new=AsyncMock(return_value=selection)) as select_tables:
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject="test", permissions={"analytics:read"}),
+            ))
+
+        self.assertEqual(result["query_status"], "executed")
+        self.assertIn("commerce.products.color = $1", result["sql"])
+        self.assertEqual(result["parameters"], ["blue"])
+        interpret.assert_awaited_once()
+        provider.generate.assert_not_called()
+        agent._generate_sql.assert_not_awaited()
+        repository.execute_approved_query.assert_awaited_once()
+        select_tables.assert_awaited_once()
+
     async def test_ineligible_template_reaches_existing_llm_fallback(self):
         class Repository:
 
@@ -381,15 +444,18 @@ class SQLCompilerDispatchFlowTest(unittest.IsolatedAsyncioTestCase):
         agent._generate_sql = AsyncMock(return_value=json.dumps({
             "clarification": "Which monthly grouping should I use?"
         }))
+        question = "Doanh thu năm 2025 theo từng tháng"
         selected_tables = set(APPROVED_COLUMNS)
         selection = {
             "tables": selected_tables,
             "required_tables": set(),
             "candidate_tables": selected_tables,
         }
-        with patch("core.agents.sql.agent.asyncio.to_thread", new=AsyncMock(return_value=selection)):
+        with patch("core.agents.sql.agent.asyncio.to_thread", new=AsyncMock(return_value=selection)), \
+                patch("core.agents.sql.agent.interpret_query_intent", new=AsyncMock(return_value=
+                      revenue_intent(question, start='2025-01-01', end='2026-01-01', dimensions=['date']))):
             result = await agent.run_payload(AgentRequest(
-                question="Doanh thu năm 2025 theo từng tháng",
+                question=question,
                 identity=VerifiedIdentity(subject="test", permissions={"analytics:read"}),
             ))
 
@@ -419,7 +485,9 @@ class SQLCompilerDispatchFlowTest(unittest.IsolatedAsyncioTestCase):
             "required_tables": set(),
             "candidate_tables": set(APPROVED_COLUMNS),
         }
-        with patch("core.agents.sql.agent.asyncio.to_thread", new=AsyncMock(return_value=selection)) as select_tables:
+        with patch("core.agents.sql.agent.asyncio.to_thread", new=AsyncMock(return_value=selection)) as select_tables, \
+                patch("core.agents.sql.agent.interpret_query_intent", new=AsyncMock(return_value=
+                      revenue_intent("Doanh thu từ tháng 6 đến tháng 12 năm 2025"))) as interpret:
             result = await agent.run_payload(AgentRequest(
                 question="Doanh thu từ tháng 6 đến tháng 12 năm 2025",
                 identity=VerifiedIdentity(subject="test", permissions={"analytics:read"}),
@@ -430,11 +498,12 @@ class SQLCompilerDispatchFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn("s.date < $2", result["sql"])
         self.assertEqual(result["parameters"], [date(2025, 6, 1), date(2026, 1, 1)])
         agent._generate_sql.assert_awaited_once()
+        interpret.assert_awaited_once()
         repository.execute_approved_query.assert_awaited_once_with(
             sql, date(2025, 6, 1), date(2026, 1, 1))
         select_tables.assert_awaited_once()
 
-    async def test_unsupported_dealer_scope_uses_fallback_and_rejects_unsafe_sql(self):
+    async def test_unsupported_date_scope_fallback_rejects_unsafe_sql(self):
         class Repository:
             async def get_schema(self):
                 return {
@@ -469,17 +538,105 @@ class SQLCompilerDispatchFlowTest(unittest.IsolatedAsyncioTestCase):
             "required_tables": set(),
             "candidate_tables": set(APPROVED_COLUMNS),
         }
-        with patch("core.agents.sql.agent.asyncio.to_thread", new=AsyncMock(return_value=selection)) as select_tables:
+        question = "Doanh thu từ tháng 6 đến tháng 12 năm 2025"
+        with patch("core.agents.sql.agent.asyncio.to_thread", new=AsyncMock(return_value=selection)) as select_tables, \
+                patch("core.agents.sql.agent.interpret_query_intent", new=AsyncMock(return_value=
+                      revenue_intent(question))) as interpret:
             result = await agent.run_payload(AgentRequest(
-                question="Tổng doanh thu năm 2025 của đại lý Bình Minh",
+                question=question,
                 identity=VerifiedIdentity(subject="test", permissions={"analytics:read"}),
             ))
 
         self.assertTrue(result["metadata"]["clarification_required"])
         self.assertEqual(agent._generate_sql.await_count, 2)
+        interpret.assert_awaited_once()
         repository.execute_approved_query.assert_not_awaited()
         repository.execute_unverified_query.assert_not_awaited()
         select_tables.assert_awaited_once()
+
+    async def test_unavailable_dealer_filter_clarifies_before_sql_generation(self):
+        repository = type("Repository", (), {})()
+        repository.get_schema = AsyncMock(return_value={
+            "tables": APPROVED_COLUMNS,
+            "joins": APPROVED_JOINS,
+            "primary_keys": PRIMARY_KEYS,
+            "date_columns": APPROVED_DATE_COLUMNS,
+        })
+        repository.execute_approved_query = AsyncMock(return_value=[])
+        agent = SQLAnalyticsAgent(repository, llm=object(), inventory_only=False)
+        agent._generate_sql = AsyncMock(side_effect=AssertionError("unresolved dealer scope must clarify"))
+        question = "Tổng doanh thu năm 2025 của đại lý Bình Minh"
+        interpretation = {
+            "intent": {
+                "original_question": question,
+                "operation": "aggregate",
+                "metrics": ["revenue"],
+                "unverified_metric_request": None,
+                "dimensions": [],
+                "filters": [{"field": "dealer_name", "operator": "eq", "value": "Bình Minh"}],
+                "time_scope": {"mode": "range", "ranges": [
+                    {"start": "2025-01-01", "end_exclusive": "2026-01-01"}]},
+                "requested_sources": [{"name": "commerce.sales", "provenance": "ontology_required"}],
+                "explicit_source_restriction": False,
+                "geographic_basis": None,
+                "geographic_coverage": None,
+                "ranking": None,
+                "unresolved_slots": [],
+            }
+        }
+        with patch("core.agents.sql.intent_resolution.generate",
+                   new=AsyncMock(return_value=json.dumps(interpretation))) as interpret:
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject="test", permissions={"analytics:read"}),
+            ))
+
+        self.assertEqual(result["query_status"], "clarification_required")
+        self.assertTrue(result["metadata"]["clarification_required"])
+        self.assertEqual(result["rows"], [])
+        interpret.assert_awaited_once()
+        agent._generate_sql.assert_not_awaited()
+        repository.execute_approved_query.assert_not_awaited()
+        repository.get_schema.assert_awaited_once()
+
+    async def test_explicit_source_restriction_clarifies_before_adding_required_order_items(self):
+        repository = type("Repository", (), {})()
+        repository.get_schema = AsyncMock(return_value={
+            "tables": APPROVED_COLUMNS, "joins": APPROVED_JOINS,
+            "primary_keys": PRIMARY_KEYS, "date_columns": APPROVED_DATE_COLUMNS,
+        })
+        repository.execute_approved_query = AsyncMock(return_value=[])
+        agent = SQLAnalyticsAgent(repository, llm=object(), inventory_only=False)
+        agent._generate_sql = AsyncMock(side_effect=AssertionError(
+            "an explicit source conflict must clarify before SQL generation"))
+        question = "Revenue by region in May 2026 using only orders and geography"
+        response = {"intent": {
+            "original_question": question, "operation": "aggregate",
+            "metrics": ["regional_revenue"], "unverified_metric_request": None,
+            "dimensions": ["region"], "filters": [],
+            "time_scope": {"mode": "range", "ranges": [
+                {"start": "2026-05-01", "end_exclusive": "2026-06-01"}]},
+            "requested_sources": [
+                {"name": "commerce.orders", "provenance": "user"},
+                {"name": "commerce.geography", "provenance": "user"}],
+            "explicit_source_restriction": True,
+            "geographic_basis": "order_destination", "geographic_coverage": "all",
+            "ranking": None, "unresolved_slots": [],
+        }}
+        with patch("core.agents.sql.intent_resolution.generate",
+                   new=AsyncMock(return_value=json.dumps(response))) as interpret, \
+                patch("core.agents.sql.agent.select_jev_schema_tables") as select_tables:
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject="test", permissions={"analytics:read"}),
+            ))
+
+        self.assertEqual(result["query_status"], "clarification_required")
+        self.assertIn("order_items", result["answer"])
+        interpret.assert_awaited_once()
+        agent._generate_sql.assert_not_awaited()
+        select_tables.assert_not_called()
+        repository.execute_approved_query.assert_not_awaited()
 
     async def test_unauthorized_request_stops_before_schema_llm_and_execution(self):
         repository = type("Repository", (), {})()
@@ -545,13 +702,17 @@ class SQLCompilerDispatchFlowTest(unittest.IsolatedAsyncioTestCase):
             "required_tables": set(),
             "candidate_tables": set(APPROVED_COLUMNS),
         }
-        with patch("core.agents.sql.agent.asyncio.to_thread", new=AsyncMock(return_value=selection)):
+        question = "Doanh thu từ tháng 6 đến tháng 12 năm 2025"
+        with patch("core.agents.sql.agent.asyncio.to_thread", new=AsyncMock(return_value=selection)), \
+                patch("core.agents.sql.agent.interpret_query_intent", new=AsyncMock(return_value=
+                      revenue_intent(question))) as interpret:
             result = await agent.run_payload(AgentRequest(
-                question="Tổng doanh thu năm 2025 của đại lý Bình Minh",
+                question=question,
                 identity=VerifiedIdentity(subject="test", permissions={"analytics:read"}),
             ))
 
         self.assertEqual(agent._generate_sql.await_count, 2)
+        interpret.assert_awaited_once()
         self.assertEqual(result["query_status"], "rejected")
         self.assertEqual(result["metadata"]["execution_status"], "validation_failed")
         repository.execute_approved_query.assert_not_awaited()

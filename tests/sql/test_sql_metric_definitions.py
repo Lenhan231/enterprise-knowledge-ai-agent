@@ -4,7 +4,7 @@ import sys
 import unittest
 from datetime import date
 from pathlib import Path
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
@@ -230,6 +230,12 @@ class MetricEnforcementTest(unittest.TestCase):
 
 
 class MetricAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
+        self.intent_patcher = patch(
+            "core.agents.sql.agent.interpret_query_intent", new=AsyncMock(return_value=None))
+        self.intent_patcher.start()
+        self.addCleanup(self.intent_patcher.stop)
+
     async def test_returned_order_count_uses_all_records_and_discards_stale_inventory_context(self):
         sql = "SELECT COUNT(DISTINCT r.order_id) AS returned_order_count FROM commerce.returns AS r LIMIT 200"
         repository = AsyncMock()

@@ -62,9 +62,23 @@ class InventoryAdversarialAgentTest(unittest.IsolatedAsyncioTestCase):
         provider, repo = (Mock(), AsyncMock())
         provider.generate.return_value = json.dumps(dict(sql=sql, parameters=[]))
         repo.execute_approved_query.return_value = []
-        result = await SQLAnalyticsAgent(repo, llm=provider).run(AgentRequest(question='List product IDs, names and categories.', identity=IDENTITY))
+        question = 'List product IDs, names and categories.'
+        intent = {'intent': {
+            'original_question': question, 'operation': 'list', 'metrics': [],
+            'unverified_metric_request': None,
+            'dimensions': ['product_id', 'product_name', 'category'], 'filters': [],
+            'time_scope': {'mode': 'all', 'ranges': []},
+            'requested_sources': [{'name': 'commerce.products', 'provenance': 'user'}],
+            'explicit_source_restriction': False, 'geographic_basis': None,
+            'geographic_coverage': None, 'ranking': None, 'unresolved_slots': [],
+        }}
+        with patch('core.agents.sql.intent_resolution.generate',
+                   new=AsyncMock(return_value=json.dumps(intent))) as interpret:
+            result = await SQLAnalyticsAgent(repo, llm=provider).run(
+                AgentRequest(question=question, identity=IDENTITY))
         self.assertEqual(result.data.get('query_status'), 'executed', result.answer)
         self.assertEqual(provider.generate.call_count, 1)
+        interpret.assert_awaited_once()
 
     async def test_free_text_filter_loss_is_measured_on_synthetic_rows(self):
         from sqlglot import parse_one

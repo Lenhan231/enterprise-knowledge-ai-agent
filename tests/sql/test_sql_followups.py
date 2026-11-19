@@ -18,6 +18,8 @@ from core.agents.router import AgentRouter
 from core.sql_agent.agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
 from core.models.agent_plan import AgentPlan, AgentTask
 from core.models.agents import AgentRequest, AgentResult, Evidence, VerifiedIdentity, validate_chat_metadata
+from core.analytics.text_to_sql import APPROVED_COLUMNS, APPROVED_DATE_COLUMNS, APPROVED_JOINS
+from core.analytics.join_validation import PRIMARY_KEYS
 
 BASE = {'metrics':['stock_on_hand'],'dimensions':['category'],'time':{'mode':'snapshot','start':'2022-12-31'}}
 STATE = {'accepted':BASE,'pending':None}
@@ -204,6 +206,327 @@ class SQLConversationTest(unittest.IsolatedAsyncioTestCase):
     def request(self,question,subject='test',conversation='session',permissions=None):
         return AgentRequest(question=question,conversation_id=conversation,
                             identity=VerifiedIdentity(subject=subject,permissions=permissions or {'analytics:read'},document_roles={'admin'}))
+
+
+class PendingClarificationLifecycleTest(unittest.IsolatedAsyncioTestCase):
+    original = ('doanh thu tháng 5 năm 2026 theo khu vực dựa trên bảng '
+                'orders customers và geography')
+
+    def setUp(self):
+        self.intent = {
+            'original_question': self.original,
+            'operation': 'aggregate',
+            'metrics': ['regional_revenue'],
+            'dimensions': ['region'],
+            'filters': [],
+            'time_scope': {
+                'mode': 'range', 'ranges': [
+                    {'start': '2026-05-01', 'end_exclusive': '2026-06-01'},
+                ],
+            },
+            'requested_sources': [
+                {'name': 'commerce.orders', 'provenance': 'user'},
+                {'name': 'commerce.customers', 'provenance': 'user'},
+                {'name': 'commerce.geography', 'provenance': 'user'},
+            ],
+            'explicit_source_restriction': True,
+            'geographic_basis': 'unknown',
+            'geographic_coverage': 'unspecified',
+            'ranking': None,
+            'unresolved_slots': ['geographic_coverage', 'geographic_basis', 'source_scope'],
+        }
+        self.pending = {
+            'original_question': self.original,
+            'intent': self.intent,
+            'unresolved_slots': self.intent['unresolved_slots'],
+            'clarification_question': 'Do you want revenue for all regions?',
+            'allowed_choices': [],
+        }
+
+        class ResolverProvider:
+            def __init__(self):
+                self.prompts = []
+
+            async def generate(provider, prompt, **_kwargs):
+                provider.prompts.append(prompt)
+                if 'List invoices' in prompt:
+                    return json.dumps({'action': 'new_request'})
+                return json.dumps({
+                    'action': 'answer',
+                    'updates': {'geographic_coverage': 'all'},
+                    'clarified_slots': ['geographic_coverage'],
+                    'clarification_question': None,
+                })
+
+        class SQLAgent:
+            def __init__(agent):
+                agent.requests = []
+                agent.resolver = ResolverProvider()
+
+            def _provider(agent):
+                return agent.resolver
+
+            async def run(agent, request):
+                agent.requests.append(request)
+                if len(agent.requests) == 1:
+                    return AgentResult(
+                        answer='Do you want revenue for all regions?', agent='sql_analytics',
+                        data={'query_status': 'clarification_required'},
+                        metadata={
+                            'ok': False, 'status': 'clarification_required',
+                            'clarification_required': True,
+                            'pending_clarification': agent.pending,
+                        } if hasattr(agent, 'pending') else {
+                            'ok': False, 'status': 'clarification_required',
+                            'clarification_required': True,
+                        },
+                    )
+                return AgentResult(
+                    answer='Please choose delivery or customer-profile geography.', agent='sql_analytics',
+                    data={'query_status': 'clarification_required'},
+                    metadata={'ok': False, 'status': 'clarification_required',
+                              'clarification_required': True},
+                )
+
+        self.sql = SQLAgent()
+        self.sql.pending = self.pending
+        self.router = AgentRouter(None, None, self.sql, llm=ResolverProvider())
+
+    async def _request(self, question, conversation_id, subject='analyst'):
+        return AgentRequest(
+            question=question, conversation_id=conversation_id,
+            identity=VerifiedIdentity(subject=subject, permissions={'analytics:read'}),
+        )
+
+    async def test_standalone_sql_resolves_reply_against_pending_intent(self):
+        first = await self._request(self.original, 'sql-pending')
+        second = await self._request('tất cả khu vực', 'sql-pending')
+
+        await self.router.run_mode(first, 'sql')
+        resumed = await self.router.run_mode(second, 'sql')
+
+        self.assertEqual(len(self.sql.requests), 1)
+        self.assertEqual(resumed.metadata['status'], 'clarification_required')
+        self.assertIn('giao hàng', resumed.answer.casefold())
+        self.assertIn('khách hàng', resumed.answer.casefold())
+        prompt = self.sql.resolver.prompts[0]
+        self.assertIn(self.original, prompt)
+        self.assertIn('regional_revenue', prompt)
+        self.assertIn('2026-05-01', prompt)
+        self.assertIn('region', prompt)
+
+    async def test_auto_resolves_reply_without_replanning_the_metric(self):
+        from core.models.agent_plan import AgentPlan
+
+        first = await self._request(self.original, 'auto-pending')
+        second = await self._request('tất cả khu vực', 'auto-pending')
+        plan = AgentPlan(objective=self.original, tasks=[
+            {'id': 's', 'agent': 'sql', 'question': self.original},
+        ])
+        with patch('core.agents.decision_support.router.plan_request',
+                   new=AsyncMock(return_value=plan)) as planner:
+            await self.router.run(first)
+            resumed = await self.router.run(second)
+
+        self.assertEqual(planner.await_count, 1)
+        self.assertEqual(len(self.sql.requests), 1)
+        self.assertEqual(resumed.metadata['status'], 'clarification_required')
+        self.assertIn('giao hàng', resumed.answer.casefold())
+        self.assertIn('khách hàng', resumed.answer.casefold())
+        prompt = self.sql.resolver.prompts[0]
+        self.assertIn(self.original, prompt)
+        self.assertIn('regional_revenue', prompt)
+        self.assertIn('2026-05-01', prompt)
+
+    async def test_no_pending_state_does_not_resolve_a_short_reply(self):
+        reply = await self._request('tất cả khu vực', 'no-pending')
+        await self.router.run_mode(reply, 'sql')
+        self.assertEqual([request.question for request in self.sql.requests], ['tất cả khu vực'])
+        self.assertEqual(self.sql.resolver.prompts, [])
+
+    async def test_pending_state_does_not_cross_conversation_or_user(self):
+        original = await self._request(self.original, 'owner-conversation')
+        await self.router.run_mode(original, 'sql')
+        for reply in (
+            await self._request('tất cả khu vực', 'other-conversation'),
+            await self._request('tất cả khu vực', 'owner-conversation', subject='another-user'),
+        ):
+            with self.subTest(conversation=reply.conversation_id, subject=reply.identity.subject):
+                await self.router.run_mode(reply, 'sql')
+                self.assertEqual(self.sql.requests[-1].question, 'tất cả khu vực')
+        self.assertEqual(self.sql.resolver.prompts, [])
+
+    async def test_permission_change_invalidates_pending_state(self):
+        original = await self._request(self.original, 'permission-change')
+        await self.router.run_mode(original, 'sql')
+        changed = await self._request('tất cả khu vực', 'permission-change')
+        changed.identity = VerifiedIdentity(subject='analyst', permissions={'analytics:read', 'documents:read'})
+        await self.router.run_mode(changed, 'sql')
+        self.assertEqual(self.sql.requests[-1].question, 'tất cả khu vực')
+        self.assertEqual(self.sql.resolver.prompts, [])
+
+    async def test_expired_pending_state_is_not_resumed(self):
+        now = [0.0]
+        self.router.conversations.clock = lambda: now[0]
+        original = await self._request(self.original, 'expired-pending')
+        await self.router.run_mode(original, 'sql')
+        now[0] = 1801.0
+        reply = await self._request('tất cả khu vực', 'expired-pending')
+        await self.router.run_mode(reply, 'sql')
+        self.assertEqual(self.sql.requests[-1].question, 'tất cả khu vực')
+        self.assertEqual(self.sql.resolver.prompts, [])
+
+    async def test_unrelated_new_request_clears_pending_without_inheriting_scope(self):
+        await self.router.run_mode(await self._request(self.original, 'new-request'), 'sql')
+        await self.router.run_mode(await self._request('List invoices', 'new-request'), 'sql')
+        self.assertEqual(self.sql.resolver.prompts.__len__(), 1)
+        self.assertEqual(self.sql.requests[-1].question, 'List invoices')
+
+
+class StructuredClarificationSQLIntegrationTest(unittest.IsolatedAsyncioTestCase):
+    question = ('doanh thu tháng 5 năm 2026 theo khu vực dựa trên bảng '
+                'orders customers và geography')
+    sql = (
+        'SELECT g.region, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS revenue '
+        'FROM commerce.orders AS o '
+        'JOIN commerce.order_items AS oi ON oi.order_id = o.order_id '
+        'JOIN commerce.geography AS g ON g.zip = o.zip '
+        'WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 '
+        'GROUP BY g.region ORDER BY revenue DESC LIMIT 200'
+    )
+
+    def setUp(self):
+        class Provider:
+            def __init__(provider):
+                provider.prompts = []
+                provider.intent_calls = 0
+                provider.resolve_calls = 0
+                provider.sql_calls = 0
+                provider.summary_calls = 0
+
+            async def generate(provider, prompt, **_kwargs):
+                provider.prompts.append(prompt)
+                if prompt.startswith('Extract only the user-requested business intent.'):
+                    provider.intent_calls += 1
+                    return json.dumps({'intent': {
+                        'original_question': StructuredClarificationSQLIntegrationTest.question,
+                        'operation': 'aggregate', 'metrics': ['regional_revenue'],
+                        'dimensions': ['region'], 'filters': [],
+                        'time_scope': {'mode': 'range', 'ranges': [
+                            {'start': '2026-05-01', 'end_exclusive': '2026-06-01'}]},
+                        'requested_sources': [
+                            {'name': 'commerce.orders', 'provenance': 'user'},
+                            {'name': 'commerce.customers', 'provenance': 'user'},
+                            {'name': 'commerce.geography', 'provenance': 'user'},
+                        ],
+                        'explicit_source_restriction': False,
+                        'geographic_basis': 'unknown', 'geographic_coverage': 'unspecified',
+                        'ranking': None, 'unresolved_slots': [],
+                    }})
+                if prompt.startswith('Resolve the reply against the pending SQL intent.'):
+                    provider.resolve_calls += 1
+                    data = json.loads(prompt[prompt.index('\n{') + 1:])
+                    reply = data['user_reply'].casefold()
+                    if 'all regions' in reply or 'tất cả khu vực' in reply or 'không lọc' in reply:
+                        return json.dumps({'action': 'answer',
+                            'updates': {'geographic_coverage': 'all'},
+                            'clarified_slots': ['geographic_coverage']})
+                    if 'delivery' in reply or 'giao hàng' in reply:
+                        return json.dumps({'action': 'answer',
+                            'updates': {'geographic_basis': 'order_destination'},
+                            'clarified_slots': ['geographic_basis']})
+                    return json.dumps({'action': 'new_request'})
+                if prompt.startswith('Generate one read-only PostgreSQL SELECT'):
+                    provider.sql_calls += 1
+                    return json.dumps({'sql': StructuredClarificationSQLIntegrationTest.sql,
+                        'parameters': ['delivered', '2026-05-01', '2026-06-01'],
+                        'explanation': 'Canonical delivered order-item revenue by delivery region.'})
+                provider.summary_calls += 1
+                return 'Revenue is 42 [S1].'
+
+        class Repository:
+            def __init__(repository):
+                repository.execute_approved_query = AsyncMock(return_value=[{'region': 'North', 'revenue': 42}])
+                repository.schema_calls = 0
+
+            async def get_schema(repository):
+                repository.schema_calls += 1
+                return {'tables': APPROVED_COLUMNS, 'primary_keys': PRIMARY_KEYS,
+                        'joins': APPROVED_JOINS, 'date_columns': APPROVED_DATE_COLUMNS}
+
+        self.provider = Provider()
+        self.repository = Repository()
+        self.agent = SQLAnalyticsAgent(self.repository, llm=self.provider, inventory_only=False)
+
+        class ResponseProvider:
+            async def generate(provider, _prompt, **_kwargs):
+                return json.dumps({'answer': 'Revenue is 42 [S1].', 'used_tasks': ['sql']})
+
+        self.router = AgentRouter(None, None, self.agent, llm=ResponseProvider())
+
+    def request(self, question, conversation='regional-revenue', subject='analyst'):
+        return AgentRequest(question=question, conversation_id=conversation,
+            identity=VerifiedIdentity(subject=subject, permissions={'analytics:read'}))
+
+    async def _complete_clarification(self, mode):
+        if mode == 'auto':
+            async def fixed_plan(request, *_args, **_kwargs):
+                return AgentPlan(objective=self.question, tasks=[
+                    {'id': 'sql', 'agent': 'sql', 'question': self.question}])
+            plan_patch = patch('core.agents.decision_support.router.plan_request', new=fixed_plan)
+        else:
+            plan_patch = patch('core.agents.decision_support.router.plan_request')
+        with plan_patch, patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': {'commerce.orders', 'commerce.order_items', 'commerce.customers', 'commerce.geography'},
+                'required_tables': {'commerce.orders', 'commerce.order_items'},
+                'candidate_tables': {'commerce.orders', 'commerce.order_items', 'commerce.customers', 'commerce.geography'},
+        }) as selection:
+            async def run(question):
+                if mode == 'auto':
+                    return await self.router.run(self.request(question))
+                return await self.router.run_mode(self.request(question), 'sql')
+
+            first = await run(self.question)
+            self.assertEqual(first.metadata['status'], 'clarification_required')
+            self.assertIn('tất cả khu vực', first.answer.casefold())
+            self.assertEqual(self.provider.sql_calls, 0)
+
+            coverage = await run('tất cả khu vực')
+            self.assertIn('địa chỉ giao hàng', coverage.answer.casefold())
+            self.assertIn('địa chỉ hồ sơ khách hàng', coverage.answer.casefold())
+            self.assertEqual(self.provider.sql_calls, 0)
+
+            basis = await run('theo địa chỉ giao hàng')
+            if mode == 'sql':
+                self.assertEqual(basis.data['query_status'], 'executed')
+            else:
+                self.assertEqual(basis.metadata.get('status'), 'complete', basis.model_dump())
+            self.repository.execute_approved_query.assert_awaited_once()
+            self.assertEqual(self.provider.intent_calls, 1)
+            self.assertEqual(self.provider.resolve_calls, 2)
+            self.assertEqual(self.provider.sql_calls, 1,
+                [prompt[prompt.find('The previous plan failed validation:'):
+                        prompt.find('The previous plan failed validation:') + 500]
+                 for prompt in self.provider.prompts] + [prompt[:200] for prompt in self.provider.prompts])
+            self.assertEqual(self.provider.summary_calls, 0 if mode == 'auto' else 1)
+            self.assertEqual(selection.call_count, 1)
+            self.repository.execute_approved_query.assert_awaited_once_with(
+                self.sql, 'delivered', date(2026, 5, 1), date(2026, 6, 1))
+            self.assertIn('regional_revenue', json.dumps(self.provider.prompts, ensure_ascii=False))
+            sql_prompt = next(prompt for prompt in reversed(self.provider.prompts)
+                              if prompt.startswith('Generate one read-only PostgreSQL SELECT'))
+            self.assertIn('2026-05-01', sql_prompt)
+            self.assertIn('order_destination', sql_prompt)
+            self.assertIn('"geographic_coverage": "all"', sql_prompt)
+            self.assertIn('commerce.customers', sql_prompt)
+            self.assertIn('commerce.order_items', sql_prompt)
+            self.assertIn('"explicit_source_restriction": false', sql_prompt)
+
+    async def test_reported_two_turn_flow_continues_to_verified_sql_in_auto(self):
+        await self._complete_clarification('auto')
+
+    async def test_reported_two_turn_flow_continues_to_verified_sql_in_standalone_sql(self):
+        await self._complete_clarification('sql')
 
 
 class OriginalQuestionContextTest(unittest.IsolatedAsyncioTestCase):

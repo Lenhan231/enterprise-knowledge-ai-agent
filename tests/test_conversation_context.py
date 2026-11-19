@@ -62,7 +62,8 @@ class ConversationContextTest(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(history, [])
 
     def test_client_cannot_inject_internal_metadata(self):
-        for key in ['identity', 'history', 'plan', 'task_results', 'deadline', '_orchestration']:
+        for key in ['identity', 'history', 'plan', 'task_results', 'deadline',
+                    '_orchestration', '_sql_context', '_pending_clarification', '_query_intent']:
             with self.subTest(key=key), self.assertRaises(ValueError):
                 validate_chat_metadata({key: 'forged'})
         self.assertEqual(validate_chat_metadata({'category': 'Outdoor'}), {'category': 'Outdoor'})

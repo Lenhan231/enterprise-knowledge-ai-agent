@@ -42,7 +42,7 @@ def load_contract():
 
 def permitted_policy(source):
     name = Path(source.replace('\\', '/')).name
-    name = re.sub(r'\.(?:pdf|docx?|md|txt)$', '', name, flags=re.I)
+    name = re.sub(r'\.(?:pdf|docx?|xlsx?|csv|md|txt)$', '', name, flags=re.I)
     normalize = lambda value: re.sub(r'[\s_-]+', ' ', value).strip().casefold()
     return normalize(name) in {normalize(s) for s in load_contract()['report_specific_rules']['fixed_policy_sources']}
 

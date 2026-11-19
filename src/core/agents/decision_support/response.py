@@ -314,8 +314,15 @@ async def assemble_response(request, plan, execution, provider):
     usable = [o for o in active if o.result and o.result.evidence and o.status in {'complete', 'partial'}]
     missing = [o for o in active if o.status != 'complete']
     status = 'complete' if len(active) == len(plan.tasks) and not missing else ('partial' if usable else 'failed')
+    clarification_options = []
     if not usable and any(o.status == 'clarification_required' for o in active):
         status = 'clarification_required'
+        clarification_result = next((o.result for o in active
+                                     if o.status == 'clarification_required' and o.result), None)
+        if clarification_result:
+            options = clarification_result.metadata.get('clarification_options', [])
+            if isinstance(options, list):
+                clarification_options = options
     evidence, inputs, data, limitations = [], [], {}, []
     generic_validation_limit = 'The generated query did not pass planning or SQL validation.'
     for task in plan.tasks:
@@ -368,6 +375,8 @@ async def assemble_response(request, plan, execution, provider):
         specialist = {key: active[0].result.metadata[key] for key in ('claim_verification', 'insufficient_context', 'search', 'nearest_documents', 'withheld_draft')
                       if key in active[0].result.metadata}
         claim_checked = (specialist.get('claim_verification') or {}).get('status') == 'supported'
+    if clarification_options:
+        specialist['clarification_options'] = clarification_options
     if len(usable) == 1 and len(plan.tasks) == 1 and status == 'complete':
         deterministic_answer = None
         if inputs[0]['agent'] == 'sql':

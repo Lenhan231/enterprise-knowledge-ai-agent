@@ -1490,6 +1490,16 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
       return `<p class="analysis-caveat answer-provenance-note" role="status"><strong>Continuing the previous SQL scope.</strong> ${snapshotLabel}: ${escapeHtml(snapshot)}${filters.length ? ` · Filters: ${filters.map(escapeHtml).join("; ")}` : ""}</p>`;
     })()
     : "";
+  const clarificationOptions = data.status === "clarification_required"
+    && panel.closest("#general-chat-transcript")
+    && Array.isArray(data.clarification_options)
+    ? data.clarification_options.filter((option) => typeof option === "string" && option.trim())
+    : [];
+  const clarificationChoices = clarificationOptions.length
+    ? `<div class="clarification-options" role="group" aria-label="Choose an option">${clarificationOptions.map((option, index) =>
+      `<button class="clarification-option" type="button" data-clarification-choice-index="${index}">${escapeHtml(option)}</button>`
+    ).join("")}</div>`
+    : "";
   const routeDetails = renderRunDetails(data);
   panel.innerHTML = `
     <div class="answer-header-wrap">
@@ -1507,6 +1517,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
     ${fallbackNotice}
     ${sqlScope}
     <div class="answer-text">${renderAnswerBody(data.answer)}</div>
+    ${clarificationChoices}
     ${outcome.next}
     ${renderAgentRows(data.data)}
     ${renderDashboardVisualization(data.data?.visualization)}
@@ -2779,6 +2790,9 @@ function renderChatTranscript(root, turns, shouldScroll) {
     else if (turn.state === "error") response.innerHTML = `<p class="error-message" role="alert">${escapeHtml(turn.error)}. Please check service configuration or connection.</p>`;
     else if (turn.result) {
       renderAgentResult(turn.result, response, false);
+      if (turn.clarificationResponded) {
+        response.querySelectorAll(".clarification-option").forEach((button) => { button.disabled = true; });
+      }
       attachFeedback(response, turn);
       if (turn.typeOut) {
         turn.typeOut = false;
@@ -2823,12 +2837,12 @@ $("#new-general-chat").addEventListener("click", () => {
   $("#general-chat-question").focus();
 });
 
-async function sendChatMessage({ question, mode, button, input, state, render }) {
+async function sendChatMessage({ question, displayQuestion, requestMetadata, mode, button, input, state, render }) {
   const requestConversationId = state.getId();
   const requestGeneration = sessionGeneration;
   const requestSubject = sessionSubject;
   if (!question) return;
-  const turn = { id: crypto.randomUUID(), mode, question, state: "pending", startedAt: Date.now(), abort: new AbortController() };
+  const turn = { id: crypto.randomUUID(), mode, question: displayQuestion || question, state: "pending", startedAt: Date.now(), abort: new AbortController() };
   state.turns.push(turn);
   state.turns = state.turns.slice(-20);
   input.value = "";
@@ -2848,6 +2862,7 @@ async function sendChatMessage({ question, mode, button, input, state, render })
     const body = JSON.stringify({
       question, agent_mode: mode, retrieval_method: "translated_hybrid_rerank",
       conversation_id: requestConversationId,
+      ...(requestMetadata ? { metadata: requestMetadata } : {}),
     });
     const signal = turn.abort.signal;
     const showStage = (stage, state) => {
@@ -2927,6 +2942,28 @@ $("#general-chat-form").addEventListener("submit", (event) => {
   const input = $("#general-chat-question");
   sendChatMessage({
     question: input.value.trim(), mode: $("#general-chat-mode").value, button: $("#general-chat-send"), input,
+    state: { getId: () => generalConversationId, get turns() { return generalTurns; }, set turns(value) { generalTurns = value; } },
+    render: renderGeneralChatTranscript,
+  });
+});
+
+$("#general-chat-transcript").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-clarification-choice-index]");
+  if (!button || button.disabled) return;
+  const entry = button.closest("[data-turn-id]");
+  const clarificationTurn = generalTurns.find((turn) => turn.id === entry?.dataset.turnId);
+  const options = clarificationTurn?.result?.metadata?.clarification_options
+    || clarificationTurn?.result?.clarification_options;
+  const index = Number(button.dataset.clarificationChoiceIndex);
+  if (!clarificationTurn || !Array.isArray(options) || !Number.isInteger(index)
+      || index < 0 || index >= options.length || typeof options[index] !== "string") return;
+  const clarificationQuestion = clarificationTurn.result?.metadata?.clarification_question
+    || clarificationTurn.result?.clarification_question || clarificationTurn.question;
+  clarificationTurn.clarificationResponded = true;
+  sendChatMessage({
+    question: options[index], displayQuestion: options[index],
+    requestMetadata: { clarification_choice: { question: clarificationQuestion, index } },
+    mode: clarificationTurn.mode, button: $("#general-chat-send"), input: $("#general-chat-question"),
     state: { getId: () => generalConversationId, get turns() { return generalTurns; }, set turns(value) { generalTurns = value; } },
     render: renderGeneralChatTranscript,
   });

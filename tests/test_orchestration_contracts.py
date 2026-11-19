@@ -216,16 +216,17 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(state['plan'], resolved)
         plan_request.assert_awaited_once()
 
-    async def test_numbered_clarification_reply_restores_scope_and_selected_option(self):
+    async def test_structured_clarification_selection_restores_scope_and_selected_option(self):
         from core.agents.decision_support.router import _resolve_clarification_choice
+        from core.agents.decision_support.response import assemble_response
 
         original = 'Trong năm 2026, 5 danh mục nào có doanh thu thuần cao nhất? Hiển thị COGS.'
-        clarification = (
-            'Bạn muốn tính COGS theo danh mục thế nào?\n\n'
-            '1. Tính SUM(products.cogs × quantity)\n'
-            '2. Bỏ COGS và gross margin\n'
-            '3. Hiển thị COGS toàn công ty riêng'
-        )
+        clarification = 'Bạn muốn tính COGS theo danh mục thế nào?'
+        options = [
+            'Tính SUM(products.cogs × quantity)',
+            'Bỏ COGS và gross margin',
+            'Hiển thị COGS toàn công ty riêng',
+        ]
         clarification_plan = AgentPlan.model_validate({
             'objective': original,
             'tasks': [{'id': 's', 'agent': 'sql', 'question': original}],
@@ -235,14 +236,16 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
                                         conversation_id='clarification-session')
         clarification_result = AgentResult(
             answer=clarification, agent='sql',
-            metadata={'ok': False, 'status': 'clarification_required'})
+            metadata={'ok': False, 'status': 'clarification_required',
+                      'clarification_options': options})
         pending = Mock(plan=clarification_plan, outcomes={
             's': TaskOutcome(clarification_plan.tasks[0], 'clarification_required',
                              result=clarification_result)},
             sql_context=None, trace=[], invocations=1)
+        auto_result = await assemble_response(original_request, clarification_plan, pending, None)
+        self.assertEqual(auto_result.metadata['clarification_options'], options)
         initial_state = {
-            'result': AgentResult(answer=clarification, agent='agentic',
-                metadata={'ok': False, 'status': 'clarification_required'}),
+            'result': auto_result,
             'plan': clarification_plan,
             'execution': pending,
         }
@@ -253,29 +256,15 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         async with router.conversations.session(original_request) as stored_history:
             history = list(stored_history)
         self.assertEqual(history[0]['clarification_plan'], clarification_plan.model_dump_json())
-        self.assertEqual(_resolve_clarification_choice('1', history)[:3],
+        self.assertEqual(history[0]['clarification_options'], options)
+        selection = {'question': original, 'index': 0}
+        self.assertEqual(_resolve_clarification_choice(selection, history)[:3],
                          (original, 1, 'Tính SUM(products.cogs × quantity)'))
-        option_replies = (
-            ('một', 1, 'Tính SUM(products.cogs × quantity)'),
-            ('phương án một', 1, 'Tính SUM(products.cogs × quantity)'),
-            ('lựa chọn số 1', 1, 'Tính SUM(products.cogs × quantity)'),
-            ('one', 1, 'Tính SUM(products.cogs × quantity)'),
-            ('hai', 2, 'Bỏ COGS và gross margin'),
-            ('phương án hai', 2, 'Bỏ COGS và gross margin'),
-            ('lựa chọn số 2', 2, 'Bỏ COGS và gross margin'),
-            ('two', 2, 'Bỏ COGS và gross margin'),
-            ('ba', 3, 'Hiển thị COGS toàn công ty riêng'),
-            ('phương án ba', 3, 'Hiển thị COGS toàn công ty riêng'),
-            ('lựa chọn số 3', 3, 'Hiển thị COGS toàn công ty riêng'),
-            ('three', 3, 'Hiển thị COGS toàn công ty riêng'),
-        )
-        for reply, number, option in option_replies:
-            with self.subTest(reply=reply):
-                self.assertEqual(_resolve_clarification_choice(reply, history)[:3],
-                                 (original, number, option))
-        self.assertIsNone(_resolve_clarification_choice('4', history))
+        self.assertIsNone(_resolve_clarification_choice({'question': original, 'index': 3}, history))
+        self.assertIsNone(_resolve_clarification_choice({'question': 'other request', 'index': 0}, history))
 
-        request = AgentRequest(question='1', identity=IDENTITY,
+        request = AgentRequest(question=options[0], identity=IDENTITY,
+                               metadata={'clarification_choice': selection},
                                conversation_id='clarification-session')
         execution = Mock()
         execution.request = request
@@ -288,7 +277,7 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
             })
 
         self.assertIn(original, execution.request.question)
-        self.assertIn('User clarification choice (1): Tính SUM(products.cogs × quantity)',
+        self.assertIn('User clarification: Tính SUM(products.cogs × quantity)',
                       execution.request.question)
         self.assertEqual(state['plan'].tasks[0].question, execution.request.question)
         self.assertEqual(state['plan'].objective, original)
@@ -306,11 +295,14 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         turn = {
             'question': original,
             'scope': original,
-            'clarification': 'Bạn muốn dùng snapshot mới nhất của mỗi sản phẩm?\n\n1. Có\n2. Không',
+            'clarification': 'Bạn muốn dùng snapshot mới nhất của mỗi sản phẩm?',
+            'clarification_options': ['Có', 'Không'],
             'clarification_plan': plan.model_dump_json(),
         }
         router = AgentRouter(None, None, None, llm=FakeProvider([]))
-        request = AgentRequest(question='có', identity=IDENTITY,
+        selection = {'question': original, 'index': 0}
+        request = AgentRequest(question='Có', identity=IDENTITY,
+                               metadata={'clarification_choice': selection},
                                conversation_id='binary-clarification-session')
         execution = Mock()
         execution.request = request
@@ -325,13 +317,47 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
             })
 
         self.assertEqual(state['plan'].objective, original)
-        self.assertIn('User clarification choice (1): Có', state['plan'].tasks[0].question)
+        self.assertIn('User clarification: Có', state['plan'].tasks[0].question)
         self.assertIn(original, state['plan'].tasks[0].question)
         classifier.assert_not_called()
         planner.assert_not_awaited()
         from core.agents.decision_support.router import _resolve_clarification_choice
-        self.assertEqual(_resolve_clarification_choice('không', [turn])[:3],
+        self.assertEqual(_resolve_clarification_choice({'question': original, 'index': 1}, [turn])[:3],
                          (original, 2, 'Không'))
+
+    async def test_structured_clarification_selection_works_in_direct_sql_mode(self):
+        original = 'Top khách hàng theo doanh thu năm 2025'
+        options = ['Dựa trên bảng sales', 'Dựa trên order_items']
+
+        class DirectSql:
+            def __init__(self):
+                self.question = None
+
+            async def run(self, request):
+                self.question = request.question
+                return AgentResult(answer='Bạn muốn chọn nguồn nào?', agent='sql', metadata={
+                    'ok': False, 'status': 'clarification_required',
+                    'clarification_required': True, 'clarification_options': options,
+                })
+
+        sql = DirectSql()
+        router = AgentRouter(None, None, sql, llm=FakeProvider([]))
+        initial = AgentRequest(question=original, identity=IDENTITY,
+                               conversation_id='direct-clarification-session')
+        async with router.conversations.session(initial) as history:
+            history.append({'question': original, 'scope': original,
+                            'clarification': 'Bạn muốn chọn nguồn nào?',
+                            'clarification_options': options})
+
+        selection = {'question': original, 'index': 1}
+        request = AgentRequest(question=options[1], identity=IDENTITY,
+                               conversation_id='direct-clarification-session',
+                               metadata={'clarification_choice': selection})
+        result = await router.run_mode(request, 'sql')
+
+        expected = f'{original}\n\nUser clarification: {options[1]}'
+        self.assertEqual(sql.question, expected)
+        self.assertEqual(result.metadata['clarification_question'], expected)
 
     async def test_sql_outage_fallback_still_uses_auto_response_layer(self):
         question = 'doanh thu năm 2025'

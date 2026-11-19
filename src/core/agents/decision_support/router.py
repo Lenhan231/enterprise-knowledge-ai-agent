@@ -38,35 +38,21 @@ class _State(TypedDict, total=False):
     report_headings: list[str] | None
 
 
-def _resolve_clarification_choice(reply: str, history: list):
-    if not history:
+def _resolve_clarification_choice(selection, history: list):
+    if not isinstance(selection, dict) or not history:
         return None
-    selected = re.fullmatch(
-        r"\s*(?:(?:option|choice|lựa chọn|phương án|chọn)\s*(?:số\s*)?)?"
-        r"(1|2|3|một|mot|hai|ba|one|two|three)[.)]?\s*", reply, re.I)
-    number = ({'1': 1, 'một': 1, 'mot': 1, 'one': 1,
-               '2': 2, 'hai': 2, 'two': 2,
-               '3': 3, 'ba': 3, 'three': 3}[selected.group(1).casefold()]
-              if selected else None)
-    candidates = [history[-1]]
-    if len(history) > 1 and str(history[-1].get('question', '')).strip() == reply.strip():
-        candidates.insert(0, history[-2])
-    for turn in candidates:
-        choices = {
-            int(index): option.strip()
-            for index, option in re.findall(r"(?m)^\s*([1-3])[.)]\s+(.+?)\s*$", turn.get('clarification', ''))
-        }
-        choice_number = number
-        if choice_number is None:
-            answer = re.sub(r"\W+", "", reply.casefold())
-            matches = [index for index, option in choices.items()
-                       if re.sub(r"\W+", "", option.casefold()) == answer]
-            if len(matches) != 1:
-                continue
-            choice_number = matches[0]
+    index = selection.get('index')
+    question = selection.get('question')
+    if type(index) is not int or not 0 <= index < 3 or not isinstance(question, str) or not question.strip():
+        return None
+    for turn in reversed(history):
+        if turn.get('question') != question:
+            continue
+        options = turn.get('clarification_options')
         scope = turn.get('scope') or turn.get('question')
-        if choice_number in choices and isinstance(scope, str) and scope.strip():
-            return scope.strip(), choice_number, choices[choice_number], turn
+        if (isinstance(options, list) and index < len(options)
+                and isinstance(options[index], str) and isinstance(scope, str) and scope.strip()):
+            return scope.strip(), index + 1, options[index], turn
     return None
 
 
@@ -162,13 +148,19 @@ class AgentRouter:
                         result = AgentResult.model_validate(state['result'])
                         pending_state = self._pending_after_execution(execution)
                         status = result.metadata.get('status')
+                        history_request = state.get('request') or request
+                        if status == 'clarification_required':
+                            result.metadata['clarification_question'] = history_request.question[:2000]
                         record_context = (status in {'complete', 'partial', 'clarification_required'}
                                           or (status is None and result.metadata.get('ok') is True)
                                           or pending_state is not None)
                         if record_context:
-                            scope = state['plan'].objective if state.get('plan') else request.question
-                            turn = {'question': user_question[:2000], 'scope': scope[:2000],
+                            scope = state['plan'].objective if state.get('plan') else history_request.question
+                            turn = {'question': history_request.question[:2000], 'scope': scope[:2000],
                                     'clarification': result.answer[:2000] if result.metadata.get('status') == 'clarification_required' else ''}
+                            options = result.metadata.get('clarification_options')
+                            if status == 'clarification_required' and isinstance(options, list):
+                                turn['clarification_options'] = options[:3]
                             if pending_state is not None:
                                 turn['pending_clarification'] = pending_state.model_dump_json()
                                 turn['clarification'] = pending_state.clarification_question[:2000]
@@ -248,6 +240,14 @@ class AgentRouter:
             authorize(request, 'sql')
             async with self.conversations.session(request) as history:
                 pending = self._pending_from_history(history)
+                if pending is None:
+                    choice = _resolve_clarification_choice(
+                        request.metadata.get('clarification_choice'), list(history))
+                    if choice:
+                        scope, _, option, _ = choice
+                        request = request.model_copy(update={
+                            'question': f"{scope}\n\nUser clarification: {option}"
+                        })
                 if pending is not None:
                     try:
                         resolved = await resolve_pending_clarification(
@@ -275,6 +275,8 @@ class AgentRouter:
                     if inspect.isawaitable(result):
                         result = await result
                 result = AgentResult.model_validate(result)
+                if result.metadata.get('status') == 'clarification_required':
+                    result.metadata['clarification_question'] = request.question[:2000]
                 await self._record_sql_debug_turn(request, result, history=history)
                 result = self._without_pending_metadata(result)
         else:
@@ -344,6 +346,9 @@ class AgentRouter:
         if pending is not None:
             turn['pending_clarification'] = pending.model_dump_json()
             turn['clarification'] = pending.clarification_question[:2000]
+        options = result.metadata.get('clarification_options')
+        if status == 'clarification_required' and isinstance(options, list):
+            turn['clarification_options'] = options[:3]
         metrics = result.metadata.get('metrics')
         if result.data.get('query_status') == 'executed' and isinstance(metrics, dict):
             turn['metrics'] = ', '.join(sorted(name for name in metrics if isinstance(name, str)))
@@ -420,11 +425,12 @@ class AgentRouter:
             jev_routed = False
             resumed_clarification = False
             if plan is None:
-                choice = _resolve_clarification_choice(request.question, state['history'])
+                choice = _resolve_clarification_choice(
+                    request.metadata.get('clarification_choice'), state['history'])
                 if choice:
-                    scope, number, option, turn = choice
+                    scope, _, option, turn = choice
                     request = request.model_copy(update={
-                        'question': f"{scope}\n\nUser clarification choice ({number}): {option}"
+                        'question': f"{scope}\n\nUser clarification: {option}"
                     })
                     state['request'] = request
                     state['execution'].request = request
@@ -435,8 +441,7 @@ class AgentRouter:
                             if (len(previous_plan.tasks) == 1 and not previous_plan.tasks[0].depends_on
                                     and not previous_plan.tasks[0].inputs):
                                 task = previous_plan.tasks[0]
-                                task_question = (f"{task.question}\n\n"
-                                                 f"User clarification choice ({number}): {option}")
+                                task_question = f"{task.question}\n\nUser clarification: {option}"
                                 if len(task_question) <= 2000:
                                     plan = previous_plan.model_copy(update={
                                         'objective': scope,

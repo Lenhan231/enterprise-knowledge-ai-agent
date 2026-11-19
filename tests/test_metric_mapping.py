@@ -251,17 +251,24 @@ class MappingAgentTest(unittest.IsolatedAsyncioTestCase):
         provider.generate.assert_not_called()
         repository.execute_approved_query.assert_awaited_once()
 
-    async def test_invalid_general_intent_clarifies_without_sql_generation(self):
+    async def test_invalid_general_intent_falls_back_to_sql_clarification(self):
         from core.sql_agent.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest,VerifiedIdentity
         provider,repository=Mock(),AsyncMock()
-        provider.generate.side_effect=[
-            json.dumps({'clarification':'Which snapshot and low-stock threshold do you mean?'}),
-            json.dumps({'clarification':'Which inventory measure and snapshot do you mean?'})]
-        result=await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
-            question='Which styles need attention?',identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
-        self.assertTrue(result.metadata['clarification_required'])
-        self.assertEqual(provider.generate.call_count,1)
+        from core.analytics.text_to_sql import APPROVED_COLUMNS
+        agent=SQLAnalyticsAgent(repository,llm=provider)
+        agent._generate_sql=AsyncMock(return_value=json.dumps(
+            {'clarification':'Which inventory measure and snapshot do you mean?'}))
+        selection={'tables':set(APPROVED_COLUMNS),'required_tables':set(),
+                   'candidate_tables':set(APPROVED_COLUMNS)}
+        with patch('core.agents.sql.agent.interpret_query_intent',
+                   new=AsyncMock(side_effect=ValueError('invalid intent response'))), \
+             patch('core.agents.sql.agent.asyncio.to_thread',
+                   new=AsyncMock(return_value=selection)):
+            result=await agent.run(AgentRequest(
+                question='Which styles need attention?',identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
+        self.assertEqual(result.answer,'Which inventory measure and snapshot do you mean?')
+        agent._generate_sql.assert_awaited_once()
         repository.execute_approved_query.assert_not_awaited()
 
     async def test_metric_formula_mismatch_runs_safe_sql_as_unverified(self):

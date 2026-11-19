@@ -97,5 +97,5 @@ def run(request_path: Path, response_path: Path) -> None:
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        raise SystemExit("usage: python -m document_processing.xiaomi_ocr_worker REQUEST.json RESPONSE.json")
+        raise SystemExit("usage: python -m document_processing.invoice.xiaomi_worker REQUEST.json RESPONSE.json")
     run(Path(sys.argv[1]), Path(sys.argv[2]))

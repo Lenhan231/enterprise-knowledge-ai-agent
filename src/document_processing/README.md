@@ -8,8 +8,9 @@ Start here when tracing a document:
 
 1. [Architecture and request flow](docs/architecture.md)
 2. [Parser contract and callers](docs/document-processing.md)
-3. Follow the selected path: [Docling and OCR](docs/docling-pipeline.md) or
-   [Vintern invoice and image caption](docs/vintern-pipeline.md)
+3. Follow the selected path in [Docling and OCR](docs/docling-pipeline.md),
+   [invoice extraction](docs/invoice-pipeline.md), or
+   [Vintern image captioning](docs/vintern-pipeline.md)
 4. Check [output metadata](docs/metadata.md), then the separate
    [chunking pipeline](../core/chunking/README.md)
 
@@ -18,30 +19,31 @@ Start here when tracing a document:
 ```text
 DocumentProcessor.process
   ├─ intent=document       → Docling → elements + tables
-  ├─ intent=invoice        → Vintern → invoice JSON draft + text element
+  ├─ intent=invoice        → Docling OCR + tables → invoice extractor → JSON draft
   └─ intent=image_caption  → Vintern → caption + text element
 
 parser output → application handoff → core/chunking → persistence / indexing
 ```
 
-Invoice and image-caption are explicit Upload Test intents. The document
-parser does not automatically classify an upload as an invoice. The current
-invoice intent asks Vintern to read page images directly; it does not combine
-Vintern with Docling OCR.
+The invoice intent runs Docling for reviewable text and tables. Gemini, Groq,
+and Qwen use that evidence to extract fields. Xiaomi-OCR-0 reads the original
+pages and returns the same invoice schema. Vintern handles the image-caption
+intent.
 
 ## Useful entry points
 
 | Need to find | Start at |
 | --- | --- |
-| Intent and file-format routing | `document_processor.py` |
-| Docling layout, OCR, tables, chart handling | `docling_adapter/processor.py` |
-| OCR line detection and printed/handwritten routing | `docling_adapter/scanned/` |
-| Docling output mapping | `docling_adapter/result_mapper.py` |
-| Invoice/caption preprocessing and output shaping | `vintern_processor.py` |
-| Vintern model loading and inference | `vintern_worker.py` |
-| Xiaomi-OCR-0 invoice extraction | `xiaomi_ocr_processor.py` and `xiaomi_ocr_worker.py` |
-| Upload Test API | `src/app/upload_test.py` |
-| Production upload caller | `src/app/main.py` |
+| Intent and file-format routing | [document_processor.py](document_processor.py) |
+| Docling layout, OCR, tables, chart handling | [docling_adapter/processor.py](docling_adapter/processor.py) |
+| OCR line detection and printed/handwritten routing | [docling_adapter/scanned/](docling_adapter/scanned/) |
+| Docling output mapping | [docling_adapter/result_mapper.py](docling_adapter/result_mapper.py) |
+| Invoice OCR cache, extraction providers, and schema | [invoice/](invoice/) |
+| Vintern caption preparation and inference | [image_caption/](image_caption/) |
+| Isolated Python workers | [worker_runtime.py](worker_runtime.py) |
+| Local parser review UI | [testing_parser_streamlit.py](../../tools/processing/testing_parser_streamlit.py) |
+| Upload Test API | [src/app/upload_test.py](../app/upload_test.py) |
+| Production upload caller | [src/app/main.py](../app/main.py) |
 
 For local commands and image build notes, see [development](docs/development.md).
 

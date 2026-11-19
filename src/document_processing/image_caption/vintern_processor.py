@@ -8,11 +8,12 @@ import json
 import os
 from pathlib import Path
 import subprocess
-import sys
 import tempfile
 from typing import Any
 
 from PIL import Image, ImageOps, ImageSequence
+
+from document_processing.worker_runtime import resolve_vintern_python, worker_environment
 
 
 _IMAGE_FORMATS = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".webp", ".svg"}
@@ -26,17 +27,6 @@ Dùng các khóa sau:
 "thuế":null,"tổng tiền":null}
 Mỗi phần tử mặt hàng là một dòng hàng. Dùng đúng các khóa này; nếu không đọc được thì điền null."""
 _IMAGE_CAPTION_PROMPT = """Quan sát ảnh và viết một caption ngắn bằng tiếng Việt mô tả nội dung chính, đối tượng và bố cục nhìn thấy. Nếu ảnh có sơ đồ hoặc biểu đồ, nêu luồng/quan hệ và các nhãn dễ đọc. Không suy đoán chi tiết không nhìn rõ; chỉ trả về caption, không thêm lời dẫn."""
-
-
-def resolve_vintern_python(config: dict[str, Any] | None = None) -> Path | None:
-    """Find an explicitly configured or project-local isolated Vintern Python."""
-    configured = (config or {}).get("vintern_python") or os.environ.get(
-        "DOCUMENT_PROCESSING_VINTERN_PYTHON"
-    )
-    if configured:
-        return Path(str(configured)).expanduser()
-    local_python = Path(__file__).resolve().parents[2] / ".venv-vintern" / "bin" / "python"
-    return local_python if local_python.is_file() else None
 
 
 class VinternProcessor:
@@ -104,9 +94,6 @@ class VinternProcessor:
                 }, ensure_ascii=False),
                 encoding="utf-8",
             )
-            env = os.environ.copy()
-            source_root = str(Path(__file__).resolve().parents[1])
-            env["PYTHONPATH"] = os.pathsep.join(filter(None, [source_root, env.get("PYTHONPATH", "")]))
             timeout = int(
                 self.config.get(
                     "vintern_timeout_seconds",
@@ -114,11 +101,11 @@ class VinternProcessor:
                 )
             )
             completed = subprocess.run(
-                [str(python_path), "-m", "document_processing.vintern_worker",
+                [str(python_path), "-m", "document_processing.image_caption.vintern_worker",
                  str(request_path), str(response_path)],
                 capture_output=True,
                 text=True,
-                env=env,
+                env=worker_environment(),
                 timeout=timeout,
                 check=False,
             )

@@ -15,12 +15,10 @@ from typing import Any
 
 from PIL import Image, ImageOps, ImageSequence
 
-from document_processing.invoice_text_processor import (
-    InvoiceFields,
-    SCHEMA,
-    SCHEMA_VERSION,
-    _merge_job_fields,
+from document_processing.invoice.schema import (
+    InvoiceFields, SCHEMA, SCHEMA_VERSION, merge_invoice_fields,
 )
+from document_processing.worker_runtime import PROJECT_ROOT, worker_environment
 
 
 MODEL_ID = "xiaomi-research/Xiaomi-OCR-0"
@@ -37,7 +35,7 @@ def resolve_xiaomi_python(config: dict[str, Any] | None = None) -> Path | None:
     )
     if configured:
         return Path(str(configured)).expanduser()
-    local_python = Path(__file__).resolve().parents[2] / ".venv-xiaomi" / "bin" / "python"
+    local_python = PROJECT_ROOT / ".venv-xiaomi" / "bin" / "python"
     return local_python if local_python.is_file() else None
 
 
@@ -108,18 +106,15 @@ class XiaomiOCRInvoiceProcessor:
                 ],
             }, ensure_ascii=False), encoding="utf-8")
 
-            env = os.environ.copy()
-            source_root = str(Path(__file__).resolve().parents[1])
-            env["PYTHONPATH"] = os.pathsep.join(filter(None, [source_root, env.get("PYTHONPATH", "")]))
             timeout = int(self.config.get(
                 "xiaomi_timeout_seconds",
                 os.environ.get("DOCUMENT_PROCESSING_XIAOMI_TIMEOUT_SECONDS", 1800),
             ))
             try:
                 completed = subprocess.run(
-                    [str(python_path), "-m", "document_processing.xiaomi_ocr_worker",
+                    [str(python_path), "-m", "document_processing.invoice.xiaomi_worker",
                      str(request_path), str(response_path)],
-                    capture_output=True, text=True, env=env, timeout=timeout, check=False,
+                    capture_output=True, text=True, env=worker_environment(), timeout=timeout, check=False,
                 )
             except subprocess.TimeoutExpired as error:
                 raise RuntimeError(f"Xiaomi-OCR-0 exceeded the {timeout}s timeout") from error
@@ -147,7 +142,7 @@ class XiaomiOCRInvoiceProcessor:
                 invalid_pages.append(f"page {page['page_number']}")
                 continue
             parsed_jobs.append(({"kind": "document"}, parsed))
-        fields, conflicts = _merge_job_fields(parsed_jobs)
+        fields, conflicts = merge_invoice_fields(parsed_jobs)
         model_revision = worker_result.get("revision", revision)
         raw_response = json.dumps(responses, ensure_ascii=False)
         parse_error = (

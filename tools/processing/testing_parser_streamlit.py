@@ -16,10 +16,12 @@ from PIL import Image, ImageDraw
 
 from document_processing.document_processor import DocumentProcessor, SUPPORTED_FORMATS
 from document_processing.element_taxonomy import normalize_element_label
+from document_processing.worker_runtime import PROJECT_ROOT, SOURCE_ROOT, resolve_vintern_python
 
 
-PACKAGE_DIR = Path(__file__).resolve().parent
-STORE_DIR = Path(os.environ.get("DOCUMENT_PROCESSING_STORE", PACKAGE_DIR / ".owner_store")).expanduser()
+STORE_DIR = Path(os.environ.get(
+    "DOCUMENT_PROCESSING_STORE", SOURCE_ROOT / "document_processing" / ".owner_store",
+)).expanduser()
 MAX_UPLOAD_BYTES = 50 * 1024 * 1024
 
 
@@ -461,7 +463,7 @@ intent = st.radio(
     horizontal=True,
     format_func={
         "document": "General document · current pipeline",
-        "invoice": "Invoice · Vintern extraction",
+        "invoice": "Invoice extraction",
         "image_caption": "Image caption · Vintern",
     }.__getitem__,
     key="processing_intent",
@@ -524,17 +526,18 @@ with settings_column:
                 if ocr_engine == "vietocr"
                 else "Tesseract PSM 6 with the selected languages."
             )
+        elif intent == "invoice":
+            st.caption("Docling extracts OCR text and tables for invoice review.")
         else:
             st.caption(
-                "Vintern reads each page directly and returns invoice fields or a short image caption. "
-                "OCR and TableFormer settings do not apply in this mode."
+                "Vintern reads each page directly and writes a short caption."
             )
 
 with upload_column:
     with st.container(border=True):
         st.subheader("Add a document")
         st.caption(
-            "Intent: invoice extraction · Vintern" if intent == "invoice"
+            "Intent: invoice extraction · Docling" if intent == "invoice"
             else "Intent: image caption · Vintern" if intent == "image_caption"
             else "Intent: general document · current Docling pipeline"
         )
@@ -548,15 +551,11 @@ with upload_column:
             if intent in {"invoice", "image_caption"}
             else "PDF, Office, CSV, TXT, Markdown, or image · maximum 50 MiB"
         )
-        if intent in {"invoice", "image_caption"}:
-            from document_processing.vintern_processor import resolve_vintern_python
-
-            if resolve_vintern_python() is None:
-                st.warning(
-                    "Vintern runtime is not configured. Create .venv-vintern or set "
-                    "DOCUMENT_PROCESSING_VINTERN_PYTHON; setup steps are in "
-                    "src/document_processing/README.md."
-                )
+        if intent == "image_caption" and resolve_vintern_python() is None:
+            st.warning(
+                "Configure the Vintern runtime by creating .venv-vintern or setting "
+                "DOCUMENT_PROCESSING_VINTERN_PYTHON. See src/document_processing/docs/development.md."
+            )
         uploaded = st.file_uploader(
             "Choose a file",
             type=sorted(suffix.lstrip(".") for suffix in allowed_suffixes),
@@ -591,7 +590,7 @@ with upload_column:
                     st.error(page_selection_error)
                 else:
                     spinner = (
-                        "Extracting invoice fields with Vintern…"
+                        "Extracting invoice fields…"
                         if intent == "invoice"
                         else "Writing an image caption with Vintern…"
                         if intent == "image_caption"
@@ -673,7 +672,7 @@ else:
         ):
             from dotenv import load_dotenv
 
-            load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+            load_dotenv(PROJECT_ROOT / ".env")
             repository = None
             try:
                 from core.database.document_processing_output_repository import DocumentProcessingOutputRepository

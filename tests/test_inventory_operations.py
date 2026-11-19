@@ -263,11 +263,20 @@ class InventoryFlowTest(unittest.IsolatedAsyncioTestCase):
             app.dependency_overrides[get_store]=lambda:ReportStore(directory)
             app.state.agent_router=SimpleNamespace(report_agent=agent)
             with TestClient(app) as client:
-                response=client.post('/api/reports',json={'question':'Monthly inventory report May 2026'},headers=headers)
-                self.assertEqual(response.status_code,201,response.text)
-                doc=response.json()['document'];path='/api/reports/'+doc['id']
-                self.assertEqual(doc['report']['report_type'],'inventory_operations')
-                self.assertEqual(len(doc['presentation']['section_order']),7)
+                documents=[]
+                for question,start,end,grain in (
+                        ('Monthly inventory report for May 2026','2026-05-01','2026-06-01','month'),
+                        ('Inventory operations report for July 2026','2026-07-01','2026-08-01','month'),
+                        ('Annual inventory report for 2026','2026-01-01','2027-01-01','year')):
+                    response=client.post('/api/reports',json={'question':question},headers=headers)
+                    self.assertEqual(response.status_code,201,response.text)
+                    doc=response.json()['document']
+                    self.assertEqual(doc['report']['report_type'],'inventory_operations')
+                    self.assertEqual(doc['report']['request']['period'],{'start':start,'end_exclusive':end})
+                    self.assertEqual(doc['report']['request']['granularity'],grain)
+                    self.assertEqual(len(doc['presentation']['section_order']),7)
+                    documents.append(doc)
+                doc=documents[0];path='/api/reports/'+doc['id']
                 self.assertEqual(client.get(path,headers=headers).json()['document']['report'],doc['report'])
                 self.assertEqual(client.get(path+'/pdf',headers=headers).status_code,200)
                 edit=dict(revision=1,title='Inventory May',presentation=doc['presentation'])

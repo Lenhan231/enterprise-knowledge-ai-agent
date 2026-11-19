@@ -128,4 +128,3 @@ def parse_request(question, *, today=None, latest=None, topic=r'sales?|revenue|d
     return {'period': {'start': start.isoformat(), 'end_exclusive': end.isoformat()},
             'granularity': grain, 'dimension': dimension,
             'dimension_value': filtered.group(2) if filtered else None}
-

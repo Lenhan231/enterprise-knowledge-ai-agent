@@ -72,4 +72,3 @@ class DashboardFormattingTest(unittest.TestCase):
         html=chart_svg(chart,currency='VND')
         self.assertIn('VND',html)
         self.assertNotIn('unconfirmed',html)
-

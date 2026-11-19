@@ -57,13 +57,53 @@ class AnalyticsPermissionDenied(PermissionError):
     """The request has no server-verified permission to query commerce data."""
 
 
+def _has_unrepresented_scope(question: str, *, promotion_ranking: bool = False,
+                            month_comparison: bool = False) -> bool:
+    """Conservatively decline templates when the question asks for extra scope or outputs."""
+    text = question.casefold()
+    if month_comparison:
+        text = re.sub(r"\bwith\s+(?:the\s+)?(?:previous|last|current|this)\s+month\b", " ", text)
+        text = re.sub(r"\b(?:compare|comparison|versus|vs\.?)\b", " ", text)
+        text = re.sub(r"\b(?:growth|change|difference|delta|variance|rate|percent(?:age)?)\b", " ", text)
+    if promotion_ranking:
+        text = re.sub(r"^\s*(?:cho\s+tôi|please|show\s+me)\b", " ", text)
+        text = re.sub(r"\b(?:top|bottom|highest|lowest|most|rank(?:ing)?|best)\b", " ", text)
+        text = re.sub(r"\bby\s+(?:(?:total|net|gross)\s+)?(?:revenue|sales|doanh\s+thu)\b", " ", text)
+        text = re.sub(r"\bwith\s+(?:the\s+)?(?:highest|most)\s+(?:total\s+)?(?:revenue|sales)\b", " ", text)
+    if re.search(
+        r"\b(?:by|per|group(?:ed)?|breakdown|according\s+to|rank(?:ing)?|top|bottom|"
+        r"highest|lowest|include|including|also|along\s+with|as\s+well\s+as|output|column|field|"
+        r"growth|change|difference|delta|variance|average|mean|median|profit|margin|rate|"
+        r"percent(?:age)?|forecast|predict|trend|"
+        r"where|with|filter(?:ed)?|only|excluding|except|between|through|until|before|after|"
+        r"compare|comparison|versus|vs\.?)\b|"
+        r"\bfor\s+(?!(?:(?:19|20)\d{2}|(?:the\s+)?year|(?:last|previous|this|current)\s+year)\b)|"
+        r"\bin\s+(?!(?:(?:19|20)\d{2}|(?:the\s+)?year|(?:last|previous|this|current)\s+year|"
+        r"january|february|march|april|may|june|july|august|september|october|november|december)\b)|"
+        r"theo\s+(?:từng|mỗi)?|từng\s+\w+|mỗi\s+\w+|"
+        r"(?:cho|lọc|chỉ|bao gồm|ngoại trừ|trừ)\s+(?!năm\s+(?:(?:19|20)\d{2}|ngoái|trước|nay)\b)",
+        text,
+    ):
+        return True
+    if re.search(
+        r"\b(?:region|regional|country|state|city|category|product|sku|brand|segment|"
+        r"channel|customer|store|warehouse|supplier|order|status|payment)\b|"
+        r"khu vực|danh mục|sản phẩm|mã hàng|thương hiệu|phân khúc|kênh|khách hàng|"
+        r"cửa hàng|nhà cung cấp|đơn hàng|trạng thái|thanh toán",
+        text,
+    ):
+        return True
+    return False
+
+
 def _month_over_month_revenue_plan(question: str, metric_names: set[str], today: date | None = None):
     """Compile the common current-vs-previous calendar month revenue comparison."""
     text = question.casefold()
     compares_months = bool(re.search(r"\b(?:compare|comparison|versus|vs\.?|month.over.month|mom)\b|so sánh|đối chiếu", text))
     mentions_previous_month = bool(re.search(r"previous month|last month|tháng trước", text))
     explicit_period = bool(re.search(r"\b(?:19|20)\d{2}\b|\btháng\s+(?:0?[1-9]|1[0-2])\b|\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\b", text))
-    if metric_names != {"revenue"} or not compares_months or not mentions_previous_month or explicit_period:
+    if (metric_names != {"revenue"} or not compares_months or not mentions_previous_month
+            or explicit_period or _has_unrepresented_scope(question, month_comparison=True)):
         return None
 
     today = today or date.today()
@@ -89,7 +129,7 @@ def _month_over_month_revenue_plan(question: str, metric_names: set[str], today:
 
 
 def _explicit_month_revenue_plan(question: str, metric_names: set[str], today: date | None = None):
-    if metric_names != {"revenue"}:
+    if metric_names != {"revenue"} or _has_unrepresented_scope(question):
         return None
     match = re.search(r"\btháng\s+(0?[1-9]|1[0-2])(?:\s+năm\s+((?:19|20)\d{2}))?\b", question, re.I)
     if not match:
@@ -112,7 +152,8 @@ def _annual_revenue_plan(question: str, metric_names: set[str], today: date | No
     text = question.casefold()
     if re.search(r"\btháng\s+(?:0?[1-9]|1[0-2])\b|\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\b|\bmonth\b|\bq[1-4]\b|\bquarter\b|quý\s+[1-4]|\b(?:19|20)\d{2}[-/]\d{1,2}", text):
         return None
-    if re.search(r"\b(?:compare|comparison|versus|vs\.?|trend|monthly|daily|by|per|region|category|product|channel|quarter|year.over.year)\b|so sánh|xu hướng|theo\s+\w+", text):
+    if (re.search(r"\b(?:compare|comparison|versus|vs\.?|trend|monthly|daily|by|per|region|category|product|channel|quarter|year.over.year)\b|so sánh|xu hướng|theo\s+\w+", text)
+            or _has_unrepresented_scope(text)):
         return None
     years = set(re.findall(r"\b(?:19|20)\d{2}\b", text))
     if len(years) > 1:
@@ -150,7 +191,13 @@ def _completed_months_revenue_plan(question: str, metric_names: set[str], today:
         r"completed|finished|đã\s+hoàn\s+tất|hoàn\s+tất|gần\s+(?:nhất|đây)|most\s+recent|last|past",
         question.casefold(),
     ))
-    if not match or not completed:
+    other_period = bool(re.search(
+        r"\b(?:19|20)\d{2}\b|\b(?:january|february|march|april|may|june|july|august|september|"
+        r"october|november|december)\b|\b(?:this|last|previous|current)\s+(?:year|quarter)\b|"
+        r"\bq[1-4]\b|\bquarter\b|\btháng\s+\d{1,2}\s+(?:năm\s+)?(?:19|20)\d{2}\b",
+        question.casefold(),
+    ))
+    if not match or not completed or other_period or _has_unrepresented_scope(question):
         return None
     raw_count = next(value for value in match.groups() if value)
     vi_count = {"một": 1, "hai": 2, "ba": 3, "bốn": 4, "năm": 5,
@@ -175,7 +222,12 @@ def _promotion_query_plan(question: str, today: date | None = None):
     """Compile the two unambiguous promotion questions using their source grain."""
     text = question.casefold()
     mentions_promo = bool(re.search(r"promo(?:tion)?s?|promotion code|discount code|coupon|voucher|khuyến mãi|mã giảm giá|mã khuyến mãi", text))
-    if not mentions_promo:
+    explicit_period = bool(re.search(
+        r"\b(?:19|20)\d{2}\b|\b(?:january|february|march|april|may|june|july|august|"
+        r"september|october|november|december)\b|\b(?:last|previous|this)\s+(?:month|year|week|day)\b|"
+        r"\btháng\s+\d{1,2}\b|\bngày\s+\d{1,2}[/-]\d{1,2}", text))
+    if (not mentions_promo or explicit_period
+            or _has_unrepresented_scope(text, promotion_ranking=True)):
         return None, None
 
     asks_active_count = bool(re.search(
@@ -210,6 +262,89 @@ def _promotion_query_plan(question: str, today: date | None = None):
             explanation="Rank promotions by recorded net item revenue, without double-attributing lines with a second promotion.",
         ), "promotion_revenue"
     return None, None
+
+
+def compile_known_query(
+    question: str,
+    *,
+    original_question: str | None = None,
+    context=None,
+    inventory_mapping=None,
+    dashboard_build: bool = False,
+    today: date | None = None,
+    trace: dict | None = None,
+) -> QueryPlan | None:
+    """Select and compile one supported deterministic path into the shared plan contract."""
+    original_question = original_question if isinstance(original_question, str) and original_question.strip() else question
+    scope_question = question if original_question.strip() == question.strip() else question + "\n" + original_question.strip()
+    direct = field_contract(question) if context is None else None
+    promotion_plan, promotion_metric = _promotion_query_plan(scope_question, today=today) if direct is None else (None, None)
+    explicit_order_item_formula = all(
+        re.search(rf"\b{field}\b", scope_question, re.I)
+        for field in ("quantity", "unit_price", "discount_amount")
+    )
+    metric_names = (set() if direct is not None or promotion_plan is not None or explicit_order_item_formula
+                    else resolve_metric_names(question))
+    relative_month_followup = bool(re.fullmatch(
+        r"\s*(?:(?:vậy|còn)\s+)?(?:tháng trước(?: thì sao)?|last month|previous month)\s*[?!.]*\s*",
+        original_question, re.I))
+
+    annual_scope_supported = _annual_revenue_plan(scope_question, metric_names, today=today) is not None
+    # A literal request with both relative and explicit years has two incompatible scopes.
+    if question.strip() == original_question.strip() and re.search(
+        r"\b(?:19|20)\d{2}\b", scope_question,
+    ) and re.search(
+        r"\b(?:this|current|last|previous)\s+year\b|năm\s+(?:nay|hiện tại|ngoái|trước)",
+        scope_question, re.I,
+    ):
+        annual_scope_supported = False
+    annual_plan = ((_annual_revenue_plan(original_question, metric_names, today=today)
+                    or _annual_revenue_plan(question, metric_names, today=today))
+                   if annual_scope_supported else None)
+    completed_scope_supported = _completed_months_revenue_plan(scope_question, metric_names, today=today) is not None
+    completed_months_plan = (_completed_months_revenue_plan(original_question, metric_names, today=today)
+                             if completed_scope_supported else None)
+    explicit_scope_supported = _explicit_month_revenue_plan(scope_question, metric_names, today=today) is not None
+    explicit_month_plan = (_explicit_month_revenue_plan(question, metric_names, today=today)
+                           if relative_month_followup and explicit_scope_supported else None)
+    month_scope_supported = _month_over_month_revenue_plan(scope_question, metric_names, today=today) is not None
+    month_comparison_plan = (_month_over_month_revenue_plan(question, metric_names, today=today)
+                             if month_scope_supported else None)
+    candidates = (
+        ("promotion", promotion_plan, promotion_metric),
+        ("annual_revenue", annual_plan, None),
+        ("completed_months_revenue", completed_months_plan, None),
+        ("explicit_month_revenue", explicit_month_plan, None),
+        ("month_over_month_revenue", month_comparison_plan, None),
+    )
+    compiler, plan, metric = next(((name, candidate, measure)
+                                   for name, candidate, measure in candidates if candidate is not None),
+                                  (None, None, None))
+    if compiler is None and direct is not None:
+        compiler = "direct_field"
+        if not dashboard_build:
+            plan = compile_field_query(direct)
+
+    # Dashboard builds keep their existing model-generated output bundle; inventory
+    # mappings still use the deterministic domain compiler when available.
+    if compiler is not None and dashboard_build:
+        plan = None
+    if plan is None and inventory_mapping is not None and inventory_mapping.domain == "inventory":
+        sql, parameters = compile_inventory_query(inventory_mapping)
+        plan = QueryPlan(sql=sql, parameters=parameters,
+                         explanation="Compiled from the validated inventory interpretation.")
+        compiler, metric = "inventory_mapping", None
+
+    if trace is not None:
+        trace.update(
+            direct=direct,
+            metric_names=metric_names,
+            promotion_metric=metric,
+            compiler=compiler,
+            candidate=compiler is not None,
+            explicit_order_item_formula=explicit_order_item_formula,
+        )
+    return plan
 
 
 def payload_to_agent_result(payload: Mapping[str, Any], *, agent: str = "analytics") -> AgentResult:
@@ -377,32 +512,22 @@ class SQLAnalyticsAgent(BaseAgent):
                                       unsupported_dimensions=unavailable, missing_columns=missing_columns,
                                       available_tables=present_tables)
             return result
+        compiler_trace = {}
         try:
-            direct = field_contract(question) if context is None else None
+            known_plan = compile_known_query(
+                question, original_question=original_question, context=context,
+                dashboard_build=dashboard_build, trace=compiler_trace,
+            )
         except MetricDefinitionError as error:
             return self._generation_error(error)
-        promotion_plan, promotion_metric = _promotion_query_plan(question) if direct is None else (None, None)
+        direct = compiler_trace['direct']
+        promotion_metric = compiler_trace['promotion_metric']
+        metric_names = compiler_trace['metric_names']
+        explicit_order_item_formula = compiler_trace['explicit_order_item_formula']
         formula_scope = f'{question}\n{original_question}'
-        explicit_order_item_formula = all(
-            re.search(rf'\b{field}\b', formula_scope, re.I)
-            for field in ('quantity', 'unit_price', 'discount_amount')
-        )
         explicit_separate_criteria = explicit_order_item_formula and bool(re.search(
             r'từng tiêu chí riêng|riêng từng tiêu chí|each criterion separately|separate criteria',
             formula_scope, re.I))
-        metric_names = (set() if direct is not None or promotion_plan is not None or explicit_order_item_formula
-                        else resolve_metric_names(question))
-        relative_month_followup = bool(re.fullmatch(
-            r'\s*(?:(?:vậy|còn)\s+)?(?:tháng trước(?: thì sao)?|last month|previous month)\s*[?!.]*\s*',
-            original_question, re.I))
-        explicit_month_plan = (_explicit_month_revenue_plan(question, metric_names)
-                               if relative_month_followup else None)
-        # The latest user turn is authoritative for relative dates; planner context can
-        # accidentally carry an older year while correctly retaining the metric.
-        annual_revenue_plan = (_annual_revenue_plan(original_question, metric_names)
-                               or _annual_revenue_plan(question, metric_names))
-        completed_months_plan = _completed_months_revenue_plan(original_question, metric_names)
-        month_comparison_plan = _month_over_month_revenue_plan(question, metric_names)
         named_sources = set(re.findall(r'\bcommerce\.\w+', re.sub(r"'(?:[^']|'')*'", '', schema_scope_question).casefold()))
         if self.inventory_only and direct is None and (named_sources - INVENTORY_SOURCES or any(
                 get_metric_definition(name).get('domain') != 'inventory_management' for name in metric_names)):
@@ -425,8 +550,7 @@ class SQLAnalyticsAgent(BaseAgent):
                 if error.code != 'snapshot_required':
                     raise
             metric_definitions = {name: get_metric_definition(name) for name in metric_names}
-            deterministic_plan = any((direct, promotion_plan, annual_revenue_plan,
-                                      completed_months_plan, explicit_month_plan, month_comparison_plan))
+            deterministic_plan = compiler_trace['candidate']
             if deterministic_plan:
                 table_selection = None
                 context_info['schema_table_selection'] = 'compiled_query'
@@ -570,7 +694,7 @@ class SQLAnalyticsAgent(BaseAgent):
                 resolved_latest = True
             metric_evidence = {}
             metric_lookup = {}
-            if ((not metric_names or cross_domain) and direct is None and promotion_plan is None
+            if ((not metric_names or cross_domain) and direct is None and promotion_metric is None
                     and not explicit_order_item_formula and self.metric_retriever is not None):
                 with measure('metric_retrieval'):
                     try:
@@ -614,26 +738,19 @@ class SQLAnalyticsAgent(BaseAgent):
         except Exception as error:
             return self._generation_error(error)
         dashboard_outputs = None
+        selected_compiler = None
         for attempt in range(2):
-            plan = None
+            plan = known_plan
+            selected_compiler = compiler_trace['compiler'] if plan is not None else None
             try:
-                if promotion_plan is not None and not dashboard_build:
-                    plan = promotion_plan
-                elif annual_revenue_plan is not None and not dashboard_build:
-                    plan = annual_revenue_plan
-                elif completed_months_plan is not None and not dashboard_build:
-                    plan = completed_months_plan
-                elif explicit_month_plan is not None and not dashboard_build:
-                    plan = explicit_month_plan
-                elif month_comparison_plan is not None and not dashboard_build:
-                    plan = month_comparison_plan
-                elif direct is not None and not dashboard_build:
-                    plan = compile_field_query(direct)
-                elif interpretation and interpretation.domain == 'inventory':
-                    sql, parameters = compile_inventory_query(interpretation)
-                    plan = QueryPlan(sql=sql, parameters=parameters,
-                                     explanation='Compiled from the validated inventory interpretation.')
-                else:
+                if plan is None and interpretation and interpretation.domain == 'inventory':
+                    plan = compile_known_query(
+                        question, original_question=original_question, context=context,
+                        inventory_mapping=interpretation, dashboard_build=dashboard_build,
+                        trace=compiler_trace,
+                    )
+                    selected_compiler = compiler_trace['compiler'] if plan is not None else None
+                if plan is None:
                     with measure("sql_planning"):
                         raw = await self._generate_sql(prompt)
                     if options.get('_dashboard_request') is True and options.get('_dashboard_allow_multiple') is True:
@@ -709,10 +826,13 @@ class SQLAnalyticsAgent(BaseAgent):
                         approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns)
                     if cross_domain and not {'commerce.inventory','commerce.orders','commerce.order_items'} <= set(validated_sql.sources):
                         raise SQLValidationError('The requested cross-domain contract must retain inventory, orders and order_items.')
-                    if metric_names or any((annual_revenue_plan, completed_months_plan,
-                                            month_comparison_plan, explicit_month_plan)):
+                    revenue_compiler = selected_compiler in {
+                        'annual_revenue', 'completed_months_revenue',
+                        'explicit_month_revenue', 'month_over_month_revenue',
+                    }
+                    if metric_names or revenue_compiler:
                         definitions = ({"revenue": get_metric_definition("revenue")}
-                                       if not dashboard_build and (annual_revenue_plan is not None or completed_months_plan is not None or month_comparison_plan is not None or explicit_month_plan) else
+                                       if not dashboard_build and revenue_compiler else
                                        validate_metric_definitions(plan.sql, metric_names, plan.parameters, table_columns,
                                            question=interpretation.date_question() if interpretation and interpretation.domain == 'inventory' else question))
                     else:
@@ -720,10 +840,8 @@ class SQLAnalyticsAgent(BaseAgent):
                         # The ontology validates only metrics that it explicitly defines.
                         definitions = {}
                         custom_metric_query = (
-                            direct is None and promotion_plan is None and promotion_metric is None
+                            direct is None and selected_compiler is None and promotion_metric is None
                             and not explicit_order_item_formula and interpretation is None and not dashboard_build
-                            and not any((annual_revenue_plan, completed_months_plan, month_comparison_plan,
-                                         explicit_month_plan))
                         )
                         has_aggregate = any(isinstance(node, exp.AggFunc)
                                             for node in parse_one(plan.sql, read='postgres').find_all(exp.AggFunc))
@@ -787,11 +905,9 @@ class SQLAnalyticsAgent(BaseAgent):
                     break
                 if (isinstance(error, MetricDefinitionError) and error.code == 'derived_metric_formula_mismatch'
                         and attempt == 1
-                        and not self.inventory_only and direct is None and promotion_plan is None
+                        and not self.inventory_only and direct is None and selected_compiler is None
                         and promotion_metric is None
-                        and interpretation is None and not dashboard_build
-                        and not any((annual_revenue_plan, completed_months_plan,
-                                     month_comparison_plan, explicit_month_plan))):
+                        and interpretation is None and not dashboard_build):
                     # SQL safety, schema, approved joins and query-grain checks already passed.
                     # Keep the query result available, but do not present this derived formula as canonical.
                     definitions = {}
@@ -803,11 +919,9 @@ class SQLAnalyticsAgent(BaseAgent):
                     }
                     break
                 if (isinstance(error, MetricDefinitionError) and attempt == 1
-                        and not self.inventory_only and direct is None and promotion_plan is None
+                        and not self.inventory_only and direct is None and selected_compiler is None
                         and promotion_metric is None
-                        and interpretation is None and not dashboard_build
-                        and not any((annual_revenue_plan, completed_months_plan,
-                                     month_comparison_plan, explicit_month_plan))):
+                        and interpretation is None and not dashboard_build):
                     # SQL safety, live schema, approved joins and join-grain checks
                     # already passed. Keep semantically unverified results available.
                     definitions = {}
@@ -867,7 +981,7 @@ class SQLAnalyticsAgent(BaseAgent):
             )
         if unverified_metric is not None:
             payload.setdefault('metadata', {})['metric_validation'] = unverified_metric
-        if plan is annual_revenue_plan and payload.get("query_status") == "executed":
+        if selected_compiler == 'annual_revenue' and payload.get("query_status") == "executed":
             payload["limitations"].append(
                 "This is the sum of matching records for the calendar year; source-data completeness for the full year is not established."
             )

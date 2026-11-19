@@ -34,6 +34,14 @@ def load_settings():
             os.environ[name] = value.strip()
 
 
+def parsed(line):
+    """A row cut short by a crash or power loss is not a result: it reads as None and is redone."""
+    try:
+        return json.loads(line) if line.strip() else None
+    except json.JSONDecodeError:
+        return None
+
+
 class ClaimCheckRateLimited(Exception):
     pass
 
@@ -50,9 +58,10 @@ def wait_for_active_hours():
     if not window:
         return
     start, end = map(int, window.split("-"))
-    while not (time.localtime().tm_hour >= start or time.localtime().tm_hour < end if start > end
-               else start <= time.localtime().tm_hour < end):
-        time.sleep(300)
+    hour = time.localtime().tm_hour
+    if not (hour >= start or hour < end if start > end else start <= hour < end):
+        print("outside EVAL_ACTIVE_HOURS; stopping, a later run resumes", flush=True)
+        sys.exit(75)
 
 
 def main(set_name, out_path, *only):
@@ -61,7 +70,7 @@ def main(set_name, out_path, *only):
     from core.rag.rag_service import RAGService
     items = json.load(open(ROOT / f"artifacts/evaluation/vietstyle-v3/{set_name}-v3.json", encoding="utf-8"))["items"]
     if Path(out_path).exists():  # a claim check cut short by a rate limit is not a result: drop it so it is redone
-        rows = [l for l in open(out_path, encoding="utf-8") if l.strip() and not rate_limited(json.loads(l))]
+        rows = [l if l.endswith("\n") else l + "\n" for l in open(out_path, encoding="utf-8") if parsed(l) and not rate_limited(parsed(l))]
         Path(out_path).write_text("".join(rows), encoding="utf-8")
     done = {json.loads(l)["id"] for l in open(out_path, encoding="utf-8")} if Path(out_path).exists() else set()
     rag = RAGService()
@@ -88,11 +97,11 @@ def main(set_name, out_path, *only):
                     except (RateLimitError, ClaimCheckRateLimited, RuntimeError) as error:
                         if isinstance(error, RuntimeError) and "HTTP 429" not in str(error) and "timed out" not in str(error):
                             raise
-                        print(item["id"], "rate limited; pausing 10 minutes", flush=True)
-                        time.sleep(600)
-                else:
-                    out.write(json.dumps({"id": item["id"], "error": "rate_limited"}) + "\n")
-                    continue
+                        if attempt:  # still limited after one short wait: stop; a later run resumes from this item
+                            print(item["id"], "rate limited; stopping until the quota recovers", flush=True)
+                            sys.exit(75)
+                        print(item["id"], "rate limited; retrying in 60 s", flush=True)
+                        time.sleep(60)
                 verification = result.verification.model_dump() if result.verification else None
                 out.write(json.dumps({
                     "id": item["id"], "answer": result.answer, "insufficient_context": result.insufficient_context,

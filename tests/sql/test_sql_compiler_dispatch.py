@@ -20,7 +20,7 @@ from core.analytics.sql_validation import QueryPlan
 from core.analytics.text_to_sql import APPROVED_COLUMNS, APPROVED_DATE_COLUMNS, APPROVED_JOINS
 from core.analytics.join_validation import PRIMARY_KEYS
 from core.models.agents import AgentRequest, VerifiedIdentity
-from core.agents.sql.agent import SQLAnalyticsAgent
+from core.agents.sql.agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
 
 
 class SQLCompilerDispatchTest(unittest.TestCase):
@@ -56,6 +56,63 @@ class SQLCompilerDispatchTest(unittest.TestCase):
                 selection = self.compile(question)
                 self.assertIsNone(selection.plan)
                 self.assertFalse(selection.matched)
+
+    def test_annual_template_declines_unrepresented_business_constraints(self):
+        unsupported = (
+            "Tổng doanh thu năm 2025 của đại lý Bình Minh",
+            "Tổng doanh thu năm 2025 tại Hà Nội",
+            "Doanh thu năm 2025 ở miền Bắc",
+            "Doanh thu năm 2025 từ cửa hàng A",
+            "Doanh thu năm 2025 cho chi nhánh B",
+            "Doanh thu năm 2025 của khách hàng VIP",
+            "Doanh thu năm 2025 thuộc thương hiệu X",
+            "Doanh thu năm 2025 không tính đơn đã hủy",
+            "Doanh thu năm 2025 loại trừ đơn hoàn trả",
+            "Doanh thu năm 2025 theo từng tháng",
+            "Doanh thu năm 2025 và lợi nhuận",
+            "So sánh doanh thu 2024 và 2025",
+            "Top 10 mã khuyến mãi theo doanh thu năm 2025",
+            "Revenue in 2025 for dealer ABC",
+            "Revenue for 2025 excluding cancelled orders",
+            "Tổng doanh thu từ tháng 6 đến tháng 12 năm 2025",
+            "Tổng doanh thu năm 2025 theo kênh trực tuyến",
+        )
+        for question in unsupported:
+            with self.subTest(question=question):
+                selection = self.compile(question)
+                self.assertFalse(selection.matched)
+                self.assertIsNone(selection.plan)
+
+    def test_annual_template_accepts_harmless_vietnamese_and_english_phrasing(self):
+        for question in (
+            "Tổng doanh thu năm 2025",
+            "Tổng doanh thu trong năm 2025 là bao nhiêu?",
+            "Cho tôi biết tổng doanh thu năm 2025",
+            "What was total revenue for 2025?",
+        ):
+            with self.subTest(question=question):
+                selection = self.compile(question)
+                self.assertTrue(selection.matched)
+                self.assertEqual(selection.compiler, CompilerKind.ANNUAL_REVENUE)
+                self.assertIn("SUM(s.revenue)", selection.plan.sql)
+                self.assertEqual(selection.plan.parameters, (date(2025, 1, 1), date(2026, 1, 1)))
+
+    def test_explicit_and_relative_year_conflict_is_unmatched(self):
+        selection = self.compile("Revenue for 2025 and this year", today=date(2026, 11, 19))
+        self.assertFalse(selection.matched)
+        self.assertIsNone(selection.plan)
+
+    def test_other_revenue_and_promotion_templates_reject_unknown_filter_terms(self):
+        for question in (
+            "Doanh thu tháng 12 năm 2025 của đại lý Bình Minh",
+            "Doanh thu 5 tháng gần đây của đại lý Bình Minh",
+            "Compare this month's revenue with previous month for dealer ABC",
+            "Top 10 discount codes by total revenue from dealer ABC",
+        ):
+            with self.subTest(question=question):
+                selection = self.compile(question, today=date(2026, 11, 19))
+                self.assertFalse(selection.matched)
+                self.assertIsNone(selection.plan)
 
     def test_month_comparison_handles_january_rollover(self):
         selection = self.compile(
@@ -131,10 +188,16 @@ class SQLCompilerDispatchTest(unittest.TestCase):
         with self.assertRaises((AttributeError, TypeError)):
             first.plan = QueryPlan(sql="SELECT 1", parameters=())
 
-        match = match_fixed_query("Tổng doanh thu năm 2025")
-        first_compilation = compile_fixed_query(match)
-        second_compilation = compile_fixed_query(match)
+        question = "Tổng doanh thu năm 2025"
+        first_match = match_fixed_query(question)
+        second_match = match_fixed_query(question)
+        self.assertEqual(first_match, second_match)
+        first_compilation = compile_fixed_query(first_match)
+        second_compilation = compile_fixed_query(second_match)
         self.assertEqual(first_compilation, second_compilation)
+        self.assertEqual(first_compilation.compiler, CompilerKind.ANNUAL_REVENUE)
+        self.assertEqual(first_compilation.plan.sql, second_compilation.plan.sql)
+        self.assertEqual(first_compilation.plan.parameters, second_compilation.plan.parameters)
 
     def test_optional_context_is_safe_and_conversation_context_disables_direct_fields(self):
         question = "List product_id, product_name from commerce.products"
@@ -213,6 +276,7 @@ class SQLCompilerDispatchFlowTest(unittest.IsolatedAsyncioTestCase):
             ))
 
         self.assertEqual(result["query_status"], "executed")
+        self.assertEqual(result["metadata"]["execution_status"], "executed_empty")
         self.assertEqual(result["parameters"], ["blue", 100])
         self.assertNotIn("'blue'", result["sql"])
         agent._generate_sql.assert_not_awaited()
@@ -247,6 +311,7 @@ class SQLCompilerDispatchFlowTest(unittest.IsolatedAsyncioTestCase):
             ))
 
         self.assertEqual(result["query_status"], "executed")
+        self.assertEqual(result["metadata"]["execution_status"], "executed")
         self.assertIn("SUM(s.revenue)", result["sql"])
         self.assertEqual(result["parameters"], [date(2025, 1, 1), date(2026, 1, 1)])
         agent._generate_sql.assert_not_awaited()
@@ -330,6 +395,165 @@ class SQLCompilerDispatchFlowTest(unittest.IsolatedAsyncioTestCase):
 
         agent._generate_sql.assert_awaited_once()
         self.assertTrue(result["metadata"]["clarification_required"])
+        repository.execute_approved_query.assert_not_awaited()
+
+    async def test_unsupported_date_scope_uses_valid_parameterized_llm_fallback(self):
+        repository = type("Repository", (), {})()
+        repository.get_schema = AsyncMock(return_value={
+            "tables": APPROVED_COLUMNS,
+            "joins": APPROVED_JOINS,
+            "primary_keys": PRIMARY_KEYS,
+            "date_columns": APPROVED_DATE_COLUMNS,
+        })
+        repository.execute_approved_query = AsyncMock(return_value=[{"revenue": 12.5}])
+        agent = SQLAnalyticsAgent(repository, llm=object(), inventory_only=False)
+        sql = ("SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s "
+               "WHERE s.date >= $1 AND s.date < $2 LIMIT 1")
+        agent._generate_sql = AsyncMock(return_value=json.dumps({
+            "sql": sql,
+            "parameters": ["2025-06-01", "2026-01-01"],
+            "explanation": "Revenue from June through December 2025.",
+        }))
+        selection = {
+            "tables": set(APPROVED_COLUMNS),
+            "required_tables": set(),
+            "candidate_tables": set(APPROVED_COLUMNS),
+        }
+        with patch("core.agents.sql.agent.asyncio.to_thread", new=AsyncMock(return_value=selection)) as select_tables:
+            result = await agent.run_payload(AgentRequest(
+                question="Doanh thu từ tháng 6 đến tháng 12 năm 2025",
+                identity=VerifiedIdentity(subject="test", permissions={"analytics:read"}),
+            ))
+
+        self.assertEqual(result["query_status"], "executed")
+        self.assertIn("s.date >= $1", result["sql"])
+        self.assertIn("s.date < $2", result["sql"])
+        self.assertEqual(result["parameters"], [date(2025, 6, 1), date(2026, 1, 1)])
+        agent._generate_sql.assert_awaited_once()
+        repository.execute_approved_query.assert_awaited_once_with(
+            sql, date(2025, 6, 1), date(2026, 1, 1))
+        select_tables.assert_awaited_once()
+
+    async def test_unsupported_dealer_scope_uses_fallback_and_rejects_unsafe_sql(self):
+        class Repository:
+            async def get_schema(self):
+                return {
+                    "tables": APPROVED_COLUMNS,
+                    "joins": APPROVED_JOINS,
+                    "primary_keys": PRIMARY_KEYS,
+                    "date_columns": APPROVED_DATE_COLUMNS,
+                }
+
+            async def execute_approved_query(self, *_args):
+                return [{"revenue": 1}]
+
+            async def execute_unverified_query(self, *_args):
+                return [{"revenue": 1}]
+
+        repository = Repository()
+        repository.get_schema = AsyncMock(return_value={
+            "tables": APPROVED_COLUMNS,
+            "joins": APPROVED_JOINS,
+            "primary_keys": PRIMARY_KEYS,
+            "date_columns": APPROVED_DATE_COLUMNS,
+        })
+        repository.execute_approved_query = AsyncMock(return_value=[{"revenue": 1}])
+        repository.execute_unverified_query = AsyncMock(return_value=[{"revenue": 1}])
+        agent = SQLAnalyticsAgent(repository, llm=object(), inventory_only=False)
+        agent._generate_sql = AsyncMock(side_effect=[
+            json.dumps({"sql": "DELETE FROM commerce.sales", "parameters": []}),
+            json.dumps({"clarification": "The dealer field is unavailable in the approved schema."}),
+        ])
+        selection = {
+            "tables": set(APPROVED_COLUMNS),
+            "required_tables": set(),
+            "candidate_tables": set(APPROVED_COLUMNS),
+        }
+        with patch("core.agents.sql.agent.asyncio.to_thread", new=AsyncMock(return_value=selection)) as select_tables:
+            result = await agent.run_payload(AgentRequest(
+                question="Tổng doanh thu năm 2025 của đại lý Bình Minh",
+                identity=VerifiedIdentity(subject="test", permissions={"analytics:read"}),
+            ))
+
+        self.assertTrue(result["metadata"]["clarification_required"])
+        self.assertEqual(agent._generate_sql.await_count, 2)
+        repository.execute_approved_query.assert_not_awaited()
+        repository.execute_unverified_query.assert_not_awaited()
+        select_tables.assert_awaited_once()
+
+    async def test_unauthorized_request_stops_before_schema_llm_and_execution(self):
+        repository = type("Repository", (), {})()
+        repository.get_schema = AsyncMock(return_value={
+            "tables": APPROVED_COLUMNS,
+            "joins": APPROVED_JOINS,
+            "primary_keys": PRIMARY_KEYS,
+            "date_columns": APPROVED_DATE_COLUMNS,
+        })
+        repository.execute_approved_query = AsyncMock(return_value=[])
+        agent = SQLAnalyticsAgent(repository, llm=object(), inventory_only=False)
+        agent._generate_sql = AsyncMock()
+
+        with self.assertRaises(AnalyticsPermissionDenied):
+            await agent.run_payload(AgentRequest(
+                question="Tổng doanh thu năm 2025",
+                identity=VerifiedIdentity(subject="test", permissions=set()),
+            ))
+
+        repository.get_schema.assert_not_awaited()
+        repository.execute_approved_query.assert_not_awaited()
+        agent._generate_sql.assert_not_awaited()
+
+    async def test_database_failure_is_source_failed_without_sql_replanning(self):
+        repository = type("Repository", (), {})()
+        repository.get_schema = AsyncMock(return_value={
+            "tables": APPROVED_COLUMNS,
+            "joins": APPROVED_JOINS,
+            "primary_keys": PRIMARY_KEYS,
+            "date_columns": APPROVED_DATE_COLUMNS,
+        })
+        repository.execute_approved_query = AsyncMock(side_effect=RuntimeError("database unavailable"))
+        agent = SQLAnalyticsAgent(repository, llm=object(), inventory_only=False)
+        agent._generate_sql = AsyncMock(side_effect=AssertionError("fixed SQL must not be replanned"))
+        with patch("core.agents.sql.agent.select_jev_schema_tables") as select_tables:
+            result = await agent.run_payload(AgentRequest(
+                question="Tổng doanh thu năm 2025",
+                identity=VerifiedIdentity(subject="test", permissions={"analytics:read"}),
+            ))
+
+        self.assertEqual(result["query_status"], "error")
+        self.assertEqual(result["metadata"]["execution_status"], "source_failed")
+        repository.execute_approved_query.assert_awaited_once()
+        agent._generate_sql.assert_not_awaited()
+        select_tables.assert_not_called()
+
+    async def test_invalid_sql_retry_exhaustion_rejects_without_execution(self):
+        repository = type("Repository", (), {})()
+        repository.get_schema = AsyncMock(return_value={
+            "tables": APPROVED_COLUMNS,
+            "joins": APPROVED_JOINS,
+            "primary_keys": PRIMARY_KEYS,
+            "date_columns": APPROVED_DATE_COLUMNS,
+        })
+        repository.execute_approved_query = AsyncMock(return_value=[])
+        agent = SQLAnalyticsAgent(repository, llm=object(), inventory_only=False)
+        agent._generate_sql = AsyncMock(side_effect=[
+            json.dumps({"sql": "DELETE FROM commerce.sales", "parameters": []}),
+            json.dumps({"sql": "UPDATE commerce.sales SET revenue = 0", "parameters": []}),
+        ])
+        selection = {
+            "tables": set(APPROVED_COLUMNS),
+            "required_tables": set(),
+            "candidate_tables": set(APPROVED_COLUMNS),
+        }
+        with patch("core.agents.sql.agent.asyncio.to_thread", new=AsyncMock(return_value=selection)):
+            result = await agent.run_payload(AgentRequest(
+                question="Tổng doanh thu năm 2025 của đại lý Bình Minh",
+                identity=VerifiedIdentity(subject="test", permissions={"analytics:read"}),
+            ))
+
+        self.assertEqual(agent._generate_sql.await_count, 2)
+        self.assertEqual(result["query_status"], "rejected")
+        self.assertEqual(result["metadata"]["execution_status"], "validation_failed")
         repository.execute_approved_query.assert_not_awaited()
 
 

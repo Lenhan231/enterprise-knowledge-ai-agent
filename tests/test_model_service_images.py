@@ -41,7 +41,14 @@ def local_imports(path, package, skip=()):
             names = [module] + [f"{module}.{alias.name}" for alias in node.names]
         else:
             continue
-        found |= {n for n in names if n.split(".")[0] in ("core", "document_processing", "app") and not n.startswith(skip)}
+        for name in names:
+            if name.split(".")[0] not in ("core", "document_processing", "app"):
+                continue
+            if any(name == prefix or name.startswith(prefix + ".") for prefix in skip):
+                # The shared API runtime needs just the lightweight diagnostics helper from this branch.
+                if not (package == "core.services" and name.startswith("document_processing.diagnostics")):
+                    continue
+            found.add(name)
     return found
 
 

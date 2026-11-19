@@ -165,4 +165,3 @@ class OverviewSQLTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(document.status,'partial')
         self.assertNotIn('stock',charts)
         self.assertEqual(len(charts),2)
-

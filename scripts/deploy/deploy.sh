@@ -52,7 +52,7 @@ if [ -n "$legacy_container" ]; then
   if [ "$(docker inspect --format '{{.State.Running}}' "$legacy_container")" != true ]; then
     backup_directory="${XDG_STATE_HOME:-$HOME/.local/state}/enterprise-knowledge-ai-agent/dashboard-backups"
     if [ -d "$backup_directory" ]; then
-      legacy_backup=$(find "$backup_directory" -maxdepth 1 -type f -name '*.sqlite3' -size +0c -printf '%T@ %p\n' | sort -nr | head -n 1 | cut -d' ' -f2-)
+      legacy_backup=$(find "$backup_directory" -maxdepth 1 -type f -name '*.sqlite3' -size +0c -printf '%T@ %p\n' | sort -nr | sed -n '1{s/^[^ ]* //;p;}')
     fi
     if [ -z "$legacy_backup" ]; then
       echo "Backend is stopped and no retained dashboard snapshot is available; refusing to discard its writable layer." >&2

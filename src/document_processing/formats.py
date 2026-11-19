@@ -51,8 +51,59 @@ _AVIF_BRANDS = {b"avif", b"avis"}
 _HEIF_BRANDS = {b"heic", b"heix", b"hevc", b"hevx", b"heis", b"hevm", b"hevs", b"heim", b"mif1", b"msf1"}
 
 
+def _is_compound_office_file(content: bytes) -> bool:
+    """Check the CFB header, FAT references, and sector alignment."""
+    if len(content) < 512 or not content.startswith(_OFFICE_SIGNATURE):
+        return False
+
+    major_version = int.from_bytes(content[26:28], "little")
+    byte_order = int.from_bytes(content[28:30], "little")
+    sector_shift = int.from_bytes(content[30:32], "little")
+    mini_sector_shift = int.from_bytes(content[32:34], "little")
+    expected_shift = {3: 9, 4: 12}.get(major_version)
+    if byte_order != 0xFFFE or expected_shift is None or sector_shift != expected_shift:
+        return False
+    if mini_sector_shift != 6 or content[34:40] != bytes(6):
+        return False
+
+    sector_size = 1 << sector_shift
+    if len(content) < 512 + sector_size or (len(content) - 512) % sector_size:
+        return False
+
+    sector_count = (len(content) - 512) // sector_size
+    directory_sector_count = int.from_bytes(content[40:44], "little")
+    fat_sector_count = int.from_bytes(content[44:48], "little")
+    first_directory_sector = int.from_bytes(content[48:52], "little")
+    mini_stream_cutoff = int.from_bytes(content[56:60], "little")
+    first_difat_sector = int.from_bytes(content[68:72], "little")
+    difat_sector_count = int.from_bytes(content[72:76], "little")
+    if major_version == 3 and directory_sector_count != 0:
+        return False
+    if major_version == 4 and directory_sector_count == 0:
+        return False
+    if fat_sector_count == 0 or fat_sector_count > sector_count:
+        return False
+    if first_directory_sector >= sector_count or mini_stream_cutoff != 4096:
+        return False
+
+    difat = (
+        int.from_bytes(content[offset:offset + 4], "little")
+        for offset in range(76, 512, 4)
+    )
+    referenced_fat_sectors = sum(sector_id < sector_count for sector_id in difat)
+    if referenced_fat_sectors < min(fat_sector_count, 109):
+        return False
+    if fat_sector_count > 109 and (difat_sector_count == 0 or first_difat_sector >= sector_count):
+        return False
+    if difat_sector_count and first_difat_sector >= sector_count:
+        return False
+    return True
+
+
 def matches_signature(content: bytes, suffix: str) -> bool:
     """Check container signatures without decoding the upload."""
+    if suffix in LEGACY_OFFICE_FORMATS:
+        return _is_compound_office_file(content)
     if suffix == ".webp":
         return content.startswith(b"RIFF") and content[8:12] == b"WEBP"
     if suffix in MODERN_IMAGE_FORMATS:

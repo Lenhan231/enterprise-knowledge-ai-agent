@@ -39,7 +39,22 @@ class DocumentFormatUploadTest(unittest.IsolatedAsyncioTestCase):
         return result, storage.storage.from_.return_value.upload, parse, repository
 
     async def test_knowledge_upload_passes_original_bytes_with_matching_media_type(self):
-        office = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
+        office_header = bytearray(512)
+        office_header[:8] = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
+        office_header[24:26] = (0x003E).to_bytes(2, "little")
+        office_header[26:28] = (3).to_bytes(2, "little")
+        office_header[28:30] = (0xFFFE).to_bytes(2, "little")
+        office_header[30:32] = (9).to_bytes(2, "little")
+        office_header[32:34] = (6).to_bytes(2, "little")
+        office_header[44:48] = (1).to_bytes(4, "little")
+        office_header[48:52] = (1).to_bytes(4, "little")
+        office_header[56:60] = (4096).to_bytes(4, "little")
+        office_header[60:64] = (0xFFFFFFFE).to_bytes(4, "little")
+        office_header[68:72] = (0xFFFFFFFE).to_bytes(4, "little")
+        office_header[76:80] = (0).to_bytes(4, "little")
+        for offset in range(80, 512, 4):
+            office_header[offset:offset + 4] = (0xFFFFFFFF).to_bytes(4, "little")
+        office = bytes(office_header) + bytes(2 * 512)
         cases = (
             (".doc", office, "application/msword"),
             (".xls", office, "application/vnd.ms-excel"),
@@ -69,6 +84,31 @@ class DocumentFormatUploadTest(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(HTTPException) as error:
             await self.upload(".avif", b"GIF89a", {})
         self.assertEqual(error.exception.status_code, 415)
+
+    async def test_truncated_legacy_office_is_rejected_before_storage(self):
+        office_header = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1" + bytes(504)
+        for suffix in (".doc", ".xls", ".ppt"):
+            with self.subTest(suffix=suffix):
+                request = SimpleNamespace(url=SimpleNamespace(path="/api/documents/parser-handoff"))
+                storage = MagicMock()
+                with (
+                    patch.dict("os.environ", {"DOCUMENT_PROCESSING_URL": "http://parser.test"}),
+                    patch.object(main, "_require_same_origin"),
+                    patch.object(main, "DocumentRepository") as repository,
+                    patch.object(main, "_storage_client", return_value=(storage, "private")),
+                ):
+                    with self.assertRaises(HTTPException) as error:
+                        await main.upload_document(
+                            request=request,
+                            file=UploadFile(filename=f"truncated{suffix}", file=BytesIO(office_header)),
+                            title="Truncated Office file", document_type="internal_report",
+                            domain="operations", fiscal_year=None, allowed_roles=["finance_analyst"],
+                            ocr_language="eng", user={"sub": "owner"},
+                        )
+                    self.assertEqual(error.exception.status_code, 415)
+                    self.assertIn("invalid legacy Office header", error.exception.detail)
+                    repository.return_value.register_upload.assert_not_called()
+                    storage.storage.from_.return_value.upload.assert_not_called()
 
     async def test_upload_test_previews_both_animated_frames(self):
         buffer = BytesIO()

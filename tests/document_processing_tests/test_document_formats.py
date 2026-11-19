@@ -31,6 +31,25 @@ SVG = b'<svg xmlns="http://www.w3.org/2000/svg" width="4" height="3"><rect width
 OFFICE = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
 
 
+def compound_office_bytes():
+    header = bytearray(512)
+    header[:8] = OFFICE
+    header[24:26] = (0x003E).to_bytes(2, "little")
+    header[26:28] = (3).to_bytes(2, "little")
+    header[28:30] = (0xFFFE).to_bytes(2, "little")
+    header[30:32] = (9).to_bytes(2, "little")
+    header[32:34] = (6).to_bytes(2, "little")
+    header[44:48] = (1).to_bytes(4, "little")
+    header[48:52] = (1).to_bytes(4, "little")
+    header[56:60] = (4096).to_bytes(4, "little")
+    header[60:64] = (0xFFFFFFFE).to_bytes(4, "little")
+    header[68:72] = (0xFFFFFFFE).to_bytes(4, "little")
+    header[76:80] = (0).to_bytes(4, "little")
+    for offset in range(80, 512, 4):
+        header[offset:offset + 4] = (0xFFFFFFFF).to_bytes(4, "little")
+    return bytes(header) + bytes(2 * 512)
+
+
 def raster_bytes(format_name, *, animated=False):
     output = BytesIO()
     image = Image.new("RGB", (4, 3), "red")
@@ -62,6 +81,13 @@ sys.stdout.buffer.write(output.getvalue())
 
 
 class DocumentFormatTest(unittest.TestCase):
+    def test_legacy_office_signature_rejects_truncated_compound_files(self):
+        truncated = OFFICE + bytes(504)
+        for suffix in LEGACY_OFFICE_FORMATS:
+            with self.subTest(suffix=suffix):
+                self.assertFalse(matches_signature(truncated, suffix))
+                self.assertTrue(matches_signature(compound_office_bytes(), suffix))
+
     def test_bitmap_and_svg_render_as_png(self):
         for suffix, payload in ((".bmp", raster_bytes("BMP")), (".svg", SVG)):
             with self.subTest(suffix=suffix):
@@ -172,8 +198,9 @@ class DocumentFormatTest(unittest.TestCase):
                 docling.return_value.process.return_value = {
                     "elements": [{"text": "Report", "metadata": {"format": target_suffix[1:].upper()}}],
                 }
-                result = DocumentProcessor().process(f"report{suffix}", OFFICE, {})
-                convert.assert_called_once_with(OFFICE, suffix)
+                valid_office = compound_office_bytes()
+                result = DocumentProcessor().process(f"report{suffix}", valid_office, {})
+                convert.assert_called_once_with(valid_office, suffix)
                 payload, _, document = docling.return_value.process.call_args.args
                 self.assertEqual(payload, b"open xml")
                 self.assertEqual(document["metadata"]["format"], target_suffix[1:].upper())
@@ -185,7 +212,7 @@ class DocumentFormatTest(unittest.TestCase):
                 convert_legacy_office(b"invalid", ".doc")
             which.assert_not_called()
             with self.assertRaisesRegex(RuntimeError, "LibreOffice"):
-                convert_legacy_office(OFFICE, ".doc")
+                convert_legacy_office(compound_office_bytes(), ".doc")
 
     def test_new_document_extensions_do_not_enable_invoice_processing(self):
         with self.assertRaisesRegex(ValueError, "document processing only"):

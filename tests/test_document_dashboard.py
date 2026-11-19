@@ -10,6 +10,18 @@ from core.models.agents import AgentRequest, AgentResult, Evidence
 
 
 class DocumentDashboardTest(unittest.TestCase):
+    def test_knowledge_document_list_reports_saved_parser_chunks_for_retry_ui(self):
+        repository = DocumentRepository.__new__(DocumentRepository)
+        repository.conn = MagicMock()
+        cursor = repository.conn.cursor.return_value.__enter__.return_value
+        cursor.fetchall.return_value = []
+
+        repository.list_knowledge_documents()
+
+        query = " ".join(cursor.execute.call_args.args[0].lower().split())
+        self.assertIn("exists ( select 1 from public.document_parser_chunks parser_chunk", query)
+        self.assertIn("parser_chunk.document_id = d.document_id ) as has_parser_chunks", query)
+
     def test_uploaded_source_lookup_requires_ready_upload_in_company_scope(self):
         repository = DocumentRepository.__new__(DocumentRepository)
         repository.conn = MagicMock()

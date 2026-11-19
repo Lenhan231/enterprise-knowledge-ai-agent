@@ -740,6 +740,34 @@ class UploadProcessingFlowTest(unittest.TestCase):
         document_repo.update_processing_status.assert_not_called()
         document_repo.close.assert_called_once()
 
+    def test_retry_embedding_rejects_upload_without_saved_parser_chunks(self):
+        document_id = "UPLOAD-NO-PARSER-CHUNKS"
+        document_repo = MagicMock()
+        document_repo.list_knowledge_documents.return_value = [{
+            "document_id": document_id,
+            "source_type": "user_upload",
+            "processing_status": "failed",
+            "allowed_roles": ["admin"],
+        }]
+        parsed_repo = MagicMock()
+        parsed_repo.get_document.return_value = []
+
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch("core.database.parser_chunks_repository.ParserChunksRepository", return_value=parsed_repo),
+        ):
+            with self.assertRaises(app_main.HTTPException) as raised:
+                app_main.retry_document_embedding(
+                    document_id, request=None, user={"role": "admin", "sub": "admin"},
+                )
+
+        self.assertEqual(raised.exception.status_code, 409)
+        self.assertIn("No saved parser output", raised.exception.detail)
+        document_repo.update_processing_status.assert_not_called()
+        parsed_repo.close.assert_called_once()
+        document_repo.close.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()

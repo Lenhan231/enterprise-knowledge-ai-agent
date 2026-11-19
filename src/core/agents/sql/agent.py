@@ -304,12 +304,13 @@ class SQLAnalyticsAgent(BaseAgent):
               and not dashboard_request and options.get('_report_planned_task') is not True):
             try:
                 interpreted = await interpret_query_intent(question, self._provider(), table_columns)
-            except Exception:
-                message = ('Mình chưa thể xác định đầy đủ chỉ số, thời gian hoặc phạm vi yêu cầu. '
-                           'Bạn vui lòng diễn đạt lại các phần này.' if any(ord(char) > 127 for char in question) else
-                           'I could not validate the requested metric and scope. Please restate the metric, period and filters.')
-                return self._generation_error(MetricDefinitionError(
-                    message, code='intent_interpretation_failed', clarification=True))
+            except Exception as error:
+                # If intent extraction fails, try SQL generation from the original
+                # question. The generated query still passes SQL and schema validation.
+                interpreted = None
+                query_intent = None
+                metric_names = resolve_metric_names(question)
+                context_info['query_intent_fallback'] = type(error).__name__
             if isinstance(interpreted, PendingClarification):
                 return self._pending_intent_payload(interpreted)
             query_intent = interpreted

@@ -264,6 +264,109 @@ class SQLCompilerDispatchTest(unittest.TestCase):
 
 
 class SQLCompilerDispatchFlowTest(unittest.IsolatedAsyncioTestCase):
+    async def test_customer_rankings_fall_back_to_sql_when_intent_interpretation_fails(self):
+        cases = (
+            (
+                "Khách hàng nào có nhiều đơn hàng nhất?",
+                "SELECT o.customer_id, COUNT(DISTINCT o.order_id) AS order_count "
+                "FROM commerce.orders AS o GROUP BY o.customer_id "
+                "ORDER BY order_count DESC, o.customer_id LIMIT 1",
+            ),
+            (
+                "khách hàng nào mua hàng nhiều nhất theo số lượng",
+                "SELECT o.customer_id, SUM(oi.quantity) AS total_quantity "
+                "FROM commerce.orders AS o "
+                "JOIN commerce.order_items AS oi ON oi.order_id = o.order_id "
+                "GROUP BY o.customer_id "
+                "ORDER BY total_quantity DESC, o.customer_id LIMIT 1",
+            ),
+        )
+        selected_tables = set(APPROVED_COLUMNS)
+        selection = {
+            "tables": selected_tables,
+            "required_tables": set(),
+            "candidate_tables": selected_tables,
+        }
+
+        for question, sql in cases:
+            with self.subTest(question=question):
+                repository = type("Repository", (), {})()
+                repository.get_schema = AsyncMock(return_value={
+                    "tables": APPROVED_COLUMNS,
+                    "joins": APPROVED_JOINS,
+                    "primary_keys": PRIMARY_KEYS,
+                    "date_columns": APPROVED_DATE_COLUMNS,
+                })
+                repository.execute_approved_query = AsyncMock(return_value=[{
+                    "customer_id": "customer-1",
+                    "order_count": 12,
+                    "total_quantity": 42,
+                }])
+                agent = SQLAnalyticsAgent(repository, llm=object(), inventory_only=False)
+                agent._generate_sql = AsyncMock(return_value=json.dumps({
+                    "sql": sql, "parameters": [],
+                }))
+
+                with patch(
+                    "core.agents.sql.agent.interpret_query_intent",
+                    new=AsyncMock(side_effect=ValueError("intent response did not validate")),
+                ) as interpret, patch(
+                    "core.agents.sql.agent.asyncio.to_thread",
+                    new=AsyncMock(return_value=selection),
+                ):
+                    result = await agent.run_payload(AgentRequest(
+                        question=question,
+                        identity=VerifiedIdentity(subject="test", permissions={"analytics:read"}),
+                    ))
+
+                self.assertEqual(result.get("query_status"), "executed", result)
+                self.assertEqual(result["sql"], sql)
+                self.assertEqual(result["parameters"], [])
+                self.assertFalse(result["metadata"].get("clarification_required", False))
+                self.assertEqual(result["metadata"]["query_intent_fallback"], "ValueError")
+                self.assertIn(question, agent._generate_sql.await_args.args[0])
+                interpret.assert_awaited_once()
+                agent._generate_sql.assert_awaited_once()
+                repository.execute_approved_query.assert_awaited_once_with(sql)
+
+    async def test_intent_interpretation_failure_does_not_bypass_sql_security(self):
+        repository = type("Repository", (), {})()
+        repository.get_schema = AsyncMock(return_value={
+            "tables": APPROVED_COLUMNS,
+            "joins": APPROVED_JOINS,
+            "primary_keys": PRIMARY_KEYS,
+            "date_columns": APPROVED_DATE_COLUMNS,
+        })
+        repository.execute_approved_query = AsyncMock(return_value=[])
+        repository.execute_unverified_query = AsyncMock(return_value=[])
+        agent = SQLAnalyticsAgent(repository, llm=object(), inventory_only=False)
+        agent._generate_sql = AsyncMock(return_value=json.dumps({
+            "sql": "DELETE FROM commerce.orders", "parameters": [],
+        }))
+        selected_tables = set(APPROVED_COLUMNS)
+        selection = {
+            "tables": selected_tables,
+            "required_tables": set(),
+            "candidate_tables": selected_tables,
+        }
+
+        with patch(
+            "core.agents.sql.agent.interpret_query_intent",
+            new=AsyncMock(side_effect=ValueError("intent response did not validate")),
+        ), patch(
+            "core.agents.sql.agent.asyncio.to_thread",
+            new=AsyncMock(return_value=selection),
+        ):
+            result = await agent.run_payload(AgentRequest(
+                question="Khách hàng nào có nhiều đơn hàng nhất?",
+                identity=VerifiedIdentity(subject="test", permissions={"analytics:read"}),
+            ))
+
+        self.assertEqual(result["metadata"]["error_type"], "SQLSecurityError")
+        self.assertEqual(agent._generate_sql.await_count, 2)
+        repository.execute_approved_query.assert_not_awaited()
+        repository.execute_unverified_query.assert_not_awaited()
+
     async def test_direct_field_request_executes_with_bound_values_without_sql_generation(self):
         class Repository:
             async def get_schema(self):

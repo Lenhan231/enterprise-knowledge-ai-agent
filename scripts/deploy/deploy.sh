@@ -105,7 +105,11 @@ if [ "$before" != "$target" ]; then
       docker/Dockerfile.chunking) add_build_service chunking ;;
       docker/Dockerfile.embeddings) add_build_service embeddings ;;
       docker/Dockerfile.reranker) add_build_service reranker ;;
-      docker-compose.yml|.dockerignore|pyproject.toml|uv.lock)
+      .dockerignore)
+        # The semantic-data allowlist in this file is consumed by the backend image.
+        add_build_service backend-api
+        ;;
+      docker-compose.yml|pyproject.toml|uv.lock)
         for service in "${all_services[@]}"; do add_build_service "$service"; done
         ;;
       src/core/services/runtime.py)

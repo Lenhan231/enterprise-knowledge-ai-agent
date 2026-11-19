@@ -46,14 +46,27 @@ jobs:
           sed -i \
             -e 's|^AUTH_SECRET_KEY=.*|AUTH_SECRET_KEY=ci-test-secret-key-with-at-least-32-characters|' \
             -e 's|^DEMO_VIEWER_PASSWORD=.*|DEMO_VIEWER_PASSWORD=ci-test-viewer-password|' .env
-          docker compose --profile proxy up -d --no-deps backend-api proxy
-          trap 'docker compose --profile proxy down' EXIT
+          cleanup() {
+            status=$?
+            if [ "$status" -ne 0 ]; then
+              docker compose --profile proxy ps || true
+              docker compose --profile proxy logs --no-color --tail=100 backend-api proxy || true
+            fi
+            docker compose --profile proxy down
+            exit "$status"
+          }
+          trap cleanup EXIT
+          docker compose --profile proxy up -d --no-deps backend-api
+          backend_ready=0
           for attempt in $(seq 1 30); do
-            if curl --fail --silent http://127.0.0.1:8080/health; then
+            if curl --fail --silent http://127.0.0.1:8000/health; then
+              backend_ready=1
               break
             fi
             sleep 2
           done
+          [ "$backend_ready" -eq 1 ]
+          docker compose --profile proxy up -d --no-deps proxy
           curl --fail --silent http://127.0.0.1:8080/health | python -c 'import json,sys; assert json.load(sys.stdin)["status"] == "ok"'
           uv run python - <<'PY'
           import http.cookiejar

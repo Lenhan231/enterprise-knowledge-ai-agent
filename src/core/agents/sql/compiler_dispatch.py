@@ -59,10 +59,56 @@ class CompilationSelection:
         return self.compiler is not None
 
 
+_REVENUE_REQUEST_WORDS = frozenset({
+    "a", "amount", "an", "are", "calendar", "calculate", "can", "could", "current",
+    "during", "find", "for", "full", "get", "how", "in", "is", "it", "know", "last",
+    "me", "month", "months", "much", "of", "overall", "please", "previous", "recent",
+    "recently", "revenue", "sales", "show", "sum", "tell", "the", "this", "to", "total",
+    "versus", "was", "what", "were", "within", "would", "year", "you", "vs", "with",
+    "change", "comparison", "compare", "completed", "delta", "difference", "finished", "growth",
+    "kpi", "month-over-month", "past", "percent", "percentage", "rate", "variance",
+    "bao", "biết", "cho", "còn", "đây", "đã", "đối", "doanh", "gần", "giúp", "hãy",
+    "hiện", "là", "lòng", "mình", "năm", "nay", "nhất", "nhiêu", "ngoái", "sao", "so",
+    "tại", "tháng", "thì", "thu", "tính", "tôi", "trong", "trước", "tổng", "vậy", "vui",
+    "xin", "sánh", "hoàn", "tất",
+})
+
+_PROMOTION_REQUEST_WORDS = frozenset({
+    "active", "are", "best", "by", "code", "codes", "count", "coupon", "current", "currently",
+    "discount", "gross", "highest", "how", "many", "me", "most", "net", "of", "please",
+    "promo", "promos", "promotion", "promotions", "rank", "ranking", "revenue", "sales", "show",
+    "the", "top", "total", "voucher", "with", "lowest", "bottom", "is", "there", "running",
+    "bao", "cho", "chương", "đang", "động", "giá", "hoạt", "khuyến", "lượng", "mã", "mãi",
+    "nhiêu", "số", "tôi", "trình", "doanh", "thu", "có", "cao", "hiện", "tại", "nhất", "giảm",
+})
+
+
+def _has_unrecognized_request_terms(
+    question: str,
+    allowed_words: frozenset[str],
+    *,
+    allowed_numbers: frozenset[str] = frozenset(),
+    allow_years: bool = False,
+) -> bool:
+    """Reject residual words that a deterministic template cannot represent."""
+    text = re.sub(r"(?<=\w)'s\b", "", question.casefold())
+    terms = re.findall(r"[^\W_]+", text, flags=re.UNICODE)
+    return any(
+        term not in allowed_words
+        and term not in allowed_numbers
+        and not (allow_years and re.fullmatch(r"(?:19|20)\d{2}", term))
+        for term in terms
+    )
+
+
 def _has_unrepresented_scope(question: str, *, promotion_ranking: bool = False,
-                            month_comparison: bool = False) -> bool:
+                            month_comparison: bool = False,
+                            allowed_words: frozenset[str] | None = None,
+                            allowed_numbers: frozenset[str] = frozenset(),
+                            allow_years: bool = False) -> bool:
     """Conservatively decline templates when the question asks for extra scope or outputs."""
     text = question.casefold()
+    text = re.sub(r"^\s*(?:(?:hãy|xin|vui\s+lòng)\s+)?cho\s+(?:(?:tôi|mình)\s+)?biết\b", " ", text)
     if month_comparison:
         text = re.sub(r"\bwith\s+(?:the\s+)?(?:previous|last|current|this)\s+month\b", " ", text)
         text = re.sub(r"\b(?:compare|comparison|versus|vs\.?)\b", " ", text)
@@ -97,6 +143,9 @@ def _has_unrepresented_scope(question: str, *, promotion_ranking: bool = False,
         text,
     ):
         return True
+    if allowed_words is not None and _has_unrecognized_request_terms(
+            text, allowed_words, allowed_numbers=allowed_numbers, allow_years=allow_years):
+        return True
     return False
 
 
@@ -107,7 +156,8 @@ def _annual_revenue_match(question: str, metric_names: frozenset[str], today: da
     if re.search(r"\btháng\s+(?:0?[1-9]|1[0-2])\b|\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\b|\bmonth\b|\bq[1-4]\b|\bquarter\b|quý\s+[1-4]|\b(?:19|20)\d{2}[-/]\d{1,2}", text):
         return None
     if (re.search(r"\b(?:compare|comparison|versus|vs\.?|trend|monthly|daily|by|per|region|category|product|channel|quarter|year.over.year)\b|so sánh|xu hướng|theo\s+\w+", text)
-            or _has_unrepresented_scope(text)):
+            or _has_unrepresented_scope(
+                text, allowed_words=_REVENUE_REQUEST_WORDS, allow_years=True)):
         return None
     years = set(re.findall(r"\b(?:19|20)\d{2}\b", text))
     if len(years) > 1:
@@ -144,9 +194,12 @@ def _completed_months_revenue_match(question: str, metric_names: frozenset[str],
         r"\bq[1-4]\b|\bquarter\b|\btháng\s+\d{1,2}\s+(?:năm\s+)?(?:19|20)\d{2}\b",
         question.casefold(),
     ))
-    if not match or not completed or other_period or _has_unrepresented_scope(question):
+    raw_count = next(value for value in match.groups() if value) if match else None
+    if not match or not completed or other_period or _has_unrepresented_scope(
+            question,
+            allowed_words=(_REVENUE_REQUEST_WORDS | ({raw_count} if raw_count and not raw_count.isdigit() else set())),
+            allowed_numbers=frozenset({raw_count}) if raw_count and raw_count.isdigit() else frozenset()):
         return None
-    raw_count = next(value for value in match.groups() if value)
     vi_count = {"một": 1, "hai": 2, "ba": 3, "bốn": 4, "năm": 5,
                 "sáu": 6, "bảy": 7, "tám": 8, "chín": 9, "mười": 10}
     count = int(raw_count) if raw_count.isdigit() else count_words.get(raw_count, vi_count.get(raw_count))
@@ -159,10 +212,12 @@ def _completed_months_revenue_match(question: str, metric_names: frozenset[str],
 
 
 def _explicit_month_revenue_match(question: str, metric_names: frozenset[str], today: date | None) -> tuple[date, date] | None:
-    if metric_names != {"revenue"} or _has_unrepresented_scope(question):
-        return None
     match = re.search(r"\btháng\s+(0?[1-9]|1[0-2])(?:\s+năm\s+((?:19|20)\d{2}))?\b", question, re.I)
-    if not match:
+    if (metric_names != {"revenue"} or match is None
+            or _has_unrepresented_scope(
+                question,
+                allowed_words=_REVENUE_REQUEST_WORDS,
+                allowed_numbers=frozenset(group for group in match.groups() if group))):
         return None
     year, month = int(match.group(2) or (today or date.today()).year), int(match.group(1))
     start = date(year, month, 1)
@@ -176,7 +231,8 @@ def _month_over_month_revenue_match(question: str, metric_names: frozenset[str],
     mentions_previous_month = bool(re.search(r"previous month|last month|tháng trước", text))
     explicit_period = bool(re.search(r"\b(?:19|20)\d{2}\b|\btháng\s+(?:0?[1-9]|1[0-2])\b|\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\b", text))
     if (metric_names != {"revenue"} or not compares_months or not mentions_previous_month
-            or explicit_period or _has_unrepresented_scope(question, month_comparison=True)):
+            or explicit_period or _has_unrepresented_scope(
+                question, month_comparison=True, allowed_words=_REVENUE_REQUEST_WORDS)):
         return None
     today = today or date.today()
     current_start = date(today.year, today.month, 1)
@@ -192,20 +248,28 @@ def _promotion_match(question: str, today: date | None) -> FixedQueryMatch | Non
         r"\b(?:19|20)\d{2}\b|\b(?:january|february|march|april|may|june|july|august|"
         r"september|october|november|december)\b|\b(?:last|previous|this)\s+(?:month|year|week|day)\b|"
         r"\btháng\s+\d{1,2}\b|\bngày\s+\d{1,2}[/-]\d{1,2}", text))
-    if (not mentions_promo or explicit_period
-            or _has_unrepresented_scope(text, promotion_ranking=True)):
-        return None
-
     asks_active_count = bool(re.search(r"\bhow many\b|\bcount\b|bao nhiêu|số lượng", text)) and bool(
         re.search(r"\bactive\b|\bcurrent\b|currently|hiện tại|đang hoạt động", text))
+    asks_top_revenue = bool(re.search(r"\b(?:top|highest|most|rank|best)\b|cao nhất|nhiều nhất|đứng đầu", text)) \
+        and bool(re.search(r"revenue|sales|doanh thu", text))
+    limit_match = (re.search(r"\btop\s+(\d{1,2})\b|(\d{1,2})\s+(?:mã|promo|promotion|discount)", text)
+                   if asks_top_revenue else None)
+    allowed_numbers = (frozenset(group for group in limit_match.groups() if group)
+                       if limit_match else frozenset())
+    if (not mentions_promo or explicit_period
+            or (asks_top_revenue and re.search(r"\btoday\b|hôm nay", text))
+            or _has_unrepresented_scope(
+                text, promotion_ranking=True,
+                allowed_numbers=allowed_numbers,
+                allowed_words=(_PROMOTION_REQUEST_WORDS | {"today", "hôm", "nay"}
+                               if asks_active_count else _PROMOTION_REQUEST_WORDS))):
+        return None
+
     if asks_active_count:
         return FixedQueryMatch(CompilerKind.PROMOTION, promotion_metric="active_promotion_count",
                                parameters=(today or date.today(),))
 
-    asks_top_revenue = bool(re.search(r"\b(?:top|highest|most|rank|best)\b|cao nhất|nhiều nhất|đứng đầu", text)) \
-        and bool(re.search(r"revenue|sales|doanh thu", text))
     if asks_top_revenue:
-        limit_match = re.search(r"\btop\s+(\d{1,2})\b|(\d{1,2})\s+(?:mã|promo|promotion|discount)", text)
         limit = min(int(next(group for group in limit_match.groups() if group)), 50) if limit_match else 10
         return FixedQueryMatch(CompilerKind.PROMOTION, promotion_metric="promotion_revenue", limit=limit)
     return None

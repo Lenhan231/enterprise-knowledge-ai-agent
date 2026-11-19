@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from document_processing.document_processor import DocumentProcessor
+from document_processing.diagnostics import PageLimitExceeded
 from document_processing.docling_adapter.digital_born.docx_semantics import apply_docx_semantics
 from document_processing.formats import LEGACY_OFFICE_FORMATS, matches_signature
 from document_processing.image_input import normalize_image
@@ -132,6 +133,31 @@ class DocumentFormatTest(unittest.TestCase):
         self.assertEqual(result["tables"][0]["page_number"], 2)
         self.assertEqual(result["tables"][0]["metadata"]["format"], "WEBP")
 
+    def test_parser_logs_frame_limits_with_document_context(self):
+        with (
+            patch.dict(os.environ, {"DOCUMENT_PROCESSING_URL": ""}),
+            patch("document_processing.image_input._MAX_FRAMES", 1),
+            self.assertLogs("document_processing.document_processor", level="ERROR") as logs,
+            self.assertRaises(PageLimitExceeded),
+        ):
+            DocumentProcessor().process("animated.gif", raster_bytes("GIF", animated=True), {"document_id": "UPLOAD-1"})
+        details = json.loads(logs.records[0].getMessage().split(" ", 1)[1])
+        self.assertEqual(details["component"], "image_normalization")
+        self.assertEqual(details["document_id"], "UPLOAD-1")
+        self.assertEqual(details["error_code"], "page_limit_exceeded")
+        self.assertEqual((details["page_count"], details["page_limit"], details["count_unit"]), (2, 1, "frames"))
+
+    def test_image_worker_preserves_reported_frame_limits(self):
+        converted = subprocess.CompletedProcess([], 3, stderr=b"Decoder warning\n[51, 50]\n")
+        avif_header = b"\0\0\0\x10ftypavif\0\0\0\0"
+        with (
+            patch.dict(os.environ, {"DOCUMENT_PROCESSING_IMAGE_PYTHON": sys.executable}),
+            patch("document_processing.image_input.subprocess.run", return_value=converted),
+            self.assertRaises(PageLimitExceeded) as error,
+        ):
+            normalize_image(avif_header, ".avif")
+        self.assertEqual((error.exception.page_count, error.exception.page_limit), (51, 50))
+
     def test_legacy_parser_passes_open_xml_to_docling(self):
         module = ModuleType("document_processing.docling_adapter.processor")
         for suffix, target_suffix in LEGACY_OFFICE_FORMATS.items():
@@ -161,10 +187,9 @@ class DocumentFormatTest(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "LibreOffice"):
                 convert_legacy_office(OFFICE, ".doc")
 
-    def test_new_document_extensions_do_not_enable_invoice_or_caption(self):
-        for intent in ("invoice", "image_caption"):
-            with self.subTest(intent=intent), self.assertRaisesRegex(ValueError, "document processing only"):
-                DocumentProcessor({"intent": intent}).process("upload.avif", b"", {})
+    def test_new_document_extensions_do_not_enable_invoice_processing(self):
+        with self.assertRaisesRegex(ValueError, "document processing only"):
+            DocumentProcessor({"intent": "invoice"}).process("upload.avif", b"", {})
 
     def test_word_start_alignment_keeps_text_and_centered_heading_detection(self):
         from docx import Document

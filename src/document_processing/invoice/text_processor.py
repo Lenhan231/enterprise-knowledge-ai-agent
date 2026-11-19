@@ -21,7 +21,7 @@ from urllib.request import Request, urlopen
 from document_processing.invoice.schema import (
     InvoiceFields, SCHEMA, SCHEMA_VERSION, merge_invoice_fields,
 )
-from document_processing.worker_runtime import resolve_vintern_python, worker_environment
+from document_processing.worker_runtime import resolve_invoice_worker_python, worker_environment
 
 
 MODEL_ID = "Qwen/Qwen3-0.6B"
@@ -407,11 +407,11 @@ class InvoiceTextProcessor:
                 except (URLError, TimeoutError, json.JSONDecodeError) as error:
                     raise RuntimeError(f"Modal invoice endpoint request failed: {error}") from error
             else:
-                python_path = resolve_vintern_python(self.config)
+                python_path = resolve_invoice_worker_python(self.config)
                 if python_path is None or not python_path.is_file():
                     raise RuntimeError(
                         "Invoice text extraction needs the isolated Transformers runtime; "
-                        "set DOCUMENT_PROCESSING_VINTERN_PYTHON."
+                        "set DOCUMENT_PROCESSING_INVOICE_WORKER_PYTHON."
                     )
                 with tempfile.TemporaryDirectory(prefix="invoice-text-") as temp_dir:
                     request_path = Path(temp_dir) / "request.json"

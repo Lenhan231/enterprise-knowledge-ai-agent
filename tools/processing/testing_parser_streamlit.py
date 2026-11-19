@@ -17,7 +17,7 @@ from PIL import Image, ImageDraw
 from document_processing.document_processor import DocumentProcessor
 from document_processing.element_taxonomy import normalize_element_label
 from document_processing.formats import IMAGE_FORMATS, SUPPORTED_FORMATS
-from document_processing.worker_runtime import PROJECT_ROOT, SOURCE_ROOT, resolve_vintern_python
+from document_processing.worker_runtime import PROJECT_ROOT, SOURCE_ROOT
 
 
 STORE_DIR = Path(os.environ.get(
@@ -88,9 +88,6 @@ def _remap_selected_page_numbers(output: dict[str, Any], selected_pages: list[in
         metadata = table.get("metadata") or {}
         if metadata.get("page_number") is not None:
             metadata["page_number"] = original_page_number(metadata["page_number"])
-    for extraction_name in ("invoice_extraction", "image_caption_extraction"):
-        for page in (output.get(extraction_name) or {}).get("pages", []):
-            page["page_number"] = original_page_number(page.get("page_number"))
     for detection in output.get("layout_detections", []):
         detection["page_number"] = original_page_number(detection.get("page_number"))
     for key in ("page_previews", "page_sizes"):
@@ -213,7 +210,6 @@ def _parser_output_row_preview(
         "document_metadata": {
             **parser_metadata,
             **({"invoice_extraction": output["invoice_extraction"]} if output.get("invoice_extraction") else {}),
-            **({"image_caption_extraction": output["image_caption_extraction"]} if output.get("image_caption_extraction") else {}),
             "filename": filename,
             "source_sha256": source_sha256,
             "local_parser_run_id": selected_id,
@@ -457,15 +453,17 @@ st.caption("PRIVATE DOCUMENT WORKSPACE")
 st.title("Document store")
 st.markdown("Upload a file, review extracted content, and keep the results on this machine.")
 
+if st.session_state.get("processing_intent") not in {"document", "invoice"}:
+    st.session_state["processing_intent"] = "document"
+
 intent = st.radio(
     "Processing intent",
-    ["document", "invoice", "image_caption"],
+    ["document", "invoice"],
     index=0,
     horizontal=True,
     format_func={
         "document": "General document · current pipeline",
         "invoice": "Invoice extraction",
-        "image_caption": "Image caption · Vintern",
     }.__getitem__,
     key="processing_intent",
 )
@@ -529,34 +527,24 @@ with settings_column:
             )
         elif intent == "invoice":
             st.caption("Docling extracts OCR text and tables for invoice review.")
-        else:
-            st.caption(
-                "Vintern reads each page directly and writes a short caption."
-            )
 
 with upload_column:
     with st.container(border=True):
         st.subheader("Add a document")
         st.caption(
             "Intent: invoice extraction · Docling" if intent == "invoice"
-            else "Intent: image caption · Vintern" if intent == "image_caption"
             else "Intent: general document · current Docling pipeline"
         )
         allowed_suffixes = (
             {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".webp"}
-            if intent in {"invoice", "image_caption"}
+            if intent == "invoice"
             else SUPPORTED_FORMATS
         )
         st.caption(
             "PDF or image · maximum 50 MiB"
-            if intent in {"invoice", "image_caption"}
+            if intent == "invoice"
             else "PDF, Office, CSV, TXT, Markdown, or image · maximum 50 MiB"
         )
-        if intent == "image_caption" and resolve_vintern_python() is None:
-            st.warning(
-                "Configure the Vintern runtime by creating .venv-vintern or setting "
-                "DOCUMENT_PROCESSING_VINTERN_PYTHON. See src/document_processing/docs/development.md."
-            )
         uploaded = st.file_uploader(
             "Choose a file",
             type=sorted(suffix.lstrip(".") for suffix in allowed_suffixes),
@@ -593,8 +581,6 @@ with upload_column:
                     spinner = (
                         "Extracting invoice fields…"
                         if intent == "invoice"
-                        else "Writing an image caption with Vintern…"
-                        if intent == "image_caption"
                         else "Processing document with Docling…"
                     )
                     with st.spinner(spinner):
@@ -710,7 +696,7 @@ else:
         run_dir = STORE_DIR / selected_id
         source_path = run_dir / "source"
         page_tab, extraction_tab, raw_tab, tables_tab, handoff_tab, details_tab, supabase_tab = st.tabs(
-            ["Page review", "Invoice / caption", "Raw text", "Tables", "Text elements", "Run details", "Supabase row preview"]
+            ["Page review", "Invoice extraction", "Raw text", "Tables", "Text elements", "Run details", "Supabase row preview"]
         )
         with page_tab:
             page_numbers = _page_numbers(run_dir) if source_path.is_file() else []
@@ -835,27 +821,17 @@ else:
                         st.text(element.get("text") or "[Table reference]")
         with extraction_tab:
             extraction = selected_output.get("invoice_extraction")
-            caption = selected_output.get("image_caption_extraction")
-            if caption:
-                st.caption(f"Model: {caption.get('model', 'unknown')} · status: {caption.get('status', 'unknown')}")
-                for page in caption.get("pages", []):
-                    st.subheader(f"Page {page.get('page_number', '?')}")
-                    st.write(page.get("caption") or "No caption was generated.")
-                    with st.expander("Raw model response"):
-                        st.code(page.get("raw_response", ""), language="text", wrap_lines=True)
-            elif not extraction:
+            if not extraction:
                 st.info("This run used the general document pipeline, not invoice extraction.")
             else:
                 st.warning("Draft extraction: verify every field against the source invoice before use.")
                 st.caption(f"Model: {extraction.get('model', 'unknown')} · status: {extraction.get('status', 'unknown')}")
-                for page in extraction.get("pages", []):
-                    st.subheader(f"Page {page.get('page_number', '?')}")
-                    if page.get("fields") is not None:
-                        st.json(page["fields"])
-                    else:
-                        st.error("The model response could not be parsed as an object; inspect the raw response.")
+                if extraction.get("parse_error"):
+                    st.error(extraction["parse_error"])
+                st.json(extraction.get("fields") or {})
+                if extraction.get("raw_response"):
                     with st.expander("Raw model response"):
-                        st.code(page.get("raw_response", ""), language="text", wrap_lines=True)
+                        st.code(extraction["raw_response"], language="text", wrap_lines=True)
         with raw_tab:
             if raw_text:
                 st.caption("Extracted text, in document reading order.")
@@ -939,9 +915,9 @@ else:
         with details_tab:
             run_config = selected_manifest.get("config") or {}
             output_metadata = selected_output.get("metadata") or {}
-            if run_config.get("intent", "document") in {"invoice", "image_caption"}:
-                intent_label = "Invoice extraction" if run_config["intent"] == "invoice" else "Image caption"
-                pipeline_id = output_metadata.get("pipeline_id") or f"vintern_{run_config['intent']}"
+            if run_config.get("intent", "document") == "invoice":
+                intent_label = "Invoice extraction"
+                pipeline_id = output_metadata.get("pipeline_id") or "docling_invoice"
                 st.write(f"**Intent:** {intent_label}")
                 st.write(f"**Pipeline:** {pipeline_id}")
             source_suffix = Path(selected_manifest["filename"]).suffix.lower()

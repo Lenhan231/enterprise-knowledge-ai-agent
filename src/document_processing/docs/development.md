@@ -15,30 +15,27 @@ PYTHONPATH=src .venv/bin/streamlit run \
 By default, local review data is under
 `src/document_processing/.owner_store/`. Set `DOCUMENT_PROCESSING_STORE` to
 use a different folder. Upload Test can select pages from a PDF before
-processing and can select the `document`, `invoice`, or `image_caption`
-intent. Invoice extraction uses Docling and the configured
-[invoice provider](invoice-pipeline.md). Image captioning uses the separate
-Vintern environment below.
+processing and can select the `document` or `invoice` intent. Invoice
+extraction uses Docling and the configured [invoice provider](invoice-pipeline.md).
 
-## Vintern environment
+## Local invoice worker
 
-The app looks for `.venv-vintern/bin/python` unless
-`DOCUMENT_PROCESSING_VINTERN_PYTHON` points to another interpreter. The
-separate environment pins the older Transformers version required by the
-Vintern remote model code:
+The local Qwen invoice worker uses a separate environment to isolate its
+Transformers and PyTorch versions. By default, the app looks for
+`.venv-invoice-worker/bin/python`; set
+`DOCUMENT_PROCESSING_INVOICE_WORKER_PYTHON` to use a different interpreter.
 
 ```sh
-uv venv .venv-vintern --python 3.11
-uv pip install --python .venv-vintern/bin/python \
+uv venv .venv-invoice-worker --python 3.11
+uv pip install --python .venv-invoice-worker/bin/python \
   --index-url https://download.pytorch.org/whl/cpu \
-  torch==2.3.1 torchvision==0.18.1
-uv pip install --python .venv-vintern/bin/python \
-  -r artifacts/evaluation/invoices/vintern-runtime-requirements.txt
+  torch==2.3.1
+uv pip install --python .venv-invoice-worker/bin/python \
+  transformers==4.57.6 accelerate==1.15.0 peft==0.21.2
 ```
 
-These commands install CPU PyTorch. A GPU runtime needs a matching CUDA PyTorch
-build and host driver/runtime; changing `vintern_device` to `cuda` is not by
-itself sufficient. See the [Vintern pipeline](vintern-pipeline.md).
+These commands install CPU PyTorch. For GPU inference, install a PyTorch build
+that matches the host CUDA runtime. See the [invoice guide](invoice-pipeline.md).
 
 ## Build the parser image
 
@@ -65,9 +62,14 @@ should be mounted to persist downloads between local container runs.
    and review status where available.
 3. Check application logs for the upload/job ID, then the document-processing
    service logs for `/parse` status and worker traceback.
-4. For Vintern, distinguish queue/proxy wait from actual model inference; the
-   worker timeout and CPU/GPU device are described in the
-   [Vintern guide](vintern-pipeline.md).
+4. For local invoice extraction, check the selected provider and the isolated
+   worker logs when Qwen runs outside Modal.
+
+Filter for `DOCUMENT_PROCESS_COMPONENT_ERROR` to see the failing component,
+error type, and available request identifiers. Docling can report a page and
+stage even when other pages completed. Page and frame limit errors include
+`error_code=page_limit_exceeded`, the observed `page_count`, the configured
+`page_limit`, and `count_unit`.
 
 Do not use production or SSH as a local verification step. Use the explicit
 deployment workflow for a separately authorized production change.

@@ -11,6 +11,7 @@ import time
 from typing import Any
 import re
 
+from document_processing.diagnostics import component_errors, document_log_context
 from document_processing.element_taxonomy import normalize_element_label
 from document_processing.formats import (
     IMAGE_FORMATS, LEGACY_OFFICE_FORMATS, NORMALIZED_RASTER_FORMATS, SUPPORTED_FORMATS,
@@ -21,14 +22,9 @@ from document_processing.legacy_office import convert_legacy_office
 
 _INVOICE_EXTRACTION_CONFIG_KEYS = frozenset({
     "invoice_provider",
+    "invoice_worker_python",
     "gemini_invoice_model",
     "groq_invoice_model",
-    "xiaomi_invoice_model",
-    "xiaomi_invoice_revision",
-    "xiaomi_python",
-    "xiaomi_device",
-    "xiaomi_max_new_tokens",
-    "xiaomi_timeout_seconds",
     "invoice_model",
     "invoice_model_revision",
     "invoice_adapter",
@@ -56,13 +52,15 @@ class DocumentProcessor:
     ) -> dict[str, Any]:
         """Parse a source file into normalized ordered elements and structured tables."""
         suffix = Path(filename).suffix.lower()
-        if suffix not in self.SUPPORTED:
-            raise ValueError(f"Unsupported document format: {suffix or 'unknown'}")
         intent = str(self.config.get("intent", "document")).strip().lower()
-        if intent not in {"document", "invoice", "image_caption"}:
-            raise ValueError(f"Unsupported document intent: {intent}")
-        if intent != "document" and suffix in _DOCUMENT_ONLY_FORMATS:
-            raise ValueError(f"{suffix} is supported for document processing only")
+        log_context = document_log_context(metadata, source_format=suffix.lstrip("."), intent=intent)
+        with component_errors(_LOGGER, "document_input_validation", **log_context):
+            if suffix not in self.SUPPORTED:
+                raise ValueError(f"Unsupported document format: {suffix or 'unknown'}")
+            if intent not in {"document", "invoice"}:
+                raise ValueError(f"Unsupported document intent: {intent}")
+            if intent != "document" and suffix in _DOCUMENT_ONLY_FORMATS:
+                raise ValueError(f"{suffix} is supported for document processing only")
         common = {
             **metadata,
             "filename": Path(filename).name,
@@ -80,17 +78,18 @@ class DocumentProcessor:
             default_timeout = "600"
             if intent == "invoice":
                 default_timeout = "1200"
-            result = client.post(
-                remote_url,
-                "/parse",
-                {
-                    "filename": Path(filename).name,
-                    "content": base64.b64encode(content).decode("ascii"),
-                    "metadata": common,
-                    "config": self.config,
-                },
-                timeout=int(os.getenv(timeout_env, default_timeout)),
-            )
+            with component_errors(_LOGGER, "remote_parser_request", **log_context):
+                result = client.post(
+                    remote_url,
+                    "/parse",
+                    {
+                        "filename": Path(filename).name,
+                        "content": base64.b64encode(content).decode("ascii"),
+                        "metadata": common,
+                        "config": self.config,
+                    },
+                    timeout=int(os.getenv(timeout_env, default_timeout)),
+                )
             previews = result.get("page_previews")
             if isinstance(previews, dict):
                 result["page_previews"] = {
@@ -101,27 +100,25 @@ class DocumentProcessor:
             return result
         parser_suffix = suffix
         if intent == "invoice":
-            from document_processing.docling_adapter.processor import DoclingProcessor
             provider = str(
                 self.config.get("invoice_provider")
                 or os.environ.get("DOCUMENT_PROCESSING_INVOICE_PROVIDER")
                 or "modal"
             ).strip().lower()
-            if provider == "xiaomi":
-                from document_processing.invoice.xiaomi_processor import XiaomiOCRInvoiceProcessor
+            with component_errors(_LOGGER, "invoice_provider_validation", **log_context):
+                if provider not in {"gemini", "groq", "modal", "local"}:
+                    raise ValueError(f"Unsupported invoice extraction provider: {provider}")
+            from document_processing.invoice.text_processor import InvoiceTextProcessor
 
-                extraction_processor = XiaomiOCRInvoiceProcessor(self.config)
-                engine = "docling_xiaomi_ocr_invoice"
-            else:
-                from document_processing.invoice.text_processor import InvoiceTextProcessor
-
-                extraction_processor = InvoiceTextProcessor(self.config)
-                engine = "docling_qwen_invoice_text"
+            extraction_processor = InvoiceTextProcessor(self.config)
+            engine = "docling_qwen_invoice_text"
 
             processor_config = {**self.config, "parser_engine": "docling", "intent": "document"}
-            parser_content = render_svg(content) if suffix == ".svg" else render_webp(content) if suffix == ".webp" else content
+            parser_content = content
             if suffix in {".svg", ".webp"}:
-                parser_suffix = ".png"
+                with component_errors(_LOGGER, "image_normalization", **log_context):
+                    parser_content = render_svg(content) if suffix == ".svg" else render_webp(content)
+                    parser_suffix = ".png"
             parser_metadata = {**common, "format": parser_suffix[1:].upper()}
             cache_config = {
                 key: value for key, value in processor_config.items()
@@ -134,6 +131,9 @@ class DocumentProcessor:
             cache_hit = result is not None
 
             def parse_and_cache():
+                with component_errors(_LOGGER, "docling_import", **log_context):
+                    from document_processing.docling_adapter.processor import DoclingProcessor
+
                 docling_started = time.perf_counter()
                 parsed = DoclingProcessor(processor_config).process(
                     parser_content, None, {"content": parser_content, "metadata": parser_metadata}
@@ -191,11 +191,7 @@ class DocumentProcessor:
                 }, separators=(",", ":")),
             )
             extraction_started = time.perf_counter()
-            if provider == "xiaomi":
-                extraction = extraction_processor.process(
-                    filename, content, reference_id=metadata.get("invoice_id"),
-                )
-            else:
+            with component_errors(_LOGGER, "invoice_extraction_result", **log_context, provider=provider):
                 extraction = extraction_processor.process(
                     result.get("elements", []), result.get("tables", []),
                     reference_id=metadata.get("invoice_id"),
@@ -217,24 +213,22 @@ class DocumentProcessor:
                 "invoice_schema_version": extraction["schema_version"],
                 "invoice_review_required": True,
             })
-        elif intent == "image_caption":
-            from document_processing.image_caption.vintern_processor import VinternProcessor
-
-            engine = "vintern_image_caption"
-            result = VinternProcessor(self.config).process(filename, content, common)
         else:
             engine = str(self.config.get("parser_engine", "docling"))
             if engine != "docling":
                 raise ValueError(f"Unsupported parser pipeline: {engine}")
-            from document_processing.docling_adapter.processor import DoclingProcessor
-
             processor_config = {**self.config, "parser_engine": engine}
             parser_content = content
             if suffix in LEGACY_OFFICE_FORMATS:
-                parser_content, parser_suffix = convert_legacy_office(content, suffix)
+                with component_errors(_LOGGER, "legacy_office_conversion", **log_context):
+                    parser_content, parser_suffix = convert_legacy_office(content, suffix)
             elif suffix in IMAGE_FORMATS:
-                parser_content, parser_suffix = normalize_image(content, suffix)
+                with component_errors(_LOGGER, "image_normalization", **log_context):
+                    parser_content, parser_suffix = normalize_image(content, suffix)
             parser_metadata = {**common, "format": parser_suffix[1:].upper()}
+            with component_errors(_LOGGER, "docling_import", **log_context):
+                from document_processing.docling_adapter.processor import DoclingProcessor
+
             result = DoclingProcessor(processor_config).process(
                 parser_content, None, {"content": parser_content, "metadata": parser_metadata}
             )

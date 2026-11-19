@@ -59,8 +59,16 @@ def judge(item, row):
             "wrongly_withheld": item["expected_outcome"] == "answer" and shown in ("withheld", "not_covered")}
 
 
+FIXES = True  # scoring_fixes.json: Vietnamese equivalents for English items (post-lock, documented in the file)
+
+
 def score(set_name, path):
     items = {i["id"]: i for i in json.load(open(HERE / f"{set_name}-v3.json", encoding="utf-8"))["items"]}
+    if FIXES and (HERE / "scoring_fixes.json").exists():
+        for item_id, alts in json.load(open(HERE / "scoring_fixes.json", encoding="utf-8"))["must_include_alternatives"].items():
+            if item_id in items:
+                items[item_id] = {**items[item_id], "must_include": [e + "|" + alts[e] if e in alts else e
+                                                                      for e in items[item_id]["must_include"]]}
     rows = [json.loads(l) for l in open(path, encoding="utf-8") if "error" not in json.loads(l)]
     per = {r["id"]: judge(items[r["id"]], r) for r in rows}
     by_cat = defaultdict(list)
@@ -82,7 +90,10 @@ def score(set_name, path):
 
 
 def main(argv):
+    global FIXES
     out = None
+    if "--no-fixes" in argv:
+        FIXES, argv = False, [a for a in argv if a != "--no-fixes"]
     if "--json" in argv:
         out, argv = argv[argv.index("--json") + 1], argv[:argv.index("--json")]
     results = [score(argv[0], p) for p in argv[1:]]
@@ -98,4 +109,5 @@ def main(argv):
 
 if __name__ == "__main__":
     assert contains("hạn 17 ngày", "17") and not contains("hạn 17 ngày", "7") and contains("tổng 6.000.000 vnd", "6.000.000")
+    assert contains(normalize("ít nhất năm ngày làm việc"), "năm ngày")
     main(sys.argv[1:])

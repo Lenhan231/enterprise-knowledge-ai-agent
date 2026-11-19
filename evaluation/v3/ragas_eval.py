@@ -18,6 +18,14 @@ ROOT = Path(__file__).resolve().parents[2]
 JUDGE = "openai/gpt-oss-120b"
 
 
+
+def parsed(line):
+    """A row cut short by a crash or power loss is not a result: it reads as None and is redone."""
+    try:
+        return json.loads(line) if line.strip() else None
+    except json.JSONDecodeError:
+        return None
+
 def keys():
     env = Path(os.getenv("EVAL_PROD_ENV", Path.home() / "projects/ekai-prod/.env")).read_text().splitlines()
     return [line.split("=", 1)[1].strip() for line in env if line.startswith("GROQ_API_KEY") and "=" in line and line.split("=", 1)[1].strip()]
@@ -39,6 +47,9 @@ async def main(set_name, answers_path, out_path):
     items = {i["id"]: i for i in json.load(open(ROOT / f"artifacts/evaluation/vietstyle-v3/{set_name}-v3.json", encoding="utf-8"))["items"]}
     embeddings = embedding_factory("huggingface", model="intfloat/multilingual-e5-base")
     pool = keys()
+    if Path(out_path).exists():  # a judge call that failed (usually a rate limit) is not a result: drop it so it is redone
+        kept = [l if l.endswith("\n") else l + "\n" for l in open(out_path, encoding="utf-8") if parsed(l) and "errors" not in parsed(l)]
+        Path(out_path).write_text("".join(kept), encoding="utf-8")
     done = {json.loads(l)["id"] for l in open(out_path, encoding="utf-8")} if Path(out_path).exists() else set()
     with open(out_path, "a", encoding="utf-8") as out:
         for n, line in enumerate(open(answers_path, encoding="utf-8")):
@@ -54,11 +65,21 @@ async def main(set_name, answers_path, out_path):
             for name, call in (("faithfulness", lambda: faithfulness.ascore(user_input=question, response=row["answer"], retrieved_contexts=contexts)),
                                ("answer_relevancy", lambda: relevancy.ascore(user_input=question, response=row["answer"])),
                                ("context_precision", lambda: precision.ascore(user_input=question, reference=item["reference_answer"], retrieved_contexts=contexts))):
-                try:
-                    result[name] = float((await call()).value)
-                except Exception as error:  # a judge failure is recorded, never scored as 0
-                    result[name] = None
-                    result.setdefault("errors", {})[name] = f"{type(error).__name__}: {str(error)[:160]}"
+                for attempt in range(4):
+                    try:
+                        result[name] = float((await call()).value)
+                        break
+                    except Exception as error:  # a judge failure is recorded, never scored as 0
+                        text = str(error)
+                        if "429" in text or "RateLimit" in type(error).__name__:
+                            if "per day" in text or "TPD" in text or attempt == 3:
+                                print(row["id"], "judge rate limited; stopping until the quota recovers", flush=True)
+                                sys.exit(75)  # nothing written: a later run judges this item again
+                            time.sleep(65)  # per-minute limit: it clears within a minute
+                            continue
+                        result[name] = None
+                        result.setdefault("errors", {})[name] = f"{type(error).__name__}: {text[:160]}"
+                        break
             result["hallucination"] = None if result["faithfulness"] is None else result["faithfulness"] < 1.0
             out.write(json.dumps(result, ensure_ascii=False) + "\n")
             out.flush()

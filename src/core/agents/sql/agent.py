@@ -602,7 +602,8 @@ class SQLAnalyticsAgent(BaseAgent):
                         plan = QueryPlan(sql=plan.sql, parameters=resolved_parameters,
                                          explanation=plan.explanation, clarification=plan.clarification,
                                          request_contract=plan.request_contract,
-                                         request_contract_warning=plan.request_contract_warning)
+                                         request_contract_warning=plan.request_contract_warning,
+                                         clarification_options=plan.clarification_options)
                     validate_current_year_month_range(plan.sql or '', plan.parameters, original_question,
                                                       date_columns=date_columns)
                     validate_rolling_days_range(plan.sql or '', plan.parameters, original_question,
@@ -774,7 +775,9 @@ class SQLAnalyticsAgent(BaseAgent):
             return {
                 "ok": False, "operation": "text_to_sql", "rows": [], "answer": plan.clarification,
                 "limitations": ["The question needs clarification before a safe query can be generated."],
-                "metadata": {"clarification_required": True},
+                "metadata": {"clarification_required": True,
+                             "status": "clarification_required",
+                             "clarification_options": list(plan.clarification_options)},
             }
 
         payload = await self._execute_plan(plan, definitions, table_columns, approved_joins,

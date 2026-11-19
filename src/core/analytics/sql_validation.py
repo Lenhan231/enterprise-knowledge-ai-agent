@@ -147,6 +147,7 @@ class QueryPlan:
     clarification: str | None = None
     request_contract: dict | None = None
     request_contract_warning: str | None = None
+    clarification_options: tuple[str, ...] = ()
 
 
 def _source_name(table: exp.Table) -> str:
@@ -561,34 +562,7 @@ def decode_query_plan(raw: str, schema_columns=None, *, allowed_sources=None, ap
         options = [option.strip() for option in raw_options]
         if options and len(options) < 2:
             raise SQLValidationError("Provide at least two choices or leave clarification_options empty.")
-        if not options and not re.search(r"(?m)^\s*1[.)]\s", clarification):
-            choice_match = re.search(
-                r"(?is)\b(?:please\s+)?confirm\s+whether\s+(?:you\s+)?"
-                r"(?:would\s+like\s+to|prefer\s+to|want\s+to)\s+(.+?),\s*or\s+"
-                r"(?:if\s+)?(?:you\s+)?(?:would\s+like\s+to|prefer\s+to|want\s+to)\s+(.+?)[?.]\s*$",
-                clarification,
-            )
-            vietnamese_match = re.search(
-                r"(?is)(?:bạn|anh|chị)\s+(?:muốn|chọn)\s+(.+?)\s+(?:hay|hoặc)\s+"
-                r"(?:(?:bạn|anh|chị)\s+)?(?:muốn\s+)?(.+?)[?.]\s*$",
-                clarification,
-            )
-            choice_match = choice_match or vietnamese_match
-            if choice_match:
-                prefix = clarification[:choice_match.start()].strip()
-                if vietnamese_match and choice_match is vietnamese_match:
-                    prefix = re.sub(r"\s*(?:bạn|anh|chị)\s+(?:muốn|chọn)\s*$", "", prefix, flags=re.I)
-                    clarification = (prefix.rstrip() + "\n\nHãy chọn một phương án:").lstrip()
-                    options = [choice_match.group(1).strip(), choice_match.group(2).strip(), "Khác (ghi rõ)"]
-                else:
-                    prefix = re.sub(r"\s*(?:please\s+)?confirm\s*$", "", prefix, flags=re.I)
-                    clarification = (prefix.rstrip() + "\n\nPlease choose an option:").lstrip()
-                    options = [choice_match.group(1).strip(), choice_match.group(2).strip(), "Other (please specify)"]
-        if options and not re.search(r"(?m)^\s*1[.)]\s", clarification):
-            clarification += "\n\n" + "\n".join(
-                f"{index}. {option}" for index, option in enumerate(options, start=1)
-            )
-        return QueryPlan(clarification=clarification)
+        return QueryPlan(clarification=clarification, clarification_options=tuple(options))
     sql = payload.get("sql")
     parameters = payload.get("parameters", [])
     explanation = payload.get("explanation", "")

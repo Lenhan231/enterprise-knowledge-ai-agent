@@ -67,14 +67,14 @@ class SQLValidationTest(unittest.TestCase):
         self.assertIn('LIMIT 1..200', repaired)
         self.assertIn('never PostgreSQL :: casts', repaired)
 
-    def test_clarification_options_render_as_numbered_lines_and_cap_at_three(self):
+    def test_clarification_options_remain_structured_and_cap_at_three(self):
         plan = decode_query_plan(json.dumps({
             'clarification': 'Choose how to calculate COGS:',
             'clarification_options': ['Estimate from products.cogs × quantity', 'Omit COGS', 'Other'],
         }))
-        self.assertEqual(plan.clarification,
-                         'Choose how to calculate COGS:\n\n1. Estimate from products.cogs × quantity\n'
-                         '2. Omit COGS\n3. Other')
+        self.assertEqual(plan.clarification, 'Choose how to calculate COGS:')
+        self.assertEqual(plan.clarification_options,
+                         ('Estimate from products.cogs × quantity', 'Omit COGS', 'Other'))
         with self.assertRaisesRegex(SQLValidationError, 'at most three'):
             decode_query_plan(json.dumps({
                 'clarification': 'Choose one:',
@@ -280,6 +280,25 @@ class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn("SUM(s.revenue)", sql)
         self.assertNotIn("GROUP BY", sql.upper())
         self.assertEqual(parameters, [date(2025, 1, 1), date(2026, 1, 1)])
+
+    async def test_sql_clarification_keeps_options_structured_without_executing(self):
+        options = ['Dựa trên bảng sales', 'Dựa trên order_items']
+
+        class LLM:
+            def generate(self, prompt):
+                if prompt.startswith('Interpret the question BEFORE'):
+                    return json.dumps({'domain': 'other'})
+                return json.dumps({'clarification': 'Bạn muốn tính doanh thu theo nguồn nào?',
+                                   'clarification_options': options})
+
+        repository = AsyncMock()
+        result = await SQLAnalyticsAgent(repository, llm=LLM()).run(AgentRequest(
+            question='How should customer revenue be calculated?', identity=ANALYST))
+
+        self.assertEqual(result.answer, 'Bạn muốn tính doanh thu theo nguồn nào?')
+        self.assertEqual(result.metadata['clarification_options'], options)
+        self.assertEqual(result.metadata['status'], 'clarification_required')
+        repository.execute_approved_query.assert_not_awaited()
 
     async def test_followup_summary_uses_original_question_language(self):
         class LLM:

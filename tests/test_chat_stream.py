@@ -21,12 +21,12 @@ def _events(body: str) -> list[tuple[str, dict]]:
     return out
 
 
-def _stream(runtime) -> list[tuple[str, dict]]:
+def _stream(runtime, payload=None) -> list[tuple[str, dict]]:
     async def collect():
         with patch("app.agents._get_runtime", new=AsyncMock(return_value=runtime)), \
                 patch("app.agents._record_agent_run"):
             response = await agent_chat_stream(
-                AgentChatRequest(question="policy?", agent_mode="knowledge"), Mock(),
+                payload or AgentChatRequest(question="policy?", agent_mode="knowledge"), Mock(),
                 user={"role": "admin", "sub": "test"})
             assert response.headers["content-type"].startswith("text/event-stream")
             return "".join([chunk async for chunk in response.body_iterator])
@@ -34,6 +34,23 @@ def _stream(runtime) -> list[tuple[str, dict]]:
 
 
 class ChatStreamTest(unittest.TestCase):
+    def test_clarification_choice_metadata_reaches_the_selected_agent(self):
+        selection = {'question': 'How should revenue be calculated?', 'index': 1}
+        received = {}
+
+        async def run_mode(request, mode):
+            received.update(request.metadata)
+            return AgentResult(answer='Selected', agent=mode)
+
+        runtime = Mock()
+        runtime.run_mode = run_mode
+        payload = AgentChatRequest(question='Dựa trên order_items', agent_mode='knowledge',
+                                   metadata={'clarification_choice': selection})
+        events = _stream(runtime, payload)
+
+        self.assertEqual(received['clarification_choice'], selection)
+        self.assertEqual(events[-1][1]['answer'], 'Selected')
+
     def test_stages_from_worker_threads_arrive_before_the_verified_answer(self):
         def rerank():
             with measure("reranking"):

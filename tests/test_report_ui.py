@@ -16,7 +16,7 @@ class ReportUITest(unittest.TestCase):
             self.assertEqual(home().headers.get('cache-control'), 'no-cache')
         html = (root / 'src/app/static/index.html').read_text(encoding='utf-8')
         for asset in ('sales-report.css', 'sales-report.js', 'app.js', 'report-workspace.js'):
-            self.assertIn('/static/' + asset + '?v=20261119-inventory-operations', html)
+            self.assertIn('/static/' + asset + '?v=20261119-inventory-polish', html)
 
     def test_fixed_sections_widgets_and_untrusted_text(self):
         script = r"""

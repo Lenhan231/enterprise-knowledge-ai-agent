@@ -239,7 +239,8 @@ class InventoryFlowTest(unittest.IsolatedAsyncioTestCase):
             text=unicodedata.normalize('NFKC',' '.join(' '.join(p.get_text() for p in pdf).split()))
             from core.reports.inventory_operations import SECTION_TITLES
             self.assertTrue(all(title in text for title in SECTION_TITLES.values()),text)
-            self.assertIn('policy-1',text)
+            self.assertIn('Inventory Control and Reorder Planner',text)
+            self.assertNotIn('policy-1',text)
             self.assertNotIn('VND',text)
             edited=saved.model_dump();edited['presentation']['chart_types']={'inventory_snapshots':'bar'}
             with self.assertRaises(ValueError):ReportDocument.model_validate(edited)
@@ -299,7 +300,7 @@ class InventoryFlowTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_fixed_inventory_renderer_has_seven_sections_and_five_widgets(self):
         import subprocess
-        report,_,_,_=await self.generate(documents=True)
+        report,result,_,_=await self.generate('Annual inventory report 2026',snapshot=date(2026,12,31),documents=True)
         script=r'''
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 class Element {
@@ -310,7 +311,7 @@ class Element {
 const document={createElement:tag=>new Element(tag),createElementNS:(_,tag)=>new Element(tag)};
 const api=vm.runInNewContext(fs.readFileSync('src/app/static/sales-report.js','utf8')+';SalesPerformanceReport',{document,Intl});
 const report=JSON.parse(fs.readFileSync(0,'utf8')), before=JSON.stringify(report),root=new Element('div');
-api.render(root,report);
+api.render(root,report,{inventory_context:CONTEXT});
 const descendants=n=>[n,...n.children.flatMap(descendants)],nodes=descendants(root);
 assert.equal(nodes.filter(n=>n.dataset.sectionId).length,7);
 assert.deepEqual(nodes.filter(n=>n.dataset.widgetId).map(n=>[n.dataset.widgetId,n.dataset.chartType]),report.dashboard.widgets.map(w=>[w.id,w.type]));
@@ -319,9 +320,84 @@ assert(!nodes.some(n=>n.tag==='script'));
 assert(nodes.filter(n=>n.tag==='a').every(a=>nodes.some(n=>n.id===a.href.slice(1))));
 assert.equal(JSON.stringify(report),before);
 assert(!nodes.some(n=>n.textContent?.includes('VND')));
+const copy=nodes.map(n=>n.textContent||'').join(' ');
+report.metrics.flatMap(m=>m.evidence).forEach(e=>assert(!copy.includes(e.query_id),'Query hashes must not be visible report text'));
+assert(!copy.includes('policy-1'),'Document IDs belong in audit data, not report copy');
+assert(!copy.includes('stockout_products > 0'));
+assert(!copy.includes('end_exclusive'));
+assert(!copy.includes('(available)'));
+assert(nodes.filter(n=>n.tag==='a'&&n.href?.includes('-source-')).every(a=>/^\[\d+\]$/.test(a.textContent)));
+assert(nodes.some(n=>n.tag==='dd'),'Inventory KPIs should use the existing Sales card layout');
+assert(nodes.some(n=>n.tag==='blockquote'),'Policy passages should be separated from report findings');
+assert(copy.includes('2026-01-01 to 2026-12-31'));
+assert(copy.includes('Inventory Control and Reorder Planner'));
+assert(copy.includes('complete transaction coverage is unverified'));
+const partial=JSON.parse(before);
+partial.data_quality.limitations=partial.data_quality.limitations.filter(n=>!/^Dashboard source \[[^\]]+\] inventory_snapshots:/.test(n));
+partial.dashboard.widgets.find(w=>w.id==='inventory_snapshots').data=[];
+api.render(root,partial,{inventory_context:CONTEXT});
+const history=descendants(root).find(n=>n.dataset.widgetId==='inventory_snapshots');
+assert(!descendants(history).some(n=>n.tag==='a'),'A failed history query must never cite the selected-snapshot aggregate');
+const unavailable=JSON.parse(before);
+unavailable.metrics.forEach(m=>{m.value=null;m.status='access_denied';m.evidence=[];});
+unavailable.dashboard.widgets.forEach(w=>{w.data=[];});
+unavailable.decisions.forEach(r=>{r.triggered=null;r.status='not_available';r.evidence=[];});
+unavailable.data_quality.limitations=['Selected snapshot: unavailable; no authorized observed snapshot could be selected before the reporting cutoff.',
+  'snapshot: access denied.',...report.data_quality.limitations.filter(n=>n.startsWith('Policy source ['))];
+api.render(root,unavailable,{inventory_context:{retrieval_status:'access_denied',documents:[]}});
+const missingNodes=descendants(root),missingCopy=missingNodes.map(n=>n.textContent||'').join(' ');
+assert(missingCopy.includes('source access is restricted'));
+assert(missingCopy.includes('No source observations were returned'));
+assert(!missingNodes.some(n=>n.tag==='blockquote'),'Withheld document context must never fall back to old embedded passages');
+assert(!missingCopy.includes('change rules'));
+assert.equal(missingNodes.filter(n=>n.dataset.widgetId).length,5);
+assert(missingNodes.filter(n=>n.tag==='a').every(a=>missingNodes.some(n=>n.id===a.href.slice(1))));
+assert.equal(JSON.stringify(report),before);
 '''
+        script=script.replace('CONTEXT',json.dumps(result.data['inventory_context']))
         result=subprocess.run(['node','-e',script],input=json.dumps(report),capture_output=True,text=True,cwd=Path(__file__).resolve().parents[1])
         self.assertEqual(result.returncode,0,result.stderr)
+
+    async def test_annual_pdf_keeps_provenance_without_technical_citation_strings(self):
+        import fitz
+        import unicodedata
+        from core.reports.document import ReportDocument
+        from core.reports.export import export_pdf
+        report,result,_,_=await self.generate('Annual inventory report 2026',snapshot=date(2026,12,31),documents=True)
+        before=copy.deepcopy(report)
+        document=ReportDocument(report=report,inventory_context=result.data['inventory_context'])
+        pdf=fitz.open(stream=export_pdf(document),filetype='pdf')
+        text=unicodedata.normalize('NFKC',' '.join(' '.join(p.get_text() for p in pdf).split()))
+        for metric in report['metrics']:
+            for e in metric['evidence']:self.assertNotIn(e['query_id'],text)
+        self.assertNotIn('policy-1',text)
+        self.assertNotIn('stockout_products > 0',text)
+        self.assertNotIn('end_exclusive',text)
+        self.assertNotIn('(available)',text)
+        self.assertIn('Inventory Control and Reorder Planner',text)
+        self.assertIn('2026-01-01 to 2026-12-31',text)
+        self.assertIn('complete transaction coverage is unverified',text)
+        boxes=[image['bbox'] for page in pdf for image in page.get_image_info()]
+        self.assertEqual(len(boxes),2)
+        self.assertTrue(all(box[2]-box[0]>450 and box[3]-box[1]>150 for box in boxes),boxes)
+        from core.reports.presentation import decision_text
+        for rule in report['decisions']:
+            page_text=next(unicodedata.normalize('NFKC',' '.join(page.get_text().split())) for page in pdf
+                           if rule['title'] in unicodedata.normalize('NFKC',' '.join(page.get_text().split())))
+            self.assertIn(decision_text(rule),page_text[page_text.index(rule['title']):])
+        self.assertEqual(report,before)
+
+    async def test_failed_history_pdf_does_not_cite_current_snapshot_as_history(self):
+        import fitz
+        import unicodedata
+        from core.reports.document import ReportDocument
+        from core.reports.export import export_pdf
+        report,result,_,_=await self.generate('Annual inventory report 2026',snapshot=date(2026,12,31),fail='inventory_snapshots')
+        document=ReportDocument(report=report,inventory_context=result.data['inventory_context'])
+        pdf=fitz.open(stream=export_pdf(document),filetype='pdf')
+        text=unicodedata.normalize('NFKC',' '.join(' '.join(p.get_text() for p in pdf).split()))
+        self.assertIn('Stockout-flag count by snapshot No chart observations available.',text)
+        self.assertIn('Snapshot history: the source could not be retrieved or verified.',text)
 
 
 @unittest.skipUnless(os.getenv('INVENTORY_REPORT_TEST_URL'), 'Opt-in read-only PostgreSQL fixture connection required')

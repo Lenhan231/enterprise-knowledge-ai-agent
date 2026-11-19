@@ -51,7 +51,7 @@
     setBusy(busy);
   }
   function preview() {
-    if (selected) SalesPerformanceReport.render(el('sales-report-output'), selected.report, {title:selected.title, presentation:selected.presentation, monthly_decisions:selected.monthly_decisions, insights:selected.insights});
+    if (selected) SalesPerformanceReport.render(el('sales-report-output'), selected.report, {title:selected.title, presentation:selected.presentation, monthly_decisions:selected.monthly_decisions, insights:selected.insights, inventory_context:selected.inventory_context});
   }
   function showTab(edit) {
     el('rw-edit-panel').hidden = !edit; el('sales-report-output').hidden = edit || !selected;

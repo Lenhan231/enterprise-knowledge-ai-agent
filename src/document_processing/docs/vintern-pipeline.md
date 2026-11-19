@@ -1,11 +1,10 @@
 # Vintern image-caption pipeline
 
-The `image_caption` intent uses Vintern directly on page images. Invoice
-extraction now uses Docling OCR plus a text-only Qwen model; see the
-[invoice pipeline guide](invoice-pipeline.md).
+The `image_caption` intent uses Vintern directly on page images. The
+[invoice pipeline guide](invoice-pipeline.md) covers invoice extraction.
 Dispatch is in [`document_processor.py`](../document_processor.py), request
-preparation/output shaping is in [`vintern_processor.py`](../vintern_processor.py),
-and model inference is in [`vintern_worker.py`](../vintern_worker.py).
+preparation/output shaping is in [`vintern_processor.py`](../image_caption/vintern_processor.py),
+and model inference is in [`vintern_worker.py`](../image_caption/vintern_worker.py).
 
 ## Current flow
 

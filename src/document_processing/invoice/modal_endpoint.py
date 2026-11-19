@@ -1,7 +1,7 @@
 """GPU-backed Modal endpoint for the private Qwen3 invoice LoRA adapter.
 
 Deploy from the repository root with:
-    modal deploy src/document_processing/modal_invoice_endpoint.py
+    modal deploy src/document_processing/invoice/modal_endpoint.py
 
 The Modal Secret ``invoice-hf-token`` must contain ``HF_INVOICE_LLM_TOKEN``.
 """
@@ -50,7 +50,7 @@ class InvoiceQwenGPU:
     @modal.enter()
     def load_model(self) -> None:
         sys.path.insert(0, "/root")
-        from document_processing.invoice_text_worker import InvoiceModelRuntime
+        from document_processing.invoice.qwen_worker import InvoiceModelRuntime
 
         request = {
             "model_id": MODEL_ID,

@@ -18,30 +18,16 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 
-from pydantic import BaseModel, ConfigDict, StrictStr, field_validator
+from document_processing.invoice.schema import (
+    InvoiceFields, SCHEMA, SCHEMA_VERSION, merge_invoice_fields,
+)
+from document_processing.worker_runtime import resolve_vintern_python, worker_environment
 
 
 MODEL_ID = "Qwen/Qwen3-0.6B"
 MODEL_REVISION = "c1899de289a04d12100db370d81485cdf75e47ca"
 ADAPTER_ID = "lenhanm1/qwen3-0.6b-invoice-lora-900"
 ADAPTER_REVISION = "7e062bb552f77af64b1c3bc9e205fa107c68c3d3"
-SCHEMA_VERSION = "invoice.v1"
-SCHEMA = {
-    "invoice_no": None,
-    "date": None,
-    "seller": None,
-    "buyer": None,
-    "items": [{
-        "description": None,
-        "quantity": None,
-        "unit": None,
-        "unit_price": None,
-        "amount": None,
-    }],
-    "subtotal": None,
-    "tax_amount": None,
-    "total_amount": None,
-}
 HEADER_SCHEMA = {
     key: SCHEMA[key]
     for key in (
@@ -58,47 +44,6 @@ _MAX_EVIDENCE_CHARS = 12_000
 _LOGGER = logging.getLogger(__name__)
 _TABLE_CHUNK_CHARS = 2_400
 _GEMINI_EXECUTOR = ThreadPoolExecutor(max_workers=2, thread_name_prefix="invoice-gemini")
-
-
-class InvoiceItem(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    description: StrictStr | None = None
-    quantity: StrictStr | None = None
-    unit: StrictStr | None = None
-    unit_price: StrictStr | None = None
-    amount: StrictStr | None = None
-
-    @field_validator("quantity", "unit_price", "amount", mode="before")
-    @classmethod
-    def numeric_values_to_text(cls, value: Any) -> Any:
-        return _numeric_text(value)
-
-
-class InvoiceFields(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    invoice_no: StrictStr | None = None
-    date: StrictStr | None = None
-    seller: StrictStr | None = None
-    buyer: StrictStr | None = None
-    items: list[InvoiceItem] = []
-    subtotal: StrictStr | None = None
-    tax_amount: StrictStr | None = None
-    total_amount: StrictStr | None = None
-
-    @field_validator("subtotal", "tax_amount", "total_amount", mode="before")
-    @classmethod
-    def numeric_values_to_text(cls, value: Any) -> Any:
-        return _numeric_text(value)
-
-
-def _numeric_text(value: Any) -> Any:
-    if isinstance(value, (int, float)) and not isinstance(value, bool):
-        return str(value)
-    if isinstance(value, str) and re.search(r"[+=×*]", value):
-        return None
-    return value
 
 
 def _prepare_extraction_input(
@@ -256,50 +201,6 @@ def _extraction_jobs(ocr_input: dict[str, Any]) -> list[dict[str, Any]]:
                 ),
             })
     return jobs
-
-
-def _merge_job_fields(
-    parsed_jobs: list[tuple[dict[str, Any], dict[str, Any]]],
-) -> tuple[dict[str, Any], dict[str, list[str]]]:
-    fields = InvoiceFields().model_dump(mode="json")
-    conflicts: dict[str, list[str]] = {}
-    scalar_fields = (
-        "invoice_no", "date", "seller", "buyer", "subtotal", "tax_amount", "total_amount",
-    )
-    items: list[dict[str, Any]] = []
-    owner_by_field = {
-        "invoice_no": {"header", "document"}, "date": {"header", "document"},
-        "seller": {"header", "document"}, "buyer": {"header", "document"},
-        "subtotal": {"header", "document", "table"},
-        "tax_amount": {"header", "document", "table"},
-        "total_amount": {"header", "document", "table"},
-    }
-    for field in scalar_fields:
-        candidates_by_kind = {
-            kind: [
-                str(result[field]).strip()
-                for job, result in parsed_jobs
-                if job["kind"] == kind and job["kind"] in owner_by_field[field]
-                and result.get(field) is not None
-                and str(result[field]).strip()
-            ]
-            for kind in ("header", "document", "table")
-        }
-        candidates = next(
-            (values for values in candidates_by_kind.values() if values),
-            [],
-        )
-        unique = list(dict.fromkeys(candidates))
-        if len(unique) == 1:
-            fields[field] = unique[0]
-        elif len(unique) > 1:
-            conflicts[field] = unique
-
-    for job, result in parsed_jobs:
-        if job["kind"] in {"table", "document"}:
-            items.extend(item for item in result.get("items", []) if isinstance(item, dict))
-    fields["items"] = items
-    return InvoiceFields.model_validate(fields).model_dump(mode="json"), conflicts
 
 
 def _groq_extraction_jobs(ocr_input: dict[str, Any]) -> list[dict[str, Any]]:
@@ -506,8 +407,6 @@ class InvoiceTextProcessor:
                 except (URLError, TimeoutError, json.JSONDecodeError) as error:
                     raise RuntimeError(f"Modal invoice endpoint request failed: {error}") from error
             else:
-                from document_processing.vintern_processor import resolve_vintern_python
-
                 python_path = resolve_vintern_python(self.config)
                 if python_path is None or not python_path.is_file():
                     raise RuntimeError(
@@ -520,16 +419,11 @@ class InvoiceTextProcessor:
                     request_path.write_text(
                         json.dumps(request_payload, ensure_ascii=False), encoding="utf-8",
                     )
-                    env = os.environ.copy()
-                    source_root = str(Path(__file__).resolve().parents[1])
-                    env["PYTHONPATH"] = os.pathsep.join(
-                        filter(None, [source_root, env.get("PYTHONPATH", "")])
-                    )
                     try:
                         completed = subprocess.run(
-                            [str(python_path), "-m", "document_processing.invoice_text_worker",
+                            [str(python_path), "-m", "document_processing.invoice.qwen_worker",
                              str(request_path), str(response_path)],
-                            capture_output=True, text=True, env=env, timeout=timeout, check=False,
+                            capture_output=True, text=True, env=worker_environment(), timeout=timeout, check=False,
                         )
                     except subprocess.TimeoutExpired as error:
                         raise RuntimeError(
@@ -575,7 +469,7 @@ class InvoiceTextProcessor:
                 invalid_sources.append(job["source"])
                 continue
             parsed_jobs.append((job, parsed))
-        fields, field_conflicts = _merge_job_fields(parsed_jobs)
+        fields, field_conflicts = merge_invoice_fields(parsed_jobs)
         raw_response = json.dumps(
             [
                 {"source": job["source"], "response": response}

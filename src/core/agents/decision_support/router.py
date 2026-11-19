@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import json
 import os
 import re
 import time
@@ -18,6 +19,8 @@ from core.agents.intent_classifier import (
 from core.agents.decision_support.planning import plan_request
 from core.agents.decision_support.response import assemble_response
 from core.agents.runtime import deadline, remaining, run_sync
+from core.agents.sql.intent_resolution import resolve_pending_clarification
+from core.agents.sql.query_intent import PendingClarification, QueryIntent
 from core.latency import measure
 from core.models.agents import AgentRequest, AgentResult
 from core.models.agent_plan import AgentPlan
@@ -115,7 +118,40 @@ class AgentRouter:
                 async with asyncio.timeout(self.request_timeout):
                     store = self.report_conversations if report_headings is not None else self.conversations
                     async with store.session(request) as history:
+                        user_question = request.question
+                        pending = self._pending_from_history(history)
+                        pending_resumed = False
+                        if pending is not None and report_headings is None and forced_plan is None:
+                            try:
+                                authorize(request, 'sql')
+                                resolved = await resolve_pending_clarification(
+                                    pending, request.question, self._intent_provider(), self._intent_schema())
+                            except Exception:
+                                resolved = pending
+                            if isinstance(resolved, PendingClarification):
+                                self._record_pending_reply(history, request.question, resolved)
+                                return AgentResult(
+                                    answer=resolved.clarification_question, agent='sql_analytics',
+                                    data={'query_status': 'clarification_required'},
+                                    metadata={'ok': False, 'status': 'clarification_required',
+                                              'clarification_required': True, 'selected_route': 'analytics'},
+                                )
+                            self._clear_pending_history(history)
+                            if isinstance(resolved, QueryIntent):
+                                request = request.model_copy(update={
+                                    'question': resolved.original_question,
+                                    'metadata': {**request.metadata,
+                                                 '_query_intent': resolved.model_dump(mode='json'),
+                                                 '_original_question': resolved.original_question},
+                                })
+                                forced_plan = AgentPlan(objective=resolved.original_question, tasks=[{
+                                    'id': 'sql', 'agent': 'sql', 'question': resolved.original_question,
+                                }])
+                                pending_resumed = True
+                                execution.request = request
                         execution.sql_context = self._sql_context_from_history(history)
+                        if pending_resumed:
+                            execution.auto_mode = True
                         # Reports build their own section questions, so only chat turns get the user's wording.
                         execution.standalone = not history and report_headings is None and forced_plan is None
                         graph_input = {'request': request, 'history': list(history),
@@ -124,13 +160,18 @@ class AgentRouter:
                             graph_input['forced_plan'] = forced_plan
                         state = await self.graph.ainvoke(graph_input, config=config)
                         result = AgentResult.model_validate(state['result'])
+                        pending_state = self._pending_after_execution(execution)
                         status = result.metadata.get('status')
                         record_context = (status in {'complete', 'partial', 'clarification_required'}
-                                          or (status is None and result.metadata.get('ok') is True))
+                                          or (status is None and result.metadata.get('ok') is True)
+                                          or pending_state is not None)
                         if record_context:
                             scope = state['plan'].objective if state.get('plan') else request.question
-                            turn = {'question': request.question[:2000], 'scope': scope[:2000],
+                            turn = {'question': user_question[:2000], 'scope': scope[:2000],
                                     'clarification': result.answer[:2000] if result.metadata.get('status') == 'clarification_required' else ''}
+                            if pending_state is not None:
+                                turn['pending_clarification'] = pending_state.model_dump_json()
+                                turn['clarification'] = pending_state.clarification_question[:2000]
                             if result.metadata.get('status') == 'clarification_required' and state.get('plan'):
                                 tasks = state['plan'].tasks
                                 pending = [execution.outcomes.get(task.id) for task in tasks]
@@ -151,7 +192,7 @@ class AgentRouter:
                                     turn['metrics'] = ', '.join(sorted(name for name in metrics if isinstance(name, str)))
                             history.append(turn)
                         self.last_destination = result.metadata.get('selected_route', 'unrouted')
-                        return result
+                        return self._without_pending_metadata(result)
         except PermissionError:
             raise
         except TimeoutError:
@@ -203,13 +244,45 @@ class AgentRouter:
                 if isinstance(agent, SQLAnalyticsAgent):
                     from core.agents.sql.analytics_agent import AnalyticsAgent
                     agent = AnalyticsAgent(agent)
-        with measure('agent_workflow'):
-            result = agent.run(request)
-            if inspect.isawaitable(result):
-                result = await result
-        result = AgentResult.model_validate(result)
         if mode == 'sql':
-            await self._record_sql_debug_turn(request, result)
+            authorize(request, 'sql')
+            async with self.conversations.session(request) as history:
+                pending = self._pending_from_history(history)
+                if pending is not None:
+                    try:
+                        resolved = await resolve_pending_clarification(
+                            pending, request.question, self._intent_provider(), self._intent_schema())
+                    except Exception:
+                        resolved = pending
+                    if isinstance(resolved, PendingClarification):
+                        self._record_pending_reply(history, request.question, resolved)
+                        return AgentResult(
+                            answer=resolved.clarification_question, agent='sql_analytics',
+                            data={'query_status': 'clarification_required'},
+                            metadata={'ok': False, 'status': 'clarification_required',
+                                      'clarification_required': True, 'selected_route': 'analytics'},
+                        )
+                    self._clear_pending_history(history)
+                    if isinstance(resolved, QueryIntent):
+                        request = request.model_copy(update={
+                            'question': resolved.original_question,
+                            'metadata': {**request.metadata,
+                                         '_query_intent': resolved.model_dump(mode='json'),
+                                         '_original_question': resolved.original_question},
+                        })
+                with measure('agent_workflow'):
+                    result = agent.run(request)
+                    if inspect.isawaitable(result):
+                        result = await result
+                result = AgentResult.model_validate(result)
+                await self._record_sql_debug_turn(request, result, history=history)
+                result = self._without_pending_metadata(result)
+        else:
+            with measure('agent_workflow'):
+                result = agent.run(request)
+                if inspect.isawaitable(result):
+                    result = await result
+            result = AgentResult.model_validate(result)
         route = 'analytics' if mode == 'sql' else mode
         self.last_destination = route
         return result.model_copy(update={'metadata': {**result.metadata, 'selected_route': route}})
@@ -250,23 +323,95 @@ class AgentRouter:
                 context = cls._serialize_sql_context(result.metadata.get('semantic_interpretation'))
         return context
 
-    async def _record_sql_debug_turn(self, request, result):
-        if not request.conversation_id or not request.identity:
+    async def _record_sql_debug_turn(self, request, result, *, history=None):
+        if history is None:
+            if not request.conversation_id or not request.identity:
+                return
+            async with self.conversations.session(request) as session:
+                await self._record_sql_debug_turn(request, result, history=session)
             return
         status = result.metadata.get('status')
-        if status in {'failed', 'unsupported'} or result.metadata.get('ok') is False:
+        pending = self._pending_from_result(result)
+        if status in {'failed', 'unsupported'} or (result.metadata.get('ok') is False and pending is None
+                                                    and status != 'clarification_required'):
             return
-        async with self.conversations.session(request) as history:
-            context = next((turn['sql_context'] for turn in reversed(history) if 'sql_context' in turn), '')
-            if result.data.get('query_status') == 'executed':
-                context = self._serialize_sql_context(result.metadata.get('semantic_interpretation'))
-            turn = {'question': request.question[:2000], 'scope': request.question[:2000],
-                    'clarification': result.answer[:2000] if status == 'clarification_required' else '',
-                    'sql_context': context}
-            metrics = result.metadata.get('metrics')
-            if result.data.get('query_status') == 'executed' and isinstance(metrics, dict):
-                turn['metrics'] = ', '.join(sorted(name for name in metrics if isinstance(name, str)))
-            history.append(turn)
+        context = next((turn['sql_context'] for turn in reversed(history) if 'sql_context' in turn), '')
+        if result.data.get('query_status') == 'executed':
+            context = self._serialize_sql_context(result.metadata.get('semantic_interpretation'))
+        turn = {'question': request.question[:2000], 'scope': request.question[:2000],
+                'clarification': result.answer[:2000] if status == 'clarification_required' else '',
+                'sql_context': context}
+        if pending is not None:
+            turn['pending_clarification'] = pending.model_dump_json()
+            turn['clarification'] = pending.clarification_question[:2000]
+        metrics = result.metadata.get('metrics')
+        if result.data.get('query_status') == 'executed' and isinstance(metrics, dict):
+            turn['metrics'] = ', '.join(sorted(name for name in metrics if isinstance(name, str)))
+        history.append(turn)
+
+    def _intent_provider(self):
+        provider_factory = getattr(self.analytics_agent, '_provider', None)
+        return provider_factory() if provider_factory else self._provider()
+
+    def _intent_schema(self):
+        if self.sql_schema:
+            return self.sql_schema
+        from core.analytics.text_to_sql import APPROVED_COLUMNS
+        return APPROVED_COLUMNS
+
+    @staticmethod
+    def _pending_from_history(history):
+        for turn in reversed(history):
+            raw = turn.get('pending_clarification')
+            if raw:
+                try:
+                    return PendingClarification.model_validate_json(raw)
+                except (TypeError, ValueError):
+                    return None
+        return None
+
+    @staticmethod
+    def _pending_from_result(result):
+        raw = result.metadata.get('pending_clarification')
+        if not raw:
+            return None
+        try:
+            if isinstance(raw, dict):
+                return PendingClarification.model_validate_json(json.dumps(raw, ensure_ascii=False), strict=True)
+            return PendingClarification.model_validate_json(raw, strict=True)
+        except (TypeError, ValueError):
+            return None
+
+    @classmethod
+    def _pending_after_execution(cls, execution):
+        for task in execution.plan.tasks if execution.plan else ():
+            outcome = execution.outcomes.get(task.id)
+            if outcome and outcome.result and task.agent == 'sql':
+                pending = cls._pending_from_result(outcome.result)
+                if pending is not None:
+                    return pending
+        return None
+
+    @staticmethod
+    def _record_pending_reply(history, reply, pending):
+        history.append({
+            'question': reply[:2000], 'scope': pending.original_question[:2000],
+            'clarification': pending.clarification_question[:2000],
+            'pending_clarification': pending.model_dump_json(),
+        })
+
+    @staticmethod
+    def _clear_pending_history(history):
+        for turn in history:
+            turn.pop('pending_clarification', None)
+
+    @staticmethod
+    def _without_pending_metadata(result):
+        if 'pending_clarification' not in result.metadata:
+            return result
+        metadata = dict(result.metadata)
+        metadata.pop('pending_clarification', None)
+        return result.model_copy(update={'metadata': metadata})
 
     async def _plan(self, state):
         with measure('routing'):

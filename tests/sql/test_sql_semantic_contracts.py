@@ -410,6 +410,12 @@ class CrossDomainInventoryTest(unittest.TestCase):
 
 
 class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
+        self.intent_patcher = patch(
+            "core.agents.sql.agent.interpret_query_intent", new=AsyncMock(return_value=None))
+        self.intent_patcher.start()
+        self.addCleanup(self.intent_patcher.stop)
+
     async def test_logistics_schema_gap_is_reported_without_asking_for_clarification(self):
         from core.agents.sql.agent import SQLAnalyticsAgent as CurrentSQLAnalyticsAgent
         from core.analytics.join_validation import PRIMARY_KEYS

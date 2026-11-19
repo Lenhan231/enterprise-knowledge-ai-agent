@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 from types import SimpleNamespace
 import unittest
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
@@ -15,6 +15,12 @@ from core.sql_agent.schema import configured_schemas
 
 
 class DynamicSchemaTest(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
+        self.intent_patcher = patch(
+            "core.agents.sql.agent.interpret_query_intent", new=AsyncMock(return_value=None))
+        self.intent_patcher.start()
+        self.addCleanup(self.intent_patcher.stop)
+
     async def test_pipeline_queries_a_discovered_schema_with_quoted_identifiers(self):
         query = 'SELECT t."customerName" FROM "MySchema"."order-history" AS t LIMIT 10'
         repository = Mock()

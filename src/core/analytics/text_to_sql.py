@@ -54,6 +54,7 @@ def build_sql_prompt(
     dashboard_allow_multiple: bool = False,
     dashboard_clarifications: list[dict[str, str]] | None = None,
     schema_tables: set[str] | None = None,
+    query_intent: dict | None = None,
 ) -> str:
     scope_question = (question if not original_question or original_question.strip() == question.strip()
                       else question + '\n' + original_question.strip())
@@ -95,6 +96,15 @@ def build_sql_prompt(
         'referenced by SQL placeholders, in placeholder order; the parameter list must have exactly one value per '
         'placeholder and contain no more than 32 values.'
     ]
+    if query_intent:
+        prompt_rules.append(
+            '\nValidated structured user intent (authoritative request scope): '
+            + json.dumps(query_intent, ensure_ascii=False, default=str)
+            + '\nPreserve every metric, date boundary, dimension, filter, ranking and source restriction in this intent. '
+            'Do not add a region predicate for all-region coverage. Use only the selected geographic basis and its '
+            'approved ZIP relationship. If the intent conflicts with available schema or a requested source restriction, '
+            'return clarification instead of substituting a formula, source or dimension.'
+        )
     if re.search(r'\b(?:each|separately|individual criteria|separate criteria)\b|từng tiêu chí riêng|riêng từng tiêu chí', scope_question, re.I):
         prompt_rules.append(
             '\nFor an entity-candidate request with multiple criteria that must be shown separately, return one row '

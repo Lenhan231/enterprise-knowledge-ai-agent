@@ -199,31 +199,59 @@ class MappingAgentTest(unittest.IsolatedAsyncioTestCase):
         from core.sql_agent.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest,VerifiedIdentity
         provider,repository=Mock(),AsyncMock()
-        provider.generate.return_value=json.dumps(MAPPING)
-        with patch('core.sql_agent.agent.compile_inventory_query', return_value=(SQL.replace('AND p.color=$1',''), ())):
+        question = 'Which blue styles have the fewest pieces left at latest snapshot?'
+        intent = {'intent': {
+            'original_question': question, 'operation': 'rank', 'metrics': ['stock_on_hand'],
+            'unverified_metric_request': None, 'dimensions': ['product_id', 'product_name'],
+            'filters': [{'field': 'commerce.products.color', 'operator': 'eq', 'value': 'blue'}],
+            'time_scope': {'mode': 'latest', 'ranges': []},
+            'requested_sources': [
+                {'name': 'commerce.inventory', 'provenance': 'ontology_required'},
+                {'name': 'commerce.products', 'provenance': 'ontology_required'}],
+            'explicit_source_restriction': False, 'geographic_basis': None,
+            'geographic_coverage': None,
+            'ranking': {'metric': 'stock_on_hand', 'direction': 'asc', 'limit': None},
+            'unresolved_slots': [],
+        }}
+        with patch('core.agents.sql.intent_resolution.generate',
+                   new=AsyncMock(return_value=json.dumps(intent))) as interpret, \
+                patch('core.sql_agent.agent.compile_inventory_query',
+                      return_value=(SQL.replace('AND p.color=$1',''), ())):
             result=await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
-                question='Which blue styles have the fewest pieces left at latest snapshot?',
+                question=question,
                 identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
         self.assertFalse(result.metadata['ok'])
         self.assertEqual(result.metadata['metric_error_code'],'interpretation_mismatch')
-        self.assertEqual(provider.generate.call_count,1)
+        interpret.assert_awaited_once()
+        provider.generate.assert_not_called()
         repository.execute_approved_query.assert_not_awaited()
 
     async def test_mapping_compiles_for_mixed_language_request(self):
         from core.sql_agent.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest,VerifiedIdentity
         provider,repository=Mock(),AsyncMock()
-        provider.generate.return_value=json.dumps(MAPPING)
+        question='Top 10 styles màu blue còn ít pieces nhất ở kỳ ghi nhận mới nhất?'
+        intent={'intent':{
+            'original_question':question,'operation':'rank','metrics':['stock_on_hand'],
+            'unverified_metric_request':None,'dimensions':['product_name'],
+            'filters':[{'field':'commerce.products.color','operator':'eq','value':'blue'}],
+            'time_scope':{'mode':'latest','ranges':[]},
+            'requested_sources':[{'name':'commerce.inventory','provenance':'ontology_required'},
+                                 {'name':'commerce.products','provenance':'ontology_required'}],
+            'explicit_source_restriction':False,'geographic_basis':None,'geographic_coverage':None,
+            'ranking':{'metric':'stock_on_hand','direction':'asc','limit':10},'unresolved_slots':[]}}
         repository.execute_approved_query.return_value=[{'snapshot_date':'2022-12-31','product_name':'A','stock_on_hand':3}]
-        result=await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
-            question='Top 10 styles màu blue còn ít pieces nhất ở kỳ ghi nhận mới nhất?',
-            identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
+        with patch('core.agents.sql.intent_resolution.generate',
+                   new=AsyncMock(return_value=json.dumps(intent))) as interpret:
+            result=await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
+                question=question, identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
         self.assertTrue(result.metadata['ok'],result.answer)
         self.assertIn('semantic_interpretation',result.metadata)
-        self.assertEqual(provider.generate.call_count,1)
+        interpret.assert_awaited_once()
+        provider.generate.assert_not_called()
         repository.execute_approved_query.assert_awaited_once()
 
-    async def test_bad_interpretation_falls_through_to_sql_planning_before_clarifying(self):
+    async def test_invalid_general_intent_clarifies_without_sql_generation(self):
         from core.sql_agent.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest,VerifiedIdentity
         provider,repository=Mock(),AsyncMock()
@@ -233,7 +261,7 @@ class MappingAgentTest(unittest.IsolatedAsyncioTestCase):
         result=await SQLAnalyticsAgent(repository,llm=provider).run(AgentRequest(
             question='Which styles need attention?',identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
         self.assertTrue(result.metadata['clarification_required'])
-        self.assertEqual(provider.generate.call_count,2)
+        self.assertEqual(provider.generate.call_count,1)
         repository.execute_approved_query.assert_not_awaited()
 
     async def test_metric_formula_mismatch_runs_safe_sql_as_unverified(self):

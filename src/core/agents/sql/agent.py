@@ -33,6 +33,7 @@ from core.analytics.commerce_decision_support import (
     resolve_commerce_decision_domain, unavailable_commerce_dimensions,
 )
 from core.analytics.metric_ontology import resolve_metric_names, get_metric_definition
+from core.analytics.query_contract import require_query_contract
 from core.analytics.metric_mapping import build_metric_mapping_prompt, compile_inventory_query, decode_metric_mapping, decode_sql_turn, MetricTime, validate_mapped_sql
 from core.analytics.metric_validation import MetricDefinitionError, inventory_time_scope, validate_metric_definitions, validate_metric_request, validate_independent_query_period
 from core.analytics.join_validation import PRIMARY_KEYS
@@ -57,6 +58,8 @@ from core.analytics.text_to_sql import (
     validate_current_month_total_query,
     relevant_schema_tables,
 )
+from core.agents.sql.intent_resolution import adapt_inventory_intent, interpret_query_intent
+from core.agents.sql.query_intent import PendingClarification, QueryIntent
 from core.database.commerce_repository import CommerceRepository
 from core.llm.llm_interface import LLMInterface
 from core.models.agents import AgentResult, Evidence, VerifiedIdentity
@@ -264,10 +267,59 @@ class SQLAnalyticsAgent(BaseAgent):
         if direct is not None:
             context_info['field_retrieval'] = {'source': direct.args['from_'].this.sql(),
                 'columns': [p.name for p in direct.selects], 'assurance': 'literal field contract'}
+        query_intent = None
+        raw_intent = options.get('_query_intent')
+        inventory_candidate = (self.inventory_only or any(
+            get_metric_definition(name).get('domain') == 'inventory_management'
+            for name in resolve_metric_names(question)))
+        if raw_intent is not None:
+            try:
+                query_intent = (raw_intent if isinstance(raw_intent, QueryIntent) else
+                    QueryIntent.model_validate_json(json.dumps(raw_intent, ensure_ascii=False), strict=True))
+            except (TypeError, ValueError):
+                return self._generation_error(MetricDefinitionError(
+                    'The saved structured request could not be validated. Please restate the request.',
+                    code='intent_invalid', clarification=True))
+            if query_intent.original_question != original_question:
+                return self._generation_error(MetricDefinitionError(
+                    'The saved request does not match this conversation. Please restate it.',
+                    code='intent_mismatch', clarification=True))
+            if query_intent.unresolved_slots:
+                return self._pending_intent_payload(PendingClarification(
+                    original_question=query_intent.original_question,
+                    intent=query_intent,
+                    unresolved_slots=query_intent.unresolved_slots,
+                    clarification_question='Please clarify the remaining business scope.',
+                ))
+        elif not fixed_selection.matched and direct is None and not inventory_candidate and not dashboard_build:
+            try:
+                interpreted = await interpret_query_intent(question, self._provider(), table_columns)
+            except Exception:
+                message = ('Mình chưa thể xác định đầy đủ chỉ số, thời gian hoặc phạm vi yêu cầu. '
+                           'Bạn vui lòng diễn đạt lại các phần này.' if any(ord(char) > 127 for char in question) else
+                           'I could not validate the requested metric and scope. Please restate the metric, period and filters.')
+                return self._generation_error(MetricDefinitionError(
+                    message, code='intent_interpretation_failed', clarification=True))
+            if isinstance(interpreted, PendingClarification):
+                return self._pending_intent_payload(interpreted)
+            query_intent = interpreted
+        if query_intent is not None:
+            metric_names = set(query_intent.metrics)
+        unverified_scope = (query_intent is None or (
+            not query_intent.metrics and not query_intent.dimensions and not query_intent.filters
+            and not query_intent.requested_sources and not query_intent.explicit_source_restriction
+            and query_intent.ranking is None
+            and query_intent.geographic_basis in (None, 'unknown')
+            and query_intent.geographic_coverage in (None, 'unspecified')
+            and (query_intent.time_scope is None or query_intent.time_scope.mode in {'all', 'unknown'})))
         definitions = {}
         raw = None
         interpretation = None
         try:
+            if query_intent is not None and query_intent.metrics and all(
+                    get_metric_definition(name).get('domain') == 'inventory_management'
+                    for name in query_intent.metrics):
+                interpretation = adapt_inventory_intent(query_intent, question)
             try:
                 validate_metric_request(question, {name for name in metric_names
                     if get_metric_definition(name).get('definition_status') in {'unresolved', 'draft'}
@@ -311,10 +363,18 @@ class SQLAnalyticsAgent(BaseAgent):
                       set(table_columns) if schema_tables is None else set(schema_tables))
             tables.update(table for definition in metric_definitions.values()
                           for table in re.findall(r'commerce\.\w+', definition.get('source', '')))
+            if query_intent is not None:
+                tables.update(source.name for source in query_intent.requested_sources
+                              if source.name in table_columns)
+                if query_intent.explicit_source_restriction:
+                    tables.intersection_update(source.name for source in query_intent.requested_sources)
+                schema_tables = set(tables)
             if self.inventory_only:
                 tables.update(set(table_columns) & INVENTORY_SOURCES)
                 required_tables.add('commerce.inventory')
             query_sources = tables & set(table_columns)
+            if query_intent is not None and query_intent.explicit_source_restriction:
+                query_sources.intersection_update(source.name for source in query_intent.requested_sources)
             if (direct is None and 'commerce.inventory' in required_tables and all(
                     get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
                     and re.search(r'\bcurrent\b|\btoday\b|hiện tại|hôm nay', re.sub(r"'(?:[^']|'')*'", '', question), re.I)
@@ -348,7 +408,7 @@ class SQLAnalyticsAgent(BaseAgent):
                      or bool(required_tables - {'commerce.inventory', 'commerce.products'}))
                 and 'commerce.inventory' in table_columns
             )
-            if (direct is None and not cross_domain and (context is not None
+            if (direct is None and interpretation is None and not cross_domain and (context is not None
                     or any(get_metric_definition(name).get('domain') == 'inventory_management' for name in metric_names)
                     or (not metric_names and 'commerce.inventory' in required_tables
                         and not explicit_order_item_formula))):
@@ -450,6 +510,7 @@ class SQLAnalyticsAgent(BaseAgent):
                 interpretation=interpretation.model_dump() if interpretation and interpretation.domain == 'inventory' else None,
                 metric_evidence=metric_evidence, relative_time_question=original_question,
                 original_question=original_question,
+                query_intent=query_intent.model_dump(mode='json') if query_intent else None,
                 dashboard_request=options.get('_dashboard_request') is True,
                 dashboard_allow_multiple=options.get('_dashboard_allow_multiple') is True,
                 dashboard_clarifications=options.get('_dashboard_clarifications'))
@@ -595,6 +656,16 @@ class SQLAnalyticsAgent(BaseAgent):
                         }}
                     if interpretation:
                         validate_mapped_sql(plan,interpretation,question=interpretation.date_question() if resolved_latest else question)
+                    if query_intent is not None:
+                        if interpretation is not None and interpretation.domain == 'inventory':
+                            if query_intent.explicit_source_restriction:
+                                allowed_intent_sources = {source.name for source in query_intent.requested_sources}
+                                if not set(validated_sql.sources) <= allowed_intent_sources:
+                                    raise MetricDefinitionError(
+                                        'The compiled inventory query exceeds the explicit source restriction.',
+                                        code='source_scope_conflict', clarification=True)
+                        else:
+                            require_query_contract(query_intent, plan.sql, plan.parameters, table_columns)
                     if dashboard_build:
                         from core.dashboards.requirements import validate_outputs
                         output_manifest = mapped_outputs if interpretation and interpretation.domain == 'inventory' else parse_json_response(raw).get('outputs')
@@ -604,6 +675,7 @@ class SQLAnalyticsAgent(BaseAgent):
             except (SQLValidationError, MetricDefinitionError) as error:
                 if (isinstance(error, (SQLSchemaMismatchError, SQLJoinValidationError))
                         and plan is not None and plan.sql
+                        and unverified_scope
                         and (attempt == 1 or direct is not None
                              or (interpretation and interpretation.domain == 'inventory'))):
                     definitions = {}
@@ -616,6 +688,7 @@ class SQLAnalyticsAgent(BaseAgent):
                     }
                     break
                 if (isinstance(error, MetricDefinitionError) and error.code == 'cross_domain_unverified'
+                        and unverified_scope
                         and cross_domain and not self.inventory_only and interpretation is None and not dashboard_build):
                     definitions = getattr(error, 'verified_definitions', {})
                     unverified_metric = {
@@ -627,6 +700,7 @@ class SQLAnalyticsAgent(BaseAgent):
                     }
                     break
                 if (isinstance(error, MetricDefinitionError) and error.code == 'derived_metric_formula_mismatch'
+                        and unverified_scope
                         and attempt == 1
                         and not self.inventory_only and direct is None and selected_compiler is None
                         and promotion_metric is None
@@ -642,6 +716,7 @@ class SQLAnalyticsAgent(BaseAgent):
                     }
                     break
                 if (isinstance(error, MetricDefinitionError) and attempt == 1
+                        and unverified_scope
                         and not self.inventory_only and direct is None and selected_compiler is None
                         and promotion_metric is None
                         and interpretation is None and not dashboard_build):
@@ -664,6 +739,7 @@ class SQLAnalyticsAgent(BaseAgent):
                         interpretation=interpretation.model_dump() if interpretation and interpretation.domain == 'inventory' else None,
                         metric_evidence=metric_evidence, relative_time_question=original_question,
                         original_question=original_question,
+                        query_intent=query_intent.model_dump(mode='json') if query_intent else None,
                         dashboard_request=options.get('_dashboard_request') is True,
                         dashboard_allow_multiple=options.get('_dashboard_allow_multiple') is True,
                         dashboard_clarifications=options.get('_dashboard_clarifications'),
@@ -964,6 +1040,20 @@ class SQLAnalyticsAgent(BaseAgent):
         if sql:
             result.update(attempted_sql=sql, parameters=list(parameters), query_status="rejected")
         return result
+
+    @staticmethod
+    def _pending_intent_payload(pending: PendingClarification) -> dict[str, Any]:
+        return {
+            'ok': False, 'operation': 'text_to_sql', 'rows': [],
+            'query_status': 'clarification_required',
+            'answer': pending.clarification_question,
+            'limitations': ['No SQL was generated; the business request still has an unresolved scope.'],
+            'metadata': {
+                'status': 'clarification_required',
+                'clarification_required': True,
+                'pending_clarification': pending.model_dump(mode='json'),
+            },
+        }
 
     @staticmethod
     def _database_error(error: Exception, sql: str | None, parameters: tuple[Any, ...]) -> dict[str, Any]:

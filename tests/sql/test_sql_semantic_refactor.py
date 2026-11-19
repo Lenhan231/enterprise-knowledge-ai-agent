@@ -129,6 +129,12 @@ class SchemaContextTest(unittest.TestCase):
 
 
 class CanonicalAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
+        self.intent_patcher = patch(
+            "core.agents.sql.agent.interpret_query_intent", new=AsyncMock(return_value=None))
+        self.intent_patcher.start()
+        self.addCleanup(self.intent_patcher.stop)
+
     async def test_missing_dimension_uses_full_schema_and_offers_supported_scope(self):
         from core.sql_agent.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity

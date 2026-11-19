@@ -192,7 +192,8 @@ class SQLAnalyticsAgent(BaseAgent):
                            primary_keys, date_columns) -> dict[str, Any]:
         question = self._query_text(request)
         options = request.get('metadata',{}) if isinstance(request,Mapping) else getattr(request,'metadata',{})
-        dashboard_build = options.get('_dashboard_request') is True and options.get('_dashboard_allow_multiple') is True
+        dashboard_request = options.get('_dashboard_request') is True
+        dashboard_build = dashboard_request and options.get('_dashboard_allow_multiple') is True
         mapped_outputs = None
         original_question = options.get('_original_question')
         if not isinstance(original_question, str) or not original_question.strip():
@@ -299,7 +300,8 @@ class SQLAnalyticsAgent(BaseAgent):
                     unresolved_slots=query_intent.unresolved_slots,
                     clarification_question='Please clarify the remaining business scope.',
                 ))
-        elif not fixed_selection.matched and direct is None and not inventory_candidate and not dashboard_build:
+        elif (not fixed_selection.matched and direct is None and not inventory_candidate
+              and not dashboard_request and options.get('_report_planned_task') is not True):
             try:
                 interpreted = await interpret_query_intent(question, self._provider(), table_columns)
             except Exception:

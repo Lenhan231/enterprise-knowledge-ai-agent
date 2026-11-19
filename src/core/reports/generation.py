@@ -65,7 +65,10 @@ async def collect_tasks(plan, sql_agent, request, semaphore):
                 async def execute_shared():
                     async with semaphore:
                         timeout = remaining(60)
-                        scoped = request.model_copy(update={'question': task.question})
+                        scoped = request.model_copy(update={
+                            'question': task.question,
+                            'metadata': {**request.metadata, '_report_planned_task': True},
+                        })
                         return await asyncio.wait_for(sql_agent.run(scoped), timeout)
                 cache[key] = asyncio.create_task(execute_shared())
             return await cache[key]

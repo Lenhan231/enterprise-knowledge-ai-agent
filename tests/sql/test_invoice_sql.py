@@ -86,6 +86,14 @@ class InvoiceAgentTest(unittest.IsolatedAsyncioTestCase):
                'FROM commerce.invoices AS inv GROUP BY inv.currency LIMIT 200')
         class Provider:
             def generate(self, prompt):
+                if prompt.startswith('Extract only the user-requested business intent.'):
+                    return json.dumps({'intent': {
+                        'original_question': 'total invoice amount', 'operation': 'aggregate',
+                        'metrics': ['invoice_total'], 'dimensions': [], 'filters': [],
+                        'time_scope': {'mode': 'all', 'ranges': []}, 'requested_sources': [],
+                        'explicit_source_restriction': False, 'geographic_basis': None,
+                        'geographic_coverage': None, 'ranking': None, 'unresolved_slots': [],
+                    }})
                 return json.dumps({'sql': sql})
         repository = AsyncMock()
         repository.execute_approved_query.return_value = [{'invoice_total': Decimal('100')}]

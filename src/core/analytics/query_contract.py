@@ -141,6 +141,37 @@ def _projection_and_groups(tree, field, aliases, schema_sources):
     return projected, grouped
 
 
+def _time_grain_present(tree, grain, intent, aliases, schema_sources):
+    date_columns = _date_columns(intent)
+
+    def is_requested_truncation(node):
+        if isinstance(node, exp.Alias):
+            node = node.this
+        if not isinstance(node, exp.TimestampTrunc):
+            return False
+        unit = node.args.get('unit')
+        column = node.this
+        if (not isinstance(unit, exp.Var) or unit.this.casefold() != grain
+                or not isinstance(column, exp.Column)):
+            return False
+        return _column_key(column, aliases, schema_sources) in date_columns
+
+    selected = any(is_requested_truncation(expression)
+                   for expression in tree.selects)
+    group = tree.args.get('group')
+    grouped = False
+    if group:
+        for expression in group.expressions:
+            if isinstance(expression, exp.Literal) and expression.is_int:
+                index = int(expression.this) - 1
+                if 0 <= index < len(tree.selects):
+                    expression = tree.selects[index]
+            if is_requested_truncation(expression):
+                grouped = True
+                break
+    return selected, grouped
+
+
 def _date_columns(intent):
     columns = set()
     for metric in intent.metrics:
@@ -227,6 +258,11 @@ def verify_query_contract(intent: QueryIntent, sql: str, parameters, schema: dic
             issues.append('An unrestricted time scope must not add a date predicate')
     elif intent.time_scope and intent.time_scope.mode not in {'all', 'unknown'}:
         return QueryContractResult('inconclusive', (f"Time mode {intent.time_scope.mode} is not verifiable here.",))
+
+    if intent.time_grain:
+        selected, grouped = _time_grain_present(tree, intent.time_grain, intent, aliases, schema_sources)
+        if not selected or not grouped:
+            issues.append(f'Requested {intent.time_grain} time grain is not projected and grouped.')
 
     if intent.ranking:
         order = tree.args.get('order')

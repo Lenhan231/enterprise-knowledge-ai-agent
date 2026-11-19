@@ -72,19 +72,49 @@ class FakeRepository:
 class FakeLLM:
     def __init__(self):
         self.plans = [
-            ("commerce.sales", "SUM(s.revenue) AS revenue, SUM(s.cogs) AS cogs"),
-            ("commerce.orders", "COUNT(*) AS orders"),
-            ("commerce.products", "COUNT(*) AS products"),
+            ("SELECT DATE_TRUNC('month', s.date) AS month, SUM(s.revenue) AS revenue, "
+             "SUM(s.cogs) AS cogs FROM commerce.sales AS s WHERE s.date >= $1 "
+             "AND s.date < $2 GROUP BY 1 LIMIT 20", ["2022-01-01", "2023-01-01"]),
+            ("SELECT o.order_status, COUNT(DISTINCT o.order_id) AS order_count "
+             "FROM commerce.orders AS o GROUP BY o.order_status LIMIT 20", []),
+            ("SELECT p.category, COUNT(*) AS products FROM commerce.products AS p "
+             "GROUP BY p.category LIMIT 20", []),
         ]
 
     def generate(self, prompt):
+        if prompt.startswith("Extract only the user-requested business intent."):
+            question = json.loads(prompt.split("\n", 1)[1])["question"]
+            if question.startswith("Show monthly revenue"):
+                intent = {
+                    "operation": "trend", "metrics": ["revenue", "cogs"],
+                    "dimensions": [], "time_grain": "month",
+                    "time_scope": {"mode": "range", "ranges": [
+                        {"start": "2022-01-01", "end_exclusive": "2023-01-01"}]},
+                }
+            elif question.startswith("Count orders"):
+                intent = {
+                    "operation": "aggregate", "metrics": ["order_count"],
+                    "dimensions": ["order_status"],
+                    "time_scope": {"mode": "all", "ranges": []},
+                }
+            else:
+                intent = {
+                    "operation": "aggregate", "metrics": [],
+                    "unverified_metric_request": "product count", "dimensions": ["category"],
+                    "time_scope": {"mode": "all", "ranges": []},
+                }
+            return json.dumps({"intent": {
+                "original_question": question, "unverified_metric_request": None,
+                "filters": [], "requested_sources": [], "explicit_source_restriction": False,
+                "geographic_basis": None, "geographic_coverage": None, "ranking": None,
+                "unresolved_slots": [], **intent,
+            }})
         if prompt.startswith('Interpret the question BEFORE'):
             return json.dumps({'domain':'other'})
         if not getattr(self, "pending_summary", False):
-            table, expression = self.plans.pop(0)
+            sql, parameters = self.plans.pop(0)
             self.pending_summary = True
-            alias = {"commerce.sales": "s", "commerce.orders": "o", "commerce.products": "p"}[table]
-            return json.dumps({"sql": f"SELECT {expression} FROM {table} AS {alias} LIMIT 20", "parameters": []})
+            return json.dumps({"sql": sql, "parameters": parameters})
         self.pending_summary = False
         return "The query returned rows."
 

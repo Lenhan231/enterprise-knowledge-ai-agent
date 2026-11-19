@@ -126,15 +126,21 @@ class OntologyAgentTest(unittest.IsolatedAsyncioTestCase):
         repository.get_schema = AsyncMock(return_value={})
         repository.execute_approved_query = AsyncMock(return_value=[{'sessions': 12}])
         provider = Mock()
-        provider.generate.return_value = json.dumps({
+        provider.generate.side_effect = [json.dumps({'intent': {
+            'original_question': 'Total recorded sessions', 'operation': 'aggregate',
+            'metrics': ['sessions'], 'dimensions': [], 'filters': [],
+            'time_scope': {'mode': 'all', 'ranges': []}, 'requested_sources': [],
+            'explicit_source_restriction': False, 'geographic_basis': None,
+            'geographic_coverage': None, 'ranking': None, 'unresolved_slots': [],
+        }}), json.dumps({
             'sql': 'SELECT SUM(w.sessions) AS sessions, SUM(w.page_views) AS extra FROM commerce.web_traffic w LIMIT 1',
-            'parameters': [], 'explanation': 'sessions only', 'request_contract': {'columns': ['sessions']}})
+            'parameters': [], 'explanation': 'sessions only', 'request_contract': {'columns': ['sessions']}})]
         agent = SQLAnalyticsAgent(repository, llm=provider)
         result = await agent.run_payload(AgentRequest(question='Total recorded sessions',
             identity=VerifiedIdentity(subject='test', permissions={'analytics:read'})))
         self.assertTrue(result['ok'], result)
         repository.execute_approved_query.assert_awaited_once()
-        self.assertEqual(provider.generate.call_count, 1)
+        self.assertEqual(provider.generate.call_count, 2)
         self.assertEqual(result['metadata']['source'], ['commerce.web_traffic'])
         self.assertIn('extra', result['sql'])
         self.assertEqual(result['metadata']['request_contract_status'], 'ignored')

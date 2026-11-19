@@ -33,6 +33,7 @@ function workspace(responseScope, responses = []) {
       if (path === '/api/dashboards' && !options) return {dashboards: []};
       return {dashboard: doc, html: '<main>Source data: old clarification output</main>', html_url: '/api/dashboards/test/html'};
     }});
+  vm.runInContext(readFileSync('src/app/static/dashboard-format.js', 'utf8'), context);
   vm.runInContext(readFileSync('src/app/static/dashboard.js', 'utf8'), context);
   const submit = async () => {
     node('dw-create').listeners.submit({preventDefault() {}});

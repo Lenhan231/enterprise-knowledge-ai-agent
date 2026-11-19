@@ -44,7 +44,7 @@
     const data = await api('/api/dashboards');
     if (!valid()) return;
     loaded = true;
-    el('library').innerHTML = data.dashboards.length ? data.dashboards.map(doc => `<button type="button" data-id="${escapeHtml(doc.id)}" aria-current="${selected?.id === doc.id}">${escapeHtml(doc.title)}<small>Revision ${doc.revision} · ${escapeHtml(new Date(doc.updated_at).toLocaleString())}</small></button>`).join('') : '<p class="dw-help">Your saved dashboards will appear here.</p>';
+    el('library').innerHTML = data.dashboards.length ? data.dashboards.map(doc => `<button type="button" data-id="${escapeHtml(doc.id)}" aria-current="${selected?.id === doc.id}">${escapeHtml(doc.title)}<small>Revision ${DashboardFormatting.number(doc.revision,{unit:'count'})} · ${escapeHtml(DashboardFormatting.datetime(doc.updated_at))}</small></button>`).join('') : '<p class="dw-help">Your saved dashboards will appear here.</p>';
     if (busy) el('library').querySelectorAll('button').forEach(node => { node.disabled = true; });
   }
   function resetEditor() {
@@ -124,7 +124,7 @@
     el('scope').value = selected.scope;
     el('prompt').value = '';
     el('create-scope').value = '';
-    el('meta').textContent = `Revision ${selected.revision} · ${selected.status} · Data refreshed ${new Date(selected.data_updated_at).toLocaleString()}`;
+    el('meta').textContent = `Revision ${DashboardFormatting.number(selected.revision,{unit:'count'})} · ${selected.status} · Data refreshed ${DashboardFormatting.datetime(selected.data_updated_at)}`;
     el('preview').srcdoc = data.html;
     el('open').href = data.html_url;
     el('download').href = `${data.html_url}?download=true`;
@@ -205,7 +205,13 @@
     });
   });
   window.dashboardWorkspace = {
-    show() { if (!loaded) action('Loading dashboards…', async valid => { await library(valid); if (valid()) status('Ready to build a dashboard.'); }); },
+    show() {
+      if (loaded) return Promise.resolve();
+      return action('Loading dashboards...', async valid => {
+        await library(valid);
+        if (valid()) status(selected ? 'Your dashboard is ready.' : 'Ready to build a dashboard.');
+      });
+    },
     clear() {
       epoch += 1;
       loaded = false;

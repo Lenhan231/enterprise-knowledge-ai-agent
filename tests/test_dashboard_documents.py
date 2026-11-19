@@ -21,7 +21,7 @@ class DashboardDocumentsTest(unittest.TestCase):
         html = render_dashboard(document())
         self.assertNotIn('<script>', html)
         self.assertIn('&lt;script&gt;', html)
-        self.assertIn('12.5', html)
+        self.assertIn('12,5', html)
         self.assertIn("script-src 'none'", unescape(html))
 
     def test_kpi_does_not_sum_grouped_rows(self):
@@ -54,7 +54,7 @@ class DashboardDocumentsTest(unittest.TestCase):
         html = render_dashboard(doc)
         self.assertIn('<svg', html)
         self.assertNotIn('Chart unavailable', html)
-        self.assertIn('mean 18.75', html)
+        self.assertIn('mean 19', html)
 
     def test_incompatible_line_falls_back_to_source_table(self):
         doc = document(tiles=[TileSpec(id='trend', title='Bad line', kind='line', query_id='sales')])

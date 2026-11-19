@@ -29,6 +29,7 @@ test('tile deletion is a draft edit, preserves siblings, and saves through the e
       if (path === '/api/dashboards') return {dashboards: []};
       return {dashboard: doc, html: '<main>Saved</main>', html_url: '/api/dashboards/test/html'};
     }});
+  vm.runInContext(readFileSync('src/app/static/dashboard-format.js', 'utf8'), context);
   vm.runInContext(readFileSync('src/app/static/dashboard.js', 'utf8'), context);
   node('dw-library').listeners.click({target: {closest: () => ({dataset: {id: doc.id}})}});
   await new Promise(setImmediate);

@@ -5,6 +5,19 @@ import unittest
 
 
 class ReportUITest(unittest.TestCase):
+    def test_inventory_release_revalidates_page_and_replaces_sales_only_assets(self):
+        import os
+        import sys
+        from unittest.mock import patch
+        root = Path(__file__).resolve().parents[1]
+        sys.path.insert(0, str(root / 'src'))
+        from app.main import home
+        with patch.dict(os.environ, {'BACKEND_ONLY': '0'}):
+            self.assertEqual(home().headers.get('cache-control'), 'no-cache')
+        html = (root / 'src/app/static/index.html').read_text(encoding='utf-8')
+        for asset in ('sales-report.css', 'sales-report.js', 'app.js', 'report-workspace.js'):
+            self.assertIn('/static/' + asset + '?v=20261119-inventory-polish', html)
+
     def test_fixed_sections_widgets_and_untrusted_text(self):
         script = r"""
 const fs = require('node:fs'), vm = require('node:vm'), assert = require('node:assert/strict');

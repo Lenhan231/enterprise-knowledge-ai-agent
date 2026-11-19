@@ -35,7 +35,8 @@ const SalesPerformanceReport = (() => {
     table.append(node('caption', widget.title));
     const head = node('thead');
     const headings = node('tr');
-    for (const label of [widget.x_dimension, ...widget.metric_ids.map(id => metrics[id].label)]) {
+    const dimensionLabel = {period:'Period',category:'Category',product:'Product',snapshot_date:'Snapshot date',dimension:'Breakdown'}[widget.x_dimension] || widget.x_dimension.replaceAll('_',' ');
+    for (const label of [dimensionLabel, ...widget.metric_ids.map(id => metrics[id].label)]) {
       const th = node('th', label); th.scope = 'col'; headings.append(th);
     }
     head.append(headings); table.append(head);
@@ -49,7 +50,7 @@ const SalesPerformanceReport = (() => {
     table.append(body); wrap.append(table); return wrap;
   }
 
-  function chart(widget, granularity) {
+  function chart(widget, granularity, metrics = {}) {
     const values = widget.data.flatMap(row => widget.metric_ids.map(id => row[id])).filter(value => typeof value === 'number' && Number.isFinite(value));
     if (!values.length) return node('p', 'No chart data available.');
     const min = Math.min(0, ...values), max = Math.max(0, ...values);
@@ -63,7 +64,7 @@ const SalesPerformanceReport = (() => {
       label.textContent = format(value); svg.append(label);
     }
     widget.metric_ids.forEach((id, series) => {
-      const color = series ? '#a15c20' : '#287b78';
+      const color = ['#287b78','#a15c20','#6951a8'][series % 3];
       let segment = [];
       const flush = () => {
         if (segment.length) svg.append(svgNode('polyline', { points: segment.join(' '), fill: 'none', stroke: color, 'stroke-width': 2 }));
@@ -81,7 +82,7 @@ const SalesPerformanceReport = (() => {
           ? svgNode('rect', { x: x(index) - Math.min(20, 200 / widget.data.length) + series * Math.min(40, 400 / widget.data.length) / widget.metric_ids.length, y: Math.min(y(value), y(0)), width: Math.min(40, 400 / widget.data.length) / widget.metric_ids.length, height: Math.abs(y(value) - y(0)), fill: color })
           : svgNode('circle', { cx: x(index), cy: y(value), r: 3, fill: color });
         const title = svgNode('title', {});
-        title.textContent = `${row[widget.x_dimension] ?? 'Unknown'}: ${id} ${format(value)}`;
+        title.textContent = `${row[widget.x_dimension] ?? 'Unknown'}: ${metrics[id]?.label || id} ${format(value)}`;
         mark.append(title);
         svg.append(mark);
         segment.push(`${x(index)},${y(value)}`);
@@ -99,6 +100,7 @@ const SalesPerformanceReport = (() => {
 
   let renderId = 0;
   const defaultPresentation = report => {
+    if (report?.report_type === 'inventory_operations') return {section_order:Object.keys(inventoryTitles), hidden_sections:[], chart_types:{}, text_edits:{}};
     const chart_types = {line_breakdown:'kpi_row'};
     if (report) {
       const next = new Date(report.request.period.start + 'T00:00:00Z');
@@ -129,20 +131,8 @@ const SalesPerformanceReport = (() => {
       return {ids: available.map(m => m.id), text: available.map(m => `The ${m.label.toLowerCase()} is ${formatMetric(m)}.`).join(' ') || (key === 'key_findings_and_explanations' && ids[0] === 'company_revenue_change_pct' ? 'Period-over-period revenue change is unavailable for this scope. See the data notes below.' : '')};
     }).filter(item => item.text);
   }
-  function render(root, report, options = {}) {
-    root.replaceChildren();
-    const defaults = defaultPresentation(report);
-    const layout = {...defaults, ...(options.presentation || {}), chart_types:{...defaults.chart_types, ...options.presentation?.chart_types}};
-    const monthly = options.monthly_decisions || [];
-    const insights = options.insights;
-    const shownMetrics = comparisonMetrics(report, monthly);
-    const metrics = Object.fromEntries(shownMetrics.map(metric => [metric.id, metric]));
-    const prefix = `sales-report-${++renderId}`;
-    const sources = new Map();
-    [report, ...monthly].forEach(group => group.metrics.forEach(m => m.evidence.forEach(e => { if (!sources.has(e.query_id)) sources.set(e.query_id, {...e, number:sources.size + 1}); })));
-    (insights?.coverage_evidence || []).forEach(e => { if (!sources.has(e.query_id)) sources.set(e.query_id, {...e, number:sources.size+1}); });
-    (insights?.documents || []).forEach(e => { if (!sources.has(e.citation_id)) sources.set(e.citation_id, {...e, source_table:e.source, number:sources.size + 1}); });
-    const citeIds = (element, ids) => {
+  function numberedCitations(sources, prefix) {
+    return (element, ids) => {
       const identifiers = new Set(ids.filter(id => sources.has(id)));
       if (!identifiers.size) return;
       const sup = node('sup', undefined, 'sales-citation');
@@ -156,6 +146,22 @@ const SalesPerformanceReport = (() => {
       });
       element.append(sup);
     };
+  }
+  function render(root, report, options = {}) {
+    if (report.report_type === 'inventory_operations') return renderInventory(root, report, options);
+    root.replaceChildren();
+    const defaults = defaultPresentation(report);
+    const layout = {...defaults, ...(options.presentation || {}), chart_types:{...defaults.chart_types, ...options.presentation?.chart_types}};
+    const monthly = options.monthly_decisions || [];
+    const insights = options.insights;
+    const shownMetrics = comparisonMetrics(report, monthly);
+    const metrics = Object.fromEntries(shownMetrics.map(metric => [metric.id, metric]));
+    const prefix = `sales-report-${++renderId}`;
+    const sources = new Map();
+    [report, ...monthly].forEach(group => group.metrics.forEach(m => m.evidence.forEach(e => { if (!sources.has(e.query_id)) sources.set(e.query_id, {...e, number:sources.size + 1}); })));
+    (insights?.coverage_evidence || []).forEach(e => { if (!sources.has(e.query_id)) sources.set(e.query_id, {...e, number:sources.size+1}); });
+    (insights?.documents || []).forEach(e => { if (!sources.has(e.citation_id)) sources.set(e.citation_id, {...e, source_table:e.source, number:sources.size + 1}); });
+    const citeIds = numberedCitations(sources, prefix);
     const cite = (element, ids, values = metrics) => citeIds(element, ids.flatMap(id => values[id]?.evidence.map(e => e.query_id) || []));
     root.append(node('h2', options.title || 'Sales Performance Report'));
     const end = new Date(report.request.period.end_exclusive + 'T00:00:00Z');
@@ -235,7 +241,7 @@ const SalesPerformanceReport = (() => {
             });
           } else if (widget.type === 'table') item.append(dataTable(widget, metrics));
           else {
-            item.append(chart(widget, report.request.granularity));
+            item.append(chart(widget, report.request.granularity, metrics));
             item.append(node('p', widget.metric_ids.map(id => metrics[id].label).join(' ? '), 'sales-chart-legend'));
             const table = node('details'); table.append(node('summary', 'View chart data'), dataTable(widget, metrics)); item.append(table);
           }
@@ -281,5 +287,152 @@ const SalesPerformanceReport = (() => {
     });
     footnotes.append(notes); root.append(footnotes);
   }
-  return {render, defaultPresentation, narrative, formatMetric, sectionTitles};
+  const inventoryTitles = {operations_summary:'Operations Summary', snapshot_scorecard:'Inventory Snapshot Scorecard', product_risks:'Product Risks', fulfillment_and_returns:'Fulfillment & Returns', policy_evidence:'Policy Evidence', fixed_decisions:'Fixed Decision Support', data_quality:'Data Quality'};
+  const inventorySourceName = source => source.split(/,\s*/).map(name => ({
+    'commerce.inventory':'Inventory records', 'commerce.products':'Product catalog', 'commerce.returns':'Return records',
+    'commerce.orders':'Order records', 'commerce.shipments':'Shipment records', 'commerce.reviews':'Customer reviews',
+  }[name] || name.replace(/^.*[\\/]/,'').replace(/\.(pdf|docx?|xlsx?|csv|md|txt)$/i,'').replace(/^\d{2}[_ -]+/,'').replaceAll('_',' '))).join(', ');
+  const inventoryValue = metric => formatMetric(metric) + (metric.value === null ? '' : ({units:' units',calendar_days:' days',rating_1_to_5:' / 5'}[metric.unit] || ''));
+  const inventoryUnavailableReason = metric => ({no_data:'No matching observations for these dates.',access_denied:'Source access is restricted.',unresolved:'The metric definition or reporting scope is unresolved.'}[metric.status] || 'Unavailable for this scope or source.');
+  function inventoryNotes(report) {
+    const labels = {snapshot:'Inventory snapshot',coverage:'Snapshot coverage',inventory_flag_distribution:'Flag distribution',stockout_product_table:'Stockout product list',inventory_snapshots:'Snapshot history',returns:'Returned orders',shipments:'Shipment duration',reviews:'Review ratings'};
+    const notes = report.data_quality.limitations.flatMap(note => {
+      if (/^(Dashboard source \[|Policy source \[|Policy Evidence:)/.test(note)) return [];
+      if (note.startsWith('Synthetic commerce')) return ['Synthetic commerce demonstration data. Transaction records and historical catalog membership are not certified complete. No forecasts, service commitments, reorder quantities or causal conclusions are inferred.'];
+      if (note.startsWith('Snapshot policy:')) return ['Inventory balances use one observed snapshot before the reporting period ends. Older snapshots are labelled stale; the history chart shows each snapshot independently.'];
+      if (note.startsWith('days_of_supply') || note.startsWith('fill_rate')) return ['Days of supply, fill rate and sell-through metrics are excluded because their source definitions are not validated.'];
+      if (note.startsWith('stockout/reorder/overstock')) return ['Stockout, reorder and overstock flags can overlap; do not add these product counts together.'];
+      if (note.startsWith('Snapshot completeness')) return ['Coverage is checked against the current product catalog; historical membership is not certified. ' + (report.data_quality.partial_period === false ? 'Catalog coverage is verified for the selected snapshot.' : 'Complete snapshot coverage is unverified or incomplete; the no-exception conclusion is withheld.')];
+      if (note === 'Inventory snapshot selection query unavailable.') return ['A snapshot date could not be verified from the available inventory records.'];
+      const metric = report.metrics.find(m => note.startsWith(m.id + ': not_available'));
+      if (metric) return [`${metric.label}: unavailable for this breakdown. No approximation has been applied.`];
+      const key = note.split(':')[0], label = labels[key];
+      if (label && note.includes('access denied')) return [`${label}: source access is restricted.`];
+      if (label && note.includes('validated source query unavailable')) return [`${label}: the source could not be retrieved or verified.`];
+      if (label && note.includes('200-row')) return [`${label}: the first 200 results are shown; additional records may be omitted.`];
+      return [note];
+    });
+    report.metrics.filter(m=>m.value===null).forEach(metric=>{
+      if (!notes.some(note=>note.startsWith(metric.label+':'))) notes.push(`${metric.label}: ${inventoryUnavailableReason(metric)}`);
+    });
+    return [...new Set(notes)];
+  }
+  function renderInventory(root, report, options) {
+    root.replaceChildren();
+    const metrics = Object.fromEntries(report.metrics.map(m => [m.id,m]));
+    const prefix = `inventory-report-${++renderId}`;
+    const sources = new Map();
+    const addSource = (id, source) => { if (!sources.has(id)) sources.set(id,{...source,number:sources.size+1}); };
+    report.metrics.forEach(m => m.evidence.forEach(e => addSource(e.query_id,e)));
+    const widgetSources = new Map();
+    report.data_quality.limitations.forEach(note => {
+      const match = note.match(/^Dashboard source \[([a-f0-9]+)\] (\w+): (.*)$/);
+      if (match) {
+        const [,id,widget,description] = match;
+        widgetSources.set(widget,[id]);
+        addSource(id,{source_table:description.split(';')[0],title:report.dashboard.widgets.find(w=>w.id===widget)?.title,
+                      filters:widget==='inventory_snapshots' ? {} : {snapshot_date:report.data_quality.coverage_end}});
+      }
+    });
+    const documents = options.inventory_context ? (options.inventory_context.documents || []) : report.data_quality.limitations.flatMap(note => {
+      const match=note.match(/^Policy source \[([^\]]+)\] document [^:]+: ([\s\S]*)$/);
+      return match ? [{citation_id:match[1],source:'Retrieved inventory policy',content:match[2],metadata:{}}] : [];
+    });
+    documents.forEach(e=>addSource(e.citation_id,{...e,source_table:e.source,source_type:'document'}));
+    const citeIds = numberedCitations(sources,prefix);
+    const cite = (target,evidence) => citeIds(target,evidence.map(e=>e.query_id));
+    const cards = ids => {
+      const grid=node('dl',undefined,'sales-report-kpis');
+      ids.forEach(id=>{
+        const metric=metrics[id],item=node('div'),label=node('dt',metric.label); cite(label,metric.evidence);
+        item.append(label,node('dd',inventoryValue(metric)));
+        if (metric.value===null) {
+          item.append(node('small',inventoryUnavailableReason(metric)));
+          const reason=node('a','Why unavailable?','sales-data-note-link');reason.href=`#${prefix}-notes`;
+          item.append(reason);
+        }
+        grid.append(item);
+      });
+      return grid;
+    };
+    root.append(node('h2', options.title || 'Inventory & Operations Report'));
+    const end=new Date(report.request.period.end_exclusive+'T00:00:00Z');end.setUTCDate(end.getUTCDate()-1);
+    root.append(node('p',`${report.request.period.start} to ${end.toISOString().slice(0,10)}`, 'sales-report-period'));
+    const ownership = {inventory_kpis:'snapshot_scorecard', inventory_flag_distribution:'product_risks', stockout_product_table:'product_risks', operations_kpis:'fulfillment_and_returns', inventory_snapshots:'fulfillment_and_returns'};
+    const notes=inventoryNotes(report);
+    Object.entries(inventoryTitles).forEach(([id,title]) => {
+      const section = node('section',undefined,'sales-report-section'); section.dataset.sectionId = id;
+      if (id==='data_quality') {section.id=`${prefix}-notes`;section.tabIndex=-1;}
+      section.append(node('h3',title));
+      if (id === 'operations_summary') {
+        notes.filter(n=>n.startsWith('Selected snapshot:')).forEach(n=>section.append(node('p',n)));
+        section.append(node('p',report.request.granularity==='year'
+          ? 'This annual report uses one inventory snapshot. It does not add stock balances across months.'
+          : 'Inventory figures describe one snapshot.'));
+        section.append(node('p','Available fulfillment, return and review records are filtered to the requested reporting dates; complete transaction coverage is unverified.'));
+        const summary=node('p',metrics.stock_on_hand.value!==null && metrics.observed_products.value!==null
+          ? `The selected snapshot records ${inventoryValue(metrics.stock_on_hand)} across ${format(metrics.observed_products.value)} observed products.`
+          : 'Snapshot totals are unavailable for this reporting period. See Data Quality for source and coverage limitations.');
+        cite(summary,[...metrics.stock_on_hand.evidence,...metrics.observed_products.evidence]);section.append(summary);
+      }
+      const grid = node('div',undefined,'sales-report-widgets');
+      report.dashboard.widgets.filter(w => ownership[w.id] === id).forEach(widget => {
+        const article = node('article',undefined,'sales-report-widget'); article.dataset.widgetId=widget.id; article.dataset.chartType=widget.type;
+        if (widget.type==='kpi_row') article.className+=' inventory-kpi-widget';
+        const evidenceIds=widgetSources.get(widget.id) || (widget.type==='kpi_row' ? widget.metric_ids.flatMap(key=>metrics[key].evidence.map(e=>e.query_id)) : []);
+        const heading=node('h4',widget.title);citeIds(heading,evidenceIds);article.append(heading);
+        if (widget.type === 'kpi_row') article.append(cards(widget.metric_ids));
+        else if (widget.type === 'table') {
+          article.append(widget.data.length ? dataTable(widget,metrics) : node('p',metrics.stockout_products.value===0
+            ? 'No stockout flags were observed at the selected snapshot.' : 'The stockout product list is unavailable for this scope.'));
+        } else {
+          article.append(chart(widget,report.request.granularity,metrics));
+          const legend=node('div',undefined,'inventory-chart-legend');
+          widget.metric_ids.forEach((key,index)=>legend.append(node('span',metrics[key].label,`inventory-series-${index}`)));article.append(legend);
+          const data=node('details');data.append(node('summary','View chart data'),dataTable(widget,metrics));article.append(data);
+        }
+        if (widget.id==='inventory_flag_distribution') article.append(node('p','A product may carry more than one flag.','sales-chart-legend'));
+        if (widget.id==='inventory_snapshots') article.append(node('p','Each point is an independent snapshot; stock balances are never added across dates.','sales-chart-legend'));
+        grid.append(article);
+      });
+      if (grid.children.length) section.append(grid);
+      if (id==='snapshot_scorecard') section.append(cards(['stockout_flag_pct','overstock_products']));
+      if (id === 'policy_evidence') {
+        if (documents.length) {
+          section.append(node('p','Quoted policy context. These passages do not by themselves verify approval, effective dates or compliance.'));
+          documents.forEach(e=>{const quote=node('blockquote',e.content);citeIds(quote,[e.citation_id]);section.append(quote);});
+        } else {
+          const status=options.inventory_context?.retrieval_status || report.data_quality.limitations.find(n=>n.startsWith('Policy Evidence:'))?.split(': ')[1].split('.')[0];
+          section.append(node('p',status==='access_denied' ? 'Policy evidence is unavailable because document access is restricted.'
+            : status==='no_evidence' ? 'No matching authorized inventory policy passage was retrieved.' : 'Policy evidence could not be retrieved. No policy-compliance conclusion has been added.'));
+        }
+      }
+      if (id === 'fixed_decisions') {
+        const triggered=report.decisions.filter(rule=>rule.triggered===true);
+        if (!triggered.length) section.append(node('p','No rule action is supported by the available inputs. Review the evaluations and Data Quality notes below.'));
+        triggered.forEach(rule=>{const article=node('article',undefined,'sales-decision'),heading=node('h4',rule.title);cite(heading,rule.evidence);article.append(heading,node('p',rule.action));section.append(article);});
+        const detail=node('details');detail.append(node('summary','View all rule evaluations'));
+        report.decisions.forEach(rule=>{
+          const article=node('article',undefined,'sales-decision'),heading=node('h4',rule.title);cite(heading,rule.evidence);
+          article.append(heading,node('p',rule.triggered===true ? 'Triggered: the recorded inputs meet this predefined condition.'
+            : rule.triggered===false ? 'Evaluated: this predefined condition was not met.'
+            : rule.id==='I04' ? 'A no-exception conclusion is withheld because snapshot coverage or flag evidence is incomplete.'
+            : 'Cannot evaluate: the required recorded flag count is unavailable.'));detail.append(article);
+        });section.append(detail);
+      }
+      if (id === 'data_quality') notes.filter(n=>!n.startsWith('Selected snapshot:')).forEach(n=>section.append(node('p',n)));
+      root.append(section);
+    });
+    const footer=node('footer',undefined,'sales-report-footnotes');footer.append(node('h3','Sources'));
+    sources.forEach(source=>{
+      const article=node('article',undefined,'sales-source');article.id=`${prefix}-source-${source.number}`;article.tabIndex=-1;
+      article.append(node('h4',`[${source.number}] ${inventorySourceName(source.source_table)}`));
+      if (source.source_type==='document') article.append(node('p',source.metadata?.section_title || 'Role-authorized policy passage.'));
+      else article.append(node('p',source.title || (source.filters?.snapshot_date ? `Selected snapshot: ${source.filters.snapshot_date}.` : 'Source queried for the requested reporting dates.')));
+      footer.append(article);
+    });
+    if (!sources.size) footer.append(node('p','No source observations were returned for this period.'));
+    root.append(footer);
+  }
+  return {render, defaultPresentation, narrative, formatMetric, sectionTitles, inventoryTitles};
 })();

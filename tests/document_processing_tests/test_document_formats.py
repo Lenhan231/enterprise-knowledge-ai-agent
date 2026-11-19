@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from document_processing.document_processor import DocumentProcessor
+from document_processing.docling_adapter.digital_born.docx_semantics import apply_docx_semantics
 from document_processing.formats import LEGACY_OFFICE_FORMATS, matches_signature
 from document_processing.image_input import normalize_image
 from document_processing.legacy_office import convert_legacy_office
@@ -164,6 +165,32 @@ class DocumentFormatTest(unittest.TestCase):
         for intent in ("invoice", "image_caption"):
             with self.subTest(intent=intent), self.assertRaisesRegex(ValueError, "document processing only"):
                 DocumentProcessor({"intent": intent}).process("upload.avif", b"", {})
+
+    def test_word_start_alignment_keeps_text_and_centered_heading_detection(self):
+        from docx import Document
+        from docx.enum.text import WD_ALIGN_PARAGRAPH
+        from docx.oxml import OxmlElement
+        from docx.oxml.ns import qn
+
+        word = Document()
+        paragraph = word.add_paragraph()
+        paragraph.add_run("ALIGNED AT START").bold = True
+        alignment = OxmlElement("w:jc")
+        alignment.set(qn("w:val"), "start")
+        paragraph._p.get_or_add_pPr().append(alignment)
+        centered = word.add_paragraph()
+        centered.add_run("CENTERED TITLE").bold = True
+        centered.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        payload = BytesIO()
+        word.save(payload)
+
+        result = {"elements": [
+            {"text": "ALIGNED AT START", "metadata": {"element_type": "text"}},
+            {"text": "CENTERED TITLE", "metadata": {"element_type": "text"}},
+        ]}
+        apply_docx_semantics(result, payload.getvalue())
+        self.assertEqual([item["metadata"]["element_type"] for item in result["elements"]],
+                         ["text", "title"])
 
     @unittest.skipUnless(shutil.which("soffice") and importlib.util.find_spec("docling"),
                          "Requires the LibreOffice and Docling runtime")

@@ -10,6 +10,7 @@ import time
 import secrets
 import uuid
 import unicodedata
+import traceback
 from typing import Annotated, Literal
 import jwt
 
@@ -94,6 +95,48 @@ def _storage_filename(filename: str) -> str:
     stem = re.sub(r"[^A-Za-z0-9_-]+", "_", stem).strip("_-")
     stem = re.sub(r"[_-]{2,}", "_", stem)[:180].rstrip("_-")
     return f"{stem or 'document'}{suffix}"
+
+
+def _upload_error_log_payload(
+    document_id: str,
+    stage: str,
+    original_filename: str,
+    storage_filename: str,
+    error: Exception,
+    *,
+    http_status: int | None = None,
+) -> str:
+    """Build a searchable upload failure record without logging configured credentials."""
+    error_message = " ".join(str(error).split())
+    for variable in (
+        "SUPABASE_SECRET_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "INTERNAL_SERVICE_TOKEN",
+    ):
+        secret = os.getenv(variable)
+        if secret:
+            error_message = error_message.replace(secret, "[REDACTED]")
+    error_message = re.sub(r"(?i)\bBearer\s+[^\s,;]+", "Bearer [REDACTED]", error_message)
+
+    payload = {
+        "reference_id": document_id,
+        "stage": stage,
+        "original_filename": original_filename,
+        "storage_filename": storage_filename,
+        "error_type": type(error).__name__,
+        "error_message": error_message[:1000],
+        "error_location": [
+            f"{frame.filename}:{frame.lineno}:{frame.name}"
+            for frame in traceback.extract_tb(error.__traceback__)
+        ],
+    }
+    if http_status is not None:
+        payload["http_status"] = http_status
+    else:
+        storage_status = getattr(error, "status_code", getattr(error, "statusCode", None))
+        if storage_status is not None:
+            payload["storage_status_code"] = storage_status
+    return json.dumps(payload, ensure_ascii=False, sort_keys=True)
 
 
 def _role_accounts() -> dict[str, tuple[str, str]]:
@@ -697,8 +740,11 @@ async def upload_document(
             except Exception:
                 logger.exception("Failed to record rejected upload %s", document_id)
         logger.warning(
-            "Document upload stopped: document_id=%s stage=%s original_filename=%r http_status=%s detail=%s",
-            document_id, stage, filename, error.status_code, error.detail,
+            "DOCUMENT_UPLOAD_ERROR %s",
+            _upload_error_log_payload(
+                document_id, stage, filename, storage_filename, error,
+                http_status=error.status_code,
+            ),
         )
         raise
     except Exception as error:
@@ -707,9 +753,9 @@ async def upload_document(
                 repository.update_processing_status(document_id, "failed")
             except Exception:
                 logger.exception("Failed to record failed status for %s", document_id)
-        logger.exception(
-            "Document upload failed: document_id=%s stage=%s original_filename=%r storage_filename=%r error_type=%s",
-            document_id, stage, filename, storage_filename, type(error).__name__,
+        logger.error(
+            "DOCUMENT_UPLOAD_ERROR %s",
+            _upload_error_log_payload(document_id, stage, filename, storage_filename, error),
         )
         user_stage = {
             "register_document": "registering the document",

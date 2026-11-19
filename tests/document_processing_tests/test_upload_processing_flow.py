@@ -1,6 +1,7 @@
 import asyncio
 import importlib.util
 import io
+import json
 import shutil
 import sys
 import unittest
@@ -137,7 +138,8 @@ class UploadProcessingFlowTest(unittest.TestCase):
             patch.object(app_main, "_storage_client", return_value=(storage, "private")),
             patch.object(app_main, "DocumentRepository", return_value=document_repo),
             patch.object(app_main.uuid, "uuid4", return_value=SimpleNamespace(hex="storage-failure")),
-            patch.object(app_main.logger, "exception") as log_exception,
+            patch.object(app_main.logger, "error") as log_error,
+            patch.dict("os.environ", {"SUPABASE_SECRET_KEY": "test-storage-secret"}),
         ):
             with self.assertRaises(HTTPException) as raised:
                 asyncio.run(app_main.upload_document(
@@ -162,9 +164,25 @@ class UploadProcessingFlowTest(unittest.TestCase):
         )
         document_repo.register_upload.assert_called_once()
         document_repo.update_processing_status.assert_called_once_with(document_id, "failed")
-        self.assertIn("stage=%s", log_exception.call_args.args[0])
-        self.assertIn("store_source_file", log_exception.call_args.args)
+        self.assertEqual(log_error.call_args.args[0], "DOCUMENT_UPLOAD_ERROR %s")
+        log_payload = json.loads(log_error.call_args.args[1])
+        self.assertEqual(log_payload["reference_id"], document_id)
+        self.assertEqual(log_payload["stage"], "store_source_file")
+        self.assertEqual(log_payload["error_type"], "RuntimeError")
+        self.assertEqual(log_payload["error_message"], "InvalidKey")
+        self.assertTrue(any(":upload_document" in frame for frame in log_payload["error_location"]))
+        self.assertNotIn("test-storage-secret", log_error.call_args.args[1])
         document_repo.close.assert_called_once()
+
+    def test_upload_error_log_sanitizes_credentials_and_keeps_storage_error_details(self):
+        with patch.dict("os.environ", {"SUPABASE_SECRET_KEY": "service-secret"}):
+            payload = json.loads(app_main._upload_error_log_payload(
+                "UPLOAD-log-test", "store_source_file", "report.pdf", "report.pdf",
+                RuntimeError("InvalidKey: service-secret; Authorization: Bearer abc123"),
+            ))
+
+        self.assertEqual(payload["error_message"], "InvalidKey: [REDACTED]; Authorization: Bearer [REDACTED]")
+        self.assertEqual(payload["stage"], "store_source_file")
 
     def test_upload_rejects_unsupported_ocr_language_before_storage(self):
         with patch.object(app_main, "_require_same_origin"):

@@ -48,7 +48,9 @@ def _accessible_document_ids(identifiers, roles):
 
 
 async def scoped_document(document, user):
-    if not document.sales_context.documents:
+    inventory = document.report['report_type'] == 'inventory_operations'
+    context = document.inventory_context if inventory else document.sales_context
+    if not context.documents:
         return document
     from core.agents.runtime import run_sync
     from core.reports.sales_context import SalesContext
@@ -58,11 +60,17 @@ async def scoped_document(document, user):
     if identity and 'documents:read' in identity.permissions and identity.document_roles:
         try:
             allowed = await run_sync(_accessible_document_ids,
-                [e.metadata['document_id'] for e in document.sales_context.documents], sorted(identity.document_roles), _timeout=10)
+                [e.metadata['document_id'] for e in context.documents], sorted(identity.document_roles), _timeout=10)
         except Exception:
             status = 'unavailable'
     copy = document.model_copy(deep=True)
-    documents = [e for e in copy.sales_context.documents if e.metadata['document_id'] in allowed]
+    documents = [e for e in context.documents if e.metadata['document_id'] in allowed]
+    if inventory:
+        from core.reports.inventory_operations import InventoryContext
+        copy.inventory_context = InventoryContext(retrieval_status='available' if documents else status, documents=documents)
+        if len(documents) != len(context.documents):
+            copy.status = 'partial'
+        return ReportDocument.model_validate(copy.model_dump())
     copy.sales_context = SalesContext.model_validate({**copy.sales_context.model_dump(), 'documents':documents,
         'retrieval_status':'available' if documents else status, 'access_limited':len(documents) != len(copy.sales_context.documents)})
     return ReportDocument.model_validate(copy.model_dump())
@@ -87,12 +95,12 @@ async def generate(payload: ReportRequest, request: Request, user=Depends(princi
     _require_same_origin(request)
     runtime = await _get_runtime(request.app)
     identity = _agent_request(user, payload.question)
-    identity.metadata['report_type'] = 'sales_performance'
     try:
         async with _slots:
             result, _, _ = await runtime.report_agent.generate_from_template(identity, source_mode='analytics')
         document = ReportDocument(report=result.data['report'], monthly_decisions=result.data.get('monthly_decisions', []),
                                   sales_context=result.data.get('sales_context', {}),
+                                  inventory_context=result.data.get('inventory_context', {}),
                                   title=payload.question[:160], status=result.metadata.get('status', 'partial'))
         document = await asyncio.to_thread(store.create, user['sub'], document)
         return await bundle(document, user, 201)
@@ -103,7 +111,7 @@ async def generate(payload: ReportRequest, request: Request, user=Depends(princi
     except StoreUnavailable:
         raise
     except Exception:
-        logger.exception('Sales report generation failed')
+        logger.exception('Report generation failed')
         raise HTTPException(503, 'The report could not be generated. Please retry.') from None
 
 
@@ -121,6 +129,8 @@ async def edit(identifier: str, payload: ReportEdit, request: Request, user=Depe
         return await bundle(await asyncio.to_thread(store.save, user['sub'], document, payload.revision), user)
     except Conflict as error:
         raise HTTPException(409, str(error)) from None
+    except ValueError as error:
+        raise HTTPException(422, str(error)) from None
 
 
 @router.delete('/{identifier}')
@@ -142,4 +152,4 @@ async def download(identifier: str, revision: int | None = Query(None, ge=1), us
         raise HTTPException(409, 'Report changed. Reopen it before downloading.')
     document = await scoped_document(document, user)
     return Response(await asyncio.to_thread(export_pdf, document), media_type='application/pdf',
-                    headers={'Content-Disposition': 'attachment; filename="sales-performance-report.pdf"', 'Cache-Control': 'no-store'})
+                    headers={'Content-Disposition': f'attachment; filename="{document.report["report_type"].replace("_", "-")}-report.pdf"', 'Cache-Control': 'no-store'})

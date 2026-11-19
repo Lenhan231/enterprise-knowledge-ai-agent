@@ -39,7 +39,9 @@ from app.upload_test import (
     list_upload_tests, router as upload_test_router,
 )
 from core.services.client import post as post_internal_service
-from document_processing.formats import IMAGE_FORMATS, MEDIA_TYPES, SUPPORTED_FORMATS, matches_signature
+from document_processing.formats import (
+    IMAGE_FORMATS, LEGACY_OFFICE_FORMATS, MEDIA_TYPES, SUPPORTED_FORMATS, matches_signature,
+)
 from document_processing.image_input import validate_svg
 
 logger = logging.getLogger(__name__)
@@ -547,7 +549,12 @@ async def upload_document(
     if len(content) > 50 * 1024 * 1024:
         raise HTTPException(413, "Maximum file size is 50 MiB")
     if not matches_signature(content, extension):
-        raise HTTPException(415, "File content does not match its extension")
+        detail = (
+            "File is truncated or has an invalid legacy Office header"
+            if extension in LEGACY_OFFICE_FORMATS
+            else "File content does not match its extension"
+        )
+        raise HTTPException(415, detail)
     if extension == ".svg":
         try:
             validate_svg(content)

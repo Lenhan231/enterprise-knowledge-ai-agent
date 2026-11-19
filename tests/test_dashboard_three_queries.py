@@ -63,9 +63,14 @@ class ThreeQueryTest(unittest.IsolatedAsyncioTestCase):
         self.assertLessEqual(self.peak, 2)
         # Saved intents retain their period; refresh still uses at most two concurrent queries.
         self.peak = 0
-        self.provider.generate.side_effect = [json.dumps(q) for q in self.value['queries']]
+        def refreshed_query(prompt):
+            matches = [query for query in self.value['queries'] if query['question'].casefold() in prompt.casefold()]
+            if len(matches) != 1:
+                raise AssertionError('Refresh prompt must identify exactly one saved query.')
+            return json.dumps(matches[0])
+        self.provider.generate.side_effect = refreshed_query
         refreshed = await self.agent.refresh(self.request, doc)
-        self.assertEqual('complete', refreshed.status)
+        self.assertEqual('complete', refreshed.status, [(result.status, result.message) for result in refreshed.results])
         self.assertEqual(2, self.peak)
 
     def test_structured_contract_accepts_three_queries_and_the_third_output(self):

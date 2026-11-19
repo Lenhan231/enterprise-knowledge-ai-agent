@@ -8,7 +8,7 @@ class WebConversationTest(unittest.TestCase):
 const fs = require('fs'), vm = require('vm'), assert = require('assert');
 const source = fs.readFileSync('src/app/static/app.js', 'utf8');
 const start = source.indexOf('async function sendChatMessage(');
-const end = source.indexOf('function updateReportFormatVisibility', start);
+const end = source.indexOf('function announceTurn', start);
 let handler, resolve, rendered = 0;
 const nodes = {};
 const context = {agentConversationId:'old', sessionGeneration:1, sessionSubject:'user', console,

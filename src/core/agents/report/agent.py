@@ -77,6 +77,7 @@ class ReportAgent:
         from core.reports.sales_performance import has_sales_period
         natural_inventory = (filename is None and report_type is None and output_format is None
                              and re.search(r'\binventory\b|tồn kho', request.question, re.I)
+                             and not re.search(r'\b\d{4}[-/]\d{1,2}[-/]\d{1,2}\b|\b\d{1,2}[-/]\d{1,2}[-/]\d{4}\b', request.question)
                              and has_sales_period(request.question))
         strict_inventory = report_type == 'inventory_operations' or natural_inventory
         if source_mode is None:

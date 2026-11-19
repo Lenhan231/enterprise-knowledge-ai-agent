@@ -213,6 +213,8 @@ class InventoryFlowTest(unittest.IsolatedAsyncioTestCase):
         sentinel=('adaptive',b'original','text/markdown')
         with patch('core.reports.generation.generate_planned_report',AsyncMock(return_value=sentinel)):
             self.assertEqual(await ReportAgent(None,None)._generate_from_template(req,source_mode='analytics'),sentinel)
+            exact=request('Inventory stock report for 2026-05-31')
+            self.assertEqual(await ReportAgent(None,None)._generate_from_template(exact,source_mode='analytics'),sentinel)
 
     async def test_saved_roundtrip_export_and_policy_reauthorization(self):
         import tempfile

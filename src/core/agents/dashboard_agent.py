@@ -16,6 +16,19 @@ from core.models.agents import ChartSeries, ChartSpec, AgentResult, Evidence
 from core.analytics.business_ontology import validate_request_contract
 
 
+def sales_report_widgets(dashboard, metrics, datasets, scope):
+    """Populate the immutable report widgets; never ask a model to design them."""
+    from copy import deepcopy
+    result = deepcopy(dashboard)
+    values = {m['id']: m['value'] for m in metrics}
+    for widget in result['widgets']:
+        if widget['type'] == 'kpi_row':
+            widget['data'] = [{'period': scope['period']['start'], **{key: values[key] for key in widget['metric_ids']}}]
+        else:
+            widget['data'] = datasets.get(widget['id'], [])
+    return result
+
+
 def requested_chart_type(question):
     choices = {
         'line': r'\bline[\s-]*chart\b|biểu đồ đường',

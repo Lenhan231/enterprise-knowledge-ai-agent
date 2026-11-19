@@ -8,6 +8,10 @@ from fastapi.responses import StreamingResponse
 
 
 def report_response(result, payload, media_type):
+    if media_type == 'application/json' and result.data.get('report'):
+        from fastapi.responses import JSONResponse
+        return JSONResponse(result.data['report'], headers={
+            'X-Report-Status': result.metadata['status'], 'Cache-Control': 'no-store'})
     if result.metadata.get('confirmation_required'):
         raise HTTPException(409, detail={key: result.metadata[key] for key in (
             'status', 'confirmation_required', 'mismatch_reasons', 'unsupported_requirements',

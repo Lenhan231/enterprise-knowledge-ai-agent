@@ -106,6 +106,14 @@ def payload_to_agent_result(payload: Mapping[str, Any], *, agent: str = "analyti
 
 
 class SQLAnalyticsAgent(BaseAgent):
+    async def run_sales_report(self, request, scope):
+        from core.agents.sql.sales_report import run
+        return await run(self, request, scope)
+
+    async def sales_report_latest(self, request):
+        from core.agents.sql.sales_report import latest
+        return await latest(self, request)
+
     def __init__(self, repository: CommerceRepository, *, llm: LLMInterface | None = None,
                  inventory_only: bool | None = None, metric_retriever=None) -> None:
         if inventory_only is None:

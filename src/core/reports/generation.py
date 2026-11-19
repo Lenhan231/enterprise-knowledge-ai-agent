@@ -2,6 +2,7 @@
 import asyncio
 from collections import defaultdict
 from copy import deepcopy
+from dataclasses import replace
 import json
 import logging
 import re
@@ -15,8 +16,8 @@ from core.models.agents import AgentResult, Evidence
 from core.reports.facts import FACT_VERIFICATION_SCOPE, compare_facts, display_value, fact_statement, facts_from_rows, facts_from_analytics, validate_fact_claim
 from core.analytics.metric_ontology import resolve_metric_names
 from core.reports.grounding import CITATION, NUMBER, UNAVAILABLE, validate_claim
-from core.reports.planning import ReportPlan, build_task_sql, planning_prompt, validate_plan
-from core.reports.templates import parse_report_template, render_report_template
+from core.reports.planning import ReportPlan, adaptive_report_type, build_task_sql, mapped_sections, planning_prompt, validate_plan
+from core.reports.templates import normalized_label, parse_report_template, render_report_template, section_capability
 
 logger = logging.getLogger(__name__)
 
@@ -142,12 +143,26 @@ def deterministic_rows(columns, facts):
     return [[str(row.get(name, 'Unavailable')) for name in columns] for row in groups.values()]
 
 
+def adaptive_table_rows(columns, facts):
+    available = {'snapshot_date', *(f.metric for f in facts), *(d for f in facts for d in f.dimensions)}
+    lookup = {normalized_label(name): name for name in available}
+    canonical = [lookup.get(normalized_label(column)) for column in columns]
+    if all(canonical) and facts:
+        return deterministic_rows(canonical, facts), canonical
+    if [normalized_label(c) for c in columns] == ['metric', 'value'] and facts:
+        return [[f.metric + ('; ' + ', '.join(f'{key}={value}' for key, value in f.dimensions.items()) if f.dimensions else '') +
+                 (f'; snapshot={f.snapshot_date}' if f.snapshot_date else ''),
+                 f'{display_value(f)} ({f.unit}) [{f.id}] [{f.evidence_id}]'] for f in facts], []
+    return [['Unavailable in source data' for _ in columns]], None
+
+
 async def generate_planned_report(agent, request, uploaded, *, source_mode, output_format,
                                     template_choice, accept_supported_scope):
     started = time.monotonic()
     format = output_format or (uploaded.format if uploaded else 'markdown')
     media_type = 'text/markdown; charset=utf-8' if format == 'markdown' else 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    prompt = planning_prompt(request.question, uploaded)
+    report_type = adaptive_report_type(request)
+    prompt = planning_prompt(request.question, uploaded, report_type)
     for attempt in range(2):
         try:
             raw = await agent._generate(prompt)
@@ -185,6 +200,8 @@ async def generate_planned_report(agent, request, uploaded, *, source_mode, outp
             message = str(error) if isinstance(error, MetricDefinitionError) else 'The generated report plan could not be verified. Please retry.'
             return outcome('clarification_required', message, clarification_required=True), b'', media_type
     details = {'plan': plan.model_dump(), 'verification_scope': FACT_VERIFICATION_SCOPE}
+    if report_type:
+        details['report_type'] = report_type
     if plan.clarification:
         return outcome('clarification_required', plan.clarification, clarification_required=True, **details), b'', media_type
     if not plan.tasks:
@@ -207,6 +224,12 @@ async def generate_planned_report(agent, request, uploaded, *, source_mode, outp
                        suggested_structure=[s.model_dump() for s in plan.sections],
                        template_decision_required=needs_template, scope_decision_required=needs_scope, **details), b'', media_type
     template = suggested if uploaded is None or template_choice == 'suggested' else uploaded
+    if report_type and uploaded and template_choice != 'suggested':
+        template = replace(template, preserve_static=True)
+    bindings = mapped_sections(plan, template, report_type, generated=uploaded is None or template_choice == 'suggested') if report_type else None
+    if bindings is not None:
+        details['section_mapping'] = {h: {'capability': section_capability(h, report_type), 'tasks': tasks}
+                                      for h, tasks in bindings.items()}
     analytics = agent.analytics_agent
     from core.agents.sql.analytics_agent import AnalyticsAgent
     from core.agents.sql.agent import SQLAnalyticsAgent
@@ -269,11 +292,13 @@ async def generate_planned_report(agent, request, uploaded, *, source_mode, outp
         elif {'price', 'cogs'} & set(task.product_columns):
             caveats.append('Product price/cogs are stored source fields with unconfirmed currency; they do not establish an approved inventory valuation.')
     documents = []
-    if source_mode in {'combined', 'orchestrated'} and re.search(r'policy|procedure|approval|chính sách|quy trình|phê duyệt', request.question, re.I):
+    context_headings = [h for h in template.headings if report_type and section_capability(h, report_type) == 'context']
+    if source_mode in {'combined', 'orchestrated'} and (context_headings or re.search(r'policy|procedure|approval|chính sách|quy trình|phê duyệt', request.question, re.I)):
         try:
             async with semaphore:
                 timeout = remaining(60)
-                retrieved = await asyncio.wait_for(agent.knowledge_agent.retrieve(request), timeout)
+                document_request = request.model_copy(update={'question': request.question + '\nReport context: ' + '; '.join(context_headings)}) if context_headings else request
+                retrieved = await asyncio.wait_for(agent.knowledge_agent.retrieve(document_request), timeout)
             characters = 0
             for item in retrieved:
                 if not item.content:
@@ -315,11 +340,18 @@ async def generate_planned_report(agent, request, uploaded, *, source_mode, outp
     all_facts = facts+derived
     sections, statuses, narrative_coverage = {}, {}, {}
     plan_sections = {section.heading: section for section in plan.sections}
+    section_tasks = bindings if bindings is not None else {
+        h: plan_sections[h].tasks if h in plan_sections else [t.id for t in plan.tasks] for h in template.headings}
 
     async def write_section(heading):
-        section = plan_sections.get(heading)
-        selected = [f for f in all_facts if section is None or f.task_id in section.tasks]
-        if not selected:
+        capability = section_capability(heading, report_type) if report_type else None
+        if capability == 'limitations':
+            # Filled after all section and table checks have completed.
+            return heading, '', 'complete'
+        selected = [f for f in all_facts if f.task_id in section_tasks[heading]]
+        if not selected and not (capability == 'context' and documents):
+            if bindings is not None:
+                failures[heading] = 'unavailable_or_unsupported_template_section'
             return heading, UNAVAILABLE, 'unavailable'
         # Tables contain all facts; narrative receives a disclosed, bounded selection.
         bounded = []
@@ -336,9 +368,9 @@ async def generate_planned_report(agent, request, uploaded, *, source_mode, outp
         narrative_coverage[heading] = {'facts_available': len(selected), 'facts_included': len(bounded),
             'facts_omitted': len(selected)-len(bounded), 'documents_included': len(bounded_documents),
             'documents_omitted': len(documents)-len(bounded_documents)}
-        if not bounded:
+        if not bounded and not bounded_documents:
             return heading, UNAVAILABLE, 'failed'
-        tasks = [task for task in plan.tasks if section is None or task.id in section.tasks]
+        tasks = [task for task in plan.tasks if task.id in section_tasks[heading]]
         listing = re.match(r'\s*(?:list\b|liệt kê\b)', request.question, re.I)
         interpretation = re.search(r'explain|analy|executive|recommend|summary|giải thích|phân tích|đề xuất|tóm tắt', request.question, re.I)
         if listing and not interpretation and not documents and all(
@@ -362,16 +394,24 @@ async def generate_planned_report(agent, request, uploaded, *, source_mode, outp
                 if type(error).__name__ not in {'RateLimitError', 'APIConnectionError', 'APITimeoutError', 'InternalServerError'}:
                     break
         # A failed writer must not prevent delivery of already verified facts.
-        return heading, '\n'.join(fact_statement(f) for f in bounded[:3]), 'failed'
+        return heading, '\n'.join(fact_statement(f) for f in bounded[:3]) or UNAVAILABLE, 'failed'
 
     for heading, text, status in await asyncio.gather(*(write_section(h) for h in template.headings)):
         sections[heading], statuses[heading] = text, status
         if status != 'complete':
-            failures[heading] = 'narrative_'+status
+            failures.setdefault(heading, 'narrative_'+status)
     tables, rendered_facts = [], set()
     for owner, columns in zip(template.table_sections, template.table_headers):
-        section = plan_sections.get(owner)
-        selected = [f for f in facts if section is None or f.task_id in section.tasks]
+        selected = [f for f in facts if f.task_id in section_tasks[owner]]
+        if report_type:
+            rows, canonical = adaptive_table_rows(columns, selected)
+            tables.append(rows)
+            if canonical is None:
+                failures[f'table_{len(tables)}'] = f'Unavailable template table in {owner}: ' + ', '.join(columns)
+            else:
+                rendered_facts.update(f.id for f in selected if f.metric in canonical
+                    and set(f.dimensions) <= set(canonical) and (not f.snapshot_date or 'snapshot_date' in canonical))
+            continue
         available = {'snapshot_date', *(f.metric for f in selected), *(d for f in selected for d in f.dimensions)}
         if set(columns) <= available:
             tables.append(deterministic_rows(columns, selected))
@@ -380,6 +420,13 @@ async def generate_planned_report(agent, request, uploaded, *, source_mode, outp
                                   and (not f.snapshot_date or 'snapshot_date' in columns))
         else:
             tables.append([])
+    if report_type:
+        notes = [*plan.unsupported_requirements, *caveats, *(f'{key}: {reason}' for key, reason in failures.items())]
+        if uploaded and template_choice != 'suggested':
+            notes.extend(mismatches)
+        for heading in template.headings:
+            if section_capability(heading, report_type) == 'limitations':
+                sections[heading] = '\n'.join(dict.fromkeys(notes)) or 'No additional data limitations identified for the returned query scope.'
     if not facts:
         if clarifications:
             return outcome('clarification_required', '\n'.join(clarifications), clarification_required=True, **details), b'', media_type
@@ -391,7 +438,7 @@ async def generate_planned_report(agent, request, uploaded, *, source_mode, outp
             failure_type = 'source_unavailable'
         return outcome('failed', 'No verified observations for the requested snapshot/filter. Missing observations are not zero inventory.', failure_type=failure_type,
                        coverage=coverage, issues=failures, **details), b'', media_type
-    status = 'partial' if failures or plan.unsupported_requirements else 'complete'
+    status = 'partial' if failures or plan.unsupported_requirements or (mismatches and template_choice != 'suggested') else 'complete'
     if uploaded and template_choice != 'suggested':
         caveats.extend(mismatches)
     source_caveats = list(dict.fromkeys(caveats))
@@ -399,7 +446,10 @@ async def generate_planned_report(agent, request, uploaded, *, source_mode, outp
     caveats.extend(f'{key}: {reason}' for key, reason in failures.items())
     caveats.append('Narrative uses a bounded fact selection; detail tables contain returned validated observations, not an exhaustive export.')
     if uploaded and template_choice != 'suggested':
-        caveats.append('Marked template: only explicit fill regions replaced.' if uploaded.marked else 'Legacy template: body paragraphs and table data replaced.')
+        caveats.append('Marked template: only explicit fill regions replaced.' if uploaded.marked else (
+            'Adaptive template: static paragraphs retained; unmarked table data replaced.' if report_type else 'Legacy template: body paragraphs and table data replaced.'))
+        if report_type:
+            caveats.append('Retained template text is user-provided and unverified.')
     output = render_report_template(template, sections, tables)
     appendices = []
     # Keep all task details even when an uploaded structure cannot express them.

@@ -69,6 +69,7 @@ function selectWorkspaceTab(name) {
     panel.querySelectorAll(".monitoring-stat strong").forEach(countUp);
   }
   if (name === "dashboard") window.dashboardWorkspace?.show();
+  if (name === "knowledge") window.reportWorkspace?.show();
   $("#workspace-main").classList.toggle("invoice-review-active", name === "invoice-review");
   const isKnowledgeTab = name === "knowledge";
   $(".intro").hidden = !isKnowledgeTab;
@@ -1643,6 +1644,15 @@ function renderAgentRows(data) {
 }
 
 function renderAgentResult(result, panel = $("#answer-panel"), shouldScroll = true) {
+  if (result.agent === 'report' && result.data?.report?.report_type === 'sales_performance') {
+    const report = document.createElement('article');
+    report.className = 'sales-report-view';
+    SalesPerformanceReport.render(report, result.data.report, {monthly_decisions:result.data.monthly_decisions, insights:result.data.insights});
+    panel.replaceChildren(report);
+    panel.hidden = false;
+    if (shouldScroll) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
   const citations = (result.evidence || []).map((item) => {
     const metadata = item.metadata || {};
     return { ...metadata, id: item.citation_id, title: item.source, source_type: item.source_type,
@@ -2146,6 +2156,7 @@ async function askAgentStream(body, signal, onStatus) {
 
 function resetConversationState() {
   window.dashboardWorkspace?.clear();
+  window.reportWorkspace?.clear();
   agentConversationId = crypto.randomUUID();
   reportConversationId = crypto.randomUUID();
   sessionTurns = [];
@@ -2157,8 +2168,8 @@ function resetConversationState() {
   $("#general-chat-transcript").hidden = true;
   $("#general-chat-welcome").hidden = false;
   $("#report-agent-question").value = "";
-  $("#report-agent-template").value = "";
-  updateReportFormatVisibility();
+  $("#sales-report-output").replaceChildren();
+  $("#sales-report-output").hidden = true;
   $("#report-agent-status").textContent = "";
   delete $("#report-agent-status").dataset.state;
   $("#question").value = "";
@@ -2233,6 +2244,7 @@ async function loadWorkspace(user) {
   $(".agent-overview").hidden = ["document_processing_owner", "document_uploader"].includes(user.role);
   $(".stats").hidden = user.role === "document_processing_owner";
   const canUseAnalytics = ["admin", "finance_analyst", "sustainability_analyst", "operations", "executive"].includes(user.role);
+  $("#reports-workspace").hidden = !canUseAnalytics;
   ["#analytics-agent-card", "#inventory-agent-card", "#report-agent-card", "#report-agent-form-section"].forEach((selector) => {
     $(selector).hidden = !canUseAnalytics;
   });
@@ -2942,146 +2954,9 @@ $("#general-chat-question").addEventListener("keydown", (event) => {
   }
 });
 
-function updateReportFormatVisibility() {
-  const hasTemplate = Boolean($("#report-agent-template").files[0]);
-  $("#report-agent-format-field").hidden = hasTemplate;
-}
-
-$("#report-agent-template").addEventListener("change", updateReportFormatVisibility);
-updateReportFormatVisibility();
-
-function confirmReportPlan(detail) {
-  return new Promise((resolve) => {
-    const dialog = document.createElement("dialog");
-    dialog.className = "report-plan-dialog";
-    dialog.setAttribute("aria-labelledby", "report-plan-title");
-    const title = document.createElement("h2");
-    title.id = "report-plan-title";
-    title.textContent = "Review report scope and structure";
-    dialog.append(title);
-    for (const reason of [...(detail.mismatch_reasons || []), ...(detail.unsupported_requirements || [])]) {
-      const paragraph = document.createElement("p");
-      paragraph.textContent = reason;
-      dialog.append(paragraph);
-    }
-    if (detail.suggested_structure?.length) {
-      const paragraph = document.createElement("p");
-      paragraph.textContent = "Suggested sections: " + detail.suggested_structure.map((section) => section.heading).join("; ");
-      dialog.append(paragraph);
-    }
-    const finish = (choice) => { dialog.close(); dialog.remove(); resolve(choice); };
-    const choices = detail.template_decision_required
-      ? [["Use suggested structure", "suggested"], ["Continue with uploaded template", "uploaded"]]
-      : [["Generate supported report", null]];
-    for (const [label, templateChoice] of choices) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.textContent = detail.scope_decision_required && templateChoice ? label + " (supported scope only)" : label;
-      button.addEventListener("click", () => finish({ templateChoice, acceptSupportedScope: Boolean(detail.scope_decision_required) }));
-      dialog.append(button);
-    }
-    const cancel = document.createElement("button");
-    cancel.type = "button";
-    cancel.textContent = "Cancel";
-    cancel.addEventListener("click", () => finish(null));
-    dialog.addEventListener("cancel", (event) => { event.preventDefault(); finish(null); });
-    dialog.append(cancel);
-    document.body.append(dialog);
-    dialog.showModal();
-  });
-}
-
-$("#report-agent-form").addEventListener("submit", async (event) => {
+$("#report-agent-form").addEventListener("submit", (event) => {
   event.preventDefault();
-  const requestConversationId = reportConversationId;
-  const requestGeneration = sessionGeneration;
-  const requestSubject = sessionSubject;
-  const button = $("#report-agent-submit");
-  const status = $("#report-agent-status");
-  const template = $("#report-agent-template").files[0];
-  const formData = new FormData();
-  formData.append("question", $("#report-agent-question").value.trim());
-  formData.append("source_mode", $("#report-agent-source-mode").value);
-  if (template) formData.append("template", template);
-  else formData.append("output_format", $("#report-agent-output-format").value);
-  formData.set('conversation_id', requestConversationId);
-  button.disabled = true;
-  delete status.dataset.state;
-  status.textContent = "Generating report from authorized sources...";
-  try {
-    let response;
-    for (let attempt = 0; attempt < 3; attempt++) {
-      response = await backendFetch("/api/agents/report", {
-        method: "POST", body: formData, credentials: "same-origin",
-        headers: { "ngrok-skip-browser-warning": "1" },
-      });
-      if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
-      if (response.status === 401) {
-        clearExpiredSession();
-        throw new Error("Sign in to continue");
-      }
-      if (response.status !== 409) break;
-      const payload = await response.json();
-      if (!payload.detail?.confirmation_required) throw new Error("Unexpected report confirmation response.");
-      const choice = await confirmReportPlan(payload.detail);
-      if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
-      if (!choice) { status.textContent = "Report generation cancelled."; return; }
-      if (choice.templateChoice) formData.set("template_choice", choice.templateChoice);
-      if (choice.acceptSupportedScope) formData.set("accept_supported_scope", "true");
-      if (attempt === 2) throw new Error("The report plan changed repeatedly. Refine the request and try again.");
-    }
-    if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
-    if (!response.ok) {
-      let detail = "Report request failed (HTTP " + response.status + ")";
-      try {
-        const payload = await response.json();
-        const reportError = typeof payload.detail === "object" ? payload.detail : null;
-        if (reportError?.status === "unsupported") {
-          status.dataset.state = "warning";
-          status.textContent = (reportError.limitations || []).join("; ");
-          return;
-        }
-        if (reportError?.status === "clarification_required") {
-          status.dataset.state = "warning";
-          status.textContent = `Clarification needed: ${reportError.clarification || reportError.detail || "Please refine the decision question."}`;
-          return;
-        }
-        const message = reportError?.detail || reportError?.message || payload.detail;
-        if (message) detail = typeof message === "string" ? message : JSON.stringify(message);
-        if (reportError?.limitations?.length) detail += ` Limitations: ${reportError.limitations.join("; ")}`;
-      } catch {}
-      throw new Error(detail);
-    }
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    const disposition = response.headers.get("Content-Disposition") || "";
-    const filename = disposition.match(/filename="?([^";]+)"?/i)?.[1];
-    const extension = $("#report-agent-output-format").value === "docx" ? ".docx" : ".md";
-    link.download = filename || `report${extension}`;
-    link.click();
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-    const reportStatus = response.headers.get("X-Report-Status");
-    status.dataset.state = reportStatus === "partial" ? "warning" : "success";
-    status.textContent = reportStatus === "partial"
-      ? "Partial report downloaded. Review its limitations before using it."
-      : "Report generated and downloaded.";
-    try {
-      const summary = JSON.parse(response.headers.get("X-Report-Summary") || "null");
-      if (summary) {
-        status.textContent += ` Sections: ${summary.complete} complete, ${summary.unavailable} unavailable, ${summary.failed} failed. `
-          + `${summary.omitted_from_narrative} evidence items omitted from narrative; review detail tables and coverage.`;
-        if (summary.reasons?.length) status.textContent += " Reasons: " + summary.reasons.join("; ") + ".";
-      }
-    } catch {}
-  } catch (error) {
-    if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
-    status.dataset.state = "error";
-    status.textContent = error.message;
-  } finally {
-    button.disabled = false;
-  }
+  void window.reportWorkspace.generate($("#report-agent-question").value.trim());
 });
 $("#monitoring-refresh").addEventListener("click", refreshAgentMonitoring);
 

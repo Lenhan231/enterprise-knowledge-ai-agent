@@ -18,6 +18,16 @@ from core.models.agents import AgentResult
 from test_report_inventory import Writer, plan
 
 
+def order_intent(prompt):
+    question = json.loads(prompt[prompt.index('\n{') + 1:])['question']
+    return json.dumps({'intent': {
+        'original_question': question, 'operation': 'aggregate',
+        'metrics': ['order_count'],
+        'time_scope': {'mode': 'range', 'ranges': [
+            {'start': '2022-01-01', 'end_exclusive': '2023-01-01'}]},
+    }})
+
+
 class SharedReportSchemaTest(unittest.TestCase):
     def test_duplicate_raw_sql_rows_keep_their_source_row_identity(self):
         specification = ReportPlan.model_validate({'purpose': 'Methods', 'tasks': [{'id': 'methods', 'question': 'List payment methods'}],
@@ -65,6 +75,8 @@ class SharedReportExecutionTest(unittest.IsolatedAsyncioTestCase):
         repository.execute_approved_query = AsyncMock(side_effect=rows)
         class SQLProvider:
             async def generate(self, prompt):
+                if prompt.startswith('Extract only the user-requested business intent.'):
+                    return order_intent(prompt)
                 return json.dumps({'sql': 'SELECT COUNT(DISTINCT o.order_id) AS order_count FROM commerce.orders o WHERE o.order_date >= $1 AND o.order_date < $2 LIMIT 200',
                     'parameters': ['2022-01-01', '2023-01-01']})
         sql_agent = SQLAnalyticsAgent(repository, llm=SQLProvider())
@@ -89,7 +101,9 @@ class SharedReportExecutionTest(unittest.IsolatedAsyncioTestCase):
         repository = type('Repository', (), {})()
         repository.execute_approved_query = AsyncMock()
         provider = type('Provider', (), {})()
-        provider.generate = AsyncMock(return_value=json.dumps({'sql': 'SELECT u.password FROM auth.users u LIMIT 200'}))
+        provider.generate = AsyncMock(side_effect=lambda prompt, **kwargs: order_intent(prompt)
+            if prompt.startswith('Extract only the user-requested business intent.')
+            else json.dumps({'sql': 'SELECT u.password FROM auth.users u LIMIT 200'}))
         agent = ReportAgent(AsyncMock(), SQLAnalyticsAgent(repository, llm=provider), llm=Writer(specification))
         identity = VerifiedIdentity(subject='analyst', permissions={'analytics:read'})
         result, payload, _ = await agent.generate_from_template(AgentRequest(question='Order count in 2022', identity=identity), source_mode='analytics')

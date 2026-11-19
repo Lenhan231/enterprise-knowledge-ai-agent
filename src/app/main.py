@@ -37,6 +37,8 @@ from app.upload_test import (
     list_upload_tests, router as upload_test_router,
 )
 from core.services.client import post as post_internal_service
+from document_processing.formats import IMAGE_FORMATS, MEDIA_TYPES, SUPPORTED_FORMATS, matches_signature
+from document_processing.image_input import validate_svg
 
 logger = logging.getLogger(__name__)
 @asynccontextmanager
@@ -435,6 +437,19 @@ def set_knowledge_document_access(
             repository.close()
 
 
+def _document_page_count(parsed: dict, extension: str) -> int | None:
+    if extension in IMAGE_FORMATS and parsed.get("page_sizes"):
+        return len(parsed["page_sizes"])
+    page_numbers = (
+        item.get("metadata", {}).get("page_number")
+        for item in [*parsed.get("elements", []), *parsed.get("tables", [])]
+    )
+    return max(
+        (number for number in page_numbers if isinstance(number, int)),
+        default=1 if extension in IMAGE_FORMATS else None,
+    )
+
+
 @app.post("/api/documents/parser-handoff")
 @app.post("/api/documents/upload")
 async def upload_document(
@@ -459,9 +474,8 @@ async def upload_document(
     parser_handoff = request is not None and request.url.path == "/api/documents/parser-handoff"
     filename = Path((file.filename or "").replace("\\", "/")).name
     extension = Path(filename).suffix.lower()
-    from document_processing.document_processor import DocumentProcessor, SUPPORTED_FORMATS
-    if not filename or extension not in SUPPORTED_FORMATS or extension in {".svg", ".webp"}:
-        raise HTTPException(415, "Supported formats: PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG, TIF")
+    if not filename or extension not in SUPPORTED_FORMATS:
+        raise HTTPException(415, "Unsupported document format")
     if not title.strip() or not document_type.strip() or not domain.strip():
         raise HTTPException(422, "Title, document type, and domain are required")
     if ocr_language not in OCR_LANGUAGES:
@@ -487,11 +501,13 @@ async def upload_document(
     content = await file.read(50 * 1024 * 1024 + 1)
     if len(content) > 50 * 1024 * 1024:
         raise HTTPException(413, "Maximum file size is 50 MiB")
-    signatures = {".pdf": content.startswith(b"%PDF-"), ".png": content.startswith(b"\x89PNG\r\n\x1a\n"),
-                  ".jpg": content.startswith(b"\xff\xd8\xff"), ".jpeg": content.startswith(b"\xff\xd8\xff"),
-                  ".tif": content.startswith((b"II*\x00", b"MM\x00*")), ".tiff": content.startswith((b"II*\x00", b"MM\x00*"))}
-    if extension in signatures and not signatures[extension]:
+    if not matches_signature(content, extension):
         raise HTTPException(415, "File content does not match its extension")
+    if extension == ".svg":
+        try:
+            validate_svg(content)
+        except ValueError as error:
+            raise HTTPException(422, str(error)) from error
 
     document_id = f"UPLOAD-{uuid.uuid4().hex}"
     storage_filename = _storage_filename(filename)
@@ -501,12 +517,7 @@ async def upload_document(
             "Normalized upload filename for storage: document_id=%s original_filename=%r storage_filename=%r",
             document_id, filename, storage_filename,
         )
-    content_type = {".pdf": "application/pdf", ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-                    ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    ".csv": "text/csv",
-                    ".txt": "text/plain", ".md": "text/markdown", ".png": "image/png",
-                    ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".tif": "image/tiff", ".tiff": "image/tiff"}[extension]
+    content_type = MEDIA_TYPES[extension]
     source_hash = hashlib.sha256(content).hexdigest()
     repository = None
     registered = False
@@ -591,14 +602,7 @@ async def upload_document(
                 outputs_repository.close()
 
             if parser_handoff:
-                page_numbers = [
-                    item.get("metadata", {}).get("page_number")
-                    for item in [*parsed.get("elements", []), *parsed.get("tables", [])]
-                    if isinstance(item.get("metadata", {}).get("page_number"), int)
-                ]
-                page_count = max(page_numbers) if page_numbers else (
-                    1 if extension in {".png", ".jpg", ".jpeg", ".tif", ".tiff"} else None
-                )
+                page_count = _document_page_count(parsed, extension)
                 repository.update_processing_status(document_id, "parsed")
                 return {
                     "document_id": document_id,
@@ -625,7 +629,7 @@ async def upload_document(
             int(chunk["metadata"]["page_count"])
             for chunk in parser_chunks
             if chunk.get("metadata", {}).get("page_count") is not None
-        ), 1 if extension in {".png", ".jpg", ".jpeg", ".tif", ".tiff"} else None)
+        ), _document_page_count(parsed, extension))
         ocr_chunk_count = sum(
             bool(chunk.get("metadata", {}).get("ocr"))
             or bool(chunk.get("metadata", {}).get("ocr_model"))
@@ -1392,26 +1396,15 @@ def _uploaded_source_response(document_id: str, user: dict) -> Response:
         raise HTTPException(502, "The stored source file could not be opened") from error
 
     extension = str(source["format"] or "").casefold()
-    media_type = {
-        "pdf": "application/pdf",
-        "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "txt": "text/plain",
-        "md": "text/markdown",
-        "png": "image/png",
-        "jpg": "image/jpeg",
-        "jpeg": "image/jpeg",
-        "tif": "image/tiff",
-        "tiff": "image/tiff",
-    }.get(extension, "application/octet-stream")
+    media_type = MEDIA_TYPES.get(f".{extension}", "application/octet-stream")
+    disposition = "attachment" if extension == "svg" else "inline"
     title = re.sub(r"[\r\n/\\]+", " ", str(source["title"] or document_id)).strip()
     filename = quote(f"{title[:120]}.{extension}", safe="")
     return Response(
         content=content,
         media_type=media_type,
         headers={
-            "Content-Disposition": f"inline; filename*=UTF-8''{filename}",
+            "Content-Disposition": f"{disposition}; filename*=UTF-8''{filename}",
             "Cache-Control": "private, no-store",
             "X-Content-Type-Options": "nosniff",
         },

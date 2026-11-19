@@ -1084,6 +1084,11 @@ async function openOcrTestRun(runId) {
   }
 }
 
+const DOCUMENT_UPLOAD_EXTENSIONS = [
+  ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".csv", ".txt", ".md",
+  ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".gif", ".webp", ".svg", ".heic", ".heif", ".avif",
+];
+
 function updateUploadTestParserSettings() {
   const intent = $("#ocr-test-parser").value;
   document.querySelectorAll("#ocr-test-form [data-parser-settings]").forEach((fieldset) => {
@@ -1094,7 +1099,7 @@ function updateUploadTestParserSettings() {
     });
   });
   $("#ocr-test-file").accept = intent === "document"
-    ? ".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff,.svg,.webp"
+    ? DOCUMENT_UPLOAD_EXTENSIONS.join(",")
     : ".pdf,.png,.jpg,.jpeg,.tif,.tiff,.webp";
 }
 
@@ -3089,7 +3094,7 @@ function updateUploadRoleSelection() {
 }
 
 const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
-const SUPPORTED_UPLOAD_EXTENSIONS = new Set([".pdf", ".docx", ".pptx", ".xlsx", ".csv", ".txt", ".md", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]);
+const SUPPORTED_UPLOAD_EXTENSIONS = new Set(DOCUMENT_UPLOAD_EXTENSIONS);
 const INVOICE_UPLOAD_EXTENSIONS = new Set([".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]);
 
 function validateUploadFile(file, invoiceMode = false) {
@@ -3098,7 +3103,7 @@ function validateUploadFile(file, invoiceMode = false) {
   const supported = invoiceMode ? INVOICE_UPLOAD_EXTENSIONS : SUPPORTED_UPLOAD_EXTENSIONS;
   if (!supported.has(extension)) return invoiceMode
     ? "Invoice extraction supports PDF, PNG, JPG and TIF files."
-    : "This file type is not supported. Choose PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG or TIF.";
+    : "Choose a supported PDF, Office document, spreadsheet, text file or image.";
   if (file.size > MAX_UPLOAD_BYTES) return "The file is larger than the 50 MiB upload limit.";
   return "";
 }
@@ -3112,7 +3117,7 @@ function updateUploadKind() {
   $("#upload-file-label").textContent = invoiceMode ? "Invoice file" : "Document file";
   $("#upload-file").accept = invoiceMode
     ? ".pdf,.png,.jpg,.jpeg,.tif,.tiff"
-    : ".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff";
+    : DOCUMENT_UPLOAD_EXTENSIONS.join(",");
   $("#upload-kind-help").textContent = invoiceMode
     ? "Upload an invoice for extraction and review in the invoice table."
     : "Knowledge documents are indexed for document Q&A.";

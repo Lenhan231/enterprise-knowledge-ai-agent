@@ -324,7 +324,7 @@
                 <label id="upload-file-label" for="upload-file">Document file</label>
                 <div id="upload-dropzone" class="upload-dropzone">
                   <p><strong>Drop one file here</strong> or choose it from your device.</p>
-                  <input id="upload-file" name="file" type="file" accept=".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff" aria-describedby="upload-file-info" required>
+                  <input id="upload-file" name="file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff,.bmp,.gif,.webp,.svg,.heic,.heif,.avif" aria-describedby="upload-file-info" required>
                   <small>PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG or TIF · up to 50 MiB.</small>
                   <p id="upload-file-info" class="corpus-note" aria-live="polite">The original is stored privately. Scans use OCR and may need source-page review in Document Processing.</p>
                 </div>
@@ -456,7 +456,7 @@
         <p>Choose general document parsing, invoice extraction, or image captioning. Results are saved for inspection without creating a production document.</p>
         <form id="ocr-test-form" class="upload-form">
           <div class="ocr-test-field"><label for="ocr-test-file">Document to upload-test (up to 20 MiB; PDFs up to 50 pages)</label>
-          <input id="ocr-test-file" name="file" type="file" accept=".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff,.svg,.webp" required></div>
+          <input id="ocr-test-file" name="file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff,.bmp,.gif,.webp,.svg,.heic,.heif,.avif" required></div>
           <div class="ocr-test-field"><label for="ocr-test-parser">Processing type</label>
           <select id="ocr-test-parser" name="intent"><option value="document" selected>Document · Docling</option><option value="invoice">Invoice · Docling OCR + Qwen text model</option><option value="image_caption">Image caption · Vintern</option></select></div>
           <fieldset data-parser-settings="document" hidden><legend>Docling tuning</legend>

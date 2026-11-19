@@ -42,6 +42,11 @@ itself sufficient. See the [Vintern pipeline](vintern-pipeline.md).
 
 ## Build the parser image
 
+Install LibreOffice locally to parse legacy DOC, XLS, and PPT files. The
+document-processing image includes LibreOffice and a separate HEIC/AVIF
+decoder. Apply the document MIME migration before enabling the new formats
+for uploads to the private source bucket.
+
 From the repository root:
 
 ```sh

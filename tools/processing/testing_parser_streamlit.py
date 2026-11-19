@@ -14,8 +14,9 @@ from typing import Any
 import streamlit as st
 from PIL import Image, ImageDraw
 
-from document_processing.document_processor import DocumentProcessor, SUPPORTED_FORMATS
+from document_processing.document_processor import DocumentProcessor
 from document_processing.element_taxonomy import normalize_element_label
+from document_processing.formats import IMAGE_FORMATS, SUPPORTED_FORMATS
 from document_processing.worker_runtime import PROJECT_ROOT, SOURCE_ROOT, resolve_vintern_python
 
 
@@ -721,7 +722,7 @@ else:
                 )
                 if (
                     len(page_numbers) == 1
-                    and Path(selected_manifest["filename"]).suffix.lower() in {".png", ".jpg", ".jpeg", ".tif", ".tiff"}
+                    and Path(selected_manifest["filename"]).suffix.lower() in IMAGE_FORMATS
                 ):
                     page_elements = elements
                     page_tables = selected_output.get("tables", [])
@@ -944,7 +945,7 @@ else:
                 st.write(f"**Intent:** {intent_label}")
                 st.write(f"**Pipeline:** {pipeline_id}")
             source_suffix = Path(selected_manifest["filename"]).suffix.lower()
-            uses_pdf_pipeline = source_suffix in {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"}
+            uses_pdf_pipeline = source_suffix == ".pdf" or source_suffix in IMAGE_FORMATS
             effective_ocr = output_metadata.get("ocr_enabled", run_config.get("docling_ocr", True))
             embedded_image_ocr = output_metadata.get("embedded_image_ocr_enabled", False)
             ocr_engine = run_config.get("docling_ocr_engine", "tesseract")

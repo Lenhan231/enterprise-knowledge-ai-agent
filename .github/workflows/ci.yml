@@ -67,6 +67,15 @@ jobs:
           done
           [ "$backend_ready" -eq 1 ]
           docker compose --profile proxy up -d --no-deps proxy
+          proxy_ready=0
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8080/health; then
+              proxy_ready=1
+              break
+            fi
+            sleep 2
+          done
+          [ "$proxy_ready" -eq 1 ]
           curl --fail --silent http://127.0.0.1:8080/health | python -c 'import json,sys; assert json.load(sys.stdin)["status"] == "ok"'
           uv run python - <<'PY'
           import http.cookiejar

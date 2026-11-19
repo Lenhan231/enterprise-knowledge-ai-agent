@@ -66,11 +66,13 @@ def inventory_request(question):
 def adaptive_report_type(request):
     selected = request.metadata.get('report_type')
     if selected is not None:
-        if not isinstance(selected, str) or selected not in REPORT_CAPABILITIES:
-            raise ValueError('Adaptive report type must be sales_performance or inventory_risk')
+        if not isinstance(selected, str) or selected not in {*REPORT_CAPABILITIES, 'inventory_operations'}:
+            raise ValueError('Supported report type: sales_performance, inventory_operations or inventory_risk')
         return selected
     normalized = _normalize(request.question).replace('_', ' ')
     normalized = re.sub(r'\bsale\s+performance\b', 'sales performance', normalized)
+    if 'inventory operations' in normalized:
+        return 'inventory_operations'
     for report_type in REPORT_CAPABILITIES:
         if report_type.replace('_', ' ') in normalized:
             return report_type

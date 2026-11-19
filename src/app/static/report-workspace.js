@@ -59,6 +59,10 @@
   }
   function editor() {
     const root = el('rw-edit-panel'); root.replaceChildren();
+    if (selected.report.report_type === 'inventory_operations') {
+      root.append(element('p','Inventory sections, metrics, widgets and decision rules use the fixed contract. You can edit the saved report title.'));
+      return;
+    }
     const defaults = SalesPerformanceReport.defaultPresentation(selected.report).chart_types;
     selected.presentation.section_order.forEach((key, index, order) => {
       const item = element('fieldset'); const title = SalesPerformanceReport.sectionTitles[Object.keys(selected.report.sections).indexOf(key)];
@@ -127,8 +131,8 @@
     if (response.status === 409) throw new Error('This saved report changed. Reopen it before downloading.');
     if (!response.ok) throw new Error('PDF download failed. Please retry.');
     const blob = await response.blob(); if (!valid()) return;
-    const url = URL.createObjectURL(blob), link = element('a'); link.href = url; link.download = 'sales-performance-report.pdf'; link.click();
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000); status('PDF downloaded without preview citations.');
+    const url = URL.createObjectURL(blob), link = element('a'); link.href = url; link.download = `${selected.report.report_type.replaceAll('_','-')}-report.pdf`; link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000); status('PDF downloaded.');
   }));
   el('rw-delete').addEventListener('click', () => {
     if (!selected || !window.confirm('Delete this saved report?')) return;
@@ -138,7 +142,7 @@
   el('rw-new').addEventListener('click', () => { if (!busy) { reportConversationId = crypto.randomUUID(); reset(); status('Describe a new report.'); el('report-agent-question').focus(); } });
   window.reportWorkspace = {
     display,
-    generate(question) { return action('Generating sales report from authorized sources...', async valid => {
+    generate(question) { return action('Generating report from authorized sources...', async valid => {
       const payload = await request('/api/reports',{method:'POST',body:JSON.stringify({question})});
       if (!valid()) return;
       display(payload.document,false); await library(valid);

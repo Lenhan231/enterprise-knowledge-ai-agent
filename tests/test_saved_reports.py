@@ -151,6 +151,9 @@ class SavedReportAPITest(unittest.TestCase):
                 edit['presentation']['hidden_sections']=['performance_analysis']
                 edit['presentation']['chart_types']['sales_trend']='bar'
                 self.assertEqual(client.put(path,json={**edit,'report':{}},headers=token('alice')).status_code,422)
+                from core.reports.document import InventoryPresentation
+                wrong_layout = {**edit, 'presentation': InventoryPresentation().model_dump()}
+                self.assertEqual(client.put(path,json=wrong_layout,headers=token('alice')).status_code,422)
                 self.assertEqual(client.put(path,json=edit,headers={**token('alice'),'Origin':'https://untrusted.example'}).status_code,403)
                 saved = client.put(path,json=edit,headers=token('alice'))
                 self.assertEqual(saved.status_code,200,saved.text)

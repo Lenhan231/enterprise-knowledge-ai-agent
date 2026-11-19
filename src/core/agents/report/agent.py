@@ -74,11 +74,21 @@ class ReportAgent:
         natural_sales = (filename is None and output_format is None and not request.metadata.get('report_type') and
                          re.search(r'\bsales?\b|\brevenue\b|doanh thu|bán hàng', request.question, re.I))
         report_type = adaptive_report_type(request)
+        from core.reports.sales_performance import has_sales_period
+        natural_inventory = (filename is None and report_type is None and output_format is None
+                             and re.search(r'\binventory\b|tồn kho', request.question, re.I)
+                             and has_sales_period(request.question))
+        strict_inventory = report_type == 'inventory_operations' or natural_inventory
         if source_mode is None:
             from core.reports.sales_performance import has_sales_period
             dated_sales = natural_sales and has_sales_period(request.question)
-            source_mode = 'analytics' if report_type == 'sales_performance' or dated_sales else 'documents'
+            source_mode = 'analytics' if report_type == 'sales_performance' or dated_sales or strict_inventory else 'documents'
         authorize_sources(request, source_mode)
+        if strict_inventory:
+            if filename is not None or output_format is not None or source_mode == 'documents':
+                raise ValueError('Inventory operations reports require the immutable JSON template and analytics sources.')
+            from core.reports.inventory_operations import generate_inventory_report
+            return await generate_inventory_report(self, request)
         sales_report = source_mode != 'documents' and (report_type == 'sales_performance' or natural_sales)
         if sales_report:
             if filename is not None:

@@ -18,9 +18,10 @@ def chart_svg(widget, metrics, kind, granularity):
     span = high - low or 1
     x = lambda index: 65 + (index + .5) * 530 / len(rows)
     y = lambda value: 185 - (value - low) / span * 150
-    parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="660" height="240" viewBox="0 0 660 240"><rect width="660" height="240" fill="white"/><line x1="65" x2="610" y1="{y(0)}" y2="{y(0)}" stroke="#64756c"/>']
+    height = 240 + max(0, len(widget['metric_ids']) - 2) * 12
+    parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="660" height="{height}" viewBox="0 0 660 {height}"><rect width="660" height="{height}" fill="white"/><line x1="65" x2="610" y1="{y(0)}" y2="{y(0)}" stroke="#64756c"/>']
     for series, key in enumerate(widget['metric_ids']):
-        color = ('#0b7a66', '#a15c20')[series % 2]
+        color = ('#0b7a66', '#a15c20', '#6951a8')[series % 3]
         segment = []
         def flush():
             if segment:
@@ -51,6 +52,9 @@ def chart_svg(widget, metrics, kind, granularity):
 
 
 def export_pdf(document):
+    if document.report['report_type'] == 'inventory_operations':
+        with tempfile.TemporaryDirectory() as directory:
+            return render_pdf(inventory_parts(document, directory), directory)
     report, layout = document.report, document.presentation
     chart_types = {**default_chart_types(report), **layout.chart_types}
     shown_metrics = comparison_metrics(report, document.monthly_decisions)
@@ -141,10 +145,63 @@ def export_pdf(document):
             c = group['coverage']
             counts = {key: 'unknown' if value is None else str(value) for key, value in c.items()}
             parts.append(f'<p class="note">{escape(group["period"]["start"][:7])} decision baseline: current month {counts["current_days"]}/{counts["expected_current_days"]} daily records; preceding month {counts["prior_days"]}/{counts["expected_prior_days"]}. Missing coverage or zero prior revenue prevents growth comparisons.</p>')
-        css = 'body{font-family:sans-serif;font-size:10pt;color:#14211d;line-height:1.3} h1{font-size:24pt;color:#075c4d}h2{font-size:16pt;margin-top:18pt}h3{font-size:10.5pt}p{margin:6pt 0}table{border-collapse:collapse;width:100%;margin:10pt 0}th,td{border-bottom:1px solid #dfe6e3;padding:7pt;text-align:left}th{background:#edf5f1}.subtitle,.note{color:#52635c}.note{font-size:8.5pt}.kpi{font-size:22pt;color:#075c4d}.new-page{page-break-before:always}.figure{page-break-inside:avoid;margin-top:14pt}img{max-width:100%}'
-        story = fitz.Story(html=''.join(parts), user_css=css, archive=fitz.Archive(directory))
-        size = fitz.paper_rect('a4')
-        pdf = story.write_with_links(lambda *_: (size, size + (42, 42, -42, -42), None))
-        for index, page in enumerate(pdf):
-            page.insert_text((42, size.height - 22), f'{index + 1} / {len(pdf)}', fontsize=8, color=(.35,.42,.38))
-        return pdf.tobytes(garbage=4, deflate=True)
+        return render_pdf(parts, directory)
+
+
+def inventory_parts(document, directory):
+    from core.reports.inventory_operations import SECTION_TITLES
+    report = document.report
+    metrics = {m['id']: m for m in report['metrics']}
+    parts = [f'<h1>{escape(document.title)}</h1><p>{report["request"]["period"]["start"]} to {report["request"]["period"]["end_exclusive"]} (end excluded)</p>']
+    ownership = {'inventory_kpis': 'snapshot_scorecard', 'inventory_flag_distribution': 'product_risks',
+                 'stockout_product_table': 'product_risks', 'operations_kpis': 'fulfillment_and_returns', 'inventory_snapshots': 'fulfillment_and_returns'}
+    for section, title in SECTION_TITLES.items():
+        parts.append(f'<h2>{escape(title)}</h2>')
+        if section == 'operations_summary':
+            parts.extend(f'<p>{escape(note)}</p>' for note in report['data_quality']['limitations'] if note.startswith(('Selected snapshot:', 'Snapshot completeness')))
+        if section == 'snapshot_scorecard':
+            parts.extend(f'<p>{escape(m["label"])}: {display_value(m)} ({escape(m["status"])})</p>' for m in report['metrics'] if m['id'] in {'stockout_flag_pct', 'overstock_products'})
+        for widget in report['dashboard']['widgets']:
+            if ownership[widget['id']] != section:
+                continue
+            parts.append(f'<h3>{escape(widget["title"])}</h3>')
+            if widget['type'] == 'kpi_row':
+                parts.extend(f'<p>{escape(metrics[k]["label"])}: {display_value(metrics[k])} ({escape(metrics[k]["status"])})</p>' for k in widget['metric_ids'])
+            elif widget['type'] == 'table':
+                parts.append('<table><tr><th>Product</th><th>Stockout flags</th></tr>')
+                parts.extend(f'<tr><td>{escape(str(row["product"]))}</td><td>{row["stockout_products"]}</td></tr>' for row in widget['data'])
+                parts.append('</table>')
+            else:
+                svg = chart_svg(widget, metrics, widget['type'], report['request']['granularity'])
+                if svg:
+                    filename = widget['id'] + '.svg'
+                    Path(directory, filename).write_text(svg, encoding='utf-8')
+                    parts.append(f'<img src="{filename}" width="490" height="178"/>')
+                else:
+                    parts.append('<p>No chart observations available.</p>')
+            if widget['notes']:
+                parts.append('<p class="note">' + escape(widget['notes']) + '</p>')
+            parts.extend('<p class="note">' + escape(note) + '</p>' for note in report['data_quality']['limitations']
+                         if note.startswith('Dashboard source [') and '] ' + widget['id'] + ':' in note)
+        if section == 'policy_evidence':
+            parts.extend('<p>' + escape(note) + '</p>' for note in report['data_quality']['limitations'] if note.startswith(('Policy Evidence:', 'Policy source [')))
+        if section == 'fixed_decisions':
+            for rule in report['decisions']:
+                text = rule['action'] if rule['triggered'] is True else 'Evaluated: condition not met.' if rule['triggered'] is False else 'Unavailable: insufficient validated snapshot evidence or coverage.'
+                parts.extend((f'<h3>{rule["id"]}: {escape(rule["title"])}</h3>', '<p>' + escape(rule['condition']) + '</p>', '<p>' + escape(text) + '</p>'))
+        if section == 'data_quality':
+            parts.extend('<p class="note">' + escape(note) + '</p>' for note in report['data_quality']['limitations'] if not note.startswith('Policy source ['))
+    parts.append('<h2>Sources</h2>')
+    evidence = {e['query_id']: e for metric in report['metrics'] for e in metric['evidence']}
+    parts.extend(f'<p class="note">[{escape(key)}] {escape(e["source_table"])}; {e["row_count"]} query result rows; snapshot {escape(e["filters"].get("snapshot_date", "period events"))}.</p>' for key, e in evidence.items())
+    return parts
+
+
+def render_pdf(parts, directory):
+    css = 'body{font-family:sans-serif;font-size:10pt;color:#14211d;line-height:1.3} h1{font-size:24pt;color:#075c4d}h2{font-size:16pt;margin-top:18pt}h3{font-size:10.5pt}p{margin:6pt 0}table{border-collapse:collapse;width:100%;margin:10pt 0}th,td{border-bottom:1px solid #dfe6e3;padding:7pt;text-align:left}th{background:#edf5f1}.subtitle,.note{color:#52635c}.note{font-size:8.5pt}.kpi{font-size:22pt;color:#075c4d}.new-page{page-break-before:always}.figure{page-break-inside:avoid;margin-top:14pt}img{max-width:100%}'
+    story = fitz.Story(html=''.join(parts), user_css=css, archive=fitz.Archive(directory))
+    size = fitz.paper_rect('a4')
+    pdf = story.write_with_links(lambda *_: (size, size + (42, 42, -42, -42), None))
+    for index, page in enumerate(pdf):
+        page.insert_text((42, size.height - 22), f'{index + 1} / {len(pdf)}', fontsize=8, color=(.35,.42,.38))
+    return pdf.tobytes(garbage=4, deflate=True)

@@ -30,6 +30,13 @@ The existing saved-report library, owner isolation, revision checks and PDF endp
 
 Sales contract, context, workflow, saved-report, adaptive report and browser-renderer regressions use the existing tests. `SALES_REPORT_TEST_URL` enables the existing read-only Sales arithmetic fixtures. Full-suite and focused test logs and a sample JSON/PDF preview are under the local `artifacts/inventory-operations/` directory.
 
+Verified on 2026-11-19 against latest main `ef5ac950`:
+
+- Focused reports: 159 tests, 147 passed, 12 opt-in database tests skipped in the offline run. All 11 read-only Inventory/Sales PostgreSQL fixtures also passed in the database-enabled run; the remaining optional saved-store PostgreSQL test was not run.
+- Full suite: 1,450 tests, 1,362 passed, 9 failures, 16 errors, 63 skipped. A clean main worktree ran 1,433 tests with the exact same 25 failing/error test names, 1,348 passing and 60 skipped. This change adds 14 passing checks and three optional database checks to that full-suite run.
+- Python compilation, JavaScript syntax checks and the existing Node report-workspace check passed. All three sample PDF pages were rendered and visually inspected. No live browser was connected, so browser-level visual testing remains unverified.
+- The full suite remains red on existing evaluation-fixture, Windows permission/decoder and legacy Streamlit failures. No unrelated fixes were added. Machine-readable results are in local `artifacts/inventory-operations/verification.json`.
+
 ## Changed files
 
 - `.gitattributes`: stable contract bytes across Windows/Linux checkouts.

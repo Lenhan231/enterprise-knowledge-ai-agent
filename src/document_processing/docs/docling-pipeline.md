@@ -67,11 +67,15 @@ document-processing container.
 ## Office and standalone images
 
 DOCX/PPTX/XLSX/CSV/TXT/Markdown use Docling's native document conversion.
+LibreOffice converts legacy DOC/PPT/XLS to their respective Open XML formats
+in a temporary profile before Docling runs.
 DOCX semantics are enriched in `docling_adapter/digital_born/docx_semantics.py`.
 When embedded-picture OCR is enabled, Office pictures use the configured OCR
-engine. PDFs do not receive a second embedded-image OCR pass. Standalone SVG
-and WebP are normalized to PNG before Docling; SVG input is restricted to
-self-contained content by `render_svg` in `document_processor.py`.
+engine. PDFs do not receive a second embedded-image OCR pass. BMP, GIF, WebP,
+SVG, HEIC/HEIF, and AVIF are normalized before Docling. Single-frame inputs
+use PNG and multi-frame inputs use TIFF, preserving frame order. Raster
+normalization accepts up to 50 frames, 16 million pixels per frame, and 32
+million pixels in total. SVG requires self-contained content.
 
 ## Runtime settings
 

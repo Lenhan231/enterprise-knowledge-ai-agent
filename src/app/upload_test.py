@@ -16,6 +16,8 @@ from fastapi.responses import Response
 from PIL import Image
 
 from app.security import _require_same_origin, require_permission
+from document_processing.formats import IMAGE_FORMATS, SUPPORTED_FORMATS
+from document_processing.image_input import normalize_image, render_webp
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -132,7 +134,6 @@ async def create_upload_test(
     _require_same_origin(request)
     filename = Path((file.filename or "").replace("\\", "/")).name
     suffix = Path(filename).suffix.lower()
-    from document_processing.document_processor import SUPPORTED_FORMATS, render_svg, render_webp
     if suffix not in SUPPORTED_FORMATS:
         raise HTTPException(415, "Unsupported Upload Test file format")
     if intent not in {"document", "invoice", "image_caption"}:
@@ -153,36 +154,26 @@ async def create_upload_test(
     page_previews = []
     preview_page_sizes = {}
     try:
-        if suffix == ".pdf":
-            source = fitz.open(stream=content, filetype="pdf")
-            page_count = len(source)
-            if not 1 <= page_count <= 50:
-                source.close()
-                raise HTTPException(422, "Upload Test accepts PDFs with 1-50 pages")
-            for page_number, page in enumerate(source, start=1):
-                preview_page_sizes[str(page_number)] = {
-                    "width": float(page.rect.width),
-                    "height": float(page.rect.height),
-                }
-                scale = min(120 / 72, 1800 / page.rect.width, 2400 / page.rect.height)
-                page_previews.append(page.get_pixmap(
-                    matrix=fitz.Matrix(scale, scale), alpha=False,
-                ).tobytes("png"))
-            source.close()
-        elif suffix in {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".svg", ".webp"}:
-            preview_content = render_svg(content) if suffix == ".svg" else render_webp(content) if suffix == ".webp" else content
-            source = fitz.open(stream=preview_content, filetype="png" if suffix in {".svg", ".webp"} else suffix[1:])
-            page_count = len(source)
-            for page_number, page in enumerate(source, start=1):
-                preview_page_sizes[str(page_number)] = {
-                    "width": float(page.rect.width),
-                    "height": float(page.rect.height),
-                }
-                scale = min(1.0, 1800 / page.rect.width, 2400 / page.rect.height)
-                page_previews.append(page.get_pixmap(
-                    matrix=fitz.Matrix(scale, scale), alpha=False,
-                ).tobytes("png"))
-            source.close()
+        if suffix == ".pdf" or suffix in IMAGE_FORMATS:
+            if suffix == ".webp" and intent != "document":
+                preview_content = await asyncio.to_thread(render_webp, content)
+                preview_suffix = ".png"
+            else:
+                preview_content, preview_suffix = await asyncio.to_thread(normalize_image, content, suffix)
+            with fitz.open(stream=preview_content, filetype=preview_suffix[1:]) as source:
+                page_count = len(source)
+                if suffix == ".pdf" and not 1 <= page_count <= 50:
+                    raise HTTPException(422, "Upload Test accepts PDFs with 1-50 pages")
+                max_scale = 120 / 72 if suffix == ".pdf" else 1.0
+                for page_number, page in enumerate(source, start=1):
+                    preview_page_sizes[str(page_number)] = {
+                        "width": float(page.rect.width),
+                        "height": float(page.rect.height),
+                    }
+                    scale = min(max_scale, 1800 / page.rect.width, 2400 / page.rect.height)
+                    page_previews.append(page.get_pixmap(
+                        matrix=fitz.Matrix(scale, scale), alpha=False,
+                    ).tobytes("png"))
     except HTTPException:
         raise
     except Exception as error:

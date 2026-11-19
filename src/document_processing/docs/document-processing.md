@@ -7,9 +7,11 @@ does not create parser chunks, embeddings, or production database records.
 ## Inputs and routes
 
 The authoritative extension list is `SUPPORTED_FORMATS` in
-[`document_processor.py`](../document_processor.py): PDF, DOCX, PPTX, XLSX,
-CSV, TXT, Markdown, PNG/JPEG, TIFF, SVG, and WebP. A caller can support fewer
-formats than the parser package.
+[`formats.py`](../formats.py). The document intent accepts PDF, DOC/DOCX,
+PPT/PPTX, XLS/XLSX, CSV, TXT, Markdown, PNG, JPEG, TIFF, BMP, GIF, WebP, SVG,
+HEIC/HEIF, and AVIF. Animated GIF and WebP frames produce separate pages.
+Legacy Office support covers binary Office files stored in a Compound File
+container. Invoice and image captioning have their own format lists.
 
 | Intent | Route | Main output |
 | --- | --- | --- |

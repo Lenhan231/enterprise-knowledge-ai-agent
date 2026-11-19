@@ -54,6 +54,14 @@ RUN python -m pip install --no-cache-dir uv \
     && uv cache clean \
     && rm -rf /tmp/uv-cache
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libreoffice-writer-nogui libreoffice-calc-nogui libreoffice-impress-nogui fonts-liberation \
+    && rm -rf /var/lib/apt/lists/* \
+    && python -m venv /opt/images \
+    && /opt/images/bin/pip install --no-cache-dir "pillow==12.3.0" "pillow-heif==1.8.0"
+
+ENV DOCUMENT_PROCESSING_IMAGE_PYTHON=/opt/images/bin/python
 COPY src ./src
 
 EXPOSE 8000

@@ -67,6 +67,9 @@ class InventoryContractTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'quoted segment filter'):parse_request('Inventory report July 2026 by segment')
         self.assertEqual(parse_request('Latest inventory snapshot report',latest=date(2026,7,31))['granularity'],'snapshot')
         with self.assertRaises(ValueError): parse_request('Inventory report July 2026 by region')
+        for text in ('Inventory report May 2026 for region "North"','Inventory report May 2026 for warehouse North',
+                     'Inventory report May 2026 for vendor "A"'):
+            with self.assertRaises(ValueError):parse_request(text)
 
     def test_fail_closed_rules(self):
         report = copy.deepcopy(load_contract()['runtime_output_template'])

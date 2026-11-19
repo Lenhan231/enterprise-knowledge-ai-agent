@@ -48,6 +48,12 @@ def permitted_policy(source):
 
 
 def parse_request(question, *, today=None, latest=None):
+    text = scope_text(question, dimensions=('category', 'segment', 'product'))
+    if re.search(r'\b(?:for|in|by|per)\s+(?:region|warehouse|supplier|customer|order[_ ]source)\b', text, re.I):
+        raise ValueError('Supported inventory dimensions: all, category, segment or product; the requested filter is unavailable.')
+    for match in re.finditer(r'\b(?:for|in|by)\s+([a-z_]+)\s+["\']', question, re.I):
+        if match[1].casefold() not in {'category', 'segment', 'product'}:
+            raise ValueError('Unsupported inventory dimension filter')
     scope = parse_calendar_request(question, today=today, latest=latest,
                                    topic=r'inventory|stock|tồn kho', dimensions=('category', 'segment', 'product'))
     text = scope_text(question, dimensions=('category', 'segment', 'product'))

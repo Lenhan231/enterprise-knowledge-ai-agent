@@ -78,6 +78,7 @@ class QueryIntent(_StrictModel):
     dimensions: list[str] = Field(default_factory=list, max_length=10)
     filters: list[IntentFilter] = Field(default_factory=list, max_length=12)
     time_scope: IntentTimeScope | None = None
+    time_grain: Literal['day', 'week', 'month', 'quarter', 'year'] | None = None
     requested_sources: list[IntentSource] = Field(default_factory=list, max_length=16)
     explicit_source_restriction: bool = False
     geographic_basis: Literal['order_destination', 'customer_profile', 'unknown'] | None = None
@@ -159,6 +160,7 @@ class IntentPatch(_StrictModel):
     dimensions: list[str] | None = Field(default=None, max_length=10)
     filters: list[IntentFilter] | None = Field(default=None, max_length=12)
     time_scope: IntentTimeScope | None = None
+    time_grain: Literal['day', 'week', 'month', 'quarter', 'year'] | None = None
     requested_sources: list[IntentSource] | None = Field(default=None, max_length=16)
     explicit_source_restriction: bool | None = None
     geographic_basis: Literal['order_destination', 'customer_profile', 'unknown'] | None = None

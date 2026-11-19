@@ -69,6 +69,25 @@ class QueryContractTest(unittest.TestCase):
         result = self.verify(sql=REGIONAL_SQL.replace(' GROUP BY g.region', ''))
         self.assertTrue(any('selected and grouped' in issue for issue in result.issues))
 
+    def test_requested_monthly_grain_requires_month_truncation_and_grouping(self):
+        intent = QueryIntent.model_validate_json(json.dumps({
+            'original_question': 'Show monthly revenue in 2022', 'operation': 'trend',
+            'metrics': ['revenue'], 'dimensions': [], 'filters': [],
+            'time_scope': {'mode': 'range', 'ranges': [
+                {'start': '2022-01-01', 'end_exclusive': '2023-01-01'}]},
+            'time_grain': 'month', 'requested_sources': [],
+            'explicit_source_restriction': False, 'geographic_basis': None,
+            'geographic_coverage': None, 'ranking': None, 'unresolved_slots': [],
+        }))
+        sql = ("SELECT DATE_TRUNC('month', s.date) AS month, SUM(s.revenue) AS revenue "
+               'FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 '
+               'GROUP BY 1 LIMIT 200')
+        parameters = ('2022-01-01', '2023-01-01')
+        self.assertEqual(self.verify(intent, sql, parameters).status, 'verified')
+        daily = sql.replace("DATE_TRUNC('month'", "DATE_TRUNC('day'")
+        result = self.verify(intent, daily, parameters)
+        self.assertTrue(any('month time grain' in issue for issue in result.issues))
+
     def test_wrong_geographic_zip_basis_is_rejected(self):
         sql = REGIONAL_SQL.replace('g.zip = o.zip', 'g.zip = c.zip').replace(
             'FROM commerce.orders AS o ',

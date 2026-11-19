@@ -130,6 +130,14 @@ class ChatAPITest(unittest.TestCase):
                 self.responses = [json.dumps({"sql": SQL, "parameters": []}), "Found product 42."]
 
             def generate(self, prompt):
+                if prompt.startswith('Extract only the user-requested business intent.'):
+                    return json.dumps({'intent': {
+                        'original_question': 'List products', 'operation': 'list',
+                        'metrics': [], 'dimensions': ['product_id'], 'filters': [],
+                        'time_scope': {'mode': 'all', 'ranges': []}, 'requested_sources': [],
+                        'explicit_source_restriction': False, 'geographic_basis': None,
+                        'geographic_coverage': None, 'ranking': None, 'unresolved_slots': [],
+                    }})
                 if prompt.startswith('Interpret the question BEFORE'):
                     return json.dumps({'domain':'other'})
                 return self.responses.pop(0)

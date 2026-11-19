@@ -238,7 +238,7 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
     async def report(request: Request, question: str = Form(...), template: UploadFile | None = File(None),
                      source_mode: Literal["documents", "analytics", "orchestrated", "combined"] | None = Form(None),
                      output_format: Literal["markdown", "docx"] | None = Form(None),
-                     report_type: Literal['sales_performance', 'inventory_risk'] | None = Form(None),
+                     report_type: Literal['sales_performance', 'inventory_operations', 'inventory_risk'] | None = Form(None),
                      template_choice: Literal['uploaded', 'suggested'] | None = Form(None),
                      accept_supported_scope: bool = Form(False),
                      conversation_id: str | None = Form(None, max_length=128)):

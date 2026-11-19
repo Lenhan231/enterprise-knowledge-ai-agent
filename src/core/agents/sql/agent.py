@@ -106,6 +106,10 @@ def payload_to_agent_result(payload: Mapping[str, Any], *, agent: str = "analyti
 
 
 class SQLAnalyticsAgent(BaseAgent):
+    async def run_inventory_report(self, request, scope):
+        from core.agents.sql.inventory_report import run
+        return await run(self, request, scope)
+
     async def run_sales_report(self, request, scope):
         from core.agents.sql.sales_report import run
         return await run(self, request, scope)

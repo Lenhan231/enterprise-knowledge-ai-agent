@@ -1658,10 +1658,10 @@ function renderAgentRows(data) {
 }
 
 function renderAgentResult(result, panel = $("#answer-panel"), shouldScroll = true) {
-  if (result.agent === 'report' && result.data?.report?.report_type === 'sales_performance') {
+  if (result.agent === 'report' && ['sales_performance','inventory_operations'].includes(result.data?.report?.report_type)) {
     const report = document.createElement('article');
     report.className = 'sales-report-view';
-    SalesPerformanceReport.render(report, result.data.report, {monthly_decisions:result.data.monthly_decisions, insights:result.data.insights});
+    SalesPerformanceReport.render(report, result.data.report, {monthly_decisions:result.data.monthly_decisions, insights:result.data.insights, inventory_context:result.data.inventory_context});
     panel.replaceChildren(report);
     panel.hidden = false;
     if (shouldScroll) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });

@@ -247,7 +247,7 @@ class InvoiceReviewRequest(BaseModel):
 def home():
     if os.getenv("BACKEND_ONLY") == "1":
         return {"service": "backend-api", "docs": "/docs"}
-    return FileResponse(STATIC_DIR / "index.html")
+    return FileResponse(STATIC_DIR / "index.html", headers={"Cache-Control": "no-cache"})
 
 
 @app.get("/health")

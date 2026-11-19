@@ -17,15 +17,9 @@ flowchart TD
     C -->|invoice| H[Docling OCR + tables]
     H --> I{Invoice provider}
     I -->|Gemini, Groq, Qwen| J[Extract from OCR text and table cells]
-    I -->|Xiaomi| Y[Extract from original page images]
     J --> K[Validated invoice JSON draft]
-    Y --> K
-    C -->|image_caption| V[VinternProcessor]
-    V --> W[Render pages and start isolated worker]
-    W --> X[Vintern caption]
     G --> L[Parser output]
     K --> L
-    X --> L
     L --> M{application handoff}
     M -->|parser-handoff route| N[Persist parser output]
     N --> O[Chunking worker]
@@ -34,11 +28,9 @@ flowchart TD
 ```
 
 Invoice parsing runs Docling for OCR, layout, and tables. Text providers use
-the extracted text and cells. Xiaomi-OCR-0 reads the original pages and keeps
-the Docling output as review evidence. Production invoice uploads are
-stored in `public.invoice_extractions`; they do not create a `documents` row,
-parser chunks, or embeddings. Every draft is marked for review. Image caption
-continues through Vintern separately.
+the extracted text and cells. Production invoice uploads are stored in
+`public.invoice_extractions`; they do not create a `documents` row, parser
+chunks, or embeddings. Every draft is marked for review.
 
 ## Where to trace next
 
@@ -48,7 +40,6 @@ continues through Vintern separately.
 | Layout, OCR, TableFormer and chart stages | [`docling_adapter/processor.py`](../docling_adapter/processor.py) · [Docling guide](docling-pipeline.md) |
 | Element/table mapping and cleanup | [`docling_adapter/result_mapper.py`](../docling_adapter/result_mapper.py) |
 | Invoice extraction and validation | [`invoice/`](../invoice/) · [Invoice guide](invoice-pipeline.md) |
-| Image-caption preparation and inference | [`vintern_processor.py`](../image_caption/vintern_processor.py) · [`vintern_worker.py`](../image_caption/vintern_worker.py) |
 | Upload Test API and async job status | [`src/app/upload_test.py`](../../app/upload_test.py) |
 | Production upload and parser handoff | [`src/app/main.py`](../../app/main.py) |
 | Parser output to parser chunks | [`src/core/chunking/README.md`](../../core/chunking/README.md) |

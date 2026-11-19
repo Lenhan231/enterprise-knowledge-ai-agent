@@ -1,6 +1,7 @@
 """Normalize image formats for Docling and previews."""
 
 from io import BytesIO
+import json
 import math
 import os
 import re
@@ -8,6 +9,7 @@ import subprocess
 import sys
 import xml.etree.ElementTree as ET
 
+from document_processing.diagnostics import PageLimitExceeded
 from document_processing.formats import (
     MODERN_IMAGE_FORMATS, NORMALIZED_RASTER_FORMATS, matches_signature,
 )
@@ -73,10 +75,11 @@ def _normalize_raster(content: bytes, suffix: str, *, single_frame: bool = False
     try:
         with Image.open(BytesIO(content), formats=[expected_format]) as image:
             count = getattr(image, "n_frames", 1)
-            if single_frame and count != 1:
-                raise ValueError("Expected a single-frame WebP image")
-            if count > _MAX_FRAMES:
-                raise ValueError(f"Image exceeds the {_MAX_FRAMES}-frame limit")
+            if count < 1:
+                raise ValueError("Image contains no frames")
+            frame_limit = 1 if single_frame else _MAX_FRAMES
+            if count > frame_limit:
+                raise PageLimitExceeded(count, frame_limit, count_unit="frames")
             frames = []
             pixels = 0
             for index in range(count):
@@ -103,7 +106,7 @@ def _normalize_raster(content: bytes, suffix: str, *, single_frame: bool = False
 
 
 def render_webp(content: bytes) -> bytes:
-    """Keep the single-frame WebP input used by invoice and caption uploads."""
+    """Keep the single-frame WebP input used by invoice uploads."""
     png, _ = _normalize_raster(content, ".webp", single_frame=True)
     return png
 
@@ -129,6 +132,12 @@ def normalize_image(content: bytes, suffix: str) -> tuple[bytes, str]:
         raise ValueError("Image decoding timed out") from error
     except OSError as error:
         raise RuntimeError("Image decoder could not start") from error
+    if converted.returncode == 3:
+        try:
+            frame_count, frame_limit = json.loads(converted.stderr.splitlines()[-1])
+        except (IndexError, TypeError, ValueError) as error:
+            raise RuntimeError("Image decoder returned invalid frame counts") from error
+        raise PageLimitExceeded(frame_count, frame_limit, count_unit="frames")
     if converted.returncode == 2:
         raise ValueError(converted.stderr.decode("utf-8", errors="replace").strip())
     if converted.returncode:
@@ -142,6 +151,9 @@ def normalize_image(content: bytes, suffix: str) -> tuple[bytes, str]:
 if __name__ == "__main__":
     try:
         payload, _ = _normalize_raster(sys.stdin.buffer.read(), sys.argv[1])
+    except PageLimitExceeded as error:
+        print(json.dumps([error.page_count, error.page_limit]), file=sys.stderr)
+        sys.exit(3)
     except ValueError as error:
         print(error, file=sys.stderr)
         sys.exit(2)

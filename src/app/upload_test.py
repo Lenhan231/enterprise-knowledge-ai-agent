@@ -16,6 +16,7 @@ from fastapi.responses import Response
 from PIL import Image
 
 from app.security import _require_same_origin, require_permission
+from document_processing.diagnostics import PageLimitExceeded, component_errors, document_log_context
 from document_processing.formats import IMAGE_FORMATS, SUPPORTED_FORMATS
 from document_processing.image_input import normalize_image, render_webp
 
@@ -24,6 +25,7 @@ router = APIRouter()
 # ponytail: in-process job state fits the single Upload Test API replica; use a durable queue if it must survive restarts or scale-out.
 _UPLOAD_TEST_JOBS: dict[uuid.UUID, dict[str, str | float]] = {}
 _UPLOAD_TEST_TASKS: set[asyncio.Task] = set()
+_UPLOAD_TEST_MAX_PDF_PAGES = 50
 
 
 def _process_and_save_upload_test(
@@ -33,37 +35,43 @@ def _process_and_save_upload_test(
     processing_started = time.perf_counter()
     from core.services.client import post
 
-    processing_url = os.environ.get("DOCUMENT_PROCESSING_URL")
-    if not processing_url:
-        raise RuntimeError("DOCUMENT_PROCESSING_URL is required")
+    log_context = document_log_context(
+        source_metadata, run_id=str(run_id), source_format=Path(filename).suffix.lower().lstrip("."),
+        intent=config.get("intent"),
+    )
     try:
-        parsed = post(processing_url, "/parse", {
-            "filename": filename,
-            "content": base64.b64encode(content).decode("ascii"),
-            "metadata": source_metadata,
-            "config": config,
-        }, timeout=600)
+        with component_errors(logger, "upload_test_parser_request", **log_context):
+            processing_url = os.environ.get("DOCUMENT_PROCESSING_URL")
+            if not processing_url:
+                raise RuntimeError("DOCUMENT_PROCESSING_URL is required")
+            parsed = post(processing_url, "/parse", {
+                "filename": filename,
+                "content": base64.b64encode(content).decode("ascii"),
+                "metadata": source_metadata,
+                "config": config,
+            }, timeout=600)
     except (ValueError, RuntimeError) as error:
         status_code = 503 if isinstance(error, RuntimeError) else 422
         raise HTTPException(status_code, f"Upload Test processing failed: {error}") from error
 
-    page_orientation_corrections = parsed.get("page_orientation_corrections") or {}
-    for page_number, raw_correction in page_orientation_corrections.items():
-        correction = int(raw_correction) % 360
-        index = int(page_number) - 1
-        if correction == 0 or not 0 <= index < len(page_previews):
-            continue
-        with Image.open(BytesIO(page_previews[index])) as source_preview:
-            oriented_preview = source_preview.rotate(-correction, expand=True)
-            buffer = BytesIO()
-            oriented_preview.save(buffer, format="PNG")
-            page_previews[index] = buffer.getvalue()
-        if correction in {90, 270}:
-            page_size = preview_page_sizes[str(page_number)]
-            preview_page_sizes[str(page_number)] = {
-                "width": page_size["height"],
-                "height": page_size["width"],
-            }
+    with component_errors(logger, "upload_test_preview_orientation", **log_context):
+        page_orientation_corrections = parsed.get("page_orientation_corrections") or {}
+        for page_number, raw_correction in page_orientation_corrections.items():
+            correction = int(raw_correction) % 360
+            index = int(page_number) - 1
+            if correction == 0 or not 0 <= index < len(page_previews):
+                continue
+            with Image.open(BytesIO(page_previews[index])) as source_preview:
+                oriented_preview = source_preview.rotate(-correction, expand=True)
+                buffer = BytesIO()
+                oriented_preview.save(buffer, format="PNG")
+                page_previews[index] = buffer.getvalue()
+            if correction in {90, 270}:
+                page_size = preview_page_sizes[str(page_number)]
+                preview_page_sizes[str(page_number)] = {
+                    "width": page_size["height"],
+                    "height": page_size["width"],
+                }
 
     runtime_info = {
         "pymupdf": pymupdf_version,
@@ -80,18 +88,19 @@ def _process_and_save_upload_test(
 
     from core.database.upload_test_repository import UploadTestRepository
 
-    repository = UploadTestRepository()
     try:
-        repository.save_run(
-            run_id, source_filename=filename, source_sha256=source_sha256,
-            uploaded_by=uploaded_by, processor_config=config, runtime_info=runtime_info,
-            page_previews=page_previews, elements=parsed["elements"], tables=parsed["tables"],
-        )
+        with component_errors(logger, "upload_test_persistence", **log_context):
+            repository = UploadTestRepository()
+            try:
+                repository.save_run(
+                    run_id, source_filename=filename, source_sha256=source_sha256,
+                    uploaded_by=uploaded_by, processor_config=config, runtime_info=runtime_info,
+                    page_previews=page_previews, elements=parsed["elements"], tables=parsed["tables"],
+                )
+            finally:
+                repository.close()
     except Exception as error:
-        logger.exception("Could not persist upload test run %s", run_id)
         raise HTTPException(503, "Upload processing completed, but its test output could not be saved") from error
-    finally:
-        repository.close()
 
     return {
         "run_id": str(run_id), "source_filename": filename,
@@ -134,19 +143,22 @@ async def create_upload_test(
     _require_same_origin(request)
     filename = Path((file.filename or "").replace("\\", "/")).name
     suffix = Path(filename).suffix.lower()
-    if suffix not in SUPPORTED_FORMATS:
-        raise HTTPException(415, "Unsupported Upload Test file format")
-    if intent not in {"document", "invoice", "image_caption"}:
-        raise HTTPException(422, "Choose document, invoice, or image caption processing")
-    if intent in {"invoice", "image_caption"} and suffix not in {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".webp", ".svg"}:
-        raise HTTPException(422, "Invoice extraction and image captioning support PDF and image files only")
-    if docling_device not in {"cpu", "cuda"} or docling_ocr_language not in {"vie+eng", "eng"} or not 1 <= docling_num_threads <= 16:
-        raise HTTPException(422, "Unsupported Docling device, OCR language, or thread count")
-    content = await file.read(20 * 1024 * 1024 + 1)
-    if len(content) > 20 * 1024 * 1024:
-        raise HTTPException(413, "Upload Test file exceeds the 20 MiB limit")
-    if suffix == ".pdf" and b"%PDF-" not in content[:1024]:
-        raise HTTPException(415, "The uploaded file is not a PDF")
+    run_id = uuid.uuid4()
+    log_context = {"run_id": str(run_id), "source_format": suffix.lstrip("."), "intent": intent}
+    with component_errors(logger, "upload_test_input_validation", **log_context):
+        if suffix not in SUPPORTED_FORMATS:
+            raise HTTPException(415, "Unsupported Upload Test file format")
+        if intent not in {"document", "invoice"}:
+            raise HTTPException(422, "Choose document or invoice processing")
+        if intent == "invoice" and suffix not in {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".webp", ".svg"}:
+            raise HTTPException(422, "Invoice extraction supports PDF and image files only")
+        if docling_device not in {"cpu", "cuda"} or docling_ocr_language not in {"vie+eng", "eng"} or not 1 <= docling_num_threads <= 16:
+            raise HTTPException(422, "Unsupported Docling device, OCR language, or thread count")
+        content = await file.read(20 * 1024 * 1024 + 1)
+        if len(content) > 20 * 1024 * 1024:
+            raise HTTPException(413, "Upload Test file exceeds the 20 MiB limit")
+        if suffix == ".pdf" and b"%PDF-" not in content[:1024]:
+            raise HTTPException(415, "The uploaded file is not a PDF")
 
     import fitz
 
@@ -155,25 +167,33 @@ async def create_upload_test(
     preview_page_sizes = {}
     try:
         if suffix == ".pdf" or suffix in IMAGE_FORMATS:
-            if suffix == ".webp" and intent != "document":
-                preview_content = await asyncio.to_thread(render_webp, content)
-                preview_suffix = ".png"
-            else:
-                preview_content, preview_suffix = await asyncio.to_thread(normalize_image, content, suffix)
-            with fitz.open(stream=preview_content, filetype=preview_suffix[1:]) as source:
-                page_count = len(source)
-                if suffix == ".pdf" and not 1 <= page_count <= 50:
-                    raise HTTPException(422, "Upload Test accepts PDFs with 1-50 pages")
-                max_scale = 120 / 72 if suffix == ".pdf" else 1.0
-                for page_number, page in enumerate(source, start=1):
-                    preview_page_sizes[str(page_number)] = {
-                        "width": float(page.rect.width),
-                        "height": float(page.rect.height),
-                    }
-                    scale = min(max_scale, 1800 / page.rect.width, 2400 / page.rect.height)
-                    page_previews.append(page.get_pixmap(
-                        matrix=fitz.Matrix(scale, scale), alpha=False,
-                    ).tobytes("png"))
+            preview_content, preview_suffix = content, suffix
+            if suffix in IMAGE_FORMATS:
+                with component_errors(logger, "upload_test_image_normalization", **log_context):
+                    if suffix == ".webp" and intent == "invoice":
+                        preview_content = await asyncio.to_thread(render_webp, content)
+                        preview_suffix = ".png"
+                    else:
+                        preview_content, preview_suffix = await asyncio.to_thread(normalize_image, content, suffix)
+            with component_errors(logger, "upload_test_page_previews", **log_context):
+                with fitz.open(stream=preview_content, filetype=preview_suffix[1:]) as source:
+                    page_count = len(source)
+                    if suffix == ".pdf" and page_count > _UPLOAD_TEST_MAX_PDF_PAGES:
+                        raise PageLimitExceeded(page_count, _UPLOAD_TEST_MAX_PDF_PAGES)
+                    if suffix == ".pdf" and page_count == 0:
+                        raise HTTPException(422, "Upload Test requires at least one PDF page")
+                    max_scale = 120 / 72 if suffix == ".pdf" else 1.0
+                    for page_number, page in enumerate(source, start=1):
+                        preview_page_sizes[str(page_number)] = {
+                            "width": float(page.rect.width),
+                            "height": float(page.rect.height),
+                        }
+                        scale = min(max_scale, 1800 / page.rect.width, 2400 / page.rect.height)
+                        page_previews.append(page.get_pixmap(
+                            matrix=fitz.Matrix(scale, scale), alpha=False,
+                        ).tobytes("png"))
+    except PageLimitExceeded as error:
+        raise HTTPException(422, str(error)) from error
     except HTTPException:
         raise
     except Exception as error:
@@ -187,13 +207,12 @@ async def create_upload_test(
         "docling_num_threads": docling_num_threads,
     }
     config = {
-        "parser_engine": "vintern_image_caption" if intent == "image_caption" else "docling",
+        "parser_engine": "docling",
         "intent": intent,
         "parser_settings": {"docling": docling_settings},
         **docling_settings,
         "vision_captioning": False,
     }
-    run_id = uuid.uuid4()
     source_sha256 = hashlib.sha256(content).hexdigest()
     source_metadata = {"source_type": "upload_test", "source_sha256": source_sha256}
     job_args = {

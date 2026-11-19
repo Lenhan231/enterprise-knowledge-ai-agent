@@ -1,5 +1,6 @@
 import unittest
 import importlib.util
+import json
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
@@ -7,6 +8,7 @@ if any(importlib.util.find_spec(module) is None for module in ("docling", "docli
     raise unittest.SkipTest("Docling is an optional document-processing dependency")
 
 from docling.datamodel.settings import DebugSettings, scoped, settings
+from docling.datamodel.base_models import ConversionStatus, DoclingComponentType, ErrorItem, FailureCategory
 from docling.datamodel.pipeline_options import TableFormerMode
 
 from document_processing.docling_adapter.processor import DoclingProcessor
@@ -70,6 +72,39 @@ class DoclingTimingSummaryTest(unittest.TestCase):
                 "intervals_ms": [1250.0],
             },
         })
+
+    def test_reports_the_stage_and_page_when_docling_returns_a_partial_result(self):
+        processor = DoclingProcessor({})
+        processor._pipeline_options = Mock()
+        conversion = SimpleNamespace(
+            status=ConversionStatus.PARTIAL_SUCCESS,
+            document=SimpleNamespace(pages={}),
+            errors=[ErrorItem(
+                component_type=DoclingComponentType.MODEL,
+                module_name="ocr",
+                error_message="Document data omitted from application logs",
+                category=FailureCategory.INFERENCE_FAILURE,
+                page_no=2,
+            )],
+        )
+        converter = SimpleNamespace(initialized_pipelines={}, convert=Mock(return_value=conversion))
+        with (
+            patch("document_processing.docling_adapter.processor.get_converter", return_value=converter),
+            patch("document_processing.docling_adapter.processor.process_embedded_images", return_value={}),
+            patch("document_processing.docling_adapter.processor.recognize_chart_regions", return_value={}),
+            patch("document_processing.docling_adapter.processor.map_result", return_value={"metadata": {}}),
+            self.assertLogs("document_processing.docling_adapter.processor", level="ERROR") as logs,
+        ):
+            result = processor.process(b"some pdf content", None, {
+                "metadata": {"format": "PDF", "document_id": "UPLOAD-1"},
+            })
+        self.assertIn("metadata", result)
+        event, payload = logs.records[0].getMessage().split(" ", 1)
+        self.assertEqual(event, "DOCUMENT_PROCESS_COMPONENT_ERROR")
+        details = json.loads(payload)
+        self.assertEqual((details["component"], details["page_number"]), ("ocr", 2))
+        self.assertEqual(details["error_code"], "inference_failure")
+        self.assertNotIn("Document data", payload)
 
 
 if __name__ == "__main__":

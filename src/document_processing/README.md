@@ -8,9 +8,8 @@ Start here when tracing a document:
 
 1. [Architecture and request flow](docs/architecture.md)
 2. [Parser contract and callers](docs/document-processing.md)
-3. Follow the selected path in [Docling and OCR](docs/docling-pipeline.md),
-   [invoice extraction](docs/invoice-pipeline.md), or
-   [Vintern image captioning](docs/vintern-pipeline.md)
+3. Follow the selected path in [Docling and OCR](docs/docling-pipeline.md) or
+   [invoice extraction](docs/invoice-pipeline.md)
 4. Check [output metadata](docs/metadata.md), then the separate
    [chunking pipeline](../core/chunking/README.md)
 
@@ -19,16 +18,14 @@ Start here when tracing a document:
 ```text
 DocumentProcessor.process
   ├─ intent=document       → Docling → elements + tables
-  ├─ intent=invoice        → Docling OCR + tables → invoice extractor → JSON draft
-  └─ intent=image_caption  → Vintern → caption + text element
+  └─ intent=invoice        → Docling OCR + tables → invoice extractor → JSON draft
 
 parser output → application handoff → core/chunking → persistence / indexing
 ```
 
 The invoice intent runs Docling for reviewable text and tables. Gemini, Groq,
-and Qwen use that evidence to extract fields. Xiaomi-OCR-0 reads the original
-pages and returns the same invoice schema. Vintern handles the image-caption
-intent.
+and Qwen use that evidence to extract fields. Qwen runs through Modal when
+configured and otherwise uses the isolated local invoice worker.
 
 ## Useful entry points
 
@@ -39,18 +36,12 @@ intent.
 | OCR line detection and printed/handwritten routing | [docling_adapter/scanned/](docling_adapter/scanned/) |
 | Docling output mapping | [docling_adapter/result_mapper.py](docling_adapter/result_mapper.py) |
 | Invoice OCR cache, extraction providers, and schema | [invoice/](invoice/) |
-| Vintern caption preparation and inference | [image_caption/](image_caption/) |
 | Isolated Python workers | [worker_runtime.py](worker_runtime.py) |
 | Local parser review UI | [testing_parser_streamlit.py](../../tools/processing/testing_parser_streamlit.py) |
 | Upload Test API | [src/app/upload_test.py](../app/upload_test.py) |
 | Production upload caller | [src/app/main.py](../app/main.py) |
 
 For local commands and image build notes, see [development](docs/development.md).
-
-Xiaomi-OCR-0 invoice mode (`invoice_provider=xiaomi`) reads original invoice
-pages in an isolated Transformers environment. Configure
-`DOCUMENT_PROCESSING_XIAOMI_PYTHON` or create `.venv-xiaomi`; see the
-[invoice pipeline](docs/invoice-pipeline.md) for setup and device settings.
 
 ## CPU OCR performance
 

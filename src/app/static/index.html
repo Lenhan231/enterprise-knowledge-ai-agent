@@ -316,9 +316,8 @@
                   <option value="gemini" selected>Gemini 3.1 Flash-Lite</option>
                   <option value="groq">GPT-OSS 120B · Groq</option>
                   <option value="modal">Qwen3-0.6B fine-tuned · Modal GPU</option>
-                  <option value="xiaomi">Xiaomi-OCR-0 · visual OCR</option>
                 </select>
-                <small class="upload-field-hint">Choose the invoice extractor. Xiaomi-OCR-0 reads the original page image; Docling still supplies reviewable OCR and tables.</small>
+                <small class="upload-field-hint">Choose the invoice text extractor. Docling supplies the reviewable OCR and tables.</small>
               </div>
               <div class="upload-field upload-field-wide">
                 <label id="upload-file-label" for="upload-file">Document file</label>
@@ -453,12 +452,12 @@
         <div class="section-heading">
           <div><h2>Run a document-processing pipeline</h2></div>
         </div>
-        <p>Choose general document parsing, invoice extraction, or image captioning. Results are saved for inspection without creating a production document.</p>
+        <p>Choose general document parsing or invoice extraction. Results are saved for inspection without creating a production document.</p>
         <form id="ocr-test-form" class="upload-form">
           <div class="ocr-test-field"><label for="ocr-test-file">Document to upload-test (up to 20 MiB; PDFs up to 50 pages)</label>
           <input id="ocr-test-file" name="file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff,.bmp,.gif,.webp,.svg,.heic,.heif,.avif" required></div>
           <div class="ocr-test-field"><label for="ocr-test-parser">Processing type</label>
-          <select id="ocr-test-parser" name="intent"><option value="document" selected>Document · Docling</option><option value="invoice">Invoice · Docling OCR + Qwen text model</option><option value="image_caption">Image caption · Vintern</option></select></div>
+          <select id="ocr-test-parser" name="intent"><option value="document" selected>Document · Docling</option><option value="invoice">Invoice · Docling OCR + Qwen text model</option></select></div>
           <fieldset data-parser-settings="document" hidden><legend>Docling tuning</legend>
             <div class="ocr-test-field"><label for="ocr-test-docling-device">Device</label><select id="ocr-test-docling-device" name="docling_device"><option value="cpu" selected>CPU</option><option value="cuda">NVIDIA CUDA</option></select></div>
             <div class="ocr-test-field"><label for="ocr-test-docling-ocr">OCR</label><select id="ocr-test-docling-ocr" name="docling_ocr"><option value="true" selected>On · scanned pages</option><option value="false">Off · digital text only</option></select></div>

@@ -4,9 +4,8 @@
 
 ```text
 PDF/image → Docling OCR, layout and TableFormer → reviewable text and tables
-  ├─ Gemini, Groq, Qwen use text and tables
-  └─ Xiaomi-OCR-0 reads the original pages
-Both paths → schema-checked JSON draft → public.invoice_extractions
+  → Gemini, Groq, or Qwen extract from text and tables
+  → schema-checked JSON draft → public.invoice_extractions
 ```
 
 `DocumentProcessor` first uses Docling with Vietnamese/English OCR and table
@@ -22,7 +21,7 @@ private `lenhanm1/qwen3-0.6b-invoice-lora-900` adapter. Set
 document-processing service environment so the worker can read the adapter.
 Model and adapter revisions are pinned in [`text_processor.py`](../invoice/text_processor.py) and can
 be overridden with `DOCUMENT_PROCESSING_INVOICE_*` environment variables. The
-local worker uses the interpreter configured by `DOCUMENT_PROCESSING_VINTERN_PYTHON`
+local worker uses the interpreter configured by `DOCUMENT_PROCESSING_INVOICE_WORKER_PYTHON`
 and shares the document-processing model cache.
 
 Table extraction returns both item rows and explicitly labeled subtotal, tax,
@@ -73,29 +72,10 @@ records. `GET /api/invoices/{invoice_id}` is limited to the uploader and admins.
 The web Upload form exposes “Invoice extraction” separately from “Knowledge
 document”; it hides the knowledge-base access-role controls for invoice mode
 and displays the returned JSON draft. Invoice uploads can select Gemini 3.1
-Flash-Lite, Groq GPT-OSS 120B, the fine-tuned Qwen3-0.6B adapter served through
-Modal GPU, or Xiaomi-OCR-0. The Xiaomi path reads the original PDF/image pages
-with the vision-language model while retaining Docling OCR and tables as
-reviewable evidence. The normal document upload remains on its existing
+Flash-Lite, Groq GPT-OSS 120B, or the fine-tuned Qwen3-0.6B adapter served
+through Modal GPU. When the Modal endpoint is unset, Qwen uses the local
+isolated invoice worker. The normal document upload remains on its existing
 parser/chunking/indexing route.
-
-Xiaomi inference runs in an isolated Python environment so the main parser
-dependencies are not changed. The document-processing Docker image includes
-this runtime at `/opt/xiaomi/bin/python`. For local runs, create `.venv-xiaomi`
-with Python 3.13 and the verified Transformers 5.17 / PyTorch 2.14 stack, or
-set `DOCUMENT_PROCESSING_XIAOMI_PYTHON` to an equivalent interpreter:
-
-```bash
-uv venv --python 3.13 .venv-xiaomi
-uv pip install --python .venv-xiaomi/bin/python \
-  "transformers==5.17.0" "torch==2.14.0" "torchvision==0.29.0" pillow
-```
-
-The runtime downloads `xiaomi-research/Xiaomi-OCR-0` on first use. Docker uses
-CPU inference by default; set `DOCUMENT_PROCESSING_XIAOMI_DEVICE=cpu` or `cuda`
-to choose the device in other deployments. `DOCUMENT_PROCESSING_XIAOMI_TIMEOUT_SECONDS`
-controls the worker timeout. Xiaomi results use the same `invoice.v1` schema
-and remain `review_required`.
 
 The first local inference may download base and adapter weights into `/models`;
 subsequent loads use the persistent model cache. Modal loads the base and adapter

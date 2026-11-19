@@ -3,6 +3,7 @@
 import asyncio
 import base64
 from io import BytesIO
+import json
 from pathlib import Path
 import sys
 from types import SimpleNamespace
@@ -95,6 +96,36 @@ class DocumentFormatUploadTest(unittest.IsolatedAsyncioTestCase):
         for index, color in enumerate(((255, 0, 0), (0, 0, 255))):
             with Image.open(BytesIO(args["page_previews"][index])) as preview:
                 self.assertEqual(preview.getpixel((0, 0)), color)
+
+    async def test_upload_test_logs_observed_pdf_pages_over_the_limit(self):
+        import fitz
+
+        with fitz.open() as pdf:
+            for _ in range(51):
+                pdf.new_page()
+            content = pdf.tobytes()
+        with (
+            patch.object(upload_test, "_require_same_origin"),
+            patch.object(upload_test, "_run_upload_test_job", new_callable=AsyncMock) as job,
+            self.assertLogs("app.upload_test", level="ERROR") as logs,
+            self.assertRaises(HTTPException) as error,
+        ):
+            await upload_test.create_upload_test(
+                request=None, file=UploadFile(filename="private.pdf", file=BytesIO(content)),
+                intent="document", docling_device="cpu", docling_ocr=True,
+                docling_ocr_language="eng", docling_table_structure=True,
+                docling_num_threads=2, user={"sub": "owner"},
+            )
+        self.assertEqual(error.exception.status_code, 422)
+        self.assertIn("51 pages", error.exception.detail)
+        job.assert_not_called()
+        event, payload = logs.records[0].getMessage().split(" ", 1)
+        self.assertEqual(event, "DOCUMENT_PROCESS_COMPONENT_ERROR")
+        details = json.loads(payload)
+        self.assertEqual(details["component"], "upload_test_page_previews")
+        self.assertEqual(details["error_code"], "page_limit_exceeded")
+        self.assertEqual((details["page_count"], details["page_limit"], details["count_unit"]), (51, 50, "pages"))
+        self.assertNotIn("private.pdf", payload)
 
     def test_svg_original_is_served_as_an_attachment(self):
         storage = MagicMock()

@@ -861,7 +861,7 @@ async function loadOcrTestRuns() {
     const intent = config.intent || "document";
     const parserSettings = intent === "document"
       ? `Document · Docling · ${selected.docling_device || "cpu"} · OCR ${selected.docling_ocr ? "on" : "off"} (${selected.docling_ocr_language || "vi"}) · tables ${selected.docling_table_structure ? "on" : "off"} · ${selected.docling_num_threads || 4} threads`
-      : intent === "invoice" ? "Invoice extraction · Docling OCR + configured model" : "Image caption · Vintern";
+      : intent === "invoice" ? "Invoice extraction · Docling OCR + configured model" : "Legacy processing run";
     const settings = parserSettings;
     const previewSummary = run.page_count ? `${formatNumber(run.page_count)} page previews` : "no page previews";
     const processingSummary = `processing ${formatDuration(run.runtime_info?.processing_time_ms)}`;
@@ -2457,7 +2457,7 @@ $("#ocr-test-form").addEventListener("submit", async (event) => {
   const button = $("#ocr-test-button");
   button.disabled = true;
   const intent = form.elements.namedItem("intent").value;
-  const parserLabel = intent === "document" ? "Docling" : intent === "invoice" ? "Docling OCR + configured invoice extraction" : "Vintern image caption";
+  const parserLabel = intent === "document" ? "Docling" : "Docling OCR + configured invoice extraction";
   $("#ocr-test-status").textContent = `Running ${parserLabel}…`;
   try {
     let result = await api("/api/upload-tests", {method:"POST", body:new FormData(form)});
@@ -2471,10 +2471,10 @@ $("#ocr-test-form").addEventListener("submit", async (event) => {
           const elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000);
           const runningLabel = intent === "invoice"
             ? "Docling OCR + configured invoice extraction"
-            : intent === "image_caption" ? "Vintern image caption" : "Docling";
+            : "Docling";
           $("#ocr-test-status").textContent = `${runningLabel} is still processing (${formatDuration(elapsedSeconds * 1000)})…`;
         } else if (result.status === "failed") {
-          throw new Error(result.error || "Vintern processing failed");
+          throw new Error(result.error || "Upload Test processing failed");
         }
       }
     }

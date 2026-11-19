@@ -29,7 +29,7 @@ jobs:
           cp .env.example .env
           docker compose --profile proxy config --quiet
       - name: Build application container
-        run: docker compose build backend-api embeddings reranker document-processing
+        run: docker compose build backend-api retrieval-api embeddings reranker document-processing
       - name: Verify document format conversion in the parser image
         run: |
           docker compose run --rm --no-deps -T \

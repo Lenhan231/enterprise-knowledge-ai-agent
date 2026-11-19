@@ -13,6 +13,7 @@ from core.agents.decision_support.execution import TaskOutcome
 from core.agents.knowledge_agent import KnowledgeAgent
 from core.agents.router import AgentRouter
 from core.agents.intent_classifier import JEV_ROUTES, classify_jev_route
+from core.agents.sql.query_intent import ClarificationChoice, PendingClarification, QueryIntent
 from core.agents.response import _supported_numbers
 from core.models.agent_plan import AgentPlan
 from core.models.agents import AgentRequest, AgentResult, Evidence, VerifiedIdentity
@@ -298,6 +299,14 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
             'clarification': 'Bạn muốn dùng snapshot mới nhất của mỗi sản phẩm?',
             'clarification_options': ['Có', 'Không'],
             'clarification_plan': plan.model_dump_json(),
+            'clarification_state': {
+                'id': 'pending-binary-choice-id-001', 'version': 1,
+                'scope': original, 'question': 'Bạn muốn dùng snapshot mới nhất của mỗi sản phẩm?',
+                'choices': [
+                    {'id': 'binary-choice-yes-0001', 'label': 'Có', 'kind': 'plan', 'index': 0},
+                    {'id': 'binary-choice-no-00001', 'label': 'Không', 'kind': 'plan', 'index': 1},
+                ], 'allow_custom': True, 'active': True,
+            },
         }
         router = AgentRouter(None, None, None, llm=FakeProvider([]))
         selection = {'question': original, 'index': 0}
@@ -322,8 +331,8 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         classifier.assert_not_called()
         planner.assert_not_awaited()
         from core.agents.decision_support.router import _resolve_clarification_choice
-        self.assertEqual(_resolve_clarification_choice({'question': original, 'index': 1}, [turn])[:3],
-                         (original, 2, 'Không'))
+        self.assertIsNone(_resolve_clarification_choice(
+            {'question': original, 'index': 1}, [turn]))
 
     async def test_structured_clarification_selection_works_in_direct_sql_mode(self):
         original = 'Top khách hàng theo doanh thu năm 2025'
@@ -347,7 +356,17 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         async with router.conversations.session(initial) as history:
             history.append({'question': original, 'scope': original,
                             'clarification': 'Bạn muốn chọn nguồn nào?',
-                            'clarification_options': options})
+                            'clarification_options': options,
+                            'clarification_state': {
+                                'id': 'pending-direct-choice-id-01', 'version': 1,
+                                'scope': original, 'question': 'Bạn muốn chọn nguồn nào?',
+                                'choices': [
+                                    {'id': 'direct-choice-sales-0001', 'label': options[0],
+                                     'kind': 'plan', 'index': 0},
+                                    {'id': 'direct-choice-items-0001', 'label': options[1],
+                                     'kind': 'plan', 'index': 1},
+                                ], 'allow_custom': True, 'active': True,
+                            }})
 
         selection = {'question': original, 'index': 1}
         request = AgentRequest(question=options[1], identity=IDENTITY,
@@ -651,3 +670,193 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
                              FakeAgent(source_result('analytics', rows=[{'count': 3}])), llm=Selecting([]))
         results = await asyncio.gather(*(router.run(AgentRequest(question=q, identity=IDENTITY)) for q in ['orders', 'policy']))
         self.assertEqual([r.metadata['selected_route'] for r in results], ['analytics', 'knowledge'])
+
+
+class ServerOwnedClarificationContractTest(unittest.IsolatedAsyncioTestCase):
+    def request(self, question, conversation='clarification-session', subject='analyst', permissions=None,
+                metadata=None):
+        return AgentRequest(
+            question=question, conversation_id=conversation,
+            identity=VerifiedIdentity(subject=subject, permissions=permissions or {'analytics:read'}),
+            metadata=metadata or {},
+        )
+
+    async def test_plan_choices_use_one_public_contract_and_replay_is_rejected(self):
+        original = 'Top customers by revenue in 2025'
+        options = ['Based on sales', 'Based on order_items']
+
+        class SQL:
+            def __init__(self):
+                self.requests = []
+
+            async def run(self, request):
+                self.requests.append(request)
+                if len(self.requests) == 1:
+                    return AgentResult(answer='Which source should I use?', agent='sql', metadata={
+                        'ok': False, 'status': 'clarification_required',
+                        'clarification_required': True, 'clarification_options': options,
+                    })
+                return AgentResult(answer='Done', agent='sql', metadata={'ok': True, 'status': 'complete'})
+
+        sql = SQL()
+        router = AgentRouter(None, None, sql, llm=FakeProvider([]))
+        first = await router.run_mode(self.request(original), 'sql')
+        ui = first.metadata['clarification_ui']
+        self.assertEqual([choice['label'] for choice in ui['choices']], options)
+        self.assertTrue(ui['allow_custom'])
+        self.assertNotIn('pending_clarification', first.metadata)
+        self.assertNotIn('_pending_clarification', first.metadata)
+
+        selected = {'clarification_reply': {
+            'clarification_id': ui['id'], 'version': ui['version'],
+            'choice_id': ui['choices'][1]['id'],
+        }}
+        resumed = await router.run_mode(
+            self.request(options[1], metadata=selected), 'sql')
+        self.assertEqual(sql.requests[1].question, f'{original}\n\nUser clarification: {options[1]}')
+        self.assertEqual(resumed.answer, 'Done')
+
+        replay = await router.run_mode(self.request(options[1], metadata=selected), 'sql')
+        self.assertEqual(len(sql.requests), 2)
+        self.assertEqual(replay.metadata['clarification_reply_error'], 'stale_or_invalid')
+
+    async def test_structured_choice_is_isolated_by_user_conversation_and_permissions(self):
+        class SQL:
+            def __init__(self): self.calls = 0
+            async def run(self, request):
+                self.calls += 1
+                return AgentResult(answer='Choose one', agent='sql', metadata={
+                    'ok': False, 'status': 'clarification_required',
+                    'clarification_required': True, 'clarification_options': ['A', 'B'],
+                })
+
+        sql = SQL()
+        router = AgentRouter(None, None, sql, llm=FakeProvider([]))
+        first = await router.run_mode(self.request('Original'), 'sql')
+        ui = first.metadata['clarification_ui']
+        reply = {'clarification_reply': {
+            'clarification_id': ui['id'], 'version': ui['version'],
+            'choice_id': ui['choices'][0]['id'],
+        }}
+        for request in (
+            self.request('A', conversation='other-conversation', metadata=reply),
+            self.request('A', subject='other-user', metadata=reply),
+            self.request('A', metadata=reply, permissions={'analytics:read', 'documents:read'}),
+        ):
+            result = await router.run_mode(request, 'sql')
+            self.assertEqual(result.metadata['clarification_reply_error'], 'stale_or_invalid')
+            self.assertEqual(sql.calls, 1)
+
+    async def test_concurrent_clicks_accept_at_most_one_execution(self):
+        class SQL:
+            def __init__(self): self.calls = 0
+            async def run(self, request):
+                self.calls += 1
+                if self.calls == 1:
+                    return AgentResult(answer='Choose one', agent='sql', metadata={
+                        'ok': False, 'status': 'clarification_required',
+                        'clarification_required': True, 'clarification_options': ['A', 'B'],
+                    })
+                await asyncio.sleep(0.01)
+                return AgentResult(answer='Done', agent='sql', metadata={'ok': True, 'status': 'complete'})
+
+        sql = SQL()
+        router = AgentRouter(None, None, sql, llm=FakeProvider([]))
+        first = await router.run_mode(self.request('Original'), 'sql')
+        ui = first.metadata['clarification_ui']
+        metadata = {'clarification_reply': {
+            'clarification_id': ui['id'], 'version': ui['version'],
+            'choice_id': ui['choices'][0]['id'],
+        }}
+        results = await asyncio.gather(*(
+            router.run_mode(self.request('A', metadata=metadata), 'sql') for _ in range(2)))
+        self.assertEqual(sql.calls, 2)
+        self.assertEqual(sum(result.metadata.get('clarification_reply_error') == 'stale_or_invalid'
+                             for result in results), 1)
+
+    async def test_query_intent_choice_updates_only_its_slot_without_exposing_intent(self):
+        question = 'Revenue by region for May 2026'
+        intent = QueryIntent.model_validate_json(json.dumps({
+            'original_question': question, 'operation': 'aggregate',
+            'metrics': ['regional_revenue'], 'dimensions': ['region'], 'filters': [],
+            'time_scope': {'mode': 'range', 'ranges': [
+                {'start': '2026-05-01', 'end_exclusive': '2026-06-01'}]},
+            'time_grain': None,
+            'requested_sources': [
+                {'name': 'commerce.orders', 'provenance': 'ontology_required'},
+                {'name': 'commerce.order_items', 'provenance': 'ontology_required'},
+                {'name': 'commerce.geography', 'provenance': 'ontology_required'},
+            ],
+            'explicit_source_restriction': False,
+            'geographic_basis': 'order_destination', 'geographic_coverage': 'unspecified',
+            'ranking': None, 'unresolved_slots': ['geographic_coverage'],
+        }), strict=True)
+        pending = PendingClarification(
+            original_question=question, intent=intent, unresolved_slots=['geographic_coverage'],
+            clarification_question='Bạn muốn xem tất cả khu vực hay lọc theo một khu vực cụ thể?',
+            allowed_choices=[
+                ClarificationChoice(number=1, label='Tất cả khu vực',
+                                    slot='geographic_coverage', value='all'),
+                ClarificationChoice(number=2, label='Một khu vực cụ thể',
+                                    slot='geographic_coverage', value='filtered'),
+            ],
+        )
+
+        class SQL:
+            def __init__(self): self.requests = []
+            async def run(self, request):
+                self.requests.append(request)
+                if len(self.requests) == 1:
+                    return AgentResult(answer=pending.clarification_question, agent='sql', metadata={
+                        'ok': False, 'status': 'clarification_required',
+                        'clarification_required': True,
+                        '_pending_clarification': pending.model_dump(mode='json'),
+                    })
+                return AgentResult(answer='Done', agent='sql', metadata={'ok': True, 'status': 'complete'})
+
+        sql = SQL()
+        router = AgentRouter(None, None, sql, llm=FakeProvider([]))
+        first = await router.run_mode(self.request(question), 'sql')
+        ui = first.metadata['clarification_ui']
+        self.assertEqual([item['label'] for item in ui['choices']], ['Tất cả khu vực', 'Một khu vực cụ thể'])
+        self.assertNotIn('_pending_clarification', first.metadata)
+        result = await router.run_mode(self.request('Tất cả khu vực', metadata={
+            'clarification_reply': {'clarification_id': ui['id'], 'version': ui['version'],
+                                    'choice_id': ui['choices'][0]['id']},
+        }), 'sql')
+        resolved = sql.requests[1].metadata['_query_intent']
+        self.assertEqual(resolved['metrics'], ['regional_revenue'])
+        self.assertEqual(resolved['geographic_coverage'], 'all')
+        self.assertEqual(resolved['time_scope']['ranges'][0]['start'], '2026-05-01')
+        self.assertEqual(resolved['dimensions'], ['region'])
+        self.assertEqual(result.answer, 'Done')
+
+    async def test_programmer_error_in_plain_text_resolution_is_not_swallowed(self):
+        question = 'Revenue by week in 2025'
+        intent = QueryIntent.model_validate_json(json.dumps({
+            'original_question': question, 'operation': 'trend', 'metrics': ['revenue'],
+            'dimensions': [], 'filters': [], 'time_scope': {'mode': 'all', 'ranges': []},
+            'time_grain': 'week', 'requested_sources': [],
+            'explicit_source_restriction': False, 'geographic_basis': None,
+            'geographic_coverage': None, 'ranking': None, 'unresolved_slots': ['time_grain'],
+        }), strict=True)
+        pending = PendingClarification(
+            original_question=question, intent=intent, unresolved_slots=['time_grain'],
+            clarification_question='Which time grain should I use?',
+        )
+
+        class SQL:
+            async def run(self, request):
+                return AgentResult(answer=pending.clarification_question, agent='sql', metadata={
+                    'ok': False, 'status': 'clarification_required',
+                    '_pending_clarification': pending.model_dump(mode='json'),
+                })
+
+        for mode in ('sql', 'auto'):
+            with self.subTest(mode=mode):
+                router = AgentRouter(None, None, SQL(), llm=FakeProvider([]))
+                await router.run_mode(self.request(question), 'sql')
+                with patch('core.agents.decision_support.router.resolve_pending_clarification',
+                           new=AsyncMock(side_effect=KeyError('time_grain'))):
+                    with self.assertRaisesRegex(KeyError, 'time_grain'):
+                        await router.run_mode(self.request('Use month'), mode)

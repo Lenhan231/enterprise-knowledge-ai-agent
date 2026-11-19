@@ -12,7 +12,7 @@ from core.analytics.metric_ontology import METRIC_ONTOLOGY
 
 IntentSlot = Literal[
     'operation', 'metric', 'dimension', 'filters', 'time_scope', 'ranking',
-    'source_scope', 'geographic_basis', 'geographic_coverage',
+    'time_grain', 'source_scope', 'geographic_basis', 'geographic_coverage',
 ]
 SourceProvenance = Literal['user', 'inferred', 'ontology_required']
 

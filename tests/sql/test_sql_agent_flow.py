@@ -939,6 +939,208 @@ ORDER BY m.sessions DESC LIMIT 20""",
             groq.assert_called_once_with(model=None)
             cloudflare.assert_not_called()
 
+    async def test_intent_failure_with_explicit_dealer_scope_does_not_generate_or_execute_sql(self):
+        question = 'Tổng doanh thu năm 2025 của đại lý Bình Minh'
+        provider = FakeProvider([])
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+
+        with patch('core.agents.sql.agent.interpret_query_intent', new=AsyncMock(
+                side_effect=ValueError('invalid intent JSON'))):
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertEqual(result['query_status'], 'clarification_required')
+        self.assertEqual(result['metadata']['query_intent_fallback'], 'ValueError')
+        self.assertEqual(result['metadata']['request_semantic_verification']['status'], 'inconclusive')
+        self.assertEqual(provider.response_index, 0)
+        repository.execute_approved_query.assert_not_awaited()
+
+    async def test_intent_failure_with_unrecognized_city_does_not_drop_location_scope(self):
+        provider = FakeProvider([])
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        with patch('core.agents.sql.agent.interpret_query_intent', new=AsyncMock(
+                side_effect=ValueError('invalid intent JSON'))):
+            result = await agent.run_payload(AgentRequest(
+                question='Revenue in 2025 for Hanoi',
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertEqual(result['query_status'], 'clarification_required')
+        self.assertEqual(provider.response_index, 0)
+        repository.execute_approved_query.assert_not_awaited()
+
+    async def test_intent_failure_with_customer_ranking_and_city_is_not_bounded_fallback(self):
+        provider = FakeProvider([])
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        with patch('core.agents.sql.agent.interpret_query_intent', new=AsyncMock(
+                side_effect=ValueError('invalid intent JSON'))):
+            result = await agent.run_payload(AgentRequest(
+                question='Khách hàng nào có nhiều đơn hàng nhất ở Hà Nội?',
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertEqual(result['query_status'], 'clarification_required')
+        self.assertNotEqual(result['metadata'].get('query_intent_fallback_contract'),
+                            'bounded_supported_grammar')
+        self.assertEqual(provider.response_index, 0)
+        repository.execute_approved_query.assert_not_awaited()
+
+    async def test_intent_failure_customer_order_ranking_uses_bounded_verified_fallback(self):
+        sql = (
+            'SELECT c.customer_id, COUNT(DISTINCT o.order_id) AS order_count '
+            'FROM commerce.orders AS o JOIN commerce.customers AS c '
+            'ON c.customer_id = o.customer_id GROUP BY c.customer_id '
+            'ORDER BY order_count DESC LIMIT 1'
+        )
+        question = 'Khách hàng nào có nhiều đơn hàng nhất?'
+        provider = FakeProvider([plan(sql)])
+        repository = FakeRepository()
+        repository.execute_approved_query.return_value = [{'customer_id': 44, 'order_count': 8}]
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        selected = {'commerce.orders', 'commerce.customers'}
+
+        with patch('core.agents.sql.agent.interpret_query_intent', new=AsyncMock(
+                side_effect=ValueError('invalid intent JSON'))), \
+             patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': selected, 'required_tables': selected, 'candidate_tables': selected}):
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertEqual(result['query_status'], 'executed', result)
+        self.assertEqual(result['metadata']['request_semantic_verification']['status'], 'verified')
+        self.assertEqual(result['metadata']['query_intent_fallback_contract'], 'bounded_supported_grammar')
+        self.assertEqual(provider.response_index, 1)
+        repository.execute_approved_query.assert_awaited_once()
+
+    async def test_intent_failure_simple_annual_revenue_uses_bounded_fallback(self):
+        sql = ('SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s '
+               'WHERE s.date >= $1 AND s.date < $2 LIMIT 1')
+        provider = FakeProvider([json.dumps({
+            'sql': sql, 'parameters': ['2025-01-01', '2026-01-01'],
+        })])
+        repository = FakeRepository()
+        repository.execute_approved_query.return_value = [{'revenue': 420}]
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+
+        with patch('core.agents.sql.agent.interpret_query_intent', new=AsyncMock(
+                side_effect=ValueError('invalid intent JSON'))), \
+             patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': {'commerce.sales'}, 'required_tables': {'commerce.sales'},
+                'candidate_tables': {'commerce.sales'}}):
+            result = await agent.run_payload(AgentRequest(
+                question='Revenue in 2025, I need the yearly total',
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertEqual(result['query_status'], 'executed', result)
+        self.assertEqual(result['metadata']['request_semantic_verification']['status'], 'verified')
+        self.assertEqual(result['metadata']['query_intent_fallback_contract'], 'bounded_supported_grammar')
+        self.assertEqual(provider.response_index, 1)
+        repository.execute_approved_query.assert_awaited_once_with(sql, date(2025, 1, 1), date(2026, 1, 1))
+
+    async def test_intent_failure_gross_profit_year_rejects_sql_missing_the_requested_period(self):
+        sql = 'SELECT SUM(s.revenue) - SUM(s.cogs) AS gross_profit FROM commerce.sales AS s LIMIT 1'
+        provider = FakeProvider([plan(sql), plan(sql)])
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        selected = {'commerce.sales'}
+
+        with patch('core.agents.sql.agent.interpret_query_intent', new=AsyncMock(
+                side_effect=ValueError('invalid intent JSON'))), \
+             patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': selected, 'required_tables': selected, 'candidate_tables': selected}):
+            result = await agent.run_payload(AgentRequest(
+                question='Gross profit in 2025',
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertNotEqual(result['query_status'], 'executed')
+        self.assertEqual(provider.response_index, 2)
+        repository.execute_approved_query.assert_not_awaited()
+
+    async def test_intent_failure_unscoped_request_is_explicitly_semantically_inconclusive(self):
+        sql = 'SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s LIMIT 1'
+        provider = FakeProvider([plan(sql)])
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+
+        with patch('core.agents.sql.agent.interpret_query_intent', new=AsyncMock(
+                side_effect=ValueError('invalid intent JSON'))):
+            result = await agent.run_payload(AgentRequest(
+                question='Show total revenue',
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertEqual(result['query_status'], 'executed', result)
+        self.assertEqual(result['metadata']['request_semantic_verification']['status'], 'inconclusive')
+        self.assertTrue(any('complete business meaning was not verified' in item
+                            for item in result['limitations']))
+        repository.execute_approved_query.assert_awaited_once()
+
+    async def test_intent_failure_unsafe_sql_never_reaches_repository(self):
+        provider = FakeProvider([plan('DELETE FROM commerce.sales')] * 3)
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+
+        with patch('core.agents.sql.agent.interpret_query_intent', new=AsyncMock(
+                side_effect=ValueError('invalid intent JSON'))):
+            result = await agent.run_payload(AgentRequest(
+                question='Revenue in 2025, I need the yearly total',
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertNotEqual(result['query_status'], 'executed')
+        self.assertEqual(provider.response_index, 2)
+        repository.execute_approved_query.assert_not_awaited()
+
+    async def test_intent_failure_unauthorized_source_never_reaches_repository(self):
+        sql = 'SELECT u.id FROM public.users AS u LIMIT 1'
+        provider = FakeProvider([plan(sql)] * 3)
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+
+        with patch('core.agents.sql.agent.interpret_query_intent', new=AsyncMock(
+                side_effect=ValueError('invalid intent JSON'))):
+            result = await agent.run_payload(AgentRequest(
+                question='Revenue in 2025, I need the yearly total',
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertNotEqual(result['query_status'], 'executed')
+        self.assertEqual(provider.response_index, 2)
+        repository.execute_approved_query.assert_not_awaited()
+
+    async def test_intent_failure_monthly_fallback_rejects_missing_grouping(self):
+        sql = ('SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s '
+               'WHERE s.date >= $1 AND s.date < $2 LIMIT 1')
+        provider = FakeProvider([json.dumps({
+            'sql': sql, 'parameters': ['2025-01-01', '2026-01-01'],
+        })] * 3)
+        repository = FakeRepository()
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+
+        with patch('core.agents.sql.agent.interpret_query_intent', new=AsyncMock(
+                side_effect=ValueError('invalid intent JSON'))), \
+             patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': {'commerce.sales'}, 'required_tables': {'commerce.sales'},
+                'candidate_tables': {'commerce.sales'}}):
+            result = await agent.run_payload(AgentRequest(
+                question='Revenue in 2025 by month, I need the monthly total',
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertNotEqual(result['query_status'], 'executed')
+        self.assertIn('projected and grouped', result['metadata']['error_detail'])
+        self.assertEqual(provider.response_index, 2)
+        repository.execute_approved_query.assert_not_awaited()
+
 
 if __name__ == "__main__":
     unittest.main()

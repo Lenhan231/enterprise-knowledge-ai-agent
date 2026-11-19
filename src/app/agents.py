@@ -24,6 +24,14 @@ router = APIRouter(prefix="/api/agents", tags=["agents"])
 _runtime_lock = asyncio.Lock()
 
 
+class ClarificationReply(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    clarification_id: str = Field(min_length=16, max_length=128)
+    version: int = Field(ge=1)
+    choice_id: str | None = Field(default=None, min_length=16, max_length=128)
+
+
 class AgentChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -34,6 +42,7 @@ class AgentChatRequest(BaseModel):
     ] = "translated_hybrid_rerank"
     conversation_id: str | None = Field(default=None, max_length=128)
     metadata: dict = Field(default_factory=dict)
+    clarification_reply: ClarificationReply | None = None
 
     @field_validator("question")
     @classmethod
@@ -147,7 +156,9 @@ async def agent_chat(
         runtime = await _get_runtime(http_request.app)
         agent_request = _agent_request(
             user, payload.question, conversation_id=payload.conversation_id,
-            metadata={**payload.metadata, "retrieval_method": payload.retrieval_method},
+            metadata={**payload.metadata, "retrieval_method": payload.retrieval_method,
+                      **({'clarification_reply': payload.clarification_reply.model_dump(exclude_none=True)}
+                         if payload.clarification_reply is not None else {})},
         )
         if payload.agent_mode == "auto":
             result = await runtime.run(agent_request)

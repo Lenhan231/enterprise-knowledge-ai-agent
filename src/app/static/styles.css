@@ -695,6 +695,12 @@
 .clarification-option:hover:not(:disabled){border-color:var(--accent);background:var(--surface-2);color:var(--accent-ink)}
 .clarification-option:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
 .clarification-option:disabled{cursor:default;opacity:.6}
+.clarification-custom-form{display:flex;align-items:end;flex-wrap:wrap;gap:8px;width:100%;margin-top:8px}
+.clarification-custom-form[hidden]{display:none}
+.clarification-custom-form label{display:grid;gap:5px;flex:1 1 220px;color:var(--muted);font-size:12px}
+.clarification-custom-form input{width:100%;min-height:42px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit}
+.clarification-custom-form :is(button,input):focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media(max-width:600px){.clarification-options{align-items:stretch}.clarification-option,.clarification-custom-open{width:100%;min-height:44px}.clarification-custom-form{align-items:stretch}.clarification-custom-form button{min-height:44px}}
 .general-chat .chat-turn .citations,.general-chat .chat-turn .analysis-caveat,.general-chat .chat-turn .answer-provenance-note,.general-chat .chat-turn .agent-diagnostics,.general-chat .chat-turn .token-usage,.general-chat .chat-turn .commerce-table-wrap,.general-chat .chat-turn .answer-visualization,.general-chat .chat-turn .answer-rows{margin-left:0}
 .general-chat .chat-turn .agent-data-result{max-width:100%;min-width:0;margin:9px 0 13px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);box-sizing:border-box}
 .general-chat .chat-turn .agent-data-result h4{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:0 0 5px;color:var(--muted);font-size:10px}

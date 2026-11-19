@@ -6,6 +6,7 @@ import inspect
 import json
 import os
 import re
+import secrets
 import time
 from typing import TypedDict
 
@@ -19,8 +20,12 @@ from core.agents.intent_classifier import (
 from core.agents.decision_support.planning import plan_request
 from core.agents.decision_support.response import assemble_response
 from core.agents.runtime import deadline, remaining, run_sync
-from core.agents.sql.intent_resolution import resolve_pending_clarification
-from core.agents.sql.query_intent import PendingClarification, QueryIntent
+from core.agents.sql.intent_resolution import apply_pending_choice, resolve_pending_clarification
+from core.agents.sql.query_intent import (
+    ClarificationChoice,
+    PendingClarification,
+    QueryIntent,
+)
 from core.latency import measure
 from core.models.agents import AgentRequest, AgentResult
 from core.models.agent_plan import AgentPlan
@@ -41,18 +46,33 @@ class _State(TypedDict, total=False):
 def _resolve_clarification_choice(selection, history: list):
     if not isinstance(selection, dict) or not history:
         return None
-    index = selection.get('index')
-    question = selection.get('question')
-    if type(index) is not int or not 0 <= index < 3 or not isinstance(question, str) or not question.strip():
-        return None
     for turn in reversed(history):
-        if turn.get('question') != question:
+        state = turn.get('clarification_state')
+        if not isinstance(state, dict) or state.get('active') is not True:
             continue
-        options = turn.get('clarification_options')
-        scope = turn.get('scope') or turn.get('question')
-        if (isinstance(options, list) and index < len(options)
-                and isinstance(options[index], str) and isinstance(scope, str) and scope.strip()):
-            return scope.strip(), index + 1, options[index], turn
+        scope = state.get('scope')
+        choices = state.get('choices')
+        if not isinstance(scope, str) or not scope.strip() or not isinstance(choices, list):
+            return None
+        if ('clarification_id' in selection or 'choice_id' in selection):
+            if (selection.get('clarification_id') != state.get('id')
+                    or type(selection.get('version')) is not int
+                    or selection.get('version') != state.get('version')):
+                continue
+            match = next((choice for choice in choices
+                          if isinstance(choice, dict) and choice.get('id') == selection.get('choice_id')),
+                         None)
+            if match is not None:
+                index = choices.index(match)
+                return scope.strip(), index + 1, match.get('label'), turn
+            continue
+        # Older clients submit the original question and an option index. Resolve only
+        # against the one active server-owned choice set; never search historical turns.
+        index, question = selection.get('index'), selection.get('question')
+        if (type(index) is int and 0 <= index < len(choices)
+                and isinstance(question, str)
+                and question in {turn.get('question'), state.get('question')}):
+            return scope.strip(), index + 1, choices[index].get('label'), turn
     return None
 
 
@@ -105,23 +125,30 @@ class AgentRouter:
                     store = self.report_conversations if report_headings is not None else self.conversations
                     async with store.session(request) as history:
                         user_question = request.question
-                        pending = self._pending_from_history(history)
                         pending_resumed = False
+                        if report_headings is None and forced_plan is None:
+                            request, reply_plan, reply_resumed, early_result = (
+                                await self._prepare_clarification_reply(request, history))
+                            if early_result is not None:
+                                return early_result
+                            if reply_plan is not None:
+                                forced_plan = reply_plan
+                                pending_resumed = reply_resumed
+                                execution.request = request
+                        pending = self._pending_from_history(history)
                         if pending is not None and report_headings is None and forced_plan is None:
                             try:
                                 authorize(request, 'sql')
                                 resolved = await resolve_pending_clarification(
                                     pending, request.question, self._intent_provider(), self._intent_schema())
+                            except (AssertionError, AttributeError, IndexError, KeyError, NameError,
+                                    PermissionError, TypeError, ZeroDivisionError):
+                                raise
                             except Exception:
                                 resolved = pending
                             if isinstance(resolved, PendingClarification):
-                                self._record_pending_reply(history, request.question, resolved)
-                                return AgentResult(
-                                    answer=resolved.clarification_question, agent='sql_analytics',
-                                    data={'query_status': 'clarification_required'},
-                                    metadata={'ok': False, 'status': 'clarification_required',
-                                              'clarification_required': True, 'selected_route': 'analytics'},
-                                )
+                                self._clear_pending_history(history)
+                                return self._pending_result(resolved, history, reply=request.question)
                             self._clear_pending_history(history)
                             if isinstance(resolved, QueryIntent):
                                 request = request.model_copy(update={
@@ -156,6 +183,9 @@ class AgentRouter:
                                           or pending_state is not None)
                         if record_context:
                             scope = state['plan'].objective if state.get('plan') else history_request.question
+                            clarification_state = (self._present_clarification(
+                                result, history, scope, pending_state)
+                                if status == 'clarification_required' else None)
                             turn = {'question': history_request.question[:2000], 'scope': scope[:2000],
                                     'clarification': result.answer[:2000] if result.metadata.get('status') == 'clarification_required' else ''}
                             options = result.metadata.get('clarification_options')
@@ -164,6 +194,8 @@ class AgentRouter:
                             if pending_state is not None:
                                 turn['pending_clarification'] = pending_state.model_dump_json()
                                 turn['clarification'] = pending_state.clarification_question[:2000]
+                            if clarification_state is not None:
+                                turn['clarification_state'] = clarification_state
                             if result.metadata.get('status') == 'clarification_required' and state.get('plan'):
                                 tasks = state['plan'].tasks
                                 pending = [execution.outcomes.get(task.id) for task in tasks]
@@ -239,29 +271,36 @@ class AgentRouter:
         if mode == 'sql':
             authorize(request, 'sql')
             async with self.conversations.session(request) as history:
+                request, _, _, early_result = await self._prepare_clarification_reply(request, history)
+                if early_result is not None:
+                    return early_result
+                marker = request.metadata.get('_validated_clarification_choice')
+                if marker:
+                    choice = _resolve_clarification_choice(marker, list(history))
+                    if choice is None:
+                        return self._invalid_clarification_reply()
+                    scope, _, option, turn = choice
+                    turn['clarification_state']['active'] = False
+                    self._clear_pending_history(history)
+                    metadata = dict(request.metadata)
+                    metadata.pop('_validated_clarification_choice', None)
+                    request = request.model_copy(update={
+                        'question': f"{scope}\n\nUser clarification: {option}",
+                        'metadata': metadata,
+                    })
                 pending = self._pending_from_history(history)
-                if pending is None:
-                    choice = _resolve_clarification_choice(
-                        request.metadata.get('clarification_choice'), list(history))
-                    if choice:
-                        scope, _, option, _ = choice
-                        request = request.model_copy(update={
-                            'question': f"{scope}\n\nUser clarification: {option}"
-                        })
                 if pending is not None:
                     try:
                         resolved = await resolve_pending_clarification(
                             pending, request.question, self._intent_provider(), self._intent_schema())
+                    except (AssertionError, AttributeError, IndexError, KeyError, NameError,
+                            PermissionError, TypeError, ZeroDivisionError):
+                        raise
                     except Exception:
                         resolved = pending
                     if isinstance(resolved, PendingClarification):
-                        self._record_pending_reply(history, request.question, resolved)
-                        return AgentResult(
-                            answer=resolved.clarification_question, agent='sql_analytics',
-                            data={'query_status': 'clarification_required'},
-                            metadata={'ok': False, 'status': 'clarification_required',
-                                      'clarification_required': True, 'selected_route': 'analytics'},
-                        )
+                        self._clear_pending_history(history)
+                        return self._pending_result(resolved, history, reply=request.question)
                     self._clear_pending_history(history)
                     if isinstance(resolved, QueryIntent):
                         request = request.model_copy(update={
@@ -349,6 +388,9 @@ class AgentRouter:
         options = result.metadata.get('clarification_options')
         if status == 'clarification_required' and isinstance(options, list):
             turn['clarification_options'] = options[:3]
+        if status == 'clarification_required':
+            turn['clarification_state'] = self._present_clarification(
+                result, history, request.question, pending)
         metrics = result.metadata.get('metrics')
         if result.data.get('query_status') == 'executed' and isinstance(metrics, dict):
             turn['metrics'] = ', '.join(sorted(name for name in metrics if isinstance(name, str)))
@@ -367,6 +409,9 @@ class AgentRouter:
     @staticmethod
     def _pending_from_history(history):
         for turn in reversed(history):
+            state = turn.get('clarification_state')
+            if isinstance(state, dict) and state.get('active') is not True:
+                continue
             raw = turn.get('pending_clarification')
             if raw:
                 try:
@@ -377,7 +422,7 @@ class AgentRouter:
 
     @staticmethod
     def _pending_from_result(result):
-        raw = result.metadata.get('pending_clarification')
+        raw = result.metadata.get('_pending_clarification', result.metadata.get('pending_clarification'))
         if not raw:
             return None
         try:
@@ -398,6 +443,187 @@ class AgentRouter:
         return None
 
     @staticmethod
+    def _active_clarification_state(history):
+        for turn in reversed(history):
+            state = turn.get('clarification_state')
+            if isinstance(state, dict) and state.get('active') is True:
+                return state, turn
+        return None, None
+
+    @classmethod
+    def _validate_clarification_reply(cls, reply, history):
+        if (not isinstance(reply, dict) or set(reply) - {'clarification_id', 'version', 'choice_id'}
+                or not isinstance(reply.get('clarification_id'), str)
+                or type(reply.get('version')) is not int or reply['version'] < 1
+                or ('choice_id' in reply and not isinstance(reply['choice_id'], str))):
+            return None
+        state, turn = cls._active_clarification_state(history)
+        if (state is None or state.get('id') != reply['clarification_id']
+                or state.get('version') != reply['version']):
+            return None
+        if 'choice_id' not in reply:
+            return (state, turn, None) if state.get('allow_custom') is True else None
+        match = next((choice for choice in state.get('choices', [])
+                      if isinstance(choice, dict) and choice.get('id') == reply['choice_id']), None)
+        return (state, turn, match) if match is not None else None
+
+    @classmethod
+    def _legacy_choice_marker(cls, selection, history):
+        resolved = _resolve_clarification_choice(selection, history)
+        if resolved is None:
+            return None
+        _, number, _, turn = resolved
+        state = turn.get('clarification_state')
+        if not isinstance(state, dict) or not 1 <= number <= len(state.get('choices', [])):
+            return None
+        choice = state['choices'][number - 1]
+        return {'clarification_id': state['id'], 'version': state['version'],
+                'choice_id': choice['id']}
+
+    async def _prepare_clarification_reply(self, request, history):
+        """Validate a click under the conversation lock and translate it to server-owned state."""
+        metadata = dict(request.metadata)
+        has_structured = 'clarification_reply' in metadata
+        has_legacy = 'clarification_choice' in metadata
+        if not has_structured and not has_legacy:
+            return request, None, False, None
+
+        if has_structured:
+            reply = metadata.pop('clarification_reply')
+            validated = self._validate_clarification_reply(reply, history)
+            if validated is None:
+                return request, None, False, self._invalid_clarification_reply()
+            state, turn, record = validated
+        else:
+            legacy = metadata.pop('clarification_choice')
+            marker = self._legacy_choice_marker(legacy, history)
+            validated = self._validate_clarification_reply(marker, history) if marker else None
+            if validated is None:
+                return request, None, False, self._invalid_clarification_reply()
+            state, turn, record = validated
+
+        pending = self._pending_from_history(history)
+        scope = state['scope']
+        if pending is not None:
+            if record is None:
+                try:
+                    resolved = await resolve_pending_clarification(
+                        pending, request.question, self._intent_provider(), self._intent_schema())
+                except Exception:
+                    # Keep the live state so a client can retry after a transient provider failure.
+                    raise
+            else:
+                if record.get('kind') != 'intent':
+                    return request, None, False, self._invalid_clarification_reply()
+                selected = ClarificationChoice.model_validate_json(
+                    json.dumps(record.get('intent_choice'), ensure_ascii=False), strict=True)
+                resolved = apply_pending_choice(pending, selected, self._intent_schema())
+
+            state['active'] = False
+            self._clear_pending_history(history)
+            if isinstance(resolved, PendingClarification):
+                return request, None, False, self._pending_result(
+                    resolved, history, reply=request.question)
+            if isinstance(resolved, QueryIntent):
+                request = request.model_copy(update={
+                    'question': resolved.original_question,
+                    'metadata': {**metadata, '_query_intent': resolved.model_dump(mode='json'),
+                                 '_original_question': resolved.original_question},
+                })
+                from core.models.agent_plan import AgentPlan
+                plan = AgentPlan(objective=resolved.original_question, tasks=[{
+                    'id': 'sql', 'agent': 'sql', 'question': resolved.original_question,
+                }])
+                return request, plan, True, None
+            return request.model_copy(update={'metadata': metadata}), None, False, None
+
+        if record is None:
+            if not request.question.strip():
+                return request, None, False, self._invalid_clarification_reply()
+            state['active'] = False
+            self._clear_pending_history(history)
+            return request.model_copy(update={
+                'question': f"{scope}\n\nUser clarification: {request.question.strip()}",
+                'metadata': metadata,
+            }), None, False, None
+
+        if record.get('kind') != 'plan':
+            return request, None, False, self._invalid_clarification_reply()
+        marker = {'clarification_id': state['id'], 'version': state['version'],
+                  'choice_id': record['id']}
+        return request.model_copy(update={
+            'metadata': {**metadata, '_validated_clarification_choice': marker},
+        }), None, False, None
+
+    @staticmethod
+    def _present_clarification(result, history, scope, pending=None):
+        """Attach the sole public choice contract and retain opaque resolution data in history."""
+        records = []
+        if pending is not None:
+            for choice in pending.allowed_choices[:3]:
+                records.append({
+                    'id': secrets.token_urlsafe(18), 'label': choice.label,
+                    'kind': 'intent', 'intent_choice': choice.model_dump(mode='json'),
+                })
+        else:
+            options = result.metadata.get('clarification_options')
+            if isinstance(options, list):
+                for index, label in enumerate(options[:3]):
+                    if isinstance(label, str) and label.strip():
+                        records.append({
+                            'id': secrets.token_urlsafe(18), 'label': label,
+                            'kind': 'plan', 'index': index,
+                        })
+        prior_versions = [
+            turn['clarification_state'].get('version', 0)
+            for turn in history if isinstance(turn.get('clarification_state'), dict)
+        ]
+        state = {
+            'id': secrets.token_urlsafe(24),
+            'version': max(prior_versions, default=0) + 1,
+            'scope': str(scope)[:2000],
+            'question': result.answer[:2000],
+            'choices': records,
+            'allow_custom': True,
+            'active': True,
+        }
+        result.metadata['clarification_ui'] = {
+            'id': state['id'], 'version': state['version'],
+            'question': state['question'],
+            'choices': [{'id': choice['id'], 'label': choice['label']} for choice in records],
+            'allow_custom': state['allow_custom'],
+        }
+        return state
+
+    @staticmethod
+    def _invalid_clarification_reply():
+        return AgentResult(
+            answer='This clarification is no longer active. Please ask the question again.',
+            agent='sql_analytics', data={'query_status': 'clarification_required'},
+            metadata={'ok': False, 'status': 'clarification_required',
+                      'clarification_required': True,
+                      'clarification_reply_error': 'stale_or_invalid', 'selected_route': 'analytics'},
+        )
+
+    @classmethod
+    def _pending_result(cls, pending, history, *, reply=None):
+        result = AgentResult(
+            answer=pending.clarification_question, agent='sql_analytics',
+            data={'query_status': 'clarification_required'},
+            metadata={'ok': False, 'status': 'clarification_required',
+                      'clarification_required': True, 'selected_route': 'analytics'},
+        )
+        state = cls._present_clarification(result, history, pending.original_question, pending)
+        history.append({
+            'question': (reply or pending.original_question)[:2000],
+            'scope': pending.original_question[:2000],
+            'clarification': pending.clarification_question[:2000],
+            'pending_clarification': pending.model_dump_json(),
+            'clarification_state': state,
+        })
+        return result
+
+    @staticmethod
     def _record_pending_reply(history, reply, pending):
         history.append({
             'question': reply[:2000], 'scope': pending.original_question[:2000],
@@ -409,13 +635,20 @@ class AgentRouter:
     def _clear_pending_history(history):
         for turn in history:
             turn.pop('pending_clarification', None)
+            state = turn.get('clarification_state')
+            if isinstance(state, dict):
+                state['active'] = False
 
     @staticmethod
     def _without_pending_metadata(result):
-        if 'pending_clarification' not in result.metadata:
+        if not ({'pending_clarification', '_pending_clarification', '_query_intent',
+                 '_original_question'} & result.metadata.keys()):
             return result
         metadata = dict(result.metadata)
         metadata.pop('pending_clarification', None)
+        metadata.pop('_pending_clarification', None)
+        metadata.pop('_query_intent', None)
+        metadata.pop('_original_question', None)
         return result.model_copy(update={'metadata': metadata})
 
     async def _plan(self, state):
@@ -426,9 +659,11 @@ class AgentRouter:
             resumed_clarification = False
             if plan is None:
                 choice = _resolve_clarification_choice(
-                    request.metadata.get('clarification_choice'), state['history'])
+                    request.metadata.get('_validated_clarification_choice')
+                    or request.metadata.get('clarification_choice'), state['history'])
                 if choice:
                     scope, _, option, turn = choice
+                    turn['clarification_state']['active'] = False
                     request = request.model_copy(update={
                         'question': f"{scope}\n\nUser clarification: {option}"
                     })

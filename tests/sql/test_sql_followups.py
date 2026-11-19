@@ -384,8 +384,7 @@ class PendingClarificationLifecycleTest(unittest.IsolatedAsyncioTestCase):
 
 
 class StructuredClarificationSQLIntegrationTest(unittest.IsolatedAsyncioTestCase):
-    question = ('doanh thu tháng 5 năm 2026 theo khu vực dựa trên bảng '
-                'orders customers và geography')
+    question = 'Doanh thu tháng 5/2026 theo khu vực'
     sql = (
         'SELECT g.region, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS revenue '
         'FROM commerce.orders AS o '
@@ -464,9 +463,10 @@ class StructuredClarificationSQLIntegrationTest(unittest.IsolatedAsyncioTestCase
 
         self.router = AgentRouter(None, None, self.agent, llm=ResponseProvider())
 
-    def request(self, question, conversation='regional-revenue', subject='analyst'):
+    def request(self, question, conversation='regional-revenue', subject='analyst', metadata=None):
         return AgentRequest(question=question, conversation_id=conversation,
-            identity=VerifiedIdentity(subject=subject, permissions={'analytics:read'}))
+            identity=VerifiedIdentity(subject=subject, permissions={'analytics:read'}),
+            metadata=metadata or {})
 
     async def _complete_clarification(self, mode):
         if mode == 'auto':
@@ -481,17 +481,22 @@ class StructuredClarificationSQLIntegrationTest(unittest.IsolatedAsyncioTestCase
                 'required_tables': {'commerce.orders', 'commerce.order_items'},
                 'candidate_tables': {'commerce.orders', 'commerce.order_items', 'commerce.customers', 'commerce.geography'},
         }) as selection:
-            async def run(question):
+            async def run(question, metadata=None):
                 if mode == 'auto':
-                    return await self.router.run(self.request(question))
-                return await self.router.run_mode(self.request(question), 'sql')
+                    return await self.router.run(self.request(question, metadata=metadata))
+                return await self.router.run_mode(self.request(question, metadata=metadata), 'sql')
 
             first = await run(self.question)
             self.assertEqual(first.metadata['status'], 'clarification_required')
             self.assertIn('tất cả khu vực', first.answer.casefold())
             self.assertEqual(self.provider.sql_calls, 0)
+            ui = first.metadata['clarification_ui']
+            all_regions = next(choice for choice in ui['choices'] if choice['label'] == 'Tất cả khu vực')
 
-            coverage = await run('tất cả khu vực')
+            coverage = await run('Tất cả khu vực', metadata={'clarification_reply': {
+                'clarification_id': ui['id'], 'version': ui['version'],
+                'choice_id': all_regions['id'],
+            }})
             self.assertIn('địa chỉ giao hàng', coverage.answer.casefold())
             self.assertIn('địa chỉ hồ sơ khách hàng', coverage.answer.casefold())
             self.assertEqual(self.provider.sql_calls, 0)
@@ -503,7 +508,7 @@ class StructuredClarificationSQLIntegrationTest(unittest.IsolatedAsyncioTestCase
                 self.assertEqual(basis.metadata.get('status'), 'complete', basis.model_dump())
             self.repository.execute_approved_query.assert_awaited_once()
             self.assertEqual(self.provider.intent_calls, 1)
-            self.assertEqual(self.provider.resolve_calls, 2)
+            self.assertEqual(self.provider.resolve_calls, 1)
             self.assertEqual(self.provider.sql_calls, 1,
                 [prompt[prompt.find('The previous plan failed validation:'):
                         prompt.find('The previous plan failed validation:') + 500]

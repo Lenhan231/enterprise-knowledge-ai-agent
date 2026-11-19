@@ -35,6 +35,23 @@ def intent_payload(question, **changes):
     return {'intent': intent}
 
 
+def pending_intent_for_slot(question, slot, **changes):
+    payload = intent_payload(question)
+    payload['intent'].update({
+        'dimensions': ['region'],
+        'time_grain': 'month',
+        'unresolved_slots': [slot],
+        **changes,
+    })
+    intent = QueryIntent.model_validate_json(json.dumps(payload['intent']), strict=True)
+    return PendingClarification(
+        original_question=question,
+        intent=intent,
+        unresolved_slots=[slot],
+        clarification_question=f'Clarify {slot}',
+    )
+
+
 class JSONProvider:
     def __init__(self, response):
         self.response = response
@@ -282,6 +299,107 @@ class StructuredIntentTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.metrics, ['revenue'])
         self.assertEqual(result.time_scope.ranges[0].start.isoformat(), '2025-02-01')
         self.assertEqual(result.time_scope.ranges[0].end_exclusive.isoformat(), '2025-03-01')
+
+    async def test_tg01_month_to_week_correction_preserves_metric_and_period(self):
+        pending = pending_intent_for_slot(
+            'Show revenue by month in 2025', 'time_grain')
+        provider = JSONProvider({'action': 'answer',
+            'updates': {'time_grain': 'week'}, 'clarified_slots': ['time_grain']})
+
+        result = await resolve_pending_clarification(
+            pending, 'No, group by week', provider, APPROVED_COLUMNS)
+
+        self.assertIsInstance(result, QueryIntent)
+        self.assertEqual(result.time_grain, 'week')
+        self.assertEqual(result.metrics, ['revenue'])
+        self.assertEqual(result.dimensions, ['region'])
+        self.assertEqual(result.time_scope.ranges[0].start.isoformat(), '2025-01-01')
+        self.assertEqual(result.time_scope.ranges[0].end_exclusive.isoformat(), '2026-01-01')
+        self.assertEqual(result.unresolved_slots, [])
+
+    async def test_tg02_week_to_quarter_correction_is_supported(self):
+        pending = pending_intent_for_slot(
+            'Show revenue by week in 2025', 'time_grain', time_grain='week')
+        provider = JSONProvider({'action': 'answer',
+            'updates': {'time_grain': 'quarter'}, 'clarified_slots': ['time_grain']})
+
+        result = await resolve_pending_clarification(
+            pending, 'Use quarters', provider, APPROVED_COLUMNS)
+
+        self.assertIsInstance(result, QueryIntent)
+        self.assertEqual(result.time_grain, 'quarter')
+
+    async def test_tg03_grain_update_without_slot_authorization_is_rejected(self):
+        pending = pending_intent_for_slot(
+            'Show revenue by month in 2025', 'time_grain')
+        provider = JSONProvider({'action': 'answer',
+            'updates': {'time_grain': 'week'}, 'clarified_slots': []})
+
+        with self.assertRaisesRegex(ValueError, 'slot it did not identify'):
+            await resolve_pending_clarification(
+                pending, 'Use weeks', provider, APPROVED_COLUMNS)
+
+    async def test_tg04_invalid_grain_is_rejected_by_resolution_schema(self):
+        pending = pending_intent_for_slot(
+            'Show revenue by month in 2025', 'time_grain')
+        provider = JSONProvider({'action': 'answer',
+            'updates': {'time_grain': 'fortnight'}, 'clarified_slots': ['time_grain']})
+
+        with self.assertRaises(ValueError):
+            await resolve_pending_clarification(
+                pending, 'Use fortnights', provider, APPROVED_COLUMNS)
+
+    async def test_tg05_grain_only_update_preserves_other_business_scope(self):
+        question = 'Revenue by region for 2025'
+        pending = pending_intent_for_slot(
+            question, 'time_grain', filters=[{
+                'field': 'commerce.sales.revenue', 'operator': 'gt', 'value': 0}])
+        provider = JSONProvider({'action': 'answer',
+            'updates': {'time_grain': 'week'}, 'clarified_slots': ['time_grain']})
+
+        result = await resolve_pending_clarification(
+            pending, 'Weekly', provider, APPROVED_COLUMNS)
+
+        self.assertIsInstance(result, QueryIntent)
+        self.assertEqual(result.metrics, ['revenue'])
+        self.assertEqual(result.time_scope.ranges[0].start.isoformat(), '2025-01-01')
+        self.assertEqual(result.dimensions, ['region'])
+        self.assertEqual([(item.field, item.value) for item in result.filters],
+                         [('commerce.sales.revenue', 0)])
+
+    async def test_tg06_pending_question_is_not_repeated_after_grain_is_resolved(self):
+        pending = pending_intent_for_slot(
+            'Show revenue by month in 2025', 'time_grain')
+        clarify = JSONProvider({'action': 'clarify', 'updates': {}, 'clarified_slots': [],
+            'clarification_question': 'Which calendar convention should define a week?'})
+        still_pending = await resolve_pending_clarification(
+            pending, 'What is a week?', clarify, APPROVED_COLUMNS)
+        self.assertIsInstance(still_pending, PendingClarification)
+        self.assertEqual(still_pending.unresolved_slots, ['time_grain'])
+
+        answer = JSONProvider({'action': 'answer',
+            'updates': {'time_grain': 'week'}, 'clarified_slots': ['time_grain']})
+        result = await resolve_pending_clarification(
+            still_pending, 'Use weeks', answer, APPROVED_COLUMNS)
+        self.assertIsInstance(result, QueryIntent)
+        self.assertEqual(result.unresolved_slots, [])
+        self.assertEqual(result.time_grain, 'week')
+
+    async def test_tg07_existing_time_scope_update_preserves_time_grain(self):
+        pending = pending_intent_for_slot(
+            'Show monthly revenue for an unspecified period', 'time_scope',
+            time_scope={'mode': 'unknown', 'ranges': []}, time_grain='month')
+        provider = JSONProvider({'action': 'answer',
+            'updates': {'time_scope': {'mode': 'range', 'ranges': [
+                {'start': '2025-02-01', 'end_exclusive': '2025-03-01'}]}},
+            'clarified_slots': ['time_scope']})
+
+        result = await resolve_pending_clarification(
+            pending, 'February 2025', provider, APPROVED_COLUMNS)
+
+        self.assertIsInstance(result, QueryIntent)
+        self.assertEqual(result.time_grain, 'month')
+        self.assertEqual(result.time_scope.ranges[0].start.isoformat(), '2025-02-01')
 
     async def test_unrelated_reply_clears_pending_without_inheriting_scope(self):
         question = 'Revenue by region for May 2026'

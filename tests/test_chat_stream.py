@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from app.agents import AgentChatRequest, agent_chat_stream
+from app.agents import AgentChatRequest, agent_chat, agent_chat_stream
 from core.latency import measure
 from core.models.agents import AgentResult
 
@@ -50,6 +50,48 @@ class ChatStreamTest(unittest.TestCase):
 
         self.assertEqual(received['clarification_choice'], selection)
         self.assertEqual(events[-1][1]['answer'], 'Selected')
+
+    def test_versioned_clarification_reply_reaches_router_for_stream(self):
+        reply = {'clarification_id': 'opaque-pending-id-0001', 'version': 3,
+                 'choice_id': 'opaque-choice-id-0001'}
+        received = {}
+
+        async def run_mode(request, mode):
+            received.update(request.metadata)
+            return AgentResult(answer='Selected', agent=mode)
+
+        runtime = Mock()
+        runtime.run_mode = run_mode
+        payload = AgentChatRequest(question='All regions', agent_mode='sql',
+                                   clarification_reply=reply)
+        events = _stream(runtime, payload)
+
+        self.assertEqual(received['clarification_reply'], reply)
+        self.assertEqual(events[-1][1]['answer'], 'Selected')
+
+    def test_custom_clarification_reply_reaches_router_and_preserves_contract_on_post(self):
+        reply = {'clarification_id': 'opaque-pending-id-0001', 'version': 3}
+        ui = {'id': reply['clarification_id'], 'version': reply['version'],
+              'question': 'Specify a region', 'choices': [], 'allow_custom': True}
+        received = {}
+
+        async def run_mode(request, mode):
+            received.update(request.metadata)
+            return AgentResult(answer='Specify a region', agent=mode,
+                               metadata={'status': 'clarification_required', 'clarification_ui': ui})
+
+        runtime = Mock()
+        runtime.run_mode = run_mode
+        payload = AgentChatRequest(question='Hanoi', agent_mode='sql', clarification_reply=reply)
+
+        async def request_post():
+            with patch('app.agents._get_runtime', new=AsyncMock(return_value=runtime)), \
+                    patch('app.agents._record_in_background'):
+                return await agent_chat(payload, Mock(headers={}), user={'role': 'admin', 'sub': 'test'})
+
+        result = asyncio.run(request_post())
+        self.assertEqual(received['clarification_reply'], reply)
+        self.assertEqual(result.metadata['clarification_ui'], ui)
 
     def test_stages_from_worker_threads_arrive_before_the_verified_answer(self):
         def rerank():

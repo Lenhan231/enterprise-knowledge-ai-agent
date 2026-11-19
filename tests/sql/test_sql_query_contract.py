@@ -84,9 +84,195 @@ class QueryContractTest(unittest.TestCase):
                'GROUP BY 1 LIMIT 200')
         parameters = ('2022-01-01', '2023-01-01')
         self.assertEqual(self.verify(intent, sql, parameters).status, 'verified')
+        by_alias = sql.replace('GROUP BY 1', 'GROUP BY month')
+        self.assertEqual(self.verify(intent, by_alias, parameters).status, 'verified')
         daily = sql.replace("DATE_TRUNC('month'", "DATE_TRUNC('day'")
         result = self.verify(intent, daily, parameters)
         self.assertTrue(any('month time grain' in issue for issue in result.issues))
+
+    def test_date_filter_in_unused_cte_does_not_satisfy_range(self):
+        intent = QueryIntent.model_validate_json(json.dumps({
+            'original_question': 'Show monthly revenue in 2022', 'operation': 'trend',
+            'metrics': ['revenue'], 'dimensions': [], 'filters': [],
+            'time_scope': {'mode': 'range', 'ranges': [
+                {'start': '2022-01-01', 'end_exclusive': '2023-01-01'}]},
+            'time_grain': None, 'requested_sources': [],
+            'explicit_source_restriction': False, 'geographic_basis': None,
+            'geographic_coverage': None, 'ranking': None, 'unresolved_slots': [],
+        }))
+        sql = ('WITH unused AS (SELECT s.date FROM commerce.sales AS s '
+               'WHERE s.date >= $1 AND s.date < $2) '
+               'SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s LIMIT 1')
+        result = self.verify(intent, sql, ('2022-01-01', '2023-01-01'))
+        self.assertTrue(any('date range' in issue for issue in result.issues))
+
+    def test_shared_period_must_filter_each_requested_metric_source(self):
+        intent = QueryIntent.model_validate_json(json.dumps({
+            'original_question': 'Revenue and rating for 2025', 'operation': 'aggregate',
+            'metrics': ['revenue', 'rating'], 'dimensions': [], 'filters': [],
+            'time_scope': {'mode': 'range', 'ranges': [
+                {'start': '2025-01-01', 'end_exclusive': '2026-01-01'}]},
+            'time_grain': None, 'requested_sources': [],
+            'explicit_source_restriction': False, 'geographic_basis': None,
+            'geographic_coverage': None, 'ranking': None, 'unresolved_slots': [],
+        }), strict=True)
+        rating_only = (
+            'WITH rev AS (SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s), '
+            'ratings AS (SELECT AVG(r.rating) AS rating FROM commerce.reviews AS r '
+            'WHERE r.review_date >= $1 AND r.review_date < $2) '
+            'SELECT rev.revenue, ratings.rating FROM rev CROSS JOIN ratings LIMIT 1'
+        )
+        result = verify_query_contract(
+            intent, rating_only, ('2025-01-01', '2026-01-01'), APPROVED_COLUMNS)
+        self.assertEqual(result.status, 'incomplete')
+        self.assertTrue(any('metric revenue' in issue and 'date range' in issue
+                            for issue in result.issues))
+
+        both_filtered = rating_only.replace(
+            'FROM commerce.sales AS s)',
+            'FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2)')
+        self.assertEqual(verify_query_contract(
+            intent, both_filtered, ('2025-01-01', '2026-01-01'), APPROVED_COLUMNS).status, 'verified')
+
+    def test_region_filter_in_unrelated_subquery_does_not_satisfy_request(self):
+        sql = REGIONAL_SQL.replace(
+            'GROUP BY g.region',
+            "AND EXISTS (SELECT 1 FROM commerce.geography AS g2 WHERE g2.region = $4) GROUP BY g.region")
+        intent = regional_intent(geographic_coverage='filtered', filters=[
+            {'field': 'commerce.orders.order_status', 'operator': 'eq', 'value': 'delivered',
+             'provenance': 'ontology_required'},
+            {'field': 'commerce.geography.region', 'operator': 'eq', 'value': 'North'},
+        ])
+        result = self.verify(intent, sql, ('delivered', '2026-05-01', '2026-06-01', 'North'))
+        self.assertTrue(any('commerce.geography.region' in issue for issue in result.issues))
+
+    def test_required_filter_in_or_branch_is_not_treated_as_guaranteed(self):
+        sql = REGIONAL_SQL.replace(
+            'o.order_status = $1 AND ',
+            '(o.order_status = $1 OR o.order_status IS NULL) AND ')
+        result = self.verify(sql=sql)
+        self.assertTrue(any('Requested filter is missing' in issue for issue in result.issues))
+
+    def test_monthly_cte_with_indirect_output_lineage_is_inconclusive(self):
+        intent = QueryIntent.model_validate_json(json.dumps({
+            'original_question': 'Show monthly revenue in 2022', 'operation': 'trend',
+            'metrics': ['revenue'], 'dimensions': [], 'filters': [],
+            'time_scope': {'mode': 'range', 'ranges': [
+                {'start': '2022-01-01', 'end_exclusive': '2023-01-01'}]},
+            'time_grain': 'month', 'requested_sources': [],
+            'explicit_source_restriction': False, 'geographic_basis': None,
+            'geographic_coverage': None, 'ranking': None, 'unresolved_slots': [],
+        }))
+        sql = ("WITH monthly AS (SELECT DATE_TRUNC('month', s.date) AS month, "
+               'SUM(s.revenue) AS revenue FROM commerce.sales AS s '
+               'WHERE s.date >= $1 AND s.date < $2 GROUP BY 1), '
+               'preserved AS (SELECT month, revenue FROM monthly) '
+               'SELECT p.month, p.revenue FROM preserved AS p ORDER BY p.month LIMIT 200')
+        result = self.verify(intent, sql, ('2022-01-01', '2023-01-01'))
+        self.assertEqual(result.status, 'inconclusive')
+
+    def test_bounded_customer_quantity_ranking_checks_aggregate_and_order(self):
+        intent = QueryIntent.model_validate_json(json.dumps({
+            'original_question': 'khách hàng nào mua hàng nhiều nhất theo số lượng',
+            'operation': 'rank', 'metrics': [],
+            'unverified_metric_request': 'sum of purchased item quantity by customer',
+            'dimensions': ['commerce.orders.customer_id'], 'filters': [],
+            'time_scope': {'mode': 'all', 'ranges': []}, 'time_grain': None,
+            'requested_sources': [
+                {'name': 'commerce.orders', 'provenance': 'ontology_required'},
+                {'name': 'commerce.order_items', 'provenance': 'ontology_required'},
+            ],
+            'explicit_source_restriction': False, 'geographic_basis': None,
+            'geographic_coverage': None, 'ranking': None, 'unresolved_slots': [],
+        }))
+        sql = ('SELECT o.customer_id, SUM(oi.quantity) AS total_quantity '
+               'FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id = o.order_id '
+               'GROUP BY o.customer_id ORDER BY total_quantity DESC LIMIT 1')
+        self.assertEqual(self.verify(intent, sql, ()).status, 'verified')
+        wrong_rank = sql.replace('ORDER BY total_quantity DESC', 'ORDER BY o.customer_id DESC')
+        result = self.verify(intent, wrong_rank, ())
+        self.assertEqual(result.status, 'incomplete')
+        self.assertTrue(any('Customer quantity ranking' in issue for issue in result.issues))
+
+    def test_monthly_cte_is_verified_when_final_output_preserves_month(self):
+        intent = QueryIntent.model_validate_json(json.dumps({
+            'original_question': 'Show monthly revenue in 2022', 'operation': 'trend',
+            'metrics': ['revenue'], 'dimensions': [], 'filters': [],
+            'time_scope': {'mode': 'range', 'ranges': [
+                {'start': '2022-01-01', 'end_exclusive': '2023-01-01'}]},
+            'time_grain': 'month', 'requested_sources': [],
+            'explicit_source_restriction': False, 'geographic_basis': None,
+            'geographic_coverage': None, 'ranking': None, 'unresolved_slots': [],
+        }))
+        sql = ("WITH monthly AS (SELECT DATE_TRUNC('month', s.date) AS month, "
+               'SUM(s.revenue) AS revenue FROM commerce.sales AS s '
+               'WHERE s.date >= $1 AND s.date < $2 GROUP BY 1) '
+               'SELECT m.month, m.revenue FROM monthly AS m ORDER BY m.month LIMIT 200')
+        self.assertEqual(self.verify(intent, sql, ('2022-01-01', '2023-01-01')).status, 'verified')
+
+    def test_monthly_cte_does_not_satisfy_collapsed_final_output(self):
+        intent = QueryIntent.model_validate_json(json.dumps({
+            'original_question': 'Show monthly revenue in 2022', 'operation': 'trend',
+            'metrics': ['revenue'], 'dimensions': [], 'filters': [],
+            'time_scope': {'mode': 'range', 'ranges': [
+                {'start': '2022-01-01', 'end_exclusive': '2023-01-01'}]},
+            'time_grain': 'month', 'requested_sources': [],
+            'explicit_source_restriction': False, 'geographic_basis': None,
+            'geographic_coverage': None, 'ranking': None, 'unresolved_slots': [],
+        }))
+        sql = ("WITH monthly AS (SELECT DATE_TRUNC('month', s.date) AS month, "
+               'SUM(s.revenue) AS revenue FROM commerce.sales AS s '
+               'WHERE s.date >= $1 AND s.date < $2 GROUP BY 1) '
+               'SELECT SUM(m.revenue) AS revenue FROM monthly AS m LIMIT 1')
+        result = self.verify(intent, sql, ('2022-01-01', '2023-01-01'))
+        self.assertTrue(any('month time grain' in issue for issue in result.issues))
+
+    def test_monthly_grain_in_unused_cte_does_not_satisfy_result_scope(self):
+        intent = QueryIntent.model_validate_json(json.dumps({
+            'original_question': 'Show monthly revenue in 2022', 'operation': 'trend',
+            'metrics': ['revenue'], 'dimensions': [], 'filters': [],
+            'time_scope': {'mode': 'range', 'ranges': [
+                {'start': '2022-01-01', 'end_exclusive': '2023-01-01'}]},
+            'time_grain': 'month', 'requested_sources': [],
+            'explicit_source_restriction': False, 'geographic_basis': None,
+            'geographic_coverage': None, 'ranking': None, 'unresolved_slots': [],
+        }))
+        sql = ("WITH unused AS (SELECT DATE_TRUNC('month', s.date) AS month, "
+               'SUM(s.revenue) AS revenue FROM commerce.sales AS s '
+               'WHERE s.date >= $1 AND s.date < $2 GROUP BY 1) '
+               'SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s '
+               'WHERE s.date >= $1 AND s.date < $2 LIMIT 1')
+        result = self.verify(intent, sql, ('2022-01-01', '2023-01-01'))
+        self.assertTrue(any('month time grain' in issue for issue in result.issues))
+
+    def test_week_request_rejects_month_grouping(self):
+        intent = QueryIntent.model_validate_json(json.dumps({
+            'original_question': 'Show weekly revenue in 2022', 'operation': 'trend',
+            'metrics': ['revenue'], 'dimensions': [], 'filters': [],
+            'time_scope': {'mode': 'range', 'ranges': [
+                {'start': '2022-01-01', 'end_exclusive': '2023-01-01'}]},
+            'time_grain': 'week', 'requested_sources': [],
+            'explicit_source_restriction': False, 'geographic_basis': None,
+            'geographic_coverage': None, 'ranking': None, 'unresolved_slots': [],
+        }))
+        sql = ("SELECT DATE_TRUNC('month', s.date) AS month, SUM(s.revenue) AS revenue "
+               'FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 GROUP BY month LIMIT 200')
+        result = self.verify(intent, sql, ('2022-01-01', '2023-01-01'))
+        self.assertTrue(any('week time grain' in issue for issue in result.issues))
+
+    def test_filter_in_predicate_subquery_does_not_satisfy_outer_request(self):
+        sql = REGIONAL_SQL.replace(
+            'WHERE o.order_status = $1 AND ',
+            'WHERE EXISTS (SELECT 1 FROM commerce.orders AS o2 WHERE o2.order_status = $1) AND ')
+        result = self.verify(sql=sql)
+        self.assertTrue(any('Requested filter is missing' in issue for issue in result.issues))
+
+    def test_filter_in_unused_cte_does_not_satisfy_outer_request(self):
+        sql = ('WITH unused AS (SELECT o.order_status FROM commerce.orders AS o '
+               'WHERE o.order_status = $1) ' + REGIONAL_SQL.replace(
+                   'WHERE o.order_status = $1 AND ', 'WHERE '))
+        result = self.verify(sql=sql)
+        self.assertTrue(any('Requested filter is missing' in issue for issue in result.issues))
 
     def test_wrong_geographic_zip_basis_is_rejected(self):
         sql = REGIONAL_SQL.replace('g.zip = o.zip', 'g.zip = c.zip').replace(
@@ -101,6 +287,20 @@ class QueryContractTest(unittest.TestCase):
         result = self.verify(sql=sql, parameters=())
         self.assertEqual(result.status, 'incomplete')
         self.assertTrue(any('Canonical metric validation failed' in issue for issue in result.issues))
+
+    def test_metric_formula_in_unused_cte_does_not_verify_constant_result(self):
+        intent = QueryIntent.model_validate_json(json.dumps({
+            'original_question': 'Total revenue', 'operation': 'aggregate',
+            'metrics': ['revenue'], 'dimensions': [], 'filters': [],
+            'time_scope': {'mode': 'all', 'ranges': []}, 'time_grain': None,
+            'requested_sources': [], 'explicit_source_restriction': False,
+            'geographic_basis': None, 'geographic_coverage': None,
+            'ranking': None, 'unresolved_slots': [],
+        }))
+        sql = ('WITH unused AS (SELECT SUM(s.revenue) AS revenue '
+               'FROM commerce.sales AS s) SELECT 1 AS revenue LIMIT 1')
+        result = self.verify(intent, sql, ())
+        self.assertNotEqual(result.status, 'verified')
 
     def test_missing_ontology_delivered_filter_fails(self):
         sql = REGIONAL_SQL.replace('o.order_status = $1 AND ', '').replace(

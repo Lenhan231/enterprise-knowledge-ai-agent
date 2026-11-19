@@ -7,6 +7,7 @@ import inspect
 import json
 import os
 import re
+import unicodedata
 from collections.abc import Mapping
 from datetime import date
 from types import SimpleNamespace
@@ -69,6 +70,117 @@ from core.agents.runtime import generate, generate_with_local_codex
 
 class AnalyticsPermissionDenied(PermissionError):
     """The request has no server-verified permission to query commerce data."""
+
+
+def _fold_request_text(value: str) -> str:
+    normalized = unicodedata.normalize('NFKD', value.casefold())
+    return ''.join(char for char in normalized if not unicodedata.combining(char)).replace('đ', 'd')
+
+
+_FALLBACK_FILLER_WORDS = {
+    'total', 'tong', 'what', 'was', 'is', 'are', 'the', 'for', 'in', 'during', 'year',
+    'please', 'tell', 'me', 'show', 'give', 'could', 'you', 's', 'how', 'much', 'of',
+    'i', 'need', 'yearly', 'nam', 'trong',
+    'la', 'bao', 'nhieu', 'cho', 'toi', 'biet', 'xin', 'by', 'per', 'monthly',
+    'month', 'theo', 'tung', 'moi', 'thang',
+}
+
+
+def _unsupported_fallback_words(question: str, metric_name: str | None = None) -> set[str]:
+    text = _fold_request_text(question)
+    if metric_name:
+        aliases = get_metric_definition(metric_name).get('aliases', ())
+        for alias in sorted((*aliases, metric_name.replace('_', ' ')), key=len, reverse=True):
+            phrase = _fold_request_text(alias)
+            text = re.sub(rf'(?<!\w){re.escape(phrase)}(?!\w)', ' ', text)
+    text = re.sub(r'\b(?:19|20)\d{2}\b', ' ', text)
+    return {token for token in re.findall(r'[a-z0-9]+', text)
+            if token not in _FALLBACK_FILLER_WORDS}
+
+
+def _fallback_intent(question: str, schema: dict[str, set[str]]) -> QueryIntent | None:
+    """Recognize only narrow request forms whose semantics can be checked without a second model call."""
+    text = _fold_request_text(question)
+    orders = schema.get('commerce.orders', set())
+    customer_rank = (
+        (re.fullmatch(r'\s*(?:(?:cho toi biet|xin cho biet)\s+)?'
+                      r'khach hang nao co nhieu don hang nhat[?.!\s]*', text)
+         or re.fullmatch(r'\s*(?:which customer (?:has|had) the most orders?'
+                         r'|which customer has most orders?)[?.!\s]*', text))
+        and {'customer_id', 'order_id'} <= orders
+    )
+    if customer_rank:
+        return QueryIntent.model_validate_json(json.dumps({
+            'original_question': question, 'operation': 'rank',
+            'metrics': ['order_count'], 'dimensions': ['customer_id'], 'filters': [],
+            'time_scope': {'mode': 'all', 'ranges': []}, 'time_grain': None,
+            'requested_sources': [{'name': 'commerce.orders', 'provenance': 'ontology_required'}],
+            'explicit_source_restriction': False, 'geographic_basis': None,
+            'geographic_coverage': None,
+            'ranking': {'metric': 'order_count', 'direction': 'desc', 'limit': 1},
+            'unresolved_slots': [],
+        }), strict=True)
+
+    customer_quantity_rank = re.fullmatch(
+        r'\s*(?:cho toi biet\s+)?khach hang nao mua hang nhieu nhat theo so luong[?.!\s]*', text)
+    if (customer_quantity_rank
+            and {'customer_id', 'order_id'} <= orders
+            and {'order_id', 'quantity'} <= schema.get('commerce.order_items', set())):
+        return QueryIntent.model_validate_json(json.dumps({
+            'original_question': question, 'operation': 'rank', 'metrics': [],
+            'unverified_metric_request': 'sum of purchased item quantity by customer',
+            'dimensions': ['commerce.orders.customer_id'], 'filters': [],
+            'time_scope': {'mode': 'all', 'ranges': []}, 'time_grain': None,
+            'requested_sources': [
+                {'name': 'commerce.orders', 'provenance': 'ontology_required'},
+                {'name': 'commerce.order_items', 'provenance': 'ontology_required'},
+            ],
+            'explicit_source_restriction': False, 'geographic_basis': None,
+            'geographic_coverage': None, 'ranking': None, 'unresolved_slots': [],
+        }), strict=True)
+
+    years = sorted(set(re.findall(r'\b((?:19|20)\d{2})\b', text)))
+    extra_scope = re.search(
+        r'\b(?:dealer|agency|store|shop|branch|customer|brand|region|city|province|category|product)\b'
+        r'|\b(?:khach hang|dai ly|cua hang|chi nhanh|thuong hieu|khu vuc|thanh pho|tinh|'
+        r'danh muc|san pham|loai tru|khong tinh|khong bao gom|theo tung|moi tung)\b'
+        r'|\b(?:excluding|exclude|except|without|cancelled|canceled|returned)\b'
+        r'|commerce\.', text)
+    unsupported_grouping = (re.search(r'\b(?:by|per)\s+(?!month\b)[a-z]+', text)
+                            or re.search(r'\btheo\s+(?!thang\b|tung\s+thang\b|moi\s+thang\b)[a-z]+', text))
+    metrics = resolve_metric_names(question)
+    metric_name = next(iter(metrics)) if len(metrics) == 1 else None
+    unsupported_words = _unsupported_fallback_words(question, metric_name)
+    if len(years) != 1 or metric_name is None or extra_scope or unsupported_grouping or unsupported_words:
+        return None
+    year = int(years[0])
+    if not 1900 <= year < 2100:
+        return None
+    grain = 'month' if re.search(
+        r'\b(?:monthly|by month|per month|theo thang|tung thang|moi thang)\b', text) else None
+    return QueryIntent.model_validate_json(json.dumps({
+        'original_question': question, 'operation': 'trend' if grain else 'aggregate',
+        'metrics': sorted(metrics), 'dimensions': [], 'filters': [],
+        'time_scope': {'mode': 'range', 'ranges': [{
+            'start': f'{year:04d}-01-01', 'end_exclusive': f'{year + 1:04d}-01-01'}]},
+        'time_grain': grain, 'requested_sources': [], 'explicit_source_restriction': False,
+        'geographic_basis': None, 'geographic_coverage': None, 'ranking': None,
+        'unresolved_slots': [],
+    }), strict=True)
+
+
+def _has_unverified_material_scope(question: str) -> bool:
+    text = _fold_request_text(question)
+    if re.search(
+        r'\b(?:dealer|agency|store|shop|branch|customer|brand|region|city|province|category|product)\b'
+        r'|\b(?:khach hang|dai ly|cua hang|chi nhanh|thuong hieu|khu vuc|thanh pho|tinh|'
+        r'danh muc|san pham|loai tru|khong tinh|khong bao gom|theo tung|moi tung)\b'
+        r'|\b(?:excluding|exclude|except|without|cancelled|canceled|returned|group by|by|per)\b'
+        r'|\b(?:19|20)\d{2}\b|\b(?:year|month|monthly|week|quarter|nam|thang|tuan|quy)\b'
+        r'|\b(?:in|at|for|from|within|with|and|versus|vs)\b|commerce\.', text):
+        return True
+    metrics = resolve_metric_names(question)
+    return len(metrics) == 1 and bool(_unsupported_fallback_words(question, next(iter(metrics))))
 
 
 def compile_inventory_mapping(mapping) -> CompilationSelection:
@@ -277,6 +389,7 @@ class SQLAnalyticsAgent(BaseAgent):
             context_info['field_retrieval'] = {'source': direct.args['from_'].this.sql(),
                 'columns': [p.name for p in direct.selects], 'assurance': 'literal field contract'}
         query_intent = None
+        bounded_fallback_contract = False
         raw_intent = options.get('_query_intent')
         inventory_candidate = (self.inventory_only or any(
             get_metric_definition(name).get('domain') == 'inventory_management'
@@ -304,16 +417,36 @@ class SQLAnalyticsAgent(BaseAgent):
               and not dashboard_request and options.get('_report_planned_task') is not True):
             try:
                 interpreted = await interpret_query_intent(question, self._provider(), table_columns)
+            except (AssertionError, AttributeError, IndexError, KeyError, TypeError):
+                # These are programming/interface defects, not user-intent failures.
+                raise
             except Exception as error:
-                # If intent extraction fails, try SQL generation from the original
-                # question. The generated query still passes SQL and schema validation.
                 interpreted = None
                 query_intent = None
                 metric_names = resolve_metric_names(question)
                 context_info['query_intent_fallback'] = type(error).__name__
+                query_intent = _fallback_intent(original_question, table_columns)
+                if query_intent is not None:
+                    bounded_fallback_contract = True
+                    metric_names = set(query_intent.metrics)
+                    context_info['query_intent_fallback_contract'] = 'bounded_supported_grammar'
+                elif _has_unverified_material_scope(original_question):
+                    result = self._generation_error(MetricDefinitionError(
+                        'I could not verify an explicitly requested filter, grouping, date or exclusion after '
+                        'intent extraction failed. Please restate the request so its full business scope can be checked.',
+                        code='semantic_scope_unverified', clarification=True))
+                    result['query_status'] = 'clarification_required'
+                    result.setdefault('metadata', {}).update(context_info)
+                    result['metadata']['request_semantic_verification'] = {
+                        'status': 'inconclusive', 'reason': 'intent_extraction_failed_with_material_scope'}
+                    return result
+                else:
+                    context_info['request_semantic_verification'] = {
+                        'status': 'inconclusive', 'reason': 'intent_extraction_failed'}
             if isinstance(interpreted, PendingClarification):
                 return self._pending_intent_payload(interpreted)
-            query_intent = interpreted
+            if interpreted is not None:
+                query_intent = interpreted
         if query_intent is not None:
             metric_names = set(query_intent.metrics)
         unverified_scope = (query_intent is None or (
@@ -784,6 +917,16 @@ class SQLAnalyticsAgent(BaseAgent):
                                            primary_keys, date_columns, interpretation,
                                            allowed_sources=set(table_columns),
                                            allow_unverified=unverified_sql)
+        if bounded_fallback_contract:
+            payload.setdefault('metadata', {})['request_semantic_verification'] = {
+                'status': 'verified' if payload.get('query_status') == 'executed' else 'inconclusive',
+                'method': 'bounded_supported_grammar',
+            }
+        elif context_info.get('request_semantic_verification', {}).get('status') == 'inconclusive':
+            payload.setdefault('metadata', {})['request_semantic_verification'] = (
+                context_info['request_semantic_verification'])
+            payload.setdefault('limitations', []).append(
+                'Intent extraction failed. The query passed security and schema validation, but its complete business meaning was not verified.')
         if plan.request_contract_warning:
             payload.setdefault('metadata', {}).update(
                 request_contract_status='ignored',
@@ -1065,7 +1208,7 @@ class SQLAnalyticsAgent(BaseAgent):
             'metadata': {
                 'status': 'clarification_required',
                 'clarification_required': True,
-                'pending_clarification': pending.model_dump(mode='json'),
+                '_pending_clarification': pending.model_dump(mode='json'),
             },
         }
 

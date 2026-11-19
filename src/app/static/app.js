@@ -1490,15 +1490,25 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
       return `<p class="analysis-caveat answer-provenance-note" role="status"><strong>Continuing the previous SQL scope.</strong> ${snapshotLabel}: ${escapeHtml(snapshot)}${filters.length ? ` · Filters: ${filters.map(escapeHtml).join("; ")}` : ""}</p>`;
     })()
     : "";
-  const clarificationOptions = data.status === "clarification_required"
-    && panel.closest("#general-chat-transcript")
-    && Array.isArray(data.clarification_options)
-    ? data.clarification_options.filter((option) => typeof option === "string" && option.trim())
-    : [];
-  const clarificationChoices = clarificationOptions.length
-    ? `<div class="clarification-options" role="group" aria-label="Choose an option">${clarificationOptions.map((option, index) =>
-      `<button class="clarification-option" type="button" data-clarification-choice-index="${index}">${escapeHtml(option)}</button>`
-    ).join("")}</div>`
+  const clarificationUi = data.clarification_ui || data.metadata?.clarification_ui;
+  const clarificationChoices = data.status === "clarification_required" && clarificationUi
+    ? (() => {
+      const question = String(clarificationUi.question || data.answer || "");
+      const vietnamese = /[ăâđêôơưáàảãạấầẩẫậắằẳẵặéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủụứừữựýỳỹỵ]/i.test(question)
+        || /\b(?:doanh thu|khach hang|don hang|khu vuc|thang|nam|tinh|huyen|san pham)\b/i.test(question);
+      const choices = Array.isArray(clarificationUi.choices) ? clarificationUi.choices.slice(0, 3) : [];
+      const attrs = `data-clarification-id="${escapeHtml(clarificationUi.id || "")}" data-clarification-version="${Number(clarificationUi.version) || 0}"`;
+      return `<div class="clarification-options" role="group" aria-label="${vietnamese ? "Chọn một phương án" : "Choose an option"}" ${attrs}>
+        ${choices.map((choice) => typeof choice?.id === "string" && typeof choice?.label === "string"
+          ? `<button class="clarification-option" type="button" data-clarification-choice-id="${escapeHtml(choice.id)}">${escapeHtml(choice.label)}</button>` : "").join("")}
+        ${clarificationUi.allow_custom === true ? `<button class="clarification-custom-open secondary-button" type="button">${vietnamese ? "Khác..." : "Other..."}</button>
+          <form class="clarification-custom-form" hidden>
+            <label>${vietnamese ? "Nhập câu trả lời" : "Enter your answer"}<input class="clarification-custom-input" type="text" maxlength="2000" required></label>
+            <button class="primary-button" type="submit">${vietnamese ? "Gửi" : "Submit"}</button>
+            <button class="secondary-button clarification-custom-cancel" type="button">${vietnamese ? "Hủy" : "Cancel"}</button>
+          </form>` : ""}
+      </div>`;
+    })()
     : "";
   const routeDetails = renderRunDetails(data);
   panel.innerHTML = `
@@ -2790,9 +2800,12 @@ function renderChatTranscript(root, turns, shouldScroll) {
     else if (turn.state === "error") response.innerHTML = `<p class="error-message" role="alert">${escapeHtml(turn.error)}. Please check service configuration or connection.</p>`;
     else if (turn.result) {
       renderAgentResult(turn.result, response, false);
-      if (turn.clarificationResponded) {
-        response.querySelectorAll(".clarification-option").forEach((button) => { button.disabled = true; });
+      if (turn.clarificationResponded || turn.clarificationSubmitting) {
+        response.querySelectorAll(".clarification-option, .clarification-custom-open, .clarification-custom-form button")
+          .forEach((button) => { button.disabled = true; });
       }
+      const customForm = response.querySelector(".clarification-custom-form");
+      if (customForm) customForm.hidden = turn.clarificationCustomOpen !== true;
       attachFeedback(response, turn);
       if (turn.typeOut) {
         turn.typeOut = false;
@@ -2837,7 +2850,8 @@ $("#new-general-chat").addEventListener("click", () => {
   $("#general-chat-question").focus();
 });
 
-async function sendChatMessage({ question, displayQuestion, requestMetadata, mode, button, input, state, render }) {
+async function sendChatMessage({ question, displayQuestion, requestMetadata, clarificationReply,
+  clarificationTurn, mode, button, input, state, render }) {
   const requestConversationId = state.getId();
   const requestGeneration = sessionGeneration;
   const requestSubject = sessionSubject;
@@ -2863,6 +2877,7 @@ async function sendChatMessage({ question, displayQuestion, requestMetadata, mod
       question, agent_mode: mode, retrieval_method: "translated_hybrid_rerank",
       conversation_id: requestConversationId,
       ...(requestMetadata ? { metadata: requestMetadata } : {}),
+      ...(clarificationReply ? { clarification_reply: clarificationReply } : {}),
     });
     const signal = turn.abort.signal;
     const showStage = (stage, state) => {
@@ -2895,6 +2910,10 @@ async function sendChatMessage({ question, displayQuestion, requestMetadata, mod
       turn.state = "error";
     }
   } finally {
+    if (clarificationTurn) {
+      clarificationTurn.clarificationSubmitting = false;
+      if (turn.result) clarificationTurn.clarificationResponded = true;
+    }
     clearTimeout(timeout);
     clearInterval(ticker);
     turn.abort = null;
@@ -2947,25 +2966,79 @@ $("#general-chat-form").addEventListener("submit", (event) => {
   });
 });
 
-$("#general-chat-transcript").addEventListener("click", (event) => {
-  const button = event.target.closest("[data-clarification-choice-index]");
+function clarificationSurface(entry) {
+  const inGeneralChat = Boolean(entry.closest("#general-chat-transcript"));
+  return inGeneralChat ? {
+    get turns() { return generalTurns; }, set turns(value) { generalTurns = value; },
+    getId: () => generalConversationId,
+    input: $("#general-chat-question"), button: $("#general-chat-send"), render: renderGeneralChatTranscript,
+  } : {
+    get turns() { return sessionTurns; }, set turns(value) { sessionTurns = value; },
+    getId: () => agentConversationId,
+    input: $("#question"), button: $("#ask-button"), render: renderSessionTranscript,
+  };
+}
+
+function submitClarification(entry, clarificationTurn, answer, clarificationReply) {
+  if (clarificationTurn.clarificationSubmitting || clarificationTurn.clarificationResponded) return;
+  const surface = clarificationSurface(entry);
+  clarificationTurn.clarificationSubmitting = true;
+  clarificationTurn.clarificationCustomOpen = false;
+  sendChatMessage({
+    question: answer, displayQuestion: answer, clarificationReply, clarificationTurn,
+    mode: clarificationTurn.mode, button: surface.button, input: surface.input,
+    state: { getId: surface.getId, get turns() { return surface.turns; }, set turns(value) { surface.turns = value; } },
+    render: surface.render,
+  });
+}
+
+document.addEventListener("click", (event) => {
+  const button = event.target.closest(".clarification-option, .clarification-custom-open, .clarification-custom-cancel");
   if (!button || button.disabled) return;
   const entry = button.closest("[data-turn-id]");
-  const clarificationTurn = generalTurns.find((turn) => turn.id === entry?.dataset.turnId);
-  const options = clarificationTurn?.result?.metadata?.clarification_options
-    || clarificationTurn?.result?.clarification_options;
-  const index = Number(button.dataset.clarificationChoiceIndex);
-  if (!clarificationTurn || !Array.isArray(options) || !Number.isInteger(index)
-      || index < 0 || index >= options.length || typeof options[index] !== "string") return;
-  const clarificationQuestion = clarificationTurn.result?.metadata?.clarification_question
-    || clarificationTurn.result?.clarification_question || clarificationTurn.question;
-  clarificationTurn.clarificationResponded = true;
-  sendChatMessage({
-    question: options[index], displayQuestion: options[index],
-    requestMetadata: { clarification_choice: { question: clarificationQuestion, index } },
-    mode: clarificationTurn.mode, button: $("#general-chat-send"), input: $("#general-chat-question"),
-    state: { getId: () => generalConversationId, get turns() { return generalTurns; }, set turns(value) { generalTurns = value; } },
-    render: renderGeneralChatTranscript,
+  const options = button.closest(".clarification-options");
+  const surface = entry && clarificationSurface(entry);
+  const clarificationTurn = surface?.turns.find((turn) => turn.id === entry.dataset.turnId);
+  const ui = clarificationTurn?.result?.metadata?.clarification_ui
+    || clarificationTurn?.result?.clarification_ui;
+  if (!entry || !clarificationTurn || clarificationTurn.state !== "complete" || !ui
+      || ui.id !== options?.dataset.clarificationId
+      || Number(ui.version) !== Number(options?.dataset.clarificationVersion)) return;
+
+  if (button.classList.contains("clarification-custom-open")) {
+    clarificationTurn.clarificationCustomOpen = true;
+    surface.render(false);
+    entry.querySelector(".clarification-custom-input")?.focus();
+    return;
+  }
+  if (button.classList.contains("clarification-custom-cancel")) {
+    clarificationTurn.clarificationCustomOpen = false;
+    surface.render(false);
+    return;
+  }
+  const choice = ui.choices?.find((item) => item.id === button.dataset.clarificationChoiceId);
+  if (!choice) return;
+  submitClarification(entry, clarificationTurn, choice.label, {
+    clarification_id: ui.id, version: ui.version, choice_id: choice.id,
+  });
+});
+
+document.addEventListener("submit", (event) => {
+  const form = event.target.closest(".clarification-custom-form");
+  if (!form) return;
+  event.preventDefault();
+  const entry = form.closest("[data-turn-id]");
+  const options = form.closest(".clarification-options");
+  const surface = entry && clarificationSurface(entry);
+  const clarificationTurn = surface?.turns.find((turn) => turn.id === entry.dataset.turnId);
+  const ui = clarificationTurn?.result?.metadata?.clarification_ui
+    || clarificationTurn?.result?.clarification_ui;
+  const answer = form.querySelector(".clarification-custom-input")?.value.trim();
+  if (!entry || !clarificationTurn || !ui || !answer
+      || ui.id !== options?.dataset.clarificationId
+      || Number(ui.version) !== Number(options?.dataset.clarificationVersion)) return;
+  submitClarification(entry, clarificationTurn, answer, {
+    clarification_id: ui.id, version: ui.version,
   });
 });
 

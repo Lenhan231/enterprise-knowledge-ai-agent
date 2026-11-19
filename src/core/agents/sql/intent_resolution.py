@@ -10,8 +10,11 @@ from core.analytics.metric_ontology import METRIC_ONTOLOGY, get_metric_definitio
 from core.analytics.metric_validation import MetricDefinitionError
 from core.analytics.text_to_sql import parse_json_response
 from core.agents.sql.query_intent import (
+    ClarificationChoice,
     ClarificationResolution,
     IntentInterpretation,
+    IntentPatch,
+    IntentSource,
     PendingClarification,
     QueryIntent,
 )
@@ -104,10 +107,11 @@ def _normalise_intent(intent: QueryIntent, schema: dict[str, set[str]]) -> Query
         for name in sorted(required - current):
             if name in schema:
                 sources.append(IntentSource(name=name, provenance='ontology_required'))
-    return intent.model_copy(update={
+    return QueryIntent.model_validate({
+        **intent.model_dump(mode='python'),
         'requested_sources': sources,
         'unresolved_slots': unresolved,
-    })
+    }, strict=True)
 
 
 def _clarification(intent: QueryIntent) -> tuple[str, list[dict]]:
@@ -290,7 +294,8 @@ def _merge_pending(pending: PendingClarification, resolution: ClarificationResol
     updates = resolution.updates
     slot_for_field = {
         'operation': 'operation', 'metrics': 'metric', 'dimensions': 'dimension',
-        'filters': 'filters', 'time_scope': 'time_scope', 'requested_sources': 'source_scope',
+        'filters': 'filters', 'time_scope': 'time_scope', 'time_grain': 'time_grain',
+        'requested_sources': 'source_scope',
         'explicit_source_restriction': 'source_scope', 'geographic_basis': 'geographic_basis',
         'geographic_coverage': 'geographic_coverage', 'ranking': 'ranking',
     }
@@ -302,13 +307,18 @@ def _merge_pending(pending: PendingClarification, resolution: ClarificationResol
             raise ValueError('Intent resolver updated a slot it did not identify as clarified or corrected.')
         changes[field] = getattr(updates, field)
     if changes:
-        intent = intent.model_copy(update=changes)
+        intent = QueryIntent.model_validate(
+            {**intent.model_dump(mode='python'), **changes}, strict=True)
     remaining = set(intent.unresolved_slots)
     remaining -= set(resolution.clarified_slots) | set(resolution.explicitly_corrected_slots)
-    intent = intent.model_copy(update={'unresolved_slots': sorted(remaining)})
+    intent = QueryIntent.model_validate(
+        {**intent.model_dump(mode='python'), 'unresolved_slots': sorted(remaining)}, strict=True)
     intent = _normalise_intent(intent, _schema_columns(schema))
     if resolution.action == 'clarify':
-        intent = intent.model_copy(update={'unresolved_slots': sorted(set(intent.unresolved_slots) | remaining)})
+        intent = QueryIntent.model_validate({
+            **intent.model_dump(mode='python'),
+            'unresolved_slots': sorted(set(intent.unresolved_slots) | remaining),
+        }, strict=True)
     if not intent.unresolved_slots:
         return intent
     if resolution.action == 'clarify' and resolution.clarification_question:
@@ -319,6 +329,52 @@ def _merge_pending(pending: PendingClarification, resolution: ClarificationResol
             allowed_choices=resolution.allowed_choices,
         )
     return _pending(intent)
+
+
+def apply_pending_choice(pending: PendingClarification, selected: ClarificationChoice,
+                         schema: dict[str, set[str]]) -> QueryIntent | PendingClarification:
+    """Apply an exact server-owned choice without asking the model to reinterpret its label."""
+    choice = next((item for item in pending.allowed_choices
+                   if item.model_dump() == selected.model_dump()), None)
+    if choice is None:
+        raise ValueError('The selected choice is not part of the active clarification.')
+
+    if choice.slot == 'source_scope':
+        if choice.value == 'allow_required_sources':
+            existing = {source.name for source in pending.intent.requested_sources}
+            additions = [name for name in sorted(_required_sources(pending.intent) - existing)
+                         if name in schema]
+            updates = IntentPatch(requested_sources=[
+                *pending.intent.requested_sources,
+                *(IntentSource(name=name, provenance='user') for name in additions),
+            ])
+            result = _merge_pending(pending, ClarificationResolution(
+                action='answer', updates=updates, clarified_slots=['source_scope']),
+                _schema_columns(schema))
+            if result is None:
+                raise ValueError('A source permission choice cannot start a new request.')
+            return result
+        if choice.value == 'keep_restriction':
+            needed = ', '.join(sorted(_required_sources(pending.intent) - {
+                source.name for source in pending.intent.requested_sources}))
+            vietnamese = any(ord(char) > 127 for char in pending.original_question)
+            question = (f'Không thể tính chỉ số này trong phạm vi nguồn đã giới hạn; cần thêm {needed}. '
+                        'Hãy chọn chỉ số khác hoặc gửi yêu cầu mới.' if vietnamese else
+                        f'This metric cannot be calculated within the restricted sources; it requires {needed}. '
+                        'Choose another metric or start a new request.')
+            return PendingClarification(
+                original_question=pending.original_question, intent=pending.intent,
+                unresolved_slots=pending.unresolved_slots, clarification_question=question)
+        raise ValueError('The source scope choice is unsupported.')
+
+    if choice.slot not in {'geographic_basis', 'geographic_coverage'}:
+        raise ValueError('The active clarification choice has no deterministic slot mapping.')
+    result = _merge_pending(pending, ClarificationResolution(
+        action='answer', updates=IntentPatch(**{choice.slot: choice.value}),
+        clarified_slots=[choice.slot]), _schema_columns(schema))
+    if result is None:
+        raise ValueError('A clarification choice cannot start a new request.')
+    return result
 
 
 async def resolve_pending_clarification(pending: PendingClarification, reply: str, provider,

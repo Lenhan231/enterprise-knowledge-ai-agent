@@ -3,14 +3,14 @@
 ## Flow
 
 ```text
-PDF/image → Docling OCR, layout and TableFormer → ordered text + table cells
-  → Gemini API or Qwen3-0.6B + private LoRA → schema-checked JSON draft
-  → public.invoice_extractions
+PDF/image → Docling OCR, layout and TableFormer → reviewable text and tables
+  ├─ Gemini, Groq, Qwen use text and tables
+  └─ Xiaomi-OCR-0 reads the original pages
+Both paths → schema-checked JSON draft → public.invoice_extractions
 ```
 
-The invoice intent sends OCR text and table cells to the configured text model;
-it does not send invoice images to the LLM. `DocumentProcessor` first uses
-Docling with Vietnamese/English OCR and table extraction. Set
+`DocumentProcessor` first uses Docling with Vietnamese/English OCR and table
+extraction. Text providers receive OCR text and table cells. Set
 `DOCUMENT_PROCESSING_INVOICE_PROVIDER=gemini` and `GEMINI_API` to use the
 `gemini-3.1-flash-lite` API. The Gemini path sends the header and table prompts
 as separate JSON-mode requests. The default `modal` provider sends those same
@@ -20,7 +20,7 @@ Qwen path uses the local isolated Transformers worker, which loads the pinned
 private `lenhanm1/qwen3-0.6b-invoice-lora-900` adapter. Set
 `HF_INVOICE_LLM_TOKEN` in the
 document-processing service environment so the worker can read the adapter.
-Model and adapter revisions are pinned in `invoice_text_processor.py` and can
+Model and adapter revisions are pinned in [`text_processor.py`](../invoice/text_processor.py) and can
 be overridden with `DOCUMENT_PROCESSING_INVOICE_*` environment variables. The
 local worker uses the interpreter configured by `DOCUMENT_PROCESSING_VINTERN_PYTHON`
 and shares the document-processing model cache.
@@ -41,8 +41,8 @@ The OCR pass classifies text-line orientation and recognizes VietOCR text in
 batches of up to 16 line crops per page. Both preserve crop order; orientation
 uses the same confidence and rotation rules as single-crop inference.
 
-For GPU inference, deploy `modal_invoice_endpoint.py` from the repository root
-with `modal deploy src/document_processing/modal_invoice_endpoint.py`. The
+For GPU inference, deploy [`modal_endpoint.py`](../invoice/modal_endpoint.py) from the repository root
+with `modal deploy src/document_processing/invoice/modal_endpoint.py`. The
 Modal Secret `invoice-hf-token` must expose `HF_INVOICE_LLM_TOKEN`. Set the
 endpoint URL as `DOCUMENT_PROCESSING_INVOICE_MODAL_URL` in the document-
 processing service environment; requests are authenticated with an HMAC derived
@@ -51,7 +51,7 @@ isolated worker.
 
 ## JSON schema
 
-`invoice.v1` contains `invoice_no`, `date`, `seller`, `buyer`, `items`
+[`invoice.v1`](../invoice/schema.py) contains `invoice_no`, `date`, `seller`, `buyer`, `items`
 (`description`, `quantity`, `unit`, `unit_price`, `amount`), `subtotal`,
 `tax_amount`, and `total_amount`. Values are strings or null. Tax-ID fields are
 intentionally excluded. Strict validation rejects extra keys and malformed

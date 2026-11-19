@@ -8,7 +8,7 @@ directly and stores review runs separately from production uploads.
 
 ```sh
 PYTHONPATH=src .venv/bin/streamlit run \
-  src/document_processing/testing_parser_streamlit.py \
+  tools/processing/testing_parser_streamlit.py \
   --server.address 127.0.0.1 --server.port 8502
 ```
 
@@ -16,8 +16,9 @@ By default, local review data is under
 `src/document_processing/.owner_store/`. Set `DOCUMENT_PROCESSING_STORE` to
 use a different folder. Upload Test can select pages from a PDF before
 processing and can select the `document`, `invoice`, or `image_caption`
-intent. Invoice extraction uses Docling and a text-only Qwen worker; image
-captioning uses the separate Vintern environment below.
+intent. Invoice extraction uses Docling and the configured
+[invoice provider](invoice-pipeline.md). Image captioning uses the separate
+Vintern environment below.
 
 ## Vintern environment
 

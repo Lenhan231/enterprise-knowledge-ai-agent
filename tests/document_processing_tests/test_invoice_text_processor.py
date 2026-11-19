@@ -6,9 +6,8 @@ from time import perf_counter
 from unittest.mock import patch
 
 from document_processing.document_processor import DocumentProcessor
-from document_processing.invoice_text_processor import (
-    InvoiceFields,
-    SCHEMA,
+from document_processing.invoice.schema import InvoiceFields, SCHEMA
+from document_processing.invoice.text_processor import (
     _extraction_jobs,
     _infer_with_gemini,
     _parse_json_response,
@@ -45,7 +44,7 @@ class InvoiceTextProcessorTest(unittest.TestCase):
                 }).encode("utf-8")
             )
 
-        with patch("document_processing.invoice_text_processor.urlopen", side_effect=fake_urlopen):
+        with patch("document_processing.invoice.text_processor.urlopen", side_effect=fake_urlopen):
             result = _infer_with_gemini(
                 [
                     {"prompt": "first", "max_new_tokens": 256},
@@ -77,7 +76,7 @@ class InvoiceTextProcessorTest(unittest.TestCase):
 
         started = perf_counter()
         try:
-            with patch("document_processing.invoice_text_processor.urlopen", side_effect=fake_urlopen):
+            with patch("document_processing.invoice.text_processor.urlopen", side_effect=fake_urlopen):
                 with self.assertRaisesRegex(RuntimeError, "fake Gemini timeout"):
                     _infer_with_gemini(
                         [
@@ -168,7 +167,7 @@ class InvoiceTextProcessorTest(unittest.TestCase):
         }
         with (
             patch("document_processing.docling_adapter.processor.DoclingProcessor.process", return_value=docling_output) as parse,
-            patch("document_processing.invoice_text_processor.InvoiceTextProcessor.process", return_value=extraction) as extract,
+            patch("document_processing.invoice.text_processor.InvoiceTextProcessor.process", return_value=extraction) as extract,
         ):
             result = DocumentProcessor({"intent": "invoice"}).process("invoice.pdf", b"pdf", {})
 

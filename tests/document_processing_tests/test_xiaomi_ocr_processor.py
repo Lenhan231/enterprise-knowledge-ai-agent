@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from document_processing.document_processor import DocumentProcessor
-from document_processing.xiaomi_ocr_processor import (
+from document_processing.invoice.xiaomi_processor import (
     MODEL_ID,
     XiaomiOCRInvoiceProcessor,
     _parse_xiaomi_response,
@@ -59,6 +59,7 @@ class XiaomiOCRInvoiceProcessorTest(unittest.TestCase):
         }
 
         def fake_run(command, **kwargs):
+            self.assertEqual(command[1:3], ["-m", "document_processing.invoice.xiaomi_worker"])
             request_path, response_path = map(Path, command[-2:])
             request = json.loads(request_path.read_text(encoding="utf-8"))
             self.assertEqual(request["model_id"], MODEL_ID)
@@ -73,10 +74,10 @@ class XiaomiOCRInvoiceProcessorTest(unittest.TestCase):
 
         with (
             patch(
-                "document_processing.xiaomi_ocr_processor.resolve_xiaomi_python",
+                "document_processing.invoice.xiaomi_processor.resolve_xiaomi_python",
                 return_value=Path(__file__),
             ),
-            patch("document_processing.xiaomi_ocr_processor.subprocess.run", side_effect=fake_run),
+            patch("document_processing.invoice.xiaomi_processor.subprocess.run", side_effect=fake_run),
         ):
             result = XiaomiOCRInvoiceProcessor().process(
                 "invoice.png", self.image_bytes(), reference_id="INV-test",
@@ -110,9 +111,9 @@ class XiaomiOCRInvoiceProcessorTest(unittest.TestCase):
 
         with (
             patch.dict(sys.modules, {"document_processing.docling_adapter.processor": docling_module}),
-            patch("document_processing.xiaomi_ocr_processor.XiaomiOCRInvoiceProcessor.process", return_value=extraction) as extract,
-            patch("document_processing.invoice_ocr_cache.invoice_docling_cache.get", return_value=None),
-            patch("document_processing.invoice_ocr_cache.invoice_docling_cache.put", return_value=True),
+            patch("document_processing.invoice.xiaomi_processor.XiaomiOCRInvoiceProcessor.process", return_value=extraction) as extract,
+            patch("document_processing.invoice.ocr_cache.invoice_docling_cache.get", return_value=None),
+            patch("document_processing.invoice.ocr_cache.invoice_docling_cache.put", return_value=True),
         ):
             result = DocumentProcessor({
                 "intent": "invoice", "invoice_provider": "xiaomi",

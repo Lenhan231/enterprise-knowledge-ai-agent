@@ -15,7 +15,7 @@ import re
 import xml.etree.ElementTree as ET
 
 from document_processing.element_taxonomy import normalize_element_label
-from document_processing.invoice_ocr_cache import invoice_docling_cache
+from document_processing.invoice.ocr_cache import invoice_docling_cache
 
 SUPPORTED_FORMATS = frozenset({
     ".pdf", ".docx", ".pptx", ".xlsx", ".csv", ".txt", ".md",
@@ -158,12 +158,12 @@ class DocumentProcessor:
                 or "modal"
             ).strip().lower()
             if provider == "xiaomi":
-                from document_processing.xiaomi_ocr_processor import XiaomiOCRInvoiceProcessor
+                from document_processing.invoice.xiaomi_processor import XiaomiOCRInvoiceProcessor
 
                 extraction_processor = XiaomiOCRInvoiceProcessor(self.config)
                 engine = "docling_xiaomi_ocr_invoice"
             else:
-                from document_processing.invoice_text_processor import InvoiceTextProcessor
+                from document_processing.invoice.text_processor import InvoiceTextProcessor
 
                 extraction_processor = InvoiceTextProcessor(self.config)
                 engine = "docling_qwen_invoice_text"
@@ -266,7 +266,7 @@ class DocumentProcessor:
                 "invoice_review_required": True,
             })
         elif intent == "image_caption":
-            from document_processing.vintern_processor import VinternProcessor
+            from document_processing.image_caption.vintern_processor import VinternProcessor
 
             engine = "vintern_image_caption"
             result = VinternProcessor(self.config).process(filename, content, common)

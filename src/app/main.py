@@ -1069,7 +1069,7 @@ def retry_invoice_extraction(
 
 
 def _validated_invoice_data(invoice_data: dict) -> dict:
-    from document_processing.invoice_text_processor import InvoiceFields
+    from document_processing.invoice.schema import InvoiceFields
 
     return InvoiceFields.model_validate(invoice_data).model_dump(mode="json")
 

@@ -4,7 +4,7 @@ from types import ModuleType, SimpleNamespace
 from unittest.mock import Mock, patch
 
 from document_processing.document_processor import DocumentProcessor
-from document_processing.invoice_ocr_cache import InvoiceDoclingCache, invoice_docling_cache
+from document_processing.invoice.ocr_cache import InvoiceDoclingCache, invoice_docling_cache
 
 
 class InvoiceDoclingCacheTest(unittest.TestCase):
@@ -50,7 +50,7 @@ class InvoiceDoclingCacheTest(unittest.TestCase):
         }
         docling_module = ModuleType("document_processing.docling_adapter.processor")
         docling_module.DoclingProcessor = Mock(side_effect=AssertionError("duplicate parse"))
-        invoice_module = ModuleType("document_processing.invoice_text_processor")
+        invoice_module = ModuleType("document_processing.invoice.text_processor")
         invoice_module.InvoiceTextProcessor = Mock(
             return_value=SimpleNamespace(process=Mock(return_value=extraction))
         )
@@ -61,7 +61,7 @@ class InvoiceDoclingCacheTest(unittest.TestCase):
             try:
                 with patch.dict("sys.modules", {
                     "document_processing.docling_adapter.processor": docling_module,
-                    "document_processing.invoice_text_processor": invoice_module,
+                    "document_processing.invoice.text_processor": invoice_module,
                 }):
                     outcome["result"] = DocumentProcessor(config).process(
                         "invoice.pdf", content, {}, invoice_docling_lock=SignalingLock(),
@@ -116,7 +116,7 @@ class InvoiceDoclingCacheTest(unittest.TestCase):
         docling_module.DoclingProcessor = Mock(
             return_value=SimpleNamespace(process=docling_process)
         )
-        invoice_module = ModuleType("document_processing.invoice_text_processor")
+        invoice_module = ModuleType("document_processing.invoice.text_processor")
         invoice_module.InvoiceTextProcessor = Mock(
             return_value=SimpleNamespace(process=Mock(side_effect=extract_invoice))
         )
@@ -124,7 +124,7 @@ class InvoiceDoclingCacheTest(unittest.TestCase):
 
         with patch.dict("sys.modules", {
             "document_processing.docling_adapter.processor": docling_module,
-            "document_processing.invoice_text_processor": invoice_module,
+            "document_processing.invoice.text_processor": invoice_module,
         }):
             result = DocumentProcessor({
                 "intent": "invoice", "invoice_provider": "gemini",
@@ -204,7 +204,7 @@ class InvoiceDoclingCacheTest(unittest.TestCase):
             return_value=SimpleNamespace(process=docling_process)
         )
         infer = Mock(side_effect=[TimeoutError("Gemini timed out"), extraction])
-        invoice_module = ModuleType("document_processing.invoice_text_processor")
+        invoice_module = ModuleType("document_processing.invoice.text_processor")
         invoice_module.InvoiceTextProcessor = Mock(
             return_value=SimpleNamespace(process=infer)
         )
@@ -212,7 +212,7 @@ class InvoiceDoclingCacheTest(unittest.TestCase):
         with (
             patch.dict("sys.modules", {
                 "document_processing.docling_adapter.processor": docling_module,
-                "document_processing.invoice_text_processor": invoice_module,
+                "document_processing.invoice.text_processor": invoice_module,
             }),
         ):
             with self.assertRaises(TimeoutError):

@@ -195,6 +195,18 @@ async def create_dashboard(body: BuildRequest, request: Request, user=Depends(pr
         return await run_draft(request, user, store, draft, body.conversation_id, history, max_chars=conversations.max_chars)
 
 
+@router.get('/overview')
+async def overview(request: Request, user=Depends(principal)):
+    from core.dashboards.overview import build_overview
+    runtime = await _get_runtime(request.app)
+    sql_engine = getattr(runtime.analytics_agent, 'sql_agent', runtime.analytics_agent)
+    async with _build_slots:
+        document, charts = await build_overview(sql_engine, _agent_request(user, 'Business overview'))
+    # Only this fixed SQL path supplies reviewed chart mappings; model-generated dashboards retain their validators.
+    return JSONResponse({'dashboard': document.model_dump(mode='json'), 'html': render_dashboard(document, charts=charts, saved=False)},
+                        headers={'Cache-Control':'no-store'})
+
+
 @router.get('/{identifier}')
 async def get_dashboard(identifier: str, request: Request, user=Depends(principal), store=Depends(get_store), conversations=Depends(get_conversations)):
     doc = await owned(store, user, identifier)

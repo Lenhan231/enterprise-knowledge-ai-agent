@@ -1,5 +1,5 @@
 const $ = (selector) => document.querySelector(selector);
-let activeTab = "general-chat";
+let activeTab = "home";
 let currentUser = null;
 let knowledgeDocuments = [];
 let activeKnowledgeReview = null;
@@ -58,8 +58,11 @@ function syntheticPolicySourcePageUrl(source) {
 
 function selectWorkspaceTab(name) {
   const button = $(`[data-tab-target="${name}"]`);
-  if (!button || button.hidden) return;
+  if (!currentUser || name !== "home" && (!button || button.hidden)) return;
   activeTab = name;
+  $("#workspace-home").hidden = name !== "home";
+  $("#workspace-home-link").setAttribute("aria-current", name === "home" ? "page" : "false");
+  if (name === "home") window.businessOverview?.show(!$("#tab-button-dashboard").hidden);
   // Rows settle in only while a tab is opening, not when a filter or selection re-renders the list.
   const panel = $(`#tab-${name}`);
   if (panel) {
@@ -76,14 +79,15 @@ function selectWorkspaceTab(name) {
   $(".agent-overview").hidden = !isKnowledgeTab
     || ["document_processing_owner", "document_uploader"].includes(currentUser?.role);
   $(".stats").hidden = !isKnowledgeTab || currentUser?.role === "document_processing_owner";
+  const firstTab = Array.from(document.querySelectorAll(".workspace-tab")).find(tab => !tab.hidden);
   document.querySelectorAll(".workspace-tab").forEach((tab) => {
     const selected = tab === button;
     tab.setAttribute("aria-selected", String(selected));
-    tab.tabIndex = selected ? 0 : -1;
+    tab.tabIndex = selected || name === "home" && tab === firstTab ? 0 : -1;
     tab.classList.toggle("active", selected);
   });
   document.querySelectorAll(".tab-panel").forEach((panel) => {
-    panel.hidden = panel.id !== button.getAttribute("aria-controls");
+    panel.hidden = panel.id !== button?.getAttribute("aria-controls");
   });
 }
 
@@ -108,11 +112,16 @@ function syncWorkspaceTabs(user = currentUser) {
   document.querySelectorAll(".workspace-tab").forEach((button) => {
     button.hidden = !available[button.dataset.tabTarget];
   });
-  if (!available[activeTab]) {
+  if (activeTab !== "home" && !available[activeTab]) {
     activeTab = isProcessingOwner ? "processing" : available["general-chat"] ? "general-chat" : available.upload ? "upload" : "general-chat";
   }
   selectWorkspaceTab(activeTab);
 }
+
+$("#workspace-home-link").addEventListener("click", (event) => {
+  event.preventDefault();
+  selectWorkspaceTab("home");
+});
 
 const UPLOAD_ROLE_LABELS = {
   employee: ["Employee", "General document Q&A"],
@@ -2169,6 +2178,7 @@ async function askAgentStream(body, signal, onStatus) {
 }
 
 function resetConversationState() {
+  window.businessOverview?.clear();
   window.dashboardWorkspace?.clear();
   window.reportWorkspace?.clear();
   agentConversationId = crypto.randomUUID();
@@ -2210,8 +2220,10 @@ async function loadWorkspace(user) {
     clearInvoiceReviewCaches();
     sessionSubject = user.username;
     resetConversationState();
+    activeTab = "home";
   }
   currentUser = user;
+  const generation = sessionGeneration;
   $("#login-view").hidden = true;
   $("#login-brand-sidebar").hidden = true;
   $("#workspace").hidden = false;
@@ -2254,9 +2266,6 @@ async function loadWorkspace(user) {
   $("#account-initial").textContent = (user.username || "?").charAt(0).toUpperCase();
   $("#user-badge").hidden = false;
   $("#logout-button").hidden = false;
-  $(".intro").hidden = user.role === "document_processing_owner";
-  $(".agent-overview").hidden = ["document_processing_owner", "document_uploader"].includes(user.role);
-  $(".stats").hidden = user.role === "document_processing_owner";
   const canUseAnalytics = ["admin", "finance_analyst", "sustainability_analyst", "operations", "executive"].includes(user.role);
   $("#reports-workspace").hidden = !canUseAnalytics;
   ["#analytics-agent-card", "#inventory-agent-card", "#report-agent-card", "#report-agent-form-section"].forEach((selector) => {
@@ -2271,9 +2280,11 @@ async function loadWorkspace(user) {
   if (user.role !== "document_processing_owner") {
     await loadCorpusStats();
   }
+  if (generation !== sessionGeneration || currentUser !== user) return;
   try {
     if (user.role === "admin") {
       const access = await api("/api/admin/access-matrix");
+      if (generation !== sessionGeneration || currentUser !== user) return;
       const permissions = [...new Set(access.roles.flatMap((role) => role.permissions))];
       const yes = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 12.5 4 4 8-9"/></svg>';
       $("#access-matrix").innerHTML = `<div class="access-table-wrap"><table class="access-table">
@@ -2291,10 +2302,10 @@ async function loadWorkspace(user) {
       await refreshKnowledgeDocuments();
       await loadOcrTestRuns();
     }
-    syncWorkspaceTabs(user);
+    if (generation !== sessionGeneration || currentUser !== user) return;
     $("#login-error").hidden = true;
   } catch (error) {
-    syncWorkspaceTabs(user);
+    if (generation !== sessionGeneration || currentUser !== user) return;
     if (error.message !== "Sign in to continue") {
       $("#connection-status").textContent = `Workspace loaded with an error: ${error.message}`;
     }
@@ -2541,7 +2552,7 @@ $("#logout-button").addEventListener("click", async () => {
   $("#login-brand-sidebar").hidden = false;
   $("#user-badge").hidden = true;
   $("#logout-button").hidden = true;
-  activeTab = "general-chat";
+  activeTab = "home";
   syncWorkspaceTabs();
 });
 

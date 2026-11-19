@@ -16,7 +16,18 @@ from sqlglot import exp, parse_one
 
 from core.agents.base import BaseAgent
 from core.agents.intent_classifier import select_jev_schema_tables
-from core.analytics.field_retrieval import field_contract, compile_field_query
+from core.agents.sql.compiler_dispatch import (
+    CompilationSelection,
+    _annual_revenue_plan,
+    _completed_months_revenue_plan,
+    _explicit_month_revenue_plan,
+    _has_unrepresented_scope,
+    _month_over_month_revenue_plan,
+    _promotion_query_plan,
+    compile_fixed_query,
+    compile_inventory_mapping as _compile_inventory_mapping,
+    match_fixed_query,
+)
 from core.analytics.commerce_decision_support import (
     COMMERCE_QUERY_TABLES, COMMERCE_UNAVAILABLE_DIMENSIONS,
     resolve_commerce_decision_domain, unavailable_commerce_dimensions,
@@ -57,294 +68,9 @@ class AnalyticsPermissionDenied(PermissionError):
     """The request has no server-verified permission to query commerce data."""
 
 
-def _has_unrepresented_scope(question: str, *, promotion_ranking: bool = False,
-                            month_comparison: bool = False) -> bool:
-    """Conservatively decline templates when the question asks for extra scope or outputs."""
-    text = question.casefold()
-    if month_comparison:
-        text = re.sub(r"\bwith\s+(?:the\s+)?(?:previous|last|current|this)\s+month\b", " ", text)
-        text = re.sub(r"\b(?:compare|comparison|versus|vs\.?)\b", " ", text)
-        text = re.sub(r"\b(?:growth|change|difference|delta|variance|rate|percent(?:age)?)\b", " ", text)
-    if promotion_ranking:
-        text = re.sub(r"^\s*(?:cho\s+tôi|please|show\s+me)\b", " ", text)
-        text = re.sub(r"\b(?:top|bottom|highest|lowest|most|rank(?:ing)?|best)\b", " ", text)
-        text = re.sub(r"\bby\s+(?:(?:total|net|gross)\s+)?(?:revenue|sales|doanh\s+thu)\b", " ", text)
-        text = re.sub(r"\bwith\s+(?:the\s+)?(?:highest|most)\s+(?:total\s+)?(?:revenue|sales)\b", " ", text)
-    if re.search(
-        r"\b(?:by|per|group(?:ed)?|breakdown|according\s+to|rank(?:ing)?|top|bottom|"
-        r"highest|lowest|include|including|also|along\s+with|as\s+well\s+as|output|column|field|"
-        r"growth|change|difference|delta|variance|average|mean|median|profit|margin|rate|"
-        r"percent(?:age)?|forecast|predict|trend|"
-        r"where|with|filter(?:ed)?|only|excluding|except|between|through|until|before|after|"
-        r"compare|comparison|versus|vs\.?)\b|"
-        r"\bfor\s+(?!(?:(?:19|20)\d{2}|(?:the\s+)?year|(?:last|previous|this|current)\s+year)\b)|"
-        r"\bin\s+(?!(?:(?:19|20)\d{2}|(?:the\s+)?year|(?:last|previous|this|current)\s+year|"
-        r"january|february|march|april|may|june|july|august|september|october|november|december)\b)|"
-        r"theo\s+(?:từng|mỗi)?|từng\s+\w+|mỗi\s+\w+|"
-        r"(?:cho|lọc|chỉ|bao gồm|ngoại trừ|trừ)\s+(?!năm\s+(?:(?:19|20)\d{2}|ngoái|trước|nay)\b)",
-        text,
-    ):
-        return True
-    if re.search(
-        r"\b(?:region|regional|country|state|city|category|product|sku|brand|segment|"
-        r"channel|customer|store|warehouse|supplier|order|status|payment)\b|"
-        r"khu vực|danh mục|sản phẩm|mã hàng|thương hiệu|phân khúc|kênh|khách hàng|"
-        r"cửa hàng|nhà cung cấp|đơn hàng|trạng thái|thanh toán",
-        text,
-    ):
-        return True
-    return False
-
-
-def _month_over_month_revenue_plan(question: str, metric_names: set[str], today: date | None = None):
-    """Compile the common current-vs-previous calendar month revenue comparison."""
-    text = question.casefold()
-    compares_months = bool(re.search(r"\b(?:compare|comparison|versus|vs\.?|month.over.month|mom)\b|so sánh|đối chiếu", text))
-    mentions_previous_month = bool(re.search(r"previous month|last month|tháng trước", text))
-    explicit_period = bool(re.search(r"\b(?:19|20)\d{2}\b|\btháng\s+(?:0?[1-9]|1[0-2])\b|\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\b", text))
-    if (metric_names != {"revenue"} or not compares_months or not mentions_previous_month
-            or explicit_period or _has_unrepresented_scope(question, month_comparison=True)):
-        return None
-
-    today = today or date.today()
-    current_start = date(today.year, today.month, 1)
-    if today.month == 1:
-        previous_start = date(today.year - 1, 12, 1)
-    else:
-        previous_start = date(today.year, today.month - 1, 1)
-    next_start = date(today.year + (today.month == 12), today.month % 12 + 1, 1)
-    sql = (
-        "SELECT CAST($2 AS DATE) AS month, CAST($1 AS DATE) AS previous_month, "
-        "SUM(s.revenue) FILTER (WHERE s.date >= $2 AND s.date < $3) AS revenue, "
-        "SUM(s.revenue) FILTER (WHERE s.date >= $1 AND s.date < $2) AS previous_month_revenue, "
-        "SUM(s.revenue) FILTER (WHERE s.date >= $2 AND s.date < $3) - "
-        "SUM(s.revenue) FILTER (WHERE s.date >= $1 AND s.date < $2) AS revenue_change, "
-        "(SUM(s.revenue) FILTER (WHERE s.date >= $2 AND s.date < $3) - "
-        "SUM(s.revenue) FILTER (WHERE s.date >= $1 AND s.date < $2)) / "
-        "NULLIF(SUM(s.revenue) FILTER (WHERE s.date >= $1 AND s.date < $2), 0) AS revenue_change_fraction "
-        "FROM commerce.sales AS s LIMIT 1"
-    )
-    return QueryPlan(sql=sql, parameters=(previous_start, current_start, next_start),
-                     explanation="Compare current and previous calendar month revenue using code-resolved date bounds.")
-
-
-def _explicit_month_revenue_plan(question: str, metric_names: set[str], today: date | None = None):
-    if metric_names != {"revenue"} or _has_unrepresented_scope(question):
-        return None
-    match = re.search(r"\btháng\s+(0?[1-9]|1[0-2])(?:\s+năm\s+((?:19|20)\d{2}))?\b", question, re.I)
-    if not match:
-        return None
-    year, month = int(match.group(2) or (today or date.today()).year), int(match.group(1))
-    start = date(year, month, 1)
-    end = date(year + (month == 12), month % 12 + 1, 1)
-    sql = (
-        "SELECT CAST($1 AS DATE) AS month, SUM(s.revenue) AS revenue "
-        "FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 LIMIT 1"
-    )
-    return QueryPlan(sql=sql, parameters=(start, end),
-                     explanation="Compile a calendar-month revenue total from commerce.sales.")
-
-
-def _annual_revenue_plan(question: str, metric_names: set[str], today: date | None = None):
-    """Compile an unambiguous calendar-year revenue total instead of daily rows."""
-    if metric_names != {"revenue"}:
-        return None
-    text = question.casefold()
-    if re.search(r"\btháng\s+(?:0?[1-9]|1[0-2])\b|\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\b|\bmonth\b|\bq[1-4]\b|\bquarter\b|quý\s+[1-4]|\b(?:19|20)\d{2}[-/]\d{1,2}", text):
-        return None
-    if (re.search(r"\b(?:compare|comparison|versus|vs\.?|trend|monthly|daily|by|per|region|category|product|channel|quarter|year.over.year)\b|so sánh|xu hướng|theo\s+\w+", text)
-            or _has_unrepresented_scope(text)):
-        return None
-    years = set(re.findall(r"\b(?:19|20)\d{2}\b", text))
-    if len(years) > 1:
-        return None
-    if years:
-        year = int(next(iter(years)))
-    elif re.search(r"\b(?:this year|current year|năm nay|năm hiện tại)\b", text):
-        year = (today or date.today()).year
-    elif re.search(r"\b(?:last year|previous year|năm ngoái|năm trước)\b", text):
-        year = (today or date.today()).year - 1
-    else:
-        return None
-    start, end = date(year, 1, 1), date(year + 1, 1, 1)
-    sql = (
-        "SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s "
-        "WHERE s.date >= $1 AND s.date < $2 LIMIT 1"
-    )
-    return QueryPlan(sql=sql, parameters=(start, end),
-                     explanation="Compile a calendar-year revenue total from commerce.sales.")
-
-
-def _completed_months_revenue_plan(question: str, metric_names: set[str], today: date | None = None):
-    """Compile a monthly revenue series for the requested most recent completed months."""
-    if metric_names != {"revenue"}:
-        return None
-    count_words = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
-                   "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10}
-    match = re.search(
-        r"\b(\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten)\s+"
-        r"(?:completed\s+)?months?\b|"
-        r"\b(\d{1,2}|một|hai|ba|bốn|năm|sáu|bảy|tám|chín|mười)\s+tháng\b",
-        question.casefold(),
-    )
-    completed = bool(re.search(
-        r"completed|finished|đã\s+hoàn\s+tất|hoàn\s+tất|gần\s+(?:nhất|đây)|most\s+recent|last|past",
-        question.casefold(),
-    ))
-    other_period = bool(re.search(
-        r"\b(?:19|20)\d{2}\b|\b(?:january|february|march|april|may|june|july|august|september|"
-        r"october|november|december)\b|\b(?:this|last|previous|current)\s+(?:year|quarter)\b|"
-        r"\bq[1-4]\b|\bquarter\b|\btháng\s+\d{1,2}\s+(?:năm\s+)?(?:19|20)\d{2}\b",
-        question.casefold(),
-    ))
-    if not match or not completed or other_period or _has_unrepresented_scope(question):
-        return None
-    raw_count = next(value for value in match.groups() if value)
-    vi_count = {"một": 1, "hai": 2, "ba": 3, "bốn": 4, "năm": 5,
-                "sáu": 6, "bảy": 7, "tám": 8, "chín": 9, "mười": 10}
-    count = int(raw_count) if raw_count.isdigit() else count_words.get(raw_count, vi_count.get(raw_count))
-    if not count or count > 24:
-        return None
-    today = today or date.today()
-    end = date(today.year, today.month, 1)
-    month_index = end.year * 12 + end.month - 1 - count
-    start = date(month_index // 12, month_index % 12 + 1, 1)
-    sql = (
-        "SELECT DATE_TRUNC('month', s.date)::date AS month, SUM(s.revenue) AS revenue "
-        "FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 "
-        "GROUP BY DATE_TRUNC('month', s.date)::date ORDER BY month LIMIT 200"
-    )
-    return QueryPlan(sql=sql, parameters=(start, end),
-                     explanation="Aggregate revenue by month over the most recent completed calendar months.")
-
-
-def _promotion_query_plan(question: str, today: date | None = None):
-    """Compile the two unambiguous promotion questions using their source grain."""
-    text = question.casefold()
-    mentions_promo = bool(re.search(r"promo(?:tion)?s?|promotion code|discount code|coupon|voucher|khuyến mãi|mã giảm giá|mã khuyến mãi", text))
-    explicit_period = bool(re.search(
-        r"\b(?:19|20)\d{2}\b|\b(?:january|february|march|april|may|june|july|august|"
-        r"september|october|november|december)\b|\b(?:last|previous|this)\s+(?:month|year|week|day)\b|"
-        r"\btháng\s+\d{1,2}\b|\bngày\s+\d{1,2}[/-]\d{1,2}", text))
-    if (not mentions_promo or explicit_period
-            or _has_unrepresented_scope(text, promotion_ranking=True)):
-        return None, None
-
-    asks_active_count = bool(re.search(
-        r"\bhow many\b|\bcount\b|bao nhiêu|số lượng", text
-    )) and bool(re.search(r"\bactive\b|\bcurrent\b|currently|hiện tại|đang hoạt động", text))
-    if asks_active_count:
-        today = today or date.today()
-        return QueryPlan(
-            sql=("SELECT COUNT(*) AS active_promotion_count "
-                 "FROM commerce.promotions AS p "
-                 "WHERE p.start_date <= $1 AND p.end_date >= $1 LIMIT 1"),
-            parameters=(today,),
-            explanation="Count promotions whose recorded start and end dates include the server's current date.",
-        ), "active_promotion_count"
-
-    asks_top_revenue = bool(re.search(r"\b(?:top|highest|most|rank|best)\b|cao nhất|nhiều nhất|đứng đầu", text)) \
-        and bool(re.search(r"revenue|sales|doanh thu", text))
-    if asks_top_revenue:
-        limit_match = re.search(r"\btop\s+(\d{1,2})\b|(\d{1,2})\s+(?:mã|promo|promotion|discount)", text)
-        limit = min(int(next(group for group in limit_match.groups() if group)), 50) if limit_match else 10
-        return QueryPlan(
-            sql=("SELECT p.promo_id, p.promo_name, "
-                 "SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS revenue "
-                 "FROM commerce.order_items AS oi "
-                 "JOIN commerce.promotions AS p ON p.promo_id = oi.promo_id "
-                 "WHERE oi.promo_id IS NOT NULL AND oi.promo_id_2 IS NULL "
-                 "AND oi.quantity IS NOT NULL AND oi.unit_price IS NOT NULL "
-                 "AND oi.discount_amount IS NOT NULL "
-                 "GROUP BY p.promo_id, p.promo_name "
-                 "ORDER BY revenue DESC, p.promo_id LIMIT " + str(limit)),
-            parameters=(),
-            explanation="Rank promotions by recorded net item revenue, without double-attributing lines with a second promotion.",
-        ), "promotion_revenue"
-    return None, None
-
-
-def compile_known_query(
-    question: str,
-    *,
-    original_question: str | None = None,
-    context=None,
-    inventory_mapping=None,
-    dashboard_build: bool = False,
-    today: date | None = None,
-    trace: dict | None = None,
-) -> QueryPlan | None:
-    """Select and compile one supported deterministic path into the shared plan contract."""
-    original_question = original_question if isinstance(original_question, str) and original_question.strip() else question
-    scope_question = question if original_question.strip() == question.strip() else question + "\n" + original_question.strip()
-    direct = field_contract(question) if context is None else None
-    promotion_plan, promotion_metric = _promotion_query_plan(scope_question, today=today) if direct is None else (None, None)
-    explicit_order_item_formula = all(
-        re.search(rf"\b{field}\b", scope_question, re.I)
-        for field in ("quantity", "unit_price", "discount_amount")
-    )
-    metric_names = (set() if direct is not None or promotion_plan is not None or explicit_order_item_formula
-                    else resolve_metric_names(question))
-    relative_month_followup = bool(re.fullmatch(
-        r"\s*(?:(?:vậy|còn)\s+)?(?:tháng trước(?: thì sao)?|last month|previous month)\s*[?!.]*\s*",
-        original_question, re.I))
-
-    annual_scope_supported = _annual_revenue_plan(scope_question, metric_names, today=today) is not None
-    # A literal request with both relative and explicit years has two incompatible scopes.
-    if question.strip() == original_question.strip() and re.search(
-        r"\b(?:19|20)\d{2}\b", scope_question,
-    ) and re.search(
-        r"\b(?:this|current|last|previous)\s+year\b|năm\s+(?:nay|hiện tại|ngoái|trước)",
-        scope_question, re.I,
-    ):
-        annual_scope_supported = False
-    annual_plan = ((_annual_revenue_plan(original_question, metric_names, today=today)
-                    or _annual_revenue_plan(question, metric_names, today=today))
-                   if annual_scope_supported else None)
-    completed_scope_supported = _completed_months_revenue_plan(scope_question, metric_names, today=today) is not None
-    completed_months_plan = (_completed_months_revenue_plan(original_question, metric_names, today=today)
-                             if completed_scope_supported else None)
-    explicit_scope_supported = _explicit_month_revenue_plan(scope_question, metric_names, today=today) is not None
-    explicit_month_plan = (_explicit_month_revenue_plan(question, metric_names, today=today)
-                           if relative_month_followup and explicit_scope_supported else None)
-    month_scope_supported = _month_over_month_revenue_plan(scope_question, metric_names, today=today) is not None
-    month_comparison_plan = (_month_over_month_revenue_plan(question, metric_names, today=today)
-                             if month_scope_supported else None)
-    candidates = (
-        ("promotion", promotion_plan, promotion_metric),
-        ("annual_revenue", annual_plan, None),
-        ("completed_months_revenue", completed_months_plan, None),
-        ("explicit_month_revenue", explicit_month_plan, None),
-        ("month_over_month_revenue", month_comparison_plan, None),
-    )
-    compiler, plan, metric = next(((name, candidate, measure)
-                                   for name, candidate, measure in candidates if candidate is not None),
-                                  (None, None, None))
-    if compiler is None and direct is not None:
-        compiler = "direct_field"
-        if not dashboard_build:
-            plan = compile_field_query(direct)
-
-    # Dashboard builds keep their existing model-generated output bundle; inventory
-    # mappings still use the deterministic domain compiler when available.
-    if compiler is not None and dashboard_build:
-        plan = None
-    if plan is None and inventory_mapping is not None and inventory_mapping.domain == "inventory":
-        sql, parameters = compile_inventory_query(inventory_mapping)
-        plan = QueryPlan(sql=sql, parameters=parameters,
-                         explanation="Compiled from the validated inventory interpretation.")
-        compiler, metric = "inventory_mapping", None
-
-    if trace is not None:
-        trace.update(
-            direct=direct,
-            metric_names=metric_names,
-            promotion_metric=metric,
-            compiler=compiler,
-            candidate=compiler is not None,
-            explicit_order_item_formula=explicit_order_item_formula,
-        )
-    return plan
+def compile_inventory_mapping(mapping) -> CompilationSelection:
+    """Keep inventory compilation patchable at the SQL-agent boundary for compatibility."""
+    return _compile_inventory_mapping(mapping, inventory_compiler=compile_inventory_query)
 
 
 def payload_to_agent_result(payload: Mapping[str, Any], *, agent: str = "analytics") -> AgentResult:
@@ -512,18 +238,18 @@ class SQLAnalyticsAgent(BaseAgent):
                                       unsupported_dimensions=unavailable, missing_columns=missing_columns,
                                       available_tables=present_tables)
             return result
-        compiler_trace = {}
         try:
-            known_plan = compile_known_query(
-                question, original_question=original_question, context=context,
-                dashboard_build=dashboard_build, trace=compiler_trace,
+            fixed_selection = compile_fixed_query(
+                match_fixed_query(question, original_question=original_question, context=context),
+                dashboard_build=dashboard_build,
             )
         except MetricDefinitionError as error:
             return self._generation_error(error)
-        direct = compiler_trace['direct']
-        promotion_metric = compiler_trace['promotion_metric']
-        metric_names = compiler_trace['metric_names']
-        explicit_order_item_formula = compiler_trace['explicit_order_item_formula']
+        known_plan = fixed_selection.plan
+        direct = fixed_selection.direct_contract
+        promotion_metric = fixed_selection.promotion_metric
+        metric_names = set(fixed_selection.metric_names)
+        explicit_order_item_formula = fixed_selection.explicit_order_item_formula
         formula_scope = f'{question}\n{original_question}'
         explicit_separate_criteria = explicit_order_item_formula and bool(re.search(
             r'từng tiêu chí riêng|riêng từng tiêu chí|each criterion separately|separate criteria',
@@ -550,7 +276,7 @@ class SQLAnalyticsAgent(BaseAgent):
                 if error.code != 'snapshot_required':
                     raise
             metric_definitions = {name: get_metric_definition(name) for name in metric_names}
-            deterministic_plan = compiler_trace['candidate']
+            deterministic_plan = fixed_selection.matched
             if deterministic_plan:
                 table_selection = None
                 context_info['schema_table_selection'] = 'compiled_query'
@@ -741,15 +467,12 @@ class SQLAnalyticsAgent(BaseAgent):
         selected_compiler = None
         for attempt in range(2):
             plan = known_plan
-            selected_compiler = compiler_trace['compiler'] if plan is not None else None
+            selected_compiler = fixed_selection.compiler.value if plan is not None else None
             try:
                 if plan is None and interpretation and interpretation.domain == 'inventory':
-                    plan = compile_known_query(
-                        question, original_question=original_question, context=context,
-                        inventory_mapping=interpretation, dashboard_build=dashboard_build,
-                        trace=compiler_trace,
-                    )
-                    selected_compiler = compiler_trace['compiler'] if plan is not None else None
+                    inventory_selection = compile_inventory_mapping(interpretation)
+                    plan = inventory_selection.plan
+                    selected_compiler = inventory_selection.compiler.value if plan is not None else None
                 if plan is None:
                     with measure("sql_planning"):
                         raw = await self._generate_sql(prompt)

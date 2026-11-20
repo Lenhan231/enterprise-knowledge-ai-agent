@@ -14,7 +14,7 @@ Investigation of the live source found daily company sales from 2025-11-14 throu
 
 Workspace actions share a busy/session guard. Save and download lock mutable controls, stale responses cannot replace a newer session or clear its authentication, and downloads are pinned to the saved revision. Generation status comes from the backend so failed chart queries remain partial. PDF rendering uses the installed PyMuPDF library without new dependencies.
 
-Additional verification: `python -m unittest discover -s tests -p test_saved_reports.py` and `node tests/test_report_workspace.cjs`. Opt into live persistence tests with `REPORT_POSTGRES_TEST_URL`; the test creates randomly owned test reports and deletes them on completion.
+Additional verification: `python -m unittest discover -s tests -p test_saved_reports.py` and `node tests/report/test_report_workspace.cjs`. Opt into live persistence tests with `REPORT_POSTGRES_TEST_URL`; the test creates randomly owned test reports and deletes them on completion.
 
 The original implementation notes below describe the canonical contract and legacy endpoints; their immutable-layout rules apply to canonical data, while the new workspace adds the explicit presentation overrides described above.
 

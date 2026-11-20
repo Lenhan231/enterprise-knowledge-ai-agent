@@ -23,7 +23,7 @@ from urllib.parse import quote, urlsplit
 from dotenv import load_dotenv
 
 from core.database.document_repository import DocumentRepository
-from core.analytics.commerce_decision_support import COMMERCE_DECISION_PROFILES
+from core.agents.sql.commerce_decision_support import COMMERCE_DECISION_PROFILES
 from supabase import create_client
 from app.security import (
     DOCUMENT_ROLES, ROLE_PERMISSIONS, _current_user, _is_trusted_frontend_origin,

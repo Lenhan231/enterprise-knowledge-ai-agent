@@ -88,7 +88,7 @@ telemetry. Preserve the public `AgentResult` envelope.
 ## Tech stack and project structure
 
 Python >=3.11 asyncio, existing LangGraph and Pydantic. Main changes remain in
-`src/core/agents/router.py`, small supporting helpers/models if justified, existing
+`src/core/agents/decision_support/router.py`, small supporting helpers/models if justified, existing
 API wrappers, and existing provider timeout boundaries. Tests remain in `tests/`.
 
 ## Commands

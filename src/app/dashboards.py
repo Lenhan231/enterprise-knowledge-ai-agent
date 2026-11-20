@@ -9,12 +9,12 @@ from fastapi.responses import HTMLResponse, JSONResponse
 
 from app.agents import _agent_request, _get_runtime
 from app.security import require_permission, _require_same_origin
-from core.agents.conversation_context import ConversationStore
-from core.dashboards.agent import DashboardDocumentAgent
-from core.dashboards.models import BuildRequest, DashboardEdit, DashboardDocument, RefreshRequest, PendingDashboard, ClarificationTurn
-from core.dashboards.render import CSP, render_dashboard
-from core.dashboards.presentation import presentation_clarification, presentation_choice, presentation_only, set_representation, reconcile
-from core.dashboards.store import create_dashboard_store, Conflict, StoreUnavailable
+from core.agents.decision_support.conversation_context import ConversationStore
+from core.agents.dashboard.agent import DashboardDocumentAgent
+from core.agents.dashboard.models import BuildRequest, DashboardEdit, DashboardDocument, RefreshRequest, PendingDashboard, ClarificationTurn
+from core.agents.dashboard.render import CSP, render_dashboard
+from core.agents.dashboard.presentation import presentation_clarification, presentation_choice, presentation_only, set_representation, reconcile
+from core.agents.dashboard.store import create_dashboard_store, Conflict, StoreUnavailable
 
 router = APIRouter(prefix='/api/dashboards', tags=['dashboards'])
 principal = require_permission('view_analytics')
@@ -197,7 +197,7 @@ async def create_dashboard(body: BuildRequest, request: Request, user=Depends(pr
 
 @router.get('/overview')
 async def overview(request: Request, user=Depends(principal)):
-    from core.dashboards.overview import build_overview
+    from core.agents.dashboard.overview import build_overview
     runtime = await _get_runtime(request.app)
     sql_engine = getattr(runtime.analytics_agent, 'sql_agent', runtime.analytics_agent)
     async with _build_slots:

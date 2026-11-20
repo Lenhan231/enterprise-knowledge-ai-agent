@@ -60,7 +60,7 @@ Hai dòng này không sửa retrieval, prompt, reranker, API key, citation hoặ
 
 ## Test regression
 
-`tests/test_agent_monitoring.py` thêm một test gồm sáu outcome:
+`tests/infrastructure/test_agent_monitoring.py` thêm một test gồm sáu outcome:
 
 | Metadata | status event | error_type |
 |---|---|---|

@@ -9,18 +9,18 @@ from unittest.mock import AsyncMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-from core.analytics.text_to_sql import (APPROVED_COLUMNS, SQLValidationError, current_year_month_range,
+from core.agents.sql.text_to_sql import (APPROVED_COLUMNS, SQLValidationError, current_year_month_range,
                                         decode_query_plan, validate_commerce_sql,
                                         build_sql_prompt,
                                         validate_current_year_month_range,
                                         validate_current_month_total_query,
                                         rolling_days_range, resolve_rolling_days_parameters,
                                         validate_rolling_days_range)
-from core.analytics.sql_ranking import (
+from core.agents.sql.sql_ranking import (
     complete_ranking_intent, resolve_ranking_intent, validate_ranking_semantics,
 )
-from core.sql_agent.agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
-from core.sql_agent.analytics_agent import AnalyticsAgent
+from core.agents.sql.agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
+from core.agents.sql.analytics_agent import AnalyticsAgent
 from core.database.commerce_repository import CommerceRepository
 from core.models.agents import AgentRequest, VerifiedIdentity
 

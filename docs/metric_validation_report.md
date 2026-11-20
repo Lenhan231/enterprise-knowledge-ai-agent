@@ -79,17 +79,17 @@ Verification labels: **I** = 20 inventory tests pass; **F** = focused suite 133/
 | `docker/Dockerfile.backend-api` | Copy runtime semantic YAML into the backend image. | Static packaging inspection; image build not run |
 | `pyproject.toml` | Declare already installed PyYAML as a direct runtime dependency. | Offline lock refresh and runtime imports pass |
 | `uv.lock` | Record the direct dependency without upgrading its locked version. | Offline lock refresh pass |
-| `src/core/analytics/metric_ontology.py` | Load validated inventory YAML into the existing ontology; normalize bilingual/plural aliases and stored-rate rankings. | I pass; F/C known baseline issues only |
-| `src/core/analytics/metric_validation.py` | Validate governance, canonical formulas, source dimensions, scalar/aggregate grain, snapshot/date scope and coded clarifications. | I pass; F known fixture failure; B final five correct |
-| `src/core/analytics/text_to_sql.py` | Reuse strict snapshot proof and supply relevant inventory definitions/schema without mutating the allowlist. | I/F safety tests pass; B formatting rejection retained |
+| `src/core/agents/sql/metric_ontology.py` | Load validated inventory YAML into the existing ontology; normalize bilingual/plural aliases and stored-rate rankings. | I pass; F/C known baseline issues only |
+| `src/core/agents/sql/metric_validation.py` | Validate governance, canonical formulas, source dimensions, scalar/aggregate grain, snapshot/date scope and coded clarifications. | I pass; F known fixture failure; B final five correct |
+| `src/core/agents/sql/text_to_sql.py` | Reuse strict snapshot proof and supply relevant inventory definitions/schema without mutating the allowlist. | I/F safety tests pass; B formatting rejection retained |
 | `src/core/prompts/sql.py` | Explain exact-date evidence, canonical joins, explicit source-grain counts and historical conventions. | I pass; B final five executions |
-| `src/core/agents/sql_analytics_agent.py` | Validate requests before generation and retain governance/date metadata plus compatible errors. | I/F permission and execution tests pass |
-| `src/core/agents/execution.py` | Retain metrics/limitations when collecting SQL task results for reports. | I direct/orchestrated evidence tests pass; F report tests pass |
-| `src/core/reports/sources.py` | Pass inventory definitions and historical limitations into existing evidence context. | I both collection paths pass; F report tests pass |
+| `src/core/agents/sql/agent.py` | Validate requests before generation and retain governance/date metadata plus compatible errors. | I/F permission and execution tests pass |
+| `src/core/agents/decision_support/execution.py` | Retain metrics/limitations when collecting SQL task results for reports. | I direct/orchestrated evidence tests pass; F report tests pass |
+| `src/core/agents/report/sources.py` | Pass inventory definitions and historical limitations into existing evidence context. | I both collection paths pass; F report tests pass |
 | `scripts/agents/benchmark_inventory_metrics.py` | Record immutable original-source/changed-source live runs with matching model/settings. | B completed; S pass; output overwrite refusal |
 | `scripts/agents/compare_inventory_metrics.py` | Score numbers separately from semantics, dates, clarifications and latency. | I scoring regressions pass; B comparisons complete |
-| `tests/test_inventory_metric_dictionary.py` | Add 20 deterministic catalog, calculation, safety, clarification, report-context and scoring regressions. | 20/20 pass |
-| `tests/test_sql_metric_definitions.py` | Keep legacy coverage while aligning inventory formulas and returned snapshot evidence with the catalog. | All tests in this module pass in F |
+| `tests/sql/test_inventory_metric_dictionary.py` | Add 20 deterministic catalog, calculation, safety, clarification, report-context and scoring regressions. | 20/20 pass |
+| `tests/sql/test_sql_metric_definitions.py` | Keep legacy coverage while aligning inventory formulas and returned snapshot evidence with the catalog. | All tests in this module pass in F |
 | `tasks/inventory-metric-dictionary-plan.md` | Track the three approved, verified implementation slices. | Completed; original tasks/plan.md preserved |
 | `docs/business_metric_dictionary.md` | Document inventory-only formulas, governance, source inconsistencies and unresolved business decisions. | Documentation/evidence review; S pass |
 | `docs/metric_validation_report.md` | Report measured results, limitations and every changed file. | Evidence/JSON review; S pass |
@@ -128,7 +128,7 @@ Demand-weighted fill rate, reorder quantity/point, safety stock, accuracy and tu
 
 The Streamlit question ?Which 10 products had the lowest stock in the latest inventory snapshot?? exposed a missing alias. The recognized metric set was empty; the latest-snapshot MAX() subquery then triggered the existing refusal of unknown inventory aggregates. This was a resolution failure, not a missing stock column or denied database permission.
 
-Changed files: `data/semantic/vietstyle_metrics_v1.yaml` adds lowest stock, highest stock and stock levels to the existing stock-on-hand definition; `src/core/analytics/metric_ontology.py` retains these explicit stock requests when other metrics are present; `tests/test_inventory_metric_dictionary.py` adds alias/protected-unresolved and agent-execution regressions; this report records the verification. No formula, permission, schema restriction, SQL parser or validator-bypass change was made.
+Changed files: `data/semantic/vietstyle_metrics_v1.yaml` adds lowest stock, highest stock and stock levels to the existing stock-on-hand definition; `src/core/agents/sql/metric_ontology.py` retains these explicit stock requests when other metrics are present; `tests/sql/test_inventory_metric_dictionary.py` adds alias/protected-unresolved and agent-execution regressions; this report records the verification. No formula, permission, schema restriction, SQL parser or validator-bypass change was made.
 
 Both new regressions failed before the fix and pass afterward. All 22 inventory tests pass. The combined inventory, SQL generation, metric definitions, join safety, AnalyticsAgent, request-planning, inventory-dashboard and Report-orchestration suites pass **89/89 tests**. A separate discovery of `test_sql*.py` ran 64 tests with the same previously documented old financial test problems (one failure, seven errors); no unrelated repairs were made. Whitespace checks pass.
 
@@ -171,17 +171,17 @@ The mapper is language interpretation, not proof of intent. It can still misunde
 
 | File | Reason/change | Verification |
 | --- | --- | --- |
-| src/core/analytics/metric_mapping.py | Typed interpretation, compact catalog selection and deterministic SQL contract checks. | 17 dedicated mapping tests pass; five replay calculations and fresh fill-ranking retest pass. |
-| src/core/agents/sql_analytics_agent.py | Authorize first; interpret/validate before generation; retain the accepted slots; check repaired SQL against them. | Mapping integration, RBAC, repeated-rejection and existing SQL/Analytics tests pass. |
-| src/core/analytics/text_to_sql.py | Relevant interpreted metrics, approved stored projections, bounded token-error repair and single-object JSON-fence normalization. | SQL and mapping tests pass; unsafe fenced SQL remains rejected. |
+| src/core/agents/sql/metric_mapping.py | Typed interpretation, compact catalog selection and deterministic SQL contract checks. | 17 dedicated mapping tests pass; five replay calculations and fresh fill-ranking retest pass. |
+| src/core/agents/sql/agent.py | Authorize first; interpret/validate before generation; retain the accepted slots; check repaired SQL against them. | Mapping integration, RBAC, repeated-rejection and existing SQL/Analytics tests pass. |
+| src/core/agents/sql/text_to_sql.py | Relevant interpreted metrics, approved stored projections, bounded token-error repair and single-object JSON-fence normalization. | SQL and mapping tests pass; unsafe fenced SQL remains rejected. |
 | src/core/prompts/sql.py | Preserve requested ranking limit up to 200 instead of contradictory fixed-limit instructions. | Ranking contract tests and live rankings pass. |
-| tests/test_metric_mapping.py | Seventeen new contract, security, field, language and regression tests. | 17/17 pass. |
-| tests/test_inventory_metric_dictionary.py | Supply mapper response and update missing-snapshot call expectations; existing unresolved checks remain pre-generation. | Inventory regressions pass. |
-| tests/test_sql_generation.py | Keep original SQL/summary fixtures after an explicit other-domain response. | Existing SQL generation tests pass. |
-| tests/test_sql_join_duplication.py | Preserve unsafe-join tests across the new interpretation call. | All join/fanout tests pass. |
-| tests/test_sql_metric_definitions.py | Supply validated stockout interpretation and its default result limit. | Canonical formula and metric agent tests pass. |
-| tests/test_app_chat.py | Supply interpretation in the authenticated generic SQL client fixture. | API fixture suite passes. |
-| tests/test_supabase_analytics_smoke.py | Supply other-domain interpretations in the fake provider without changing read-only probe tests. | Mocked smoke tests pass; no live DML probe executed. |
+| tests/sql/test_metric_mapping.py | Seventeen new contract, security, field, language and regression tests. | 17/17 pass. |
+| tests/sql/test_inventory_metric_dictionary.py | Supply mapper response and update missing-snapshot call expectations; existing unresolved checks remain pre-generation. | Inventory regressions pass. |
+| tests/sql/test_sql_generation.py | Keep original SQL/summary fixtures after an explicit other-domain response. | Existing SQL generation tests pass. |
+| tests/sql/test_sql_join_duplication.py | Preserve unsafe-join tests across the new interpretation call. | All join/fanout tests pass. |
+| tests/sql/test_sql_metric_definitions.py | Supply validated stockout interpretation and its default result limit. | Canonical formula and metric agent tests pass. |
+| tests/api/test_app_chat.py | Supply interpretation in the authenticated generic SQL client fixture. | API fixture suite passes. |
+| tests/sql/test_supabase_analytics_smoke.py | Supply other-domain interpretations in the fake provider without changing read-only probe tests. | Mocked smoke tests pass; no live DML probe executed. |
 | scripts/agents/benchmark_inventory_metrics.py | Reuse existing runner for a separate eight-case matrix and archive versioned catalog data with original source. Record mapping/catalog hashes. | Original-source and two changed-source trials completed; immutable output refusal retained. |
 | scripts/agents/compare_inventory_metrics.py | Score mapped semantics and normalized JSON separately from numbers; derive matrix coverage from cases. | Numeric-versus-semantic regressions and saved comparisons pass. |
 | data/evaluation/inventory_semantic_mapping_cases.json | Freeze five supported unseen/mixed-language questions and three refusal/clarification cases. | Unique IDs and equal before/after case hashes checked. |
@@ -235,15 +235,15 @@ Changed-file accountability:
 
 | File | Reason/change | Verification |
 | --- | --- | --- |
-| src/core/analytics/metric_mapping.py | Typed SQL conversation/patch/clarification models, deterministic merge and existing catalog revalidation; contextual mapping prompt. | Thirteen context tests, existing 17 mapping tests and live sequence pass. |
-| src/core/agents/router.py | Separate locked SQL-only state, identity/expiry isolation, execution-only commits and timeout handling. | Context, concurrency, isolation, legacy routing and mode tests pass. |
-| src/core/agents/sql_analytics_agent.py | Server-only context consumption, latest resolution, exact pinned SQL validation, context metadata and sanitized snapshot-read failures. | Context sequence, existing SQL safety/metric tests and live numeric checks pass. |
-| src/core/analytics/text_to_sql.py | Explain server-resolved concrete dates in the existing generation prompt. | Pinned-date query and existing prompt/SQL regressions pass. |
-| src/core/agents/analytics_agent.py | Supply the accepted interpretation to answer summarization. | Analytics and summary regressions pass. |
+| src/core/agents/sql/metric_mapping.py | Typed SQL conversation/patch/clarification models, deterministic merge and existing catalog revalidation; contextual mapping prompt. | Thirteen context tests, existing 17 mapping tests and live sequence pass. |
+| src/core/agents/decision_support/router.py | Separate locked SQL-only state, identity/expiry isolation, execution-only commits and timeout handling. | Context, concurrency, isolation, legacy routing and mode tests pass. |
+| src/core/agents/sql/agent.py | Server-only context consumption, latest resolution, exact pinned SQL validation, context metadata and sanitized snapshot-read failures. | Context sequence, existing SQL safety/metric tests and live numeric checks pass. |
+| src/core/agents/sql/text_to_sql.py | Explain server-resolved concrete dates in the existing generation prompt. | Pinned-date query and existing prompt/SQL regressions pass. |
+| src/core/agents/sql/analytics_agent.py | Supply the accepted interpretation to answer summarization. | Analytics and summary regressions pass. |
 | src/core/prompts/agents.py | Add accepted query scope to the existing summary template. | Summary-format and report/orchestration regression checks pass. |
 | src/core/agents/streamlit_ui.py | Session transcript, keyed historical result rendering, separate Report controls, context captions, reset/sign-out and stale-response guards. | Six AppTests and existing Streamlit renderer/client tests pass. |
-| tests/test_sql_followups.py | Thirteen deterministic context, execution, rejection, identity and lifecycle tests. | 13/13 pass. |
-| tests/test_session_chat.py | Six session UI/retained-data/report/dashboard/reset AppTests. | 6/6 pass. |
+| tests/sql/test_sql_followups.py | Thirteen deterministic context, execution, rejection, identity and lifecycle tests. | 13/13 pass. |
+| tests/api/test_session_chat.py | Six session UI/retained-data/report/dashboard/reset AppTests. | 6/6 pass. |
 | docs/business_metric_dictionary.md | Explain session follow-ups and their boundaries. | Reviewed against tests and live evidence. |
 | docs/metric_validation_report.md | Preserve this implementation record and measured limitations. | Reviewed against evaluation JSON. |
 | tasks/inventory-metric-dictionary-plan.md | Record the completed first two chat stages and deferred persistence. | Matches the approved plan. |

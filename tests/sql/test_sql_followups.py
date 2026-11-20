@@ -9,17 +9,17 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'src'))
-from core.analytics.metric_mapping import build_metric_mapping_prompt, compile_inventory_query, decode_sql_turn
-from core.analytics.metric_validation import MetricDefinitionError
-from core.agents.execution import Execution, TaskOutcome
-from core.agents.response import (_failure_answer, _month_over_month_sql_finding, _null_sql_findings,
+from core.agents.sql.metric_mapping import build_metric_mapping_prompt, compile_inventory_query, decode_sql_turn
+from core.agents.sql.metric_validation import MetricDefinitionError
+from core.agents.decision_support.execution import Execution, TaskOutcome
+from core.agents.decision_support.response import (_failure_answer, _month_over_month_sql_finding, _null_sql_findings,
                                   _scalar_sql_finding, assemble_response)
-from core.agents.router import AgentRouter
-from core.sql_agent.agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
+from core.agents.decision_support.router import AgentRouter
+from core.agents.sql.agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
 from core.models.agent_plan import AgentPlan, AgentTask
 from core.models.agents import AgentRequest, AgentResult, Evidence, VerifiedIdentity, validate_chat_metadata
-from core.analytics.text_to_sql import APPROVED_COLUMNS, APPROVED_DATE_COLUMNS, APPROVED_JOINS
-from core.analytics.join_validation import PRIMARY_KEYS
+from core.agents.sql.text_to_sql import APPROVED_COLUMNS, APPROVED_DATE_COLUMNS, APPROVED_JOINS
+from core.agents.sql.join_validation import PRIMARY_KEYS
 
 BASE = {'metrics':['stock_on_hand'],'dimensions':['category'],'time':{'mode':'snapshot','start':'2022-12-31'}}
 STATE = {'accepted':BASE,'pending':None}
@@ -781,7 +781,7 @@ class ResponseSynthesisBudgetTest(unittest.IsolatedAsyncioTestCase):
         execution = SimpleNamespace(
             outcomes={'s': TaskOutcome(task, 'complete', result)}, trace=[], invocations=1)
 
-        with patch('core.agents.response.generate', new=AsyncMock(side_effect=TimeoutError)):
+        with patch('core.agents.decision_support.response.generate', new=AsyncMock(side_effect=TimeoutError)):
             response = await assemble_response(
                 AgentRequest(question=question, identity=IDENTITY), plan, execution, provider=object())
 

@@ -6,14 +6,14 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock, patch
 
 from core.agents.sql.agent import SQLAnalyticsAgent
-from core.dashboards.agent import DashboardDocumentAgent
+from core.agents.dashboard.agent import DashboardDocumentAgent
 from core.models.agents import AgentRequest, VerifiedIdentity
 
 
 class UpstreamSQLRuntimeTest(unittest.IsolatedAsyncioTestCase):
     async def test_multiple_chart_contract_survives_sql_validation_and_execution(self):
-        from core.dashboards.models import ClarificationTurn
-        from core.dashboards.render import render_dashboard
+        from core.agents.dashboard.models import ClarificationTurn
+        from core.agents.dashboard.render import render_dashboard
         contract = {'columns': ['month', 'sessions', 'page_views'], 'dimensions': ['month'], 'chart_type': None,
             'charts': [{'type': 'line', 'dimension': 'month', 'measures': ['sessions']},
                        {'type': 'bar', 'dimension': 'month', 'measures': ['page_views']}]}
@@ -38,8 +38,8 @@ class UpstreamSQLRuntimeTest(unittest.IsolatedAsyncioTestCase):
         repo.execute_approved_query.assert_awaited_once()
 
     async def test_dashboard_uses_upstream_runtime_without_jev_for_different_sources(self):
-        from core.sql_agent.agent import SQLAnalyticsAgent as legacy
-        from core.agents.sql_analytics_agent import SQLAnalyticsAgent as oldest
+        from core.agents.sql.agent import SQLAnalyticsAgent as legacy
+        from core.agents.sql.agent import SQLAnalyticsAgent as oldest
         self.assertIs(SQLAnalyticsAgent, legacy)
         self.assertIs(SQLAnalyticsAgent, oldest)
         self.assertFalse(hasattr(SQLAnalyticsAgent, '_check_ambiguity'))

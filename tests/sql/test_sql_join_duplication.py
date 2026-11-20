@@ -7,8 +7,8 @@ from unittest.mock import AsyncMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
-from core.analytics.text_to_sql import SQLValidationError, validate_commerce_sql
-from core.sql_agent.agent import SQLAnalyticsAgent
+from core.agents.sql.text_to_sql import SQLValidationError, validate_commerce_sql
+from core.agents.sql.agent import SQLAnalyticsAgent
 from core.models.agents import AgentRequest, VerifiedIdentity
 
 

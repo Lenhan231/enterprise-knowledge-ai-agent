@@ -11,9 +11,9 @@ import sys
 from sqlglot import parse_one
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
-from core.analytics.counting import compile_count_query
-from core.analytics.metric_validation import MetricDefinitionError
-from core.analytics.sql_validation import APPROVED_COLUMNS, decode_query_plan
+from core.agents.sql.counting import compile_count_query
+from core.agents.sql.metric_validation import MetricDefinitionError
+from core.agents.sql.sql_validation import APPROVED_COLUMNS, decode_query_plan
 
 
 INVENTORY = [

@@ -57,7 +57,7 @@ async def _get_runtime(application):
         runtime = getattr(application.state, "agent_router", None)
         if runtime is not None:
             return runtime
-        from core.agents.dashboard_agent import InventoryDashboardAgent
+        from core.agents.dashboard.charts import InventoryDashboardAgent
         from core.agents.main import _FallbackClassifier, _LazyKnowledgeAgent
         from core.agents.report.agent import ReportAgent
         from core.agents.decision_support.router import AgentRouter
@@ -299,8 +299,8 @@ async def generate_agent_report(
                                        conversation_id=conversation_id)
         if report_type:
             agent_request.metadata['report_type'] = report_type
-        from core.reports.sources import authorize_sources
-        from core.reports.http import report_response
+        from core.agents.report.sources import authorize_sources
+        from core.agents.report.http import report_response
         if source_mode is not None:
             authorize_sources(agent_request, source_mode)
         runtime = await _get_runtime(http_request.app)

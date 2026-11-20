@@ -37,7 +37,7 @@ offline evaluators and must use the same source snapshot and query labels.
 
 ```bash
 PYTHONPATH=src .venv/bin/python -m unittest \
-  tests.test_embedding_service tests.test_text_processor_chunking -q
+  tests.retrieval.test_embedding_service tests.documents.test_text_processor_chunking -q
 ```
 
 Hosted inference has a different privacy, latency, and quota profile from the

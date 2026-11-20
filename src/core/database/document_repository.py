@@ -7,8 +7,8 @@ from dotenv import load_dotenv
 from psycopg.rows import dict_row
 
 from core.database.connection_limit import close_database_connection, connect_database
-from core.analytics.sql_safety import UnsafeAnalyticsQuery, validate_analytics_sql, validate_commerce_sql
-from core.analytics.commerce_decision_support import COMMERCE_DECISION_PROFILES, COMMERCE_QUERY_TABLES
+from core.agents.sql.sql_safety import UnsafeAnalyticsQuery, validate_analytics_sql, validate_commerce_sql
+from core.agents.sql.commerce_decision_support import COMMERCE_DECISION_PROFILES, COMMERCE_QUERY_TABLES
 
 load_dotenv()
 

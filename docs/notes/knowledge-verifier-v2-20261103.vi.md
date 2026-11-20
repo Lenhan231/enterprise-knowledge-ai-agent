@@ -30,7 +30,7 @@ Nếu sau citation còn nội dung không có citation thì unavailable. Whitesp
 
 ## 2. R02: kiểm tra phép tính tường minh bằng code
 
-`src/core/rag/arithmetic.py` chạy trước lượt LLM audit:
+`src/core/agents/knowledge/arithmetic.py` chạy trước lượt LLM audit:
 
 - Dò chuỗi có đẳng thức và phép tính số literal; hỗ trợ +, -, *, /, ×, ÷, dấu âm và ngoặc, thứ tự ưu tiên và chuỗi đẳng thức.
 - Dùng `numeric_value` đã có để đọc số theo locale một cách bảo thủ; không đoán `1,000` là 1 hay 1000.

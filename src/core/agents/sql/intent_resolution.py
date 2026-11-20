@@ -6,9 +6,9 @@ import re
 from datetime import date, timedelta
 
 from core.agents.runtime import generate
-from core.analytics.metric_ontology import METRIC_ONTOLOGY, get_metric_definition
-from core.analytics.metric_validation import MetricDefinitionError
-from core.analytics.text_to_sql import parse_json_response
+from core.agents.sql.metric_ontology import METRIC_ONTOLOGY, get_metric_definition
+from core.agents.sql.metric_validation import MetricDefinitionError
+from core.agents.sql.text_to_sql import parse_json_response
 from core.agents.sql.query_intent import (
     ClarificationResolution,
     IntentInterpretation,
@@ -217,7 +217,7 @@ async def interpret_query_intent(question: str, provider, schema: dict[str, set[
 
 def adapt_inventory_intent(intent: QueryIntent, question: str):
     """Convert a complete inventory intent through the existing catalog validator."""
-    from core.analytics.metric_mapping import decode_metric_mapping
+    from core.agents.sql.metric_mapping import decode_metric_mapping
 
     metrics = [name for name in intent.metrics
                if get_metric_definition(name).get('domain') == 'inventory_management']

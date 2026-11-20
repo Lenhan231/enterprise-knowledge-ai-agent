@@ -7,7 +7,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from core.analytics.metric_ontology import METRIC_ONTOLOGY
+from core.agents.sql.metric_ontology import METRIC_ONTOLOGY
 
 
 IntentSlot = Literal[

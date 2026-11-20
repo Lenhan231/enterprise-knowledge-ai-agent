@@ -18,8 +18,8 @@ from time import perf_counter, sleep
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from core.rag.rag_service import RAGService  # noqa: E402
-from core.rag.rag_service import extract_source_ids  # noqa: E402
+from core.agents.knowledge.rag_service import RAGService  # noqa: E402
+from core.agents.knowledge.rag_service import extract_source_ids  # noqa: E402
 
 
 CASES = (

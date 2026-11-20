@@ -7,12 +7,12 @@ from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
-from core.analytics.metric_mapping import build_metric_mapping_prompt, decode_metric_mapping
-from core.analytics.metric_ontology import resolve_metric_names
-from core.analytics.text_to_sql import (build_sql_prompt, validate_commerce_sql, validate_sql_security,
+from core.agents.sql.metric_mapping import build_metric_mapping_prompt, decode_metric_mapping
+from core.agents.sql.metric_ontology import resolve_metric_names
+from core.agents.sql.text_to_sql import (build_sql_prompt, validate_commerce_sql, validate_sql_security,
     SQLValidationError, SQLSecurityError, SQLSchemaMismatchError, decode_query_plan)
-from core.analytics.metric_validation import validate_metric_definitions, MetricDefinitionError
-from core.analytics.text_to_sql import APPROVED_COLUMNS
+from core.agents.sql.metric_validation import validate_metric_definitions, MetricDefinitionError
+from core.agents.sql.text_to_sql import APPROVED_COLUMNS
 
 
 class InterpretationRegressionTest(unittest.TestCase):
@@ -64,13 +64,13 @@ class InterpretationRegressionTest(unittest.TestCase):
                 decode_query_plan(json.dumps({'sql':sql}))
 
     def test_named_snapshot_dates_are_not_replaced_with_a_whole_year(self):
-        from core.analytics.metric_validation import inventory_time_scope
+        from core.agents.sql.metric_validation import inventory_time_scope
         self.assertEqual(inventory_time_scope('Between November 30 and December 31, 2022'),
                          ('range','2022-11-30','2022-12-31'))
         self.assertEqual(inventory_time_scope('On November 30, 2022'),('snapshot','2022-11-30',None))
 
     def test_correlated_missing_observation_remains_a_structural_query(self):
-        from core.analytics.metric_mapping import validate_mapped_sql
+        from core.agents.sql.metric_mapping import validate_mapped_sql
         question = 'Which catalog products are missing an inventory row on 2022-12-31?'
         mapping = decode_metric_mapping('{"domain":"other"}',question)
         plan = decode_query_plan(json.dumps({'sql':
@@ -80,7 +80,7 @@ class InterpretationRegressionTest(unittest.TestCase):
         validate_mapped_sql(plan,mapping,question=question)
 
     def test_flagged_product_count_is_not_a_boolean_aggregate(self):
-        from core.analytics.metric_mapping import compile_inventory_query
+        from core.agents.sql.metric_mapping import compile_inventory_query
         mapping = decode_metric_mapping(json.dumps({'metrics':['overstock_indicator'],
             'dimensions':['category'],'representation':'aggregate',
             'filters':[{'field':'overstock_indicator','operator':'eq','value':True}],
@@ -200,7 +200,7 @@ class DerivedJoinContractTest(unittest.TestCase):
         validate_commerce_sql(sql)
 
     def test_latest_month_metric_validation_accepts_cte_aggregation_shapes(self):
-        from core.analytics.text_to_sql import validate_latest_month_query
+        from core.agents.sql.text_to_sql import validate_latest_month_query
         question = 'doanh thu tháng gần nhất là bao nhiêu'
         queries = (
             "WITH latest_month AS (SELECT DATE_TRUNC('month', s.date) AS month, SUM(s.revenue) AS revenue "
@@ -360,8 +360,8 @@ class CrossDomainInventoryTest(unittest.TestCase):
 
     def test_monthly_stockout_revenue_analysis_keeps_verified_components_unverified(self):
         from datetime import date
-        from core.analytics.metric_ontology import resolve_metric_names
-        from core.analytics.metric_validation import inventory_time_scope
+        from core.agents.sql.metric_ontology import resolve_metric_names
+        from core.agents.sql.metric_validation import inventory_time_scope
 
         question = ('Trong từng tháng của năm 2026, ba danh mục sản phẩm có tổng số ngày hết hàng cao nhất là gì? '
             'Với mỗi danh mục và tháng, hãy tính tổng số ngày hết hàng, số sản phẩm từng hết hàng, '
@@ -418,9 +418,9 @@ class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_logistics_schema_gap_is_reported_without_asking_for_clarification(self):
         from core.agents.sql.agent import SQLAnalyticsAgent as CurrentSQLAnalyticsAgent
-        from core.analytics.join_validation import PRIMARY_KEYS
-        from core.analytics.sql_validation import APPROVED_JOINS
-        from core.analytics.text_to_sql import APPROVED_DATE_COLUMNS
+        from core.agents.sql.join_validation import PRIMARY_KEYS
+        from core.agents.sql.sql_validation import APPROVED_JOINS
+        from core.agents.sql.text_to_sql import APPROVED_DATE_COLUMNS
         from core.models.agents import AgentRequest, VerifiedIdentity
 
         class Repository:
@@ -447,8 +447,8 @@ class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_exact_monthly_stockout_question_executes_with_unverified_derived_measures(self):
         from core.agents.sql.agent import SQLAnalyticsAgent as CurrentSQLAnalyticsAgent
-        from core.analytics.join_validation import PRIMARY_KEYS
-        from core.analytics.text_to_sql import APPROVED_COLUMNS, APPROVED_DATE_COLUMNS, APPROVED_JOINS
+        from core.agents.sql.join_validation import PRIMARY_KEYS
+        from core.agents.sql.text_to_sql import APPROVED_COLUMNS, APPROVED_DATE_COLUMNS, APPROVED_JOINS
         from core.models.agents import AgentRequest, VerifiedIdentity
 
         question = ('Trong từng tháng của năm 2026, ba danh mục sản phẩm có tổng số ngày hết hàng cao nhất là gì? '
@@ -513,7 +513,7 @@ class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_current_period_unavailability_is_verified_without_a_provider(self):
         from datetime import date
-        from core.sql_agent.agent import SQLAnalyticsAgent
+        from core.agents.sql.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         for latest in [date(2022,12,31),None]:
             provider,repository=Mock(),AsyncMock()
@@ -528,7 +528,7 @@ class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
             repository.execute_approved_query.assert_awaited_once()
 
     async def test_approved_bridge_replaces_an_unnecessary_join_clarification(self):
-        from core.sql_agent.agent import SQLAnalyticsAgent
+        from core.agents.sql.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         provider, repository = Mock(), AsyncMock()
         sql=('SELECT DISTINCT r.product_id,r.order_id FROM commerce.returns r '
@@ -544,7 +544,7 @@ class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(provider.generate.call_count,2)
 
     async def test_two_snapshot_change_executes_verified_product_comparison(self):
-        from core.sql_agent.agent import SQLAnalyticsAgent
+        from core.agents.sql.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         provider, repository = Mock(), AsyncMock()
         provider.generate.return_value = json.dumps(dict(metrics=['stock_on_hand'], dimensions=['product_id'],
@@ -558,7 +558,7 @@ class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
         repository.execute_approved_query.assert_awaited_once()
 
     async def test_comparison_reaches_shared_sql_path_and_readonly_repository(self):
-        from core.sql_agent.agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
+        from core.agents.sql.agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
         from core.models.agents import AgentRequest, VerifiedIdentity
         provider, repository = Mock(), AsyncMock()
         provider.generate.return_value = json.dumps({'sql':CrossDomainInventoryTest.comparison})
@@ -576,7 +576,7 @@ class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn('period_observation_sum',str(result.metadata['metrics']))
 
     async def test_dropped_order_operand_cannot_execute(self):
-        from core.sql_agent.agent import SQLAnalyticsAgent
+        from core.agents.sql.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         provider, repository = Mock(), AsyncMock()
         provider.generate.return_value = json.dumps({'sql':

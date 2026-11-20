@@ -6,7 +6,7 @@ Status: implementation specification transcribed from the user's detailed task a
 Prove inventory calculations on deterministic fixtures; benchmark historical snapshot questions with the unchanged Qwen configuration; propagate metric context through existing Report source collection and document results.
 
 ## Stack and structure
-Python 3.11, Pydantic, sqlglot, PyYAML already in the dependency lock; unittest. Runtime: src/core/analytics and src/core/agents; catalog: data/semantic/vietstyle_metrics_v1.yaml; tests: tests/test_inventory_metric_dictionary.py; reports: docs/business_metric_dictionary.md and docs/metric_validation_report.md.
+Python 3.11, Pydantic, sqlglot, PyYAML already in the dependency lock; unittest. Runtime: src/core/agents/sql and src/core/agents; catalog: data/semantic/vietstyle_metrics_v1.yaml; tests: tests/sql/test_inventory_metric_dictionary.py; reports: docs/business_metric_dictionary.md and docs/metric_validation_report.md.
 
 ## Commands
 Focused tests: .venv/Scripts/python.exe -m unittest discover -s tests -p test_inventory_metric_dictionary.py -v

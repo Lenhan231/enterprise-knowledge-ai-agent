@@ -62,7 +62,7 @@ without applicable authorization. Runtime code remains untouched until task appr
   - Verify: `.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_app_chat.py' -v`;
     repeat with `test_orchestration_api.py`, covering both entry points.
   - Files: `src/core/models/agents.py`, `src/core/agents/main.py`, `src/app/agents.py`,
-    `tests/test_app_chat.py`, `tests/test_orchestration_api.py`.
+    `tests/api/test_app_chat.py`, `tests/test_orchestration_api.py`.
 
 - [x] T03: Enforce verified document scope before Knowledge execution.
   - Module: bounded-execution security prerequisite.
@@ -72,8 +72,8 @@ without applicable authorization. Runtime code remains untouched until task appr
     privileges or broader document visibility are introduced.
   - Verify: `.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_orchestration_access.py' -v`;
     repeat with `test_report_agent.py` and `test_app_chat.py` for affected behavior.
-  - Files: `src/core/agents/knowledge_agent.py`, `tests/test_orchestration_access.py`,
-    affected identity fixtures in `tests/test_app_chat.py` and `tests/test_report_agent.py`.
+  - Files: `src/core/agents/knowledge/agent.py`, `tests/test_orchestration_access.py`,
+    affected identity fixtures in `tests/api/test_app_chat.py` and `tests/report/test_report_agent.py`.
 
 ### Conversation context
 
@@ -85,8 +85,8 @@ without applicable authorization. Runtime code remains untouched until task appr
     locks and waiters; cancellation cleanup; active keys never lose serialization.
   - Verify: `.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_conversation_context.py' -v`
     with fake time, concurrent calls, permission changes, eviction, and expiry.
-  - Files: `src/core/agents/conversation_context.py`, `src/core/agents/router.py`,
-    `tests/test_conversation_context.py`.
+  - Files: `src/core/agents/decision_support/conversation_context.py`, `src/core/agents/decision_support/router.py`,
+    `tests/api/test_conversation_context.py`.
 
 - [x] T05: Carry/reset conversation IDs in both existing clients.
   - Module: conversation-context.
@@ -98,8 +98,8 @@ without applicable authorization. Runtime code remains untouched until task appr
     repeat with `test_orchestration_clients.py`; inspect sign-out/reset behavior at
     the final live demo checkpoint.
   - Files: `src/core/agents/streamlit_ui.py`, `src/app/static/app.js`,
-    `src/app/static/index.html`, `tests/test_streamlit_ui.py`,
-    `tests/test_orchestration_clients.py`.
+    `src/app/static/index.html`, `tests/api/test_streamlit_ui.py`,
+    `tests/decision_support/test_orchestration_clients.py`.
 
 ### Unified planning
 
@@ -111,7 +111,7 @@ without applicable authorization. Runtime code remains untouched until task appr
     unsupported agents, raw executable SQL, and authorization fields.
   - Verify: `.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_request_planning.py' -v`
     with EN/VI mixed plans, both dependency directions, and malformed plans.
-  - Files: `src/core/models/agent_plan.py`, `tests/test_request_planning.py`.
+  - Files: `src/core/models/agent_plan.py`, `tests/decision_support/test_request_planning.py`.
 
 - [x] T07: Implement context-aware planning with safe repair/fallback.
   - Module: request-planning.
@@ -124,8 +124,8 @@ without applicable authorization. Runtime code remains untouched until task appr
     authorize tools or provide fresh factual evidence.
   - Verify: `.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_request_planning.py' -v`
     using controlled sync/async providers, malformed output, outage, and follow-ups.
-  - Files: `src/core/agents/planning.py`, `src/core/prompts/agent_plan.py`,
-    `tests/test_request_planning.py`.
+  - Files: `src/core/agents/decision_support/planning.py`, `src/core/prompts/agent_plan.py`,
+    `tests/decision_support/test_request_planning.py`.
 
 - [x] T08: Route auto and agentic through the same planner.
   - Module: request-planning.
@@ -135,8 +135,8 @@ without applicable authorization. Runtime code remains untouched until task appr
     shared runtime behavior; all four supported specialist destinations are selectable.
   - Verify: `.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_agentic_agent.py' -v`;
     repeat with `test_analytics_agents.py` and `test_orchestration_api.py`.
-  - Files: `src/core/agents/router.py`, `src/core/agents/main.py`,
-    `src/app/agents.py`, `tests/test_agentic_agent.py`, `tests/test_analytics_agents.py`.
+  - Files: `src/core/agents/decision_support/router.py`, `src/core/agents/main.py`,
+    `src/app/agents.py`, `tests/decision_support/test_agentic_agent.py`, `tests/decision_support/test_analytics_agents.py`.
 
 ### Bounded execution
 
@@ -148,8 +148,8 @@ without applicable authorization. Runtime code remains untouched until task appr
     clarification/denial statuses are never inferred complete from returned prose.
   - Verify: `.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_bounded_execution.py' -v`
     inspecting actual dispatched subquestions, scope, parallelism, and outcomes.
-  - Files: `src/core/agents/router.py`, `src/core/agents/execution.py`,
-    `tests/test_bounded_execution.py`.
+  - Files: `src/core/agents/decision_support/router.py`, `src/core/agents/decision_support/execution.py`,
+    `tests/decision_support/test_bounded_execution.py`.
 
 - [x] T10: Execute dependent tasks using validated predecessor outputs.
   - Module: bounded-execution.
@@ -159,8 +159,8 @@ without applicable authorization. Runtime code remains untouched until task appr
     execution; values are never interpolated into raw SQL or trusted instructions.
   - Verify: `.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_bounded_execution.py' -v`
     covering ordering, missing values, hostile predecessor text, and preserved filters.
-  - Files: `src/core/agents/execution.py`, `src/core/agents/planning.py`,
-    `src/core/agents/sql_analytics_agent.py`, `tests/test_bounded_execution.py`,
+  - Files: `src/core/agents/decision_support/execution.py`, `src/core/agents/decision_support/planning.py`,
+    `src/core/agents/sql/agent.py`, `tests/decision_support/test_bounded_execution.py`,
     `tests/test_orchestration_access.py`.
 
 - [x] T11: Add bounded inspection, transient retry, and one replan.
@@ -172,8 +172,8 @@ without applicable authorization. Runtime code remains untouched until task appr
     scope cannot trigger futile retry loops or role-bypass routes.
   - Verify: `.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_bounded_execution.py' -v`
     with deterministic counters and revised-plan fixtures.
-  - Files: `src/core/agents/router.py`, `src/core/agents/execution.py`,
-    `src/core/agents/planning.py`, `tests/test_bounded_execution.py`.
+  - Files: `src/core/agents/decision_support/router.py`, `src/core/agents/decision_support/execution.py`,
+    `src/core/agents/decision_support/planning.py`, `tests/decision_support/test_bounded_execution.py`.
 
 - [x] T12: Enforce request deadlines and bound blocking provider work.
   - Module: bounded-execution.
@@ -185,9 +185,9 @@ without applicable authorization. Runtime code remains untouched until task appr
   - Verify: `.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_orchestration_timeouts.py' -v`;
     repeat with `test_bounded_execution.py`, using short injected budgets and a
     controllably blocking fake provider rather than long sleeps.
-  - Files: `src/core/agents/execution.py`, `src/core/agents/planning.py`,
+  - Files: `src/core/agents/decision_support/execution.py`, `src/core/agents/decision_support/planning.py`,
     `src/core/llm/groq_provider.py`, `tests/test_orchestration_timeouts.py`,
-    `tests/test_bounded_execution.py`.
+    `tests/decision_support/test_bounded_execution.py`.
 
 - [x] T13: Carry remaining time through specialist provider calls.
   - Module: bounded-execution.
@@ -199,8 +199,8 @@ without applicable authorization. Runtime code remains untouched until task appr
     rather than silently widening this task beyond five files.
   - Verify: `.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_orchestration_timeouts.py' -v`;
     repeat affected analytics/RAG/report tests selected from the T01 baseline.
-  - Files: `src/core/agents/sql_analytics_agent.py`, `src/core/agents/analytics_agent.py`,
-    `src/core/rag/rag_service.py`, `src/core/agents/report_agent.py`,
+  - Files: `src/core/agents/sql/agent.py`, `src/core/agents/sql/analytics_agent.py`,
+    `src/core/agents/knowledge/rag_service.py`, `src/core/agents/report/agent.py`,
     `tests/test_orchestration_timeouts.py`.
 
 ### Report/dashboard handoffs
@@ -215,9 +215,9 @@ without applicable authorization. Runtime code remains untouched until task appr
     are represented in planning tests and preserved at dispatch.
   - Verify: `.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_report_agent.py' -v`;
     repeat with `test_orchestration_reports.py` and `test_request_planning.py`.
-  - Files: `src/core/agents/report_agent.py`, `src/core/reports/sources.py`,
-    `src/core/agents/execution.py`, `tests/test_orchestration_reports.py`,
-    `tests/test_report_agent.py`.
+  - Files: `src/core/agents/report/agent.py`, `src/core/agents/report/sources.py`,
+    `src/core/agents/decision_support/execution.py`, `tests/test_orchestration_reports.py`,
+    `tests/report/test_report_agent.py`.
 
 ### Grounded response and integration
 
@@ -230,8 +230,8 @@ without applicable authorization. Runtime code remains untouched until task appr
     limitations survive assembly. No claim of complete semantic proof from ID checks.
   - Verify: `.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_grounded_response.py' -v`
     with mixed-source collisions, unsupported references, changed values, and EN/VI.
-  - Files: `src/core/agents/response.py`, `src/core/agents/router.py`,
-    `tests/test_grounded_response.py`, `tests/test_agentic_agent.py`.
+  - Files: `src/core/agents/decision_support/response.py`, `src/core/agents/decision_support/router.py`,
+    `tests/test_grounded_response.py`, `tests/decision_support/test_agentic_agent.py`.
 
 - [x] T16: Return honest fallback/status and preserve structured payloads.
   - Module: grounded-response.
@@ -242,9 +242,9 @@ without applicable authorization. Runtime code remains untouched until task appr
     and report information remain available without leaking denied evidence.
   - Verify: `.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_grounded_response.py' -v`;
     repeat with `test_analytics_agents.py` and `test_streamlit_ui.py`.
-  - Files: `src/core/agents/response.py`, `src/core/agents/router.py`,
-    `src/core/agents/sql_analytics_agent.py`, `tests/test_grounded_response.py`,
-    `tests/test_analytics_agents.py`.
+  - Files: `src/core/agents/decision_support/response.py`, `src/core/agents/decision_support/router.py`,
+    `src/core/agents/sql/agent.py`, `tests/test_grounded_response.py`,
+    `tests/decision_support/test_analytics_agents.py`.
 
 - [x] T17: Align API defaults, telemetry, and request-local traces.
   - Module: bounded-execution/grounded-response.
@@ -256,8 +256,8 @@ without applicable authorization. Runtime code remains untouched until task appr
   - Verify: `.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_orchestration_api.py' -v`;
     repeat with `test_agent_monitoring.py` and `test_app_chat.py`.
   - Files: `src/app/agents.py`, `src/core/agents/main.py`,
-    `src/core/agents/router.py`, `tests/test_orchestration_api.py`,
-    `tests/test_agent_monitoring.py`.
+    `src/core/agents/decision_support/router.py`, `tests/test_orchestration_api.py`,
+    `tests/infrastructure/test_agent_monitoring.py`.
 
 - [x] T18: Expose one Auto experience in Streamlit and bundled web chat.
   - Module: grounded-response/orchestration-evaluation.
@@ -269,8 +269,8 @@ without applicable authorization. Runtime code remains untouched until task appr
   - Verify: `.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_streamlit_ui.py' -v`;
     repeat with `test_orchestration_clients.py`; final rendered UI inspection at T24.
   - Files: `src/core/agents/streamlit_ui.py`, `src/app/static/app.js`,
-    `src/app/static/index.html`, `tests/test_streamlit_ui.py`,
-    `tests/test_orchestration_clients.py`.
+    `src/app/static/index.html`, `tests/api/test_streamlit_ui.py`,
+    `tests/decision_support/test_orchestration_clients.py`.
 
 ### Evaluation and delivery
 
@@ -284,7 +284,7 @@ without applicable authorization. Runtime code remains untouched until task appr
   - Verify: `.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_orchestration_evaluation.py' -v`
     validates fixture coverage, unique IDs, expected sources/scopes, and dependencies.
   - Files: `data/evaluation/orchestration_cases.json`,
-    `tests/test_orchestration_evaluation.py`.
+    `tests/benchmarks/test_orchestration_evaluation.py`.
 
 - [x] T20: Evaluate the actual unified runtime with fresh artifacts.
   - Module: orchestration-evaluation.
@@ -297,7 +297,7 @@ without applicable authorization. Runtime code remains untouched until task appr
     repeat with `test_agent_route_evaluation.py` and `test_agent_benchmarks.py`;
     `.\.venv\Scripts\python.exe scripts/agents/benchmark_router_25.py --help`.
   - Files: `scripts/agents/benchmark_router_25.py`,
-    `tests/test_orchestration_evaluation.py`, `tests/test_agent_route_evaluation.py`.
+    `tests/benchmarks/test_orchestration_evaluation.py`, `tests/benchmarks/test_agent_route_evaluation.py`.
 
 - [ ] T21: Run the 50-case benchmark and eight authorized live workflows.
   - Module: orchestration-evaluation.
@@ -324,7 +324,7 @@ without applicable authorization. Runtime code remains untouched until task appr
     existing SQL validation, report grounding, and authorization boundaries.
   - Verify: run the module commands in the five approved specs plus affected
     analytics/API/report/monitoring/benchmark/Streamlit suites;
-    `.\.venv\Scripts\python.exe -m compileall -q src/core/agents src/core/models src/core/prompts src/core/llm src/core/reports src/app`;
+    `.\.venv\Scripts\python.exe -m compileall -q src/core/agents src/core/models src/core/prompts src/core/llm src/core/agents/report src/app`;
     `git diff --check`. Record known unrelated baseline failures separately.
   - Files: test/review findings in this record; any remediation gets an explicit
     follow-up entry naming its files, acceptance check, and verification outcome.

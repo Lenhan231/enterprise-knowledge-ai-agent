@@ -19,7 +19,7 @@ from core.llm.Cloudflare_provider import CloudflareProvider
 from core.llm.groq_provider import GroqProvider
 from core.llm.models import BENCHMARK_MODELS
 from core.llm.openai_compatible_provider import OpenAICompatibleProvider
-from core.rag.rag_service import RAGService
+from core.agents.knowledge.rag_service import RAGService
 from core.retrieval.query_translator import QueryTranslator
 from core.retrieval.retrieval import RetrievalRequest
 from core.retrieval.retrieval_service import RetrievalService

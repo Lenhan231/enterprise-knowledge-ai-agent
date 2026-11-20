@@ -12,9 +12,9 @@ from fastapi.testclient import TestClient
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from core.agents.main import create_app
-from core.analytics.text_to_sql import APPROVED_COLUMNS
+from core.agents.sql.text_to_sql import APPROVED_COLUMNS
 from core.models.agents import VerifiedIdentity
-from core.sql_agent.agent import SQLAnalyticsAgent
+from core.agents.sql.agent import SQLAnalyticsAgent
 
 
 IDENTITY = VerifiedIdentity(subject="sql-assistant-test", permissions={"analytics:read"})

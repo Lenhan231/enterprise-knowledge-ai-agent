@@ -15,10 +15,10 @@ from core.agents.sql.compiler_dispatch import (
     compile_inventory_mapping,
     match_fixed_query,
 )
-from core.analytics.metric_mapping import compile_inventory_query, decode_metric_mapping
-from core.analytics.sql_validation import QueryPlan
-from core.analytics.text_to_sql import APPROVED_COLUMNS, APPROVED_DATE_COLUMNS, APPROVED_JOINS
-from core.analytics.join_validation import PRIMARY_KEYS
+from core.agents.sql.metric_mapping import compile_inventory_query, decode_metric_mapping
+from core.agents.sql.sql_validation import QueryPlan
+from core.agents.sql.text_to_sql import APPROVED_COLUMNS, APPROVED_DATE_COLUMNS, APPROVED_JOINS
+from core.agents.sql.join_validation import PRIMARY_KEYS
 from core.models.agents import AgentRequest, VerifiedIdentity
 from core.agents.sql.agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
 from core.agents.sql.query_intent import QueryIntent

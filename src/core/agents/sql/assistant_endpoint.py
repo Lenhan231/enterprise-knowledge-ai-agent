@@ -8,16 +8,16 @@ import re
 from typing import Any
 
 from core.agents.runtime import run_sync
-from core.analytics.join_validation import PRIMARY_KEYS
-from core.analytics.metric_ontology import get_metric_definition, resolve_metric_names
-from core.analytics.metric_validation import validate_metric_definitions, validate_metric_request
-from core.analytics.sql_ranking import (
+from core.agents.sql.join_validation import PRIMARY_KEYS
+from core.agents.sql.metric_ontology import get_metric_definition, resolve_metric_names
+from core.agents.sql.metric_validation import validate_metric_definitions, validate_metric_request
+from core.agents.sql.sql_ranking import (
     complete_ranking_intent,
     has_ranking_request,
     resolve_ranking_intent,
     validate_ranking_semantics,
 )
-from core.analytics.text_to_sql import (
+from core.agents.sql.text_to_sql import (
     APPROVED_FUNCTIONS,
     APPROVED_JOINS,
     INVENTORY_SOURCES,

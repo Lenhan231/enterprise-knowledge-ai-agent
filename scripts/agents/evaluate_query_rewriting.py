@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
 
-from core.analytics.metric_ontology import METRIC_ONTOLOGY, resolve_metric_names  # noqa: E402
+from core.agents.sql.metric_ontology import METRIC_ONTOLOGY, resolve_metric_names  # noqa: E402
 from core.evaluation.retrieval_metrics import ndcg_at_k, precision_at_k, recall_at_k, reciprocal_rank  # noqa: E402
 from core.retrieval.retrieval import RetrievalRequest  # noqa: E402
 from core.retrieval.retrieval_service import RetrievalService  # noqa: E402

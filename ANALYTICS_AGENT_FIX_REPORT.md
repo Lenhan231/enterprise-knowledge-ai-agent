@@ -103,7 +103,7 @@ Lỗi repository không còn thoát thẳng ra ngoài. Agent trả `AgentResult`
 Lệnh:
 
 ```powershell
-.venv\Scripts\python.exe -m unittest tests.test_analytics_agents tests.test_agents tests.test_agent_route_evaluation
+.venv\Scripts\python.exe -m unittest tests.decision_support.test_analytics_agents tests.test_agents tests.benchmarks.test_agent_route_evaluation
 ```
 
 Kết quả:

@@ -441,8 +441,8 @@ async def main():
         print(f"Ragas unavailable: {type(error).__name__}: {error}", flush=True)
         print("Generated answers will need manual scoring.", flush=True)
     provider = make_provider()
-    from core.agents.knowledge_agent import KnowledgeAgent
-    from core.rag.rag_service import RAGService
+    from core.agents.knowledge.agent import KnowledgeAgent
+    from core.agents.knowledge.rag_service import RAGService
     app = create_app(llm=provider, knowledge_agent=KnowledgeAgent(RAGService(llm=provider)))
     completed = {record["case_id"] for record in records if record.get("status") == "completed"}
     async with app.router.lifespan_context(app):

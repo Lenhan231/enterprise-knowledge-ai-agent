@@ -7,7 +7,7 @@ from decimal import Decimal, InvalidOperation
 from core.agents.runtime import generate, generate_with_codex_cli, remaining
 from core.models.agents import AgentResult
 from core.prompts.agents import SYNTHESIS_PROMPT
-from core.rag.arithmetic import verified_results
+from core.agents.knowledge.arithmetic import verified_results
 
 _VIETNAMESE_TEXT = re.compile(
     r'[ăâđêôơưáàảãạấầẩẫậắằẳẵặéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]',

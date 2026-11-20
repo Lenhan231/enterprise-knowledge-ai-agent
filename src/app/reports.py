@@ -9,10 +9,10 @@ from pydantic import Field
 
 from app.agents import _agent_request, _get_runtime
 from app.security import require_permission, _require_same_origin
-from core.dashboards.models import StrictModel
-from core.dashboards.store import Conflict, StoreUnavailable
-from core.reports.document import ReportDocument, ReportEdit
-from core.reports.store import create_report_store
+from core.agents.dashboard.models import StrictModel
+from core.agents.dashboard.store import Conflict, StoreUnavailable
+from core.agents.report.document import ReportDocument, ReportEdit
+from core.agents.report.store import create_report_store
 
 router = APIRouter(prefix='/api/reports', tags=['reports'])
 principal = require_permission('view_analytics')
@@ -53,7 +53,7 @@ async def scoped_document(document, user):
     if not context.documents:
         return document
     from core.agents.runtime import run_sync
-    from core.reports.sales_context import SalesContext
+    from core.agents.report.sales_context import SalesContext
     identity = _agent_request(user, 'Saved report document access').identity
     allowed = set()
     status = 'access_denied'
@@ -66,7 +66,7 @@ async def scoped_document(document, user):
     copy = document.model_copy(deep=True)
     documents = [e for e in context.documents if e.metadata['document_id'] in allowed]
     if inventory:
-        from core.reports.inventory_operations import InventoryContext
+        from core.agents.report.inventory_operations import InventoryContext
         copy.inventory_context = InventoryContext(retrieval_status='available' if documents else status, documents=documents)
         if len(documents) != len(context.documents):
             copy.status = 'partial'
@@ -146,7 +146,7 @@ async def delete(identifier: str, request: Request, revision: int = Query(ge=1),
 
 @router.get('/{identifier}/pdf')
 async def download(identifier: str, revision: int | None = Query(None, ge=1), user=Depends(principal), store=Depends(get_store)):
-    from core.reports.export import export_pdf
+    from core.agents.report.export import export_pdf
     document = await owned(store, user, identifier)
     if revision is not None and revision != document.revision:
         raise HTTPException(409, 'Report changed. Reopen it before downloading.')

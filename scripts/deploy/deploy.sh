@@ -121,7 +121,7 @@ if [ "$before" != "$target" ]; then
         add_build_service backend-api
         ;;
       src/document_processing/*) add_build_service document-processing ;;
-      src/app/*|data/semantic/*|src/core/agents/*|src/core/dashboards/*|src/core/auth/*)
+      src/app/*|data/semantic/*|src/core/agents/*|src/core/agents/dashboard/*|src/core/auth/*)
         add_build_service backend-api
         ;;
       src/core/embeddings/*) add_build_service embeddings ;;
@@ -163,15 +163,15 @@ if [ -n "$legacy_backup" ] && [ -s "$legacy_backup" ]; then
   docker cp "$legacy_backup" "$(docker compose ps -q backend-api):/tmp/dashboard-migration.sqlite3"
   docker compose exec -T backend-api python -c '
 import json, sys
-from core.dashboards.postgres_store import PostgresDashboardStore
+from core.agents.dashboard.postgres_store import PostgresDashboardStore
 print(json.dumps(PostgresDashboardStore().import_sqlite(sys.argv[1])))
 ' /tmp/dashboard-migration.sqlite3 < /dev/null
 fi
 
 docker compose exec -T backend-api python -c '
 from uuid import uuid4
-from core.dashboards.store import create_dashboard_store
-from core.dashboards.postgres_store import PostgresDashboardStore
+from core.agents.dashboard.store import create_dashboard_store
+from core.agents.dashboard.postgres_store import PostgresDashboardStore
 store = create_dashboard_store()
 assert isinstance(store, PostgresDashboardStore), "Production dashboards require shared PostgreSQL storage"
 store.list("deployment-check-" + uuid4().hex)

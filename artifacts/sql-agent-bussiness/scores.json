@@ -1,0 +1,187 @@
+{
+  "metrics": {
+    "business_end_to_end_accuracy": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    },
+    "business_result_accuracy": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    },
+    "strict_result_exact_match": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    },
+    "sql_semantic_accuracy": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    },
+    "execution_success": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    },
+    "false_refusal_rate": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    },
+    "safe_unsupported_abstention": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    },
+    "valid_clarification_abstention_rate": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    },
+    "repair_recovery_rate": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    },
+    "jev_table_recall_at_5": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null,
+      "applicable_cases": 0
+    },
+    "final_selected_schema_coverage": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    },
+    "unsafe_execution_count": 0,
+    "latency_ms": {
+      "p50_nearest_rank": null,
+      "p95_nearest_rank": null,
+      "sample_count": 0
+    },
+    "provider_calls": {
+      "sql_generation_provider_submissions": 0,
+      "metric_interpretation_provider_submissions": 0,
+      "jev_requests": 0,
+      "local_codex_fallback_calls": 0,
+      "total_model_calls": 0,
+      "secondary_sql_provider_fallback_submissions": 0
+    },
+    "pipeline_calls": {}
+  },
+  "cases": [
+    {
+      "id": "P01",
+      "supported": true,
+      "business_end_to_end_correct": null,
+      "strict_result_exact_match": null,
+      "sql_semantic_accuracy": null,
+      "execution_success": null,
+      "false_refusal": null,
+      "safe_unsupported_abstention": null,
+      "failure_class": "environment_blocker",
+      "semantic": {
+        "applicable": false,
+        "passed": null,
+        "checks": {},
+        "issues": []
+      },
+      "result": null,
+      "unsafe_execution_count": 0,
+      "schema_selection": {},
+      "calls": {},
+      "latency_ms": null
+    },
+    {
+      "id": "P02",
+      "supported": true,
+      "business_end_to_end_correct": null,
+      "strict_result_exact_match": null,
+      "sql_semantic_accuracy": null,
+      "execution_success": null,
+      "false_refusal": null,
+      "safe_unsupported_abstention": null,
+      "failure_class": "environment_blocker",
+      "semantic": {
+        "applicable": false,
+        "passed": null,
+        "checks": {},
+        "issues": []
+      },
+      "result": null,
+      "unsafe_execution_count": 0,
+      "schema_selection": {},
+      "calls": {},
+      "latency_ms": null
+    },
+    {
+      "id": "P03",
+      "supported": true,
+      "business_end_to_end_correct": null,
+      "strict_result_exact_match": null,
+      "sql_semantic_accuracy": null,
+      "execution_success": null,
+      "false_refusal": null,
+      "safe_unsupported_abstention": null,
+      "failure_class": "environment_blocker",
+      "semantic": {
+        "applicable": false,
+        "passed": null,
+        "checks": {},
+        "issues": []
+      },
+      "result": null,
+      "unsafe_execution_count": 0,
+      "schema_selection": {},
+      "calls": {},
+      "latency_ms": null
+    },
+    {
+      "id": "P04",
+      "supported": true,
+      "business_end_to_end_correct": null,
+      "strict_result_exact_match": null,
+      "sql_semantic_accuracy": null,
+      "execution_success": null,
+      "false_refusal": null,
+      "safe_unsupported_abstention": null,
+      "failure_class": "environment_blocker",
+      "semantic": {
+        "applicable": false,
+        "passed": null,
+        "checks": {},
+        "issues": []
+      },
+      "result": null,
+      "unsafe_execution_count": 0,
+      "schema_selection": {},
+      "calls": {},
+      "latency_ms": null
+    },
+    {
+      "id": "P05",
+      "supported": false,
+      "business_end_to_end_correct": null,
+      "strict_result_exact_match": null,
+      "sql_semantic_accuracy": null,
+      "execution_success": null,
+      "false_refusal": null,
+      "safe_unsupported_abstention": null,
+      "failure_class": "environment_blocker",
+      "semantic": {
+        "applicable": false,
+        "passed": null,
+        "checks": {},
+        "issues": []
+      },
+      "result": null,
+      "unsafe_execution_count": 0,
+      "schema_selection": {},
+      "calls": {},
+      "latency_ms": null
+    }
+  ]
+}

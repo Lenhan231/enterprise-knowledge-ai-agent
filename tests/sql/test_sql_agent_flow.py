@@ -163,6 +163,65 @@ def assistant(repository, provider):
 
 
 class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
+    async def test_resolved_top_one_ranking_ignores_conflicting_model_contract_limit(self):
+        question = "Khách hàng nào có nhiều đơn hàng nhất?"
+        sql = (
+            "SELECT o.customer_id, COUNT(DISTINCT o.order_id) AS order_count "
+            "FROM commerce.orders AS o GROUP BY o.customer_id "
+            "ORDER BY order_count DESC LIMIT 1"
+        )
+        model_contract = {
+            "entity": "customer", "measure": {"metric_id": "order_count"},
+            "direction": "desc", "limit": 10, "partition_by": [],
+        }
+        repository = FakeRepository()
+        provider = FakeProvider([plan(sql, ranking_contract=model_contract)])
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+
+        with patch("core.agents.sql.agent.select_jev_schema_tables", return_value={
+                "tables": {"commerce.orders"}, "required_tables": {"commerce.orders"},
+                "candidate_tables": {"commerce.orders"},
+        }):
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject="analyst", permissions={"analytics:read"}),
+            ))
+
+        self.assertEqual(result["query_status"], "executed", result)
+        self.assertEqual(provider.response_index, 1)
+        self.assertEqual(repository.execute_approved_query.await_count, 1)
+        self.assertEqual(repository.execute_approved_query.await_args.args[0], sql)
+        self.assertEqual(result["metadata"]["ranking_validation"]["status"], "verified")
+        self.assertEqual(result["metadata"]["ranking_validation"]["limit"], 1)
+
+    async def test_resolved_top_one_ranking_still_rejects_sql_with_limit_ten(self):
+        question = "Khách hàng nào có nhiều đơn hàng nhất?"
+        sql = (
+            "SELECT o.customer_id, COUNT(DISTINCT o.order_id) AS order_count "
+            "FROM commerce.orders AS o GROUP BY o.customer_id "
+            "ORDER BY order_count DESC LIMIT 10"
+        )
+        model_contract = {
+            "entity": "customer", "measure": {"metric_id": "order_count"},
+            "direction": "desc", "limit": 10, "partition_by": [],
+        }
+        repository = FakeRepository()
+        provider = FakeProvider([plan(sql, ranking_contract=model_contract)])
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+
+        with patch("core.agents.sql.agent.select_jev_schema_tables", return_value={
+                "tables": {"commerce.orders"}, "required_tables": {"commerce.orders"},
+                "candidate_tables": {"commerce.orders"},
+        }):
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject="analyst", permissions={"analytics:read"}),
+            ))
+
+        self.assertEqual(result["query_status"], "rejected")
+        repository.execute_approved_query.assert_not_awaited()
+        self.assertIn("limit", result["metadata"]["error_detail"].casefold())
+
     async def test_wrong_customer_payment_ordinal_is_repaired_before_execution(self):
         wrong = plan(
             "SELECT o.customer_id, SUM(p.payment_value) AS total_payment "

@@ -585,9 +585,12 @@ class SQLAnalyticsAgent(BaseAgent):
                             for _, data_plan, _ in bundle:
                                 effective_ranking = request_ranking
                                 if effective_ranking and data_plan.ranking_contract is not None:
-                                    effective_ranking = complete_ranking_intent(
-                                        effective_ranking, data_plan.ranking_contract, table_columns
-                                    )
+                                    if (not effective_ranking.resolved
+                                            or effective_ranking.partition_entities
+                                            or effective_ranking.partition_grains):
+                                        effective_ranking = complete_ranking_intent(
+                                            effective_ranking, data_plan.ranking_contract, table_columns
+                                        )
                                 elif (effective_ranking and
                                       (effective_ranking.measure_contract_eligible
                                        or effective_ranking.partition_grains)):
@@ -677,9 +680,11 @@ class SQLAnalyticsAgent(BaseAgent):
                     if cross_domain and not {'commerce.inventory','commerce.orders','commerce.order_items'} <= set(validated_sql.sources):
                         raise SQLValidationError('The requested cross-domain contract must retain inventory, orders and order_items.')
                     if plan.ranking_contract is not None:
-                        ranking_intent = complete_ranking_intent(
-                            ranking_intent, plan.ranking_contract, table_columns
-                        )
+                        if (ranking_intent is None or not ranking_intent.resolved
+                                or ranking_intent.partition_entities or ranking_intent.partition_grains):
+                            ranking_intent = complete_ranking_intent(
+                                ranking_intent, plan.ranking_contract, table_columns
+                            )
                         ranking_semantics_required = True
                     elif ranking_requested and ranking_intent is None:
                         raise SQLValidationError(

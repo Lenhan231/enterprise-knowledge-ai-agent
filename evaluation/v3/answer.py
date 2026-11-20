@@ -30,7 +30,8 @@ def load_settings():
         name, _, value = line.partition("=")
         if name in SETTINGS and name not in os.environ:
             os.environ[name] = value.strip()
-        elif name.startswith(("GROQ_API_KEY", "CLOUDFLARE_")) and name not in os.environ:  # used, never printed
+        elif name.startswith(("GROQ_API_KEY", "CLOUDFLARE_")) and name not in os.environ \
+                and not os.getenv("GROQ_BASE_URL"):  # used, never printed; never sent to a self-hosted endpoint
             os.environ[name] = value.strip()
 
 

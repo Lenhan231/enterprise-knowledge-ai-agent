@@ -391,6 +391,7 @@ class SQLBenchmarkRunnerTest(unittest.TestCase):
         self.assertIn("src/core/agents/sql/query_contract.py", hashes)
         self.assertIn("src/core/agents/sql/sql_ranking.py", hashes)
         self.assertIn("src/core/database/commerce_repository.py", hashes)
+        self.assertIn("data/semantic/vietstyle_metrics_v1.yaml", hashes)
 
     def test_preflight_records_and_requires_the_frozen_order_date_type(self):
         class PreflightRepository:

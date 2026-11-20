@@ -92,6 +92,7 @@ def source_manifest():
         "src/core/agents/sql/text_to_sql.py",
         "src/core/database/commerce_repository.py",
         "src/core/prompts/sql.py",
+        "data/semantic/vietstyle_metrics_v1.yaml",
     })
     hashes = {}
     for relative in sorted(paths):

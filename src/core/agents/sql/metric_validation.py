@@ -3,12 +3,18 @@ from __future__ import annotations
 
 import re
 import calendar
+from dataclasses import dataclass
 from datetime import date, timedelta
 
 from sqlglot import exp, parse_one
 from sqlglot.optimizer.scope import Scope, traverse_scope
 
-from core.agents.sql.metric_ontology import METRIC_ONTOLOGY, get_metric_definition, _normalize
+from core.agents.sql.metric_ontology import (
+    METRIC_ONTOLOGY,
+    POPULATION_FILTER_ONTOLOGY,
+    _normalize,
+    get_metric_definition,
+)
 
 
 class MetricDefinitionError(ValueError):
@@ -315,6 +321,172 @@ def _conjuncts(node):
         yield from _conjuncts(node.expression)
     elif node is not None:
         yield node
+
+
+@dataclass(frozen=True)
+class PopulationFilterRequirement:
+    source: str
+    column: str
+    operator: str
+    values: tuple[str, ...]
+    vocabulary_id: str
+
+
+def requested_population_filters(question: str) -> tuple[PopulationFilterRequirement, ...]:
+    """Resolve catalogued population constraints from the original request."""
+    text = _normalize(question or "")
+    requirements = []
+    for field_ref, definition in POPULATION_FILTER_ONTOLOGY.items():
+        source, column = field_ref.rsplit(".", 1)
+        for vocabulary_id, value in definition["values"].items():
+            for alias in value["aliases"]:
+                phrase = _normalize(alias)
+                pattern = re.compile(r"(?<!\w)" + re.escape(phrase) + r"(?!\w)")
+                for match in pattern.finditer(text):
+                    prefix = text[max(0, match.start() - 56):match.start()]
+                    excluded = any(re.search(
+                        r"(?:^|\W)" + re.escape(_normalize(cue))
+                        + r"(?:\W+\w+){0,3}\W*$", prefix,
+                    ) for cue in definition["exclusion_cues"])
+                    requirement = PopulationFilterRequirement(
+                        source=source,
+                        column=column,
+                        operator="exclude" if excluded else "include",
+                        values=tuple(value["stored_values"]),
+                        vocabulary_id=vocabulary_id,
+                    )
+                    if requirement not in requirements:
+                        requirements.append(requirement)
+    return tuple(requirements)
+
+
+def _population_column(node, scope, parameters):
+    case_insensitive = isinstance(node, (exp.Lower, exp.Upper))
+    column = node.this if case_insensitive else node
+    if not isinstance(column, exp.Column):
+        return None, case_insensitive
+    if column.db and column.table:
+        return (f"{column.db}.{column.table}", column.name), case_insensitive
+    canonical = _canonical(column, scope, parameters, {})
+    if not isinstance(canonical, exp.Column):
+        return None, case_insensitive
+    return (f"{canonical.db}.{canonical.table}", canonical.name), case_insensitive
+
+
+def _population_value(node, scope, parameters):
+    try:
+        canonical = _canonical(node, scope, parameters, {})
+    except (MetricDefinitionError, IndexError, ValueError, TypeError):
+        return None
+    return canonical.this if isinstance(canonical, exp.Literal) and canonical.is_string else None
+
+
+def _population_status_conditions(tree, parameters):
+    target = ("commerce.orders", "order_status")
+    conditions = []
+    for scope in traverse_scope(tree):
+        select = scope.expression
+        predicates = [("where", predicate) for predicate in _conjuncts(select.args.get("where"))]
+        predicates.extend(("having", predicate) for predicate in _conjuncts(select.args.get("having")))
+        for join in select.args.get("joins", []):
+            predicates.extend(("join", predicate) for predicate in _conjuncts(join.args.get("on")))
+        for clause, predicate in predicates:
+            try:
+                canonical = _canonical(predicate, scope, parameters, {})
+            except (MetricDefinitionError, IndexError, ValueError, TypeError):
+                continue
+            columns = list(canonical.find_all(exp.Column))
+            if not any((f"{column.db}.{column.table}", column.name) == target for column in columns):
+                continue
+            if clause != "where":
+                conditions.append((target, "unresolved", ()))
+                continue
+
+            case_insensitive = False
+            operator, operands = "unresolved", None
+            left = None
+            if isinstance(canonical, exp.Not) and isinstance(canonical.this, exp.In):
+                operator, left, operands = "exclude", canonical.this.this, canonical.this.expressions
+            elif isinstance(canonical, exp.In):
+                operator = "exclude" if canonical.args.get("not") else "include"
+                left, operands = canonical.this, canonical.expressions
+            elif isinstance(canonical, (exp.EQ, exp.NEQ)):
+                operator = "include" if isinstance(canonical, exp.EQ) else "exclude"
+                left, operands = canonical.this, [canonical.expression]
+            elif isinstance(canonical, exp.Is):
+                left = canonical.this
+                origin, _ = _population_column(left, scope, parameters)
+                if origin == target:
+                    conditions.append((origin, "is_null" if isinstance(canonical.expression, exp.Null) else "is", ()))
+                continue
+
+            origin, case_insensitive = _population_column(left, scope, parameters) if left is not None else (None, False)
+            if origin != target:
+                conditions.append((target, "unresolved", ()))
+                continue
+            values = tuple(_population_value(item, scope, parameters) for item in (operands or ()))
+            if not values or any(not isinstance(value, str) for value in values):
+                conditions.append((target, "unresolved", ()))
+                continue
+            if case_insensitive:
+                values = tuple(value.casefold() for value in values)
+            conditions.append((origin, operator, values))
+    return conditions
+
+
+def _canonical_population_filters(metric_names):
+    allowed = []
+    for name in metric_names or ():
+        for expression in get_metric_definition(name).get("filters", ()):
+            match = re.fullmatch(r"\s*orders\.order_status\s*=\s*'([^']+)'\s*", expression, re.I)
+            if match:
+                allowed.append(("include", (match.group(1),)))
+    return allowed
+
+
+def _population_condition_matches(requirement, condition):
+    source_column, operator, values = condition
+    if source_column != (requirement.source, requirement.column) or operator != requirement.operator:
+        return False
+    required = {value.casefold() for value in requirement.values}
+    actual = {value.casefold() for value in values}
+    return actual == required
+
+
+def validate_population_contract(sql, question, parameters=(), metric_names=()):
+    """Require explicit order-status scope and reject SQL-invented status filters."""
+    requirements = requested_population_filters(question)
+    tree = parse_one(sql, read="postgres")
+    conditions = _population_status_conditions(tree, parameters)
+    requested = {
+        index
+        for requirement in requirements
+        for index, condition in enumerate(conditions)
+        if _population_condition_matches(requirement, condition)
+    }
+    for requirement in requirements:
+        if not any(_population_condition_matches(requirement, condition) for condition in conditions):
+            qualifier = "exclude" if requirement.operator == "exclude" else "include"
+            raise MetricDefinitionError(
+                f"The request requires the {qualifier} order-status population {requirement.vocabulary_id}; "
+                "preserve its commerce.orders.order_status filter.",
+                code="population_filter",
+            )
+
+    canonical = _canonical_population_filters(metric_names)
+    for index, (_, operator, values) in enumerate(conditions):
+        if index in requested:
+            continue
+        if (operator, tuple(sorted(value.casefold() for value in values))) in {
+                (allowed_operator, tuple(sorted(value.casefold() for value in allowed_values)))
+                for allowed_operator, allowed_values in canonical
+        }:
+            continue
+        raise MetricDefinitionError(
+            "Generated SQL contains an unrequested order-status population filter; preserve only filters "
+            "stated by the request or required by its canonical metric.",
+            code="unrequested_population_filter",
+        )
 
 
 def _latest_snapshot(value):

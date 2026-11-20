@@ -11,8 +11,75 @@ from core.agents.sql.metric_mapping import build_metric_mapping_prompt, decode_m
 from core.agents.sql.metric_ontology import resolve_metric_names
 from core.agents.sql.text_to_sql import (build_sql_prompt, validate_commerce_sql, validate_sql_security,
     SQLValidationError, SQLSecurityError, SQLSchemaMismatchError, decode_query_plan)
-from core.agents.sql.metric_validation import validate_metric_definitions, MetricDefinitionError
+from core.agents.sql.metric_validation import (
+    MetricDefinitionError,
+    requested_population_filters,
+    validate_metric_definitions,
+    validate_population_contract,
+)
 from core.agents.sql.text_to_sql import APPROVED_COLUMNS
+
+
+class PopulationFilterContractTest(unittest.TestCase):
+    question = (
+        'Khách hàng nào có nhiều đơn hàng đã giao nhất trong năm 2025? '
+        'Trả về top 5 customer_id và số đơn hàng; nếu bằng nhau sắp customer_id tăng dần.'
+    )
+    sql = (
+        'SELECT o.customer_id, COUNT(DISTINCT o.order_id) AS order_count '
+        'FROM commerce.orders AS o WHERE o.order_status = $1 '
+        'AND o.order_date >= $2 AND o.order_date < $3 GROUP BY o.customer_id '
+        'ORDER BY order_count DESC, o.customer_id ASC LIMIT 5'
+    )
+
+    def test_p02_requires_the_explicit_delivered_population(self):
+        requirement, = requested_population_filters(self.question)
+        self.assertEqual((requirement.source, requirement.column, requirement.operator, requirement.values),
+                         ('commerce.orders', 'order_status', 'include', ('delivered',)))
+        validate_population_contract(
+            self.sql, self.question, ('delivered', '2025-01-01', '2026-01-01'), {'order_count'},
+        )
+
+        missing = self.sql.replace('o.order_status = $1 AND ', '').replace(
+            'o.order_date >= $2', 'o.order_date >= $1').replace('o.order_date < $3', 'o.order_date < $2')
+        with self.assertRaisesRegex(MetricDefinitionError, 'requires the include order-status population'):
+            validate_population_contract(missing, self.question, ('2025-01-01', '2026-01-01'), {'order_count'})
+
+    def test_unrequested_status_filter_is_rejected_but_unfiltered_population_passes(self):
+        question = 'Which customers placed the most orders in 2025?'
+        unfiltered = self.sql.replace('o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3',
+                                      'o.order_date >= $1 AND o.order_date < $2')
+        validate_population_contract(unfiltered, question, ('2025-01-01', '2026-01-01'), {'order_count'})
+        with self.assertRaisesRegex(MetricDefinitionError, 'unrequested order-status population'):
+            validate_population_contract(
+                self.sql, question, ('delivered', '2025-01-01', '2026-01-01'), {'order_count'},
+            )
+        join_filter = (
+            'SELECT oi.product_id, SUM(oi.quantity) AS units_sold '
+            'FROM commerce.order_items AS oi JOIN commerce.orders AS o '
+            "ON o.order_id = oi.order_id AND o.order_status = 'delivered' "
+            'GROUP BY oi.product_id LIMIT 5'
+        )
+        with self.assertRaisesRegex(MetricDefinitionError, 'unrequested order-status population'):
+            validate_population_contract(join_filter, 'Top products by units sold', (), ())
+
+    def test_canonical_delivered_metric_and_cancelled_exclusion_are_preserved(self):
+        product_revenue = (
+            'SELECT SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS revenue '
+            'FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id = o.order_id '
+            "WHERE o.order_status = 'delivered' LIMIT 1"
+        )
+        validate_population_contract(product_revenue, 'What is product revenue?', (), {'product_revenue'})
+
+        question = 'Doanh thu năm 2025 không tính đơn đã hủy.'
+        self.assertEqual(requested_population_filters(question)[0].operator, 'exclude')
+        cancelled_excluded = (
+            'SELECT COUNT(DISTINCT o.order_id) AS order_count FROM commerce.orders AS o '
+            "WHERE LOWER(o.order_status) NOT IN ('cancelled', 'canceled') "
+            'AND o.order_date >= $1 AND o.order_date < $2 LIMIT 1'
+        )
+        validate_population_contract(cancelled_excluded, question,
+                                     ('2025-01-01', '2026-01-01'), {'order_count'})
 
 
 class InterpretationRegressionTest(unittest.TestCase):

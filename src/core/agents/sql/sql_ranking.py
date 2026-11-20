@@ -365,6 +365,12 @@ def _ranking_request(question: str) -> tuple[str, bool, bool, bool]:
     return text, ascending, descending, ascending or descending or _has_term(text, _RANK_MARKERS)
 
 
+def _ranking_question_without_projection_instruction(question: str) -> str:
+    """Keep output-field instructions out of metric resolution (for example, return product_id)."""
+    match = re.search(r"\breturn\s+(?=[a-z][a-z0-9]*_[a-z0-9_]*\b)", question, re.I)
+    return question[:match.start()] if match else question
+
+
 def has_ranking_request(question: str) -> bool:
     """Retain the generic ranking cue when structured intent extraction cannot resolve it."""
     return _ranking_request(question)[3]
@@ -372,11 +378,12 @@ def has_ranking_request(question: str) -> bool:
 
 def resolve_ranking_intent(question: str) -> RankingIntent | None:
     """Resolve simple explicit top/bottom requests; preserve unknown intent as unresolved."""
-    text, ascending, descending, ranking = _ranking_request(question)
+    analysis_question = _ranking_question_without_projection_instruction(question)
+    text, ascending, descending, ranking = _ranking_request(analysis_question)
     if not ranking:
         return None
 
-    metrics = resolve_metric_names(question)
+    metrics = resolve_metric_names(analysis_question)
     entity_mentions = _entity_mentions(text)
     ranking_metric, metric_pos = _ranking_metric(text, metrics)
 

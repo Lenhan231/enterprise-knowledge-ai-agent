@@ -163,6 +163,140 @@ def assistant(repository, provider):
 
 
 class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
+    async def test_explicit_delivered_population_is_repaired_before_repository_execution(self):
+        question = (
+            'Khách hàng nào có nhiều đơn hàng đã giao nhất trong năm 2025? '
+            'Trả về top 5 customer_id và số đơn hàng; nếu bằng nhau sắp customer_id tăng dần.'
+        )
+        missing_filter = json.dumps({
+            'sql': (
+                'SELECT o.customer_id, COUNT(DISTINCT o.order_id) AS order_count '
+                'FROM commerce.orders AS o WHERE o.order_date >= $1 AND o.order_date < $2 '
+                'GROUP BY o.customer_id ORDER BY order_count DESC, o.customer_id ASC LIMIT 5'
+            ),
+            'parameters': ['2025-01-01', '2026-01-01'],
+            'explanation': 'Rank customers by order count.',
+        })
+        corrected = json.dumps({
+            'sql': (
+                'SELECT o.customer_id, COUNT(DISTINCT o.order_id) AS order_count '
+                'FROM commerce.orders AS o WHERE o.order_status = $1 AND o.order_date >= $2 '
+                'AND o.order_date < $3 GROUP BY o.customer_id '
+                'ORDER BY order_count DESC, o.customer_id ASC LIMIT 5'
+            ),
+            'parameters': ['delivered', '2025-01-01', '2026-01-01'],
+            'explanation': 'Rank customers by delivered order count.',
+        })
+        repository = FakeRepository()
+        provider = FakeProvider([missing_filter, corrected])
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+
+        with (
+            patch('core.agents.sql.agent.interpret_query_intent', new=AsyncMock(return_value=None)),
+            patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': {'commerce.orders'}, 'required_tables': {'commerce.orders'},
+                'candidate_tables': {'commerce.orders'},
+            }),
+        ):
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertEqual(provider.response_index, 2)
+        self.assertEqual(repository.execute_approved_query.await_count, 1)
+        self.assertIn('o.order_status = $1', repository.execute_approved_query.await_args.args[0])
+        self.assertEqual(repository.execute_approved_query.await_args.args[1:],
+                         ('delivered', date(2025, 1, 1), date(2026, 1, 1)))
+        self.assertEqual(result['query_status'], 'executed')
+
+    async def test_exhausted_delivered_population_repair_never_executes_sql(self):
+        question = (
+            'Khách hàng nào có nhiều đơn hàng đã giao nhất trong năm 2025? '
+            'Trả về top 5 customer_id và số đơn hàng; nếu bằng nhau sắp customer_id tăng dần.'
+        )
+        missing_filter = json.dumps({
+            'sql': (
+                'SELECT o.customer_id, COUNT(DISTINCT o.order_id) AS order_count '
+                'FROM commerce.orders AS o WHERE o.order_date >= $1 AND o.order_date < $2 '
+                'GROUP BY o.customer_id ORDER BY order_count DESC, o.customer_id ASC LIMIT 5'
+            ),
+            'parameters': ['2025-01-01', '2026-01-01'],
+            'explanation': 'Rank customers by order count.',
+        })
+        repository = FakeRepository()
+        provider = FakeProvider([missing_filter, missing_filter])
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+
+        with (
+            patch('core.agents.sql.agent.interpret_query_intent', new=AsyncMock(return_value=None)),
+            patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': {'commerce.orders'}, 'required_tables': {'commerce.orders'},
+                'candidate_tables': {'commerce.orders'},
+            }),
+        ):
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertEqual(provider.response_index, 2)
+        repository.execute_approved_query.assert_not_awaited()
+        self.assertEqual(result['query_status'], 'rejected')
+        self.assertIn('order-status population', result['metadata']['error_detail'].casefold())
+
+    async def test_units_sold_ranking_repairs_return_quantity_false_match(self):
+        question = (
+            'Top 5 products by units sold from delivered orders between 2025-04-01 and 2025-06-30; '
+            'return product_id and units, ties by product_id ascending.'
+        )
+        wrong = json.dumps({
+            'sql': (
+                'WITH returned_units AS (SELECT r.product_id, SUM(r.return_quantity) AS units_sold '
+                'FROM commerce.returns AS r JOIN commerce.orders AS o ON o.order_id = r.order_id '
+                'WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 '
+                'GROUP BY r.product_id) SELECT x.product_id, x.units_sold FROM returned_units AS x '
+                'ORDER BY x.units_sold DESC, x.product_id ASC LIMIT 5'
+            ),
+            'parameters': ['delivered', '2025-04-01', '2025-07-01'],
+            'explanation': 'Rank products by returned units.',
+        })
+        corrected = json.dumps({
+            'sql': (
+                'WITH sold_units AS (SELECT oi.product_id, SUM(oi.quantity) AS units_sold '
+                'FROM commerce.order_items AS oi JOIN commerce.orders AS o ON o.order_id = oi.order_id '
+                'WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 '
+                'GROUP BY oi.product_id) SELECT x.product_id, x.units_sold FROM sold_units AS x '
+                'ORDER BY x.units_sold DESC, x.product_id ASC LIMIT 5'
+            ),
+            'parameters': ['delivered', '2025-04-01', '2025-07-01'],
+            'explanation': 'Rank delivered products by sold units.',
+        })
+        repository = FakeRepository()
+        provider = FakeProvider([wrong, corrected])
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        sources = {'commerce.orders', 'commerce.order_items', 'commerce.returns'}
+
+        with (
+            patch('core.agents.sql.agent.interpret_query_intent', new=AsyncMock(return_value=None)),
+            patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': sources, 'required_tables': sources, 'candidate_tables': sources,
+            }),
+        ):
+            result = await agent.run_payload(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertEqual(provider.response_index, 2)
+        self.assertEqual(repository.execute_approved_query.await_count, 1)
+        executed_sql = repository.execute_approved_query.await_args.args[0]
+        self.assertIn('SUM(oi.quantity)', executed_sql)
+        self.assertNotIn('return_quantity', executed_sql)
+        self.assertEqual(result['query_status'], 'executed')
+        self.assertEqual(result['metadata']['ranking_validation']['measure'],
+                         'sum:commerce.order_items.quantity')
+
     async def test_resolved_top_one_ranking_ignores_conflicting_model_contract_limit(self):
         question = "Khách hàng nào có nhiều đơn hàng nhất?"
         sql = (

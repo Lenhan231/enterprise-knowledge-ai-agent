@@ -32,7 +32,7 @@ Small denominators mean these are pilot counts, not stable population estimates.
 
 ## Frozen questions and observed outcomes
 
-There were four answerable cases and one deliberately unsupported case. Prompts, requested semantics and data-based golds were frozen before model calls; no production result rows are published in this report.
+There were four answerable cases and one deliberately unsupported case. Prompts, requested semantics and data-based golds were frozen before model calls. The repository identifies the Commerce source as synthetic competition data, not real retailer results (`src/core/database/document_repository.py:416,468,472`). This report includes the five selected gold/actual result sets, not a full database export.
 
 | Case | Exact frozen request | Route and outcome |
 |---|---|---|

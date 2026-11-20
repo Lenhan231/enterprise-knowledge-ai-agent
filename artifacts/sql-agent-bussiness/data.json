@@ -1,0 +1,187 @@
+{
+  "format_version": "sql-business-observations.v1",
+  "manifest": {
+    "experiment_id": "sql-agent-business-pilot5-rerun-20261120",
+    "status": "NOT_RUN",
+    "application_revision": "d16f013102b90ba3aa58692bff40caa99bb932ff",
+    "branch": "main",
+    "dirty_worktree": true,
+    "worktree_source_hashes": {
+      "src/core/agents/decision_support/intent_classifier.py": "bdf6c7c43e8b10c38d66c57b61a43b2690c3af59e05cd2b6e841aadccfbb02a0",
+      "src/core/agents/sql/agent.py": "1dc1cf9676402b9041f8494ea7f026dfd72df0db84667cc7171c5d73d72a4df5",
+      "src/core/agents/sql/compiler_dispatch.py": "9df24bbcf6f2fb3bedcfc620aa59506403793ecfca6a1a387dcc90c52dab098c",
+      "src/core/agents/sql/field_retrieval.py": "7fc37b464d2f6c5edb726361a78567c5cd650cd2c18408af5d816e040d777752",
+      "src/core/agents/sql/join_validation.py": "e776fa376e36820004c7eaad5f34e134802f6089fe0b6b80e2f1812298559007",
+      "src/core/agents/sql/metric_mapping.py": "9c00a288155289714992053e06e624ce772ded0a7e9835132b09f20bde7566c6",
+      "src/core/agents/sql/metric_ontology.py": "719bc9d74c0c3bc875594ec49cec15ae4ee7b52634033bc69ace97a09085c0fa",
+      "src/core/agents/sql/query_intent.py": "cf6f4a41cd8d01c9e4a909346c8e6ddcdcaea5354cbd98e8a38b6366c2d7e78e",
+      "src/core/agents/sql/sql_ranking.py": "fbfd67b943f251b009ea0f4eaa63fb7d1e04906fd7379a4c89440ee6fcf981f2",
+      "src/core/agents/sql/text_to_sql.py": "ddef4af93fc281d9f15fc4533e38de62abd94e4acf5ba9ab5b1d90d6d6b3b177",
+      "src/core/database/commerce_repository.py": "67326796a6e43375d72c668e89bf7d14c6690ae579da72cb63f8984e8c1a9baa",
+      "src/core/prompts/sql.py": "cf1829c735a357a9bff55bd04d649ad807cb2bbdff134da36542d73371144e60"
+    },
+    "source_fingerprint_sha256": "9da248379230905cd10e8fa63838af681c8711641f7f4211a6f6d3fba083afab",
+    "benchmark_code_hashes": {
+      "artifacts/sql-agent-bussiness/cases.json": "93b88c56b84c7e594d83c77a3e619aaf2f6aa1ff32868c686e937fe2f67063d4",
+      "artifacts/sql-agent-bussiness/benchmark_40_plan.json": "6aee7807768639b6e742928f7291b2612eb617f29e700d520bed5d68945e823b",
+      "artifacts/sql-agent-bussiness/failure_classes.json": "e8e882b928b29a78df3f05f1bd46d3ae63daeb0cb1725aed78edaba0850acffb",
+      "artifacts/sql-agent-bussiness/preflight.py": "9a6db6df5da9afa2dcfa75e5dece7ee203f762b27ba03f089777b4fdb74229cb",
+      "artifacts/sql-agent-bussiness/reference_runner.py": "7b7bf26ad762dbc3aa8195a34da33b1629c4274d421768caa84943cae140d480",
+      "artifacts/sql-agent-bussiness/runner.py": "ebb5661a3ffbf957f5edd746b0809f638012ed3882cdb53fb2865e397d42a034",
+      "artifacts/sql-agent-bussiness/scorer.py": "33c78164c05272f9991f2fcffea61807b96af80b1e964917ead2f7e9cc7b8984",
+      "artifacts/sql-agent-bussiness/PROTOCOL.md": "1f8ef14a8ef6f8bebd4b9144dde46e2819b15a878922d9bbf18439e485fbea8f",
+      "artifacts/sql-agent-bussiness/README.md": "de0caee65949279d1f10bdd2f5746fd8e001fc1b3df95f1748b0cb9f047c9dcd",
+      "artifacts/sql-agent-bussiness/THESIS_ALIGNMENT.md": "ff6b74db8dc0c6fb20f2f654cd59b3e44b92fd59cf2fde9886392998ced7cb2a",
+      "artifacts/sql-agent-bussiness/tests/test_runner.py": "a615e2f4be2b65a047d2934a22bbdbe3ec027788e04186a5fa242264fdf0e2d8",
+      "artifacts/sql-agent-bussiness/tests/test_scorer.py": "9e33f32d2cf4157f268d34080645f873952e8892c2fae75893f0e0f382289086"
+    },
+    "prompt_hashes": {
+      "sql_prompt_builder": "cf1829c735a357a9bff55bd04d649ad807cb2bbdff134da36542d73371144e60",
+      "metric_mapping": "e5c14e246e58c32fe057daf71649d81532881f5882224abd7e4ccc48bab94201"
+    },
+    "provider_configuration": {
+      "sql_provider": "cloudflare",
+      "sql_model": "@cf/openai/gpt-oss-20b",
+      "jev_model": "typesafe/jev-1.14",
+      "intent_model": "no separate intent call in direct SQL-agent benchmark route",
+      "configured": true,
+      "invoked_for_fresh_pilot": false,
+      "provider_tokens": "NOT_AVAILABLE from current provider return interface"
+    },
+    "package_versions": {
+      "sqlglot": "30.19.0",
+      "asyncpg": "0.32.0",
+      "supabase": "2.31.0",
+      "pydantic": "2.11.7",
+      "httpx": "0.28.1"
+    },
+    "repair_budget": 1,
+    "case_set_sha256": "ddade2d597b30a6bb4c74fc7b997dfe9a617e6c5348cd8b64bf7016463d100c4",
+    "gold_reference_sha256": "6a6d44fe1547a7bf2f3dfdae87dda00d2288c311b9a453a0b7cccbc80db63469",
+    "historical_artifact_sha256": {
+      "data.json": "6d8ba79e7b0dbd0ee2f10eeec5f01dbe711f00dd1a18aaec56e60bd159fda0fb",
+      "report.md": "8457520815097cfbd99ab2fc9bc86693982997850af61fccce5c0c02b1e8e614"
+    },
+    "dataset_fingerprint_sha256": null,
+    "dataset_preflight": "NOT_RUN_nonproduction_database_not_configured",
+    "not_run_reason": "NOT RUN: SQL_BENCHMARK_DATABASE_URL is not configured; the benchmark will not reuse ANALYTICS_DATABASE_URL. No benchmark case, gold reference query, or provider call was executed.",
+    "jev_diagnostic": {
+      "status": "FAILED",
+      "http_status": 402,
+      "attempts": 1,
+      "scope": "single synthetic diagnostic probe, not a benchmark case",
+      "message": "Insufficient credits; the OpenRouter account never purchased credits. JEV recall@5 is not measurable."
+    },
+    "historical_pilot_metrics": {
+      "Strict end-to-end accuracy": "1/4",
+      "Business-value accuracy": "2/4",
+      "SQL semantic contract accuracy": "3/4",
+      "Approved execution acceptance": "3/4",
+      "Safe unsupported abstention": "1/1",
+      "JEV availability": "0/4; recall@5 not measurable",
+      "Bounded repair recovery": "0/1",
+      "End-to-end latency": "p50 8.19 s; p95 14.85 s"
+    },
+    "historical_trace_limitation": "Original report states full provider prompts and raw traces are retained locally outside the repository. They are not present in this workspace, so original attempts/calls cannot be independently reconstructed from source traces.",
+    "created_at": "2026-11-20T14:05:30+00:00",
+    "preflight_blocker_fields": {
+      "SQL_BENCHMARK_DATABASE_URL": false,
+      "SQL_BENCHMARK_DB_CLASSIFICATION": false,
+      "SQL_BENCHMARK_ALLOWED_HOSTS": false,
+      "ANALYTICS_DATABASE_URL_configured": true
+    },
+    "python_version": "3.11.16",
+    "gold_reference_hash_scope": "SHA-256 of canonical JSON array [{id, gold}] from cases.json.",
+    "verified_at": "2026-11-20T15:07:58+00:00",
+    "artifact_verification": {
+      "status": "PASS",
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src uv run python -m unittest discover -s artifacts/sql-agent-bussiness/tests -v",
+      "passed": 34,
+      "failed": 0,
+      "skipped": 0,
+      "preflight_status": "NOT RUN",
+      "preflight_detail": "SQL_BENCHMARK_DATABASE_URL is not configured; ANALYTICS_DATABASE_URL was not reused.",
+      "fresh_pilot_status": "NOT RUN",
+      "verified_at": "2026-11-20T15:07:58+00:00",
+      "tested_revision": "d16f013102b90ba3aa58692bff40caa99bb932ff"
+    }
+  },
+  "case_set_sha256": "ddade2d597b30a6bb4c74fc7b997dfe9a617e6c5348cd8b64bf7016463d100c4",
+  "cases": [
+    {
+      "id": "P01",
+      "question": "What was total revenue for 2025?",
+      "status": "NOT_RUN",
+      "failure_class": "environment_blocker",
+      "sql": null,
+      "parameters": [],
+      "rows": [],
+      "columns": [],
+      "execution_events": [],
+      "schema_selection": {},
+      "calls": {},
+      "latency_ms": null,
+      "error_detail": "NOT RUN: SQL_BENCHMARK_DATABASE_URL is unset. Only ANALYTICS_DATABASE_URL is configured, and this task does not use that hosted database because it is not confirmed non-production. No benchmark case, gold reference query, or provider call was executed."
+    },
+    {
+      "id": "P02",
+      "question": "Khách hàng nào có nhiều đơn hàng đã giao nhất trong năm 2025? Trả về top 5 customer_id và số đơn hàng; nếu bằng nhau sắp customer_id tăng dần.",
+      "status": "NOT_RUN",
+      "failure_class": "environment_blocker",
+      "sql": null,
+      "parameters": [],
+      "rows": [],
+      "columns": [],
+      "execution_events": [],
+      "schema_selection": {},
+      "calls": {},
+      "latency_ms": null,
+      "error_detail": "NOT RUN: SQL_BENCHMARK_DATABASE_URL is unset. Only ANALYTICS_DATABASE_URL is configured, and this task does not use that hosted database because it is not confirmed non-production. No benchmark case, gold reference query, or provider call was executed."
+    },
+    {
+      "id": "P03",
+      "question": "Top 5 products by units sold from delivered orders between 2025-04-01 and 2025-06-30; return product_id and units, ties by product_id ascending.",
+      "status": "NOT_RUN",
+      "failure_class": "environment_blocker",
+      "sql": null,
+      "parameters": [],
+      "rows": [],
+      "columns": [],
+      "execution_events": [],
+      "schema_selection": {},
+      "calls": {},
+      "latency_ms": null,
+      "error_detail": "NOT RUN: SQL_BENCHMARK_DATABASE_URL is unset. Only ANALYTICS_DATABASE_URL is configured, and this task does not use that hosted database because it is not confirmed non-production. No benchmark case, gold reference query, or provider call was executed."
+    },
+    {
+      "id": "P04",
+      "question": "Tại snapshot 2026-11-13, cho tôi 5 sản phẩm có tồn kho cao nhất, gồm product_id, product_name và stock_on_hand; nếu bằng nhau sắp product_id tăng dần.",
+      "status": "NOT_RUN",
+      "failure_class": "environment_blocker",
+      "sql": null,
+      "parameters": [],
+      "rows": [],
+      "columns": [],
+      "execution_events": [],
+      "schema_selection": {},
+      "calls": {},
+      "latency_ms": null,
+      "error_detail": "NOT RUN: SQL_BENCHMARK_DATABASE_URL is unset. Only ANALYTICS_DATABASE_URL is configured, and this task does not use that hosted database because it is not confirmed non-production. No benchmark case, gold reference query, or provider call was executed."
+    },
+    {
+      "id": "P05",
+      "question": "Tại snapshot 2026-11-13, tồn kho từng kho và lead time của nhà cung cấp cho từng sản phẩm là bao nhiêu?",
+      "status": "NOT_RUN",
+      "failure_class": "environment_blocker",
+      "sql": null,
+      "parameters": [],
+      "rows": [],
+      "columns": [],
+      "execution_events": [],
+      "schema_selection": {},
+      "calls": {},
+      "latency_ms": null,
+      "error_detail": "NOT RUN: SQL_BENCHMARK_DATABASE_URL is unset. Only ANALYTICS_DATABASE_URL is configured, and this task does not use that hosted database because it is not confirmed non-production. No benchmark case, gold reference query, or provider call was executed."
+    }
+  ]
+}

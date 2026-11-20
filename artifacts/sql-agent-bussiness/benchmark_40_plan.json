@@ -25,7 +25,7 @@
     "split development/debug pilot from held-out evaluation",
     "do not execute this cohort in the current task"
   ],
-  "gold_preparation_blocker": "The current workspace has no explicitly designated non-production analytics database; gold SQL and results remain null until safe reference generation can be run.",
+  "gold_preparation_blocker": "Gold SQL and results remain null until two independent reviewers adjudicate the cases and approve references generated read-only from the explicitly frozen analytics snapshot. The 40-case cohort has not been executed.",
   "cases": [
     {
       "id": "B40-001",
@@ -50,7 +50,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -81,7 +81,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -114,7 +114,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -149,7 +149,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -191,7 +191,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -224,7 +224,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -267,7 +267,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -312,7 +312,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -346,7 +346,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -389,7 +389,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -432,7 +432,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -475,7 +475,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -515,7 +515,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -559,7 +559,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -604,7 +604,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -648,7 +648,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -690,7 +690,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -730,7 +730,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -773,7 +773,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -816,7 +816,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -856,7 +856,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -888,7 +888,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -930,7 +930,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -973,7 +973,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -1015,7 +1015,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -1054,7 +1054,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -1096,7 +1096,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -1139,7 +1139,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -1181,7 +1181,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -1221,7 +1221,7 @@
       "gold_sql": null,
       "gold_parameters": null,
       "gold_result": null,
-      "gold_status": "NOT_PREPARED_requires_nonproduction_reference_run",
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
       "numeric_tolerance": {
         "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
         "relative": 0
@@ -1499,5 +1499,6 @@
       "potential_ambiguity": "Verify absent dimensions against the same frozen schema snapshot before freezing.",
       "provenance": "candidate unsupported/security case; expected no business query execution."
     }
-  ]
+  ],
+  "readiness": "NOT_READY_FOR_40_CASE_BENCHMARK"
 }

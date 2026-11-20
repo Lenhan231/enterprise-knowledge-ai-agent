@@ -42,6 +42,56 @@ There were four answerable cases and one deliberately unsupported case. Prompts,
 | P04 | `Tại snapshot 2026-11-13, cho tôi 5 sản phẩm có tồn kho cao nhất, gồm product_id, product_name và stock_on_hand; nếu bằng nhau sắp product_id tăng dần.` | Inventory mapping + typed compiler; requested values match, but output adds `snapshot_date`, failing strict full-row equality |
 | P05 | `Tại snapshot 2026-11-13, tồn kho từng kho và lead time của nhà cung cấp cho từng sản phẩm là bao nhiêu?` | Unsupported-schema handling; safely clarified without business SQL, but clarification omitted the missing warehouse dimension |
 
+## Gold data vs SQL Agent output
+
+These are the selected cases' gold rows and observed Agent rows, not a dump of the Commerce tables. Currency metadata is absent, so P01 is reported without assuming a currency.
+
+**P01 — 2025 revenue**
+
+| Gold | SQL Agent |
+|---:|---:|
+| 13,299,821.25 | 13,299,821.25 |
+
+**P02 — delivered orders per customer, 2025**
+
+| Rank | Gold customer_id | Gold orders | Agent customer_id | Agent orders |
+|---:|---:|---:|---:|---:|
+| 1 | 1924 | 4 | 58578 | 5 |
+| 2 | 41034 | 4 | 102 | 4 |
+| 3 | 42962 | 4 | 1924 | 4 |
+| 4 | 102 | 3 | 41034 | 4 |
+| 5 | 6121 | 3 | 42962 | 4 |
+
+Agent SQL counted all statuses; the gold filters `order_status = 'delivered'`.
+
+**P03 — units sold by product, delivered orders in Q2 2025**
+
+| Rank | Gold product_id | Gold units | SQL Agent output |
+|---:|---:|---:|---|
+| 1 | 690 | 11 | No rows; validator rejected the generated SQL |
+| 2 | 761 | 11 | No rows; validator rejected the generated SQL |
+| 3 | 782 | 11 | No rows; validator rejected the generated SQL |
+| 4 | 808 | 11 | No rows; validator rejected the generated SQL |
+| 5 | 1059 | 11 | No rows; validator rejected the generated SQL |
+
+**P04 — stock at snapshot 2026-11-13**
+
+| Rank | Gold product_id | Gold product_name | Gold stock | Agent product_id | Agent product_name | Agent stock |
+|---:|---:|---|---:|---:|---|---:|
+| 1 | 1974 | UrbanVN RP-49 | 60 | 1974 | UrbanVN RP-49 | 60 |
+| 2 | 2091 | UrbanVN UC-26 | 60 | 2091 | UrbanVN UC-26 | 60 |
+| 3 | 556 | SaigonFlex UC-21 | 59 | 556 | SaigonFlex UC-21 | 59 |
+| 4 | 2180 | PhoenixWear UC-10 | 59 | 2180 | PhoenixWear UC-10 | 59 |
+| 5 | 2219 | VietMotion RP-16 | 59 | 2219 | VietMotion RP-16 | 59 |
+
+All requested values match. SQL Agent also returned `snapshot_date = 2026-11-13` on each row, which causes the strict full-row mismatch.
+
+**P05 — unsupported warehouse and supplier lead-time data**
+
+| Gold rows | Agent rows | Status |
+|---|---|---|
+| None; schema lacks warehouse and supplier lead-time fields | None | Clarification required; zero business queries executed |
+
 ## Runtime and safety evidence
 
 - Selected cohort: 5 traces, 8 Cloudflare calls (2 intent, 1 metric mapping, 4 SQL generation, 1 repair), and 4 Jev attempts.

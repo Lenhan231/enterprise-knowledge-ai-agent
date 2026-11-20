@@ -3,36 +3,41 @@
   "manifest": {
     "experiment_id": "sql-agent-business-pilot5-rerun-20261120",
     "status": "NOT_RUN",
-    "application_revision": "d16f013102b90ba3aa58692bff40caa99bb932ff",
+    "application_revision": "ca86bd6f9d22810fa50f4efc394f269a5a0f10ae",
     "branch": "main",
-    "dirty_worktree": true,
+    "dirty_worktree": false,
     "worktree_source_hashes": {
+      "data/semantic/vietstyle_metrics_v1.yaml": "5c05965d8e11d8230fbe1cae181370b12851f446f414dd59c9bbc9bb126fb1c3",
       "src/core/agents/decision_support/intent_classifier.py": "bdf6c7c43e8b10c38d66c57b61a43b2690c3af59e05cd2b6e841aadccfbb02a0",
-      "src/core/agents/sql/agent.py": "1dc1cf9676402b9041f8494ea7f026dfd72df0db84667cc7171c5d73d72a4df5",
+      "src/core/agents/sql/agent.py": "2c9f9ee26cee3a3aedcca809e353ea9b45484985fb1703e5520c95c5e1741c84",
+      "src/core/agents/sql/assistant_endpoint.py": "08aafe5456aa74cdaea645e23dc894ef05c4dd491e437a69de91fcada7cee0a2",
       "src/core/agents/sql/compiler_dispatch.py": "9df24bbcf6f2fb3bedcfc620aa59506403793ecfca6a1a387dcc90c52dab098c",
       "src/core/agents/sql/field_retrieval.py": "7fc37b464d2f6c5edb726361a78567c5cd650cd2c18408af5d816e040d777752",
+      "src/core/agents/sql/intent_resolution.py": "86defb2ef65e1c03dbfa62d1877dd1df5f0c9051727625af50d82a0a6ba1cfa0",
       "src/core/agents/sql/join_validation.py": "e776fa376e36820004c7eaad5f34e134802f6089fe0b6b80e2f1812298559007",
       "src/core/agents/sql/metric_mapping.py": "9c00a288155289714992053e06e624ce772ded0a7e9835132b09f20bde7566c6",
-      "src/core/agents/sql/metric_ontology.py": "719bc9d74c0c3bc875594ec49cec15ae4ee7b52634033bc69ace97a09085c0fa",
+      "src/core/agents/sql/metric_ontology.py": "f1aca33a5f880a71852eef99b62472e55250931ec6f546e1b7dd1d7e5cafe308",
+      "src/core/agents/sql/metric_validation.py": "3ccc9a06d95d7950f6cdb2a05593222073c73c091c8ad684ca51d14e84410cb3",
+      "src/core/agents/sql/query_contract.py": "8b3080be9cedbf5d3896974c5255caa5d81ec9c9d16fe7f9bcb1d4aba9a5df1c",
       "src/core/agents/sql/query_intent.py": "cf6f4a41cd8d01c9e4a909346c8e6ddcdcaea5354cbd98e8a38b6366c2d7e78e",
-      "src/core/agents/sql/sql_ranking.py": "fbfd67b943f251b009ea0f4eaa63fb7d1e04906fd7379a4c89440ee6fcf981f2",
+      "src/core/agents/sql/sql_ranking.py": "7dbec694e2a38c8eb83d76a007069f733ee622c1633a969ffe37e8c4319774db",
       "src/core/agents/sql/text_to_sql.py": "ddef4af93fc281d9f15fc4533e38de62abd94e4acf5ba9ab5b1d90d6d6b3b177",
       "src/core/database/commerce_repository.py": "67326796a6e43375d72c668e89bf7d14c6690ae579da72cb63f8984e8c1a9baa",
       "src/core/prompts/sql.py": "cf1829c735a357a9bff55bd04d649ad807cb2bbdff134da36542d73371144e60"
     },
-    "source_fingerprint_sha256": "9da248379230905cd10e8fa63838af681c8711641f7f4211a6f6d3fba083afab",
+    "source_fingerprint_sha256": "91971ef2fd8848724c6c79965759e76815b134d48b6e5e679c7831d351efa3e0",
     "benchmark_code_hashes": {
       "artifacts/sql-agent-bussiness/cases.json": "93b88c56b84c7e594d83c77a3e619aaf2f6aa1ff32868c686e937fe2f67063d4",
       "artifacts/sql-agent-bussiness/benchmark_40_plan.json": "6aee7807768639b6e742928f7291b2612eb617f29e700d520bed5d68945e823b",
       "artifacts/sql-agent-bussiness/failure_classes.json": "e8e882b928b29a78df3f05f1bd46d3ae63daeb0cb1725aed78edaba0850acffb",
       "artifacts/sql-agent-bussiness/preflight.py": "9a6db6df5da9afa2dcfa75e5dece7ee203f762b27ba03f089777b4fdb74229cb",
       "artifacts/sql-agent-bussiness/reference_runner.py": "7b7bf26ad762dbc3aa8195a34da33b1629c4274d421768caa84943cae140d480",
-      "artifacts/sql-agent-bussiness/runner.py": "ebb5661a3ffbf957f5edd746b0809f638012ed3882cdb53fb2865e397d42a034",
+      "artifacts/sql-agent-bussiness/runner.py": "e6bdf4b1be156de7d66cd2e36d3c6f774e300e2ce0a5a6f970bba2bf78a9f501",
       "artifacts/sql-agent-bussiness/scorer.py": "33c78164c05272f9991f2fcffea61807b96af80b1e964917ead2f7e9cc7b8984",
       "artifacts/sql-agent-bussiness/PROTOCOL.md": "1f8ef14a8ef6f8bebd4b9144dde46e2819b15a878922d9bbf18439e485fbea8f",
       "artifacts/sql-agent-bussiness/README.md": "de0caee65949279d1f10bdd2f5746fd8e001fc1b3df95f1748b0cb9f047c9dcd",
       "artifacts/sql-agent-bussiness/THESIS_ALIGNMENT.md": "ff6b74db8dc0c6fb20f2f654cd59b3e44b92fd59cf2fde9886392998ced7cb2a",
-      "artifacts/sql-agent-bussiness/tests/test_runner.py": "a615e2f4be2b65a047d2934a22bbdbe3ec027788e04186a5fa242264fdf0e2d8",
+      "artifacts/sql-agent-bussiness/tests/test_runner.py": "9faaf76ccad231bb1404d6fea8e5544d61266a5f2b37d1cbdc4fa64f3c069d69",
       "artifacts/sql-agent-bussiness/tests/test_scorer.py": "9e33f32d2cf4157f268d34080645f873952e8892c2fae75893f0e0f382289086"
     },
     "prompt_hashes": {
@@ -92,18 +97,45 @@
     },
     "python_version": "3.11.16",
     "gold_reference_hash_scope": "SHA-256 of canonical JSON array [{id, gold}] from cases.json.",
-    "verified_at": "2026-11-20T15:07:58+00:00",
+    "verified_at": "2026-11-20T15:45:35+00:00",
     "artifact_verification": {
       "status": "PASS",
-      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src uv run python -m unittest discover -s artifacts/sql-agent-bussiness/tests -v",
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src /home/lenhanm1/orca/workspaces/enterprise-knowledge-ai-agent/main/.venv/bin/python -m unittest discover -s artifacts/sql-agent-bussiness/tests -v",
       "passed": 34,
       "failed": 0,
       "skipped": 0,
       "preflight_status": "NOT RUN",
       "preflight_detail": "SQL_BENCHMARK_DATABASE_URL is not configured; ANALYTICS_DATABASE_URL was not reused.",
       "fresh_pilot_status": "NOT RUN",
-      "verified_at": "2026-11-20T15:07:58+00:00",
-      "tested_revision": "d16f013102b90ba3aa58692bff40caa99bb932ff"
+      "verified_at": "2026-11-20T15:49:58+00:00",
+      "tested_revision": "ca86bd6f9d22810fa50f4efc394f269a5a0f10ae"
+    },
+    "regression_verification": {
+      "status": "PASS",
+      "application_revision": "ca86bd6f9d22810fa50f4efc394f269a5a0f10ae",
+      "python_version": "3.11.16",
+      "results": {
+        "tests/sql/test_sql_*.py": {
+          "passed": 382,
+          "failed": 0,
+          "skipped": 10
+        },
+        "tests/test_inventory*.py": {
+          "passed": 73,
+          "failed": 0,
+          "skipped": 3
+        },
+        "artifacts/sql-agent-bussiness/tests": {
+          "passed": 34,
+          "failed": 0,
+          "skipped": 0
+        }
+      },
+      "syntax_compilation": "PASS",
+      "git_diff_check": "PASS",
+      "live_database_queries": 0,
+      "model_provider_calls": 0,
+      "verified_at": "2026-11-20T15:45:35+00:00"
     }
   },
   "case_set_sha256": "ddade2d597b30a6bb4c74fc7b997dfe9a617e6c5348cd8b64bf7016463d100c4",

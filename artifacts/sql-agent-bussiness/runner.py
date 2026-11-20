@@ -136,7 +136,7 @@ def build_manifest(application_revision, *, provider, model):
         "benchmark_code_hashes": {path: sha256_file(ROOT / path) for path in benchmark_files},
         "prompt_hashes": {
             "src/core/prompts/sql.py": sha256_file(prompt_path),
-            "src/core/analytics/metric_mapping.py": sha256_file(ROOT / "src/core/analytics/metric_mapping.py"),
+            "src/core/agents/sql/metric_mapping.py": sha256_file(ROOT / "src/core/agents/sql/metric_mapping.py"),
         },
         "provider": provider,
         "model": model,
@@ -281,7 +281,7 @@ def normalize_payload(case, payload, instrumentation, latency_ms):
     rows = payload.get("rows") or []
     if not columns and rows:
         columns = list(rows[0])
-    error = metadata.get("error") or payload.get("error")
+    error = metadata.get("error") or metadata.get("error_detail") or payload.get("error")
     if status == "failed" and not error:
         limitations = payload.get("limitations") or []
         error = limitations[0] if limitations else None
@@ -289,8 +289,8 @@ def normalize_payload(case, payload, instrumentation, latency_ms):
         "id": case["id"],
         "question": case["question"],
         "status": status,
-        "sql": payload.get("sql"),
-        "parameters": payload.get("parameters") or [],
+        "sql": payload.get("sql") or payload.get("attempted_sql"),
+        "parameters": payload.get("parameters") or payload.get("attempted_parameters") or [],
         "rows": rows,
         "columns": columns,
         "answer": _redact(payload.get("answer", "")),
@@ -703,6 +703,8 @@ async def run_live(args):
 
         current_reference = await generate_reference(case_set, repository)
         validate_reference_snapshot(reference, current_reference, case_set)
+        manifest["database_classification"] = preflight["database_classification"]
+        manifest["database_role_read_only"] = preflight["database_role_read_only"]
         manifest["dataset_fingerprint_sha256"] = preflight["fingerprint_sha256"]
         manifest["preflight_coverage"] = preflight["coverage"]
         manifest["reference_sha256"] = sha256_file(args.reference)

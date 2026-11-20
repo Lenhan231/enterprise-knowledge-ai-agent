@@ -71,9 +71,10 @@ class SQLBenchmarkRunnerTest(unittest.TestCase):
             self.assertEqual(data["cases"][0]["sql"], "SELECT 0 AS n LIMIT 1")
 
     def test_validator_rejection_retains_sql_and_failure_reason(self):
-        blocked = {"ok": False, "sql": "SELECT * FROM commerce.orders LIMIT 1", "parameters": [],
-                   "limitations": ["The ranking contract changed the requested TOP-N limit."],
-                   "metadata": {"status": "failed", "error_type": "SQLValidationError"}}
+        blocked = {"ok": False, "attempted_sql": "SELECT * FROM commerce.orders LIMIT 1", "parameters": [],
+                   "limitations": ["The generated query did not pass planning or SQL validation."],
+                   "metadata": {"status": "failed", "error_type": "SQLValidationError",
+                                "error_detail": "The ranking contract changed the requested TOP-N limit."}}
         with tempfile.TemporaryDirectory() as directory:
             store = self.make_store(Path(directory) / "run")
             data = asyncio.run(RUNNER.run_cases(FakeAgent(blocked), case_set(), store))
@@ -376,10 +377,37 @@ class SQLBenchmarkRunnerTest(unittest.TestCase):
         self.assertEqual(calls["jev_attempts"], 1)
         self.assertEqual(calls["schema_discovery"], 0)
 
-    def test_database_preflight_never_reuses_analytics_url(self):
-        with patch.dict("os.environ", {"ANALYTICS_DATABASE_URL": "postgresql://same-host/production"}, clear=True):
-            with self.assertRaisesRegex(RUNNER.PreflightBlocked, "SQL_BENCHMARK_DATABASE_URL is not configured"):
-                RUNNER.validate_database_environment()
+    def test_database_preflight_never_reuses_analytics_url_as_nonproduction(self):
+        url = "postgresql://analyst:secret@same-host/commerce"
+        environment = {
+            "SQL_BENCHMARK_DATABASE_URL": url,
+            "SQL_BENCHMARK_DB_CLASSIFICATION": "non-production",
+            "SQL_BENCHMARK_ALLOWED_HOSTS": "same-host",
+            "ANALYTICS_DATABASE_URL": url,
+        }
+        with self.assertRaisesRegex(RUNNER.PreflightBlocked, "matches ANALYTICS_DATABASE_URL"):
+            RUNNER.validate_database_environment(environment)
+
+    def test_frozen_analytics_snapshot_requires_exact_url_ack_and_allowlisted_host(self):
+        url = "postgresql://analyst:secret@frozen-host/commerce"
+        environment = {
+            "SQL_BENCHMARK_DATABASE_URL": url,
+            "SQL_BENCHMARK_DB_CLASSIFICATION": "frozen-analytics-snapshot",
+            "SQL_BENCHMARK_FROZEN_SNAPSHOT_ACK": "I_CONFIRM_ANALYTICS_SNAPSHOT_IS_FROZEN",
+            "SQL_BENCHMARK_ALLOWED_HOSTS": "frozen-host",
+            "ANALYTICS_DATABASE_URL": url,
+        }
+        self.assertEqual(RUNNER.validate_database_environment(environment), url)
+        no_ack = dict(environment)
+        no_ack.pop("SQL_BENCHMARK_FROZEN_SNAPSHOT_ACK")
+        with self.assertRaisesRegex(RUNNER.PreflightBlocked, "only after confirming"):
+            RUNNER.validate_database_environment(no_ack)
+        wrong_url = dict(environment, SQL_BENCHMARK_DATABASE_URL="postgresql://other-host/commerce")
+        with self.assertRaisesRegex(RUNNER.PreflightBlocked, "exactly match ANALYTICS_DATABASE_URL"):
+            RUNNER.validate_database_environment(wrong_url)
+        wrong_host = dict(environment, SQL_BENCHMARK_ALLOWED_HOSTS="other-host")
+        with self.assertRaisesRegex(RUNNER.PreflightBlocked, "not in SQL_BENCHMARK_ALLOWED_HOSTS"):
+            RUNNER.validate_database_environment(wrong_host)
 
     def test_source_manifest_includes_typed_compiler_and_repository_paths(self):
         hashes = RUNNER.source_manifest()
@@ -392,6 +420,14 @@ class SQLBenchmarkRunnerTest(unittest.TestCase):
         self.assertIn("src/core/agents/sql/sql_ranking.py", hashes)
         self.assertIn("src/core/database/commerce_repository.py", hashes)
         self.assertIn("data/semantic/vietstyle_metrics_v1.yaml", hashes)
+
+    def test_run_manifest_hashes_the_typed_metric_mapping_module(self):
+        with patch.dict("os.environ", {"SQL_BENCHMARK_ALLOW_DIRTY": "true"}):
+            manifest = RUNNER.build_manifest(
+                RUNNER.current_revision(), provider="cloudflare", model="test-model"
+            )
+        self.assertIn("src/core/agents/sql/metric_mapping.py", manifest["prompt_hashes"])
+        self.assertNotIn("src/core/analytics/metric_mapping.py", manifest["prompt_hashes"])
 
     def test_preflight_records_and_requires_the_frozen_order_date_type(self):
         class PreflightRepository:
@@ -457,6 +493,8 @@ class SQLBenchmarkRunnerTest(unittest.TestCase):
         self.assertEqual(len(result["cases"]), 5)
         self.assertEqual(sum(case["id"] == "P05" for case in result["cases"]), 1)
         self.assertNotIn(cases["cases"][4]["gold"]["sql"], {sql for sql, _ in repository.queries})
+        self.assertIsInstance(repository.queries[0][1][0], date)
+        self.assertEqual(result["cases"][0]["parameters"], ["2025-01-01", "2026-01-01"])
 
     def test_reference_snapshot_change_stops_before_generation(self):
         cases = case_set()

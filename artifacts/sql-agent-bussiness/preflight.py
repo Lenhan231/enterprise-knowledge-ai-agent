@@ -7,12 +7,17 @@ import hashlib
 import json
 import os
 from contextlib import asynccontextmanager
+from datetime import date
 from pathlib import Path
 from urllib.parse import urlsplit
 
 
 ROOT = Path(__file__).resolve().parents[2]
 DATABASE_ENV = "SQL_BENCHMARK_DATABASE_URL"
+CLASSIFICATION_ENV = "SQL_BENCHMARK_DB_CLASSIFICATION"
+FROZEN_ACK_ENV = "SQL_BENCHMARK_FROZEN_SNAPSHOT_ACK"
+FROZEN_CLASSIFICATION = "frozen-analytics-snapshot"
+FROZEN_ACK_VALUE = "I_CONFIRM_ANALYTICS_SNAPSHOT_IS_FROZEN"
 PILOT_CASES = ROOT / "artifacts/sql-agent-bussiness/cases.json"
 
 
@@ -27,14 +32,28 @@ def validate_database_environment(environ=None):
         raise PreflightBlocked(
             f"{DATABASE_ENV} is not configured; the benchmark will not reuse ANALYTICS_DATABASE_URL."
         )
-    if environ.get("SQL_BENCHMARK_DB_CLASSIFICATION", "").strip().casefold() != "non-production":
-        raise PreflightBlocked("Set SQL_BENCHMARK_DB_CLASSIFICATION=non-production for a dedicated test database.")
+    classification = environ.get(CLASSIFICATION_ENV, "").strip().casefold()
     parsed = urlsplit(url)
     if parsed.scheme not in {"postgres", "postgresql"} or not parsed.hostname:
         raise PreflightBlocked(f"{DATABASE_ENV} must be a PostgreSQL URL.")
     analytics_url = environ.get("ANALYTICS_DATABASE_URL", "").strip()
-    if analytics_url and url == analytics_url:
-        raise PreflightBlocked("The benchmark URL matches ANALYTICS_DATABASE_URL; refusing possible production access.")
+    if classification == "non-production":
+        if analytics_url and url == analytics_url:
+            raise PreflightBlocked("The benchmark URL matches ANALYTICS_DATABASE_URL; refusing possible production access.")
+    elif classification == FROZEN_CLASSIFICATION:
+        if not analytics_url or url != analytics_url:
+            raise PreflightBlocked(
+                f"{FROZEN_CLASSIFICATION} requires SQL_BENCHMARK_DATABASE_URL to exactly match ANALYTICS_DATABASE_URL."
+            )
+        if environ.get(FROZEN_ACK_ENV, "").strip() != FROZEN_ACK_VALUE:
+            raise PreflightBlocked(
+                f"Set {FROZEN_ACK_ENV}={FROZEN_ACK_VALUE} only after confirming the analytics snapshot is frozen."
+            )
+    else:
+        raise PreflightBlocked(
+            f"Set {CLASSIFICATION_ENV}=non-production for a dedicated test database, or "
+            f"{CLASSIFICATION_ENV}={FROZEN_CLASSIFICATION} with the explicit freeze acknowledgement."
+        )
     # A second explicit allow-list makes it harder to accidentally point the
     # benchmark at a shared/production host. Values contain hostnames only.
     allowed_hosts = {
@@ -110,7 +129,7 @@ async def collect_preflight(repository):
     sales_2025 = await repository.execute_approved_query(
         "SELECT COUNT(*) AS rows, SUM(s.revenue) AS revenue "
         "FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 LIMIT 1",
-        "2025-01-01", "2026-01-01",
+        date(2025, 1, 1), date(2026, 1, 1),
     )
     orders = await repository.execute_approved_query(
         "SELECT COUNT(*) AS rows, MIN(o.order_date) AS date_min, MAX(o.order_date) AS date_max "
@@ -119,7 +138,7 @@ async def collect_preflight(repository):
     delivered_2025 = await repository.execute_approved_query(
         "SELECT COUNT(DISTINCT o.order_id) AS delivered_orders "
         "FROM commerce.orders AS o WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 LIMIT 1",
-        "delivered", "2025-01-01", "2026-01-01",
+        "delivered", date(2025, 1, 1), date(2026, 1, 1),
     )
     inventory = await repository.execute_approved_query(
         "SELECT COUNT(*) AS rows, MIN(i.snapshot_date) AS snapshot_min, "
@@ -128,7 +147,7 @@ async def collect_preflight(repository):
     )
     inventory_snapshot = await repository.execute_approved_query(
         "SELECT COUNT(*) AS rows FROM commerce.inventory AS i "
-        "WHERE i.snapshot_date = $1 LIMIT 1", "2026-11-13",
+        "WHERE i.snapshot_date = $1 LIMIT 1", date(2026, 11, 13),
     )
     coverage = {
         "commerce.sales": {**sales[0], "rows_2025": sales_2025[0]["rows"],
@@ -154,7 +173,7 @@ async def collect_preflight(repository):
         sort_keys=True, default=str, separators=(",", ":"),
     ).encode()).hexdigest()
     return {
-        "database_classification": "non-production (explicit operator declaration)",
+        "database_classification": os.environ.get(CLASSIFICATION_ENV, "").strip().casefold(),
         "database_role_read_only": True,
         "coverage": coverage,
         "verified_column_types": verified_types,

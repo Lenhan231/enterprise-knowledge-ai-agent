@@ -32,6 +32,19 @@ def _json_value(value):
     return value
 
 
+def _bind_parameters(case, parameters):
+    date_values = set()
+    filters = case.get("semantic", {}).get("filters", {})
+    for name, value in filters.items():
+        if name == "date_range" and isinstance(value, dict):
+            date_values.update(value.get(bound) for bound in ("start", "end_exclusive", "end_inclusive"))
+        elif "date" in name and isinstance(value, str):
+            date_values.add(value)
+    date_values.discard(None)
+    return tuple(date.fromisoformat(value) if isinstance(value, str) and value in date_values else value
+                 for value in parameters)
+
+
 def _digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, ensure_ascii=False,
                                      default=_json_value, separators=(",", ":")).encode()).hexdigest()
@@ -48,7 +61,7 @@ async def generate_reference(case_set, repository):
             continue
         sql = case["gold"]["sql"]
         parameters = case["gold"].get("parameters", [])
-        rows = await repository.execute_approved_query(sql, *parameters)
+        rows = await repository.execute_approved_query(sql, *_bind_parameters(case, parameters))
         rows = [{key: _json_value(value) for key, value in row.items()} for row in rows]
         columns = list(rows[0]) if rows else [column for column in case["requested_columns"]]
         observation = {"sql": sql, "parameters": parameters, "columns": columns, "rows": rows}

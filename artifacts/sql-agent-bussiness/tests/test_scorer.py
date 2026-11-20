@@ -125,6 +125,36 @@ class SQLAgentBenchmarkScorerTest(unittest.TestCase):
         observation["sql"] = "SELECT * FROM commerce.inventory"
         self.assertFalse(SCORER.score_case(case, observation)["safe_unsupported_abstention"])
 
+    def test_unsupported_case_calls_are_included_in_provider_totals(self):
+        case = CASES["P05"]
+        observation = {
+            "id": "P05", "status": "clarification_required", "sql": None,
+            "execution_events": [], "schema_selection": {
+                "jev_status": "failed", "jev_http_status": 402,
+            }, "calls": {
+                "general_sql_generation": 1, "metric_interpretation": 1,
+                "jev_attempts": 1, "schema_discovery": 1,
+            },
+        }
+
+        scored = SCORER.score_experiment({"cases": [case]}, {"cases": [observation]})
+        metrics = scored["metrics"]
+
+        self.assertEqual(metrics["provider_calls"]["sql_generation_provider_submissions"], 1)
+        self.assertEqual(metrics["provider_calls"]["metric_interpretation_provider_submissions"], 1)
+        self.assertEqual(metrics["provider_calls"]["jev_requests"], 1)
+        self.assertEqual(metrics["pipeline_calls"]["schema_discovery"], 1)
+        report = SCORER.render_report({"cases": [case]}, scored, {
+            "experiment_id": "pilot", "status": "completed", "application_revision": "abc",
+            "provider": "cloudflare", "model": "test-model",
+            "database_classification": "frozen-analytics-snapshot",
+            "database_role_read_only": True, "dataset_fingerprint_sha256": "fingerprint",
+            "dirty_worktree": True, "source_fingerprint_sha256": "source-fingerprint",
+        })
+        self.assertIn("Provider/model: `cloudflare` / `test-model`", report)
+        self.assertIn("JEV availability: **FAILED** (HTTP 402)", report)
+        self.assertIn("Worktree dirty: `True`", report)
+
     def test_not_run_cases_are_excluded_from_quality_denominators(self):
         data = {
             "cases": [

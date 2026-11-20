@@ -27,7 +27,7 @@ The five original questions, SQL references, parameters and output rows are froz
 
 The Commerce database represents synthetic competition data. It must not be interpreted as observed operating results from a real retailer. The five-case artifact stores only selected case outputs and a historical aggregate preflight; it is not a database dump. The original five-case run reported these historical coverage values: `commerce.sales` 2023-01-01 through 2026-11-13, `commerce.orders` 2023-01-01 through 2026-11-13, and `commerce.inventory` 2023-01-31 through 2026-11-13.
 
-The current workspace has an analytics database URL but no separately designated non-production URL, no explicit non-production classification and no benchmark host allow-list. The fresh pilot and gold-reference preflight were therefore not run. Existing hosted credentials were not used. A new run must use a dedicated non-production endpoint and the repository's read-only role check.
+The current pilot used the explicitly frozen analytics snapshot in read-only mode. Preflight confirmed the least-privilege role, the declared `commerce.orders.order_date` PostgreSQL `DATE` type, and dataset fingerprint `dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028`. The benchmark stores only the selected case outputs and aggregate coverage; it does not include a database dump. The historical pilot remains unchanged.
 
 ## Chapter IV — Evaluation metrics
 
@@ -39,7 +39,7 @@ For ordered ranking cases, both result rows and tie-break order must match. Unor
 
 The SQL Agent selects either deterministic fixed compilation, inventory interpretation plus compilation, or general SQL generation. All paths still depend on the read-only repository boundary and its source/schema checks. The benchmark runner captures route, source hashes, prompt hashes, provider/model settings, package versions, schema-selection evidence, SQL, parameters, rows, error details, execution events, calls and latency. Per-case output is atomically persisted. Completed experiments and terminal case records cannot be overwritten.
 
-The evaluation requires `SQL_BENCHMARK_DATABASE_URL`, `SQL_BENCHMARK_DB_CLASSIFICATION=non-production`, and `SQL_BENCHMARK_ALLOWED_HOSTS`. The preflight rejects reuse of the configured `ANALYTICS_DATABASE_URL`; the application repository then verifies least-privilege database permissions. No credentials are written to the benchmark artifacts.
+The evaluation requires `SQL_BENCHMARK_DATABASE_URL`, `SQL_BENCHMARK_DB_CLASSIFICATION`, and `SQL_BENCHMARK_ALLOWED_HOSTS`. In frozen-snapshot mode, the benchmark URL must exactly match `ANALYTICS_DATABASE_URL` and an explicit freeze acknowledgement is required. The repository verifies read-only database permissions. No credentials are written to benchmark artifacts.
 
 ## Chapter VI — Results and discussion
 
@@ -66,13 +66,15 @@ P03 is a semantic false rejection. The current ranking intent resolves “units 
 
 ### Fresh five-case rerun
 
-The fresh rerun is **NOT RUN**. The preflight stopped before any benchmark reference query, SQL Agent call or provider call because `SQL_BENCHMARK_DATABASE_URL` is not configured. The existing analytics URL was not used because its non-production status could not be established. Consequently, fresh-run metric denominators are zero and all quality/latency values are N/A; no improvement is claimed.
+The fresh five-case pilot completed on the frozen snapshot at application base revision `e6f3b90915bbd5359bff6966c7403fc1b6d5f0b5`, with a dirty worktree whose source hashes are recorded in `data.json`. Four supported cases executed with 4/4 business end-to-end accuracy, 4/4 business result accuracy, 4/4 SQL semantic accuracy and 4/4 execution success. Strict output exact match was 2/4: P03 used an accepted business alias with a different strict column name, and P04 included the permitted `snapshot_date` provenance field. The unsupported P05 request was safely clarified without SQL execution (1/1).
 
-JEV was diagnosed separately with one synthetic diagnostic probe. It returned HTTP 402 with an insufficient-credit response stating that the account had never purchased credits. The original pilot also reported four HTTP 402 responses. For both conditions, JEV availability is failed and recall@5 is not measurable. Fallback schema coverage must not be labeled JEV recall.
+Latency was p50 6.80 s and p95 40.45 s across four supported cases; the five-question pilot is too small for a stable latency estimate. There were four SQL-generation provider submissions, including one secondary-provider fallback, two metric interpretation calls, four JEV requests and zero local Codex calls. Therefore these results measure the configured SQL Agent path and are not a single-model comparison. JEV returned HTTP 402 in all four schema-selection cases; recall@5 is not measurable and fallback schema coverage is not JEV recall. No unsafe or unverified SQL executions occurred. These descriptive pilot results do not establish model superiority, generalization or production readiness.
+
+For this update, using Python 3.11.16, the benchmark package suite passed 37 tests, the SQL regression suite passed 383 tests with 10 explicit skips, inventory regressions passed 73 with 3 skips, metric mapping passed 23, and hybrid field contracts passed 5. These checks used local fixtures; the separate pilot above is the evidence involving the frozen database and configured providers.
 
 ## Chapter VII — Conclusions and limitations
 
-The historical pilot exposed a delivered-order population omission and a ranking-metric interpretation mismatch. Regression tests now exercise both defects, and the local benchmark scorer distinguishes business-value correctness from strict output equality. However, the new five-question measurement could not be run on a confirmed non-production snapshot, and the original provider traces are not available in the repository. The fresh evidence therefore does not establish a corrected end-to-end accuracy rate, model superiority, generalization, or production readiness.
+The historical pilot exposed a delivered-order population omission and a ranking-metric interpretation mismatch. Regression tests now exercise both defects, and the local benchmark scorer distinguishes business-value correctness from strict output equality. The fresh pilot measured 4/4 supported business outcomes on the frozen snapshot, but its five-question development cohort is small, had one provider fallback, and did not measure JEV recall. It does not establish model superiority, generalization, or production readiness.
 
 The next evaluation should freeze the 40 candidate questions only after two-person semantic review and reference generation on one verified non-production snapshot. Keep the five pilot cases in the development/debug set. For SQL model comparisons, hold application code, intent interpretation, schema selection, prompts, validators, repair budget, database snapshot and scoring fixed; vary only the SQL-generation model. Evaluate JEV separately and stratify by provider availability.
 

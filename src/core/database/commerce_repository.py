@@ -121,6 +121,8 @@ class CommerceRepository:
             sources &= INVENTORY_SOURCES
         await verify_analytics_role(self.pool, allowed_sources=sources, allowed_schemas=self.allowed_schemas)
         schema['tables'] = {name: columns for name, columns in schema['tables'].items() if name in sources}
+        schema['column_types'] = {name: types for name, types in schema.get('column_types', {}).items()
+                                  if name in sources}
         schema['primary_keys'] = {name: keys for name, keys in schema['primary_keys'].items() if name in sources}
         schema['joins'] = frozenset(join for join in schema['joins']
                                     if all(table in sources for table, _ in join))

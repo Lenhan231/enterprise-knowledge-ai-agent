@@ -420,6 +420,9 @@ def score_case(case, observation):
             "failure_class": None if safe_no_query else "invalid_unsupported_execution_or_response",
             "semantic": {"applicable": False, "passed": None, "checks": {}, "issues": []},
             "result": None,
+            "schema_selection": observation.get("schema_selection", {}),
+            "calls": observation.get("calls", {}),
+            "latency_ms": observation.get("latency_ms"),
         }
 
     semantic = _sql_semantics(case, observation)
@@ -582,6 +585,12 @@ def render_report(case_set, scored, manifest):
         f"Experiment: `{manifest.get('experiment_id', 'unspecified')}`",
         f"Status: **{manifest.get('status', 'unknown')}**",
         f"Application revision: `{manifest.get('application_revision', 'unknown')}`",
+        f"Provider/model: `{manifest.get('provider', 'unknown')}` / `{manifest.get('model', 'unknown')}`",
+        f"Database: `{manifest.get('database_classification', 'unknown')}`; "
+        f"read-only role verified: `{manifest.get('database_role_read_only', 'unknown')}`",
+        f"Dataset fingerprint: `{manifest.get('dataset_fingerprint_sha256', 'unknown')}`",
+        f"Worktree dirty: `{manifest.get('dirty_worktree', 'unknown')}`; "
+        f"source fingerprint: `{manifest.get('source_fingerprint_sha256', 'unknown')}`",
         "",
         "## Metrics",
         "",
@@ -614,6 +623,15 @@ def render_report(case_set, scored, manifest):
             f"| {outcome.get('failure_class') or '—'} |"
         )
     lines += ["", "## Method notes", "", "See [`PROTOCOL.md`](PROTOCOL.md) for metric definitions and applicability rules.", ""]
+    jev_failures = sorted({
+        (case.get("schema_selection", {}).get("jev_status"),
+         case.get("schema_selection", {}).get("jev_http_status"))
+        for case in scored.get("cases", [])
+        if case.get("schema_selection", {}).get("jev_status") == "failed"
+    }, key=lambda item: (str(item[0]), str(item[1])))
+    if jev_failures:
+        summary = ", ".join(f"HTTP {status}" if status else "failed" for _, status in jev_failures)
+        lines.extend(["JEV availability: **FAILED** (" + summary + "); recall@5 is not measurable.", ""])
     blocker = manifest.get("not_run_reason")
     if manifest.get("status") == "NOT_RUN" or blocker:
         lines.extend([

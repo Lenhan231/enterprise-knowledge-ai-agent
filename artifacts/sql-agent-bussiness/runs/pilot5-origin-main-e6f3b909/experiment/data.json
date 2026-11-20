@@ -1,0 +1,733 @@
+{
+  "format_version": "sql-business-observations.v1",
+  "manifest": {
+    "experiment_id": "20261120T183120Z",
+    "application_revision": "e6f3b90915bbd5359bff6966c7403fc1b6d5f0b5",
+    "dirty_worktree": true,
+    "dirty_paths": [
+      "artifacts/sql-agent-bussiness/preflight.py",
+      "artifacts/sql-agent-bussiness/reference_runner.py",
+      "artifacts/sql-agent-bussiness/runner.py",
+      "artifacts/sql-agent-bussiness/tests/test_runner.py",
+      "src/core/agents/sql/schema.py",
+      "src/core/database/commerce_repository.py",
+      "tests/sql/test_sql_dynamic_schema.py"
+    ],
+    "source_hashes": {
+      "data/semantic/vietstyle_metrics_v1.yaml": "5c05965d8e11d8230fbe1cae181370b12851f446f414dd59c9bbc9bb126fb1c3",
+      "src/core/agents/decision_support/intent_classifier.py": "bdf6c7c43e8b10c38d66c57b61a43b2690c3af59e05cd2b6e841aadccfbb02a0",
+      "src/core/agents/sql/agent.py": "2c9f9ee26cee3a3aedcca809e353ea9b45484985fb1703e5520c95c5e1741c84",
+      "src/core/agents/sql/assistant_endpoint.py": "08aafe5456aa74cdaea645e23dc894ef05c4dd491e437a69de91fcada7cee0a2",
+      "src/core/agents/sql/compiler_dispatch.py": "9df24bbcf6f2fb3bedcfc620aa59506403793ecfca6a1a387dcc90c52dab098c",
+      "src/core/agents/sql/field_retrieval.py": "7fc37b464d2f6c5edb726361a78567c5cd650cd2c18408af5d816e040d777752",
+      "src/core/agents/sql/intent_resolution.py": "86defb2ef65e1c03dbfa62d1877dd1df5f0c9051727625af50d82a0a6ba1cfa0",
+      "src/core/agents/sql/join_validation.py": "e776fa376e36820004c7eaad5f34e134802f6089fe0b6b80e2f1812298559007",
+      "src/core/agents/sql/metric_mapping.py": "9c00a288155289714992053e06e624ce772ded0a7e9835132b09f20bde7566c6",
+      "src/core/agents/sql/metric_ontology.py": "f1aca33a5f880a71852eef99b62472e55250931ec6f546e1b7dd1d7e5cafe308",
+      "src/core/agents/sql/metric_validation.py": "3ccc9a06d95d7950f6cdb2a05593222073c73c091c8ad684ca51d14e84410cb3",
+      "src/core/agents/sql/query_contract.py": "8b3080be9cedbf5d3896974c5255caa5d81ec9c9d16fe7f9bcb1d4aba9a5df1c",
+      "src/core/agents/sql/query_intent.py": "cf6f4a41cd8d01c9e4a909346c8e6ddcdcaea5354cbd98e8a38b6366c2d7e78e",
+      "src/core/agents/sql/schema.py": "16ba95f5cc4d3605d634444cb51e9fdacf801d85792ab84c1c4f22b85c1bcacd",
+      "src/core/agents/sql/sql_ranking.py": "7dbec694e2a38c8eb83d76a007069f733ee622c1633a969ffe37e8c4319774db",
+      "src/core/agents/sql/text_to_sql.py": "ddef4af93fc281d9f15fc4533e38de62abd94e4acf5ba9ab5b1d90d6d6b3b177",
+      "src/core/database/commerce_repository.py": "c50409b9dda2c25768f4f669fe8765253b85df35199acca438b03d64030d41ec",
+      "src/core/prompts/sql.py": "cf1829c735a357a9bff55bd04d649ad807cb2bbdff134da36542d73371144e60"
+    },
+    "source_fingerprint_sha256": "1d1f6c83d3ef8c283d15b9a91a531b29c94eb3bdbe5d35edc951a0d7a5d92015",
+    "benchmark_code_hashes": {
+      "artifacts/sql-agent-bussiness/cases.json": "93b88c56b84c7e594d83c77a3e619aaf2f6aa1ff32868c686e937fe2f67063d4",
+      "artifacts/sql-agent-bussiness/benchmark_40_plan.json": "6aee7807768639b6e742928f7291b2612eb617f29e700d520bed5d68945e823b",
+      "artifacts/sql-agent-bussiness/failure_classes.json": "e8e882b928b29a78df3f05f1bd46d3ae63daeb0cb1725aed78edaba0850acffb",
+      "artifacts/sql-agent-bussiness/preflight.py": "bbaec1e74677d7c1a9a199c36127ec2b4188b6c2103f4f1acfaa1620bda7eb4c",
+      "artifacts/sql-agent-bussiness/reference_runner.py": "a9c26b6d6ef6207b69049e249f9612996d2058873b35a2ec32495cea12ae3c88",
+      "artifacts/sql-agent-bussiness/runner.py": "a1b84622c00dcc09e35271e5efb728b161ce0f97a1d7b381d183edabc427687f",
+      "artifacts/sql-agent-bussiness/scorer.py": "33c78164c05272f9991f2fcffea61807b96af80b1e964917ead2f7e9cc7b8984",
+      "artifacts/sql-agent-bussiness/PROTOCOL.md": "1f8ef14a8ef6f8bebd4b9144dde46e2819b15a878922d9bbf18439e485fbea8f",
+      "artifacts/sql-agent-bussiness/README.md": "de0caee65949279d1f10bdd2f5746fd8e001fc1b3df95f1748b0cb9f047c9dcd",
+      "artifacts/sql-agent-bussiness/THESIS_ALIGNMENT.md": "ff6b74db8dc0c6fb20f2f654cd59b3e44b92fd59cf2fde9886392998ced7cb2a",
+      "artifacts/sql-agent-bussiness/tests/test_runner.py": "d086ae77a03483336b9c17646eded0649d6c204d11dfb29fbb49c65c6443832c",
+      "artifacts/sql-agent-bussiness/tests/test_scorer.py": "9e33f32d2cf4157f268d34080645f873952e8892c2fae75893f0e0f382289086"
+    },
+    "prompt_hashes": {
+      "src/core/prompts/sql.py": "cf1829c735a357a9bff55bd04d649ad807cb2bbdff134da36542d73371144e60",
+      "src/core/agents/sql/metric_mapping.py": "9c00a288155289714992053e06e624ce772ded0a7e9835132b09f20bde7566c6"
+    },
+    "provider": "cloudflare",
+    "model": "@cf/openai/gpt-oss-20b",
+    "intent_model": "not invoked by direct SQL-agent route",
+    "jev_model": "typesafe/jev-1.14",
+    "provider_settings": {
+      "SQL_LLM_PROVIDER": "cloudflare",
+      "SQL_GROQ_MODEL": "openai/gpt-oss-20b",
+      "SQL_CLOUDFLARE_MODEL": "@cf/openai/gpt-oss-20b",
+      "CODEX_CLI_SQL_FALLBACK": "false"
+    },
+    "package_versions": {
+      "sqlglot": "30.19.0",
+      "asyncpg": "0.32.0",
+      "supabase": "2.31.0",
+      "pydantic": "2.11.7",
+      "httpx": "0.28.1"
+    },
+    "repair_budget": 1,
+    "python_version": "3.11.16",
+    "dataset_fingerprint_sha256": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028",
+    "preflight_coverage": {
+      "commerce.sales": {
+        "rows": 1400,
+        "date_min": "2023-01-01",
+        "date_max": "2026-11-13",
+        "rows_2025": 352,
+        "revenue_2025": "13299821.25"
+      },
+      "commerce.orders": {
+        "rows": 3300,
+        "date_min": "2023-01-01",
+        "date_max": "2026-11-13",
+        "delivered_orders_2025": 719,
+        "order_date_type": "date"
+      },
+      "commerce.inventory": {
+        "rows": 4559,
+        "snapshot_min": "2023-01-31",
+        "snapshot_max": "2026-11-13",
+        "snapshot_count": 47,
+        "rows_at_2026_11_13": 97
+      }
+    },
+    "reference_sha256": "295c53652e5fe3a7fc8c3c35cffb9ecf4f6bc23e44b6db861955e369d0932a17",
+    "configuration_fingerprint": "f4ba1d6de774c9051b630b25415b2ec68319e724591dfdde0a1bfedafe795cb8",
+    "status": "completed",
+    "started_at": "2026-11-20T18:31:59.030565+00:00",
+    "completed_at": "2026-11-20T18:33:27.378087+00:00",
+    "database_classification": "frozen-analytics-snapshot",
+    "database_role_read_only": true
+  },
+  "case_set_sha256": "ddade2d597b30a6bb4c74fc7b997dfe9a617e6c5348cd8b64bf7016463d100c4",
+  "cases": [
+    {
+      "id": "P01",
+      "question": "What was total revenue for 2025?",
+      "status": "executed",
+      "sql": "SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 LIMIT 1",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "rows": [
+        {
+          "revenue": "13299821.25"
+        }
+      ],
+      "columns": [
+        "revenue"
+      ],
+      "answer": "Query completed.",
+      "error_type": null,
+      "error_detail": null,
+      "failure_class": null,
+      "execution_events": [
+        {
+          "kind": "approved",
+          "security_validated": true,
+          "semantic_approval": true
+        }
+      ],
+      "schema_selection": {
+        "method": "compiled_query",
+        "candidate_tables": [],
+        "required_tables": [],
+        "final_selected_tables": null,
+        "ontology_added_sources": [],
+        "approved_join_bridge_additions": [],
+        "failure": null,
+        "jev_status": "not_attempted",
+        "jev_http_status": null
+      },
+      "calls": {
+        "fixed_match_calls": 1,
+        "fixed_compiler_matches": 1,
+        "fixed_compilation_calls": 1,
+        "fixed_compiler_plans": 1,
+        "inventory_compilation_calls": 0,
+        "inventory_compiler_plans": 0,
+        "general_sql_generation": 0,
+        "intent_interpretation": 0,
+        "metric_interpretation": 0,
+        "provider_fallback_calls": 0,
+        "local_codex_fallback_calls": 0,
+        "jev_attempts": 0,
+        "jev_successes": 0,
+        "sql_repair": 0,
+        "schema_selection": 0,
+        "schema_discovery": 1,
+        "repository_execution_attempts": 1,
+        "repository_execution": 1,
+        "approved_repository_execution_attempts": 1,
+        "unverified_repository_execution_attempts": 0,
+        "approved_repository_execution": 1,
+        "unverified_repository_execution": 0,
+        "sql_generation_entries": 0
+      },
+      "latency_ms": 4989.936,
+      "metadata": {
+        "schema_table_selection": "compiled_query"
+      },
+      "route": "sql_agent",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "executed",
+          "started_at": "2026-11-20T18:31:59.031006+00:00",
+          "latency_ms": 4989.936
+        }
+      ],
+      "completed_at": "2026-11-20T18:32:04.021397+00:00"
+    },
+    {
+      "id": "P02",
+      "question": "Khách hàng nào có nhiều đơn hàng đã giao nhất trong năm 2025? Trả về top 5 customer_id và số đơn hàng; nếu bằng nhau sắp customer_id tăng dần.",
+      "status": "executed",
+      "sql": "SELECT o.customer_id, COUNT(DISTINCT o.order_id) AS order_count FROM commerce.orders AS o WHERE o.order_status = 'delivered' AND o.order_date >= CAST($1 AS DATE) AND o.order_date < CAST($2 AS DATE) GROUP BY o.customer_id ORDER BY order_count DESC, o.customer_id ASC LIMIT 5",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "rows": [
+        {
+          "customer_id": 1924,
+          "order_count": 4
+        },
+        {
+          "customer_id": 41034,
+          "order_count": 4
+        },
+        {
+          "customer_id": 42962,
+          "order_count": 4
+        },
+        {
+          "customer_id": 102,
+          "order_count": 3
+        },
+        {
+          "customer_id": 6121,
+          "order_count": 3
+        }
+      ],
+      "columns": [
+        "customer_id",
+        "order_count"
+      ],
+      "answer": "Query completed.",
+      "error_type": null,
+      "error_detail": null,
+      "failure_class": null,
+      "execution_events": [
+        {
+          "kind": "approved",
+          "security_validated": true,
+          "semantic_approval": true
+        }
+      ],
+      "schema_selection": {
+        "method": "full_schema_fallback",
+        "candidate_tables": [
+          "commerce.customers",
+          "commerce.geography",
+          "commerce.inventory",
+          "commerce.invoice_items",
+          "commerce.invoices",
+          "commerce.order_items",
+          "commerce.orders",
+          "commerce.payments",
+          "commerce.products",
+          "commerce.promotions",
+          "commerce.returns",
+          "commerce.reviews",
+          "commerce.sales",
+          "commerce.shipments",
+          "commerce.web_traffic"
+        ],
+        "required_tables": [],
+        "final_selected_tables": null,
+        "ontology_added_sources": [],
+        "approved_join_bridge_additions": [],
+        "failure": null,
+        "jev_status": "failed",
+        "jev_http_status": 402
+      },
+      "calls": {
+        "fixed_match_calls": 1,
+        "fixed_compiler_matches": 0,
+        "fixed_compilation_calls": 1,
+        "fixed_compiler_plans": 0,
+        "inventory_compilation_calls": 0,
+        "inventory_compiler_plans": 0,
+        "general_sql_generation": 2,
+        "intent_interpretation": 0,
+        "metric_interpretation": 0,
+        "provider_fallback_calls": 1,
+        "local_codex_fallback_calls": 0,
+        "jev_attempts": 1,
+        "jev_successes": 0,
+        "sql_repair": 0,
+        "schema_selection": 1,
+        "schema_discovery": 1,
+        "repository_execution_attempts": 1,
+        "repository_execution": 1,
+        "approved_repository_execution_attempts": 1,
+        "unverified_repository_execution_attempts": 0,
+        "approved_repository_execution": 1,
+        "unverified_repository_execution": 0,
+        "sql_generation_entries": 1
+      },
+      "latency_ms": 40447.753,
+      "metadata": {
+        "schema_table_selection": "full_schema_fallback",
+        "schema_table_candidates": [
+          "commerce.customers",
+          "commerce.geography",
+          "commerce.inventory",
+          "commerce.invoice_items",
+          "commerce.invoices",
+          "commerce.order_items",
+          "commerce.orders",
+          "commerce.payments",
+          "commerce.products",
+          "commerce.promotions",
+          "commerce.returns",
+          "commerce.reviews",
+          "commerce.sales",
+          "commerce.shipments",
+          "commerce.web_traffic"
+        ],
+        "ranking_validation": {
+          "status": "verified",
+          "entity": "customer",
+          "measure": "order_count",
+          "measure_approval": "catalogued",
+          "direction": "desc",
+          "limit": 5
+        }
+      },
+      "route": "sql_agent",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "executed",
+          "started_at": "2026-11-20T18:32:04.021817+00:00",
+          "latency_ms": 40447.753
+        }
+      ],
+      "completed_at": "2026-11-20T18:32:44.469624+00:00"
+    },
+    {
+      "id": "P03",
+      "question": "Top 5 products by units sold from delivered orders between 2025-04-01 and 2025-06-30; return product_id and units, ties by product_id ascending.",
+      "status": "executed",
+      "sql": "WITH sales_cte AS (SELECT oi.product_id AS product_id, SUM(oi.quantity) AS units FROM commerce.order_items AS oi JOIN commerce.orders AS o ON oi.order_id = o.order_id WHERE o.order_date >= $1 AND o.order_date <= $2 AND o.order_status = 'delivered' GROUP BY oi.product_id) SELECT sales_cte.product_id, sales_cte.units FROM sales_cte ORDER BY units DESC, product_id ASC LIMIT 5",
+      "parameters": [
+        "2025-04-01",
+        "2025-06-30"
+      ],
+      "rows": [
+        {
+          "product_id": 690,
+          "units": 11
+        },
+        {
+          "product_id": 761,
+          "units": 11
+        },
+        {
+          "product_id": 782,
+          "units": 11
+        },
+        {
+          "product_id": 808,
+          "units": 11
+        },
+        {
+          "product_id": 1059,
+          "units": 11
+        }
+      ],
+      "columns": [
+        "product_id",
+        "units"
+      ],
+      "answer": "Query completed.",
+      "error_type": null,
+      "error_detail": null,
+      "failure_class": null,
+      "execution_events": [
+        {
+          "kind": "approved",
+          "security_validated": true,
+          "semantic_approval": true
+        }
+      ],
+      "schema_selection": {
+        "method": "full_schema_fallback",
+        "candidate_tables": [
+          "commerce.customers",
+          "commerce.geography",
+          "commerce.inventory",
+          "commerce.invoice_items",
+          "commerce.invoices",
+          "commerce.order_items",
+          "commerce.orders",
+          "commerce.payments",
+          "commerce.products",
+          "commerce.promotions",
+          "commerce.returns",
+          "commerce.reviews",
+          "commerce.sales",
+          "commerce.shipments",
+          "commerce.web_traffic"
+        ],
+        "required_tables": [],
+        "final_selected_tables": null,
+        "ontology_added_sources": [],
+        "approved_join_bridge_additions": [],
+        "failure": null,
+        "jev_status": "failed",
+        "jev_http_status": 402
+      },
+      "calls": {
+        "fixed_match_calls": 1,
+        "fixed_compiler_matches": 0,
+        "fixed_compilation_calls": 1,
+        "fixed_compiler_plans": 0,
+        "inventory_compilation_calls": 0,
+        "inventory_compiler_plans": 0,
+        "general_sql_generation": 1,
+        "intent_interpretation": 0,
+        "metric_interpretation": 0,
+        "provider_fallback_calls": 0,
+        "local_codex_fallback_calls": 0,
+        "jev_attempts": 1,
+        "jev_successes": 0,
+        "sql_repair": 0,
+        "schema_selection": 1,
+        "schema_discovery": 1,
+        "repository_execution_attempts": 1,
+        "repository_execution": 1,
+        "approved_repository_execution_attempts": 1,
+        "unverified_repository_execution_attempts": 0,
+        "approved_repository_execution": 1,
+        "unverified_repository_execution": 0,
+        "sql_generation_entries": 1
+      },
+      "latency_ms": 13003.998,
+      "metadata": {
+        "schema_table_selection": "full_schema_fallback",
+        "schema_table_candidates": [
+          "commerce.customers",
+          "commerce.geography",
+          "commerce.inventory",
+          "commerce.invoice_items",
+          "commerce.invoices",
+          "commerce.order_items",
+          "commerce.orders",
+          "commerce.payments",
+          "commerce.products",
+          "commerce.promotions",
+          "commerce.returns",
+          "commerce.reviews",
+          "commerce.sales",
+          "commerce.shipments",
+          "commerce.web_traffic"
+        ],
+        "metric_validation": {
+          "status": "unverified",
+          "code": "metric_definition_unresolved",
+          "reason": "No approved metric definition was found in Knowledge; the query result is an unverified calculation.",
+          "knowledge_lookup": "not_configured"
+        },
+        "ranking_validation": {
+          "status": "verified",
+          "entity": "product",
+          "measure": "sum:commerce.order_items.quantity",
+          "measure_approval": "unverified",
+          "direction": "desc",
+          "limit": 5
+        }
+      },
+      "route": "sql_agent",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "executed",
+          "started_at": "2026-11-20T18:32:44.470253+00:00",
+          "latency_ms": 13003.998
+        }
+      ],
+      "completed_at": "2026-11-20T18:32:57.474306+00:00"
+    },
+    {
+      "id": "P04",
+      "question": "Tại snapshot 2026-11-13, cho tôi 5 sản phẩm có tồn kho cao nhất, gồm product_id, product_name và stock_on_hand; nếu bằng nhau sắp product_id tăng dần.",
+      "status": "executed",
+      "sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.inventory.product_id AS product_id, commerce.products.product_name AS product_name, commerce.inventory.stock_on_hand AS stock_on_hand FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.snapshot_date = $1 ORDER BY commerce.inventory.stock_on_hand DESC NULLS LAST, commerce.inventory.snapshot_date, commerce.inventory.product_id, commerce.products.product_name LIMIT 5",
+      "parameters": [
+        "2026-11-13"
+      ],
+      "rows": [
+        {
+          "snapshot_date": "2026-11-13",
+          "product_id": 1974,
+          "product_name": "UrbanVN RP-49",
+          "stock_on_hand": 60
+        },
+        {
+          "snapshot_date": "2026-11-13",
+          "product_id": 2091,
+          "product_name": "UrbanVN UC-26",
+          "stock_on_hand": 60
+        },
+        {
+          "snapshot_date": "2026-11-13",
+          "product_id": 556,
+          "product_name": "SaigonFlex UC-21",
+          "stock_on_hand": 59
+        },
+        {
+          "snapshot_date": "2026-11-13",
+          "product_id": 2180,
+          "product_name": "PhoenixWear UC-10",
+          "stock_on_hand": 59
+        },
+        {
+          "snapshot_date": "2026-11-13",
+          "product_id": 2219,
+          "product_name": "VietMotion RP-16",
+          "stock_on_hand": 59
+        }
+      ],
+      "columns": [
+        "snapshot_date",
+        "product_id",
+        "product_name",
+        "stock_on_hand"
+      ],
+      "answer": "Query completed.",
+      "error_type": null,
+      "error_detail": null,
+      "failure_class": null,
+      "execution_events": [
+        {
+          "kind": "approved",
+          "security_validated": true,
+          "semantic_approval": true
+        }
+      ],
+      "schema_selection": {
+        "method": "full_schema_fallback",
+        "candidate_tables": [
+          "commerce.customers",
+          "commerce.geography",
+          "commerce.inventory",
+          "commerce.invoice_items",
+          "commerce.invoices",
+          "commerce.order_items",
+          "commerce.orders",
+          "commerce.payments",
+          "commerce.products",
+          "commerce.promotions",
+          "commerce.returns",
+          "commerce.reviews",
+          "commerce.sales",
+          "commerce.shipments",
+          "commerce.web_traffic"
+        ],
+        "required_tables": [],
+        "final_selected_tables": null,
+        "ontology_added_sources": [],
+        "approved_join_bridge_additions": [],
+        "failure": null,
+        "jev_status": "failed",
+        "jev_http_status": 402
+      },
+      "calls": {
+        "fixed_match_calls": 1,
+        "fixed_compiler_matches": 0,
+        "fixed_compilation_calls": 1,
+        "fixed_compiler_plans": 0,
+        "inventory_compilation_calls": 1,
+        "inventory_compiler_plans": 1,
+        "general_sql_generation": 0,
+        "intent_interpretation": 0,
+        "metric_interpretation": 1,
+        "provider_fallback_calls": 0,
+        "local_codex_fallback_calls": 0,
+        "jev_attempts": 1,
+        "jev_successes": 0,
+        "sql_repair": 0,
+        "schema_selection": 1,
+        "schema_discovery": 1,
+        "repository_execution_attempts": 1,
+        "repository_execution": 1,
+        "approved_repository_execution_attempts": 1,
+        "unverified_repository_execution_attempts": 0,
+        "approved_repository_execution": 1,
+        "unverified_repository_execution": 0,
+        "sql_generation_entries": 0
+      },
+      "latency_ms": 6802.847,
+      "metadata": {
+        "schema_table_selection": "full_schema_fallback",
+        "schema_table_candidates": [
+          "commerce.customers",
+          "commerce.geography",
+          "commerce.inventory",
+          "commerce.invoice_items",
+          "commerce.invoices",
+          "commerce.order_items",
+          "commerce.orders",
+          "commerce.payments",
+          "commerce.products",
+          "commerce.promotions",
+          "commerce.returns",
+          "commerce.reviews",
+          "commerce.sales",
+          "commerce.shipments",
+          "commerce.web_traffic"
+        ],
+        "semantic_interpretation": {
+          "domain": "inventory",
+          "metrics": [
+            "stock_on_hand"
+          ],
+          "dimensions": [
+            "product_id",
+            "product_name"
+          ],
+          "filters": [],
+          "time": {
+            "mode": "snapshot",
+            "start": "2026-11-13",
+            "end": null
+          },
+          "ranking": {
+            "metric": "stock_on_hand",
+            "direction": "desc",
+            "limit": 5,
+            "then": []
+          },
+          "representation": "product",
+          "clarification": null
+        }
+      },
+      "route": "sql_agent",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "executed",
+          "started_at": "2026-11-20T18:32:57.475035+00:00",
+          "latency_ms": 6802.847
+        }
+      ],
+      "completed_at": "2026-11-20T18:33:04.277933+00:00"
+    },
+    {
+      "id": "P05",
+      "question": "Tại snapshot 2026-11-13, tồn kho từng kho và lead time của nhà cung cấp cho từng sản phẩm là bao nhiêu?",
+      "status": "clarification_required",
+      "sql": null,
+      "parameters": [],
+      "rows": [],
+      "columns": [],
+      "answer": "Bạn muốn biết lead time của nhà cung cấp cho từng sản phẩm là gì?",
+      "error_type": null,
+      "error_detail": null,
+      "failure_class": null,
+      "execution_events": [],
+      "schema_selection": {
+        "method": "full_schema_fallback",
+        "candidate_tables": [
+          "commerce.customers",
+          "commerce.geography",
+          "commerce.inventory",
+          "commerce.invoice_items",
+          "commerce.invoices",
+          "commerce.order_items",
+          "commerce.orders",
+          "commerce.payments",
+          "commerce.products",
+          "commerce.promotions",
+          "commerce.returns",
+          "commerce.reviews",
+          "commerce.sales",
+          "commerce.shipments",
+          "commerce.web_traffic"
+        ],
+        "required_tables": [],
+        "final_selected_tables": null,
+        "ontology_added_sources": [],
+        "approved_join_bridge_additions": [],
+        "failure": null,
+        "jev_status": "failed",
+        "jev_http_status": 402
+      },
+      "calls": {
+        "fixed_match_calls": 1,
+        "fixed_compiler_matches": 0,
+        "fixed_compilation_calls": 1,
+        "fixed_compiler_plans": 0,
+        "inventory_compilation_calls": 0,
+        "inventory_compiler_plans": 0,
+        "general_sql_generation": 1,
+        "intent_interpretation": 0,
+        "metric_interpretation": 1,
+        "provider_fallback_calls": 0,
+        "local_codex_fallback_calls": 0,
+        "jev_attempts": 1,
+        "jev_successes": 0,
+        "sql_repair": 0,
+        "schema_selection": 1,
+        "schema_discovery": 1,
+        "repository_execution_attempts": 0,
+        "repository_execution": 0,
+        "approved_repository_execution_attempts": 0,
+        "unverified_repository_execution_attempts": 0,
+        "approved_repository_execution": 0,
+        "unverified_repository_execution": 0,
+        "sql_generation_entries": 1
+      },
+      "latency_ms": 23098.443,
+      "metadata": {
+        "status": "clarification_required",
+        "schema_table_selection": "full_schema_fallback",
+        "schema_table_candidates": [
+          "commerce.customers",
+          "commerce.geography",
+          "commerce.inventory",
+          "commerce.invoice_items",
+          "commerce.invoices",
+          "commerce.order_items",
+          "commerce.orders",
+          "commerce.payments",
+          "commerce.products",
+          "commerce.promotions",
+          "commerce.returns",
+          "commerce.reviews",
+          "commerce.sales",
+          "commerce.shipments",
+          "commerce.web_traffic"
+        ]
+      },
+      "route": "sql_agent",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "clarification_required",
+          "started_at": "2026-11-20T18:33:04.278795+00:00",
+          "latency_ms": 23098.443
+        }
+      ],
+      "completed_at": "2026-11-20T18:33:27.377281+00:00"
+    }
+  ]
+}

@@ -11,7 +11,32 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 from core.agents.sql.text_to_sql import SQLValidationError, validate_commerce_sql
 from core.models.agents import AgentRequest, VerifiedIdentity
 from core.agents.sql.agent import SQLAnalyticsAgent
-from core.agents.sql.schema import configured_schemas
+from core.agents.sql.schema import configured_schemas, discover_schema
+
+
+class _AsyncContext:
+    def __init__(self, value):
+        self.value = value
+
+    async def __aenter__(self):
+        return self.value
+
+    async def __aexit__(self, *args):
+        return False
+
+
+class _SchemaPool:
+    def acquire(self):
+        return _AsyncContext(self)
+
+    def transaction(self, *, readonly=False):
+        return _AsyncContext(self)
+
+    async def fetch(self, query, schemas):
+        if 'information_schema.columns' in query:
+            return [{'table_schema': 'commerce', 'table_name': 'orders',
+                     'column_name': 'order_date', 'data_type': 'date'}]
+        return []
 
 
 class DynamicSchemaTest(unittest.IsolatedAsyncioTestCase):
@@ -103,6 +128,11 @@ class DynamicSchemaTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(configured_schemas('commerce, reporting,commerce'), ('commerce', 'reporting'))
         with self.assertRaises(ValueError):
             configured_schemas('commerce, pg_catalog')
+
+    async def test_discovery_exposes_column_types_for_frozen_benchmark_preflight(self):
+        schema = await discover_schema(_SchemaPool(), ('commerce',))
+
+        self.assertEqual(schema['column_types']['commerce.orders']['order_date'], 'date')
 
     def test_discovered_foreign_keys_and_primary_keys_validate_dynamic_join(self):
         schema = {

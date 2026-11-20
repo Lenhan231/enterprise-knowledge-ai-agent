@@ -1,29 +1,29 @@
 {
   "metrics": {
     "business_end_to_end_accuracy": {
-      "numerator": 4,
+      "numerator": 3,
       "denominator": 4,
-      "value": 1.0
+      "value": 0.75
     },
     "business_result_accuracy": {
-      "numerator": 4,
-      "denominator": 4,
+      "numerator": 3,
+      "denominator": 3,
       "value": 1.0
     },
     "strict_result_exact_match": {
-      "numerator": 2,
+      "numerator": 1,
       "denominator": 4,
-      "value": 0.5
+      "value": 0.25
     },
     "sql_semantic_accuracy": {
-      "numerator": 4,
+      "numerator": 3,
       "denominator": 4,
-      "value": 1.0
+      "value": 0.75
     },
     "execution_success": {
-      "numerator": 4,
+      "numerator": 3,
       "denominator": 4,
-      "value": 1.0
+      "value": 0.75
     },
     "false_refusal_rate": {
       "numerator": 0,
@@ -31,19 +31,19 @@
       "value": 0.0
     },
     "safe_unsupported_abstention": {
-      "numerator": 1,
+      "numerator": 0,
       "denominator": 1,
-      "value": 1.0
+      "value": 0.0
     },
     "valid_clarification_abstention_rate": {
-      "numerator": 1,
+      "numerator": 0,
       "denominator": 1,
-      "value": 1.0
+      "value": 0.0
     },
     "repair_recovery_rate": {
       "numerator": 0,
-      "denominator": 0,
-      "value": null
+      "denominator": 1,
+      "value": 0.0
     },
     "jev_table_recall_at_5": {
       "numerator": 0,
@@ -58,26 +58,26 @@
     },
     "unsafe_execution_count": 0,
     "latency_ms": {
-      "p50_nearest_rank": 6802.847,
-      "p95_nearest_rank": 40447.753,
+      "p50_nearest_rank": 7884.425,
+      "p95_nearest_rank": 14957.067,
       "sample_count": 4
     },
     "provider_calls": {
-      "sql_generation_provider_submissions": 4,
+      "sql_generation_provider_submissions": 6,
       "metric_interpretation_provider_submissions": 2,
       "jev_requests": 4,
       "local_codex_fallback_calls": 0,
-      "total_model_calls": 10,
+      "total_model_calls": 12,
       "secondary_sql_provider_fallback_submissions": 1
     },
     "pipeline_calls": {
-      "approved_repository_execution": 4,
-      "approved_repository_execution_attempts": 4,
+      "approved_repository_execution": 3,
+      "approved_repository_execution_attempts": 3,
       "fixed_compilation_calls": 5,
       "fixed_compiler_matches": 1,
       "fixed_compiler_plans": 1,
       "fixed_match_calls": 5,
-      "general_sql_generation": 4,
+      "general_sql_generation": 6,
       "intent_interpretation": 0,
       "inventory_compilation_calls": 1,
       "inventory_compiler_plans": 1,
@@ -86,12 +86,12 @@
       "local_codex_fallback_calls": 0,
       "metric_interpretation": 2,
       "provider_fallback_calls": 1,
-      "repository_execution": 4,
-      "repository_execution_attempts": 4,
+      "repository_execution": 3,
+      "repository_execution_attempts": 3,
       "schema_discovery": 5,
       "schema_selection": 4,
-      "sql_generation_entries": 3,
-      "sql_repair": 0,
+      "sql_generation_entries": 5,
+      "sql_repair": 2,
       "unverified_repository_execution": 0,
       "unverified_repository_execution_attempts": 0
     }
@@ -167,39 +167,45 @@
         "unverified_repository_execution": 0,
         "sql_generation_entries": 0
       },
-      "latency_ms": 4989.936
+      "latency_ms": 5162.585
     },
     {
       "id": "P02",
       "supported": true,
-      "business_end_to_end_correct": true,
-      "business_result_match": true,
-      "strict_result_exact_match": true,
-      "sql_semantic_accuracy": true,
-      "execution_success": true,
+      "business_end_to_end_correct": false,
+      "business_result_match": null,
+      "strict_result_exact_match": false,
+      "sql_semantic_accuracy": false,
+      "execution_success": false,
       "false_refusal": false,
       "safe_unsupported_abstention": null,
-      "failure_class": null,
+      "failure_class": "agent_failure",
       "semantic": {
         "applicable": true,
-        "passed": true,
+        "passed": false,
         "checks": {
           "required_tables": true,
-          "filter:order_status": true,
-          "filter:date_range": true,
+          "filter:order_status": false,
+          "filter:date_range": false,
           "aggregation": true,
           "grouping": true,
           "ranking_order": true,
           "limit": true,
           "all_requested_columns": true
         },
-        "issues": []
+        "issues": [
+          "filter:order_status",
+          "filter:date_range"
+        ]
       },
       "result": {
-        "business_rows_match": true,
-        "strict_schema_match": true,
-        "strict_rows_match": true,
-        "missing_columns": [],
+        "business_rows_match": false,
+        "strict_schema_match": false,
+        "strict_rows_match": false,
+        "missing_columns": [
+          "customer_id",
+          "order_count"
+        ],
         "extra_columns": [],
         "unexpected_extra_columns": []
       },
@@ -241,22 +247,22 @@
         "general_sql_generation": 2,
         "intent_interpretation": 0,
         "metric_interpretation": 0,
-        "provider_fallback_calls": 1,
+        "provider_fallback_calls": 0,
         "local_codex_fallback_calls": 0,
         "jev_attempts": 1,
         "jev_successes": 0,
-        "sql_repair": 0,
+        "sql_repair": 1,
         "schema_selection": 1,
         "schema_discovery": 1,
-        "repository_execution_attempts": 1,
-        "repository_execution": 1,
-        "approved_repository_execution_attempts": 1,
+        "repository_execution_attempts": 0,
+        "repository_execution": 0,
+        "approved_repository_execution_attempts": 0,
         "unverified_repository_execution_attempts": 0,
-        "approved_repository_execution": 1,
+        "approved_repository_execution": 0,
         "unverified_repository_execution": 0,
-        "sql_generation_entries": 1
+        "sql_generation_entries": 2
       },
-      "latency_ms": 40447.753
+      "latency_ms": 14957.067
     },
     {
       "id": "P03",
@@ -346,7 +352,7 @@
         "unverified_repository_execution": 0,
         "sql_generation_entries": 1
       },
-      "latency_ms": 13003.998
+      "latency_ms": 13509.097
     },
     {
       "id": "P04",
@@ -437,7 +443,7 @@
         "unverified_repository_execution": 0,
         "sql_generation_entries": 0
       },
-      "latency_ms": 6802.847
+      "latency_ms": 7884.425
     },
     {
       "id": "P05",
@@ -445,9 +451,9 @@
       "business_end_to_end_correct": null,
       "strict_result_exact_match": null,
       "sql_semantic_accuracy": null,
-      "safe_unsupported_abstention": true,
+      "safe_unsupported_abstention": false,
       "business_result_match": null,
-      "failure_class": null,
+      "failure_class": "invalid_unsupported_execution_or_response",
       "semantic": {
         "applicable": false,
         "passed": null,
@@ -489,14 +495,14 @@
         "fixed_compiler_plans": 0,
         "inventory_compilation_calls": 0,
         "inventory_compiler_plans": 0,
-        "general_sql_generation": 1,
+        "general_sql_generation": 3,
         "intent_interpretation": 0,
         "metric_interpretation": 1,
-        "provider_fallback_calls": 0,
+        "provider_fallback_calls": 1,
         "local_codex_fallback_calls": 0,
         "jev_attempts": 1,
         "jev_successes": 0,
-        "sql_repair": 0,
+        "sql_repair": 1,
         "schema_selection": 1,
         "schema_discovery": 1,
         "repository_execution_attempts": 0,
@@ -505,9 +511,9 @@
         "unverified_repository_execution_attempts": 0,
         "approved_repository_execution": 0,
         "unverified_repository_execution": 0,
-        "sql_generation_entries": 1
+        "sql_generation_entries": 2
       },
-      "latency_ms": 23098.443
+      "latency_ms": 38046.332
     }
   ]
 }

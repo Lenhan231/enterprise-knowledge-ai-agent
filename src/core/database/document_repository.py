@@ -552,5 +552,15 @@ class DocumentRepository:
                            (identifiers, roles, roles))
             return {row['document_id'] for row in cursor.fetchall()}
 
+    def accessible_document_ids_by_title(self, titles: list[str], roles: list[str]) -> list[str]:
+        """Restrict fixed report evidence before ranking, with current document ACLs."""
+        with self.conn.cursor() as cursor:
+            cursor.execute('''SELECT document_id FROM public.documents
+                WHERE title = ANY(%s::text[]) AND processing_status='ready'
+                  AND knowledge_base_active IS TRUE
+                  AND (allowed_roles && %s::text[] OR 'admin'=ANY(%s::text[]))
+                ORDER BY document_id''', (titles,roles,roles))
+            return [row['document_id'] for row in cursor.fetchall()]
+
     def close(self) -> None:
         close_database_connection(self.conn)

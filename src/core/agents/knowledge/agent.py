@@ -25,15 +25,29 @@ class KnowledgeAgent(BaseAgent):
         identity = request.identity
         if identity is None or "documents:read" not in identity.permissions or not identity.document_roles:
             raise PermissionError("Verified document scope is required")
+        options = {}
+        if request.metadata.get('_policy_source_titles'):
+            from core.database.document_repository import DocumentRepository
+            def policy_ids():
+                repository = DocumentRepository()
+                try:
+                    return repository.accessible_document_ids_by_title(request.metadata['_policy_source_titles'], sorted(identity.document_roles))
+                finally:
+                    repository.close()
+            identifiers = await run_sync(policy_ids, _timeout=10)
+            if not identifiers:
+                return []
+            options['document_ids'] = identifiers
         contexts = await run_sync(
-            self.rag.retrieve_contexts, request.question, limit=5,
+            self.rag.retrieve_contexts, request.question, limit=15 if options else 5,
             roles=sorted(identity.document_roles),
             retrieval_method=request.metadata.get("retrieval_method", "translated_hybrid_rerank"),
+            **options,
         )
         return [Evidence(source_type="document", source=item["document_name"],
                          content=item["content"], metadata={**item["metadata"],
                          "chunk_id": item.get("chunk_id"), "chunk_index": item["chunk_index"]})
-                for item in contexts]
+                for item in contexts if not options or item.get('metadata', {}).get('document_id') in options['document_ids']]
 
     async def retrieve_metric_definition(self, request: AgentRequest, metric_name: str) -> list[dict]:
         """Retrieve role-scoped metric guidance without turning retrieved text into approval."""

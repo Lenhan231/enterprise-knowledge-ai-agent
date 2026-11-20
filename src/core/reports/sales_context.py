@@ -52,10 +52,10 @@ async def retrieve_context(knowledge, request, scope=None):
     try:
         try:
             items = await asyncio.wait_for(knowledge.retrieve(scoped), remaining(60))
-        except TimeoutError:
+        except (TimeoutError, RuntimeError, ConnectionError):
             if scoped.metadata.get('retrieval_method') == 'bm25':
                 raise
-            # Local model cold starts can be slow; use the existing role-scoped lexical search.
+            # Preserve document access when optional embedding/reranking services are slow or unavailable.
             scoped = scoped.model_copy(update={'metadata':{**scoped.metadata, 'retrieval_method':'bm25'}})
             items = await asyncio.wait_for(knowledge.retrieve(scoped), remaining(10))
         documents = []
@@ -154,7 +154,12 @@ def build_insights(report, monthly, context):
         citations = list(dict.fromkeys(e['query_id'] for _, rule in matches for e in rule['evidence']))
         periods = [group['period']['start'][:7] if 'period' in group else
                    report['request']['period']['start'] + ' to ' + str(date.fromisoformat(report['request']['period']['end_exclusive'])-timedelta(days=1)) for group, _ in matches]
-        actions.append({'title':fixed['title'], 'action':fixed['action'], 'periods':periods, 'citations':citations})
+        from core.reports.presentation import decision_text
+        group, rule = matches[-1]
+        values = {m['id']: m for m in group['metrics']}
+        why = (f"Most recent matching period: {periods[-1]}. Revenue: {display_value(values['company_revenue'])}; "
+               f"gross profit: {display_value(values['company_gross_profit'])}.")
+        actions.append({'title':fixed['title'], 'why':why, 'action':decision_text(rule, group), 'periods':periods, 'citations':citations})
         if fixed['id'] == 'S04':
             continue
         group, rule = matches[-1]

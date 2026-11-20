@@ -238,7 +238,7 @@ class InventoryFlowTest(unittest.IsolatedAsyncioTestCase):
             import unicodedata
             text=unicodedata.normalize('NFKC',' '.join(' '.join(p.get_text() for p in pdf).split()))
             from core.reports.inventory_operations import SECTION_TITLES
-            self.assertTrue(all(title in text for title in SECTION_TITLES.values()),text)
+            self.assertTrue(all(('Validation summary' if key == 'data_quality' else title) in text for key,title in SECTION_TITLES.items()),text)
             self.assertIn('Inventory Control and Reorder Planner',text)
             self.assertNotIn('policy-1',text)
             self.assertNotIn('VND',text)
@@ -311,7 +311,7 @@ class Element {
 const document={createElement:tag=>new Element(tag),createElementNS:(_,tag)=>new Element(tag)};
 const api=vm.runInNewContext(fs.readFileSync('src/app/static/sales-report.js','utf8')+';SalesPerformanceReport',{document,Intl});
 const report=JSON.parse(fs.readFileSync(0,'utf8')), before=JSON.stringify(report),root=new Element('div');
-api.render(root,report,{inventory_context:CONTEXT});
+api.render(root,report,{inventory_context:CONTEXT,insights:INSIGHTS});
 const descendants=n=>[n,...n.children.flatMap(descendants)],nodes=descendants(root);
 assert.equal(nodes.filter(n=>n.dataset.sectionId).length,7);
 assert.deepEqual(nodes.filter(n=>n.dataset.widgetId).map(n=>[n.dataset.widgetId,n.dataset.chartType]),report.dashboard.widgets.map(w=>[w.id,w.type]));
@@ -329,6 +329,11 @@ assert(!copy.includes('(available)'));
 assert(nodes.filter(n=>n.tag==='a'&&n.href?.includes('-source-')).every(a=>/^\[\d+\]$/.test(a.textContent)));
 assert(nodes.some(n=>n.tag==='dd'),'Inventory KPIs should use the existing Sales card layout');
 assert(nodes.some(n=>n.tag==='blockquote'),'Policy passages should be separated from report findings');
+assert(copy.includes('Why review this:'));
+assert(copy.includes('Recommended next step:'));
+assert(copy.includes('9 of 9'));
+assert(!nodes.some(n=>n.tag==='h3'&&n.textContent==='Data Quality'));
+assert(nodes.some(n=>n.tag==='summary'&&n.textContent==='Validation and source details'));
 assert(copy.includes('2026-01-01 to 2026-12-31'));
 assert(copy.includes('Inventory Control and Reorder Planner'));
 assert(copy.includes('complete transaction coverage is unverified'));
@@ -354,7 +359,7 @@ assert.equal(missingNodes.filter(n=>n.dataset.widgetId).length,5);
 assert(missingNodes.filter(n=>n.tag==='a').every(a=>missingNodes.some(n=>n.id===a.href.slice(1))));
 assert.equal(JSON.stringify(report),before);
 '''
-        script=script.replace('CONTEXT',json.dumps(result.data['inventory_context']))
+        script=script.replace('CONTEXT',json.dumps(result.data['inventory_context'])).replace('INSIGHTS',json.dumps(result.data['insights']))
         result=subprocess.run(['node','-e',script],input=json.dumps(report),capture_output=True,text=True,cwd=Path(__file__).resolve().parents[1])
         self.assertEqual(result.returncode,0,result.stderr)
 

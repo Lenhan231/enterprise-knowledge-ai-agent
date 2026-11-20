@@ -81,7 +81,8 @@ class ReportDocument(StrictModel):
             context = self.inventory_context.model_dump(mode='json')
             self.report['data_quality']['limitations'] = [note for note in self.report['data_quality']['limitations']
                 if not note.startswith(('Policy Evidence:', 'Policy source ['))] + policy_notes(context)
-            self.insights = {}
+            from core.reports.presentation import inventory_insights
+            self.insights = inventory_insights(self.report)
             return self
         if not isinstance(self.presentation, ReportPresentation):
             raise ValueError('Sales reports require a sales presentation')

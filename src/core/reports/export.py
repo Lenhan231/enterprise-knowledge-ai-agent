@@ -80,7 +80,7 @@ def export_pdf(document):
             elif section == 'decision_support':
                 parts.append('<p>' + escape(document.insights['decision_summary']) + '</p>')
                 for action in document.insights['actions']:
-                    parts.append(f'<h3>{escape(action["title"])}</h3><p>{escape(action["action"])}</p><p>Periods: {escape(", ".join(action["periods"]))}</p>')
+                    parts.append(f'<h3>{escape(action["title"])}</h3><p>Why review this: {escape(action.get("why", ""))}</p><p>Recommended next step: {escape(action["action"])}</p><p>Periods: {escape(", ".join(action["periods"]))}</p>')
                 if document.monthly_decisions:
                     parts.append('<p>Rules compare each month with its preceding calendar month.</p>')
                     parts.extend(f'<p class="note">{escape(rule["id"])}: {escape(rule["title"])}</p>' for rule in report['decisions'])
@@ -193,8 +193,16 @@ def inventory_parts(document, directory):
     ownership = {'inventory_kpis': 'snapshot_scorecard', 'inventory_flag_distribution': 'product_risks',
                  'stockout_product_table': 'product_risks', 'operations_kpis': 'fulfillment_and_returns', 'inventory_snapshots': 'fulfillment_and_returns'}
     for section, title in SECTION_TITLES.items():
+        if section == 'data_quality':
+            parts.append('<h2>Validation summary</h2>')
+            parts.extend('<p class="note">' + escape(text) + '</p>' for text in document.insights['validation_summary'])
+            parts.extend('<p class="note">' + escape(text) + '</p>' for text in notes
+                         if any(marker in text.lower() for marker in ('unavailable', 'could not', 'access is restricted', 'may be omitted')))
+            parts.append('<p class="note">Source definitions and limitations remain in the saved report. Missing values are never treated as zero.</p>')
+            continue
         parts.append(f'<h2{" class=new-page" if section in {"product_risks", "fulfillment_and_returns"} else ""}>{escape(title)}</h2>')
         if section == 'operations_summary':
+            parts.append('<p class="note">Synthetic commerce demonstration data; source completeness and current business balances are not independently certified.</p>')
             parts.extend(f'<p>{escape(note)}</p>' for note in notes if note.startswith('Selected snapshot:'))
             parts.append('<p>' + ('This annual report uses one inventory snapshot. It does not add stock balances across months.'
                          if report['request']['granularity'] == 'year' else 'Inventory figures describe one snapshot.') + '</p>')
@@ -203,7 +211,7 @@ def inventory_parts(document, directory):
                 parts.append(f'<p>The selected snapshot records {inventory_display_value(metrics["stock_on_hand"])} across {display_value(metrics["observed_products"])} observed products.' +
                              cite([*metrics['stock_on_hand']['evidence'], *metrics['observed_products']['evidence']]) + '</p>')
             else:
-                parts.append('<p>Snapshot totals are unavailable for this reporting period. See Data Quality for source and coverage limitations.</p>')
+                parts.append('<p>Snapshot totals are unavailable for this reporting period. Check the validation summary for missing inputs.</p>')
         for widget in report['dashboard']['widgets']:
             if ownership[widget['id']] != section:
                 continue
@@ -250,10 +258,15 @@ def inventory_parts(document, directory):
                            'Policy evidence could not be retrieved. No policy-compliance conclusion has been added.')
                 parts.append('<p>' + message + '</p>')
         if section == 'fixed_decisions':
+            actions = document.insights['actions']
+            if not actions:
+                parts.append('<p>No recommendation can be confirmed. Verify the selected snapshot and flag inputs before acting.</p>')
+            for action in actions:
+                parts.append('<div class="inventory-decision"><h3>' + escape(action['title']) + cite_ids(action['citations']) +
+                             '</h3><p>Why review this: ' + escape(action['why']) + '</p><p>Recommended next step: ' + escape(action['action']) + '</p></div>')
             for rule in report['decisions']:
-                parts.append('<div class="inventory-decision"><h3>' + escape(rule['title']) + cite(rule['evidence']) + '</h3><p>' + escape(decision_text(rule)) + '</p></div>')
-        if section == 'data_quality':
-            parts.extend('<p class="note">' + escape(note) + '</p>' for note in notes if not note.startswith('Selected snapshot:'))
+                if rule['triggered'] is not True:
+                    parts.append('<h3>' + escape(rule['title']) + '</h3><p class="note">' + escape(decision_text(rule, report)) + '</p>')
     parts.append('<h2>Sources</h2>')
     for source in sources.values():
         description = ('Role-authorized policy passage.' if source.get('source_type') == 'document' else source.get('title') or

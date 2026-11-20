@@ -161,6 +161,8 @@ class RAGService:
             raise ValueError("The configured retrieval backend cannot enforce role-scoped retrieval")
         if company is not None and "company" not in parameters:
             raise ValueError("The configured retrieval backend cannot enforce company-scoped retrieval")
+        if document_ids is not None and "document_ids" not in parameters:
+            raise ValueError("The configured retrieval backend cannot enforce document-scoped retrieval")
         if "company" in parameters:
             options["company"] = company
         if "roles" in parameters:

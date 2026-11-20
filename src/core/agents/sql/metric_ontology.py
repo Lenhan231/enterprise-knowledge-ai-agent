@@ -241,6 +241,32 @@ METRIC_ONTOLOGY = {
 }
 
 
+# Explicit row-population filters are independent from metric formulas. Keep
+# their natural-language aliases and stored database values in one bounded
+# vocabulary so SQL validation can preserve them without trusting extraction.
+POPULATION_FILTER_ONTOLOGY = {
+    "commerce.orders.order_status": {
+        "exclusion_cues": (
+            "exclude", "excluding", "except", "without", "do not count", "not include",
+            "không tính", "loại trừ", "ngoại trừ", "bỏ qua",
+        ),
+        "values": {
+            "delivered": {
+                "aliases": ("delivered orders", "orders delivered", "đơn hàng đã giao", "đơn đã giao"),
+                "stored_values": ("delivered",),
+            },
+            "cancelled": {
+                "aliases": (
+                    "cancelled orders", "canceled orders", "orders cancelled", "orders canceled",
+                    "đơn hàng đã hủy", "đơn hàng đã huỷ", "đơn đã hủy", "đơn đã huỷ",
+                ),
+                "stored_values": ("cancelled", "canceled"),
+            },
+        },
+    },
+}
+
+
 METRIC_ONTOLOGY.update(load_inventory_catalog())
 
 METRIC_ONTOLOGY.update({

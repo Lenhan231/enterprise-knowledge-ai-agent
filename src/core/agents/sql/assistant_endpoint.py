@@ -10,7 +10,11 @@ from typing import Any
 from core.agents.runtime import run_sync
 from core.agents.sql.join_validation import PRIMARY_KEYS
 from core.agents.sql.metric_ontology import get_metric_definition, resolve_metric_names
-from core.agents.sql.metric_validation import validate_metric_definitions, validate_metric_request
+from core.agents.sql.metric_validation import (
+    validate_metric_definitions,
+    validate_metric_request,
+    validate_population_contract,
+)
 from core.agents.sql.sql_ranking import (
     complete_ranking_intent,
     has_ranking_request,
@@ -147,6 +151,7 @@ async def run_sql_assistant(agent, question: str, *, mode: str = "draft", sql: s
         validated = validate_commerce_sql(plan.sql, allowed_sources=allowed_sources,
             schema_columns=schema_columns, approved_joins=approved_joins,
             primary_keys=primary_keys, date_columns=date_columns)
+        validate_population_contract(plan.sql, question, plan.parameters, metric_names)
         return plan, definitions, validated, ranking_validation
 
     if mode == "execute":

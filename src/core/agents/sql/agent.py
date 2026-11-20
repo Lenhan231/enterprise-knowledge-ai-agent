@@ -35,7 +35,14 @@ from core.agents.sql.commerce_decision_support import (
 from core.agents.sql.metric_ontology import resolve_metric_names, get_metric_definition
 from core.agents.sql.query_contract import require_query_contract
 from core.agents.sql.metric_mapping import build_metric_mapping_prompt, compile_inventory_query, decode_metric_mapping, decode_sql_turn, MetricTime, validate_mapped_sql
-from core.agents.sql.metric_validation import MetricDefinitionError, inventory_time_scope, validate_metric_definitions, validate_metric_request, validate_independent_query_period
+from core.agents.sql.metric_validation import (
+    MetricDefinitionError,
+    inventory_time_scope,
+    validate_independent_query_period,
+    validate_metric_definitions,
+    validate_metric_request,
+    validate_population_contract,
+)
 from core.agents.sql.join_validation import PRIMARY_KEYS
 from core.agents.sql.sql_ranking import (
     complete_ranking_intent, has_ranking_request, resolve_ranking_intent,
@@ -615,6 +622,10 @@ class SQLAnalyticsAgent(BaseAgent):
                             dashboard_outputs = validate_outputs(parse_json_response(raw).get('outputs'), bundle, question, date_columns)
                             datasets = []
                             for index, (data_question, data_plan, data_definitions) in enumerate(bundle):
+                                validate_population_contract(
+                                    data_plan.sql, data_question + "\n" + question,
+                                    data_plan.parameters, data_definitions.keys(),
+                                )
                                 payload = await self._execute_plan(data_plan, data_definitions,
                                     table_columns, approved_joins, primary_keys, date_columns,
                                     allowed_sources=set(table_columns))
@@ -677,6 +688,9 @@ class SQLAnalyticsAgent(BaseAgent):
                 if plan.sql:
                     validated_sql = validate_commerce_sql(plan.sql, allowed_sources=set(table_columns), schema_columns=table_columns,
                         approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns)
+                    validate_population_contract(
+                        plan.sql, schema_scope_question, plan.parameters, metric_names,
+                    )
                     if cross_domain and not {'commerce.inventory','commerce.orders','commerce.order_items'} <= set(validated_sql.sources):
                         raise SQLValidationError('The requested cross-domain contract must retain inventory, orders and order_items.')
                     if plan.ranking_contract is not None:
@@ -805,6 +819,7 @@ class SQLAnalyticsAgent(BaseAgent):
                     break
                 if (isinstance(error, MetricDefinitionError) and attempt == 1
                         and unverified_scope
+                        and error.code not in {'population_filter', 'unrequested_population_filter'}
                         and not self.inventory_only and direct is None and selected_compiler is None
                         and promotion_metric is None
                         and interpretation is None and not dashboard_build):

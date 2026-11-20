@@ -19,6 +19,7 @@ from core.agents.sql.text_to_sql import (APPROVED_COLUMNS, SQLValidationError, c
 from core.agents.sql.sql_ranking import (
     complete_ranking_intent, resolve_ranking_intent, validate_ranking_semantics,
 )
+from core.agents.sql.metric_validation import validate_population_contract
 from core.agents.sql.agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
 from core.agents.sql.analytics_agent import AnalyticsAgent
 from core.database.commerce_repository import CommerceRepository
@@ -463,6 +464,42 @@ class SQLRankingValidationTest(unittest.TestCase):
         self.assertTrue(purchased.resolved, purchased.issue)
         self.assertEqual(purchased.measure.identity, "sum:commerce.order_items.quantity")
         self.assertEqual(purchased.measure.approval_status, "unverified")
+
+    def test_returned_output_columns_do_not_change_units_sold_metric(self):
+        question = (
+            "Top 5 products by units sold from delivered orders between 2025-04-01 and 2025-06-30; "
+            "return product_id and units, ties by product_id ascending."
+        )
+        intent = resolve_ranking_intent(question)
+        self.assertTrue(intent.resolved, intent.issue)
+        self.assertEqual(intent.measure.identity, "sum:commerce.order_items.quantity")
+        self.assertEqual(intent.measure.source, "commerce.order_items")
+        self.assertEqual(intent.measure.column, "quantity")
+        self.assertEqual(intent.limit, 5)
+
+        correct = (
+            "WITH sold_units AS (SELECT oi.product_id, SUM(oi.quantity) AS units_sold "
+            "FROM commerce.order_items AS oi JOIN commerce.orders AS o ON oi.order_id=o.order_id "
+            "WHERE o.order_status=$1 AND o.order_date >= $2 AND o.order_date < $3 "
+            "GROUP BY oi.product_id) SELECT sold.product_id, sold.units_sold FROM sold_units AS sold "
+            "ORDER BY sold.units_sold DESC, sold.product_id ASC LIMIT 5"
+        )
+        result = validate_ranking_semantics(correct, intent, APPROVED_COLUMNS)
+        self.assertEqual(result["status"], "verified")
+        validate_population_contract(
+            correct, question, ("delivered", "2025-04-01", "2025-07-01"), (),
+        )
+
+        returned_units = (
+            "SELECT r.product_id, SUM(r.return_quantity) AS units_sold "
+            "FROM commerce.returns AS r GROUP BY r.product_id "
+            "ORDER BY units_sold DESC, r.product_id ASC LIMIT 5"
+        )
+        with self.assertRaises(SQLValidationError):
+            validate_ranking_semantics(returned_units, intent, APPROVED_COLUMNS)
+
+        returned = resolve_ranking_intent("Top 5 returned products by returned units in 2025")
+        self.assertEqual(returned.measure.identity, "sum:commerce.returns.return_quantity")
 
     def test_requested_month_partition_is_preserved_and_verified(self):
         intent = resolve_ranking_intent("Top 10 products in each month by revenue")

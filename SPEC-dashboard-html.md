@@ -6,7 +6,7 @@ Tiles: one-row KPI, bar/line/donut through existing ChartSpec eligibility, table
 
 Interface: `render_dashboard(document) -> str`. Reusable tile preparation validates requested columns and chart compatibility. Unsupported charts show a table and reason. HTML includes title, timestamps, source scope and expandable query evidence.
 
-Implementation: `src/core/dashboards/render.py`. Use escaped text, controlled HTML/CSS/SVG templates and no external scripts/CDNs. Render the preview inside a sandboxed iframe. Serve exported HTML with a restrictive CSP, no network access and no script execution. No model-authored executable HTML.
+Implementation: `src/core/agents/dashboard/render.py`. Use escaped text, controlled HTML/CSS/SVG templates and no external scripts/CDNs. Render the preview inside a sandboxed iframe. Serve exported HTML with a restrictive CSP, no network access and no script execution. No model-authored executable HTML.
 
 Verify: `.venv/Scripts/python.exe -m unittest discover -s tests -p test_dashboard*.py`. Check all tile types, wrong-unit fallback, XSS strings, empty values, numerical grounding and complete HTML structure.
 

@@ -13,7 +13,7 @@ from langgraph.graph import END, START, StateGraph
 
 from core.agents.decision_support.conversation_context import ConversationStore
 from core.agents.decision_support.execution import Execution, authorize
-from core.agents.intent_classifier import (
+from core.agents.decision_support.intent_classifier import (
     JEV_ROUTE_THRESHOLD, classify_jev_route, IntentClassifier, is_product_profit_recommendation,
 )
 from core.agents.decision_support.planning import plan_request
@@ -291,7 +291,7 @@ class AgentRouter:
 
     @staticmethod
     def _sql_context_from_history(history):
-        from core.analytics.metric_mapping import SQLConversationState
+        from core.agents.sql.metric_mapping import SQLConversationState
         for turn in reversed(history):
             raw = turn.get('sql_context')
             if raw is None:
@@ -308,7 +308,7 @@ class AgentRouter:
     def _serialize_sql_context(interpretation):
         if not isinstance(interpretation, dict):
             return ''
-        from core.analytics.metric_mapping import SQLConversationState
+        from core.agents.sql.metric_mapping import SQLConversationState
         try:
             return SQLConversationState.model_validate(
                 {'accepted': interpretation, 'pending': None}).model_dump_json()
@@ -361,7 +361,7 @@ class AgentRouter:
     def _intent_schema(self):
         if self.sql_schema:
             return self.sql_schema
-        from core.analytics.text_to_sql import APPROVED_COLUMNS
+        from core.agents.sql.text_to_sql import APPROVED_COLUMNS
         return APPROVED_COLUMNS
 
     @staticmethod

@@ -10,7 +10,7 @@ from core.prompts.agents import PLANNING_PROMPT, PLANNING_REPAIR_PROMPT
 
 async def plan_request(request, provider, *, history=(), previous=None, report_headings=None, sql_schema=None,
                        selected_tools=None):
-    from core.agents.intent_classifier import IntentClassifier, is_product_profit_recommendation
+    from core.agents.decision_support.intent_classifier import IntentClassifier, is_product_profit_recommendation
     intent = IntentClassifier.fallback(request.question)
     if not history and previous is None and report_headings is None:
         unresolved_reference = bool(re.search(
@@ -22,7 +22,7 @@ async def plan_request(request, provider, *, history=(), previous=None, report_h
                 and not unresolved_reference):
             return AgentPlan(objective=request.question, fallback=True, tasks=[{
                 'id': 'fallback', 'agent': 'sql', 'question': request.question}])
-    from core.analytics.text_to_sql import APPROVED_COLUMNS
+    from core.agents.sql.text_to_sql import APPROVED_COLUMNS
     latest_turn = history[-1] if history else {}
     latest_metrics = next((turn.get('metrics') for turn in reversed(history) if turn.get('metrics')), '')
     data = {'question': request.question, 'current_date': date.today().isoformat(),
@@ -131,7 +131,7 @@ async def plan_request(request, provider, *, history=(), previous=None, report_h
                 for agent in selected
             ])
     if not history and previous is None:
-        from core.agents.intent_classifier import IntentClassifier
+        from core.agents.decision_support.intent_classifier import IntentClassifier
         intent = IntentClassifier.fallback(request.question)
         # Broad analytics/comparison and mixed keywords do not prove safe decomposition.
         text = request.question.casefold()

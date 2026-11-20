@@ -8,11 +8,11 @@ from unittest.mock import AsyncMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-from core.analytics.metric_ontology import METRIC_ONTOLOGY, get_metric_definition, resolve_metric_names
-from core.analytics.text_to_sql import (APPROVED_COLUMNS, SQLValidationError, SQLSecurityError,
+from core.agents.sql.metric_ontology import METRIC_ONTOLOGY, get_metric_definition, resolve_metric_names
+from core.agents.sql.text_to_sql import (APPROVED_COLUMNS, SQLValidationError, SQLSecurityError,
     SQLSchemaMismatchError, build_sql_prompt, decode_query_plan)
-from core.sql_agent.analytics_agent import AnalyticsAgent
-from core.sql_agent.agent import SQLAnalyticsAgent
+from core.agents.sql.analytics_agent import AnalyticsAgent
+from core.agents.sql.agent import SQLAnalyticsAgent
 from core.models.agents import AgentRequest, VerifiedIdentity
 
 
@@ -62,7 +62,7 @@ class MetricPlanningTest(unittest.TestCase):
 
 class MetricEnforcementTest(unittest.TestCase):
     def validate(self, sql, names, parameters=()):
-        from core.analytics.metric_validation import validate_metric_definitions
+        from core.agents.sql.metric_validation import validate_metric_definitions
         return validate_metric_definitions(sql, names, parameters, APPROVED_COLUMNS)
 
     def test_accepts_canonical_revenue_with_arbitrary_alias_and_transparent_cte(self):
@@ -76,7 +76,7 @@ class MetricEnforcementTest(unittest.TestCase):
                 self.assertEqual(definitions["revenue"]["formula"], "SUM(revenue)")
 
     def test_rejects_wrong_formula_source_or_missing_requested_metric(self):
-        from core.analytics.metric_validation import MetricDefinitionError
+        from core.agents.sql.metric_validation import MetricDefinitionError
         queries = (
             "SELECT AVG(s.revenue) AS revenue FROM commerce.sales AS s LIMIT 1",
             "SELECT SUM(p.payment_value) AS revenue FROM commerce.payments AS p LIMIT 1",
@@ -89,13 +89,13 @@ class MetricEnforcementTest(unittest.TestCase):
                 self.validate(sql, {"revenue"})
 
     def test_order_count_requires_distinct_orders(self):
-        from core.analytics.metric_validation import MetricDefinitionError
+        from core.agents.sql.metric_validation import MetricDefinitionError
         self.validate("SELECT COUNT(DISTINCT o.order_id) AS n FROM commerce.orders AS o LIMIT 1", {"order_count"})
         with self.assertRaises(MetricDefinitionError):
             self.validate("SELECT COUNT(o.order_id) AS n FROM commerce.orders AS o LIMIT 1", {"order_count"})
 
     def test_returned_order_count_requires_distinct_order_ids(self):
-        from core.analytics.metric_validation import MetricDefinitionError
+        from core.agents.sql.metric_validation import MetricDefinitionError
         valid = "SELECT COUNT(DISTINCT r.order_id) AS n FROM commerce.returns AS r LIMIT 200"
         self.assertIn("returned_order_count", self.validate(valid, {"returned_order_count"}))
         with self.assertRaises(MetricDefinitionError):
@@ -111,7 +111,7 @@ class MetricEnforcementTest(unittest.TestCase):
         )
 
     def test_regional_revenue_requires_the_delivered_filter(self):
-        from core.analytics.metric_validation import MetricDefinitionError
+        from core.agents.sql.metric_validation import MetricDefinitionError
         sql = (
             "SELECT g.region, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS revenue "
             "FROM commerce.orders AS o JOIN commerce.order_items AS oi ON o.order_id = oi.order_id "
@@ -127,7 +127,7 @@ class MetricEnforcementTest(unittest.TestCase):
                 self.validate(sql + predicate + " GROUP BY g.region LIMIT 20", {"regional_revenue"}, parameters)
 
     def test_metric_dimensions_and_snapshot_grain_are_enforced(self):
-        from core.analytics.metric_validation import MetricDefinitionError
+        from core.agents.sql.metric_validation import MetricDefinitionError
         self.validate(
             "SELECT i.snapshot_date, AVG(i.days_of_supply) FROM commerce.inventory AS i "
             "GROUP BY i.snapshot_date LIMIT 20", {"days_of_supply"})
@@ -143,7 +143,7 @@ class MetricEnforcementTest(unittest.TestCase):
                 self.validate(sql, {metric}, ("2022-12-31", "Outdoor"))
 
     def test_canonical_metric_label_cannot_disguise_another_formula(self):
-        from core.analytics.metric_validation import MetricDefinitionError
+        from core.agents.sql.metric_validation import MetricDefinitionError
         with self.assertRaises(MetricDefinitionError):
             self.validate("SELECT SUM(s.cogs) AS revenue, SUM(s.revenue) AS total FROM commerce.sales AS s LIMIT 1", {"revenue"})
 

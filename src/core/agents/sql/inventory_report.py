@@ -11,7 +11,7 @@ async def latest(agent, request):
 
 
 def plans(scope, snapshot):
-    from core.reports.inventory_operations import load_contract
+    from core.agents.report.inventory_operations import load_contract
     supported = load_contract()['supported_request']
     if scope['dimension'] not in supported['dimensions'] or scope['granularity'] not in supported['granularities']:
         raise ValueError('Unsupported inventory scope')
@@ -70,7 +70,7 @@ def plans(scope, snapshot):
 
 
 async def run(agent, request, scope):
-    from core.reports.inventory_operations import load_contract
+    from core.agents.report.inventory_operations import load_contract
     agent._authorize(request)
     # Validate before the selection query. Date selection is global, never per SKU/category.
     plans(scope, None)

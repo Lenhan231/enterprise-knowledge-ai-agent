@@ -6,11 +6,11 @@
 
 ## Current-state findings
 
-- The `QuocAn` branch already implements LangGraph orchestration in `src/core/agents/router.py`.
+- The `QuocAn` branch already implements LangGraph orchestration in `src/core/agents/decision_support/router.py`.
 - Text-to-SQL is already model-assisted, not a separately trained in-house model. `GroqProvider` defaults to `qwen/qwen3.8-27b`; `SQLAnalyticsAgent` asks for a JSON query plan, retries once after a validation error, and routes queries through `CommerceRepository`.
 - SQL safety currently includes a finite approved-column schema, approved join keys/functions, one SELECT statement, explicit aliases, exact parameter binding, a result cap of 200 rows, a read-only transaction, a 5-second statement timeout, server-verified `analytics:read` authorization, and a dedicated `ANALYTICS_DATABASE_URL`.
 - The database's `commerce` tables cover through **2022-12-31**. The current snapshot is not 2026 inventory. Policy docs also explicitly say currency, inbound POs, supplier lead times, backorders and warehouse locations are not fully provided.
-- `report` routing exists as an optional graph node, but `src/core/agents/report_agent.py` was not found in `QuocAn`; the dashboard path in `src/app/main.py` currently uses an unsupported-route fallback. Treat report/template ingestion and dashboard outline rendering as implementation work, not completed features.
+- `report` routing exists as an optional graph node, but `src/core/agents/report/agent.py` was not found in `QuocAn`; the dashboard path in `src/app/main.py` currently uses an unsupported-route fallback. Treat report/template ingestion and dashboard outline rendering as implementation work, not completed features.
 - `pyproject.toml` already includes both `langgraph` and `ragas`. The repo has `evaluation/run_ragas_24q.py` and `evaluation/run_generation_benchmark.py`, so this sprint does not need a new evaluation framework.
 
 ## 2024 Text-to-SQL literature and candidate

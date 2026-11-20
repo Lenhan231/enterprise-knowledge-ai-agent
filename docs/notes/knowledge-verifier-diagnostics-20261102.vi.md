@@ -74,7 +74,7 @@ Replay cố ý nằm trong script để có thể copy chạy với image hiện
 - Selector chỉ chạy ca được chọn, raw được lưu trong file và không in ở tiến độ; ID lạ không tạo provider.
 - Các regression cũ về quyền file, quota, key selection, chạy script từ /tmp và pipeline Knowledge/Report vẫn đạt.
 
-Thêm bốn test `tests/test_groq_key_failover.py` đã chạy lúc kiểm tra giả thuyết fallback: mock key 1 trả 429 rồi key 2 thành công; ưu tiên key 2 ở lượt tiếp; không gọi HTTP khi cả hai cooldown; thử lại key 2 sau cooldown; key rỗng/trùng không tạo client mới. Đây là test logic, không kết luận nguyên nhân lỗi quota thực tế. Không đổi code provider.
+Thêm bốn test `tests/infrastructure/test_groq_key_failover.py` đã chạy lúc kiểm tra giả thuyết fallback: mock key 1 trả 429 rồi key 2 thành công; ưu tiên key 2 ở lượt tiếp; không gọi HTTP khi cả hai cooldown; thử lại key 2 sau cooldown; key rỗng/trùng không tạo client mới. Đây là test logic, không kết luận nguyên nhân lỗi quota thực tế. Không đổi code provider.
 
 Không build Docker, gọi LLM hay benchmark VPS ở local trong bản sửa chẩn đoán này.
 

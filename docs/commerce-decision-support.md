@@ -114,7 +114,7 @@ synthetic policies instead of repeating OCR text. It labels the note as curated
 metadata, not a transcript, and cites the retrieved scan page. A role-scoped
 BM25 run against Supabase with a simulated 429 returned the logistics note from
 CD-POL-LOG-001 page 2; the original OCR chunk stayed out of the answer. The
-focused `tests.test_rag` module has 24 passing tests. ReportAgent's SQL decision
+focused `tests.knowledge.test_rag` module has 24 passing tests. ReportAgent's SQL decision
 fallback uses `notes` / `notes_en` as a clearly labeled catalog summary for all
 three synthetic policies, including logistics; it still does not interpret raw
 OCR as verified policy text. A live rate-limited logistics response returned

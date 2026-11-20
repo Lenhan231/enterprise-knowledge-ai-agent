@@ -13,7 +13,7 @@ financial pages. If provider initialization or generation fails, the upload
 keeps the parser candidates, records the document as ready after indexing, and
 still requires admin review before any KPI is published. The upload closes the
 provider on both success and provider-error paths; regressions are in
-`tests/test_upload_processing_flow.py` and `tests/test_llm_provider.py`.
+`tests/test_upload_processing_flow.py` and `tests/infrastructure/test_llm_provider.py`.
 
 `data/evaluation/vinamilk_qa_cases.json` and
 `scripts/agents/run_review1_grounded_qa.py --cases ... --company ...` exercise answers,

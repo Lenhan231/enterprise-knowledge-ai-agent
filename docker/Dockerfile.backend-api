@@ -12,5 +12,5 @@ EXPOSE 8000
 RUN rm -rf /app/src/app/static
 ENV BACKEND_ONLY="1" EMBEDDING_BACKEND="remote" EMBEDDING_PRELOAD="0" RERANKER_PRELOAD="0" USE_TORCH="0" USE_TF="0"
 RUN python -c "import asyncpg; from core.agents.main import create_app; from app.main import app"
-RUN python -c "from core.reports import inventory_operations, sales_performance; inventory_operations.load_contract(); sales_performance.load_contract()"
+RUN python -c "from core.agents.report import inventory_operations, sales_performance; inventory_operations.load_contract(); sales_performance.load_contract()"
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

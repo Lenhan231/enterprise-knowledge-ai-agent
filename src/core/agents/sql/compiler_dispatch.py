@@ -10,10 +10,10 @@ from typing import Any, Callable
 
 from sqlglot import exp
 
-from core.analytics.field_retrieval import compile_field_query, field_contract
-from core.analytics.metric_mapping import MetricMapping, compile_inventory_query
-from core.analytics.metric_ontology import resolve_metric_names
-from core.analytics.sql_validation import QueryPlan
+from core.agents.sql.field_retrieval import compile_field_query, field_contract
+from core.agents.sql.metric_mapping import MetricMapping, compile_inventory_query
+from core.agents.sql.metric_ontology import resolve_metric_names
+from core.agents.sql.sql_validation import QueryPlan
 
 
 class CompilerKind(str, Enum):

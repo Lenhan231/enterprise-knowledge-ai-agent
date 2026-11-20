@@ -8,11 +8,11 @@ from unittest.mock import AsyncMock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
-from core.analytics.invoices import normalize_invoice
-from core.analytics.metric_ontology import resolve_metric_names
-from core.analytics.text_to_sql import build_sql_prompt, validate_commerce_sql, SQLValidationError
-from core.agents.intent_classifier import IntentClassifier
-from core.agents.sql_analytics_agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
+from core.agents.sql.invoices import normalize_invoice
+from core.agents.sql.metric_ontology import resolve_metric_names
+from core.agents.sql.text_to_sql import build_sql_prompt, validate_commerce_sql, SQLValidationError
+from core.agents.decision_support.intent_classifier import IntentClassifier
+from core.agents.sql.agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
 from core.models.agents import AgentRequest, VerifiedIdentity
 
 

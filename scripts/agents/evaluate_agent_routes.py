@@ -20,8 +20,8 @@ from dotenv import load_dotenv
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from core.agents.intent_classifier import IntentClassifier  # noqa: E402
-from core.agents.router import AgentRouter  # noqa: E402
+from core.agents.decision_support.intent_classifier import IntentClassifier  # noqa: E402
+from core.agents.decision_support.router import AgentRouter  # noqa: E402
 from core.llm.groq_provider import GroqProvider  # noqa: E402
 from core.models.agents import AgentRequest, AgentResult  # noqa: E402
 
@@ -189,8 +189,8 @@ def main() -> int:
     ).stdout.strip())
     implementation_files = (
         "scripts/agents/evaluate_agent_routes.py",
-        "src/core/agents/intent_classifier.py",
-        "src/core/agents/router.py",
+        "src/core/agents/decision_support/intent_classifier.py",
+        "src/core/agents/decision_support/router.py",
         "src/core/prompts/intent.py",
     )
     report = {

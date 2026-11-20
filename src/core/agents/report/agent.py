@@ -11,13 +11,13 @@ from io import BytesIO
 from docx import Document
 
 from core.models.agents import AgentResult
-from core.reports.grounding import UNAVAILABLE, VERIFICATION_SCOPE, validate_section
-from core.reports.sources import ReportClarificationRequired, authorize_sources, collect_sources, serialize_context
-from core.reports.templates import default_report_template, parse_report_template, render_report_template, section_capability
+from core.agents.report.grounding import UNAVAILABLE, VERIFICATION_SCOPE, validate_section
+from core.agents.report.sources import ReportClarificationRequired, authorize_sources, collect_sources, serialize_context
+from core.agents.report.templates import default_report_template, parse_report_template, render_report_template, section_capability
 from core.prompts.report import REPORT_SECTION_PROMPT, REPORT_REPAIR_PROMPT
 from core.agents.runtime import deadline, remaining, run_sync
-from core.reports.planning import adaptive_report_type, inventory_request
-from core.analytics.metric_ontology import resolve_metric_names
+from core.agents.report.planning import adaptive_report_type, inventory_request
+from core.agents.sql.metric_ontology import resolve_metric_names
 
 MIME_TYPES = {
     "markdown": "text/markdown; charset=utf-8",
@@ -74,27 +74,27 @@ class ReportAgent:
         natural_sales = (filename is None and output_format is None and not request.metadata.get('report_type') and
                          re.search(r'\bsales?\b|\brevenue\b|doanh thu|bán hàng', request.question, re.I))
         report_type = adaptive_report_type(request)
-        from core.reports.sales_performance import has_sales_period
+        from core.agents.report.sales_performance import has_sales_period
         natural_inventory = (filename is None and report_type is None and output_format is None
                              and re.search(r'\binventory\b|tồn kho', request.question, re.I)
                              and not re.search(r'\b\d{4}[-/]\d{1,2}[-/]\d{1,2}\b|\b\d{1,2}[-/]\d{1,2}[-/]\d{4}\b', request.question)
                              and has_sales_period(request.question))
         strict_inventory = report_type == 'inventory_operations' or natural_inventory
         if source_mode is None:
-            from core.reports.sales_performance import has_sales_period
+            from core.agents.report.sales_performance import has_sales_period
             dated_sales = natural_sales and has_sales_period(request.question)
             source_mode = 'analytics' if report_type == 'sales_performance' or dated_sales or strict_inventory else 'documents'
         authorize_sources(request, source_mode)
         if strict_inventory:
             if filename is not None or output_format is not None or source_mode == 'documents':
                 raise ValueError('Inventory operations reports require the immutable JSON template and analytics sources.')
-            from core.reports.inventory_operations import generate_inventory_report
+            from core.agents.report.inventory_operations import generate_inventory_report
             return await generate_inventory_report(self, request)
         sales_report = source_mode != 'documents' and (report_type == 'sales_performance' or natural_sales)
         if sales_report:
             if filename is not None:
                 raise ValueError('Sales performance reports use the immutable server template; custom templates are not supported.')
-            from core.reports.sales_performance import generate_sales_report
+            from core.agents.report.sales_performance import generate_sales_report
             return await generate_sales_report(self, request)
         if template_choice not in {None, 'uploaded', 'suggested'} or type(accept_supported_scope) is not bool:
             raise ValueError('Invalid report confirmation choice')
@@ -105,7 +105,7 @@ class ReportAgent:
         if output_format and template.format != output_format:
             raise ValueError("Output format conflicts with uploaded template")
         if source_mode != 'documents' and (report_type or inventory_request(request.question) or resolve_metric_names(request.question)):
-            from core.reports.generation import generate_planned_report
+            from core.agents.report.generation import generate_planned_report
             return await generate_planned_report(
                 self, request, template if filename else None, source_mode=source_mode,
                 output_format=output_format, template_choice=template_choice,

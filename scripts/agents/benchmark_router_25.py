@@ -23,8 +23,8 @@ sys.path.insert(0, str(ROOT / "src"))
 load_dotenv(ROOT / ".env", override=True)
 os.environ["LANGSMITH_TRACING"] = "false"
 
-from core.agents.intent_classifier import IntentClassifier  # noqa: E402
-from core.agents.router import AgentRouter  # noqa: E402
+from core.agents.decision_support.intent_classifier import IntentClassifier  # noqa: E402
+from core.agents.decision_support.router import AgentRouter  # noqa: E402
 from core.llm.groq_provider import GroqProvider  # noqa: E402
 from core.models.agents import AgentRequest, AgentResult, Evidence, VerifiedIdentity  # noqa: E402
 from core.models.intent import IntentResult  # noqa: E402
@@ -34,8 +34,8 @@ DATASET = ROOT / "data/evaluation/router_benchmark_50.json"
 OUT = ROOT / "artifacts/evaluation/router-benchmark-50-2026-10-25"
 PREVIOUS_OUT = ROOT / "artifacts/evaluation/router-benchmark-25-2026-10-25"
 LABELS = ("knowledge", "analytics", "hybrid")
-FILES = ("scripts/agents/benchmark_router_25.py", "src/core/agents/intent_classifier.py",
-         "src/core/agents/router.py", "src/core/prompts/intent.py", "src/core/models/intent.py")
+FILES = ("scripts/agents/benchmark_router_25.py", "src/core/agents/decision_support/intent_classifier.py",
+         "src/core/agents/decision_support/router.py", "src/core/prompts/intent.py", "src/core/models/intent.py")
 
 
 class Target:
@@ -214,8 +214,8 @@ async def benchmark_unified(output: Path, cases: list, dataset_bytes: bytes, *, 
                 await asyncio.sleep(interval)
     finally:
         provider.close()
-    files = ['src/core/agents/router.py', 'src/core/agents/planning.py', 'src/core/models/agent_plan.py',
-             'src/core/agents/execution.py', 'src/core/agents/response.py', 'src/app/agents.py',
+    files = ['src/core/agents/decision_support/router.py', 'src/core/agents/decision_support/planning.py', 'src/core/models/agent_plan.py',
+             'src/core/agents/decision_support/execution.py', 'src/core/agents/decision_support/response.py', 'src/app/agents.py',
              'src/core/prompts/agents.py']
     report = {'created_at_utc': datetime.now(timezone.utc).isoformat(), 'configuration': 'unified',
               'model': provider.model_name, 'provider': 'Groq Responses API',

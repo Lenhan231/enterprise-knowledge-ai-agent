@@ -15,8 +15,8 @@ from dotenv import load_dotenv
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from core.agents.analytics_agent import AnalyticsAgent  # noqa: E402
-from core.agents.sql_analytics_agent import SQLAnalyticsAgent  # noqa: E402
+from core.agents.sql.analytics_agent import AnalyticsAgent  # noqa: E402
+from core.agents.sql.agent import SQLAnalyticsAgent  # noqa: E402
 from core.database.commerce_repository import CommerceRepository, create_repository_from_env  # noqa: E402
 from core.models.agents import AgentRequest, AgentResult, VerifiedIdentity  # noqa: E402
 

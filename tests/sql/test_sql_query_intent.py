@@ -11,7 +11,7 @@ from core.agents.sql.intent_resolution import (
 from core.agents.sql.query_intent import (
     ClarificationChoice, PendingClarification, QueryIntent,
 )
-from core.analytics.text_to_sql import APPROVED_COLUMNS
+from core.agents.sql.text_to_sql import APPROVED_COLUMNS
 
 
 def intent_payload(question, **changes):

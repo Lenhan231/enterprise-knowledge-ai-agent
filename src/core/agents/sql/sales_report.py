@@ -6,9 +6,9 @@ from decimal import Decimal
 import hashlib
 import math
 
-from core.analytics.text_to_sql import validate_commerce_sql
+from core.agents.sql.text_to_sql import validate_commerce_sql
 from core.agents.runtime import remaining
-from core.reports.sales_performance import load_contract, month_start, monthly_scopes
+from core.agents.report.sales_performance import load_contract, month_start, monthly_scopes
 
 
 async def query(agent, request, sql, parameters=()):

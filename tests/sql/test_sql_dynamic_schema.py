@@ -8,10 +8,10 @@ from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
-from core.analytics.text_to_sql import SQLValidationError, validate_commerce_sql
+from core.agents.sql.text_to_sql import SQLValidationError, validate_commerce_sql
 from core.models.agents import AgentRequest, VerifiedIdentity
-from core.sql_agent.agent import SQLAnalyticsAgent
-from core.sql_agent.schema import configured_schemas
+from core.agents.sql.agent import SQLAnalyticsAgent
+from core.agents.sql.schema import configured_schemas
 
 
 class DynamicSchemaTest(unittest.IsolatedAsyncioTestCase):
@@ -44,7 +44,7 @@ class DynamicSchemaTest(unittest.IsolatedAsyncioTestCase):
         repository.execute_approved_query.assert_awaited_once_with(query)
 
     async def test_auto_planner_replans_with_live_schema_only_for_sql_tasks(self):
-        from core.agents.router import AgentRouter
+        from core.agents.decision_support.router import AgentRouter
 
         repository = Mock()
         repository.get_schema = AsyncMock(return_value={
@@ -70,7 +70,7 @@ class DynamicSchemaTest(unittest.IsolatedAsyncioTestCase):
         repository.get_schema.assert_awaited_once()
 
     async def test_auto_planner_routes_promotion_question_to_sql_without_clarification(self):
-        from core.agents.router import AgentRouter
+        from core.agents.decision_support.router import AgentRouter
 
         repository = Mock()
         repository.get_schema = AsyncMock(return_value={

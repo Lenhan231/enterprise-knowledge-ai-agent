@@ -204,12 +204,12 @@ and error types. Persisted telemetry does not acquire raw questions, row data,
 | File | Responsibility |
 |---|---|
 | `src/core/models/agent_plan.py` | Typed focused tasks, result references, dependency validation |
-| `src/core/agents/planning.py` | Context-aware plan generation, repair, narrow fallback |
-| `src/core/agents/router.py` | Shared auto/agentic graph and standalone dispatch |
-| `src/core/agents/execution.py` | Authorization, dependencies, outcomes, attempts, trace |
-| `src/core/agents/response.py` | Citation mapping, synthesis checks, supported fallback |
+| `src/core/agents/decision_support/planning.py` | Context-aware plan generation, repair, narrow fallback |
+| `src/core/agents/decision_support/router.py` | Shared auto/agentic graph and standalone dispatch |
+| `src/core/agents/decision_support/execution.py` | Authorization, dependencies, outcomes, attempts, trace |
+| `src/core/agents/decision_support/response.py` | Citation mapping, synthesis checks, supported fallback |
 | `src/core/agents/runtime.py` | Request-local deadlines and bounded sync work |
-| `src/core/agents/conversation_context.py` | Scoped, bounded process-local history and locks |
+| `src/core/agents/decision_support/conversation_context.py` | Scoped, bounded process-local history and locks |
 | `src/core/prompts/` | Centralized instruction templates; see its prompt catalog |
 | `src/core/llm/groq_provider.py` | Finite provider calls and same-model key failover |
 | `src/app/agents.py`, `src/core/agents/main.py` | API validation/defaults/status integration |

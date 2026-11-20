@@ -35,11 +35,11 @@ Trên câu thử EN tìm toàn kho:
 | File | Nhiệm vụ |
 |---|---|
 | `src/core/prompts/knowledge_search.py` | Chỉ dẫn LLM tạo JSON với 1 hoặc 2 câu tìm kiếm |
-| `src/core/rag/rag_service.py` | Kiểm tra kế hoạch, gọi retrieval, gộp context, gọi generation |
-| `src/core/agents/knowledge_agent.py` | Bật cơ chế này cho Knowledge trả lời bằng `decompose=True` |
+| `src/core/agents/knowledge/rag_service.py` | Kiểm tra kế hoạch, gọi retrieval, gộp context, gọi generation |
+| `src/core/agents/knowledge/agent.py` | Bật cơ chế này cho Knowledge trả lời bằng `decompose=True` |
 | `src/core/latency.py` | Thêm thời gian `knowledge_search_planning` vào monitoring |
-| `tests/test_knowledge_search_plan.py` | Kiểm tra các nhánh logic mới |
-| `tests/test_knowledge_outcomes.py` | Cập nhật kiểm tra lời gọi từ KnowledgeAgent |
+| `tests/knowledge/test_knowledge_search_plan.py` | Kiểm tra các nhánh logic mới |
+| `tests/knowledge/test_knowledge_outcomes.py` | Cập nhật kiểm tra lời gọi từ KnowledgeAgent |
 
 Không sửa routing của An. `KnowledgeAgent.retrieve()` lấy bằng chứng thô cho Report vẫn giữ hành vi cũ. `generate_answer()` mặc định `decompose=False`, nên caller khác không tự đổi hành vi; luồng Knowledge trả lời chủ động bật True. Auto nếu gọi chính KnowledgeAgent.run cũng đi qua bước này, nhưng không sửa bộ lập kế hoạch Auto.
 

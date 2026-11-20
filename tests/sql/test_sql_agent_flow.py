@@ -12,14 +12,14 @@ from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-from core.analytics.join_validation import PRIMARY_KEYS
-from core.analytics.text_to_sql import (
+from core.agents.sql.join_validation import PRIMARY_KEYS
+from core.agents.sql.text_to_sql import (
     APPROVED_COLUMNS, APPROVED_DATE_COLUMNS, APPROVED_JOINS,
     relevant_schema_tables,
 )
-from core.analytics.metric_ontology import get_metric_definition, resolve_metric_names
-from core.sql_agent.agent import SQLAnalyticsAgent, _completed_months_revenue_plan
-from core.sql_agent.assistant_endpoint import run_sql_assistant
+from core.agents.sql.metric_ontology import get_metric_definition, resolve_metric_names
+from core.agents.sql.agent import SQLAnalyticsAgent, _completed_months_revenue_plan
+from core.agents.sql.assistant_endpoint import run_sql_assistant
 from core.models.agents import AgentRequest, VerifiedIdentity
 
 

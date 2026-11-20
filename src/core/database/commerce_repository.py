@@ -11,7 +11,7 @@ import asyncio
 from typing import Any
 from urllib.parse import urlsplit
 
-from core.analytics.text_to_sql import (
+from core.agents.sql.text_to_sql import (
     INVENTORY_SOURCES, inventory_scope_enabled, validate_commerce_sql, validate_sql_security,
 )
 from core.agents.sql.schema import configured_schemas, discover_schema

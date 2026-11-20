@@ -28,7 +28,7 @@ Inventory presentation follows the Sales report's numbered source links, KPI car
 
 ## Verification
 
-`tests/test_inventory_operations.py` covers contract bytes, scope, all fixed SQL plans, parameters, missing/stale/incomplete snapshots, rule boundaries, unsupported dimensions, policy RBAC/source filtering, immutable definitions, the seven-section/five-widget renderer, saved report ownership, policy revocation, PDFs and both report-delivery APIs. Read-only PostgreSQL VALUES fixtures additionally verify all nine arithmetic formulas, period cutoffs, independent snapshots, null flags, empty sources and product filters. Set `INVENTORY_REPORT_TEST_URL` to opt into those fixtures. They create no tables and write no data.
+`tests/report/test_inventory_operations.py` covers contract bytes, scope, all fixed SQL plans, parameters, missing/stale/incomplete snapshots, rule boundaries, unsupported dimensions, policy RBAC/source filtering, immutable definitions, the seven-section/five-widget renderer, saved report ownership, policy revocation, PDFs and both report-delivery APIs. Read-only PostgreSQL VALUES fixtures additionally verify all nine arithmetic formulas, period cutoffs, independent snapshots, null flags, empty sources and product filters. Set `INVENTORY_REPORT_TEST_URL` to opt into those fixtures. They create no tables and write no data.
 
 Sales contract, context, workflow, saved-report, adaptive report and browser-renderer regressions use the existing tests. `SALES_REPORT_TEST_URL` enables the existing read-only Sales arithmetic fixtures. Full-suite and focused test logs and a sample JSON/PDF preview are under the local `artifacts/inventory-operations/` directory.
 
@@ -43,15 +43,15 @@ Verified on 2026-11-19 against latest main `ef5ac950`:
 
 - `.gitattributes`: stable contract bytes across Windows/Linux checkouts.
 - `data/semantic/inventory_operations_strict.json`: original supplied contract.
-- `src/core/reports/calendar_scope.py`, `sales_performance.py`: shared calendar parsing, preserving Sales imports and behavior.
-- `src/core/reports/inventory_operations.py`: fixed contract, policy evidence, validation, decisions and assembly.
+- `src/core/agents/report/calendar_scope.py`, `sales_performance.py`: shared calendar parsing, preserving Sales imports and behavior.
+- `src/core/agents/report/inventory_operations.py`: fixed contract, policy evidence, validation, decisions and assembly.
 - `src/core/agents/sql/inventory_report.py`, `sql/agent.py`: fixed validated SQL plans and SQL Agent entry point.
-- `src/core/agents/report/agent.py`, `src/core/reports/planning.py`: strict routing while preserving adaptive inventory and exact-date requests.
-- `src/core/reports/document.py`, `export.py`: fixed inventory presentation and existing PDF delivery.
+- `src/core/agents/report/agent.py`, `src/core/agents/report/planning.py`: strict routing while preserving adaptive inventory and exact-date requests.
+- `src/core/agents/report/document.py`, `export.py`: fixed inventory presentation and existing PDF delivery.
 - `src/app/reports.py`: natural request routing, saved reports, policy reauthorization and safe presentation edits.
 - `src/app/agents.py`, `src/core/agents/main.py`: inventory report type on both existing delivery endpoints.
 - `src/app/static/app.js`, `index.html`, `report-workspace.js`, `sales-report.js`: existing prompt, library, fixed preview and chart rendering.
-- `tests/test_inventory_operations.py`, `tests/test_saved_reports.py`: inventory workflow and cross-report presentation regression checks.
+- `tests/report/test_inventory_operations.py`, `tests/report/test_saved_reports.py`: inventory workflow and cross-report presentation regression checks.
 - `docs/technical/inventory-operations-strict-report.md`: implementation policy and verification notes.
 
 

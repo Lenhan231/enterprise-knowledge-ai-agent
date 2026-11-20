@@ -67,7 +67,7 @@ attribute claims consistently, and clearly disclose unavailable portions.
 Existing Python >=3.11, Pydantic models, provider adapter, and report grounding
 helpers where applicable. Work stays in `src/core/agents/`,
 `src/core/models/agents.py`, `src/core/agents/streamlit_ui.py`, and relevant
-`src/app/static/` clients. Reuse `core.reports` validation patterns without forcing
+`src/app/static/` clients. Reuse `core.agents.report` validation patterns without forcing
 ordinary chat through full report generation.
 
 ## Commands

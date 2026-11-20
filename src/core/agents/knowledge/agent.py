@@ -8,7 +8,7 @@ from core.models.agents import (
     AgentResult,
     Evidence,
 )
-from core.rag.rag_service import RAGService
+from core.agents.knowledge.rag_service import RAGService
 from core.agents.decision_support.execution import authorize
 from core.agents.runtime import deadline, remaining, run_sync
 

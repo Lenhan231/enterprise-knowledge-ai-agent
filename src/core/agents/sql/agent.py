@@ -15,7 +15,7 @@ from typing import Any
 from sqlglot import exp, parse_one
 
 from core.agents.base import BaseAgent
-from core.agents.intent_classifier import select_jev_schema_tables
+from core.agents.decision_support.intent_classifier import select_jev_schema_tables
 from core.agents.sql.compiler_dispatch import (
     CompilationSelection,
     _annual_revenue_plan,
@@ -28,20 +28,20 @@ from core.agents.sql.compiler_dispatch import (
     compile_inventory_mapping as _compile_inventory_mapping,
     match_fixed_query,
 )
-from core.analytics.commerce_decision_support import (
+from core.agents.sql.commerce_decision_support import (
     COMMERCE_QUERY_TABLES, COMMERCE_UNAVAILABLE_DIMENSIONS,
     resolve_commerce_decision_domain, unavailable_commerce_dimensions,
 )
-from core.analytics.metric_ontology import resolve_metric_names, get_metric_definition
-from core.analytics.query_contract import require_query_contract
-from core.analytics.metric_mapping import build_metric_mapping_prompt, compile_inventory_query, decode_metric_mapping, decode_sql_turn, MetricTime, validate_mapped_sql
-from core.analytics.metric_validation import MetricDefinitionError, inventory_time_scope, validate_metric_definitions, validate_metric_request, validate_independent_query_period
-from core.analytics.join_validation import PRIMARY_KEYS
-from core.analytics.sql_ranking import (
+from core.agents.sql.metric_ontology import resolve_metric_names, get_metric_definition
+from core.agents.sql.query_contract import require_query_contract
+from core.agents.sql.metric_mapping import build_metric_mapping_prompt, compile_inventory_query, decode_metric_mapping, decode_sql_turn, MetricTime, validate_mapped_sql
+from core.agents.sql.metric_validation import MetricDefinitionError, inventory_time_scope, validate_metric_definitions, validate_metric_request, validate_independent_query_period
+from core.agents.sql.join_validation import PRIMARY_KEYS
+from core.agents.sql.sql_ranking import (
     complete_ranking_intent, has_ranking_request, resolve_ranking_intent,
     validate_ranking_semantics,
 )
-from core.analytics.text_to_sql import (
+from core.agents.sql.text_to_sql import (
     APPROVED_COLUMNS, APPROVED_JOINS, APPROVED_DATE_COLUMNS, INVENTORY_SOURCES, inventory_scope_enabled,
     approved_join_path,
     QueryPlan,
@@ -579,7 +579,7 @@ class SQLAnalyticsAgent(BaseAgent):
                             if interpretation is not None or cross_domain:
                                 raise MetricDefinitionError('This semantic request requires the existing single-query workflow. '
                                     'Please narrow it to one supported dataset.', clarification=True)
-                            from core.dashboards.requirements import validate_outputs
+                            from core.agents.dashboard.requirements import validate_outputs
                             ranking_requested = has_ranking_request(schema_scope_question)
                             request_ranking = resolve_ranking_intent(schema_scope_question)
                             for _, data_plan, _ in bundle:
@@ -754,7 +754,7 @@ class SQLAnalyticsAgent(BaseAgent):
                         else:
                             require_query_contract(query_intent, plan.sql, plan.parameters, table_columns)
                     if dashboard_build:
-                        from core.dashboards.requirements import validate_outputs
+                        from core.agents.dashboard.requirements import validate_outputs
                         output_manifest = mapped_outputs if interpretation and interpretation.domain == 'inventory' else parse_json_response(raw).get('outputs')
                         dashboard_outputs = validate_outputs(output_manifest,
                             [(question, plan, definitions)], question, date_columns)

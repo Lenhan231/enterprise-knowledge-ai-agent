@@ -16,7 +16,7 @@ Một request V2 trước đó mất 93,02 giây HTTP trong khi handler chỉ 27
 
 ### Giới hạn chờ Knowledge
 
-`src/core/agents/knowledge_agent.py` đặt deadline cho phần sinh câu trả lời: 90 giây khi `KNOWLEDGE_MULTIQUERY_ENABLED=1`, 60 giây khi tắt. Đây là giới hạn theo chế độ multiquery, không phải chỉ những câu được planner tách thành hai nhánh. Deadline ngắn hơn từ luồng cha vẫn được giữ.
+`src/core/agents/knowledge/agent.py` đặt deadline cho phần sinh câu trả lời: 90 giây khi `KNOWLEDGE_MULTIQUERY_ENABLED=1`, 60 giây khi tắt. Đây là giới hạn theo chế độ multiquery, không phải chỉ những câu được planner tách thành hai nhánh. Deadline ngắn hơn từ luồng cha vẫn được giữ.
 
 `src/core/agents/runtime.py` thêm tham số nội bộ `_timeout` vào `run_sync()`, mặc định 60 giây. Tham số này điều khiển thời gian chờ, không truyền xuống hàm RAG. Các caller khác giữ mặc định cũ. Deadline được truyền vào worker và khôi phục ở caller cả khi lỗi.
 

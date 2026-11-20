@@ -127,7 +127,7 @@ all stored chunks before considering this fix proven on the live corpus. Keep
 stored chunk sizes without re-embedding the matching vectors and evaluating
 retrieval quality.
 
-Focused checks: `tests/test_text_processor_chunking.py`,
+Focused checks: `tests/documents/test_text_processor_chunking.py`,
 `tests/test_document_processor.py`, `tests/test_pdf_upload_processing.py` and
 `tests/test_seed_ingestion.py`. The paired retrieval result above is preliminary;
 proposal evaluation still needs broader independently reviewed queries and

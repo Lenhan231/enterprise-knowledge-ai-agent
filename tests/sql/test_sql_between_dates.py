@@ -2,7 +2,7 @@ import json
 import unittest
 from datetime import date
 
-from core.analytics.text_to_sql import decode_query_plan, SQLValidationError
+from core.agents.sql.text_to_sql import decode_query_plan, SQLValidationError
 
 
 class BetweenDateBindingTest(unittest.TestCase):

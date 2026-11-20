@@ -181,11 +181,11 @@ async def generate(groups, identifiers, *, retry_provider_errors=False):
     # Process-local alias lets existing lazy/nested providers use the authorized fallback too.
     tertiary_alias=install_tertiary_alias(os.environ)
     from core.agents.main import _LazyKnowledgeAgent, _FallbackClassifier
-    from core.agents.analytics_agent import AnalyticsAgent
-    from core.agents.dashboard_agent import InventoryDashboardAgent
-    from core.agents.router import AgentRouter
-    from core.agents.report_agent import ReportAgent
-    from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+    from core.agents.sql.analytics_agent import AnalyticsAgent
+    from core.agents.dashboard.charts import InventoryDashboardAgent
+    from core.agents.decision_support.router import AgentRouter
+    from core.agents.report.agent import ReportAgent
+    from core.agents.sql.agent import SQLAnalyticsAgent
     from core.database.commerce_repository import create_repository_from_env
     from core.llm.groq_provider import GroqProvider
     from core.models.agents import AgentRequest, VerifiedIdentity
@@ -376,7 +376,7 @@ def report_reference_text(reference):
 async def score(groups, identifiers, *, retry_provider_errors=False):
     from evaluation.ragas_judge import CodexCLIJudge
     from ragas.metrics.collections import Faithfulness, FactualCorrectness, SQLSemanticEquivalence, RubricsScoreWithReference
-    from core.analytics.text_to_sql import APPROVED_COLUMNS
+    from core.agents.sql.text_to_sql import APPROVED_COLUMNS
     judge = CodexCLIJudge()  # Deliberately same model/reasoning as the previous benchmark.
     ExecutionAccuracy, NumericalAccuracy, SQLNumericalAccuracy = metric_classes()
     execution = ExecutionAccuracy()

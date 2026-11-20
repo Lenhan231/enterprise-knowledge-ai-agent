@@ -2,7 +2,7 @@
 
 Bản này dùng ID do server cấp và guard số học. Các số dòng ở bảng dưới trỏ vào source v2. Dòng trống chỉ phân nhóm; data JSON không chạy code. Kết quả và giới hạn xem `knowledge-verifier-v2-20261103.vi.md`.
 
-## `src/core/rag/arithmetic.py`
+## `src/core/agents/knowledge/arithmetic.py`
 
 | Dòng | Code | Giải thích |
 |---:|---|---|
@@ -11,7 +11,7 @@ Bản này dùng ID do server cấp và guard số học. Các số dòng ở b�
 | 4 | `import operator` | Dùng bốn hàm toán học chuẩn được whitelist. |
 | 5 | `import re` | Dùng regex tìm biểu thức, token số và dấu hiệu mơ hồ. |
 | 6 | `from fractions import Fraction` | Fraction giữ giá trị hữu tỉ chính xác, không dùng sai số float. |
-| 8 | `from core.reports.grounding import numeric_value` | Tái sử dụng bộ đọc số locale bảo thủ của Report; không sao chép parser số mới. |
+| 8 | `from core.agents.report.grounding import numeric_value` | Tái sử dụng bộ đọc số locale bảo thủ của Report; không sao chép parser số mới. |
 | 10 | `_OPERATORS = {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul, ast.Div: operator.truediv}` | Chỉ cho cộng, trừ, nhân, chia; Pow/Call/Mod không có trong whitelist. |
 | 11 | `_NUMBER = re.compile(r"(?:\d+(?:[.,]\d+)*&#124;[.,]\d+)")` | Token số cho phép dấu chấm/phẩy; tính hợp lệ locale do numeric_value kiểm tra. |
 | 12 | `_RUN = re.compile(r"(?:(?!,\s)[0-9\s.,()+*/×÷=^%−-])+")` | Tìm chuỗi ký tự toán; dấu phẩy theo sau bởi whitespace ngăn hai câu/phép tính bị nối nhầm. |
@@ -74,7 +74,7 @@ Bản này dùng ID do server cấp và guard số học. Các số dòng ở b�
 | 77 | `if any(value != values[0] for value in values[1:]):` | Mọi vế phải bằng vế đầu chính xác. |
 | 78 | `return checked, "arithmetic_mismatch"` | Không bằng thì arithmetic_mismatch, dùng để chặn trước LLM. |
 | 79 | `return checked, None` | Trả số đã kiểm và không có lỗi; vẫn chưa xác nhận claim với nguồn. |
-## `src/core/rag/claim_verification.py`
+## `src/core/agents/knowledge/claim_verification.py`
 
 | Dòng | Code | Giải thích |
 |---:|---|---|
@@ -86,7 +86,7 @@ Bản này dùng ID do server cấp và guard số học. Các số dòng ở b�
 | 8 | `from openai import APIError` | Bắt lỗi provider đã biết. |
 | 9 | `from pydantic import BaseModel, ConfigDict, Field, StringConstraints` | Dùng Pydantic có sẵn. |
 | 11 | `from core.agents.runtime import deadline, remaining` | Kế thừa deadline cha, không tăng trần. |
-| 12 | `from core.rag.arithmetic import check_equalities` | Gọi guard số học thuần code. |
+| 12 | `from core.agents.knowledge.arithmetic import check_equalities` | Gọi guard số học thuần code. |
 | 13 | `from core.latency import measure` | Đo latency request-local. |
 | 14 | `from core.prompts.knowledge_verification import CLAIM_VERIFICATION_PROMPT` | Prompt riêng để review thay đổi. |
 | 16 | `VERIFICATION_UNAVAILABLE_ANSWER = (` | Thông báo khi câu chưa qua kiểm chứng. |

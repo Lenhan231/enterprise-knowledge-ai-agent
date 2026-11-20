@@ -7,9 +7,9 @@ from unittest.mock import AsyncMock, Mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
-from core.analytics.metric_mapping import decode_metric_mapping, compile_inventory_query, validate_mapped_sql
-from core.analytics.metric_validation import MetricDefinitionError
-from core.analytics.text_to_sql import decode_query_plan
+from core.agents.sql.metric_mapping import decode_metric_mapping, compile_inventory_query, validate_mapped_sql
+from core.agents.sql.metric_validation import MetricDefinitionError
+from core.agents.sql.text_to_sql import decode_query_plan
 
 
 CHANGE = 'How did stock_on_hand change between November 30 and December 31, 2022, for products present on both dates?'
@@ -71,7 +71,7 @@ class SnapshotContractsTest(unittest.TestCase):
 
 class ComparisonAgentTest(unittest.IsolatedAsyncioTestCase):
     async def test_comparison_runs_through_shared_agent(self):
-        from core.sql_agent.agent import SQLAnalyticsAgent
+        from core.agents.sql.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         provider, repository = Mock(), AsyncMock()
         provider.generate.return_value = json.dumps(dict(metrics=['stock_on_hand'], dimensions=['product_id'],

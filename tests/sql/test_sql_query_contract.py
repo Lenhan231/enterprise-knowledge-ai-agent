@@ -5,9 +5,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
-from core.analytics.query_contract import verify_query_contract
-from core.analytics.sql_validation import SQLSecurityError, validate_sql_security
-from core.analytics.text_to_sql import APPROVED_COLUMNS
+from core.agents.sql.query_contract import verify_query_contract
+from core.agents.sql.sql_validation import SQLSecurityError, validate_sql_security
+from core.agents.sql.text_to_sql import APPROVED_COLUMNS
 from core.agents.sql.query_intent import QueryIntent
 
 

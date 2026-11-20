@@ -9,7 +9,10 @@ import importlib.metadata
 import hashlib
 import json
 import platform
-import resource
+try:
+    import resource
+except ImportError:  # Windows has no POSIX peak RSS API.
+    resource = None
 import re
 import shutil
 import subprocess
@@ -139,6 +142,8 @@ def summarize_pages(rows: list[dict]) -> dict:
 
 
 def peak_memory_mb() -> dict[str, float | None]:
+    if resource is None:
+        return {"process_peak_rss_mb": None, "child_peak_rss_mb": None}
     """Return process and child-process high-water RSS in MiB."""
     scale = 1024 if platform.system() == "Linux" else 1024 * 1024
     result = {}

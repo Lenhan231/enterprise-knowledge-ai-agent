@@ -13,8 +13,8 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from core.agents.dashboard_agent import InventoryDashboardAgent
-from core.agents.intent_classifier import IntentClassifier
+from core.agents.dashboard.charts import InventoryDashboardAgent
+from core.agents.decision_support.intent_classifier import IntentClassifier
 from core.agents.knowledge.agent import KnowledgeAgent
 from core.agents.report.agent import ReportAgent
 from core.agents.decision_support.router import AgentRouter
@@ -257,8 +257,8 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
                     identity = _local_development_identity()
             if not isinstance(identity, VerifiedIdentity):
                 raise AnalyticsPermissionDenied("A verified identity is required")
-            from core.reports.sources import authorize_sources
-            from core.reports.http import report_response
+            from core.agents.report.sources import authorize_sources
+            from core.agents.report.http import report_response
             agent_request = AgentRequest(question=question.strip(), user_id=identity.subject, identity=identity,
                                          conversation_id=conversation_id)
             if report_type:

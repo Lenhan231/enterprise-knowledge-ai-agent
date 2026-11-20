@@ -77,12 +77,16 @@ def source_manifest():
     paths = set(_git_changed_paths())
     paths.update({
         "src/core/agents/sql/agent.py",
+        "src/core/agents/sql/assistant_endpoint.py",
         "src/core/agents/sql/compiler_dispatch.py",
         "src/core/agents/decision_support/intent_classifier.py",
         "src/core/agents/sql/field_retrieval.py",
+        "src/core/agents/sql/intent_resolution.py",
         "src/core/agents/sql/join_validation.py",
         "src/core/agents/sql/metric_mapping.py",
         "src/core/agents/sql/metric_ontology.py",
+        "src/core/agents/sql/metric_validation.py",
+        "src/core/agents/sql/query_contract.py",
         "src/core/agents/sql/query_intent.py",
         "src/core/agents/sql/sql_ranking.py",
         "src/core/agents/sql/text_to_sql.py",

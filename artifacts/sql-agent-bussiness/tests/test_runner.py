@@ -385,6 +385,11 @@ class SQLBenchmarkRunnerTest(unittest.TestCase):
         hashes = RUNNER.source_manifest()
         self.assertIn("src/core/agents/sql/compiler_dispatch.py", hashes)
         self.assertIn("src/core/agents/sql/agent.py", hashes)
+        self.assertIn("src/core/agents/sql/assistant_endpoint.py", hashes)
+        self.assertIn("src/core/agents/sql/intent_resolution.py", hashes)
+        self.assertIn("src/core/agents/sql/metric_validation.py", hashes)
+        self.assertIn("src/core/agents/sql/query_contract.py", hashes)
+        self.assertIn("src/core/agents/sql/sql_ranking.py", hashes)
         self.assertIn("src/core/database/commerce_repository.py", hashes)
 
     def test_preflight_records_and_requires_the_frozen_order_date_type(self):

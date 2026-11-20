@@ -53,3 +53,12 @@ Verified on 2026-11-19 against latest main `ef5ac950`:
 - `src/app/static/app.js`, `index.html`, `report-workspace.js`, `sales-report.js`: existing prompt, library, fixed preview and chart rendering.
 - `tests/test_inventory_operations.py`, `tests/test_saved_reports.py`: inventory workflow and cross-report presentation regression checks.
 - `docs/technical/inventory-operations-strict-report.md`: implementation policy and verification notes.
+
+
+## Policy retrieval and guidance correction ? 2026-11-20
+
+Fixed report policy retrieval uses role-scoped lexical lookup across the four original source titles and the Enterprise Operating Policy EN/VN companions. Current document ACLs, ready status and active knowledge-base membership are checked before document IDs are passed to retrieval ranking. Returned IDs are rechecked, and backends that cannot enforce document filters fail closed. Fixed topic queries cover stockout, reorder, overstock and returns; page headers, contents entries and duplicate passages are excluded. Document text remains quoted evidence and cannot change metric formulas or decision rules.
+
+Both report presentations separate the recorded reason for review from a concrete next step. Inventory validation is a collapsed browser disclosure and a compact PDF summary; the immutable JSON still retains all seven sections and its full audit limitations. Reports use the available page width. The Jan?Nov 2026 workflow was checked using the Operations role: all nine metrics were available, catalog-relative snapshot coverage matched all 97 products, and policy evidence was retrieved.
+
+No generated source records were inserted. The existing Sales record fingerprint was unchanged. An optional nullable provenance column was added while a separately authorized synthetic-data extension was being assessed; the extension was not executed and no report calculation uses that column.

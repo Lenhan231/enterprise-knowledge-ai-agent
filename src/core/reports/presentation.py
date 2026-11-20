@@ -77,13 +77,23 @@ def observations(report, section, monthly=()):
 def decision_text(rule, report=None):
     if rule['id'].startswith('I'):
         if rule['triggered'] is True:
-            return rule['action']
+            return {
+                'I01': 'Review the flagged product list and confirm current sellable stock and open orders. Investigate discrepancies before changing purchases or customer commitments.',
+                'I02': 'Confirm current stock and existing purchase commitments, then review the flagged products with the inventory planner. Obtain approval before ordering; no purchase quantity or lead time is inferred.',
+                'I03': 'Inspect flagged products and check for overlapping stockout flags. Confirm current sellable quantities before considering transfers or markdowns; disposal or write-off needs separate approval.',
+                'I04': 'Continue routine monitoring. No stockout, reorder or overstock flags were recorded in this covered snapshot; this does not establish current availability.',
+            }[rule['id']]
         if rule['triggered'] is False:
             return 'Evaluated: this predefined condition was not met.'
         return ('A no-exception conclusion is withheld because snapshot coverage or flag evidence is incomplete.'
                 if rule['id'] == 'I04' else 'Cannot evaluate: the required recorded flag count is unavailable.')
     if rule['triggered'] is True:
-        text = rule['action']
+        text = {
+            'S01': 'Compare revenue by month and review dated sales, pricing and promotion records for the affected periods. Confirm the cause before changing commercial plans.',
+            'S02': 'Review revenue and COGS source entries, discounts and pricing conditions. Investigate the nonpositive gross profit before approving a corrective action.',
+            'S03': 'Compare current and prior COGS and gross profit, then review dated pricing and promotion changes. Revenue growth alone does not establish improved profitability or its cause.',
+            'S04': 'Continue routine monitoring. None of the predefined risk conditions were met; this is not a certification of business health.',
+        }[rule['id']]
     elif rule['triggered'] is False:
         text = 'Evaluated: this predefined risk condition was not met.'
     else:
@@ -98,6 +108,30 @@ def decision_text(rule, report=None):
     if rule['id'] in {'S01', 'S03'}:
         return 'Cannot evaluate this comparison with the selected scope and available baseline. See the data notes below.'
     return 'Cannot evaluate: current-period revenue or gross profit is unavailable.'
+
+
+def inventory_insights(report):
+    metrics = {m['id']: m for m in report['metrics']}
+    quality = report['data_quality']
+    available = sum(m['status'] == 'available' and m['value'] is not None for m in metrics.values())
+    date_text = quality['coverage_end'] or 'unavailable'
+    missing = quality['missing_or_unmatched_count']
+    summary = [f'{available} of {len(metrics)} fixed metric values are available from validated source queries.',
+               f'Selected inventory snapshot: {date_text}. Balances use this date only.']
+    summary.append('Catalog-relative snapshot coverage verified; no missing or unmatched products.'
+        if quality['partial_period'] is False and missing == 0 else
+        f'Snapshot coverage needs review: {missing} missing or unmatched products.' if missing is not None else
+        'Snapshot coverage could not be verified. Confirm the snapshot and product catalog before relying on a no-exception conclusion.')
+    actions = []
+    for rule in report['decisions']:
+        if rule['triggered'] is not True:
+            continue
+        key, flag = {'I01':('stockout_products','stockout'), 'I02':('reorder_products','reorder'), 'I03':('overstock_products','overstock')}.get(rule['id'],(None,None))
+        why = (f"{display_value(metrics[key])} products carry the {flag} flag in the {date_text} snapshot. Flags are signals for review."
+               if key else f'All three recorded flag counts are zero and catalog-relative coverage is verified for {date_text}.')
+        actions.append({'title':rule['title'], 'why':why, 'action':decision_text(rule, report),
+                        'citations':list(dict.fromkeys(e['query_id'] for e in rule['evidence']))})
+    return {'actions':actions, 'validation_summary':summary}
 
 
 def data_notes(report):

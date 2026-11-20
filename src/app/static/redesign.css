@@ -355,8 +355,9 @@
 :root .feedback-form-actions{display:flex;justify-content:flex-end;gap:8px}
 :root .feedback-form-actions button{height:38px;min-height:38px;padding:0 16px;font-size:13.5px}
 
-/* ---------- Knowledge Q&A, layout B: the question box is the hero ---------- */
-:root .intro,:root .stats,:root #tab-knowledge{max-width:880px;margin-inline:auto}
+/* ---------- Reports workspace ---------- */
+:root #workspace-main.page:has(#tab-knowledge:not([hidden])){max-width:none}
+:root .intro,:root .stats,:root #tab-knowledge{max-width:none;margin-inline:0}
 :root .agent-overview{display:none!important}
 :root .intro{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:10px}
 :root .intro h1{color:var(--ink);font:600 clamp(28px,3.2vw,37px)/1.15 var(--font);letter-spacing:-.025em}

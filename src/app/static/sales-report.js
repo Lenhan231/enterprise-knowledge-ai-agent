@@ -197,7 +197,9 @@ const SalesPerformanceReport = (() => {
           insights.actions.forEach(action => {
             const card = node('article', undefined, 'sales-decision');
             const title = node('h4', action.title); citeIds(title, action.citations);
-            card.append(title, node('p', action.action), node('p', `Periods: ${action.periods.join(', ')}`)); section.append(card);
+            card.append(title);
+            if (action.why) card.append(node('p', `Why review this: ${action.why}`));
+            card.append(node('p', `Recommended next step: ${action.action}`), node('p', `Periods: ${action.periods.join(', ')}`)); section.append(card);
           });
           if (!insights.actions.length) section.append(node('p', 'No rule action is available from the observed inputs. See Data needed below for the specific gaps.'));
           detailRoot = node('details'); detailRoot.append(node('summary','View all rule evaluations')); section.append(detailRoot);
@@ -362,7 +364,13 @@ const SalesPerformanceReport = (() => {
     const notes=inventoryNotes(report);
     Object.entries(inventoryTitles).forEach(([id,title]) => {
       const section = node('section',undefined,'sales-report-section'); section.dataset.sectionId = id;
-      if (id==='data_quality') {section.id=`${prefix}-notes`;section.tabIndex=-1;}
+      if (id==='data_quality') {
+        section.id=`${prefix}-notes`;section.tabIndex=-1;
+        const detail=node('details');detail.append(node('summary','Validation and source details'));
+        (options.insights?.validation_summary || []).forEach(text=>detail.append(node('p',text)));
+        notes.filter(n=>!n.startsWith('Selected snapshot:')).forEach(text=>detail.append(node('p',text)));
+        section.append(detail);root.append(section);return;
+      }
       section.append(node('h3',title));
       if (id === 'operations_summary') {
         notes.filter(n=>n.startsWith('Selected snapshot:')).forEach(n=>section.append(node('p',n)));
@@ -372,7 +380,7 @@ const SalesPerformanceReport = (() => {
         section.append(node('p','Available fulfillment, return and review records are filtered to the requested reporting dates; complete transaction coverage is unverified.'));
         const summary=node('p',metrics.stock_on_hand.value!==null && metrics.observed_products.value!==null
           ? `The selected snapshot records ${inventoryValue(metrics.stock_on_hand)} across ${format(metrics.observed_products.value)} observed products.`
-          : 'Snapshot totals are unavailable for this reporting period. See Data Quality for source and coverage limitations.');
+          : 'Snapshot totals are unavailable for this reporting period. Open Validation and source details for the missing inputs.');
         cite(summary,[...metrics.stock_on_hand.evidence,...metrics.observed_products.evidence]);section.append(summary);
       }
       const grid = node('div',undefined,'sales-report-widgets');
@@ -409,8 +417,13 @@ const SalesPerformanceReport = (() => {
       }
       if (id === 'fixed_decisions') {
         const triggered=report.decisions.filter(rule=>rule.triggered===true);
-        if (!triggered.length) section.append(node('p','No rule action is supported by the available inputs. Review the evaluations and Data Quality notes below.'));
-        triggered.forEach(rule=>{const article=node('article',undefined,'sales-decision'),heading=node('h4',rule.title);cite(heading,rule.evidence);article.append(heading,node('p',rule.action));section.append(article);});
+        if (!triggered.length) section.append(node('p','No recommendation can be confirmed from the available inputs. Check the selected snapshot and recorded flags in Validation and source details.'));
+        triggered.forEach(rule=>{
+          const action=options.insights?.actions?.find(item=>item.title===rule.title);
+          const article=node('article',undefined,'sales-decision'),heading=node('h4',rule.title);cite(heading,rule.evidence);article.append(heading);
+          if (action?.why) article.append(node('p',`Why review this: ${action.why}`));
+          article.append(node('p',`Recommended next step: ${action?.action || rule.action}`));section.append(article);
+        });
         const detail=node('details');detail.append(node('summary','View all rule evaluations'));
         report.decisions.forEach(rule=>{
           const article=node('article',undefined,'sales-decision'),heading=node('h4',rule.title);cite(heading,rule.evidence);
@@ -420,7 +433,6 @@ const SalesPerformanceReport = (() => {
             : 'Cannot evaluate: the required recorded flag count is unavailable.'));detail.append(article);
         });section.append(detail);
       }
-      if (id === 'data_quality') notes.filter(n=>!n.startsWith('Selected snapshot:')).forEach(n=>section.append(node('p',n)));
       root.append(section);
     });
     const footer=node('footer',undefined,'sales-report-footnotes');footer.append(node('h3','Sources'));

@@ -84,7 +84,9 @@ class SalesFlowTest(unittest.IsolatedAsyncioTestCase):
         copy = ''.join(page.get_text() for page in pdf)
         self.assertIn('2026-05', copy)
         self.assertIn('Company revenue month-over-month change (2026-05 vs 2026-04)', ' '.join(copy.split()))
-        self.assertIn(monthly[-1]['decisions'][2]['action'], ' '.join(copy.split()))
+        from core.reports.presentation import decision_text
+        import unicodedata
+        self.assertIn(decision_text(monthly[-1]['decisions'][2], monthly[-1]), unicodedata.normalize('NFKC',' '.join(copy.split())))
         self.assertNotIn(monthly[-1]['metrics'][0]['evidence'][0]['query_id'], copy)
         changed = document.model_dump()
         changed['monthly_decisions'][-1]['decisions'][2]['triggered'] = False

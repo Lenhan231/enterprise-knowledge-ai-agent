@@ -2,7 +2,7 @@
 
 Experiment: `sql-agent-business-pilot5-rerun-20261120`
 Status: **NOT_RUN**
-Application revision: `d16f013102b90ba3aa58692bff40caa99bb932ff`
+Application revision: `ca86bd6f9d22810fa50f4efc394f269a5a0f10ae`
 
 ## Metrics
 
@@ -53,9 +53,23 @@ Original report states full provider prompts and raw traces are retained locally
 ## Artifact verification
 
 Offline suite: **PASS** (34 passed, 0 failed, 0 skipped).
-Command: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src uv run python -m unittest discover -s artifacts/sql-agent-bussiness/tests -v`
+Command: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src /home/lenhanm1/orca/workspaces/enterprise-knowledge-ai-agent/main/.venv/bin/python -m unittest discover -s artifacts/sql-agent-bussiness/tests -v`
 Fresh pilot execution: **NOT RUN**.
 Database preflight: **NOT RUN** — SQL_BENCHMARK_DATABASE_URL is not configured; ANALYTICS_DATABASE_URL was not reused.
+
+## SQL semantic regression verification
+
+At application revision `ca86bd6f9d22810fa50f4efc394f269a5a0f10ae`, local SQL regressions passed using Python 3.11.16:
+
+| Suite | Command | Passed | Failed | Skipped |
+|---|---|---:|---:|---:|
+| SQL regressions | `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src /home/lenhanm1/orca/workspaces/enterprise-knowledge-ai-agent/main/.venv/bin/python -m unittest discover -s tests/sql -p 'test_sql_*.py' -v` | 382 | 0 | 10 |
+| Inventory regressions | `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src /home/lenhanm1/orca/workspaces/enterprise-knowledge-ai-agent/main/.venv/bin/python -m unittest discover -s tests -p 'test_inventory*.py' -v` | 73 | 0 | 3 |
+| Benchmark tooling | `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src /home/lenhanm1/orca/workspaces/enterprise-knowledge-ai-agent/main/.venv/bin/python -m unittest discover -s artifacts/sql-agent-bussiness/tests -v` | 34 | 0 | 0 |
+
+The P02 regression proves a missing delivered-order filter is repaired before execution and remains rejected after the bounded repair budget is exhausted. The P03 regression proves `return product_id` is treated as an output instruction, a wrong `returns.return_quantity` plan is repaired, and only the corrected `order_items.quantity` query reaches the repository. These are code-level regression results, not fresh model-accuracy measurements. The SQL benchmark runner's source manifest now hashes the query-intent, population, ranking and assistant validation modules used by these checks.
+
+Syntax compilation and `git diff --check`: **PASS**. Tests used local fixtures and mocks; no SQL database query or model provider call was made.
 
 ## Historical pilot (preserved; not rescored)
 

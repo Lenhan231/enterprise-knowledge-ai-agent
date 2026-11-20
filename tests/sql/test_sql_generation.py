@@ -1,4 +1,5 @@
 import json
+import sqlite3
 import sys
 import unittest
 from datetime import date
@@ -8,13 +9,16 @@ from unittest.mock import AsyncMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-from core.analytics.text_to_sql import (SQLValidationError, current_year_month_range,
+from core.analytics.text_to_sql import (APPROVED_COLUMNS, SQLValidationError, current_year_month_range,
                                         decode_query_plan, validate_commerce_sql,
                                         build_sql_prompt,
                                         validate_current_year_month_range,
                                         validate_current_month_total_query,
                                         rolling_days_range, resolve_rolling_days_parameters,
                                         validate_rolling_days_range)
+from core.analytics.sql_ranking import (
+    complete_ranking_intent, resolve_ranking_intent, validate_ranking_semantics,
+)
 from core.sql_agent.agent import AnalyticsPermissionDenied, SQLAnalyticsAgent
 from core.sql_agent.analytics_agent import AnalyticsAgent
 from core.database.commerce_repository import CommerceRepository
@@ -25,6 +29,14 @@ ANALYST = VerifiedIdentity(subject="analyst-1", permissions={"analytics:read"})
 
 
 class SQLValidationTest(unittest.TestCase):
+    def test_ranking_prompt_prioritizes_requested_measure_not_position(self):
+        prompt = build_sql_prompt("Which customer paid the most money?")
+        self.assertIn("order by the requested business measure first", prompt.casefold())
+        self.assertIn("entity key only as a tie-breaker", prompt.casefold())
+        self.assertIn("positional ORDER BY is allowed only if it resolves to that measure", prompt)
+        self.assertIn("ranking_contract", prompt)
+        self.assertNotIn("Use ORDER BY positions (such as ORDER BY 1)", prompt)
+
     def test_multiple_explicit_decision_criteria_use_entity_rows_without_clarification(self):
         prompt = build_sql_prompt(
             'Show product candidates by revenue, gross margin, inventory and returns for orders in the period, with returns through 2026-11-13. '
@@ -231,6 +243,437 @@ class SQLValidationTest(unittest.TestCase):
                          ("commerce.customers", "commerce.orders"))
         self.assertEqual(validate_commerce_sql(payment_query).sources,
                          ("commerce.payments", "commerce.orders"))
+
+
+class SQLRankingValidationTest(unittest.TestCase):
+    question = "khách hàng nào trả nhiều tiền nhất"
+    base = ("SELECT o.customer_id, SUM(p.payment_value) AS total_payment "
+            "FROM commerce.orders AS o JOIN commerce.payments AS p ON o.order_id=p.order_id "
+            "GROUP BY o.customer_id ")
+    payment_contract = {
+        "entity": "customer",
+        "measure": {"source": "commerce.payments", "column": "payment_value", "aggregation": "sum"},
+        "direction": "desc", "limit": 1, "partition_by": [],
+    }
+
+    def setUp(self):
+        partial = resolve_ranking_intent(self.question)
+        self.assertIsNotNone(partial)
+        self.assertTrue(partial.measure_contract_eligible)
+        self.intent = complete_ranking_intent(partial, self.payment_contract, APPROVED_COLUMNS)
+        self.assertTrue(self.intent.resolved)
+
+    def validate(self, sql, intent=None):
+        return validate_ranking_semantics(sql, intent or self.intent, APPROVED_COLUMNS)
+
+    def test_synthetic_fixture_exposes_customer_id_as_wrong_order_key(self):
+        with sqlite3.connect(":memory:") as db:
+            db.executescript(
+                "CREATE TABLE orders(order_id INTEGER, customer_id INTEGER);"
+                "CREATE TABLE payments(order_id INTEGER, payment_value INTEGER);"
+                "INSERT INTO orders VALUES (1,100),(2,999),(3,200);"
+                "INSERT INTO payments VALUES (1,5000),(2,100),(3,2500);"
+            )
+            wrong = db.execute(
+                "SELECT o.customer_id, SUM(p.payment_value) AS total_payment "
+                "FROM orders o JOIN payments p ON p.order_id=o.order_id "
+                "GROUP BY o.customer_id ORDER BY 1 DESC LIMIT 1"
+            ).fetchone()
+            right = db.execute(
+                "SELECT o.customer_id, SUM(p.payment_value) AS total_payment "
+                "FROM orders o JOIN payments p ON p.order_id=o.order_id "
+                "GROUP BY o.customer_id ORDER BY total_payment DESC, o.customer_id LIMIT 1"
+            ).fetchone()
+        self.assertEqual(wrong, (999, 100))
+        self.assertEqual(right, (100, 5000))
+
+    def test_noncanonical_measure_stays_unverified_while_ranking_is_verifiable(self):
+        self.assertEqual(self.intent.measure.metric_id, None)
+        self.assertEqual(self.intent.measure.source, "commerce.payments")
+        self.assertEqual(self.intent.measure.column, "payment_value")
+        self.assertEqual(self.intent.measure.calculation, "sum_column")
+        self.assertEqual(self.intent.measure.identity, "sum:commerce.payments.payment_value")
+        self.assertEqual(self.intent.measure.approval_status, "unverified")
+        result = self.validate(self.base + "ORDER BY total_payment DESC LIMIT 1")
+        self.assertEqual(result["status"], "verified")
+        self.assertEqual(result["measure_approval"], "unverified")
+
+    def test_custom_ranking_contract_is_schema_bound_and_never_grants_approval(self):
+        partial = resolve_ranking_intent(self.question)
+        with self.assertRaisesRegex(SQLValidationError, "complete typed ranking_contract"):
+            complete_ranking_intent(partial, None, APPROVED_COLUMNS)
+        invalid_contracts = (
+            {**self.payment_contract, "measure": {"source": "commerce.payments", "column": "missing", "aggregation": "sum"}},
+            {**self.payment_contract, "measure": {"source": "commerce.payments", "column": "payment_value", "aggregation": "sum", "approval_status": "business_approved"}},
+            {**self.payment_contract, "sql": "SUM(payment_value)"},
+            {**self.payment_contract, "direction": []},
+            {**self.payment_contract, "measure": {"source": "commerce.payments", "column": "payment_value", "aggregation": {}}},
+        )
+        for contract in invalid_contracts:
+            with self.subTest(contract=contract), self.assertRaises(SQLValidationError):
+                complete_ranking_intent(partial, contract, APPROVED_COLUMNS)
+
+    def test_custom_formula_contract_preserves_typed_operands_and_is_unverified(self):
+        question = "Which customer ranks highest by net item value after discounts?"
+        partial = resolve_ranking_intent(question)
+        self.assertTrue(partial.measure_contract_eligible)
+        contract = {
+            "entity": "customer",
+            "measure": {
+                "aggregation": "sum",
+                "expression": {
+                    "op": "sub",
+                    "left": {
+                        "op": "mul",
+                        "left": {"source": "commerce.order_items", "column": "quantity"},
+                        "right": {"source": "commerce.order_items", "column": "unit_price"},
+                    },
+                    "right": {"source": "commerce.order_items", "column": "discount_amount"},
+                },
+            },
+            "direction": "desc", "limit": 1, "partition_by": [],
+        }
+        intent = complete_ranking_intent(partial, contract, APPROVED_COLUMNS)
+        self.assertEqual(intent.measure.approval_status, "unverified")
+        self.assertEqual(intent.measure.metric_id, None)
+
+        correct = (
+            "SELECT o.customer_id, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_items "
+            "FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id=o.order_id "
+            "GROUP BY o.customer_id ORDER BY net_items DESC LIMIT 1"
+        )
+        wrong = correct.replace("oi.quantity * oi.unit_price - oi.discount_amount", "oi.quantity * oi.unit_price")
+        self.assertEqual(validate_ranking_semantics(correct, intent, APPROVED_COLUMNS)["status"], "verified")
+        with self.assertRaisesRegex(SQLValidationError, "requested measure"):
+            validate_ranking_semantics(wrong, intent, APPROVED_COLUMNS)
+
+        scaled_contract = {**contract, "measure": {
+            "aggregation": "sum",
+            "expression": {
+                "op": "mul", "left": {"value": 100},
+                "right": {"source": "commerce.order_items", "column": "quantity"},
+            },
+        }}
+        scaled_intent = complete_ranking_intent(partial, scaled_contract, APPROVED_COLUMNS)
+        scaled_sql = (
+            "SELECT o.customer_id, SUM(100 * oi.quantity) AS scaled_units "
+            "FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id=o.order_id "
+            "GROUP BY o.customer_id ORDER BY scaled_units DESC LIMIT 1"
+        )
+        self.assertEqual(validate_ranking_semantics(scaled_sql, scaled_intent, APPROVED_COLUMNS)["status"], "verified")
+
+        invalid_measures = (
+            {"aggregation": "sum", "expression": {"sql": "SUM(payment_value)"}},
+            {"aggregation": "sum", "expression": {
+                "source": "commerce.order_items", "column": "missing_column",
+            }},
+            {"aggregation": "sum", "expression": {
+                "op": "pow", "left": {"source": "commerce.order_items", "column": "quantity"},
+                "right": {"source": "commerce.order_items", "column": "unit_price"},
+            }},
+            {"aggregation": "sum", "expression": {
+                "op": [], "left": {"source": "commerce.order_items", "column": "quantity"},
+                "right": {"source": "commerce.order_items", "column": "unit_price"},
+            }},
+            {"aggregation": "sum", "expression": {"value": True}},
+        )
+        for measure in invalid_measures:
+            with self.subTest(measure=measure), self.assertRaises(SQLValidationError):
+                complete_ranking_intent(partial, {**contract, "measure": measure}, APPROVED_COLUMNS)
+
+    def test_alias_ordinal_direct_expression_and_stable_tie_break_are_supported(self):
+        for ordering in (
+            "ORDER BY total_payment DESC LIMIT 1",
+            "ORDER BY 2 DESC LIMIT 1",
+            "ORDER BY SUM(p.payment_value) DESC LIMIT 1",
+            "ORDER BY total_payment DESC, o.customer_id ASC LIMIT 1",
+        ):
+            with self.subTest(ordering=ordering):
+                self.assertEqual(self.validate(self.base + ordering)["status"], "verified")
+
+    def test_wrong_primary_order_direction_measure_group_or_limit_is_rejected(self):
+        rejected = (
+            self.base + "ORDER BY o.customer_id DESC LIMIT 1",
+            self.base + "ORDER BY 1 DESC LIMIT 1",
+            self.base + "ORDER BY total_payment ASC LIMIT 1",
+            self.base + "ORDER BY COUNT(o.order_id) DESC LIMIT 1",
+            self.base + "ORDER BY o.customer_id DESC, total_payment DESC LIMIT 1",
+            "SELECT o.customer_id, SUM(p.payment_value) AS total_payment "
+            "FROM commerce.orders AS o JOIN commerce.payments AS p ON o.order_id=p.order_id "
+            "ORDER BY total_payment DESC LIMIT 1",
+            "SELECT o.customer_id, COUNT(*) AS total_payment FROM commerce.orders AS o "
+            "GROUP BY o.customer_id ORDER BY total_payment DESC LIMIT 1",
+            "SELECT SUM(p.payment_value) AS total_payment FROM commerce.payments AS p "
+            "ORDER BY total_payment DESC LIMIT 1",
+            self.base + "ORDER BY total_payment DESC LIMIT 5",
+        )
+        for sql in rejected:
+            with self.subTest(sql=sql), self.assertRaises(SQLValidationError):
+                self.validate(sql)
+
+    def test_missing_order_and_changed_top_n_are_rejected(self):
+        with self.assertRaisesRegex(SQLValidationError, "needs ORDER BY"):
+            self.validate(self.base + "LIMIT 1")
+        self.assertEqual(
+            self.validate(self.base + "ORDER BY total_payment DESC LIMIT 1 OFFSET 0")["status"],
+            "verified",
+        )
+        for offset in ("1", "$1"):
+            with self.subTest(offset=offset), self.assertRaisesRegex(SQLValidationError, "OFFSET"):
+                self.validate(self.base + f"ORDER BY total_payment DESC LIMIT 1 OFFSET {offset}")
+        top_five = resolve_ranking_intent("Top 5 customers by payment amount")
+        self.assertEqual(top_five.limit, 5)
+        top_five = complete_ranking_intent(
+            top_five,
+            {**self.payment_contract, "limit": 5},
+            APPROVED_COLUMNS,
+        )
+        with self.assertRaisesRegex(SQLValidationError, "LIMIT 5"):
+            validate_ranking_semantics(self.base + "ORDER BY total_payment DESC LIMIT 1",
+                                       top_five, APPROVED_COLUMNS)
+
+    def test_unknown_ranking_measure_needs_an_explicit_measure_request(self):
+        vague = resolve_ranking_intent("Which customer ranks highest?")
+        self.assertIsNotNone(vague)
+        self.assertFalse(vague.measure_contract_eligible)
+        self.assertIn("measure", vague.issue.casefold())
+
+        explicit = resolve_ranking_intent("Which customer ranks highest by net item value?")
+        self.assertTrue(explicit.measure_contract_eligible)
+        payment_amount = resolve_ranking_intent("Khách hàng nào trả nhiều tiền nhất?")
+        self.assertTrue(payment_amount.measure_contract_eligible)
+        quantity_rate = resolve_ranking_intent(
+            "Danh mục nào có tỷ lệ số lượng trả hàng cao nhất so với số lượng đã bán?"
+        )
+        self.assertTrue(quantity_rate.measure_contract_eligible)
+
+    def test_explicit_quantity_rankings_resolve_to_unverified_schema_fields(self):
+        returned = resolve_ranking_intent("Which 10 products had the most units returned in 2022?")
+        self.assertTrue(returned.resolved, returned.issue)
+        self.assertEqual(returned.measure.identity, "sum:commerce.returns.return_quantity")
+        self.assertEqual(returned.measure.approval_status, "unverified")
+        returned_sql = (
+            "SELECT r.product_id, SUM(r.return_quantity) AS returned_units "
+            "FROM commerce.returns AS r GROUP BY r.product_id "
+            "ORDER BY returned_units DESC, r.product_id LIMIT 10"
+        )
+        self.assertEqual(validate_ranking_semantics(returned_sql, returned, APPROVED_COLUMNS)["status"], "verified")
+
+        purchased = resolve_ranking_intent("khách hàng nào mua hàng nhiều nhất theo số lượng")
+        self.assertTrue(purchased.resolved, purchased.issue)
+        self.assertEqual(purchased.measure.identity, "sum:commerce.order_items.quantity")
+        self.assertEqual(purchased.measure.approval_status, "unverified")
+
+    def test_requested_month_partition_is_preserved_and_verified(self):
+        intent = resolve_ranking_intent("Top 10 products in each month by revenue")
+        self.assertEqual(intent.partition_grains, ("month",))
+        contract = {
+            "entity": "product", "measure": {"metric_id": "product_revenue"},
+            "direction": "desc", "limit": 10,
+            "partition_by": [{"source": "commerce.orders", "column": "order_date", "date_part": "month"}],
+        }
+        intent = complete_ranking_intent(intent, contract, APPROVED_COLUMNS)
+        sql = (
+            "WITH monthly_products AS (SELECT oi.product_id, "
+            "CAST(DATE_TRUNC('month', o.order_date) AS DATE) AS month_start, "
+            "SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS revenue "
+            "FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id=o.order_id "
+            "GROUP BY oi.product_id, DATE_TRUNC('month', o.order_date)), ranked AS ("
+            "SELECT mp.product_id, mp.month_start, mp.revenue, "
+            "ROW_NUMBER() OVER (PARTITION BY mp.month_start ORDER BY mp.revenue DESC) AS rank_no "
+            "FROM monthly_products AS mp) SELECT product_id, month_start, revenue FROM ranked "
+            "WHERE rank_no <= 10 ORDER BY month_start, rank_no LIMIT 200"
+        )
+        self.assertEqual(self.validate(sql, intent)["status"], "verified")
+
+    def test_user_requested_month_partition_cannot_be_dropped(self):
+        question = "Top 10 products in each month by revenue"
+        intent = resolve_ranking_intent(question)
+        contract = {
+            "entity": "product", "measure": {"metric_id": "product_revenue"},
+            "direction": "desc", "limit": 10, "partition_by": [],
+        }
+        with self.assertRaisesRegex(SQLValidationError, "partition|month|group"):
+            complete_ranking_intent(intent, contract, APPROVED_COLUMNS)
+
+    def test_contract_cannot_invent_month_partition_for_global_ranking(self):
+        question = "Top 5 products by revenue"
+        intent = resolve_ranking_intent(question)
+        contract = {
+            "entity": "product", "measure": {"metric_id": "product_revenue"},
+            "direction": "desc", "limit": 5,
+            "partition_by": [{"source": "commerce.orders", "column": "order_date", "date_part": "month"}],
+        }
+        with self.assertRaisesRegex(SQLValidationError, "partition|month|group"):
+            complete_ranking_intent(intent, contract, APPROVED_COLUMNS)
+
+    def test_cte_lineage_passes_but_unused_cte_does_not(self):
+        correct = (
+            "WITH customer_payment AS (SELECT o.customer_id, SUM(p.payment_value) AS total_payment "
+            "FROM commerce.orders AS o JOIN commerce.payments AS p ON p.order_id=o.order_id "
+            "GROUP BY o.customer_id) SELECT cp.customer_id, cp.total_payment "
+            "FROM customer_payment AS cp ORDER BY cp.total_payment DESC LIMIT 1"
+        )
+        self.assertEqual(self.validate(correct)["status"], "verified")
+        unused = (
+            "WITH customer_payment AS (SELECT o.customer_id, SUM(p.payment_value) AS total_payment "
+            "FROM commerce.orders AS o JOIN commerce.payments AS p ON p.order_id=o.order_id "
+            "GROUP BY o.customer_id) SELECT o.customer_id, COUNT(*) AS total_payment "
+            "FROM commerce.orders AS o GROUP BY o.customer_id ORDER BY 2 DESC LIMIT 1"
+        )
+        with self.assertRaises(SQLValidationError):
+            self.validate(unused)
+
+    def test_window_ranking_cannot_change_the_requested_entity_grain(self):
+        partitioned = (
+            "WITH customer_payment AS (SELECT o.customer_id, g.region, "
+            "SUM(p.payment_value) AS total_payment FROM commerce.orders AS o "
+            "JOIN commerce.payments AS p ON p.order_id=o.order_id "
+            "JOIN commerce.geography AS g ON g.zip=o.zip "
+            "GROUP BY o.customer_id, g.region), ranked AS ("
+            "SELECT customer_id, region, total_payment, "
+            "ROW_NUMBER() OVER (PARTITION BY region ORDER BY total_payment DESC) AS rank_no "
+            "FROM customer_payment) SELECT customer_id, total_payment FROM ranked "
+            "WHERE rank_no <= 1 ORDER BY region, rank_no LIMIT 200"
+        )
+        with self.assertRaisesRegex(SQLValidationError, "partition|grouping|grain"):
+            self.validate(partitioned)
+
+    def test_window_rank_filter_in_side_cte_cannot_authorize_final_wrong_order(self):
+        sql = (
+            "WITH customer_payment AS (SELECT o.customer_id, SUM(p.payment_value) AS total_payment "
+            "FROM commerce.orders AS o JOIN commerce.payments AS p ON p.order_id=o.order_id "
+            "GROUP BY o.customer_id), ranked AS (SELECT cp.customer_id, cp.total_payment, "
+            "ROW_NUMBER() OVER (ORDER BY cp.total_payment DESC) AS rank_no FROM customer_payment AS cp), "
+            "top_one AS (SELECT customer_id FROM ranked WHERE rank_no <= 1) "
+            "SELECT cp.customer_id, cp.total_payment FROM customer_payment AS cp CROSS JOIN top_one AS t "
+            "ORDER BY cp.customer_id DESC LIMIT 1"
+        )
+        with self.assertRaisesRegex(SQLValidationError, "final result|ranked output|entity grain|first ranking key"):
+            self.validate(sql)
+
+    def test_rank_intent_covers_existing_metrics_and_rejects_unsupported_entities(self):
+        cases = (
+            ("Top 5 products by revenue", "product_revenue", "catalogued", "desc", 5),
+            ("Khách hàng nào có nhiều đơn hàng nhất?", "order_count", "catalogued", "desc", 1),
+            ("Sản phẩm nào có số đơn hàng cao nhất?", "order_count", "unverified", "desc", 1),
+            ("Sản phẩm nào bán nhiều nhất theo số lượng?", "sum:commerce.order_items.quantity", "unverified", "desc", 1),
+            ("Top 10 sản phẩm tồn kho thấp nhất", "stock_on_hand", "team_accepted", "asc", 10),
+        )
+        for question, measure, approval, direction, limit in cases:
+            with self.subTest(question=question):
+                intent = resolve_ranking_intent(question)
+                if not intent.resolved and question == "Sản phẩm nào bán nhiều nhất theo số lượng?":
+                    intent = complete_ranking_intent(intent, {
+                        "entity": "product",
+                        "measure": {"source": "commerce.order_items", "column": "quantity", "aggregation": "sum"},
+                        "direction": "desc", "limit": 1, "partition_by": [],
+                    }, APPROVED_COLUMNS)
+                self.assertTrue(intent.resolved)
+                self.assertEqual(intent.measure.identity, measure)
+                self.assertEqual(intent.measure.approval_status, approval)
+                self.assertEqual((intent.direction, intent.limit), (direction, limit))
+        unsupported = resolve_ranking_intent("Đại lý nào có doanh thu cao nhất?")
+        self.assertIsNotNone(unsupported)
+        self.assertFalse(unsupported.resolved)
+        self.assertEqual(unsupported.entity, "dealer")
+        self.assertIn("no approved identity column", unsupported.issue)
+
+    def test_per_group_channel_ranking_preserves_partition_dimension(self):
+        question = (
+            "Trong năm 2026, ở từng khu vực, kênh thu hút khách hàng nào có thời gian giao hàng "
+            "trung bình ngắn nhất? Hiển thị thứ hạng trong từng khu vực."
+        )
+        intent = resolve_ranking_intent(question)
+        self.assertTrue(intent.resolved, intent.issue)
+        self.assertEqual(intent.entity, "acquisition_channel")
+        self.assertEqual(intent.measure.metric_id, "delivery_time")
+        self.assertEqual(intent.direction, "asc")
+        self.assertEqual(intent.partition_columns, (("commerce.geography", "region"),))
+
+    def test_prefix_count_discount_code_and_ranking_clause_are_resolved(self):
+        for question in (
+            "10 mã giảm giá có doanh thu cao nhất",
+            "Top 10 discount codes by total revenue",
+        ):
+            with self.subTest(question=question):
+                intent = resolve_ranking_intent(question)
+                self.assertTrue(intent.resolved)
+                self.assertEqual((intent.entity, intent.measure.identity, intent.limit),
+                                 ("promotion", "promotion_net_item_revenue", 10))
+
+        question = (
+            "Trong 90 ngày kết thúc tại MAX(orders.order_date), tìm 5 vùng (region) "
+            "có gross profit thấp nhất; COGS tính theo sản phẩm và đối soát payments."
+        )
+        intent = resolve_ranking_intent(question)
+        self.assertTrue(intent.resolved)
+        self.assertEqual((intent.entity, intent.measure.identity, intent.direction, intent.limit),
+                         ("region", "gross_profit", "asc", 5))
+        self.assertEqual(intent.measure.approval_status, "unverified")
+        oversized = resolve_ranking_intent("Find 300 regions with the highest revenue")
+        self.assertFalse(oversized.resolved)
+        self.assertIn("limit", oversized.issue)
+
+    def test_cross_domain_rank_measures_are_checked_without_claiming_metric_approval(self):
+        product_revenue_sql = (
+            "SELECT p.product_id, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS revenue "
+            "FROM commerce.order_items AS oi JOIN commerce.products AS p ON p.product_id=oi.product_id "
+            "GROUP BY p.product_id ORDER BY 2 DESC LIMIT 5"
+        )
+        product_revenue_intent = resolve_ranking_intent("Top 5 products by revenue")
+        self.assertEqual(validate_ranking_semantics(
+            product_revenue_sql, product_revenue_intent, APPROVED_COLUMNS)["status"], "verified")
+
+        customer_orders_sql = (
+            "SELECT o.customer_id, COUNT(DISTINCT o.order_id) AS order_count "
+            "FROM commerce.orders AS o GROUP BY o.customer_id ORDER BY 2 DESC LIMIT 1"
+        )
+        customer_orders_intent = resolve_ranking_intent("Khách hàng nào có nhiều đơn hàng nhất?")
+        self.assertEqual(validate_ranking_semantics(
+            customer_orders_sql, customer_orders_intent, APPROVED_COLUMNS)["status"], "verified")
+
+        product_units_contract = {
+            "entity": "product",
+            "measure": {"source": "commerce.order_items", "column": "quantity", "aggregation": "sum"},
+            "direction": "desc", "limit": 1, "partition_by": [],
+        }
+        product_units_intent = complete_ranking_intent(
+            resolve_ranking_intent("Sản phẩm nào bán nhiều nhất theo số lượng?"),
+            product_units_contract, APPROVED_COLUMNS,
+        )
+        product_units_sql = (
+            "SELECT oi.product_id, SUM(oi.quantity) AS units_sold "
+            "FROM commerce.order_items AS oi GROUP BY oi.product_id ORDER BY 2 DESC LIMIT 1"
+        )
+        unit_result = validate_ranking_semantics(product_units_sql, product_units_intent, APPROVED_COLUMNS)
+        self.assertEqual(unit_result["status"], "verified")
+        self.assertEqual(unit_result["measure_approval"], "unverified")
+
+        product_order_sql = (
+            "SELECT p.product_id, COUNT(DISTINCT o.order_id) AS order_count "
+            "FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id=o.order_id "
+            "JOIN commerce.products AS p ON p.product_id=oi.product_id "
+            "GROUP BY p.product_id ORDER BY 2 DESC LIMIT 1"
+        )
+        intent = resolve_ranking_intent("Sản phẩm nào có số đơn hàng cao nhất?")
+        result = validate_ranking_semantics(product_order_sql, intent, APPROVED_COLUMNS)
+        self.assertEqual(result["measure"], "order_count")
+        self.assertEqual(result["measure_approval"], "unverified")
+
+        region_profit_sql = (
+            "SELECT g.region, SUM(s.revenue) - SUM(s.cogs) AS gross_profit "
+            "FROM commerce.sales AS s JOIN commerce.orders AS o ON o.order_id=s.order_id "
+            "JOIN commerce.geography AS g ON g.zip=o.zip GROUP BY g.region "
+            "ORDER BY 2 DESC LIMIT 5"
+        )
+        profit_question = (
+            "Trong 90 ngày kết thúc tại MAX(orders.order_date), tìm 5 vùng (region) "
+            "có gross profit cao nhất; COGS tính theo sản phẩm và đối soát payments."
+        )
+        profit_intent = resolve_ranking_intent(profit_question)
+        self.assertEqual(validate_ranking_semantics(region_profit_sql, profit_intent,
+                                                   APPROVED_COLUMNS)["status"], "verified")
 
 
 class SQLGenerationAgentTest(unittest.IsolatedAsyncioTestCase):

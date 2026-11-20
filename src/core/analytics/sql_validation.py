@@ -148,6 +148,7 @@ class QueryPlan:
     request_contract: dict | None = None
     request_contract_warning: str | None = None
     clarification_options: tuple[str, ...] = ()
+    ranking_contract: dict | None = None
 
 
 def _source_name(table: exp.Table) -> str:
@@ -568,6 +569,9 @@ def decode_query_plan(raw: str, schema_columns=None, *, allowed_sources=None, ap
     explanation = payload.get("explanation", "")
     if not isinstance(sql, str) or not isinstance(parameters, list) or not isinstance(explanation, str):
         raise SQLValidationError("The query plan must include SQL, a parameter list, and an explanation.")
+    ranking_contract = payload.get("ranking_contract")
+    if ranking_contract is not None and not isinstance(ranking_contract, dict):
+        raise SQLValidationError("ranking_contract must be an object or null.")
     if len(parameters) > 32 or any(not isinstance(value, (str, int, float, bool, type(None))) for value in parameters):
         raise SQLValidationError("Query parameters must be at most 32 scalar JSON values.")
     sql = _normalize_unambiguous_sql(sql, schema_columns)
@@ -619,7 +623,8 @@ def decode_query_plan(raw: str, schema_columns=None, *, allowed_sources=None, ap
             contract_warning = str(error)
             contract = None
     return QueryPlan(sql=sql, parameters=tuple(parameters), explanation=explanation.strip(),
-                     request_contract=contract, request_contract_warning=contract_warning)
+                     request_contract=contract, request_contract_warning=contract_warning,
+                     ranking_contract=ranking_contract)
 
 
 def _date_parameter_indexes(sql: str, date_columns=None) -> set[int]:

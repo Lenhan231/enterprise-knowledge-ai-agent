@@ -5,7 +5,7 @@ from pathlib import Path
 import sys
 from types import SimpleNamespace
 import unittest
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 from fastapi.testclient import TestClient
 
@@ -135,3 +135,132 @@ class SQLAssistantEndpointTest(unittest.TestCase):
 
         self.assertEqual(response.status_code, 422)
         self.repository.execute_approved_query.assert_not_awaited()
+
+    def test_ranked_approved_sql_is_semantically_checked_before_execution(self):
+        sql = (
+            "SELECT oi.product_id, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS revenue "
+            "FROM commerce.order_items AS oi GROUP BY oi.product_id ORDER BY 1 DESC LIMIT 5"
+        )
+        response = self.client.post("/api/sql/assistant", json={
+            "question": "Top 5 products by revenue", "mode": "execute", "sql": sql, "parameters": [],
+        })
+
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("requested measure", response.json()["detail"])
+        self.repository.execute_approved_query.assert_not_awaited()
+
+    def test_unverifiable_ranking_can_be_drafted_but_not_executed(self):
+        question = "Which month had the highest gross profit?"
+        sql = (
+            "SELECT DATE_TRUNC('month', s.date) AS month, "
+            "SUM(s.revenue) - SUM(s.cogs) AS gross_profit "
+            "FROM commerce.sales AS s GROUP BY 1 ORDER BY 2 DESC LIMIT 1"
+        )
+        self.provider.responses = iter([json.dumps({
+            "sql": sql, "parameters": [], "explanation": "Monthly gross profit.",
+        })])
+
+        draft = self.client.post("/api/sql/assistant", json={"question": question})
+
+        self.assertEqual(draft.status_code, 200, draft.text)
+        self.assertEqual(draft.json()["status"], "approval_required")
+        self.assertIn("Review-only draft", draft.json()["message"])
+        self.assertTrue(any("not verified by a typed contract" in note
+                            for note in draft.json()["limitations"]))
+        self.repository.execute_approved_query.assert_not_awaited()
+
+        execution = self.client.post("/api/sql/assistant", json={
+            "question": question, "mode": "execute", "sql": sql, "parameters": [],
+        })
+
+        self.assertEqual(execution.status_code, 422, execution.text)
+        self.assertIn("review only", execution.json()["detail"])
+        self.repository.execute_approved_query.assert_not_awaited()
+
+    def test_custom_ranking_without_typed_contract_is_draft_only(self):
+        question = "Which customer ranks highest by net item value?"
+        sql = (
+            "SELECT o.customer_id, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_value "
+            "FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id=o.order_id "
+            "GROUP BY o.customer_id ORDER BY net_value DESC LIMIT 1"
+        )
+        self.provider.responses = iter([json.dumps({
+            "sql": sql, "parameters": [], "explanation": "Net item value by customer.",
+        })])
+        draft = self.client.post("/api/sql/assistant", json={"question": question})
+        self.assertEqual(draft.status_code, 200, draft.text)
+        self.assertEqual(draft.json()["status"], "approval_required")
+
+        execution = self.client.post("/api/sql/assistant", json={
+            "question": question, "mode": "execute", "sql": sql, "parameters": [],
+        })
+        self.assertEqual(execution.status_code, 422, execution.text)
+        self.assertIn("typed ranking_contract", execution.json()["detail"])
+        self.repository.execute_approved_query.assert_not_awaited()
+
+    def test_missing_intent_without_typed_contract_is_review_only(self):
+        question = "Khách hàng nào trả nhiều tiền nhất?"
+        sql = (
+            "SELECT o.customer_id, SUM(p.payment_value) AS total_payment "
+            "FROM commerce.orders AS o JOIN commerce.payments AS p ON p.order_id=o.order_id "
+            "GROUP BY o.customer_id ORDER BY 1 DESC LIMIT 1"
+        )
+        self.provider.responses = iter([json.dumps({
+            "sql": sql, "parameters": [], "explanation": "Payment total by customer.",
+        })])
+
+        with patch("core.agents.sql.assistant_endpoint.resolve_ranking_intent", return_value=None):
+            draft = self.client.post("/api/sql/assistant", json={"question": question})
+            execution = self.client.post("/api/sql/assistant", json={
+                "question": question, "mode": "execute", "sql": sql, "parameters": [],
+            })
+
+        self.assertEqual(draft.status_code, 200, draft.text)
+        self.assertEqual(draft.json()["status"], "approval_required")
+        self.assertIn("Review-only draft", draft.json()["message"])
+        self.assertTrue(any("not verified by a typed contract" in note
+                            for note in draft.json()["limitations"]))
+        self.assertEqual(execution.status_code, 422, execution.text)
+        self.assertIn("review only", execution.json()["detail"])
+        self.repository.execute_approved_query.assert_not_awaited()
+
+    def test_noncanonical_rank_contract_survives_review_and_reexecution(self):
+        contract = {
+            "entity": "customer",
+            "measure": {"source": "commerce.payments", "column": "payment_value", "aggregation": "sum"},
+            "direction": "desc", "limit": 1, "partition_by": [],
+        }
+        wrong = (
+            "SELECT o.customer_id, SUM(p.payment_value) AS total_payment "
+            "FROM commerce.orders AS o JOIN commerce.payments AS p ON p.order_id=o.order_id "
+            "GROUP BY o.customer_id ORDER BY 1 DESC LIMIT 1"
+        )
+        correct = wrong.replace("ORDER BY 1 DESC", "ORDER BY total_payment DESC, o.customer_id")
+        self.provider.responses = iter([
+            json.dumps({"sql": wrong, "parameters": [], "explanation": "Payment totals.",
+                        "ranking_contract": contract}),
+            json.dumps({"sql": correct, "parameters": [], "explanation": "Payment totals.",
+                        "ranking_contract": contract}),
+        ])
+        question = "Khách hàng nào trả nhiều tiền nhất?"
+        with patch("core.agents.sql.assistant_endpoint.resolve_ranking_intent", return_value=None):
+            draft = self.client.post("/api/sql/assistant", json={"question": question})
+
+        self.assertEqual(draft.status_code, 200, draft.text)
+        self.assertEqual(draft.json()["status"], "approval_required")
+        self.assertEqual(draft.json()["ranking_contract"], contract)
+        self.assertEqual(draft.json()["ranking_validation"]["status"], "verified")
+        self.assertEqual(draft.json()["ranking_validation"]["measure_approval"], "unverified")
+        self.repository.execute_approved_query.assert_not_awaited()
+
+        with patch("core.agents.sql.assistant_endpoint.resolve_ranking_intent", return_value=None):
+            executed = self.client.post("/api/sql/assistant", json={
+                "question": question, "mode": "execute", "sql": draft.json()["sql"],
+                "parameters": draft.json()["parameters"], "ranking_contract": draft.json()["ranking_contract"],
+            })
+
+        self.assertEqual(executed.status_code, 200, executed.text)
+        self.assertEqual(executed.json()["status"], "executed")
+        self.assertEqual(executed.json()["ranking_validation"]["status"], "verified")
+        self.assertEqual(executed.json()["ranking_validation"]["measure_approval"], "unverified")
+        self.repository.execute_approved_query.assert_awaited_once_with(correct)

@@ -37,6 +37,10 @@ from core.analytics.query_contract import require_query_contract
 from core.analytics.metric_mapping import build_metric_mapping_prompt, compile_inventory_query, decode_metric_mapping, decode_sql_turn, MetricTime, validate_mapped_sql
 from core.analytics.metric_validation import MetricDefinitionError, inventory_time_scope, validate_metric_definitions, validate_metric_request, validate_independent_query_period
 from core.analytics.join_validation import PRIMARY_KEYS
+from core.analytics.sql_ranking import (
+    complete_ranking_intent, has_ranking_request, resolve_ranking_intent,
+    validate_ranking_semantics,
+)
 from core.analytics.text_to_sql import (
     APPROVED_COLUMNS, APPROVED_JOINS, APPROVED_DATE_COLUMNS, INVENTORY_SOURCES, inventory_scope_enabled,
     approved_join_path,
@@ -479,6 +483,21 @@ class SQLAnalyticsAgent(BaseAgent):
                     context_info.update(context_used=used,_sql_context_action='followup' if used else 'new')
                 if interpretation and interpretation.domain == 'inventory':
                     metric_names = set(interpretation.metrics)
+            ranking_requested = has_ranking_request(schema_scope_question)
+            ranking_intent = resolve_ranking_intent(schema_scope_question)
+            if interpretation and interpretation.domain == 'inventory':
+                # Inventory mappings already carry and validate their typed MetricRanking contract.
+                ranking_intent = None
+                ranking_requested = False
+            elif (ranking_intent and not ranking_intent.resolved
+                  and not ranking_intent.measure_contract_eligible):
+                raise MetricDefinitionError(
+                    ranking_intent.issue or 'The requested ranking could not be verified safely.',
+                    code='ranking_intent_unresolved', clarification=True,
+                )
+            ranking_semantics_required = ranking_requested or bool(ranking_intent) or bool(
+                interpretation and interpretation.domain == 'inventory' and interpretation.ranking
+            )
             resolved_latest = False
             if context is not None and interpretation and interpretation.domain == 'inventory' and interpretation.time.mode == 'latest':
                 snapshot_sql = 'SELECT MAX(i.snapshot_date) AS snapshot_date FROM commerce.inventory AS i LIMIT 1'
@@ -541,6 +560,7 @@ class SQLAnalyticsAgent(BaseAgent):
             return self._generation_error(error)
         dashboard_outputs = None
         selected_compiler = None
+        ranking_validation = None
         for attempt in range(2):
             plan = known_plan
             selected_compiler = fixed_selection.compiler.value if plan is not None else None
@@ -560,6 +580,35 @@ class SQLAnalyticsAgent(BaseAgent):
                                 raise MetricDefinitionError('This semantic request requires the existing single-query workflow. '
                                     'Please narrow it to one supported dataset.', clarification=True)
                             from core.dashboards.requirements import validate_outputs
+                            ranking_requested = has_ranking_request(schema_scope_question)
+                            request_ranking = resolve_ranking_intent(schema_scope_question)
+                            for _, data_plan, _ in bundle:
+                                effective_ranking = request_ranking
+                                if effective_ranking and data_plan.ranking_contract is not None:
+                                    effective_ranking = complete_ranking_intent(
+                                        effective_ranking, data_plan.ranking_contract, table_columns
+                                    )
+                                elif (effective_ranking and
+                                      (effective_ranking.measure_contract_eligible
+                                       or effective_ranking.partition_grains)):
+                                    raise SQLValidationError(
+                                        'A ranking with an unresolved measure or time partition needs a complete typed ranking_contract.'
+                                    )
+                                elif (ranking_requested and effective_ranking is None
+                                      and data_plan.ranking_contract is None):
+                                    raise SQLValidationError(
+                                        'The ranking request was not included in a typed ranking_contract.'
+                                    )
+                                elif effective_ranking is None and data_plan.ranking_contract is not None:
+                                    effective_ranking = complete_ranking_intent(
+                                        None, data_plan.ranking_contract, table_columns
+                                    )
+                                if effective_ranking:
+                                    if not effective_ranking.resolved:
+                                        raise SQLValidationError(
+                                            'A dashboard query omitted or obscured the requested ranking contract.'
+                                        )
+                                    validate_ranking_semantics(data_plan.sql, effective_ranking, table_columns)
                             dashboard_outputs = validate_outputs(parse_json_response(raw).get('outputs'), bundle, question, date_columns)
                             datasets = []
                             for index, (data_question, data_plan, data_definitions) in enumerate(bundle):
@@ -607,7 +656,8 @@ class SQLAnalyticsAgent(BaseAgent):
                                          explanation=plan.explanation, clarification=plan.clarification,
                                          request_contract=plan.request_contract,
                                          request_contract_warning=plan.request_contract_warning,
-                                         clarification_options=plan.clarification_options)
+                                         clarification_options=plan.clarification_options,
+                                         ranking_contract=plan.ranking_contract)
                     validate_current_year_month_range(plan.sql or '', plan.parameters, original_question,
                                                       date_columns=date_columns)
                     validate_rolling_days_range(plan.sql or '', plan.parameters, original_question,
@@ -626,6 +676,22 @@ class SQLAnalyticsAgent(BaseAgent):
                         approved_joins=approved_joins, primary_keys=primary_keys, date_columns=date_columns)
                     if cross_domain and not {'commerce.inventory','commerce.orders','commerce.order_items'} <= set(validated_sql.sources):
                         raise SQLValidationError('The requested cross-domain contract must retain inventory, orders and order_items.')
+                    if plan.ranking_contract is not None:
+                        ranking_intent = complete_ranking_intent(
+                            ranking_intent, plan.ranking_contract, table_columns
+                        )
+                        ranking_semantics_required = True
+                    elif ranking_requested and ranking_intent is None:
+                        raise SQLValidationError(
+                            'The ranking request was not included in a typed ranking_contract.'
+                        )
+                    elif ranking_intent and (
+                            ranking_intent.measure_contract_eligible or ranking_intent.partition_grains):
+                        raise SQLValidationError(
+                            'The ranking measure or time partition was not included in a validated ranking_contract.'
+                        )
+                    if ranking_intent:
+                        ranking_validation = validate_ranking_semantics(plan.sql, ranking_intent, table_columns)
                     revenue_compiler = selected_compiler in {
                         'annual_revenue', 'completed_months_revenue',
                         'explicit_month_revenue', 'month_over_month_revenue',
@@ -692,6 +758,7 @@ class SQLAnalyticsAgent(BaseAgent):
                 if (isinstance(error, (SQLSchemaMismatchError, SQLJoinValidationError))
                         and plan is not None and plan.sql
                         and unverified_scope
+                        and not ranking_semantics_required
                         and (attempt == 1 or direct is not None
                              or (interpretation and interpretation.domain == 'inventory'))):
                     definitions = {}
@@ -788,6 +855,8 @@ class SQLAnalyticsAgent(BaseAgent):
                                            primary_keys, date_columns, interpretation,
                                            allowed_sources=set(table_columns),
                                            allow_unverified=unverified_sql)
+        if ranking_validation:
+            payload.setdefault('metadata', {})['ranking_validation'] = ranking_validation
         if plan.request_contract_warning:
             payload.setdefault('metadata', {}).update(
                 request_contract_status='ignored',
@@ -816,7 +885,8 @@ class SQLAnalyticsAgent(BaseAgent):
             raise SQLValidationError('A dashboard accepts at most two independent queries.')
         bundle, seen_questions, seen_sql, found_metrics, found_sources = [], set(), set(), set(), set()
         for item in items:
-            if (not isinstance(item, dict) or set(item) - {'question', 'sql', 'parameters', 'explanation', 'request_contract'}
+            if (not isinstance(item, dict) or set(item) - {
+                    'question', 'sql', 'parameters', 'explanation', 'request_contract', 'ranking_contract'}
                     or not isinstance(item.get('question'), str) or not 1 <= len(item['question'].strip()) <= 2000):
                 raise SQLValidationError('Each independent query needs a bounded, self-contained question and SQL plan.')
             data_question = item['question'].strip()

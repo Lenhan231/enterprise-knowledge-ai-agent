@@ -143,8 +143,18 @@ class FakeRepository:
         }
 
 
-def plan(sql, explanation="Calculated from order-item rows."):
-    return json.dumps({"sql": sql, "parameters": [], "explanation": explanation})
+PAYMENT_RANKING_CONTRACT = {
+    "entity": "customer",
+    "measure": {"source": "commerce.payments", "column": "payment_value", "aggregation": "sum"},
+    "direction": "desc", "limit": 1, "partition_by": [],
+}
+
+
+def plan(sql, explanation="Calculated from order-item rows.", *, ranking_contract=None):
+    payload = {"sql": sql, "parameters": [], "explanation": explanation}
+    if ranking_contract is not None:
+        payload["ranking_contract"] = ranking_contract
+    return json.dumps(payload)
 
 
 def assistant(repository, provider):
@@ -153,6 +163,249 @@ def assistant(repository, provider):
 
 
 class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
+    async def test_wrong_customer_payment_ordinal_is_repaired_before_execution(self):
+        wrong = plan(
+            "SELECT o.customer_id, SUM(p.payment_value) AS total_payment "
+            "FROM commerce.orders AS o JOIN commerce.payments AS p "
+            "ON o.order_id=p.order_id GROUP BY o.customer_id "
+            "ORDER BY 1 DESC LIMIT 1",
+            ranking_contract=PAYMENT_RANKING_CONTRACT,
+        )
+        corrected = plan(
+            "SELECT o.customer_id, SUM(p.payment_value) AS total_payment "
+            "FROM commerce.orders AS o JOIN commerce.payments AS p "
+            "ON o.order_id=p.order_id GROUP BY o.customer_id "
+            "ORDER BY total_payment DESC, o.customer_id LIMIT 1",
+            ranking_contract=PAYMENT_RANKING_CONTRACT,
+        )
+        repository = FakeRepository()
+        provider = FakeProvider([wrong, corrected])
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        sources = {"commerce.orders", "commerce.payments"}
+
+        with patch("core.agents.sql.agent.select_jev_schema_tables", return_value={
+                "tables": sources, "required_tables": sources, "candidate_tables": sources,
+        }):
+            result = await agent.run_payload(AgentRequest(
+                question="khách hàng nào trả nhiều tiền nhất",
+                identity=VerifiedIdentity(subject="analyst", permissions={"analytics:read"}),
+            ))
+
+        self.assertEqual(provider.response_index, 2)
+        self.assertEqual(repository.execute_approved_query.await_count, 1)
+        self.assertEqual(repository.execute_approved_query.await_args.args[0], json.loads(corrected)["sql"])
+        self.assertEqual(result["query_status"], "executed")
+        ranking = result["metadata"]["ranking_validation"]
+        self.assertEqual(ranking["status"], "verified")
+        self.assertEqual(ranking["measure_approval"], "unverified")
+        self.assertEqual(result["metadata"]["metric_validation"]["status"], "unverified")
+
+    async def test_offset_cannot_skip_top_rank_after_repair(self):
+        wrong = plan(
+            "SELECT o.customer_id, SUM(p.payment_value) AS total_payment "
+            "FROM commerce.orders AS o JOIN commerce.payments AS p "
+            "ON o.order_id=p.order_id GROUP BY o.customer_id "
+            "ORDER BY total_payment DESC LIMIT 1 OFFSET 1",
+            ranking_contract=PAYMENT_RANKING_CONTRACT,
+        )
+        corrected = plan(
+            "SELECT o.customer_id, SUM(p.payment_value) AS total_payment "
+            "FROM commerce.orders AS o JOIN commerce.payments AS p "
+            "ON o.order_id=p.order_id GROUP BY o.customer_id "
+            "ORDER BY total_payment DESC, o.customer_id LIMIT 1",
+            ranking_contract=PAYMENT_RANKING_CONTRACT,
+        )
+        repository = FakeRepository()
+        provider = FakeProvider([wrong, corrected])
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        sources = {"commerce.orders", "commerce.payments"}
+
+        with patch("core.agents.sql.agent.select_jev_schema_tables", return_value={
+                "tables": sources, "required_tables": sources, "candidate_tables": sources,
+        }):
+            result = await agent.run_payload(AgentRequest(
+                question="khách hàng nào trả nhiều tiền nhất",
+                identity=VerifiedIdentity(subject="analyst", permissions={"analytics:read"}),
+            ))
+
+        self.assertEqual(provider.response_index, 2)
+        self.assertEqual(repository.execute_approved_query.await_count, 1)
+        self.assertEqual(repository.execute_approved_query.await_args.args[0], json.loads(corrected)["sql"])
+        self.assertEqual(result["query_status"], "executed")
+        self.assertEqual(result["metadata"]["ranking_validation"]["status"], "verified")
+
+    async def test_typed_fallback_contract_keeps_ranking_gate_when_intent_extractor_misses(self):
+        wrong = plan(
+            "SELECT o.customer_id, SUM(p.payment_value) AS total_payment "
+            "FROM commerce.orders AS o JOIN commerce.payments AS p ON o.order_id=p.order_id "
+            "GROUP BY o.customer_id ORDER BY 1 DESC LIMIT 1",
+            ranking_contract=PAYMENT_RANKING_CONTRACT,
+        )
+        correct = plan(
+            "SELECT o.customer_id, SUM(p.payment_value) AS total_payment "
+            "FROM commerce.orders AS o JOIN commerce.payments AS p ON o.order_id=p.order_id "
+            "GROUP BY o.customer_id ORDER BY total_payment DESC LIMIT 1",
+            ranking_contract=PAYMENT_RANKING_CONTRACT,
+        )
+        repository = FakeRepository()
+        provider = FakeProvider([wrong, correct])
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        sources = {"commerce.orders", "commerce.payments"}
+
+        with (
+            patch("core.agents.sql.agent.resolve_ranking_intent", return_value=None),
+            patch("core.agents.sql.agent.select_jev_schema_tables", return_value={
+                "tables": sources, "required_tables": sources, "candidate_tables": sources,
+            }),
+        ):
+            result = await agent.run_payload(AgentRequest(
+                question="khách hàng nào trả nhiều tiền nhất",
+                identity=VerifiedIdentity(subject="analyst", permissions={"analytics:read"}),
+            ))
+
+        self.assertEqual(provider.response_index, 2)
+        self.assertEqual(repository.execute_approved_query.await_count, 1)
+        self.assertEqual(repository.execute_approved_query.await_args.args[0], json.loads(correct)["sql"])
+        self.assertEqual(result["query_status"], "executed")
+        self.assertEqual(result["metadata"]["ranking_validation"]["status"], "verified")
+        self.assertEqual(result["metadata"]["ranking_validation"]["measure"], "sum:commerce.payments.payment_value")
+
+    async def test_missing_intent_and_missing_typed_contract_never_execute_ranked_sql(self):
+        wrong = plan(
+            "SELECT o.customer_id, SUM(p.payment_value) AS total_payment "
+            "FROM commerce.orders AS o JOIN commerce.payments AS p ON o.order_id=p.order_id "
+            "GROUP BY o.customer_id ORDER BY 1 DESC LIMIT 1",
+        )
+        repository = FakeRepository()
+        provider = FakeProvider([wrong, wrong])
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        sources = {"commerce.orders", "commerce.payments"}
+
+        with (
+            patch("core.agents.sql.agent.resolve_ranking_intent", return_value=None),
+            patch("core.agents.sql.agent.select_jev_schema_tables", return_value={
+                "tables": sources, "required_tables": sources, "candidate_tables": sources,
+            }),
+        ):
+            result = await agent.run_payload(AgentRequest(
+                question="khách hàng nào trả nhiều tiền nhất",
+                identity=VerifiedIdentity(subject="analyst", permissions={"analytics:read"}),
+            ))
+
+        self.assertEqual(provider.response_index, 2)
+        repository.execute_approved_query.assert_not_awaited()
+        self.assertEqual(result["query_status"], "rejected")
+        self.assertIn("ranking", result["metadata"]["error_detail"].casefold())
+
+    async def test_exhausted_ranking_repair_never_executes_wrong_result(self):
+        wrong = plan(
+            "SELECT o.customer_id, SUM(p.payment_value) AS total_payment "
+            "FROM commerce.orders AS o JOIN commerce.payments AS p "
+            "ON o.order_id=p.order_id GROUP BY o.customer_id ORDER BY 1 DESC LIMIT 1",
+            ranking_contract=PAYMENT_RANKING_CONTRACT,
+        )
+        repository = FakeRepository()
+        provider = FakeProvider([wrong, wrong])
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        sources = {"commerce.orders", "commerce.payments"}
+
+        with patch("core.agents.sql.agent.select_jev_schema_tables", return_value={
+                "tables": sources, "required_tables": sources, "candidate_tables": sources,
+        }):
+            result = await agent.run_payload(AgentRequest(
+                question="khách hàng nào trả nhiều tiền nhất",
+                identity=VerifiedIdentity(subject="analyst", permissions={"analytics:read"}),
+            ))
+
+        self.assertEqual(provider.response_index, 2)
+        repository.execute_approved_query.assert_not_awaited()
+        self.assertEqual(result["query_status"], "rejected")
+        self.assertIn("requested measure sum:commerce.payments.payment_value", result["metadata"]["error_detail"])
+
+    async def test_typed_custom_formula_ranking_executes_as_unverified_metric(self):
+        contract = {
+            "entity": "customer",
+            "measure": {
+                "aggregation": "sum",
+                "expression": {
+                    "op": "sub",
+                    "left": {
+                        "op": "mul",
+                        "left": {"source": "commerce.order_items", "column": "quantity"},
+                        "right": {"source": "commerce.order_items", "column": "unit_price"},
+                    },
+                    "right": {"source": "commerce.order_items", "column": "discount_amount"},
+                },
+            },
+            "direction": "desc", "limit": 1, "partition_by": [],
+        }
+        sql = (
+            "SELECT o.customer_id, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_items "
+            "FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id=o.order_id "
+            "GROUP BY o.customer_id ORDER BY net_items DESC LIMIT 1"
+        )
+        repository = FakeRepository()
+        provider = FakeProvider([plan(sql, ranking_contract=contract)])
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        sources = {"commerce.orders", "commerce.order_items"}
+
+        with patch("core.agents.sql.agent.select_jev_schema_tables", return_value={
+                "tables": sources, "required_tables": sources, "candidate_tables": sources,
+        }):
+            result = await agent.run_payload(AgentRequest(
+                question="Which customer ranks highest by net item value after discounts?",
+                identity=VerifiedIdentity(subject="analyst", permissions={"analytics:read"}),
+            ))
+
+        self.assertEqual(provider.response_index, 1)
+        self.assertEqual(repository.execute_approved_query.await_count, 1)
+        self.assertEqual(result["query_status"], "executed")
+        self.assertEqual(result["metadata"]["ranking_validation"]["status"], "verified")
+        self.assertEqual(result["metadata"]["ranking_validation"]["measure_approval"], "unverified")
+        self.assertEqual(result["metadata"]["metric_validation"]["status"], "unverified")
+
+    async def test_schema_join_unverified_fallback_cannot_bypass_ranking_gate(self):
+        wrong = plan(
+            "SELECT o.customer_id, SUM(p.payment_value) AS total_payment "
+            "FROM commerce.orders AS o JOIN commerce.payments AS p "
+            "ON o.customer_id=p.order_id GROUP BY o.customer_id "
+            "ORDER BY 1 DESC LIMIT 1",
+            ranking_contract=PAYMENT_RANKING_CONTRACT,
+        )
+        repository = FakeRepository()
+        provider = FakeProvider([wrong, wrong])
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        sources = {"commerce.orders", "commerce.payments"}
+
+        with patch("core.agents.sql.agent.select_jev_schema_tables", return_value={
+                "tables": sources, "required_tables": sources, "candidate_tables": sources,
+        }):
+            result = await agent.run_payload(AgentRequest(
+                question="khách hàng nào trả nhiều tiền nhất",
+                identity=VerifiedIdentity(subject="analyst", permissions={"analytics:read"}),
+            ))
+
+        self.assertEqual(provider.response_index, 2)
+        repository.execute_approved_query.assert_not_awaited()
+        self.assertNotEqual(result.get("query_status"), "executed")
+        self.assertIn("error_detail", result["metadata"])
+
+    async def test_unresolved_ranking_does_not_execute_or_generate_unverified_sql(self):
+        repository = FakeRepository()
+        provider = FakeProvider([plan("SELECT p.product_id FROM commerce.products AS p LIMIT 1")])
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        with patch("core.agents.sql.agent.select_jev_schema_tables", return_value={
+                "tables": {"commerce.sales"}, "required_tables": {"commerce.sales"},
+                "candidate_tables": {"commerce.sales"},
+        }):
+            result = await agent.run_payload(AgentRequest(
+                question="Đại lý nào có doanh thu cao nhất?",
+                identity=VerifiedIdentity(subject="analyst", permissions={"analytics:read"}),
+            ))
+        self.assertTrue(result["metadata"]["clarification_required"])
+        self.assertEqual(provider.response_index, 0)
+        repository.execute_approved_query.assert_not_awaited()
+
     async def test_table_selection_and_prompt_keep_the_original_auto_scope(self):
         task_question = 'Return product sales and return rate.'
         original_question = (
@@ -197,7 +450,7 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         tables = relevant_schema_tables(question, {}, APPROVED_COLUMNS)
         self.assertEqual(tables, set(APPROVED_COLUMNS))
 
-    async def test_explicit_order_item_formula_retries_unnecessary_join_clarification(self):
+    async def test_explicit_order_item_ranking_rejects_wrong_gross_profit_measure(self):
         question = (
             "Trong 90 ngày kết thúc tại MAX(orders.order_date), tìm 5 vùng (region) có gross profit cao nhất. "
             "Tính doanh thu sau giảm giá = quantity × unit_price − discount_amount; gross profit là "
@@ -230,11 +483,9 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
                 identity=VerifiedIdentity(subject="analyst", permissions={"analytics:read"}),
             ))
 
-        self.assertEqual(result["query_status"], "executed")
-        self.assertEqual(len(provider.prompts), 3)
-        self.assertIn('Requested metrics: {"metrics": []}', provider.prompts[-1])
-        self.assertIn('do not ask for clarification', provider.prompts[-1])
-        repository.execute_approved_query.assert_awaited_once_with(sql)
+        self.assertEqual(result["query_status"], "rejected")
+        self.assertIn("requested measure gross_profit", result["metadata"]["error_detail"])
+        repository.execute_approved_query.assert_not_awaited()
 
     async def test_vietnamese_bridge_clarification_retries_through_orders(self):
         question = (
@@ -292,7 +543,8 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
             "ranked_channels AS (SELECT region, acquisition_channel, successful_delivered_orders, "
             "avg_delivery_time_days, RANK() OVER (PARTITION BY region ORDER BY avg_delivery_time_days) AS rank_in_region "
             "FROM channel_metrics) SELECT region, acquisition_channel, successful_delivered_orders, "
-            "avg_delivery_time_days, rank_in_region FROM ranked_channels ORDER BY 1, 5 LIMIT 200"
+            "avg_delivery_time_days, rank_in_region FROM ranked_channels "
+            "WHERE rank_in_region = 1 ORDER BY 1, 5 LIMIT 200"
         )
         provider = FakeProvider([json.dumps({
             'sql': sql, 'parameters': ['delivered', '2026-01-01', '2027-01-01'],

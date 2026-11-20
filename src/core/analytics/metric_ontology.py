@@ -154,7 +154,8 @@ METRIC_ONTOLOGY = {
         "limitations": ("Doanh thu dòng hàng sau chiết khấu từ đơn đã giao; có thể khác commerce.sales.Revenue.",),
     },
     "order_count": {
-        "aliases": ("order count", "number of orders", "số đơn hàng", "lượng đơn hàng"),
+        "aliases": ("order count", "number of orders", "many orders", "most orders",
+                    "số đơn hàng", "lượng đơn hàng", "nhiều đơn hàng"),
         "source": "commerce.orders (+ commerce.geography khi lọc theo region)",
         "formula": "COUNT(DISTINCT order_id)",
         "grain": "order",

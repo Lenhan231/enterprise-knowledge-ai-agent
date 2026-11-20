@@ -96,6 +96,23 @@ def build_sql_prompt(
         'referenced by SQL placeholders, in placeholder order; the parameter list must have exactly one value per '
         'placeholder and contain no more than 32 values.'
     ]
+    prompt_rules.append(
+        '\nFor any requested top/bottom/ranked result, include a typed ranking_contract with exactly '
+        'entity, measure, direction, limit and partition_by. entity must be one of customer, product, order, '
+        'promotion, category, region or acquisition_channel and must match a returned stable identity. '
+        'direction is asc or desc; limit is 1..200; partition_by lists only explicitly requested dimensions, '
+        'using an entity ID or a schema reference {"source":"commerce.table","column":"column"}; '
+        'for a time bucket, use that reference with date_part set to day, week, month, quarter or year. '
+        'For a catalog metric, measure is {"metric_id":"catalog_id"}. For one custom field, measure is '
+        '{"source":"commerce.table","column":"approved_column","aggregation":"sum|avg|min|max|count|count_distinct"}. '
+        'When the user explicitly requests an arithmetic formula, preserve its exact operands and operators with '
+        'measure={"aggregation":"sum|avg|min|max|count|count_distinct","expression":typed_node}; a typed_node is '
+        'either {"source":"commerce.table","column":"approved_column"}, {"value":numeric_constant} or '
+        '{"op":"add|sub|mul|div","left":typed_node,"right":typed_node}. '
+        'These are schema references, not SQL. Never put SQL text, aliases or approval status inside ranking_contract. '
+        'The server validates the tree against the approved schema and marks custom calculations unverified. '
+        'Use null only when the question does not request ranking or must be clarified; do not silently omit a recognized ranking.'
+    )
     if query_intent:
         prompt_rules.append(
             '\nValidated structured user intent (authoritative request scope): '
@@ -270,7 +287,8 @@ def build_sql_prompt(
         + ('\nValidated interpretation: '+json.dumps(interpretation,ensure_ascii=False)+
            '\nPreserve exactly these metrics, dimensions, source-row filters, date scope, output grain and ranking. '
            'Project snapshot_date plus only the requested dimensions and metrics. Product representation uses stored scalar values. '
-           'Use GROUP BY qualified columns, ORDER BY positions, direct SELECT without CTE/HAVING/DISTINCT. '
+           'Use GROUP BY qualified columns and direct SELECT without CTE/HAVING/DISTINCT. For a requested ranking, '
+           'put the requested measure first in ORDER BY; use a positional key only when it resolves to that measure. '
            'Use the declared ranking limit, otherwise LIMIT 200. For an inclusive date range use snapshot_date >= start '
            'AND snapshot_date < the day AFTER end. For latest use the unfiltered MAX subquery. '
            'Filters use field <operator> parameter (IN uses a list of parameters); do not add other restrictions.'

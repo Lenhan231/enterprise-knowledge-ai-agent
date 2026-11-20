@@ -477,7 +477,15 @@ class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
             'ORDER BY r.month,r.category_rank LIMIT 200')
         provider, repository = Mock(), AsyncMock()
         metric_retriever = AsyncMock(return_value=[{'content': 'Candidate cross-domain metric guidance.'}])
-        provider.generate.return_value = json.dumps({'sql': sql, 'parameters': ['2026-01-01', '2027-01-01']})
+        provider.generate.return_value = json.dumps({
+            'sql': sql, 'parameters': ['2026-01-01', '2027-01-01'],
+            'ranking_contract': {
+                'entity': 'category', 'measure': {'metric_id': 'stockout_days'},
+                'direction': 'desc', 'limit': 3,
+                'partition_by': [{'source': 'commerce.inventory', 'column': 'snapshot_date',
+                                  'date_part': 'month'}],
+            },
+        })
         repository.get_schema.return_value = {
             'tables': APPROVED_COLUMNS, 'primary_keys': PRIMARY_KEYS,
             'joins': APPROVED_JOINS, 'date_columns': APPROVED_DATE_COLUMNS,

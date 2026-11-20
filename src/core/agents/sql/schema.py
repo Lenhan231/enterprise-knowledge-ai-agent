@@ -47,10 +47,12 @@ async def discover_schema(pool, schemas: tuple[str, ...]) -> dict:
             key_rows = await connection.fetch(keys_sql, list(schemas))
             foreign_key_rows = await connection.fetch(foreign_keys_sql, list(schemas))
     tables: dict[str, set[str]] = {}
+    column_types: dict[str, dict[str, str]] = {}
     date_columns = set()
     for row in column_rows:
         table = f"{row['table_schema']}.{row['table_name']}"
         tables.setdefault(table, set()).add(row['column_name'])
+        column_types.setdefault(table, {})[row['column_name']] = row['data_type']
         if row['data_type'] in {"date", "timestamp without time zone", "timestamp with time zone"}:
             date_columns.add((table, row['column_name']))
     primary_keys: dict[str, set[str]] = {}
@@ -64,6 +66,7 @@ async def discover_schema(pool, schemas: tuple[str, ...]) -> dict:
         joins.add(frozenset((left, right)))
     return {
         "tables": {table: frozenset(names) for table, names in tables.items()},
+        "column_types": column_types,
         "primary_keys": {table: frozenset(names) for table, names in primary_keys.items()},
         "joins": frozenset(joins),
         "date_columns": frozenset(date_columns),

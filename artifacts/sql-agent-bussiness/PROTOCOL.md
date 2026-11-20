@@ -42,6 +42,8 @@ SQL generation token usage is reported only when the selected provider exposes t
 
 `general_sql_generation` counts each provider submission made by the SQL generation stage, including a secondary provider after a primary failure. `provider_fallback_calls` is the secondary-provider subset of that count; `local_codex_fallback_calls` is counted separately. `metric_interpretation` counts metric-mapping provider submissions. `total_model_calls` sums SQL-generation submissions, metric-mapping submissions, JEV HTTP requests and local Codex calls; it does not add the fallback subset a second time. Pipeline counters are reported separately: fixed matching calls and matches, fixed compilation calls and plans, inventory compilation calls and plans, `schema_discovery`, `schema_selection`, SQL generation entries/repairs, repository execution attempts, and successful repository executions. A repository execution event is recorded only after its query call returns successfully; failed attempts remain visible in the attempt counters.
 
+Because the aggregate `total_model_calls` includes JEV HTTP requests (including failed requests), use the per-stage counts to distinguish generated SQL/model submissions from schema-selection availability. A JEV request count is not a successful JEV selection count.
+
 The package is intentionally separate from `evaluation/run_agent_benchmarks.py` (a 75-prompt, three-agent RAGAS run) and the older `evaluation/agent_benchmarks/sql_analytics_agent_benchmark.json` cohort (25 questions, recorded data through 2022-12-31). Their case sets, snapshots and scoring contracts differ, so their scores must not be combined with this pilot.
 
 ## Business and strict result policies
@@ -56,7 +58,7 @@ SQL semantic accuracy is scored separately from result matching. Executable SQL 
 
 Commerce data is synthetic competition data, not observed retailer operations. Frozen result rows are limited to the five cases. No full database dump is stored. Reference generation runs the frozen gold SQL through the repository's approved read-only executor and stores a compact aggregate data fingerprint plus the case outputs. It must use a separately designated non-production PostgreSQL endpoint and the repository's least-privilege role validation.
 
-The preflight fails closed unless `SQL_BENCHMARK_DATABASE_URL`, `SQL_BENCHMARK_DB_CLASSIFICATION=non-production`, and `SQL_BENCHMARK_ALLOWED_HOSTS` are set. It refuses a URL equal to `ANALYTICS_DATABASE_URL`. Secrets are read from environment variables and are never written to artifacts.
+The preflight fails closed unless `SQL_BENCHMARK_DATABASE_URL` and `SQL_BENCHMARK_ALLOWED_HOSTS` are set and the repository verifies a least-privilege read-only role. Use either `SQL_BENCHMARK_DB_CLASSIFICATION=non-production` for a dedicated test database, or `SQL_BENCHMARK_DB_CLASSIFICATION=frozen-analytics-snapshot` when the configured analytics snapshot is explicitly frozen. Frozen mode requires the benchmark URL to exactly match `ANALYTICS_DATABASE_URL` and `SQL_BENCHMARK_FROZEN_SNAPSHOT_ACK=I_CONFIRM_ANALYTICS_SNAPSHOT_IS_FROZEN`. Never use frozen mode for a database that can still change during the run. The benchmark records classification and a content-coverage fingerprint; secrets are read from environment variables and never written to artifacts.
 
 ## Runtime, tracing and recovery
 
@@ -72,7 +74,7 @@ Explicit order-status population wording is resolved through the field-value voc
 
 ## Reproduction workflow
 
-From the repository root, first configure the dedicated non-production database and provider through the environment. Do not point these variables at production.
+From the repository root, configure the database and provider through environment variables. For the frozen snapshot mode used in this pilot, confirm the database is frozen, set `SQL_BENCHMARK_DATABASE_URL` to exactly the same URL as `ANALYTICS_DATABASE_URL`, add its hostname to `SQL_BENCHMARK_ALLOWED_HOSTS`, and set the explicit freeze acknowledgement described above. Run preflight first and check the read-only role and fingerprint before reference generation.
 
 ```bash
 PYTHONPATH=src uv run python artifacts/sql-agent-bussiness/preflight.py --output /tmp/sql-benchmark-preflight.json

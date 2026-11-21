@@ -73,6 +73,17 @@ def table(rows, *, units=None, currency=None, dimension=None, vi=False):
         '<tr>' + ''.join(f'<td>{cell(k, row.get(k))}</td>' for k in names) + '</tr>' for row in rows[:200]) + '</tbody></table></div>'
 
 
+def _sector(cx, cy, inner, outer, start, end):
+    """Ring segment from `start` to `end` (fractions of a turn, 0 at 12 o'clock, clockwise)."""
+    if end - start >= .9999:
+        return (f'M{cx - outer} {cy}a{outer} {outer} 0 1 0 {2 * outer} 0a{outer} {outer} 0 1 0 {-2 * outer} 0Z'
+                f'M{cx - inner} {cy}a{inner} {inner} 0 1 0 {2 * inner} 0a{inner} {inner} 0 1 0 {-2 * inner} 0Z')
+    point = lambda r, f: (cx + r * math.sin(2 * math.pi * f), cy - r * math.cos(2 * math.pi * f))
+    large = 1 if end - start > .5 else 0
+    (x1, y1), (x2, y2), (x3, y3), (x4, y4) = point(outer, start), point(outer, end), point(inner, end), point(inner, start)
+    return f'M{x1:.2f} {y1:.2f}A{outer} {outer} 0 {large} 1 {x2:.2f} {y2:.2f}L{x3:.2f} {y3:.2f}A{inner} {inner} 0 {large} 0 {x4:.2f} {y4:.2f}Z'
+
+
 def _tip(x, y, head, rows, W, flip=None):
     """SVG tooltip shown by CSS on :hover (the dashboard document runs no script)."""
     width = max([len(head) * 6.6] + [(len(a) + len(b)) * 6.4 + 34 for a, b, *_ in rows]) + 26
@@ -122,7 +133,7 @@ def chart_svg(chart, *, currency=None, granularity=None, vi=False, wide=False):
             geometry = f'cx="{W//2}" cy="140" r="85" fill="none" pathLength="100" stroke-dasharray="{fraction * 100} {100 - fraction * 100}" stroke-dashoffset="{-offset}" transform="rotate(-90 {W//2} 140)"'
             out.append(f'<circle class="v v-{i}" {geometry} stroke="{color}" stroke-width="48"/>')
             percent = formatted(fraction * 100, unit="percent")
-            segments.append(f'<g class="seg seg-{i}" role="img" aria-label="{text(label_text(label))}: {text(shown(value))} ({text(percent)})"><circle class="hit" {geometry} stroke="transparent" stroke-width="56"/>'
+            segments.append(f'<g class="seg seg-{i}" role="img" aria-label="{text(label_text(label))}: {text(shown(value))} ({text(percent)})"><path class="hit" d="{_sector(W//2, 140, 56, 114, offset / 100, (offset + fraction * 100) / 100)}" fill="transparent" fill-rule="evenodd"/>'
                             f'<text class="ctr" x="{W//2}" y="128" text-anchor="middle">{text(label_text(label)[:22])}</text><text class="ctr big" x="{W//2}" y="154" text-anchor="middle">{text(shown(value))}</text><text class="ctr" x="{W//2}" y="174" text-anchor="middle">{text(percent)}</text>'
                             + _tip(W//2 + 108, 70, label_text(label), [('Value' if not vi else 'Giá trị', shown(value)), ('Share' if not vi else 'Tỷ trọng', percent)], W, flip=False) + '</g>')
             offset += fraction * 100

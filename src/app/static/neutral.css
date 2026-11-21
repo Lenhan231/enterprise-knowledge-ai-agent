@@ -364,3 +364,6 @@ html #home-overview-preview { height: 1000px; }
 :root .general-chat-composer .general-chat-mode.visually-hidden { display: none; }
 /* the pill edge (not the icon) lines up with the text edge, like the controls on the right line up with its end */
 :root .composer-actions { margin-left: 0; gap: 4px; }
+/* text and icon sit on the vertical centre of the pill (the earlier reset had put them at the top) */
+:root .general-chat-composer .composer-action, :root .general-chat-composer .examples-menu button { align-items: center; }
+:root .general-chat-composer .composer-action { justify-content: center; }

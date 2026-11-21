@@ -43,6 +43,7 @@
     }
     if (q.get("shot") === "dashboard") { document.querySelector("#tab-button-dashboard").click(); setTimeout(() => document.querySelector("#dw-library button")?.click(), 400); }
     if (q.get("shot") === "reports") { document.querySelector("#tab-button-knowledge").click(); const rf = document.querySelector("#report-fold"); if (rf) rf.open = true; setTimeout(() => document.querySelector("#rw-library button")?.click(), 400); }
+    if ((q.get("shot") || "").startsWith("tab:")) document.querySelector("#tab-button-" + q.get("shot").slice(4))?.click();
     if (q.get("shot") === "monitor") document.querySelector("#tab-button-monitoring").click();
     if (q.get("shot") === "ratings") { document.querySelector("#tab-button-monitoring").click(); document.querySelector('[data-monitor-tab="feedback"]')?.click(); }
     if (q.get("shot") === "report") { document.querySelector("#tab-button-knowledge").click(); const f = document.querySelector("#report-fold"); if (f) f.open = true; }

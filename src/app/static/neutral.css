@@ -255,3 +255,19 @@
 /* Dashboard frames: follow the theme surface and leave room for the whole dashboard. */
 html #dw-preview, html #home-overview-preview { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; }
 html #dw-preview { height: 1350px; }
+
+/* Remaining pages: native controls, upload, knowledge list, monitoring cards. */
+:root input[type="checkbox"], :root input[type="radio"] { accent-color: var(--accent); }
+:root .upload-dropzone { border: 1.5px dashed var(--line-strong); background: var(--bg); text-align: center; transition: border-color .15s, background .15s; }
+:root .upload-dropzone:hover, :root .upload-dropzone:focus-within { border-color: var(--accent); background: var(--accent-soft, var(--surface-2)); }
+:root .upload-role-option { border: 1px solid var(--line); border-radius: 12px; background: var(--bg); transition: border-color .15s, background .15s; }
+:root .upload-role-option:hover { border-color: var(--line-strong); }
+:root .upload-role-option:has(input:checked) { border-color: var(--accent); background: var(--accent-soft, var(--surface-2)); }
+:root .knowledge-documents-list { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+:root .knowledge-document-entry { background: transparent; border: 0; border-radius: 0; }
+:root .knowledge-documents-list .knowledge-document-row:hover { background: var(--surface-2); }
+:root .monitoring-stat { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; box-shadow: none; }
+:root .monitoring-stat strong, :root .monitoring-stat b { font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+
+.gen-stats { margin: 6px 0 0; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.chat-turn-response > .gen-stats { grid-column: 1; }

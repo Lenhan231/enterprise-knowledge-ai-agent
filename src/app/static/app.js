@@ -2952,6 +2952,14 @@ function renderChatTranscript(root, turns, shouldScroll) {
         response.querySelectorAll(".clarification-option").forEach((button) => { button.disabled = true; });
       }
       attachFeedback(response, turn);
+      // Generation stats: only what this browser measured and what the answer itself carries.
+      if (turn.elapsedMs) {
+        const sources = (turn.result.citations?.length) || (turn.result.evidence?.length) || 0;
+        const stats = document.createElement("p");
+        stats.className = "gen-stats";
+        stats.textContent = [`Answered in ${(turn.elapsedMs / 1000).toFixed(1)} s`, sources ? `${sources} source${sources === 1 ? "" : "s"} cited` : ""].filter(Boolean).join(" · ");
+        response.append(stats);
+      }
       if (turn.typeOut) {
         turn.typeOut = false;
         typeOutText(response.querySelector(".answer-text"),
@@ -3044,6 +3052,7 @@ async function sendChatMessage({ question, displayQuestion, requestMetadata, mod
     $(".status-dot").classList.add("connected");
     turn.result = data;
     turn.state = "complete";
+    turn.elapsedMs = Date.now() - turn.startedAt;
     turn.typeOut = true;
   } catch (error) {
     if (state.getId() !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;

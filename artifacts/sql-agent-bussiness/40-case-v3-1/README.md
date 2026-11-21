@@ -1,6 +1,6 @@
 # SQL Agent benchmark v3.1 — post-review draft
 
-**State: NOT FROZEN · Reviewer 1 approved 40/40 · Reviewer 2/adjudication pending · held-out SQL Agent not run.**
+**State: NOT FROZEN · Reviewers 1 and 2 recorded 40/40 APPROVE · adjudication pending · held-out SQL Agent not run.**
 
 This revision applies the [2026-11-21 AI-assisted v3 audit](../40-case-v3/AI_ASSISTED_SEMANTIC_REVIEW_2026-11-21.md) without overwriting any original v3 benchmark, review, preflight, or mutation files. It is a **new candidate** requiring independent review and adjudication of its own exact hashes.
 
@@ -8,6 +8,7 @@ This revision applies the [2026-11-21 AI-assisted v3 audit](../40-case-v3/AI_ASS
 
 - `SEMANTIC_REVIEW_V3_1.html`: local review UI for the 40 cases, 30 Gold SQL queries/results, independent reviewer decisions, and adjudication. From this directory run `python3 -m http.server 8765 --bind 127.0.0.1`, then open `http://127.0.0.1:8765/SEMANTIC_REVIEW_V3_1.html`. Autosave is only in that browser's localStorage; it does not write a JSON file into this folder or sync to another browser. Export the completed reviewer JSON and verify the download before closing the page.
 - `review_v3_1_reviewer_1_Lenhan231_complete.json`: Reviewer 1's 40/40 APPROVE record, logged from the user's confirmation after the HTML failed to leave a recoverable export. Its timestamp is when the record was logged, not the original per-case review time; no original rationales were provided.
+- `review_v3_1_reviewer_2_user_reported_complete.json`: Reviewer 2's 40/40 APPROVE record from the user's report that their friend completed the review before the HTML reset. The reviewer's actual identity and original per-case timestamps/rationales were not supplied; the record labels this provenance explicitly.
 - `cases_v3_1_draft.json`: 40 questions: 30 execute, 5 clarify, 5 abstain.
 - `gold_sql_v3_1_draft.json`: 30 draft Gold SQL definitions.
 - `gold_results_v3_1_provisional.json`: 404 provisional reference rows, carrying original snapshot provenance and updated results/column hashes.
@@ -41,7 +42,7 @@ The candidate includes **per-case explicit `column_aliases`** for common equival
 ## Database checks and mutation evidence
 
 - Fresh repository preflight verified the allowlisted frozen analytics snapshot and read-only role. Its fingerprint `dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028` matches the v3.1 provisional references; `commerce.orders.order_date` is PostgreSQL `date`.
-- The repository-approved generator executed all 30 v3.1 Gold queries read-only. All 30 SQL/parameter/column/row results exactly match the provisional results (404 rows total). The run remains provisional; one human review record is now logged, while second review and adjudication are pending.
+- The repository-approved generator executed all 30 v3.1 Gold queries read-only. All 30 SQL/parameter/column/row results exactly match the provisional results (404 rows total). The run remains provisional; two approval records are logged, and adjudication is pending.
 - All 28 controlled mutations were attempted read-only. Result-based detection is 23/26 (88.46%); three valid mutations were observationally equivalent on this frozen snapshot. Approved-join, join-fanout, and population-contract validator probes each detected 1/1 assigned mutations. This is a newly measured v3.1 result, distinct from the historical v3 evidence.
 - No SQL Agent generation calls, held-out execution, or database writes occurred.
 - Full run inputs, hashes, output, and limitations are in [the technical validation report](TECHNICAL_VALIDATION_REPORT_2026-11-21.md). Historical v3 files remain unchanged.
@@ -55,12 +56,12 @@ PYTHONPATH=src uv run --no-sync python -m unittest discover -s tests/sql -p 'tes
 PYTHONPATH=src uv run --no-sync python -m unittest discover -s tests -t . -v
 ```
 
-Executed with the repository Python 3.11.16 environment: the v3.1 contract tests passed 21/21, the benchmark package passed 45/45, and all SQL tests passed 544 (10 skipped). The full repository run had one unrelated HEIF encoder error; the preserved v3 artifact suite has one known historical checklist-manifest hash mismatch. Exact commands and outcomes are recorded in the technical validation report. CI discovery includes the new v3.1 tests.
+Executed with the repository Python 3.11.16 environment: the v3.1 contract tests passed 23/23, the benchmark package passed 45/45, and all SQL tests passed 544 (10 skipped). The full repository run had one unrelated HEIF encoder error; the historical v3 checklist provenance test has since been updated to verify the archived original bytes. Exact commands and outcomes are recorded in the technical validation report. CI discovery includes the v3.1 review-record regression.
 
 ## Remaining freeze blockers
 
-1. Two independent human reviewers must review the exact v3.1 case, Gold, and output-contract hashes; adjudicate any disagreement. The audit-linkage code verifies matching inputs and records reviewer identity/evidence, but does not prove the reviewer is independent or replace human review.
-2. Resolve or explicitly accept the full-suite HEIF encoder environment error and the historical v3 checklist hash mismatch. Do not rewrite the archived v3 manifest to hide the mismatch.
+1. Adjudicate the two 40/40 approval records against the exact v3.1 case, Gold, and output-contract hashes. Reviewer 2's decision is user-reported; obtain a direct identity/export if the formal process requires it. The audit-linkage code binds records to inputs but does not prove reviewer independence.
+2. Resolve or explicitly accept the full-suite HEIF encoder environment error. The historical v3 checklist test now checks the archived original bytes; do not rewrite the archived v3 manifest to hide the mismatch.
 3. Keep `FREEZE_MANIFEST_V3_1_DRAFT.json` in draft state until reviews, adjudication, and any required test-environment follow-up are complete.
 4. Do not run the 40 held-out SQL Agent cases or mark `FROZEN` before the exact v3.1 contract is independently reviewed and frozen.
 

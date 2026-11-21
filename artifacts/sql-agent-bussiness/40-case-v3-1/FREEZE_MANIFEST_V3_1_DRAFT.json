@@ -1,6 +1,6 @@
 {
   "format_version": "sql-agent-business-benchmark-freeze-manifest.v3.1-draft",
-  "status": "PENDING_REVIEWER_2_ADJUDICATION_AND_TEST_FOLLOW_UP",
+  "status": "PENDING_ADJUDICATION_AND_TEST_FOLLOW_UP",
   "freeze_status": "DRAFT_NOT_FROZEN",
   "submitted_date_local": "2026-11-21",
   "branch": "benchmark/v3-1-output-contract-20261121",
@@ -72,8 +72,8 @@
     "source": "../40-case-v3/AI_ASSISTED_SEMANTIC_REVIEW_2026-11-21.md",
     "ai_technical_review_v3_complete": true,
     "ai_review_is_not_human_approval": true,
-    "independent_human_reviewers_approved": 0,
-    "review_records_logged": 1,
+    "independent_human_reviewers_approved": 2,
+    "review_records_logged": 2,
     "reviewer_1": {
       "status": "APPROVED_ALL_40",
       "reviewer_id": "Lenhan231",
@@ -86,8 +86,22 @@
       "original_rationales_available": false,
       "independence_attestation": "role slot recorded as reviewer_1; independent status is not established by this artifact alone"
     },
-    "reviewer_2": "PENDING",
-    "adjudication": "PENDING"
+    "reviewer_2": {
+      "status": "APPROVED_ALL_40_USER_REPORTED",
+      "reviewer_id": "friend-of-Lenhan231",
+      "reviewer_identity_supplied": false,
+      "record_file": "review_v3_1_reviewer_2_user_reported_complete.json",
+      "record_sha256": "0975c50545aabef7187c924b9b2b5aa94712d61c0879ac9eecd85abbcfffdbeb",
+      "approved_cases": 40,
+      "recorded_at": "2026-11-21T13:56:13Z",
+      "recording_source": "explicit_user_report_after_reviewer_browser_state_reset",
+      "original_per_case_timestamps_available": false,
+      "original_rationales_available": false,
+      "identity_attestation": "User reports a separate friend as Reviewer 2; actual identity and direct reviewer export were not supplied.",
+      "independence_attestation": "Distinct reviewer is user-reported and not independently verified by this artifact."
+    },
+    "adjudication": "PENDING",
+    "independent_approval_basis": "Two 40/40 approval decisions are recorded from the user direct confirmation for Reviewer 1 and user report for a separate friend as Reviewer 2; the second identity and direct export are unavailable."
   },
   "tests": {
     "ci_discovery_test_added": "tests/sql/test_benchmark_v3_1_contract.py",
@@ -113,12 +127,13 @@
       "not_required": 22,
       "unresolved": 0
     },
-    "independent_human_approvals": 0,
+    "independent_human_approvals": 2,
     "runner_emits_independent_audit_records": false,
     "heldout_agent_executed": false,
     "review_record_sha256": "4de70c567e45e96ce32a8666885461fcad06be7d1154a759615981e4f8d8e48d",
     "review_timestamp_is_recording_time_not_original_review_time": true,
-    "human_review_records_logged": 1
+    "human_review_records_logged": 2,
+    "reviewer_2_record_sha256": "0975c50545aabef7187c924b9b2b5aa94712d61c0879ac9eecd85abbcfffdbeb"
   },
   "ready_for_independent_human_review": true,
   "ready_for_formal_freeze": false,

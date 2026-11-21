@@ -1,6 +1,6 @@
 # SQL Agent benchmark v3.1 technical validation
 
-**Status:** technical validation run complete with disclosed test failures. One reviewer record now covers 40/40 cases; Reviewer 2 and adjudication remain pending. Not frozen. The 40-case SQL Agent cohort was not executed.
+**Status:** technical validation run complete with disclosed test failures. Reviewer 1 and a user-reported Reviewer 2 record each cover 40/40 approvals; adjudication remains pending. Not frozen. The 40-case SQL Agent cohort was not executed.
 
 ## Revision and scope
 
@@ -93,15 +93,18 @@ For the review-record regression, an initial run against the worktree-local `.ve
 
 - `TECHNICAL_VALIDATION_COMPLETE = YES_WITH_DISCLOSED_TEST_FAILURES` — the read-only data, Gold, mutation, scorer, ranking, pilot, and SQL-agent validations ran; the two test failures above remain visible.
 - `REVIEWER_1_APPROVAL_RECORD = 40/40 APPROVE` — see [review record](review_v3_1_reviewer_1_Lenhan231_complete.json), bound to the exact case/Gold/result hashes. The user confirmed that all 40 cases had been reviewed in the browser UI, but the page produced no recoverable export. This JSON records that confirmation; its timestamp is the artifact logging time, not the original review time, and per-case rationales were not supplied.
-- `READY_FOR_INDEPENDENT_HUMAN_REVIEW = YES` — Reviewer 2 must still review the exact v3.1 candidate; the artifact does not independently attest reviewer independence.
-- `READY_FOR_40_CASE_GOLD_PREPARATION = YES` — proceed with two independent semantic reviews and adjudication of these exact candidate hashes.
-- `READY_FOR_FREEZE = NO` — one review record is logged; Reviewer 2, adjudication, and test follow-up remain.
+- `REVIEWER_2_APPROVAL_RECORD = 40/40 APPROVE (USER-REPORTED)` — see [review record](review_v3_1_reviewer_2_user_reported_complete.json), bound to the same exact hashes. The user reports that their friend approved all 40 before the HTML reset. No direct export, actual reviewer identity, original timestamps, or rationales were available; the synthetic reviewer ID is not identity proof.
+- `HUMAN_REVIEW_RECORDS = TWO_40_OF_40_APPROVALS` — Reviewer 1 is directly user-confirmed; Reviewer 2 is user-reported as a separate friend. The second identity and direct export are not independently verifiable from this artifact.
+- `READY_FOR_40_CASE_GOLD_PREPARATION = YES` — both review records are present; proceed with adjudication and final Gold preparation for these exact candidate hashes.
+- `READY_FOR_FREEZE = NO` — both approval records are logged; adjudication and test follow-up remain.
 - `READY_FOR_40_CASE_EXECUTION = NO` — do not execute the 40-case Agent cohort until independent review and formal freeze.
 
 The v3.1 case set remains a draft. No original v2/v3 evidence was overwritten.
 
 ## Review logging and UI persistence note
 
-The user confirmed that all 40 cases had already been reviewed and approved in the local HTML page, but no JSON export was retained. The page stores state only in that browser's `localStorage`; it does not write to the repository or sync across browsers. A 40/40 `APPROVE` record was therefore logged from the user's confirmation at `2026-11-21T13:30:10Z`; that timestamp is the logging time, not the original per-case review time. No per-case rationale or original timestamp was supplied. The record is hash-bound to the exact v3.1 case, Gold SQL, and provisional result files. Reviewer 2 and adjudication are still pending, so the cohort remains unfrozen and unexecuted.
+The user confirmed that all 40 cases had already been reviewed and approved in the local HTML page, but no JSON export was retained. The page stores state only in that browser's `localStorage`; it does not write to the repository or sync across browsers. Reviewer 1's 40/40 `APPROVE` record was logged at `2026-11-21T13:30:10Z`; this is the logging time, not the original review time. No per-case rationale or original timestamp was supplied.
 
-Regression: `test_recovered_reviewer_approval_is_linked_and_does_not_freeze_cohort` verifies the 40 decisions, reviewer record hash, source artifact hashes, pending Reviewer 2/adjudication, and no-freeze/no-execution gates.
+The user later reported that a friend had also reviewed the same 40 cases and selected `APPROVE` for all before the HTML reset. Reviewer 2's 40/40 record was logged at `2026-11-21T13:56:13Z` with synthetic slot label `friend-of-Lenhan231`; the actual name/ID, export, original per-case timestamps, and rationales were not supplied. Both records are hash-bound to the exact v3.1 case, Gold SQL, and provisional result files. Reviewer 2's identity and independence are user-attested and not independently verifiable from this artifact. Adjudication remains pending, so the cohort stays unfrozen and unexecuted.
+
+Regression: `test_recovered_reviewer_approval_is_linked_and_does_not_freeze_cohort` verifies both sets of 40 decisions, reviewer record hashes, source artifact hashes, pending adjudication, and no-freeze/no-execution gates.

@@ -50,6 +50,33 @@ spec_mutations.loader.exec_module(mutation_runner)
 
 
 class V31ContractTests(unittest.TestCase):
+    def test_recovered_reviewer_approval_is_linked_and_does_not_freeze_cohort(self):
+        manifest = read("FREEZE_MANIFEST_V3_1_DRAFT.json")
+        review_path = HERE / "review_v3_1_reviewer_1_Lenhan231_complete.json"
+        review = json.loads(review_path.read_text(encoding="utf-8"))
+        self.assertEqual(review["review_format"], "sql-agent-benchmark-semantic-review")
+        self.assertEqual(review["benchmark_version"], "v3.1")
+        self.assertEqual(review["reviewer"]["id"], "Lenhan231")
+        self.assertEqual(review["reviewer"]["role"], "reviewer_1")
+        self.assertEqual(len(review["case_reviews"]), 40)
+        self.assertEqual(set(review["case_reviews"]), set(BY_ID))
+        self.assertEqual({r["decision"] for r in review["case_reviews"].values()}, {"APPROVE"})
+        self.assertEqual(
+            review["artifact_sha256"],
+            manifest["artifacts_sha256"],
+        )
+        self.assertEqual(
+            manifest["review"]["reviewer_1"]["record_sha256"],
+            hashlib.sha256(review_path.read_bytes()).hexdigest(),
+        )
+        self.assertEqual(manifest["review"]["review_records_logged"], 1)
+        self.assertEqual(manifest["review"]["independent_human_reviewers_approved"], 0)
+        self.assertEqual(manifest["review"]["reviewer_2"], "PENDING")
+        self.assertEqual(manifest["review"]["adjudication"], "PENDING")
+        self.assertEqual(manifest["freeze_status"], "DRAFT_NOT_FROZEN")
+        self.assertFalse(manifest["ready_for_formal_freeze"])
+        self.assertFalse(manifest["ready_for_40_case_sql_agent_run"])
+
     def test_distribution_references_hash_and_human_gate(self):
         self.assertEqual(len(CASES["cases"]), 40)
         self.assertEqual(len(GOLD["cases"]), 30)

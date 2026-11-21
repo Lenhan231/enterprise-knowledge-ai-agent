@@ -63,3 +63,7 @@ CI's existing unittest discovery also includes the new regression file.
 4. Do not run the 40 held-out SQL Agent cases or mark `FROZEN` while the above gates are pending.
 
 **Source-of-truth principle:** Old v3 reference/review is kept immutable. The exact v3.1 content SHA-256 values in the draft manifest identify the new candidate.
+
+## Historical v3 manifest note
+
+The original v3 `FREEZE_MANIFEST.json` records `REVIEW_CHECKLIST.md` SHA-256 `0aa3f33211a0c696a305928f78c4e7c599a53fe7e906a08a0cc43662e234066c`, but the checklist now hashes to `117b75d2477f3fa1c8519ed0d6c3825a1fb5861bb4b1c667e65cc0bb22540fdf` after the AI review links were appended. This is an **archival manifest mismatch**, not a mismatch in the v3 case set or Gold SQL/Gold Results. The existing v3 artifact test that verifies historical manifest hashes may fail until this provenance change is reconciled in an explicit follow-up. Do **not** silently update the archived manifest or present its original byte-hash check as passing.

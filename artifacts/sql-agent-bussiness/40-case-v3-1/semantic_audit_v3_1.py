@@ -7,10 +7,13 @@ reviewer and be linked with :func:`create_audit_record`.
 
 from __future__ import annotations
 
-from datetime import date, datetime
+import argparse
+import copy
+from datetime import date, datetime, timezone
 from decimal import Decimal
 import hashlib
 import json
+from pathlib import Path
 from typing import Any
 
 import sqlglot
@@ -19,6 +22,7 @@ from sqlglot import exp
 
 AUDIT_FORMAT_VERSION = "sql-semantic-audit.v3.1"
 AUDIT_DECISIONS = {"PASS", "FAIL", "REVIEW_REQUIRED", "INDETERMINATE"}
+AUDIT_DECISIONS_FORMAT_VERSION = "sql-semantic-audit-decisions.v1"
 
 
 def _json_default(value: Any):
@@ -35,6 +39,96 @@ def canonical_sha256(value: Any) -> str:
         default=_json_default,
     ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+def projection_signatures(sql: str) -> list[tuple[str, str | None]] | None:
+    """Return narrow SQL-expression lineage signatures for SELECT projections.
+
+    This supports column-label equivalence only when the projected expressions
+    have the same parsed structure and resolve to the same fully qualified
+    source columns. It is not a query-semantic proof.
+    """
+    try:
+        statements = sqlglot.parse(sql, read="postgres")
+    except Exception:
+        return None
+    if len(statements) != 1 or not isinstance(statements[0], exp.Select):
+        return None
+    select = statements[0]
+    if select.args.get("with_") or any(select.find_all(exp.Subquery)):
+        return None
+    projections = list(select.expressions)
+
+    tables = list(select.find_all(exp.Table))
+    alias_to_relation: dict[str, str] = {}
+    relation_by_bare_name: dict[str, set[str]] = {}
+    relations: set[str] = set()
+    for table in tables:
+        name = table.name.casefold()
+        schema = (table.db or "").casefold()
+        catalog = (table.catalog or "").casefold()
+        relation = ".".join(part for part in (catalog, schema, name) if part)
+        relations.add(relation)
+        relation_by_bare_name.setdefault(name, set()).add(relation)
+        for label in (table.alias_or_name, table.name):
+            key = str(label).casefold()
+            previous = alias_to_relation.get(key)
+            if previous is not None and previous != relation:
+                alias_to_relation.pop(key, None)
+                alias_to_relation[f"!ambiguous:{key}"] = ""
+            elif f"!ambiguous:{key}" not in alias_to_relation:
+                alias_to_relation[key] = relation
+        if schema:
+            alias_to_relation[f"{schema}.{name}"] = relation
+        if catalog and schema:
+            alias_to_relation[f"{catalog}.{schema}.{name}"] = relation
+
+    if any(len(items) > 1 for items in relation_by_bare_name.values()):
+        ambiguous_bare_names = {name for name, items in relation_by_bare_name.items() if len(items) > 1}
+        for name in ambiguous_bare_names:
+            alias_to_relation.pop(name, None)
+            alias_to_relation[f"!ambiguous:{name}"] = ""
+
+    signatures = []
+    for projection in projections:
+        expression = projection.this if isinstance(projection, exp.Alias) else projection
+        normalized = expression.copy()
+        columns = list(normalized.find_all(exp.Column))
+        if not columns:
+            signatures.append((str(projection.alias_or_name).casefold(), None))
+            continue
+        failed = False
+        for column in columns:
+            table_name = column.table.casefold() if column.table else ""
+            schema_name = column.db.casefold() if column.db else ""
+            catalog_name = column.catalog.casefold() if column.catalog else ""
+            if table_name:
+                qualifier = ".".join(part for part in (catalog_name, schema_name, table_name) if part)
+                relation = alias_to_relation.get(qualifier) or alias_to_relation.get(table_name)
+                if not relation:
+                    failed = True
+                    break
+            elif len(relations) == 1:
+                relation = next(iter(relations))
+            else:
+                    failed = True
+                    break
+            replacement = exp.Anonymous(
+                this="__lineage_column__",
+                expressions=[
+                    exp.Literal.string(relation),
+                    exp.Literal.string(column.name.casefold()),
+                ],
+            )
+            if column is normalized:
+                normalized = replacement
+            else:
+                column.replace(replacement)
+        signature = None if failed else normalized.sql(
+            dialect="postgres", normalize=True,
+        )
+        signatures.append((str(projection.alias_or_name).casefold(), signature))
+    return signatures
 
 
 def create_audit_record(
@@ -115,6 +209,125 @@ def validate_audit_record(
     return decision, []
 
 
+def export_audit_records(
+    cases_doc: dict, experiment_doc: dict, decisions_doc: dict, *,
+    recorded_at_utc: str | None = None,
+) -> dict:
+    """Link reviewer-supplied decisions to the exact run inputs without inventing review."""
+    expected_case_set_sha256 = canonical_sha256(cases_doc)
+    if not isinstance(decisions_doc, dict):
+        raise ValueError("Reviewer decisions must be a JSON object.")
+    if decisions_doc.get("format_version") != AUDIT_DECISIONS_FORMAT_VERSION:
+        raise ValueError("Unsupported reviewer-decision format version.")
+    if decisions_doc.get("case_set_sha256") != expected_case_set_sha256:
+        raise ValueError("Reviewer decisions do not match the current case-set hash.")
+    auditor_id = decisions_doc.get("auditor_id")
+    auditor_version = decisions_doc.get("auditor_version")
+    if not isinstance(auditor_id, str) or not auditor_id.strip():
+        raise ValueError("A non-empty auditor_id is required.")
+    if not isinstance(auditor_version, str) or not auditor_version.strip():
+        raise ValueError("A non-empty auditor_version is required.")
+
+    if not isinstance(cases_doc, dict) or not isinstance(experiment_doc, dict):
+        raise ValueError("Cases and experiment inputs must be JSON objects.")
+    case_items = cases_doc.get("cases")
+    observation_items = experiment_doc.get("cases")
+    if not isinstance(case_items, list) or not isinstance(observation_items, list):
+        raise ValueError("Cases and experiment observations must be lists.")
+    if any(not isinstance(item, dict) for item in [*case_items, *observation_items]):
+        raise ValueError("Case and observation entries must be objects.")
+    if any(not isinstance(item.get("id"), str) or not item["id"].strip()
+           for item in [*case_items, *observation_items]):
+        raise ValueError("Case and observation IDs must be non-empty strings.")
+    cases = {item["id"]: item for item in case_items}
+    observations = {item["id"]: item for item in observation_items}
+    if len(cases) != len(case_items) or len(observations) != len(observation_items):
+        raise ValueError("Case and observation IDs must be present and unique.")
+    existing = experiment_doc.get("independent_semantic_audits", [])
+    if existing:
+        raise ValueError("Refusing to replace existing independent semantic audits.")
+
+    decisions = decisions_doc.get("decisions")
+    if not isinstance(decisions, list):
+        raise ValueError("Reviewer decisions must be a list.")
+    records = []
+    reviewed = set()
+    for item in decisions:
+        if not isinstance(item, dict):
+            raise ValueError("Each reviewer decision must be an object.")
+        case_id = item.get("case_id")
+        if not isinstance(case_id, str) or case_id in reviewed:
+            raise ValueError("Reviewer decisions require unique case IDs.")
+        reviewed.add(case_id)
+        case = cases.get(case_id)
+        observation = observations.get(case_id)
+        if case is None or case.get("expected_behavior") != "execute":
+            raise ValueError(f"{case_id}: semantic SQL audits apply only to known execute cases.")
+        if observation is None:
+            raise ValueError(f"{case_id}: no observed SQL exists in this experiment.")
+        records.append(create_audit_record(
+            case=case,
+            case_set_sha256=expected_case_set_sha256,
+            observation=observation,
+            auditor_id=auditor_id,
+            auditor_version=auditor_version,
+            decision=item.get("decision"),
+            evidence=item.get("evidence"),
+        ))
+
+    now = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    recorded_at_utc = recorded_at_utc or now
+    if not isinstance(recorded_at_utc, str) or not recorded_at_utc.strip():
+        raise ValueError("recorded_at_utc must be a non-empty timestamp string.")
+    try:
+        timestamp = datetime.fromisoformat(recorded_at_utc.replace("Z", "+00:00"))
+    except ValueError as error:
+        raise ValueError("recorded_at_utc must be an ISO 8601 timestamp.") from error
+    if timestamp.tzinfo is None or timestamp.utcoffset() != timezone.utc.utcoffset(timestamp):
+        raise ValueError("recorded_at_utc must use a UTC timezone.")
+    result = copy.deepcopy(experiment_doc)
+    result["independent_semantic_audits"] = records
+    result["semantic_audit_export"] = {
+        "format_version": "sql-semantic-audit-export.v1",
+        "source": "reviewer_decisions_json",
+        "authenticated": False,
+        "recorded_at_utc": recorded_at_utc,
+        "auditor_id": auditor_id,
+        "auditor_version": auditor_version,
+        "case_set_sha256": expected_case_set_sha256,
+        "reviewed_case_ids": sorted(reviewed),
+        "unreviewed_observed_sql_case_ids": sorted(
+            case_id for case_id, observation in observations.items()
+            if cases.get(case_id, {}).get("expected_behavior") == "execute"
+            and isinstance(observation.get("sql"), str)
+            and observation["sql"].strip()
+            and case_id not in reviewed
+        ),
+    }
+    return result
+
+
+def _export_cli() -> int:
+    parser = argparse.ArgumentParser(description="Export linked independent SQL semantic audit records.")
+    parser.add_argument("--cases", type=Path, required=True)
+    parser.add_argument("--experiment", type=Path, required=True)
+    parser.add_argument("--decisions", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+    try:
+        cases_doc = json.loads(args.cases.read_text(encoding="utf-8"))
+        experiment_doc = json.loads(args.experiment.read_text(encoding="utf-8"))
+        decisions_doc = json.loads(args.decisions.read_text(encoding="utf-8"))
+        exported = export_audit_records(cases_doc, experiment_doc, decisions_doc)
+        # Exclusive create protects prior run and review evidence from accidental replacement.
+        with args.output.open("x", encoding="utf-8") as handle:
+            json.dump(exported, handle, ensure_ascii=False, indent=2, default=_json_default)
+            handle.write("\n")
+    except (OSError, ValueError) as error:
+        parser.error(str(error))
+    return 0
+
+
 def audit_ranking_contract(case: dict, sql: str) -> dict:
     """Check explicit ORDER BY/TOP-N only; leave other semantics to review."""
     top_n = case.get("top_n")
@@ -171,3 +384,7 @@ def audit_ranking_contract(case: dict, sql: str) -> dict:
         if count != top_n:
             return {"decision": "FAIL", "evidence": ["top_n_limit_missing_or_mismatched"]}
     return {"decision": "PASS", "evidence": ["explicit_ordering_and_top_n_structure_verified"]}
+
+
+if __name__ == "__main__":
+    raise SystemExit(_export_cli())

@@ -1,10 +1,13 @@
-"""Regression checks for the versioned v3.1 benchmark; never runs the held-out SQL Agent."""
+"""Regression checks for v3.1/v3.2 scoring; never runs the held-out SQL Agent."""
 from __future__ import annotations
 
 import hashlib
 import importlib.util
+import io
 import json
+import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -98,6 +101,16 @@ class V31ContractTests(unittest.TestCase):
         self.assertFalse(GOLD["human_approval_claimed"])
         self.assertFalse(RESULTS["heldout_agent_executed"])
         self.assertEqual(RESULTS["independent_review_approvals"], 0)
+        manifest = read("FREEZE_MANIFEST_V3_1_DRAFT.json")
+        self.assertEqual(manifest["protocol_version"], "3.2.0")
+        self.assertEqual(manifest["scorer_version"], "3.2.0")
+        self.assertEqual(manifest["revised_case_set_sha256"], digest(CASES))
+        for relative_path, expected_sha256 in manifest["scoring_artifacts_sha256"].items():
+            self.assertEqual(
+                hashlib.sha256((ROOT / relative_path).read_bytes()).hexdigest(),
+                expected_sha256,
+                relative_path,
+            )
         self.assertEqual(digest(CASES), GOLD["case_set_sha256"])
         self.assertEqual(digest(CASES), RESULTS["case_set_sha256"])
         self.assertEqual(digest([
@@ -433,6 +446,388 @@ class V31ContractTests(unittest.TestCase):
         self.assertEqual(result["metrics"]["provider_network_failure_count"]["count"], 1)
         self.assertEqual(result["metrics"]["false_clarification_abstention"]["numerator"], 0)
         self.assertEqual(result["metrics"]["valid_clarification_abstention"]["numerator"], 0)
+
+    def test_v32_column_order_and_approved_aliases_preserve_business_values(self):
+        for case_id in ("B40-001", "B40-004"):
+            case = BY_ID[case_id]
+            gold = RESULT_BY_ID[case_id]
+            if case_id == "B40-001":
+                actual_columns = list(reversed(gold["columns"]))
+                actual_rows = [{key: row[key] for key in actual_columns} for row in gold["rows"]]
+            else:
+                actual_columns = ["aov", "month"]
+                actual_rows = [
+                    {"aov": row["average_order_value"], "month": row["month"]}
+                    for row in gold["rows"]
+                ]
+            compared = scorer_v31.compare_business_results(
+                case, gold["rows"], {"columns": actual_columns, "rows": actual_rows},
+            )
+            with self.subTest(case_id=case_id):
+                self.assertEqual(compared["business_result_decision"], "PASS")
+                self.assertEqual(compared["output_contract_decision"], "PASS")
+                self.assertFalse(compared["strict_schema_match"])
+
+    def test_v32_all_30_execute_gold_results_match_the_revised_contract(self):
+        self.assertEqual(len(GOLD_BY_ID), 30)
+        for case_id, case in BY_ID.items():
+            if case["expected_behavior"] != "execute":
+                continue
+            gold = RESULT_BY_ID[case_id]
+            compared = scorer_v31.compare_business_results(
+                case,
+                gold["rows"],
+                {
+                    "sql": gold["sql"], "columns": gold["columns"],
+                    "rows": gold["rows"],
+                },
+                reference_sql=gold["sql"],
+            )
+            with self.subTest(case_id=case_id):
+                self.assertEqual(compared["business_result_decision"], "PASS")
+                self.assertEqual(compared["output_contract_decision"], "PASS")
+
+    def test_v32_identical_resolved_projection_lineage_maps_an_unapproved_alias(self):
+        case = {
+            "id": "SYNTHETIC-LINEAGE", "expected_behavior": "execute",
+            "output_contract": {"columns": ["customer_id", "revenue"], "ordered": False},
+            "column_aliases": {}, "numeric_tolerance": {},
+        }
+        reference_sql = (
+            "SELECT o.customer_id AS customer_id, SUM(o.amount) AS revenue "
+            "FROM commerce.sales AS o GROUP BY o.customer_id"
+        )
+        observation_sql = (
+            "SELECT s.customer_id AS acct, SUM(s.amount) AS net "
+            "FROM commerce.sales AS s GROUP BY s.customer_id"
+        )
+        compared = scorer_v31.compare_business_results(
+            case,
+            [{"customer_id": 7, "revenue": "12.50"}],
+            {
+                "sql": observation_sql,
+                "columns": ["acct", "net"],
+                "rows": [{"acct": 7, "net": "12.50"}],
+            },
+            reference_sql=reference_sql,
+        )
+        self.assertEqual(compared["business_result_decision"], "PASS")
+        self.assertEqual(compared["canonical_column_mapping"], {
+            "acct": "customer_id", "net": "revenue",
+        })
+
+    def test_v32_ambiguous_projection_lineage_requires_review_instead_of_fuzzy_pass(self):
+        case = {
+            "id": "SYNTHETIC-AMBIGUOUS", "expected_behavior": "execute",
+            "output_contract": {"columns": ["left_value", "right_value"], "ordered": False},
+            "column_aliases": {}, "numeric_tolerance": {},
+        }
+        reference_sql = "SELECT t.value AS left_value, t.value AS right_value FROM t"
+        observation_sql = "SELECT t.value AS mystery FROM t"
+        compared = scorer_v31.compare_business_results(
+            case,
+            [{"left_value": 1, "right_value": 1}],
+            {"sql": observation_sql, "columns": ["mystery"], "rows": [{"mystery": 1}]},
+            reference_sql=reference_sql,
+        )
+        self.assertEqual(compared["business_result_decision"], "REVIEW_REQUIRED")
+        self.assertIn(
+            "ambiguous_sql_projection_lineage",
+            compared["business_result_reason_codes"],
+        )
+
+    def test_v32_count_star_does_not_claim_projection_lineage_without_a_source_column(self):
+        self.assertEqual(
+            audit.projection_signatures("SELECT COUNT(*) AS count_a FROM commerce.orders"),
+            [("count_a", None)],
+        )
+
+    def test_v32_extra_column_fails_output_contract_without_changing_business_accuracy(self):
+        case = {
+            "id": "SYNTHETIC-EXTRA", "expected_behavior": "execute",
+            "output_contract": {"columns": ["value"], "ordered": False},
+            "column_aliases": {}, "numeric_tolerance": {},
+        }
+        compared = scorer_v31.compare_business_results(
+            case, [{"value": 8}],
+            {"columns": ["value", "trace_id"], "rows": [{"value": 8, "trace_id": "x"}]},
+        )
+        self.assertEqual(compared["business_result_decision"], "PASS")
+        self.assertEqual(compared["output_contract_decision"], "FAIL")
+        self.assertIn("unexpected_extra_columns", compared["output_contract_reason_codes"])
+
+        approved = {
+            **case,
+            "allowed_provenance_columns": {"source_tag": "gold-reference"},
+        }
+        provenance = scorer_v31.compare_business_results(
+            approved, [{"value": 8}],
+            {"columns": ["value", "source_tag"], "rows": [{
+                "value": 8, "source_tag": "gold-reference",
+            }]},
+        )
+        self.assertEqual(provenance["business_result_decision"], "PASS")
+        self.assertEqual(provenance["output_contract_decision"], "PASS")
+
+    def test_v32_row_limits_are_output_contract_requirements(self):
+        case = {
+            "id": "SYNTHETIC-LIMIT", "expected_behavior": "execute", "top_n": 1,
+            "output_contract": {"columns": ["value"], "ordered": False, "max_rows": 2},
+            "column_aliases": {}, "numeric_tolerance": {},
+        }
+        compared = scorer_v31.compare_business_results(
+            case, [{"value": 1}],
+            {"columns": ["value"], "rows": [{"value": 1}, {"value": 2}]},
+        )
+        self.assertEqual(compared["output_contract_decision"], "FAIL")
+        self.assertIn("top_n_rows_exceeded", compared["output_contract_reason_codes"])
+
+    def test_v32_multiset_matching_handles_overlapping_decimal_tolerances_and_duplicates(self):
+        case = {
+            "id": "SYNTHETIC-TOLERANCE", "expected_behavior": "execute",
+            "output_contract": {"columns": ["metric"], "ordered": False},
+            "column_aliases": {}, "numeric_tolerance": {"absolute": "0.10", "relative": 0},
+        }
+        compared = scorer_v31.compare_business_results(
+            case,
+            [{"metric": "10.0"}, {"metric": "10.1"}],
+            {"columns": ["metric"], "rows": [{"metric": "10.05"}, {"metric": "9.95"}]},
+        )
+        self.assertEqual(compared["business_result_decision"], "PASS")
+        self.assertEqual(compared["row_matching"]["matched_rows"], 2)
+
+        duplicate_case = {**case, "numeric_tolerance": {"absolute": 0, "relative": 0}}
+        duplicates = scorer_v31.compare_business_results(
+            duplicate_case,
+            [{"metric": "2.00"}, {"metric": "2.00"}],
+            {"columns": ["metric"], "rows": [{"metric": "2"}, {"metric": "2"}]},
+        )
+        self.assertEqual(duplicates["business_result_decision"], "PASS")
+        nulls = scorer_v31.compare_business_results(
+            duplicate_case, [{"metric": None}],
+            {"columns": ["metric"], "rows": [{"metric": None}]},
+        )
+        self.assertEqual(nulls["business_result_decision"], "PASS")
+        null_vs_zero = scorer_v31.compare_business_results(
+            duplicate_case, [{"metric": None}],
+            {"columns": ["metric"], "rows": [{"metric": 0}]},
+        )
+        self.assertEqual(null_vs_zero["business_result_decision"], "FAIL")
+
+    def test_v32_missing_and_extra_rows_fail_business_accuracy(self):
+        case = {
+            "id": "SYNTHETIC-ROWS", "expected_behavior": "execute",
+            "output_contract": {"columns": ["value"], "ordered": False},
+            "column_aliases": {}, "numeric_tolerance": {},
+        }
+        expected = [{"value": 1}, {"value": 2}]
+        missing = scorer_v31.compare_business_results(
+            case, expected, {"columns": ["value"], "rows": [{"value": 1}]},
+        )
+        extra = scorer_v31.compare_business_results(
+            case, expected, {"columns": ["value"], "rows": [{"value": 1}, {"value": 2}, {"value": 3}]},
+        )
+        self.assertEqual(missing["business_result_decision"], "FAIL")
+        self.assertEqual(extra["business_result_decision"], "FAIL")
+
+    def test_v32_ordered_rows_separate_content_accuracy_from_order_contract(self):
+        case = {
+            "id": "SYNTHETIC-ORDER", "expected_behavior": "execute",
+            "output_contract": {"columns": ["id", "value"], "ordered": True},
+            "column_aliases": {}, "numeric_tolerance": {},
+        }
+        compared = scorer_v31.compare_business_results(
+            case,
+            [{"id": 1, "value": "a"}, {"id": 2, "value": "b"}],
+            {"columns": ["value", "id"], "rows": [{"value": "b", "id": 2}, {"value": "a", "id": 1}]},
+        )
+        self.assertEqual(compared["business_result_decision"], "PASS")
+        self.assertEqual(compared["output_contract_decision"], "FAIL")
+        self.assertIn("ordered_output_mismatch", compared["output_contract_reason_codes"])
+
+    def test_v32_business_key_duplicate_or_null_is_not_counted_as_correct(self):
+        case = {
+            "id": "SYNTHETIC-KEY", "expected_behavior": "execute",
+            "business_key_columns": ["customer_id"],
+            "output_contract": {"columns": ["customer_id", "orders"], "ordered": False},
+            "column_aliases": {}, "numeric_tolerance": {},
+        }
+        expected = [{"customer_id": 1, "orders": 2}, {"customer_id": 2, "orders": 1}]
+        duplicate = scorer_v31.compare_business_results(
+            case, expected,
+            {"columns": ["customer_id", "orders"], "rows": [
+                {"customer_id": 1, "orders": 2}, {"customer_id": 1, "orders": 1},
+            ]},
+        )
+        null_key = scorer_v31.compare_business_results(
+            case, expected,
+            {"columns": ["customer_id", "orders"], "rows": [
+                {"customer_id": None, "orders": 2}, {"customer_id": 2, "orders": 1},
+            ]},
+        )
+        self.assertEqual(duplicate["business_result_decision"], "FAIL")
+        self.assertEqual(null_key["business_result_decision"], "FAIL")
+
+    def test_v32_missing_reference_rows_is_review_required_not_an_empty_gold_pass(self):
+        case = {
+            "id": "SYNTHETIC-NO-GOLD", "expected_behavior": "execute",
+            "output_contract": {"columns": ["value"], "ordered": False},
+            "column_aliases": {}, "numeric_tolerance": {},
+        }
+        compared = scorer_v31.compare_business_results(
+            case, None,
+            {"columns": ["value"], "rows": []},
+        )
+        self.assertEqual(compared["business_result_decision"], "REVIEW_REQUIRED")
+        self.assertIn("invalid_reference_row_shape", compared["business_result_reason_codes"])
+
+    def test_v32_extra_output_changes_contract_metric_but_not_business_metric(self):
+        case = {
+            "id": "SYNTHETIC-METRICS", "expected_behavior": "execute",
+            "output_contract": {"columns": ["value"], "ordered": False},
+            "column_aliases": {}, "numeric_tolerance": {},
+        }
+        observation = {
+            "id": case["id"], "status": "executed", "sql_semantic_valid": True,
+            "sql": "SELECT value, 'trace' AS trace_id FROM data", "parameters": [],
+            "columns": ["value", "trace_id"], "rows": [{"value": 9, "trace_id": "trace"}],
+        }
+        reference_sql = "SELECT value FROM data"
+        cases_doc = {"cases": [case]}
+        record = audit.create_audit_record(
+            case=case, case_set_sha256=digest(cases_doc), observation=observation,
+            auditor_id="synthetic-reviewer", auditor_version="fixture-v1", decision="PASS",
+            evidence=["Synthetic fixture: approved semantic audit decision."],
+        )
+        scores = scorer_v31.score(
+            cases_doc,
+            {"cases": [{"id": case["id"], "sql": reference_sql, "rows": [{"value": 9}]}]},
+            {"cases": [observation], "independent_semantic_audits": [record]},
+        )
+        self.assertEqual(scores["metrics"]["business_result_accuracy"]["value"], 1.0)
+        self.assertEqual(scores["metrics"]["output_contract_compliance"]["value"], 0.0)
+        self.assertEqual(scores["metrics"]["supported_business_end_to_end_accuracy"]["value"], 0.0)
+
+    def test_independent_audit_export_links_evidence_and_refuses_stale_or_incomplete_input(self):
+        case = {
+            "id": "SYNTHETIC-EXPORT", "expected_behavior": "execute",
+            "output_contract": {"columns": ["value"], "ordered": False},
+            "column_aliases": {}, "numeric_tolerance": {},
+        }
+        cases_doc = {"cases": [case]}
+        observation = {
+            "id": case["id"], "sql": "SELECT 4 AS value", "parameters": [4],
+            "columns": ["value"], "rows": [{"value": 4}],
+        }
+        decisions_doc = {
+            "format_version": audit.AUDIT_DECISIONS_FORMAT_VERSION,
+            "case_set_sha256": digest(cases_doc),
+            "auditor_id": "reviewer-test", "auditor_version": "manual-checklist-1",
+            "decisions": [{
+                "case_id": case["id"], "decision": "PASS",
+                "evidence": ["Projection and result rows were independently checked."],
+            }],
+        }
+        exported = audit.export_audit_records(
+            cases_doc, {"cases": [observation]}, decisions_doc,
+            recorded_at_utc="2026-11-21T00:00:00+00:00",
+        )
+        record = exported["independent_semantic_audits"][0]
+        self.assertEqual(record["sql_sha256"], hashlib.sha256(observation["sql"].encode()).hexdigest())
+        self.assertEqual(record["parameters_sha256"], audit.canonical_sha256([4]))
+        self.assertEqual(record["case_contract_sha256"], audit.canonical_sha256(case))
+        self.assertEqual(record["case_set_sha256"], digest(cases_doc))
+        self.assertEqual(record["auditor_id"], "reviewer-test")
+        self.assertEqual(exported["semantic_audit_export"]["authenticated"], False)
+        self.assertEqual(exported["semantic_audit_export"]["unreviewed_observed_sql_case_ids"], [])
+
+        stale = {**decisions_doc, "case_set_sha256": "0" * 64}
+        with self.assertRaisesRegex(ValueError, "case-set hash"):
+            audit.export_audit_records(cases_doc, {"cases": [observation]}, stale)
+        incomplete = {**decisions_doc, "decisions": [{
+            "case_id": case["id"], "decision": "PASS", "evidence": [],
+        }]}
+        with self.assertRaisesRegex(ValueError, "evidence"):
+            audit.export_audit_records(cases_doc, {"cases": [observation]}, incomplete)
+        duplicate = {**decisions_doc, "decisions": [
+            decisions_doc["decisions"][0], decisions_doc["decisions"][0],
+        ]}
+        with self.assertRaisesRegex(ValueError, "unique case IDs"):
+            audit.export_audit_records(cases_doc, {"cases": [observation]}, duplicate)
+
+    def test_audit_export_cli_creates_new_file_and_never_overwrites_existing_evidence(self):
+        case = {
+            "id": "SYNTHETIC-CLI", "expected_behavior": "execute",
+            "output_contract": {"columns": ["value"], "ordered": False},
+        }
+        cases_doc = {"cases": [case]}
+        experiment_doc = {"cases": [{
+            "id": case["id"], "sql": "SELECT 2 AS value", "parameters": [],
+            "columns": ["value"], "rows": [{"value": 2}],
+        }]}
+        decisions_doc = {
+            "format_version": audit.AUDIT_DECISIONS_FORMAT_VERSION,
+            "case_set_sha256": digest(cases_doc),
+            "auditor_id": "reviewer-cli", "auditor_version": "manual-1",
+            "decisions": [{"case_id": case["id"], "decision": "PASS",
+                           "evidence": ["Reviewed the synthetic SQL fixture."]}],
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            paths = {
+                "--cases": root / "cases.json",
+                "--experiment": root / "experiment.json",
+                "--decisions": root / "decisions.json",
+                "--output": root / "export.json",
+            }
+            paths["--cases"].write_text(json.dumps(cases_doc), encoding="utf-8")
+            paths["--experiment"].write_text(json.dumps(experiment_doc), encoding="utf-8")
+            paths["--decisions"].write_text(json.dumps(decisions_doc), encoding="utf-8")
+            argv = ["semantic_audit_v3_1.py"]
+            for flag, value in paths.items():
+                argv.extend([flag, str(value)])
+            with patch("sys.argv", argv):
+                self.assertEqual(audit._export_cli(), 0)
+            original = paths["--output"].read_bytes()
+            with patch("sys.argv", argv), patch("sys.stderr", io.StringIO()), self.assertRaises(SystemExit) as raised:
+                audit._export_cli()
+            self.assertEqual(raised.exception.code, 2)
+            self.assertEqual(paths["--output"].read_bytes(), original)
+
+    def test_independent_fail_audits_keep_semantic_mutations_out_of_end_to_end_passes(self):
+        mutations = {
+            "aggregation": "SELECT COUNT(*) AS value FROM data",
+            "grouping": "SELECT group_a, SUM(value) AS value FROM data GROUP BY group_a",
+            "join": "SELECT a.value AS value FROM table_a AS a JOIN table_b AS b ON a.id = b.id",
+            "snapshot": "SELECT quantity AS value FROM inventory WHERE snapshot_date = DATE '2026-01-01'",
+            "null": "SELECT COALESCE(value, 0) AS value FROM data",
+            "alias": "SELECT other_value AS value FROM data",
+        }
+        for mutation_name, sql in mutations.items():
+            with self.subTest(mutation=mutation_name):
+                case = {
+                    "id": f"SYNTHETIC-{mutation_name.upper()}", "expected_behavior": "execute",
+                    "output_contract": {"columns": ["value"], "ordered": False},
+                    "column_aliases": {}, "numeric_tolerance": {},
+                }
+                cases_doc = {"cases": [case]}
+                observation = {
+                    "id": case["id"], "status": "executed", "sql_semantic_valid": True,
+                    "sql": sql, "parameters": [], "columns": ["value"], "rows": [{"value": 1}],
+                }
+                record = audit.create_audit_record(
+                    case=case, case_set_sha256=digest(cases_doc), observation=observation,
+                    auditor_id="synthetic-reviewer", auditor_version="fixture-v1", decision="FAIL",
+                    evidence=[f"Synthetic independent review: {mutation_name} changes the requested semantics."],
+                )
+                scores = scorer_v31.score(
+                    cases_doc,
+                    {"cases": [{"id": case["id"], "rows": [{"value": 1}]}]},
+                    {"cases": [observation], "independent_semantic_audits": [record]},
+                )
+                self.assertEqual(scores["semantic_audits"][case["id"]]["decision"], "FAIL")
+                self.assertEqual(scores["metrics"]["supported_business_end_to_end_accuracy"]["numerator"], 0)
+                self.assertEqual(scores["metrics"]["business_result_accuracy"]["numerator"], 1)
 
     def test_all_v3_mutations_construct_against_v31_gold_definitions(self):
         gold_by_id = GOLD_BY_ID

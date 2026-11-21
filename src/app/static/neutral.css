@@ -425,3 +425,10 @@ html #home-overview-preview { height: 1000px; }
 /* Sources column: room on the right edge; long file names wrap instead of touching it */
 :root .general-chat .chat-turn-response > .citations { padding-right: 16px; }
 :root .general-chat .chat-turn .citation-title strong, :root .general-chat .chat-turn .citation-title { overflow-wrap: anywhere; min-width: 0; }
+
+/* Score bars: a generic "span + span" margin had pushed the fill 10 px to the right; the bar and its fill start at the edge */
+:root .citation-score-bar, :root .citation-score-bar > span { margin: 0; }
+:root .citation-score { gap: 8px; }
+/* Source Lens: long file names wrap inside the box */
+:root .source-lens-body h3, :root .source-lens-pub, :root .source-lens-host { overflow-wrap: anywhere; }
+:root .general-chat .chat-turn .citation-title span.citation-score-bar, :root .general-chat .chat-turn .citation-title span.citation-score-bar > span { margin-left: 0; }

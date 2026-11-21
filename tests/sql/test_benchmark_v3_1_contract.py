@@ -53,6 +53,16 @@ spec_mutations.loader.exec_module(mutation_runner)
 
 
 class V31ContractTests(unittest.TestCase):
+    def test_review_page_can_restore_committed_approvals_after_browser_reset(self):
+        page = (HERE / "SEMANTIC_REVIEW_V3_1.html").read_text(encoding="utf-8")
+        self.assertIn('id="restoreRecordedReviews"', page)
+        self.assertIn('"review_v3_1_reviewer_1_Lenhan231_complete.json"', page)
+        self.assertIn('"review_v3_1_reviewer_2_user_reported_complete.json"', page)
+        self.assertIn("async function restoreRecordedReviews()", page)
+        self.assertIn("await importReview({ name: filename, text: async () => text }, role)", page)
+        self.assertIn("40/40 APPROVE mỗi reviewer", page)
+        self.assertIn("Adjudication và freeze vẫn đang chờ", page)
+
     def test_recovered_reviewer_approval_is_linked_and_does_not_freeze_cohort(self):
         manifest = read("FREEZE_MANIFEST_V3_1_DRAFT.json")
         review_path = HERE / "review_v3_1_reviewer_1_Lenhan231_complete.json"

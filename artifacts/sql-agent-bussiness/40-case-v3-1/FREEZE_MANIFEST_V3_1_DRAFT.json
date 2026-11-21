@@ -173,8 +173,8 @@
     "artifacts/sql-agent-bussiness/40-case-v3-1/scorer_v3_1.py": "90baa56dc3681511f11df6fc6e762af1b76cfff6ef87b62754935330ce8eca3f",
     "artifacts/sql-agent-bussiness/40-case-v3-1/semantic_audit_v3_1.py": "af041327fe3264042f0c6fa1cb3e886a96c5cf32a22232d0747d9f1464d41514",
     "artifacts/sql-agent-bussiness/40-case-v3-1/PROTOCOL_V3_1.md": "fa802abe736880ee05a04ff02a35dc60a291fdc76a402c3690b912fefd5ed74d",
-    "artifacts/sql-agent-bussiness/40-case-v3-1/README.md": "6c255904998f9753638e06fa95748283ce29949219d085a15e9d46073471c048",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/README.md": "b5680d7b44bf9173adc7b5793152de10a4d5bdd26c15064a1b25221c045f644b",
     "artifacts/sql-agent-bussiness/40-case-v3-1/TECHNICAL_VALIDATION_REPORT_2026-11-21.md": "8fd751fd823a221f844e7c62d2a3ce16baaa8c912566e591b27a6f96bb277a08",
-    "tests/sql/test_benchmark_v3_1_contract.py": "7f2750ba69556d36cd09cea095433e65a90ad2adcc6564928234957ae5426dfd"
+    "tests/sql/test_benchmark_v3_1_contract.py": "037b49a67f7df3153fce2fa3d30ee054ca134d95570bb286e396b68f73b703b8"
   }
 }

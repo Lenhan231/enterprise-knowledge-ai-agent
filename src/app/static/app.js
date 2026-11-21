@@ -3583,3 +3583,64 @@ $("#sidebar-toggle").addEventListener("click", () => {
   sync();
   ready();
 })();
+
+// Prompt Input with Actions: Examples menu (the starter questions), Clear, a length counter that shows near the limit,
+// "/" to focus the box, and Esc to leave it. Nothing here sends anything by itself.
+(() => {
+  const form = document.getElementById("general-chat-form");
+  const input = document.getElementById("general-chat-question");
+  const pillWrap = form?.querySelector(".route-pill-wrap");
+  if (!form || !input || !pillWrap) return;
+  const icon = (d) => `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const bar = document.createElement("div");
+  bar.className = "composer-actions";
+  bar.innerHTML = `<div class="examples-wrap"><button type="button" class="composer-action" aria-haspopup="menu" aria-expanded="false">${icon('<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/>')}<span>Examples</span></button><div class="examples-menu" role="menu" hidden></div></div>
+    <button type="button" class="composer-action composer-clear" aria-label="Clear message" hidden>${icon('<path d="M18 6 6 18M6 6l12 12"/>')}<span>Clear</span></button>
+    <span class="composer-count" aria-live="off" hidden></span>`;
+  pillWrap.before(bar);
+  const trigger = bar.querySelector(".examples-wrap > button");
+  const menu = bar.querySelector(".examples-menu");
+  const clear = bar.querySelector(".composer-clear");
+  const count = bar.querySelector(".composer-count");
+  const closeMenu = () => { menu.hidden = true; trigger.setAttribute("aria-expanded", "false"); };
+  const update = () => {
+    const length = input.value.length, limit = Number(input.maxLength) || 2000;
+    clear.hidden = length === 0;
+    count.hidden = length < limit * 0.8;
+    count.textContent = `${length}/${limit}`;
+  };
+  trigger.addEventListener("click", (event) => {
+    event.stopPropagation();
+    if (!menu.hidden) return closeMenu();
+    const seen = new Set();
+    const items = [...document.querySelectorAll(".quick-chip[data-prompt]")].filter((chip) => !seen.has(chip.dataset.prompt) && seen.add(chip.dataset.prompt));
+    menu.innerHTML = items.length ? items.map((chip) => `<button type="button" role="menuitem" data-prompt="${escapeHtml(chip.dataset.prompt)}">${escapeHtml(chip.textContent.trim())}</button>`).join("") : '<p class="examples-empty">No examples available</p>';
+    menu.hidden = false;
+    trigger.setAttribute("aria-expanded", "true");
+    menu.querySelector("button")?.focus();
+  });
+  menu.addEventListener("click", (event) => {
+    const item = event.target.closest("[data-prompt]");
+    if (!item) return;
+    input.value = item.dataset.prompt;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    closeMenu();
+    input.focus();
+  });
+  menu.addEventListener("keydown", (event) => {
+    const items = [...menu.querySelectorAll("button")];
+    const at = items.indexOf(document.activeElement);
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); items[(at + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length]?.focus(); }
+    if (event.key === "Escape") { event.preventDefault(); closeMenu(); trigger.focus(); }
+  });
+  document.addEventListener("click", (event) => { if (!bar.contains(event.target)) closeMenu(); });
+  clear.addEventListener("click", () => { input.value = ""; input.dispatchEvent(new Event("input", { bubbles: true })); input.focus(); });
+  input.addEventListener("input", update);
+  form.addEventListener("submit", () => setTimeout(update));
+  document.addEventListener("keydown", (event) => {
+    const editing = event.target.closest?.("input, textarea, select, [contenteditable]");
+    if (event.key === "/" && !editing && !event.metaKey && !event.ctrlKey && form.offsetParent !== null) { event.preventDefault(); input.focus(); }
+    else if (event.key === "Escape" && event.target === input) input.blur();
+  });
+  update();
+})();

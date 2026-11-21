@@ -7,7 +7,7 @@ import unittest
 import inspect
 from datetime import date
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 from urllib.error import HTTPError
 
 
@@ -119,6 +119,24 @@ class SQLBenchmarkRunnerTest(unittest.TestCase):
             data = asyncio.run(RUNNER.run_cases(FirstFails(), cases, store))
             self.assertEqual(data["cases"][0]["status"], "provider_error")
             self.assertEqual(data["cases"][1]["status"], "executed")
+
+    def test_rate_limit_is_classified_as_provider_failure_before_validation_text(self):
+        failure = RUNNER.classify_failure(
+            "failed", {"error_type": "RateLimitError"},
+            "The generated query did not pass planning or SQL validation.",
+        )
+        self.assertEqual(failure, "provider_failure")
+
+    def test_case_delay_is_applied_between_cases_only(self):
+        cases = {"cases": [*case_set()["cases"],
+                           {"id": "T02", "question": "second query", "supported": True}]}
+        with tempfile.TemporaryDirectory() as directory, patch.object(
+            RUNNER.asyncio, "sleep", new_callable=AsyncMock
+        ) as sleep:
+            store = self.make_store(Path(directory) / "run", cases=cases)
+            data = asyncio.run(RUNNER.run_cases(FakeAgent(), cases, store, delay_between_cases=60))
+            self.assertEqual([case["status"] for case in data["cases"]], ["executed", "executed"])
+            sleep.assert_awaited_once_with(60)
 
     def test_schema_selector_http_error_is_counted_and_classified(self):
         from core.agents.sql import agent as sql_module

@@ -362,3 +362,5 @@ html #home-overview-preview { height: 1000px; }
 :root .examples-wrap { display: flex; align-items: center; }
 :root .general-chat-composer .composer-action { padding: 0 11px; line-height: 1; gap: 6px; }
 :root .general-chat-composer .general-chat-mode.visually-hidden { display: none; }
+/* the pill edge (not the icon) lines up with the text edge, like the controls on the right line up with its end */
+:root .composer-actions { margin-left: 0; gap: 4px; }

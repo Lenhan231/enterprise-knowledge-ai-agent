@@ -1,0 +1,296 @@
+{
+  "format_version": "sql-selector-model-comparison.v1",
+  "application_revision": "ac6803a368d36154ae3a1dfba8a969dc19be93d0",
+  "dirty_worktree": false,
+  "protocol_version": "1.2.0",
+  "scorer_version": "2.1.0",
+  "case_set_sha256": "ddade2d597b30a6bb4c74fc7b997dfe9a617e6c5348cd8b64bf7016463d100c4",
+  "reference_sha256": "295c53652e5fe3a7fc8c3c35cffb9ecf4f6bc23e44b6db861955e369d0932a17",
+  "source_fingerprint_sha256": "5feb222132233fa2bd8ee010eac42b804a64bb0d0f13ad80b7252c3b0728a57d",
+  "database": {
+    "classification": "frozen-analytics-snapshot",
+    "read_only_role_verified": true,
+    "fingerprint_sha256": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028"
+  },
+  "controlled_settings": {
+    "sql_generation_provider": "groq",
+    "sql_generation_model": "openai/gpt-oss-20b",
+    "repair_budget": 1,
+    "same_case_set_reference_source_and_snapshot": true
+  },
+  "models": {
+    "perplexity/pplx-decider-flash-v1.3:free": {
+      "run_id": "pilot5-selector-flash-ac6803a368d3-20261121T033000Z",
+      "experiment_path": "runs/pilot5-selector-flash-ac6803a368d3-20261121T033000Z/experiment",
+      "manifest_status": "completed",
+      "schema_selection_model": "perplexity/pplx-decider-flash-v1.3:free",
+      "metrics": {
+        "business_end_to_end_accuracy": {
+          "numerator": 4,
+          "denominator": 4,
+          "value": 1.0
+        },
+        "business_result_accuracy": {
+          "numerator": 4,
+          "denominator": 4,
+          "value": 1.0
+        },
+        "sql_semantic_accuracy": {
+          "numerator": 4,
+          "denominator": 4,
+          "value": 1.0
+        },
+        "strict_result_exact_match": {
+          "numerator": 2,
+          "denominator": 4,
+          "value": 0.5
+        },
+        "safe_unsupported_abstention": {
+          "numerator": 1,
+          "denominator": 1,
+          "value": 1.0
+        },
+        "schema_selector_raw_recall_at_5": {
+          "numerator": 4,
+          "denominator": 4,
+          "value": 1.0,
+          "applicable_cases": 3
+        },
+        "unsafe_execution_count": 0,
+        "latency_ms": {
+          "p50_nearest_rank": 9964.206,
+          "p95_nearest_rank": 20275.422,
+          "sample_count": 4
+        }
+      },
+      "calls": {
+        "schema_selection": 3,
+        "schema_selector_attempts": 3,
+        "schema_selector_successes": 3,
+        "general_sql_generation": 2,
+        "metric_interpretation": 1,
+        "local_codex_fallback_calls": 1,
+        "sql_repair": 0,
+        "repository_execution_attempts": 4,
+        "repository_execution": 4
+      },
+      "cases": [
+        {
+          "id": "P01",
+          "status": "executed",
+          "business_end_to_end_correct": true,
+          "sql_semantic_accuracy": true,
+          "business_result_match": true,
+          "strict_result_exact_match": true,
+          "latency_ms": 6700.83,
+          "selector_status": "not_attempted",
+          "selector_candidates": []
+        },
+        {
+          "id": "P02",
+          "status": "executed",
+          "business_end_to_end_correct": true,
+          "sql_semantic_accuracy": true,
+          "business_result_match": true,
+          "strict_result_exact_match": true,
+          "latency_ms": 9964.206,
+          "selector_status": "available",
+          "selector_candidates": [
+            "commerce.customers",
+            "commerce.geography",
+            "commerce.order_items",
+            "commerce.orders",
+            "commerce.shipments"
+          ]
+        },
+        {
+          "id": "P03",
+          "status": "executed",
+          "business_end_to_end_correct": true,
+          "sql_semantic_accuracy": true,
+          "business_result_match": true,
+          "strict_result_exact_match": false,
+          "latency_ms": 16064.365,
+          "selector_status": "available",
+          "selector_candidates": [
+            "commerce.inventory",
+            "commerce.order_items",
+            "commerce.orders",
+            "commerce.products",
+            "commerce.shipments"
+          ]
+        },
+        {
+          "id": "P04",
+          "status": "executed",
+          "business_end_to_end_correct": true,
+          "sql_semantic_accuracy": true,
+          "business_result_match": true,
+          "strict_result_exact_match": false,
+          "latency_ms": 20275.422,
+          "selector_status": "available",
+          "selector_candidates": [
+            "commerce.inventory",
+            "commerce.order_items",
+            "commerce.products",
+            "commerce.returns",
+            "commerce.reviews"
+          ]
+        },
+        {
+          "id": "P05",
+          "status": "unsupported",
+          "business_end_to_end_correct": null,
+          "sql_semantic_accuracy": null,
+          "business_result_match": null,
+          "strict_result_exact_match": null,
+          "latency_ms": 4726.153,
+          "selector_status": "not_attempted",
+          "selector_candidates": []
+        }
+      ]
+    },
+    "perplexity/pplx-decider-v1.3:free": {
+      "run_id": "pilot5-selector-decider13-ac6803a368d3-20261121T033000Z",
+      "experiment_path": "runs/pilot5-selector-decider13-ac6803a368d3-20261121T033000Z/experiment",
+      "manifest_status": "completed",
+      "schema_selection_model": "perplexity/pplx-decider-v1.3:free",
+      "metrics": {
+        "business_end_to_end_accuracy": {
+          "numerator": 4,
+          "denominator": 4,
+          "value": 1.0
+        },
+        "business_result_accuracy": {
+          "numerator": 4,
+          "denominator": 4,
+          "value": 1.0
+        },
+        "sql_semantic_accuracy": {
+          "numerator": 4,
+          "denominator": 4,
+          "value": 1.0
+        },
+        "strict_result_exact_match": {
+          "numerator": 2,
+          "denominator": 4,
+          "value": 0.5
+        },
+        "safe_unsupported_abstention": {
+          "numerator": 1,
+          "denominator": 1,
+          "value": 1.0
+        },
+        "schema_selector_raw_recall_at_5": {
+          "numerator": 4,
+          "denominator": 4,
+          "value": 1.0,
+          "applicable_cases": 3
+        },
+        "unsafe_execution_count": 0,
+        "latency_ms": {
+          "p50_nearest_rank": 8313.041,
+          "p95_nearest_rank": 40242.435,
+          "sample_count": 4
+        }
+      },
+      "calls": {
+        "schema_selection": 3,
+        "schema_selector_attempts": 3,
+        "schema_selector_successes": 3,
+        "general_sql_generation": 2,
+        "metric_interpretation": 1,
+        "local_codex_fallback_calls": 1,
+        "sql_repair": 0,
+        "repository_execution_attempts": 4,
+        "repository_execution": 4
+      },
+      "cases": [
+        {
+          "id": "P01",
+          "status": "executed",
+          "business_end_to_end_correct": true,
+          "sql_semantic_accuracy": true,
+          "business_result_match": true,
+          "strict_result_exact_match": true,
+          "latency_ms": 6713.671,
+          "selector_status": "not_attempted",
+          "selector_candidates": []
+        },
+        {
+          "id": "P02",
+          "status": "executed",
+          "business_end_to_end_correct": true,
+          "sql_semantic_accuracy": true,
+          "business_result_match": true,
+          "strict_result_exact_match": true,
+          "latency_ms": 11859.084,
+          "selector_status": "available",
+          "selector_candidates": [
+            "commerce.customers",
+            "commerce.geography",
+            "commerce.order_items",
+            "commerce.orders",
+            "commerce.shipments"
+          ]
+        },
+        {
+          "id": "P03",
+          "status": "executed",
+          "business_end_to_end_correct": true,
+          "sql_semantic_accuracy": true,
+          "business_result_match": true,
+          "strict_result_exact_match": false,
+          "latency_ms": 40242.435,
+          "selector_status": "available",
+          "selector_candidates": [
+            "commerce.inventory",
+            "commerce.order_items",
+            "commerce.orders",
+            "commerce.products",
+            "commerce.shipments"
+          ]
+        },
+        {
+          "id": "P04",
+          "status": "executed",
+          "business_end_to_end_correct": true,
+          "sql_semantic_accuracy": true,
+          "business_result_match": true,
+          "strict_result_exact_match": false,
+          "latency_ms": 8313.041,
+          "selector_status": "available",
+          "selector_candidates": [
+            "commerce.inventory",
+            "commerce.order_items",
+            "commerce.products",
+            "commerce.returns",
+            "commerce.reviews"
+          ]
+        },
+        {
+          "id": "P05",
+          "status": "unsupported",
+          "business_end_to_end_correct": null,
+          "sql_semantic_accuracy": null,
+          "business_result_match": null,
+          "strict_result_exact_match": null,
+          "latency_ms": 4080.738,
+          "selector_status": "not_attempted",
+          "selector_candidates": []
+        }
+      ]
+    }
+  },
+  "comparison": {
+    "selector_applicable_cases": [
+      "P02",
+      "P03",
+      "P04"
+    ],
+    "candidate_sets_identical_on_all_selector_cases": true,
+    "no_quality_winner_identified": true,
+    "interpretation": "Both selector models tied on this five-case pilot; only three cases exercised schema selection, and SQL-generation fallback occurred once per run.",
+    "forty_case_cohort_executed": false
+  }
+}

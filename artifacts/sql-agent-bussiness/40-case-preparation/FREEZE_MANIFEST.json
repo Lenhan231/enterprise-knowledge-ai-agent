@@ -137,9 +137,13 @@
     }
   },
   "review_approvals": {
-    "reviewer_1": 0,
-    "reviewer_2": 0,
-    "adjudicator": 0
+    "reviewer_1": 40,
+    "reviewer_2": 40,
+    "adjudicator": 0,
+    "source": "artifacts/sql-agent-bussiness/40-case-preparation/REVIEW_DECISIONS.json",
+    "basis": "project-owner attestation; no per-click browser log was retained",
+    "scope": "The 40 case questions and the visible intent/metric and expected behavior presented in the static review page.",
+    "gold_sql_or_results_approved": false
   },
   "sql_agent_generation_calls_during_preparation": 0,
   "heldout_agent_executed": false,
@@ -163,7 +167,7 @@
     "gold_results_provisional_superseded_20261121_v3.json"
   ],
   "blockers": [
-    "two independent reviewers and adjudication are pending",
+    "case-presentation approvals are owner-attested; detailed semantic review and any required adjudication remain pending",
     "gold SQL and reference rows are provisional, not approved",
     "follow-up context injection adapter is not implemented or verified",
     "related pilot overlaps and replacement rationale need reviewer acceptance",
@@ -221,5 +225,14 @@
       "git_diff_check": "PASS",
       "new_artifact_trailing_whitespace": "PASS"
     }
+  },
+  "review_record": {
+    "status": "CASE_PRESENTATION_APPROVALS_RECORDED_BY_ATTESTATION",
+    "recorded_at_utc": "2026-11-21T15:47:16Z",
+    "review_date": null,
+    "identity_capture": "Reviewer names were not supplied.",
+    "capture_limitation": "The static HTML review page did not persist individual votes; the decision file records the project owner's confirmation.",
+    "gold_sql_review": "PENDING",
+    "gold_results_review": "PENDING"
   }
 }

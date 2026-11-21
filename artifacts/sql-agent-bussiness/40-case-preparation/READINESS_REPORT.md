@@ -1,6 +1,6 @@
 # 40-case preparation readiness
 
-**Verdict: READY_FOR_HUMAN_REVIEW**
+**Verdict: CASE_PRESENTATION_REVIEW_RECORDED; GOLD_AND_FREEZE_REVIEW_PENDING**
 
 **READY_FOR_40_CASE_EXECUTION = NO**
 
@@ -29,9 +29,9 @@
 
 ## Human review and remaining gates
 
-- Reviewer 1 approvals: 0; Reviewer 2 approvals: 0; adjudications: 0. No signatures or independent approvals are claimed.
-- `FREEZE_MANIFEST.json` is `PENDING_REVIEW` with freeze state `DRAFT`; no case, oracle or cohort is marked `APPROVED` or `FROZEN`.
-- Reviewers must accept/reject all question substitutions, metric formulas, semantic overlap dispositions, gold SQL/results and tolerances.
+- The project owner reports that Reviewer 1 (the owner) and Reviewer 2 (a colleague) independently approved all 40 case presentations. The case-level record is in `REVIEW_DECISIONS.json`; reviewer names and original review dates were not captured.
+- The static HTML page did not persist per-case clicks. The stored approvals are explicitly an owner attestation, not a recovered browser audit log. Scope is the question and the visible intent/metric and expected behavior.
+- Gold SQL/parameters, reference rows, tolerances, overlap adjudication and freeze are not covered by that attestation and remain pending. `FREEZE_MANIFEST.json` therefore remains `PENDING_REVIEW` / `DRAFT`; the 40-case Agent benchmark remains unexecuted.
 - B40-026–030 use typed frozen-context injection but no live conversation adapter is implemented or verified; these are not yet reproducible live multi-turn cases.
 - No 40-case SQL Agent evaluation and no new model comparison were run.
 

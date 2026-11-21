@@ -69,9 +69,9 @@ assert.doesNotMatch(copy, /No usable documentary|Validated SQL evidence|Order an
         with patch.dict(os.environ, {'BACKEND_ONLY': '0'}):
             self.assertEqual(home().headers.get('cache-control'), 'no-cache')
         html = (root / 'src/app/static/index.html').read_text(encoding='utf-8')
-        self.assertIn('/static/sales-report.css?v=20261120-guidance', html)
-        self.assertIn('/static/sales-report.js?v=20261121-report-vi', html)
-        self.assertIn('/static/report-workspace.js?v=20261212-skeleton',html)
+        self.assertIn('/static/sales-report.css?v=20261222-merge', html)
+        self.assertIn('/static/sales-report.js?v=20261222-merge', html)
+        self.assertIn('/static/report-workspace.js?v=20261222-merge',html)
         self.assertIn('/static/app.js?v=20261213-neutral', html)
 
     def test_fixed_sections_widgets_and_untrusted_text(self):

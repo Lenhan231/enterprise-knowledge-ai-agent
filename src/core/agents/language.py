@@ -9,7 +9,9 @@ _VIETNAMESE_TEXT = re.compile(
     re.IGNORECASE,
 )
 _VIETNAMESE_PHRASE = re.compile(
-    r'\b(?:bao cao|bieu do|doanh thu|ton kho|tao dashboard|cho toi|hien thi|so luong|tieng viet)\b',
+    r'\b(?:bao cao|bieu do|doanh thu|ton kho|tao dashboard|cho toi|hien thi|so luong|tieng viet)\b'
+    r'|\b(?:thang|quy)\s+\d'
+    r'|\b(?:tao|lap|xuat|lam|viet)\s+(?:(?:a|an|the|new|monthly|quarterly|annual)\s+)*(?:inventory|sales|financial|report|dashboard)\b',
     re.IGNORECASE,
 )
 

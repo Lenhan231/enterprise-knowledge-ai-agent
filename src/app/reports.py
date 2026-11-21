@@ -1,5 +1,6 @@
 """A report-only library, with server-owned facts and editable presentation."""
 import asyncio
+from datetime import date, timedelta
 import logging
 from functools import lru_cache
 
@@ -13,6 +14,7 @@ from core.agents.dashboard.models import StrictModel
 from core.agents.dashboard.store import Conflict, StoreUnavailable
 from core.agents.language import is_vietnamese
 from core.agents.report.document import ReportDocument, ReportEdit
+from core.agents.report.labels import LABELS, uses_vietnamese_labels
 from core.agents.report.store import create_report_store
 
 router = APIRouter(prefix='/api/reports', tags=['reports'])
@@ -101,10 +103,16 @@ async def generate(payload: ReportRequest, request: Request, user=Depends(princi
             result, _, _ = await runtime.report_agent.generate_from_template(identity, source_mode='analytics')
         if 'report' not in result.data:
             raise HTTPException(422, detail=result.answer)
-        document = ReportDocument(report=result.data['report'], monthly_decisions=result.data.get('monthly_decisions', []),
+        report = result.data['report']
+        title = payload.question[:160]
+        if uses_vietnamese_labels(report):
+            period = report['request']['period']
+            end = date.fromisoformat(period['end_exclusive']) - timedelta(days=1)
+            title = f'{LABELS[report["report_type"]]} · {period["start"]} đến {end}'
+        document = ReportDocument(report=report, monthly_decisions=result.data.get('monthly_decisions', []),
                                   sales_context=result.data.get('sales_context', {}),
                                   inventory_context=result.data.get('inventory_context', {}),
-                                  title=payload.question[:160], status=result.metadata.get('status', 'partial'))
+                                  title=title, status=result.metadata.get('status', 'partial'))
         document = await asyncio.to_thread(store.create, user['sub'], document)
         return await bundle(document, user, 201)
     except PermissionError:

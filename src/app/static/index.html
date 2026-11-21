@@ -263,30 +263,30 @@
         <div id="answer-panel" class="answer-panel" hidden></div>
       </section>
       <div class="reports-workspace" id="reports-workspace">
-        <aside class="rw-sidebar" aria-label="Saved reports">
-          <h2>Saved reports</h2><button id="rw-new" type="button">New report</button>
+        <aside class="rw-sidebar" aria-labelledby="rw-library-title">
+          <h2 id="rw-library-title" data-report-vi="Báo cáo đã lưu">Saved reports</h2><button id="rw-new" type="button" data-report-vi="Báo cáo mới">New report</button>
           <div id="rw-library"></div>
         </aside>
         <div class="rw-main">
       <details id="report-fold" class="report-fold" open>
-        <summary><span class="report-fold-title">Generate a report</span><span class="report-fold-note">Sales and inventory from authorized, validated data</span></summary>
+        <summary><span class="report-fold-title" data-report-vi="Tạo báo cáo">Generate a report</span><span class="report-fold-note" data-report-vi="Dữ liệu bán hàng và tồn kho đã xác minh, trong phạm vi được cấp quyền">Sales and inventory from authorized, validated data</span></summary>
       <section id="report-agent-form-section" class="report-agent-panel" aria-labelledby="report-agent-form-title" hidden>
-        <h2 id="report-agent-form-title" class="visually-hidden">Generate an evidence-backed report</h2>
+        <h2 id="report-agent-form-title" class="visually-hidden" data-report-vi="Tạo báo cáo có nguồn đối chiếu">Generate an evidence-backed report</h2>
         <form id="report-agent-form" class="review-form">
-          <label for="report-agent-question">Report request</label>
+          <label for="report-agent-question" data-report-vi="Yêu cầu báo cáo">Report request</label>
           <textarea id="report-agent-question" name="question" minlength="3" maxlength="2000" required aria-describedby="report-agent-help" placeholder="Monthly revenue report for May 2026"></textarea>
-          <p id="report-agent-help" class="report-agent-help">Describe a sales or inventory report and a month, quarter, or year. For example: Monthly inventory report for May 2026. Generate, save or download a PDF. Inventory reports use fixed sections and charts.</p>
-          <button id="report-agent-submit" type="submit" class="primary-button">Generate report</button>
+          <p id="report-agent-help" class="report-agent-help" data-report-vi="Nêu nội dung báo cáo bán hàng hoặc tồn kho và kỳ cần xem theo tháng, quý hoặc năm. Ví dụ: Báo cáo tồn kho tháng 5/2026.">Describe a sales or inventory report and a month, quarter, or year. For example: Monthly inventory report for May 2026. Generate, save or download a PDF. Inventory reports use fixed sections and charts.</p>
+          <button id="report-agent-submit" type="submit" class="primary-button" data-report-vi="Tạo báo cáo">Generate report</button>
           <p id="report-agent-status" class="corpus-note" role="status" aria-live="polite"></p>
         </form>
         <section id="rw-editor" hidden>
-          <label for="rw-title">Report title</label><input id="rw-title" maxlength="160">
+          <label for="rw-title" data-report-vi="Tiêu đề báo cáo">Report title</label><input id="rw-title" maxlength="160">
           <div class="rw-toolbar">
-            <button id="rw-preview-tab" type="button" aria-pressed="true">Preview</button>
-            <button id="rw-edit-tab" type="button" aria-pressed="false">Edit report</button>
-            <button id="rw-save" type="button">Save changes</button>
-            <button id="rw-download" type="button">Download PDF</button>
-            <button id="rw-delete" type="button">Delete saved report</button>
+            <button id="rw-preview-tab" type="button" aria-pressed="true" data-report-vi="Xem trước">Preview</button>
+            <button id="rw-edit-tab" type="button" aria-pressed="false" data-report-vi="Chỉnh sửa báo cáo">Edit report</button>
+            <button id="rw-save" type="button" data-report-vi="Lưu thay đổi">Save changes</button>
+            <button id="rw-download" type="button" data-report-vi="Tải PDF">Download PDF</button>
+            <button id="rw-delete" type="button" data-report-vi="Xóa báo cáo đã lưu">Delete saved report</button>
           </div>
           <p id="rw-meta" class="corpus-note"></p>
         </section>
@@ -560,11 +560,11 @@
   </dialog>
   <link rel="stylesheet" href="/static/dashboard.css?v=20261119-home">
   <link rel="stylesheet" href="/static/sales-report.css?v=20261120-guidance">
-  <script src="/static/sales-report.js?v=20261120-guidance" defer></script>
+  <script src="/static/sales-report.js?v=20261121-report-vi" defer></script>
   <script src="/static/dashboard-format.js?v=20261119-overview" defer></script>
   <script src="/static/business-overview.js?v=20261119-home-cache" defer></script>
   <script src="/static/app.js?v=20261119-home" defer></script>
-  <script src="/static/report-workspace.js?v=20261119-inventory-polish" defer></script>
+  <script src="/static/report-workspace.js?v=20261121-report-vi" defer></script>
   <script src="/static/dashboard.js?v=20261119-home" defer></script>
 </body>
 </html>

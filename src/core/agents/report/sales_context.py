@@ -158,7 +158,7 @@ def data_needs(scope, context, *, vi=False):
 
 
 def build_insights(report, monthly, context):
-    from core.agents.report.presentation import display_value
+    from core.agents.report.presentation import SALES_ACTIONS_VI, data_notes, display_value
     groups = monthly or [report]
     complete = sum(all(d['triggered'] is not None for d in group['decisions']) for group in groups)
     partial = sum(any(d['triggered'] is not None for d in group['decisions']) and
@@ -204,5 +204,7 @@ def build_insights(report, monthly, context):
         findings.append({'text':text, 'citations':list(dict.fromkeys(e['query_id'] for m in metrics.values() for e in m['evidence']))})
     return {'decision_summary':summary, 'actions':actions, 'findings':findings,
             'document_context':document_passages(context), 'data_needs':data_needs(report['request'], context, vi=vi),
+            'data_notes':data_notes(report, include_currency=False),
+            'rule_actions':SALES_ACTIONS_VI.copy() if vi else {},
             'coverage_evidence':[e.metadata for e in context.coverage_evidence],
             'documents':[e.model_dump(mode='json') for e in context.documents]}

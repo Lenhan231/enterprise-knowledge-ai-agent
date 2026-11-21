@@ -1,10 +1,64 @@
 """The fixed report renderer preserves widgets and treats source strings as text."""
 from pathlib import Path
+import json
 import subprocess
 import unittest
 
 
 class ReportUITest(unittest.TestCase):
+    def test_saved_vietnamese_report_localizes_preview_and_pdf(self):
+        from core.agents.report.document import ReportDocument
+        from core.agents.report.export import export_pdf
+        from core.agents.report.labels import localize_labels
+        from core.agents.report.sales_performance import evaluate_decisions, populate_sections
+        from tests.report.test_saved_reports import sample_report
+        import fitz
+
+        report = sample_report()
+        localize_labels(report)
+        change = next(metric for metric in report['metrics'] if metric['id'] == 'company_revenue_change_pct')
+        change.update(value=-2.5, status='available', evidence=report['metrics'][0]['evidence'])
+        evaluate_decisions(report, {'comparable': True})
+        populate_sections(report)
+        report['data_quality']['limitations'] = [
+            'Order and traffic source completeness is unverified; totals describe matching records, not certified complete periods. No causal explanations are established.',
+            'Period-over-period comparison uses calendar-month totals. Daily records verify source coverage only. '
+            '2026-01-01 to 2027-01-01 (end excluded): 360 of 365 days; 2025-01-01 to 2026-01-01 (end excluded): 365 of 365 days. '
+            'Whole-period revenue change and aggregate comparison-dependent decisions are unavailable; monthly decisions use separate calendar-month baselines. Current-period revenue and profitability remain usable.',
+        ]
+        saved = ReportDocument(report=report)
+        script = r"""
+const fs = require('node:fs'), vm = require('node:vm'), assert = require('node:assert/strict');
+class Element {
+  constructor(tag) { this.tag = tag; this.children = []; this.dataset = {}; }
+  append(...children) { this.children.push(...children); }
+  replaceChildren(...children) { this.children = children; }
+  setAttribute() {}
+}
+const element = tag => new Element(tag);
+const document = {createElement: element, createElementNS: (_,tag) => element(tag)};
+const render = vm.runInNewContext(fs.readFileSync('src/app/static/sales-report.js','utf8')+';SalesPerformanceReport.render', {document,Intl});
+const saved = JSON.parse(fs.readFileSync(0, 'utf8')), root = element('div');
+render(root, saved.report, {insights:saved.insights});
+const text = el => [el.textContent || '', ...el.children.flatMap(text)];
+const copy = text(root).join(' ');
+assert.match(copy, /Tóm tắt điều hành/);
+assert.match(copy, /Nguồn SQL đã xác minh/);
+assert.match(copy, /360\/365 ngày/);
+assert.match(copy, /So sánh doanh thu theo tháng và đối chiếu/);
+assert.match(copy, /-2,5%/);
+assert.doesNotMatch(copy, /No usable documentary|Validated SQL evidence|Order and traffic|Period-over-period comparison|A no-trigger conclusion|No chart data|Cannot evaluate|Compare revenue by month/);
+"""
+        result = subprocess.run(['node', '-e', script], input=json.dumps(saved.model_dump(mode='json')),
+                                capture_output=True, text=True, encoding='utf-8',
+                                cwd=Path(__file__).resolve().parents[2])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        with fitz.open(stream=export_pdf(saved), filetype='pdf') as pdf:
+            copy = ' '.join(' '.join(page.get_text() for page in pdf).split())
+        self.assertIn('360/365 ngày', copy)
+        self.assertIn('So sánh doanh thu theo tháng và đối chiếu', copy)
+        self.assertNotRegex(copy, r'No usable documentary|Period-over-period comparison|No chart observations|Cannot evaluate|Compare revenue by month')
+
     def test_inventory_release_revalidates_page_and_replaces_sales_only_assets(self):
         import os
         import sys
@@ -15,9 +69,9 @@ class ReportUITest(unittest.TestCase):
         with patch.dict(os.environ, {'BACKEND_ONLY': '0'}):
             self.assertEqual(home().headers.get('cache-control'), 'no-cache')
         html = (root / 'src/app/static/index.html').read_text(encoding='utf-8')
-        for asset in ('sales-report.css', 'sales-report.js'):
-            self.assertIn('/static/' + asset + '?v=20261120-guidance', html)
-        self.assertIn('/static/report-workspace.js?v=20261119-inventory-polish',html)
+        self.assertIn('/static/sales-report.css?v=20261120-guidance', html)
+        self.assertIn('/static/sales-report.js?v=20261121-report-vi', html)
+        self.assertIn('/static/report-workspace.js?v=20261121-report-vi',html)
         self.assertIn('/static/app.js?v=20261119-home', html)
 
     def test_fixed_sections_widgets_and_untrusted_text(self):

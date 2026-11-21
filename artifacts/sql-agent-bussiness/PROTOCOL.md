@@ -1,6 +1,8 @@
 # SQL Agent Business Benchmark Protocol
 
-Protocol version: `1.0.0`
+Protocol version: `1.1.2`
+
+Scorer version: `2.0.2` (`sql-agent-benchmark-scores.v2`)
 
 Pilot case set: `cases.json`
 
@@ -14,7 +16,7 @@ Measure whether the SQL Agent converts frozen business questions into safe SQL t
 
 `cases.json` contains exact question text, supported/unsupported status, required source tables, gold SQL, bound values, frozen reference rows, output policy, numeric tolerance and semantic contract. `benchmark_40_plan.json` is a design-only candidate cohort. Its gold fields are intentionally null until a non-production database and reference approval are available.
 
-P03 records `commerce.orders.order_date` as PostgreSQL `DATE`. The scorer accepts an inclusive `<= 2025-06-30` upper bound as equivalent to `< 2025-07-01` only for that declared type. The database preflight reads the live column type from schema discovery, rejects a mismatch, and includes the verified type in the dataset fingerprint. A timestamp column requires the exclusive next-day bound.
+P02 and P03 use `commerce.orders.order_date`, verified as PostgreSQL `DATE` by each run's schema preflight. For that type only, the scorer accepts `EXTRACT(YEAR FROM order_date) = 2025` as the half-open calendar-year interval `[2025-01-01, 2026-01-01)`, and an inclusive `<= 2025-06-30` upper bound as equivalent to `< 2025-07-01`. The scorer reads the verified type from either the historical `data_coverage` field or the current runner's `preflight_coverage` field and does not apply either equivalence to timestamp or timestamptz columns. The database preflight rejects a type mismatch and includes the verified type in the dataset fingerprint.
 
 Before generation, the runner verifies the case-set hash and data fingerprint against the separately generated reference artifact. A changed database fingerprint stops the run. Gold SQL/results must be regenerated and reviewed under a new artifact version; never overwrite a frozen case set after observing model output.
 
@@ -29,8 +31,10 @@ All rate metrics report integer numerator, denominator and a `null` value when t
 | Strict Result Exact Match | Executed supported cases with exact strict output columns, column order, rows, values and SQL semantics ÷ supported cases | All attempted supported cases |
 | SQL Semantic Accuracy | Supported cases whose parsed SQL preserves required tables, filters, date bounds, aggregate, grouping, join, ranking direction, tie-break and limit ÷ supported cases | All attempted supported cases |
 | Execution Success | Supported cases reaching `executed` or `executed_empty` ÷ supported cases | All attempted supported cases |
-| False-Refusal Rate | Supported cases clarified, rejected or abstained without successful execution ÷ supported cases | All attempted supported cases |
-| Valid Clarification/Abstention | Unsupported cases with clarification/abstention and no SQL or execution ÷ unsupported cases | All attempted unsupported cases |
+| False Clarification/Abstention Rate | Supported cases returned as clarification, unsupported, rejected or abstained ÷ supported cases | All attempted supported cases; provider and validator failures are not refusals |
+| Supported Noncompletion Rate | Supported cases without an executed, semantically valid, business-correct answer ÷ supported cases | All attempted supported cases |
+| Validation-Blocked Supported Rate | Supported cases stopped by SQL security, schema, metric or semantic validation ÷ supported cases | All attempted supported cases; provider/network failures are excluded |
+| Valid Clarification/Abstention | Unsupported cases with a non-empty user-facing answer, a valid 0–3 string choices list, no SQL and no execution ÷ unsupported cases | All attempted unsupported cases; invalid model clarification is not a valid abstention |
 | JEV Raw Recall@5 | Required tables in JEV's raw top-five candidates ÷ required tables across cases where JEV succeeded | JEV-successful cases only; on HTTP failure recall is not measurable |
 | Final Schema Coverage | Required tables present in the final schema sent to SQL planning ÷ required tables for cases with a selected schema | Cases with observable final schema; fixed compiler bypasses are excluded |
 | Repair Recovery Rate | Cases that execute after at least one internal SQL repair ÷ cases with an internal SQL repair | Internal SQL repair cases only; Auto revise is a separate mechanism |
@@ -68,9 +72,15 @@ SQL Agent repair remains its bounded internal loop. Auto revise is not invoked b
 
 ## JEV interpretation
 
-Report raw JEV top-five candidates, required tables, ontology-added sources, approved join-bridge additions, final schema and final schema coverage separately. When JEV fails, report `availability=FAILED`, its HTTP status, and `recall@5=NOT MEASURABLE`. `full_schema_fallback` coverage is not JEV recall. Do not compare fallback and JEV-enabled runs as if schema selection conditions matched.
+Report raw JEV top-five candidates, required tables, ontology-added sources, approved join-bridge additions, final schema and final schema coverage separately. When JEV fails, report `availability=FAILED`, its HTTP status and external-provider failure class where available, and `recall@5=NOT MEASURABLE`. Store a redacted diagnostic only when the provider returns one; never infer a billing or quota cause from HTTP 402. `full_schema_fallback` coverage is not JEV recall. Do not compare fallback and JEV-enabled runs as if schema selection conditions matched.
 
-Explicit order-status population wording is resolved through the field-value vocabulary in `metric_ontology.py` into a typed `(source, column, operator, values)` contract. SQL is checked through parsed predicate lineage before execution. Canonical metric filters remain allowed and are independently validated by the metric catalog. The vocabulary is bounded; requests involving unmodeled population fields still need dedicated regression cases before the 40-case cohort is frozen.
+Explicit order-status population wording is resolved through the field-value vocabulary in `metric_ontology.py` into a typed `(source, column, operator, values)` contract. The SQL generation and bounded repair prompts include that contract, and SQL is checked through parsed predicate lineage before execution. Canonical metric filters remain allowed and are independently validated by the metric catalog. The vocabulary is bounded; requests involving unmodeled population fields still need dedicated regression cases before the 40-case cohort is frozen.
+
+Clarifications accept no choices or one to three non-empty strings. More than three choices, empty values, non-string values and nested choice objects are invalid. The Agent may make one bounded format-correction request. If the correction remains invalid, the run is a validation failure with no SQL execution; it is not counted as a clarification or a valid unsupported abstention.
+
+Scorer v2 replaces the ambiguous `false_refusal_rate` field with the three explicit metrics above. Scorer 2.0.2 reads historical and current preflight coverage manifests when verifying date-column types, and labels local Codex fallback cases as non-comparable when the CLI model identity is unavailable. Historical v1 scores and reports remain unchanged. Any v2 rescore is stored as a new artifact and must not overwrite its source experiment.
+
+The secondary SQL provider fallback count is a subset of SQL-generation submissions. Any run with a secondary submission remains an end-to-end SQL Agent result and is not a single-SQL-LLM comparison; hold primary/fallback settings fixed for model comparisons. The local Codex fallback is counted separately, but its selected model identity is not available from the current runner instrumentation; such runs are also unsuitable for single-model comparison.
 
 ## Reproduction workflow
 

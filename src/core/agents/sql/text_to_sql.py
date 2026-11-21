@@ -96,6 +96,21 @@ def build_sql_prompt(
         'referenced by SQL placeholders, in placeholder order; the parameter list must have exactly one value per '
         'placeholder and contain no more than 32 values.'
     ]
+    from core.agents.sql.metric_validation import requested_population_filters
+
+    population_filters = requested_population_filters(scope_question)
+    if population_filters:
+        prompt_rules.append(
+            '\nAuthoritative user-requested population filters: '
+            + json.dumps([{
+                'source': item.source,
+                'column': item.column,
+                'operator': item.operator,
+                'values': list(item.values),
+            } for item in population_filters], ensure_ascii=False)
+            + '. Apply each filter to that exact source and column with the stated inclusion or exclusion '
+            'semantics. Preserve these constraints in every repair; do not omit, broaden, narrow or substitute them.'
+        )
     prompt_rules.append(
         '\nFor any requested top/bottom/ranked result, include a typed ranking_contract with exactly '
         'entity, measure, direction, limit and partition_by. entity must be one of customer, product, order, '

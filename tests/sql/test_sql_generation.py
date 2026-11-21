@@ -94,6 +94,53 @@ class SQLValidationTest(unittest.TestCase):
                 'clarification_options': ['One', 'Two', 'Three', 'Four'],
             }))
 
+    def test_population_contract_is_explicit_in_generation_and_repair_prompts(self):
+        question = (
+            'Khách hàng nào có nhiều đơn hàng đã giao nhất trong năm 2025? '
+            'Trả về top 5 customer_id và số đơn hàng; nếu bằng nhau sắp customer_id tăng dần.'
+        )
+        error = 'The request requires the include order-status population delivered.'
+        for prompt in (
+            build_sql_prompt(question),
+            build_sql_prompt(question, validation_error=error, previous_response='SELECT ...'),
+        ):
+            with self.subTest(repair='validation_error' in prompt):
+                self.assertIn('Authoritative user-requested population filters', prompt)
+                self.assertIn('"source": "commerce.orders"', prompt)
+                self.assertIn('"column": "order_status"', prompt)
+                self.assertIn('"operator": "include"', prompt)
+                self.assertIn('"values": ["delivered"]', prompt)
+
+        cancelled = build_sql_prompt('Count orders excluding cancelled orders.')
+        self.assertIn('"operator": "exclude"', cancelled)
+        self.assertIn('"values": ["cancelled", "canceled"]', cancelled)
+        unfiltered = build_sql_prompt('How many orders were placed in 2025?')
+        self.assertNotIn('Authoritative user-requested population filters', unfiltered)
+
+    def test_invalid_clarification_shapes_are_rejected_without_coercion(self):
+        valid = decode_query_plan(json.dumps({'clarification': 'Which scope do you want?'}))
+        self.assertEqual(valid.clarification_options, ())
+        one_choice = decode_query_plan(json.dumps({
+            'clarification': 'Which scope do you want?',
+            'clarification_options': ['Use the available product snapshot'],
+        }))
+        self.assertEqual(one_choice.clarification_options, ('Use the available product snapshot',))
+        for choices in (
+            ['One', ''],
+            ['One', 2],
+            [{'label': 'One'}, 'Two'],
+            ['One', 'Two', 'Three', 'Four'],
+        ):
+            with self.subTest(choices=choices), self.assertRaisesRegex(
+                SQLValidationError, 'Clarification options must be a list'
+            ):
+                decode_query_plan(json.dumps({
+                    'clarification': 'Which scope do you want?',
+                    'clarification_options': choices,
+                }))
+        with self.assertRaisesRegex(SQLValidationError, 'did not return valid JSON'):
+            decode_query_plan('{"clarification":')
+
     def test_prompt_uses_boolean_literals_and_only_placeholder_parameters(self):
         prompt = build_sql_prompt('Show overstock_flag products and filter by snapshot date')
         self.assertIn('BOOLEAN: compare them with TRUE/FALSE, never 1/0', prompt)

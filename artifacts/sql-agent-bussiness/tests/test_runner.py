@@ -391,6 +391,31 @@ class SQLBenchmarkRunnerTest(unittest.TestCase):
             {"kind": "approved", "security_validated": True, "semantic_approval": True}
         ])
 
+    def test_unverified_event_is_security_validated_but_not_semantically_approved(self):
+        instrumentation = RUNNER.Instrumentation()
+        instrumentation.execution_events = [{"kind": "unverified"}]
+        payload = {
+            "ok": True,
+            "query_status": "executed",
+            "sql": "SELECT 1 AS value",
+            "parameters": [],
+            "rows": [{"value": 1}],
+            "metadata": {},
+        }
+
+        record = RUNNER.normalize_payload(
+            {"id": "T-UNVERIFIED", "question": "synthetic"},
+            payload,
+            instrumentation,
+            1.0,
+        )
+
+        self.assertEqual(record["execution_events"], [{
+            "kind": "unverified",
+            "security_validated": True,
+            "semantic_approval": False,
+        }])
+
     def test_failed_repository_attempt_is_not_reported_as_successful_execution(self):
         class Repository:
             async def get_schema(self):

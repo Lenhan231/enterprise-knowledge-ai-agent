@@ -1513,6 +1513,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
     ).join("")}</div>`
     : "";
   const routeDetails = renderRunDetails(data);
+  const terms = matchTerms(data.search);
   panel.innerHTML = `
     <div class="answer-header-wrap">
       <div class="answer-heading${outcome.gap || data.status === "partial" || data.limitations?.length ? " is-partial" : ""}">
@@ -1568,7 +1569,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
           const sourceExcerpt = source.source_type === "commerce_sql"
             && Array.isArray(source.commerce_observations) && source.commerce_observations.length
             ? ""
-            : `<p>${escapeHtml(source.excerpt)}</p>`;
+            : `<p>${underlineMatches(escapeHtml(source.excerpt), terms)}</p>`;
           const publisher = source.source_publisher || source.company || "";
           return `
             <article class="citation" data-cite-id="${escapeHtml(source.id)}">
@@ -1610,6 +1611,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
     void card.offsetWidth;
     card.classList.add("is-highlighted");
     setTimeout(() => card.classList.remove("is-highlighted"), 1600);
+    toggleSourceLens(ref, card);
   }));
   requestAnimationFrame(() => pruneCitationToggles(panel));
   panel.querySelectorAll(".citation-toggle").forEach((toggle) => toggle.addEventListener("click", () => {
@@ -1667,6 +1669,40 @@ function renderAgentRows(data) {
     const jevNote = jev?.probabilities ? `<p class="jev-note">JEV · rõ ${Math.round((jev.probabilities.clear || 0) * 100)}% · mơ hồ ${Math.round((jev.probabilities.ambiguous || 0) * 100)}% · độ rõ tối thiểu để chạy ${Math.round((jev.threshold || 0) * 100)}%</p>` : "";
     return `<section class="agent-data-result"><h4>${escapeHtml(label.replace(/^task:/, "Task "))} ${queryStatus}</h4>${table}${jevNote}${diagnostics}</section>`;
   }).join("");
+}
+
+// Source Lens (21st.dev): a citation pill opens its source as a small card right under the sentence that cites it,
+// so the evidence is readable without leaving the answer. One card per answer; clicking the pill again closes it.
+function toggleSourceLens(ref, card) {
+  const panel = ref.closest(".answer-panel") || document;
+  const block = ref.closest("p, li") || ref.parentElement;
+  const open = panel.querySelector(".source-lens");
+  const same = open?.dataset.cite === ref.dataset.cite;
+  open?.remove();
+  if (same || !block) return;
+  const title = card.querySelector(".citation-title strong")?.textContent || "";
+  const where = card.querySelector(".citation-title > span:not(.citation-id):not(.citation-meta)")?.textContent || "";
+  const text = (card.querySelector(":scope > p")?.dataset.plain ?? card.querySelector(":scope > p")?.textContent ?? "").trim();
+  const lens = document.createElement("aside");
+  lens.className = "source-lens";
+  lens.dataset.cite = ref.dataset.cite;
+  lens.setAttribute("aria-label", `Source ${ref.dataset.cite}`);
+  lens.innerHTML = `<div class="source-lens-head"><span class="source-lens-id">${escapeHtml(ref.dataset.cite)}</span><strong>${escapeHtml(title)}</strong><span>${escapeHtml(where)}</span><button type="button" class="source-lens-close" aria-label="Close source">×</button></div><p>${escapeHtml(text.length > 260 ? `${text.slice(0, 257)}…` : text)}</p>`;
+  lens.querySelector(".source-lens-close").addEventListener("click", () => { lens.remove(); ref.focus(); });
+  block.after(lens);
+}
+
+// Retrieved Chunks marks the words a passage matched: they step up to ink over a soft underline. Terms come from the
+// search queries the API reports (metadata.search.lexical_queries); a term matches at a word start, to the word's end.
+const MATCH_STOPWORDS = new Set("của và các những được cho với không thì là có khi trong này một người the and for with what how are does from that this".split(" "));
+function matchTerms(search) {
+  const text = Object.values(search?.lexical_queries || {}).filter((value) => typeof value === "string").join(" ");
+  return [...new Set(text.toLocaleLowerCase().split(/[^\p{L}\p{N}]+/u).filter((word) => word.length >= 3 && !MATCH_STOPWORDS.has(word)))];
+}
+function underlineMatches(escaped, terms) {
+  if (!terms.length) return escaped;
+  const pattern = new RegExp(`(?<![\\p{L}\\p{N}&])(${terms.map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})[\\p{L}\\p{N}]*`, "giu");
+  return escaped.replace(pattern, (word) => `<mark class="chunk-match">${word}</mark>`);
 }
 
 // Every passage the answer model saw (metadata.retrieved), after the 21st.dev Retrieved Chunks list: rank, document,
@@ -2801,7 +2837,7 @@ function clearCitedSentence(turn) {
   turn.querySelectorAll(".citation.is-cited").forEach((card) => {
     card.classList.remove("is-cited");
     const passage = card.querySelector(":scope > p");
-    if (passage?.dataset.plain !== undefined) { passage.textContent = passage.dataset.plain; delete passage.dataset.plain; }
+    if (passage?.dataset.plain !== undefined) { passage.innerHTML = passage.dataset.html ?? escapeHtml(passage.dataset.plain); delete passage.dataset.plain; delete passage.dataset.html; }
   });
   turn.querySelectorAll(".cite-ref.is-pointed").forEach((ref) => ref.classList.remove("is-pointed"));
 }
@@ -2823,6 +2859,7 @@ function markCitedSentence(ref) {
   });
   if (!bestScore) return;
   passage.dataset.plain = plain;
+  passage.dataset.html = passage.innerHTML;
   passage.innerHTML = sentences.map((sentence, index) => index === best ? `<mark class="cited-sentence">${escapeHtml(sentence)}</mark>` : escapeHtml(sentence)).join("");
   card.classList.add("is-cited");
   ref.classList.add("is-pointed");

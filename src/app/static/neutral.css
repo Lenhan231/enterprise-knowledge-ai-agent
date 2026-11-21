@@ -421,3 +421,7 @@ html #home-overview-preview { height: 1000px; }
 :root .login-landing-link:hover { text-decoration: underline; }
 :root .login-landing-link:visited { color: var(--accent); }
 :root:not([data-theme="dark"]) .login-view .login-card { background: #fff; }
+
+/* Sources column: room on the right edge; long file names wrap instead of touching it */
+:root .general-chat .chat-turn-response > .citations { padding-right: 16px; }
+:root .general-chat .chat-turn .citation-title strong, :root .general-chat .chat-turn .citation-title { overflow-wrap: anywhere; min-width: 0; }

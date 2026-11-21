@@ -251,3 +251,7 @@
 /* the "every claim checked" pill is hidden on screen (it clashed with the neutral palette) but kept for screen
    readers; unverified and partial answers keep their visible warnings */
 :root .general-chat .chat-turn .answer-verified{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Dashboard frames: follow the theme surface and leave room for the whole dashboard. */
+html #dw-preview, html #home-overview-preview { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; }
+html #dw-preview { height: 1350px; }

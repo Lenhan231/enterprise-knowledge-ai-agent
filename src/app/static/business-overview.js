@@ -11,7 +11,7 @@
     try {
       const data=await api('/api/dashboards/overview');
       if (!valid()) return;
-      el('home-overview-preview').srcdoc=data.html;
+      el('home-overview-preview')._raw=data.html; el('home-overview-preview').srcdoc=window.themedDoc?window.themedDoc(data.html):data.html;
       el('home-overview-preview').hidden=false;
       cachedAt = data.dashboard.status === 'failed' ? null : Date.now();
       el('home-overview-status').textContent=`Data refreshed ${DashboardFormatting.datetime(data.dashboard.data_updated_at)} · ${data.dashboard.status==='complete' ? 'Live source data' : 'Some sources are unavailable; review the chart notes.'}`;

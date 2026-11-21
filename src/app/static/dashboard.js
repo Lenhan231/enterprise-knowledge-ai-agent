@@ -125,7 +125,7 @@
     el('prompt').value = '';
     el('create-scope').value = '';
     el('meta').textContent = `Revision ${DashboardFormatting.number(selected.revision,{unit:'count'})} · ${selected.status} · Data refreshed ${DashboardFormatting.datetime(selected.data_updated_at)}`;
-    el('preview').srcdoc = data.html;
+    el('preview')._raw = data.html; el('preview').srcdoc = window.themedDoc ? window.themedDoc(data.html) : data.html;
     el('open').href = data.html_url;
     el('download').href = `${data.html_url}?download=true`;
     tileEditors();

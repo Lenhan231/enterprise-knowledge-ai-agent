@@ -3389,6 +3389,15 @@ $("#upload-form").addEventListener("submit", async (event) => {
   }
 });
 
+// Saved dashboards are sandboxed documents that cannot see the page theme, so the theme is stamped into their markup.
+window.themedDoc = html => document.documentElement.getAttribute("data-theme") === "dark" ? html.replace("<html ", '<html data-theme="dark" ') : html;
+function restyleDashboardFrames() {
+  for (const id of ["home-overview-preview", "dw-preview"]) {
+    const frame = document.getElementById(id);
+    if (frame && frame._raw && frame.getAttribute("srcdoc") !== null) frame.srcdoc = window.themedDoc(frame._raw);
+  }
+}
+
 function setupThemeToggle() {
   const button = $("#theme-toggle");
   if (!button) return;
@@ -3401,6 +3410,7 @@ function setupThemeToggle() {
       } else {
         document.documentElement.removeAttribute("data-theme");
       }
+      restyleDashboardFrames();
     };
     // Paint/eraser transition (redesign.css); plain swap without View Transitions or with reduced motion.
     if (document.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {

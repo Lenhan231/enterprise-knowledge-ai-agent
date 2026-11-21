@@ -82,6 +82,10 @@
   :root .general-chat{width:min(100%,1160px)}
   :root .general-chat .chat-turn{max-width:none}
   :root .general-chat .chat-turn-response{display:grid;grid-template-columns:minmax(0,1fr) 380px;column-gap:40px;align-items:start;padding-left:0}
+  /* every other child stays in the answer column, also while the sources column is still hidden during the reveal */
+  :root .general-chat .chat-turn-response>*{grid-column:1}
+  /* the question bubble ends where the answer column ends, so the sources column has the right side to itself */
+  :root .general-chat .chat-turn-question{padding-right:420px}
   :root .general-chat .chat-turn-response>.citations{grid-column:2;grid-row:1/span 40;position:sticky;top:12px;max-width:none;margin:0;padding:0 0 0 24px;border-top:0;border-left:1px solid var(--line)}
   :root .general-chat .chat-turn-response>.citations .citation{padding:12px 0 12px 32px}
   :root .general-chat .chat-turn-response>.answer-verified{justify-self:start}

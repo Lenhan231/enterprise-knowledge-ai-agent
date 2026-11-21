@@ -138,3 +138,12 @@ window.addEventListener("load", () => setTimeout(() => {
     g.style.animation = "none"; g.style.setProperty("--r", (q.get("r") || "45") + "%"); document.body.append(g);
   }, 600));
 })();
+// ?shot=skeleton: unhide the home skeleton; ?shot=toast: raise sample toasts
+(() => {
+  const q = new URLSearchParams(location.search), shot = q.get("shot");
+  if (shot !== "skeleton" && shot !== "toast") return;
+  window.addEventListener("load", () => setTimeout(() => {
+    if (shot === "skeleton") { document.getElementById("home-overview-preview").hidden = true; document.getElementById("home-overview-skeleton").hidden = false; }
+    else { window.toast("Report saved."); window.toast("Copied to clipboard"); window.toast("The report could not be saved.", "error"); }
+  }, 900));
+})();

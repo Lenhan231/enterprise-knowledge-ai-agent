@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles.css?v=redesign-20261115a">
   <link rel="stylesheet" href="/static/redesign.css?v=reports-wide-20261120">
-  <link rel="stylesheet" href="/static/neutral.css?v=neutral-20261211">
+  <link rel="stylesheet" href="/static/neutral.css?v=neutral-20261212">
   <script>
     (function() {
       const saved = localStorage.getItem("app_theme");
@@ -160,7 +160,7 @@
     <section id="workspace-home" class="workspace-home" aria-labelledby="home-heading" hidden>
       <header class="dw-heading"><div><p class="eyebrow">Welcome back</p><h1 id="home-heading">Live business overview</h1><p>Your latest business data. Use the sidebar for dashboards, reports, and general chat.</p></div><button id="home-overview-refresh" type="button" class="secondary-button">Refresh overview</button></header>
       <p id="home-overview-status" class="dw-help" role="status" aria-live="polite"></p>
-      <iframe id="home-overview-preview" title="Current business overview" sandbox="" referrerpolicy="no-referrer" hidden></iframe>
+      <div id="home-overview-skeleton" class="skeleton-board" hidden aria-hidden="true"><div class="sk"><i class="w40"></i><i class="ring"></i><i class="w80"></i><i class="w60"></i></div><div class="sk"><i class="w40"></i><i class="bars"></i><i class="w60"></i></div><div class="sk wide"><i class="w30"></i><i class="chart"></i></div></div><iframe id="home-overview-preview" title="Current business overview" sandbox="" referrerpolicy="no-referrer" hidden></iframe>
     </section>
     <section id="tab-dashboard" class="tab-panel dashboard-workspace" role="tabpanel" aria-labelledby="tab-button-dashboard" hidden>
       <header class="dw-heading"><div><p class="eyebrow">Text to dashboard</p><h1>Your business, in view</h1><p>Build a saved dashboard from approved SQL data.</p></div><button id="dw-new" type="button" class="secondary-button">New dashboard</button></header>
@@ -180,7 +180,7 @@
           </form>
           <section id="dw-editor" hidden aria-label="Dashboard editor">
             <div class="dw-toolbar"><button id="dw-save" type="button" class="primary-button">Save edits</button><button id="dw-refresh" type="button" class="secondary-button">Refresh data</button><button id="dw-rebuild" type="button" class="secondary-button">Rebuild from description</button><a id="dw-open" target="_blank" rel="noopener" class="secondary-button">Open HTML</a><a id="dw-download" class="secondary-button">Download HTML</a><button id="dw-delete" type="button" class="secondary-button">Delete</button></div>
-            <h2 class="visually-hidden">Dashboard preview</h2><iframe id="dw-preview" title="Saved dashboard preview" sandbox="" referrerpolicy="no-referrer"></iframe><details class="dw-card"><summary>Edit title, scope and tiles</summary><label for="dw-title">Title</label><input id="dw-title" maxlength="120" required><label for="dw-description">Description</label><textarea id="dw-description" maxlength="2000" rows="3"></textarea><label for="dw-scope">Shared scope</label><input id="dw-scope" name="dashboard_edit_scope" autocomplete="off" spellcheck="false" maxlength="600"><p id="dw-meta" class="dw-help"></p><div id="dw-tiles"></div></details>
+            <h2 class="visually-hidden">Dashboard preview</h2><div id="dw-skeleton" class="skeleton-board" hidden aria-hidden="true"><div class="sk"><i class="w40"></i><i class="ring"></i><i class="w80"></i><i class="w60"></i></div><div class="sk"><i class="w40"></i><i class="bars"></i><i class="w60"></i></div><div class="sk wide"><i class="w30"></i><i class="chart"></i></div></div><iframe id="dw-preview" title="Saved dashboard preview" sandbox="" referrerpolicy="no-referrer"></iframe><details class="dw-card"><summary>Edit title, scope and tiles</summary><label for="dw-title">Title</label><input id="dw-title" maxlength="120" required><label for="dw-description">Description</label><textarea id="dw-description" maxlength="2000" rows="3"></textarea><label for="dw-scope">Shared scope</label><input id="dw-scope" name="dashboard_edit_scope" autocomplete="off" spellcheck="false" maxlength="600"><p id="dw-meta" class="dw-help"></p><div id="dw-tiles"></div></details>
             
           </section>
         </div>
@@ -295,7 +295,7 @@
         </section>
         <p id="report-workspace-status" role="status" aria-live="polite"></p>
         <div id="rw-edit-panel" hidden></div>
-        <div id="sales-report-output" tabindex="-1" hidden></div>
+        <div id="rw-skeleton" class="skeleton-report" hidden aria-hidden="true"><i class="w50 title"></i><i class="w30"></i><div class="hero"><i class="w30"></i><i class="num"></i></div><i class="w80"></i><i class="w70"></i><i class="chart"></i></div><div id="sales-report-output" tabindex="-1" hidden></div>
       </section>
       </details>
         </div>
@@ -565,9 +565,9 @@
   <link rel="stylesheet" href="/static/sales-report.css?v=20261120-guidance">
   <script src="/static/sales-report.js?v=20261121-report-vi" defer></script>
   <script src="/static/dashboard-format.js?v=20261119-overview" defer></script>
-  <script src="/static/business-overview.js?v=20261119-home-cache" defer></script>
-  <script src="/static/app.js?v=20261211-neutral" defer></script>
-  <script src="/static/report-workspace.js?v=20261121-report-vi" defer></script>
-  <script src="/static/dashboard.js?v=20261119-home" defer></script>
+  <script src="/static/business-overview.js?v=20261212-skeleton" defer></script>
+  <script src="/static/app.js?v=20261212-neutral" defer></script>
+  <script src="/static/report-workspace.js?v=20261212-skeleton" defer></script>
+  <script src="/static/dashboard.js?v=20261212-skeleton" defer></script>
 </body>
 </html>

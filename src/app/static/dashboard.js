@@ -29,11 +29,14 @@
     const valid = () => token === epoch && generation === sessionGeneration && !!currentUser;
     setBusy(true);
     status(message);
+    const skeleton = document.getElementById('dw-skeleton');
+    if (skeleton && !el('editor').hidden) skeleton.hidden = false;
     try {
       await work(valid);
     } catch (error) {
       if (valid()) status(error.message || 'Dashboard request failed.', true);
     } finally {
+      if (skeleton) skeleton.hidden = true;
       if (valid()) {
         setBusy(false);
         if (!root.hidden && !el('create').hidden && !restartRequired) el('prompt').focus();

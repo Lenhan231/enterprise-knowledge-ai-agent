@@ -67,9 +67,11 @@
     const generation = sessionGeneration, token = epoch;
     const valid = () => token === epoch && generation === sessionGeneration && allowed();
     busy = true; status(message); setBusy(true);
+    const skeleton = /Opening|Generating|Đang (mở|tạo)/.test(message) ? document.getElementById('rw-skeleton') : null;
+    if (skeleton) skeleton.hidden = false;
     try { await work(valid); }
     catch (error) { if (valid()) status(error.message, true); }
-    finally { if (valid()) { busy = false; setBusy(false); } }
+    finally { if (skeleton) skeleton.hidden = true; if (valid()) { busy = false; setBusy(false); } }
   }
   async function library(valid = () => true) {
     const payload = await request('/api/reports');

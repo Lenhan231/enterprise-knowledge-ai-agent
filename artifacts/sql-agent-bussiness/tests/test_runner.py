@@ -259,7 +259,8 @@ class SQLBenchmarkRunnerTest(unittest.TestCase):
                     return await sql_module.generate_with_local_codex(prompt, error)
 
         with patch.object(sql_module, "generate", new=generate), \
-             patch.object(sql_module, "generate_with_local_codex", new=local_codex):
+             patch.object(sql_module, "generate_with_local_codex", new=local_codex), \
+             patch.dict("os.environ", {"CODEX_CLI_SQL_FALLBACK": "true"}):
             instrumentation = RUNNER.Instrumentation()
             agent = LocalFallbackAgent()
             restore = RUNNER.instrument_agent(agent, instrumentation)
@@ -272,6 +273,32 @@ class SQLBenchmarkRunnerTest(unittest.TestCase):
         self.assertEqual(instrumentation.calls["general_sql_generation"], 1)
         self.assertEqual(instrumentation.calls["provider_fallback_calls"], 0)
         self.assertEqual(instrumentation.calls["local_codex_fallback_calls"], 1)
+
+    def test_disabled_local_codex_fallback_is_not_counted_as_a_call(self):
+        from core.agents.sql import agent as sql_module
+
+        async def generate(_provider, _prompt, *, timeout=15, max_output_tokens=None):
+            raise RuntimeError("primary provider unavailable")
+
+        class LocalFallbackAgent:
+            async def _generate_sql(self, prompt):
+                try:
+                    return await sql_module.generate("primary", prompt, timeout=75)
+                except RuntimeError as error:
+                    return await sql_module.generate_with_local_codex(prompt, error)
+
+        with patch.object(sql_module, "generate", new=generate), \
+             patch.dict("os.environ", {"CODEX_CLI_SQL_FALLBACK": "false"}):
+            instrumentation = RUNNER.Instrumentation()
+            agent = LocalFallbackAgent()
+            restore = RUNNER.instrument_agent(agent, instrumentation)
+            try:
+                with self.assertRaisesRegex(RuntimeError, "primary provider unavailable"):
+                    asyncio.run(agent._generate_sql("prompt"))
+            finally:
+                restore()
+
+        self.assertEqual(instrumentation.calls["local_codex_fallback_calls"], 0)
 
     def test_compiler_matches_and_generated_plans_are_counted_from_typed_stages(self):
         from core.agents.sql import agent as sql_module

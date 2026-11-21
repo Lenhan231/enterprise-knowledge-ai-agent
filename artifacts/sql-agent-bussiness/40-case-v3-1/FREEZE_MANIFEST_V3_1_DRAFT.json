@@ -1,6 +1,6 @@
 {
   "format_version": "sql-agent-business-benchmark-freeze-manifest.v3.1-draft",
-  "status": "PENDING_INDEPENDENT_REVIEW_AND_REVALIDATION",
+  "status": "PENDING_INDEPENDENT_HUMAN_REVIEW_AND_TEST_FOLLOW_UP",
   "freeze_status": "DRAFT_NOT_FROZEN",
   "submitted_date_local": "2026-11-21",
   "branch": "benchmark/v3-1-output-contract-20261121",
@@ -35,7 +35,7 @@
     ],
     "exact_business_columns_required": true,
     "supported_case_specific_aliases": 30,
-    "scorer_implementation": "../40-case-v3/scorer_v3.py",
+    "scorer_implementation": "scorer_v3_1.py (business result base: ../40-case-v3/scorer_v3.py)",
     "independent_sql_semantic_audit_required": true,
     "runner_audit_provenance_verified": false
   },
@@ -50,8 +50,23 @@
     "changed_gold_sql_reexecuted": true,
     "unchanged_gold_sql_inherited": 27,
     "original_snapshot_fingerprint_sha256": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028",
-    "revised_snapshot_preflight_rerun": false,
-    "full_revised_mutation_suite_rerun": false
+    "revised_snapshot_preflight_rerun": true,
+    "revised_snapshot_preflight_file": "database_preflight_v3_1_20261121T114601Z.json",
+    "gold_results_rerun_file": "runs/technical-validation-v3-1-20261121T114601Z/gold_results_v3_1_rerun.json",
+    "gold_queries_rerun": 30,
+    "gold_rows_matching_provisional": 30,
+    "gold_total_rows": 404,
+    "full_revised_mutation_suite_rerun": true,
+    "mutation_results_file": "runs/technical-validation-v3-1-20261121T114601Z/mutation_results_v3_1_rerun.json",
+    "mutations_attempted": 28,
+    "result_based_mutation_detection": "23/26",
+    "observationally_equivalent_mutations": [
+      "M008-01-missing-nonnull-filter",
+      "M023-03-missing-common-product-condition",
+      "M029-02-wrong-ranking-direction"
+    ],
+    "database_write_attempts": 0,
+    "heldout_agent_executed": false
   },
   "review": {
     "source": "../40-case-v3/AI_ASSISTED_SEMANTIC_REVIEW_2026-11-21.md",
@@ -64,12 +79,34 @@
   },
   "tests": {
     "ci_discovery_test_added": "tests/sql/test_benchmark_v3_1_contract.py",
-    "test_runtime_execution_in_this_turn": false,
+    "test_runtime_execution_in_this_turn": true,
+    "v3_1_contract_tests": "PASS 21/21",
+    "benchmark_package_tests": "PASS 45/45",
+    "sql_tests": "PASS 534 passed, 10 skipped (544 run)",
+    "v3_historical_artifact_tests": "FAIL 1/55: archived REVIEW_CHECKLIST.md hash mismatch (54 passed)",
+    "full_repository_tests": "FAIL 1/1611: unrelated HEIF encoder error (80 skipped)",
+    "test_report": "TECHNICAL_VALIDATION_REPORT_2026-11-21.md",
     "targeted_supabase_wrong_sql_probes": 3,
     "targeted_supabase_wrong_sql_probes_detected": 3,
-    "full_mutation_rate": "NOT_REMEASURED_FOR_V3.1"
+    "full_mutation_rate": "23/26 result-distinguishable mutations; 3 observationally equivalent"
+  },
+  "technical_validation": {
+    "status": "COMPLETE_WITH_DISCLOSED_TEST_FAILURES",
+    "python_version": "3.11.16",
+    "database_fingerprint_sha256": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028",
+    "schema_order_date_type": "date",
+    "ranking_ast_audit": {
+      "supported_cases": 30,
+      "pass": 8,
+      "not_required": 22,
+      "unresolved": 0
+    },
+    "independent_human_approvals": 0,
+    "runner_emits_independent_audit_records": false,
+    "heldout_agent_executed": false
   },
   "ready_for_independent_human_review": true,
   "ready_for_formal_freeze": false,
+  "ready_for_40_case_gold_preparation": true,
   "ready_for_40_case_sql_agent_run": false
 }

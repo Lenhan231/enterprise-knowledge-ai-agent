@@ -10,7 +10,10 @@ This revision applies the [2026-11-21 AI-assisted v3 audit](../40-case-v3/AI_ASS
 - `gold_sql_v3_1_draft.json`: 30 draft Gold SQL definitions.
 - `gold_results_v3_1_provisional.json`: 404 provisional reference rows, carrying original snapshot provenance and updated results/column hashes.
 - `FREEZE_MANIFEST_V3_1_DRAFT.json`: explicit draft state and content SHA-256 identities.
-- `tests/sql/test_benchmark_v3_1_contract.py`: no-LLM regression tests for hashes, schema, aliases, order policy, and pending approval gates.
+- `scorer_v3_1.py` and `semantic_audit_v3_1.py`: versioned scorer with SQL/parameter/case hash linkage, independent audit decisions, and conservative AST checks for ranking and TOP-N.
+- `PROTOCOL_V3_1.md`: the metric definitions and audit requirements for this revision.
+- `runs/technical-validation-v3-1-20261121T114601Z/`: immutable read-only Gold and mutation reruns.
+- `tests/sql/test_benchmark_v3_1_contract.py`: no-LLM regression tests for hashes, schema, aliases, ranking, scorer audit gates, and approval state.
 
 ## Six case-level corrections
 
@@ -27,22 +30,19 @@ The three modified Gold SQL queries **B40-002, B40-021, B40-024** were executed 
 
 ## Scoring contract
 
-Previous v3 had 26 ordered executable cases. This version requires order-sensitive business scoring only where the question explicitly calls for ranking or TOP-N with ordering:
+Seven cases require ordered output rows: `B40-011, B40-012, B40-013, B40-014, B40-015, B40-029, B40-030`. The separate ranking contract also applies to B40-005: its returned row sequence is unordered because it has one row, but its TOP-1 selection must use the required rank and tie-break. The v3.1 AST check therefore verifies eight explicit ranking/TOP-N obligations across 30 executable Gold queries; the remaining 22 have no order-sensitive output requirement.
 
-`B40-011, B40-012, B40-013, B40-014, B40-015, B40-029, B40-030` (7 cases).
-
-The other 23 executable cases use order-insensitive row-multiset scoring. Gold SQL `ORDER BY` remains for deterministic display and result hashing; a different row order alone cannot fail their business result metric. In particular the TOP-1 B40-005 preserves the SQL tie-break selecting a unique month; its single output row needs no sequence constraint.
+Row order alone cannot fail an unordered case's business result metric. Gold SQL `ORDER BY` remains for deterministic display and result hashing. The TOP-1 entity/month selection contract is checked independently of output row ordering.
 
 The candidate includes **per-case explicit `column_aliases`** for common equivalent semantic names. No aliases are accepted by guesswork, and an alias does not replace the required independent SQL semantic audit. The existing `40-case-v3/scorer_v3.py` supports these two contract fields; the original scorer source is unchanged. Its separate **Strict Result Exact Match** diagnostic still requires literal original column names and row values.
 
 ## Database checks and mutation evidence
 
-- Rerun 3 changed Gold SQL outputs via Supabase: matched saved results and expected columns.
-- Controlled wrong-aggregate on B40-002: missing-date count changes (7 missing in Dec 2025 versus 0 incorrectly).
-- Controlled wrong boolean population B40-021: TRUE count changes from 17 total to 97 non-NULL rows.
-- Controlled shifted snapshot boundary B40-024: two rows instead of three.
-- The **old v3 23/26 mutation result is NOT a newly measured v3.1 detection rate**; full v3.1 mutation probes and repository preflight still need rerunning in the repository runtime. Do not silently carry over 88.46% as a revised-cohort result.
-- Original preflight fingerprint `dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028` is inherited as provenance, not a claim that this connector rerun re-verified the least-privilege executor role. Before freeze, run the approved preflight and reference generator on the exact v3.1 files.
+- Fresh repository preflight verified the allowlisted frozen analytics snapshot and read-only role. Its fingerprint `dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028` matches the v3.1 provisional references; `commerce.orders.order_date` is PostgreSQL `date`.
+- The repository-approved generator executed all 30 v3.1 Gold queries read-only. All 30 SQL/parameter/column/row results exactly match the provisional results (404 rows total). The run is provisional and has zero human approvals.
+- All 28 controlled mutations were attempted read-only. Result-based detection is 23/26 (88.46%); three valid mutations were observationally equivalent on this frozen snapshot. Approved-join, join-fanout, and population-contract validator probes each detected 1/1 assigned mutations. This is a newly measured v3.1 result, distinct from the historical v3 evidence.
+- No SQL Agent generation calls, held-out execution, or database writes occurred.
+- Full run inputs, hashes, output, and limitations are in [the technical validation report](TECHNICAL_VALIDATION_REPORT_2026-11-21.md). Historical v3 files remain unchanged.
 
 ## Local automated checks
 
@@ -53,14 +53,14 @@ PYTHONPATH=src uv run --no-sync python -m unittest discover -s tests/sql -p 'tes
 PYTHONPATH=src uv run --no-sync python -m unittest discover -s tests -t . -v
 ```
 
-CI's existing unittest discovery also includes the new regression file.
+Executed with the repository Python 3.11.16 environment: the v3.1 contract tests passed 21/21, the benchmark package passed 45/45, and all SQL tests passed 544 (10 skipped). The full repository run had one unrelated HEIF encoder error; the preserved v3 artifact suite has one known historical checklist-manifest hash mismatch. Exact commands and outcomes are recorded in the technical validation report. CI discovery includes the new v3.1 tests.
 
 ## Remaining freeze blockers
 
-1. Independent human reviewers must review **this revised version**, each preserving their own record; adjudication resolves objections.
-2. Re-run repository-approved read-only preflight, Gold-results generator, structural validator, scorer tests and full mutation set against v3.1 identities; commit new evidence without overwriting v3. 
-3. Inspect the benchmark runner: the repository scorer currently trusts a boolean `sql_semantic_valid` supplied by an observation; it does not verify who audited the generated SQL. No production runner that emits cryptographically linked independent semantic-audit evidence was identified in the repository search. Define and enforce a separate SQL audit record (generated SQL hash, case ID, reviewer identity, independent reasoning, decision) before scoring E2E semantics.
-4. Do not run the 40 held-out SQL Agent cases or mark `FROZEN` while the above gates are pending.
+1. Two independent human reviewers must review the exact v3.1 case, Gold, and output-contract hashes; adjudicate any disagreement. The audit-linkage code verifies matching inputs and records reviewer identity/evidence, but does not prove the reviewer is independent or replace human review.
+2. Resolve or explicitly accept the full-suite HEIF encoder environment error and the historical v3 checklist hash mismatch. Do not rewrite the archived v3 manifest to hide the mismatch.
+3. Keep `FREEZE_MANIFEST_V3_1_DRAFT.json` in draft state until reviews, adjudication, and any required test-environment follow-up are complete.
+4. Do not run the 40 held-out SQL Agent cases or mark `FROZEN` before the exact v3.1 contract is independently reviewed and frozen.
 
 **Source-of-truth principle:** Old v3 reference/review is kept immutable. The exact v3.1 content SHA-256 values in the draft manifest identify the new candidate.
 

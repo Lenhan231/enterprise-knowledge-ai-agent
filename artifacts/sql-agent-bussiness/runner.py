@@ -259,6 +259,16 @@ def _redact(text):
     return text[:2_000]
 
 
+def _redact_structure(value):
+    if isinstance(value, str):
+        return _redact(value)
+    if isinstance(value, list):
+        return [_redact_structure(item) for item in value]
+    if isinstance(value, dict):
+        return {str(key): _redact_structure(item) for key, item in value.items()}
+    return value
+
+
 def classify_status(payload):
     metadata = payload.get("metadata") or {}
     status = metadata.get("status") or payload.get("status")
@@ -291,6 +301,16 @@ def normalize_payload(case, payload, instrumentation, latency_ms):
     if status == "failed" and not error:
         limitations = payload.get("limitations") or []
         error = limitations[0] if limitations else None
+    clarification_options = metadata.get("clarification_options", payload.get("clarification_options"))
+    normalized_metadata = {key: metadata[key] for key in (
+        "status", "query_status", "schema_table_selection", "schema_table_candidates",
+        "schema_table_required", "schema_table_final_selected", "schema_ontology_added_sources",
+        "schema_approved_join_bridge_additions", "schema_selection_failure",
+        "semantic_interpretation", "metric_validation", "ranking_validation",
+        "request_contract_status", "unverified_sql",
+    ) if key in metadata}
+    if "clarification_options" in metadata or "clarification_options" in payload:
+        normalized_metadata["clarification_options"] = _redact_structure(clarification_options)
     return {
         "id": case["id"],
         "question": case["question"],
@@ -299,7 +319,7 @@ def normalize_payload(case, payload, instrumentation, latency_ms):
         "parameters": payload.get("parameters") or payload.get("attempted_parameters") or [],
         "rows": rows,
         "columns": columns,
-        "answer": _redact(payload.get("answer", "")),
+        "answer": _redact_structure(payload.get("answer", "")),
         "error_type": metadata.get("error_type"),
         "error_detail": _redact(error) if error else None,
         "failure_class": classify_failure(status, metadata, error),
@@ -317,13 +337,7 @@ def normalize_payload(case, payload, instrumentation, latency_ms):
         },
         "calls": dict(instrumentation.calls),
         "latency_ms": round(latency_ms, 3),
-        "metadata": {key: metadata[key] for key in (
-            "status", "query_status", "schema_table_selection", "schema_table_candidates",
-            "schema_table_required", "schema_table_final_selected", "schema_ontology_added_sources",
-            "schema_approved_join_bridge_additions", "schema_selection_failure",
-            "semantic_interpretation", "metric_validation", "ranking_validation",
-            "request_contract_status", "unverified_sql",
-        ) if key in metadata},
+        "metadata": normalized_metadata,
     }
 
 

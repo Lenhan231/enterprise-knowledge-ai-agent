@@ -165,6 +165,28 @@ class SQLBenchmarkRunnerTest(unittest.TestCase):
             self.assertEqual(data["cases"][0]["status"], "clarification_required")
             self.assertEqual(data["cases"][0]["execution_events"], [])
 
+    def test_clarification_options_are_preserved_for_versioned_scoring(self):
+        options = ["Product snapshot", "Current inventory"]
+        result = {"ok": False, "metadata": {"status": "clarification_required",
+                                             "clarification_options": options},
+                  "answer": "Which available scope would you like?"}
+        with tempfile.TemporaryDirectory() as directory:
+            store = self.make_store(Path(directory) / "run")
+            data = asyncio.run(RUNNER.run_cases(FakeAgent(result), case_set(), store))
+            self.assertEqual(data["cases"][0]["metadata"]["clarification_options"], options)
+            self.assertEqual(data["cases"][0]["answer"], result["answer"])
+
+    def test_malformed_clarification_shapes_survive_normalization(self):
+        result = {"ok": False, "metadata": {"status": "clarification_required",
+                                             "clarification_options": [{"label": "nested"}]},
+                  "answer": {"unexpected": "object"}}
+        with tempfile.TemporaryDirectory() as directory:
+            store = self.make_store(Path(directory) / "run")
+            data = asyncio.run(RUNNER.run_cases(FakeAgent(result), case_set(), store))
+            observation = data["cases"][0]
+            self.assertEqual(observation["metadata"]["clarification_options"], [{"label": "nested"}])
+            self.assertEqual(observation["answer"], {"unexpected": "object"})
+
     def test_unsupported_case_is_persisted_without_gold_sql(self):
         cases = {"cases": [{"id": "T01", "question": "unsupported", "supported": False}]}
         result = {"ok": False, "metadata": {"status": "unsupported"},

@@ -7,6 +7,39 @@ STATIC = Path(sys.argv[1]).resolve()
 PORT = int(sys.argv[2]) if len(sys.argv) > 2 else 8765
 ROLE = sys.argv[3] if len(sys.argv) > 3 else "admin"
 
+DASH_HTML = (Path(__file__).parent / "demo-dashboard.html").read_text()
+_NOW = "2026-11-22T00:20:00Z"
+DASHBOARD = {"id": "a" * 32, "title": "Business overview", "description": "Inventory, purchases and revenue.", "scope": "Last 12 months",
+             "revision": 3, "status": "complete", "created_at": _NOW, "updated_at": _NOW, "data_updated_at": _NOW, "tiles": [], "tile_status": {}}
+DASH_OVERVIEW = {"html": DASH_HTML, "dashboard": {"status": "complete", "data_updated_at": _NOW}}
+_CONTRACT = json.loads((Path(__file__).resolve().parents[2] / "data" / "semantic" / "sales_performance_strict.json").read_text())
+def _fill(report):
+    """Make the strict template look like a finished sales report (demo numbers only)."""
+    import copy
+    r = copy.deepcopy(report)
+    r["request"]["period"] = {"start": "2026-01-01", "end_exclusive": "2026-07-01"}
+    r["data_quality"].update(coverage_start="2026-01-01", coverage_end="2026-06-30", partial_period=False, missing_or_unmatched_count=0)
+    values = {"company_revenue": 2570e6, "company_cogs": 1620e6, "company_gross_profit": 950e6, "company_gross_margin_pct": 37.0,
+              "company_revenue_change_pct": 6.2, "order_count": 4180, "delivered_line_revenue": 2310e6,
+              "delivered_average_order_value": 552000, "promotion_discount": 118e6, "sessions": 96500}
+    for m in r["metrics"]:
+        m["value"], m["status"] = values[m["id"]], "available"
+    months = [f"2026-0{i}-01" for i in range(1, 7)]
+    rev = [380, 395, 410, 442, 455, 488]
+    for w in r["dashboard"]["widgets"]:
+        if w["x_dimension"] == "period":
+            w["data"] = [{"period": d, **{mid: (rev[i] * 1e6 * (0.37 if "profit" in mid else 1) if "revenue" in mid or "profit" in mid else values[mid] / 6 * (0.9 + i * .04))
+                                          for mid in w["metric_ids"]}} for i, d in enumerate(months)]
+        elif w["id"] == "line_breakdown":
+            w["x_dimension"] = w["x_dimension"]
+            w["data"] = [{w["x_dimension"]: n, "delivered_line_revenue": v * 1e6} for n, v in [("Laptops", 820), ("Monitors", 610), ("Accessories", 540), ("Docks", 340)]]
+    return r
+
+
+REPORT = {"id": "b" * 32, "revision": 1, "title": "Sales performance, 2026", "status": "partial", "updated_at": _NOW,
+          "report": _fill(_CONTRACT["runtime_output_template"]),
+          "presentation": {"section_order": list(_CONTRACT["sections"]), "hidden_sections": [], "chart_types": {}, "text_edits": {}}}
+
 ANSWER = {
     "answer": "Khi nghỉ việc, nhân viên phải bàn giao toàn bộ công việc đang xử lý cho người được trưởng bộ phận chỉ định [S1].\n\n"
               "1. Lập biên bản bàn giao, liệt kê hồ sơ, tài liệu và công việc dang dở [S1].\n"
@@ -17,16 +50,23 @@ ANSWER = {
     "evidence": [
         {"citation_id": "S1", "source": "Quy chế nhân sự 2025.pdf", "source_type": "document",
          "content": "Điều 18. Bàn giao công việc. Người lao động nghỉ việc có trách nhiệm bàn giao toàn bộ công việc, hồ sơ cho người được Trưởng bộ phận chỉ định, lập biên bản bàn giao chậm nhất 03 ngày làm việc trước ngày nghỉ việc chính thức.",
-         "metadata": {"page_number": 12, "chunk_index": 41}},
+         "metadata": {"page_number": 12, "chunk_index": 41, "similarity_score": 0.91}},
         {"citation_id": "S2", "source": "Quy định quản lý tài sản.pdf", "source_type": "document",
          "content": "Khi chấm dứt hợp đồng lao động, người lao động hoàn trả máy tính, thiết bị, thẻ ra vào, con dấu và các tài sản khác được cấp phát.",
-         "metadata": {"page_number": 4, "chunk_index": 9}},
+         "metadata": {"page_number": 4, "chunk_index": 9, "similarity_score": 0.84}},
         {"citation_id": "S3", "source": "Quy chế nhân sự 2025.pdf", "source_type": "document",
          "content": "Công ty thanh toán tiền lương và các khoản liên quan trong vòng 07 ngày kể từ khi biên bản bàn giao được ký xác nhận.",
-         "metadata": {"page_number": 13, "chunk_index": 44}},
+         "metadata": {"page_number": 13, "chunk_index": 44, "similarity_score": 0.78}},
     ],
     "data": {},
     "metadata": {"ok": True, "status": "complete", "selected_route": "knowledge",
+                 "retrieved": [
+                     {"source_id": "S1", "document": "Quy chế nhân sự 2025.pdf", "chunk_index": 41, "page_number": 12, "score": 0.91, "used": True},
+                     {"source_id": "S2", "document": "Quy định quản lý tài sản.pdf", "chunk_index": 9, "page_number": 4, "score": 0.84, "used": True},
+                     {"source_id": "S3", "document": "Quy chế nhân sự 2025.pdf", "chunk_index": 44, "page_number": 13, "score": 0.78, "used": True},
+                     {"source_id": "S4", "document": "Quy chế nhân sự 2025.pdf", "chunk_index": 40, "page_number": 12, "score": 0.66, "used": False},
+                     {"source_id": "S5", "document": "Hướng dẫn thôi việc.docx", "chunk_index": 3, "page_number": 2, "score": 0.58, "used": False},
+                     {"source_id": "S6", "document": "Quy định quản lý tài sản.pdf", "chunk_index": 10, "page_number": 5, "score": 0.49, "used": False}],
                  "task_trace": [{"agent": "knowledge", "status": "complete", "elapsed_ms": 8420}],
                  "search": {"lexical_queries": {"vn": "bàn giao công việc khi nghỉ việc", "en": "work handover when resigning"},
                             "candidate_count": 30, "passages_to_model": 8, "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1", "context_radius": 1},
@@ -99,6 +139,8 @@ FIXED = {
         {"role": "document_processing_owner", "permissions": ["upload_documents", "inspect_parsing"]}]},
     "/api/admin/knowledge-documents": {"documents": KNOWLEDGE_DOCS},
     "/api/invoices": {"invoices": INVOICES},
+    "/api/dashboards": {"dashboards": [DASHBOARD, {**DASHBOARD, "id": "c" * 32, "title": "Inventory by product", "revision": 1}]},
+    "/api/reports": {"reports": [REPORT]},
     "/api/upload-tests": {"runs": []},
     "/api/admin/answer-feedback": {"summary": {"up": 14, "down": 3}, "recent": [
         {"created_at": "2026-11-12T09:20:00Z", "rating": "down", "actor_role": "employee", "agent_name": "knowledge",
@@ -147,7 +189,7 @@ class Handler(SimpleHTTPRequestHandler):
             raw = (STATIC / "index.html").read_text().replace("</head>", '<script src="/demo.js"></script></head>', 1).encode()
             self.send_response(200); self.send_header("Content-Type", "text/html; charset=utf-8"); self.end_headers()
             return self.wfile.write(raw)
-        if path == "/api/auth/me" and "demo_logout=1" in (self.headers.get("Cookie") or ""):
+        if path == "/api/auth/me" and (os.environ.get("DEMO_LOGGED_OUT") == "1" or "demo_logout=1" in (self.headers.get("Cookie") or "")):
             return self.send_json({"detail": "Not signed in"}, 401)
         if path.startswith("/api/invoices/") and path.endswith("/source"):
             found = next((i for i in INVOICES if i["invoice_id"] == path.split("/")[3]), {})
@@ -159,6 +201,12 @@ class Handler(SimpleHTTPRequestHandler):
         if path.startswith("/api/invoices/"):
             found = next((i for i in INVOICES if i["invoice_id"] == path.rsplit("/", 1)[1]), None)
             return self.send_json(found or {"detail": "Not found"}, 200 if found else 404)
+        if path in ("/api/dashboards/overview",) or (path.startswith("/api/dashboards/") and path.endswith("/html")):
+            return self.send_json(DASH_OVERVIEW) if path.endswith("overview") else self.send_html((Path(__file__).parent / "demo-dashboard.html").read_text())
+        if path.startswith("/api/dashboards/"):
+            return self.send_json({"dashboard": DASHBOARD, "html": DASH_HTML, "html_url": "/api/dashboards/%s/html" % DASHBOARD["id"]})
+        if path.startswith("/api/reports/"):
+            return self.send_json({"document": REPORT})
         if path.startswith("/api/"):
             return self.send_json(FIXED.get(path, {}))
         return super().do_GET()
@@ -185,6 +233,10 @@ class Handler(SimpleHTTPRequestHandler):
         if path == "/api/agents/chat":
             return self.send_json(ANSWER)
         return self.send_json(FIXED.get(path, {"ok": True}))
+
+    def send_html(self, text):
+        self.send_response(200); self.send_header("Content-Type", "text/html; charset=utf-8"); self.end_headers()
+        self.wfile.write(text.encode())
 
     def log_message(self, *_):
         pass

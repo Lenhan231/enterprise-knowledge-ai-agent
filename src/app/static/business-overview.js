@@ -5,13 +5,15 @@
   let canRead = false;
   const CACHE_MS = 5 * 60 * 1000;
   let cachedAt = null, owner = null, generation = null, pending = null;
+  const skeleton = on => { const node = document.getElementById('home-overview-skeleton'); if (node) node.hidden = !on; };
   async function overview(valid) {
+    skeleton(true);
     el('home-overview-status').textContent='Refreshing authorized source data…';
     el('home-overview-status').dataset.error='false';
     try {
       const data=await api('/api/dashboards/overview');
       if (!valid()) return;
-      el('home-overview-preview').srcdoc=data.html;
+      el('home-overview-preview')._raw=data.html; el('home-overview-preview').srcdoc=window.themedDoc?window.themedDoc(data.html):data.html;
       el('home-overview-preview').hidden=false;
       cachedAt = data.dashboard.status === 'failed' ? null : Date.now();
       el('home-overview-status').textContent=`Data refreshed ${DashboardFormatting.datetime(data.dashboard.data_updated_at)} · ${data.dashboard.status==='complete' ? 'Live source data' : 'Some sources are unavailable; review the chart notes.'}`;
@@ -21,7 +23,7 @@
       el('home-overview-preview').hidden=true;
       el('home-overview-status').textContent=error.message || 'The overview is temporarily unavailable. Your saved dashboards remain available.';
       el('home-overview-status').dataset.error='true';
-    }
+    } finally { skeleton(false); }
   }
   function refreshOverview() {
     cachedAt = null;

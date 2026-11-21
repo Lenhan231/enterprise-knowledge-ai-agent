@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enterprise Knowledge AI</title>
+<meta name="description" content="Hỏi chính sách công ty bằng tiếng Việt. Mỗi ý trong câu trả lời được đối chiếu với đúng câu trong tài liệu.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Landing page, neutral direction: Grid Pattern + Text Reveal + Word Rotate (Magic UI / 21st.dev), plain CSS + JS. */
+:root{--bg:#fff;--surface-2:#f5f5f7;--line:#e8e8ed;--ink:#1d1d1f;--ink-2:#424245;--muted:#6e6e73;--accent:#0a66d8;--accent-ink:#0752ad;--ok:#1a7f37;--ok-soft:#e9f6ec;--grid:rgb(156 163 175 / .3);color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#161618;--surface-2:#232325;--line:#2c2c2e;--ink:#f5f5f7;--ink-2:#d1d1d6;--muted:#a1a1a6;--accent:#4c9dff;--accent-ink:#8cc0ff;--ok:#3fcf6b;--ok-soft:#102b19;--grid:rgb(156 163 175 / .16);color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 "Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.wrap{width:min(1120px,100%);margin:0 auto;padding-left:max(20px,env(safe-area-inset-left));padding-right:max(20px,env(safe-area-inset-right))}
+nav{display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px;font-size:14px}
+nav .brand{font-weight:600;color:var(--ink);text-decoration:none}
+nav .links{display:flex;gap:28px}
+nav .links a{color:var(--ink-2);text-decoration:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 24px;border-radius:999px;font:500 16px/1 "Inter",sans-serif;text-decoration:none}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-ink)}
+.btn-quiet{color:var(--accent)}
+nav .btn{min-height:38px;padding:0 18px;font-size:14px}
+
+/* hero with Grid Pattern: 40 px cells, stroke gray-400/30, a few filled squares, faded towards the edges */
+.hero{position:relative;overflow:hidden;padding:96px 0 40px;text-align:center}
+.grid-pattern{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;fill:var(--grid);stroke:var(--grid);-webkit-mask-image:radial-gradient(ellipse 60% 70% at 50% 30%,#000 20%,transparent 75%);mask-image:radial-gradient(ellipse 60% 70% at 50% 30%,#000 20%,transparent 75%)}
+.hero .wrap{position:relative}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;margin:0 0 22px;padding:5px 14px;border-radius:999px;background:var(--ok-soft);color:var(--ok);font-size:13.5px;font-weight:500}
+h1{margin:0 auto;max-width:900px;font-size:clamp(44px,7vw,80px);line-height:1.04;font-weight:700;letter-spacing:-.04em;text-wrap:balance}
+/* Text Reveal: words rise and unblur one after another */
+.reveal-word{display:inline-block;opacity:0;filter:blur(6px);transform:translateY(14px);animation:revealWord .7s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes revealWord{to{opacity:1;filter:none;transform:none}}
+.lede{margin:22px auto 0;max-width:680px;font-size:clamp(18px,2.2vw,22px);line-height:1.45;color:var(--muted)}
+/* Word Rotate: one word at a time, in from above, out downwards, 0.25 s ease-out, every 2.5 s */
+.rotate{display:inline-block;overflow:hidden;vertical-align:bottom;padding:0 2px;text-align:left}
+.rotate span{display:inline-block;color:var(--ink);font-weight:600;transition:transform .25s ease-out,opacity .25s ease-out}
+.rotate span.out{transform:translateY(50px);opacity:0}
+.rotate span.in{transform:translateY(-50px);opacity:0;transition:none}
+.ctas{display:flex;flex-wrap:wrap;justify-content:center;gap:12px 28px;align-items:center;margin-top:30px}
+.shot{position:relative;margin:64px auto 0;width:min(1040px,100%);border-radius:20px;overflow:hidden;box-shadow:0 40px 80px -30px rgba(0,0,0,.25),0 0 0 1px rgba(0,0,0,.06);animation:shotIn 1.2s cubic-bezier(.16,1,.3,1) .4s both}
+.shot img{display:block;width:100%;height:auto}
+@keyframes shotIn{from{opacity:0;transform:translateY(60px) scale(.97)}to{opacity:1;transform:none}}
+
+section{padding:96px 0}
+.band{background:var(--surface-2)}
+h2{margin:0 0 12px;font-size:clamp(30px,4vw,44px);line-height:1.1;font-weight:700;letter-spacing:-.03em;text-wrap:balance}
+.sub{margin:0 0 40px;max-width:620px;color:var(--muted);font-size:18px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px}
+.step{padding:28px;border-radius:20px;background:var(--bg)}
+.step b{display:block;margin-bottom:8px;font-size:19px;font-weight:600;letter-spacing:-.01em}
+.step p{margin:0;color:var(--ink-2);font-size:15.5px}
+.step .num{display:inline-grid;place-items:center;width:30px;height:30px;margin-bottom:16px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:14px;font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:20px}
+.stat{padding:28px;border:1px solid var(--line);border-radius:20px}
+.stat strong{display:block;font-size:52px;line-height:1;font-weight:700;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.stat span{display:block;margin-top:12px;color:var(--ink-2);font-size:15.5px}
+.note{margin-top:20px;color:var(--muted);font-size:13.5px}
+.end{text-align:center}
+footer{padding:28px 0 40px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+/* Lenis smooth scroll (its recommended base rules) */
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+@media (max-width:640px){nav .links{display:none}.hero{padding-top:64px}}
+@media (prefers-reduced-motion:reduce){.reveal-word,.shot{animation:none;opacity:1;filter:none;transform:none}.rotate span{transition:none}}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <nav aria-label="Trang">
+    <a class="brand" href="/static/landing.html">Enterprise Knowledge AI</a>
+    <div class="links"><a href="#how">Cách kiểm chứng</a><a href="#results">Kết quả đo</a></div>
+    <a class="btn btn-primary" href="/">Mở workspace</a>
+  </nav>
+</header>
+
+<main>
+  <div class="hero">
+    <svg class="grid-pattern" aria-hidden="true">
+      <defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse" x="-1" y="-1"><path d="M.5 40V.5H40" fill="none"></path></pattern></defs>
+      <rect width="100%" height="100%" stroke-width="0" fill="url(#grid)"></rect>
+      <svg x="-1" y="-1" style="overflow:visible">
+        <rect stroke-width="0" width="39" height="39" x="481" y="41"></rect><rect stroke-width="0" width="39" height="39" x="721" y="121"></rect>
+        <rect stroke-width="0" width="39" height="39" x="321" y="201"></rect><rect stroke-width="0" width="39" height="39" x="961" y="241"></rect>
+        <rect stroke-width="0" width="39" height="39" x="601" y="321"></rect>
+      </svg>
+    </svg>
+    <div class="wrap">
+      <p class="eyebrow">✓ Mỗi ý đều có nguồn trước khi hiện ra</p>
+      <h1 id="headline">Mỗi câu trả lời, một nguồn để kiểm.</h1>
+      <p class="lede">Trợ lý tài liệu cho phòng <span class="rotate" aria-live="off"><span id="rotate-word">Mua sắm</span></span><br>Hỏi chính sách công ty bằng tiếng Việt, kể cả không dấu hay viết tắt.</p>
+      <div class="ctas"><a class="btn btn-primary" href="/">Thử hỏi một câu</a><a class="btn-quiet" href="#how">Xem cách kiểm chứng ›</a></div>
+      <figure class="shot" style="margin-bottom:0"><img src="/static/landing-chat.webp" width="1168" height="760" alt="General Chat: câu trả lời có trích dẫn bên trái, các nguồn kèm điểm liên quan bên phải"></figure>
+    </div>
+  </div>
+
+  <section id="how" class="band">
+    <div class="wrap">
+      <h2>Ba bước trước khi bạn thấy câu trả lời</h2>
+      <p class="sub">Câu trả lời nào cũng đi qua cùng một quy trình, và bạn xem được từng bước.</p>
+      <div class="steps">
+        <div class="step"><span class="num">1</span><b>Hiểu câu hỏi viết kiểu gì cũng được</b><p>Khôi phục dấu, đổi "2tr2" thành 2.200.000 VND, tìm cả tài liệu tiếng Anh.</p></div>
+        <div class="step"><span class="num">2</span><b>Tìm và xếp hạng đoạn tài liệu</b><p>Tìm theo nghĩa và theo từ khóa, rồi mô hình xếp hạng đưa đoạn đúng lên đầu. Bạn thấy điểm của từng đoạn.</p></div>
+        <div class="step"><span class="num">3</span><b>Kiểm từng ý rồi mới hiện</b><p>Mỗi ý phải chỉ ra được câu trong tài liệu, phép tính phải ra đúng số. Ý không có nguồn thì không được hiện.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="results">
+    <div class="wrap">
+      <h2>Đo trên 60 câu hỏi đã khoá trước khi chỉnh hệ thống</h2>
+      <p class="sub">Bộ câu hỏi kiểm tra được khoá bằng mã băm trước mọi lần chỉnh sửa, nên kết quả không bị "học tủ".</p>
+      <div class="stats">
+        <div class="stat"><strong>92%</strong><span>câu trả lời đúng với reranker BGE, 87% với bản đang chạy.</span></div>
+        <div class="stat"><strong>0</strong><span>câu sai được đóng dấu "đã kiểm chứng" ở bản đang chạy.</span></div>
+        <div class="stat"><strong>0</strong><span>lần lộ tài liệu cho người không có quyền xem.</span></div>
+        <div class="stat"><strong>20 s</strong><span>thời gian trả lời trung vị khi 8 người hỏi cùng lúc.</span></div>
+      </div>
+      <p class="note">Thời gian trả lời đo trên một bản thử nghiệm riêng, không phải trên máy chủ đang chạy.</p>
+    </div>
+  </section>
+
+  <section class="band end">
+    <div class="wrap">
+      <h2>Hỏi đi. Nguồn sẽ trả lời.</h2>
+      <div class="ctas"><a class="btn btn-primary" href="/">Mở workspace</a></div>
+    </div>
+  </section>
+</main>
+<footer><div class="wrap">Enterprise Knowledge AI · đồ án capstone FA26AI48</div></footer>
+
+<script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+<script>
+(() => {
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Text Reveal: wrap each headline word and stagger it by 60 ms
+  const headline = document.getElementById("headline");
+  if (!reduce) {
+    const words = headline.textContent.trim().split(/\s+/);
+    headline.textContent = "";
+    words.forEach((word, index) => {
+      const span = document.createElement("span");
+      span.className = "reveal-word";
+      span.style.animationDelay = `${index * 60}ms`;
+      span.textContent = word;
+      headline.append(span, index < words.length - 1 ? " " : "");
+    });
+  }
+  // Lenis smooth scrolling; in-page links glide to their section. Off for reduced motion or if the CDN is blocked.
+  if (!reduce && window.Lenis) {
+    const lenis = new Lenis();
+    const raf = (time) => { lenis.raf(time); requestAnimationFrame(raf); };
+    requestAnimationFrame(raf);
+    document.querySelectorAll('a[href^="#"]').forEach((link) => link.addEventListener("click", (event) => {
+      const target = document.querySelector(link.getAttribute("href"));
+      if (target) { event.preventDefault(); lenis.scrollTo(target, { offset: -16 }); }
+    }));
+  }
+  // Word Rotate: every 2.5 s the word leaves downwards, then the next enters from above (mode "wait")
+  const words = ["Mua sắm", "Nhân sự", "Tài chính", "Kho vận"];
+  const el = document.getElementById("rotate-word");
+  el.parentElement.style.width = `${Math.max(...words.map((w) => w.length)) * 0.62}em`;
+  let index = 0;
+  setInterval(() => {
+    index = (index + 1) % words.length;
+    if (reduce) { el.textContent = words[index]; return; }
+    el.classList.add("out");
+    setTimeout(() => {
+      el.textContent = words[index];
+      el.classList.remove("out");
+      el.classList.add("in");
+      void el.offsetWidth;
+      el.classList.remove("in");
+    }, 250);
+  }, 2500);
+})();
+</script>
+</body>
+</html>

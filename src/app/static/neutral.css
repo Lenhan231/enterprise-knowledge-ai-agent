@@ -92,3 +92,28 @@
 :root .general-chat-composer button{border-radius:50%;background:var(--ink);color:var(--bg);box-shadow:none}
 :root .general-chat-composer button::after{display:none}
 :root .general-chat-composer button:hover:not(:disabled){background:var(--ink-2)}
+
+/* flat primary buttons: drop the glossy lens and glow of the glass layer */
+:root #ask-button,:root .primary-button,:root #report-agent-submit,:root .submit-query-btn{box-shadow:none;background-image:none}
+:root #ask-button::after,:root .primary-button::after,:root #report-agent-submit::after,:root .submit-query-btn::after{display:none}
+
+/* retrieved-chunks list under the cited sources */
+:root .retrieved-chunks{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+:root .retrieved-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+:root .retrieved-head h5{margin:0;color:var(--ink);font:500 13.5px/1.4 var(--font)}
+:root .retrieved-sort{display:flex;padding:2px;border-radius:7px;background:var(--surface-2)}
+:root .retrieved-sort button{min-height:26px;padding:0 10px;border:0;border-radius:5px;background:transparent;color:var(--muted);font:500 12.5px/1 var(--font);cursor:pointer}
+:root .retrieved-sort button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line),0 1px 2px rgba(0,0,0,.04)}
+:root .retrieved-chunks ol{margin:0;padding:0;list-style:none}
+:root .retrieved-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted)}
+:root .retrieved-row:last-child{border-bottom:0}
+:root .retrieved-row.is-used{color:var(--ink)}
+:root .retrieved-rank{width:14px;flex:none;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted);font-size:12px}
+:root .retrieved-doc{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+:root .retrieved-doc strong{font-weight:500}
+:root .retrieved-doc span{color:var(--muted);font-size:12px}
+:root .retrieved-row .citation-used{flex:none;color:var(--ink);font-size:12px;font-weight:500}
+:root .retrieved-row .citation-score{flex:none;display:inline-flex;align-items:center;gap:8px;font-size:12px;font-variant-numeric:tabular-nums}
+:root .retrieved-row .citation-score-bar{position:relative;display:block;width:40px;height:4px;border-radius:999px;background:var(--line)}
+:root .retrieved-row .citation-score-bar>span{position:absolute;inset:0 auto 0 0;border-radius:999px;background:var(--ink)}
+:root .retrieved-row:not(.is-used) .citation-score-bar>span{background:var(--line-strong)}

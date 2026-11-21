@@ -86,6 +86,10 @@ class KnowledgeOutcomeTest(unittest.IsolatedAsyncioTestCase):
             "lexical_queries": {"vn": "hủy PO", "en": "cancel PO"}, "candidate_count": 30,
             "passages_to_model": 1, "reranker_model": "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1",
             "context_radius": 1})
+        # every passage the model saw is listed for the UI, marked unused when nothing cites it
+        self.assertEqual([(row["source_id"], row["used"]) for row in result.metadata["retrieved"]],
+                         [(contexts[0]["source_id"], False)])
+        self.assertEqual(result.metadata["retrieved"][0]["score"], contexts[0].get("similarity_score"))
 
     async def test_multiquery_switch_defaults_off_and_requires_explicit_one(self):
         identity = VerifiedIdentity(subject="viewer", permissions={"documents:read"}, document_roles={"employee"})

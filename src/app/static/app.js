@@ -1590,6 +1590,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
               </div>
             </article>`;
         }).join("")}
+        ${renderRetrievedChunks(data.retrieved)}
       </div>` : ""}
     ${routeDetails}
     ${tokenUsage}
@@ -1597,6 +1598,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
       ${outcome.next ? "" : `<button type="button" class="action-btn copy-answer-btn" title="Copy response text" aria-label="Copy response">${ICONS.copy}<span class="action-label">Copy</span></button>`}
     </div>`;
 
+  bindRetrievedChunks(panel);
   // Inline [S1] chips scroll to and highlight their source card.
   panel.querySelectorAll(".cite-ref").forEach((ref) => ref.addEventListener("click", (event) => {
     event.preventDefault();
@@ -1665,6 +1667,40 @@ function renderAgentRows(data) {
     const jevNote = jev?.probabilities ? `<p class="jev-note">JEV · rõ ${Math.round((jev.probabilities.clear || 0) * 100)}% · mơ hồ ${Math.round((jev.probabilities.ambiguous || 0) * 100)}% · độ rõ tối thiểu để chạy ${Math.round((jev.threshold || 0) * 100)}%</p>` : "";
     return `<section class="agent-data-result"><h4>${escapeHtml(label.replace(/^task:/, "Task "))} ${queryStatus}</h4>${table}${jevNote}${diagnostics}</section>`;
   }).join("");
+}
+
+// Every passage the answer model saw (metadata.retrieved), after the 21st.dev Retrieved Chunks list: rank, document,
+// page, used mark and relevance bar; a Rank / Score switch reorders the rows in place.
+function renderRetrievedChunks(rows) {
+  if (!Array.isArray(rows) || !rows.length) return "";
+  const items = rows.map((row, index) => {
+    const score = Number(row.score);
+    const hasScore = row.score !== null && row.score !== undefined && Number.isFinite(score);
+    const page = row.page_number ? `trang ${escapeHtml(row.page_number)}` : Number.isInteger(row.chunk_index) ? `đoạn ${row.chunk_index}` : "";
+    return `<li class="retrieved-row${row.used ? " is-used" : ""}" data-rank="${index + 1}" data-score="${hasScore ? score : -1}">
+      <span class="retrieved-rank">${index + 1}</span>
+      <span class="retrieved-doc"><strong>${escapeHtml(row.document || "")}</strong>${page ? ` <span>${page}</span>` : ""}</span>
+      ${row.used ? `<span class="citation-used">✓ Đã dùng</span>` : ""}
+      ${hasScore ? `<span class="citation-score"><span class="citation-score-bar" aria-hidden="true"><span style="width:${Math.round(Math.max(0, Math.min(1, score)) * 100)}%"></span></span>${score.toFixed(2)}</span>` : ""}
+    </li>`;
+  }).join("");
+  return `<div class="retrieved-chunks">
+    <div class="retrieved-head"><h5>Đoạn đã truy xuất (${rows.length})</h5>
+      <div class="retrieved-sort" role="group" aria-label="Thứ tự"><button type="button" data-sort="rank" aria-pressed="true">Thứ hạng</button><button type="button" data-sort="score" aria-pressed="false">Điểm</button></div>
+    </div>
+    <ol>${items}</ol>
+  </div>`;
+}
+
+function bindRetrievedChunks(root) {
+  root.querySelectorAll(".retrieved-sort button").forEach((button) => button.addEventListener("click", () => {
+    const box = button.closest(".retrieved-chunks");
+    const key = button.dataset.sort;
+    box.querySelectorAll(".retrieved-sort button").forEach((other) => other.setAttribute("aria-pressed", String(other === button)));
+    const list = box.querySelector("ol");
+    [...list.children].sort((a, b) => key === "score" ? b.dataset.score - a.dataset.score : a.dataset.rank - b.dataset.rank)
+      .forEach((row) => list.append(row));
+  }));
 }
 
 function renderAgentResult(result, panel = $("#answer-panel"), shouldScroll = true) {

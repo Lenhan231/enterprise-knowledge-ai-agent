@@ -440,5 +440,25 @@ class V31ContractTests(unittest.TestCase):
             self.assertEqual(GOLD_BY_ID[ident]["parameters"], original_by_id[ident]["parameters"])
 
 
+    def test_archived_v3_checklist_provenance(self):
+        # The v3 manifest identifies pre-review bytes, not the edited checklist.
+        # The historical snapshot is stored in the v3.1 evidence directory.
+        old_manifest = json.loads(
+            (OLD / "FREEZE_MANIFEST.json").read_text(encoding="utf-8")
+        )
+        key = "artifacts/sql-agent-bussiness/40-case-v3/REVIEW_CHECKLIST.md"
+        expected = old_manifest["artifact_hashes_excluding_this_manifest"][key]
+        historical = HERE / "historical" / "REVIEW_CHECKLIST_at_v3_manifest.md"
+        current = OLD / "REVIEW_CHECKLIST.md"
+        actual_historical = hashlib.sha256(historical.read_bytes()).hexdigest()
+        actual_current = hashlib.sha256(current.read_bytes()).hexdigest()
+        self.assertEqual(actual_historical, expected)
+        self.assertNotEqual(actual_current, expected)
+        self.assertIn(
+            "AI_ASSISTED_SEMANTIC_REVIEW_2026-11-21.md",
+            current.read_text(encoding="utf-8"),
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

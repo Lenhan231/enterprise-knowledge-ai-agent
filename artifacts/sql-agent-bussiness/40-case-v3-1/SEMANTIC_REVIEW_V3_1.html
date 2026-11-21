@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>SQL Agent Benchmark v3.1 — Semantic Review</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #15243b;
+      --ink-soft: #42536b;
+      --muted: #68778d;
+      --line: #dce3ed;
+      --surface: #fff;
+      --canvas: #f2f5fa;
+      --navy: #10213a;
+      --navy-2: #172d4b;
+      --blue: #2557a7;
+      --blue-soft: #eaf1ff;
+      --amber: #a65a0a;
+      --amber-soft: #fff2dc;
+      --green: #176449;
+      --green-soft: #e5f5ee;
+      --red: #a43b37;
+      --red-soft: #fff0ee;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: var(--sans);
+      color: var(--ink);
+      background: var(--canvas);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; background: var(--canvas); }
+    button, input, select, textarea { font: inherit; }
+    button, select { cursor: pointer; }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
+      outline: 3px solid #6a9df0; outline-offset: 2px;
+    }
+    .topbar { background: var(--navy); color: #f5f8ff; padding: 18px 26px 16px; }
+    .topbar-inner { max-width: 1680px; margin: auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+    .eyebrow { color: #a9c5f3; font-size: 11px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    h1 { margin: 5px 0 5px; font-size: clamp(21px, 2.3vw, 29px); line-height: 1.2; letter-spacing: -.025em; }
+    .subtitle { margin: 0; color: #c0ccdc; font-size: 13px; }
+    .top-links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding-top: 3px; }
+    .top-links a { color: #e2ecff; text-decoration: none; font-size: 12px; border: 1px solid #476080; border-radius: 7px; padding: 7px 10px; }
+    .top-links a:hover { background: #203a5b; }
+    .status-strip { max-width: 1680px; margin: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 15px; }
+    .top-stat { color: #d6e0ef; font-size: 12px; border: 1px solid #334c6a; border-radius: 6px; padding: 5px 8px; }
+    .top-stat strong { color: #fff; margin-right: 4px; }
+    .draft-pill { color: #ffe3a7; border-color: #73572d; background: #352a19; }
+    .toolbar { background: #fff; border-bottom: 1px solid var(--line); padding: 12px 26px; }
+    .toolbar-inner { max-width: 1680px; margin: auto; display: flex; align-items: end; gap: 12px; flex-wrap: wrap; }
+    .control { display: grid; gap: 4px; }
+    .control label { color: var(--muted); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; }
+    .control input, .control select { height: 36px; min-width: 190px; border: 1px solid #cbd5e2; border-radius: 6px; color: var(--ink); background: white; padding: 0 10px; font-size: 13px; }
+    .control select { min-width: 160px; }
+    .reviewer-id input { min-width: 185px; }
+    .reviewer-name input { min-width: 180px; }
+    .toolbar-note { margin-left: auto; max-width: 470px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .import-controls { display: none; align-items: end; gap: 8px; }
+    .import-controls.active { display: flex; }
+    .file-button { height: 36px; display: inline-flex; align-items: center; gap: 7px; border: 1px solid #b7c6da; border-radius: 6px; background: #f9fbfe; color: var(--ink); padding: 0 10px; font-size: 12px; font-weight: 700; }
+    .file-button:hover { background: var(--blue-soft); border-color: #9ab4dc; }
+    .file-button input { display: none; }
+    .workarea { max-width: 1680px; margin: 16px auto 42px; padding: 0 20px; display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 16px; align-items: start; }
+    .rail { background: var(--navy); border-radius: 10px; overflow: hidden; color: white; position: sticky; top: 12px; max-height: calc(100vh - 24px); display: flex; flex-direction: column; box-shadow: 0 5px 18px #1629451a; }
+    .rail-head { padding: 15px 14px 10px; border-bottom: 1px solid #2b415e; }
+    .rail-title { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 14px; }
+    .rail-progress { color: #a9bedb; font-size: 11px; font-weight: 600; }
+    .progress-track { height: 5px; margin-top: 10px; border-radius: 99px; background: #2e4563; overflow: hidden; }
+    .progress-fill { height: 100%; background: #74b99f; width: 0; transition: width .18s ease; }
+    .rail-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; padding: 10px 12px; border-bottom: 1px solid #2b415e; }
+    .rail-filters input, .rail-filters select { width: 100%; height: 32px; min-width: 0; border-radius: 5px; border: 1px solid #405572; background: #192f4d; color: #eef4ff; padding: 0 8px; font-size: 11px; }
+    .rail-filters input::placeholder { color: #a7b7cc; }
+    #caseList { overflow: auto; padding: 6px; scrollbar-color: #4a6383 #12233a; }
+    .case-link { position: relative; display: block; width: 100%; text-align: left; color: #d7e1ef; background: transparent; border: 1px solid transparent; border-radius: 6px; padding: 8px 8px 8px 10px; margin: 1px 0; }
+    .case-link:hover { background: #1b3556; }
+    .case-link.selected { background: #234779; border-color: #527cb3; color: #fff; }
+    .case-link.priority:before { content: ""; position: absolute; left: 2px; top: 11px; width: 4px; height: 4px; border-radius: 50%; background: #ffb957; }
+    .case-link-main { display: flex; align-items: center; gap: 7px; }
+    .case-link-id { color: #fff; font: 700 11px var(--mono); min-width: 67px; }
+    .case-link-title { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 11px; }
+    .case-link-meta { display: flex; gap: 5px; margin: 5px 0 0 74px; align-items: center; }
+    .mini-chip { color: #c1ccdb; font-size: 9px; border: 1px solid #455a75; border-radius: 4px; padding: 2px 4px; }
+    .mini-chip.decision-APPROVE { color: #b8f0d7; border-color: #31745d; }
+    .mini-chip.decision-REVISE { color: #ffdb9c; border-color: #8c642b; }
+    .mini-chip.decision-REJECT { color: #ffc4bd; border-color: #90524e; }
+    .mini-chip.diff { color: #ffdda2; border-color: #9e763e; }
+    .empty-list { color: #bbc8d9; padding: 18px 12px; font-size: 12px; line-height: 1.5; }
+    .main { min-width: 0; }
+    .notice { border: 1px solid #ead1a3; background: #fff8e9; color: #65430f; border-radius: 8px; padding: 10px 13px; margin-bottom: 12px; font-size: 12px; line-height: 1.5; }
+    .notice.error { border-color: #e4b5b1; background: var(--red-soft); color: #812f2a; }
+    .notice.success { border-color: #b4dcca; background: var(--green-soft); color: #14553d; }
+    .notice[hidden] { display: none; }
+    .case-head { background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 18px 20px 16px; box-shadow: 0 2px 8px #1c314d08; }
+    .case-heading-line { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .case-number { color: var(--blue); font: 800 15px var(--mono); letter-spacing: .015em; }
+    .case-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pill { display: inline-flex; align-items: center; border-radius: 99px; padding: 4px 8px; font-size: 10px; line-height: 1.2; font-weight: 800; background: #edf1f6; color: #48596e; }
+    .pill.execute { background: var(--green-soft); color: var(--green); }
+    .pill.clarify { background: var(--amber-soft); color: var(--amber); }
+    .pill.abstain { background: #f1eefe; color: #5b48a3; }
+    .pill.priority { background: #fff0d4; color: #8b4b08; }
+    .question { font-size: clamp(18px, 2vw, 23px); line-height: 1.45; font-weight: 650; letter-spacing: -.015em; margin: 14px 0 10px; white-space: pre-wrap; }
+    .intent { border-left: 3px solid #8ca9d5; padding: 8px 12px; margin: 0; color: #41526a; background: #f6f8fc; font-size: 13px; line-height: 1.55; }
+    .case-nav { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; gap: 8px; }
+    .case-nav button, .secondary-button { border: 1px solid #c9d4e2; color: #34475f; background: white; border-radius: 5px; padding: 6px 10px; font-size: 11px; font-weight: 700; }
+    .case-nav button:hover, .secondary-button:hover { background: #f3f7fc; border-color: #9fb2ca; }
+    .case-nav-count { color: var(--muted); font-size: 11px; }
+    .content-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+    .card { min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 2px 8px #1c314d08; }
+    .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 14px; border-bottom: 1px solid #e9edf3; }
+    .card-head h2 { margin: 0; color: #263951; font-size: 13px; letter-spacing: -.005em; }
+    .card-head small { color: var(--muted); font-size: 10px; }
+    .card-body { padding: 13px 14px; }
+    .wide { grid-column: 1 / -1; }
+    .spec-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
+    .field { min-width: 0; }
+    .field.full { grid-column: 1 / -1; }
+    .field-label { color: #66778d; font-size: 9px; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 4px; }
+    .field-value { color: #263952; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+    .field-value ul { margin: 0; padding-left: 17px; }
+    .field-value li { margin: 2px 0; }
+    .field-value .empty { color: #8b98aa; font-style: italic; }
+    .token-list { display: flex; flex-wrap: wrap; gap: 5px; }
+    .token { display: inline-block; max-width: 100%; font: 10px var(--mono); color: #344b6b; background: #f0f4fa; border: 1px solid #e0e7f1; border-radius: 4px; padding: 3px 5px; overflow-wrap: anywhere; }
+    .contract-box { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+    .contract-item { min-width: 145px; }
+    .contract-columns { display: flex; flex-wrap: wrap; gap: 5px; }
+    details { border-top: 1px solid #e9edf3; }
+    details:first-child { border-top: 0; }
+    summary { padding: 9px 14px; color: #334862; cursor: pointer; font-size: 11px; font-weight: 750; list-style-position: inside; }
+    details[open] > summary { border-bottom: 1px solid #edf0f5; }
+    details .details-body { padding: 12px 14px; }
+    pre { margin: 0; max-height: 360px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font: 11px/1.6 var(--mono); }
+    .sql-box { color: #e2eaf5; background: #152238; border-radius: 6px; padding: 13px; }
+    .param-list { display: grid; gap: 5px; margin-top: 10px; }
+    .param-row { display: grid; grid-template-columns: 28px 1fr; gap: 8px; font: 10px/1.5 var(--mono); }
+    .param-row span:first-child { color: #65758a; text-align: right; }
+    .param-row code { color: #364c69; overflow-wrap: anywhere; }
+    .result-wrap { max-height: 420px; overflow: auto; border: 1px solid #e1e7ef; border-radius: 6px; }
+    table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 11px; }
+    th { position: sticky; top: 0; z-index: 1; text-align: left; color: #52657f; background: #f3f6fa; padding: 8px 9px; border-bottom: 1px solid #dce4ee; font-size: 9px; text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; }
+    td { padding: 7px 9px; border-bottom: 1px solid #edf0f5; color: #30435c; vertical-align: top; white-space: nowrap; }
+    tr:last-child td { border-bottom: 0; }
+    tbody tr:nth-child(even) { background: #fafbfd; }
+    .null-value { color: #8d98a6; font-style: italic; }
+    .empty-result { color: #66778c; background: #f6f8fb; border-radius: 6px; padding: 13px; font-size: 12px; line-height: 1.55; }
+    .review-card { border-top: 3px solid #315c9c; }
+    .decision-row { display: flex; gap: 7px; flex-wrap: wrap; }
+    .decision-button { border: 1px solid #c8d2df; border-radius: 6px; padding: 8px 13px; background: #fff; color: #40536c; font-size: 11px; font-weight: 850; min-width: 98px; }
+    .decision-button:hover { background: #f4f7fb; }
+    .decision-button[aria-pressed="true"][data-decision="APPROVE"] { color: var(--green); border-color: #75b89b; background: var(--green-soft); }
+    .decision-button[aria-pressed="true"][data-decision="REVISE"] { color: var(--amber); border-color: #d6a65d; background: var(--amber-soft); }
+    .decision-button[aria-pressed="true"][data-decision="REJECT"] { color: var(--red); border-color: #d9928b; background: var(--red-soft); }
+    .review-label { color: #53657b; font-size: 10px; font-weight: 800; margin: 13px 0 5px; display: block; }
+    textarea { width: 100%; min-height: 74px; resize: vertical; border: 1px solid #cbd5e2; border-radius: 6px; padding: 9px 10px; color: var(--ink); font-size: 12px; line-height: 1.5; }
+    textarea::placeholder { color: #8c99aa; }
+    .review-hint { margin: 8px 0 0; color: #728197; font-size: 10px; line-height: 1.5; }
+    .review-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 11px; margin-top: 11px; border-top: 1px solid #edf0f5; }
+    .save-state { color: #64768c; font-size: 10px; }
+    .export-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .primary-button { border: 0; border-radius: 6px; background: var(--blue); color: #fff; padding: 8px 12px; font-size: 11px; font-weight: 850; }
+    .primary-button:hover { background: #1e488f; }
+    .primary-button:disabled { cursor: not-allowed; background: #a9b5c5; }
+    .review-comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+    .comparison-side { border: 1px solid #dfe5ed; background: #f8fafd; border-radius: 6px; padding: 9px 10px; min-width: 0; }
+    .comparison-side strong { display: block; color: #51647c; font-size: 9px; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 4px; }
+    .comparison-side b { display: block; color: #253a55; font-size: 12px; }
+    .comparison-side p { margin: 6px 0 0; color: #68798f; font-size: 10px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .comparison-side.missing { color: #7b8796; font-size: 11px; }
+    .compare-status { font-size: 10px; font-weight: 800; padding: 4px 7px; border-radius: 5px; }
+    .compare-status.agree { background: var(--green-soft); color: var(--green); }
+    .compare-status.disagree { background: var(--amber-soft); color: var(--amber); }
+    .compare-status.pending { background: #eef1f5; color: #5e6b7c; }
+    .review-footer { color: #8190a4; font-size: 10px; line-height: 1.5; padding: 14px 3px 0; }
+    .loading { background: white; border: 1px solid var(--line); border-radius: 8px; padding: 28px; color: var(--muted); }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    @media (max-width: 900px) {
+      .workarea { grid-template-columns: 1fr; }
+      .rail { position: static; max-height: 400px; }
+      #caseList { max-height: 285px; }
+      .toolbar-note { margin-left: 0; }
+    }
+    @media (max-width: 600px) {
+      .topbar { padding: 15px 15px 13px; }
+      .topbar-inner { display: block; }
+      .top-links { justify-content: flex-start; padding-top: 12px; }
+      .toolbar { padding: 11px 14px; }
+      .control { flex: 1 1 145px; }
+      .control input, .control select { width: 100%; min-width: 0; }
+      .workarea { padding: 0 10px; margin-top: 10px; }
+      .content-grid, .spec-grid, .review-comparison { grid-template-columns: 1fr; }
+      .wide, .field.full { grid-column: auto; }
+      .case-head { padding: 14px; }
+      .case-heading-line { align-items: flex-start; flex-direction: column; }
+      .card-body { padding: 11px; }
+      .toolbar-note { flex-basis: 100%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div>
+        <div class="eyebrow">Independent semantic review · PR #61</div>
+        <h1>SQL Agent benchmark <span style="color:#9fc2ff">v3.1</span></h1>
+        <p class="subtitle">Đọc câu hỏi, hợp đồng đầu ra, Gold SQL và kết quả tham chiếu cùng một case.</p>
+      </div>
+      <nav class="top-links" aria-label="Tài liệu benchmark">
+        <a href="PROTOCOL_V3_1.md" target="_blank" rel="noopener">Protocol v3.1</a>
+        <a href="TECHNICAL_VALIDATION_REPORT_2026-11-21.md" target="_blank" rel="noopener">Technical validation</a>
+        <a href="cases_v3_1_draft.json" target="_blank" rel="noopener">Cases JSON</a>
+        <a href="gold_sql_v3_1_draft.json" target="_blank" rel="noopener">Gold SQL JSON</a>
+        <a href="gold_results_v3_1_provisional.json" target="_blank" rel="noopener">Gold results JSON</a>
+      </nav>
+    </div>
+    <div class="status-strip" id="summaryStrip" aria-live="polite"></div>
+  </header>
+
+  <section class="toolbar" aria-label="Thiết lập review">
+    <div class="toolbar-inner">
+      <div class="control">
+        <label for="reviewRole">Vai trò</label>
+        <select id="reviewRole">
+          <option value="reviewer_1">Reviewer 1 · độc lập</option>
+          <option value="reviewer_2">Reviewer 2 · độc lập</option>
+          <option value="adjudication">Adjudication · đối chiếu</option>
+        </select>
+      </div>
+      <div class="control reviewer-id">
+        <label for="reviewerId">Reviewer ID *</label>
+        <input id="reviewerId" autocomplete="off" placeholder="Ví dụ: reviewer-01">
+      </div>
+      <div class="control reviewer-name">
+        <label for="reviewerName">Tên (tuỳ chọn)</label>
+        <input id="reviewerName" autocomplete="name" placeholder="Tên reviewer">
+      </div>
+      <div class="import-controls" id="importControls" aria-label="Nhập review độc lập để adjudicate">
+        <label class="file-button">Nhập file Reviewer 1<input id="importReviewer1" type="file" accept="application/json,.json"></label>
+        <label class="file-button">Nhập file Reviewer 2<input id="importReviewer2" type="file" accept="application/json,.json"></label>
+      </div>
+      <div class="toolbar-note" id="privacyNote">Review chỉ autosave trong localStorage của browser này, không ghi file vào repo/server. Hãy bấm Export review JSON và kiểm tra file tải xuống trước khi đóng trang. Reviewer 1/2 không hiển thị quyết định của nhau.</div>
+    </div>
+  </section>
+
+  <div class="workarea">
+    <aside class="rail" aria-label="Danh sách case">
+      <div class="rail-head">
+        <div class="rail-title"><span>Danh sách case</span><span class="rail-progress" id="progressText">0 / 40 đã quyết định</span></div>
+        <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+      <div class="rail-filters">
+        <label class="sr-only" for="caseSearch">Tìm trong case</label>
+        <input id="caseSearch" type="search" placeholder="Tìm ID, câu hỏi, SQL…">
+        <label class="sr-only" for="behaviorFilter">Lọc expected behavior</label>
+        <select id="behaviorFilter">
+          <option value="all">Mọi expected behavior</option>
+          <option value="execute">execute</option>
+          <option value="clarify">clarify</option>
+          <option value="abstain_without_query">abstain</option>
+        </select>
+        <label class="sr-only" for="reviewFilter">Lọc trạng thái review</label>
+        <select id="reviewFilter">
+          <option value="all">Mọi trạng thái</option>
+          <option value="unreviewed">Chưa review</option>
+          <option value="APPROVE">APPROVE</option>
+          <option value="REVISE">REVISE</option>
+          <option value="REJECT">REJECT</option>
+          <option value="priority">6 case ưu tiên</option>
+          <option value="disagreement">Có bất đồng</option>
+        </select>
+        <button class="secondary-button" id="clearFilters" type="button">Xoá lọc</button>
+      </div>
+      <nav id="caseList" aria-label="Chọn case"></nav>
+    </aside>
+
+    <main class="main" id="mainContent">
+      <div class="loading" id="loading">Đang tải ba file benchmark v3.1…</div>
+    </main>
+  </div>
+
+  <script>
+    (() => {
+      "use strict";
+      const FILES = {
+        cases: "cases_v3_1_draft.json",
+        sql: "gold_sql_v3_1_draft.json",
+        results: "gold_results_v3_1_provisional.json"
+      };
+      const PRIORITY = new Set(["B40-002", "B40-006", "B40-017", "B40-021", "B40-024", "B40-029"]);
+      const ROLE_LABELS = { reviewer_1: "Reviewer 1", reviewer_2: "Reviewer 2", adjudication: "Adjudication" };
+      const $ = (selector) => document.querySelector(selector);
+      const esc = (value) => String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" })[ch]);
+      const plain = (value) => value == null ? "" : typeof value === "string" ? value : JSON.stringify(value);
+      const fold = (value) => String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      const state = { cases: {}, selectedId: null, role: "reviewer_1", reviewerId: "", reviewerName: "", review1: null, review2: null, hashes: {}, storageWarning: false };
+      let caseData = [];
+      let sqlById = {};
+      let resultById = {};
+      let loaded = false;
+
+      function storeKey(role = state.role, id = state.reviewerId) {
+        return `sql-benchmark-v3.1-review:${role}:${fold(id.trim()).replace(/[^a-z0-9_-]+/g, "_") || "anonymous"}`;
+      }
+      function readStorage(key) {
+        try { return localStorage.getItem(key); } catch (_) { state.storageWarning = true; return null; }
+      }
+      function writeStorage(key, value) {
+        try { localStorage.setItem(key, value); } catch (_) { state.storageWarning = true; }
+      }
+      function loadSavedReview() {
+        const raw = readStorage(storeKey());
+        if (!raw) { state.cases = {}; return; }
+        try { state.cases = JSON.parse(raw) || {}; } catch (_) { state.cases = {}; }
+      }
+      function saveReview() {
+        if (!loaded) return;
+        writeStorage(storeKey(), JSON.stringify(state.cases));
+        if (state.role === "adjudication") {
+          writeStorage(`${storeKey()}:imports`, JSON.stringify({ review1: state.review1, review2: state.review2 }));
+        }
+        updateProgress();
+      }
+      function loadImports() {
+        state.review1 = null; state.review2 = null;
+        if (state.role !== "adjudication") return;
+        try {
+          const raw = readStorage(`${storeKey()}:imports`);
+          if (raw) Object.assign(state, JSON.parse(raw));
+        } catch (_) { state.review1 = null; state.review2 = null; }
+      }
+      async function sha256(text) {
+        if (!crypto?.subtle) return "SHA-256 unavailable in this browser context";
+        const bytes = new TextEncoder().encode(text);
+        const digest = await crypto.subtle.digest("SHA-256", bytes);
+        return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, "0")).join("");
+      }
+      async function loadFiles() {
+        const entries = await Promise.all(Object.entries(FILES).map(async ([key, file]) => {
+          const response = await fetch(file, { cache: "no-store" });
+          if (!response.ok) throw new Error(`${file}: HTTP ${response.status}`);
+          const raw = await response.text();
+          return [key, JSON.parse(raw), await sha256(raw)];
+        }));
+        const data = Object.fromEntries(entries.map(([key, value]) => [key, value]));
+        state.hashes = Object.fromEntries(entries.map(([key, , hash]) => [FILES[key], hash]));
+        caseData = data.cases.cases || [];
+        sqlById = Object.fromEntries((data.sql.cases || []).map(item => [item.id, item]));
+        resultById = Object.fromEntries((data.results.cases || []).map(item => [item.id, item]));
+        if (new Set(caseData.map(item => item.id)).size !== caseData.length) throw new Error("cases JSON có ID bị trùng.");
+        if (caseData.length !== 40) throw new Error(`Cần 40 case; tìm thấy ${caseData.length}.`);
+        loaded = true;
+        state.selectedId = caseData[0]?.id || null;
+        loadImports();
+        renderAll();
+      }
+      function caseDecision(id) { return state.cases[id]?.decision || ""; }
+      function peerEntry(review, id) { return review?.case_reviews?.[id] || null; }
+      function peerDecision(review, id) { return peerEntry(review, id)?.decision || ""; }
+      function hasDisagreement(id) {
+        const left = peerDecision(state.review1, id), right = peerDecision(state.review2, id);
+        return Boolean(left && right && left !== right);
+      }
+      function decisionIsComplete(id) {
+        const review = state.cases[id];
+        if (!review?.decision) return false;
+        if (review.decision !== "APPROVE" && !review.rationale?.trim()) return false;
+        if (state.role === "adjudication") {
+          const a = peerDecision(state.review1, id), b = peerDecision(state.review2, id);
+          if (!a || !b) return false;
+          if (a !== b && !review.rationale?.trim()) return false;
+        }
+        return true;
+      }
+      function completeness() { return caseData.filter(c => decisionIsComplete(c.id)).length; }
+      function canExport() {
+        if (!state.reviewerId.trim() || completeness() !== caseData.length) return false;
+        if (state.role === "adjudication" && (!state.review1 || !state.review2)) return false;
+        return true;
+      }
+      function renderSummary() {
+        const execute = caseData.filter(c => c.expected_behavior === "execute").length;
+        const clarify = caseData.filter(c => c.expected_behavior === "clarify").length;
+        const abstain = caseData.filter(c => c.expected_behavior === "abstain_without_query").length;
+        const sqlCount = Object.keys(sqlById).length;
+        const values = [
+          `<span class="top-stat"><strong>${caseData.length}</strong> câu hỏi</span>`,
+          `<span class="top-stat"><strong>${execute}</strong> execute</span>`,
+          `<span class="top-stat"><strong>${clarify}</strong> clarify</span>`,
+          `<span class="top-stat"><strong>${abstain}</strong> abstain</span>`,
+          `<span class="top-stat"><strong>${sqlCount}</strong> Gold SQL + kết quả</span>`,
+          `<span class="top-stat draft-pill">DRAFT · chưa freeze</span>`
+        ];
+        $("#summaryStrip").innerHTML = values.join("");
+      }
+      function renderProgress() {
+        const done = completeness();
+        $("#progressText").textContent = `${done} / ${caseData.length} đã quyết định`;
+        $("#progressFill").style.width = `${caseData.length ? done / caseData.length * 100 : 0}%`;
+        const role = ROLE_LABELS[state.role];
+        $("#privacyNote").textContent = state.role === "adjudication"
+          ? "Adjudication chỉ hiện hai bản review đã nhập tại đây. Dữ liệu chỉ ở localStorage browser này, không lưu file trên server; hãy export JSON để lưu/chia sẻ."
+          : `${role} autosave trong localStorage browser này, không ghi file trên server. Hãy export JSON và kiểm tra file tải xuống; quyết định reviewer còn lại không hiển thị.`;
+      }
+      function allDataText(c) { return fold(JSON.stringify(c) + " " + (sqlById[c.id]?.sql || "")); }
+      function visibleCases() {
+        const query = fold($("#caseSearch").value.trim());
+        const behavior = $("#behaviorFilter").value;
+        const reviewFilter = $("#reviewFilter").value;
+        return caseData.filter(c => {
+          if (behavior !== "all" && c.expected_behavior !== behavior) return false;
+          if (query && !allDataText(c).includes(query)) return false;
+          if (reviewFilter === "unreviewed" && caseDecision(c.id)) return false;
+          if (["APPROVE", "REVISE", "REJECT"].includes(reviewFilter) && caseDecision(c.id) !== reviewFilter) return false;
+          if (reviewFilter === "priority" && !PRIORITY.has(c.id)) return false;
+          if (reviewFilter === "disagreement" && !hasDisagreement(c.id)) return false;
+          return true;
+        });
+      }
+      function renderList() {
+        const list = $("#caseList");
+        const items = visibleCases();
+        if (!items.length) { list.innerHTML = `<div class="empty-list">Không có case khớp bộ lọc.</div>`; return; }
+        list.innerHTML = items.map(c => {
+          const decision = caseDecision(c.id);
+          const decisionTag = decision ? `<span class="mini-chip decision-${decision}">${decision}</span>` : `<span class="mini-chip">PENDING</span>`;
+          const diff = state.role === "adjudication" && hasDisagreement(c.id) ? `<span class="mini-chip diff">BẤT ĐỒNG</span>` : "";
+          const behavior = c.expected_behavior === "abstain_without_query" ? "abstain" : c.expected_behavior;
+          return `<button type="button" class="case-link ${c.id === state.selectedId ? "selected" : ""} ${PRIORITY.has(c.id) ? "priority" : ""}" data-id="${esc(c.id)}" aria-current="${c.id === state.selectedId ? "true" : "false"}">
+            <span class="case-link-main"><span class="case-link-id">${esc(c.id)}</span><span class="case-link-title">${esc(c.question)}</span></span>
+            <span class="case-link-meta"><span class="mini-chip">${esc(behavior)}</span>${decisionTag}${diff}</span>
+          </button>`;
+        }).join("");
+        list.querySelectorAll("[data-id]").forEach(button => button.addEventListener("click", () => selectCase(button.dataset.id)));
+      }
+      function valueContents(value) {
+        if (value == null || value === "") return `<span class="empty">—</span>`;
+        if (Array.isArray(value)) {
+          if (!value.length) return `<span class="empty">—</span>`;
+          return `<ul>${value.map(item => `<li>${esc(plain(item))}</li>`).join("")}</ul>`;
+        }
+        if (typeof value === "object") return `<pre>${esc(JSON.stringify(value, null, 2))}</pre>`;
+        return esc(value);
+      }
+      function field(label, value, full = false) {
+        return `<div class="field ${full ? "full" : ""}"><div class="field-label">${esc(label)}</div><div class="field-value">${valueContents(value)}</div></div>`;
+      }
+      function tagField(label, values) {
+        if (!Array.isArray(values) || !values.length) return field(label, null);
+        return `<div class="field"><div class="field-label">${esc(label)}</div><div class="token-list">${values.map(v => `<span class="token">${esc(plain(v))}</span>`).join("")}</div></div>`;
+      }
+      function jsonHashStatus() {
+        return Object.entries(state.hashes).map(([file, hash]) => `<div class="field"><div class="field-label">${esc(file)}</div><div class="field-value" style="font:10px var(--mono)">${esc(hash)}</div></div>`).join("");
+      }
+      function reviewComparison(id) {
+        const one = peerEntry(state.review1, id), two = peerEntry(state.review2, id);
+        const a = one?.decision || "PENDING", b = two?.decision || "PENDING";
+        const ready = a !== "PENDING" && b !== "PENDING";
+        const disagree = ready && a !== b;
+        const status = !ready ? `<span class="compare-status pending">Chưa đủ hai quyết định</span>` : disagree ? `<span class="compare-status disagree">Bất đồng cần giải quyết</span>` : `<span class="compare-status agree">Hai reviewer đồng ý</span>`;
+        const opinion = (label, entry, review) => entry
+          ? `<div class="comparison-side"><strong>${esc(label)} · ${esc(review?.reviewer?.id || "ID chưa ghi")}</strong><b>${esc(entry.decision || "PENDING")}</b><p>${esc(entry.rationale || "Không có ghi chú.")}</p></div>`
+          : `<div class="comparison-side missing">${esc(label)} chưa nhập.</div>`;
+        return `<div class="review-comparison">${opinion("Reviewer 1", one, state.review1)}${opinion("Reviewer 2", two, state.review2)}</div><div style="margin:-4px 0 12px">${status}</div>`;
+      }
+      function getQuestionIndex() { return caseData.findIndex(c => c.id === state.selectedId); }
+      function renderCase() {
+        const c = caseData.find(item => item.id === state.selectedId);
+        const main = $("#mainContent");
+        if (!c) { main.innerHTML = `<div class="loading">Chọn một case trong danh sách.</div>`; return; }
+        const sql = sqlById[c.id];
+        const result = resultById[c.id];
+        const visible = visibleCases();
+        const idx = visible.findIndex(item => item.id === c.id);
+        const behaviorClass = c.expected_behavior === "execute" ? "execute" : c.expected_behavior === "clarify" ? "clarify" : "abstain";
+        const stored = state.cases[c.id] || {};
+        const resultCols = result?.columns?.length ? result.columns : Array.from(new Set((result?.rows || []).flatMap(row => Object.keys(row || {}))));
+        const resultTable = result && resultCols.length ? `<div class="result-wrap"><table><thead><tr>${resultCols.map(col => `<th>${esc(col)}</th>`).join("")}</tr></thead><tbody>${(result.rows || []).map(row => `<tr>${resultCols.map(col => row?.[col] == null ? `<td><span class="null-value">NULL</span></td>` : `<td>${esc(plain(row[col]))}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<div class="empty-result">Case này không có Gold Result dạng SQL. Hãy kiểm tra expected behavior và expected clarification/abstention của case.</div>`;
+        const parameters = sql?.parameters || result?.parameters || [];
+        const priorityBanner = PRIORITY.has(c.id) ? `<span class="pill priority">Case từng có vấn đề · kiểm tra kỹ</span>` : "";
+        const adjudication = state.role === "adjudication";
+        const reviewClass = stored.decision ? `decision-${stored.decision}` : "";
+        const hints = adjudication
+          ? "Khi hai quyết định khác nhau, ghi rõ căn cứ giải quyết bất đồng. Chọn quyết định cuối cho từng case."
+          : "APPROVE nếu câu hỏi, nhãn execute/clarify/abstain và nội dung Gold tương ứng đều đúng nghiệp vụ; Gold SQL/kết quả áp dụng cho case execute. REVISE hoặc REJECT cần ghi lý do.";
+        const responseHash = result?.result_sha256 ? `<span class="top-stat">result SHA-256 <strong>${esc(result.result_sha256.slice(0, 12))}…</strong></span>` : "";
+        main.innerHTML = `
+          <div id="loadNotice" class="notice ${state.storageWarning ? "error" : ""}" ${state.storageWarning ? "" : "hidden"}>${state.storageWarning ? "Trình duyệt không cho dùng localStorage. Bản review hiện chỉ còn trong tab này; hãy export thường xuyên." : ""}</div>
+          <div id="dataNotice" class="notice" hidden></div>
+          <section class="case-head">
+            <div class="case-heading-line"><span class="case-number">${esc(c.id)}</span><div class="case-tags"><span class="pill ${behaviorClass}">${esc(c.expected_behavior)}</span><span class="pill">${esc(c.category || "uncategorized")}</span><span class="pill">${esc(c.difficulty || "difficulty n/a")}</span>${priorityBanner}</div></div>
+            <h2 class="question">${esc(c.question)}</h2>
+            <p class="intent"><strong>Ý định/metric cần đáp ứng:</strong> ${esc(c.required_metric_or_intent || "—")}</p>
+            <div class="case-nav"><button id="previousCase" type="button" ${idx <= 0 ? "disabled" : ""}>← Case trước</button><span class="case-nav-count">${idx >= 0 ? idx + 1 : 0} / ${visible.length} case đang lọc</span><button id="nextCase" type="button" ${idx < 0 || idx >= visible.length - 1 ? "disabled" : ""}>Case tiếp →</button></div>
+          </section>
+          <div class="content-grid">
+            <section class="card wide"><div class="card-head"><h2>Đặc tả nghiệp vụ và output contract</h2><small>${esc(c.language || "")}</small></div>
+              <div class="card-body"><div class="spec-grid">
+                ${field("Required population", c.required_population, true)}
+                ${field("Required filters", c.required_filters, true)}
+                ${tagField("Source tables", c.required_source_tables)}
+                ${tagField("Required columns", c.required_columns)}
+                ${field("Required joins", c.required_joins)}
+                ${field("Time scope", c.time_scope)}
+                ${field("Grouping grain", c.grouping_grain)}
+                ${field("Ranking / tie-break", c.ranking)}
+                ${field("TOP N", c.top_n)}
+                <div class="field"><div class="field-label">Output columns</div><div class="contract-columns">${(c.output_contract?.columns || []).map(col => `<span class="token">${esc(col)}</span>`).join("") || `<span class="empty">—</span>`}</div></div>
+                ${field("Ordered rows", c.output_contract?.ordered)}
+                ${field("Maximum rows", c.output_contract?.max_rows)}
+                ${field("Order policy", c.output_contract?.order_policy_note, true)}
+                ${field("NULL policy", c.null_policy, true)}
+                ${field("Numeric tolerance", c.numeric_tolerance)}
+                ${Object.keys(c.column_aliases || {}).length ? field("Accepted column aliases", c.column_aliases, true) : ""}
+                ${field("Expected clarification / abstention", c.expected_clarification_or_abstention, true)}
+              </div></div>
+              <details><summary>Provenance, prior semantic review và ghi chú thay đổi</summary><div class="details-body"><div class="spec-grid">${field("Change note", c.provenance?.change_note, true)}${field("Prior semantic-review note", c.semantic_review?.review_note, true)}${field("Original candidate", c.provenance?.original_candidate_id)}${field("Oracle status", c.oracle_status)}${field("Source-plan status", c.provenance?.source_plan_status)}${field("Agent output used as Gold", c.provenance?.sql_agent_output_used_as_gold)}</div></div></details>
+            </section>
+
+            <section class="card"><div class="card-head"><h2>Gold SQL</h2><small>${esc(sql?.status || "Không có SQL")}</small></div>
+              <div class="card-body">${sql ? `<div class="sql-box"><pre id="sqlText">${esc(sql.sql)}</pre></div><div class="export-row" style="margin-top:8px"><button class="secondary-button" id="copySql" type="button">Copy SQL</button><small>${esc(sql.independent_authoring_basis || "")}</small></div><div class="param-list">${parameters.length ? parameters.map((p, i) => `<div class="param-row"><span>$${i + 1}</span><code>${esc(plain(p))}</code></div>`).join("") : `<span class="empty">Không có parameters.</span>`}</div>` : `<div class="empty-result">Case clarify/abstain — không có Gold SQL theo thiết kế.</div>`}</div>
+              ${sql ? `<details><summary>Human-review status trong Gold SQL file</summary><div class="details-body">${field("Existing review markers", sql.human_review)}</div></details>` : ""}
+            </section>
+
+            <section class="card"><div class="card-head"><h2>Gold result tham chiếu</h2><small>${result ? `${esc(result.row_count ?? result.rows?.length ?? 0)} rows · ${esc(result.status)}` : "Không áp dụng"}</small></div>
+              <div class="card-body">${resultTable}${result ? `<div class="status-strip" style="padding-top:10px"><span class="top-stat">elapsed ${esc(result.elapsed_ms ?? "n/a")} ms</span>${responseHash}</div>` : ""}</div>
+              ${result ? `<details><summary>Result provenance và trạng thái hiện tại</summary><div class="details-body"><div class="spec-grid">${field("Result hash", result.result_sha256, true)}${field("Status", result.status)}${field("Existing human-review markers", result.human_review)}${field("Parameters", result.parameters)}</div></div></details>` : ""}
+            </section>
+
+            ${adjudication ? `<section class="card wide"><div class="card-head"><h2>So sánh hai review độc lập</h2><small>Chỉ hiển thị trong chế độ adjudication</small></div><div class="card-body">${reviewComparison(c.id)}</div></section>` : ""}
+
+            <section class="card wide review-card"><div class="card-head"><h2>${esc(ROLE_LABELS[state.role])} decision</h2><small>${state.reviewerId.trim() ? `ID: ${esc(state.reviewerId.trim())}` : "Reviewer ID cần thiết để export"}</small></div>
+              <div class="card-body">
+                <div class="decision-row" role="group" aria-label="Quyết định review">${["APPROVE", "REVISE", "REJECT"].map(decision => `<button type="button" class="decision-button ${reviewClass}" data-decision="${decision}" aria-pressed="${stored.decision === decision}">${decision}</button>`).join("")}</div>
+                <label class="review-label" for="rationale">${adjudication ? "Căn cứ / ghi chú adjudication" : "Lý do hoặc bằng chứng (nên ghi cho APPROVE; bắt buộc khi REVISE/REJECT)"}</label>
+                <textarea id="rationale" placeholder="Ghi rõ điểm nghiệp vụ đã xác nhận hoặc vấn đề cần sửa…">${esc(stored.rationale || "")}</textarea>
+                <p class="review-hint">${esc(hints)} Kết quả provisional chứng minh khả năng tái lập trên snapshot; nó không tự xác nhận công thức nghiệp vụ.</p>
+                <div class="review-meta"><span class="save-state" id="saveState">Autosave trong browser · ${esc(ROLE_LABELS[state.role])}</span><div class="export-row"><button class="secondary-button" id="exportDraft" type="button">Export draft hiện tại</button><button class="primary-button" id="exportComplete" type="button" ${canExport() ? "" : "disabled"}>Export review JSON</button></div></div>
+              </div>
+            </section>
+
+            <details class="wide"><summary>SHA-256 của ba file được tải</summary><div class="details-body"><div class="spec-grid">${jsonHashStatus()}</div></div></details>
+          </div>
+          <div class="review-footer">Trang review đọc ba JSON trong cùng thư mục. Review không sửa benchmark artifacts; tải file review JSON để lưu hồ sơ hoặc chuyển cho người adjudicate.</div>`;
+
+        $("#previousCase").addEventListener("click", () => moveCase(-1));
+        $("#nextCase").addEventListener("click", () => moveCase(1));
+        $("#rationale").addEventListener("input", event => {
+          const current = state.cases[c.id] || {};
+          state.cases[c.id] = { ...current, rationale: event.target.value, updated_at: new Date().toISOString() };
+          saveReview(); renderList(); syncExportButtons();
+        });
+        main.querySelectorAll(".decision-button").forEach(button => button.addEventListener("click", () => {
+          const current = state.cases[c.id] || {};
+          state.cases[c.id] = { ...current, decision: button.dataset.decision, rationale: $("#rationale").value, reviewed_at: new Date().toISOString() };
+          saveReview(); renderList(); renderCase();
+        }));
+        $("#exportDraft").addEventListener("click", () => exportReview(false));
+        $("#exportComplete").addEventListener("click", () => exportReview(true));
+        const copy = $("#copySql");
+        if (copy) copy.addEventListener("click", async () => {
+          try { await navigator.clipboard.writeText(sql.sql); copy.textContent = "Đã copy"; setTimeout(() => { if (copy.isConnected) copy.textContent = "Copy SQL"; }, 1500); }
+          catch (_) { copy.textContent = "Clipboard không khả dụng"; }
+        });
+      }
+      function syncExportButtons() {
+        const button = $("#exportComplete");
+        if (button) button.disabled = !canExport();
+        updateProgress();
+      }
+      function selectCase(id) { state.selectedId = id; renderList(); renderCase(); }
+      function moveCase(delta) {
+        const visible = visibleCases();
+        const idx = visible.findIndex(c => c.id === state.selectedId);
+        const next = visible[idx + delta];
+        if (next) selectCase(next.id);
+      }
+      function renderAll() {
+        renderSummary(); renderProgress(); renderList(); renderCase();
+        $("#importControls").classList.toggle("active", state.role === "adjudication");
+        const mismatch = [];
+        if (Object.keys(sqlById).length !== 30) mismatch.push(`Gold SQL: dự kiến 30, nhận ${Object.keys(sqlById).length}`);
+        if (Object.keys(resultById).length !== 30) mismatch.push(`Gold Results: dự kiến 30, nhận ${Object.keys(resultById).length}`);
+        const executable = caseData.filter(c => c.expected_behavior === "execute");
+        const unpaired = executable.filter(c => !sqlById[c.id] || !resultById[c.id]);
+        const unexpected = caseData.filter(c => c.expected_behavior !== "execute" && (sqlById[c.id] || resultById[c.id]));
+        const sqlMismatch = executable.filter(c => sqlById[c.id] && resultById[c.id] && (sqlById[c.id].sql !== resultById[c.id].sql || JSON.stringify(sqlById[c.id].parameters || []) !== JSON.stringify(resultById[c.id].parameters || [])));
+        const ids = new Set(caseData.map(c => c.id));
+        const orphanSql = Object.keys(sqlById).filter(id => !ids.has(id));
+        const orphanResults = Object.keys(resultById).filter(id => !ids.has(id));
+        if (unpaired.length) mismatch.push(`case execute thiếu Gold SQL/Result: ${unpaired.map(c => c.id).join(", ")}`);
+        if (unexpected.length) mismatch.push(`case unsupported có SQL/Result ngoài dự kiến: ${unexpected.map(c => c.id).join(", ")}`);
+        if (sqlMismatch.length) mismatch.push(`SQL/parameters khác giữa Gold SQL và Gold Results: ${sqlMismatch.map(c => c.id).join(", ")}`);
+        if (orphanSql.length || orphanResults.length) mismatch.push(`có ID ngoài case set: ${(orphanSql.concat(orphanResults)).join(", ")}`);
+        const notice = $("#dataNotice");
+        if (mismatch.length) { notice.hidden = false; notice.className = "notice error"; notice.textContent = `Cấu trúc file không khớp: ${mismatch.join("; ")}.`; }
+      }
+      function syncMetaFromInputs() {
+        state.role = $("#reviewRole").value;
+        state.reviewerId = $("#reviewerId").value.trim();
+        state.reviewerName = $("#reviewerName").value.trim();
+        renderProgress(); renderList(); renderCase();
+      }
+      function reviewPayload() {
+        const now = new Date().toISOString();
+        const reviews = {};
+        for (const c of caseData) {
+          const item = state.cases[c.id] || {};
+          if (!item.decision) continue;
+          reviews[c.id] = { decision: item.decision, rationale: (item.rationale || "").trim(), reviewed_at: item.reviewed_at || now };
+        }
+        const payload = {
+          review_format: "sql-agent-benchmark-semantic-review",
+          format_version: "1.0",
+          benchmark_version: "v3.1",
+          reviewer: { id: state.reviewerId.trim(), name: state.reviewerName || null, role: state.role },
+          reviewed_at: now,
+          artifact_sha256: state.hashes,
+          case_reviews: reviews
+        };
+        if (state.role === "adjudication") {
+          payload.adjudication = {
+            reviewer_1: state.review1 ? { id: state.review1.reviewer?.id || null, review_file_sha256: state.review1.__file_sha256 || null } : null,
+            reviewer_2: state.review2 ? { id: state.review2.reviewer?.id || null, review_file_sha256: state.review2.__file_sha256 || null } : null,
+            disagreements: caseData.filter(c => hasDisagreement(c.id)).map(c => c.id),
+            resolved_count: caseData.filter(c => state.cases[c.id]?.decision && decisionIsComplete(c.id)).length
+          };
+        }
+        return payload;
+      }
+      function downloadJson(payload, suffix) {
+        const blob = new Blob([JSON.stringify(payload, null, 2) + "\n"], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const id = (state.reviewerId.trim() || "reviewer").replace(/[^a-z0-9_-]+/gi, "-");
+        a.href = url; a.download = `review_v3_1_${state.role}_${id}_${suffix}.json`;
+        document.body.append(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      }
+      function exportReview(complete) {
+        const payload = reviewPayload();
+        if (complete) {
+          if (!canExport()) { alert("Chưa đủ điều kiện export: cần Reviewer ID, quyết định đủ 40 case, lý do cho REVISE/REJECT và (khi adjudication) đủ hai bản review độc lập."); return; }
+          downloadJson(payload, "complete");
+        } else downloadJson(payload, "draft");
+      }
+      async function importReview(file, role) {
+        const text = await file.text();
+        let review;
+        try { review = JSON.parse(text); } catch (_) { throw new Error("File không phải JSON hợp lệ."); }
+        if (review.review_format !== "sql-agent-benchmark-semantic-review" || review.benchmark_version !== "v3.1") throw new Error("Sai review format hoặc benchmark version.");
+        if (review.reviewer?.role !== role) throw new Error(`File cần có reviewer.role = ${role}.`);
+        for (const [filename, hash] of Object.entries(state.hashes)) {
+          if (review.artifact_sha256?.[filename] !== hash) throw new Error(`File review không khớp artifact ${filename}; kiểm tra đúng snapshot v3.1.`);
+        }
+        const reviewedCases = review.case_reviews || {};
+        const missing = caseData.filter(c => !["APPROVE", "REVISE", "REJECT"].includes(reviewedCases[c.id]?.decision));
+        if (missing.length) throw new Error(`Review chưa có quyết định hợp lệ cho đủ 40 case; còn thiếu ${missing.map(c => c.id).join(", ")}.`);
+        review.__file_sha256 = await sha256(text);
+        if (role === "reviewer_1") state.review1 = review; else state.review2 = review;
+        saveReview(); renderAll();
+        const notice = $("#dataNotice");
+        notice.hidden = false; notice.className = "notice success";
+        notice.textContent = `${ROLE_LABELS[role]} đã nhập: ${review.reviewer?.id || "ID chưa ghi"} · ${file.name}.`;
+      }
+
+      $("#reviewRole").addEventListener("change", () => {
+        if (loaded) saveReview();
+        syncMetaFromInputs(); loadSavedReview(); loadImports(); renderAll();
+      });
+      $("#reviewerId").addEventListener("change", () => {
+        if (loaded) saveReview();
+        syncMetaFromInputs(); loadSavedReview(); loadImports();
+        // Let the click that caused the input to blur finish before replacing the case pane.
+        setTimeout(renderAll, 0);
+      });
+      $("#reviewerName").addEventListener("input", () => { state.reviewerName = $("#reviewerName").value.trim(); });
+      $("#caseSearch").addEventListener("input", () => { renderList(); });
+      $("#behaviorFilter").addEventListener("change", renderList);
+      $("#reviewFilter").addEventListener("change", renderList);
+      $("#clearFilters").addEventListener("click", () => { $("#caseSearch").value = ""; $("#behaviorFilter").value = "all"; $("#reviewFilter").value = "all"; renderList(); });
+      $("#importReviewer1").addEventListener("change", async event => { const file = event.target.files?.[0]; if (!file) return; try { await importReview(file, "reviewer_1"); } catch (error) { const notice = $("#dataNotice"); notice.hidden = false; notice.className = "notice error"; notice.textContent = error.message; } finally { event.target.value = ""; } });
+      $("#importReviewer2").addEventListener("change", async event => { const file = event.target.files?.[0]; if (!file) return; try { await importReview(file, "reviewer_2"); } catch (error) { const notice = $("#dataNotice"); notice.hidden = false; notice.className = "notice error"; notice.textContent = error.message; } finally { event.target.value = ""; } });
+
+      loadFiles().catch(error => {
+        const loading = $("#loading");
+        loading.className = "notice error";
+        loading.innerHTML = `<strong>Không tải được dữ liệu benchmark.</strong><br>${esc(error.message)}<br><br>Mở trang qua local HTTP server từ thư mục này (không mở bằng file://):<br><code>python3 -m http.server 8765 --bind 127.0.0.1</code><br>rồi truy cập <code>http://127.0.0.1:8765/SEMANTIC_REVIEW_V3_1.html</code>.`;
+      });
+    })();
+  </script>
+</body>
+</html>

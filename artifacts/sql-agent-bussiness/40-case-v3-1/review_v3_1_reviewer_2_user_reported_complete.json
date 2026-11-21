@@ -1,0 +1,224 @@
+{
+  "review_format": "sql-agent-benchmark-semantic-review",
+  "format_version": "1.0",
+  "benchmark_version": "v3.1",
+  "reviewer": {
+    "id": "friend-of-Lenhan231",
+    "name": null,
+    "role": "reviewer_2"
+  },
+  "reviewed_at": "2026-11-21T13:56:13Z",
+  "artifact_sha256": {
+    "cases_v3_1_draft.json": "f5030b254f81d237b73b50ef491df583cd0076f4c98a44958c6612afdb01a625",
+    "gold_sql_v3_1_draft.json": "bd3fde86d887493f82a2a498e3e58a4eb8beefa2af5d4b81596e6274158c4022",
+    "gold_results_v3_1_provisional.json": "33e80eee02f59aa8140b725d233ee209ba6e5cd68a3241329f220e1e67700f84"
+  },
+  "case_reviews": {
+    "B40-001": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-002": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-003": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-004": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-005": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-006": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-007": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-008": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-009": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-010": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-011": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-012": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-013": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-014": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-015": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-016": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-017": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-018": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-019": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-020": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-021": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-022": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-023": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-024": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-025": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-026": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-027": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-028": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-029": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-030": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-031": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-032": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-033": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-034": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-035": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-036": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-037": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-038": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-039": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    },
+    "B40-040": {
+      "decision": "APPROVE",
+      "rationale": "",
+      "reviewed_at": "2026-11-21T13:56:13Z"
+    }
+  },
+  "recording": {
+    "source": "explicit_user_report_after_reviewer_browser_state_reset",
+    "reported_by": "Lenhan231",
+    "recorded_at": "2026-11-21T13:56:13Z",
+    "note": "The user reports that their friend independently reviewed and selected APPROVE for all 40 cases. The review HTML reset and no export was retained. The reviewer name/ID, original per-case timestamps, and rationales were not supplied; this synthetic ID labels the Reviewer 2 slot and is not the reviewer real identity."
+  }
+}

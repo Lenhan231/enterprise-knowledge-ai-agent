@@ -7,9 +7,9 @@ from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
-from core.analytics.metric_mapping import decode_metric_mapping
-from core.analytics.metric_validation import MetricDefinitionError, validate_metric_definitions
-from core.analytics.text_to_sql import APPROVED_COLUMNS, SQLValidationError, decode_query_plan, validate_commerce_sql
+from core.agents.sql.metric_mapping import decode_metric_mapping
+from core.agents.sql.metric_validation import MetricDefinitionError, validate_metric_definitions
+from core.agents.sql.text_to_sql import APPROVED_COLUMNS, SQLValidationError, decode_query_plan, validate_commerce_sql
 
 
 class TemporalContractTest(unittest.TestCase):
@@ -52,7 +52,7 @@ class TemporalContractTest(unittest.TestCase):
                                     question='Average fill rate in December 2022')
 
     def test_product_period_rows_keep_snapshot_identity_without_grouping_measures(self):
-        from core.analytics.metric_mapping import compile_inventory_query
+        from core.agents.sql.metric_mapping import compile_inventory_query
         mapping = self.mapping({'mode':'range','start':'2022-12-01','end':'2022-12-31'},
             'Highest stockout days in December 2022', ['stockout_days'],
             dimensions=['product_id'], representation='product',
@@ -80,7 +80,7 @@ class SafeJoinPredicateTest(unittest.TestCase):
                                       + condition + ' LIMIT 200')
 
     def test_structural_inventory_queries_do_not_require_business_kpi(self):
-        from core.analytics.metric_mapping import validate_mapped_sql
+        from core.agents.sql.metric_mapping import validate_mapped_sql
         mapping = decode_metric_mapping('{"domain":"other"}', 'Check inventory observation keys')
         for sql in [
             'SELECT MAX(i.snapshot_date) AS latest_snapshot FROM commerce.inventory i LIMIT 1',
@@ -93,7 +93,7 @@ class SafeJoinPredicateTest(unittest.TestCase):
                 validate_mapped_sql(plan, mapping)
 
     def test_structural_path_cannot_bypass_inventory_measures(self):
-        from core.analytics.metric_mapping import validate_mapped_sql
+        from core.agents.sql.metric_mapping import validate_mapped_sql
         mapping = decode_metric_mapping('{"domain":"other"}', 'Check observation keys')
         for value in ['SUM(i.stock_on_hand)', 'SUM(i.product_id)', 'AVG(i.fill_rate)', 'i.stock_on_hand']:
             sql='SELECT '+value+' AS value FROM commerce.inventory i LIMIT 200'
@@ -102,7 +102,7 @@ class SafeJoinPredicateTest(unittest.TestCase):
                 validate_mapped_sql(plan, mapping)
 
     def test_observation_path_cannot_hide_a_business_threshold_in_where(self):
-        from core.analytics.metric_mapping import validate_mapped_sql
+        from core.agents.sql.metric_mapping import validate_mapped_sql
         mapping = decode_metric_mapping('{"domain":"other"}', 'Check observation keys')
         plan = decode_query_plan(json.dumps({'sql':
             'SELECT i.product_id FROM commerce.inventory i WHERE i.stock_on_hand<5 LIMIT 200',
@@ -113,7 +113,7 @@ class SafeJoinPredicateTest(unittest.TestCase):
 
 class SchemaContextTest(unittest.TestCase):
     def test_return_context_keeps_keys_grain_and_excludes_web_traffic(self):
-        from core.analytics.text_to_sql import build_sql_prompt
+        from core.agents.sql.text_to_sql import build_sql_prompt
         prompt = build_sql_prompt('Returned units by product during 2022', metric_names=set())
         self.assertIn('commerce.returns:', prompt)
         self.assertIn('commerce.products:', prompt)
@@ -122,15 +122,21 @@ class SchemaContextTest(unittest.TestCase):
         self.assertNotIn('commerce.web_traffic:', prompt)
 
     def test_context_for_inventory_and_orders_preserves_both_sources(self):
-        from core.analytics.text_to_sql import build_sql_prompt
+        from core.agents.sql.text_to_sql import build_sql_prompt
         prompt = build_sql_prompt('Inventory units_sold versus ordered quantities', metric_names=set())
         for name in ('inventory', 'orders', 'order_items', 'products'):
             self.assertIn('commerce.'+name+':', prompt)
 
 
 class CanonicalAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
+        self.intent_patcher = patch(
+            "core.agents.sql.agent.interpret_query_intent", new=AsyncMock(return_value=None))
+        self.intent_patcher.start()
+        self.addCleanup(self.intent_patcher.stop)
+
     async def test_missing_dimension_uses_full_schema_and_offers_supported_scope(self):
-        from core.sql_agent.agent import SQLAnalyticsAgent
+        from core.agents.sql.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         for question in ['Which suppliers delivered stock late in December 2022?',
                          'Tổng hợp tồn kho theo nhà cung cấp tại snapshot 2022-12-31']:
@@ -139,13 +145,14 @@ class CanonicalAgentTest(unittest.IsolatedAsyncioTestCase):
                 identity=VerifiedIdentity(subject='test',permissions={'analytics:read'})))
             self.assertEqual(result.metadata.get('metric_error_code'), 'unsupported_dimension')
             self.assertIn('supplier',result.answer)
-            self.assertIn('alternative',result.answer)
+            supported_scope = 'thay thế' if any(ord(char) > 127 for char in question) else 'alternative'
+            self.assertIn(supported_scope,result.answer)
             provider.generate.assert_not_called()
             repo.execute_approved_query.assert_not_awaited()
 
     async def test_unreviewed_alias_cannot_be_replaced_with_an_approved_metric(self):
-        from core.sql_agent.agent import SQLAnalyticsAgent
-        from core.analytics.metric_ontology import METRIC_ONTOLOGY
+        from core.agents.sql.agent import SQLAnalyticsAgent
+        from core.agents.sql.metric_ontology import METRIC_ONTOLOGY
         from core.models.agents import AgentRequest, VerifiedIdentity
         provider, repo = Mock(), AsyncMock()
         provider.generate.return_value=json.dumps({'metrics':['stock_on_hand'], 'time':{'mode':'latest'}})
@@ -160,7 +167,7 @@ class CanonicalAgentTest(unittest.IsolatedAsyncioTestCase):
         repo.execute_approved_query.assert_not_awaited()
 
     async def test_transaction_question_does_not_pass_through_inventory_interpreter(self):
-        from core.sql_agent.agent import SQLAnalyticsAgent
+        from core.agents.sql.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         provider, repo = Mock(), AsyncMock()
         provider.generate.return_value = json.dumps({'sql':
@@ -175,7 +182,7 @@ class CanonicalAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(provider.generate.call_count,1)
 
     async def test_provider_failure_is_not_a_validation_failure(self):
-        from core.sql_agent.agent import SQLAnalyticsAgent
+        from core.agents.sql.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         provider, repo = Mock(), AsyncMock()
         provider.generate.side_effect = ConnectionError('provider unavailable')
@@ -186,7 +193,7 @@ class CanonicalAgentTest(unittest.IsolatedAsyncioTestCase):
         repo.execute_approved_query.assert_not_awaited()
 
     async def test_valid_mapping_compiles_without_second_llm_interpretation(self):
-        from core.sql_agent.agent import SQLAnalyticsAgent
+        from core.agents.sql.agent import SQLAnalyticsAgent
         from core.models.agents import AgentRequest, VerifiedIdentity
         provider, repo = Mock(), AsyncMock()
         provider.generate.return_value = json.dumps({'metrics':['stock_on_hand'],

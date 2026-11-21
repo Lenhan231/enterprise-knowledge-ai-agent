@@ -1,0 +1,469 @@
+{
+  "format_version": "sql-business-gold-sql-draft.v3.1",
+  "status": "DRAFT_PENDING_HUMAN_REVIEW",
+  "author_identity": "Codex draft author; no independent semantic approval claimed",
+  "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+  "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+  "sql_agent_outputs_used": false,
+  "human_approval_claimed": false,
+  "cases": [
+    {
+      "id": "B40-001",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT DATE_TRUNC('month', w.date)::date AS month, w.traffic_source, SUM(w.sessions) AS sessions FROM commerce.web_traffic AS w WHERE w.date >= $1 AND w.date < $2 GROUP BY DATE_TRUNC('month', w.date)::date, w.traffic_source ORDER BY month ASC, w.traffic_source ASC LIMIT 200",
+      "parameters": [
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-002",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT DATE_TRUNC('month', s.ship_date)::date AS month, AVG(s.delivery_date - s.ship_date) FILTER (WHERE s.delivery_date IS NOT NULL) AS average_delivery_days, COUNT(*) FILTER (WHERE s.delivery_date IS NULL) AS missing_delivery_date_count FROM commerce.shipments AS s WHERE s.ship_date >= $1 AND s.ship_date < $2 GROUP BY DATE_TRUNC('month', s.ship_date)::date ORDER BY month ASC LIMIT 200",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-003",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT DATE_TRUNC('month', r.return_date)::date AS month, COUNT(DISTINCT r.return_id) AS return_count FROM commerce.returns AS r WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY DATE_TRUNC('month', r.return_date)::date ORDER BY month ASC LIMIT 12",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-004",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT DATE_TRUNC('month', o.order_date)::date AS month, SUM(oi.quantity * oi.unit_price - oi.discount_amount) / NULLIF(COUNT(DISTINCT o.order_id), 0) AS average_order_value FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id = o.order_id WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 GROUP BY DATE_TRUNC('month', o.order_date)::date ORDER BY month ASC LIMIT 12",
+      "parameters": [
+        "delivered",
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-005",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT DATE_TRUNC('month', r.return_date)::date AS month, SUM(r.refund_amount) AS refund_amount FROM commerce.returns AS r WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY DATE_TRUNC('month', r.return_date)::date ORDER BY refund_amount DESC, month ASC LIMIT 1",
+      "parameters": [
+        "2024-01-01",
+        "2024-07-01"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-006",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT COUNT(DISTINCT c.customer_id) AS customer_count FROM commerce.customers AS c JOIN commerce.geography AS g ON g.zip = c.zip WHERE g.city = $1 AND c.age_group = $2 AND c.signup_date >= $3 AND c.signup_date < $4 LIMIT 1",
+      "parameters": [
+        "Hai Phong",
+        "25-34",
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-007",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT SUM(s.revenue) AS revenue, SUM(s.cogs) AS cogs FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 AND s.cogs > s.revenue LIMIT 1",
+      "parameters": [
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-008",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT r.return_reason, SUM(r.refund_amount) AS refund_amount FROM commerce.returns AS r WHERE r.return_date >= $1 AND r.return_date < $2 AND r.return_reason IS NOT NULL GROUP BY r.return_reason ORDER BY refund_amount DESC, r.return_reason ASC LIMIT 200",
+      "parameters": [
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-009",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT SUM(i.units_sold) AS units_sold FROM commerce.inventory AS i WHERE i.snapshot_date = $1 AND i.category = $2 LIMIT 1",
+      "parameters": [
+        "2025-10-31",
+        "Outdoor"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-010",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT COUNT(DISTINCT o.order_id) AS order_count FROM commerce.orders AS o WHERE o.order_date >= $1 AND o.order_date < $2 AND o.order_source = $3 AND o.device_type = $4 LIMIT 1",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01",
+        "paid_search",
+        "mobile"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-011",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT p.product_id, p.cogs AS catalog_cogs FROM commerce.products AS p ORDER BY catalog_cogs DESC, p.product_id ASC LIMIT 5",
+      "parameters": [],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-012",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT o.order_source, COUNT(DISTINCT o.order_id) AS order_count FROM commerce.orders AS o WHERE o.order_date >= $1 AND o.order_date < $2 GROUP BY o.order_source ORDER BY order_count DESC, o.order_source ASC NULLS LAST LIMIT 200",
+      "parameters": [
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-013",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT i.segment, SUM(i.units_received) AS units_received FROM commerce.inventory AS i WHERE i.snapshot_date = $1 GROUP BY i.segment ORDER BY units_received DESC, i.segment ASC NULLS LAST LIMIT 5",
+      "parameters": [
+        "2026-11-13"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-014",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT g.city, COUNT(DISTINCT o.customer_id) AS customer_count FROM commerce.orders AS o JOIN commerce.geography AS g ON g.zip = o.zip WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 GROUP BY g.city ORDER BY customer_count DESC, g.city ASC LIMIT 5",
+      "parameters": [
+        "delivered",
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-015",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT p.category, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_revenue FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id = o.order_id JOIN commerce.products AS p ON p.product_id = oi.product_id WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 GROUP BY p.category ORDER BY net_revenue DESC, p.category ASC LIMIT 3",
+      "parameters": [
+        "delivered",
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-016",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT g.city, SUM(r.return_quantity) AS returned_units FROM commerce.returns AS r JOIN commerce.orders AS o ON o.order_id = r.order_id JOIN commerce.geography AS g ON g.zip = o.zip WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY g.city ORDER BY returned_units DESC, g.city ASC LIMIT 200",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-017",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT r.product_id, SUM(r.return_quantity) AS returned_units FROM commerce.returns AS r WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY r.product_id ORDER BY returned_units DESC, r.product_id ASC LIMIT 200",
+      "parameters": [
+        "2023-01-01",
+        "2026-01-01"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-018",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT p.category, AVG(r.rating) AS avg_rating FROM commerce.reviews AS r JOIN commerce.products AS p ON p.product_id = r.product_id GROUP BY p.category ORDER BY avg_rating DESC, p.category ASC LIMIT 200",
+      "parameters": [],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-019",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT p.payment_method, SUM(p.payment_value) AS payment_value FROM commerce.orders AS o JOIN commerce.payments AS p ON p.order_id = o.order_id WHERE o.order_date >= $1 AND o.order_date < $2 GROUP BY p.payment_method ORDER BY payment_value DESC, p.payment_method ASC LIMIT 200",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-020",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT g.city, AVG(s.shipping_fee) AS average_shipping_fee, COUNT(s.shipping_fee) AS fee_observation_count FROM commerce.shipments AS s JOIN commerce.orders AS o ON o.order_id = s.order_id JOIN commerce.geography AS g ON g.zip = o.zip WHERE s.ship_date >= $1 AND s.ship_date < $2 GROUP BY g.city ORDER BY average_shipping_fee DESC NULLS LAST, g.city ASC LIMIT 200",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-021",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT i.category, COUNT(*) FILTER (WHERE i.stockout_flag = TRUE) AS stockout_product_count FROM commerce.inventory AS i WHERE i.snapshot_date = $1 GROUP BY i.category ORDER BY stockout_product_count DESC, i.category ASC NULLS LAST LIMIT 200",
+      "parameters": [
+        "2026-11-13"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-022",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT i.snapshot_date, COUNT(i.days_of_supply) AS products_with_days_of_supply, COUNT(*) FILTER (WHERE i.days_of_supply IS NULL) AS products_without_days_of_supply FROM commerce.inventory AS i WHERE i.snapshot_date >= $1 AND i.snapshot_date <= $2 GROUP BY i.snapshot_date ORDER BY i.snapshot_date ASC LIMIT 100",
+      "parameters": [
+        "2023-01-31",
+        "2026-11-13"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-023",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT i.product_id, MAX(i.stock_on_hand) FILTER (WHERE i.snapshot_date = $1) AS stock_before, MAX(i.stock_on_hand) FILTER (WHERE i.snapshot_date = $2) AS stock_after, MAX(i.stock_on_hand) FILTER (WHERE i.snapshot_date = $2) - MAX(i.stock_on_hand) FILTER (WHERE i.snapshot_date = $1) AS stock_delta FROM commerce.inventory AS i WHERE i.snapshot_date = $1 OR i.snapshot_date = $2 GROUP BY i.product_id HAVING COUNT(DISTINCT i.snapshot_date) = 2 ORDER BY stock_delta DESC, i.product_id ASC LIMIT 200",
+      "parameters": [
+        "2025-09-30",
+        "2025-10-31"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-024",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT i.snapshot_date, SUM(i.stock_on_hand) AS observed_stock_total FROM commerce.inventory AS i WHERE i.snapshot_date >= $1 AND i.snapshot_date <= $2 GROUP BY i.snapshot_date ORDER BY i.snapshot_date ASC LIMIT 100",
+      "parameters": [
+        "2025-09-30",
+        "2025-11-30"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-025",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT i.category, AVG(i.days_of_supply) AS average_days_of_supply, COUNT(i.days_of_supply) AS nonnull_product_count, COUNT(*) FILTER (WHERE i.days_of_supply IS NULL) AS null_product_count FROM commerce.inventory AS i WHERE i.snapshot_date = $1 GROUP BY i.category ORDER BY average_days_of_supply DESC NULLS LAST, i.category ASC NULLS LAST LIMIT 200",
+      "parameters": [
+        "2025-10-31"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-026",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT DATE_TRUNC('month', s.date)::date AS month, SUM(s.cogs) AS cogs FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 GROUP BY DATE_TRUNC('month', s.date)::date ORDER BY month ASC LIMIT 12",
+      "parameters": [
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-027",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT o.order_source, COUNT(DISTINCT o.order_id) AS order_count FROM commerce.orders AS o WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 GROUP BY o.order_source ORDER BY order_count DESC, o.order_source ASC NULLS LAST LIMIT 200",
+      "parameters": [
+        "delivered",
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-028",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "WITH monthly AS (SELECT EXTRACT(YEAR FROM s.date) AS sales_year, EXTRACT(MONTH FROM s.date) AS month, SUM(s.revenue) - SUM(s.cogs) AS gross_profit FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 GROUP BY EXTRACT(YEAR FROM s.date), EXTRACT(MONTH FROM s.date)) SELECT m.month, MAX(m.gross_profit) FILTER (WHERE m.sales_year = 2023) AS gross_profit_2023, MAX(m.gross_profit) FILTER (WHERE m.sales_year = 2024) AS gross_profit_2024, MAX(m.gross_profit) FILTER (WHERE m.sales_year = 2024) - MAX(m.gross_profit) FILTER (WHERE m.sales_year = 2023) AS difference_2024_minus_2023 FROM monthly AS m GROUP BY m.month ORDER BY m.month ASC LIMIT 12",
+      "parameters": [
+        "2023-01-01",
+        "2025-01-01"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-029",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT r.return_reason, SUM(r.return_quantity) AS returned_units FROM commerce.returns AS r WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY r.return_reason ORDER BY returned_units DESC, r.return_reason ASC NULLS LAST LIMIT 2",
+      "parameters": [
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-030",
+      "status": "DRAFT_PENDING_HUMAN_REVIEW",
+      "sql": "SELECT i.product_id, i.stockout_days FROM commerce.inventory AS i WHERE i.snapshot_date = $1 ORDER BY i.stockout_days DESC, i.product_id ASC LIMIT 5",
+      "parameters": [
+        "2025-10-31"
+      ],
+      "independent_authoring_basis": "Question + approved schema/metric contract; no SQL Agent output used.",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    }
+  ],
+  "v3_based_on": {
+    "commit": "60eafaee964a6de48a0c8d13925e3207d5116588",
+    "cases_v2_sha256": "6036477937037c12dd90c10a1b00c90735ec8d48ba08ebbb8775f217f8a01677",
+    "gold_sql_v2_sha256": "422d82e809b646477af4295e3e01561b27c08ed3e505f4bafa2928fe3ea45e6d"
+  },
+  "heldout_agent_executed": false,
+  "independent_review_approvals": 0,
+  "v3_1_based_on": {
+    "v3_case_set_sha256": "56ef0dd5ec0d2fc15539665b91a230a923e1836cc4a18cf5c6fe8fcd795146c6"
+  }
+}

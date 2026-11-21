@@ -1,0 +1,911 @@
+{
+  "format_version": "sql-agent-model-rotation-comparison.v1",
+  "comparison_type": "counterbalanced_repeated_development_pilot",
+  "created_utc": "2026-11-21T05:27:12.323381+00:00",
+  "cohort": {
+    "case_count": 5,
+    "supported_cases": 4,
+    "unsupported_cases": 1,
+    "case_ids": [
+      "P01",
+      "P02",
+      "P03",
+      "P04",
+      "P05"
+    ],
+    "case_set_sha256": "ddade2d597b30a6bb4c74fc7b997dfe9a617e6c5348cd8b64bf7016463d100c4",
+    "cases_file_sha256": "93b88c56b84c7e594d83c77a3e619aaf2f6aa1ff32868c686e937fe2f67063d4",
+    "held_out": false
+  },
+  "design": {
+    "round_1_run_order": [
+      "gpt-oss-20b",
+      "gpt-oss-120b"
+    ],
+    "round_2_run_order": [
+      "gpt-oss-120b",
+      "gpt-oss-20b"
+    ],
+    "rotation": "Model run-block order reversed; each model saw the same case order P01-P05.",
+    "case_order": [
+      "P01",
+      "P02",
+      "P03",
+      "P04",
+      "P05"
+    ],
+    "case_delay_seconds": 60,
+    "repair_budget": 1,
+    "round_2_application_revision_equal": true,
+    "round_2_runner_hash_equal": true,
+    "round_2_provider_settings_equal_except_model": true,
+    "round_2_only_application_model_setting_changed": "SQL_GROQ_MODEL",
+    "fallback_overrides": {
+      "CODEX_CLI_SQL_FALLBACK": false,
+      "HUGGINGFACE_LLM_FALLBACK": false,
+      "secondary_sql_provider_submissions_observed": 0
+    },
+    "billing_tier_verified": false
+  },
+  "controlled_environment": {
+    "provider": "groq",
+    "schema_selection_model": "perplexity/pplx-decider-flash-v1.3:free",
+    "source_fingerprint_sha256": "5feb222132233fa2bd8ee010eac42b804a64bb0d0f13ad80b7252c3b0728a57d",
+    "all_run_source_fingerprints_equal": true,
+    "database_classification": "frozen-analytics-snapshot",
+    "database_role_read_only": true,
+    "dataset_fingerprint_sha256": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028",
+    "reference_sha256": "295c53652e5fe3a7fc8c3c35cffb9ecf4f6bc23e44b6db861955e369d0932a17",
+    "all_runs_share_dataset_and_reference": true
+  },
+  "runs": {
+    "round_1": {
+      "gpt-oss-20b": {
+        "model": "gpt-oss-20b",
+        "round": "round_1",
+        "relative_path": "model-ab-groq-oss20b-vs-oss120b-20261121-final/gpt-oss-20b",
+        "experiment_id": "20261121T030504Z",
+        "application_revision": "2f00c5b199ebdb8671ad76d641c0d9fc46054c49",
+        "provider": "groq",
+        "model_id": "openai/gpt-oss-20b",
+        "source_fingerprint_sha256": "5feb222132233fa2bd8ee010eac42b804a64bb0d0f13ad80b7252c3b0728a57d",
+        "benchmark_runner_sha256": "9998f0174d9b793d3ee1d477c8528dae3f7b303a5089c4f8062ba6998c0bf8f6",
+        "python_version": "3.11.16",
+        "case_delay_seconds": 60.0,
+        "repair_budget": 1,
+        "schema_selection_model": "perplexity/pplx-decider-flash-v1.3:free",
+        "provider_settings": {
+          "SQL_LLM_PROVIDER": "groq",
+          "SQL_GROQ_MODEL": "openai/gpt-oss-20b",
+          "SQL_CLOUDFLARE_MODEL": "@cf/openai/gpt-oss-20b",
+          "CODEX_CLI_SQL_FALLBACK": "false"
+        },
+        "database_classification": "frozen-analytics-snapshot",
+        "database_role_read_only": true,
+        "dataset_fingerprint_sha256": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028",
+        "reference_sha256": "295c53652e5fe3a7fc8c3c35cffb9ecf4f6bc23e44b6db861955e369d0932a17",
+        "run_status": "completed",
+        "metrics": {
+          "business_end_to_end_accuracy": {
+            "numerator": 4,
+            "denominator": 4,
+            "value": 1.0
+          },
+          "business_result_accuracy": {
+            "numerator": 4,
+            "denominator": 4,
+            "value": 1.0
+          },
+          "sql_semantic_accuracy": {
+            "numerator": 4,
+            "denominator": 4,
+            "value": 1.0
+          },
+          "execution_success": {
+            "numerator": 4,
+            "denominator": 4,
+            "value": 1.0
+          },
+          "strict_result_exact_match": {
+            "numerator": 2,
+            "denominator": 4,
+            "value": 0.5
+          },
+          "false_clarification_abstention_rate": {
+            "numerator": 0,
+            "denominator": 4,
+            "value": 0.0
+          },
+          "supported_noncompletion_rate": {
+            "numerator": 0,
+            "denominator": 4,
+            "value": 0.0
+          },
+          "validation_blocked_supported_rate": {
+            "numerator": 0,
+            "denominator": 4,
+            "value": 0.0
+          },
+          "valid_clarification_abstention_rate": {
+            "numerator": 1,
+            "denominator": 1,
+            "value": 1.0
+          },
+          "schema_selector_raw_recall_at_5": {
+            "numerator": 4,
+            "denominator": 4,
+            "value": 1.0,
+            "applicable_cases": 3
+          },
+          "repair_recovery_rate": {
+            "numerator": 0,
+            "denominator": 0,
+            "value": null
+          },
+          "unsafe_execution_count": 0,
+          "latency_ms": {
+            "p50_nearest_rank": 9233.107,
+            "p95_nearest_rank": 10341.271,
+            "sample_count": 4
+          },
+          "provider_calls": {
+            "sql_generation_provider_submissions": 2,
+            "metric_interpretation_provider_submissions": 1,
+            "schema_selection_provider_requests": 3,
+            "local_codex_fallback_calls": 0,
+            "total_model_calls": 6,
+            "secondary_sql_provider_fallback_submissions": 0
+          },
+          "pipeline_calls": {
+            "approved_repository_execution": 4,
+            "approved_repository_execution_attempts": 4,
+            "fixed_compilation_calls": 4,
+            "fixed_compiler_matches": 1,
+            "fixed_compiler_plans": 1,
+            "fixed_match_calls": 4,
+            "general_sql_generation": 2,
+            "intent_interpretation": 0,
+            "inventory_compilation_calls": 1,
+            "inventory_compiler_plans": 1,
+            "local_codex_fallback_calls": 0,
+            "metric_interpretation": 1,
+            "provider_fallback_calls": 0,
+            "repository_execution": 4,
+            "repository_execution_attempts": 4,
+            "schema_discovery": 5,
+            "schema_selection": 3,
+            "schema_selector_attempts": 3,
+            "schema_selector_successes": 3,
+            "sql_generation_entries": 2,
+            "sql_repair": 0,
+            "unverified_repository_execution": 0,
+            "unverified_repository_execution_attempts": 0
+          }
+        },
+        "cases": {
+          "P01": {
+            "status": "executed",
+            "failure_class": null,
+            "error_type": null,
+            "business_end_to_end_correct": true,
+            "sql_semantic_accuracy": true,
+            "execution_success": true,
+            "false_clarification_abstention": false,
+            "safe_unsupported_abstention": null
+          },
+          "P02": {
+            "status": "executed",
+            "failure_class": null,
+            "error_type": null,
+            "business_end_to_end_correct": true,
+            "sql_semantic_accuracy": true,
+            "execution_success": true,
+            "false_clarification_abstention": false,
+            "safe_unsupported_abstention": null
+          },
+          "P03": {
+            "status": "executed",
+            "failure_class": null,
+            "error_type": null,
+            "business_end_to_end_correct": true,
+            "sql_semantic_accuracy": true,
+            "execution_success": true,
+            "false_clarification_abstention": false,
+            "safe_unsupported_abstention": null
+          },
+          "P04": {
+            "status": "executed",
+            "failure_class": null,
+            "error_type": null,
+            "business_end_to_end_correct": true,
+            "sql_semantic_accuracy": true,
+            "execution_success": true,
+            "false_clarification_abstention": false,
+            "safe_unsupported_abstention": null
+          },
+          "P05": {
+            "status": "unsupported",
+            "failure_class": null,
+            "error_type": "MetricDefinitionError",
+            "business_end_to_end_correct": null,
+            "sql_semantic_accuracy": null,
+            "execution_success": null,
+            "false_clarification_abstention": null,
+            "safe_unsupported_abstention": true
+          }
+        }
+      },
+      "gpt-oss-120b": {
+        "model": "gpt-oss-120b",
+        "round": "round_1",
+        "relative_path": "model-ab-groq-oss20b-vs-oss120b-20261121-final/gpt-oss-120b",
+        "experiment_id": "20261121T032033Z",
+        "application_revision": "a5a2169727d6397b96e6bfc21ea7a8e70165f9a5",
+        "provider": "groq",
+        "model_id": "openai/gpt-oss-120b",
+        "source_fingerprint_sha256": "5feb222132233fa2bd8ee010eac42b804a64bb0d0f13ad80b7252c3b0728a57d",
+        "benchmark_runner_sha256": "0719c1976a7584d2a1cd2222dadabe85a8447c78877b71620f1da14987b25843",
+        "python_version": "3.11.16",
+        "case_delay_seconds": 60.0,
+        "repair_budget": 1,
+        "schema_selection_model": "perplexity/pplx-decider-flash-v1.3:free",
+        "provider_settings": {
+          "SQL_LLM_PROVIDER": "groq",
+          "SQL_GROQ_MODEL": "openai/gpt-oss-120b",
+          "SQL_CLOUDFLARE_MODEL": "@cf/openai/gpt-oss-20b",
+          "CODEX_CLI_SQL_FALLBACK": "false"
+        },
+        "database_classification": "frozen-analytics-snapshot",
+        "database_role_read_only": true,
+        "dataset_fingerprint_sha256": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028",
+        "reference_sha256": "295c53652e5fe3a7fc8c3c35cffb9ecf4f6bc23e44b6db861955e369d0932a17",
+        "run_status": "completed_with_failures",
+        "metrics": {
+          "business_end_to_end_accuracy": {
+            "numerator": 3,
+            "denominator": 4,
+            "value": 0.75
+          },
+          "business_result_accuracy": {
+            "numerator": 3,
+            "denominator": 3,
+            "value": 1.0
+          },
+          "sql_semantic_accuracy": {
+            "numerator": 4,
+            "denominator": 4,
+            "value": 1.0
+          },
+          "execution_success": {
+            "numerator": 3,
+            "denominator": 4,
+            "value": 0.75
+          },
+          "strict_result_exact_match": {
+            "numerator": 2,
+            "denominator": 4,
+            "value": 0.5
+          },
+          "false_clarification_abstention_rate": {
+            "numerator": 0,
+            "denominator": 4,
+            "value": 0.0
+          },
+          "supported_noncompletion_rate": {
+            "numerator": 1,
+            "denominator": 4,
+            "value": 0.25
+          },
+          "validation_blocked_supported_rate": {
+            "numerator": 0,
+            "denominator": 4,
+            "value": 0.0
+          },
+          "valid_clarification_abstention_rate": {
+            "numerator": 1,
+            "denominator": 1,
+            "value": 1.0
+          },
+          "schema_selector_raw_recall_at_5": {
+            "numerator": 4,
+            "denominator": 4,
+            "value": 1.0,
+            "applicable_cases": 3
+          },
+          "repair_recovery_rate": {
+            "numerator": 0,
+            "denominator": 1,
+            "value": 0.0
+          },
+          "unsafe_execution_count": 0,
+          "latency_ms": {
+            "p50_nearest_rank": 9260.064,
+            "p95_nearest_rank": 11334.504,
+            "sample_count": 4
+          },
+          "provider_calls": {
+            "sql_generation_provider_submissions": 3,
+            "metric_interpretation_provider_submissions": 1,
+            "schema_selection_provider_requests": 3,
+            "local_codex_fallback_calls": 0,
+            "total_model_calls": 7,
+            "secondary_sql_provider_fallback_submissions": 0
+          },
+          "pipeline_calls": {
+            "approved_repository_execution": 3,
+            "approved_repository_execution_attempts": 3,
+            "fixed_compilation_calls": 4,
+            "fixed_compiler_matches": 1,
+            "fixed_compiler_plans": 1,
+            "fixed_match_calls": 4,
+            "general_sql_generation": 3,
+            "intent_interpretation": 0,
+            "inventory_compilation_calls": 1,
+            "inventory_compiler_plans": 1,
+            "local_codex_fallback_calls": 0,
+            "metric_interpretation": 1,
+            "provider_fallback_calls": 0,
+            "repository_execution": 3,
+            "repository_execution_attempts": 3,
+            "schema_discovery": 5,
+            "schema_selection": 3,
+            "schema_selector_attempts": 3,
+            "schema_selector_successes": 3,
+            "sql_generation_entries": 3,
+            "sql_repair": 1,
+            "unverified_repository_execution": 0,
+            "unverified_repository_execution_attempts": 0
+          }
+        },
+        "cases": {
+          "P01": {
+            "status": "executed",
+            "failure_class": null,
+            "error_type": null,
+            "business_end_to_end_correct": true,
+            "sql_semantic_accuracy": true,
+            "execution_success": true,
+            "false_clarification_abstention": false,
+            "safe_unsupported_abstention": null
+          },
+          "P02": {
+            "status": "executed",
+            "failure_class": null,
+            "error_type": null,
+            "business_end_to_end_correct": true,
+            "sql_semantic_accuracy": true,
+            "execution_success": true,
+            "false_clarification_abstention": false,
+            "safe_unsupported_abstention": null
+          },
+          "P03": {
+            "status": "failed",
+            "failure_class": "provider_failure",
+            "error_type": "RateLimitError",
+            "business_end_to_end_correct": false,
+            "sql_semantic_accuracy": true,
+            "execution_success": false,
+            "false_clarification_abstention": false,
+            "safe_unsupported_abstention": null
+          },
+          "P04": {
+            "status": "executed",
+            "failure_class": null,
+            "error_type": null,
+            "business_end_to_end_correct": true,
+            "sql_semantic_accuracy": true,
+            "execution_success": true,
+            "false_clarification_abstention": false,
+            "safe_unsupported_abstention": null
+          },
+          "P05": {
+            "status": "unsupported",
+            "failure_class": null,
+            "error_type": "MetricDefinitionError",
+            "business_end_to_end_correct": null,
+            "sql_semantic_accuracy": null,
+            "execution_success": null,
+            "false_clarification_abstention": null,
+            "safe_unsupported_abstention": true
+          }
+        }
+      }
+    },
+    "round_2": {
+      "gpt-oss-120b": {
+        "model": "gpt-oss-120b",
+        "round": "round_2",
+        "relative_path": "model-ab-groq-oss20b-vs-oss120b-rotated-20261121/gpt-oss-120b",
+        "experiment_id": "20261121T051137Z",
+        "application_revision": "72e60fa3311c6d310c2b453df156860a7c2cb3ee",
+        "provider": "groq",
+        "model_id": "openai/gpt-oss-120b",
+        "source_fingerprint_sha256": "5feb222132233fa2bd8ee010eac42b804a64bb0d0f13ad80b7252c3b0728a57d",
+        "benchmark_runner_sha256": "0719c1976a7584d2a1cd2222dadabe85a8447c78877b71620f1da14987b25843",
+        "python_version": "3.11.16",
+        "case_delay_seconds": 60.0,
+        "repair_budget": 1,
+        "schema_selection_model": "perplexity/pplx-decider-flash-v1.3:free",
+        "provider_settings": {
+          "SQL_LLM_PROVIDER": "groq",
+          "SQL_GROQ_MODEL": "openai/gpt-oss-120b",
+          "SQL_CLOUDFLARE_MODEL": "@cf/openai/gpt-oss-20b",
+          "CODEX_CLI_SQL_FALLBACK": "false",
+          "SQL_INVENTORY_ONLY": "false",
+          "SQL_SCHEMA_SELECTION_MODEL": "perplexity/pplx-decider-flash-v1.3:free"
+        },
+        "database_classification": "frozen-analytics-snapshot",
+        "database_role_read_only": true,
+        "dataset_fingerprint_sha256": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028",
+        "reference_sha256": "295c53652e5fe3a7fc8c3c35cffb9ecf4f6bc23e44b6db861955e369d0932a17",
+        "run_status": "completed_with_failures",
+        "metrics": {
+          "business_end_to_end_accuracy": {
+            "numerator": 2,
+            "denominator": 4,
+            "value": 0.5
+          },
+          "business_result_accuracy": {
+            "numerator": 2,
+            "denominator": 2,
+            "value": 1.0
+          },
+          "sql_semantic_accuracy": {
+            "numerator": 3,
+            "denominator": 4,
+            "value": 0.75
+          },
+          "execution_success": {
+            "numerator": 2,
+            "denominator": 4,
+            "value": 0.5
+          },
+          "strict_result_exact_match": {
+            "numerator": 2,
+            "denominator": 4,
+            "value": 0.5
+          },
+          "false_clarification_abstention_rate": {
+            "numerator": 1,
+            "denominator": 4,
+            "value": 0.25
+          },
+          "supported_noncompletion_rate": {
+            "numerator": 2,
+            "denominator": 4,
+            "value": 0.5
+          },
+          "validation_blocked_supported_rate": {
+            "numerator": 1,
+            "denominator": 4,
+            "value": 0.25
+          },
+          "valid_clarification_abstention_rate": {
+            "numerator": 1,
+            "denominator": 1,
+            "value": 1.0
+          },
+          "schema_selector_raw_recall_at_5": {
+            "numerator": 4,
+            "denominator": 4,
+            "value": 1.0,
+            "applicable_cases": 3
+          },
+          "repair_recovery_rate": {
+            "numerator": 0,
+            "denominator": 1,
+            "value": 0.0
+          },
+          "unsafe_execution_count": 0,
+          "latency_ms": {
+            "p50_nearest_rank": 5534.573,
+            "p95_nearest_rank": 13456.529,
+            "sample_count": 4
+          },
+          "provider_calls": {
+            "sql_generation_provider_submissions": 3,
+            "metric_interpretation_provider_submissions": 1,
+            "schema_selection_provider_requests": 3,
+            "local_codex_fallback_calls": 0,
+            "total_model_calls": 7,
+            "secondary_sql_provider_fallback_submissions": 0
+          },
+          "pipeline_calls": {
+            "approved_repository_execution": 2,
+            "approved_repository_execution_attempts": 2,
+            "fixed_compilation_calls": 4,
+            "fixed_compiler_matches": 1,
+            "fixed_compiler_plans": 1,
+            "fixed_match_calls": 4,
+            "general_sql_generation": 3,
+            "intent_interpretation": 0,
+            "inventory_compilation_calls": 0,
+            "inventory_compiler_plans": 0,
+            "local_codex_fallback_calls": 0,
+            "metric_interpretation": 1,
+            "provider_fallback_calls": 0,
+            "repository_execution": 2,
+            "repository_execution_attempts": 2,
+            "schema_discovery": 5,
+            "schema_selection": 3,
+            "schema_selector_attempts": 3,
+            "schema_selector_successes": 3,
+            "sql_generation_entries": 3,
+            "sql_repair": 1,
+            "unverified_repository_execution": 0,
+            "unverified_repository_execution_attempts": 0
+          }
+        },
+        "cases": {
+          "P01": {
+            "status": "executed",
+            "failure_class": null,
+            "error_type": null,
+            "business_end_to_end_correct": true,
+            "sql_semantic_accuracy": true,
+            "execution_success": true,
+            "false_clarification_abstention": false,
+            "safe_unsupported_abstention": null
+          },
+          "P02": {
+            "status": "executed",
+            "failure_class": null,
+            "error_type": null,
+            "business_end_to_end_correct": true,
+            "sql_semantic_accuracy": true,
+            "execution_success": true,
+            "false_clarification_abstention": false,
+            "safe_unsupported_abstention": null
+          },
+          "P03": {
+            "status": "failed",
+            "failure_class": "provider_failure",
+            "error_type": "RateLimitError",
+            "business_end_to_end_correct": false,
+            "sql_semantic_accuracy": true,
+            "execution_success": false,
+            "false_clarification_abstention": false,
+            "safe_unsupported_abstention": null
+          },
+          "P04": {
+            "status": "clarification_required",
+            "failure_class": "supported_request_not_executed",
+            "error_type": "MetricDefinitionError",
+            "business_end_to_end_correct": false,
+            "sql_semantic_accuracy": false,
+            "execution_success": false,
+            "false_clarification_abstention": true,
+            "safe_unsupported_abstention": null
+          },
+          "P05": {
+            "status": "unsupported",
+            "failure_class": null,
+            "error_type": "MetricDefinitionError",
+            "business_end_to_end_correct": null,
+            "sql_semantic_accuracy": null,
+            "execution_success": null,
+            "false_clarification_abstention": null,
+            "safe_unsupported_abstention": true
+          }
+        }
+      },
+      "gpt-oss-20b": {
+        "model": "gpt-oss-20b",
+        "round": "round_2",
+        "relative_path": "model-ab-groq-oss20b-vs-oss120b-rotated-20261121/gpt-oss-20b",
+        "experiment_id": "20261121T051711Z",
+        "application_revision": "72e60fa3311c6d310c2b453df156860a7c2cb3ee",
+        "provider": "groq",
+        "model_id": "openai/gpt-oss-20b",
+        "source_fingerprint_sha256": "5feb222132233fa2bd8ee010eac42b804a64bb0d0f13ad80b7252c3b0728a57d",
+        "benchmark_runner_sha256": "0719c1976a7584d2a1cd2222dadabe85a8447c78877b71620f1da14987b25843",
+        "python_version": "3.11.16",
+        "case_delay_seconds": 60.0,
+        "repair_budget": 1,
+        "schema_selection_model": "perplexity/pplx-decider-flash-v1.3:free",
+        "provider_settings": {
+          "SQL_LLM_PROVIDER": "groq",
+          "SQL_GROQ_MODEL": "openai/gpt-oss-20b",
+          "SQL_CLOUDFLARE_MODEL": "@cf/openai/gpt-oss-20b",
+          "CODEX_CLI_SQL_FALLBACK": "false",
+          "SQL_INVENTORY_ONLY": "false",
+          "SQL_SCHEMA_SELECTION_MODEL": "perplexity/pplx-decider-flash-v1.3:free"
+        },
+        "database_classification": "frozen-analytics-snapshot",
+        "database_role_read_only": true,
+        "dataset_fingerprint_sha256": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028",
+        "reference_sha256": "295c53652e5fe3a7fc8c3c35cffb9ecf4f6bc23e44b6db861955e369d0932a17",
+        "run_status": "completed",
+        "metrics": {
+          "business_end_to_end_accuracy": {
+            "numerator": 4,
+            "denominator": 4,
+            "value": 1.0
+          },
+          "business_result_accuracy": {
+            "numerator": 4,
+            "denominator": 4,
+            "value": 1.0
+          },
+          "sql_semantic_accuracy": {
+            "numerator": 4,
+            "denominator": 4,
+            "value": 1.0
+          },
+          "execution_success": {
+            "numerator": 4,
+            "denominator": 4,
+            "value": 1.0
+          },
+          "strict_result_exact_match": {
+            "numerator": 2,
+            "denominator": 4,
+            "value": 0.5
+          },
+          "false_clarification_abstention_rate": {
+            "numerator": 0,
+            "denominator": 4,
+            "value": 0.0
+          },
+          "supported_noncompletion_rate": {
+            "numerator": 0,
+            "denominator": 4,
+            "value": 0.0
+          },
+          "validation_blocked_supported_rate": {
+            "numerator": 0,
+            "denominator": 4,
+            "value": 0.0
+          },
+          "valid_clarification_abstention_rate": {
+            "numerator": 1,
+            "denominator": 1,
+            "value": 1.0
+          },
+          "schema_selector_raw_recall_at_5": {
+            "numerator": 4,
+            "denominator": 4,
+            "value": 1.0,
+            "applicable_cases": 3
+          },
+          "repair_recovery_rate": {
+            "numerator": 0,
+            "denominator": 0,
+            "value": null
+          },
+          "unsafe_execution_count": 0,
+          "latency_ms": {
+            "p50_nearest_rank": 7963.046,
+            "p95_nearest_rank": 11352.021,
+            "sample_count": 4
+          },
+          "provider_calls": {
+            "sql_generation_provider_submissions": 2,
+            "metric_interpretation_provider_submissions": 1,
+            "schema_selection_provider_requests": 3,
+            "local_codex_fallback_calls": 0,
+            "total_model_calls": 6,
+            "secondary_sql_provider_fallback_submissions": 0
+          },
+          "pipeline_calls": {
+            "approved_repository_execution": 4,
+            "approved_repository_execution_attempts": 4,
+            "fixed_compilation_calls": 4,
+            "fixed_compiler_matches": 1,
+            "fixed_compiler_plans": 1,
+            "fixed_match_calls": 4,
+            "general_sql_generation": 2,
+            "intent_interpretation": 0,
+            "inventory_compilation_calls": 1,
+            "inventory_compiler_plans": 1,
+            "local_codex_fallback_calls": 0,
+            "metric_interpretation": 1,
+            "provider_fallback_calls": 0,
+            "repository_execution": 4,
+            "repository_execution_attempts": 4,
+            "schema_discovery": 5,
+            "schema_selection": 3,
+            "schema_selector_attempts": 3,
+            "schema_selector_successes": 3,
+            "sql_generation_entries": 2,
+            "sql_repair": 0,
+            "unverified_repository_execution": 0,
+            "unverified_repository_execution_attempts": 0
+          }
+        },
+        "cases": {
+          "P01": {
+            "status": "executed",
+            "failure_class": null,
+            "error_type": null,
+            "business_end_to_end_correct": true,
+            "sql_semantic_accuracy": true,
+            "execution_success": true,
+            "false_clarification_abstention": false,
+            "safe_unsupported_abstention": null
+          },
+          "P02": {
+            "status": "executed",
+            "failure_class": null,
+            "error_type": null,
+            "business_end_to_end_correct": true,
+            "sql_semantic_accuracy": true,
+            "execution_success": true,
+            "false_clarification_abstention": false,
+            "safe_unsupported_abstention": null
+          },
+          "P03": {
+            "status": "executed",
+            "failure_class": null,
+            "error_type": null,
+            "business_end_to_end_correct": true,
+            "sql_semantic_accuracy": true,
+            "execution_success": true,
+            "false_clarification_abstention": false,
+            "safe_unsupported_abstention": null
+          },
+          "P04": {
+            "status": "executed",
+            "failure_class": null,
+            "error_type": null,
+            "business_end_to_end_correct": true,
+            "sql_semantic_accuracy": true,
+            "execution_success": true,
+            "false_clarification_abstention": false,
+            "safe_unsupported_abstention": null
+          },
+          "P05": {
+            "status": "unsupported",
+            "failure_class": null,
+            "error_type": "MetricDefinitionError",
+            "business_end_to_end_correct": null,
+            "sql_semantic_accuracy": null,
+            "execution_success": null,
+            "false_clarification_abstention": null,
+            "safe_unsupported_abstention": true
+          }
+        }
+      }
+    }
+  },
+  "descriptive_two_round_summary": {
+    "gpt-oss-20b": {
+      "business_end_to_end_accuracy": {
+        "numerator": 8,
+        "denominator": 8,
+        "value": 1.0,
+        "interpretation": "descriptive repeated development-pilot observations; not independent cases"
+      },
+      "business_result_accuracy": {
+        "numerator": 8,
+        "denominator": 8,
+        "value": 1.0,
+        "interpretation": "descriptive repeated development-pilot observations; not independent cases"
+      },
+      "sql_semantic_accuracy": {
+        "numerator": 8,
+        "denominator": 8,
+        "value": 1.0,
+        "interpretation": "descriptive repeated development-pilot observations; not independent cases"
+      },
+      "execution_success": {
+        "numerator": 8,
+        "denominator": 8,
+        "value": 1.0,
+        "interpretation": "descriptive repeated development-pilot observations; not independent cases"
+      },
+      "strict_result_exact_match": {
+        "numerator": 4,
+        "denominator": 8,
+        "value": 0.5,
+        "interpretation": "descriptive repeated development-pilot observations; not independent cases"
+      },
+      "false_clarification_abstention_rate": {
+        "numerator": 0,
+        "denominator": 8,
+        "value": 0.0,
+        "interpretation": "descriptive repeated development-pilot observations; not independent cases"
+      },
+      "supported_noncompletion_rate": {
+        "numerator": 0,
+        "denominator": 8,
+        "value": 0.0,
+        "interpretation": "descriptive repeated development-pilot observations; not independent cases"
+      },
+      "validation_blocked_supported_rate": {
+        "numerator": 0,
+        "denominator": 8,
+        "value": 0.0,
+        "interpretation": "descriptive repeated development-pilot observations; not independent cases"
+      },
+      "valid_clarification_abstention_rate": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0,
+        "interpretation": "descriptive repeated development-pilot observations; not independent cases"
+      },
+      "provider_calls": {
+        "sql_generation_provider_submissions": 4,
+        "metric_interpretation_provider_submissions": 2,
+        "schema_selection_provider_requests": 6,
+        "local_codex_fallback_calls": 0,
+        "total_model_calls": 12,
+        "secondary_sql_provider_fallback_submissions": 0
+      }
+    },
+    "gpt-oss-120b": {
+      "business_end_to_end_accuracy": {
+        "numerator": 5,
+        "denominator": 8,
+        "value": 0.625,
+        "interpretation": "descriptive repeated development-pilot observations; not independent cases"
+      },
+      "business_result_accuracy": {
+        "numerator": 5,
+        "denominator": 5,
+        "value": 1.0,
+        "interpretation": "descriptive repeated development-pilot observations; not independent cases"
+      },
+      "sql_semantic_accuracy": {
+        "numerator": 7,
+        "denominator": 8,
+        "value": 0.875,
+        "interpretation": "descriptive repeated development-pilot observations; not independent cases"
+      },
+      "execution_success": {
+        "numerator": 5,
+        "denominator": 8,
+        "value": 0.625,
+        "interpretation": "descriptive repeated development-pilot observations; not independent cases"
+      },
+      "strict_result_exact_match": {
+        "numerator": 4,
+        "denominator": 8,
+        "value": 0.5,
+        "interpretation": "descriptive repeated development-pilot observations; not independent cases"
+      },
+      "false_clarification_abstention_rate": {
+        "numerator": 1,
+        "denominator": 8,
+        "value": 0.125,
+        "interpretation": "descriptive repeated development-pilot observations; not independent cases"
+      },
+      "supported_noncompletion_rate": {
+        "numerator": 3,
+        "denominator": 8,
+        "value": 0.375,
+        "interpretation": "descriptive repeated development-pilot observations; not independent cases"
+      },
+      "validation_blocked_supported_rate": {
+        "numerator": 1,
+        "denominator": 8,
+        "value": 0.125,
+        "interpretation": "descriptive repeated development-pilot observations; not independent cases"
+      },
+      "valid_clarification_abstention_rate": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0,
+        "interpretation": "descriptive repeated development-pilot observations; not independent cases"
+      },
+      "provider_calls": {
+        "sql_generation_provider_submissions": 6,
+        "metric_interpretation_provider_submissions": 2,
+        "schema_selection_provider_requests": 6,
+        "local_codex_fallback_calls": 0,
+        "total_model_calls": 14,
+        "secondary_sql_provider_fallback_submissions": 0
+      }
+    }
+  },
+  "limitations": [
+    "Only five development cases were repeated; this is not a held-out benchmark.",
+    "Only two cases require general SQL generation; fixed/inventory cases do not measure SQL-LLM quality.",
+    "The repeated observations reuse the same questions and are not statistically independent.",
+    "A 120B P03 RateLimitError occurred in both rounds; treat it as provider noncompletion, not wrong business output.",
+    "A 120B P04 clarification in round 2 was validator-blocked after the model changed the requested historical period.",
+    "The 20B result is more reliable on this pilot, but the sample does not establish general model superiority.",
+    "Groq billing tier was not verified; do not claim the calls were free.",
+    "JEV/schema selection is a held-constant separate stage and is not the SQL-generation model under comparison."
+  ]
+}

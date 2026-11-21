@@ -50,15 +50,22 @@ legacy_backup=
 legacy_container=$(docker compose ps -aq backend-api)
 if [ -n "$legacy_container" ]; then
   if [ "$(docker inspect --format '{{.State.Running}}' "$legacy_container")" != true ]; then
-    echo "Start the existing backend before deploying so its saved dashboards can be backed up." >&2
-    exit 6
-  fi
-  umask 077
-  backup_directory="${XDG_STATE_HOME:-$HOME/.local/state}/enterprise-knowledge-ai-agent/dashboard-backups"
-  mkdir -p "$backup_directory"
-  chmod 700 "$backup_directory"
-  legacy_backup=$(mktemp "$backup_directory/XXXXXXXX.sqlite3")
-  docker compose exec -T backend-api python -c '
+    backup_directory="${XDG_STATE_HOME:-$HOME/.local/state}/enterprise-knowledge-ai-agent/dashboard-backups"
+    if [ -d "$backup_directory" ]; then
+      legacy_backup=$(find "$backup_directory" -maxdepth 1 -type f -name '*.sqlite3' -size +0c -printf '%T@ %p\n' | sort -nr | sed -n '1{s/^[^ ]* //;p;}')
+    fi
+    if [ -z "$legacy_backup" ]; then
+      echo "Backend is stopped and no retained dashboard snapshot is available; refusing to discard its writable layer." >&2
+      exit 6
+    fi
+    say "Reusing retained dashboard snapshot from the previous deployment attempt"
+  else
+    umask 077
+    backup_directory="${XDG_STATE_HOME:-$HOME/.local/state}/enterprise-knowledge-ai-agent/dashboard-backups"
+    mkdir -p "$backup_directory"
+    chmod 700 "$backup_directory"
+    legacy_backup=$(mktemp "$backup_directory/XXXXXXXX.sqlite3")
+    docker compose exec -T backend-api python -c '
 import os, pathlib, sqlite3, sys, tempfile
 from contextlib import closing
 source = pathlib.Path(os.getenv("DASHBOARD_STORAGE_DIR", "artifacts/local/dashboards")) / "dashboards.sqlite3"
@@ -69,25 +76,102 @@ if source.is_file():
             reader.backup(writer)
         sys.stdout.buffer.write(target.read_bytes())
 ' < /dev/null > "$legacy_backup"
+  fi
 fi
 
 say "Building and restarting changed services"
-docker compose up -d --build
+
+all_services=(backend-api document-processing retrieval-api chunking embeddings reranker)
+build_services=()
+deploy_services=()
+add_service() {
+  local target=$1 service
+  for service in "${deploy_services[@]}"; do [ "$service" = "$target" ] && return; done
+  deploy_services+=("$target")
+}
+add_build_service() {
+  local target=$1 service
+  add_service "$target"
+  for service in "${build_services[@]}"; do [ "$service" = "$target" ] && return; done
+  build_services+=("$target")
+}
+
+if [ "$before" != "$target" ]; then
+  while IFS= read -r path; do
+    case "$path" in
+      docker/Dockerfile.backend-api) add_build_service backend-api ;;
+      docker/Dockerfile.document-processing) add_build_service document-processing ;;
+      docker/Dockerfile.retrieval) add_build_service retrieval-api ;;
+      docker/Dockerfile.chunking) add_build_service chunking ;;
+      docker/Dockerfile.embeddings) add_build_service embeddings ;;
+      docker/Dockerfile.reranker) add_build_service reranker ;;
+      .dockerignore)
+        # The semantic-data allowlist in this file is consumed by the backend image.
+        add_build_service backend-api
+        ;;
+      docker-compose.yml|pyproject.toml|uv.lock)
+        for service in "${all_services[@]}"; do add_build_service "$service"; done
+        ;;
+      src/core/services/runtime.py)
+        # This runtime is copied into every API image.
+        for service in backend-api document-processing retrieval-api embeddings reranker; do add_build_service "$service"; done
+        ;;
+      src/document_processing/diagnostics.py)
+        add_build_service document-processing
+        add_build_service backend-api
+        ;;
+      src/document_processing/*) add_build_service document-processing ;;
+      src/app/*|data/semantic/*|src/core/agents/*|src/core/agents/dashboard/*|src/core/auth/*)
+        add_build_service backend-api
+        ;;
+      src/core/embeddings/*) add_build_service embeddings ;;
+      src/core/retrieval/reranker.py) add_build_service reranker ;;
+      src/core/retrieval/*) add_build_service retrieval-api ;;
+      src/core/chunking/*) add_build_service chunking ;;
+      src/core/*|src/*) add_build_service backend-api ;;
+    esac
+  done < <(git diff --name-only "$before" "$target")
+fi
+
+# Recover stopped or unhealthy services with their existing image even when their source did not change.
+for service in "${all_services[@]}"; do
+  container_id=$(docker compose ps -q "$service")
+  if [ -z "$container_id" ]; then
+    add_build_service "$service"
+    continue
+  fi
+  container_status=$(docker inspect --format '{{.State.Status}}' "$container_id")
+  health_status=$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$container_id")
+  if [ "$container_status" != running ] || { [ "$health_status" != healthy ] && [ "$health_status" != none ]; }; then
+    add_service "$service"
+  fi
+done
+
+if [ "${#build_services[@]}" -gt 0 ]; then
+  say "Building: ${build_services[*]}"
+  docker compose build "${build_services[@]}"
+fi
+if [ "${#deploy_services[@]}" -gt 0 ]; then
+  say "Starting: ${deploy_services[*]}"
+  docker compose up -d --no-deps "${deploy_services[@]}"
+else
+  say "No service changes or unhealthy containers; checking the current stack"
+fi
 
 if [ -n "$legacy_backup" ] && [ -s "$legacy_backup" ]; then
   say "Copying legacy dashboards to shared storage (local backup retained)"
   docker cp "$legacy_backup" "$(docker compose ps -q backend-api):/tmp/dashboard-migration.sqlite3"
   docker compose exec -T backend-api python -c '
 import json, sys
-from core.dashboards.postgres_store import PostgresDashboardStore
+from core.agents.dashboard.postgres_store import PostgresDashboardStore
 print(json.dumps(PostgresDashboardStore().import_sqlite(sys.argv[1])))
 ' /tmp/dashboard-migration.sqlite3 < /dev/null
 fi
 
 docker compose exec -T backend-api python -c '
 from uuid import uuid4
-from core.dashboards.store import create_dashboard_store
-from core.dashboards.postgres_store import PostgresDashboardStore
+from core.agents.dashboard.store import create_dashboard_store
+from core.agents.dashboard.postgres_store import PostgresDashboardStore
 store = create_dashboard_store()
 assert isinstance(store, PostgresDashboardStore), "Production dashboards require shared PostgreSQL storage"
 store.list("deployment-check-" + uuid4().hex)

@@ -2,6 +2,7 @@
 .venv
 env
 __pycache__
+agent_cache
 *.py[cod]
 .env
 .env.*
@@ -25,6 +26,8 @@ data/*
 data/semantic/*
 !data/semantic/vietstyle_metrics_v1.yaml
 !data/semantic/vietstyle_business_ontology_v1.yaml
+!data/semantic/sales_performance_strict.json
+!data/semantic/inventory_operations_strict.json
 !data/vietnam_enterprises/
 data/vietnam_enterprises/*
 !data/vietnam_enterprises/manifest.json

@@ -1,0 +1,576 @@
+import sys
+import asyncio
+import unittest
+from pathlib import Path
+from unittest.mock import AsyncMock, Mock, patch
+
+from fastapi import HTTPException
+from fastapi.testclient import TestClient
+from pydantic import ValidationError
+from starlette.requests import Request
+from starlette.responses import Response
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+
+import app.main as app_main
+from app.main import CORPUS_COMPANY, DOCUMENT_ROLES, ROLE_PERMISSIONS, DocumentAccessRequest, KnowledgeBaseStatusRequest, _commerce_reference_metadata, _role_accounts, _roles_with_permission, access_matrix, app, require_permission, upload_capability
+from core.agents.decision_support.intent_classifier import IntentClassifier
+from core.models.agents import AgentResult, Evidence
+
+
+class CommerceDashboardApiTest(unittest.TestCase):
+    def test_commerce_upload_reference_requires_trusted_classification_and_attribution(self):
+        method = _commerce_reference_metadata(
+            ["promotion_planning"], "Nielsen Norman Group", "management_cookbook_reference",
+            "General experimentation method; not Commerce Demo policy",
+        )
+        self.assertEqual(method["evidence_class"], "management_cookbook_reference")
+        self.assertFalse(method["external_policy_reference"])
+        self.assertFalse(method["external_business_reference"])
+        self.assertTrue(method["commerce_reference_active"])
+
+        metadata = _commerce_reference_metadata(
+            ["inventory_allocation", "nationwide_logistics", "inventory_allocation"],
+            " Walmart Inc. ",
+            "company_policy_reference",
+            " Walmart suppliers only; not Commerce Demo policy ",
+        )
+        self.assertEqual(metadata["knowledge_domains"], ["inventory_allocation", "nationwide_logistics"])
+        self.assertEqual(metadata["source_publisher"], "Walmart Inc.")
+        self.assertEqual(metadata["reference_applicability"], "Walmart suppliers only; not Commerce Demo policy")
+        self.assertEqual(metadata["evidence_class"], "company_policy_reference")
+        self.assertFalse(metadata["external_policy_reference"])
+        self.assertFalse(metadata["synthetic_company_policy"])
+        self.assertTrue(metadata["commerce_reference_active"])
+
+        synthetic = _commerce_reference_metadata(
+            ["inventory_allocation"],
+            "Commerce Demo (fictional organization)",
+            "company_policy_reference",
+            "Fictional Commerce Demo only; not a policy of a real company.",
+            True,
+        )
+        self.assertTrue(synthetic["synthetic_company_policy"])
+        self.assertFalse(synthetic["external_business_reference"])
+        self.assertEqual(synthetic["evidence_class"], "company_policy_reference")
+        self.assertTrue(synthetic["commerce_reference_active"])
+
+        for domains, publisher, reference_type in (
+            (["made_up"], "Publisher", "company_policy_reference"),
+            (["inventory_allocation"], "", "company_policy_reference"),
+            (["inventory_allocation"], "Publisher", ""),
+        ):
+            with self.subTest(reference_type=reference_type, publisher=publisher):
+                with self.assertRaises(HTTPException):
+                    _commerce_reference_metadata(domains, publisher, reference_type)
+
+        with self.assertRaises(HTTPException):
+            _commerce_reference_metadata(["inventory_allocation"], "Publisher", "company_policy_reference", " ")
+
+        for reference_type, publisher, scope in (
+            ("company_practice_reference", "Commerce Demo (fictional organization)", "Fictional demo only"),
+            ("company_policy_reference", "Walmart Inc.", "Fictional demo only"),
+            ("company_policy_reference", "Commerce Demo (fictional organization)", "Applies to suppliers"),
+        ):
+            with self.subTest(reference_type=reference_type, publisher=publisher, scope=scope):
+                with self.assertRaises(HTTPException):
+                    _commerce_reference_metadata(["inventory_allocation"], publisher, reference_type, scope, True)
+
+    def test_document_uploader_cannot_mark_an_upload_as_synthetic_policy(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_UPLOADER_USERNAME": "uploader-test",
+            "DEMO_UPLOADER_PASSWORD": "uploader-password",
+        }
+        with patch.dict("os.environ", environment, clear=False), TestClient(app) as client:
+            login = client.post("/api/auth/login", json={
+                "username": "uploader-test", "password": "uploader-password",
+            })
+            self.assertEqual(login.status_code, 200)
+            response = client.post(
+                "/api/documents/upload",
+                files={"file": ("demo-policy.pdf", b"%PDF-1.4\n", "application/pdf")},
+                data={
+                    "title": "Synthetic inventory policy",
+                    "document_type": "company_policy_reference",
+                    "domain": "inventory_allocation",
+                    "source_publisher": "Commerce Demo (fictional organization)",
+                    "reference_type": "company_policy_reference",
+                    "reference_applicability": "Fictional Commerce Demo only",
+                    "synthetic_company_policy": "true",
+                    "knowledge_domains": "inventory_allocation",
+                    "allowed_roles": "admin",
+                },
+            )
+        self.assertEqual(response.status_code, 403)
+        self.assertIn("Only an admin", response.json()["detail"])
+
+
+
+
+
+
+
+
+
+
+
+
+    def test_access_matrix_matches_actual_role_capabilities(self):
+        matrix = access_matrix({"sub": "admin"})
+        permissions = {row["role"]: set(row["permissions"]) for row in matrix["roles"]}
+        self.assertEqual(permissions, ROLE_PERMISSIONS)
+        self.assertIn("view_agent_monitoring", permissions["admin"])
+        self.assertNotIn("view_agent_monitoring", permissions["employee"])
+        self.assertNotIn("view_agent_monitoring", permissions["document_uploader"])
+        self.assertEqual(set(_roles_with_permission("view_analytics")), {"finance_analyst", "sustainability_analyst", "operations", "executive", "admin"})
+        self.assertNotIn("view_analytics", permissions["employee"])
+        self.assertIn("manage_knowledge", permissions["admin"])
+        self.assertNotIn("manage_knowledge", permissions["finance_analyst"])
+
+    def test_admin_can_remove_and_restore_a_source_from_retrieval(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_ADMIN_USERNAME": "admin-test",
+            "DEMO_ADMIN_PASSWORD": "admin-password",
+        }
+        repository = Mock()
+        repository.set_knowledge_base_active.return_value = True
+        with patch.dict("os.environ", environment, clear=False), \
+             patch("app.main.DocumentRepository", return_value=repository), \
+             TestClient(app) as client:
+            self.assertEqual(client.post("/api/auth/login", json={
+                "username": "admin-test", "password": "admin-password",
+            }).status_code, 200)
+            response = client.patch("/api/admin/knowledge-documents/SHOPIFY-1", json={"active": False})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"document_id": "SHOPIFY-1", "active": False})
+        repository.set_knowledge_base_active.assert_called_once_with("SHOPIFY-1", False)
+
+    def test_admin_can_update_existing_document_reader_roles(self):
+        repository = Mock()
+        repository.set_document_allowed_roles.return_value = True
+        scope = {
+            "type": "http", "asgi": {"version": "3.0"}, "http_version": "1.1",
+            "method": "PATCH", "scheme": "http", "path": "/", "raw_path": b"/",
+            "query_string": b"", "root_path": "", "headers": [(b"host", b"testserver")],
+            "server": ("testserver", 80), "client": ("testclient", 80),
+        }
+        with patch("app.main.DocumentRepository", return_value=repository):
+            response = app_main.set_knowledge_document_access(
+                "SHOPIFY-1", DocumentAccessRequest(allowed_roles=["employee", "procurement"]),
+                Request(scope), {"role": "admin"},
+            )
+        self.assertEqual(response, {
+            "document_id": "SHOPIFY-1", "allowed_roles": ["employee", "procurement"],
+        })
+        repository.set_document_allowed_roles.assert_called_once_with(
+            "SHOPIFY-1", ["employee", "procurement"],
+        )
+
+    def test_document_reader_role_update_is_admin_only_over_http(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_ADMIN_USERNAME": "admin-test",
+            "DEMO_ADMIN_PASSWORD": "admin-password",
+            "DEMO_ANALYST_USERNAME": "analyst-test",
+            "DEMO_ANALYST_PASSWORD": "analyst-password",
+        }
+        repository = Mock()
+        repository.set_document_allowed_roles.return_value = True
+        with patch.dict("os.environ", environment, clear=False), \
+             patch("app.main.DocumentRepository", return_value=repository), \
+             TestClient(app) as client:
+            self.assertEqual(client.post("/api/auth/login", json={
+                "username": "admin-test", "password": "admin-password",
+            }).status_code, 200)
+            allowed = client.patch(
+                "/api/admin/knowledge-documents/SHOPIFY-1/access",
+                json={"allowed_roles": ["employee", "procurement"]},
+            )
+            client.post("/api/auth/logout")
+            self.assertEqual(client.post("/api/auth/login", json={
+                "username": "analyst-test", "password": "analyst-password",
+            }).status_code, 200)
+            denied = client.patch(
+                "/api/admin/knowledge-documents/SHOPIFY-1/access",
+                json={"allowed_roles": ["employee"]},
+            )
+
+        self.assertEqual(allowed.status_code, 200)
+        self.assertEqual(allowed.json(), {
+            "document_id": "SHOPIFY-1", "allowed_roles": ["employee", "procurement"],
+        })
+        self.assertEqual(denied.status_code, 403)
+        repository.set_document_allowed_roles.assert_called_once_with(
+            "SHOPIFY-1", ["employee", "procurement"],
+        )
+
+    def test_document_access_rejects_empty_or_unknown_role_lists(self):
+        for roles in ([], ["tester"], ["employee", "employee"]):
+            with self.subTest(roles=roles), self.assertRaises(ValidationError):
+                DocumentAccessRequest(allowed_roles=roles)
+
+    def test_analyst_cannot_change_knowledge_base_sources(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_ANALYST_USERNAME": "analyst-test",
+            "DEMO_ANALYST_PASSWORD": "analyst-password",
+        }
+        with patch.dict("os.environ", environment, clear=False), TestClient(app) as client:
+            self.assertEqual(client.post("/api/auth/login", json={
+                "username": "analyst-test", "password": "analyst-password",
+            }).status_code, 200)
+            response = client.patch("/api/admin/knowledge-documents/SHOPIFY-1", json={"active": False})
+        self.assertEqual(response.status_code, 403)
+
+    def test_only_admin_can_open_manifest_registered_synthetic_policy_pdf(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_ADMIN_USERNAME": "admin-test",
+            "DEMO_ADMIN_PASSWORD": "admin-password",
+            "DEMO_ANALYST_USERNAME": "analyst-test",
+            "DEMO_ANALYST_PASSWORD": "analyst-password",
+        }
+        with patch.dict("os.environ", environment, clear=False), \
+             patch("app.main._synthetic_policy_file_response", side_effect=lambda document_id: (
+                 Response(content=b"%PDF-1.4\n", media_type="application/pdf",
+                          headers={"Content-Disposition": "inline; filename=policy.pdf",
+                                   "Cache-Control": "private, no-store"})
+                 if document_id == "CD-POL-INV-001" else HTTPException(404)
+             )), TestClient(app) as client:
+            self.assertEqual(client.post("/api/auth/login", json={
+                "username": "admin-test", "password": "admin-password",
+            }).status_code, 200)
+            response = client.get("/api/admin/knowledge-documents/CD-POL-INV-001/source")
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.headers["content-type"], "application/pdf")
+            self.assertIn("inline", response.headers["content-disposition"])
+            self.assertTrue(response.content.startswith(b"%PDF-"))
+            client.post("/api/auth/logout")
+            self.assertEqual(client.post("/api/auth/login", json={
+                "username": "analyst-test", "password": "analyst-password",
+            }).status_code, 200)
+            self.assertEqual(client.get(
+                "/api/admin/knowledge-documents/CD-POL-INV-001/source",
+            ).status_code, 403)
+
+    def test_analyst_can_open_allowed_active_synthetic_policy_and_uploader_cannot(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_ANALYST_USERNAME": "analyst-test",
+            "DEMO_ANALYST_PASSWORD": "analyst-password",
+            "DEMO_UPLOADER_USERNAME": "uploader-test",
+            "DEMO_UPLOADER_PASSWORD": "uploader-password",
+        }
+        repository = Mock()
+        repository.uploaded_source.return_value = None
+        repository.accessible_synthetic_policy_source.side_effect = lambda _id, company, role: (
+            {"title": "Inventory policy", "format": "PDF"}
+            if role == "finance_analyst" and company == CORPUS_COMPANY else None
+        )
+        with patch.dict("os.environ", environment, clear=False), \
+             patch("app.main.DocumentRepository", return_value=repository), \
+             patch("app.main._storage_client") as storage_client, \
+             patch("app.main._synthetic_policy_file_response", return_value=Response(
+                 content=b"%PDF-1.4\n", media_type="application/pdf",
+                 headers={"Cache-Control": "private, no-store"})), \
+             TestClient(app) as client:
+            self.assertEqual(client.post("/api/auth/login", json={
+                "username": "analyst-test", "password": "analyst-password",
+            }).status_code, 200)
+            allowed = client.get("/api/documents/CD-POL-INV-001/source")
+            client.post("/api/auth/logout")
+            self.assertEqual(client.post("/api/auth/login", json={
+                "username": "uploader-test", "password": "uploader-password",
+            }).status_code, 200)
+            denied = client.get("/api/documents/CD-POL-INV-001/source")
+
+        self.assertEqual(allowed.status_code, 200)
+        self.assertEqual(allowed.headers["content-type"], "application/pdf")
+        self.assertTrue(allowed.content.startswith(b"%PDF-"))
+        self.assertEqual(allowed.headers["cache-control"], "private, no-store")
+        self.assertEqual(denied.status_code, 404)
+        repository.accessible_synthetic_policy_source.assert_any_call(
+            "CD-POL-INV-001", company=CORPUS_COMPANY, role="finance_analyst",
+        )
+        repository.accessible_synthetic_policy_source.assert_any_call(
+            "CD-POL-INV-001", company=CORPUS_COMPANY, role="document_uploader",
+        )
+        storage_client.assert_not_called()
+
+    def test_knowledge_status_request_rejects_unknown_fields(self):
+        with self.assertRaises(ValidationError):
+            KnowledgeBaseStatusRequest(active=False, delete_source=True)
+
+    def test_uploader_can_upload_without_analytics_or_admin_review(self):
+        self.assertTrue(upload_capability({"role": "document_uploader"})["can_upload"])
+        self.assertNotIn("/api/business-metrics/parser-profiles", {
+            route.path for route in app_main.app.routes
+        })
+        self.assertNotIn("view_analytics", ROLE_PERMISSIONS["document_uploader"])
+        self.assertNotIn("ask_documents", ROLE_PERMISSIONS["document_uploader"])
+        self.assertNotIn("review_metrics", ROLE_PERMISSIONS["document_uploader"])
+        self.assertNotIn("manage_access", ROLE_PERMISSIONS["document_uploader"])
+        self.assertNotIn("document_uploader", _roles_with_permission("review_metrics"))
+
+    def test_document_uploader_is_denied_current_document_question_route(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_UPLOADER_USERNAME": "uploader-test",
+            "DEMO_UPLOADER_PASSWORD": "uploader-password",
+        }
+        with patch.dict("os.environ", environment, clear=False), TestClient(app) as client:
+            login = client.post("/api/auth/login", json={
+                "username": "uploader-test", "password": "uploader-password",
+            })
+            response = client.post("/api/agents/chat", json={"question": "Summarize a document"})
+
+        self.assertEqual(login.status_code, 200)
+        self.assertEqual(response.status_code, 403)
+
+    def test_employee_is_denied_by_authenticated_upload_http_route(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_VIEWER_USERNAME": "employee-test",
+            "DEMO_VIEWER_PASSWORD": "employee-password",
+        }
+        with patch.dict("os.environ", environment, clear=False), TestClient(app) as client:
+            login = client.post("/api/auth/login", json={
+                "username": "employee-test", "password": "employee-password",
+            })
+            self.assertEqual(login.status_code, 200)
+            response = client.post(
+                "/api/documents/upload",
+                data={
+                    "title": "Should be denied",
+                    "document_type": "internal_report",
+                    "domain": "finance",
+                    "allowed_roles": "employee",
+                },
+                files={"file": ("denied.txt", b"No database write should occur.", "text/plain")},
+            )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json()["detail"], "Bạn không có quyền truy cập chức năng hoặc tài liệu này.")
+
+    def test_dashboard_endpoint_uses_manifest_company_scope(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_ANALYST_USERNAME": "analyst-test",
+            "DEMO_ANALYST_PASSWORD": "analyst-password",
+        }
+        repository = Mock()
+        repository.corpus_dashboard.return_value = {"documents": []}
+        with patch.dict("os.environ", environment, clear=False), \
+             patch("app.main.DocumentRepository", return_value=repository), \
+             TestClient(app) as client:
+            login = client.post("/api/auth/login", json={
+                "username": "analyst-test", "password": "analyst-password",
+            })
+            self.assertEqual(login.status_code, 200)
+            response = client.get("/api/dashboard")
+
+        self.assertEqual(response.status_code, 200)
+        repository.corpus_dashboard.assert_called_once_with(
+            "finance_analyst", "analyst-test",
+        )
+
+    def test_processing_owner_can_inspect_paginated_parsed_chunks_in_company_scope(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_DOCUMENT_PROCESSING_OWNER_USERNAME": "processor-test",
+            "DEMO_DOCUMENT_PROCESSING_OWNER_PASSWORD": "processor-password",
+        }
+        parsed = Mock()
+        parsed.get_document.return_value = [{"chunk_index": 0, "content": "extracted OCR text", "metadata": {}}]
+        with patch.dict("os.environ", environment, clear=False), \
+             patch("core.database.parser_chunks_repository.ParserChunksRepository", return_value=parsed), \
+             TestClient(app) as client:
+            login = client.post("/api/auth/login", json={
+                "username": "processor-test", "password": "processor-password",
+            })
+            self.assertEqual(login.status_code, 200)
+            response = client.get("/api/admin/processing/UPLOAD-1/chunks?offset=5&limit=10")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["chunks"][0]["content"], "extracted OCR text")
+        parsed.get_document.assert_called_once_with(
+            "UPLOAD-1", limit=10, offset=5, company=CORPUS_COMPANY,
+        )
+        parsed.close.assert_called_once()
+
+    def test_processing_owner_can_request_exact_indexed_metric_source_chunk(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_DOCUMENT_PROCESSING_OWNER_USERNAME": "processor-test",
+            "DEMO_DOCUMENT_PROCESSING_OWNER_PASSWORD": "processor-password",
+        }
+        parsed = Mock()
+        indexed = Mock()
+        indexed.get_document_chunk.return_value = {
+            "chunk_index": 413, "content": "Exact linked indexed source passage", "metadata": {},
+        }
+        with patch.dict("os.environ", environment, clear=False), \
+             patch("core.database.parser_chunks_repository.ParserChunksRepository", return_value=parsed), \
+             patch("core.database.document_chunks_repository.DocumentChunkRepository", return_value=indexed), \
+             TestClient(app) as client:
+            login = client.post("/api/auth/login", json={
+                "username": "processor-test", "password": "processor-password",
+            })
+            self.assertEqual(login.status_code, 200)
+            response = client.get("/api/admin/processing/COMMERCE-REF-2025/chunks?stage=indexed&source_chunk_id=9021")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["stage"], "indexed")
+        self.assertEqual(response.json()["chunks"][0]["content"], "Exact linked indexed source passage")
+        parsed.get_document.assert_not_called()
+        indexed.get_document_chunk.assert_called_once_with(
+            9021, "COMMERCE-REF-2025", company=CORPUS_COMPANY,
+        )
+        indexed.close.assert_called_once()
+        parsed.close.assert_not_called()
+
+    def test_processing_owner_can_inspect_company_scoped_extracted_tables(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_DOCUMENT_PROCESSING_OWNER_USERNAME": "processor-test",
+            "DEMO_DOCUMENT_PROCESSING_OWNER_PASSWORD": "processor-password",
+        }
+        store = Mock()
+        store.get_document_tables.return_value = [{
+            "page_number": 2, "table_index": 0, "columns": ["Metric", "Value"],
+            "rows": [{"Metric": "Revenue", "Value": "100"}], "row_count": 1,
+            "metadata": {"parser": "test"},
+        }]
+        with patch.dict("os.environ", environment, clear=False), \
+             patch("core.database.structured_store.StructuredDataStore", return_value=store), \
+             TestClient(app) as client:
+            login = client.post("/api/auth/login", json={
+                "username": "processor-test", "password": "processor-password",
+            })
+            self.assertEqual(login.status_code, 200)
+            response = client.get(
+                "/api/admin/processing/UPLOAD-1/tables?table_offset=1&row_offset=5&row_limit=20"
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["tables"][0]["rows"][0]["Metric"], "Revenue")
+        store.get_document_tables.assert_called_once_with(
+            "UPLOAD-1", company=CORPUS_COMPANY, table_offset=1, table_limit=50,
+            row_offset=5, row_limit=20,
+        )
+        store.close.assert_called_once()
+
+    def test_employee_cannot_inspect_extracted_tables(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_VIEWER_USERNAME": "viewer-test",
+            "DEMO_VIEWER_PASSWORD": "viewer-password",
+        }
+        store = Mock()
+        with patch.dict("os.environ", environment, clear=False), \
+             patch("core.database.structured_store.StructuredDataStore", return_value=store), \
+             TestClient(app) as client:
+            login = client.post("/api/auth/login", json={
+                "username": "viewer-test", "password": "viewer-password",
+            })
+            self.assertEqual(login.status_code, 200)
+            response = client.get("/api/admin/processing/UPLOAD-1/tables")
+
+        self.assertEqual(response.status_code, 403)
+        store.get_document_tables.assert_not_called()
+
+    def test_processing_owner_can_open_private_uploaded_pdf_at_source_review(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_DOCUMENT_PROCESSING_OWNER_USERNAME": "processor-test",
+            "DEMO_DOCUMENT_PROCESSING_OWNER_PASSWORD": "processor-password",
+        }
+        repository = Mock()
+        repository.uploaded_source.return_value = {
+            "title": "Annual report", "format": "PDF", "storage_path": "UPLOAD-1/report.pdf",
+        }
+        storage = Mock()
+        storage.storage.from_.return_value.download.return_value = b"%PDF-1.7 test"
+        with patch.dict("os.environ", environment, clear=False), \
+             patch("app.main.DocumentRepository", return_value=repository), \
+             patch("app.main._storage_client", return_value=(storage, "enterprise-documents")), \
+             TestClient(app) as client:
+            login = client.post("/api/auth/login", json={
+                "username": "processor-test", "password": "processor-password",
+            })
+            self.assertEqual(login.status_code, 200)
+            response = client.get("/api/admin/processing/UPLOAD-1/source#page=4")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"%PDF-1.7 test")
+        self.assertEqual(response.headers["content-type"], "application/pdf")
+        self.assertIn("inline; filename*=UTF-8''Annual%20report.pdf", response.headers["content-disposition"])
+        self.assertEqual(response.headers["cache-control"], "private, no-store")
+        repository.uploaded_source.assert_called_once_with(
+            "UPLOAD-1", company=CORPUS_COMPANY,
+            role="document_processing_owner", username="processor-test",
+        )
+        storage.storage.from_.return_value.download.assert_called_once_with("UPLOAD-1/report.pdf")
+        repository.close.assert_called_once()
+
+    def test_employee_cannot_open_private_uploaded_source(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_VIEWER_USERNAME": "viewer-test",
+            "DEMO_VIEWER_PASSWORD": "viewer-password",
+        }
+        repository = Mock()
+        storage = Mock()
+        with patch.dict("os.environ", environment, clear=False), \
+             patch("app.main.DocumentRepository", return_value=repository), \
+             patch("app.main._storage_client", return_value=(storage, "enterprise-documents")), \
+             TestClient(app) as client:
+            login = client.post("/api/auth/login", json={
+                "username": "viewer-test", "password": "viewer-password",
+            })
+            self.assertEqual(login.status_code, 200)
+            response = client.get("/api/admin/processing/UPLOAD-1/source")
+
+        self.assertEqual(response.status_code, 403)
+        repository.uploaded_source.assert_not_called()
+
+    def test_finance_analyst_can_open_source_when_document_role_allows_it(self):
+        environment = {
+            "AUTH_SECRET_KEY": "test-secret-key-that-is-at-least-32-bytes-long",
+            "DEMO_ANALYST_USERNAME": "analyst-test",
+            "DEMO_ANALYST_PASSWORD": "analyst-password",
+        }
+        repository = Mock()
+        repository.uploaded_source.return_value = {
+            "title": "Finance report", "format": "PDF", "storage_path": "UPLOAD-2/report.pdf",
+        }
+        storage = Mock()
+        storage.storage.from_.return_value.download.return_value = b"%PDF-1.7 finance"
+        with patch.dict("os.environ", environment, clear=False), \
+             patch("app.main.DocumentRepository", return_value=repository), \
+             patch("app.main._storage_client", return_value=(storage, "enterprise-documents")), \
+             TestClient(app) as client:
+            login = client.post("/api/auth/login", json={
+                "username": "analyst-test", "password": "analyst-password",
+            })
+            self.assertEqual(login.status_code, 200)
+            response = client.get("/api/documents/UPLOAD-2/source#page=3")
+
+        self.assertEqual(response.status_code, 200)
+        repository.uploaded_source.assert_called_once_with(
+            "UPLOAD-2", company=CORPUS_COMPANY,
+            role="finance_analyst", username="analyst-test",
+        )
+        storage.storage.from_.return_value.download.assert_called_once_with("UPLOAD-2/report.pdf")
+
+    def test_unknown_permission_fails_closed(self):
+        with self.assertRaises(ValueError):
+            require_permission("manage_everything")
+
+
+if __name__ == "__main__":
+    unittest.main()

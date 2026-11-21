@@ -4,7 +4,7 @@ Trạng thái: thử nghiệm local, chưa commit/push/deploy. **Cập nhật sa
 
 ## Code và luồng
 
-`needs_search_planner()` trong `src/core/rag/rag_service.py` dùng quy tắc cấu trúc VI/EN, không gọi model:
+`needs_search_planner()` trong `src/core/agents/knowledge/rag_service.py` dùng quy tắc cấu trúc VI/EN, không gọi model:
 - Nhiều dấu hỏi hoặc dấu chấm phẩy.
 - Danh sách có ít nhất hai mục đánh số.
 - Từ nối rõ như đồng thời/ngoài ra/sau đó/also/then.

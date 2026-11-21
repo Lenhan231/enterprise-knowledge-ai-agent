@@ -32,6 +32,8 @@ async def run_sync(function, *args, _timeout=60.0, **kwargs):
         try:
             remaining()
             return function(*args, **kwargs)
+        except StopIteration as error:
+            raise RuntimeError('Synchronous agent provider stopped unexpectedly') from error
         finally:
             _slots.release()
 
@@ -46,12 +48,21 @@ async def run_sync(function, *args, _timeout=60.0, **kwargs):
     return await asyncio.wait_for(asyncio.shield(task), remaining(_timeout))
 
 
-async def generate(provider, prompt, *, timeout=15):
+async def generate(provider, prompt, *, timeout=15, max_output_tokens=None):
     token = deadline.set(time.monotonic() + remaining(timeout))
     try:
+        kwargs = {}
+        if max_output_tokens is not None:
+            try:
+                parameters = inspect.signature(provider.generate).parameters.values()
+                if any(parameter.name == 'max_output_tokens' or parameter.kind == inspect.Parameter.VAR_KEYWORD
+                       for parameter in parameters):
+                    kwargs['max_output_tokens'] = max_output_tokens
+            except (TypeError, ValueError):
+                pass
         if inspect.iscoroutinefunction(provider.generate):
-            return await asyncio.wait_for(provider.generate(prompt), remaining(timeout))
-        result = await run_sync(provider.generate, prompt)
+            return await asyncio.wait_for(provider.generate(prompt, **kwargs), remaining(timeout))
+        result = await run_sync(provider.generate, prompt, **kwargs)
         if inspect.isawaitable(result):
             return await asyncio.wait_for(result, remaining(timeout))
         return result
@@ -59,35 +70,54 @@ async def generate(provider, prompt, *, timeout=15):
         deadline.reset(token)
 
 
-async def generate_with_local_codex(prompt, provider_error):
-    # Local debugging only: use authenticated Codex CLI after provider failure.
-    # This opt-in is not intended for deployed environments or main.
-    if os.getenv('CODEX_CLI_SQL_FALLBACK', 'false').casefold() != 'true':
-        raise provider_error
+async def generate_with_codex_cli(prompt, *, timeout=90):
+    """Run the authenticated local Codex CLI as an explicitly selected provider."""
     executable = shutil.which('codex')
     if not executable:
-        raise RuntimeError('Local Codex CLI fallback is enabled but codex is unavailable') from provider_error
+        raise RuntimeError('Codex CLI provider is selected but codex is unavailable')
     prompt = (
         'Local debugging response rule: answer in the language used by the user question in this prompt. '
         'If the question is Vietnamese, keep all user-facing text in Vietnamese. Preserve the requested JSON or other output format.\n\n'
         + prompt
     )
     process = await asyncio.create_subprocess_exec(
-        executable, 'exec', '--ephemeral', '--sandbox', 'read-only', '--skip-git-repo-check', '-',
+        executable, 'exec', '--ephemeral', '--sandbox', 'read-only', '--skip-git-repo-check',
+        '-C', '/tmp', '-',
         stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
     )
     try:
         stdout, stderr = await asyncio.wait_for(
-            process.communicate(prompt.encode('utf-8')), timeout=remaining(90)
+            process.communicate(prompt.encode('utf-8')), timeout=remaining(timeout)
         )
     except asyncio.TimeoutError as error:
         process.kill()
         await process.communicate()
         raise TimeoutError('Local Codex CLI generation exceeded its deadline') from error
+    except asyncio.CancelledError:
+        process.kill()
+        await process.communicate()
+        raise
     if process.returncode:
         detail = stderr.decode('utf-8', errors='replace').strip()
-        raise RuntimeError(f'Local Codex CLI generation failed: {detail[-1000:]}') from provider_error
+        raise RuntimeError(f'Codex CLI generation failed: {detail[-1000:]}')
     answer = stdout.decode('utf-8', errors='replace').strip()
     if not answer:
-        raise RuntimeError('Local Codex CLI returned an empty response') from provider_error
+        raise RuntimeError('Codex CLI returned an empty response')
     return answer
+
+
+class CodexCLIProvider:
+    """Provider adapter for local planner and SQL generation calls."""
+
+    def __init__(self, *, timeout=60):
+        self.timeout = timeout
+
+    async def generate(self, prompt, *, max_output_tokens=None):
+        return await generate_with_codex_cli(prompt, timeout=self.timeout)
+
+
+async def generate_with_local_codex(prompt, provider_error):
+    # SQL's local fallback is opt-in; production should use a configured API provider.
+    if os.getenv('CODEX_CLI_SQL_FALLBACK', 'false').casefold() != 'true':
+        raise provider_error
+    return await generate_with_codex_cli(prompt)

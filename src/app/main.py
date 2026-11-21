@@ -10,6 +10,7 @@ import time
 import secrets
 import uuid
 import unicodedata
+import traceback
 from typing import Annotated, Literal
 import jwt
 
@@ -22,7 +23,7 @@ from urllib.parse import quote, urlsplit
 from dotenv import load_dotenv
 
 from core.database.document_repository import DocumentRepository
-from core.analytics.commerce_decision_support import COMMERCE_DECISION_PROFILES
+from core.agents.sql.commerce_decision_support import COMMERCE_DECISION_PROFILES
 from supabase import create_client
 from app.security import (
     DOCUMENT_ROLES, ROLE_PERMISSIONS, _current_user, _is_trusted_frontend_origin,
@@ -31,12 +32,17 @@ from app.security import (
 )
 from app.agents import router as agents_router
 from app.dashboards import router as dashboards_router
+from app.reports import router as reports_router
 from app.retrieval import router as retrieval_router
 from app.upload_test import (
     create_upload_test, get_upload_test_preview, inspect_upload_test,
     list_upload_tests, router as upload_test_router,
 )
 from core.services.client import post as post_internal_service
+from document_processing.formats import (
+    IMAGE_FORMATS, LEGACY_OFFICE_FORMATS, MEDIA_TYPES, SUPPORTED_FORMATS, matches_signature,
+)
+from document_processing.image_input import validate_svg
 
 logger = logging.getLogger(__name__)
 @asynccontextmanager
@@ -60,6 +66,7 @@ app = FastAPI(title="Commerce Decision Support", lifespan=_lifespan)
 app.include_router(upload_test_router)
 app.include_router(agents_router)
 app.include_router(dashboards_router)
+app.include_router(reports_router)
 app.include_router(retrieval_router)
 
 APP_DIR = Path(__file__).resolve().parent
@@ -90,6 +97,48 @@ def _storage_filename(filename: str) -> str:
     stem = re.sub(r"[^A-Za-z0-9_-]+", "_", stem).strip("_-")
     stem = re.sub(r"[_-]{2,}", "_", stem)[:180].rstrip("_-")
     return f"{stem or 'document'}{suffix}"
+
+
+def _upload_error_log_payload(
+    document_id: str,
+    stage: str,
+    original_filename: str,
+    storage_filename: str,
+    error: Exception,
+    *,
+    http_status: int | None = None,
+) -> str:
+    """Build a searchable upload failure record without logging configured credentials."""
+    error_message = " ".join(str(error).split())
+    for variable in (
+        "SUPABASE_SECRET_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "INTERNAL_SERVICE_TOKEN",
+    ):
+        secret = os.getenv(variable)
+        if secret:
+            error_message = error_message.replace(secret, "[REDACTED]")
+    error_message = re.sub(r"(?i)\bBearer\s+[^\s,;]+", "Bearer [REDACTED]", error_message)
+
+    payload = {
+        "reference_id": document_id,
+        "stage": stage,
+        "original_filename": original_filename,
+        "storage_filename": storage_filename,
+        "error_type": type(error).__name__,
+        "error_message": error_message[:1000],
+        "error_location": [
+            f"{frame.filename}:{frame.lineno}:{frame.name}"
+            for frame in traceback.extract_tb(error.__traceback__)
+        ],
+    }
+    if http_status is not None:
+        payload["http_status"] = http_status
+    else:
+        storage_status = getattr(error, "status_code", getattr(error, "statusCode", None))
+        if storage_status is not None:
+            payload["storage_status_code"] = storage_status
+    return json.dumps(payload, ensure_ascii=False, sort_keys=True)
 
 
 def _role_accounts() -> dict[str, tuple[str, str]]:
@@ -198,7 +247,7 @@ class InvoiceReviewRequest(BaseModel):
 def home():
     if os.getenv("BACKEND_ONLY") == "1":
         return {"service": "backend-api", "docs": "/docs"}
-    return FileResponse(STATIC_DIR / "index.html")
+    return FileResponse(STATIC_DIR / "index.html", headers={"Cache-Control": "no-cache"})
 
 
 @app.get("/health")
@@ -435,6 +484,19 @@ def set_knowledge_document_access(
             repository.close()
 
 
+def _document_page_count(parsed: dict, extension: str) -> int | None:
+    if extension in IMAGE_FORMATS and parsed.get("page_sizes"):
+        return len(parsed["page_sizes"])
+    page_numbers = (
+        item.get("metadata", {}).get("page_number")
+        for item in [*parsed.get("elements", []), *parsed.get("tables", [])]
+    )
+    return max(
+        (number for number in page_numbers if isinstance(number, int)),
+        default=1 if extension in IMAGE_FORMATS else None,
+    )
+
+
 @app.post("/api/documents/parser-handoff")
 @app.post("/api/documents/upload")
 async def upload_document(
@@ -459,9 +521,8 @@ async def upload_document(
     parser_handoff = request is not None and request.url.path == "/api/documents/parser-handoff"
     filename = Path((file.filename or "").replace("\\", "/")).name
     extension = Path(filename).suffix.lower()
-    from document_processing.document_processor import DocumentProcessor, SUPPORTED_FORMATS
-    if not filename or extension not in SUPPORTED_FORMATS or extension in {".svg", ".webp"}:
-        raise HTTPException(415, "Supported formats: PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG, TIF")
+    if not filename or extension not in SUPPORTED_FORMATS:
+        raise HTTPException(415, "Unsupported document format")
     if not title.strip() or not document_type.strip() or not domain.strip():
         raise HTTPException(422, "Title, document type, and domain are required")
     if ocr_language not in OCR_LANGUAGES:
@@ -487,11 +548,18 @@ async def upload_document(
     content = await file.read(50 * 1024 * 1024 + 1)
     if len(content) > 50 * 1024 * 1024:
         raise HTTPException(413, "Maximum file size is 50 MiB")
-    signatures = {".pdf": content.startswith(b"%PDF-"), ".png": content.startswith(b"\x89PNG\r\n\x1a\n"),
-                  ".jpg": content.startswith(b"\xff\xd8\xff"), ".jpeg": content.startswith(b"\xff\xd8\xff"),
-                  ".tif": content.startswith((b"II*\x00", b"MM\x00*")), ".tiff": content.startswith((b"II*\x00", b"MM\x00*"))}
-    if extension in signatures and not signatures[extension]:
-        raise HTTPException(415, "File content does not match its extension")
+    if not matches_signature(content, extension):
+        detail = (
+            "File is truncated or has an invalid legacy Office header"
+            if extension in LEGACY_OFFICE_FORMATS
+            else "File content does not match its extension"
+        )
+        raise HTTPException(415, detail)
+    if extension == ".svg":
+        try:
+            validate_svg(content)
+        except ValueError as error:
+            raise HTTPException(422, str(error)) from error
 
     document_id = f"UPLOAD-{uuid.uuid4().hex}"
     storage_filename = _storage_filename(filename)
@@ -501,12 +569,7 @@ async def upload_document(
             "Normalized upload filename for storage: document_id=%s original_filename=%r storage_filename=%r",
             document_id, filename, storage_filename,
         )
-    content_type = {".pdf": "application/pdf", ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-                    ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    ".csv": "text/csv",
-                    ".txt": "text/plain", ".md": "text/markdown", ".png": "image/png",
-                    ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".tif": "image/tiff", ".tiff": "image/tiff"}[extension]
+    content_type = MEDIA_TYPES[extension]
     source_hash = hashlib.sha256(content).hexdigest()
     repository = None
     registered = False
@@ -591,14 +654,7 @@ async def upload_document(
                 outputs_repository.close()
 
             if parser_handoff:
-                page_numbers = [
-                    item.get("metadata", {}).get("page_number")
-                    for item in [*parsed.get("elements", []), *parsed.get("tables", [])]
-                    if isinstance(item.get("metadata", {}).get("page_number"), int)
-                ]
-                page_count = max(page_numbers) if page_numbers else (
-                    1 if extension in {".png", ".jpg", ".jpeg", ".tif", ".tiff"} else None
-                )
+                page_count = _document_page_count(parsed, extension)
                 repository.update_processing_status(document_id, "parsed")
                 return {
                     "document_id": document_id,
@@ -625,7 +681,7 @@ async def upload_document(
             int(chunk["metadata"]["page_count"])
             for chunk in parser_chunks
             if chunk.get("metadata", {}).get("page_count") is not None
-        ), 1 if extension in {".png", ".jpg", ".jpeg", ".tif", ".tiff"} else None)
+        ), _document_page_count(parsed, extension))
         ocr_chunk_count = sum(
             bool(chunk.get("metadata", {}).get("ocr"))
             or bool(chunk.get("metadata", {}).get("ocr_model"))
@@ -691,8 +747,11 @@ async def upload_document(
             except Exception:
                 logger.exception("Failed to record rejected upload %s", document_id)
         logger.warning(
-            "Document upload stopped: document_id=%s stage=%s original_filename=%r http_status=%s detail=%s",
-            document_id, stage, filename, error.status_code, error.detail,
+            "DOCUMENT_UPLOAD_ERROR %s",
+            _upload_error_log_payload(
+                document_id, stage, filename, storage_filename, error,
+                http_status=error.status_code,
+            ),
         )
         raise
     except Exception as error:
@@ -701,9 +760,9 @@ async def upload_document(
                 repository.update_processing_status(document_id, "failed")
             except Exception:
                 logger.exception("Failed to record failed status for %s", document_id)
-        logger.exception(
-            "Document upload failed: document_id=%s stage=%s original_filename=%r storage_filename=%r error_type=%s",
-            document_id, stage, filename, storage_filename, type(error).__name__,
+        logger.error(
+            "DOCUMENT_UPLOAD_ERROR %s",
+            _upload_error_log_payload(document_id, stage, filename, storage_filename, error),
         )
         user_stage = {
             "register_document": "registering the document",
@@ -781,11 +840,7 @@ def _process_invoice_upload(
                     "DOCUMENT_PROCESSING_INVOICE_LAYOUT_THREADS", "2",
                 )),
             },
-        }, timeout=int(os.getenv(
-            "DOCUMENT_PROCESSING_XIAOMI_TIMEOUT_SECONDS", "1800",
-        ) if model_provider == "xiaomi" else os.getenv(
-            "DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS", "600",
-        )))
+        }, timeout=int(os.getenv("DOCUMENT_PROCESSING_INVOICE_TIMEOUT_SECONDS", "600")))
         logger.info("INVOICE_UPLOAD_COMPONENT %s", json.dumps({
             "component": "document_processing_request", "invoice_id": invoice_id,
             "elapsed_ms": round((time.perf_counter() - stage_started) * 1000, 2),
@@ -849,8 +904,8 @@ async def upload_invoice(
     """OCR an invoice and save its reviewable JSON outside the document corpus."""
     _require_same_origin(request)
     model_provider = model_provider.strip().lower()
-    if model_provider not in {"gemini", "groq", "modal", "xiaomi"}:
-        raise HTTPException(422, "Choose Gemini, Groq GPT-OSS 120B, Qwen on Modal, or Xiaomi-OCR-0")
+    if model_provider not in {"gemini", "groq", "modal"}:
+        raise HTTPException(422, "Choose Gemini, Groq GPT-OSS 120B, or Qwen on Modal")
     filename = Path((file.filename or "").replace("\\", "/")).name
     extension = Path(filename).suffix.lower()
     supported = {".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"}
@@ -1031,7 +1086,7 @@ def _invoice_for_user(repository, invoice_id: str, user: dict) -> dict:
 
 
 class InvoiceRetryRequest(BaseModel):
-    model_provider: Literal["gemini", "groq", "modal", "xiaomi"]
+    model_provider: Literal["gemini", "groq", "modal"]
 
 
 @app.post("/api/invoices/{invoice_id}/retry", status_code=202)
@@ -1069,7 +1124,7 @@ def retry_invoice_extraction(
 
 
 def _validated_invoice_data(invoice_data: dict) -> dict:
-    from document_processing.invoice_text_processor import InvoiceFields
+    from document_processing.invoice.schema import InvoiceFields
 
     return InvoiceFields.model_validate(invoice_data).model_dump(mode="json")
 
@@ -1392,26 +1447,15 @@ def _uploaded_source_response(document_id: str, user: dict) -> Response:
         raise HTTPException(502, "The stored source file could not be opened") from error
 
     extension = str(source["format"] or "").casefold()
-    media_type = {
-        "pdf": "application/pdf",
-        "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "txt": "text/plain",
-        "md": "text/markdown",
-        "png": "image/png",
-        "jpg": "image/jpeg",
-        "jpeg": "image/jpeg",
-        "tif": "image/tiff",
-        "tiff": "image/tiff",
-    }.get(extension, "application/octet-stream")
+    media_type = MEDIA_TYPES.get(f".{extension}", "application/octet-stream")
+    disposition = "attachment" if extension == "svg" else "inline"
     title = re.sub(r"[\r\n/\\]+", " ", str(source["title"] or document_id)).strip()
     filename = quote(f"{title[:120]}.{extension}", safe="")
     return Response(
         content=content,
         media_type=media_type,
         headers={
-            "Content-Disposition": f"inline; filename*=UTF-8''{filename}",
+            "Content-Disposition": f"{disposition}; filename*=UTF-8''{filename}",
             "Cache-Control": "private, no-store",
             "X-Content-Type-Options": "nosniff",
         },

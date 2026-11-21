@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from pydantic import ValidationError
 from dotenv import load_dotenv
 from core.llm.groq_provider import GroqProvider
-from core.rag.claim_verification import AUDIT_MAX_OUTPUT_TOKENS, parse_review, validate_review, verify_answer
+from core.agents.knowledge.claim_verification import AUDIT_MAX_OUTPUT_TOKENS, parse_review, validate_review, verify_answer
 from core.prompts.knowledge_verification import CLAIM_VERIFICATION_PROMPT
 
 

@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Sơ đồ và giải thích luồng Auto của Knowledge + SQL agent.">
+  <title>Luồng Auto | Enterprise Knowledge AI Agent</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --page: #0b1210;
+      --panel: #121d19;
+      --panel-raised: #18251f;
+      --line: #2b4037;
+      --text: #e7eee9;
+      --muted: #a9bbb1;
+      --green: #7ce0b1;
+      --blue: #90c9ff;
+      --amber: #ffd078;
+      --red: #ff9e9e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 15% 0%, #173027 0, transparent 38%), var(--page);
+      color: var(--text);
+      font: 16px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(1080px, calc(100% - 36px)); margin: 48px auto 72px; }
+    header { margin-bottom: 30px; }
+    .eyebrow { color: var(--green); font-size: .78rem; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 8px 0 10px; font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.12; }
+    h2 { margin: 0 0 12px; font-size: 1.35rem; }
+    h3 { margin: 0 0 7px; font-size: 1rem; }
+    p { margin: 0 0 12px; }
+    .lede { max-width: 780px; color: var(--muted); font-size: 1.08rem; }
+    .panel, .step, .lane, .note { border: 1px solid var(--line); border-radius: 16px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .panel { padding: clamp(18px, 3vw, 30px); margin: 22px 0; }
+    .flow { display: grid; gap: 12px; }
+    .step { position: relative; padding: 17px 20px 17px 64px; background: var(--panel-raised); }
+    .step:not(:last-child)::after { content: "↓"; position: absolute; left: 26px; bottom: -23px; z-index: 1; color: var(--green); font-size: 1.35rem; }
+    .num { position: absolute; left: 18px; top: 17px; display: grid; width: 30px; height: 30px; place-items: center; border-radius: 50%; color: #062014; background: var(--green); font-weight: 800; }
+    .step p, .lane p, .note p { color: var(--muted); }
+    .branch { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 4px 0; }
+    .lane { padding: 20px; }
+    .lane.knowledge { border-top: 3px solid var(--green); }
+    .lane.sql { border-top: 3px solid var(--blue); }
+    .tag { display: inline-block; margin-bottom: 8px; padding: 2px 9px; border-radius: 99px; background: #24342d; color: var(--green); font-size: .78rem; font-weight: 700; }
+    .sql .tag { color: var(--blue); }
+    .gate { border-color: #695530; }
+    .gate .num { background: var(--amber); }
+    .outcomes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+    .outcome { padding: 15px; border-radius: 12px; background: var(--panel-raised); }
+    .outcome strong { display: block; margin-bottom: 5px; }
+    .outcome p { margin: 0; color: var(--muted); font-size: .94rem; }
+    .warning { border-left: 3px solid var(--amber); padding-left: 14px; }
+    a { color: var(--green); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    ul { margin: 8px 0 0; padding-left: 21px; color: var(--muted); }
+    li + li { margin-top: 6px; }
+    .small { color: var(--muted); font-size: .88rem; }
+    footer { margin-top: 26px; color: var(--muted); font-size: .88rem; }
+    @media (max-width: 700px) {
+      main { width: min(100% - 24px, 1080px); margin-top: 28px; }
+      .branch, .outcomes { grid-template-columns: 1fr; }
+      .step { padding-right: 14px; }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .step, .lane { animation: appear .35s ease-out both; }
+      .step:nth-child(2) { animation-delay: .04s; }
+      .step:nth-child(3) { animation-delay: .08s; }
+      @keyframes appear { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">Knowledge + SQL · Auto</div>
+      <h1>Luồng Auto hiện tại</h1>
+      <p class="lede">Auto chọn một agent khi một nguồn là đủ, hoặc lập kế hoạch gồm nhiều task khi câu hỏi cần cả số liệu có cấu trúc lẫn bằng chứng từ tài liệu.</p>
+    </header>
+
+    <section class="panel" aria-labelledby="flow-title">
+      <h2 id="flow-title">Từ câu hỏi đến câu trả lời</h2>
+      <div class="flow">
+        <article class="step">
+          <span class="num">1</span>
+          <h3>Nhận câu hỏi và quyền của người dùng</h3>
+          <p>Chat API tạo request có danh tính đã xác thực, conversation ID và retrieval settings, rồi chuyển sang AgentRouter.</p>
+        </article>
+        <article class="step">
+          <span class="num">2</span>
+          <h3>Chọn route hoặc lập kế hoạch</h3>
+          <p>Jev thử chọn Knowledge hoặc SQL cho câu hỏi độc lập, độ tin cậy cao. Nếu câu hỏi cần phối hợp, là follow-up, hoặc Jev không chắc, planner phân rã thành task và khai báo phụ thuộc.</p>
+        </article>
+        <div class="branch" aria-label="Hai nguồn bằng chứng">
+          <article class="lane knowledge">
+            <span class="tag">Knowledge · tài liệu</span>
+            <h3>Truy xuất nội dung được phép xem</h3>
+            <p>Tìm tài liệu liên quan, lấy đoạn bằng chứng và citations. Phù hợp để trả lời chính sách, hướng dẫn, tiêu chí hoặc cách diễn giải.</p>
+          </article>
+          <article class="lane sql">
+            <span class="tag">SQL · dữ liệu có cấu trúc</span>
+            <h3>Tạo và chạy truy vấn chỉ đọc</h3>
+            <p>Lấy số liệu từ schema đã cấu hình; kiểm tra quyền, an toàn truy vấn và các quy tắc metric. Kết quả chứa rows, trạng thái query và giới hạn nếu có.</p>
+          </article>
+        </div>
+        <article class="step gate">
+          <span class="num">3</span>
+          <h3>Kiểm tra quyền, thực thi và theo dõi task</h3>
+          <p>Mỗi task phải có quyền tương ứng. Task phụ thuộc chỉ chạy khi task trước cung cấp kết quả; task độc lập có thể chạy song song. Router giữ task trace, số lần thử và thời gian thực thi.</p>
+        </article>
+        <article class="step">
+          <span class="num">4</span>
+          <h3>Kiểm tra kết quả; thử sửa kế hoạch nếu cần</h3>
+          <p>Nếu task thất bại hoặc không có dữ liệu, planner có thể được gọi lại tối đa một lần trong ngân sách còn lại. Task đã hoàn tất được giữ lại; câu hỏi cần làm rõ không bị tự động lập lại.</p>
+        </article>
+        <article class="step">
+          <span class="num">5</span>
+          <h3>Tổng hợp và trả lời</h3>
+          <p>Response ghép findings từ SQL với evidence/citations từ Knowledge, nêu limitations và chọn trạng thái hoàn tất, một phần, thất bại hoặc cần làm rõ.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="example-title">
+      <h2 id="example-title">Ví dụ: nên nhập thêm, quảng bá hay ngừng bán sản phẩm nào?</h2>
+      <div class="branch">
+        <div class="lane sql">
+          <span class="tag">SQL trả lời “đang xảy ra điều gì?”</span>
+          <p>Doanh thu, giá vốn/lợi nhuận nếu có định nghĩa phù hợp, tốc độ bán và các dấu hiệu tồn kho có sẵn.</p>
+        </div>
+        <div class="lane knowledge">
+          <span class="tag">Knowledge trả lời “nên cân nhắc ra sao?”</span>
+          <p>Nguyên tắc bổ sung hàng, xử lý hàng chậm luân chuyển, giới hạn dữ liệu và căn cứ trong tài liệu.</p>
+        </div>
+      </div>
+      <p class="warning">Khuyến nghị cuối cần phân biệt dữ kiện SQL với hướng dẫn trong tài liệu. Tương quan trong dữ liệu không tự chứng minh quan hệ nhân quả; metric chưa được chuẩn hóa cần được ghi rõ là chưa xác minh.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="trust-title">
+      <h2 id="trust-title">Các trạng thái cần phân biệt</h2>
+      <div class="outcomes">
+        <div class="outcome"><strong style="color:var(--green)">Hoàn tất</strong><p>Các task cần thiết chạy được và có bằng chứng dùng được.</p></div>
+        <div class="outcome"><strong style="color:var(--amber)">Một phần / cần làm rõ</strong><p>Thiếu một nguồn, thiếu dữ liệu, hoặc câu hỏi còn mơ hồ về phạm vi.</p></div>
+        <div class="outcome"><strong style="color:var(--red)">Bị từ chối vì bảo mật</strong><p>Người dùng thiếu quyền hoặc SQL không vượt qua kiểm tra an toàn. Đây khác với metric chỉ mang nhãn unverified.</p></div>
+      </div>
+      <p class="small" style="margin-top:16px">SQL không được xem là đúng nghiệp vụ chỉ vì chạy thành công. Nhãn unverified có nghĩa kết quả phản ánh phép tính của truy vấn, chưa phải metric được phê duyệt.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="code-title">
+      <h2 id="code-title">Các điểm vào code</h2>
+      <ul>
+        <li>API chat và tạo runtime: <a href="../../src/app/agents.py">src/app/agents.py</a></li>
+        <li>Định tuyến, đồ thị plan → execute → inspect → revise → combine: <a href="../../src/core/agents/decision_support/router.py">decision_support/router.py</a></li>
+        <li>Phân rã câu hỏi thành task: <a href="../../src/core/agents/decision_support/planning.py">decision_support/planning.py</a></li>
+        <li>Quyền, phụ thuộc và thực thi task: <a href="../../src/core/agents/decision_support/execution.py">decision_support/execution.py</a></li>
+        <li>Tổng hợp findings, citations và limitations: <a href="../../src/core/agents/decision_support/response.py">decision_support/response.py</a></li>
+      </ul>
+    </section>
+
+    <footer>Trang này mô tả luồng Auto trong code hiện tại; kết quả thực tế còn phụ thuộc kế hoạch được tạo, dữ liệu có sẵn, quyền người dùng và ngân sách xử lý.</footer>
+  </main>
+</body>
+</html>

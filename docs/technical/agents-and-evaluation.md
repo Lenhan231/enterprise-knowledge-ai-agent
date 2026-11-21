@@ -42,7 +42,7 @@ agent abstains instead of attaching another KPI from the same report. This
 implements a bounded form of proposal SQL generation, not unrestricted
 cross-domain SQL; multi-source joins and broader BI calculations remain
 unimplemented.
-The bilingual metric ontology in `src/core/analytics/metric_ontology.py` is
+The bilingual metric ontology in `src/core/agents/sql/metric_ontology.py` is
 the source of truth for 11 canonical KPI names, English/Vietnamese aliases,
 definitions and unit guidance. It currently covers revenue, cost of sales,
 gross and pre-/after-tax profit, assets, cash, inventory, employee count and

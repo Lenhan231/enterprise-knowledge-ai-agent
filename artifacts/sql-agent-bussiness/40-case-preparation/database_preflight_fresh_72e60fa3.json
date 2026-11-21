@@ -1,0 +1,1072 @@
+{
+  "format_version": "sql-40-case-preflight.v1",
+  "status": "VERIFIED_READ_ONLY_PREFLIGHT",
+  "captured_at_utc": "2026-11-21T05:00:26.430565+00:00",
+  "database_classification": "frozen-analytics-snapshot",
+  "database_role_read_only": true,
+  "host_allowlist_verified": true,
+  "database_url_matches_configured_analytics_url": true,
+  "fingerprint_sha256": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028",
+  "coverage": {
+    "commerce.sales": {
+      "rows": 1400,
+      "date_min": "2023-01-01",
+      "date_max": "2026-11-13",
+      "rows_2025": 352,
+      "revenue_2025": "13299821.25"
+    },
+    "commerce.orders": {
+      "rows": 3300,
+      "date_min": "2023-01-01",
+      "date_max": "2026-11-13",
+      "delivered_orders_2025": 719,
+      "order_date_type": "date"
+    },
+    "commerce.inventory": {
+      "rows": 4559,
+      "snapshot_min": "2023-01-31",
+      "snapshot_max": "2026-11-13",
+      "snapshot_count": 47,
+      "rows_at_2026_11_13": 97
+    }
+  },
+  "verified_column_types": {
+    "commerce.orders.order_date": "date"
+  },
+  "unsupported_dimensions": {
+    "inventory_has_warehouse": false,
+    "supplier_tables": [],
+    "lead_time_columns": []
+  },
+  "date_columns": [
+    "commerce.customers.signup_date",
+    "commerce.inventory.snapshot_date",
+    "commerce.invoices.invoice_date",
+    "commerce.orders.order_date",
+    "commerce.promotions.end_date",
+    "commerce.promotions.start_date",
+    "commerce.returns.return_date",
+    "commerce.reviews.review_date",
+    "commerce.sales.date",
+    "commerce.shipments.delivery_date",
+    "commerce.shipments.ship_date",
+    "commerce.web_traffic.date"
+  ],
+  "schema": {
+    "tables": {
+      "commerce.customers": [
+        "acquisition_channel",
+        "age_group",
+        "city",
+        "customer_id",
+        "gender",
+        "signup_date",
+        "zip"
+      ],
+      "commerce.geography": [
+        "city",
+        "district",
+        "region",
+        "zip"
+      ],
+      "commerce.inventory": [
+        "category",
+        "days_of_supply",
+        "fill_rate",
+        "month",
+        "overstock_flag",
+        "product_id",
+        "product_name",
+        "reorder_flag",
+        "segment",
+        "sell_through_rate",
+        "snapshot_date",
+        "stock_on_hand",
+        "stockout_days",
+        "stockout_flag",
+        "units_received",
+        "units_sold",
+        "year"
+      ],
+      "commerce.invoice_items": [
+        "amount",
+        "description",
+        "invoice_id",
+        "line_no",
+        "quantity",
+        "unit",
+        "unit_price"
+      ],
+      "commerce.invoices": [
+        "buyer",
+        "currency",
+        "invoice_date",
+        "invoice_id",
+        "invoice_no",
+        "seller",
+        "source_filename",
+        "subtotal",
+        "tax_amount",
+        "total_amount"
+      ],
+      "commerce.order_items": [
+        "discount_amount",
+        "order_id",
+        "order_item_id",
+        "product_id",
+        "promo_id",
+        "promo_id_2",
+        "quantity",
+        "unit_price"
+      ],
+      "commerce.orders": [
+        "customer_id",
+        "device_type",
+        "order_date",
+        "order_id",
+        "order_source",
+        "order_status",
+        "payment_method",
+        "zip"
+      ],
+      "commerce.payments": [
+        "installments",
+        "order_id",
+        "payment_method",
+        "payment_value"
+      ],
+      "commerce.products": [
+        "category",
+        "cogs",
+        "color",
+        "price",
+        "product_id",
+        "product_name",
+        "segment",
+        "size"
+      ],
+      "commerce.promotions": [
+        "applicable_category",
+        "discount_value",
+        "end_date",
+        "min_order_value",
+        "promo_channel",
+        "promo_id",
+        "promo_name",
+        "promo_type",
+        "stackable_flag",
+        "start_date"
+      ],
+      "commerce.returns": [
+        "order_id",
+        "product_id",
+        "refund_amount",
+        "return_date",
+        "return_id",
+        "return_quantity",
+        "return_reason"
+      ],
+      "commerce.reviews": [
+        "customer_id",
+        "order_id",
+        "product_id",
+        "rating",
+        "review_date",
+        "review_id",
+        "review_title"
+      ],
+      "commerce.sales": [
+        "cogs",
+        "date",
+        "demo_provenance",
+        "revenue"
+      ],
+      "commerce.shipments": [
+        "delivery_date",
+        "order_id",
+        "ship_date",
+        "shipping_fee"
+      ],
+      "commerce.web_traffic": [
+        "avg_session_duration_sec",
+        "bounce_rate",
+        "date",
+        "page_views",
+        "sessions",
+        "traffic_source",
+        "unique_visitors"
+      ]
+    },
+    "column_types": {
+      "commerce.customers": {
+        "customer_id": "integer",
+        "zip": "text",
+        "city": "text",
+        "signup_date": "date",
+        "gender": "text",
+        "age_group": "text",
+        "acquisition_channel": "text"
+      },
+      "commerce.geography": {
+        "zip": "text",
+        "city": "text",
+        "region": "text",
+        "district": "text"
+      },
+      "commerce.inventory": {
+        "snapshot_date": "date",
+        "product_id": "integer",
+        "stock_on_hand": "integer",
+        "units_received": "integer",
+        "units_sold": "integer",
+        "stockout_days": "integer",
+        "days_of_supply": "numeric",
+        "fill_rate": "numeric",
+        "stockout_flag": "boolean",
+        "overstock_flag": "boolean",
+        "reorder_flag": "boolean",
+        "sell_through_rate": "numeric",
+        "product_name": "text",
+        "category": "text",
+        "segment": "text",
+        "year": "integer",
+        "month": "integer"
+      },
+      "commerce.invoice_items": {
+        "invoice_id": "text",
+        "line_no": "integer",
+        "description": "text",
+        "unit": "text",
+        "quantity": "numeric",
+        "unit_price": "numeric",
+        "amount": "numeric"
+      },
+      "commerce.invoices": {
+        "invoice_id": "text",
+        "source_filename": "text",
+        "invoice_no": "text",
+        "invoice_date": "date",
+        "buyer": "text",
+        "seller": "text",
+        "subtotal": "numeric",
+        "tax_amount": "numeric",
+        "total_amount": "numeric",
+        "currency": "text"
+      },
+      "commerce.order_items": {
+        "order_item_id": "bigint",
+        "order_id": "integer",
+        "product_id": "integer",
+        "quantity": "integer",
+        "unit_price": "numeric",
+        "discount_amount": "numeric",
+        "promo_id": "text",
+        "promo_id_2": "text"
+      },
+      "commerce.orders": {
+        "order_id": "integer",
+        "order_date": "date",
+        "customer_id": "integer",
+        "zip": "text",
+        "order_status": "text",
+        "payment_method": "text",
+        "device_type": "text",
+        "order_source": "text"
+      },
+      "commerce.payments": {
+        "order_id": "integer",
+        "payment_method": "text",
+        "payment_value": "numeric",
+        "installments": "integer"
+      },
+      "commerce.products": {
+        "product_id": "integer",
+        "product_name": "text",
+        "category": "text",
+        "segment": "text",
+        "size": "text",
+        "color": "text",
+        "price": "numeric",
+        "cogs": "numeric"
+      },
+      "commerce.promotions": {
+        "promo_id": "text",
+        "promo_name": "text",
+        "promo_type": "text",
+        "discount_value": "numeric",
+        "start_date": "date",
+        "end_date": "date",
+        "applicable_category": "text",
+        "promo_channel": "text",
+        "stackable_flag": "boolean",
+        "min_order_value": "numeric"
+      },
+      "commerce.returns": {
+        "return_id": "text",
+        "order_id": "integer",
+        "product_id": "integer",
+        "return_date": "date",
+        "return_reason": "text",
+        "return_quantity": "integer",
+        "refund_amount": "numeric"
+      },
+      "commerce.reviews": {
+        "review_id": "text",
+        "order_id": "integer",
+        "product_id": "integer",
+        "customer_id": "integer",
+        "review_date": "date",
+        "rating": "integer",
+        "review_title": "text"
+      },
+      "commerce.sales": {
+        "date": "date",
+        "revenue": "numeric",
+        "cogs": "numeric",
+        "demo_provenance": "jsonb"
+      },
+      "commerce.shipments": {
+        "order_id": "integer",
+        "ship_date": "date",
+        "delivery_date": "date",
+        "shipping_fee": "numeric"
+      },
+      "commerce.web_traffic": {
+        "date": "date",
+        "sessions": "integer",
+        "unique_visitors": "integer",
+        "page_views": "integer",
+        "bounce_rate": "numeric",
+        "avg_session_duration_sec": "numeric",
+        "traffic_source": "text"
+      }
+    },
+    "primary_keys": {},
+    "foreign_keys": [],
+    "joins": [],
+    "approved_primary_keys_contract": {
+      "invoices": [
+        "invoice_id"
+      ],
+      "invoice_items": [
+        "invoice_id",
+        "line_no"
+      ],
+      "products": [
+        "product_id"
+      ],
+      "geography": [
+        "zip"
+      ],
+      "customers": [
+        "customer_id"
+      ],
+      "promotions": [
+        "promo_id"
+      ],
+      "orders": [
+        "order_id"
+      ],
+      "order_items": [
+        "order_item_id"
+      ],
+      "payments": [
+        "order_id"
+      ],
+      "shipments": [
+        "order_id"
+      ],
+      "returns": [
+        "return_id"
+      ],
+      "reviews": [
+        "review_id"
+      ],
+      "inventory": [
+        "product_id",
+        "snapshot_date"
+      ],
+      "web_traffic": [
+        "date",
+        "traffic_source"
+      ],
+      "sales": [
+        "date"
+      ]
+    },
+    "approved_joins_contract": [
+      "commerce.customers.customer_id = commerce.orders.customer_id",
+      "commerce.customers.zip = commerce.geography.zip",
+      "commerce.geography.zip = commerce.orders.zip",
+      "commerce.inventory.product_id = commerce.products.product_id",
+      "commerce.invoice_items.invoice_id = commerce.invoices.invoice_id",
+      "commerce.order_items.order_id = commerce.orders.order_id",
+      "commerce.order_items.product_id = commerce.products.product_id",
+      "commerce.order_items.promo_id = commerce.promotions.promo_id",
+      "commerce.order_items.promo_id_2 = commerce.promotions.promo_id",
+      "commerce.orders.order_id = commerce.payments.order_id",
+      "commerce.orders.order_id = commerce.returns.order_id",
+      "commerce.orders.order_id = commerce.reviews.order_id",
+      "commerce.orders.order_id = commerce.shipments.order_id",
+      "commerce.products.product_id = commerce.returns.product_id",
+      "commerce.products.product_id = commerce.reviews.product_id"
+    ]
+  },
+  "targeted_checks": {
+    "inventory_null_counts_by_snapshot": [
+      {
+        "snapshot_date": "2023-01-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2023-02-28",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2023-03-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2023-04-30",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2023-05-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2023-06-30",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2023-07-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2023-08-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2023-09-30",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2023-10-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2023-11-30",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2023-12-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2024-01-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2024-02-29",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2024-03-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2024-04-30",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2024-05-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2024-06-30",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2024-07-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2024-08-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2024-09-30",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2024-10-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2024-11-30",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2024-12-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2025-01-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2025-02-28",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2025-03-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2025-04-30",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2025-05-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2025-06-30",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2025-07-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2025-08-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2025-09-30",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2025-10-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 0,
+        "null_days_of_supply": 97,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2025-11-30",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 97,
+        "null_days_of_supply": 0,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2025-12-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 97,
+        "null_days_of_supply": 0,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2026-01-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 97,
+        "null_days_of_supply": 0,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2026-02-28",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 97,
+        "null_days_of_supply": 0,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2026-03-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 97,
+        "null_days_of_supply": 0,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2026-04-30",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 97,
+        "null_days_of_supply": 0,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2026-05-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 97,
+        "null_days_of_supply": 0,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2026-06-30",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 97,
+        "null_days_of_supply": 0,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2026-07-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 97,
+        "null_days_of_supply": 0,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2026-08-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 97,
+        "null_days_of_supply": 0,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2026-09-30",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 97,
+        "null_days_of_supply": 0,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2026-10-31",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 97,
+        "null_days_of_supply": 0,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      },
+      {
+        "snapshot_date": "2026-11-13",
+        "row_count": 97,
+        "product_count": 97,
+        "nonnull_days_of_supply": 97,
+        "null_days_of_supply": 0,
+        "null_stock_on_hand": 0,
+        "null_fill_rate": 0,
+        "null_sell_through_rate": 0
+      }
+    ],
+    "duplicate_snapshot_product_keys": [],
+    "catalog_product_count": 97,
+    "observed_product_count_2026_11_13": 97,
+    "catalog_products_missing_snapshot_2026_11_13": 0,
+    "inventory_product_ids_not_in_catalog_2026_11_13": 0,
+    "latest_snapshot_categories": [
+      {
+        "category": "Casual",
+        "row_count": 1
+      },
+      {
+        "category": "GenZ",
+        "row_count": 6
+      },
+      {
+        "category": "Outdoor",
+        "row_count": 57
+      },
+      {
+        "category": "Streetwear",
+        "row_count": 33
+      }
+    ],
+    "inventory_categories_2025_10_31": [
+      {
+        "category": "Casual",
+        "row_count": 1
+      },
+      {
+        "category": "GenZ",
+        "row_count": 6
+      },
+      {
+        "category": "Outdoor",
+        "row_count": 57
+      },
+      {
+        "category": "Streetwear",
+        "row_count": 33
+      }
+    ],
+    "null_days_of_supply_by_category_2025_10_31": [
+      {
+        "category": "Casual",
+        "nonnull_count": 0,
+        "null_count": 1,
+        "average_days_of_supply": null
+      },
+      {
+        "category": "GenZ",
+        "nonnull_count": 0,
+        "null_count": 6,
+        "average_days_of_supply": null
+      },
+      {
+        "category": "Outdoor",
+        "nonnull_count": 0,
+        "null_count": 57,
+        "average_days_of_supply": null
+      },
+      {
+        "category": "Streetwear",
+        "nonnull_count": 0,
+        "null_count": 33,
+        "average_days_of_supply": null
+      }
+    ],
+    "stockout_flags_by_category_2026_11_13": [
+      {
+        "category": "Outdoor",
+        "stockout_product_count": 10,
+        "observed_product_count": 57
+      },
+      {
+        "category": "Streetwear",
+        "stockout_product_count": 5,
+        "observed_product_count": 33
+      },
+      {
+        "category": "GenZ",
+        "stockout_product_count": 2,
+        "observed_product_count": 6
+      },
+      {
+        "category": "Casual",
+        "stockout_product_count": 0,
+        "observed_product_count": 1
+      }
+    ],
+    "order_vocabulary": {
+      "order_status": [
+        {
+          "order_status": "delivered",
+          "row_count": 3190
+        },
+        {
+          "order_status": "paid",
+          "row_count": 4
+        },
+        {
+          "order_status": "returned",
+          "row_count": 44
+        },
+        {
+          "order_status": "shipped",
+          "row_count": 62
+        }
+      ],
+      "order_source": [
+        {
+          "order_source": "direct",
+          "row_count": 447
+        },
+        {
+          "order_source": "email_campaign",
+          "row_count": 511
+        },
+        {
+          "order_source": "organic_search",
+          "row_count": 680
+        },
+        {
+          "order_source": "paid_search",
+          "row_count": 613
+        },
+        {
+          "order_source": "referral",
+          "row_count": 547
+        },
+        {
+          "order_source": "social_media",
+          "row_count": 502
+        }
+      ],
+      "device_type": [
+        {
+          "device_type": "desktop",
+          "row_count": 1128
+        },
+        {
+          "device_type": "mobile",
+          "row_count": 1273
+        },
+        {
+          "device_type": "tablet",
+          "row_count": 899
+        }
+      ]
+    },
+    "paid_search_mobile_orders_2025": 20,
+    "delivered_orders_without_order_items": 0,
+    "catalog_cogs_completeness": {
+      "products": 97,
+      "products_with_cogs": 97,
+      "products_without_cogs": 0
+    },
+    "return_reasons_2024": [
+      {
+        "return_reason": "Size exchange",
+        "return_count": 13,
+        "refund_amount": "92064.49"
+      },
+      {
+        "return_reason": "Changed mind",
+        "return_count": 13,
+        "refund_amount": "62837.92"
+      },
+      {
+        "return_reason": "Color differed from expectation",
+        "return_count": 13,
+        "refund_amount": "33047.48"
+      }
+    ],
+    "region_values": [
+      {
+        "region": "East",
+        "zip_count": 96
+      }
+    ]
+  },
+  "limitations": [
+    "information_schema exposes no declared PK/FK metadata in the inspected snapshot; joins and keys use the approved migration contract",
+    "preflight confirms database and schema properties, not human approval of candidate semantics or gold SQL"
+  ]
+}

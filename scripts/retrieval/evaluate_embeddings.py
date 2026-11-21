@@ -8,7 +8,10 @@ import hashlib
 import json
 import os
 import platform
-import resource
+try:
+    import resource
+except ImportError:  # Windows has no POSIX peak RSS API.
+    resource = None
 import sys
 import time
 from collections import defaultdict
@@ -49,7 +52,9 @@ MODELS = {
 }
 
 
-def _rss_peak_mb() -> float:
+def _rss_peak_mb() -> float | None:
+    if resource is None:
+        return None
     value = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     return round(value / (1024 if sys.platform != "darwin" else 1024 * 1024), 1)
 

@@ -8,7 +8,7 @@ import unicodedata
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
-from core.rag.rag_service import extract_source_ids
+from core.agents.knowledge.rag_service import extract_source_ids
 
 
 def cited_sources(result, include_full_evidence: bool = False) -> list[dict]:

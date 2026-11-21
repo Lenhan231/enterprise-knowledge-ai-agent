@@ -9,87 +9,30 @@ import logging
 import os
 import time
 from typing import Any
-from io import BytesIO
-import math
 import re
-import xml.etree.ElementTree as ET
 
+from document_processing.diagnostics import component_errors, document_log_context
 from document_processing.element_taxonomy import normalize_element_label
-from document_processing.invoice_ocr_cache import invoice_docling_cache
+from document_processing.formats import (
+    IMAGE_FORMATS, LEGACY_OFFICE_FORMATS, NORMALIZED_RASTER_FORMATS, SUPPORTED_FORMATS,
+)
+from document_processing.image_input import normalize_image, render_svg, render_webp
+from document_processing.invoice.ocr_cache import invoice_docling_cache
+from document_processing.legacy_office import convert_legacy_office
 
-SUPPORTED_FORMATS = frozenset({
-    ".pdf", ".docx", ".pptx", ".xlsx", ".csv", ".txt", ".md",
-    ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".svg", ".webp",
-})
 _INVOICE_EXTRACTION_CONFIG_KEYS = frozenset({
     "invoice_provider",
+    "invoice_worker_python",
     "gemini_invoice_model",
     "groq_invoice_model",
-    "xiaomi_invoice_model",
-    "xiaomi_invoice_revision",
-    "xiaomi_python",
-    "xiaomi_device",
-    "xiaomi_max_new_tokens",
-    "xiaomi_timeout_seconds",
     "invoice_model",
     "invoice_model_revision",
     "invoice_adapter",
     "invoice_adapter_revision",
 })
 _LOGGER = logging.getLogger(__name__)
+_DOCUMENT_ONLY_FORMATS = (LEGACY_OFFICE_FORMATS.keys() | NORMALIZED_RASTER_FORMATS.keys()) - {".webp"}
 
-
-def render_webp(content: bytes) -> bytes:
-    """Convert a single WebP image to PNG for Docling and preview generation."""
-    from PIL import Image
-
-    try:
-        with Image.open(BytesIO(content)) as image:
-            if image.format != "WEBP" or getattr(image, "n_frames", 1) != 1:
-                raise ValueError("Expected a single-frame WebP image")
-            if image.width * image.height > 16_000_000:
-                raise ValueError("WebP image is too large")
-            output = BytesIO()
-            rgba = image.convert("RGBA")
-            background = Image.new("RGB", image.size, "white")
-            background.paste(rgba, mask=rgba.getchannel("A"))
-            background.save(output, format="PNG")
-            return output.getvalue()
-    except ValueError:
-        raise
-    except Exception as error:
-        raise ValueError("Could not open WebP image") from error
-
-
-def render_svg(content: bytes) -> bytes:
-    """Render a self-contained SVG as PNG without fetching external resources."""
-    try:
-        text = content.decode("utf-8-sig")
-        if re.search(r"<!\s*(?:DOCTYPE|ENTITY)|<\?xml-stylesheet", text, re.IGNORECASE):
-            raise ValueError("SVG document declarations are not supported")
-        root = ET.fromstring(text)
-        if root.tag != "{http://www.w3.org/2000/svg}svg" and root.tag != "svg":
-            raise ValueError("File is not an SVG")
-        for node in root.iter():
-            for name, value in node.attrib.items():
-                if name.rsplit("}", 1)[-1] == "href" and not value.strip().startswith("#"):
-                    raise ValueError("SVG external references are not supported")
-                if re.search(r"url\s*\(\s*['\"]?(?!#)", value, re.IGNORECASE):
-                    raise ValueError("SVG external references are not supported")
-            if node.tag.rsplit("}", 1)[-1] in {"script", "style", "foreignObject"}:
-                raise ValueError("SVG scripts, stylesheets and foreign objects are not supported")
-        import fitz
-        with fitz.open(stream=content, filetype="svg") as document:
-            page = document[0]
-            width, height = page.rect.width, page.rect.height
-            if not all(math.isfinite(v) and 0 < v <= 10000 for v in (width, height)):
-                raise ValueError("SVG dimensions are invalid")
-            scale = min(2.0, 4096 / width, 4096 / height)
-            return page.get_pixmap(matrix=fitz.Matrix(scale, scale), alpha=False).tobytes("png")
-    except ValueError:
-        raise
-    except Exception as error:
-        raise ValueError("Could not render SVG") from error
 
 class DocumentProcessor:
     """Parse a source file; original bytes and persistence belong to app/storage layers."""
@@ -109,11 +52,15 @@ class DocumentProcessor:
     ) -> dict[str, Any]:
         """Parse a source file into normalized ordered elements and structured tables."""
         suffix = Path(filename).suffix.lower()
-        if suffix not in self.SUPPORTED:
-            raise ValueError(f"Unsupported document format: {suffix or 'unknown'}")
         intent = str(self.config.get("intent", "document")).strip().lower()
-        if intent not in {"document", "invoice", "image_caption"}:
-            raise ValueError(f"Unsupported document intent: {intent}")
+        log_context = document_log_context(metadata, source_format=suffix.lstrip("."), intent=intent)
+        with component_errors(_LOGGER, "document_input_validation", **log_context):
+            if suffix not in self.SUPPORTED:
+                raise ValueError(f"Unsupported document format: {suffix or 'unknown'}")
+            if intent not in {"document", "invoice"}:
+                raise ValueError(f"Unsupported document intent: {intent}")
+            if intent != "document" and suffix in _DOCUMENT_ONLY_FORMATS:
+                raise ValueError(f"{suffix} is supported for document processing only")
         common = {
             **metadata,
             "filename": Path(filename).name,
@@ -131,17 +78,18 @@ class DocumentProcessor:
             default_timeout = "600"
             if intent == "invoice":
                 default_timeout = "1200"
-            result = client.post(
-                remote_url,
-                "/parse",
-                {
-                    "filename": Path(filename).name,
-                    "content": base64.b64encode(content).decode("ascii"),
-                    "metadata": common,
-                    "config": self.config,
-                },
-                timeout=int(os.getenv(timeout_env, default_timeout)),
-            )
+            with component_errors(_LOGGER, "remote_parser_request", **log_context):
+                result = client.post(
+                    remote_url,
+                    "/parse",
+                    {
+                        "filename": Path(filename).name,
+                        "content": base64.b64encode(content).decode("ascii"),
+                        "metadata": common,
+                        "config": self.config,
+                    },
+                    timeout=int(os.getenv(timeout_env, default_timeout)),
+                )
             previews = result.get("page_previews")
             if isinstance(previews, dict):
                 result["page_previews"] = {
@@ -150,27 +98,28 @@ class DocumentProcessor:
                     for page, value in previews.items()
                 }
             return result
+        parser_suffix = suffix
         if intent == "invoice":
-            from document_processing.docling_adapter.processor import DoclingProcessor
             provider = str(
                 self.config.get("invoice_provider")
                 or os.environ.get("DOCUMENT_PROCESSING_INVOICE_PROVIDER")
                 or "modal"
             ).strip().lower()
-            if provider == "xiaomi":
-                from document_processing.xiaomi_ocr_processor import XiaomiOCRInvoiceProcessor
+            with component_errors(_LOGGER, "invoice_provider_validation", **log_context):
+                if provider not in {"gemini", "groq", "modal", "local"}:
+                    raise ValueError(f"Unsupported invoice extraction provider: {provider}")
+            from document_processing.invoice.text_processor import InvoiceTextProcessor
 
-                extraction_processor = XiaomiOCRInvoiceProcessor(self.config)
-                engine = "docling_xiaomi_ocr_invoice"
-            else:
-                from document_processing.invoice_text_processor import InvoiceTextProcessor
-
-                extraction_processor = InvoiceTextProcessor(self.config)
-                engine = "docling_qwen_invoice_text"
+            extraction_processor = InvoiceTextProcessor(self.config)
+            engine = "docling_qwen_invoice_text"
 
             processor_config = {**self.config, "parser_engine": "docling", "intent": "document"}
-            parser_content = render_svg(content) if suffix == ".svg" else render_webp(content) if suffix == ".webp" else content
-            parser_metadata = {**common, "format": "PNG"} if suffix in {".svg", ".webp"} else common
+            parser_content = content
+            if suffix in {".svg", ".webp"}:
+                with component_errors(_LOGGER, "image_normalization", **log_context):
+                    parser_content = render_svg(content) if suffix == ".svg" else render_webp(content)
+                    parser_suffix = ".png"
+            parser_metadata = {**common, "format": parser_suffix[1:].upper()}
             cache_config = {
                 key: value for key, value in processor_config.items()
                 if key not in _INVOICE_EXTRACTION_CONFIG_KEYS
@@ -182,6 +131,9 @@ class DocumentProcessor:
             cache_hit = result is not None
 
             def parse_and_cache():
+                with component_errors(_LOGGER, "docling_import", **log_context):
+                    from document_processing.docling_adapter.processor import DoclingProcessor
+
                 docling_started = time.perf_counter()
                 parsed = DoclingProcessor(processor_config).process(
                     parser_content, None, {"content": parser_content, "metadata": parser_metadata}
@@ -239,11 +191,7 @@ class DocumentProcessor:
                 }, separators=(",", ":")),
             )
             extraction_started = time.perf_counter()
-            if provider == "xiaomi":
-                extraction = extraction_processor.process(
-                    filename, content, reference_id=metadata.get("invoice_id"),
-                )
-            else:
+            with component_errors(_LOGGER, "invoice_extraction_result", **log_context, provider=provider):
                 extraction = extraction_processor.process(
                     result.get("elements", []), result.get("tables", []),
                     reference_id=metadata.get("invoice_id"),
@@ -265,27 +213,29 @@ class DocumentProcessor:
                 "invoice_schema_version": extraction["schema_version"],
                 "invoice_review_required": True,
             })
-        elif intent == "image_caption":
-            from document_processing.vintern_processor import VinternProcessor
-
-            engine = "vintern_image_caption"
-            result = VinternProcessor(self.config).process(filename, content, common)
         else:
             engine = str(self.config.get("parser_engine", "docling"))
             if engine != "docling":
                 raise ValueError(f"Unsupported parser pipeline: {engine}")
-            from document_processing.docling_adapter.processor import DoclingProcessor
-
             processor_config = {**self.config, "parser_engine": engine}
-            parser_content = render_svg(content) if suffix == ".svg" else render_webp(content) if suffix == ".webp" else content
-            parser_metadata = {**common, "format": "PNG"} if suffix in {".svg", ".webp"} else common
+            parser_content = content
+            if suffix in LEGACY_OFFICE_FORMATS:
+                with component_errors(_LOGGER, "legacy_office_conversion", **log_context):
+                    parser_content, parser_suffix = convert_legacy_office(content, suffix)
+            elif suffix in IMAGE_FORMATS:
+                with component_errors(_LOGGER, "image_normalization", **log_context):
+                    parser_content, parser_suffix = normalize_image(content, suffix)
+            parser_metadata = {**common, "format": parser_suffix[1:].upper()}
+            with component_errors(_LOGGER, "docling_import", **log_context):
+                from document_processing.docling_adapter.processor import DoclingProcessor
+
             result = DoclingProcessor(processor_config).process(
                 parser_content, None, {"content": parser_content, "metadata": parser_metadata}
             )
         normalization_started = time.perf_counter()
         elements = result.get("elements", [])
         tables = result.get("tables", [])
-        if suffix in {".png", ".jpg", ".jpeg", ".svg", ".webp"}:
+        if suffix in IMAGE_FORMATS and parser_suffix not in {".tif", ".tiff"}:
             for element in elements:
                 (element.get("metadata") or {}).pop("page_number", None)
             for table in tables:
@@ -299,8 +249,8 @@ class DocumentProcessor:
                 for row in table.get("rows", []) if isinstance(row, dict)
             ]
             table_metadata = table.setdefault("metadata", {})
-            if suffix in {".svg", ".webp"}:
-                table_metadata["format"] = suffix[1:].upper()
+            if parser_suffix != suffix:
+                table_metadata["format"] = common["format"]
             table_metadata.update({key: value for key, value in common.items() if key not in table_metadata and key not in {"title", "uploaded_by"}})
             table_metadata.update({"pipeline_id": engine, "parser_engine": "docling" if intent == "invoice" else engine})
             table_metadata.update({"element_type": "table", "layout_type": "table"})
@@ -314,8 +264,8 @@ class DocumentProcessor:
 
         for element in elements:
             element_metadata = dict(element.get("metadata") or {})
-            if suffix in {".svg", ".webp"}:
-                element_metadata["format"] = suffix[1:].upper()
+            if parser_suffix != suffix:
+                element_metadata["format"] = common["format"]
             element_metadata.pop("word_style", None)
             element_metadata.pop("word_style_id", None)
             element_metadata.update({

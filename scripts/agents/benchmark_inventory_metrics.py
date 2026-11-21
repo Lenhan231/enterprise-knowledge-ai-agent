@@ -21,7 +21,7 @@ async def run(args, source):
     sys.path.insert(0, str(source / 'src'))
     from dotenv import load_dotenv
     load_dotenv(ROOT / '.env')
-    from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+    from core.agents.sql.agent import SQLAnalyticsAgent
     from core.database.commerce_repository import create_repository_from_env
     from core.llm.groq_provider import GroqProvider
     from core.models.agents import AgentRequest, VerifiedIdentity
@@ -59,9 +59,9 @@ async def run(args, source):
               'case_sha256': hashlib.sha256(args.cases.read_bytes()).hexdigest(),
               'pace_seconds': args.pace_seconds, 'write_probes': False,
               'source_sha256': {name: hashlib.sha256((source/name).read_bytes()).hexdigest()
-                                for name in ('src/core/analytics/metric_ontology.py', 'src/core/analytics/metric_validation.py',
-                                             'src/core/analytics/text_to_sql.py','src/core/agents/sql_analytics_agent.py','src/core/prompts/sql.py',
-                                             'src/core/analytics/metric_mapping.py','data/semantic/vietstyle_metrics_v1.yaml') if (source/name).exists()},
+                                for name in ('src/core/agents/sql/metric_ontology.py', 'src/core/agents/sql/metric_validation.py',
+                                             'src/core/agents/sql/text_to_sql.py','src/core/agents/sql/agent.py','src/core/prompts/sql.py',
+                                             'src/core/agents/sql/metric_mapping.py','data/semantic/vietstyle_metrics_v1.yaml') if (source/name).exists()},
               'cases': []}
     try:
         repository = await create_repository_from_env()

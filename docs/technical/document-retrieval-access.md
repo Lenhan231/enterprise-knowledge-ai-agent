@@ -23,7 +23,7 @@ the protected management endpoint.
 
 ## Checks
 
-`tests/test_retrieval_access.py` creates and drops its own database on **local**
+`tests/retrieval/test_retrieval_access.py` creates and drops its own database on **local**
 PostgreSQL. Its server user needs permission to create databases. Set
 `RETRIEVAL_TEST_DATABASE_URL` to that local server and run:
 

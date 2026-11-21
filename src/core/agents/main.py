@@ -13,8 +13,8 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from core.agents.dashboard_agent import InventoryDashboardAgent
-from core.agents.intent_classifier import IntentClassifier
+from core.agents.dashboard.charts import InventoryDashboardAgent
+from core.agents.decision_support.intent_classifier import IntentClassifier
 from core.agents.knowledge.agent import KnowledgeAgent
 from core.agents.report.agent import ReportAgent
 from core.agents.decision_support.router import AgentRouter
@@ -116,6 +116,7 @@ class SQLAssistantRequest(BaseModel):
     mode: Literal["draft", "execute"] = "draft"
     sql: str | None = Field(default=None, max_length=20_000)
     parameters: list[Any] = Field(default_factory=list, max_length=32)
+    ranking_contract: dict[str, Any] | None = None
 
     @field_validator("question")
     @classmethod
@@ -227,7 +228,8 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
             raise HTTPException(status_code=403, detail="Verified analytics:read permission is required")
         try:
             return await run_sql_assistant(agent, payload.question, mode=payload.mode,
-                sql=payload.sql, parameters=payload.parameters)
+                sql=payload.sql, parameters=payload.parameters,
+                ranking_contract=payload.ranking_contract)
         except PermissionError:
             raise HTTPException(status_code=403, detail="Verified analytics:read permission is required") from None
         except Exception as error:
@@ -236,8 +238,9 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
 
     @application.post("/api/report")
     async def report(request: Request, question: str = Form(...), template: UploadFile | None = File(None),
-                     source_mode: Literal["documents", "analytics", "orchestrated", "combined"] = Form("documents"),
+                     source_mode: Literal["documents", "analytics", "orchestrated", "combined"] | None = Form(None),
                      output_format: Literal["markdown", "docx"] | None = Form(None),
+                     report_type: Literal['sales_performance', 'inventory_operations', 'inventory_risk'] | None = Form(None),
                      template_choice: Literal['uploaded', 'suggested'] | None = Form(None),
                      accept_supported_scope: bool = Form(False),
                      conversation_id: str | None = Form(None, max_length=128)):
@@ -254,11 +257,14 @@ def create_app(*, chat_agent: Any | None = None, commerce_repository: Any | None
                     identity = _local_development_identity()
             if not isinstance(identity, VerifiedIdentity):
                 raise AnalyticsPermissionDenied("A verified identity is required")
-            from core.reports.sources import authorize_sources
-            from core.reports.http import report_response
+            from core.agents.report.sources import authorize_sources
+            from core.agents.report.http import report_response
             agent_request = AgentRequest(question=question.strip(), user_id=identity.subject, identity=identity,
                                          conversation_id=conversation_id)
-            authorize_sources(agent_request, source_mode)
+            if report_type:
+                agent_request.metadata['report_type'] = report_type
+            if source_mode is not None:
+                authorize_sources(agent_request, source_mode)
             filename = Path(template.filename or "").name if template else None
             extension = Path(filename).suffix.casefold() if filename else None
             if extension == ".docx":

@@ -9,8 +9,8 @@ import unittest
 ROOT=Path(__file__).resolve().parents[2]
 WORK=Path(os.environ.get('SQL_CROSS_DOMAIN_ROOT',ROOT))
 sys.path[:0]=[str(WORK),str(WORK/'src')]
-from core.analytics.text_to_sql import decode_query_plan,APPROVED_COLUMNS,validate_commerce_sql,validate_sql_security
-from core.analytics.metric_validation import validate_metric_definitions,MetricDefinitionError
+from core.agents.sql.text_to_sql import decode_query_plan,APPROVED_COLUMNS,validate_commerce_sql,validate_sql_security
+from core.agents.sql.metric_validation import validate_metric_definitions,MetricDefinitionError
 from sqlglot import exp,parse_one
 
 QUESTIONS={
@@ -436,8 +436,8 @@ class CrossDomainContractGapTest(unittest.TestCase):
             with self.subTest(sql=sql),self.assertRaises(ValueError):decode_query_plan(json.dumps({'sql':sql}))
     def test_period_rollup_does_not_inherit_canonical_snapshot_approval(self):
         from core.models.agents import AgentResult
-        from core.reports.planning import ReportTask
-        from core.reports.facts import facts_from_analytics
+        from core.agents.report.planning import ReportTask
+        from core.agents.report.facts import facts_from_analytics
         definitions=validate('S27',SQL['S27'])
         result=AgentResult(answer='Rows',agent='sql_analytics',data={'sql':SQL['S27'],'parameters':[],
             'rows':[{'category':'A','inventory_units_sold':13,'ordered_units':12}]},metadata={'metrics':definitions})

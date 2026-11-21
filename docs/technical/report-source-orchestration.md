@@ -77,7 +77,7 @@ section, and 100 registered sources. Omissions are disclosed. Reusing a source
 pool does not guarantee that every requested heading has sufficient evidence.
 Numeric/citation validation is not a proof that all prose is semantically correct.
 
-Regression coverage in `tests/test_report_orchestration.py` verifies focused
+Regression coverage in `tests/report/test_report_orchestration.py` verifies focused
 dispatch, one collection across headings, no combined-answer synthesis, partial
 sources, clarification, no invented export, and report/chat context isolation.
 Existing report generation and transport suites verify grounding, templates,

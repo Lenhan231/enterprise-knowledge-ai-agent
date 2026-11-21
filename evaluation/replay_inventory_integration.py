@@ -15,7 +15,7 @@ async def run(args):
     from dotenv import load_dotenv
     load_dotenv(args.env_file)
     os.environ['SQL_INVENTORY_ONLY']='true'
-    from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+    from core.agents.sql.agent import SQLAnalyticsAgent
     from core.database.commerce_repository import create_repository_from_env
     from core.models.agents import AgentRequest, VerifiedIdentity
     from datetime import date, datetime

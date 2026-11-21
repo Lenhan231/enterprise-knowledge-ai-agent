@@ -6,10 +6,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
-from core.analytics.metric_mapping import compile_inventory_query, decode_metric_mapping, validate_mapped_sql
-from core.analytics.metric_validation import MetricDefinitionError
-from core.analytics.metric_validation import validate_metric_definitions
-from core.analytics.text_to_sql import APPROVED_COLUMNS, SQLValidationError, decode_query_plan
+from core.agents.sql.metric_mapping import compile_inventory_query, decode_metric_mapping, validate_mapped_sql
+from core.agents.sql.metric_validation import MetricDefinitionError
+from core.agents.sql.metric_validation import validate_metric_definitions
+from core.agents.sql.text_to_sql import APPROVED_COLUMNS, SQLValidationError, decode_query_plan
 
 
 class SemanticAuthorityTest(unittest.TestCase):

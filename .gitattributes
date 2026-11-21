@@ -1,4 +1,6 @@
 /src/core/evaluation/evidence_metrics.py text eol=lf
+/data/semantic/sales_performance_strict.json text eol=lf
+/data/semantic/inventory_operations_strict.json text eol=lf
 /scripts/retrieval/evaluate_fresh_reviewed_reranker.py text eol=lf
 /scripts/retrieval/evaluate_reranker_source_context.py text eol=lf
 /src/core/retrieval/methods/translated_hybrid.py text eol=lf

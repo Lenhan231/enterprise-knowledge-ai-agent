@@ -1,0 +1,773 @@
+import asyncio
+import importlib.util
+import io
+import json
+import shutil
+import sys
+import unittest
+import zipfile
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
+
+import fitz
+
+from fastapi import HTTPException, UploadFile
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "src"))
+
+from app import main as app_main  # noqa: E402
+from core.database.structured_store import StructuredDataStore  # noqa: E402
+from document_processing.document_processor import DocumentProcessor  # noqa: E402
+
+
+def xlsx_with_formula() -> bytes:
+    package = io.BytesIO()
+    files = {
+        "xl/workbook.xml": """<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Finance" sheetId="1" r:id="rId1"/></sheets></workbook>""",
+        "xl/_rels/workbook.xml.rels": """<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Target="worksheets/sheet1.xml"/></Relationships>""",
+        "xl/worksheets/sheet1.xml": """<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData><row r="1"><c r="A1" t="inlineStr"><is><t>Metric</t></is></c><c r="B1" t="inlineStr"><is><t>Value</t></is></c></row><row r="2"><c r="A2" t="inlineStr"><is><t>Total</t></is></c><c r="B2"><f>SUM(B1:B1)</f><v>100</v></c></row></sheetData></worksheet>""",
+    }
+    with zipfile.ZipFile(package, "w") as archive:
+        for name, content in files.items():
+            archive.writestr(name, content)
+    return package.getvalue()
+
+
+def pptx_with_table() -> bytes:
+    package = io.BytesIO()
+    with zipfile.ZipFile(package, "w") as archive:
+        archive.writestr("ppt/slides/slide1.xml", """<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+          <p:spTree><p:sp><p:txBody><a:p><a:r><a:t>Annual results</a:t></a:r></a:p></p:txBody></p:sp>
+          <a:graphicFrame><a:graphic><a:graphicData><a:tbl>
+            <a:tr><a:tc><a:txBody><a:p><a:r><a:t>Year</a:t></a:r></a:p></a:txBody></a:tc><a:tc><a:txBody><a:p><a:r><a:t>Revenue</a:t></a:r></a:p></a:txBody></a:tc></a:tr>
+            <a:tr><a:tc><a:txBody><a:p><a:r><a:t>2024</a:t></a:r></a:p></a:txBody></a:tc><a:tc><a:txBody><a:p><a:r><a:t>100 VND</a:t></a:r></a:p></a:txBody></a:tc></a:tr>
+          </a:tbl></a:graphicData></a:graphic></a:graphicFrame></p:spTree></p:sld>""")
+    return package.getvalue()
+
+
+def docx_with_sections() -> bytes:
+    package = io.BytesIO()
+    with zipfile.ZipFile(package, "w") as archive:
+        archive.writestr("word/document.xml", """<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>
+          <w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr><w:r><w:t>Financial performance</w:t></w:r></w:p>
+          <w:p><w:r><w:t>Audited annual results.</w:t></w:r></w:p>
+          <w:tbl><w:tr><w:tc><w:p><w:r><w:t>Metric</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>Amount</w:t></w:r></w:p></w:tc></w:tr>
+            <w:tr><w:tc><w:p><w:r><w:t>Revenue</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>100 billion VND</w:t></w:r></w:p></w:tc></w:tr></w:tbl>
+        </w:body></w:document>""")
+    return package.getvalue()
+
+
+def borderless_financial_pdf() -> bytes:
+    document = fitz.open()
+    page = document.new_page(width=600, height=400)
+    for text, x, y in (
+        ("31/12/2024", 360, 100), ("31/12/2023", 480, 100),
+        ("Revenue", 40, 140), ("100", 360, 140), ("90", 480, 140),
+        ("Cash", 40, 170), ("25", 360, 170), ("20", 480, 170),
+        ("Assets", 40, 200), ("500", 360, 200), ("450", 480, 200),
+    ):
+        page.insert_text((x, y), text, fontsize=10)
+    source = document.tobytes()
+    document.close()
+    return source
+
+
+def financial_summary_pdf() -> bytes:
+    document = fitz.open()
+    page = document.new_page(width=600, height=400)
+    page.insert_text((40, 80), "Net revenue 2024 was 100 billion VND.", fontsize=12)
+    source = document.tobytes()
+    document.close()
+    return source
+
+
+def blank_table_image() -> bytes:
+    document = fitz.open()
+    page = document.new_page(width=300, height=200)
+    source = page.get_pixmap(alpha=False).tobytes("png")
+    document.close()
+    return source
+
+
+class UploadProcessingFlowTest(unittest.TestCase):
+    def setUp(self):
+        environment = patch.dict("os.environ", {
+            "DOCUMENT_PROCESSING_URL": "http://document-processing.test",
+            "SERVICE_KIND": "document-processing",
+            "INTERNAL_SERVICE_TOKEN": "test-internal-service-token",
+            "DATABASE_URL": "postgresql://test:test@localhost/test",
+        })
+        environment.start()
+        self.addCleanup(environment.stop)
+        from core.services.runtime import Parse, parse
+
+        def parse_service(_url, path, payload, timeout):
+            self.assertEqual(path, "/parse")
+            processing_url = __import__("os").environ.pop("DOCUMENT_PROCESSING_URL")
+            try:
+                return parse(Parse(**payload))
+            finally:
+                __import__("os").environ["DOCUMENT_PROCESSING_URL"] = processing_url
+
+        parser_transport = patch.object(app_main, "post_internal_service", side_effect=parse_service)
+        parser_transport.start()
+        self.addCleanup(parser_transport.stop)
+        output_repository = patch(
+            "core.database.document_processing_output_repository.DocumentProcessingOutputRepository",
+        )
+        self.output_repository_class = output_repository.start()
+        self.addCleanup(output_repository.stop)
+
+    def test_storage_filename_transliterates_vietnamese_and_removes_unsafe_characters(self):
+        self.assertEqual(
+            app_main._storage_filename("Phụ lục kế hoạch lựa chọn nhà cung cấp(1).docx"),
+            "Phu_luc_ke_hoach_lua_chon_nha_cung_cap_1.docx",
+        )
+        self.assertEqual(app_main._storage_filename("報告.docx"), "document.docx")
+
+    def test_storage_upload_failure_records_failed_status_and_reports_stage(self):
+        document_id = "UPLOAD-storage-failure"
+        document_repo = MagicMock()
+        storage = MagicMock()
+        storage.storage.from_.return_value.upload.side_effect = RuntimeError("InvalidKey")
+
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "_storage_client", return_value=(storage, "private")),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch.object(app_main.uuid, "uuid4", return_value=SimpleNamespace(hex="storage-failure")),
+            patch.object(app_main.logger, "error") as log_error,
+            patch.dict("os.environ", {"SUPABASE_SECRET_KEY": "test-storage-secret"}),
+        ):
+            with self.assertRaises(HTTPException) as raised:
+                asyncio.run(app_main.upload_document(
+                    request=None,
+                    file=UploadFile(
+                        filename="Phụ lục kế hoạch lựa chọn nhà cung cấp(1).docx",
+                        file=io.BytesIO(b"docx"),
+                    ),
+                    title="Supplier selection plan", document_type="knowledge_document",
+                    domain="general_knowledge", allowed_roles=["admin"], ocr_language="eng",
+                    user={"sub": "admin"},
+                ))
+
+        self.assertEqual(raised.exception.status_code, 503, raised.exception.detail)
+        self.assertIn("saving the original file", raised.exception.detail)
+        self.assertIn(document_id, raised.exception.detail)
+        storage.storage.from_.return_value.upload.assert_called_once()
+        upload_path = storage.storage.from_.return_value.upload.call_args.args[0]
+        self.assertEqual(
+            upload_path,
+            "UPLOAD-storage-failure/Phu_luc_ke_hoach_lua_chon_nha_cung_cap_1.docx",
+        )
+        document_repo.register_upload.assert_called_once()
+        document_repo.update_processing_status.assert_called_once_with(document_id, "failed")
+        self.assertEqual(log_error.call_args.args[0], "DOCUMENT_UPLOAD_ERROR %s")
+        log_payload = json.loads(log_error.call_args.args[1])
+        self.assertEqual(log_payload["reference_id"], document_id)
+        self.assertEqual(log_payload["stage"], "store_source_file")
+        self.assertEqual(log_payload["error_type"], "RuntimeError")
+        self.assertEqual(log_payload["error_message"], "InvalidKey")
+        self.assertTrue(any(":upload_document" in frame for frame in log_payload["error_location"]))
+        self.assertNotIn("test-storage-secret", log_error.call_args.args[1])
+        document_repo.close.assert_called_once()
+
+    def test_upload_error_log_sanitizes_credentials_and_keeps_storage_error_details(self):
+        with patch.dict("os.environ", {"SUPABASE_SECRET_KEY": "service-secret"}):
+            payload = json.loads(app_main._upload_error_log_payload(
+                "UPLOAD-log-test", "store_source_file", "report.pdf", "report.pdf",
+                RuntimeError("InvalidKey: service-secret; Authorization: Bearer abc123"),
+            ))
+
+        self.assertEqual(payload["error_message"], "InvalidKey: [REDACTED]; Authorization: Bearer [REDACTED]")
+        self.assertEqual(payload["stage"], "store_source_file")
+
+    def test_upload_rejects_unsupported_ocr_language_before_storage(self):
+        with patch.object(app_main, "_require_same_origin"):
+            with self.assertRaises(HTTPException) as raised:
+                asyncio.run(app_main.upload_document(
+                    request=None,
+                    file=UploadFile(filename="scan.pdf", file=io.BytesIO(b"%PDF-")),
+                    title="Scanned source", document_type="knowledge_document",
+                    domain="general_knowledge", allowed_roles=["admin"],
+                    ocr_language="deu", user={"sub": "admin"},
+                ))
+
+        self.assertEqual(raised.exception.status_code, 422)
+        self.assertIn("OCR language", raised.exception.detail)
+
+    @unittest.skipUnless(
+        shutil.which("tesseract") and (ROOT / "data/evaluation/ocr/commerce_synthetic_policy_scan_demo.pdf").is_file(),
+        "Tesseract and the scanned-PDF fixture are required",
+    )
+    @unittest.skipUnless(importlib.util.find_spec("docling_core"), "Docling optional extra is not installed")
+    def test_scanned_pdf_upload_reports_ocr_and_persists_structured_output(self):
+        source = (ROOT / "data/evaluation/ocr/commerce_synthetic_policy_scan_demo.pdf").read_bytes()
+        document_repo = MagicMock()
+        storage = MagicMock()
+        storage.storage.from_.return_value.upload.return_value = None
+        structured_store = MagicMock()
+        chunk_repository = MagicMock()
+        embedding = MagicMock(model_name="test-embedding", max_sequence_length=2048)
+        embedding.embed_documents.side_effect = lambda texts: [[0.1, 0.2] for _ in texts]
+
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "_storage_client", return_value=(storage, "private")),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
+            patch("core.database.document_chunks_repository.DocumentChunkRepository", return_value=chunk_repository),
+            patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
+            patch("core.database.parser_chunks_repository.ParserChunksRepository"),
+            patch.dict("os.environ", {
+                "DOCUMENT_PADDLE_LAYOUT": "false",
+                "DOCUMENT_VISION_CAPTIONS": "false",
+            }),
+        ):
+            counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
+            counter_cls.return_value.count.return_value = 20
+            response = asyncio.run(app_main.upload_document(
+                request=None,
+                file=UploadFile(filename="commerce_synthetic_policy_scan_demo.pdf", file=io.BytesIO(source)),
+                title="Synthetic Commerce OCR upload test",
+                document_type="ocr_demo", domain="commerce_ocr_quality",
+                ocr_language="eng",
+                fiscal_year=2026, source_url=None,
+                knowledge_domains=["inventory_allocation"],
+                source_publisher="Test fixture publisher",
+                reference_type="company_practice_reference",
+                reference_applicability="Test-only OCR fixture; not Commerce Demo policy",
+                allowed_roles=["admin"], user={"sub": "admin"},
+            ))
+
+        self.assertEqual(response["processing_status"], "ready")
+        self.assertEqual(response["page_count"], 2)
+        self.assertEqual(response["ocr_chunk_count"], 3)
+        self.assertEqual(response["table_count"], 1)
+        self.assertEqual(response["indexed_chunk_count"], response["parser_chunk_count"])
+        saved_tables = structured_store.save_document_tables.call_args.args[2]
+        self.assertEqual(saved_tables[0]["metadata"]["ocr"]["language"], "eng")
+        self.assertEqual(saved_tables[0]["columns"], [
+            "Region", "Delivered sample orders", "Median transit days", "Avg fee units",
+        ])
+        self.assertEqual(saved_tables[0]["rows"], [
+            {"Region": "East", "Delivered sample orders": "120", "Median transit days": "3.0", "Avg fee units": "42.50"},
+            {"Region": "Central", "Delivered sample orders": "95", "Median transit days": "4.0", "Avg fee units": "48.75"},
+            {"Region": "West", "Delivered sample orders": "80", "Median transit days": "5.0", "Avg fee units": "55.25"},
+        ])
+        indexed = chunk_repository.replace_document.call_args.args[1]
+        self.assertEqual(len(indexed), response["indexed_chunk_count"])
+        self.assertEqual(sum(bool(row[3].get("ocr")) for row in indexed), response["ocr_chunk_count"])
+
+    @unittest.skipUnless(importlib.util.find_spec("docling_core"), "Docling optional extra is not installed")
+    def test_commerce_reference_upload_indexes_context_without_changing_dashboard_data(self):
+        source = financial_summary_pdf()
+        document_repo = MagicMock()
+        storage = MagicMock()
+        storage.storage.from_.return_value.upload.return_value = None
+        embedding = MagicMock(model_name="test-embedding", max_sequence_length=100)
+        embedding.embed_documents.side_effect = lambda texts: [[0.1, 0.2] for _ in texts]
+        parsed_document = {
+            "elements": [{"text": "Walmart supplier logistics reference", "metadata": {"page_number": 1}}],
+            "tables": [], "metadata": {"pipeline_id": "docling"},
+        }
+        chunk_repository = MagicMock()
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "_storage_client", return_value=(storage, "private")),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
+            patch("core.database.document_chunks_repository.DocumentChunkRepository", return_value=chunk_repository),
+            patch("core.database.structured_store.StructuredDataStore"),
+            patch("core.database.parser_chunks_repository.ParserChunksRepository"),
+            patch(
+                "document_processing.document_processor.DocumentProcessor.process",
+                side_effect=lambda filename, content, metadata: {
+                    **parsed_document,
+                    "elements": [{"text": "Walmart supplier logistics reference", "metadata": {**metadata, "page_number": 1}}],
+                },
+            ) as parse_document,
+        ):
+            counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
+            counter_cls.return_value.count.return_value = 4
+            response = asyncio.run(app_main.upload_document(
+                request=None,
+                file=UploadFile(filename="annual-report.pdf", file=io.BytesIO(source)),
+                title="Annual report", document_type="annual_report", domain="finance",
+                fiscal_year=None,
+                knowledge_domains=["inventory_allocation", "nationwide_logistics"],
+                source_publisher="Walmart Inc.", reference_type="company_policy_reference",
+                reference_applicability="Walmart suppliers only; not Commerce Demo policy",
+                allowed_roles=["finance_analyst"],
+                ocr_language="vie+eng",
+                user={"sub": "uploader-1"},
+            ))
+
+        self.assertEqual(response["processing_status"], "ready")
+        self.assertTrue(response["searchable"])
+        processor_metadata = parse_document.call_args.args[2]
+        self.assertEqual(processor_metadata["knowledge_domains"], ["inventory_allocation", "nationwide_logistics"])
+        self.assertEqual(processor_metadata["source_publisher"], "Walmart Inc.")
+        self.assertEqual(processor_metadata["reference_applicability"], "Walmart suppliers only; not Commerce Demo policy")
+        self.assertEqual(processor_metadata["evidence_class"], "company_policy_reference")
+        self.assertFalse(processor_metadata["external_policy_reference"])
+        saved_metadata = chunk_repository.replace_document.call_args.args[1][0][3]
+        self.assertEqual(saved_metadata["knowledge_domains"], ["inventory_allocation", "nationwide_logistics"])
+
+    def test_upload_no_longer_exposes_report_specific_metric_profile(self):
+        from inspect import signature
+
+        self.assertNotIn("metric_parser_profile", signature(app_main.upload_document).parameters)
+        self.assertNotIn("business_decision_domain", signature(app_main.upload_document).parameters)
+        self.assertNotIn("/api/business-metrics/parser-profiles", {
+            route.path for route in app_main.app.routes
+        })
+
+    def test_structured_table_inspection_is_company_scoped_and_paginated(self):
+        connection = MagicMock()
+        cursor = connection.cursor.return_value.__enter__.return_value
+        cursor.description = [MagicMock(name="id"), MagicMock(name="page_number")]
+        cursor.fetchall.return_value = [{
+            "id": "DOC-1:page:2:table:0", "page_number": 2, "table_index": 0,
+            "columns": ["Metric", "Value"], "metadata": {"parser": "test"},
+            "row_count": 130, "rows": [{"Metric": "Revenue", "Value": "100"}],
+        }]
+        store = StructuredDataStore(connection=connection)
+
+        result = store.get_document_tables(
+            "DOC-1", company="Example Retailer", table_offset=2, table_limit=10,
+            row_offset=30, row_limit=50,
+        )
+
+        self.assertEqual(result[0]["row_count"], 130)
+        query, params = cursor.execute.call_args.args
+        self.assertIn("t.metadata->>'company' = %s", query)
+        self.assertIn("LIMIT %s OFFSET %s", query)
+        self.assertEqual(params, (50, 30, "DOC-1", "Example Retailer", 10, 2))
+
+    def test_structured_table_inspection_rejects_unbounded_page_sizes(self):
+        store = StructuredDataStore(connection=MagicMock())
+        with self.assertRaisesRegex(ValueError, "table_limit"):
+            store.get_document_tables("DOC-1", company="Example Retailer", row_limit=1000)
+
+    @unittest.skipUnless(importlib.util.find_spec("docling_core"), "Docling optional extra is not installed")
+    def test_docx_section_title_flows_through_upload_into_retrieval_chunks(self):
+        document_repo = MagicMock()
+        structured_store = MagicMock()
+        storage = MagicMock()
+        storage.storage.from_.return_value.upload.return_value = None
+        embedding = MagicMock(model_name="test-embedding", max_sequence_length=100)
+        embedding.embed_documents.side_effect = lambda texts: [[0.1, 0.2] for _ in texts]
+
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "_storage_client", return_value=(storage, "private")),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
+            patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
+            patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
+            patch("core.database.parser_chunks_repository.ParserChunksRepository") as parsed_cls,
+        ):
+            counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
+            counter_cls.return_value.count.return_value = 4
+            response = asyncio.run(app_main.upload_document(
+                request=None,
+                file=UploadFile(filename="finance.docx", file=io.BytesIO(docx_with_sections())),
+                title="Finance report",
+                document_type="annual_report",
+                domain="finance",
+                fiscal_year=2024,
+                allowed_roles=["finance_analyst"],
+                ocr_language="vie+eng",
+                user={"sub": "uploader-1"},
+            ))
+
+        self.assertEqual(response["processing_status"], "ready")
+        persisted = chunks_cls.return_value.replace_document.call_args.args[1]
+        self.assertEqual(
+            chunks_cls.return_value.replace_document.call_args.args[0], response["document_id"],
+        )
+        self.assertEqual(persisted[0][0], "finance.docx")
+        self.assertEqual(persisted[0][3]["section_title"], "Financial performance")
+        self.assertEqual(persisted[0][3]["embedding_model"], "test-embedding")
+        self.assertEqual(persisted[0][3]["actual_char_count"], len(persisted[0][2]))
+        table_chunk = next((row for row in persisted if row[3].get("layout_type") == "table"), None)
+        self.assertIsNotNone(table_chunk)
+        self.assertIn("Metric: Revenue | Amount: 100 billion VND", table_chunk[2])
+        self.assertEqual(table_chunk[3]["section_title"], "Financial performance")
+        parsed = parsed_cls.return_value.replace_document.call_args.args[1]
+        self.assertEqual(parsed[0]["metadata"]["section_title"], "Financial performance")
+        self.assertNotIn("embedding_model", parsed[0]["metadata"])
+        parsed_table_chunk = next(chunk for chunk in parsed if chunk["metadata"].get("layout_type") == "table")
+        self.assertIn("Metric: Revenue | Amount: 100 billion VND", parsed_table_chunk["text"])
+        saved_table = structured_store.save_document_tables.call_args.args[2][0]
+        self.assertEqual(saved_table["columns"], ["Metric", "Amount"])
+        self.assertEqual(saved_table["rows"], [{"Metric": "Revenue", "Amount": "100 billion VND"}])
+
+    def test_embedding_failure_keeps_parsed_upload_for_retry_and_marks_document_failed(self):
+        document_repo = MagicMock()
+        storage = MagicMock()
+        storage.storage.from_.return_value.upload.return_value = None
+        parsed_repository = MagicMock()
+        parsed_output = {
+            "elements": [{"text": "Revenue was 100 VND.", "metadata": {"page_number": 1}}],
+            "tables": [], "metadata": {"pipeline_id": "docling"},
+        }
+
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "_storage_client", return_value=(storage, "private")),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch.object(DocumentProcessor, "process", return_value=parsed_output),
+            patch("core.embeddings.embedding_service.EmbeddingService", side_effect=RuntimeError("model unavailable")),
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
+            patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
+            patch("core.database.structured_store.StructuredDataStore") as structured_cls,
+            patch("core.database.parser_chunks_repository.ParserChunksRepository", return_value=parsed_repository),
+        ):
+            counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
+            counter_cls.return_value.count.return_value = 4
+            with self.assertRaises(app_main.HTTPException) as error:
+                asyncio.run(app_main.upload_document(
+                    request=None,
+                    file=UploadFile(filename="notes.txt", file=io.BytesIO(b"Revenue was 100 VND.")),
+                    title="Finance notes",
+                    document_type="internal_report",
+                    domain="finance",
+                    fiscal_year=None,
+                    allowed_roles=["finance_analyst"],
+                    ocr_language="vie+eng",
+                    user={"sub": "uploader-1"},
+                ))
+
+        self.assertEqual(error.exception.status_code, 503)
+        self.output_repository_class.return_value.replace_document.assert_called_once()
+        document_repo.update_processing_status.assert_called_with(
+            document_repo.register_upload.call_args.args[0]["document_id"], "failed",
+        )
+        chunks_cls.return_value.replace_document.assert_not_called()
+        structured_cls.return_value.save_document_tables.assert_called_once()
+        storage.storage.from_.return_value.remove.assert_not_called()
+
+    def test_parser_output_remains_model_independent_when_embedding_chunks_are_split(self):
+        document_repo = MagicMock()
+        storage = MagicMock()
+        embedding = MagicMock(model_name="test-embedding", max_sequence_length=8)
+        embedding.embed_documents.return_value = [[0.1], [0.2]]
+        parsed_repo = MagicMock()
+        extracted_text = "Revenue 100; cash 20; total assets 500"
+        processed = {"elements": [{
+            "text": extracted_text,
+            "metadata": {"chunk_index": 0, "page_number": 1, "layout_type": "text"},
+        }], "tables": [], "metadata": {"pipeline_id": "docling"}}
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "_storage_client", return_value=(storage, "private")),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch.object(DocumentProcessor, "process", return_value=processed),
+            patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
+            patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
+            patch("core.database.structured_store.StructuredDataStore"),
+            patch("core.database.parser_chunks_repository.ParserChunksRepository", return_value=parsed_repo),
+        ):
+            counter_cls.return_value.split_text.return_value = [extracted_text[:18], extracted_text[18:]]
+            counter_cls.return_value.count.return_value = 4
+            result = asyncio.run(app_main.upload_document(
+                request=None, file=UploadFile(filename="report.pdf", file=io.BytesIO(b"%PDF-1.7 test")),
+                title="Report", document_type="annual_report", domain="finance",
+                fiscal_year=None, allowed_roles=["finance_analyst"],
+                ocr_language="vie+eng",
+                user={"sub": "uploader-1"},
+            ))
+
+        self.assertEqual(result["processing_status"], "ready")
+        parsed_repo.replace_document.assert_called_once()
+        self.assertEqual(parsed_repo.replace_document.call_args.args[1][0]["text"], extracted_text)
+        self.assertNotIn("embedding_model", parsed_repo.replace_document.call_args.args[1][0]["metadata"])
+        self.assertEqual(len(chunks_cls.return_value.replace_document.call_args.args[1]), 2)
+
+
+    @unittest.skipUnless(importlib.util.find_spec("docling_core"), "Docling optional extra is not installed")
+    def test_borderless_pdf_table_flows_through_upload_to_structured_store(self):
+        source = borderless_financial_pdf()
+        document_repo = MagicMock()
+        structured_store = MagicMock()
+        storage = MagicMock()
+        storage.storage.from_.return_value.upload.return_value = None
+        embedding = MagicMock(model_name="test-embedding", max_sequence_length=100)
+        embedding.embed_documents.return_value = [[0.1, 0.2]]
+        processor_settings = {}
+        original_processor_init = DocumentProcessor.__init__
+
+        def capture_processor_settings(processor, config=None):
+            processor_settings.update(config or {})
+            original_processor_init(processor, config)
+
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "_storage_client", return_value=(storage, "private")),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
+            patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
+            patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
+            patch("core.database.parser_chunks_repository.ParserChunksRepository") as parsed_cls,
+            patch.dict("os.environ", {
+                "DOCUMENT_PADDLE_FORMULA_RECOGNITION": "true",
+                "DOCUMENT_PADDLE_CHART_RECOGNITION": "true",
+                "DOCUMENT_VISION_CAPTIONS": "true",
+            }),
+            patch.object(DocumentProcessor, "__init__", capture_processor_settings),
+        ):
+            counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
+            counter_cls.return_value.count.return_value = 4
+            response = asyncio.run(app_main.upload_document(
+                request=None,
+                file=UploadFile(filename="balance.pdf", file=io.BytesIO(source)),
+                title="Balance sheet",
+                document_type="annual_report",
+                domain="finance",
+                fiscal_year=2024,
+                allowed_roles=["finance_analyst"],
+                ocr_language="vie+eng",
+                user={"sub": "uploader-1"},
+            ))
+
+        self.assertEqual(response["processing_status"], "ready")
+        self.assertTrue(processor_settings["paddle_formula_recognition"])
+        self.assertTrue(processor_settings["paddle_chart_recognition"])
+        self.assertTrue(processor_settings["vision_captioning"])
+        saved_tables = structured_store.save_document_tables.call_args.args[2]
+        self.assertEqual(len(saved_tables), 1)
+        self.assertEqual(saved_tables[0]["columns"], ["label", "31/12/2024", "31/12/2023"])
+        self.assertEqual(saved_tables[0]["rows"][-1], {
+            "label": "Assets", "31/12/2024": "500", "31/12/2023": "450",
+        })
+        self.assertEqual(saved_tables[0]["metadata"]["table_extraction_method"], "pymupdf.find_tables_text_aligned_columns")
+        chunks_cls.return_value.replace_document.assert_called_once()
+
+
+    @unittest.skipUnless(importlib.util.find_spec("docling_core"), "Docling optional extra is not installed")
+    def test_pptx_table_flows_from_upload_to_structured_store(self):
+        source = pptx_with_table()
+        document_repo = MagicMock()
+        structured_store = MagicMock()
+        storage = MagicMock()
+        storage.storage.from_.return_value.upload.return_value = None
+        embedding = MagicMock(model_name="test-embedding", max_sequence_length=100)
+        embedding.embed_documents.return_value = [[0.1, 0.2]]
+
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "_storage_client", return_value=(storage, "private")),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
+            patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
+            patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
+            patch("core.database.parser_chunks_repository.ParserChunksRepository") as parsed_cls,
+        ):
+            counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
+            counter_cls.return_value.count.return_value = 4
+            request_file = UploadFile(filename="finance.pptx", file=io.BytesIO(source))
+            response = asyncio.run(app_main.upload_document(
+                request=None,
+                file=request_file,
+                title="Finance presentation",
+                document_type="annual_report",
+                domain="finance",
+                fiscal_year=None,
+                allowed_roles=["finance_analyst"],
+                ocr_language="vie+eng",
+                user={"sub": "uploader-1"},
+            ))
+
+        self.assertEqual(response["processing_status"], "ready")
+        saved_tables = structured_store.save_document_tables.call_args.args[2]
+        self.assertEqual(saved_tables[0]["page_number"], 1)
+        self.assertEqual(saved_tables[0]["columns"], ["Year", "Revenue"])
+        self.assertEqual(saved_tables[0]["rows"], [{"Year": "2024", "Revenue": "100 VND"}])
+        self.assertEqual(saved_tables[0]["metadata"]["slide_number"], 1)
+        document_repo.update_processing_status.assert_called_with(response["document_id"], "ready")
+        chunks_cls.return_value.replace_document.assert_called_once()
+
+    @unittest.skipUnless(importlib.util.find_spec("docling_core"), "Docling optional extra is not installed")
+    def test_xlsx_formula_metadata_flows_from_upload_to_structured_store(self):
+        source = xlsx_with_formula()
+        document_repo = MagicMock()
+        structured_store = MagicMock()
+        storage = MagicMock()
+        storage.storage.from_.return_value.upload.return_value = None
+        embedding = MagicMock(model_name="test-embedding", max_sequence_length=100)
+        embedding.embed_documents.return_value = [[0.1, 0.2]]
+
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "_storage_client", return_value=(storage, "private")),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
+            patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
+            patch("core.database.structured_store.StructuredDataStore", return_value=structured_store),
+            patch("core.database.parser_chunks_repository.ParserChunksRepository") as parsed_cls,
+        ):
+            counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
+            counter_cls.return_value.count.return_value = 4
+            request_file = UploadFile(filename="finance.xlsx", file=io.BytesIO(source))
+            response = asyncio.run(app_main.upload_document(
+                request=None,
+                file=request_file,
+                title="Finance report",
+                document_type="annual_report",
+                domain="finance",
+                fiscal_year=None,
+                allowed_roles=["finance_analyst"],
+                ocr_language="vie+eng",
+                user={"sub": "uploader-1"},
+            ))
+
+        self.assertEqual(response["processing_status"], "ready")
+        saved_tables = structured_store.save_document_tables.call_args.args[2]
+        self.assertEqual(saved_tables[0]["metadata"]["formulas"], [{
+            "cell": "B2", "formula": "=SUM(B1:B1)", "formula_type": None,
+            "formula_ref": None, "cached_value": "100",
+        }])
+        self.assertEqual(document_repo.update_processing_status.call_args.args[1], "ready")
+        chunks_cls.return_value.replace_document.assert_called_once()
+
+    def test_structured_store_binds_formula_metadata_as_jsonb(self):
+        connection = MagicMock()
+        store = StructuredDataStore(connection=connection)
+        formulas = [{"cell": "B2", "formula": "=SUM(B1:B1)", "cached_value": "100"}]
+        row_cell_bboxes = [{"label": [10, 20, 50, 30], "2024": [100, 20, 130, 30]}]
+
+        store.save_document_tables("DOC-1", "Finance", [{
+            "page_number": 1, "table_index": 0, "columns": ["Value"],
+            "rows": [{"Value": "100"}],
+            "metadata": {"formulas": formulas, "row_cell_bboxes": row_cell_bboxes},
+            "context": {"table_title": "Revenue summary", "unit": "VND"},
+        }])
+
+        cursor = connection.cursor.return_value.__enter__.return_value
+        insert_params = cursor.execute.call_args.args[1]
+        self.assertEqual(insert_params[-1].obj["formulas"], formulas)
+        self.assertEqual(insert_params[-1].obj["row_cell_bboxes"], row_cell_bboxes)
+        self.assertEqual(insert_params[-1].obj["table_context"]["table_title"], "Revenue summary")
+        record_params = cursor.executemany.call_args.args[1]
+        self.assertEqual(record_params[0][3].obj, {"Value": "100"})
+
+    def test_unpaginated_table_uses_internal_page_sentinel_without_source_page_metadata(self):
+        connection = MagicMock()
+        store = StructuredDataStore(connection=connection)
+        store.save_document_tables("DOC-1", "Finance", [{
+            "table_index": 0, "columns": ["Metric"], "rows": [{"Metric": "Revenue"}],
+            "metadata": {"format": "XLSX", "sheet_name": "Summary"},
+        }])
+
+        cursor = connection.cursor.return_value.__enter__.return_value
+        insert_params = cursor.execute.call_args.args[1]
+        self.assertEqual(insert_params[0], "DOC-1:unpaginated:table:0")
+        self.assertEqual(insert_params[3], 0)
+        self.assertEqual(insert_params[-1].obj["sheet_name"], "Summary")
+        self.assertNotIn("page_number", insert_params[-1].obj)
+
+    def test_failed_upload_can_retry_embedding_from_saved_parser_output(self):
+        document_id = "UPLOAD-FAILED-1"
+        document_repo = MagicMock()
+        document_repo.list_knowledge_documents.return_value = [{
+            "document_id": document_id,
+            "source_type": "user_upload",
+            "processing_status": "failed",
+            "allowed_roles": ["admin"],
+            "knowledge_base_active": False,
+        }]
+        parsed_repo = MagicMock()
+        parsed_repo.get_document.return_value = [{
+            "content": "Inventory policy passage",
+            "metadata": {"filename": "inventory-policy.pdf", "page_number": 2},
+        }]
+        embedding = MagicMock(model_name="local-test-embedding", max_sequence_length=128)
+        embedding.embed_documents.return_value = [[0.1, 0.2]]
+
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch("core.database.parser_chunks_repository.ParserChunksRepository", return_value=parsed_repo),
+            patch("core.embeddings.embedding_service.EmbeddingService", return_value=embedding),
+            patch("core.tokenization.token_counter.TokenCounter") as counter_cls,
+            patch("core.database.document_chunks_repository.DocumentChunkRepository") as chunks_cls,
+        ):
+            counter_cls.return_value.split_text.side_effect = lambda text, **kwargs: [text]
+            counter_cls.return_value.count.return_value = 3
+            result = app_main.retry_document_embedding(
+                document_id, request=None, user={"role": "admin", "sub": "admin"},
+            )
+
+        self.assertEqual(result["processing_status"], "ready")
+        self.assertEqual(result["indexed_chunk_count"], 1)
+        document_repo.update_processing_status.assert_any_call(document_id, "processing")
+        document_repo.update_processing_status.assert_any_call(document_id, "ready")
+        indexed = chunks_cls.return_value.replace_document.call_args.args[1]
+        self.assertEqual(indexed[0][0:3], ("inventory-policy.pdf", 0, "Inventory policy passage"))
+        self.assertEqual(indexed[0][3]["allowed_roles"], ["admin"])
+        self.assertEqual(indexed[0][3]["page_number"], 2)
+        document_repo.set_knowledge_base_active.assert_not_called()
+        document_repo.set_document_allowed_roles.assert_not_called()
+        parsed_repo.close.assert_called_once()
+        document_repo.close.assert_called_once()
+
+    def test_retry_embedding_rejects_seed_documents_without_mutating_status(self):
+        document_repo = MagicMock()
+        document_repo.list_knowledge_documents.return_value = [{
+            "document_id": "SEED-1", "source_type": "manifest",
+            "processing_status": "failed", "allowed_roles": ["admin"],
+        }]
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+        ):
+            with self.assertRaises(app_main.HTTPException) as raised:
+                app_main.retry_document_embedding(
+                    "SEED-1", request=None, user={"role": "admin", "sub": "admin"},
+                )
+        self.assertEqual(raised.exception.status_code, 409)
+        document_repo.update_processing_status.assert_not_called()
+        document_repo.close.assert_called_once()
+
+    def test_retry_embedding_rejects_upload_without_saved_parser_chunks(self):
+        document_id = "UPLOAD-NO-PARSER-CHUNKS"
+        document_repo = MagicMock()
+        document_repo.list_knowledge_documents.return_value = [{
+            "document_id": document_id,
+            "source_type": "user_upload",
+            "processing_status": "failed",
+            "allowed_roles": ["admin"],
+        }]
+        parsed_repo = MagicMock()
+        parsed_repo.get_document.return_value = []
+
+        with (
+            patch.object(app_main, "_require_same_origin"),
+            patch.object(app_main, "DocumentRepository", return_value=document_repo),
+            patch("core.database.parser_chunks_repository.ParserChunksRepository", return_value=parsed_repo),
+        ):
+            with self.assertRaises(app_main.HTTPException) as raised:
+                app_main.retry_document_embedding(
+                    document_id, request=None, user={"role": "admin", "sub": "admin"},
+                )
+
+        self.assertEqual(raised.exception.status_code, 409)
+        self.assertIn("No saved parser output", raised.exception.detail)
+        document_repo.update_processing_status.assert_not_called()
+        parsed_repo.close.assert_called_once()
+        document_repo.close.assert_called_once()
+
+
+if __name__ == "__main__":
+    unittest.main()

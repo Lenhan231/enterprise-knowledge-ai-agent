@@ -1,0 +1,3974 @@
+{
+  "format_version": "sql-40-case-mutation-results.v3",
+  "protocol_version": "3.0.0",
+  "status": "COMPLETE_NOT_APPROVED",
+  "run_id": "mutation-v3-20261121T080242Z",
+  "captured_at_utc": "2026-11-21T08:02:42.561528+00:00",
+  "source_revision": "60eafaee964a6de48a0c8d13925e3207d5116588",
+  "source_worktree_dirty": true,
+  "python_version": "3.11.16",
+  "source_hashes": {
+    "artifacts/sql-agent-bussiness/40-case-v3/cases_v3_draft.json": "1ac699ce7f15fcb9981fceb600e1db9a0a17511044f3831bcaffb94d3b5ff2bd",
+    "artifacts/sql-agent-bussiness/40-case-v3/gold_sql_v3_draft.json": "f3b3dae24242da66b369dbd906a0303e0ce23abbf8e40287dcd2325393ef2ddf",
+    "artifacts/sql-agent-bussiness/40-case-v3/gold_results_v3_provisional.json": "7ba2222722ae0cb5dc1956ad7de27478db8ae956118f23e90e58fe7a1c7eaa86",
+    "artifacts/sql-agent-bussiness/40-case-v3/mutation_probes_v3.py": "a18723c41a3dbea2f526ffd4793e4f81f92b8cee0f0553c5f49568e35fd8e4a6",
+    "artifacts/sql-agent-bussiness/40-case-v3/run_mutation_probes_v3.py": "b76f479f531651f3571d423a86b0195fa36785e499dfd4369f9812c9f9ec677f",
+    "artifacts/sql-agent-bussiness/40-case-v3/scorer_v3.py": "d1b52175659d19be6087fa98669d298272fcc00d3e30bf26e35495a27010e2cf",
+    "artifacts/sql-agent-bussiness/40-case-v3/followup_adapter.py": "3ec038322e7e1a47824c0b0d93287a04039940e775d83c1c2cb1fd1225e54bbc",
+    "artifacts/sql-agent-bussiness/preflight.py": "bbaec1e74677d7c1a9a199c36127ec2b4188b6c2103f4f1acfaa1620bda7eb4c",
+    "src/core/agents/sql/metric_validation.py": "3ccc9a06d95d7950f6cdb2a05593222073c73c091c8ad684ca51d14e84410cb3",
+    "src/core/agents/sql/sql_validation.py": "8b80b68c945785f7df3eff4a8836ce12a5902d19230bdd31086c84a76f6a175c",
+    "src/core/agents/sql/join_validation.py": "e776fa376e36820004c7eaad5f34e134802f6089fe0b6b80e2f1812298559007",
+    "src/core/database/commerce_repository.py": "c50409b9dda2c25768f4f669fe8765253b85df35199acca438b03d64030d41ec",
+    "data/semantic/commerce_schema_metric_contract_v1.md": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2"
+  },
+  "case_set_sha256": "56ef0dd5ec0d2fc15539665b91a230a923e1836cc4a18cf5c6fe8fcd795146c6",
+  "gold_sql_file_sha256": "f3b3dae24242da66b369dbd906a0303e0ce23abbf8e40287dcd2325393ef2ddf",
+  "gold_results_file_sha256": "7ba2222722ae0cb5dc1956ad7de27478db8ae956118f23e90e58fe7a1c7eaa86",
+  "preflight_file_sha256": "8b5d4ca6b716ef4a2344ddb2423e23bf277e8765d523cf04c251388d3d41159f",
+  "database_classification": "frozen-analytics-snapshot",
+  "database_role_read_only": true,
+  "database_fingerprint_sha256": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028",
+  "sql_agent_generation_calls": 0,
+  "heldout_agent_executed": false,
+  "database_write_attempts": 0,
+  "mutations_attempted": 28,
+  "invalid_mutations_not_counted": 0,
+  "result_based_mutation_detection": {
+    "numerator": 23,
+    "denominator": 26,
+    "value": 0.8846153846153846
+  },
+  "observationally_equivalent": 3,
+  "validator_detection": {
+    "safety_and_join_validators": {
+      "approved_join_relationship": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "join_fanout_aggregation": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      }
+    },
+    "business_semantic_validator": {
+      "validator": "validate_population_contract",
+      "numerator": 1,
+      "denominator": 1,
+      "value": 1.0
+    }
+  },
+  "failures": [],
+  "mutations": [
+    {
+      "id": "M002-01-missing-time-scope",
+      "case_id": "B40-002",
+      "category": "missing_time_restriction",
+      "description": "Replace the 2025 ship-date range with a non-null parameter tautology.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT DATE_TRUNC('month', s.ship_date)::date AS month, AVG(s.delivery_date - s.ship_date) FILTER (WHERE s.delivery_date IS NOT NULL) AS average_delivery_days, COUNT(s.delivery_date) AS completed_shipment_count, COUNT(*) FILTER (WHERE s.delivery_date IS NULL) AS missing_delivery_date_count FROM commerce.shipments AS s WHERE $1::date IS NOT NULL AND $2::date IS NOT NULL GROUP BY DATE_TRUNC('month', s.ship_date)::date ORDER BY month ASC LIMIT 200",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "sql_sha256": "e85678d60f62f164a20f2971e84eddc47b7229fee0b6aff832f46519afddc472",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "month": "2023-01-01",
+          "average_delivery_days": "3.0000000000000000",
+          "completed_shipment_count": 83,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2023-02-01",
+          "average_delivery_days": "3.0000000000000000",
+          "completed_shipment_count": 77,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2023-03-01",
+          "average_delivery_days": "3.0000000000000000",
+          "completed_shipment_count": 85,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2023-04-01",
+          "average_delivery_days": "2.9878048780487805",
+          "completed_shipment_count": 82,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2023-05-01",
+          "average_delivery_days": "3.0000000000000000",
+          "completed_shipment_count": 85,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2023-06-01",
+          "average_delivery_days": "3.0120481927710843",
+          "completed_shipment_count": 83,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2023-07-01",
+          "average_delivery_days": "3.0000000000000000",
+          "completed_shipment_count": 85,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2023-08-01",
+          "average_delivery_days": "3.0000000000000000",
+          "completed_shipment_count": 85,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2023-09-01",
+          "average_delivery_days": "2.9878048780487805",
+          "completed_shipment_count": 82,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2023-10-01",
+          "average_delivery_days": "3.0000000000000000",
+          "completed_shipment_count": 85,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2023-11-01",
+          "average_delivery_days": "3.0365853658536585",
+          "completed_shipment_count": 82,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2023-12-01",
+          "average_delivery_days": "2.7441860465116279",
+          "completed_shipment_count": 86,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2024-01-01",
+          "average_delivery_days": "3.0338983050847458",
+          "completed_shipment_count": 59,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2024-02-01",
+          "average_delivery_days": "2.9824561403508772",
+          "completed_shipment_count": 57,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2024-03-01",
+          "average_delivery_days": "2.9666666666666667",
+          "completed_shipment_count": 60,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2024-04-01",
+          "average_delivery_days": "3.0517241379310345",
+          "completed_shipment_count": 58,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2024-05-01",
+          "average_delivery_days": "2.9500000000000000",
+          "completed_shipment_count": 60,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2024-06-01",
+          "average_delivery_days": "2.9827586206896552",
+          "completed_shipment_count": 58,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2024-07-01",
+          "average_delivery_days": "3.0166666666666667",
+          "completed_shipment_count": 60,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2024-08-01",
+          "average_delivery_days": "3.0500000000000000",
+          "completed_shipment_count": 60,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2024-09-01",
+          "average_delivery_days": "2.9661016949152542",
+          "completed_shipment_count": 59,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2024-10-01",
+          "average_delivery_days": "3.0169491525423729",
+          "completed_shipment_count": 59,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2024-11-01",
+          "average_delivery_days": "3.0169491525423729",
+          "completed_shipment_count": 59,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2024-12-01",
+          "average_delivery_days": "2.9836065573770492",
+          "completed_shipment_count": 61,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-01-01",
+          "average_delivery_days": "2.9491525423728814",
+          "completed_shipment_count": 59,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-02-01",
+          "average_delivery_days": "3.0727272727272727",
+          "completed_shipment_count": 55,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-03-01",
+          "average_delivery_days": "3.0000000000000000",
+          "completed_shipment_count": 60,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-04-01",
+          "average_delivery_days": "2.9482758620689655",
+          "completed_shipment_count": 58,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-05-01",
+          "average_delivery_days": "2.9833333333333333",
+          "completed_shipment_count": 60,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-06-01",
+          "average_delivery_days": "3.0169491525423729",
+          "completed_shipment_count": 59,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-07-01",
+          "average_delivery_days": "3.0000000000000000",
+          "completed_shipment_count": 59,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-08-01",
+          "average_delivery_days": "3.0000000000000000",
+          "completed_shipment_count": 60,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-09-01",
+          "average_delivery_days": "3.0000000000000000",
+          "completed_shipment_count": 59,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-10-01",
+          "average_delivery_days": "2.7704918032786885",
+          "completed_shipment_count": 61,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-11-01",
+          "average_delivery_days": "3.2250000000000000",
+          "completed_shipment_count": 40,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-12-01",
+          "average_delivery_days": "3.0439560439560440",
+          "completed_shipment_count": 91,
+          "missing_delivery_date_count": 7
+        },
+        {
+          "month": "2026-01-01",
+          "average_delivery_days": "2.8550724637681159",
+          "completed_shipment_count": 69,
+          "missing_delivery_date_count": 5
+        },
+        {
+          "month": "2026-02-01",
+          "average_delivery_days": "3.0428571428571429",
+          "completed_shipment_count": 70,
+          "missing_delivery_date_count": 2
+        },
+        {
+          "month": "2026-03-01",
+          "average_delivery_days": "2.9382716049382716",
+          "completed_shipment_count": 81,
+          "missing_delivery_date_count": 6
+        },
+        {
+          "month": "2026-04-01",
+          "average_delivery_days": "3.1600000000000000",
+          "completed_shipment_count": 75,
+          "missing_delivery_date_count": 4
+        },
+        {
+          "month": "2026-05-01",
+          "average_delivery_days": "2.8607594936708861",
+          "completed_shipment_count": 79,
+          "missing_delivery_date_count": 5
+        },
+        {
+          "month": "2026-06-01",
+          "average_delivery_days": "3.0649350649350649",
+          "completed_shipment_count": 77,
+          "missing_delivery_date_count": 5
+        },
+        {
+          "month": "2026-07-01",
+          "average_delivery_days": "3.1566265060240964",
+          "completed_shipment_count": 83,
+          "missing_delivery_date_count": 2
+        },
+        {
+          "month": "2026-08-01",
+          "average_delivery_days": "3.2317073170731707",
+          "completed_shipment_count": 82,
+          "missing_delivery_date_count": 3
+        },
+        {
+          "month": "2026-09-01",
+          "average_delivery_days": "3.0823529411764706",
+          "completed_shipment_count": 85,
+          "missing_delivery_date_count": 4
+        },
+        {
+          "month": "2026-10-01",
+          "average_delivery_days": "3.1733333333333333",
+          "completed_shipment_count": 75,
+          "missing_delivery_date_count": 10
+        },
+        {
+          "month": "2026-11-01",
+          "average_delivery_days": "3.0000000000000000",
+          "completed_shipment_count": 27,
+          "missing_delivery_date_count": 9
+        }
+      ],
+      "row_count": 47,
+      "result_sha256": "5c24874b1912eee28209a0b0fbf6fd9f0a8f64f1fa7934d74c29ae9cfe609eb6",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1333.19
+    },
+    {
+      "id": "M002-02-wrong-date-boundary",
+      "case_id": "B40-002",
+      "category": "incorrect_date_boundary",
+      "description": "Move the exclusive end boundary one day earlier, omitting 2025-12-31.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT DATE_TRUNC('month', s.ship_date)::date AS month, AVG(s.delivery_date - s.ship_date) FILTER (WHERE s.delivery_date IS NOT NULL) AS average_delivery_days, COUNT(s.delivery_date) AS completed_shipment_count, COUNT(*) FILTER (WHERE s.delivery_date IS NULL) AS missing_delivery_date_count FROM commerce.shipments AS s WHERE s.ship_date >= $1 AND s.ship_date < $2 GROUP BY DATE_TRUNC('month', s.ship_date)::date ORDER BY month ASC LIMIT 200",
+      "parameters": [
+        "2025-01-01",
+        "2025-12-31"
+      ],
+      "sql_sha256": "de1348dff9592f14d9966df60420cab09fa729271e7a10e9d14e6ccc4b34889a",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "month": "2025-01-01",
+          "average_delivery_days": "2.9491525423728814",
+          "completed_shipment_count": 59,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-02-01",
+          "average_delivery_days": "3.0727272727272727",
+          "completed_shipment_count": 55,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-03-01",
+          "average_delivery_days": "3.0000000000000000",
+          "completed_shipment_count": 60,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-04-01",
+          "average_delivery_days": "2.9482758620689655",
+          "completed_shipment_count": 58,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-05-01",
+          "average_delivery_days": "2.9833333333333333",
+          "completed_shipment_count": 60,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-06-01",
+          "average_delivery_days": "3.0169491525423729",
+          "completed_shipment_count": 59,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-07-01",
+          "average_delivery_days": "3.0000000000000000",
+          "completed_shipment_count": 59,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-08-01",
+          "average_delivery_days": "3.0000000000000000",
+          "completed_shipment_count": 60,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-09-01",
+          "average_delivery_days": "3.0000000000000000",
+          "completed_shipment_count": 59,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-10-01",
+          "average_delivery_days": "2.7704918032786885",
+          "completed_shipment_count": 61,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-11-01",
+          "average_delivery_days": "3.2250000000000000",
+          "completed_shipment_count": 40,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-12-01",
+          "average_delivery_days": "3.0238095238095238",
+          "completed_shipment_count": 84,
+          "missing_delivery_date_count": 7
+        }
+      ],
+      "row_count": 12,
+      "result_sha256": "f9d9bc682d54c3afc5cf9e5ca2f08aae6e14715fc5010f468706738442869190",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1464.324
+    },
+    {
+      "id": "M002-03-wrong-null-aggregate",
+      "case_id": "B40-002",
+      "category": "incorrect_null_handling",
+      "description": "Count non-NULL delivery dates under the missing-date predicate.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT DATE_TRUNC('month', s.ship_date)::date AS month, AVG(s.delivery_date - s.ship_date) FILTER (WHERE s.delivery_date IS NOT NULL) AS average_delivery_days, COUNT(s.delivery_date) AS completed_shipment_count, COUNT(s.delivery_date) FILTER (WHERE s.delivery_date IS NULL) AS missing_delivery_date_count FROM commerce.shipments AS s WHERE s.ship_date >= $1 AND s.ship_date < $2 GROUP BY DATE_TRUNC('month', s.ship_date)::date ORDER BY month ASC LIMIT 200",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "sql_sha256": "fcad447a79113b54ac7ee47d7cd6ca13ca1cf597b77c75b690ef689be88f6c17",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "month": "2025-01-01",
+          "average_delivery_days": "2.9491525423728814",
+          "completed_shipment_count": 59,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-02-01",
+          "average_delivery_days": "3.0727272727272727",
+          "completed_shipment_count": 55,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-03-01",
+          "average_delivery_days": "3.0000000000000000",
+          "completed_shipment_count": 60,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-04-01",
+          "average_delivery_days": "2.9482758620689655",
+          "completed_shipment_count": 58,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-05-01",
+          "average_delivery_days": "2.9833333333333333",
+          "completed_shipment_count": 60,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-06-01",
+          "average_delivery_days": "3.0169491525423729",
+          "completed_shipment_count": 59,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-07-01",
+          "average_delivery_days": "3.0000000000000000",
+          "completed_shipment_count": 59,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-08-01",
+          "average_delivery_days": "3.0000000000000000",
+          "completed_shipment_count": 60,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-09-01",
+          "average_delivery_days": "3.0000000000000000",
+          "completed_shipment_count": 59,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-10-01",
+          "average_delivery_days": "2.7704918032786885",
+          "completed_shipment_count": 61,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-11-01",
+          "average_delivery_days": "3.2250000000000000",
+          "completed_shipment_count": 40,
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-12-01",
+          "average_delivery_days": "3.0439560439560440",
+          "completed_shipment_count": 91,
+          "missing_delivery_date_count": 0
+        }
+      ],
+      "row_count": 12,
+      "result_sha256": "bc40f144be907ed8290bbf4fdffb9835eb7f01e743de34a7bc61b5a853da3168",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1357.274
+    },
+    {
+      "id": "M006-01-missing-city-filter",
+      "case_id": "B40-006",
+      "category": "missing_required_filter",
+      "description": "Remove the Hai Phong constraint while keeping the bound parameter valid.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT COUNT(DISTINCT c.customer_id) AS customer_count FROM commerce.customers AS c JOIN commerce.geography AS g ON g.zip = c.zip WHERE c.age_group = $1 AND c.signup_date >= $2 AND c.signup_date < $3 LIMIT 1",
+      "parameters": [
+        "25-34",
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "sql_sha256": "837e4578b7513374400e6354671b5404b23ca2d72e734f05f1309a050019655f",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "customer_count": 143
+        }
+      ],
+      "row_count": 1,
+      "result_sha256": "3c2a3b3e92bf76b4d203f972946e58489a0080dfb7b0fc1b34e8e0015e940a83",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": false
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1301.031
+    },
+    {
+      "id": "M006-02-wrong-age-value",
+      "case_id": "B40-006",
+      "category": "wrong_filter_value",
+      "description": "Use age group 35-44 instead of the requested 25-34.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT COUNT(DISTINCT c.customer_id) AS customer_count FROM commerce.customers AS c JOIN commerce.geography AS g ON g.zip = c.zip WHERE g.city = $1 AND c.age_group = $2 AND c.signup_date >= $3 AND c.signup_date < $4 LIMIT 1",
+      "parameters": [
+        "Hai Phong",
+        "35-44",
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "sql_sha256": "781df366e778da864b0d6f9b3d0c5adb77e42d8f9b6c8eae4aa3877bb7f4fc42",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "customer_count": 14
+        }
+      ],
+      "row_count": 1,
+      "result_sha256": "56666ac7a0814d745d436fe92ca5a079948a9c9ebd68b0ffac8532584ddb8c56",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": false
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1264.571
+    },
+    {
+      "id": "M006-03-wrong-join-key",
+      "case_id": "B40-006",
+      "category": "incorrect_join_key",
+      "description": "Join geography ZIP to customer_id instead of customers.zip.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": "approved_join_relationship",
+      "semantic_validator_oracle": null,
+      "sql": "SELECT COUNT(DISTINCT c.customer_id) AS customer_count FROM commerce.customers AS c JOIN commerce.geography AS g ON g.zip = c.customer_id WHERE g.city = $1 AND c.age_group = $2 AND c.signup_date >= $3 AND c.signup_date < $4 LIMIT 1",
+      "parameters": [
+        "Hai Phong",
+        "25-34",
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "sql_sha256": "6a0cf0416c90acfd2182fb2438420655f56542b499177cf2512cf56c0ed36bec",
+      "sql_parse_valid": true,
+      "status": "VALIDATOR_REJECTED",
+      "executed_via": "execute_approved_query",
+      "detected": true,
+      "detection_channel": "approved_join_validator",
+      "validator_oracle_outcome": "CORRECT_REJECTION",
+      "error_type": "SQLJoinValidationError",
+      "error_detail": "JOIN does not match an approved relationship.",
+      "elapsed_ms": 2.261
+    },
+    {
+      "id": "M008-01-missing-nonnull-filter",
+      "case_id": "B40-008",
+      "category": "missing_null_filter",
+      "description": "Remove the return_reason IS NOT NULL constraint.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT r.return_reason, SUM(r.refund_amount) AS refund_amount FROM commerce.returns AS r WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY r.return_reason ORDER BY refund_amount DESC, r.return_reason ASC LIMIT 200",
+      "parameters": [
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "sql_sha256": "4a158433c63717f5ae95d79d63e6818c8d63642565095787b69af19fce7d8860",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "return_reason": "Size exchange",
+          "refund_amount": "92064.49"
+        },
+        {
+          "return_reason": "Changed mind",
+          "refund_amount": "62837.92"
+        },
+        {
+          "return_reason": "Color differed from expectation",
+          "refund_amount": "33047.48"
+        }
+      ],
+      "row_count": 3,
+      "result_sha256": "09244bf775b77ac36e08776b1d0caf2f6700fd7c24a3f9b817738cc20999b082",
+      "comparison": {
+        "business_rows_match": true,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": true,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": false,
+      "detection_channel": "observationally_equivalent",
+      "elapsed_ms": 1516.901
+    },
+    {
+      "id": "M008-02-inverted-null-filter",
+      "case_id": "B40-008",
+      "category": "incorrect_null_handling",
+      "description": "Select NULL reasons instead of non-NULL reasons.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT r.return_reason, SUM(r.refund_amount) AS refund_amount FROM commerce.returns AS r WHERE r.return_date >= $1 AND r.return_date < $2 AND r.return_reason IS NULL GROUP BY r.return_reason ORDER BY refund_amount DESC, r.return_reason ASC LIMIT 200",
+      "parameters": [
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "sql_sha256": "64d0f9f4a15dd3e6bf491f04070d7e8d0c7c7a17957dd67b1ff104237bcc3a7d",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [],
+      "row_count": 0,
+      "result_sha256": "45d4816f5acfcaf9ae495700cfa57c559f5fbc567b40ce379b17073f749ce9cc",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1272.245
+    },
+    {
+      "id": "M015-01-wrong-ranking-direction",
+      "case_id": "B40-015",
+      "category": "wrong_ranking_direction",
+      "description": "Rank net revenue ascending rather than descending.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT p.category, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_revenue FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id = o.order_id JOIN commerce.products AS p ON p.product_id = oi.product_id WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 GROUP BY p.category ORDER BY net_revenue ASC, p.category ASC LIMIT 3",
+      "parameters": [
+        "delivered",
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "sql_sha256": "90a244b9d01279b308011aad07cb0821bd12abab0e9ccdb9a49463832f9e2f89",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "category": "Casual",
+          "net_revenue": "324543.26"
+        },
+        {
+          "category": "GenZ",
+          "net_revenue": "396405.85"
+        },
+        {
+          "category": "Outdoor",
+          "net_revenue": "3533291.45"
+        }
+      ],
+      "row_count": 3,
+      "result_sha256": "ccbcc726fc677170d0403cc2e87bc6f15028ff8295125dbb4489ae56d47a4f7f",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1314.999
+    },
+    {
+      "id": "M015-02-incorrect-limit",
+      "case_id": "B40-015",
+      "category": "incorrect_limit",
+      "description": "Use TOP 5 instead of the requested TOP 3.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT p.category, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_revenue FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id = o.order_id JOIN commerce.products AS p ON p.product_id = oi.product_id WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 GROUP BY p.category ORDER BY net_revenue DESC, p.category ASC LIMIT 5",
+      "parameters": [
+        "delivered",
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "sql_sha256": "eabb10998e4386baa71e5544a6e9ab4e6eb0aece6669d51b0acac437b62ef341",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "category": "Streetwear",
+          "net_revenue": "8685863.04"
+        },
+        {
+          "category": "Outdoor",
+          "net_revenue": "3533291.45"
+        },
+        {
+          "category": "GenZ",
+          "net_revenue": "396405.85"
+        },
+        {
+          "category": "Casual",
+          "net_revenue": "324543.26"
+        }
+      ],
+      "row_count": 4,
+      "result_sha256": "2fa530562e959186d253662ccdd6e9cc0a477c658c791e1fd9ce9de0ffd61282",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1304.634
+    },
+    {
+      "id": "M015-03-missing-limit",
+      "case_id": "B40-015",
+      "category": "missing_limit",
+      "description": "Remove the business TOP 3 and retain only the executor's safe maximum cap (200 rows).",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT p.category, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_revenue FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id = o.order_id JOIN commerce.products AS p ON p.product_id = oi.product_id WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 GROUP BY p.category ORDER BY net_revenue DESC, p.category ASC LIMIT 200",
+      "parameters": [
+        "delivered",
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "sql_sha256": "faa2ca08f1de45e9e9c4ee35a2fff5353464f7103c066a2baea977e2d5c92600",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "category": "Streetwear",
+          "net_revenue": "8685863.04"
+        },
+        {
+          "category": "Outdoor",
+          "net_revenue": "3533291.45"
+        },
+        {
+          "category": "GenZ",
+          "net_revenue": "396405.85"
+        },
+        {
+          "category": "Casual",
+          "net_revenue": "324543.26"
+        }
+      ],
+      "row_count": 4,
+      "result_sha256": "2fa530562e959186d253662ccdd6e9cc0a477c658c791e1fd9ce9de0ffd61282",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1457.96
+    },
+    {
+      "id": "M017-01-wrong-aggregation",
+      "case_id": "B40-017",
+      "category": "wrong_aggregation",
+      "description": "Use MAX(return_quantity) instead of SUM(return_quantity).",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT r.product_id, MAX(r.return_quantity) AS returned_units FROM commerce.returns AS r WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY r.product_id ORDER BY returned_units DESC, r.product_id ASC LIMIT 200",
+      "parameters": [
+        "2023-01-01",
+        "2026-01-01"
+      ],
+      "sql_sha256": "9141bb864bafbd5f31d5df5b23bf4c264b0d0f5f02f454e5c8114a59ddd363d0",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "product_id": 1958,
+          "returned_units": 4
+        },
+        {
+          "product_id": 136,
+          "returned_units": 3
+        },
+        {
+          "product_id": 26,
+          "returned_units": 1
+        },
+        {
+          "product_id": 182,
+          "returned_units": 1
+        },
+        {
+          "product_id": 193,
+          "returned_units": 1
+        },
+        {
+          "product_id": 396,
+          "returned_units": 1
+        },
+        {
+          "product_id": 475,
+          "returned_units": 1
+        },
+        {
+          "product_id": 487,
+          "returned_units": 1
+        },
+        {
+          "product_id": 491,
+          "returned_units": 1
+        },
+        {
+          "product_id": 549,
+          "returned_units": 1
+        },
+        {
+          "product_id": 556,
+          "returned_units": 1
+        },
+        {
+          "product_id": 600,
+          "returned_units": 1
+        },
+        {
+          "product_id": 635,
+          "returned_units": 1
+        },
+        {
+          "product_id": 676,
+          "returned_units": 1
+        },
+        {
+          "product_id": 690,
+          "returned_units": 1
+        },
+        {
+          "product_id": 754,
+          "returned_units": 1
+        },
+        {
+          "product_id": 758,
+          "returned_units": 1
+        },
+        {
+          "product_id": 760,
+          "returned_units": 1
+        },
+        {
+          "product_id": 778,
+          "returned_units": 1
+        },
+        {
+          "product_id": 779,
+          "returned_units": 1
+        },
+        {
+          "product_id": 780,
+          "returned_units": 1
+        },
+        {
+          "product_id": 782,
+          "returned_units": 1
+        },
+        {
+          "product_id": 790,
+          "returned_units": 1
+        },
+        {
+          "product_id": 791,
+          "returned_units": 1
+        },
+        {
+          "product_id": 794,
+          "returned_units": 1
+        },
+        {
+          "product_id": 808,
+          "returned_units": 1
+        },
+        {
+          "product_id": 809,
+          "returned_units": 1
+        },
+        {
+          "product_id": 993,
+          "returned_units": 1
+        },
+        {
+          "product_id": 1000,
+          "returned_units": 1
+        },
+        {
+          "product_id": 1059,
+          "returned_units": 1
+        },
+        {
+          "product_id": 1085,
+          "returned_units": 1
+        },
+        {
+          "product_id": 1086,
+          "returned_units": 1
+        },
+        {
+          "product_id": 1089,
+          "returned_units": 1
+        },
+        {
+          "product_id": 1442,
+          "returned_units": 1
+        },
+        {
+          "product_id": 1483,
+          "returned_units": 1
+        },
+        {
+          "product_id": 1588,
+          "returned_units": 1
+        },
+        {
+          "product_id": 1826,
+          "returned_units": 1
+        },
+        {
+          "product_id": 1879,
+          "returned_units": 1
+        },
+        {
+          "product_id": 1926,
+          "returned_units": 1
+        },
+        {
+          "product_id": 1964,
+          "returned_units": 1
+        },
+        {
+          "product_id": 1965,
+          "returned_units": 1
+        },
+        {
+          "product_id": 2045,
+          "returned_units": 1
+        },
+        {
+          "product_id": 2053,
+          "returned_units": 1
+        },
+        {
+          "product_id": 2055,
+          "returned_units": 1
+        },
+        {
+          "product_id": 2138,
+          "returned_units": 1
+        },
+        {
+          "product_id": 2180,
+          "returned_units": 1
+        },
+        {
+          "product_id": 2207,
+          "returned_units": 1
+        },
+        {
+          "product_id": 2218,
+          "returned_units": 1
+        },
+        {
+          "product_id": 2219,
+          "returned_units": 1
+        },
+        {
+          "product_id": 2234,
+          "returned_units": 1
+        },
+        {
+          "product_id": 2240,
+          "returned_units": 1
+        },
+        {
+          "product_id": 2241,
+          "returned_units": 1
+        },
+        {
+          "product_id": 2252,
+          "returned_units": 1
+        },
+        {
+          "product_id": 2255,
+          "returned_units": 1
+        },
+        {
+          "product_id": 2262,
+          "returned_units": 1
+        },
+        {
+          "product_id": 2263,
+          "returned_units": 1
+        },
+        {
+          "product_id": 2284,
+          "returned_units": 1
+        },
+        {
+          "product_id": 2345,
+          "returned_units": 1
+        },
+        {
+          "product_id": 2359,
+          "returned_units": 1
+        },
+        {
+          "product_id": 2400,
+          "returned_units": 1
+        }
+      ],
+      "row_count": 60,
+      "result_sha256": "67355432719d55bb56466ecf4c575c9181f3e065f976386070d3d32490af8d2e",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1266.832
+    },
+    {
+      "id": "M017-02-wrong-grouping-grain",
+      "case_id": "B40-017",
+      "category": "missing_required_grouping",
+      "description": "Aggregate all return rows together without grouping by product_id.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT SUM(r.return_quantity) AS returned_units FROM commerce.returns AS r WHERE r.return_date >= $1 AND r.return_date < $2 ORDER BY returned_units DESC LIMIT 200",
+      "parameters": [
+        "2023-01-01",
+        "2026-01-01"
+      ],
+      "sql_sha256": "8be6b945f2c65cb96d6cf790089d429aa7fd35fdcc72709f68f13a63d8b01943",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "returned_units": 139
+        }
+      ],
+      "row_count": 1,
+      "result_sha256": "14a813b066d0716a083f4b569fb0a21adfb2da771aa5001e928eba5df4dafcf0",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": false,
+        "strict_schema_match": false,
+        "strict_rows_match": false,
+        "missing_columns": [
+          "product_id"
+        ],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1262.666
+    },
+    {
+      "id": "M021-01-nonnull-instead-of-true",
+      "case_id": "B40-021",
+      "category": "wrong_boolean_population",
+      "description": "Count every non-NULL stockout flag, including FALSE rows.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT i.category, COUNT(*) FILTER (WHERE i.stockout_flag IS NOT NULL) AS stockout_product_count, COUNT(DISTINCT i.product_id) AS observed_product_count FROM commerce.inventory AS i WHERE i.snapshot_date = $1 GROUP BY i.category ORDER BY stockout_product_count DESC, i.category ASC NULLS LAST LIMIT 200",
+      "parameters": [
+        "2026-11-13"
+      ],
+      "sql_sha256": "0a01afb30b2ccf21ec1ea156bf0502c9fde272e3dde8c697ed85d93f6fe1e2fc",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "category": "Outdoor",
+          "stockout_product_count": 57,
+          "observed_product_count": 57
+        },
+        {
+          "category": "Streetwear",
+          "stockout_product_count": 33,
+          "observed_product_count": 33
+        },
+        {
+          "category": "GenZ",
+          "stockout_product_count": 6,
+          "observed_product_count": 6
+        },
+        {
+          "category": "Casual",
+          "stockout_product_count": 1,
+          "observed_product_count": 1
+        }
+      ],
+      "row_count": 4,
+      "result_sha256": "ab9ad90d41d83664bbc0bcfe90ddd86fbc9b2ee17891644fa42e35a5b8c5450e",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1340.177
+    },
+    {
+      "id": "M023-01-reversed-snapshot-delta",
+      "case_id": "B40-023",
+      "category": "wrong_comparison_direction",
+      "description": "Compute before minus after instead of after minus before.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT i.product_id, MAX(i.stock_on_hand) FILTER (WHERE i.snapshot_date = $1) AS stock_before, MAX(i.stock_on_hand) FILTER (WHERE i.snapshot_date = $2) AS stock_after, MAX(i.stock_on_hand) FILTER (WHERE i.snapshot_date = $1) - MAX(i.stock_on_hand) FILTER (WHERE i.snapshot_date = $2) AS stock_delta FROM commerce.inventory AS i WHERE i.snapshot_date = $1 OR i.snapshot_date = $2 GROUP BY i.product_id HAVING COUNT(DISTINCT i.snapshot_date) = 2 ORDER BY stock_delta DESC, i.product_id ASC LIMIT 200",
+      "parameters": [
+        "2025-09-30",
+        "2025-10-31"
+      ],
+      "sql_sha256": "d64fda74546f2d35f096a81f6675c4424f87a39bbe015e75131600766b24d723",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "product_id": 777,
+          "stock_before": 210,
+          "stock_after": 2,
+          "stock_delta": 208
+        },
+        {
+          "product_id": 809,
+          "stock_before": 214,
+          "stock_after": 6,
+          "stock_delta": 208
+        },
+        {
+          "product_id": 1060,
+          "stock_before": 211,
+          "stock_after": 3,
+          "stock_delta": 208
+        },
+        {
+          "product_id": 2255,
+          "stock_before": 217,
+          "stock_after": 9,
+          "stock_delta": 208
+        },
+        {
+          "product_id": 2380,
+          "stock_before": 211,
+          "stock_after": 3,
+          "stock_delta": 208
+        },
+        {
+          "product_id": 778,
+          "stock_before": 216,
+          "stock_after": 9,
+          "stock_delta": 207
+        },
+        {
+          "product_id": 808,
+          "stock_before": 207,
+          "stock_after": 0,
+          "stock_delta": 207
+        },
+        {
+          "product_id": 2254,
+          "stock_before": 210,
+          "stock_after": 3,
+          "stock_delta": 207
+        },
+        {
+          "product_id": 494,
+          "stock_before": 208,
+          "stock_after": 3,
+          "stock_delta": 205
+        },
+        {
+          "product_id": 1061,
+          "stock_before": 0,
+          "stock_after": 10,
+          "stock_delta": -10
+        },
+        {
+          "product_id": 2091,
+          "stock_before": 170,
+          "stock_after": 180,
+          "stock_delta": -10
+        },
+        {
+          "product_id": 2138,
+          "stock_before": 59,
+          "stock_after": 69,
+          "stock_delta": -10
+        },
+        {
+          "product_id": 2055,
+          "stock_before": 138,
+          "stock_after": 149,
+          "stock_delta": -11
+        },
+        {
+          "product_id": 2090,
+          "stock_before": 163,
+          "stock_after": 174,
+          "stock_delta": -11
+        },
+        {
+          "product_id": 115,
+          "stock_before": 197,
+          "stock_after": 209,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 182,
+          "stock_before": 5,
+          "stock_after": 17,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 449,
+          "stock_before": 115,
+          "stock_after": 127,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 487,
+          "stock_before": 160,
+          "stock_after": 172,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 549,
+          "stock_before": 155,
+          "stock_after": 167,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 600,
+          "stock_before": 71,
+          "stock_after": 83,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 676,
+          "stock_before": 164,
+          "stock_after": 176,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 735,
+          "stock_before": 136,
+          "stock_after": 148,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 760,
+          "stock_before": 92,
+          "stock_after": 104,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 781,
+          "stock_before": 19,
+          "stock_after": 31,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 790,
+          "stock_before": 81,
+          "stock_after": 93,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 794,
+          "stock_before": 110,
+          "stock_after": 122,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 1000,
+          "stock_before": 12,
+          "stock_after": 24,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 1089,
+          "stock_before": 195,
+          "stock_after": 207,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 1441,
+          "stock_before": 18,
+          "stock_after": 30,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 1809,
+          "stock_before": 175,
+          "stock_after": 187,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 1826,
+          "stock_before": 73,
+          "stock_after": 85,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 2053,
+          "stock_before": 124,
+          "stock_after": 136,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 2180,
+          "stock_before": 133,
+          "stock_after": 145,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 2207,
+          "stock_before": 102,
+          "stock_after": 114,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 2212,
+          "stock_before": 136,
+          "stock_after": 148,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 2218,
+          "stock_before": 177,
+          "stock_after": 189,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 2239,
+          "stock_before": 105,
+          "stock_after": 117,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 2241,
+          "stock_before": 118,
+          "stock_after": 130,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 2263,
+          "stock_before": 52,
+          "stock_after": 64,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 2345,
+          "stock_before": 187,
+          "stock_after": 199,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 26,
+          "stock_before": 14,
+          "stock_after": 27,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 136,
+          "stock_before": 123,
+          "stock_after": 136,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 193,
+          "stock_before": 81,
+          "stock_after": 94,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 426,
+          "stock_before": 174,
+          "stock_after": 187,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 475,
+          "stock_before": 76,
+          "stock_after": 89,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 491,
+          "stock_before": 187,
+          "stock_after": 200,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 506,
+          "stock_before": 74,
+          "stock_after": 87,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 556,
+          "stock_before": 203,
+          "stock_after": 216,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 604,
+          "stock_before": 98,
+          "stock_after": 111,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 635,
+          "stock_before": 97,
+          "stock_after": 110,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 690,
+          "stock_before": 41,
+          "stock_after": 54,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 753,
+          "stock_before": 41,
+          "stock_after": 54,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 758,
+          "stock_before": 78,
+          "stock_after": 91,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 761,
+          "stock_before": 98,
+          "stock_after": 111,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 780,
+          "stock_before": 12,
+          "stock_after": 25,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 782,
+          "stock_before": 25,
+          "stock_after": 38,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 791,
+          "stock_before": 87,
+          "stock_after": 100,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 793,
+          "stock_before": 103,
+          "stock_after": 116,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 816,
+          "stock_before": 42,
+          "stock_after": 55,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 993,
+          "stock_before": 183,
+          "stock_after": 196,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 1059,
+          "stock_before": 204,
+          "stock_after": 217,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 1086,
+          "stock_before": 174,
+          "stock_after": 187,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 1096,
+          "stock_before": 23,
+          "stock_after": 36,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 1442,
+          "stock_before": 24,
+          "stock_after": 37,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 1588,
+          "stock_before": 168,
+          "stock_after": 181,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 1819,
+          "stock_before": 24,
+          "stock_after": 37,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 1879,
+          "stock_before": 3,
+          "stock_after": 16,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 2213,
+          "stock_before": 142,
+          "stock_after": 155,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 2219,
+          "stock_before": 183,
+          "stock_after": 196,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 2238,
+          "stock_before": 98,
+          "stock_after": 111,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 2240,
+          "stock_before": 111,
+          "stock_after": 124,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 2252,
+          "stock_before": 194,
+          "stock_after": 207,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 2262,
+          "stock_before": 45,
+          "stock_after": 58,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 2275,
+          "stock_before": 135,
+          "stock_after": 148,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 2284,
+          "stock_before": 200,
+          "stock_after": 213,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 2359,
+          "stock_before": 64,
+          "stock_after": 77,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 2396,
+          "stock_before": 102,
+          "stock_after": 115,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 1958,
+          "stock_before": 118,
+          "stock_after": 132,
+          "stock_delta": -14
+        },
+        {
+          "product_id": 1959,
+          "stock_before": 125,
+          "stock_after": 139,
+          "stock_delta": -14
+        },
+        {
+          "product_id": 2045,
+          "stock_before": 67,
+          "stock_after": 81,
+          "stock_delta": -14
+        },
+        {
+          "product_id": 396,
+          "stock_before": 182,
+          "stock_after": 197,
+          "stock_delta": -15
+        },
+        {
+          "product_id": 609,
+          "stock_before": 133,
+          "stock_after": 148,
+          "stock_delta": -15
+        },
+        {
+          "product_id": 754,
+          "stock_before": 48,
+          "stock_after": 63,
+          "stock_delta": -15
+        },
+        {
+          "product_id": 779,
+          "stock_before": 3,
+          "stock_after": 18,
+          "stock_delta": -15
+        },
+        {
+          "product_id": 792,
+          "stock_before": 94,
+          "stock_after": 109,
+          "stock_delta": -15
+        },
+        {
+          "product_id": 939,
+          "stock_before": 23,
+          "stock_after": 38,
+          "stock_delta": -15
+        },
+        {
+          "product_id": 1085,
+          "stock_before": 165,
+          "stock_after": 180,
+          "stock_delta": -15
+        },
+        {
+          "product_id": 1483,
+          "stock_before": 91,
+          "stock_after": 106,
+          "stock_delta": -15
+        },
+        {
+          "product_id": 1926,
+          "stock_before": 112,
+          "stock_after": 127,
+          "stock_delta": -15
+        },
+        {
+          "product_id": 1964,
+          "stock_before": 159,
+          "stock_after": 174,
+          "stock_delta": -15
+        },
+        {
+          "product_id": 1965,
+          "stock_before": 166,
+          "stock_after": 181,
+          "stock_delta": -15
+        },
+        {
+          "product_id": 2234,
+          "stock_before": 68,
+          "stock_after": 83,
+          "stock_delta": -15
+        },
+        {
+          "product_id": 2253,
+          "stock_before": 201,
+          "stock_after": 216,
+          "stock_delta": -15
+        },
+        {
+          "product_id": 2277,
+          "stock_before": 149,
+          "stock_after": 164,
+          "stock_delta": -15
+        },
+        {
+          "product_id": 2400,
+          "stock_before": 130,
+          "stock_after": 145,
+          "stock_delta": -15
+        },
+        {
+          "product_id": 1974,
+          "stock_before": 8,
+          "stock_after": 24,
+          "stock_delta": -16
+        },
+        {
+          "product_id": 1975,
+          "stock_before": 15,
+          "stock_after": 31,
+          "stock_delta": -16
+        }
+      ],
+      "row_count": 97,
+      "result_sha256": "a80d28aa48f82862479978845f77cf30ac78341ff9f289b87dbe87958de80190",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1289.44
+    },
+    {
+      "id": "M023-02-wrong-after-snapshot",
+      "case_id": "B40-023",
+      "category": "wrong_inventory_snapshot",
+      "description": "Compare against 2025-11-30 instead of the requested 2025-10-31 snapshot.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT i.product_id, MAX(i.stock_on_hand) FILTER (WHERE i.snapshot_date = $1) AS stock_before, MAX(i.stock_on_hand) FILTER (WHERE i.snapshot_date = $2) AS stock_after, MAX(i.stock_on_hand) FILTER (WHERE i.snapshot_date = $2) - MAX(i.stock_on_hand) FILTER (WHERE i.snapshot_date = $1) AS stock_delta FROM commerce.inventory AS i WHERE i.snapshot_date = $1 OR i.snapshot_date = $2 GROUP BY i.product_id HAVING COUNT(DISTINCT i.snapshot_date) = 2 ORDER BY stock_delta DESC, i.product_id ASC LIMIT 200",
+      "parameters": [
+        "2025-09-30",
+        "2025-11-30"
+      ],
+      "sql_sha256": "284812838b648335f4a581e9e4e5ae892ee19a893a17d43a89f63ec189cdf2b3",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "product_id": 1061,
+          "stock_before": 0,
+          "stock_after": 42,
+          "stock_delta": 42
+        },
+        {
+          "product_id": 1000,
+          "stock_before": 12,
+          "stock_after": 51,
+          "stock_delta": 39
+        },
+        {
+          "product_id": 1975,
+          "stock_before": 15,
+          "stock_after": 52,
+          "stock_delta": 37
+        },
+        {
+          "product_id": 1879,
+          "stock_before": 3,
+          "stock_after": 37,
+          "stock_delta": 34
+        },
+        {
+          "product_id": 780,
+          "stock_before": 12,
+          "stock_after": 41,
+          "stock_delta": 29
+        },
+        {
+          "product_id": 1819,
+          "stock_before": 24,
+          "stock_after": 51,
+          "stock_delta": 27
+        },
+        {
+          "product_id": 26,
+          "stock_before": 14,
+          "stock_after": 37,
+          "stock_delta": 23
+        },
+        {
+          "product_id": 779,
+          "stock_before": 3,
+          "stock_after": 19,
+          "stock_delta": 16
+        },
+        {
+          "product_id": 1096,
+          "stock_before": 23,
+          "stock_after": 39,
+          "stock_delta": 16
+        },
+        {
+          "product_id": 1442,
+          "stock_before": 24,
+          "stock_after": 40,
+          "stock_delta": 16
+        },
+        {
+          "product_id": 182,
+          "stock_before": 5,
+          "stock_after": 20,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 690,
+          "stock_before": 41,
+          "stock_after": 56,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 1441,
+          "stock_before": 18,
+          "stock_after": 32,
+          "stock_delta": 14
+        },
+        {
+          "product_id": 782,
+          "stock_before": 25,
+          "stock_after": 34,
+          "stock_delta": 9
+        },
+        {
+          "product_id": 939,
+          "stock_before": 23,
+          "stock_after": 32,
+          "stock_delta": 9
+        },
+        {
+          "product_id": 816,
+          "stock_before": 42,
+          "stock_after": 48,
+          "stock_delta": 6
+        },
+        {
+          "product_id": 1974,
+          "stock_before": 8,
+          "stock_after": 13,
+          "stock_delta": 5
+        },
+        {
+          "product_id": 754,
+          "stock_before": 48,
+          "stock_after": 47,
+          "stock_delta": -1
+        },
+        {
+          "product_id": 781,
+          "stock_before": 19,
+          "stock_after": 18,
+          "stock_delta": -1
+        },
+        {
+          "product_id": 2263,
+          "stock_before": 52,
+          "stock_after": 40,
+          "stock_delta": -12
+        },
+        {
+          "product_id": 753,
+          "stock_before": 41,
+          "stock_after": 28,
+          "stock_delta": -13
+        },
+        {
+          "product_id": 475,
+          "stock_before": 76,
+          "stock_after": 58,
+          "stock_delta": -18
+        },
+        {
+          "product_id": 2262,
+          "stock_before": 45,
+          "stock_after": 21,
+          "stock_delta": -24
+        },
+        {
+          "product_id": 193,
+          "stock_before": 81,
+          "stock_after": 55,
+          "stock_delta": -26
+        },
+        {
+          "product_id": 791,
+          "stock_before": 87,
+          "stock_after": 60,
+          "stock_delta": -27
+        },
+        {
+          "product_id": 2045,
+          "stock_before": 67,
+          "stock_after": 38,
+          "stock_delta": -29
+        },
+        {
+          "product_id": 600,
+          "stock_before": 71,
+          "stock_after": 39,
+          "stock_delta": -32
+        },
+        {
+          "product_id": 2234,
+          "stock_before": 68,
+          "stock_after": 33,
+          "stock_delta": -35
+        },
+        {
+          "product_id": 790,
+          "stock_before": 81,
+          "stock_after": 39,
+          "stock_delta": -42
+        },
+        {
+          "product_id": 2138,
+          "stock_before": 59,
+          "stock_after": 17,
+          "stock_delta": -42
+        },
+        {
+          "product_id": 506,
+          "stock_before": 74,
+          "stock_after": 23,
+          "stock_delta": -51
+        },
+        {
+          "product_id": 2359,
+          "stock_before": 64,
+          "stock_after": 11,
+          "stock_delta": -53
+        },
+        {
+          "product_id": 1926,
+          "stock_before": 112,
+          "stock_after": 57,
+          "stock_delta": -55
+        },
+        {
+          "product_id": 1483,
+          "stock_before": 91,
+          "stock_after": 33,
+          "stock_delta": -58
+        },
+        {
+          "product_id": 1826,
+          "stock_before": 73,
+          "stock_after": 14,
+          "stock_delta": -59
+        },
+        {
+          "product_id": 1958,
+          "stock_before": 118,
+          "stock_after": 58,
+          "stock_delta": -60
+        },
+        {
+          "product_id": 449,
+          "stock_before": 115,
+          "stock_after": 50,
+          "stock_delta": -65
+        },
+        {
+          "product_id": 793,
+          "stock_before": 103,
+          "stock_after": 38,
+          "stock_delta": -65
+        },
+        {
+          "product_id": 758,
+          "stock_before": 78,
+          "stock_after": 11,
+          "stock_delta": -67
+        },
+        {
+          "product_id": 604,
+          "stock_before": 98,
+          "stock_after": 28,
+          "stock_delta": -70
+        },
+        {
+          "product_id": 2239,
+          "stock_before": 105,
+          "stock_after": 35,
+          "stock_delta": -70
+        },
+        {
+          "product_id": 2207,
+          "stock_before": 102,
+          "stock_after": 28,
+          "stock_delta": -74
+        },
+        {
+          "product_id": 2241,
+          "stock_before": 118,
+          "stock_after": 44,
+          "stock_delta": -74
+        },
+        {
+          "product_id": 2180,
+          "stock_before": 133,
+          "stock_after": 58,
+          "stock_delta": -75
+        },
+        {
+          "product_id": 635,
+          "stock_before": 97,
+          "stock_after": 18,
+          "stock_delta": -79
+        },
+        {
+          "product_id": 2240,
+          "stock_before": 111,
+          "stock_after": 32,
+          "stock_delta": -79
+        },
+        {
+          "product_id": 609,
+          "stock_before": 133,
+          "stock_after": 53,
+          "stock_delta": -80
+        },
+        {
+          "product_id": 761,
+          "stock_before": 98,
+          "stock_after": 18,
+          "stock_delta": -80
+        },
+        {
+          "product_id": 792,
+          "stock_before": 94,
+          "stock_after": 13,
+          "stock_delta": -81
+        },
+        {
+          "product_id": 2275,
+          "stock_before": 135,
+          "stock_after": 54,
+          "stock_delta": -81
+        },
+        {
+          "product_id": 2396,
+          "stock_before": 102,
+          "stock_after": 21,
+          "stock_delta": -81
+        },
+        {
+          "product_id": 760,
+          "stock_before": 92,
+          "stock_after": 9,
+          "stock_delta": -83
+        },
+        {
+          "product_id": 2238,
+          "stock_before": 98,
+          "stock_after": 13,
+          "stock_delta": -85
+        },
+        {
+          "product_id": 2053,
+          "stock_before": 124,
+          "stock_after": 38,
+          "stock_delta": -86
+        },
+        {
+          "product_id": 136,
+          "stock_before": 123,
+          "stock_after": 31,
+          "stock_delta": -92
+        },
+        {
+          "product_id": 2400,
+          "stock_before": 130,
+          "stock_after": 36,
+          "stock_delta": -94
+        },
+        {
+          "product_id": 2212,
+          "stock_before": 136,
+          "stock_after": 40,
+          "stock_delta": -96
+        },
+        {
+          "product_id": 794,
+          "stock_before": 110,
+          "stock_after": 10,
+          "stock_delta": -100
+        },
+        {
+          "product_id": 1964,
+          "stock_before": 159,
+          "stock_after": 59,
+          "stock_delta": -100
+        },
+        {
+          "product_id": 735,
+          "stock_before": 136,
+          "stock_after": 28,
+          "stock_delta": -108
+        },
+        {
+          "product_id": 1085,
+          "stock_before": 165,
+          "stock_after": 55,
+          "stock_delta": -110
+        },
+        {
+          "product_id": 2055,
+          "stock_before": 138,
+          "stock_after": 28,
+          "stock_delta": -110
+        },
+        {
+          "product_id": 2091,
+          "stock_before": 170,
+          "stock_after": 60,
+          "stock_delta": -110
+        },
+        {
+          "product_id": 1965,
+          "stock_before": 166,
+          "stock_after": 50,
+          "stock_delta": -116
+        },
+        {
+          "product_id": 1959,
+          "stock_before": 125,
+          "stock_after": 8,
+          "stock_delta": -117
+        },
+        {
+          "product_id": 2213,
+          "stock_before": 142,
+          "stock_after": 25,
+          "stock_delta": -117
+        },
+        {
+          "product_id": 2090,
+          "stock_before": 163,
+          "stock_after": 44,
+          "stock_delta": -119
+        },
+        {
+          "product_id": 993,
+          "stock_before": 183,
+          "stock_after": 59,
+          "stock_delta": -124
+        },
+        {
+          "product_id": 1588,
+          "stock_before": 168,
+          "stock_after": 43,
+          "stock_delta": -125
+        },
+        {
+          "product_id": 2218,
+          "stock_before": 177,
+          "stock_after": 47,
+          "stock_delta": -130
+        },
+        {
+          "product_id": 2219,
+          "stock_before": 183,
+          "stock_after": 51,
+          "stock_delta": -132
+        },
+        {
+          "product_id": 1089,
+          "stock_before": 195,
+          "stock_after": 60,
+          "stock_delta": -135
+        },
+        {
+          "product_id": 2277,
+          "stock_before": 149,
+          "stock_after": 14,
+          "stock_delta": -135
+        },
+        {
+          "product_id": 426,
+          "stock_before": 174,
+          "stock_after": 33,
+          "stock_delta": -141
+        },
+        {
+          "product_id": 549,
+          "stock_before": 155,
+          "stock_after": 14,
+          "stock_delta": -141
+        },
+        {
+          "product_id": 676,
+          "stock_before": 164,
+          "stock_after": 23,
+          "stock_delta": -141
+        },
+        {
+          "product_id": 1086,
+          "stock_before": 174,
+          "stock_after": 33,
+          "stock_delta": -141
+        },
+        {
+          "product_id": 2345,
+          "stock_before": 187,
+          "stock_after": 42,
+          "stock_delta": -145
+        },
+        {
+          "product_id": 491,
+          "stock_before": 187,
+          "stock_after": 40,
+          "stock_delta": -147
+        },
+        {
+          "product_id": 487,
+          "stock_before": 160,
+          "stock_after": 10,
+          "stock_delta": -150
+        },
+        {
+          "product_id": 1809,
+          "stock_before": 175,
+          "stock_after": 24,
+          "stock_delta": -151
+        },
+        {
+          "product_id": 2252,
+          "stock_before": 194,
+          "stock_after": 43,
+          "stock_delta": -151
+        },
+        {
+          "product_id": 556,
+          "stock_before": 203,
+          "stock_after": 49,
+          "stock_delta": -154
+        },
+        {
+          "product_id": 115,
+          "stock_before": 197,
+          "stock_after": 42,
+          "stock_delta": -155
+        },
+        {
+          "product_id": 809,
+          "stock_before": 214,
+          "stock_after": 57,
+          "stock_delta": -157
+        },
+        {
+          "product_id": 2253,
+          "stock_before": 201,
+          "stock_after": 41,
+          "stock_delta": -160
+        },
+        {
+          "product_id": 396,
+          "stock_before": 182,
+          "stock_after": 19,
+          "stock_delta": -163
+        },
+        {
+          "product_id": 778,
+          "stock_before": 216,
+          "stock_after": 52,
+          "stock_delta": -164
+        },
+        {
+          "product_id": 2284,
+          "stock_before": 200,
+          "stock_after": 31,
+          "stock_delta": -169
+        },
+        {
+          "product_id": 494,
+          "stock_before": 208,
+          "stock_after": 37,
+          "stock_delta": -171
+        },
+        {
+          "product_id": 1059,
+          "stock_before": 204,
+          "stock_after": 31,
+          "stock_delta": -173
+        },
+        {
+          "product_id": 777,
+          "stock_before": 210,
+          "stock_after": 25,
+          "stock_delta": -185
+        },
+        {
+          "product_id": 808,
+          "stock_before": 207,
+          "stock_after": 21,
+          "stock_delta": -186
+        },
+        {
+          "product_id": 2254,
+          "stock_before": 210,
+          "stock_after": 24,
+          "stock_delta": -186
+        },
+        {
+          "product_id": 1060,
+          "stock_before": 211,
+          "stock_after": 23,
+          "stock_delta": -188
+        },
+        {
+          "product_id": 2380,
+          "stock_before": 211,
+          "stock_after": 8,
+          "stock_delta": -203
+        },
+        {
+          "product_id": 2255,
+          "stock_before": 217,
+          "stock_after": 12,
+          "stock_delta": -205
+        }
+      ],
+      "row_count": 97,
+      "result_sha256": "64971b846146e8676d1aaeae2e3453a76554dfff0a130c73653bcebc0b7fb03a",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1375.949
+    },
+    {
+      "id": "M023-03-missing-common-product-condition",
+      "case_id": "B40-023",
+      "category": "missing_snapshot_membership_condition",
+      "description": "Remove the requirement that each product be present in both snapshots.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT i.product_id, MAX(i.stock_on_hand) FILTER (WHERE i.snapshot_date = $1) AS stock_before, MAX(i.stock_on_hand) FILTER (WHERE i.snapshot_date = $2) AS stock_after, MAX(i.stock_on_hand) FILTER (WHERE i.snapshot_date = $2) - MAX(i.stock_on_hand) FILTER (WHERE i.snapshot_date = $1) AS stock_delta FROM commerce.inventory AS i WHERE i.snapshot_date = $1 OR i.snapshot_date = $2 GROUP BY i.product_id ORDER BY stock_delta DESC, i.product_id ASC LIMIT 200",
+      "parameters": [
+        "2025-09-30",
+        "2025-10-31"
+      ],
+      "sql_sha256": "8d5706a8e9cc5670f7997582d017788ead2ae383a88e11a5ea1577ec23b6c4c3",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "product_id": 1974,
+          "stock_before": 8,
+          "stock_after": 24,
+          "stock_delta": 16
+        },
+        {
+          "product_id": 1975,
+          "stock_before": 15,
+          "stock_after": 31,
+          "stock_delta": 16
+        },
+        {
+          "product_id": 396,
+          "stock_before": 182,
+          "stock_after": 197,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 609,
+          "stock_before": 133,
+          "stock_after": 148,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 754,
+          "stock_before": 48,
+          "stock_after": 63,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 779,
+          "stock_before": 3,
+          "stock_after": 18,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 792,
+          "stock_before": 94,
+          "stock_after": 109,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 939,
+          "stock_before": 23,
+          "stock_after": 38,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 1085,
+          "stock_before": 165,
+          "stock_after": 180,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 1483,
+          "stock_before": 91,
+          "stock_after": 106,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 1926,
+          "stock_before": 112,
+          "stock_after": 127,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 1964,
+          "stock_before": 159,
+          "stock_after": 174,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 1965,
+          "stock_before": 166,
+          "stock_after": 181,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 2234,
+          "stock_before": 68,
+          "stock_after": 83,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 2253,
+          "stock_before": 201,
+          "stock_after": 216,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 2277,
+          "stock_before": 149,
+          "stock_after": 164,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 2400,
+          "stock_before": 130,
+          "stock_after": 145,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 1958,
+          "stock_before": 118,
+          "stock_after": 132,
+          "stock_delta": 14
+        },
+        {
+          "product_id": 1959,
+          "stock_before": 125,
+          "stock_after": 139,
+          "stock_delta": 14
+        },
+        {
+          "product_id": 2045,
+          "stock_before": 67,
+          "stock_after": 81,
+          "stock_delta": 14
+        },
+        {
+          "product_id": 26,
+          "stock_before": 14,
+          "stock_after": 27,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 136,
+          "stock_before": 123,
+          "stock_after": 136,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 193,
+          "stock_before": 81,
+          "stock_after": 94,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 426,
+          "stock_before": 174,
+          "stock_after": 187,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 475,
+          "stock_before": 76,
+          "stock_after": 89,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 491,
+          "stock_before": 187,
+          "stock_after": 200,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 506,
+          "stock_before": 74,
+          "stock_after": 87,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 556,
+          "stock_before": 203,
+          "stock_after": 216,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 604,
+          "stock_before": 98,
+          "stock_after": 111,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 635,
+          "stock_before": 97,
+          "stock_after": 110,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 690,
+          "stock_before": 41,
+          "stock_after": 54,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 753,
+          "stock_before": 41,
+          "stock_after": 54,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 758,
+          "stock_before": 78,
+          "stock_after": 91,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 761,
+          "stock_before": 98,
+          "stock_after": 111,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 780,
+          "stock_before": 12,
+          "stock_after": 25,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 782,
+          "stock_before": 25,
+          "stock_after": 38,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 791,
+          "stock_before": 87,
+          "stock_after": 100,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 793,
+          "stock_before": 103,
+          "stock_after": 116,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 816,
+          "stock_before": 42,
+          "stock_after": 55,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 993,
+          "stock_before": 183,
+          "stock_after": 196,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 1059,
+          "stock_before": 204,
+          "stock_after": 217,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 1086,
+          "stock_before": 174,
+          "stock_after": 187,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 1096,
+          "stock_before": 23,
+          "stock_after": 36,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 1442,
+          "stock_before": 24,
+          "stock_after": 37,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 1588,
+          "stock_before": 168,
+          "stock_after": 181,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 1819,
+          "stock_before": 24,
+          "stock_after": 37,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 1879,
+          "stock_before": 3,
+          "stock_after": 16,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 2213,
+          "stock_before": 142,
+          "stock_after": 155,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 2219,
+          "stock_before": 183,
+          "stock_after": 196,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 2238,
+          "stock_before": 98,
+          "stock_after": 111,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 2240,
+          "stock_before": 111,
+          "stock_after": 124,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 2252,
+          "stock_before": 194,
+          "stock_after": 207,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 2262,
+          "stock_before": 45,
+          "stock_after": 58,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 2275,
+          "stock_before": 135,
+          "stock_after": 148,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 2284,
+          "stock_before": 200,
+          "stock_after": 213,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 2359,
+          "stock_before": 64,
+          "stock_after": 77,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 2396,
+          "stock_before": 102,
+          "stock_after": 115,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 115,
+          "stock_before": 197,
+          "stock_after": 209,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 182,
+          "stock_before": 5,
+          "stock_after": 17,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 449,
+          "stock_before": 115,
+          "stock_after": 127,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 487,
+          "stock_before": 160,
+          "stock_after": 172,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 549,
+          "stock_before": 155,
+          "stock_after": 167,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 600,
+          "stock_before": 71,
+          "stock_after": 83,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 676,
+          "stock_before": 164,
+          "stock_after": 176,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 735,
+          "stock_before": 136,
+          "stock_after": 148,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 760,
+          "stock_before": 92,
+          "stock_after": 104,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 781,
+          "stock_before": 19,
+          "stock_after": 31,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 790,
+          "stock_before": 81,
+          "stock_after": 93,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 794,
+          "stock_before": 110,
+          "stock_after": 122,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 1000,
+          "stock_before": 12,
+          "stock_after": 24,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 1089,
+          "stock_before": 195,
+          "stock_after": 207,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 1441,
+          "stock_before": 18,
+          "stock_after": 30,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 1809,
+          "stock_before": 175,
+          "stock_after": 187,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 1826,
+          "stock_before": 73,
+          "stock_after": 85,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 2053,
+          "stock_before": 124,
+          "stock_after": 136,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 2180,
+          "stock_before": 133,
+          "stock_after": 145,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 2207,
+          "stock_before": 102,
+          "stock_after": 114,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 2212,
+          "stock_before": 136,
+          "stock_after": 148,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 2218,
+          "stock_before": 177,
+          "stock_after": 189,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 2239,
+          "stock_before": 105,
+          "stock_after": 117,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 2241,
+          "stock_before": 118,
+          "stock_after": 130,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 2263,
+          "stock_before": 52,
+          "stock_after": 64,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 2345,
+          "stock_before": 187,
+          "stock_after": 199,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 2055,
+          "stock_before": 138,
+          "stock_after": 149,
+          "stock_delta": 11
+        },
+        {
+          "product_id": 2090,
+          "stock_before": 163,
+          "stock_after": 174,
+          "stock_delta": 11
+        },
+        {
+          "product_id": 1061,
+          "stock_before": 0,
+          "stock_after": 10,
+          "stock_delta": 10
+        },
+        {
+          "product_id": 2091,
+          "stock_before": 170,
+          "stock_after": 180,
+          "stock_delta": 10
+        },
+        {
+          "product_id": 2138,
+          "stock_before": 59,
+          "stock_after": 69,
+          "stock_delta": 10
+        },
+        {
+          "product_id": 494,
+          "stock_before": 208,
+          "stock_after": 3,
+          "stock_delta": -205
+        },
+        {
+          "product_id": 778,
+          "stock_before": 216,
+          "stock_after": 9,
+          "stock_delta": -207
+        },
+        {
+          "product_id": 808,
+          "stock_before": 207,
+          "stock_after": 0,
+          "stock_delta": -207
+        },
+        {
+          "product_id": 2254,
+          "stock_before": 210,
+          "stock_after": 3,
+          "stock_delta": -207
+        },
+        {
+          "product_id": 777,
+          "stock_before": 210,
+          "stock_after": 2,
+          "stock_delta": -208
+        },
+        {
+          "product_id": 809,
+          "stock_before": 214,
+          "stock_after": 6,
+          "stock_delta": -208
+        },
+        {
+          "product_id": 1060,
+          "stock_before": 211,
+          "stock_after": 3,
+          "stock_delta": -208
+        },
+        {
+          "product_id": 2255,
+          "stock_before": 217,
+          "stock_after": 9,
+          "stock_delta": -208
+        },
+        {
+          "product_id": 2380,
+          "stock_before": 211,
+          "stock_after": 3,
+          "stock_delta": -208
+        }
+      ],
+      "row_count": 97,
+      "result_sha256": "9c716071d6c4a137df1d0aa1e49885e3fea8f7a41e684f6049bc7900ad5bd7e4",
+      "comparison": {
+        "business_rows_match": true,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": true,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": false,
+      "detection_channel": "observationally_equivalent",
+      "elapsed_ms": 1306.907
+    },
+    {
+      "id": "M026-01-wrong-inherited-year",
+      "case_id": "B40-026",
+      "category": "wrong_followup_time_scope",
+      "description": "Use 2025 instead of the inherited 2024 year for the monthly COGS follow-up.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT DATE_TRUNC('month', s.date)::date AS month, SUM(s.cogs) AS cogs FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 GROUP BY DATE_TRUNC('month', s.date)::date ORDER BY month ASC LIMIT 12",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "sql_sha256": "8c989068741bb67488be292938ff819ee60cd9529374851fa632ed51acd7c954",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "month": "2025-01-01",
+          "cogs": "779558.81"
+        },
+        {
+          "month": "2025-02-01",
+          "cogs": "556713.30"
+        },
+        {
+          "month": "2025-03-01",
+          "cogs": "1020416.86"
+        },
+        {
+          "month": "2025-04-01",
+          "cogs": "681712.78"
+        },
+        {
+          "month": "2025-05-01",
+          "cogs": "780430.25"
+        },
+        {
+          "month": "2025-06-01",
+          "cogs": "801264.40"
+        },
+        {
+          "month": "2025-07-01",
+          "cogs": "1034111.52"
+        },
+        {
+          "month": "2025-08-01",
+          "cogs": "805806.42"
+        },
+        {
+          "month": "2025-09-01",
+          "cogs": "712179.02"
+        },
+        {
+          "month": "2025-10-01",
+          "cogs": "1052617.99"
+        },
+        {
+          "month": "2025-11-01",
+          "cogs": "918518.36"
+        },
+        {
+          "month": "2025-12-01",
+          "cogs": "1910971.46"
+        }
+      ],
+      "row_count": 12,
+      "result_sha256": "b86115c93e2c0a5cd9151a82ee2d35e6ec7b25317c134a47c2e778ed54c95249",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1263.071
+    },
+    {
+      "id": "M027-01-missing-delivered-filter",
+      "case_id": "B40-027",
+      "category": "missing_population_filter",
+      "description": "Count all statuses rather than only delivered orders in inherited 2025 scope.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": "required_order_status_population",
+      "sql": "SELECT o.order_source, COUNT(DISTINCT o.order_id) AS order_count FROM commerce.orders AS o WHERE o.order_date >= $1 AND o.order_date < $2 GROUP BY o.order_source ORDER BY order_count DESC, o.order_source ASC NULLS LAST LIMIT 200",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "sql_sha256": "74ebc3dbed42b5673129559abebd9636ccfc2ef70766e0aaa4b094c08463c5c0",
+      "semantic_validator_outcome": "CORRECT_REJECTION",
+      "semantic_validator_detected": true,
+      "semantic_validator_error_type": "MetricDefinitionError",
+      "semantic_validator_error_detail": "The request requires the include order-status population delivered; preserve its commerce.orders.order_status filter.",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "order_source": "organic_search",
+          "order_count": 143
+        },
+        {
+          "order_source": "paid_search",
+          "order_count": 132
+        },
+        {
+          "order_source": "referral",
+          "order_count": 128
+        },
+        {
+          "order_source": "email_campaign",
+          "order_count": 114
+        },
+        {
+          "order_source": "social_media",
+          "order_count": 109
+        },
+        {
+          "order_source": "direct",
+          "order_count": 107
+        }
+      ],
+      "row_count": 6,
+      "result_sha256": "b8f87e3b445b169d448d5d9318732fdd0e8a5ca86da705bd991e5e5973f7434d",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 3567.522
+    },
+    {
+      "id": "M027-02-wrong-inherited-year",
+      "case_id": "B40-027",
+      "category": "wrong_followup_time_scope",
+      "description": "Use 2024 instead of inherited 2025 for the delivered-order follow-up.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT o.order_source, COUNT(DISTINCT o.order_id) AS order_count FROM commerce.orders AS o WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 GROUP BY o.order_source ORDER BY order_count DESC, o.order_source ASC NULLS LAST LIMIT 200",
+      "parameters": [
+        "delivered",
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "sql_sha256": "90e43b04b4a0a07f165e8d53e59534aa95525057f0daff8572592868e2b2ae23",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "order_source": "email_campaign",
+          "order_count": 120
+        },
+        {
+          "order_source": "organic_search",
+          "order_count": 119
+        },
+        {
+          "order_source": "direct",
+          "order_count": 118
+        },
+        {
+          "order_source": "paid_search",
+          "order_count": 118
+        },
+        {
+          "order_source": "referral",
+          "order_count": 118
+        },
+        {
+          "order_source": "social_media",
+          "order_count": 118
+        }
+      ],
+      "row_count": 6,
+      "result_sha256": "82d6907fbb125afbd7a00686e167b07802e7c0a6a36d310e7a6071a381bfffa3",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1450.929
+    },
+    {
+      "id": "M028-01-misaligned-comparison-month",
+      "case_id": "B40-028",
+      "category": "misaligned_month_grouping",
+      "description": "Shift 2023 gross-profit rows one month later before aligning them to 2024.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "WITH monthly AS (SELECT EXTRACT(YEAR FROM s.date) AS sales_year, EXTRACT(MONTH FROM s.date) + CASE WHEN EXTRACT(YEAR FROM s.date) = 2023 THEN 1 ELSE 0 END AS month, SUM(s.revenue) - SUM(s.cogs) AS gross_profit FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 GROUP BY EXTRACT(YEAR FROM s.date), EXTRACT(MONTH FROM s.date) + CASE WHEN EXTRACT(YEAR FROM s.date) = 2023 THEN 1 ELSE 0 END) SELECT m.month, MAX(m.gross_profit) FILTER (WHERE m.sales_year = 2023) AS gross_profit_2023, MAX(m.gross_profit) FILTER (WHERE m.sales_year = 2024) AS gross_profit_2024, MAX(m.gross_profit) FILTER (WHERE m.sales_year = 2024) - MAX(m.gross_profit) FILTER (WHERE m.sales_year = 2023) AS difference_2024_minus_2023 FROM monthly AS m GROUP BY m.month ORDER BY m.month ASC LIMIT 12",
+      "parameters": [
+        "2023-01-01",
+        "2025-01-01"
+      ],
+      "sql_sha256": "304596ff3a1f7f3a49fc27950029c3481ccbca1c55f9264a5653afa5ce0644fe",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "month": "1",
+          "gross_profit_2023": null,
+          "gross_profit_2024": "218718.84",
+          "difference_2024_minus_2023": null
+        },
+        {
+          "month": "2",
+          "gross_profit_2023": "223729.62",
+          "gross_profit_2024": "134595.00",
+          "difference_2024_minus_2023": "-89134.62"
+        },
+        {
+          "month": "3",
+          "gross_profit_2023": "284452.46",
+          "gross_profit_2024": "184868.01",
+          "difference_2024_minus_2023": "-99584.45"
+        },
+        {
+          "month": "4",
+          "gross_profit_2023": "236477.29",
+          "gross_profit_2024": "241844.50",
+          "difference_2024_minus_2023": "5367.21"
+        },
+        {
+          "month": "5",
+          "gross_profit_2023": "266335.69",
+          "gross_profit_2024": "199604.31",
+          "difference_2024_minus_2023": "-66731.38"
+        },
+        {
+          "month": "6",
+          "gross_profit_2023": "329319.39",
+          "gross_profit_2024": "75202.17",
+          "difference_2024_minus_2023": "-254117.22"
+        },
+        {
+          "month": "7",
+          "gross_profit_2023": "116484.87",
+          "gross_profit_2024": "158048.18",
+          "difference_2024_minus_2023": "41563.31"
+        },
+        {
+          "month": "8",
+          "gross_profit_2023": "183564.09",
+          "gross_profit_2024": "254292.84",
+          "difference_2024_minus_2023": "70728.75"
+        },
+        {
+          "month": "9",
+          "gross_profit_2023": "323921.56",
+          "gross_profit_2024": "183773.73",
+          "difference_2024_minus_2023": "-140147.83"
+        },
+        {
+          "month": "10",
+          "gross_profit_2023": "265073.35",
+          "gross_profit_2024": "207755.47",
+          "difference_2024_minus_2023": "-57317.88"
+        },
+        {
+          "month": "11",
+          "gross_profit_2023": "300349.14",
+          "gross_profit_2024": "183280.75",
+          "difference_2024_minus_2023": "-117068.39"
+        },
+        {
+          "month": "12",
+          "gross_profit_2023": "198246.39",
+          "gross_profit_2024": "109610.56",
+          "difference_2024_minus_2023": "-88635.83"
+        }
+      ],
+      "row_count": 12,
+      "result_sha256": "7841cc312b8c895732b1fe1841c4c1584cbd599dae5ac5d132798745eb15329a",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1539.515
+    },
+    {
+      "id": "M028-02-wrong-gross-profit-formula",
+      "case_id": "B40-028",
+      "category": "wrong_aggregation_formula",
+      "description": "Use gross revenue alone instead of SUM(revenue)-SUM(cogs).",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "WITH monthly AS (SELECT EXTRACT(YEAR FROM s.date) AS sales_year, EXTRACT(MONTH FROM s.date) AS month, SUM(s.revenue) AS gross_profit FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 GROUP BY EXTRACT(YEAR FROM s.date), EXTRACT(MONTH FROM s.date)) SELECT m.month, MAX(m.gross_profit) FILTER (WHERE m.sales_year = 2023) AS gross_profit_2023, MAX(m.gross_profit) FILTER (WHERE m.sales_year = 2024) AS gross_profit_2024, MAX(m.gross_profit) FILTER (WHERE m.sales_year = 2024) - MAX(m.gross_profit) FILTER (WHERE m.sales_year = 2023) AS difference_2024_minus_2023 FROM monthly AS m GROUP BY m.month ORDER BY m.month ASC LIMIT 12",
+      "parameters": [
+        "2023-01-01",
+        "2025-01-01"
+      ],
+      "sql_sha256": "935706342d2582174ac3e4842e11a398656298ba389f47421fcf67a7ee1fc324",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "month": "1",
+          "gross_profit_2023": "1515782.52",
+          "gross_profit_2024": "1317528.01",
+          "difference_2024_minus_2023": "-198254.51"
+        },
+        {
+          "month": "2",
+          "gross_profit_2023": "1447518.55",
+          "gross_profit_2024": "852624.17",
+          "difference_2024_minus_2023": "-594894.38"
+        },
+        {
+          "month": "3",
+          "gross_profit_2023": "1380248.23",
+          "gross_profit_2024": "969024.40",
+          "difference_2024_minus_2023": "-411223.83"
+        },
+        {
+          "month": "4",
+          "gross_profit_2023": "1376130.67",
+          "gross_profit_2024": "1212363.03",
+          "difference_2024_minus_2023": "-163767.64"
+        },
+        {
+          "month": "5",
+          "gross_profit_2023": "1547548.20",
+          "gross_profit_2024": "993268.32",
+          "difference_2024_minus_2023": "-554279.88"
+        },
+        {
+          "month": "6",
+          "gross_profit_2023": "1380742.35",
+          "gross_profit_2024": "894972.49",
+          "difference_2024_minus_2023": "-485769.86"
+        },
+        {
+          "month": "7",
+          "gross_profit_2023": "1155375.13",
+          "gross_profit_2024": "945858.24",
+          "difference_2024_minus_2023": "-209516.89"
+        },
+        {
+          "month": "8",
+          "gross_profit_2023": "1613073.67",
+          "gross_profit_2024": "1264799.21",
+          "difference_2024_minus_2023": "-348274.46"
+        },
+        {
+          "month": "9",
+          "gross_profit_2023": "1473508.38",
+          "gross_profit_2024": "920980.56",
+          "difference_2024_minus_2023": "-552527.82"
+        },
+        {
+          "month": "10",
+          "gross_profit_2023": "1585678.28",
+          "gross_profit_2024": "1011591.63",
+          "difference_2024_minus_2023": "-574086.65"
+        },
+        {
+          "month": "11",
+          "gross_profit_2023": "1146795.81",
+          "gross_profit_2024": "1095556.54",
+          "difference_2024_minus_2023": "-51239.27"
+        },
+        {
+          "month": "12",
+          "gross_profit_2023": "1422560.70",
+          "gross_profit_2024": "1019788.82",
+          "difference_2024_minus_2023": "-402771.88"
+        }
+      ],
+      "row_count": 12,
+      "result_sha256": "370fe8101bd7d413a878c7394805f1369a3617f24f552d3f2d5fc84cd3e18ee7",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1515.904
+    },
+    {
+      "id": "M028-03-wrong-inherited-period",
+      "case_id": "B40-028",
+      "category": "wrong_followup_time_scope",
+      "description": "Drop 2024 from the inherited year-over-year comparison window.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "WITH monthly AS (SELECT EXTRACT(YEAR FROM s.date) AS sales_year, EXTRACT(MONTH FROM s.date) AS month, SUM(s.revenue) - SUM(s.cogs) AS gross_profit FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 GROUP BY EXTRACT(YEAR FROM s.date), EXTRACT(MONTH FROM s.date)) SELECT m.month, MAX(m.gross_profit) FILTER (WHERE m.sales_year = 2023) AS gross_profit_2023, MAX(m.gross_profit) FILTER (WHERE m.sales_year = 2024) AS gross_profit_2024, MAX(m.gross_profit) FILTER (WHERE m.sales_year = 2024) - MAX(m.gross_profit) FILTER (WHERE m.sales_year = 2023) AS difference_2024_minus_2023 FROM monthly AS m GROUP BY m.month ORDER BY m.month ASC LIMIT 12",
+      "parameters": [
+        "2022-01-01",
+        "2024-01-01"
+      ],
+      "sql_sha256": "6fab0337de763422dd70d77e38d01c7046f33f49e8a7d0bb166056277d5f1684",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "month": "1",
+          "gross_profit_2023": "223729.62",
+          "gross_profit_2024": null,
+          "difference_2024_minus_2023": null
+        },
+        {
+          "month": "2",
+          "gross_profit_2023": "284452.46",
+          "gross_profit_2024": null,
+          "difference_2024_minus_2023": null
+        },
+        {
+          "month": "3",
+          "gross_profit_2023": "236477.29",
+          "gross_profit_2024": null,
+          "difference_2024_minus_2023": null
+        },
+        {
+          "month": "4",
+          "gross_profit_2023": "266335.69",
+          "gross_profit_2024": null,
+          "difference_2024_minus_2023": null
+        },
+        {
+          "month": "5",
+          "gross_profit_2023": "329319.39",
+          "gross_profit_2024": null,
+          "difference_2024_minus_2023": null
+        },
+        {
+          "month": "6",
+          "gross_profit_2023": "116484.87",
+          "gross_profit_2024": null,
+          "difference_2024_minus_2023": null
+        },
+        {
+          "month": "7",
+          "gross_profit_2023": "183564.09",
+          "gross_profit_2024": null,
+          "difference_2024_minus_2023": null
+        },
+        {
+          "month": "8",
+          "gross_profit_2023": "323921.56",
+          "gross_profit_2024": null,
+          "difference_2024_minus_2023": null
+        },
+        {
+          "month": "9",
+          "gross_profit_2023": "265073.35",
+          "gross_profit_2024": null,
+          "difference_2024_minus_2023": null
+        },
+        {
+          "month": "10",
+          "gross_profit_2023": "300349.14",
+          "gross_profit_2024": null,
+          "difference_2024_minus_2023": null
+        },
+        {
+          "month": "11",
+          "gross_profit_2023": "198246.39",
+          "gross_profit_2024": null,
+          "difference_2024_minus_2023": null
+        },
+        {
+          "month": "12",
+          "gross_profit_2023": "170245.82",
+          "gross_profit_2024": null,
+          "difference_2024_minus_2023": null
+        }
+      ],
+      "row_count": 12,
+      "result_sha256": "fa928217b37840a28eaea66e0bef814fb87f983630653ff98129f49cb2c486f0",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1596.809
+    },
+    {
+      "id": "M029-01-missing-top-two-limit",
+      "case_id": "B40-029",
+      "category": "missing_limit",
+      "description": "Remove the business TOP 2 and retain only the executor's safe maximum cap (200 rows).",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT r.return_reason, SUM(r.return_quantity) AS returned_units FROM commerce.returns AS r WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY r.return_reason ORDER BY returned_units DESC, r.return_reason ASC NULLS LAST LIMIT 200",
+      "parameters": [
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "sql_sha256": "3a3481f7b63881cfae16878e257d06fb731b7fec7c2cc2ed88de7c50933105f2",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "return_reason": "Changed mind",
+          "returned_units": 13
+        },
+        {
+          "return_reason": "Color differed from expectation",
+          "returned_units": 13
+        },
+        {
+          "return_reason": "Size exchange",
+          "returned_units": 13
+        }
+      ],
+      "row_count": 3,
+      "result_sha256": "f29faa7dadd398462eca445ea8f0680b1a3bde54228a6f5887b87fda1992de61",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1372.116
+    },
+    {
+      "id": "M029-02-wrong-ranking-direction",
+      "case_id": "B40-029",
+      "category": "wrong_ranking_direction",
+      "description": "Rank return quantity ascending rather than descending.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT r.return_reason, SUM(r.return_quantity) AS returned_units FROM commerce.returns AS r WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY r.return_reason ORDER BY returned_units ASC, r.return_reason ASC NULLS LAST LIMIT 2",
+      "parameters": [
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "sql_sha256": "1125133faa2bb6c4c1b852ede0746ecaf25ac3d68b2445d64e18cd85735963a7",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "return_reason": "Changed mind",
+          "returned_units": 13
+        },
+        {
+          "return_reason": "Color differed from expectation",
+          "returned_units": 13
+        }
+      ],
+      "row_count": 2,
+      "result_sha256": "6abb24fa6a1bdf95c1b647d3e4a30cfb57b96249128c6a9a61adfce04dd04d35",
+      "comparison": {
+        "business_rows_match": true,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": true,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": false,
+      "detection_channel": "observationally_equivalent",
+      "elapsed_ms": 1266.843
+    },
+    {
+      "id": "M029-03-wrong-tie-break-direction",
+      "case_id": "B40-029",
+      "category": "wrong_tie_break_direction",
+      "description": "Use reverse alphabetical order for equal return quantities instead of ascending reason names.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT r.return_reason, SUM(r.return_quantity) AS returned_units FROM commerce.returns AS r WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY r.return_reason ORDER BY returned_units DESC, r.return_reason DESC NULLS FIRST LIMIT 2",
+      "parameters": [
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "sql_sha256": "9e2888f1b88d70d0d03aec80e54c4b766a9875f5284863b972f78a773970c0a1",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "return_reason": "Size exchange",
+          "returned_units": 13
+        },
+        {
+          "return_reason": "Color differed from expectation",
+          "returned_units": 13
+        }
+      ],
+      "row_count": 2,
+      "result_sha256": "af67ca1e5ac73f0f2f06971f11e14a10d20f342ceb3a9abc1812a867c7c0620c",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1319.871
+    },
+    {
+      "id": "M030-01-wrong-inventory-snapshot",
+      "case_id": "B40-030",
+      "category": "wrong_inventory_snapshot",
+      "description": "Use the 2025-09-30 snapshot instead of inherited 2025-10-31.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": null,
+      "semantic_validator_oracle": null,
+      "sql": "SELECT i.product_id, i.stockout_days FROM commerce.inventory AS i WHERE i.snapshot_date = $1 ORDER BY i.stockout_days DESC, i.product_id ASC LIMIT 5",
+      "parameters": [
+        "2025-09-30"
+      ],
+      "sql_sha256": "3f6fa636a9c1c2df189f49290c2f26549ed9c103b9d0729a07dde54f45e991ad",
+      "sql_parse_valid": true,
+      "status": "EXECUTED",
+      "executed_via": "execute_approved_query",
+      "rows": [
+        {
+          "product_id": 182,
+          "stockout_days": 4
+        },
+        {
+          "product_id": 779,
+          "stockout_days": 4
+        },
+        {
+          "product_id": 1879,
+          "stockout_days": 4
+        },
+        {
+          "product_id": 1974,
+          "stockout_days": 4
+        },
+        {
+          "product_id": 1061,
+          "stockout_days": 3
+        }
+      ],
+      "row_count": 5,
+      "result_sha256": "b1809641614edd3e50000481a19cc639e14cfc4a22070104f13b735ef542265e",
+      "comparison": {
+        "business_rows_match": false,
+        "business_schema_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "duplicate_required_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": [],
+        "provenance_mismatches": [],
+        "ordered": true
+      },
+      "detected": true,
+      "detection_channel": "result",
+      "elapsed_ms": 1263.95
+    },
+    {
+      "id": "M004-01-join-fanout-denominator",
+      "case_id": "B40-004",
+      "category": "join_fanout_aggregation",
+      "description": "Divide line-item revenue by joined order rows rather than distinct orders.",
+      "valid_semantic_mutation": true,
+      "construction_verified": true,
+      "validator_oracle": "join_fanout_aggregation",
+      "semantic_validator_oracle": null,
+      "sql": "SELECT DATE_TRUNC('month', o.order_date)::date AS month, SUM(oi.quantity * oi.unit_price - oi.discount_amount) / NULLIF(COUNT(o.order_id), 0) AS average_order_value FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id = o.order_id WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 GROUP BY DATE_TRUNC('month', o.order_date)::date ORDER BY month ASC LIMIT 12",
+      "parameters": [
+        "delivered",
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "sql_sha256": "2ad3cb85d27004f2fea8c570d537e4064f6d57fc797b1b0435287546985db1c3",
+      "sql_parse_valid": true,
+      "status": "VALIDATOR_REJECTED",
+      "executed_via": "execute_approved_query",
+      "detected": true,
+      "detection_channel": "approved_join_validator",
+      "validator_oracle_outcome": "CORRECT_REJECTION",
+      "error_type": "SQLJoinValidationError",
+      "error_detail": "Aggregate input may be duplicated by a one-to-many join. Aggregate from its source without the multiplying join, or use COUNT(DISTINCT key) for entity counts. SUM(DISTINCT value) does not restore source grain.",
+      "elapsed_ms": 4.394
+    }
+  ]
+}

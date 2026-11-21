@@ -9,7 +9,7 @@ import time
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 from core.agents.sql.agent import SQLAnalyticsAgent
 from core.database.commerce_repository import LazyCommerceRepository
-from core.dashboards.agent import DashboardDocumentAgent
+from core.agents.dashboard.agent import DashboardDocumentAgent
 from core.llm.groq_provider import GroqProvider
 from core.models.agents import AgentRequest, VerifiedIdentity
 from scripts.agents.evaluate_count_queries import reference_plan

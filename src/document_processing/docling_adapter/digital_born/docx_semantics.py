@@ -15,7 +15,6 @@ def apply_docx_semantics(result: dict[str, Any], source_bytes: bytes | None) -> 
         return
     try:
         from docx import Document
-        from docx.enum.text import WD_ALIGN_PARAGRAPH
         from docx.oxml.ns import qn
 
         word_document = Document(BytesIO(source_bytes))
@@ -42,8 +41,10 @@ def apply_docx_semantics(result: dict[str, Any], source_bytes: bytes | None) -> 
         has_numbering = _has_numbering(paragraph_properties, qn) or _has_numbering(style_properties, qn)
         bold = any(run.bold is True for run in paragraph.runs if run.text.strip())
         uppercase = text == text.upper() and any(char.isalpha() for char in text)
+        justification = paragraph_properties.find(qn("w:jc")) if paragraph_properties is not None else None
         centered_title = (
-            paragraph.alignment == WD_ALIGN_PARAGRAPH.CENTER and bold and uppercase and len(text) < 180
+            bold and uppercase and len(text) < 180
+            and justification is not None and justification.get(qn("w:val")) == "center"
         )
         numbered_heading = re.match(r"^(\d+(?:\.\d+)*[.)]?)\s+", text) if bold else None
         number = re.match(r"^\d+(?:\.\d+)*", numbered_heading.group()) if numbered_heading else None

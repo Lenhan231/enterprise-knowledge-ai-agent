@@ -68,7 +68,7 @@ Tests cover raw/wrapped runtimes, clarification isolation, query/output bounds, 
 $env:PYTHONPATH = 'src'
 python -m unittest discover -s tests -p 'test_dashboard*.py'
 python -m unittest discover -s tests/sql
-node --test tests/test_dashboard_scope.cjs tests/test_dashboard_workspace.cjs
+node --test tests/dashboard/test_dashboard_scope.cjs tests/dashboard/test_dashboard_workspace.cjs
 node --check src/app/static/dashboard.js
 ```
 

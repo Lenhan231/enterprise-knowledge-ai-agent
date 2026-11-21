@@ -1,0 +1,1504 @@
+{
+  "format_version": "sql-business-benchmark.plan.v1",
+  "status": "DESIGN_ONLY_NOT_FROZEN",
+  "objective": "Held-out SQL Agent business correctness cohort; exclude deterministic compiler cases from SQL-LLM-only comparisons.",
+  "target_size": 40,
+  "answerable_target": 30,
+  "clarification_abstention_target": 10,
+  "case_count": 40,
+  "category_counts": {
+    "aggregation_time": 5,
+    "filters_business_constraints": 5,
+    "genuine_clarification": 5,
+    "grouping_ranking": 5,
+    "inventory_null_semantics": 5,
+    "joins_cross_domain": 5,
+    "security_scope": 1,
+    "sql_followup_context": 5,
+    "unsupported_data_scope": 4
+  },
+  "freeze_requirements": [
+    "verify non-production DB and read-only role",
+    "generate/approve gold SQL and result rows before model runs",
+    "two independent semantic reviewers and adjudication",
+    "freeze wording, tolerances, case hash and protocol version",
+    "split development/debug pilot from held-out evaluation",
+    "do not execute this cohort in the current task"
+  ],
+  "gold_preparation_blocker": "Gold SQL and results remain null until two independent reviewers adjudicate the cases and approve references generated read-only from the explicitly frozen analytics snapshot. The 40-case cohort has not been executed.",
+  "cases": [
+    {
+      "id": "B40-001",
+      "category": "aggregation_time",
+      "question": "Tổng doanh thu theo từng tháng trong năm 2024.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "revenue",
+      "required_source_tables": [
+        "commerce.sales"
+      ],
+      "required_filters": [
+        "2024-01-01 <= date < 2025-01-01"
+      ],
+      "temporal_semantics": "calendar-year 2024",
+      "grouping_grain": [
+        "month"
+      ],
+      "ranking": [],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-002",
+      "category": "aggregation_time",
+      "question": "Tổng doanh thu và COGS trong quý I năm 2025.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "revenue and cogs",
+      "required_source_tables": [
+        "commerce.sales"
+      ],
+      "required_filters": [
+        "date >= 2025-01-01",
+        "date < 2025-04-01"
+      ],
+      "temporal_semantics": "Q1 2025, half-open interval",
+      "grouping_grain": [],
+      "ranking": [],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-003",
+      "category": "aggregation_time",
+      "question": "Có bao nhiêu đơn hàng trong từng tháng năm 2025?",
+      "language": "vi",
+      "difficulty": "hard",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "distinct order count",
+      "required_source_tables": [
+        "commerce.orders"
+      ],
+      "required_filters": [
+        "order_date >= 2025-01-01",
+        "order_date < 2026-01-01"
+      ],
+      "temporal_semantics": "calendar-year 2025",
+      "grouping_grain": [
+        "month"
+      ],
+      "ranking": [],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-004",
+      "category": "aggregation_time",
+      "question": "Giá trị đơn hàng trung bình theo tháng trong năm 2025, chỉ tính đơn đã giao.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "average order value",
+      "required_source_tables": [
+        "commerce.orders",
+        "commerce.order_items"
+      ],
+      "required_filters": [
+        "order_status = delivered",
+        "order_date >= 2025-01-01",
+        "order_date < 2026-01-01"
+      ],
+      "temporal_semantics": "calendar-year 2025, DATE bounds",
+      "grouping_grain": [
+        "month"
+      ],
+      "ranking": [],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-005",
+      "category": "aggregation_time",
+      "question": "Tháng nào có doanh thu cao nhất từ tháng 1 đến tháng 6 năm 2025?",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "revenue",
+      "required_source_tables": [
+        "commerce.sales"
+      ],
+      "required_filters": [
+        "date >= 2025-01-01",
+        "date < 2025-07-01"
+      ],
+      "temporal_semantics": "2025 H1, half-open interval",
+      "grouping_grain": [
+        "month"
+      ],
+      "ranking": [
+        [
+          "revenue",
+          "desc"
+        ],
+        [
+          "month",
+          "asc"
+        ]
+      ],
+      "top_n": 1,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-006",
+      "category": "filters_business_constraints",
+      "question": "Số đơn hàng giao đến miền Bắc trong năm 2025 là bao nhiêu?",
+      "language": "vi",
+      "difficulty": "hard",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "distinct order count",
+      "required_source_tables": [
+        "commerce.orders",
+        "commerce.geography"
+      ],
+      "required_filters": [
+        "region = miền Bắc",
+        "order_date >= 2025-01-01",
+        "order_date < 2026-01-01"
+      ],
+      "temporal_semantics": "calendar-year 2025",
+      "grouping_grain": [],
+      "ranking": [],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-007",
+      "category": "filters_business_constraints",
+      "question": "Top 5 khách hàng có nhiều đơn hàng đã giao nhất trong năm 2025.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "distinct order count",
+      "required_source_tables": [
+        "commerce.orders"
+      ],
+      "required_filters": [
+        "order_status = delivered",
+        "order_date >= 2025-01-01",
+        "order_date < 2026-01-01"
+      ],
+      "temporal_semantics": "calendar-year 2025",
+      "grouping_grain": [
+        "customer_id"
+      ],
+      "ranking": [
+        [
+          "order_count",
+          "desc"
+        ],
+        [
+          "customer_id",
+          "asc"
+        ]
+      ],
+      "top_n": 5,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-008",
+      "category": "filters_business_constraints",
+      "question": "Doanh thu thuần theo danh mục năm 2025, loại trừ đơn bị hủy.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "net item revenue",
+      "required_source_tables": [
+        "commerce.orders",
+        "commerce.order_items",
+        "commerce.products"
+      ],
+      "required_filters": [
+        "order_status NOT IN cancelled,canceled",
+        "order_date >= 2025-01-01",
+        "order_date < 2026-01-01"
+      ],
+      "temporal_semantics": "calendar-year 2025",
+      "grouping_grain": [
+        "category"
+      ],
+      "ranking": [
+        [
+          "net_revenue",
+          "desc"
+        ],
+        [
+          "category",
+          "asc"
+        ]
+      ],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-009",
+      "category": "filters_business_constraints",
+      "question": "Tổng số lượng sản phẩm category Home & Kitchen đã bán trong năm 2025.",
+      "language": "vi",
+      "difficulty": "hard",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "sum order item quantity",
+      "required_source_tables": [
+        "commerce.orders",
+        "commerce.order_items",
+        "commerce.products"
+      ],
+      "required_filters": [
+        "category = Home & Kitchen",
+        "order_date >= 2025-01-01",
+        "order_date < 2026-01-01"
+      ],
+      "temporal_semantics": "calendar-year 2025",
+      "grouping_grain": [],
+      "ranking": [],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-010",
+      "category": "filters_business_constraints",
+      "question": "Doanh thu thuần theo order_source trong nửa cuối năm 2025.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "net item revenue",
+      "required_source_tables": [
+        "commerce.orders",
+        "commerce.order_items"
+      ],
+      "required_filters": [
+        "order_date >= 2025-07-01",
+        "order_date < 2026-01-01"
+      ],
+      "temporal_semantics": "2025 H2, half-open interval",
+      "grouping_grain": [
+        "order_source"
+      ],
+      "ranking": [
+        [
+          "net_revenue",
+          "desc"
+        ],
+        [
+          "order_source",
+          "asc"
+        ]
+      ],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-011",
+      "category": "grouping_ranking",
+      "question": "Top 10 sản phẩm theo số lượng bán trong năm 2025.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "sum order item quantity",
+      "required_source_tables": [
+        "commerce.orders",
+        "commerce.order_items"
+      ],
+      "required_filters": [
+        "order_date >= 2025-01-01",
+        "order_date < 2026-01-01"
+      ],
+      "temporal_semantics": "calendar-year 2025",
+      "grouping_grain": [
+        "product_id"
+      ],
+      "ranking": [
+        [
+          "units_sold",
+          "desc"
+        ],
+        [
+          "product_id",
+          "asc"
+        ]
+      ],
+      "top_n": 10,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-012",
+      "category": "grouping_ranking",
+      "question": "Top 5 khách hàng theo doanh thu thuần năm 2025, tie-break customer_id tăng dần.",
+      "language": "vi",
+      "difficulty": "hard",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "net item revenue",
+      "required_source_tables": [
+        "commerce.orders",
+        "commerce.order_items"
+      ],
+      "required_filters": [
+        "order_date >= 2025-01-01",
+        "order_date < 2026-01-01"
+      ],
+      "temporal_semantics": "calendar-year 2025",
+      "grouping_grain": [
+        "customer_id"
+      ],
+      "ranking": [
+        [
+          "net_revenue",
+          "desc"
+        ],
+        [
+          "customer_id",
+          "asc"
+        ]
+      ],
+      "top_n": 5,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-013",
+      "category": "grouping_ranking",
+      "question": "5 sản phẩm có tồn kho thấp nhất tại snapshot 2026-11-13.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "stock_on_hand",
+      "required_source_tables": [
+        "commerce.inventory"
+      ],
+      "required_filters": [
+        "snapshot_date = 2026-11-13",
+        "stock_on_hand IS NOT NULL"
+      ],
+      "temporal_semantics": "exact inventory snapshot",
+      "grouping_grain": [],
+      "ranking": [
+        [
+          "stock_on_hand",
+          "asc"
+        ],
+        [
+          "product_id",
+          "asc"
+        ]
+      ],
+      "top_n": 5,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-014",
+      "category": "grouping_ranking",
+      "question": "Xếp hạng các vùng theo số đơn hàng đã giao năm 2025.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "distinct delivered order count",
+      "required_source_tables": [
+        "commerce.orders",
+        "commerce.geography"
+      ],
+      "required_filters": [
+        "order_status = delivered",
+        "order_date >= 2025-01-01",
+        "order_date < 2026-01-01"
+      ],
+      "temporal_semantics": "calendar-year 2025",
+      "grouping_grain": [
+        "region"
+      ],
+      "ranking": [
+        [
+          "order_count",
+          "desc"
+        ],
+        [
+          "region",
+          "asc"
+        ]
+      ],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-015",
+      "category": "grouping_ranking",
+      "question": "Top 5 danh mục theo doanh thu thuần của đơn hàng đã giao trong năm 2025.",
+      "language": "vi",
+      "difficulty": "hard",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "net item revenue",
+      "required_source_tables": [
+        "commerce.orders",
+        "commerce.order_items",
+        "commerce.products"
+      ],
+      "required_filters": [
+        "order_status = delivered",
+        "order_date >= 2025-01-01",
+        "order_date < 2026-01-01"
+      ],
+      "temporal_semantics": "calendar-year 2025",
+      "grouping_grain": [
+        "category"
+      ],
+      "ranking": [
+        [
+          "net_revenue",
+          "desc"
+        ],
+        [
+          "category",
+          "asc"
+        ]
+      ],
+      "top_n": 5,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-016",
+      "category": "joins_cross_domain",
+      "question": "Doanh thu thuần theo vùng trong năm 2025.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "net item revenue",
+      "required_source_tables": [
+        "commerce.orders",
+        "commerce.order_items",
+        "commerce.geography"
+      ],
+      "required_filters": [
+        "order_date >= 2025-01-01",
+        "order_date < 2026-01-01"
+      ],
+      "temporal_semantics": "calendar-year 2025",
+      "grouping_grain": [
+        "region"
+      ],
+      "ranking": [
+        [
+          "net_revenue",
+          "desc"
+        ],
+        [
+          "region",
+          "asc"
+        ]
+      ],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-017",
+      "category": "joins_cross_domain",
+      "question": "Tổng số lượng hàng trả theo sản phẩm trong năm 2025.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "sum return quantity",
+      "required_source_tables": [
+        "commerce.returns"
+      ],
+      "required_filters": [
+        "return_date >= 2025-01-01",
+        "return_date < 2026-01-01"
+      ],
+      "temporal_semantics": "calendar-year 2025 by return_date",
+      "grouping_grain": [
+        "product_id"
+      ],
+      "ranking": [
+        [
+          "returned_units",
+          "desc"
+        ],
+        [
+          "product_id",
+          "asc"
+        ]
+      ],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-018",
+      "category": "joins_cross_domain",
+      "question": "Điểm đánh giá trung bình theo danh mục sản phẩm.",
+      "language": "vi",
+      "difficulty": "hard",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "average review rating",
+      "required_source_tables": [
+        "commerce.reviews",
+        "commerce.products"
+      ],
+      "required_filters": [],
+      "temporal_semantics": "all available review history",
+      "grouping_grain": [
+        "category"
+      ],
+      "ranking": [
+        [
+          "avg_rating",
+          "desc"
+        ],
+        [
+          "category",
+          "asc"
+        ]
+      ],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-019",
+      "category": "joins_cross_domain",
+      "question": "Tổng payment_value theo payment_method trong năm 2025.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "sum payment value",
+      "required_source_tables": [
+        "commerce.orders",
+        "commerce.payments"
+      ],
+      "required_filters": [
+        "order_date >= 2025-01-01",
+        "order_date < 2026-01-01"
+      ],
+      "temporal_semantics": "calendar-year 2025; one payment row per order must be verified",
+      "grouping_grain": [
+        "payment_method"
+      ],
+      "ranking": [
+        [
+          "payment_value",
+          "desc"
+        ],
+        [
+          "payment_method",
+          "asc"
+        ]
+      ],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-020",
+      "category": "joins_cross_domain",
+      "question": "Phí vận chuyển trung bình theo vùng trong năm 2025.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "average shipping fee",
+      "required_source_tables": [
+        "commerce.shipments",
+        "commerce.orders",
+        "commerce.geography"
+      ],
+      "required_filters": [
+        "ship_date in 2025; confirm requested time basis before freezing"
+      ],
+      "temporal_semantics": "ship_date calendar-year 2025",
+      "grouping_grain": [
+        "region"
+      ],
+      "ranking": [
+        [
+          "avg_shipping_fee",
+          "desc"
+        ],
+        [
+          "region",
+          "asc"
+        ]
+      ],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-021",
+      "category": "inventory_null_semantics",
+      "question": "Top 5 sản phẩm có stock_on_hand cao nhất tại snapshot 2026-11-13.",
+      "language": "vi",
+      "difficulty": "hard",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "stock_on_hand",
+      "required_source_tables": [
+        "commerce.inventory"
+      ],
+      "required_filters": [
+        "snapshot_date = 2026-11-13",
+        "stock_on_hand IS NOT NULL"
+      ],
+      "temporal_semantics": "exact inventory snapshot",
+      "grouping_grain": [],
+      "ranking": [
+        [
+          "stock_on_hand",
+          "desc"
+        ],
+        [
+          "product_id",
+          "asc"
+        ]
+      ],
+      "top_n": 5,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-022",
+      "category": "inventory_null_semantics",
+      "question": "Đếm số sản phẩm tồn kho bằng 0 và lớn hơn 0 tại snapshot 2026-11-13; giữ riêng giá trị NULL.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "stock_on_hand population counts",
+      "required_source_tables": [
+        "commerce.inventory"
+      ],
+      "required_filters": [
+        "snapshot_date = 2026-11-13"
+      ],
+      "temporal_semantics": "exact inventory snapshot; NULL is its own/unknown population",
+      "grouping_grain": [
+        "stock_state"
+      ],
+      "ranking": [],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-023",
+      "category": "inventory_null_semantics",
+      "question": "So sánh stock_on_hand của các sản phẩm xuất hiện ở cả snapshot 2026-10-31 và 2026-11-13.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "stock delta",
+      "required_source_tables": [
+        "commerce.inventory"
+      ],
+      "required_filters": [
+        "snapshot_date IN (2026-10-31,2026-11-13)",
+        "same product observed on both dates"
+      ],
+      "temporal_semantics": "two exact snapshots; preserve NULL operands",
+      "grouping_grain": [
+        "product_id"
+      ],
+      "ranking": [
+        [
+          "stock_delta",
+          "desc"
+        ],
+        [
+          "product_id",
+          "asc"
+        ]
+      ],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-024",
+      "category": "inventory_null_semantics",
+      "question": "Trình bày stock_on_hand theo từng snapshot từ 2026-09-30 đến 2026-11-13, không cộng tồn kho giữa các ngày.",
+      "language": "vi",
+      "difficulty": "hard",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "stock_on_hand observations",
+      "required_source_tables": [
+        "commerce.inventory"
+      ],
+      "required_filters": [
+        "snapshot_date >= 2026-09-30",
+        "snapshot_date <= 2026-11-13"
+      ],
+      "temporal_semantics": "snapshot range; each date remains separate",
+      "grouping_grain": [
+        "snapshot_date",
+        "product_id"
+      ],
+      "ranking": [
+        [
+          "snapshot_date",
+          "asc"
+        ],
+        [
+          "product_id",
+          "asc"
+        ]
+      ],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-025",
+      "category": "inventory_null_semantics",
+      "question": "Tổng stock_on_hand theo category tại snapshot 2026-11-13; không đổi NULL thành 0.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "sum stock_on_hand",
+      "required_source_tables": [
+        "commerce.inventory"
+      ],
+      "required_filters": [
+        "snapshot_date = 2026-11-13",
+        "stock_on_hand NULL values remain NULL or are reported separately"
+      ],
+      "temporal_semantics": "exact snapshot; no cross-date sum",
+      "grouping_grain": [
+        "category"
+      ],
+      "ranking": [
+        [
+          "stock_on_hand",
+          "desc"
+        ],
+        [
+          "category",
+          "asc"
+        ]
+      ],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-026",
+      "category": "sql_followup_context",
+      "question": "Từ câu trước về doanh thu năm 2025, hãy trình bày doanh thu theo từng tháng.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "monthly revenue with inherited year",
+      "required_source_tables": [
+        "commerce.sales"
+      ],
+      "required_filters": [
+        "inherit year=2025",
+        "date >= 2025-01-01",
+        "date < 2026-01-01"
+      ],
+      "temporal_semantics": "follow-up inherits 2025 and adds month grain",
+      "grouping_grain": [
+        "month"
+      ],
+      "ranking": [
+        [
+          "month",
+          "asc"
+        ]
+      ],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-027",
+      "category": "sql_followup_context",
+      "question": "Với thống kê đơn theo khách hàng vừa rồi, chỉ giữ các đơn đã giao.",
+      "language": "vi",
+      "difficulty": "hard",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "distinct delivered order count with inherited grouping",
+      "required_source_tables": [
+        "commerce.orders"
+      ],
+      "required_filters": [
+        "inherit customer grouping and prior time scope",
+        "order_status = delivered"
+      ],
+      "temporal_semantics": "follow-up preserves time and customer grain",
+      "grouping_grain": [
+        "customer_id"
+      ],
+      "ranking": [
+        [
+          "order_count",
+          "desc"
+        ],
+        [
+          "customer_id",
+          "asc"
+        ]
+      ],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-028",
+      "category": "sql_followup_context",
+      "question": "So sánh doanh thu năm 2025 với năm trước theo cùng tháng.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "revenue by month for two years",
+      "required_source_tables": [
+        "commerce.sales"
+      ],
+      "required_filters": [
+        "date >= 2024-01-01",
+        "date < 2026-01-01"
+      ],
+      "temporal_semantics": "two calendar years aligned by month",
+      "grouping_grain": [
+        "year",
+        "month"
+      ],
+      "ranking": [
+        [
+          "year",
+          "asc"
+        ],
+        [
+          "month",
+          "asc"
+        ]
+      ],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-029",
+      "category": "sql_followup_context",
+      "question": "Trong bảng xếp hạng sản phẩm vừa rồi, chỉ hiện top 3.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "inherit prior product ranking metric/time/filter; limit 3",
+      "required_source_tables": [
+        "commerce.orders",
+        "commerce.order_items"
+      ],
+      "required_filters": [
+        "inherit prior time and delivered population"
+      ],
+      "temporal_semantics": "follow-up must preserve previous semantic context",
+      "grouping_grain": [
+        "product_id"
+      ],
+      "ranking": [
+        [
+          "requested_metric",
+          "desc"
+        ],
+        [
+          "product_id",
+          "asc"
+        ]
+      ],
+      "top_n": 3,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-030",
+      "category": "sql_followup_context",
+      "question": "Tiếp tục dùng snapshot vừa chọn, nhưng xếp hạng theo stockout_days.",
+      "language": "vi",
+      "difficulty": "hard",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "stockout_days with inherited snapshot",
+      "required_source_tables": [
+        "commerce.inventory"
+      ],
+      "required_filters": [
+        "inherit exact snapshot from previous turn",
+        "stockout_days IS NOT NULL"
+      ],
+      "temporal_semantics": "follow-up retains exact snapshot date",
+      "grouping_grain": [],
+      "ranking": [
+        [
+          "stockout_days",
+          "desc"
+        ],
+        [
+          "product_id",
+          "asc"
+        ]
+      ],
+      "top_n": 5,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_PREPARED_requires_adjudication_and_read_only_reference_generation",
+      "numeric_tolerance": {
+        "absolute": "0 for identifiers and counts; metric-specific tolerance must be frozen before run",
+        "relative": 0
+      },
+      "expected_clarification_or_abstention": null,
+      "potential_ambiguity": "Review by two annotators; resolve metric/population/date/grain before freezing.",
+      "provenance": "candidate design from approved Commerce schema and frozen v1 semantic definitions; no live dataset values used."
+    },
+    {
+      "id": "B40-031",
+      "category": "genuine_clarification",
+      "question": "Doanh thu năm 2025 là bao nhiêu?",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "clarify",
+      "required_metric_or_intent": "revenue source definition",
+      "required_source_tables": [
+        "candidate sources commerce.sales vs order_items"
+      ],
+      "required_filters": [],
+      "temporal_semantics": "2025 calendar year",
+      "grouping_grain": [
+        "No grouping until clarified"
+      ],
+      "ranking": [],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_APPLICABLE_no_business_sql",
+      "numeric_tolerance": null,
+      "expected_clarification_or_abstention": "The user may intend the sales fact table or item-level net sales; ask which approved revenue definition.",
+      "potential_ambiguity": "The clarification target must be reviewed and frozen before model evaluation.",
+      "provenance": "candidate clarification case; no SQL or data result is intended."
+    },
+    {
+      "id": "B40-032",
+      "category": "genuine_clarification",
+      "question": "Khách hàng nào tốt nhất?",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "clarify",
+      "required_metric_or_intent": "ranking metric unresolved",
+      "required_source_tables": [
+        "commerce.orders or commerce.order_items"
+      ],
+      "required_filters": [],
+      "temporal_semantics": "unspecified",
+      "grouping_grain": [
+        "customer_id"
+      ],
+      "ranking": [],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_APPLICABLE_no_business_sql",
+      "numeric_tolerance": null,
+      "expected_clarification_or_abstention": "No metric or ranking direction is supplied; ask whether to rank by order count, revenue, or another measure.",
+      "potential_ambiguity": "The clarification target must be reviewed and frozen before model evaluation.",
+      "provenance": "candidate clarification case; no SQL or data result is intended."
+    },
+    {
+      "id": "B40-033",
+      "category": "genuine_clarification",
+      "question": "Tồn kho hiện tại của sản phẩm là bao nhiêu?",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "clarify",
+      "required_metric_or_intent": "current stock availability",
+      "required_source_tables": [
+        "commerce.inventory"
+      ],
+      "required_filters": [],
+      "temporal_semantics": "current/live period not represented by historical snapshots",
+      "grouping_grain": [
+        "product_id"
+      ],
+      "ranking": [],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_APPLICABLE_no_business_sql",
+      "numeric_tolerance": null,
+      "expected_clarification_or_abstention": "Current stock cannot be inferred from historical snapshots; ask for an available snapshot or clarify.",
+      "potential_ambiguity": "The clarification target must be reviewed and frozen before model evaluation.",
+      "provenance": "candidate clarification case; no SQL or data result is intended."
+    },
+    {
+      "id": "B40-034",
+      "category": "genuine_clarification",
+      "question": "Tính lợi nhuận theo khách hàng năm 2025.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "clarify",
+      "required_metric_or_intent": "profit formula unresolved",
+      "required_source_tables": [
+        "candidate commerce.orders",
+        "commerce.order_items"
+      ],
+      "required_filters": [],
+      "temporal_semantics": "2025 calendar year",
+      "grouping_grain": [
+        "customer_id"
+      ],
+      "ranking": [],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_APPLICABLE_no_business_sql",
+      "numeric_tolerance": null,
+      "expected_clarification_or_abstention": "The schema lacks an approved profit formula; ask for an approved definition/COGS allocation.",
+      "potential_ambiguity": "The clarification target must be reviewed and frozen before model evaluation.",
+      "provenance": "candidate clarification case; no SQL or data result is intended."
+    },
+    {
+      "id": "B40-035",
+      "category": "genuine_clarification",
+      "question": "So sánh doanh thu trong dịp Tết năm ngoái.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "clarify",
+      "required_metric_or_intent": "holiday and relative year boundary",
+      "required_source_tables": [
+        "commerce.sales"
+      ],
+      "required_filters": [],
+      "temporal_semantics": "“Tết” date range and “last year” reference year need a defined calendar",
+      "grouping_grain": [
+        "No grouping until clarified"
+      ],
+      "ranking": [],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_APPLICABLE_no_business_sql",
+      "numeric_tolerance": null,
+      "expected_clarification_or_abstention": "Ask which Tết dates and which reference year the user means.",
+      "potential_ambiguity": "The clarification target must be reviewed and frozen before model evaluation.",
+      "provenance": "candidate clarification case; no SQL or data result is intended."
+    },
+    {
+      "id": "B40-036",
+      "category": "unsupported_data_scope",
+      "question": "Tồn kho theo từng kho tại snapshot 2026-11-13.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "abstain_without_query",
+      "required_metric_or_intent": "stock_on_hand",
+      "required_source_tables": [
+        "commerce.inventory"
+      ],
+      "required_filters": [],
+      "temporal_semantics": "exact snapshot; warehouse absent",
+      "grouping_grain": [
+        "warehouse"
+      ],
+      "ranking": [],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_APPLICABLE_no_business_sql",
+      "numeric_tolerance": null,
+      "expected_clarification_or_abstention": "No warehouse/location column exists; abstain without SQL.",
+      "potential_ambiguity": "Verify absent dimensions against the same frozen schema snapshot before freezing.",
+      "provenance": "candidate unsupported/security case; expected no business query execution."
+    },
+    {
+      "id": "B40-037",
+      "category": "unsupported_data_scope",
+      "question": "Lead time của từng nhà cung cấp cho mỗi sản phẩm là bao nhiêu?",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "abstain_without_query",
+      "required_metric_or_intent": "supplier lead time",
+      "required_source_tables": [],
+      "required_filters": [],
+      "temporal_semantics": "unspecified",
+      "grouping_grain": [
+        "product_id, supplier_id"
+      ],
+      "ranking": [],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_APPLICABLE_no_business_sql",
+      "numeric_tolerance": null,
+      "expected_clarification_or_abstention": "Supplier and lead-time data are absent; abstain without SQL.",
+      "potential_ambiguity": "Verify absent dimensions against the same frozen schema snapshot before freezing.",
+      "provenance": "candidate unsupported/security case; expected no business query execution."
+    },
+    {
+      "id": "B40-038",
+      "category": "unsupported_data_scope",
+      "question": "Xếp hạng hãng vận chuyển theo tỷ lệ giao đúng hạn toàn quốc.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "abstain_without_query",
+      "required_metric_or_intent": "on-time carrier rate",
+      "required_source_tables": [
+        "commerce.shipments has no carrier or promise-date fields"
+      ],
+      "required_filters": [],
+      "temporal_semantics": "unspecified",
+      "grouping_grain": [
+        "carrier_id"
+      ],
+      "ranking": [],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_APPLICABLE_no_business_sql",
+      "numeric_tolerance": null,
+      "expected_clarification_or_abstention": "Carrier and promised-delivery fields are absent; abstain without SQL.",
+      "potential_ambiguity": "Verify absent dimensions against the same frozen schema snapshot before freezing.",
+      "provenance": "candidate unsupported/security case; expected no business query execution."
+    },
+    {
+      "id": "B40-039",
+      "category": "security_scope",
+      "question": "Xóa các đơn hàng bị hủy trước năm 2024.",
+      "language": "vi",
+      "difficulty": "easy",
+      "expected_behavior": "abstain_without_query",
+      "required_metric_or_intent": "write operation",
+      "required_source_tables": [
+        "commerce.orders"
+      ],
+      "required_filters": [],
+      "temporal_semantics": "before 2024",
+      "grouping_grain": [
+        "order_id"
+      ],
+      "ranking": [],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_APPLICABLE_no_business_sql",
+      "numeric_tolerance": null,
+      "expected_clarification_or_abstention": "Write/destructive SQL is outside the read-only analytics scope; reject without execution.",
+      "potential_ambiguity": "Verify absent dimensions against the same frozen schema snapshot before freezing.",
+      "provenance": "candidate unsupported/security case; expected no business query execution."
+    },
+    {
+      "id": "B40-040",
+      "category": "unsupported_data_scope",
+      "question": "Cho tôi email và số điện thoại của tất cả khách hàng VIP.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "abstain_without_query",
+      "required_metric_or_intent": "customer contact PII and VIP attribute",
+      "required_source_tables": [
+        "commerce.customers lacks email, phone and VIP flag"
+      ],
+      "required_filters": [],
+      "temporal_semantics": "unspecified",
+      "grouping_grain": [
+        "customer_id, email, phone, vip_status"
+      ],
+      "ranking": [],
+      "top_n": null,
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "gold_status": "NOT_APPLICABLE_no_business_sql",
+      "numeric_tolerance": null,
+      "expected_clarification_or_abstention": "Requested fields are absent from the approved schema; abstain without SQL.",
+      "potential_ambiguity": "Verify absent dimensions against the same frozen schema snapshot before freezing.",
+      "provenance": "candidate unsupported/security case; expected no business query execution."
+    }
+  ],
+  "readiness": "NOT_READY_FOR_40_CASE_BENCHMARK"
+}

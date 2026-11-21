@@ -1,0 +1,724 @@
+{
+  "report_type": "inventory_operations",
+  "title": "Inventory & Operations Report",
+  "schema_version": "1.0.0",
+  "source_contract": "commerce_schema_metric_contract_v1.md",
+  "strict_generation_rules": {
+    "template_structure": "IMMUTABLE",
+    "metric_catalog": "IMMUTABLE",
+    "dashboard_layout": "IMMUTABLE",
+    "decision_rule_catalog": "IMMUTABLE",
+    "llm_role": "Select report_type and scope; populate only value, series data, evidence, data_quality fields from approved agent outputs. Never create/delete/rename metrics, charts, sections, or rules.",
+    "allowed_runtime_mutations": [
+      "request.period.start",
+      "request.period.end_exclusive",
+      "request.granularity",
+      "request.dimension",
+      "request.dimension_value",
+      "metrics.*.value",
+      "metrics.*.status",
+      "metrics.*.evidence",
+      "dashboard.widgets.*.data",
+      "decisions.*.triggered",
+      "decisions.*.evidence",
+      "data_quality.*"
+    ],
+    "forbidden": [
+      "Invent metrics, narratives, dashboard charts, thresholds or unsupported breakdowns",
+      "Assume currency for synthetic commerce data",
+      "Infer causality from correlation",
+      "Join commerce.sales with order_items/orders to allocate sales by category/region",
+      "Combine commerce.invoices with synthetic commerce sales",
+      "Reinterpret inventory snapshots as daily movements",
+      "Use missing/undefined numeric data as zero",
+      "Bypass SQL allowlist, RBAC or document RLS",
+      "Treat synthetic demo data as real company performance"
+    ],
+    "authorization": "Each upstream tool call must be authorized for requester; no cross-role inference or fallback to service-role results.",
+    "calculation_policy": "SQL Agent calculates fixed metric formulas; Report Agent only copies validated results; no LLM arithmetic.",
+    "null_policy": "If unavailable/unsupported/ambiguous, value=null; status=not_available or unresolved; omit unsupported conclusions without changing structure.",
+    "period_policy": "Use [start,end_exclusive) for DATE comparisons. Year means calendar year; latest means latest observed source date. Record coverage separately.",
+    "dimension_policy": "Validate requested dimension against each metric's allowed_dimensions; unsupported combinations return not_available rather than approximate.",
+    "output_policy": "Output JSON only. Fixed key set and order. No Markdown. No new fields. Dashboard uses fixed widget ids/types/order. Decisions use deterministic triggers only."
+  },
+  "request": {
+    "period": {
+      "start": null,
+      "end_exclusive": null
+    },
+    "granularity": "month",
+    "dimension": "all",
+    "dimension_value": null
+  },
+  "data_quality": {
+    "coverage_start": null,
+    "coverage_end": null,
+    "partial_period": null,
+    "missing_or_unmatched_count": null,
+    "limitations": []
+  },
+  "metric_value_shape": {
+    "value": null,
+    "status": "pending",
+    "evidence": []
+  },
+  "evidence_shape": {
+    "source_table": "",
+    "query_id": "",
+    "filters": {},
+    "row_count": null,
+    "document_id": null,
+    "citation": null
+  },
+  "permitted_statuses": [
+    "pending",
+    "available",
+    "no_data",
+    "not_available",
+    "unresolved",
+    "access_denied"
+  ],
+  "supported_request": {
+    "dimensions": [
+      "all",
+      "category",
+      "segment",
+      "product"
+    ],
+    "granularities": [
+      "snapshot",
+      "month",
+      "quarter",
+      "year"
+    ]
+  },
+  "sections": [
+    "operations_summary",
+    "snapshot_scorecard",
+    "product_risks",
+    "fulfillment_and_returns",
+    "policy_evidence",
+    "fixed_decisions",
+    "data_quality"
+  ],
+  "agent_dependencies": [
+    "sql",
+    "knowledge",
+    "dashboard"
+  ],
+  "metrics": [
+    {
+      "id": "observed_products",
+      "label": "Observed inventory products",
+      "source": "commerce.inventory",
+      "formula": "COUNT(DISTINCT product_id) at selected latest snapshot <= period end",
+      "allowed_dimensions": [
+        "all",
+        "category",
+        "segment",
+        "product"
+      ],
+      "scope": "",
+      "unit": "products",
+      "grain": "snapshot",
+      "value": null,
+      "status": "pending",
+      "evidence": [],
+      "notes": null
+    },
+    {
+      "id": "stock_on_hand",
+      "label": "Total stock on hand",
+      "source": "commerce.inventory",
+      "formula": "SUM(stock_on_hand) at one selected snapshot",
+      "allowed_dimensions": [
+        "all",
+        "category",
+        "segment",
+        "product"
+      ],
+      "scope": "",
+      "unit": "units",
+      "grain": "snapshot",
+      "value": null,
+      "status": "pending",
+      "evidence": [],
+      "notes": null
+    },
+    {
+      "id": "stockout_products",
+      "label": "Stockout flagged products",
+      "source": "commerce.inventory",
+      "formula": "COUNT(*) FILTER (WHERE stockout_flag=true) at one selected snapshot",
+      "allowed_dimensions": [
+        "all",
+        "category",
+        "segment",
+        "product"
+      ],
+      "scope": "",
+      "unit": "products",
+      "grain": "snapshot",
+      "value": null,
+      "status": "pending",
+      "evidence": [],
+      "notes": null
+    },
+    {
+      "id": "stockout_flag_pct",
+      "label": "Observed stockout flag share",
+      "source": "commerce.inventory",
+      "formula": "100*stockout_products/NULLIF(observed_products,0)",
+      "allowed_dimensions": [
+        "all",
+        "category",
+        "segment",
+        "product"
+      ],
+      "scope": "",
+      "unit": "percent",
+      "grain": "snapshot",
+      "value": null,
+      "status": "pending",
+      "evidence": [],
+      "notes": "Not the same as stock_on_hand=0"
+    },
+    {
+      "id": "overstock_products",
+      "label": "Overstock flagged products",
+      "source": "commerce.inventory",
+      "formula": "COUNT(*) FILTER (WHERE overstock_flag=true) at one selected snapshot",
+      "allowed_dimensions": [
+        "all",
+        "category",
+        "segment",
+        "product"
+      ],
+      "scope": "",
+      "unit": "products",
+      "grain": "snapshot",
+      "value": null,
+      "status": "pending",
+      "evidence": [],
+      "notes": null
+    },
+    {
+      "id": "reorder_products",
+      "label": "Reorder flagged products",
+      "source": "commerce.inventory",
+      "formula": "COUNT(*) FILTER (WHERE reorder_flag=true) at one selected snapshot",
+      "allowed_dimensions": [
+        "all",
+        "category",
+        "segment",
+        "product"
+      ],
+      "scope": "",
+      "unit": "products",
+      "grain": "snapshot",
+      "value": null,
+      "status": "pending",
+      "evidence": [],
+      "notes": null
+    },
+    {
+      "id": "returned_order_count",
+      "label": "Returned orders",
+      "source": "commerce.returns",
+      "formula": "COUNT(DISTINCT returns.order_id) by return_date window",
+      "allowed_dimensions": [
+        "all"
+      ],
+      "scope": "",
+      "unit": "orders",
+      "grain": "return_event",
+      "value": null,
+      "status": "pending",
+      "evidence": [],
+      "notes": null
+    },
+    {
+      "id": "avg_delivery_days",
+      "label": "Average shipment duration",
+      "source": "commerce.shipments + commerce.orders",
+      "formula": "AVG(delivery_date - ship_date) for rows with both dates",
+      "allowed_dimensions": [
+        "all"
+      ],
+      "scope": "",
+      "unit": "calendar_days",
+      "grain": "shipment",
+      "value": null,
+      "status": "pending",
+      "evidence": [],
+      "notes": "Filter via ship_date; no promised SLA in database"
+    },
+    {
+      "id": "avg_review_rating",
+      "label": "Average review rating",
+      "source": "commerce.reviews",
+      "formula": "AVG(rating)",
+      "allowed_dimensions": [
+        "all",
+        "category",
+        "product"
+      ],
+      "scope": "",
+      "unit": "rating_1_to_5",
+      "grain": "reviews",
+      "value": null,
+      "status": "pending",
+      "evidence": [],
+      "notes": "Filter by review_date; avoid representativeness claims"
+    }
+  ],
+  "dashboard": {
+    "layout": "fixed",
+    "columns": 2,
+    "widgets": [
+      {
+        "id": "inventory_kpis",
+        "type": "kpi_row",
+        "title": "Current inventory status",
+        "metric_ids": [
+          "observed_products",
+          "stock_on_hand",
+          "stockout_products",
+          "reorder_products"
+        ],
+        "x_dimension": "period",
+        "data": [],
+        "notes": ""
+      },
+      {
+        "id": "inventory_flag_distribution",
+        "type": "bar",
+        "title": "Flagged SKUs by category",
+        "metric_ids": [
+          "stockout_products",
+          "overstock_products",
+          "reorder_products"
+        ],
+        "x_dimension": "category",
+        "data": [],
+        "notes": "Fixed three flag series; counts may overlap"
+      },
+      {
+        "id": "stockout_product_table",
+        "type": "table",
+        "title": "Stockout product list",
+        "metric_ids": [
+          "stockout_products"
+        ],
+        "x_dimension": "product",
+        "data": [],
+        "notes": "Rows are only source-observed SKU snapshot records; observe validator output cap"
+      },
+      {
+        "id": "operations_kpis",
+        "type": "kpi_row",
+        "title": "Fulfillment and experience",
+        "metric_ids": [
+          "avg_delivery_days",
+          "returned_order_count",
+          "avg_review_rating"
+        ],
+        "x_dimension": "period",
+        "data": [],
+        "notes": ""
+      },
+      {
+        "id": "inventory_snapshots",
+        "type": "line",
+        "title": "Stockout-flag count by snapshot",
+        "metric_ids": [
+          "stockout_products"
+        ],
+        "x_dimension": "snapshot_date",
+        "data": [],
+        "notes": "Evaluate each snapshot independently, never sum across dates"
+      }
+    ]
+  },
+  "decisions": [
+    {
+      "id": "I01",
+      "title": "Observed stockout flags",
+      "condition": "stockout_products > 0",
+      "action": "Investigate flagged SKUs; policy compliance conclusion requires cited approved policy",
+      "required_metric_ids": [
+        "stockout_products"
+      ],
+      "triggered": null,
+      "evidence": [],
+      "priority": "fixed_rule_order",
+      "status": "pending"
+    },
+    {
+      "id": "I02",
+      "title": "Observed reorder flags",
+      "condition": "reorder_products > 0",
+      "action": "Review flagged SKUs against the approved reorder procedure; do not infer lead time or order quantity",
+      "required_metric_ids": [
+        "reorder_products"
+      ],
+      "triggered": null,
+      "evidence": [],
+      "priority": "fixed_rule_order",
+      "status": "pending"
+    },
+    {
+      "id": "I03",
+      "title": "Observed overstock flags",
+      "condition": "overstock_products > 0",
+      "action": "Inspect flagged overstock SKUs; do not infer carrying costs",
+      "required_metric_ids": [
+        "overstock_products"
+      ],
+      "triggered": null,
+      "evidence": [],
+      "priority": "fixed_rule_order",
+      "status": "pending"
+    },
+    {
+      "id": "I04",
+      "title": "No inventory flags",
+      "condition": "stockout_products = 0 AND reorder_products = 0 AND overstock_products = 0 AND complete snapshot coverage",
+      "action": "No flagged inventory exception in observed snapshot",
+      "required_metric_ids": [
+        "stockout_products",
+        "reorder_products",
+        "overstock_products"
+      ],
+      "triggered": null,
+      "evidence": [],
+      "priority": "fixed_rule_order",
+      "status": "pending"
+    }
+  ],
+  "runtime_output_template": {
+    "report_type": "inventory_operations",
+    "request": {
+      "period": {
+        "start": null,
+        "end_exclusive": null
+      },
+      "granularity": "month",
+      "dimension": "all",
+      "dimension_value": null
+    },
+    "metrics": [
+      {
+        "id": "observed_products",
+        "label": "Observed inventory products",
+        "source": "commerce.inventory",
+        "formula": "COUNT(DISTINCT product_id) at selected latest snapshot <= period end",
+        "allowed_dimensions": [
+          "all",
+          "category",
+          "segment",
+          "product"
+        ],
+        "scope": "",
+        "unit": "products",
+        "grain": "snapshot",
+        "value": null,
+        "status": "pending",
+        "evidence": [],
+        "notes": null
+      },
+      {
+        "id": "stock_on_hand",
+        "label": "Total stock on hand",
+        "source": "commerce.inventory",
+        "formula": "SUM(stock_on_hand) at one selected snapshot",
+        "allowed_dimensions": [
+          "all",
+          "category",
+          "segment",
+          "product"
+        ],
+        "scope": "",
+        "unit": "units",
+        "grain": "snapshot",
+        "value": null,
+        "status": "pending",
+        "evidence": [],
+        "notes": null
+      },
+      {
+        "id": "stockout_products",
+        "label": "Stockout flagged products",
+        "source": "commerce.inventory",
+        "formula": "COUNT(*) FILTER (WHERE stockout_flag=true) at one selected snapshot",
+        "allowed_dimensions": [
+          "all",
+          "category",
+          "segment",
+          "product"
+        ],
+        "scope": "",
+        "unit": "products",
+        "grain": "snapshot",
+        "value": null,
+        "status": "pending",
+        "evidence": [],
+        "notes": null
+      },
+      {
+        "id": "stockout_flag_pct",
+        "label": "Observed stockout flag share",
+        "source": "commerce.inventory",
+        "formula": "100*stockout_products/NULLIF(observed_products,0)",
+        "allowed_dimensions": [
+          "all",
+          "category",
+          "segment",
+          "product"
+        ],
+        "scope": "",
+        "unit": "percent",
+        "grain": "snapshot",
+        "value": null,
+        "status": "pending",
+        "evidence": [],
+        "notes": "Not the same as stock_on_hand=0"
+      },
+      {
+        "id": "overstock_products",
+        "label": "Overstock flagged products",
+        "source": "commerce.inventory",
+        "formula": "COUNT(*) FILTER (WHERE overstock_flag=true) at one selected snapshot",
+        "allowed_dimensions": [
+          "all",
+          "category",
+          "segment",
+          "product"
+        ],
+        "scope": "",
+        "unit": "products",
+        "grain": "snapshot",
+        "value": null,
+        "status": "pending",
+        "evidence": [],
+        "notes": null
+      },
+      {
+        "id": "reorder_products",
+        "label": "Reorder flagged products",
+        "source": "commerce.inventory",
+        "formula": "COUNT(*) FILTER (WHERE reorder_flag=true) at one selected snapshot",
+        "allowed_dimensions": [
+          "all",
+          "category",
+          "segment",
+          "product"
+        ],
+        "scope": "",
+        "unit": "products",
+        "grain": "snapshot",
+        "value": null,
+        "status": "pending",
+        "evidence": [],
+        "notes": null
+      },
+      {
+        "id": "returned_order_count",
+        "label": "Returned orders",
+        "source": "commerce.returns",
+        "formula": "COUNT(DISTINCT returns.order_id) by return_date window",
+        "allowed_dimensions": [
+          "all"
+        ],
+        "scope": "",
+        "unit": "orders",
+        "grain": "return_event",
+        "value": null,
+        "status": "pending",
+        "evidence": [],
+        "notes": null
+      },
+      {
+        "id": "avg_delivery_days",
+        "label": "Average shipment duration",
+        "source": "commerce.shipments + commerce.orders",
+        "formula": "AVG(delivery_date - ship_date) for rows with both dates",
+        "allowed_dimensions": [
+          "all"
+        ],
+        "scope": "",
+        "unit": "calendar_days",
+        "grain": "shipment",
+        "value": null,
+        "status": "pending",
+        "evidence": [],
+        "notes": "Filter via ship_date; no promised SLA in database"
+      },
+      {
+        "id": "avg_review_rating",
+        "label": "Average review rating",
+        "source": "commerce.reviews",
+        "formula": "AVG(rating)",
+        "allowed_dimensions": [
+          "all",
+          "category",
+          "product"
+        ],
+        "scope": "",
+        "unit": "rating_1_to_5",
+        "grain": "reviews",
+        "value": null,
+        "status": "pending",
+        "evidence": [],
+        "notes": "Filter by review_date; avoid representativeness claims"
+      }
+    ],
+    "dashboard": {
+      "layout": "fixed",
+      "columns": 2,
+      "widgets": [
+        {
+          "id": "inventory_kpis",
+          "type": "kpi_row",
+          "title": "Current inventory status",
+          "metric_ids": [
+            "observed_products",
+            "stock_on_hand",
+            "stockout_products",
+            "reorder_products"
+          ],
+          "x_dimension": "period",
+          "data": [],
+          "notes": ""
+        },
+        {
+          "id": "inventory_flag_distribution",
+          "type": "bar",
+          "title": "Flagged SKUs by category",
+          "metric_ids": [
+            "stockout_products",
+            "overstock_products",
+            "reorder_products"
+          ],
+          "x_dimension": "category",
+          "data": [],
+          "notes": "Fixed three flag series; counts may overlap"
+        },
+        {
+          "id": "stockout_product_table",
+          "type": "table",
+          "title": "Stockout product list",
+          "metric_ids": [
+            "stockout_products"
+          ],
+          "x_dimension": "product",
+          "data": [],
+          "notes": "Rows are only source-observed SKU snapshot records; observe validator output cap"
+        },
+        {
+          "id": "operations_kpis",
+          "type": "kpi_row",
+          "title": "Fulfillment and experience",
+          "metric_ids": [
+            "avg_delivery_days",
+            "returned_order_count",
+            "avg_review_rating"
+          ],
+          "x_dimension": "period",
+          "data": [],
+          "notes": ""
+        },
+        {
+          "id": "inventory_snapshots",
+          "type": "line",
+          "title": "Stockout-flag count by snapshot",
+          "metric_ids": [
+            "stockout_products"
+          ],
+          "x_dimension": "snapshot_date",
+          "data": [],
+          "notes": "Evaluate each snapshot independently, never sum across dates"
+        }
+      ]
+    },
+    "decisions": [
+      {
+        "id": "I01",
+        "title": "Observed stockout flags",
+        "condition": "stockout_products > 0",
+        "action": "Investigate flagged SKUs; policy compliance conclusion requires cited approved policy",
+        "required_metric_ids": [
+          "stockout_products"
+        ],
+        "triggered": null,
+        "evidence": [],
+        "priority": "fixed_rule_order",
+        "status": "pending"
+      },
+      {
+        "id": "I02",
+        "title": "Observed reorder flags",
+        "condition": "reorder_products > 0",
+        "action": "Review flagged SKUs against the approved reorder procedure; do not infer lead time or order quantity",
+        "required_metric_ids": [
+          "reorder_products"
+        ],
+        "triggered": null,
+        "evidence": [],
+        "priority": "fixed_rule_order",
+        "status": "pending"
+      },
+      {
+        "id": "I03",
+        "title": "Observed overstock flags",
+        "condition": "overstock_products > 0",
+        "action": "Inspect flagged overstock SKUs; do not infer carrying costs",
+        "required_metric_ids": [
+          "overstock_products"
+        ],
+        "triggered": null,
+        "evidence": [],
+        "priority": "fixed_rule_order",
+        "status": "pending"
+      },
+      {
+        "id": "I04",
+        "title": "No inventory flags",
+        "condition": "stockout_products = 0 AND reorder_products = 0 AND overstock_products = 0 AND complete snapshot coverage",
+        "action": "No flagged inventory exception in observed snapshot",
+        "required_metric_ids": [
+          "stockout_products",
+          "reorder_products",
+          "overstock_products"
+        ],
+        "triggered": null,
+        "evidence": [],
+        "priority": "fixed_rule_order",
+        "status": "pending"
+      }
+    ],
+    "data_quality": {
+      "coverage_start": null,
+      "coverage_end": null,
+      "partial_period": null,
+      "missing_or_unmatched_count": null,
+      "limitations": []
+    }
+  },
+  "report_specific_rules": {
+    "snapshot_selection": "Use MAX(snapshot_date) <= requested period end_exclusive with a recorded selected_snapshot_date; do not sum inventory stock across snapshots",
+    "fixed_policy_sources": [
+      "01 Inventory Management Policy Manual",
+      "02 SOP Cycle Count and Stock Adjustment",
+      "03 Policy Rules Registry",
+      "04 Inventory Control and Reorder Planner"
+    ],
+    "policy_claim_rule": "Policy conclusions may only use a cited clause with an explicit matching predicate; otherwise decision remains investigation only",
+    "known_issues": [
+      "days_of_supply is unvalidated/anomalous; intentionally excluded",
+      "fill_rate and sell_through_rate source definitions unresolved; intentionally excluded",
+      "stockout/reorder/overstock flags may overlap",
+      "No warehouse, supplier, supplier lead time, SLA, forecast, or purchase order data"
+    ]
+  }
+}

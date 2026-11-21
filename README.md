@@ -16,7 +16,11 @@ Quick start
 
 ```bash
 uv sync
+uv run python scripts/configure_python_cache.py
 ```
+
+The setup command directs bytecode from this checkout's `.venv` to
+`agent_cache/`. Run it again after recreating the virtual environment.
 
 2. Copy `.env.example` to `.env` and fill in the Supabase URL/secret, database
    URL, provider key, and demo credentials described in
@@ -32,10 +36,20 @@ PYTHONPATH=src uvicorn app.main:app --reload --env-file .env --port 8000
 
 Open `http://localhost:8000` for the Commerce decision-support dashboard.
 The UI reads the indexed corpus and live, role-scoped aggregates from Supabase.
-The default text LLM is `qwen/qwen3.8-27b` through Groq. Set
-`GROQ_MODEL=openai/gpt-oss-120b` to switch back. Both untuned models remain
-available as benchmark baselines (`qwen3` and `gpt_oss_120b`); changing the
-runtime default does not fine-tune either model or overwrite benchmark results.
+JEV selects whether to use Knowledge, SQL or both; the planner then creates the task plan.
+Planner models use `DECISION_PLANNER_LLM_PROVIDER` (auto selects Cloudflare when configured)
+and their component-specific model settings. Set it to `codex_cli` to use the authenticated
+local Codex CLI for planning. Final Auto answer synthesis uses
+`DECISION_RESPONSE_LLM_PROVIDER` (auto selects Cloudflare when configured) and
+its `DECISION_RESPONSE_CLOUDFLARE_MODEL` or `DECISION_RESPONSE_GROQ_MODEL`.
+For local development, `DECISION_RESPONSE_LLM_PROVIDER=codex_cli` uses the
+authenticated Codex CLI from an isolated `/tmp` working directory for final
+synthesis. `SQL_LLM_PROVIDER=codex_cli` uses it for SQL generation as well.
+These settings use the signed-in Codex plan allowance or credits instead of API
+billing; they do not eliminate model usage. Keep CLI providers off in deployments
+unless the CLI is installed and authenticated there. SQL otherwise uses
+`SQL_GROQ_MODEL` independently. Model changes do not fine-tune a model
+or overwrite benchmark results.
 Commerce competition data is synthetic; public operating references are external
 examples, not policy for the synthetic business.
 
@@ -67,8 +81,8 @@ backend still calls its private Docker service with internal service authenticat
 - src/core/database: PostgreSQL repositories and table persistence
 - Supabase `document_preprocessing_test` schema: isolated Upload Test runs and parser outputs
 - src/core/retrieval: role-scoped search; in Docker, the private Retrieval API owns translation, embedding, search and reranking
-- src/core/agents/{knowledge,sql,report}: specialist agent implementations; planning, execution, routing and synthesis live in src/core/agents/decision_support
-- src/core/rag: retrieval-grounded answer generation; src/core/sql_agent keeps compatibility imports for existing callers
+- src/core/agents/{knowledge,sql,report,dashboard,decision_support}: specialist agents and their helpers
+- src/core/agents/decision_support: planning, execution, routing and synthesis, including requests that combine knowledge and SQL
 - [CLI tools](tools/README.md): reproducible CLI entry points grouped by workstream; see the [repository map](docs/technical/repository-ownership.md) for ownership and shared contracts
 - docker-compose.yml: Agents API, private Retrieval API, document processing, chunking worker, embeddings and reranker; optional Nginx ingress. Frontend hosting remains on Vercel and data remains in Supabase.
 

@@ -68,7 +68,7 @@ const SalesPerformanceReport = (() => {
       label.textContent = format(value, vi); svg.append(label);
     }
     widget.metric_ids.forEach((id, series) => {
-      const color = ['#287b78','#a15c20','#6951a8'][series % 3];
+      const color = ['#0a66d8','#64748b','#7aa8e8'][series % 3];
       let segment = [];
       const flush = () => {
         if (segment.length) svg.append(svgNode('polyline', { points: segment.join(' '), fill: 'none', stroke: color, 'stroke-width': 2 }));

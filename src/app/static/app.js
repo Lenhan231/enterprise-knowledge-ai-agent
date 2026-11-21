@@ -2076,32 +2076,46 @@ function renderRunDetails(data) {
 // `revealAfter` (the source panel, then each card) appears one by one after the text is complete.
 // Skipped for reduced motion.
 function typeOutText(element, revealAfter = []) {
+  // Word reveal after 21st.dev AI Response (SmoothUI): each word blurs in as it "arrives"; a citation
+  // chip is one token and pops in. 2–6 s in total, punctuation and whitespace stay plain text.
   if (!element || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
   const nodes = [];
-  while (walker.nextNode()) nodes.push([walker.currentNode, walker.currentNode.nodeValue]);
-  const total = nodes.reduce((sum, [, text]) => sum + text.length, 0);
-  if (!total) return;
-  for (const [node] of nodes) node.nodeValue = "";
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  const tokens = [];
+  const chips = new Set();
+  for (const node of nodes) {
+    const chip = node.parentElement?.closest(".cite-ref");
+    if (chip) {
+      if (!chips.has(chip)) { chips.add(chip); chip.classList.add("ai-pending"); tokens.push([chip, "ai-pop"]); }
+      continue;
+    }
+    const fragment = document.createDocumentFragment();
+    for (const part of node.nodeValue.split(/(\s+)/)) {
+      if (!part) continue;
+      if (/^\s+$/.test(part) || !/[\p{L}\p{N}]/u.test(part)) { fragment.append(part); continue; }
+      const word = document.createElement("span");
+      word.className = "ai-word ai-pending";
+      word.textContent = part;
+      fragment.append(word);
+      tokens.push([word, "ai-in"]);
+    }
+    node.replaceWith(fragment);
+  }
+  if (!tokens.length) return;
   for (const item of revealAfter) item.hidden = true;
   element.setAttribute("aria-busy", "true");
-  const seconds = Math.min(10, Math.max(3, total / 60));
-  const perFrame = Math.max(1, Math.ceil(total / (seconds * 60)));
+  const perFrame = Math.max(1, Math.ceil(tokens.length / (Math.min(6, Math.max(2, tokens.length / 25)) * 60)));
   let index = 0;
-  let shown = 0;
   const step = () => {
-    let budget = perFrame;
-    while (budget > 0 && index < nodes.length) {
-      const [node, text] = nodes[index];
-      const take = Math.min(budget, text.length - shown);
-      node.nodeValue = text.slice(0, shown + take);
-      shown += take;
-      budget -= take;
-      if (shown >= text.length) { index += 1; shown = 0; }
+    for (const end = Math.min(tokens.length, index + perFrame); index < end; index += 1) {
+      const [token, name] = tokens[index];
+      token.classList.remove("ai-pending");
+      token.classList.add(name);
     }
-    if (index < nodes.length && element.isConnected) requestAnimationFrame(step);
+    if (index < tokens.length && element.isConnected) requestAnimationFrame(step);
     else {
-      for (const [node, text] of nodes) node.nodeValue = text;
+      for (const [token] of tokens) token.classList.remove("ai-pending");
       element.removeAttribute("aria-busy");
       revealAfter.forEach((item, position) => setTimeout(() => { item.hidden = false; requestAnimationFrame(() => pruneCitationToggles(item.closest(".answer-panel") || item)); }, 500 + position * 400));
     }

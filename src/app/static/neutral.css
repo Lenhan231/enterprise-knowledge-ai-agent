@@ -1,0 +1,72 @@
+/* Neutral layer (direction 3, 21 Nov 2026): loads after redesign.css and swaps its tokens. White and light grey, one
+   blue for citations and the primary action, green only for "verified". No glass, no colour fields, one sans
+   (Inter) for interface and answers. Remove this file's <link> in index.html to return to ink & jade. */
+
+:root{
+  --font:"Inter","Be Vietnam Pro",system-ui,sans-serif;
+  --serif:var(--font);
+  --bg:#ffffff;--surface:#ffffff;--surface-2:#f5f5f7;--surface-3:#ededf0;
+  --line:#e8e8ed;--line-strong:#d2d2d7;
+  --ink:#1d1d1f;--ink-2:#424245;--muted:#6e6e73;--faint:#6e6e73;
+  --accent:#0a66d8;--accent-ink:#0752ad;--accent-soft:#eaf2fd;--accent-line:#bcd6f6;--on-accent:#ffffff;
+  --ok:#1a7f37;--ok-ink:#116329;--ok-soft:#e9f6ec;--ok-line:#b7e1c1;
+  --warn:#a15c07;--warn-ink:#7a4505;--warn-soft:#fdf2e2;--warn-line:#f0d3a8;
+  --danger:#c4314b;--danger-ink:#9b2238;--danger-soft:#fdecef;--danger-line:#f3bfca;
+  --cited:#fff3b0;
+  --radius-panel:22px;--radius-card:16px;--radius-control:12px;
+  --shadow:none;
+  --shadow-float:0 1px 2px rgba(0,0,0,.04);
+  --ease-out-word:cubic-bezier(.23,1,.32,1);
+}
+:root[data-theme="dark"]{
+  --bg:#161618;--surface:#1c1c1e;--surface-2:#232325;--surface-3:#2c2c2e;
+  --line:#2c2c2e;--line-strong:#3a3a3c;
+  --ink:#f5f5f7;--ink-2:#d1d1d6;--muted:#a1a1a6;--faint:#98989d;
+  --accent:#4c9dff;--accent-ink:#8cc0ff;--accent-soft:#10294a;--accent-line:#1d4577;--on-accent:#00172f;
+  --ok:#3fcf6b;--ok-ink:#7ee29b;--ok-soft:#102b19;--ok-line:#1e4d2c;
+  --warn:#f0a845;--warn-ink:#f6c784;--warn-soft:#2e2312;--warn-line:#5a4220;
+  --danger:#ff6b81;--danger-ink:#ffa3b1;--danger-soft:#33161c;--danger-line:#5e2531;
+  --cited:#4a4116;
+  --shadow-float:none;
+}
+
+/* no colour fields and no glass: controls are plain surfaces */
+:root body::before{display:none}
+:root .workspace-sidebar,:root #ask-form,:root .general-chat-composer,:root .monitoring-tabs{-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none}
+:root #ask-form::before,:root .general-chat-composer::before,:root .monitoring-tabs::before{display:none}
+/* the sidebar is a light grey rail in both themes (redesign.css re-scopes it to dark jade; undo that) */
+:root:not([data-theme="dark"]) body .workspace-sidebar,:root[data-theme="dark"] body .workspace-sidebar{background:var(--surface-2);border-right:0;color:var(--ink)}
+:root:not([data-theme="dark"]) body .workspace-sidebar{--ink:#1d1d1f;--ink-2:#424245;--muted:#6e6e73;--faint:#6e6e73;--line:#e8e8ed;--surface:#ffffff;--surface-2:#f5f5f7;--surface-3:#e8e8ed;--accent-soft:#eaf2fd;--accent-ink:#0752ad;--accent:#0a66d8;--on-accent:#ffffff}
+:root[data-theme="dark"] body .workspace-sidebar{--line:#2c2c2e;--surface-3:#2c2c2e}
+:root .workspace-sidebar .workspace-tab.active{background:var(--surface-3);color:var(--ink)}
+:root .workspace-sidebar .workspace-tab.active::before{display:none}
+:root .general-chat-composer,:root #ask-form{background:var(--surface-2);border:0;border-radius:18px}
+:root .primary-button,:root .submit-query-btn,:root #ask-button,:root #report-agent-submit{border-radius:999px;font-weight:500}
+
+/* the question is a grey bubble on the right; the answer reads as plain text below it */
+:root .general-chat .chat-turn-question{justify-content:flex-end;padding-left:0}
+:root .general-chat .chat-turn-question p{max-width:520px;padding:10px 16px;border-radius:18px;background:var(--surface-2);color:var(--ink);font:400 16px/1.5 var(--font);letter-spacing:0}
+:root .general-chat .chat-turn .answer-text{color:var(--ink);font:400 17px/1.7 var(--font)}
+:root .general-chat .chat-turn .citation>p{font:400 14px/1.6 var(--font)}
+:root .general-chat-welcome h3{font:700 36px/1.15 var(--font);letter-spacing:-.035em}
+:root .chat-library-q{font:400 15.5px/1.4 var(--font)}
+
+/* citations: small round pills after 21st.dev AI Response */
+:root .cite-ref,:root .general-chat .chat-turn .answer-text .cite-ref{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;margin:0 0 0 2px;padding:0 4px;border:1px solid var(--line);border-radius:999px;background:var(--surface-2);color:var(--muted);font:500 10px/1 var(--font);vertical-align:super;text-decoration:none}
+:root .cite-ref:hover,:root .cite-ref:focus-visible,:root .cite-ref.is-pointed,
+:root .general-chat .chat-turn .answer-text .cite-ref:hover,:root .general-chat .chat-turn .answer-text .cite-ref:focus-visible,
+:root .general-chat .chat-turn .answer-text .cite-ref.is-pointed{border-color:var(--accent);background:var(--accent);color:var(--on-accent)}
+:root .general-chat .chat-turn .citations{border-top-color:var(--line)}
+:root .cited-sentence{background:var(--cited);color:var(--ink);border-radius:3px;padding:0 2px}
+
+/* "verified" is the one green element: a small pill */
+:root .general-chat .chat-turn .answer-verified{display:inline-flex;align-items:center;gap:6px;margin:0 0 12px;padding:5px 12px;border-radius:999px;background:var(--ok-soft);color:var(--ok-ink);font:500 13px/1.2 var(--font)}
+
+/* word reveal (typeOutText): blur 4px, opacity 0, 2px down -> rest in 0.22 s, as in AI Response */
+:root .ai-word{display:inline-block}
+:root .ai-pending{opacity:0}
+:root .ai-in{animation:aiWordIn .22s var(--ease-out-word) both}
+:root .ai-pop{animation:aiPillIn .25s cubic-bezier(.34,1.3,.64,1) both}
+@keyframes aiWordIn{from{opacity:0;filter:blur(4px);transform:translateY(2px)}to{opacity:1;filter:none;transform:none}}
+@keyframes aiPillIn{0%{opacity:0;transform:scale(.6)}75%{opacity:1;transform:scale(1.04)}100%{transform:none}}
+@media (prefers-reduced-motion:reduce){:root .ai-in,:root .ai-pop{animation:none}:root .ai-pending{opacity:1}}

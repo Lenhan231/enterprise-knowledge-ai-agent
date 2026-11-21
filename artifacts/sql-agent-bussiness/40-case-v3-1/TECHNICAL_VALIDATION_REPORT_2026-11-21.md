@@ -108,3 +108,40 @@ The user confirmed that all 40 cases had already been reviewed and approved in t
 The user later reported that a friend had also reviewed the same 40 cases and selected `APPROVE` for all before the HTML reset. Reviewer 2's 40/40 record was logged at `2026-11-21T13:56:13Z` with synthetic slot label `friend-of-Lenhan231`; the actual name/ID, export, original per-case timestamps, and rationales were not supplied. Both records are hash-bound to the exact v3.1 case, Gold SQL, and provisional result files. Reviewer 2's identity and independence are user-attested and not independently verifiable from this artifact. Adjudication remains pending, so the cohort stays unfrozen and unexecuted.
 
 Regression: `test_recovered_reviewer_approval_is_linked_and_does_not_freeze_cohort` verifies both sets of 40 decisions, reviewer record hashes, source artifact hashes, pending adjudication, and no-freeze/no-execution gates.
+
+## Scorer v3.2 addendum
+
+This is a scoring-only revision for PR #61. It does not change `cases_v3_1_draft.json`, `gold_sql_v3_1_draft.json`, `gold_results_v3_1_provisional.json`, reviewer records, or historical v3/v3.1 run output. The case-set, Gold-definition, and Gold-results hashes therefore remain the values recorded in the draft manifest. The scorer/protocol version and their source hashes are new and recorded separately in `scoring_artifacts_sha256`.
+
+Changes:
+
+- Canonical columns align by case-insensitive exact name, case-approved alias, or identical SQLGlot projection expression with resolved relation/column lineage. Ambiguous lineage returns `REVIEW_REQUIRED`; unknown columns are not fuzzy-matched. Star-only aggregates do not establish a field alias.
+- Business values compare independently of column order and row order. Explicit business keys are used only when declared; otherwise maximum bipartite multiset matching preserves duplicates and applies Decimal tolerance safely. NULL matches only NULL. Ordered-case row sequence is measured separately as output-contract compliance.
+- Business Result Accuracy ignores unapproved extra output columns but compares all canonical values/rows. Output Contract Compliance fails for unapproved extras, missing/duplicate canonical fields, violated row limits, and incorrect ordered output. Business End-to-End Accuracy still requires a linked independent SQL audit PASS and both result/contract PASS.
+- The audit exporter accepts reviewer-supplied decisions and requires non-empty evidence, auditor ID/version, exact case-set linkage, and observed SQL/parameters. Export time is not represented as original review time; output is explicitly unauthenticated and cannot establish reviewer identity or independence.
+
+Sample scorer outcomes from deterministic synthetic fixtures:
+
+| Fixture | Business Result | Output Contract | Reason |
+|---|---|---|---|
+| Reordered columns and approved alias | PASS | PASS | `strict_schema_match=false`; canonical field mapping is preserved. |
+| Same resolved SQL projection under a different label | PASS | PASS | `canonical_column_mapping` binds the alias to Gold lineage. |
+| One unknown label matches two Gold projections | REVIEW_REQUIRED | REVIEW_REQUIRED | `ambiguous_sql_projection_lineage`. |
+| Correct required values plus an unapproved `trace_id` column | PASS | FAIL | `unexpected_extra_columns`. |
+| NULL versus zero | FAIL | PASS for unordered output shape | `business_result_rows_mismatch`; NULL is not coerced. |
+| Independent review rejects aggregation/grouping/JOIN/snapshot/NULL/alias mutation | Gold rows can still PASS | End-to-end FAIL | audit decision `FAIL` gates semantic success; Agent boolean is ignored. |
+
+The v3.2 regression suite runs all 30 stored execute-case Gold result sets locally, without invoking the SQL Agent or re-querying the held-out cohort. This validates scorer compatibility with the provisional references; it is not a fresh database audit, reviewer approval, or 40-case Agent run.
+
+Executed test evidence for the scorer v3.2 revision:
+
+| Command | Result |
+|---|---|
+| `PYTHONPATH=src uv run --locked --project . python -m unittest discover -s tests/sql -p 'test_benchmark_v3_1_contract.py' -v` | PASS: 39 run, 39 passed. Includes all 30 stored Gold result sets and synthetic mapping/tolerance/export cases. |
+| `PYTHONPATH=src uv run --locked --project . python -m unittest discover -s artifacts/sql-agent-bussiness/tests -q` | PASS: 45 run, 45 passed. |
+| `PYTHONPATH=src uv run --locked --project . python -m unittest discover -s tests/sql -q` | PASS: 562 run, 552 passed, 10 skipped. |
+| `PYTHONPATH=src:artifacts/sql-agent-bussiness/40-case-preparation uv run --locked --project . python -m unittest discover -s artifacts/sql-agent-bussiness/40-case-v3 -p 'test_*.py' -q` | FAIL: 55 run, 54 passed, 1 historical hash assertion. `test_freeze_manifest_is_explicitly_draft_and_hashes_review_artifacts` expected `test_v3_artifacts.py` SHA `9ef7240b…`, current file is `96adc0d9…`. The v3 historical manifest and test files were left unchanged. |
+
+The focused v3.2 and SQL suites are fully passing. The legacy v3 artifact suite remains red because its old manifest pins the test source file's previous bytes; this does not indicate a scorer v3.2 assertion failure, and the historical manifest was not rewritten. The 40-case SQL Agent benchmark, live database reference generation, and external model calls were not run for this revision.
+
+Limitations remain: SQL expression lineage only supports straightforward SELECT projections and is not full-query equivalence; independent semantic decisions remain human-supplied plain JSON without signatures; the v3.1 case set does not declare explicit business keys, so its comparisons use multisets; ordered output with mismatched business rows is `REVIEW_REQUIRED`; and numeric tolerance is a case-level rule rather than a typed per-column schema. The static HTML review UI still stores live clicks in browser-local storage. The two logged review records are the durable source for this session, with Reviewer 2 explicitly marked user-reported.

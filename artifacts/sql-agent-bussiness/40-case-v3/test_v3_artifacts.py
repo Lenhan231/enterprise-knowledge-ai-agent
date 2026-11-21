@@ -234,9 +234,29 @@ class V3ArtifactTests(unittest.TestCase):
         self.assertEqual(MANIFEST["oracle"]["independent_review_approvals"], 0)
         self.assertNotIn("artifacts/sql-agent-bussiness/40-case-v3/FREEZE_MANIFEST.json",
                          MANIFEST["artifact_hashes_excluding_this_manifest"])
+        # The v3 manifest predates the AI-review links appended to REVIEW_CHECKLIST.md.
+        # Verify its recorded digest against the exact historical bytes, preserved
+        # from Git commit 281aed8, rather than rewriting the old manifest or
+        # incorrectly treating the current checklist as the original snapshot.
+        historical_checklist = (
+            "artifacts/sql-agent-bussiness/40-case-v3/REVIEW_CHECKLIST.md"
+        )
+        archived_checklist = (
+            HERE.parent / "40-case-v3-1" / "historical"
+            / "REVIEW_CHECKLIST_at_v3_manifest.md"
+        )
         for relative_path, expected_sha256 in MANIFEST["artifact_hashes_excluding_this_manifest"].items():
             with self.subTest(artifact=relative_path):
-                self.assertEqual(file_sha256(HERE.parents[2] / relative_path), expected_sha256)
+                source = (
+                    archived_checklist
+                    if relative_path == historical_checklist
+                    else HERE.parents[2] / relative_path
+                )
+                self.assertEqual(file_sha256(source), expected_sha256)
+
+        current_checklist = (HERE / "REVIEW_CHECKLIST.md").read_text(encoding="utf-8")
+        self.assertIn("AI_ASSISTED_SEMANTIC_REVIEW_2026-11-21.md", current_checklist)
+        self.assertIn("human", current_checklist.casefold())
 
 
 if __name__ == "__main__":

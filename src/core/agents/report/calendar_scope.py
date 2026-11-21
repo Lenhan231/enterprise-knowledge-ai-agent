@@ -24,7 +24,8 @@ _VI_SCOPE = {
 
 def calendar_text(text):
     text = re.sub(r'\b(?:' + '|'.join(_VI_SCOPE) + r')\b', lambda match: _VI_SCOPE[match[0]], text)
-    text = re.sub(r'\b(từ|tu|đến|den|tới|toi)\s+(?=(?:(?:tháng|thang)\s+\d|(?:(?:năm|nam)\s+)?(?:19|20)\d{2}\b))',
+    period = r'(?:tháng|thang)\s+\d|(?:(?:năm|nam)\s+)?(?:19|20)\d{2}\b|' + _MONTH_TOKEN
+    text = re.sub(r'\b(từ|tu|đến|den|tới|toi)\s+(?=' + period + ')',
                   lambda match: 'from ' if match[1] in {'từ', 'tu'} else 'to ', text)
     text = re.sub(r'\b(from|to)\s+(?:năm|nam)\s+(?=(?:19|20)\d{2}\b)', r'\1 ', text)
     return _VI_MONTH.sub(lambda match: calendar.month_name[int(match[1])].lower() + ' ', text)

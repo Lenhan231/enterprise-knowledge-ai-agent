@@ -30,6 +30,8 @@
     'Enter a report title before saving.': 'Hãy nhập tiêu đề trước khi lưu.',
     'This saved report changed. Reopen it before downloading.': 'Báo cáo đã thay đổi. Hãy mở lại trước khi tải.',
     'PDF download failed. Please retry.': 'Chưa tải được PDF. Vui lòng thử lại.',
+    'Inventory sections, metrics, widgets and decision rules use the fixed contract. You can edit the saved report title.':
+      'Báo cáo tồn kho dùng bố cục, chỉ số, biểu đồ và quy tắc cố định. Bạn có thể sửa tiêu đề.',
   };
   const copy = text => vi && Object.hasOwn(copyVi, text) ? copyVi[text] : text;
   const translated = [...el('reports-workspace').querySelectorAll('[data-report-vi]')]
@@ -98,7 +100,7 @@
   function editor() {
     const root = el('rw-edit-panel'); root.replaceChildren();
     if (selected.report.report_type === 'inventory_operations') {
-      root.append(element('p','Inventory sections, metrics, widgets and decision rules use the fixed contract. You can edit the saved report title.'));
+      root.append(element('p',copy('Inventory sections, metrics, widgets and decision rules use the fixed contract. You can edit the saved report title.')));
       return;
     }
     const defaults = SalesPerformanceReport.defaultPresentation(selected.report).chart_types;

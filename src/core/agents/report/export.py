@@ -10,7 +10,7 @@ import fitz
 from core.agents.report.presentation import SECTION_TITLES, calendar_rows, comparison_metrics, data_notes, decision_text, default_chart_types, display_value, observations
 
 
-def chart_svg(widget, metrics, kind, granularity):
+def chart_svg(widget, metrics, kind, granularity, *, vi=False):
     rows = widget['data']
     values = [row[key] for row in rows for key in widget['metric_ids'] if row[key] is not None]
     if not values:
@@ -45,10 +45,11 @@ def chart_svg(widget, metrics, kind, granularity):
         if kind == 'line': flush()
         parts.append(f'<text x="65" y="{225 + 11*series}" font-family="sans-serif" font-size="10" fill="{color}">{escape(metrics[key]["label"])}</text>')
     for i in (range(len(rows)) if len(rows) <= 12 else sorted({0, len(rows)//2, len(rows)-1})):
-        label = str(rows[i][widget['x_dimension']] or 'Unknown')
+        label = str(rows[i][widget['x_dimension']] or ('Chưa rõ' if vi else 'Unknown'))
         if widget['x_dimension'] == 'period': label = label[:7]
         parts.append(f'<text x="{x(i)}" y="207" text-anchor="middle" font-family="sans-serif" font-size="9">{escape(label)}</text>')
-    parts.append(f'<text x="4" y="30" font-family="sans-serif" font-size="9">{high:,.0f}</text><text x="4" y="185" font-family="sans-serif" font-size="9">{low:,.0f}</text></svg>')
+    upper, lower = (f'{value:,.0f}'.replace(',', '.' if vi else ',') for value in (high, low))
+    parts.append(f'<text x="4" y="30" font-family="sans-serif" font-size="9">{upper}</text><text x="4" y="185" font-family="sans-serif" font-size="9">{lower}</text></svg>')
     return ''.join(parts)
 
 
@@ -139,7 +140,7 @@ def export_pdf(document):
                             parts.append(f'<tr><td>{escape(str(dimension if dimension is not None else label("Unknown", "Chưa rõ")))}</td>{cells}</tr>')
                         parts.append('</table>')
                     else:
-                        svg = chart_svg(widget, metrics, kind, report['request']['granularity'])
+                        svg = chart_svg(widget, metrics, kind, report['request']['granularity'], vi=vi)
                         if svg:
                             chart_count += 1
                             filename = widget['id'] + '.svg'
@@ -171,12 +172,17 @@ def export_pdf(document):
 
 def inventory_parts(document, directory):
     from core.agents.report.inventory_operations import SECTION_TITLES
+    from core.agents.report.labels import INVENTORY_COPY_VI, uses_vietnamese_labels
     from core.agents.report.presentation import inventory_source_name, inventory_display_value
     report = document.report
+    vi = uses_vietnamese_labels(report)
+    def copy(text):
+        return INVENTORY_COPY_VI[text] if vi else text
+
     metrics = {m['id']: m for m in report['metrics']}
     period = report['request']['period']
     end = date.fromisoformat(period['end_exclusive']) - timedelta(days=1)
-    parts = [f'<h1>{escape(document.title)}</h1><p class="subtitle">{period["start"]} to {end}</p>']
+    parts = [f'<h1>{escape(document.title)}</h1><p class="subtitle">{period["start"]} {"đến" if vi else "to"} {end}</p>']
     sources, widget_sources = {}, {}
 
     def add_source(identifier, source):
@@ -192,7 +198,7 @@ def inventory_parts(document, directory):
             identifier, widget, description = match.groups()
             widget_sources[widget] = [identifier]
             add_source(identifier, {'source_table': description.split(';')[0],
-                'title': next((w['title'] for w in report['dashboard']['widgets'] if w['id'] == widget), 'Chart source'),
+                'title': next((w['title'] for w in report['dashboard']['widgets'] if w['id'] == widget), copy('Chart source')),
                 'filters': {} if widget == 'inventory_snapshots' else {'snapshot_date': report['data_quality']['coverage_end']}})
     for item in document.inventory_context.documents:
         add_source(item.citation_id, {**item.model_dump(), 'source_table': item.source})
@@ -205,33 +211,38 @@ def inventory_parts(document, directory):
         return cite_ids([e['query_id'] for e in evidence])
 
     def metric_table(identifiers):
-        return ('<table class="inventory-table"><tr><th>Measure</th><th>Value</th></tr>' + ''.join(
+        return (f'<table class="inventory-table"><tr><th>{copy("Measure")}</th><th>{copy("Value")}</th></tr>' + ''.join(
             '<tr><td>' + escape(metrics[key]['label']) + cite(metrics[key]['evidence']) + '</td><td>' +
             escape(inventory_display_value(metrics[key])) + '</td></tr>' for key in identifiers) + '</table>')
 
     notes = data_notes(report)
+    snapshot_prefix = copy('Selected snapshot:')
     ownership = {'inventory_kpis': 'snapshot_scorecard', 'inventory_flag_distribution': 'product_risks',
                  'stockout_product_table': 'product_risks', 'operations_kpis': 'fulfillment_and_returns', 'inventory_snapshots': 'fulfillment_and_returns'}
     for section, title in SECTION_TITLES.items():
         if section == 'data_quality':
-            parts.append('<h2>Validation summary</h2>')
+            parts.append(f'<h2>{copy("Validation summary")}</h2>')
             parts.extend('<p class="note">' + escape(text) + '</p>' for text in document.insights['validation_summary'])
             parts.extend('<p class="note">' + escape(text) + '</p>' for text in notes
-                         if any(marker in text.lower() for marker in ('unavailable', 'could not', 'access is restricted', 'may be omitted')))
-            parts.append('<p class="note">Source definitions and limitations remain in the saved report. Missing values are never treated as zero.</p>')
+                         if (not text.startswith(snapshot_prefix) if vi else
+                             any(marker in text.lower() for marker in ('unavailable', 'could not', 'access is restricted', 'may be omitted'))))
+            parts.append(f'<p class="note">{copy("Source definitions and limitations remain in the saved report. Missing values are never treated as zero.")}</p>')
             continue
-        parts.append(f'<h2{" class=new-page" if section in {"product_risks", "fulfillment_and_returns"} else ""}>{escape(title)}</h2>')
+        parts.append(f'<h2{" class=new-page" if section in {"product_risks", "fulfillment_and_returns"} else ""}>{escape(copy(title))}</h2>')
         if section == 'operations_summary':
-            parts.append('<p class="note">Synthetic commerce demonstration data; source completeness and current business balances are not independently certified.</p>')
-            parts.extend(f'<p>{escape(note)}</p>' for note in notes if note.startswith('Selected snapshot:'))
-            parts.append('<p>' + ('This annual report uses one inventory snapshot. It does not add stock balances across months.'
-                         if report['request']['granularity'] == 'year' else 'Inventory figures describe one snapshot.') + '</p>')
-            parts.append('<p>Available fulfillment, return and review records are filtered to the requested reporting dates; complete transaction coverage is unverified.</p>')
+            parts.append(f'<p class="note">{copy("Synthetic commerce demonstration data; source completeness and current business balances are not independently certified.")}</p>')
+            parts.extend(f'<p>{escape(note)}</p>' for note in notes if note.startswith(snapshot_prefix))
+            parts.append('<p>' + copy('This annual report uses one inventory snapshot. It does not add stock balances across months.'
+                                      if report['request']['granularity'] == 'year' else 'Inventory figures describe one snapshot.') + '</p>')
+            parts.append(f'<p>{copy("Available fulfillment, return and review records are filtered to the requested reporting dates; complete transaction coverage is unverified.")}</p>')
             if metrics['stock_on_hand']['value'] is not None and metrics['observed_products']['value'] is not None:
-                parts.append(f'<p>The selected snapshot records {inventory_display_value(metrics["stock_on_hand"])} across {display_value(metrics["observed_products"])} observed products.' +
+                stock, products = inventory_display_value(metrics['stock_on_hand']), display_value(metrics['observed_products'])
+                summary = (f'Tại ngày chốt có {stock} tồn kho trên {products} sản phẩm được ghi nhận.' if vi
+                           else f'The selected snapshot records {stock} across {products} observed products.')
+                parts.append(f'<p>{summary}' +
                              cite([*metrics['stock_on_hand']['evidence'], *metrics['observed_products']['evidence']]) + '</p>')
             else:
-                parts.append('<p>Snapshot totals are unavailable for this reporting period. Check the validation summary for missing inputs.</p>')
+                parts.append(f'<p>{copy("Snapshot totals are unavailable for this reporting period. Check the validation summary for missing inputs.")}</p>')
         for widget in report['dashboard']['widgets']:
             if ownership[widget['id']] != section:
                 continue
@@ -244,31 +255,31 @@ def inventory_parts(document, directory):
                 parts.append(metric_table(widget['metric_ids']))
             elif widget['type'] == 'table':
                 if widget['data']:
-                    parts.append('<table class="inventory-table"><tr><th>Product</th><th>Stockout flags</th></tr>')
+                    parts.append(f'<table class="inventory-table"><tr><th>{copy("Product")}</th><th>{copy("Stockout flags")}</th></tr>')
                     parts.extend(f'<tr><td>{escape(str(row["product"]))}</td><td>{row["stockout_products"]}</td></tr>' for row in widget['data'])
                     parts.append('</table>')
                 else:
-                    parts.append('<p>' + ('No stockout flags were observed at the selected snapshot.' if metrics['stockout_products']['value'] == 0
+                    parts.append('<p>' + copy('No stockout flags were observed at the selected snapshot.' if metrics['stockout_products']['value'] == 0
                                  else 'The stockout product list is unavailable for this scope.') + '</p>')
             else:
-                svg = chart_svg(widget, metrics, widget['type'], report['request']['granularity'])
+                svg = chart_svg(widget, metrics, widget['type'], report['request']['granularity'], vi=vi)
                 if svg:
                     filename = widget['id'] + '.svg'
                     Path(directory, filename).write_text(svg, encoding='utf-8')
                     parts.append(f'<img src="{filename}" width="490" height="178"/>')
                 else:
-                    parts.append('<p>No chart observations available.</p>')
+                    parts.append(f'<p>{copy("No chart observations available.")}</p>')
             if widget['id'] == 'inventory_flag_distribution':
-                parts.append('<p class="note">A product may carry more than one flag.</p>')
+                parts.append(f'<p class="note">{copy("A product may carry more than one flag.")}</p>')
             if widget['id'] == 'inventory_snapshots':
-                parts.append('<p class="note">Each point is an independent snapshot; stock balances are never added across dates.</p>')
+                parts.append(f'<p class="note">{copy("Each point is an independent snapshot; stock balances are never added across dates.")}</p>')
             if figure:
                 parts.append('</div>')
         if section == 'snapshot_scorecard':
             parts.append(metric_table(['stockout_flag_pct', 'overstock_products']))
         if section == 'policy_evidence':
             if document.inventory_context.documents:
-                parts.append('<p>Quoted policy context. These passages do not by themselves verify approval, effective dates or compliance.</p>')
+                parts.append(f'<p>{copy("Quoted policy context. These passages do not by themselves verify approval, effective dates or compliance.")}</p>')
                 for item in document.inventory_context.documents:
                     parts.append('<blockquote>' + escape(item.content) + cite_ids([item.citation_id]) + '</blockquote>')
             else:
@@ -276,26 +287,27 @@ def inventory_parts(document, directory):
                 message = ('Policy evidence is unavailable because document access is restricted.' if status == 'access_denied' else
                            'No matching authorized inventory policy passage was retrieved.' if status == 'no_evidence' else
                            'Policy evidence could not be retrieved. No policy-compliance conclusion has been added.')
-                parts.append('<p>' + message + '</p>')
+                parts.append('<p>' + copy(message) + '</p>')
         if section == 'fixed_decisions':
             actions = document.insights['actions']
             if not actions:
-                parts.append('<p>No recommendation can be confirmed. Verify the selected snapshot and flag inputs before acting.</p>')
+                parts.append(f'<p>{copy("No recommendation can be confirmed. Verify the selected snapshot and flag inputs before acting.")}</p>')
             for action in actions:
                 parts.append('<div class="inventory-decision"><h3>' + escape(action['title']) + cite_ids(action['citations']) +
-                             '</h3><p>Why review this: ' + escape(action['why']) + '</p><p>Recommended next step: ' + escape(action['action']) + '</p></div>')
+                             f'</h3><p>{copy("Why review this:")} ' + escape(action['why']) +
+                             f'</p><p>{copy("Recommended next step:")} ' + escape(action['action']) + '</p></div>')
             for rule in report['decisions']:
                 if rule['triggered'] is not True:
                     parts.append('<h3>' + escape(rule['title']) + '</h3><p class="note">' + escape(decision_text(rule, report)) + '</p>')
-    parts.append('<h2>Sources</h2>')
+    parts.append(f'<h2>{copy("Sources")}</h2>')
     for source in sources.values():
-        description = ('Role-authorized policy passage.' if source.get('source_type') == 'document' else source.get('title') or
-                       ('Selected snapshot: ' + source['filters']['snapshot_date'] + '.' if source.get('filters', {}).get('snapshot_date') else
-                        'Source queried for the requested reporting dates.'))
+        description = (copy('Role-authorized policy passage.') if source.get('source_type') == 'document' else source.get('title') or
+                       (snapshot_prefix + ' ' + source['filters']['snapshot_date'] + '.' if source.get('filters', {}).get('snapshot_date') else
+                        copy('Source queried for the requested reporting dates.')))
         parts.append(f'<p id="inventory-source-{source["number"]}" class="note">[{source["number"]}] ' +
-                     escape(inventory_source_name(source['source_table'])) + '. ' + escape(description) + '</p>')
+                     escape(inventory_source_name(source['source_table'], vi=vi)) + '. ' + escape(description) + '</p>')
     if not sources:
-        parts.append('<p>No source observations were returned for this period.</p>')
+        parts.append(f'<p>{copy("No source observations were returned for this period.")}</p>')
     return parts
 
 

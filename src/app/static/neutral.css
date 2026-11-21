@@ -370,3 +370,29 @@ html #home-overview-preview { height: 1000px; }
 /* text and icon sit on the vertical centre of the pill (the earlier reset had put them at the top) */
 :root .general-chat-composer .composer-action, :root .general-chat-composer .examples-menu button { align-items: center; }
 :root .general-chat-composer .composer-action { justify-content: center; }
+
+/* ---- Skeleton loading ---- */
+.skeleton-board { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 8px; }
+.skeleton-board[hidden], .skeleton-report[hidden] { display: none; }
+.sk { border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 14px; align-content: start; min-height: 260px; }
+.sk.wide { grid-column: 1 / -1; min-height: 240px; }
+.skeleton-report { display: grid; gap: 14px; padding: 8px 0; }
+.skeleton-report .hero { border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 12px; }
+.skeleton-board i, .skeleton-report i { display: block; height: 12px; border-radius: 6px; background: linear-gradient(90deg, var(--surface-2) 25%, var(--line) 37%, var(--surface-2) 63%); background-size: 400% 100%; animation: skShimmer 1.5s ease infinite; }
+.skeleton-board i.w30, .skeleton-report i.w30 { width: 30%; } .skeleton-board i.w40 { width: 40%; } .skeleton-report i.w50 { width: 50%; }
+.skeleton-board i.w60, .skeleton-report i.w60 { width: 60%; } .skeleton-report i.w70 { width: 70%; } .skeleton-board i.w80, .skeleton-report i.w80 { width: 80%; }
+.skeleton-board i.ring { width: 130px; height: 130px; border-radius: 50%; margin: 6px auto; }
+.skeleton-board i.bars { height: 120px; border-radius: 8px; }
+.skeleton-board i.chart, .skeleton-report i.chart { height: 150px; border-radius: 8px; }
+.skeleton-report i.title { height: 22px; } .skeleton-report i.num { height: 34px; width: 45%; }
+@keyframes skShimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .skeleton-board i, .skeleton-report i { animation: none; } }
+@media (max-width: 700px) { .skeleton-board { grid-template-columns: 1fr; } }
+
+/* ---- Toasts ---- */
+#toast-stack { position: fixed; z-index: 2147482000; right: 20px; bottom: 20px; display: grid; gap: 8px; justify-items: end; pointer-events: none; }
+.toast { max-width: min(380px, calc(100vw - 40px)); padding: 10px 16px; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.4; box-shadow: 0 10px 30px rgba(0,0,0,.14); animation: toastIn .28s cubic-bezier(.2, .8, .2, 1) both; }
+.toast-error { border-color: var(--danger); color: var(--danger-ink, var(--danger)); }
+.toast.is-leaving { opacity: 0; transform: translateY(6px); transition: opacity .4s, transform .4s; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(10px) scale(.98); } }
+@media (prefers-reduced-motion: reduce) { .toast { animation: none; } }

@@ -5,7 +5,9 @@
   let canRead = false;
   const CACHE_MS = 5 * 60 * 1000;
   let cachedAt = null, owner = null, generation = null, pending = null;
+  const skeleton = on => { const node = document.getElementById('home-overview-skeleton'); if (node) node.hidden = !on; };
   async function overview(valid) {
+    skeleton(true);
     el('home-overview-status').textContent='Refreshing authorized source data…';
     el('home-overview-status').dataset.error='false';
     try {
@@ -21,7 +23,7 @@
       el('home-overview-preview').hidden=true;
       el('home-overview-status').textContent=error.message || 'The overview is temporarily unavailable. Your saved dashboards remain available.';
       el('home-overview-status').dataset.error='true';
-    }
+    } finally { skeleton(false); }
   }
   function refreshOverview() {
     cachedAt = null;

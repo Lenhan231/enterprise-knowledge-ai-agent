@@ -1625,6 +1625,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
       try {
         await navigator.clipboard.writeText(data.answer);
         copyBtn.innerHTML = `${ICONS.check}<span class="action-label">Copied</span>`;
+        window.toast?.("Copied to clipboard");
         copyBtn.classList.add("copied");
         setTimeout(() => {
           copyBtn.innerHTML = `${ICONS.copy}<span class="action-label">Copy</span>`;
@@ -3654,4 +3655,40 @@ $("#sidebar-toggle").addEventListener("click", () => {
     else if (event.key === "Escape" && event.target === input) input.blur();
   });
   update();
+})();
+
+// Toasts: short confirmations that fade away. They mirror the pages' own status lines (which stay as the live region),
+// so success messages and errors from Dashboard and Reports are seen even when the line has scrolled out of view.
+window.toast = (message, kind = "ok") => {
+  if (!message) return;
+  let stack = document.getElementById("toast-stack");
+  if (!stack) {
+    stack = document.createElement("div");
+    stack.id = "toast-stack";
+    stack.setAttribute("aria-hidden", "true");
+    document.body.append(stack);
+  }
+  const item = document.createElement("div");
+  item.className = `toast toast-${kind}`;
+  item.textContent = message;
+  stack.append(item);
+  while (stack.children.length > 3) stack.firstChild.remove();
+  setTimeout(() => item.classList.add("is-leaving"), 3200);
+  setTimeout(() => item.remove(), 3700);
+};
+(() => {
+  const done = /\b(saved|generated|downloaded|refreshed|deleted|created|copied|opened)\b|đã (lưu|tạo|tải|xóa|xoá|mở)/i;
+  const working = /^(saving|generating|preparing|opening|deleting|loading|refreshing|đang)/i;
+  for (const id of ["dw-status", "report-workspace-status"]) {
+    const line = document.getElementById(id);
+    if (!line) continue;
+    let last = "";
+    new MutationObserver(() => {
+      const message = line.textContent.trim();
+      if (!message || message === last) return;
+      last = message;
+      if (line.dataset.error === "true") window.toast(message, "error");
+      else if (done.test(message) && !working.test(message)) window.toast(message);
+    }).observe(line, { childList: true, characterData: true, subtree: true });
+  }
 })();

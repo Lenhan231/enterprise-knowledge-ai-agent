@@ -1,0 +1,3205 @@
+{
+  "format_version": "sql-40-case-gold-results.v3.1-provisional",
+  "status": "PROVISIONAL_COMPLETE_NOT_APPROVED",
+  "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+  "gold_sql_definition_sha256": "cf8072cbce69eff02f1305e0ece9a41c1dcfaa73b8ac0b8e96c8f225bb96e0a5",
+  "gold_sql_draft_file_sha256": "bd3fde86d887493f82a2a498e3e58a4eb8beefa2af5d4b81596e6274158c4022",
+  "preflight_file_sha256": "8b5d4ca6b716ef4a2344ddb2423e23bf277e8765d523cf04c251388d3d41159f",
+  "source_revision": "60eafaee964a6de48a0c8d13925e3207d5116588",
+  "source_worktree_dirty": true,
+  "python_version": "3.11.16",
+  "source_hashes": {
+    "artifacts/sql-agent-bussiness/40-case-v3/cases_v3_draft.json": "1ac699ce7f15fcb9981fceb600e1db9a0a17511044f3831bcaffb94d3b5ff2bd",
+    "artifacts/sql-agent-bussiness/40-case-v3/gold_sql_v3_draft.json": "f3b3dae24242da66b369dbd906a0303e0ce23abbf8e40287dcd2325393ef2ddf",
+    "artifacts/sql-agent-bussiness/40-case-v3/build_v3_draft.py": "5d4b039bf331b675c6ec67ef59bc7bc9fcac3592777a7fa0293b47cf9b1893cb",
+    "artifacts/sql-agent-bussiness/40-case-v3/followup_adapter.py": "3ec038322e7e1a47824c0b0d93287a04039940e775d83c1c2cb1fd1225e54bbc",
+    "artifacts/sql-agent-bussiness/40-case-v3/generate_gold_results_v3.py": "997a6d46483c647090ab12224fbe579e9ad9ab6234165d61c608723da8e530be",
+    "artifacts/sql-agent-bussiness/40-case-preparation/dataset_validator.py": "312736415cdabd868ba000c84d99691601a64a488cf9ed71ae81cddb3e9b62ee",
+    "artifacts/sql-agent-bussiness/40-case-preparation/preflight_40.py": "839211e00471c2bfd0e827e7a3293e5b400ccd8238128885c7b67e46159bb4e0",
+    "artifacts/sql-agent-bussiness/preflight.py": "bbaec1e74677d7c1a9a199c36127ec2b4188b6c2103f4f1acfaa1620bda7eb4c",
+    "artifacts/sql-agent-bussiness/scorer.py": "0fc62447df7daf44219ecbdad9423ac5b5b8633e1f2aaa74224ff00865278c92",
+    "artifacts/sql-agent-bussiness/PROTOCOL.md": "f478c5b6f7d239f4b869b62a7a9a65811311a65c02c53fd3529eda0f1a962062",
+    "src/core/agents/sql/agent.py": "758cf333858d91c11c4d6af03801f17c79c3df6b89dd5701d60ab5a243c845df",
+    "src/core/agents/sql/sql_validation.py": "8b80b68c945785f7df3eff4a8836ce12a5902d19230bdd31086c84a76f6a175c",
+    "src/core/agents/sql/join_validation.py": "e776fa376e36820004c7eaad5f34e134802f6089fe0b6b80e2f1812298559007",
+    "data/semantic/commerce_schema_metric_contract_v1.md": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2"
+  },
+  "database_classification": "frozen-analytics-snapshot",
+  "database_role_read_only": true,
+  "database_fingerprint_sha256": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028",
+  "schema_sha256": "34cda511dede7651f95468fe5b7821a4570fafb181228b1679428cae83d69dba",
+  "schema": {
+    "tables": {
+      "commerce.customers": [
+        "acquisition_channel",
+        "age_group",
+        "city",
+        "customer_id",
+        "gender",
+        "signup_date",
+        "zip"
+      ],
+      "commerce.geography": [
+        "city",
+        "district",
+        "region",
+        "zip"
+      ],
+      "commerce.inventory": [
+        "category",
+        "days_of_supply",
+        "fill_rate",
+        "month",
+        "overstock_flag",
+        "product_id",
+        "product_name",
+        "reorder_flag",
+        "segment",
+        "sell_through_rate",
+        "snapshot_date",
+        "stock_on_hand",
+        "stockout_days",
+        "stockout_flag",
+        "units_received",
+        "units_sold",
+        "year"
+      ],
+      "commerce.invoice_items": [
+        "amount",
+        "description",
+        "invoice_id",
+        "line_no",
+        "quantity",
+        "unit",
+        "unit_price"
+      ],
+      "commerce.invoices": [
+        "buyer",
+        "currency",
+        "invoice_date",
+        "invoice_id",
+        "invoice_no",
+        "seller",
+        "source_filename",
+        "subtotal",
+        "tax_amount",
+        "total_amount"
+      ],
+      "commerce.order_items": [
+        "discount_amount",
+        "order_id",
+        "order_item_id",
+        "product_id",
+        "promo_id",
+        "promo_id_2",
+        "quantity",
+        "unit_price"
+      ],
+      "commerce.orders": [
+        "customer_id",
+        "device_type",
+        "order_date",
+        "order_id",
+        "order_source",
+        "order_status",
+        "payment_method",
+        "zip"
+      ],
+      "commerce.payments": [
+        "installments",
+        "order_id",
+        "payment_method",
+        "payment_value"
+      ],
+      "commerce.products": [
+        "category",
+        "cogs",
+        "color",
+        "price",
+        "product_id",
+        "product_name",
+        "segment",
+        "size"
+      ],
+      "commerce.promotions": [
+        "applicable_category",
+        "discount_value",
+        "end_date",
+        "min_order_value",
+        "promo_channel",
+        "promo_id",
+        "promo_name",
+        "promo_type",
+        "stackable_flag",
+        "start_date"
+      ],
+      "commerce.returns": [
+        "order_id",
+        "product_id",
+        "refund_amount",
+        "return_date",
+        "return_id",
+        "return_quantity",
+        "return_reason"
+      ],
+      "commerce.reviews": [
+        "customer_id",
+        "order_id",
+        "product_id",
+        "rating",
+        "review_date",
+        "review_id",
+        "review_title"
+      ],
+      "commerce.sales": [
+        "cogs",
+        "date",
+        "demo_provenance",
+        "revenue"
+      ],
+      "commerce.shipments": [
+        "delivery_date",
+        "order_id",
+        "ship_date",
+        "shipping_fee"
+      ],
+      "commerce.web_traffic": [
+        "avg_session_duration_sec",
+        "bounce_rate",
+        "date",
+        "page_views",
+        "sessions",
+        "traffic_source",
+        "unique_visitors"
+      ]
+    },
+    "column_types": {
+      "commerce.customers": {
+        "customer_id": "integer",
+        "zip": "text",
+        "city": "text",
+        "signup_date": "date",
+        "gender": "text",
+        "age_group": "text",
+        "acquisition_channel": "text"
+      },
+      "commerce.geography": {
+        "zip": "text",
+        "city": "text",
+        "region": "text",
+        "district": "text"
+      },
+      "commerce.inventory": {
+        "snapshot_date": "date",
+        "product_id": "integer",
+        "stock_on_hand": "integer",
+        "units_received": "integer",
+        "units_sold": "integer",
+        "stockout_days": "integer",
+        "days_of_supply": "numeric",
+        "fill_rate": "numeric",
+        "stockout_flag": "boolean",
+        "overstock_flag": "boolean",
+        "reorder_flag": "boolean",
+        "sell_through_rate": "numeric",
+        "product_name": "text",
+        "category": "text",
+        "segment": "text",
+        "year": "integer",
+        "month": "integer"
+      },
+      "commerce.invoice_items": {
+        "invoice_id": "text",
+        "line_no": "integer",
+        "description": "text",
+        "unit": "text",
+        "quantity": "numeric",
+        "unit_price": "numeric",
+        "amount": "numeric"
+      },
+      "commerce.invoices": {
+        "invoice_id": "text",
+        "source_filename": "text",
+        "invoice_no": "text",
+        "invoice_date": "date",
+        "buyer": "text",
+        "seller": "text",
+        "subtotal": "numeric",
+        "tax_amount": "numeric",
+        "total_amount": "numeric",
+        "currency": "text"
+      },
+      "commerce.order_items": {
+        "order_item_id": "bigint",
+        "order_id": "integer",
+        "product_id": "integer",
+        "quantity": "integer",
+        "unit_price": "numeric",
+        "discount_amount": "numeric",
+        "promo_id": "text",
+        "promo_id_2": "text"
+      },
+      "commerce.orders": {
+        "order_id": "integer",
+        "order_date": "date",
+        "customer_id": "integer",
+        "zip": "text",
+        "order_status": "text",
+        "payment_method": "text",
+        "device_type": "text",
+        "order_source": "text"
+      },
+      "commerce.payments": {
+        "order_id": "integer",
+        "payment_method": "text",
+        "payment_value": "numeric",
+        "installments": "integer"
+      },
+      "commerce.products": {
+        "product_id": "integer",
+        "product_name": "text",
+        "category": "text",
+        "segment": "text",
+        "size": "text",
+        "color": "text",
+        "price": "numeric",
+        "cogs": "numeric"
+      },
+      "commerce.promotions": {
+        "promo_id": "text",
+        "promo_name": "text",
+        "promo_type": "text",
+        "discount_value": "numeric",
+        "start_date": "date",
+        "end_date": "date",
+        "applicable_category": "text",
+        "promo_channel": "text",
+        "stackable_flag": "boolean",
+        "min_order_value": "numeric"
+      },
+      "commerce.returns": {
+        "return_id": "text",
+        "order_id": "integer",
+        "product_id": "integer",
+        "return_date": "date",
+        "return_reason": "text",
+        "return_quantity": "integer",
+        "refund_amount": "numeric"
+      },
+      "commerce.reviews": {
+        "review_id": "text",
+        "order_id": "integer",
+        "product_id": "integer",
+        "customer_id": "integer",
+        "review_date": "date",
+        "rating": "integer",
+        "review_title": "text"
+      },
+      "commerce.sales": {
+        "date": "date",
+        "revenue": "numeric",
+        "cogs": "numeric",
+        "demo_provenance": "jsonb"
+      },
+      "commerce.shipments": {
+        "order_id": "integer",
+        "ship_date": "date",
+        "delivery_date": "date",
+        "shipping_fee": "numeric"
+      },
+      "commerce.web_traffic": {
+        "date": "date",
+        "sessions": "integer",
+        "unique_visitors": "integer",
+        "page_views": "integer",
+        "bounce_rate": "numeric",
+        "avg_session_duration_sec": "numeric",
+        "traffic_source": "text"
+      }
+    },
+    "primary_keys": {},
+    "foreign_keys": [],
+    "joins": [],
+    "date_columns": [
+      "commerce.customers.signup_date",
+      "commerce.inventory.snapshot_date",
+      "commerce.invoices.invoice_date",
+      "commerce.orders.order_date",
+      "commerce.promotions.end_date",
+      "commerce.promotions.start_date",
+      "commerce.returns.return_date",
+      "commerce.reviews.review_date",
+      "commerce.sales.date",
+      "commerce.shipments.delivery_date",
+      "commerce.shipments.ship_date",
+      "commerce.web_traffic.date"
+    ]
+  },
+  "sql_agent_generation_calls": 0,
+  "heldout_agent_executed": false,
+  "oracle_status": "PROVISIONAL_NOT_APPROVED",
+  "independent_review_approvals": 0,
+  "structural_validation": {
+    "errors": [],
+    "warnings": [
+      "live information_schema exposed no PK/FK metadata; drafts rely on approved migration contract and duplicate/orphan checks",
+      "Structural checks cannot establish semantic independence or human approval."
+    ],
+    "case_count": 40,
+    "category_counts": {
+      "aggregation_time": 5,
+      "filters_business_constraints": 5,
+      "grouping_ranking": 5,
+      "joins_cross_domain": 5,
+      "inventory_null_semantics": 5,
+      "sql_followup_context": 5,
+      "genuine_clarification": 5,
+      "unsupported_data_scope": 4,
+      "security_scope": 1
+    },
+    "expected_behavior_counts": {
+      "execute": 30,
+      "clarify": 5,
+      "abstain_without_query": 5
+    },
+    "case_set_sha256": "56ef0dd5ec0d2fc15539665b91a230a923e1836cc4a18cf5c6fe8fcd795146c6",
+    "status": "PASS_STRUCTURAL_DRAFT"
+  },
+  "gold_sql_validation": {
+    "errors": [],
+    "validated_count": 30,
+    "gold_case_count": 30,
+    "per_case": [
+      {
+        "id": "B40-001",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-002",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-003",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-004",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-005",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-006",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-007",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-008",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-009",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-010",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-011",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-012",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-013",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-014",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-015",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-016",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-017",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-018",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-019",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-020",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-021",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-022",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-023",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-024",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-025",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-026",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-027",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-028",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-029",
+        "status": "PASS",
+        "errors": []
+      },
+      {
+        "id": "B40-030",
+        "status": "PASS",
+        "errors": []
+      }
+    ],
+    "status": "PASS_STRUCTURAL_DRAFT",
+    "warning": "Structural SQL validation is not semantic review or human approval."
+  },
+  "execution_count": 30,
+  "execution_failures": [],
+  "cases": [
+    {
+      "id": "B40-001",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT DATE_TRUNC('month', w.date)::date AS month, w.traffic_source, SUM(w.sessions) AS sessions FROM commerce.web_traffic AS w WHERE w.date >= $1 AND w.date < $2 GROUP BY DATE_TRUNC('month', w.date)::date, w.traffic_source ORDER BY month ASC, w.traffic_source ASC LIMIT 200",
+      "parameters": [
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "columns": [
+        "month",
+        "traffic_source",
+        "sessions"
+      ],
+      "rows": [
+        {
+          "month": "2024-01-01",
+          "traffic_source": "email_campaign",
+          "sessions": 86955
+        },
+        {
+          "month": "2024-01-01",
+          "traffic_source": "organic_search",
+          "sessions": 93062
+        },
+        {
+          "month": "2024-01-01",
+          "traffic_source": "paid_search",
+          "sessions": 99169
+        },
+        {
+          "month": "2024-01-01",
+          "traffic_source": "referral",
+          "sessions": 105276
+        },
+        {
+          "month": "2024-02-01",
+          "traffic_source": "email_campaign",
+          "sessions": 92655
+        },
+        {
+          "month": "2024-02-01",
+          "traffic_source": "organic_search",
+          "sessions": 98368
+        },
+        {
+          "month": "2024-02-01",
+          "traffic_source": "paid_search",
+          "sessions": 104081
+        },
+        {
+          "month": "2024-02-01",
+          "traffic_source": "referral",
+          "sessions": 109794
+        },
+        {
+          "month": "2024-03-01",
+          "traffic_source": "email_campaign",
+          "sessions": 111135
+        },
+        {
+          "month": "2024-03-01",
+          "traffic_source": "organic_search",
+          "sessions": 117242
+        },
+        {
+          "month": "2024-03-01",
+          "traffic_source": "paid_search",
+          "sessions": 123349
+        },
+        {
+          "month": "2024-03-01",
+          "traffic_source": "referral",
+          "sessions": 104256
+        },
+        {
+          "month": "2024-04-01",
+          "traffic_source": "email_campaign",
+          "sessions": 119445
+        },
+        {
+          "month": "2024-04-01",
+          "traffic_source": "organic_search",
+          "sessions": 101955
+        },
+        {
+          "month": "2024-04-01",
+          "traffic_source": "paid_search",
+          "sessions": 79065
+        },
+        {
+          "month": "2024-04-01",
+          "traffic_source": "referral",
+          "sessions": 83175
+        },
+        {
+          "month": "2024-05-01",
+          "traffic_source": "email_campaign",
+          "sessions": 83518
+        },
+        {
+          "month": "2024-05-01",
+          "traffic_source": "organic_search",
+          "sessions": 86025
+        },
+        {
+          "month": "2024-05-01",
+          "traffic_source": "paid_search",
+          "sessions": 92132
+        },
+        {
+          "month": "2024-05-01",
+          "traffic_source": "referral",
+          "sessions": 98239
+        },
+        {
+          "month": "2024-06-01",
+          "traffic_source": "email_campaign",
+          "sessions": 89235
+        },
+        {
+          "month": "2024-06-01",
+          "traffic_source": "organic_search",
+          "sessions": 95145
+        },
+        {
+          "month": "2024-06-01",
+          "traffic_source": "paid_search",
+          "sessions": 101055
+        },
+        {
+          "month": "2024-06-01",
+          "traffic_source": "referral",
+          "sessions": 106965
+        },
+        {
+          "month": "2024-07-01",
+          "traffic_source": "email_campaign",
+          "sessions": 104501
+        },
+        {
+          "month": "2024-07-01",
+          "traffic_source": "organic_search",
+          "sessions": 110608
+        },
+        {
+          "month": "2024-07-01",
+          "traffic_source": "paid_search",
+          "sessions": 116715
+        },
+        {
+          "month": "2024-07-01",
+          "traffic_source": "referral",
+          "sessions": 122822
+        },
+        {
+          "month": "2024-08-01",
+          "traffic_source": "email_campaign",
+          "sessions": 116994
+        },
+        {
+          "month": "2024-08-01",
+          "traffic_source": "organic_search",
+          "sessions": 123101
+        },
+        {
+          "month": "2024-08-01",
+          "traffic_source": "paid_search",
+          "sessions": 105808
+        },
+        {
+          "month": "2024-08-01",
+          "traffic_source": "referral",
+          "sessions": 84915
+        },
+        {
+          "month": "2024-09-01",
+          "traffic_source": "email_campaign",
+          "sessions": 101715
+        },
+        {
+          "month": "2024-09-01",
+          "traffic_source": "organic_search",
+          "sessions": 80625
+        },
+        {
+          "month": "2024-09-01",
+          "traffic_source": "paid_search",
+          "sessions": 82935
+        },
+        {
+          "month": "2024-09-01",
+          "traffic_source": "referral",
+          "sessions": 88845
+        },
+        {
+          "month": "2024-10-01",
+          "traffic_source": "email_campaign",
+          "sessions": 85777
+        },
+        {
+          "month": "2024-10-01",
+          "traffic_source": "organic_search",
+          "sessions": 91884
+        },
+        {
+          "month": "2024-10-01",
+          "traffic_source": "paid_search",
+          "sessions": 97991
+        },
+        {
+          "month": "2024-10-01",
+          "traffic_source": "referral",
+          "sessions": 104098
+        },
+        {
+          "month": "2024-11-01",
+          "traffic_source": "email_campaign",
+          "sessions": 94905
+        },
+        {
+          "month": "2024-11-01",
+          "traffic_source": "organic_search",
+          "sessions": 100815
+        },
+        {
+          "month": "2024-11-01",
+          "traffic_source": "paid_search",
+          "sessions": 106725
+        },
+        {
+          "month": "2024-11-01",
+          "traffic_source": "referral",
+          "sessions": 112635
+        },
+        {
+          "month": "2024-12-01",
+          "traffic_source": "email_campaign",
+          "sessions": 110360
+        },
+        {
+          "month": "2024-12-01",
+          "traffic_source": "organic_search",
+          "sessions": 116467
+        },
+        {
+          "month": "2024-12-01",
+          "traffic_source": "paid_search",
+          "sessions": 122574
+        },
+        {
+          "month": "2024-12-01",
+          "traffic_source": "referral",
+          "sessions": 107081
+        }
+      ],
+      "row_count": 48,
+      "elapsed_ms": 2334.191,
+      "result_sha256": "1828d9a90a5254ca8f6e1fad60135a8a01b7726fe0981c95725eceb8d3af1399",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-002",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT DATE_TRUNC('month', s.ship_date)::date AS month, AVG(s.delivery_date - s.ship_date) FILTER (WHERE s.delivery_date IS NOT NULL) AS average_delivery_days, COUNT(*) FILTER (WHERE s.delivery_date IS NULL) AS missing_delivery_date_count FROM commerce.shipments AS s WHERE s.ship_date >= $1 AND s.ship_date < $2 GROUP BY DATE_TRUNC('month', s.ship_date)::date ORDER BY month ASC LIMIT 200",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "columns": [
+        "month",
+        "average_delivery_days",
+        "missing_delivery_date_count"
+      ],
+      "rows": [
+        {
+          "month": "2025-01-01",
+          "average_delivery_days": "2.9491525423728814",
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-02-01",
+          "average_delivery_days": "3.0727272727272727",
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-03-01",
+          "average_delivery_days": "3.0000000000000000",
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-04-01",
+          "average_delivery_days": "2.9482758620689655",
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-05-01",
+          "average_delivery_days": "2.9833333333333333",
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-06-01",
+          "average_delivery_days": "3.0169491525423729",
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-07-01",
+          "average_delivery_days": "3.0000000000000000",
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-08-01",
+          "average_delivery_days": "3.0000000000000000",
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-09-01",
+          "average_delivery_days": "3.0000000000000000",
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-10-01",
+          "average_delivery_days": "2.7704918032786885",
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-11-01",
+          "average_delivery_days": "3.2250000000000000",
+          "missing_delivery_date_count": 0
+        },
+        {
+          "month": "2025-12-01",
+          "average_delivery_days": "3.0439560439560440",
+          "missing_delivery_date_count": 7
+        }
+      ],
+      "row_count": 12,
+      "elapsed_ms": 2335.313,
+      "result_sha256": "12dc98e6952352c1dad1cdf8c4b1fd4e2d82c2edc8081156e519fcf11aca457e",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-003",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT DATE_TRUNC('month', r.return_date)::date AS month, COUNT(DISTINCT r.return_id) AS return_count FROM commerce.returns AS r WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY DATE_TRUNC('month', r.return_date)::date ORDER BY month ASC LIMIT 12",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "columns": [
+        "month",
+        "return_count"
+      ],
+      "rows": [
+        {
+          "month": "2025-01-01",
+          "return_count": 4
+        },
+        {
+          "month": "2025-02-01",
+          "return_count": 2
+        },
+        {
+          "month": "2025-03-01",
+          "return_count": 5
+        },
+        {
+          "month": "2025-04-01",
+          "return_count": 4
+        },
+        {
+          "month": "2025-05-01",
+          "return_count": 3
+        },
+        {
+          "month": "2025-06-01",
+          "return_count": 4
+        },
+        {
+          "month": "2025-07-01",
+          "return_count": 2
+        },
+        {
+          "month": "2025-08-01",
+          "return_count": 4
+        },
+        {
+          "month": "2025-09-01",
+          "return_count": 3
+        },
+        {
+          "month": "2025-10-01",
+          "return_count": 2
+        },
+        {
+          "month": "2025-12-01",
+          "return_count": 4
+        }
+      ],
+      "row_count": 11,
+      "elapsed_ms": 2170.081,
+      "result_sha256": "8b4fe596b08614b06515c1e5fa506ee732f68909626474939e0646a1dbc3c834",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-004",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT DATE_TRUNC('month', o.order_date)::date AS month, SUM(oi.quantity * oi.unit_price - oi.discount_amount) / NULLIF(COUNT(DISTINCT o.order_id), 0) AS average_order_value FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id = o.order_id WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 GROUP BY DATE_TRUNC('month', o.order_date)::date ORDER BY month ASC LIMIT 12",
+      "parameters": [
+        "delivered",
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "columns": [
+        "month",
+        "average_order_value"
+      ],
+      "rows": [
+        {
+          "month": "2025-01-01",
+          "average_order_value": "15358.450333333333"
+        },
+        {
+          "month": "2025-02-01",
+          "average_order_value": "12301.875000000000"
+        },
+        {
+          "month": "2025-03-01",
+          "average_order_value": "21134.255500000000"
+        },
+        {
+          "month": "2025-04-01",
+          "average_order_value": "14862.187288135593"
+        },
+        {
+          "month": "2025-05-01",
+          "average_order_value": "16188.055737704918"
+        },
+        {
+          "month": "2025-06-01",
+          "average_order_value": "15449.201228070175"
+        },
+        {
+          "month": "2025-07-01",
+          "average_order_value": "19017.761639344262"
+        },
+        {
+          "month": "2025-08-01",
+          "average_order_value": "16880.782833333333"
+        },
+        {
+          "month": "2025-09-01",
+          "average_order_value": "15556.290000000000"
+        },
+        {
+          "month": "2025-10-01",
+          "average_order_value": "21291.030000000000"
+        },
+        {
+          "month": "2025-11-01",
+          "average_order_value": "27307.617073170732"
+        },
+        {
+          "month": "2025-12-01",
+          "average_order_value": "21239.514157303371"
+        }
+      ],
+      "row_count": 12,
+      "elapsed_ms": 2355.375,
+      "result_sha256": "9770415e3fb025a81c14692d889d7ef66cfee17165eb1ec27f4fbd6979a508cf",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-005",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT DATE_TRUNC('month', r.return_date)::date AS month, SUM(r.refund_amount) AS refund_amount FROM commerce.returns AS r WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY DATE_TRUNC('month', r.return_date)::date ORDER BY refund_amount DESC, month ASC LIMIT 1",
+      "parameters": [
+        "2024-01-01",
+        "2024-07-01"
+      ],
+      "columns": [
+        "month",
+        "refund_amount"
+      ],
+      "rows": [
+        {
+          "month": "2024-05-01",
+          "refund_amount": "35611.25"
+        }
+      ],
+      "row_count": 1,
+      "elapsed_ms": 2162.529,
+      "result_sha256": "83a3abd68bdcd76632d21550314a0f0b9b54718fa541b99c7822edaaed66122c",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-006",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT COUNT(DISTINCT c.customer_id) AS customer_count FROM commerce.customers AS c JOIN commerce.geography AS g ON g.zip = c.zip WHERE g.city = $1 AND c.age_group = $2 AND c.signup_date >= $3 AND c.signup_date < $4 LIMIT 1",
+      "parameters": [
+        "Hai Phong",
+        "25-34",
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "columns": [
+        "customer_count"
+      ],
+      "rows": [
+        {
+          "customer_count": 17
+        }
+      ],
+      "row_count": 1,
+      "elapsed_ms": 2342.715,
+      "result_sha256": "f6234452122137f4a83226ade55dbd1be042a9a51ebd38128d2c7dfa41449fec",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-007",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT SUM(s.revenue) AS revenue, SUM(s.cogs) AS cogs FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 AND s.cogs > s.revenue LIMIT 1",
+      "parameters": [
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "columns": [
+        "revenue",
+        "cogs"
+      ],
+      "rows": [
+        {
+          "revenue": "371200.82",
+          "cogs": "382742.90"
+        }
+      ],
+      "row_count": 1,
+      "elapsed_ms": 2252.668,
+      "result_sha256": "9f8f0cb05e0817018fc7856264793a84d8af95ec1bf545f9c14e7920fe3c8ad8",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-008",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT r.return_reason, SUM(r.refund_amount) AS refund_amount FROM commerce.returns AS r WHERE r.return_date >= $1 AND r.return_date < $2 AND r.return_reason IS NOT NULL GROUP BY r.return_reason ORDER BY refund_amount DESC, r.return_reason ASC LIMIT 200",
+      "parameters": [
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "columns": [
+        "return_reason",
+        "refund_amount"
+      ],
+      "rows": [
+        {
+          "return_reason": "Size exchange",
+          "refund_amount": "92064.49"
+        },
+        {
+          "return_reason": "Changed mind",
+          "refund_amount": "62837.92"
+        },
+        {
+          "return_reason": "Color differed from expectation",
+          "refund_amount": "33047.48"
+        }
+      ],
+      "row_count": 3,
+      "elapsed_ms": 2252.803,
+      "result_sha256": "09244bf775b77ac36e08776b1d0caf2f6700fd7c24a3f9b817738cc20999b082",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-009",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT SUM(i.units_sold) AS units_sold FROM commerce.inventory AS i WHERE i.snapshot_date = $1 AND i.category = $2 LIMIT 1",
+      "parameters": [
+        "2025-10-31",
+        "Outdoor"
+      ],
+      "columns": [
+        "units_sold"
+      ],
+      "rows": [
+        {
+          "units_sold": 113
+        }
+      ],
+      "row_count": 1,
+      "elapsed_ms": 2155.754,
+      "result_sha256": "bd811f2c78d7ad278c3e3184abb89fb09606e279bf0a717be8d3a29e460169b0",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-010",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT COUNT(DISTINCT o.order_id) AS order_count FROM commerce.orders AS o WHERE o.order_date >= $1 AND o.order_date < $2 AND o.order_source = $3 AND o.device_type = $4 LIMIT 1",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01",
+        "paid_search",
+        "mobile"
+      ],
+      "columns": [
+        "order_count"
+      ],
+      "rows": [
+        {
+          "order_count": 20
+        }
+      ],
+      "row_count": 1,
+      "elapsed_ms": 2268.122,
+      "result_sha256": "7d2eff56ef7a85ae103a1fb84883053064013ba0416b5a89290c249b3aa9824e",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-011",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT p.product_id, p.cogs AS catalog_cogs FROM commerce.products AS p ORDER BY catalog_cogs DESC, p.product_id ASC LIMIT 5",
+      "parameters": [],
+      "columns": [
+        "product_id",
+        "catalog_cogs"
+      ],
+      "rows": [
+        {
+          "product_id": 506,
+          "catalog_cogs": "14463.03045555477"
+        },
+        {
+          "product_id": 494,
+          "catalog_cogs": "13062.185815573772"
+        },
+        {
+          "product_id": 182,
+          "catalog_cogs": "12051.627954545454"
+        },
+        {
+          "product_id": 1879,
+          "catalog_cogs": "11879.26704054054"
+        },
+        {
+          "product_id": 449,
+          "catalog_cogs": "11279.04019694316"
+        }
+      ],
+      "row_count": 5,
+      "elapsed_ms": 2334.293,
+      "result_sha256": "607cb7d12252369f80af466225d05c095bf8e0b7eab034babf692ac09fe1670d",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-012",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT o.order_source, COUNT(DISTINCT o.order_id) AS order_count FROM commerce.orders AS o WHERE o.order_date >= $1 AND o.order_date < $2 GROUP BY o.order_source ORDER BY order_count DESC, o.order_source ASC NULLS LAST LIMIT 200",
+      "parameters": [
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "columns": [
+        "order_source",
+        "order_count"
+      ],
+      "rows": [
+        {
+          "order_source": "email_campaign",
+          "order_count": 120
+        },
+        {
+          "order_source": "organic_search",
+          "order_count": 119
+        },
+        {
+          "order_source": "direct",
+          "order_count": 118
+        },
+        {
+          "order_source": "paid_search",
+          "order_count": 118
+        },
+        {
+          "order_source": "referral",
+          "order_count": 118
+        },
+        {
+          "order_source": "social_media",
+          "order_count": 118
+        }
+      ],
+      "row_count": 6,
+      "elapsed_ms": 2069.52,
+      "result_sha256": "82d6907fbb125afbd7a00686e167b07802e7c0a6a36d310e7a6071a381bfffa3",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-013",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT i.segment, SUM(i.units_received) AS units_received FROM commerce.inventory AS i WHERE i.snapshot_date = $1 GROUP BY i.segment ORDER BY units_received DESC, i.segment ASC NULLS LAST LIMIT 5",
+      "parameters": [
+        "2026-11-13"
+      ],
+      "columns": [
+        "segment",
+        "units_received"
+      ],
+      "rows": [
+        {
+          "segment": "Activewear",
+          "units_received": 497
+        },
+        {
+          "segment": "Everyday",
+          "units_received": 129
+        },
+        {
+          "segment": "Balanced",
+          "units_received": 96
+        },
+        {
+          "segment": "Performance",
+          "units_received": 43
+        },
+        {
+          "segment": "Premium",
+          "units_received": 39
+        }
+      ],
+      "row_count": 5,
+      "elapsed_ms": 2231.358,
+      "result_sha256": "5e643ee552c4acea01f7875cd167ed36438e13addccb0f1c14dac41a1b1f8506",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-014",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT g.city, COUNT(DISTINCT o.customer_id) AS customer_count FROM commerce.orders AS o JOIN commerce.geography AS g ON g.zip = o.zip WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 GROUP BY g.city ORDER BY customer_count DESC, g.city ASC LIMIT 5",
+      "parameters": [
+        "delivered",
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "columns": [
+        "city",
+        "customer_count"
+      ],
+      "rows": [
+        {
+          "city": "Phu Ly",
+          "customer_count": 96
+        },
+        {
+          "city": "Hai Phong",
+          "customer_count": 79
+        },
+        {
+          "city": "Viet Tri",
+          "customer_count": 60
+        },
+        {
+          "city": "Ha Long",
+          "customer_count": 58
+        },
+        {
+          "city": "Cam Pha",
+          "customer_count": 56
+        }
+      ],
+      "row_count": 5,
+      "elapsed_ms": 2355.323,
+      "result_sha256": "e4c0b901f10a8f862bd44aa0522bf14320d4af8f4e9336841dc5482e0add2361",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-015",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT p.category, SUM(oi.quantity * oi.unit_price - oi.discount_amount) AS net_revenue FROM commerce.orders AS o JOIN commerce.order_items AS oi ON oi.order_id = o.order_id JOIN commerce.products AS p ON p.product_id = oi.product_id WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 GROUP BY p.category ORDER BY net_revenue DESC, p.category ASC LIMIT 3",
+      "parameters": [
+        "delivered",
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "columns": [
+        "category",
+        "net_revenue"
+      ],
+      "rows": [
+        {
+          "category": "Streetwear",
+          "net_revenue": "8685863.04"
+        },
+        {
+          "category": "Outdoor",
+          "net_revenue": "3533291.45"
+        },
+        {
+          "category": "GenZ",
+          "net_revenue": "396405.85"
+        }
+      ],
+      "row_count": 3,
+      "elapsed_ms": 2252.759,
+      "result_sha256": "d9dd1f0b9cd79b753285adf4c58282c23ab439762c8467862017ae3eadec1c7f",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-016",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT g.city, SUM(r.return_quantity) AS returned_units FROM commerce.returns AS r JOIN commerce.orders AS o ON o.order_id = r.order_id JOIN commerce.geography AS g ON g.zip = o.zip WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY g.city ORDER BY returned_units DESC, g.city ASC LIMIT 200",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "columns": [
+        "city",
+        "returned_units"
+      ],
+      "rows": [
+        {
+          "city": "Hai Phong",
+          "returned_units": 7
+        },
+        {
+          "city": "Phu Ly",
+          "returned_units": 7
+        },
+        {
+          "city": "Cam Pha",
+          "returned_units": 6
+        },
+        {
+          "city": "Ha Long",
+          "returned_units": 3
+        },
+        {
+          "city": "Son Tay",
+          "returned_units": 3
+        },
+        {
+          "city": "Uong Bi",
+          "returned_units": 3
+        },
+        {
+          "city": "Bac Giang",
+          "returned_units": 2
+        },
+        {
+          "city": "Bac Ninh",
+          "returned_units": 2
+        },
+        {
+          "city": "Nam Dinh",
+          "returned_units": 2
+        },
+        {
+          "city": "Ninh Binh",
+          "returned_units": 2
+        },
+        {
+          "city": "Viet Tri",
+          "returned_units": 2
+        },
+        {
+          "city": "Hanoi",
+          "returned_units": 1
+        },
+        {
+          "city": "Lao Cai",
+          "returned_units": 1
+        },
+        {
+          "city": "Thai Nguyen",
+          "returned_units": 1
+        }
+      ],
+      "row_count": 14,
+      "elapsed_ms": 2252.788,
+      "result_sha256": "38fc4426ae8b3946b7c0a9c16be2b42a92b316baa69ed195c197d3359bf2e06a",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-017",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT r.product_id, SUM(r.return_quantity) AS returned_units FROM commerce.returns AS r WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY r.product_id ORDER BY returned_units DESC, r.product_id ASC LIMIT 200",
+      "parameters": [
+        "2023-01-01",
+        "2026-01-01"
+      ],
+      "columns": [
+        "product_id",
+        "returned_units"
+      ],
+      "rows": [
+        {
+          "product_id": 1958,
+          "returned_units": 4
+        },
+        {
+          "product_id": 136,
+          "returned_units": 3
+        },
+        {
+          "product_id": 182,
+          "returned_units": 3
+        },
+        {
+          "product_id": 475,
+          "returned_units": 3
+        },
+        {
+          "product_id": 549,
+          "returned_units": 3
+        },
+        {
+          "product_id": 635,
+          "returned_units": 3
+        },
+        {
+          "product_id": 754,
+          "returned_units": 3
+        },
+        {
+          "product_id": 782,
+          "returned_units": 3
+        },
+        {
+          "product_id": 790,
+          "returned_units": 3
+        },
+        {
+          "product_id": 794,
+          "returned_units": 3
+        },
+        {
+          "product_id": 993,
+          "returned_units": 3
+        },
+        {
+          "product_id": 1085,
+          "returned_units": 3
+        },
+        {
+          "product_id": 1442,
+          "returned_units": 3
+        },
+        {
+          "product_id": 1826,
+          "returned_units": 3
+        },
+        {
+          "product_id": 2045,
+          "returned_units": 3
+        },
+        {
+          "product_id": 2138,
+          "returned_units": 3
+        },
+        {
+          "product_id": 2180,
+          "returned_units": 3
+        },
+        {
+          "product_id": 2218,
+          "returned_units": 3
+        },
+        {
+          "product_id": 2240,
+          "returned_units": 3
+        },
+        {
+          "product_id": 2255,
+          "returned_units": 3
+        },
+        {
+          "product_id": 26,
+          "returned_units": 2
+        },
+        {
+          "product_id": 193,
+          "returned_units": 2
+        },
+        {
+          "product_id": 396,
+          "returned_units": 2
+        },
+        {
+          "product_id": 487,
+          "returned_units": 2
+        },
+        {
+          "product_id": 491,
+          "returned_units": 2
+        },
+        {
+          "product_id": 556,
+          "returned_units": 2
+        },
+        {
+          "product_id": 600,
+          "returned_units": 2
+        },
+        {
+          "product_id": 676,
+          "returned_units": 2
+        },
+        {
+          "product_id": 690,
+          "returned_units": 2
+        },
+        {
+          "product_id": 758,
+          "returned_units": 2
+        },
+        {
+          "product_id": 760,
+          "returned_units": 2
+        },
+        {
+          "product_id": 778,
+          "returned_units": 2
+        },
+        {
+          "product_id": 779,
+          "returned_units": 2
+        },
+        {
+          "product_id": 791,
+          "returned_units": 2
+        },
+        {
+          "product_id": 808,
+          "returned_units": 2
+        },
+        {
+          "product_id": 809,
+          "returned_units": 2
+        },
+        {
+          "product_id": 1000,
+          "returned_units": 2
+        },
+        {
+          "product_id": 1059,
+          "returned_units": 2
+        },
+        {
+          "product_id": 1086,
+          "returned_units": 2
+        },
+        {
+          "product_id": 1089,
+          "returned_units": 2
+        },
+        {
+          "product_id": 1483,
+          "returned_units": 2
+        },
+        {
+          "product_id": 1588,
+          "returned_units": 2
+        },
+        {
+          "product_id": 1879,
+          "returned_units": 2
+        },
+        {
+          "product_id": 1926,
+          "returned_units": 2
+        },
+        {
+          "product_id": 1964,
+          "returned_units": 2
+        },
+        {
+          "product_id": 1965,
+          "returned_units": 2
+        },
+        {
+          "product_id": 2053,
+          "returned_units": 2
+        },
+        {
+          "product_id": 2055,
+          "returned_units": 2
+        },
+        {
+          "product_id": 2207,
+          "returned_units": 2
+        },
+        {
+          "product_id": 2219,
+          "returned_units": 2
+        },
+        {
+          "product_id": 2234,
+          "returned_units": 2
+        },
+        {
+          "product_id": 2241,
+          "returned_units": 2
+        },
+        {
+          "product_id": 2252,
+          "returned_units": 2
+        },
+        {
+          "product_id": 2262,
+          "returned_units": 2
+        },
+        {
+          "product_id": 2263,
+          "returned_units": 2
+        },
+        {
+          "product_id": 2284,
+          "returned_units": 2
+        },
+        {
+          "product_id": 2345,
+          "returned_units": 2
+        },
+        {
+          "product_id": 2400,
+          "returned_units": 2
+        },
+        {
+          "product_id": 780,
+          "returned_units": 1
+        },
+        {
+          "product_id": 2359,
+          "returned_units": 1
+        }
+      ],
+      "row_count": 60,
+      "elapsed_ms": 2090.194,
+      "result_sha256": "5b8ce00b6e6bf7c5673874224fade261f30927c227c273c6cf9eee4a435ea346",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-018",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT p.category, AVG(r.rating) AS avg_rating FROM commerce.reviews AS r JOIN commerce.products AS p ON p.product_id = r.product_id GROUP BY p.category ORDER BY avg_rating DESC, p.category ASC LIMIT 200",
+      "parameters": [],
+      "columns": [
+        "category",
+        "avg_rating"
+      ],
+      "rows": [
+        {
+          "category": "GenZ",
+          "avg_rating": "4.0909090909090909"
+        },
+        {
+          "category": "Outdoor",
+          "avg_rating": "4.0500000000000000"
+        },
+        {
+          "category": "Streetwear",
+          "avg_rating": "4.0482456140350877"
+        },
+        {
+          "category": "Casual",
+          "avg_rating": "3.8571428571428571"
+        }
+      ],
+      "row_count": 4,
+      "elapsed_ms": 1988.666,
+      "result_sha256": "55642dbc029b5c2998f9a622e1f3760f21e41a5668e570dbea40a98f16272be0",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-019",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT p.payment_method, SUM(p.payment_value) AS payment_value FROM commerce.orders AS o JOIN commerce.payments AS p ON p.order_id = o.order_id WHERE o.order_date >= $1 AND o.order_date < $2 GROUP BY p.payment_method ORDER BY payment_value DESC, p.payment_method ASC LIMIT 200",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "columns": [
+        "payment_method",
+        "payment_value"
+      ],
+      "rows": [
+        {
+          "payment_method": "credit_card",
+          "payment_value": "4041768.40"
+        },
+        {
+          "payment_method": "paypal",
+          "payment_value": "2704772.54"
+        },
+        {
+          "payment_method": "apple_pay",
+          "payment_value": "2635208.67"
+        },
+        {
+          "payment_method": "bank_transfer",
+          "payment_value": "2501831.73"
+        },
+        {
+          "payment_method": "cod",
+          "payment_value": "2481349.84"
+        }
+      ],
+      "row_count": 5,
+      "elapsed_ms": 2106.357,
+      "result_sha256": "1c38409f3dd90f59911094ed6f2900af895c61bf19a94bc3d781cd8b3c44ff6f",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-020",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT g.city, AVG(s.shipping_fee) AS average_shipping_fee, COUNT(s.shipping_fee) AS fee_observation_count FROM commerce.shipments AS s JOIN commerce.orders AS o ON o.order_id = s.order_id JOIN commerce.geography AS g ON g.zip = o.zip WHERE s.ship_date >= $1 AND s.ship_date < $2 GROUP BY g.city ORDER BY average_shipping_fee DESC NULLS LAST, g.city ASC LIMIT 200",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "columns": [
+        "city",
+        "average_shipping_fee",
+        "fee_observation_count"
+      ],
+      "rows": [
+        {
+          "city": "Bac Giang",
+          "average_shipping_fee": "14047.935714285714",
+          "fee_observation_count": 49
+        },
+        {
+          "city": "Bac Ninh",
+          "average_shipping_fee": "13860.696981132075",
+          "fee_observation_count": 53
+        },
+        {
+          "city": "Viet Tri",
+          "average_shipping_fee": "13737.737894736842",
+          "fee_observation_count": 57
+        },
+        {
+          "city": "Ninh Binh",
+          "average_shipping_fee": "13502.366896551724",
+          "fee_observation_count": 29
+        },
+        {
+          "city": "Hai Phong",
+          "average_shipping_fee": "13373.098192771084",
+          "fee_observation_count": 83
+        },
+        {
+          "city": "Thai Nguyen",
+          "average_shipping_fee": "13294.778000000000",
+          "fee_observation_count": 20
+        },
+        {
+          "city": "Son Tay",
+          "average_shipping_fee": "12472.438367346939",
+          "fee_observation_count": 49
+        },
+        {
+          "city": "Lao Cai",
+          "average_shipping_fee": "12378.152105263158",
+          "fee_observation_count": 38
+        },
+        {
+          "city": "Cam Pha",
+          "average_shipping_fee": "12274.711538461538",
+          "fee_observation_count": 65
+        },
+        {
+          "city": "Ha Long",
+          "average_shipping_fee": "12162.368730158730",
+          "fee_observation_count": 63
+        },
+        {
+          "city": "Uong Bi",
+          "average_shipping_fee": "12030.690000000000",
+          "fee_observation_count": 52
+        },
+        {
+          "city": "Phu Ly",
+          "average_shipping_fee": "12011.532815533981",
+          "fee_observation_count": 103
+        },
+        {
+          "city": "Nam Dinh",
+          "average_shipping_fee": "11321.395000000000",
+          "fee_observation_count": 36
+        },
+        {
+          "city": "Hanoi",
+          "average_shipping_fee": "11111.784838709677",
+          "fee_observation_count": 31
+        }
+      ],
+      "row_count": 14,
+      "elapsed_ms": 2416.143,
+      "result_sha256": "12126eaaa68bd9758fa6ca348b6f50ce968f547e094a21ad888e5377cf61c367",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-021",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT i.category, COUNT(*) FILTER (WHERE i.stockout_flag = TRUE) AS stockout_product_count FROM commerce.inventory AS i WHERE i.snapshot_date = $1 GROUP BY i.category ORDER BY stockout_product_count DESC, i.category ASC NULLS LAST LIMIT 200",
+      "parameters": [
+        "2026-11-13"
+      ],
+      "columns": [
+        "category",
+        "stockout_product_count"
+      ],
+      "rows": [
+        {
+          "category": "Outdoor",
+          "stockout_product_count": 10
+        },
+        {
+          "category": "Streetwear",
+          "stockout_product_count": 5
+        },
+        {
+          "category": "GenZ",
+          "stockout_product_count": 2
+        },
+        {
+          "category": "Casual",
+          "stockout_product_count": 0
+        }
+      ],
+      "row_count": 4,
+      "elapsed_ms": 2273.903,
+      "result_sha256": "efaf4732d3036a5fd9098b41d8ba580407bb359869a3b0031c20655bf927cbac",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-022",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT i.snapshot_date, COUNT(i.days_of_supply) AS products_with_days_of_supply, COUNT(*) FILTER (WHERE i.days_of_supply IS NULL) AS products_without_days_of_supply FROM commerce.inventory AS i WHERE i.snapshot_date >= $1 AND i.snapshot_date <= $2 GROUP BY i.snapshot_date ORDER BY i.snapshot_date ASC LIMIT 100",
+      "parameters": [
+        "2023-01-31",
+        "2026-11-13"
+      ],
+      "columns": [
+        "snapshot_date",
+        "products_with_days_of_supply",
+        "products_without_days_of_supply"
+      ],
+      "rows": [
+        {
+          "snapshot_date": "2023-01-31",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2023-02-28",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2023-03-31",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2023-04-30",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2023-05-31",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2023-06-30",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2023-07-31",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2023-08-31",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2023-09-30",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2023-10-31",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2023-11-30",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2023-12-31",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2024-01-31",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2024-02-29",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2024-03-31",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2024-04-30",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2024-05-31",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2024-06-30",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2024-07-31",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2024-08-31",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2024-09-30",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2024-10-31",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2024-11-30",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2024-12-31",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2025-01-31",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2025-02-28",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2025-03-31",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2025-04-30",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2025-05-31",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2025-06-30",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2025-07-31",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2025-08-31",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2025-09-30",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2025-10-31",
+          "products_with_days_of_supply": 0,
+          "products_without_days_of_supply": 97
+        },
+        {
+          "snapshot_date": "2025-11-30",
+          "products_with_days_of_supply": 97,
+          "products_without_days_of_supply": 0
+        },
+        {
+          "snapshot_date": "2025-12-31",
+          "products_with_days_of_supply": 97,
+          "products_without_days_of_supply": 0
+        },
+        {
+          "snapshot_date": "2026-01-31",
+          "products_with_days_of_supply": 97,
+          "products_without_days_of_supply": 0
+        },
+        {
+          "snapshot_date": "2026-02-28",
+          "products_with_days_of_supply": 97,
+          "products_without_days_of_supply": 0
+        },
+        {
+          "snapshot_date": "2026-03-31",
+          "products_with_days_of_supply": 97,
+          "products_without_days_of_supply": 0
+        },
+        {
+          "snapshot_date": "2026-04-30",
+          "products_with_days_of_supply": 97,
+          "products_without_days_of_supply": 0
+        },
+        {
+          "snapshot_date": "2026-05-31",
+          "products_with_days_of_supply": 97,
+          "products_without_days_of_supply": 0
+        },
+        {
+          "snapshot_date": "2026-06-30",
+          "products_with_days_of_supply": 97,
+          "products_without_days_of_supply": 0
+        },
+        {
+          "snapshot_date": "2026-07-31",
+          "products_with_days_of_supply": 97,
+          "products_without_days_of_supply": 0
+        },
+        {
+          "snapshot_date": "2026-08-31",
+          "products_with_days_of_supply": 97,
+          "products_without_days_of_supply": 0
+        },
+        {
+          "snapshot_date": "2026-09-30",
+          "products_with_days_of_supply": 97,
+          "products_without_days_of_supply": 0
+        },
+        {
+          "snapshot_date": "2026-10-31",
+          "products_with_days_of_supply": 97,
+          "products_without_days_of_supply": 0
+        },
+        {
+          "snapshot_date": "2026-11-13",
+          "products_with_days_of_supply": 97,
+          "products_without_days_of_supply": 0
+        }
+      ],
+      "row_count": 47,
+      "elapsed_ms": 2333.854,
+      "result_sha256": "bb6840159c1eefbb30ec7a9ea513ec4b807658dd561837f064435fed10fe8fdd",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-023",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT i.product_id, MAX(i.stock_on_hand) FILTER (WHERE i.snapshot_date = $1) AS stock_before, MAX(i.stock_on_hand) FILTER (WHERE i.snapshot_date = $2) AS stock_after, MAX(i.stock_on_hand) FILTER (WHERE i.snapshot_date = $2) - MAX(i.stock_on_hand) FILTER (WHERE i.snapshot_date = $1) AS stock_delta FROM commerce.inventory AS i WHERE i.snapshot_date = $1 OR i.snapshot_date = $2 GROUP BY i.product_id HAVING COUNT(DISTINCT i.snapshot_date) = 2 ORDER BY stock_delta DESC, i.product_id ASC LIMIT 200",
+      "parameters": [
+        "2025-09-30",
+        "2025-10-31"
+      ],
+      "columns": [
+        "product_id",
+        "stock_before",
+        "stock_after",
+        "stock_delta"
+      ],
+      "rows": [
+        {
+          "product_id": 1974,
+          "stock_before": 8,
+          "stock_after": 24,
+          "stock_delta": 16
+        },
+        {
+          "product_id": 1975,
+          "stock_before": 15,
+          "stock_after": 31,
+          "stock_delta": 16
+        },
+        {
+          "product_id": 396,
+          "stock_before": 182,
+          "stock_after": 197,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 609,
+          "stock_before": 133,
+          "stock_after": 148,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 754,
+          "stock_before": 48,
+          "stock_after": 63,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 779,
+          "stock_before": 3,
+          "stock_after": 18,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 792,
+          "stock_before": 94,
+          "stock_after": 109,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 939,
+          "stock_before": 23,
+          "stock_after": 38,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 1085,
+          "stock_before": 165,
+          "stock_after": 180,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 1483,
+          "stock_before": 91,
+          "stock_after": 106,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 1926,
+          "stock_before": 112,
+          "stock_after": 127,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 1964,
+          "stock_before": 159,
+          "stock_after": 174,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 1965,
+          "stock_before": 166,
+          "stock_after": 181,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 2234,
+          "stock_before": 68,
+          "stock_after": 83,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 2253,
+          "stock_before": 201,
+          "stock_after": 216,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 2277,
+          "stock_before": 149,
+          "stock_after": 164,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 2400,
+          "stock_before": 130,
+          "stock_after": 145,
+          "stock_delta": 15
+        },
+        {
+          "product_id": 1958,
+          "stock_before": 118,
+          "stock_after": 132,
+          "stock_delta": 14
+        },
+        {
+          "product_id": 1959,
+          "stock_before": 125,
+          "stock_after": 139,
+          "stock_delta": 14
+        },
+        {
+          "product_id": 2045,
+          "stock_before": 67,
+          "stock_after": 81,
+          "stock_delta": 14
+        },
+        {
+          "product_id": 26,
+          "stock_before": 14,
+          "stock_after": 27,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 136,
+          "stock_before": 123,
+          "stock_after": 136,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 193,
+          "stock_before": 81,
+          "stock_after": 94,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 426,
+          "stock_before": 174,
+          "stock_after": 187,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 475,
+          "stock_before": 76,
+          "stock_after": 89,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 491,
+          "stock_before": 187,
+          "stock_after": 200,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 506,
+          "stock_before": 74,
+          "stock_after": 87,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 556,
+          "stock_before": 203,
+          "stock_after": 216,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 604,
+          "stock_before": 98,
+          "stock_after": 111,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 635,
+          "stock_before": 97,
+          "stock_after": 110,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 690,
+          "stock_before": 41,
+          "stock_after": 54,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 753,
+          "stock_before": 41,
+          "stock_after": 54,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 758,
+          "stock_before": 78,
+          "stock_after": 91,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 761,
+          "stock_before": 98,
+          "stock_after": 111,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 780,
+          "stock_before": 12,
+          "stock_after": 25,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 782,
+          "stock_before": 25,
+          "stock_after": 38,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 791,
+          "stock_before": 87,
+          "stock_after": 100,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 793,
+          "stock_before": 103,
+          "stock_after": 116,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 816,
+          "stock_before": 42,
+          "stock_after": 55,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 993,
+          "stock_before": 183,
+          "stock_after": 196,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 1059,
+          "stock_before": 204,
+          "stock_after": 217,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 1086,
+          "stock_before": 174,
+          "stock_after": 187,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 1096,
+          "stock_before": 23,
+          "stock_after": 36,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 1442,
+          "stock_before": 24,
+          "stock_after": 37,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 1588,
+          "stock_before": 168,
+          "stock_after": 181,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 1819,
+          "stock_before": 24,
+          "stock_after": 37,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 1879,
+          "stock_before": 3,
+          "stock_after": 16,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 2213,
+          "stock_before": 142,
+          "stock_after": 155,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 2219,
+          "stock_before": 183,
+          "stock_after": 196,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 2238,
+          "stock_before": 98,
+          "stock_after": 111,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 2240,
+          "stock_before": 111,
+          "stock_after": 124,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 2252,
+          "stock_before": 194,
+          "stock_after": 207,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 2262,
+          "stock_before": 45,
+          "stock_after": 58,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 2275,
+          "stock_before": 135,
+          "stock_after": 148,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 2284,
+          "stock_before": 200,
+          "stock_after": 213,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 2359,
+          "stock_before": 64,
+          "stock_after": 77,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 2396,
+          "stock_before": 102,
+          "stock_after": 115,
+          "stock_delta": 13
+        },
+        {
+          "product_id": 115,
+          "stock_before": 197,
+          "stock_after": 209,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 182,
+          "stock_before": 5,
+          "stock_after": 17,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 449,
+          "stock_before": 115,
+          "stock_after": 127,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 487,
+          "stock_before": 160,
+          "stock_after": 172,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 549,
+          "stock_before": 155,
+          "stock_after": 167,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 600,
+          "stock_before": 71,
+          "stock_after": 83,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 676,
+          "stock_before": 164,
+          "stock_after": 176,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 735,
+          "stock_before": 136,
+          "stock_after": 148,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 760,
+          "stock_before": 92,
+          "stock_after": 104,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 781,
+          "stock_before": 19,
+          "stock_after": 31,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 790,
+          "stock_before": 81,
+          "stock_after": 93,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 794,
+          "stock_before": 110,
+          "stock_after": 122,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 1000,
+          "stock_before": 12,
+          "stock_after": 24,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 1089,
+          "stock_before": 195,
+          "stock_after": 207,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 1441,
+          "stock_before": 18,
+          "stock_after": 30,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 1809,
+          "stock_before": 175,
+          "stock_after": 187,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 1826,
+          "stock_before": 73,
+          "stock_after": 85,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 2053,
+          "stock_before": 124,
+          "stock_after": 136,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 2180,
+          "stock_before": 133,
+          "stock_after": 145,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 2207,
+          "stock_before": 102,
+          "stock_after": 114,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 2212,
+          "stock_before": 136,
+          "stock_after": 148,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 2218,
+          "stock_before": 177,
+          "stock_after": 189,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 2239,
+          "stock_before": 105,
+          "stock_after": 117,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 2241,
+          "stock_before": 118,
+          "stock_after": 130,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 2263,
+          "stock_before": 52,
+          "stock_after": 64,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 2345,
+          "stock_before": 187,
+          "stock_after": 199,
+          "stock_delta": 12
+        },
+        {
+          "product_id": 2055,
+          "stock_before": 138,
+          "stock_after": 149,
+          "stock_delta": 11
+        },
+        {
+          "product_id": 2090,
+          "stock_before": 163,
+          "stock_after": 174,
+          "stock_delta": 11
+        },
+        {
+          "product_id": 1061,
+          "stock_before": 0,
+          "stock_after": 10,
+          "stock_delta": 10
+        },
+        {
+          "product_id": 2091,
+          "stock_before": 170,
+          "stock_after": 180,
+          "stock_delta": 10
+        },
+        {
+          "product_id": 2138,
+          "stock_before": 59,
+          "stock_after": 69,
+          "stock_delta": 10
+        },
+        {
+          "product_id": 494,
+          "stock_before": 208,
+          "stock_after": 3,
+          "stock_delta": -205
+        },
+        {
+          "product_id": 778,
+          "stock_before": 216,
+          "stock_after": 9,
+          "stock_delta": -207
+        },
+        {
+          "product_id": 808,
+          "stock_before": 207,
+          "stock_after": 0,
+          "stock_delta": -207
+        },
+        {
+          "product_id": 2254,
+          "stock_before": 210,
+          "stock_after": 3,
+          "stock_delta": -207
+        },
+        {
+          "product_id": 777,
+          "stock_before": 210,
+          "stock_after": 2,
+          "stock_delta": -208
+        },
+        {
+          "product_id": 809,
+          "stock_before": 214,
+          "stock_after": 6,
+          "stock_delta": -208
+        },
+        {
+          "product_id": 1060,
+          "stock_before": 211,
+          "stock_after": 3,
+          "stock_delta": -208
+        },
+        {
+          "product_id": 2255,
+          "stock_before": 217,
+          "stock_after": 9,
+          "stock_delta": -208
+        },
+        {
+          "product_id": 2380,
+          "stock_before": 211,
+          "stock_after": 3,
+          "stock_delta": -208
+        }
+      ],
+      "row_count": 97,
+      "elapsed_ms": 2171.333,
+      "result_sha256": "9c716071d6c4a137df1d0aa1e49885e3fea8f7a41e684f6049bc7900ad5bd7e4",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-024",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT i.snapshot_date, SUM(i.stock_on_hand) AS observed_stock_total FROM commerce.inventory AS i WHERE i.snapshot_date >= $1 AND i.snapshot_date <= $2 GROUP BY i.snapshot_date ORDER BY i.snapshot_date ASC LIMIT 100",
+      "parameters": [
+        "2025-09-30",
+        "2025-11-30"
+      ],
+      "columns": [
+        "snapshot_date",
+        "observed_stock_total"
+      ],
+      "rows": [
+        {
+          "snapshot_date": "2025-09-30",
+          "observed_stock_total": 11134
+        },
+        {
+          "snapshot_date": "2025-10-31",
+          "observed_stock_total": 10412
+        },
+        {
+          "snapshot_date": "2025-11-30",
+          "observed_stock_total": 3376
+        }
+      ],
+      "row_count": 3,
+      "elapsed_ms": 2150.29,
+      "result_sha256": "ca31c8fcc1ecd8b612c641eda6ab719908103fc7efcdb110d7dcf7f4f0030882",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-025",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT i.category, AVG(i.days_of_supply) AS average_days_of_supply, COUNT(i.days_of_supply) AS nonnull_product_count, COUNT(*) FILTER (WHERE i.days_of_supply IS NULL) AS null_product_count FROM commerce.inventory AS i WHERE i.snapshot_date = $1 GROUP BY i.category ORDER BY average_days_of_supply DESC NULLS LAST, i.category ASC NULLS LAST LIMIT 200",
+      "parameters": [
+        "2025-10-31"
+      ],
+      "columns": [
+        "category",
+        "average_days_of_supply",
+        "nonnull_product_count",
+        "null_product_count"
+      ],
+      "rows": [
+        {
+          "category": "Casual",
+          "average_days_of_supply": null,
+          "nonnull_product_count": 0,
+          "null_product_count": 1
+        },
+        {
+          "category": "GenZ",
+          "average_days_of_supply": null,
+          "nonnull_product_count": 0,
+          "null_product_count": 6
+        },
+        {
+          "category": "Outdoor",
+          "average_days_of_supply": null,
+          "nonnull_product_count": 0,
+          "null_product_count": 57
+        },
+        {
+          "category": "Streetwear",
+          "average_days_of_supply": null,
+          "nonnull_product_count": 0,
+          "null_product_count": 33
+        }
+      ],
+      "row_count": 4,
+      "elapsed_ms": 2232.083,
+      "result_sha256": "e083603c69906170c3c51643ec8c51b0bc4fb29524870646fd6421c521c322eb",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-026",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT DATE_TRUNC('month', s.date)::date AS month, SUM(s.cogs) AS cogs FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 GROUP BY DATE_TRUNC('month', s.date)::date ORDER BY month ASC LIMIT 12",
+      "parameters": [
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "columns": [
+        "month",
+        "cogs"
+      ],
+      "rows": [
+        {
+          "month": "2024-01-01",
+          "cogs": "1098809.17"
+        },
+        {
+          "month": "2024-02-01",
+          "cogs": "718029.17"
+        },
+        {
+          "month": "2024-03-01",
+          "cogs": "784156.39"
+        },
+        {
+          "month": "2024-04-01",
+          "cogs": "970518.53"
+        },
+        {
+          "month": "2024-05-01",
+          "cogs": "793664.01"
+        },
+        {
+          "month": "2024-06-01",
+          "cogs": "819770.32"
+        },
+        {
+          "month": "2024-07-01",
+          "cogs": "787810.06"
+        },
+        {
+          "month": "2024-08-01",
+          "cogs": "1010506.37"
+        },
+        {
+          "month": "2024-09-01",
+          "cogs": "737206.83"
+        },
+        {
+          "month": "2024-10-01",
+          "cogs": "803836.16"
+        },
+        {
+          "month": "2024-11-01",
+          "cogs": "912275.79"
+        },
+        {
+          "month": "2024-12-01",
+          "cogs": "910178.26"
+        }
+      ],
+      "row_count": 12,
+      "elapsed_ms": 2354.934,
+      "result_sha256": "2026c78efb2877d5e0de58f2b3068f0d5f543b4974efa8c7dc10f44ef73dec9b",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-027",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT o.order_source, COUNT(DISTINCT o.order_id) AS order_count FROM commerce.orders AS o WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 GROUP BY o.order_source ORDER BY order_count DESC, o.order_source ASC NULLS LAST LIMIT 200",
+      "parameters": [
+        "delivered",
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "columns": [
+        "order_source",
+        "order_count"
+      ],
+      "rows": [
+        {
+          "order_source": "organic_search",
+          "order_count": 138
+        },
+        {
+          "order_source": "paid_search",
+          "order_count": 129
+        },
+        {
+          "order_source": "referral",
+          "order_count": 128
+        },
+        {
+          "order_source": "email_campaign",
+          "order_count": 110
+        },
+        {
+          "order_source": "social_media",
+          "order_count": 108
+        },
+        {
+          "order_source": "direct",
+          "order_count": 106
+        }
+      ],
+      "row_count": 6,
+      "elapsed_ms": 2274.345,
+      "result_sha256": "4d2c8ae1fdad9a55a309f1a8d3f4f9146e1dfdad316916f53c6178a3528e4015",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-028",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "WITH monthly AS (SELECT EXTRACT(YEAR FROM s.date) AS sales_year, EXTRACT(MONTH FROM s.date) AS month, SUM(s.revenue) - SUM(s.cogs) AS gross_profit FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 GROUP BY EXTRACT(YEAR FROM s.date), EXTRACT(MONTH FROM s.date)) SELECT m.month, MAX(m.gross_profit) FILTER (WHERE m.sales_year = 2023) AS gross_profit_2023, MAX(m.gross_profit) FILTER (WHERE m.sales_year = 2024) AS gross_profit_2024, MAX(m.gross_profit) FILTER (WHERE m.sales_year = 2024) - MAX(m.gross_profit) FILTER (WHERE m.sales_year = 2023) AS difference_2024_minus_2023 FROM monthly AS m GROUP BY m.month ORDER BY m.month ASC LIMIT 12",
+      "parameters": [
+        "2023-01-01",
+        "2025-01-01"
+      ],
+      "columns": [
+        "month",
+        "gross_profit_2023",
+        "gross_profit_2024",
+        "difference_2024_minus_2023"
+      ],
+      "rows": [
+        {
+          "month": "1",
+          "gross_profit_2023": "223729.62",
+          "gross_profit_2024": "218718.84",
+          "difference_2024_minus_2023": "-5010.78"
+        },
+        {
+          "month": "2",
+          "gross_profit_2023": "284452.46",
+          "gross_profit_2024": "134595.00",
+          "difference_2024_minus_2023": "-149857.46"
+        },
+        {
+          "month": "3",
+          "gross_profit_2023": "236477.29",
+          "gross_profit_2024": "184868.01",
+          "difference_2024_minus_2023": "-51609.28"
+        },
+        {
+          "month": "4",
+          "gross_profit_2023": "266335.69",
+          "gross_profit_2024": "241844.50",
+          "difference_2024_minus_2023": "-24491.19"
+        },
+        {
+          "month": "5",
+          "gross_profit_2023": "329319.39",
+          "gross_profit_2024": "199604.31",
+          "difference_2024_minus_2023": "-129715.08"
+        },
+        {
+          "month": "6",
+          "gross_profit_2023": "116484.87",
+          "gross_profit_2024": "75202.17",
+          "difference_2024_minus_2023": "-41282.70"
+        },
+        {
+          "month": "7",
+          "gross_profit_2023": "183564.09",
+          "gross_profit_2024": "158048.18",
+          "difference_2024_minus_2023": "-25515.91"
+        },
+        {
+          "month": "8",
+          "gross_profit_2023": "323921.56",
+          "gross_profit_2024": "254292.84",
+          "difference_2024_minus_2023": "-69628.72"
+        },
+        {
+          "month": "9",
+          "gross_profit_2023": "265073.35",
+          "gross_profit_2024": "183773.73",
+          "difference_2024_minus_2023": "-81299.62"
+        },
+        {
+          "month": "10",
+          "gross_profit_2023": "300349.14",
+          "gross_profit_2024": "207755.47",
+          "difference_2024_minus_2023": "-92593.67"
+        },
+        {
+          "month": "11",
+          "gross_profit_2023": "198246.39",
+          "gross_profit_2024": "183280.75",
+          "difference_2024_minus_2023": "-14965.64"
+        },
+        {
+          "month": "12",
+          "gross_profit_2023": "170245.82",
+          "gross_profit_2024": "109610.56",
+          "difference_2024_minus_2023": "-60635.26"
+        }
+      ],
+      "row_count": 12,
+      "elapsed_ms": 2231.363,
+      "result_sha256": "84ba8e21dab27e18fd1efb29f33fd93606d289e4c430fbfbda27deb0155bb23d",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-029",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT r.return_reason, SUM(r.return_quantity) AS returned_units FROM commerce.returns AS r WHERE r.return_date >= $1 AND r.return_date < $2 GROUP BY r.return_reason ORDER BY returned_units DESC, r.return_reason ASC NULLS LAST LIMIT 2",
+      "parameters": [
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "columns": [
+        "return_reason",
+        "returned_units"
+      ],
+      "rows": [
+        {
+          "return_reason": "Changed mind",
+          "returned_units": 13
+        },
+        {
+          "return_reason": "Color differed from expectation",
+          "returned_units": 13
+        }
+      ],
+      "row_count": 2,
+      "elapsed_ms": 2289.515,
+      "result_sha256": "6abb24fa6a1bdf95c1b647d3e4a30cfb57b96249128c6a9a61adfce04dd04d35",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    },
+    {
+      "id": "B40-030",
+      "status": "PROVISIONAL_NOT_APPROVED",
+      "sql": "SELECT i.product_id, i.stockout_days FROM commerce.inventory AS i WHERE i.snapshot_date = $1 ORDER BY i.stockout_days DESC, i.product_id ASC LIMIT 5",
+      "parameters": [
+        "2025-10-31"
+      ],
+      "columns": [
+        "product_id",
+        "stockout_days"
+      ],
+      "rows": [
+        {
+          "product_id": 494,
+          "stockout_days": 5
+        },
+        {
+          "product_id": 777,
+          "stockout_days": 5
+        },
+        {
+          "product_id": 809,
+          "stockout_days": 5
+        },
+        {
+          "product_id": 2254,
+          "stockout_days": 5
+        },
+        {
+          "product_id": 808,
+          "stockout_days": 4
+        }
+      ],
+      "row_count": 5,
+      "elapsed_ms": 2174.854,
+      "result_sha256": "1db052aa45e92ca77de1df06983bc99a2c115cc6a096d16ad8cf68d4ab9b1b18",
+      "human_review": {
+        "reviewer_1": "PENDING",
+        "reviewer_2": "PENDING",
+        "adjudication": "PENDING"
+      }
+    }
+  ],
+  "v3_1_reference_lineage": {
+    "source_v3_case_set_sha256": "56ef0dd5ec0d2fc15539665b91a230a923e1836cc4a18cf5c6fe8fcd795146c6",
+    "source_v3_gold_sql_definition_sha256": "07a9a92d6761797b672ad57e40ea67cb72b3f7bb41b1df9cbaa96ce0ac3f0af0",
+    "unchanged_v3_reference_cases": 27,
+    "modified_gold_reexecuted_via_supabase_connector": 3,
+    "modified_gold_case_ids": [
+      "B40-002",
+      "B40-021",
+      "B40-024"
+    ],
+    "source_v3_reference_rows": 404,
+    "current_reference_rows": 404,
+    "preflight_note": "Inherited original frozen-snapshot fingerprint, source hash provenance and read-only generation record; this GitHub connector recheck does NOT independently verify a new least-privilege read-only database role. Re-run repository preflight/generator before formal freeze.",
+    "v3_review_human_approvals": 0
+  },
+  "revised_artifact_hashes": {
+    "cases_v3_1_draft_sha256": "f5030b254f81d237b73b50ef491df583cd0076f4c98a44958c6612afdb01a625",
+    "gold_sql_v3_1_draft_sha256": "bd3fde86d887493f82a2a498e3e58a4eb8beefa2af5d4b81596e6274158c4022"
+  }
+}

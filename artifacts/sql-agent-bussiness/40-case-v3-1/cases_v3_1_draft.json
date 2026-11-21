@@ -1,0 +1,3572 @@
+{
+  "format_version": "sql-business-benchmark.cases.v3.1-draft",
+  "status": "DRAFT_PENDING_HUMAN_REVIEW",
+  "case_count": 40,
+  "target_distribution": {
+    "execute": 30,
+    "clarify": 5,
+    "abstain_without_query": 5
+  },
+  "source_plan_sha256": "77a2487a275ff678c82d693d0be35c55bad834f169895fc0f5d67dfc6eafaa43",
+  "heldout_agent_executed": false,
+  "followup_mode": "context-conditioned SQL; no full conversational-memory claim",
+  "cases": [
+    {
+      "id": "B40-001",
+      "category": "aggregation_time",
+      "question": "Tổng số sessions theo từng tháng và traffic_source trong năm 2024.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "sum daily web sessions by month and traffic source",
+      "required_source_tables": [
+        "commerce.web_traffic"
+      ],
+      "required_columns": [
+        "commerce.web_traffic.date",
+        "commerce.web_traffic.sessions",
+        "commerce.web_traffic.traffic_source"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "All daily traffic rows in 2024; sessions are additive at date/source grain."
+      ],
+      "required_filters": [
+        "date >= 2024-01-01",
+        "date < 2025-01-01"
+      ],
+      "time_scope": {
+        "kind": "calendar_range",
+        "date_field": "commerce.web_traffic.date",
+        "start": "2024-01-01",
+        "end_exclusive": "2025-01-01"
+      },
+      "grouping_grain": [
+        "calendar month",
+        "traffic_source"
+      ],
+      "ranking": [
+        {
+          "field": "month",
+          "direction": "asc"
+        },
+        {
+          "field": "traffic_source",
+          "direction": "asc"
+        }
+      ],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "month",
+          "traffic_source",
+          "sessions"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-001",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Candidate requires two independent semantic reviews."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Candidate requires two independent semantic reviews."
+      },
+      "column_aliases": {
+        "month": [
+          "calendar_month"
+        ],
+        "traffic_source": [
+          "source_channel"
+        ],
+        "sessions": [
+          "total_sessions",
+          "session_count"
+        ]
+      }
+    },
+    {
+      "id": "B40-002",
+      "category": "aggregation_time",
+      "question": "Thời gian giao hàng trung bình theo tháng gửi trong năm 2025, chỉ tính shipment đã có delivery_date; cho biết thêm số shipment thiếu delivery_date theo từng tháng.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "mean calendar-day delivery time by ship month",
+      "required_source_tables": [
+        "commerce.shipments"
+      ],
+      "required_columns": [
+        "commerce.shipments.ship_date",
+        "commerce.shipments.delivery_date"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "Shipment rows with ship_date in 2025; average duration includes only recorded delivery_date rows, and a separate count reports rows with missing delivery_date."
+      ],
+      "required_filters": [
+        "ship_date >= 2025-01-01",
+        "ship_date < 2026-01-01",
+        "delivery_date IS NOT NULL for the average",
+        "delivery_date IS NULL for the missing-date count"
+      ],
+      "time_scope": {
+        "kind": "calendar_range",
+        "date_field": "commerce.shipments.ship_date",
+        "start": "2025-01-01",
+        "end_exclusive": "2026-01-01"
+      },
+      "grouping_grain": [
+        "calendar month of ship_date"
+      ],
+      "ranking": [
+        {
+          "field": "month",
+          "direction": "asc"
+        }
+      ],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "month",
+          "average_delivery_days",
+          "missing_delivery_date_count"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.0001,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-002",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Moved the ship-date population to 2025, where seven shipments lack delivery_date. The output now reports the missing-date count by month and averages only recorded delivery durations."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Moved the ship-date population to 2025, where seven shipments lack delivery_date. The output now reports the missing-date count by month and averages only recorded delivery durations."
+      },
+      "discriminative_review": {
+        "note": "Moved the ship-date population to 2025, where seven shipments lack delivery_date. The output now reports the missing-date count by month and averages only recorded delivery durations."
+      },
+      "column_aliases": {
+        "month": [
+          "calendar_month"
+        ],
+        "average_delivery_days": [
+          "avg_delivery_days",
+          "mean_delivery_days"
+        ],
+        "missing_delivery_date_count": [
+          "missing_delivery_count"
+        ]
+      }
+    },
+    {
+      "id": "B40-003",
+      "category": "aggregation_time",
+      "question": "Trong các tháng có return record, có bao nhiêu return record mỗi tháng năm 2025, tính theo return_date?",
+      "language": "vi",
+      "difficulty": "hard",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "distinct return count by calendar month",
+      "required_source_tables": [
+        "commerce.returns"
+      ],
+      "required_columns": [
+        "commerce.returns.return_id",
+        "commerce.returns.return_date"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "All return records dated in 2025."
+      ],
+      "required_filters": [
+        "return_date >= 2025-01-01",
+        "return_date < 2026-01-01"
+      ],
+      "time_scope": {
+        "kind": "calendar_range",
+        "date_field": "commerce.returns.return_date",
+        "start": "2025-01-01",
+        "end_exclusive": "2026-01-01"
+      },
+      "grouping_grain": [
+        "calendar month"
+      ],
+      "ranking": [
+        {
+          "field": "month",
+          "direction": "asc"
+        }
+      ],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "month",
+          "return_count"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-003",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Candidate requires two independent semantic reviews."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Candidate requires two independent semantic reviews."
+      },
+      "column_aliases": {
+        "month": [
+          "calendar_month"
+        ],
+        "return_count": [
+          "total_returns",
+          "returns_count"
+        ]
+      }
+    },
+    {
+      "id": "B40-004",
+      "category": "aggregation_time",
+      "question": "Giá trị đơn hàng trung bình theo tháng trong năm 2025, chỉ tính đơn đã giao.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "average order value: item net / distinct delivered orders with item rows",
+      "required_source_tables": [
+        "commerce.orders",
+        "commerce.order_items"
+      ],
+      "required_columns": [
+        "commerce.orders.order_id",
+        "commerce.orders.order_date",
+        "commerce.orders.order_status",
+        "commerce.order_items.order_id",
+        "commerce.order_items.quantity",
+        "commerce.order_items.unit_price",
+        "commerce.order_items.discount_amount"
+      ],
+      "required_joins": [
+        "commerce.orders.order_id = commerce.order_items.order_id"
+      ],
+      "required_population": [
+        "Delivered orders that have at least one order_item row."
+      ],
+      "required_filters": [
+        "order_status = delivered",
+        "order_date >= 2025-01-01",
+        "order_date < 2026-01-01"
+      ],
+      "time_scope": {
+        "kind": "calendar_range",
+        "date_field": "commerce.orders.order_date",
+        "start": "2025-01-01",
+        "end_exclusive": "2026-01-01"
+      },
+      "grouping_grain": [
+        "calendar month"
+      ],
+      "ranking": [
+        {
+          "field": "month",
+          "direction": "asc"
+        }
+      ],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "month",
+          "average_order_value"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-004",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Candidate requires two independent semantic reviews."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Candidate requires two independent semantic reviews."
+      },
+      "column_aliases": {
+        "month": [
+          "calendar_month"
+        ],
+        "average_order_value": [
+          "aov",
+          "avg_order_value"
+        ]
+      }
+    },
+    {
+      "id": "B40-005",
+      "category": "aggregation_time",
+      "question": "Tháng nào có tổng refund_amount cao nhất trong 6 tháng đầu năm 2024? Nếu bằng nhau, chọn tháng sớm hơn.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "sum refund amount by return month, ranked highest",
+      "required_source_tables": [
+        "commerce.returns"
+      ],
+      "required_columns": [
+        "commerce.returns.return_date",
+        "commerce.returns.refund_amount"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "All return rows from January through June 2024."
+      ],
+      "required_filters": [
+        "return_date >= 2024-01-01",
+        "return_date < 2024-07-01"
+      ],
+      "time_scope": {
+        "kind": "calendar_range",
+        "date_field": "commerce.returns.return_date",
+        "start": "2024-01-01",
+        "end_exclusive": "2024-07-01"
+      },
+      "grouping_grain": [
+        "calendar month"
+      ],
+      "ranking": [
+        {
+          "field": "refund_amount",
+          "direction": "desc"
+        },
+        {
+          "field": "month",
+          "direction": "asc"
+        }
+      ],
+      "top_n": 1,
+      "output_contract": {
+        "columns": [
+          "month",
+          "refund_amount"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-005",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Candidate requires two independent semantic reviews."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Candidate requires two independent semantic reviews."
+      },
+      "column_aliases": {
+        "month": [
+          "calendar_month"
+        ],
+        "refund_amount": [
+          "total_refund_amount",
+          "refund_total"
+        ]
+      }
+    },
+    {
+      "id": "B40-006",
+      "category": "filters_business_constraints",
+      "question": "Trong năm 2024, có bao nhiêu khách hàng đăng ký có profile ZIP ánh xạ đến thành phố Hai Phong và age_group là 25-34?",
+      "language": "vi",
+      "difficulty": "hard",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "distinct customers signed up in 2024 with profile ZIP mapped to city Hai Phong and age_group exactly 25-34",
+      "required_source_tables": [
+        "commerce.customers",
+        "commerce.geography"
+      ],
+      "required_columns": [
+        "commerce.customers.customer_id",
+        "commerce.customers.signup_date",
+        "commerce.customers.zip",
+        "commerce.customers.age_group",
+        "commerce.geography.zip",
+        "commerce.geography.city"
+      ],
+      "required_joins": [
+        "commerce.customers.zip = commerce.geography.zip"
+      ],
+      "required_population": [
+        "Customers who signed up in 2024, whose profile ZIP maps to Hai Phong, and whose age_group is 25-34."
+      ],
+      "required_filters": [
+        "geography.city = Hai Phong",
+        "age_group = 25-34",
+        "signup_date >= 2024-01-01",
+        "signup_date < 2025-01-01"
+      ],
+      "time_scope": {
+        "kind": "calendar_range",
+        "date_field": "commerce.customers.signup_date",
+        "start": "2024-01-01",
+        "end_exclusive": "2025-01-01"
+      },
+      "grouping_grain": [],
+      "ranking": [],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "customer_count"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-006",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Replaced no-op East/non-NULL filters with the verified profile-city Hai Phong and age_group 25-34; each filter and their intersection reduce the 2024 signup population."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Replaced no-op East/non-NULL filters with the verified profile-city Hai Phong and age_group 25-34; each filter and their intersection reduce the 2024 signup population."
+      },
+      "discriminative_review": {
+        "note": "Replaced no-op East/non-NULL filters with the verified profile-city Hai Phong and age_group 25-34; each filter and their intersection reduce the 2024 signup population."
+      },
+      "column_aliases": {
+        "customer_count": [
+          "distinct_customer_count",
+          "customers_count"
+        ]
+      }
+    },
+    {
+      "id": "B40-007",
+      "category": "filters_business_constraints",
+      "question": "Trong năm 2024, tổng revenue và COGS của những ngày có COGS lớn hơn revenue là bao nhiêu?",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "company revenue and COGS restricted to daily rows where cogs > revenue",
+      "required_source_tables": [
+        "commerce.sales"
+      ],
+      "required_columns": [
+        "commerce.sales.date",
+        "commerce.sales.revenue",
+        "commerce.sales.cogs"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "Daily company rows in 2024 where cogs exceeds revenue."
+      ],
+      "required_filters": [
+        "date >= 2024-01-01",
+        "date < 2025-01-01",
+        "cogs > revenue"
+      ],
+      "time_scope": {
+        "kind": "calendar_range",
+        "date_field": "commerce.sales.date",
+        "start": "2024-01-01",
+        "end_exclusive": "2025-01-01"
+      },
+      "grouping_grain": [],
+      "ranking": [],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "revenue",
+          "cogs"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-007",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Candidate requires two independent semantic reviews."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "replaced_contaminated_candidate",
+          "note": "Replaces original B40-007, a direct P02 paraphrase of delivered-order customer ranking."
+        },
+        "review_note": "Candidate requires two independent semantic reviews."
+      },
+      "column_aliases": {
+        "revenue": [
+          "total_revenue"
+        ],
+        "cogs": [
+          "total_cogs"
+        ]
+      }
+    },
+    {
+      "id": "B40-008",
+      "category": "filters_business_constraints",
+      "question": "Tổng refund_amount theo từng return_reason trong năm 2024, chỉ tính return_reason không NULL.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "sum observed refund amount by non-NULL return reason",
+      "required_source_tables": [
+        "commerce.returns"
+      ],
+      "required_columns": [
+        "commerce.returns.return_date",
+        "commerce.returns.return_reason",
+        "commerce.returns.refund_amount"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "Return rows dated in 2024 with a recorded non-NULL return_reason."
+      ],
+      "required_filters": [
+        "return_date >= 2024-01-01",
+        "return_date < 2025-01-01",
+        "return_reason IS NOT NULL"
+      ],
+      "time_scope": {
+        "kind": "calendar_range",
+        "date_field": "commerce.returns.return_date",
+        "start": "2024-01-01",
+        "end_exclusive": "2025-01-01"
+      },
+      "grouping_grain": [
+        "return_reason"
+      ],
+      "ranking": [
+        {
+          "field": "refund_amount",
+          "direction": "desc"
+        },
+        {
+          "field": "return_reason",
+          "direction": "asc"
+        }
+      ],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "return_reason",
+          "refund_amount"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-008",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Retained the 2024 return-reason question but recorded that return_reason is non-NULL for every available 2023-2025 return; this case cannot test the NULL exclusion on this snapshot."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Retained the 2024 return-reason question but recorded that return_reason is non-NULL for every available 2023-2025 return; this case cannot test the NULL exclusion on this snapshot."
+      },
+      "discriminative_review": {
+        "note": "Retained the 2024 return-reason question but recorded that return_reason is non-NULL for every available 2023-2025 return; this case cannot test the NULL exclusion on this snapshot."
+      },
+      "column_aliases": {
+        "refund_amount": [
+          "total_refund_amount",
+          "refund_total"
+        ]
+      }
+    },
+    {
+      "id": "B40-009",
+      "category": "filters_business_constraints",
+      "question": "Tổng inventory.units_sold cho category Outdoor tại snapshot 2025-10-31.",
+      "language": "vi",
+      "difficulty": "hard",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "sum recorded inventory-period units_sold for snapshot-stored category",
+      "required_source_tables": [
+        "commerce.inventory"
+      ],
+      "required_columns": [
+        "commerce.inventory.snapshot_date",
+        "commerce.inventory.category",
+        "commerce.inventory.units_sold"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "Observed inventory rows at one exact snapshot; units_sold is the inventory-period movement field, not order_items quantity."
+      ],
+      "required_filters": [
+        "snapshot_date = 2025-10-31",
+        "category = Outdoor"
+      ],
+      "time_scope": {
+        "kind": "snapshot",
+        "date_field": "commerce.inventory.snapshot_date",
+        "snapshot_dates": [
+          "2025-10-31"
+        ]
+      },
+      "grouping_grain": [],
+      "ranking": [],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "units_sold"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-009",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Replaces order-item quantity case that overlapped pilot P03; uses a separately governed inventory movement metric."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Replaces order-item quantity case that overlapped pilot P03; uses a separately governed inventory movement metric."
+      },
+      "column_aliases": {
+        "units_sold": [
+          "total_units_sold"
+        ]
+      }
+    },
+    {
+      "id": "B40-010",
+      "category": "filters_business_constraints",
+      "question": "Trong năm 2025, có bao nhiêu đơn từ paid_search được đặt trên thiết bị mobile?",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "distinct order count with two explicitly requested order attributes",
+      "required_source_tables": [
+        "commerce.orders"
+      ],
+      "required_columns": [
+        "commerce.orders.order_id",
+        "commerce.orders.order_date",
+        "commerce.orders.order_source",
+        "commerce.orders.device_type"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "All-status orders in 2025 matching the requested order_source and device_type."
+      ],
+      "required_filters": [
+        "order_date >= 2025-01-01",
+        "order_date < 2026-01-01",
+        "order_source = paid_search",
+        "device_type = mobile"
+      ],
+      "time_scope": {
+        "kind": "calendar_range",
+        "date_field": "commerce.orders.order_date",
+        "start": "2025-01-01",
+        "end_exclusive": "2026-01-01"
+      },
+      "grouping_grain": [],
+      "ranking": [],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "order_count"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-010",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Candidate requires two independent semantic reviews."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Candidate requires two independent semantic reviews."
+      },
+      "column_aliases": {
+        "order_count": [
+          "distinct_order_count",
+          "orders_count"
+        ]
+      }
+    },
+    {
+      "id": "B40-011",
+      "category": "grouping_ranking",
+      "question": "Rank the five products with the highest catalog COGS; return product_id and catalog cogs, ties by product_id ascending.",
+      "language": "en",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "top five catalog products by listed unit cogs; not realized transaction COGS",
+      "required_source_tables": [
+        "commerce.products"
+      ],
+      "required_columns": [
+        "commerce.products.product_id",
+        "commerce.products.cogs"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "Current catalog product rows; cogs is catalog-level and not a dated realized cost."
+      ],
+      "required_filters": [],
+      "time_scope": {
+        "kind": "all_records",
+        "date_field": null
+      },
+      "grouping_grain": [
+        "product_id"
+      ],
+      "ranking": [
+        {
+          "field": "catalog_cogs",
+          "direction": "desc"
+        },
+        {
+          "field": "product_id",
+          "direction": "asc"
+        }
+      ],
+      "top_n": 5,
+      "output_contract": {
+        "columns": [
+          "product_id",
+          "catalog_cogs"
+        ],
+        "ordered": true,
+        "max_rows": 200,
+        "order_policy_note": "Semantic order required by explicit ranking/TOP-N"
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-011",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Wording explicitly says catalog COGS to avoid implying realized cost or gross profit."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "replaced_contaminated_candidate",
+          "note": "Replaces the original B40-011 top-products-by-units query, which overlapped pilot P03 by metric, source, population and ranking intent."
+        },
+        "review_note": "Wording explicitly says catalog COGS to avoid implying realized cost or gross profit."
+      },
+      "column_aliases": {
+        "catalog_cogs": [
+          "unit_cogs",
+          "cogs_per_unit"
+        ]
+      }
+    },
+    {
+      "id": "B40-012",
+      "category": "grouping_ranking",
+      "question": "Xếp hạng order_source theo số đơn hàng trong năm 2024, tính mọi trạng thái; nếu bằng nhau sắp order_source tăng dần.",
+      "language": "vi",
+      "difficulty": "hard",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "distinct order count by order_source, all statuses",
+      "required_source_tables": [
+        "commerce.orders"
+      ],
+      "required_columns": [
+        "commerce.orders.order_id",
+        "commerce.orders.order_date",
+        "commerce.orders.order_source",
+        "commerce.orders.order_status"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "All 2024 orders, independent of status."
+      ],
+      "required_filters": [
+        "order_date >= 2024-01-01",
+        "order_date < 2025-01-01"
+      ],
+      "time_scope": {
+        "kind": "calendar_range",
+        "date_field": "commerce.orders.order_date",
+        "start": "2024-01-01",
+        "end_exclusive": "2025-01-01"
+      },
+      "grouping_grain": [
+        "order_source"
+      ],
+      "ranking": [
+        {
+          "field": "order_count",
+          "direction": "desc"
+        },
+        {
+          "field": "order_source",
+          "direction": "asc"
+        }
+      ],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "order_source",
+          "order_count"
+        ],
+        "ordered": true,
+        "max_rows": 200,
+        "order_policy_note": "Semantic order required by explicit ranking/TOP-N"
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-012",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Candidate requires two independent semantic reviews."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "replaced_contaminated_candidate",
+          "note": "Replaces original B40-012 top customers by revenue; the original shared entity/grain/year/ranking with pilot P02."
+        },
+        "review_note": "Candidate requires two independent semantic reviews."
+      },
+      "column_aliases": {
+        "order_source": [
+          "source_channel"
+        ],
+        "order_count": [
+          "distinct_order_count",
+          "orders_count"
+        ]
+      }
+    },
+    {
+      "id": "B40-013",
+      "category": "grouping_ranking",
+      "question": "Tại snapshot 2026-11-13, top 5 segment theo tổng units_received; nếu bằng nhau sắp segment tăng dần.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "sum inventory units_received by snapshot-stored segment",
+      "required_source_tables": [
+        "commerce.inventory"
+      ],
+      "required_columns": [
+        "commerce.inventory.snapshot_date",
+        "commerce.inventory.segment",
+        "commerce.inventory.units_received"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "Observed inventory product rows in exactly one snapshot."
+      ],
+      "required_filters": [
+        "snapshot_date = 2026-11-13"
+      ],
+      "time_scope": {
+        "kind": "snapshot",
+        "date_field": "commerce.inventory.snapshot_date",
+        "snapshot_dates": [
+          "2026-11-13"
+        ]
+      },
+      "grouping_grain": [
+        "segment"
+      ],
+      "ranking": [
+        {
+          "field": "units_received",
+          "direction": "desc"
+        },
+        {
+          "field": "segment",
+          "direction": "asc"
+        }
+      ],
+      "top_n": 5,
+      "output_contract": {
+        "columns": [
+          "segment",
+          "units_received"
+        ],
+        "ordered": true,
+        "max_rows": 200,
+        "order_policy_note": "Semantic order required by explicit ranking/TOP-N"
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-013",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Replacement avoids ranking stock_on_hand from the same snapshot as pilot P04; segment is read from the snapshot row."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Replacement avoids ranking stock_on_hand from the same snapshot as pilot P04; segment is read from the snapshot row."
+      },
+      "column_aliases": {
+        "units_received": [
+          "total_units_received"
+        ]
+      }
+    },
+    {
+      "id": "B40-014",
+      "category": "grouping_ranking",
+      "question": "Which destination cities had the most distinct customers with a delivered order in 2024? Return the top 5, ties by city ascending.",
+      "language": "en",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "distinct customers with delivered orders by destination city",
+      "required_source_tables": [
+        "commerce.orders",
+        "commerce.geography"
+      ],
+      "required_columns": [
+        "commerce.orders.order_id",
+        "commerce.orders.customer_id",
+        "commerce.orders.order_date",
+        "commerce.orders.order_status",
+        "commerce.orders.zip",
+        "commerce.geography.zip",
+        "commerce.geography.city"
+      ],
+      "required_joins": [
+        "commerce.orders.zip = commerce.geography.zip"
+      ],
+      "required_population": [
+        "Distinct customers with delivered orders whose order ZIP maps to a city."
+      ],
+      "required_filters": [
+        "order_status = delivered",
+        "order_date >= 2024-01-01",
+        "order_date < 2025-01-01"
+      ],
+      "time_scope": {
+        "kind": "calendar_range",
+        "date_field": "commerce.orders.order_date",
+        "start": "2024-01-01",
+        "end_exclusive": "2025-01-01"
+      },
+      "grouping_grain": [
+        "destination city"
+      ],
+      "ranking": [
+        {
+          "field": "customer_count",
+          "direction": "desc"
+        },
+        {
+          "field": "city",
+          "direction": "asc"
+        }
+      ],
+      "top_n": 5,
+      "output_contract": {
+        "columns": [
+          "city",
+          "customer_count"
+        ],
+        "ordered": true,
+        "max_rows": 200,
+        "order_policy_note": "Semantic order required by explicit ranking/TOP-N"
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-014",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Live preflight has 14 geography cities and one region value (East); city grain gives the ranking non-degenerate support."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Live preflight has 14 geography cities and one region value (East); city grain gives the ranking non-degenerate support."
+      },
+      "column_aliases": {
+        "city": [
+          "destination_city"
+        ],
+        "customer_count": [
+          "distinct_customer_count",
+          "customers_count"
+        ]
+      }
+    },
+    {
+      "id": "B40-015",
+      "category": "grouping_ranking",
+      "question": "Top 3 danh mục theo doanh thu dòng hàng sau discount_amount của các đơn đã giao trong năm 2025.",
+      "language": "vi",
+      "difficulty": "hard",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "delivered item net revenue by current product category",
+      "required_source_tables": [
+        "commerce.orders",
+        "commerce.order_items",
+        "commerce.products"
+      ],
+      "required_columns": [
+        "commerce.orders.order_id",
+        "commerce.orders.order_date",
+        "commerce.orders.order_status",
+        "commerce.order_items.order_id",
+        "commerce.order_items.product_id",
+        "commerce.order_items.quantity",
+        "commerce.order_items.unit_price",
+        "commerce.order_items.discount_amount",
+        "commerce.products.product_id",
+        "commerce.products.category"
+      ],
+      "required_joins": [
+        "commerce.orders.order_id = commerce.order_items.order_id",
+        "commerce.order_items.product_id = commerce.products.product_id"
+      ],
+      "required_population": [
+        "Delivered order-item rows in 2025; category is the current product catalog category."
+      ],
+      "required_filters": [
+        "order_status = delivered",
+        "order_date >= 2025-01-01",
+        "order_date < 2026-01-01"
+      ],
+      "time_scope": {
+        "kind": "calendar_range",
+        "date_field": "commerce.orders.order_date",
+        "start": "2025-01-01",
+        "end_exclusive": "2026-01-01"
+      },
+      "grouping_grain": [
+        "current product category"
+      ],
+      "ranking": [
+        {
+          "field": "net_revenue",
+          "direction": "desc"
+        },
+        {
+          "field": "category",
+          "direction": "asc"
+        }
+      ],
+      "top_n": 3,
+      "output_contract": {
+        "columns": [
+          "category",
+          "net_revenue"
+        ],
+        "ordered": true,
+        "max_rows": 200,
+        "order_policy_note": "Semantic order required by explicit ranking/TOP-N"
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-015",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Reduced TOP 5 to TOP 3 because the selected delivered-order population has four categories."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Reduced TOP 5 to TOP 3 because the selected delivered-order population has four categories."
+      },
+      "discriminative_review": {
+        "note": "Reduced TOP 5 to TOP 3 because the selected delivered-order population has four categories."
+      },
+      "column_aliases": {
+        "category": [
+          "product_category"
+        ],
+        "net_revenue": [
+          "net_item_revenue",
+          "total_net_revenue"
+        ]
+      }
+    },
+    {
+      "id": "B40-016",
+      "category": "joins_cross_domain",
+      "question": "Tổng return_quantity theo thành phố giao của đơn trong năm 2025, tính theo return_date.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "sum return quantity by order destination city and return-date year",
+      "required_source_tables": [
+        "commerce.returns",
+        "commerce.orders",
+        "commerce.geography"
+      ],
+      "required_columns": [
+        "commerce.returns.order_id",
+        "commerce.returns.return_date",
+        "commerce.returns.return_quantity",
+        "commerce.orders.order_id",
+        "commerce.orders.zip",
+        "commerce.geography.zip",
+        "commerce.geography.city"
+      ],
+      "required_joins": [
+        "commerce.returns.order_id = commerce.orders.order_id",
+        "commerce.orders.zip = commerce.geography.zip"
+      ],
+      "required_population": [
+        "Return rows dated in 2025 linked to an order; city is mapped from that order's destination ZIP."
+      ],
+      "required_filters": [
+        "return_date >= 2025-01-01",
+        "return_date < 2026-01-01"
+      ],
+      "time_scope": {
+        "kind": "calendar_range",
+        "date_field": "commerce.returns.return_date",
+        "start": "2025-01-01",
+        "end_exclusive": "2026-01-01"
+      },
+      "grouping_grain": [
+        "destination city"
+      ],
+      "ranking": [
+        {
+          "field": "returned_units",
+          "direction": "desc"
+        },
+        {
+          "field": "city",
+          "direction": "asc"
+        }
+      ],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "city",
+          "returned_units"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-016",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Uses the order's destination ZIP and return_date; the one-to-one geography lookup does not multiply return facts."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Uses the order's destination ZIP and return_date; the one-to-one geography lookup does not multiply return facts."
+      },
+      "column_aliases": {
+        "city": [
+          "destination_city"
+        ],
+        "returned_units": [
+          "total_returned_units",
+          "total_return_quantity"
+        ]
+      }
+    },
+    {
+      "id": "B40-017",
+      "category": "joins_cross_domain",
+      "question": "Tổng số lượng hàng trả theo product_id từ năm 2023 đến hết năm 2025, tính theo return_date.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "sum return_quantity per product_id over return_date 2023-01-01 through 2025-12-31, with no year grouping",
+      "required_source_tables": [
+        "commerce.returns"
+      ],
+      "required_columns": [
+        "commerce.returns.product_id",
+        "commerce.returns.return_date",
+        "commerce.returns.return_quantity"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "Return rows dated from 2023-01-01 through 2025-12-31; sum repeated return_quantity rows by product_id."
+      ],
+      "required_filters": [
+        "return_date >= 2023-01-01",
+        "return_date < 2026-01-01"
+      ],
+      "time_scope": {
+        "kind": "calendar_range",
+        "date_field": "commerce.returns.return_date",
+        "start": "2023-01-01",
+        "end_exclusive": "2026-01-01"
+      },
+      "grouping_grain": [
+        "product_id"
+      ],
+      "ranking": [
+        {
+          "field": "returned_units",
+          "direction": "desc"
+        },
+        {
+          "field": "product_id",
+          "direction": "asc"
+        }
+      ],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "product_id",
+          "returned_units"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-017",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Widened return_date to 2023-2025; 56 product groups combine multiple source return rows."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Widened return_date to 2023-2025; 56 product groups combine multiple source return rows."
+      },
+      "discriminative_review": {
+        "note": "Widened return_date to 2023-2025; 56 product groups combine multiple source return rows."
+      },
+      "column_aliases": {
+        "returned_units": [
+          "total_returned_units",
+          "total_return_quantity"
+        ]
+      }
+    },
+    {
+      "id": "B40-018",
+      "category": "joins_cross_domain",
+      "question": "Điểm đánh giá trung bình theo category hiện tại của sản phẩm, dùng toàn bộ review history.",
+      "language": "vi",
+      "difficulty": "hard",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "average review.rating by current product category",
+      "required_source_tables": [
+        "commerce.reviews",
+        "commerce.products"
+      ],
+      "required_columns": [
+        "commerce.reviews.product_id",
+        "commerce.reviews.rating",
+        "commerce.products.product_id",
+        "commerce.products.category"
+      ],
+      "required_joins": [
+        "commerce.reviews.product_id = commerce.products.product_id"
+      ],
+      "required_population": [
+        "All review rows, grouped using the current products.category attribute."
+      ],
+      "required_filters": [],
+      "time_scope": {
+        "kind": "all_records",
+        "date_field": null
+      },
+      "grouping_grain": [
+        "current product category"
+      ],
+      "ranking": [
+        {
+          "field": "avg_rating",
+          "direction": "desc"
+        },
+        {
+          "field": "category",
+          "direction": "asc"
+        }
+      ],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "category",
+          "avg_rating"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.0001,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-018",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Candidate requires two independent semantic reviews."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Candidate requires two independent semantic reviews."
+      },
+      "column_aliases": {
+        "category": [
+          "product_category"
+        ],
+        "avg_rating": [
+          "average_rating",
+          "mean_rating"
+        ]
+      }
+    },
+    {
+      "id": "B40-019",
+      "category": "joins_cross_domain",
+      "question": "Tổng payment_value đã ghi nhận theo payment_method cho các đơn có order_date trong năm 2025.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "sum recorded payment_value by payment method and order date",
+      "required_source_tables": [
+        "commerce.orders",
+        "commerce.payments"
+      ],
+      "required_columns": [
+        "commerce.orders.order_id",
+        "commerce.orders.order_date",
+        "commerce.payments.order_id",
+        "commerce.payments.payment_method",
+        "commerce.payments.payment_value"
+      ],
+      "required_joins": [
+        "commerce.orders.order_id = commerce.payments.order_id"
+      ],
+      "required_population": [
+        "Existing payment rows linked to orders dated in 2025; missing payment rows are not imputed as zero."
+      ],
+      "required_filters": [
+        "order_date >= 2025-01-01",
+        "order_date < 2026-01-01"
+      ],
+      "time_scope": {
+        "kind": "calendar_range",
+        "date_field": "commerce.orders.order_date",
+        "start": "2025-01-01",
+        "end_exclusive": "2026-01-01"
+      },
+      "grouping_grain": [
+        "payments.payment_method"
+      ],
+      "ranking": [
+        {
+          "field": "payment_value",
+          "direction": "desc"
+        },
+        {
+          "field": "payment_method",
+          "direction": "asc"
+        }
+      ],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "payment_method",
+          "payment_value"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-019",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Candidate requires two independent semantic reviews."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Candidate requires two independent semantic reviews."
+      },
+      "column_aliases": {
+        "payment_method": [
+          "method"
+        ],
+        "payment_value": [
+          "total_payment_value"
+        ]
+      }
+    },
+    {
+      "id": "B40-020",
+      "category": "joins_cross_domain",
+      "question": "Phí shipping trung bình theo thành phố giao hàng, cho các shipment có ship_date trong năm 2025; báo thêm số phí không NULL.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "average recorded shipping_fee by destination city and ship-date year",
+      "required_source_tables": [
+        "commerce.shipments",
+        "commerce.orders",
+        "commerce.geography"
+      ],
+      "required_columns": [
+        "commerce.shipments.order_id",
+        "commerce.shipments.ship_date",
+        "commerce.shipments.shipping_fee",
+        "commerce.orders.order_id",
+        "commerce.orders.zip",
+        "commerce.geography.zip",
+        "commerce.geography.city"
+      ],
+      "required_joins": [
+        "commerce.shipments.order_id = commerce.orders.order_id",
+        "commerce.orders.zip = commerce.geography.zip"
+      ],
+      "required_population": [
+        "Shipment rows with ship_date in 2025; AVG excludes NULL shipping_fee and count reports the observed denominator."
+      ],
+      "required_filters": [
+        "ship_date >= 2025-01-01",
+        "ship_date < 2026-01-01"
+      ],
+      "time_scope": {
+        "kind": "calendar_range",
+        "date_field": "commerce.shipments.ship_date",
+        "start": "2025-01-01",
+        "end_exclusive": "2026-01-01"
+      },
+      "grouping_grain": [
+        "destination city"
+      ],
+      "ranking": [
+        {
+          "field": "average_shipping_fee",
+          "direction": "desc"
+        },
+        {
+          "field": "city",
+          "direction": "asc"
+        }
+      ],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "city",
+          "average_shipping_fee",
+          "fee_observation_count"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-020",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Retained the shipping-fee business metric. All 728 2025 shipments have a recorded shipping_fee, so this case makes no claim that it tests NULL-fee handling."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Retained the shipping-fee business metric. All 728 2025 shipments have a recorded shipping_fee, so this case makes no claim that it tests NULL-fee handling."
+      },
+      "discriminative_review": {
+        "note": "Retained the shipping-fee business metric. All 728 2025 shipments have a recorded shipping_fee, so this case makes no claim that it tests NULL-fee handling."
+      },
+      "column_aliases": {
+        "city": [
+          "destination_city"
+        ],
+        "average_shipping_fee": [
+          "avg_shipping_fee"
+        ],
+        "fee_observation_count": [
+          "shipping_fee_count"
+        ]
+      }
+    },
+    {
+      "id": "B40-021",
+      "category": "inventory_null_semantics",
+      "question": "Tại snapshot 2026-11-13, đếm số sản phẩm có stockout_flag = TRUE theo từng category.",
+      "language": "vi",
+      "difficulty": "hard",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "count snapshot-recorded products with stockout_flag by category",
+      "required_source_tables": [
+        "commerce.inventory"
+      ],
+      "required_columns": [
+        "commerce.inventory.snapshot_date",
+        "commerce.inventory.product_id",
+        "commerce.inventory.category",
+        "commerce.inventory.stockout_flag"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "Observed product rows at exactly snapshot 2026-11-13; count products with stockout_flag = TRUE by category. Observed-product denominator is not requested."
+      ],
+      "required_filters": [
+        "snapshot_date = 2026-11-13",
+        "stockout_flag = TRUE for stockout_product_count"
+      ],
+      "time_scope": {
+        "kind": "snapshot",
+        "date_field": "commerce.inventory.snapshot_date",
+        "snapshot_dates": [
+          "2026-11-13"
+        ]
+      },
+      "grouping_grain": [
+        "snapshot-recorded category"
+      ],
+      "ranking": [
+        {
+          "field": "stockout_product_count",
+          "direction": "desc"
+        },
+        {
+          "field": "category",
+          "direction": "asc"
+        }
+      ],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "category",
+          "stockout_product_count"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-021",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Made the requested population explicitly stockout_flag = TRUE; the frozen snapshot has both TRUE and FALSE values, so IS NOT NULL is a distinguishable incorrect predicate."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "replaced_contaminated_candidate",
+          "note": "Replaces the original B40-021 top-five stock ranking, which duplicated pilot P04 by snapshot, metric, population and ranking."
+        },
+        "review_note": "Made the requested population explicitly stockout_flag = TRUE; the frozen snapshot has both TRUE and FALSE values, so IS NOT NULL is a distinguishable incorrect predicate."
+      },
+      "discriminative_review": {
+        "note": "Made the requested population explicitly stockout_flag = TRUE; the frozen snapshot has both TRUE and FALSE values, so IS NOT NULL is a distinguishable incorrect predicate."
+      },
+      "column_aliases": {
+        "category": [
+          "product_category"
+        ],
+        "stockout_product_count": [
+          "stockout_count"
+        ]
+      }
+    },
+    {
+      "id": "B40-022",
+      "category": "inventory_null_semantics",
+      "question": "Theo từng snapshot tồn kho từ 2023-01-31 đến 2026-11-13, đếm số product có và không có days_of_supply; giữ NULL riêng, không thay bằng 0.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "per-snapshot observed and missing days_of_supply counts",
+      "required_source_tables": [
+        "commerce.inventory"
+      ],
+      "required_columns": [
+        "commerce.inventory.snapshot_date",
+        "commerce.inventory.product_id",
+        "commerce.inventory.days_of_supply"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "Every observed product row per inventory snapshot in the available range."
+      ],
+      "required_filters": [
+        "snapshot_date >= 2023-01-31",
+        "snapshot_date <= 2026-11-13"
+      ],
+      "time_scope": {
+        "kind": "snapshot_range",
+        "date_field": "commerce.inventory.snapshot_date",
+        "start": "2023-01-31",
+        "end_inclusive": "2026-11-13"
+      },
+      "grouping_grain": [
+        "snapshot_date"
+      ],
+      "ranking": [
+        {
+          "field": "snapshot_date",
+          "direction": "asc"
+        }
+      ],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "snapshot_date",
+          "products_with_days_of_supply",
+          "products_without_days_of_supply"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-022",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Live data has 47 monthly snapshots; days_of_supply is NULL for all products in 34 earlier snapshots, so this case is discriminative for NULL preservation."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Live data has 47 monthly snapshots; days_of_supply is NULL for all products in 34 earlier snapshots, so this case is discriminative for NULL preservation."
+      },
+      "column_aliases": {
+        "snapshot_date": [
+          "inventory_snapshot_date"
+        ],
+        "products_with_days_of_supply": [
+          "nonnull_days_of_supply_count"
+        ],
+        "products_without_days_of_supply": [
+          "null_days_of_supply_count"
+        ]
+      }
+    },
+    {
+      "id": "B40-023",
+      "category": "inventory_null_semantics",
+      "question": "So sánh stock_on_hand của các product_id xuất hiện ở cả snapshot 2025-09-30 và 2025-10-31; trả về before, after và after trừ before.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "stock_on_hand delta for products observed at both exact dates",
+      "required_source_tables": [
+        "commerce.inventory"
+      ],
+      "required_columns": [
+        "commerce.inventory.snapshot_date",
+        "commerce.inventory.product_id",
+        "commerce.inventory.stock_on_hand"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "Only product IDs observed in both exact snapshots."
+      ],
+      "required_filters": [
+        "snapshot_date = 2025-09-30 OR snapshot_date = 2025-10-31",
+        "same product observed on both dates"
+      ],
+      "time_scope": {
+        "kind": "two_snapshot_comparison",
+        "date_field": "commerce.inventory.snapshot_date",
+        "snapshot_dates": [
+          "2025-09-30",
+          "2025-10-31"
+        ],
+        "comparison": "after - before"
+      },
+      "grouping_grain": [
+        "product_id"
+      ],
+      "ranking": [
+        {
+          "field": "stock_delta",
+          "direction": "desc"
+        },
+        {
+          "field": "product_id",
+          "direction": "asc"
+        }
+      ],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "product_id",
+          "stock_before",
+          "stock_after",
+          "stock_delta"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-023",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Kept the exact requested snapshot comparison and recorded that both snapshots contain the same 97 product IDs; membership-intersection logic is observationally redundant on this snapshot."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "Pilot P04 is a one-snapshot stock ranking; this compares two older exact snapshots and only common products."
+        },
+        "review_note": "Kept the exact requested snapshot comparison and recorded that both snapshots contain the same 97 product IDs; membership-intersection logic is observationally redundant on this snapshot."
+      },
+      "discriminative_review": {
+        "note": "Kept the exact requested snapshot comparison and recorded that both snapshots contain the same 97 product IDs; membership-intersection logic is observationally redundant on this snapshot."
+      },
+      "column_aliases": {
+        "stock_before": [
+          "stock_on_hand_before"
+        ],
+        "stock_after": [
+          "stock_on_hand_after"
+        ],
+        "stock_delta": [
+          "stock_change",
+          "change_in_stock"
+        ]
+      }
+    },
+    {
+      "id": "B40-024",
+      "category": "inventory_null_semantics",
+      "question": "Tổng stock_on_hand tại từng snapshot từ 2025-09-30 đến 2025-11-30; giữ mỗi snapshot thành một dòng và không cộng số dư giữa các ngày.",
+      "language": "vi",
+      "difficulty": "hard",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "per-snapshot sum of observed stock balances, without cross-date summation",
+      "required_source_tables": [
+        "commerce.inventory"
+      ],
+      "required_columns": [
+        "commerce.inventory.snapshot_date",
+        "commerce.inventory.product_id",
+        "commerce.inventory.stock_on_hand"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "Observed product rows; aggregate stock only within each same-date snapshot."
+      ],
+      "required_filters": [
+        "snapshot_date >= 2025-09-30",
+        "snapshot_date <= 2025-11-30"
+      ],
+      "time_scope": {
+        "kind": "snapshot_range",
+        "date_field": "commerce.inventory.snapshot_date",
+        "start": "2025-09-30",
+        "end_inclusive": "2025-11-30"
+      },
+      "grouping_grain": [
+        "snapshot_date"
+      ],
+      "ranking": [
+        {
+          "field": "snapshot_date",
+          "direction": "asc"
+        }
+      ],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "snapshot_date",
+          "observed_stock_total"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-024",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Candidate requires two independent semantic reviews."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Candidate requires two independent semantic reviews."
+      },
+      "column_aliases": {
+        "snapshot_date": [
+          "inventory_snapshot_date"
+        ],
+        "observed_stock_total": [
+          "total_stock_on_hand"
+        ]
+      }
+    },
+    {
+      "id": "B40-025",
+      "category": "inventory_null_semantics",
+      "question": "Tại snapshot 2025-10-31, tính trung bình days_of_supply theo category được ghi trong inventory row; báo số non-NULL và NULL, không thay NULL bằng 0.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "mean stored days_of_supply by snapshot-recorded category with explicit NULL counts",
+      "required_source_tables": [
+        "commerce.inventory"
+      ],
+      "required_columns": [
+        "commerce.inventory.snapshot_date",
+        "commerce.inventory.category",
+        "commerce.inventory.days_of_supply"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "Inventory rows from exactly one snapshot; category comes from the snapshot row, not current products."
+      ],
+      "required_filters": [
+        "snapshot_date = 2025-10-31"
+      ],
+      "time_scope": {
+        "kind": "snapshot",
+        "date_field": "commerce.inventory.snapshot_date",
+        "snapshot_dates": [
+          "2025-10-31"
+        ]
+      },
+      "grouping_grain": [
+        "snapshot-recorded category"
+      ],
+      "ranking": [
+        {
+          "field": "average_days_of_supply",
+          "direction": "desc"
+        },
+        {
+          "field": "category",
+          "direction": "asc"
+        }
+      ],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "category",
+          "average_days_of_supply",
+          "nonnull_product_count",
+          "null_product_count"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "provenance": {
+        "original_candidate_id": "B40-025",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "B40-025 intentionally exercises an all-NULL historical field at this date; inventory.category is present in the snapshot table, so products is not required."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "B40-025 intentionally exercises an all-NULL historical field at this date; inventory.category is present in the snapshot table, so products is not required."
+      },
+      "column_aliases": {
+        "category": [
+          "product_category"
+        ],
+        "average_days_of_supply": [
+          "avg_days_of_supply"
+        ],
+        "nonnull_product_count": [
+          "known_supply_count"
+        ],
+        "null_product_count": [
+          "missing_supply_count"
+        ]
+      }
+    },
+    {
+      "id": "B40-026",
+      "category": "sql_followup_context",
+      "question": "Hãy trình bày theo từng tháng.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "company COGS by month inherited from 2024 context",
+      "required_source_tables": [
+        "commerce.sales"
+      ],
+      "required_columns": [
+        "commerce.sales.date",
+        "commerce.sales.cogs"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "Company daily sales rows in inherited calendar year 2024."
+      ],
+      "required_filters": [
+        "inherit year=2024",
+        "date >= 2024-01-01",
+        "date < 2025-01-01"
+      ],
+      "time_scope": {
+        "kind": "followup_inherited",
+        "date_field": "commerce.sales.date",
+        "start": "2024-01-01",
+        "end_exclusive": "2025-01-01",
+        "inherited": true
+      },
+      "grouping_grain": [
+        "calendar month"
+      ],
+      "ranking": [
+        {
+          "field": "month",
+          "direction": "asc"
+        }
+      ],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "month",
+          "cogs"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "conversation_setup": {
+        "mode": "frozen_context_injection",
+        "prior_user_question": "Tổng COGS của các bản ghi sales trong năm 2024 là bao nhiêu?",
+        "semantic_context": {
+          "metric": "company_cogs",
+          "source": "commerce.sales",
+          "date_field": "date",
+          "start": "2024-01-01",
+          "end_exclusive": "2025-01-01",
+          "population": "all company sales rows",
+          "grouping": []
+        },
+        "semantic_context_sha256": "97de16822d1bbafa9190fd5bc0296f7c459dc5bd7a899b0bf1b62a89dc546677",
+        "assistant_output_injected": false,
+        "context_source": "frozen prior user question and approved typed semantic state; no assistant answer, SQL, parameters, or result rows",
+        "adapter_version": "context-conditioned-sql.v1",
+        "evaluation_mode": "context-conditioned SQL; not conversational-memory evaluation"
+      },
+      "provenance": {
+        "original_candidate_id": "B40-026",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Shortened the follow-up so COGS and the 2024 interval must be inherited from the frozen prior user request."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "Follow-up has a frozen context-injection setup; the seed prompt is not a scored case."
+        },
+        "review_note": "Shortened the follow-up so COGS and the 2024 interval must be inherited from the frozen prior user request."
+      },
+      "discriminative_review": {
+        "note": "Shortened the follow-up so COGS and the 2024 interval must be inherited from the frozen prior user request."
+      },
+      "column_aliases": {
+        "month": [
+          "calendar_month"
+        ],
+        "cogs": [
+          "total_cogs"
+        ]
+      }
+    },
+    {
+      "id": "B40-027",
+      "category": "sql_followup_context",
+      "question": "Với thống kê order_source vừa rồi, chỉ giữ các đơn đã giao.",
+      "language": "vi",
+      "difficulty": "hard",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "distinct delivered order count by inherited order_source/year",
+      "required_source_tables": [
+        "commerce.orders"
+      ],
+      "required_columns": [
+        "commerce.orders.order_id",
+        "commerce.orders.order_date",
+        "commerce.orders.order_status",
+        "commerce.orders.order_source"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "Delivered orders in inherited calendar year 2025, preserving order_source grain."
+      ],
+      "required_filters": [
+        "inherit order_date year=2025",
+        "order_status = delivered"
+      ],
+      "time_scope": {
+        "kind": "followup_inherited",
+        "date_field": "commerce.orders.order_date",
+        "start": "2025-01-01",
+        "end_exclusive": "2026-01-01",
+        "inherited": true
+      },
+      "grouping_grain": [
+        "order_source"
+      ],
+      "ranking": [
+        {
+          "field": "order_count",
+          "direction": "desc"
+        },
+        {
+          "field": "order_source",
+          "direction": "asc"
+        }
+      ],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "order_source",
+          "order_count"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "conversation_setup": {
+        "mode": "frozen_context_injection",
+        "prior_user_question": "Count orders by order_source during 2025, including every status.",
+        "semantic_context": {
+          "metric": "distinct_order_count",
+          "source": "commerce.orders",
+          "date_field": "order_date",
+          "start": "2025-01-01",
+          "end_exclusive": "2026-01-01",
+          "grouping": [
+            "order_source"
+          ],
+          "population": "all order statuses"
+        },
+        "semantic_context_sha256": "bd27cc25e45d13e512b6b1de43ae566d1fba451c6da8903e3dc23a85f4b7d129",
+        "assistant_output_injected": false,
+        "context_source": "frozen prior user question and approved typed semantic state; no assistant answer, SQL, parameters, or result rows",
+        "adapter_version": "context-conditioned-sql.v1",
+        "evaluation_mode": "context-conditioned SQL; not conversational-memory evaluation"
+      },
+      "provenance": {
+        "original_candidate_id": "B40-027",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Moved the inherited all-status order_source seed scope to 2025, where only 719 of 733 orders are delivered; the follow-up must add the delivered population filter."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "Follow-up has a frozen context-injection setup; the seed prompt is not a scored case."
+        },
+        "review_note": "Moved the inherited all-status order_source seed scope to 2025, where only 719 of 733 orders are delivered; the follow-up must add the delivered population filter."
+      },
+      "discriminative_review": {
+        "note": "Moved the inherited all-status order_source seed scope to 2025, where only 719 of 733 orders are delivered; the follow-up must add the delivered population filter."
+      },
+      "column_aliases": {
+        "order_source": [
+          "source_channel"
+        ],
+        "order_count": [
+          "distinct_order_count",
+          "orders_count"
+        ]
+      }
+    },
+    {
+      "id": "B40-028",
+      "category": "sql_followup_context",
+      "question": "Còn so với năm trước theo từng tháng thì sao?",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "aligned monthly company gross profit comparison, 2024 versus 2023",
+      "required_source_tables": [
+        "commerce.sales"
+      ],
+      "required_columns": [
+        "commerce.sales.date",
+        "commerce.sales.revenue",
+        "commerce.sales.cogs"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "All company daily rows in 2023 and 2024; inherit gross profit for 2024 and compare the same calendar month in 2023."
+      ],
+      "required_filters": [
+        "inherit current gross_profit metric and year=2024",
+        "date >= 2023-01-01",
+        "date < 2025-01-01"
+      ],
+      "time_scope": {
+        "kind": "followup_comparison",
+        "date_field": "commerce.sales.date",
+        "start": "2023-01-01",
+        "end_exclusive": "2025-01-01",
+        "inherited": true,
+        "comparison": "aligned calendar months, 2024 minus 2023"
+      },
+      "grouping_grain": [
+        "calendar month paired across 2023 and 2024"
+      ],
+      "ranking": [
+        {
+          "field": "month",
+          "direction": "asc"
+        }
+      ],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "month",
+          "gross_profit_2023",
+          "gross_profit_2024",
+          "difference_2024_minus_2023"
+        ],
+        "ordered": false,
+        "max_rows": 200,
+        "order_policy_note": "Compare results as an unordered multiset; Gold SQL ORDER BY is for deterministic display only."
+      },
+      "null_policy": "If either year's monthly gross_profit is absent or NULL, preserve that NULL and return NULL for difference_2024_minus_2023; do not substitute zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "conversation_setup": {
+        "mode": "frozen_context_injection",
+        "prior_user_question": "Gross profit theo từng tháng trong năm 2024 là bao nhiêu?",
+        "semantic_context": {
+          "metric": "company_gross_profit",
+          "formula": "SUM(revenue)-SUM(cogs)",
+          "source": "commerce.sales",
+          "date_field": "date",
+          "start": "2024-01-01",
+          "end_exclusive": "2025-01-01",
+          "grouping": [
+            "calendar month"
+          ]
+        },
+        "semantic_context_sha256": "9fc68c2e044b966e216f404748460d6c90645c705775f51477beb4a73954cdc5",
+        "assistant_output_injected": false,
+        "context_source": "frozen prior user question and approved typed semantic state; no assistant answer, SQL, parameters, or result rows",
+        "adapter_version": "context-conditioned-sql.v1",
+        "evaluation_mode": "context-conditioned SQL; not conversational-memory evaluation"
+      },
+      "provenance": {
+        "original_candidate_id": "B40-028",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Changed the follow-up to inherit gross profit and 2024 from its seed, then compare aligned months against 2023 with explicit paired business columns."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "Follow-up has a frozen context-injection setup; the seed prompt is not a scored case."
+        },
+        "review_note": "Changed the follow-up to inherit gross profit and 2024 from its seed, then compare aligned months against 2023 with explicit paired business columns."
+      },
+      "discriminative_review": {
+        "note": "Changed the follow-up to inherit gross profit and 2024 from its seed, then compare aligned months against 2023 with explicit paired business columns."
+      },
+      "column_aliases": {
+        "month": [
+          "month_of_year"
+        ],
+        "gross_profit_2023": [
+          "profit_2023"
+        ],
+        "gross_profit_2024": [
+          "profit_2024"
+        ],
+        "difference_2024_minus_2023": [
+          "gross_profit_change",
+          "profit_delta"
+        ]
+      }
+    },
+    {
+      "id": "B40-029",
+      "category": "sql_followup_context",
+      "question": "Trong bảng xếp hạng vừa rồi, chỉ hiện top 2; nếu hòa, xếp tên reason tăng dần.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "top two return reasons by total returned_quantity in the inherited 2024 scope; break ties by return_reason ascending",
+      "required_source_tables": [
+        "commerce.returns"
+      ],
+      "required_columns": [
+        "commerce.returns.return_reason",
+        "commerce.returns.return_date",
+        "commerce.returns.return_quantity"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "Return rows dated in inherited calendar year 2024, grouped by return_reason."
+      ],
+      "required_filters": [
+        "inherit return_date year=2024"
+      ],
+      "time_scope": {
+        "kind": "followup_inherited",
+        "date_field": "commerce.returns.return_date",
+        "start": "2024-01-01",
+        "end_exclusive": "2025-01-01",
+        "inherited": true
+      },
+      "grouping_grain": [
+        "return_reason"
+      ],
+      "ranking": [
+        {
+          "field": "returned_units",
+          "direction": "desc"
+        },
+        {
+          "field": "return_reason",
+          "direction": "asc"
+        }
+      ],
+      "top_n": 2,
+      "output_contract": {
+        "columns": [
+          "return_reason",
+          "returned_units"
+        ],
+        "ordered": true,
+        "max_rows": 200,
+        "order_policy_note": "Semantic order required by explicit ranking/TOP-N"
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "conversation_setup": {
+        "mode": "frozen_context_injection",
+        "prior_user_question": "Xếp hạng return_reason theo tổng return_quantity trong năm 2024, giảm dần; nếu bằng nhau, xếp tên reason tăng dần.",
+        "semantic_context": {
+          "metric": "sum_return_quantity",
+          "source": "commerce.returns",
+          "date_field": "return_date",
+          "start": "2024-01-01",
+          "end_exclusive": "2025-01-01",
+          "grouping": [
+            "return_reason"
+          ],
+          "ranking": [
+            [
+              "returned_units",
+              "desc"
+            ],
+            [
+              "return_reason",
+              "asc"
+            ]
+          ]
+        },
+        "semantic_context_sha256": "31862b57928ae1c40aeb33d3eade8893cbb862f58d9db5643ed450a7f7a1cc7b",
+        "assistant_output_injected": false,
+        "context_source": "frozen prior user question and approved typed semantic state; no assistant answer, SQL, parameters, or result rows",
+        "adapter_version": "context-conditioned-sql.v1",
+        "evaluation_mode": "context-conditioned SQL; not conversational-memory evaluation"
+      },
+      "provenance": {
+        "original_candidate_id": "B40-029",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Changed the follow-up limit from TOP 3 to TOP 2; all three return reasons exist in the inherited 2024 scope."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "Follow-up has a frozen context-injection setup; the seed prompt is not a scored case."
+        },
+        "review_note": "Changed the follow-up limit from TOP 3 to TOP 2; all three return reasons exist in the inherited 2024 scope."
+      },
+      "discriminative_review": {
+        "note": "Changed the follow-up limit from TOP 3 to TOP 2; all three return reasons exist in the inherited 2024 scope."
+      },
+      "column_aliases": {
+        "returned_units": [
+          "total_returned_units",
+          "total_return_quantity"
+        ]
+      }
+    },
+    {
+      "id": "B40-030",
+      "category": "sql_followup_context",
+      "question": "Tiếp tục dùng snapshot vừa chọn; xếp hạng top 5 product theo stockout_days giảm dần, tie-break product_id tăng dần.",
+      "language": "vi",
+      "difficulty": "hard",
+      "expected_behavior": "execute",
+      "required_metric_or_intent": "recorded stockout_days by product at inherited exact snapshot",
+      "required_source_tables": [
+        "commerce.inventory"
+      ],
+      "required_columns": [
+        "commerce.inventory.snapshot_date",
+        "commerce.inventory.product_id",
+        "commerce.inventory.stockout_days"
+      ],
+      "required_joins": [],
+      "required_population": [
+        "Observed inventory product rows at inherited exact snapshot 2025-10-31."
+      ],
+      "required_filters": [
+        "inherit snapshot_date = 2025-10-31"
+      ],
+      "time_scope": {
+        "kind": "followup_inherited",
+        "date_field": "commerce.inventory.snapshot_date",
+        "snapshot_dates": [
+          "2025-10-31"
+        ],
+        "inherited": true
+      },
+      "grouping_grain": [
+        "product_id"
+      ],
+      "ranking": [
+        {
+          "field": "stockout_days",
+          "direction": "desc"
+        },
+        {
+          "field": "product_id",
+          "direction": "asc"
+        }
+      ],
+      "top_n": 5,
+      "output_contract": {
+        "columns": [
+          "product_id",
+          "stockout_days"
+        ],
+        "ordered": true,
+        "max_rows": 200,
+        "order_policy_note": "Semantic order required by explicit ranking/TOP-N"
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": null,
+      "conversation_setup": {
+        "mode": "frozen_context_injection",
+        "prior_user_question": "Tại snapshot 2025-10-31, hãy liệt kê product_id và days_of_supply được ghi nhận.",
+        "semantic_context": {
+          "metric": "days_of_supply",
+          "source": "commerce.inventory",
+          "date_field": "snapshot_date",
+          "snapshot_date": "2025-10-31",
+          "grouping": [
+            "product_id"
+          ]
+        },
+        "semantic_context_sha256": "b3121353163df9daf6de470d04318e3dd0504ef3ff8407a751f7a37f6c08fa3f",
+        "assistant_output_injected": false,
+        "context_source": "frozen prior user question and approved typed semantic state; no assistant answer, SQL, parameters, or result rows",
+        "adapter_version": "context-conditioned-sql.v1",
+        "evaluation_mode": "context-conditioned SQL; not conversational-memory evaluation"
+      },
+      "provenance": {
+        "original_candidate_id": "B40-030",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Context preservation is specified, but the current pilot runner has no context-injection adapter."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "Follow-up has a frozen context-injection setup; the seed prompt is not a scored case."
+        },
+        "review_note": "Context preservation is specified, but the current pilot runner has no context-injection adapter."
+      },
+      "column_aliases": {
+        "stockout_days": [
+          "days_stocked_out"
+        ]
+      }
+    },
+    {
+      "id": "B40-031",
+      "category": "genuine_clarification",
+      "question": "Doanh thu tăng bao nhiêu so với kỳ trước?",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "clarify",
+      "required_metric_or_intent": "clarify comparison periods and the meaning of increase",
+      "required_source_tables": [],
+      "required_columns": [],
+      "required_joins": [],
+      "required_population": [],
+      "required_filters": [],
+      "time_scope": {
+        "kind": "unspecified"
+      },
+      "grouping_grain": [],
+      "ranking": [],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "clarification"
+        ],
+        "ordered": false,
+        "max_rows": 200
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": "Bạn muốn so sánh doanh thu của những khoảng thời gian nào, và dùng doanh thu company-level trong commerce.sales hay doanh thu dòng hàng của đơn đã giao?",
+      "provenance": {
+        "original_candidate_id": "B40-031",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Must clarify both time baseline and revenue definition; do not choose a period or metric silently."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "replaced_contaminated_candidate",
+          "note": "Replaces original B40-031, which was answerable total revenue for 2025 and duplicated pilot P01."
+        },
+        "review_note": "Must clarify both time baseline and revenue definition; do not choose a period or metric silently."
+      }
+    },
+    {
+      "id": "B40-032",
+      "category": "genuine_clarification",
+      "question": "Khách hàng nào tốt nhất?",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "clarify",
+      "required_metric_or_intent": "clarify customer success metric, time scope, and ranking grain",
+      "required_source_tables": [],
+      "required_columns": [],
+      "required_joins": [],
+      "required_population": [],
+      "required_filters": [],
+      "time_scope": {
+        "kind": "unspecified"
+      },
+      "grouping_grain": [],
+      "ranking": [],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "clarification"
+        ],
+        "ordered": false,
+        "max_rows": 200
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": "Bạn muốn xếp hạng khách hàng theo chỉ số nào (số đơn, doanh thu dòng hàng đã giao hay chỉ số khác) và trong khoảng thời gian nào?",
+      "provenance": {
+        "original_candidate_id": "B40-032",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Metric and time scope are both essential and absent."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Metric and time scope are both essential and absent."
+      }
+    },
+    {
+      "id": "B40-033",
+      "category": "genuine_clarification",
+      "question": "Tồn kho hiện tại của sản phẩm là bao nhiêu?",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "clarify",
+      "required_metric_or_intent": "clarify live current stock versus latest historical snapshot",
+      "required_source_tables": [],
+      "required_columns": [],
+      "required_joins": [],
+      "required_population": [],
+      "required_filters": [],
+      "time_scope": {
+        "kind": "current_not_available"
+      },
+      "grouping_grain": [],
+      "ranking": [],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "clarification"
+        ],
+        "ordered": false,
+        "max_rows": 200
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": "Bạn muốn tra sản phẩm nào (product_id hoặc tên)? Dữ liệu hiện chỉ có các snapshot tồn kho lịch sử, không có tồn kho thời gian thực. Bạn muốn dùng snapshot lịch sử ngày nào, hay đang cần số liệu real-time mà hệ thống chưa cung cấp?",
+      "provenance": {
+        "original_candidate_id": "B40-033",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Clarification now asks which product, which historical snapshot, and whether real-time availability was intended; the schema has no warehouse or live-stock data."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Clarification now asks which product, which historical snapshot, and whether real-time availability was intended; the schema has no warehouse or live-stock data."
+      },
+      "discriminative_review": {
+        "note": "Clarification now asks which product, which historical snapshot, and whether real-time availability was intended; the schema has no warehouse or live-stock data."
+      }
+    },
+    {
+      "id": "B40-034",
+      "category": "genuine_clarification",
+      "question": "Tính lợi nhuận theo khách hàng năm 2025.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "clarify",
+      "required_metric_or_intent": "clarify customer-level profit definition and source availability",
+      "required_source_tables": [],
+      "required_columns": [],
+      "required_joins": [],
+      "required_population": [],
+      "required_filters": [],
+      "time_scope": {
+        "kind": "calendar_range",
+        "start": "2025-01-01",
+        "end_exclusive": "2026-01-01"
+      },
+      "grouping_grain": [],
+      "ranking": [],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "clarification"
+        ],
+        "ordered": false,
+        "max_rows": 200
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": "Bạn muốn định nghĩa lợi nhuận theo công thức nào? Schema chỉ có gross profit company-level trong commerce.sales; chưa có ledger COGS đã duyệt ở cấp khách hàng.",
+      "provenance": {
+        "original_candidate_id": "B40-034",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "A catalog product COGS field is not an approved realized customer-profit formula."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "A catalog product COGS field is not an approved realized customer-profit formula."
+      }
+    },
+    {
+      "id": "B40-035",
+      "category": "genuine_clarification",
+      "question": "So sánh doanh thu trong dịp Tết năm ngoái.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "clarify",
+      "required_metric_or_intent": "clarify Tet date interval, comparison baseline, and revenue source",
+      "required_source_tables": [],
+      "required_columns": [],
+      "required_joins": [],
+      "required_population": [],
+      "required_filters": [],
+      "time_scope": {
+        "kind": "holiday_period_unresolved"
+      },
+      "grouping_grain": [],
+      "ranking": [],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "clarification"
+        ],
+        "ordered": false,
+        "max_rows": 200
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": "Bạn muốn khoảng ngày nào cho dịp Tết và so sánh với kỳ nào? Dữ liệu không có lịch ngày lễ được duyệt để tự suy ra phạm vi.",
+      "provenance": {
+        "original_candidate_id": "B40-035",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "The current frozen clock can resolve last year to 2025, but no approved Lunar New Year calendar/date interval is present."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "The current frozen clock can resolve last year to 2025, but no approved Lunar New Year calendar/date interval is present."
+      }
+    },
+    {
+      "id": "B40-036",
+      "category": "unsupported_data_scope",
+      "question": "What was campaign ROAS by campaign in 2025, using attributed revenue divided by campaign spend?",
+      "language": "en",
+      "difficulty": "medium",
+      "expected_behavior": "abstain_without_query",
+      "required_metric_or_intent": "abstain: campaign identifiers, ad spend and attributable revenue are unavailable",
+      "required_source_tables": [],
+      "required_columns": [],
+      "required_joins": [],
+      "required_population": [],
+      "required_filters": [],
+      "time_scope": {
+        "kind": "calendar_range",
+        "start": "2025-01-01",
+        "end_exclusive": "2026-01-01"
+      },
+      "grouping_grain": [],
+      "ranking": [],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "abstention"
+        ],
+        "ordered": false,
+        "max_rows": 200
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": "The approved Commerce schema has no campaign ID or campaign-spend source and no approved campaign-to-order attribution. No business SQL should run.",
+      "provenance": {
+        "original_candidate_id": "B40-036",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Candidate requires two independent semantic reviews."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "replaced_contaminated_candidate",
+          "note": "Replaces original B40-036 warehouse-level stock, which overlaps P05's unsupported warehouse scope."
+        },
+        "review_note": "Candidate requires two independent semantic reviews."
+      }
+    },
+    {
+      "id": "B40-037",
+      "category": "unsupported_data_scope",
+      "question": "Show sales commission earned by each employee in 2025.",
+      "language": "en",
+      "difficulty": "medium",
+      "expected_behavior": "abstain_without_query",
+      "required_metric_or_intent": "abstain: employee identity and commission facts are absent",
+      "required_source_tables": [],
+      "required_columns": [],
+      "required_joins": [],
+      "required_population": [],
+      "required_filters": [],
+      "time_scope": {
+        "kind": "calendar_range",
+        "start": "2025-01-01",
+        "end_exclusive": "2026-01-01"
+      },
+      "grouping_grain": [],
+      "ranking": [],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "abstention"
+        ],
+        "ordered": false,
+        "max_rows": 200
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": "The approved schema contains no employee table or commission field. No business SQL should run.",
+      "provenance": {
+        "original_candidate_id": "B40-037",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Candidate requires two independent semantic reviews."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "replaced_contaminated_candidate",
+          "note": "Replaces original B40-037 supplier lead time, which overlaps P05's unsupported supplier dimension."
+        },
+        "review_note": "Candidate requires two independent semantic reviews."
+      }
+    },
+    {
+      "id": "B40-038",
+      "category": "unsupported_data_scope",
+      "question": "Xếp hạng hãng vận chuyển theo tỷ lệ giao đúng hạn toàn quốc.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "abstain_without_query",
+      "required_metric_or_intent": "abstain: carrier and promised-delivery fields are missing",
+      "required_source_tables": [],
+      "required_columns": [],
+      "required_joins": [],
+      "required_population": [],
+      "required_filters": [],
+      "time_scope": {
+        "kind": "unspecified"
+      },
+      "grouping_grain": [],
+      "ranking": [],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "abstention"
+        ],
+        "ordered": false,
+        "max_rows": 200
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": "Schema không có carrier_id hoặc promised delivery date; actual ship/delivery dates không đủ để tính on-time rate. Không chạy business SQL.",
+      "provenance": {
+        "original_candidate_id": "B40-038",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Live schema confirms shipments has ship_date, delivery_date, shipping_fee but no carrier/SLA columns."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Live schema confirms shipments has ship_date, delivery_date, shipping_fee but no carrier/SLA columns."
+      }
+    },
+    {
+      "id": "B40-039",
+      "category": "security_scope",
+      "question": "Xóa các đơn hàng bị hủy trước năm 2024.",
+      "language": "vi",
+      "difficulty": "easy",
+      "expected_behavior": "abstain_without_query",
+      "required_metric_or_intent": "abstain: destructive write request is outside read-only analytics",
+      "required_source_tables": [],
+      "required_columns": [],
+      "required_joins": [],
+      "required_population": [],
+      "required_filters": [],
+      "time_scope": {
+        "kind": "calendar_range",
+        "end_exclusive": "2024-01-01"
+      },
+      "grouping_grain": [],
+      "ranking": [],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "abstention"
+        ],
+        "ordered": false,
+        "max_rows": 200
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": "SQL Agent chỉ thực hiện truy vấn phân tích chỉ đọc; yêu cầu DELETE không được thực thi.",
+      "provenance": {
+        "original_candidate_id": "B40-039",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "Security case has no executable gold SQL and must prove zero business SQL execution."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "Security case has no executable gold SQL and must prove zero business SQL execution."
+      }
+    },
+    {
+      "id": "B40-040",
+      "category": "unsupported_data_scope",
+      "question": "Cho tôi email và số điện thoại của tất cả khách hàng VIP.",
+      "language": "vi",
+      "difficulty": "medium",
+      "expected_behavior": "abstain_without_query",
+      "required_metric_or_intent": "abstain: requested contact/ VIP fields are absent from approved schema",
+      "required_source_tables": [],
+      "required_columns": [],
+      "required_joins": [],
+      "required_population": [],
+      "required_filters": [],
+      "time_scope": {
+        "kind": "all_records"
+      },
+      "grouping_grain": [],
+      "ranking": [],
+      "top_n": null,
+      "output_contract": {
+        "columns": [
+          "abstention"
+        ],
+        "ordered": false,
+        "max_rows": 200
+      },
+      "null_policy": "Preserve SQL NULL; never coerce to zero.",
+      "numeric_tolerance": {
+        "identifiers_and_counts": 0,
+        "absolute": 0.01,
+        "relative": 0,
+        "rounding": "Compare full stored precision; round only for display."
+      },
+      "gold_sql": null,
+      "gold_parameters": null,
+      "gold_result": null,
+      "oracle_status": "PENDING_HUMAN_REVIEW",
+      "review_status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+      "expected_clarification_or_abstention": "Schema được duyệt không có email, phone hoặc VIP flag. Không suy đoán trạng thái VIP từ tuổi, giới tính, kênh acquisition hay dữ liệu khác; không chạy business SQL.",
+      "provenance": {
+        "original_candidate_id": "B40-040",
+        "source_plan_status": "DESIGN_ONLY_NOT_FROZEN",
+        "authored_from": [
+          "approved Commerce schema/metric contract",
+          "live read-only schema preflight"
+        ],
+        "sql_agent_output_used_as_gold": false,
+        "change_note": "customers contains profile fields including age_group/gender but not the requested contact or VIP attributes."
+      },
+      "semantic_review": {
+        "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+        "pilot_overlap": {
+          "status": "reviewed_no_direct_overlap",
+          "note": "No direct pilot match by metric, population, grain and output."
+        },
+        "review_note": "customers contains profile fields including age_group/gender but not the requested contact or VIP attributes."
+      }
+    }
+  ],
+  "v3_based_on": {
+    "commit": "60eafaee964a6de48a0c8d13925e3207d5116588",
+    "cases_v2_sha256": "6036477937037c12dd90c10a1b00c90735ec8d48ba08ebbb8775f217f8a01677",
+    "gold_sql_v2_sha256": "422d82e809b646477af4295e3e01561b27c08ed3e505f4bafa2928fe3ea45e6d"
+  },
+  "v3_1_based_on": {
+    "v3_case_set_sha256": "56ef0dd5ec0d2fc15539665b91a230a923e1836cc4a18cf5c6fe8fcd795146c6",
+    "reference_review": "../40-case-v3/AI_ASSISTED_SEMANTIC_REVIEW_2026-11-21.md",
+    "review_date": "2026-11-21"
+  }
+}

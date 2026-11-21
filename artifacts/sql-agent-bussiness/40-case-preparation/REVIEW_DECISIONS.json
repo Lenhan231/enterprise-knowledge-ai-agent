@@ -1,302 +1,488 @@
 {
-  "format_version": "sql-40-case-review-decisions.v1",
-  "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+  "format_version": "sql-40-case-review-decisions.v2",
+  "status": "TWO_REVIEWERS_APPROVED_CASE_PRESENTATION_OWNER_ATTESTED",
   "reviewer_1": {
-    "identity": null,
-    "approved_case_ids": [],
+    "identity": "Project owner; name not recorded",
+    "decision": "APPROVE_ALL_CASES",
+    "approved_case_ids": [
+      "B40-001",
+      "B40-002",
+      "B40-003",
+      "B40-004",
+      "B40-005",
+      "B40-006",
+      "B40-007",
+      "B40-008",
+      "B40-009",
+      "B40-010",
+      "B40-011",
+      "B40-012",
+      "B40-013",
+      "B40-014",
+      "B40-015",
+      "B40-016",
+      "B40-017",
+      "B40-018",
+      "B40-019",
+      "B40-020",
+      "B40-021",
+      "B40-022",
+      "B40-023",
+      "B40-024",
+      "B40-025",
+      "B40-026",
+      "B40-027",
+      "B40-028",
+      "B40-029",
+      "B40-030",
+      "B40-031",
+      "B40-032",
+      "B40-033",
+      "B40-034",
+      "B40-035",
+      "B40-036",
+      "B40-037",
+      "B40-038",
+      "B40-039",
+      "B40-040"
+    ],
     "rejected_case_ids": [],
-    "comments": []
+    "comments": [],
+    "attestation": "Project owner confirms personally approving all 40 cases.",
+    "review_date": null,
+    "recorded_at_utc": "2026-11-21T15:47:16Z"
   },
   "reviewer_2": {
-    "identity": null,
-    "approved_case_ids": [],
+    "identity": "Project owner's colleague; name not recorded",
+    "decision": "APPROVE_ALL_CASES",
+    "approved_case_ids": [
+      "B40-001",
+      "B40-002",
+      "B40-003",
+      "B40-004",
+      "B40-005",
+      "B40-006",
+      "B40-007",
+      "B40-008",
+      "B40-009",
+      "B40-010",
+      "B40-011",
+      "B40-012",
+      "B40-013",
+      "B40-014",
+      "B40-015",
+      "B40-016",
+      "B40-017",
+      "B40-018",
+      "B40-019",
+      "B40-020",
+      "B40-021",
+      "B40-022",
+      "B40-023",
+      "B40-024",
+      "B40-025",
+      "B40-026",
+      "B40-027",
+      "B40-028",
+      "B40-029",
+      "B40-030",
+      "B40-031",
+      "B40-032",
+      "B40-033",
+      "B40-034",
+      "B40-035",
+      "B40-036",
+      "B40-037",
+      "B40-038",
+      "B40-039",
+      "B40-040"
+    ],
     "rejected_case_ids": [],
-    "comments": []
+    "comments": [],
+    "attestation": "Project owner confirms the colleague independently approved all 40 cases.",
+    "review_date": null,
+    "recorded_at_utc": "2026-11-21T15:47:16Z"
   },
   "adjudication": {
     "identity": null,
-    "decisions": []
+    "decisions": [],
+    "status": "NOT_RECORDED",
+    "note": "No disagreement was reported for the reviewed case presentation; Gold adjudication remains pending."
   },
   "cases": [
     {
       "id": "B40-001",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-002",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-003",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-004",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-005",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-006",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-007",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-008",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-009",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-010",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-011",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-012",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-013",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-014",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-015",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-016",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-017",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-018",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-019",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-020",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-021",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-022",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-023",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-024",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-025",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-026",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-027",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-028",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-029",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-030",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-031",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-032",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-033",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-034",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-035",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-036",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-037",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-038",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-039",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     },
     {
       "id": "B40-040",
-      "reviewer_1": "PENDING",
-      "reviewer_2": "PENDING",
-      "adjudication": "PENDING",
-      "notes": []
+      "reviewer_1": "APPROVED",
+      "reviewer_2": "APPROVED",
+      "adjudication": "NOT_RECORDED",
+      "notes": [
+        "Approval transcribed from project-owner attestation; static HTML did not retain per-case vote events."
+      ]
     }
-  ]
+  ],
+  "recording": {
+    "recorded_at_utc": "2026-11-21T15:47:16Z",
+    "recorded_by": "Codex, transcribing project-owner confirmation",
+    "source": "project_owner_attestation",
+    "capture_limitation": "The static HTML review page did not persist per-case clicks. This is an attested record of completed reviews, not a recovered browser event log.",
+    "review_date": null,
+    "review_scope": "The 40 case questions and the visible intent/metric and expected behavior presented in the static review page.",
+    "out_of_scope": [
+      "Gold SQL and bound parameters",
+      "Gold result rows",
+      "Numeric tolerances",
+      "Cohort freeze and authorization to execute the held-out benchmark"
+    ]
+  }
 }

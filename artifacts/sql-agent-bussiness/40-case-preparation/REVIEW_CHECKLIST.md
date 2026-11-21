@@ -1,6 +1,6 @@
 # Independent review and freeze checklist
 
-**Do not mark a case approved until both reviewers have independently completed it.** The current decision file is entirely pending.
+**Case presentation approvals were recorded on 2026-11-21 from the project owner's attestation.** The static HTML did not retain individual votes. See `REVIEW_DECISIONS.json`; the review date and reviewer names were not captured. These approvals do not mark the detailed semantic checklist below, Gold SQL/results, or freeze as complete.
 
 ## Per-case review (all B40-001 through B40-040)
 
@@ -27,6 +27,6 @@
 
 | Role | Reviewer identity | Decision | Date | Notes |
 |---|---|---|---|---|
-| Reviewer 1 | PENDING | PENDING | | |
-| Reviewer 2 | PENDING | PENDING | | |
+| Reviewer 1 | Project owner (name not recorded) | APPROVE all 40 case presentations (attested) | Review date not recorded; attestation recorded 2026-11-21 | Static HTML retained no per-case events |
+| Reviewer 2 | Colleague (name not recorded) | APPROVE all 40 case presentations (owner-attested) | Review date not recorded; attestation recorded 2026-11-21 | Static HTML retained no per-case events |
 | Adjudicator | PENDING | PENDING | | |

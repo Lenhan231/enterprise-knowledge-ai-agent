@@ -1,0 +1,8 @@
+{
+  "note": "Post-lock scoring fix, 19 Nov 2026: English questions answered in Vietnamese failed must_include on wording only (found by the human check, T041 and T044). Vietnamese equivalents of the same facts are added as alternatives; questions, reference answers and gold passages are unchanged. Applied to every run on both sets. score_answers.py --no-fixes gives the original scores.",
+  "must_include_alternatives": {
+    "D045": {"no|cannot|not": "không được"},
+    "T041": {"five|5": "năm ngày"},
+    "T044": {"Executive|Operations Executive": "Hội đồng Điều hành|Điều hành Vận hành", "Finance": "Tài chính"}
+  }
+}

@@ -23,6 +23,28 @@ def request(text='Monthly revenue report May 2026', authorized=True):
 
 
 class SalesFlowTest(unittest.IsolatedAsyncioTestCase):
+    async def test_vietnamese_financial_report_uses_requested_month_range(self):
+        repo = type('Repository', (), {'execute_approved_query': AsyncMock(return_value=[])})()
+        agent = ReportAgent(None, SQLAnalyticsAgent(repo, inventory_only=False))
+        agent._generate = AsyncMock(side_effect=AssertionError('Fixed reports need no model generation'))
+        question = 'tạo báo cáo tài chính từ tháng 1 đến tháng 12 2026'
+        for source_mode in (None, 'analytics'):
+            with self.subTest(source_mode=source_mode):
+                result, raw, media = await agent.generate_from_template(request(question), source_mode=source_mode)
+                report = json.loads(raw)
+                self.assertEqual(media, 'application/json')
+                self.assertEqual(report['request']['period'], {'start': '2026-01-01', 'end_exclusive': '2027-01-01'})
+                self.assertEqual(report['request']['granularity'], 'month')
+                self.assertEqual(len(result.data['monthly_decisions']), 12)
+                self.assertEqual(report['report_type'], 'sales_performance')
+                self.assertEqual(report['metrics'][0]['label'], 'Doanh thu công ty')
+                self.assertEqual(result.metadata['status'], 'partial')
+                self.assertIsNone(report['metrics'][0]['value'])
+                self.assertTrue(any('bảng cân đối kế toán' in note for note in report['data_quality']['limitations']))
+                from core.agents.report.document import ReportDocument
+                ReportDocument(report=report, monthly_decisions=result.data['monthly_decisions'])
+        agent._generate.assert_not_awaited()
+
     async def test_year_range_covers_both_years_in_report_and_monthly_decisions(self):
         from core.agents.report.presentation import calendar_rows
         repo = type('Repository', (), {'execute_approved_query': AsyncMock(return_value=[])})()
@@ -68,6 +90,18 @@ class SalesFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([d['triggered'] for d in monthly[-1]['decisions']], [False, False, True, False])
         self.assertIsNone(json.loads(raw)['decisions'][0]['triggered'])
         self.assertEqual(monthly[-1]['metrics'][0]['evidence'][0]['filters']['period'], monthly[-1]['period'])
+        from core.agents.report.presentation import comparison_metrics
+        incomplete_june = deepcopy(monthly[-1])
+        incomplete_june['period'] = {'start': '2026-06-01', 'end_exclusive': '2026-07-01'}
+        incomplete_june['comparison']['comparable'] = False
+        next(m for m in incomplete_june['metrics'] if m['id'] == 'company_revenue_change_pct').update(
+            value=None, status='not_available')
+        extended_report = json.loads(raw)
+        extended_report['request']['period']['end_exclusive'] = '2026-07-01'
+        selected_change = next(m for m in comparison_metrics(extended_report, [*monthly, incomplete_june])
+                               if m['id'] == 'company_revenue_change_pct')
+        self.assertIsNone(selected_change['value'])
+        self.assertIn('2026-06 vs 2026-05', selected_change['label'])
         self.assertIn((date(2026,1,1), date(2026,2,1), date(2025,12,1)), calls)
         from core.agents.report.document import ReportDocument
         document = ReportDocument(report=json.loads(raw), monthly_decisions=monthly)

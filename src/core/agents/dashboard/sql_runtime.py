@@ -7,6 +7,7 @@ import json
 import re
 
 from core.agents.runtime import generate
+from core.agents.language import is_vietnamese
 from core.agents.sql.agent import SQLAnalyticsAgent, parse_json_response
 from core.agents.sql.counting import COUNT_QUERY_INSTRUCTIONS, compile_count_query
 from core.agents.sql.metric_mapping import decode_metric_mapping, compile_inventory_query, _required_metrics
@@ -144,6 +145,11 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
     def _prompt(self, prompt, *, inventory_repair=False):
         if 'Repair only the outputs' in prompt:
             return prompt
+        question = getattr(self, '_question', '')
+        required_kinds = sorted(requested_kinds(question, getattr(self, '_clarifications', ())))
+        presentation = '\nEach listed representation is required in outputs: ' + json.dumps(required_kinds) if required_kinds else ''
+        if is_vietnamese(question):
+            presentation += '\nUse Vietnamese for dataset questions, explanations and clarification. Keep SQL, identifiers and JSON schema keys unchanged.'
         if not inventory_repair and not self._inventory_count_intent() and 'Catalog candidates (selection summaries only):' not in prompt:
             if not hasattr(self, '_columns') or 'Repair only the outputs' in prompt:
                 return prompt + OUTPUT_RULES
@@ -179,7 +185,7 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
             context += '\nUse explicitly mentioned recorded fields without asking for confirmation. Selected months require EXTRACT(MONTH FROM the source date) IN those month numbers, in addition to the period bounds.'
             if 'The previous plan failed validation:' in prompt:
                 context += '\nThe previous plan failed validation:' + prompt.split('The previous plan failed validation:', 1)[1][:6000]
-            return context + OUTPUT_RULES
+            return context + OUTPUT_RULES + presentation
         sources = {source: sorted(columns) for source, columns in self._columns.items() if source in INVENTORY_SOURCES}
         dates = {source: sorted(field for table, field in APPROVED_DATE_COLUMNS | set(self._dates or ())
                                 if table == source and field in columns) for source, columns in sources.items()}
@@ -189,7 +195,7 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
             'clarification_history': getattr(self, '_clarifications', [])})
         context += ('\nUse the supplied answers to resolve slots; do not repeat answered questions. '
                     'Requested charts and observation tables use the requested metrics unless the user explicitly assigns different ones. '
-                    'Do not ask for the same measure separately for a chart and its observation table.\n')
+                    'Do not ask for the same measure separately for a chart and its observation table.\n') + presentation + '\n'
         if self._count_intent():
             return ('Interpret this structural count request using only recorded entity fields. '
                 'Choose the entity catalog, not a historical observation table, unless the user requested observations or a snapshot. '
@@ -225,7 +231,8 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
             response = parse_json_response(raw)
         except SQLValidationError:
             return raw
-        response = normalize_generation(response, summarize_returned=bool(re.search(
+        kinds = requested_kinds(self._question, self._clarifications)
+        response = normalize_generation(response, required_kinds=kinds, summarize_returned=bool(re.search(
             r'statistical summar|summary statistics?|descriptive statistics?|thống kê mô tả|tóm tắt thống kê', self._question, re.I)))
         raw = json.dumps(response)
         if isinstance(response, dict) and 'result' in response:
@@ -349,9 +356,9 @@ class DashboardSQLAgent(SQLAnalyticsAgent):
     @staticmethod
     def _validation_message(detail, question):
         detail = detail.removeprefix('Please clarify the requested measures, grouping, scope or representation. ').strip()[:700]
-        if re.search(r'[ăâđêôơưáàảãạấầẩẫậắằẳẵặếềểễệốồổỗộớờởỡợứừửữựýỳỷỹỵ]', question, re.I):
+        if is_vietnamese(question):
             return ('Mình chưa tạo được dashboard vì kế hoạch dữ liệu hoặc cách hiển thị chưa hợp lệ. '
-                    f'Nguyên nhân kiểm tra: {detail} Chưa thực thi query dữ liệu dashboard. Yêu cầu bạn đã nhập vẫn được giữ nguyên.')
+                    f'Lý do kiểm tra: {detail} Chưa chạy truy vấn dữ liệu.')
         return (f'I could not build the dashboard because its data/output plan failed validation. Reason: {detail} '
                 'No dashboard data query was executed. Your original request is retained.')
 

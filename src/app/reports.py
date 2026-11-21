@@ -11,6 +11,7 @@ from app.agents import _agent_request, _get_runtime
 from app.security import require_permission, _require_same_origin
 from core.agents.dashboard.models import StrictModel
 from core.agents.dashboard.store import Conflict, StoreUnavailable
+from core.agents.language import is_vietnamese
 from core.agents.report.document import ReportDocument, ReportEdit
 from core.agents.report.store import create_report_store
 
@@ -98,6 +99,8 @@ async def generate(payload: ReportRequest, request: Request, user=Depends(princi
     try:
         async with _slots:
             result, _, _ = await runtime.report_agent.generate_from_template(identity, source_mode='analytics')
+        if 'report' not in result.data:
+            raise HTTPException(422, detail=result.answer)
         document = ReportDocument(report=result.data['report'], monthly_decisions=result.data.get('monthly_decisions', []),
                                   sales_context=result.data.get('sales_context', {}),
                                   inventory_context=result.data.get('inventory_context', {}),
@@ -108,11 +111,15 @@ async def generate(payload: ReportRequest, request: Request, user=Depends(princi
         raise HTTPException(403, 'Verified analytics permission is required') from None
     except ValueError as error:
         raise HTTPException(422, str(error)) from None
+    except HTTPException:
+        raise
     except StoreUnavailable:
         raise
     except Exception:
         logger.exception('Report generation failed')
-        raise HTTPException(503, 'The report could not be generated. Please retry.') from None
+        message = ('Chưa tạo được báo cáo. Vui lòng thử lại.'
+                   if is_vietnamese(payload.question) else 'The report could not be generated. Please retry.')
+        raise HTTPException(503, message) from None
 
 
 @router.get('/{identifier}')

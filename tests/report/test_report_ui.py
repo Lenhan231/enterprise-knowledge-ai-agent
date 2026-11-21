@@ -103,6 +103,17 @@ assert(nodes.some(n=>n.tag==='dt'&&n.textContent==='Company revenue month-over-m
 assert(nodes.some(n=>n.tag==='dd'&&n.textContent==='12.5%'));
 assert(nodes.some(n=>n.textContent?.includes('month-over-month change (2026-05 vs 2026-04) is 12.5%')));
 assert.equal(report.metrics.find(m=>m.id==='company_revenue_change_pct').value,null,'Display defaults must preserve canonical facts');
+const incompleteJune = JSON.parse(JSON.stringify(monthly));
+incompleteJune.period = {start:'2026-06-01',end_exclusive:'2026-07-01'};
+incompleteJune.comparison.comparable = false;
+Object.assign(incompleteJune.metrics.find(m => m.id === change.id), {value:null,status:'not_available'});
+report.request.period.end_exclusive = '2026-07-01';
+render(root,report,{monthly_decisions:[monthly,incompleteJune]});
+nodes=descendants(root);
+const latestChange=nodes.find(n=>n.tag==='dt'&&n.textContent==='Company revenue month-over-month change (2026-06 vs 2026-05)');
+assert(latestChange);
+assert(nodes.some(n=>n.children.includes(latestChange)&&n.children.some(child=>child.tag==='dd'&&child.textContent==='Unavailable')));
+report.request.period.end_exclusive = '2026-06-01';
 const insights={decision_summary:'1 of 1 reporting months fully evaluated', actions:[{title:'Revenue decline',action:'Review company revenue',periods:['2026-05'],citations:['monthly-evidence']}],
   findings:[{text:'Supported monthly finding',citations:['monthly-evidence']}],
   document_context:[{text:'Pricing changes require approval.',citations:['document-evidence']}],

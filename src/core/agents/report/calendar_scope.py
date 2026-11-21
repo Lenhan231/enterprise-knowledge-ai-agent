@@ -12,6 +12,23 @@ _MONTH_RANGE = re.compile(
     r'\b(?:(?P<prefix>from|between)\s+)?(?P<start>' + _MONTH_TOKEN + r')\.?(?:\s+(?P<start_year>(?:19|20)\d{2}))?'
     r'\s*(?P<link>to|through|until|and|[-–—])\s*(?P<end>' + _MONTH_TOKEN + r')\.?(?:\s+(?P<end_year>(?:19|20)\d{2}))?')
 
+FINANCIAL_OVERVIEW = r'\b(?:báo cáo tài chính|bao cao tai chinh)\b'
+_VI_MONTH = re.compile(r'\b(?:tháng|thang)\s+(0?[1-9]|1[0-2])\b(?:\s+(?:năm|nam)\s+(?=(?:19|20)\d{2}\b))?')
+_VI_SCOPE = {
+    'tháng này': 'this month', 'tháng trước': 'last month',
+    'quý này': 'this quarter', 'quý trước': 'last quarter',
+    'năm nay': 'this year', 'năm trước': 'last year', 'năm ngoái': 'last year',
+    'mới nhất': 'latest', 'theo tháng': 'monthly', 'theo quý': 'quarterly', 'theo năm': 'yearly',
+}
+
+
+def calendar_text(text):
+    text = re.sub(r'\b(?:' + '|'.join(_VI_SCOPE) + r')\b', lambda match: _VI_SCOPE[match[0]], text)
+    text = re.sub(r'\b(từ|tu|đến|den|tới|toi)\s+(?=(?:(?:tháng|thang)\s+\d|(?:(?:năm|nam)\s+)?(?:19|20)\d{2}\b))',
+                  lambda match: 'from ' if match[1] in {'từ', 'tu'} else 'to ', text)
+    text = re.sub(r'\b(from|to)\s+(?:năm|nam)\s+(?=(?:19|20)\d{2}\b)', r'\1 ', text)
+    return _VI_MONTH.sub(lambda match: calendar.month_name[int(match[1])].lower() + ' ', text)
+
 
 def named_month_range(text, today, years, months, quarters):
     match = _MONTH_RANGE.search(text)
@@ -41,7 +58,7 @@ def named_year_range(text, months, quarters):
 
 def scope_text(question, *, dimensions=None):
     pattern = _FILTER if dimensions is None else re.compile(r'\b(' + '|'.join(dimensions) + r')\s+["\']([^"\']{1,100})["\']', re.I)
-    return pattern.sub(lambda match: match.group(1), question).casefold()
+    return calendar_text(pattern.sub(lambda match: match.group(1), question).casefold())
 
 
 def has_sales_period(question):
@@ -55,11 +72,11 @@ def month_start(year, month):
     return date(index // 12, index % 12 + 1, 1)
 
 
-def parse_request(question, *, today=None, latest=None, topic=r'sales?|revenue|doanh thu|bán hàng', dimensions=('category', 'region', 'product', 'order_source')):
+def parse_request(question, *, today=None, latest=None, topic=r'sales?|revenue|doanh thu|bán hàng|' + FINANCIAL_OVERVIEW, dimensions=('category', 'region', 'product', 'order_source')):
     today = today or datetime.now(ZoneInfo('Asia/Ho_Chi_Minh')).date()
     dimension_pattern = '|'.join(dimensions).replace('order_source', 'order[_ ]source')
     filter_pattern = re.compile(r'\b(' + dimension_pattern + r')\s+["\']([^"\']{1,100})["\']', re.I)
-    text = filter_pattern.sub(lambda match: match.group(1), question).casefold()
+    text = calendar_text(filter_pattern.sub(lambda match: match.group(1), question).casefold())
     if not 3 <= len(text) <= 2000 or not re.search(topic, text):
         raise ValueError('Request a report for the supported topic.')
     years = set(re.findall(r'\b(?:19|20)\d{2}\b', text))

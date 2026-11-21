@@ -11,12 +11,14 @@ from io import BytesIO
 from docx import Document
 
 from core.models.agents import AgentResult
-from core.agents.report.grounding import UNAVAILABLE, VERIFICATION_SCOPE, validate_section
+from core.agents.language import VIETNAMESE_STATUS, is_vietnamese
+from core.agents.report.grounding import UNAVAILABLE, UNAVAILABLE_VI, VERIFICATION_SCOPE, validate_section
 from core.agents.report.sources import ReportClarificationRequired, authorize_sources, collect_sources, serialize_context
 from core.agents.report.templates import default_report_template, parse_report_template, render_report_template, section_capability
 from core.prompts.report import REPORT_SECTION_PROMPT, REPORT_REPAIR_PROMPT
 from core.agents.runtime import deadline, remaining, run_sync
 from core.agents.report.planning import adaptive_report_type, inventory_request
+from core.agents.report.calendar_scope import FINANCIAL_OVERVIEW, has_sales_period
 from core.agents.sql.metric_ontology import resolve_metric_names
 
 MIME_TYPES = {
@@ -71,18 +73,19 @@ class ReportAgent:
                                       source_mode=None, output_format=None,
                                       template_choice=None, accept_supported_scope=False):
         import re
+        vi = is_vietnamese(request.question)
+        unavailable = UNAVAILABLE_VI if vi else UNAVAILABLE
+        financial_overview = re.search(FINANCIAL_OVERVIEW, request.question, re.I)
         natural_sales = (filename is None and output_format is None and not request.metadata.get('report_type') and
-                         re.search(r'\bsales?\b|\brevenue\b|doanh thu|bán hàng', request.question, re.I))
+                         (financial_overview or re.search(r'\bsales?\b|\brevenue\b|doanh thu|bán hàng', request.question, re.I)))
         report_type = adaptive_report_type(request)
-        from core.agents.report.sales_performance import has_sales_period
         natural_inventory = (filename is None and report_type is None and output_format is None
                              and re.search(r'\binventory\b|tồn kho', request.question, re.I)
                              and not re.search(r'\b\d{4}[-/]\d{1,2}[-/]\d{1,2}\b|\b\d{1,2}[-/]\d{1,2}[-/]\d{4}\b', request.question)
                              and has_sales_period(request.question))
         strict_inventory = report_type == 'inventory_operations' or natural_inventory
         if source_mode is None:
-            from core.agents.report.sales_performance import has_sales_period
-            dated_sales = natural_sales and has_sales_period(request.question)
+            dated_sales = natural_sales and (financial_overview or has_sales_period(request.question))
             source_mode = 'analytics' if report_type == 'sales_performance' or dated_sales or strict_inventory else 'documents'
         authorize_sources(request, source_mode)
         if strict_inventory:
@@ -101,7 +104,7 @@ class ReportAgent:
         if output_format is not None and output_format not in MIME_TYPES:
             raise ValueError("Output format must be markdown or docx")
         template = (parse_report_template(filename, content) if filename is not None
-                    else default_report_template(output_format or "markdown"))
+                    else default_report_template(output_format or "markdown", vietnamese=vi))
         if output_format and template.format != output_format:
             raise ValueError("Output format conflicts with uploaded template")
         if source_mode != 'documents' and (report_type or inventory_request(request.question) or resolve_metric_names(request.question)):
@@ -142,13 +145,13 @@ class ReportAgent:
         provider_failed = False
         for heading in template.headings:
             if capabilities is not None and capabilities[heading] == 'limitations':
-                sections[heading] = '\n'.join(limitations) or 'No additional limitations identified for the supplied document evidence.'
+                sections[heading] = '\n'.join(limitations) or ('Không phát hiện thêm giới hạn trong tài liệu nguồn.' if vi else 'No additional limitations identified for the supplied document evidence.')
                 section_status[heading] = 'complete'
                 continue
             supplied = contexts[heading]
             indices = [index for index, owner in enumerate(template.table_sections) if owner == heading]
             headers = [template.table_headers[index] for index in indices]
-            body, rows = UNAVAILABLE, [[] for _ in headers]
+            body, rows = unavailable, [[] for _ in headers]
             valid = False
             if supplied:
                 prompt = self._prompt(request.question, heading, headers, supplied)
@@ -162,7 +165,7 @@ class ReportAgent:
                     try:
                         draft = self._decode_draft(raw)
                         body, rows = validate_section(draft, heading, headers, supplied)
-                        valid = body != UNAVAILABLE or any(rows)
+                        valid = body not in {UNAVAILABLE, UNAVAILABLE_VI} or any(rows)
                         if valid:
                             break
                     except (ValueError, TypeError, KeyError, RecursionError) as error:
@@ -175,20 +178,21 @@ class ReportAgent:
                 for item in supplied:
                     evidence[item.citation_id] = item
             else:
-                body, rows = UNAVAILABLE, [[] for _ in headers]
+                body, rows = unavailable, [[] for _ in headers]
                 section_status[heading] = "failed"
-                limitations.append(f"Section unavailable or verification failed: {heading}")
+                limitations.append(f"Không thể xác minh mục {heading}." if vi else f"Section unavailable or verification failed: {heading}")
             sections[heading] = body
             for index, values in zip(indices, rows):
                 tables[index] = values
         if capabilities is not None:
             for index, rows in enumerate(tables):
                 if not rows:
-                    tables[index] = [['Unavailable in source data' for _ in template.table_headers[index]]]
-                    limitations.append(f'Table unavailable: {template.table_sections[index]}: ' + ', '.join(template.table_headers[index]))
+                    tables[index] = [[('Không có dữ liệu nguồn' if vi else 'Unavailable in source data') for _ in template.table_headers[index]]]
+                    label = 'Không có dữ liệu cho bảng' if vi else 'Table unavailable'
+                    limitations.append(f'{label}: {template.table_sections[index]}: ' + ', '.join(template.table_headers[index]))
             for heading, capability in capabilities.items():
                 if capability == 'limitations':
-                    sections[heading] = '\n'.join(dict.fromkeys(limitations)) or 'No additional limitations identified for the supplied document evidence.'
+                    sections[heading] = '\n'.join(dict.fromkeys(limitations)) or ('Không phát hiện thêm giới hạn trong tài liệu nguồn.' if vi else 'No additional limitations identified for the supplied document evidence.')
         limitations = list(dict.fromkeys(limitations))
         status = "failed" if not usable else ("partial" if limitations or any(state != 'complete' for state in section_status.values()) else "complete")
         metadata = {"ok": status == "complete", "status": status, "limitations": limitations,
@@ -201,22 +205,24 @@ class ReportAgent:
             metadata.update(report_type=report_type, section_mapping=capabilities)
         if 'orchestration' in row_coverage:
             metadata['source_collection'] = row_coverage['orchestration']
-        result = AgentResult(answer=f"Report status: {status}.", agent="report",
+        answer = f"Trạng thái báo cáo: {VIETNAMESE_STATUS[status]}." if vi else f"Report status: {status}."
+        result = AgentResult(answer=answer, agent="report",
                              evidence=list(evidence.values()), metadata=metadata,
                              data={"report_format": template.format, "section_count": len(sections)})
         if status == "failed":
             return result, b"", MIME_TYPES[template.format]
         output = render_report_template(template, sections, tables)
-        appendix = self._appendix(status, limitations, evidence.values(), coverage, row_coverage)
+        appendix = self._appendix(status, limitations, evidence.values(), coverage, row_coverage, vi=vi)
         if filename:
-            appendix += ('Only explicit fill regions were replaced. Retained template text is user-provided and unverified.\n'
+            appendix += ('Nội dung giữ lại từ mẫu do người dùng cung cấp và chưa được xác minh.\n' if vi else
+                         'Only explicit fill regions were replaced. Retained template text is user-provided and unverified.\n'
                          if template.marked else ('Static paragraphs retained and unverified; existing table data replaced.\n' if report_type else
                                                  'Legacy template: body paragraphs and existing table data were replaced.\n'))
         if isinstance(output, str):
             payload = (output + appendix).encode("utf-8")
         else:
             document = Document(BytesIO(output))
-            document.add_heading("Report status and sources", 1)
+            document.add_heading("Trạng thái báo cáo và nguồn" if vi else "Report status and sources", 1)
             for line in appendix.splitlines():
                 if line.strip():
                     document.add_paragraph(line.lstrip("# "))
@@ -251,8 +257,10 @@ class ReportAgent:
 
     @staticmethod
     def _prompt(question, heading, headers, evidence):
+        vi = is_vietnamese(question)
         return REPORT_SECTION_PROMPT.format(
-            unavailable=UNAVAILABLE,
+            language="Vietnamese" if vi else "the language of the question",
+            unavailable=UNAVAILABLE_VI if vi else UNAVAILABLE,
             question=json.dumps(question, ensure_ascii=False),
             heading=json.dumps(heading, ensure_ascii=False),
             headers=json.dumps(headers, ensure_ascii=False),
@@ -260,14 +268,18 @@ class ReportAgent:
         )
 
     @staticmethod
-    def _appendix(status, limitations, evidence, coverage, rows):
-        lines = ["", "## Report status and sources", f"Status: {status}", VERIFICATION_SCOPE,
-                 rows["scope"], f"SQL rows considered: {rows['considered_rows']} of {rows['available_rows']} returned."]
+    def _appendix(status, limitations, evidence, coverage, rows, *, vi=False):
+        lines = (["", "## Trạng thái báo cáo và nguồn", f"Trạng thái: {VIETNAMESE_STATUS[status]}",
+                  "Kiểm tra sự tồn tại của trích dẫn và đối chiếu số liệu. Phạm vi kiểm tra không bao gồm diễn giải, phép tính, phạm vi kế toán hay độ bao phủ nguồn.",
+                  f"Đã xem xét {rows['considered_rows']} trên {rows['available_rows']} dòng SQL được trả về."]
+                 if vi else ["", "## Report status and sources", f"Status: {status}", VERIFICATION_SCOPE,
+                             rows["scope"], f"SQL rows considered: {rows['considered_rows']} of {rows['available_rows']} returned."])
         lines.extend(f"- {note}" for note in limitations)
         for heading, counts in coverage.items():
-            lines.append(f"Coverage — {heading}: {counts['included']} included; {counts['omitted']} omitted.")
+            lines.append(f"Phạm vi mục {heading}: dùng {counts['included']}, bỏ qua {counts['omitted']}."
+                         if vi else f"Coverage — {heading}: {counts['included']} included; {counts['omitted']} omitted.")
         for item in evidence:
             page = item.metadata.get("page_number", item.metadata.get("page"))
-            location = f"; page {page}" if page is not None else ""
+            location = (f"; trang {page}" if vi else f"; page {page}") if page is not None else ""
             lines.append(f"[{item.citation_id}] {item.source}{location}")
         return "\n".join(lines) + "\n"

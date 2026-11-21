@@ -12,10 +12,11 @@ import re
 
 def requested_kinds(question, clarifications=()):
     patterns = {
-        'line': r'\bline[ -]*charts?\b|biểu đồ đường',
-        'bar': r'\bbar[ -]*charts?\b|biểu đồ (?:cột|thanh)',
-        'donut': r'\bdonut\b|\bdoughnut\b|biểu đồ tròn',
-        'table': r'\b(?:include|show|display|add|use|with|and|as)\s+(?:(?:an?|the)\s+)?(?:(?:underlying|source|observation|observations|data|monthly)\s+)*table\b|hiển thị.*\bbảng\b',
+        'line': r'\bline[ -]*charts?\b|biểu đồ đường|\bbieu do duong\b',
+        'bar': r'\bbar[ -]*charts?\b|biểu đồ (?:cột|thanh)|\bbieu do (?:cot|thanh)\b',
+        'donut': r'\bdonut\b|\bdoughnut\b|biểu đồ tròn|\bbieu do tron\b',
+        'table': (r'\b(?:include|show|display|add|use|with|and|as)\s+(?:(?:an?|the)\s+)?(?:(?:underlying|source|observation|observations|data|monthly)\s+)*table\b'
+                  r'|hiển thị.*\bbảng\b|\b(?:dạng|kèm|và|thêm|có)\s+(?:một\s+)?bảng\b|\b(?:dang|kem|va|them|co)\s+(?:mot\s+)?bang\b'),
         'kpi': r'\bkpis?\b',
         'summary': r'statistical summar|summary statistics?|descriptive statistics?|thống kê mô tả|tóm tắt thống kê',
     }

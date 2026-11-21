@@ -3,10 +3,13 @@ from copy import deepcopy
 from datetime import date
 import json
 import math
+import re
 from pathlib import Path
+from core.agents.language import is_vietnamese
+from core.agents.report.labels import localize_labels, localize_metrics, uses_vietnamese_labels
 
 CONTRACT_PATH = Path(__file__).resolve().parents[4] / 'data/semantic/sales_performance_strict.json'
-from core.agents.report.calendar_scope import parse_request, scope_text, has_sales_period, month_start
+from core.agents.report.calendar_scope import FINANCIAL_OVERVIEW, parse_request, scope_text, has_sales_period, month_start
 
 
 def load_contract():
@@ -98,6 +101,8 @@ def validate_report(report, comparison=None):
     """Reject changed definitions, unknown slots, invalid runtime values, and invented prose."""
     contract = load_contract()
     base = contract['runtime_output_template']
+    if uses_vietnamese_labels(report):
+        localize_labels(base)
     def keys(actual, expected):
         if not isinstance(actual, dict) or list(actual) != list(expected):
             raise ValueError('Report keys or order violate the sales contract')
@@ -188,12 +193,21 @@ async def generate_sales_report(agent, request):
     for metric in report['metrics']:
         metric.update(result['metrics'][metric['id']])
     report['data_quality'].update(result['data_quality'])
+    vi = is_vietnamese(request.question)
+    if vi:
+        localize_labels(report)
+    if re.search(FINANCIAL_OVERVIEW, request.question, re.I):
+        report['data_quality']['limitations'].append(
+            'Phạm vi tài chính gồm doanh thu, giá vốn, lợi nhuận gộp và biên lợi nhuận gộp từ dữ liệu bán hàng. '
+            'Nguồn hiện tại không cung cấp bảng cân đối kế toán hoặc báo cáo lưu chuyển tiền tệ.')
     report['dashboard'] = sales_report_widgets(report['dashboard'], report['metrics'], result['datasets'], scope)
     populate_sections(report)
     evaluate_decisions(report, result['comparison'])
     validate_report(report, result['comparison'])
     monthly = result.get('monthly_decisions', [])
     for item in monthly:
+        if vi:
+            localize_metrics(item['metrics'])
         evaluated = {'metrics': item['metrics'], 'decisions': deepcopy(report['decisions'])}
         evaluate_decisions(evaluated, item['comparison'])
         item['decisions'] = evaluated['decisions']

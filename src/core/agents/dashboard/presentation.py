@@ -10,11 +10,27 @@ from sqlglot.lineage import lineage
 from core.agents.dashboard.render import number, tile_presentation
 from core.agents.dashboard.models import TileSpec
 from core.agents.dashboard.charts import requested_chart_type
+from core.agents.language import is_vietnamese, vietnamese_field
 from core.agents.sql.metric_ontology import METRIC_ONTOLOGY, _normalize
 
 
 def canonical(name):
     return re.sub(r'^(?:total|sum)_|_(?:total|sum)$', '', name.lower())
+
+
+OUTPUT_LABELS_VI = {
+    'table': 'Bảng dữ liệu', 'line': 'Biểu đồ đường', 'bar': 'Biểu đồ cột',
+    'donut': 'Biểu đồ tròn', 'kpi': 'Chỉ số', 'summary': 'Thống kê mô tả',
+}
+
+
+def vietnamese_tile_title(tile):
+    label = OUTPUT_LABELS_VI[tile.kind]
+    measures = ', '.join(vietnamese_field(name) for name in tile.measures)
+    dimension = ' theo ' + vietnamese_field(tile.dimension).lower() if tile.dimension else ''
+    if tile.kind == 'kpi' and measures:
+        return measures[:120]
+    return (label + (': ' + measures if measures else '') + dimension)[:120]
 
 
 def output_roles(payload):
@@ -115,11 +131,14 @@ def presentation_only(reply, tile):
 
 def set_representation(tile, kind, result):
     generated_title = (tile.kind.title() + ': ' + ', '.join(tile.measures).replace('_', ' '))[:120]
+    vi_title = tile.title == vietnamese_tile_title(tile)
     if tile.title == generated_title:
         tile.title = (kind.title() + ': ' + ', '.join(tile.measures).replace('_', ' '))[:120]
     tile.kind = kind
     if kind == 'table':
         tile.measures, tile.dimension = [], None
+    if vi_title:
+        tile.title = vietnamese_tile_title(tile)
     result.payload.get('metadata', {}).pop('_presentation_clarification', None)
 
 
@@ -187,6 +206,8 @@ def automatic_tiles(result, question):
         requested = requested_chart_type(question)
     except ValueError:
         result.payload.setdefault('metadata', {})['_presentation_clarification'] = (
+            'Hãy cho biết loại biểu đồ và chỉ số cho từng biểu đồ hoặc chọn bảng dữ liệu.'
+            if is_vietnamese(question) else
             'SQL completed, but the returned chart mapping does not identify a separate type and measures '
             'for each requested chart. Please specify the chart type and metric for each chart, or choose a table.')
         return [table]
@@ -277,6 +298,10 @@ def presentation_clarification(document):
         columns = ', '.join((result.payload.get('rows') or [{}])[0])[:300]
         measures = ', '.join(tile.measures)[:160]
         label = tile.kind + ' chart' if tile.kind in {'line', 'bar', 'donut'} else tile.kind + ' output'
+        if is_vietnamese(document.description):
+            return tile.id, (f'Dữ liệu từ {tile.query_id} chưa phù hợp với {OUTPUT_LABELS_VI[tile.kind].lower()}. '
+                             f'Chỉ số yêu cầu: {measures}. Cột trả về: {columns}. '
+                             'Bạn muốn dùng cách hiển thị nào? Hãy chỉ định chỉ số phù hợp với từng biểu đồ hoặc chọn bảng dữ liệu.')[:1200]
         question = (f'SQL completed for {tile.query_id}, but the requested {label} is not suitable. '
                 f'{reason[:300]} Requested measures: {measures}. Returned columns: {columns}. '
                 f'Supported with these results: {", ".join(alternatives)}. '
@@ -288,6 +313,7 @@ def presentation_clarification(document):
 
 def reconcile(document):
     bind_fields(document)
+    vi = is_vietnamese(document.description)
     results = {result.id: result for result in document.results}
     question = document.description
     for turn in document.clarifications:
@@ -300,6 +326,9 @@ def reconcile(document):
         other_ids = {t.id for t in document.tiles if t is not tile}
         if (groups and chart_count - 1 + len(groups) <= 2 and len(document.tiles) - 1 + len(groups) <= 8
                 and not other_ids & {t.id for t in groups}):
+            if vi:
+                for group in groups:
+                    group.title = vietnamese_tile_title(group)
             index = document.tiles.index(tile)
             document.tiles[index:index + 1] = groups
     used = {tile.query_id for tile in document.tiles}
@@ -308,7 +337,7 @@ def reconcile(document):
     results = {result.id: result for result in document.results}
     document.tile_status = {}
     for tile in document.tiles:
-        _, status, message = tile_presentation(tile, results.get(tile.query_id))
+        _, status, message = tile_presentation(tile, results.get(tile.query_id), vi=vi)
         document.tile_status[tile.id] = {'status': status, 'message': message}
     count = sum(item['status'] != 'unavailable' for item in document.tile_status.values())
     document.status = 'complete' if count == len(document.tiles) else 'partial' if count else 'failed'

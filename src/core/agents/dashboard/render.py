@@ -12,6 +12,7 @@ from sqlglot.optimizer.scope import build_scope
 from core.agents.dashboard.charts import build_chart, _unit
 from core.agents.sql.join_validation import column_origin
 from core.agents.dashboard.formatting import format_number, format_datetime, format_value, axis_date
+from core.agents.language import VIETNAMESE_STATUS, is_vietnamese, vietnamese_field
 
 CSP = "default-src 'none'; script-src 'none'; style-src 'unsafe-inline'; img-src 'none'; connect-src 'none'; base-uri 'none'; form-action 'none'"
 COLORS = ['#117b70', '#4361b2', '#b66a16', '#974e93', '#c23b51', '#657a13']
@@ -58,23 +59,25 @@ def display_context(payload):
     return units, currency
 
 
-def table(rows, *, units=None, currency=None, dimension=None):
+def table(rows, *, units=None, currency=None, dimension=None, vi=False):
     def cell(key, value):
+        if vi and isinstance(value, bool):
+            return 'Có' if value else 'Không'
         identifier = key.endswith('_id') or key in {'zip', 'year', 'fiscal_year', 'currency', 'product_name', 'category', 'segment'} or key == dimension
         if identifier and not isinstance(value, datetime) and not re.fullmatch(r'\d{4}-\d{2}-\d{2}(?:[T ].*)?', str(value)):
             return text(value)
         unit = (units or {}).get(key)
         return text(format_value(value, unit=unit, currency=currency if unit and unit.startswith('currency') else None))
     names = list(dict.fromkeys(key for row in rows for key in row))[:20]
-    return '<div class="table"><table><thead><tr>' + ''.join(f'<th>{text(k)}</th>' for k in names) + '</tr></thead><tbody>' + ''.join(
+    return '<div class="table"><table><thead><tr>' + ''.join(f'<th>{text(vietnamese_field(k) if vi else k)}</th>' for k in names) + '</tr></thead><tbody>' + ''.join(
         '<tr>' + ''.join(f'<td>{cell(k, row.get(k))}</td>' for k in names) + '</tr>' for row in rows[:200]) + '</tbody></table></div>'
 
 
-def chart_svg(chart, *, currency=None, granularity=None):
+def chart_svg(chart, *, currency=None, granularity=None, vi=False):
     labels, series = chart.categories, chart.series
     values = [value for s in series for value in s.values if value is not None]
     if not values:
-        return '<p class="notice">No matching chart observations.</p>'
+        return '<p class="notice">Không có dữ liệu phù hợp cho biểu đồ.</p>' if vi else '<p class="notice">No matching chart observations.</p>'
     shown = lambda value: formatted(value, unit=chart.unit, currency=currency if chart.unit.startswith('currency') or chart.unit in {'VND', 'USD', 'EUR'} else None)
     granularity = granularity or 'day'
     label_text = lambda label: axis_date(label, granularity) if chart.temporal else label
@@ -83,6 +86,10 @@ def chart_svg(chart, *, currency=None, granularity=None):
     scale = high / magnitude - low / magnitude or 1
     y = lambda value: 235 - (value / magnitude - low / magnitude) / scale * 205
     display_unit = currency if currency and chart.unit.startswith('currency') else 'percent' if chart.unit.startswith('fraction') else chart.unit
+    if vi:
+        display_unit = {'percent': 'Phần trăm', 'count': 'Số lượng', 'number': 'Số',
+                        'currency (unconfirmed)': 'Chưa xác nhận tiền tệ',
+                        'currency': 'Tiền tệ', 'unknown_currency': 'Chưa xác nhận tiền tệ'}.get(display_unit, display_unit)
     out = [f'<svg viewBox="0 0 640 290" role="img" aria-label="{text(chart.title)}">',
            f'<title>{text(chart.title)} · {text(display_unit)}</title>']
     if chart.type == 'donut':
@@ -109,7 +116,7 @@ def chart_svg(chart, *, currency=None, granularity=None):
                     previous = None
                     continue
                 x = positions[j]
-                title = f'<title>{text(label_text(labels[j]))} · {text(s.name)}: {text(shown(value))}</title>'
+                title = f'<title>{text(label_text(labels[j]))} · {text(vietnamese_field(s.name) if vi else s.name)}: {text(shown(value))}</title>'
                 if chart.type == 'bar':
                     bar_width = max(.1, width * .8 / len(series))
                     bar_left = x - width * .4 + i * bar_width
@@ -128,16 +135,17 @@ def chart_svg(chart, *, currency=None, granularity=None):
     if chart.type == 'donut':
         out.append('<p>' + ' · '.join(f'<span style="color:{COLORS[i % len(COLORS)]}">{text(label_text(label))}: {text(shown(value))}</span>' for i,(label,value) in enumerate(zip(labels,series[0].values))) + '</p>')
     else:
-        out.append('<p>' + ' · '.join(f'<span style="color:{COLORS[i]}">{text(s.name)}</span>' for i, s in enumerate(series)) + '</p>')
-    return ''.join(out) + f'<small>{text(display_unit)} · Display values are rounded; original observations remain in the saved data.</small>'
+        out.append('<p>' + ' · '.join(f'<span style="color:{COLORS[i]}">{text(vietnamese_field(s.name) if vi else s.name)}</span>' for i, s in enumerate(series)) + '</p>')
+    note = ('Giá trị hiển thị đã được làm tròn. Dữ liệu lưu trữ giữ nguyên giá trị gốc.'
+            if vi else 'Display values are rounded; original observations remain in the saved data.')
+    return ''.join(out) + f'<small>{text(display_unit)} · {note}</small>'
 
 
-def _tile_content(tile, result, *, include_observations=True, chart=None):
-    if not result or result.status not in {'complete', 'empty'}:
-        return f'<p class="notice">{text(result.message if result else "Source unavailable")}</p>'
+def _tile_content(tile, result, *, include_observations=True, chart=None, vi=False):
     rows = result.payload.get('rows') or []
     if not rows:
-        return '<p class="notice">No matching observations. This is not a zero value.</p>'
+        return ('<p class="notice">Không có dữ liệu phù hợp. Giá trị chưa xác định.</p>' if vi
+                else '<p class="notice">No matching observations. This is not a zero value.</p>')
     names = list(rows[0])
     units, currency = display_context(result.payload)
     measures = tile.measures or [key for key in names if any(number(row.get(key)) is not None for row in rows) and key != tile.dimension]
@@ -148,8 +156,8 @@ def _tile_content(tile, result, *, include_observations=True, chart=None):
             raise ValueError('A KPI needs one aggregate row and one measure; showing observations.')
         value = number(rows[0].get(measures[0]))
         unit = units.get(measures[0])
-        shown = formatted(Decimal(str(rows[0][measures[0]])), unit=unit, currency=currency if unit and unit.startswith('currency') else None) if value is not None else 'No observed value'
-        return f'<p class="kpi">{shown}</p><p>{text(measures[0])}</p>'
+        shown = formatted(Decimal(str(rows[0][measures[0]])), unit=unit, currency=currency if unit and unit.startswith('currency') else None) if value is not None else ('Không có giá trị quan sát' if vi else 'No observed value')
+        return f'<p class="kpi">{shown}</p><p>{text(vietnamese_field(measures[0]) if vi else measures[0])}</p>'
     if tile.kind == 'summary':
         items = []
         for key in measures:
@@ -157,12 +165,16 @@ def _tile_content(tile, result, *, include_observations=True, chart=None):
             observed = [value for value in values if value is not None]
             if observed:
                 options = {'unit': units.get(key), 'currency': currency if (units.get(key) or '').startswith('currency') else None}
-                items.append(f'<li>{text(key)}: {formatted(len(observed), unit="count")} observed; min {formatted(min(observed), **options)}; max {formatted(max(observed), **options)}; mean {formatted(mean(observed), **options)}</li>')
+                if vi:
+                    items.append(f'<li>{text(vietnamese_field(key))}: {formatted(len(observed), unit="count")} quan sát, nhỏ nhất {formatted(min(observed), **options)}, lớn nhất {formatted(max(observed), **options)}, trung bình {formatted(mean(observed), **options)}</li>')
+                else:
+                    items.append(f'<li>{text(key)}: {formatted(len(observed), unit="count")} observed; min {formatted(min(observed), **options)}; max {formatted(max(observed), **options)}; mean {formatted(mean(observed), **options)}</li>')
         if not items:
             raise ValueError('No numeric observations are available for this summary.')
-        return '<p>Descriptive statistics of returned observations only.</p><ul>' + ''.join(items) + '</ul>'
+        intro = 'Thống kê mô tả từ các quan sát trả về.' if vi else 'Descriptive statistics of returned observations only.'
+        return f'<p>{intro}</p><ul>' + ''.join(items) + '</ul>'
     if tile.kind == 'table':
-        return table([{key: row.get(key) for key in names if not tile.measures or key in {*measures, tile.dimension}} for row in rows], units=units, currency=currency, dimension=tile.dimension)
+        return table([{key: row.get(key) for key in names if not tile.measures or key in {*measures, tile.dimension}} for row in rows], units=units, currency=currency, dimension=tile.dimension, vi=vi)
     try:
         payload = deepcopy(result.payload)
         if tile.dimension:
@@ -179,25 +191,27 @@ def _tile_content(tile, result, *, include_observations=True, chart=None):
         if chart.unit in {'VND', 'USD', 'EUR'} and currency is None:
             chart = chart.model_copy(update={'unit': 'currency (unconfirmed)'})
         chart.title = tile.title
-        observations = '<details><summary>Source observations</summary>' + table(rows, units=units, currency=currency, dimension=tile.dimension) + '</details>' if include_observations else ''
+        source_label = 'Dữ liệu nguồn' if vi else 'Source observations'
+        observations = f'<details><summary>{source_label}</summary>' + table(rows, units=units, currency=currency, dimension=tile.dimension, vi=vi) + '</details>' if include_observations else ''
         grain = re.search(r"DATE_TRUNC\(\s*'(day|month|quarter|year)'", payload.get('sql') or '', re.I)
         dimension_grain = tile.dimension if tile.dimension in {'month','quarter','year'} else None
-        return chart_svg(chart, currency=currency, granularity=grain[1].lower() if grain else dimension_grain) + observations
+        return chart_svg(chart, currency=currency, granularity=grain[1].lower() if grain else dimension_grain, vi=vi) + observations
     except ValueError as error:
         raise ValueError('Chart unavailable: ' + str(error)) from error
 
 
-def tile_presentation(tile, result, *, include_observations=True, chart=None):
+def tile_presentation(tile, result, *, include_observations=True, chart=None, vi=False):
     if not result or result.status not in {'complete', 'empty'}:
-        message = result.message if result and result.message else 'Source unavailable'
+        message = result.message if result and result.message and (not vi or is_vietnamese(result.message)) else (
+            'Không lấy được dữ liệu nguồn.' if vi else 'Source unavailable')
         return f'<p class="notice">{text(message)}</p>', 'unavailable', message
     try:
-        html = _tile_content(tile, result, include_observations=include_observations, chart=chart)
+        html = _tile_content(tile, result, include_observations=include_observations, chart=chart, vi=vi)
         return html, 'complete' if result.payload.get('rows') else 'empty', ''
     except ValueError as error:
-        message = str(error)
+        message = 'Dữ liệu trả về chưa phù hợp với cách hiển thị đã chọn.' if vi else str(error)
         units, currency = display_context(result.payload)
-        return f'<p class="notice">{text(message)}</p>' + table(result.payload.get('rows') or [], units=units, currency=currency, dimension=tile.dimension), 'unavailable', message
+        return f'<p class="notice">{text(message)}</p>' + table(result.payload.get('rows') or [], units=units, currency=currency, dimension=tile.dimension, vi=vi), 'unavailable', message
 
 
 def tile_content(tile, result):
@@ -205,26 +219,38 @@ def tile_content(tile, result):
 
 
 def render_dashboard(document, *, charts=None, saved=True):
+    vi = is_vietnamese(document.description)
+    dataset_label = 'Bộ dữ liệu' if vi else 'Dataset'
+    source_label = 'Dữ liệu nguồn' if vi else 'Source observations'
+    status_label = lambda value: VIETNAMESE_STATUS.get(value, value) if vi else value
     results = {result.id: result for result in document.results}
     tiles, observed = [], set()
     for tile in document.tiles:
-        content, status, _ = tile_presentation(tile, results.get(tile.query_id), include_observations=tile.query_id not in observed, chart=(charts or {}).get(tile.id))
-        tiles.append(f'<article class="span-{tile.span}"><h2>{text(tile.title)}</h2>{content}<small>Dataset: {text(tile.query_id)}</small></article>')
+        content, status, _ = tile_presentation(tile, results.get(tile.query_id), include_observations=tile.query_id not in observed, chart=(charts or {}).get(tile.id), vi=vi)
+        tiles.append(f'<article class="span-{tile.span}"><h2>{text(tile.title)}</h2>{content}<small>{dataset_label}: {text(tile.query_id)}</small></article>')
         if tile.kind in {'line', 'bar', 'donut', 'table'} and status == 'complete':
             observed.add(tile.query_id)
     tiles = ''.join(tiles)
     sources = []
     represented = {tile.query_id for tile in document.tiles if tile.kind in {'line', 'bar', 'donut', 'table'}}
     for result in document.results:
-        parameters = ', '.join(str(value) for value in result.payload.get('parameters', [])) or 'None'
-        evidence = f'<details><summary>{text(result.id)} · {text(result.status)}</summary><p>{text(result.question)}</p><p>{text(result.message)}</p><p>Error type: {text(result.payload.get("metadata", {}).get("error_type", "None reported"))}</p><pre>{text(result.payload.get("sql") or result.payload.get("attempted_sql") or "SQL text unavailable")}</pre><pre>{text(parameters)}</pre><p>{text(result.payload.get("metadata", {}).get("limitations", []))}</p>'
+        parameters = ', '.join(str(value) for value in result.payload.get('parameters', [])) or ('Không có' if vi else 'None')
+        error_type = result.payload.get('metadata', {}).get('error_type', 'Không có' if vi else 'None reported')
+        sql = result.payload.get('sql') or result.payload.get('attempted_sql') or ('Không có câu lệnh SQL' if vi else 'SQL text unavailable')
+        evidence = f'<details><summary>{text(result.id)} · {text(status_label(result.status))}</summary><p>{text(result.question)}</p><p>{text(result.message)}</p><p>{"Loại lỗi" if vi else "Error type"}: {text(error_type)}</p><pre>{text(sql)}</pre><pre>{text(parameters)}</pre><p>{text(result.payload.get("metadata", {}).get("limitations", []))}</p>'
         if result.id not in represented and result.payload.get('rows'):
             units, currency = display_context(result.payload)
-            evidence += '<details><summary>Source observations</summary>' + table(result.payload['rows'], units=units, currency=currency) + '</details>'
+            evidence += f'<details><summary>{source_label}</summary>' + table(result.payload['rows'], units=units, currency=currency, vi=vi) + '</details>'
         sources.append(evidence + '</details>')
     sources = ''.join(sources)
     label = f'SQL-backed business dashboard · {text(document.status)} · Revision {formatted(document.revision, unit="count")}' if saved else f'Live SQL overview · {text(document.status)}'
     timestamps = f'Data refreshed {text(format_datetime(document.data_updated_at))}.' + (f' Saved {text(format_datetime(document.updated_at))}.' if saved else '')
-    return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="{escape(CSP, quote=True)}"><title>{text(document.title)}</title>
+    if vi:
+        label = f'Dashboard dữ liệu SQL · {text(status_label(document.status))}' + (f' · Phiên bản {formatted(document.revision, unit="count")}' if saved else '')
+        timestamps = f'Cập nhật dữ liệu lúc {text(format_datetime(document.data_updated_at))}.' + (f' Lưu lúc {text(format_datetime(document.updated_at))}.' if saved else '')
+    scope = document.scope or ('Theo yêu cầu truy vấn' if vi else 'As specified in source questions')
+    footer = ('Biểu đồ và thống kê mô tả các quan sát do SQL trả về. Giá trị thiếu chưa được xác định. Đơn vị tiền tệ cần được xác nhận từ nguồn.'
+              if vi else 'Charts and statistics describe returned SQL observations. Missing values are unknown. Currency is unconfirmed unless the source explicitly identifies it.')
+    return f'''<!doctype html><html lang="{'vi' if vi else 'en'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="{escape(CSP, quote=True)}"><title>{text(document.title)}</title>
 <style>body{{margin:0;background:#f2f5f7;color:#172d36;font:15px system-ui,sans-serif;padding:30px}}header,main,footer{{max-width:1300px;margin:auto}}h1{{font-size:32px;letter-spacing:-1px}}h2{{font-size:19px}}main{{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}}article{{background:white;border:1px solid #d9e2e7;border-radius:14px;padding:22px;min-width:0}}.span-2{{grid-column:span 2}}.kpi{{font-size:42px;font-weight:700;margin:16px 0;color:#117b70}}small{{color:#526774}}svg{{width:100%;max-height:350px}}.table{{overflow:auto;max-height:380px}}table{{border-collapse:collapse;width:100%;font-size:13px}}td,th{{padding:10px;text-align:left;border-bottom:1px solid #e4e9ed;white-space:nowrap}}details{{margin:14px 0}}summary{{cursor:pointer}}pre{{white-space:pre-wrap;overflow-wrap:anywhere}}.notice{{color:#84510a}}footer{{margin-top:24px}}@media(max-width:700px){{body{{padding:15px}}main{{grid-template-columns:1fr}}.span-2{{grid-column:span 1}}}}</style></head>
-<body><header><small>{label}</small><h1>{text(document.title)}</h1><p>{text(document.description)}</p><p>Scope: {text(document.scope or 'As specified in source questions')}</p><p><small>{timestamps}</small></p></header><main>{tiles}</main><footer><h2>Sources and limitations</h2><p>Charts and statistics describe returned SQL observations. Missing values are unknown. Currency is unconfirmed unless the source explicitly identifies it.</p>{sources}</footer></body></html>'''
+<body><header><small>{label}</small><h1>{text(document.title)}</h1><p>{text(document.description)}</p><p>{"Phạm vi" if vi else "Scope"}: {text(scope)}</p><p><small>{timestamps}</small></p></header><main>{tiles}</main><footer><h2>{"Nguồn và giới hạn" if vi else "Sources and limitations"}</h2><p>{footer}</p>{sources}</footer></body></html>'''

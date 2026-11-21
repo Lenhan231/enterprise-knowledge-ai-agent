@@ -21,6 +21,7 @@ SYSTEM_RULES = (
     'Descriptive statistics are computed from returned observations by the renderer; do not query them separately. '
     'An underlying observation table reuses the chart dataset unless raw source records are explicitly requested. '
     'Do not ask to confirm supplied chart types, measures, columns or time scope. '
+    'Write dataset questions, explanations and clarification in the language of the original user request. '
     'Ask a focused business clarification only when required information is genuinely missing.'
 )
 
@@ -149,7 +150,7 @@ def response_schema(model, *, allow_kpi=True):
     return schema
 
 
-def normalize_generation(value, *, summarize_returned=False):
+def normalize_generation(value, *, summarize_returned=False, required_kinds=()):
     """Normalize transport and unambiguous returned summaries; all validators still run afterward."""
     result = deepcopy(value)
     if not isinstance(result, dict):
@@ -186,6 +187,10 @@ def normalize_generation(value, *, summarize_returned=False):
         if len(statements) == 1 and isinstance(statements[0], exp.Select) and not statements[0].args.get('limit'):
             from core.agents.sql.sql_validation import MAX_RESULT_ROWS
             item['sql'] = statements[0].limit(MAX_RESULT_ROWS).sql(dialect='postgres')
+    if len(required_kinds) == 1:
+        kind, = required_kinds
+        if kind in {'line', 'bar', 'donut'}:
+            _reuse_grouped_table_for_chart(result, kind)
     if (summarize_returned and isinstance(queries, list) and isinstance(result.get('outputs'), list)
             and all(isinstance(output, dict) for output in result['outputs'])):
         candidate = deepcopy(result)
@@ -198,6 +203,27 @@ def normalize_generation(value, *, summarize_returned=False):
     if summarize_returned:
         _complete_returned_summary(result)
     return result
+
+
+def _reuse_grouped_table_for_chart(result, kind):
+    """Apply an explicit chart choice when the returned table already binds its exact fields."""
+    from core.agents.dashboard.presentation import aggregate_outputs, output_roles
+
+    outputs, queries = result.get('outputs'), result.get('queries', [result])
+    if not isinstance(outputs, list) or len(outputs) != 1 or not isinstance(queries, list) or len(queries) != 1:
+        return
+    output, dataset = outputs[0], queries[0]
+    if not isinstance(output, dict) or output.get('kind') != 'table' or not isinstance(dataset, dict):
+        return
+    try:
+        binding = DashboardOutput.model_validate(output)
+    except ValueError:
+        return
+    if binding.query != 0 or not binding.dimension or not binding.measures or binding.group_by not in ([], [binding.dimension]):
+        return
+    _, grouped = output_roles(dataset)
+    if grouped == {binding.dimension} and set(binding.measures) <= aggregate_outputs(dataset) - grouped:
+        outputs[0] = {**output, 'kind': kind, 'group_by': []}
 
 
 def _complete_returned_summary(result):

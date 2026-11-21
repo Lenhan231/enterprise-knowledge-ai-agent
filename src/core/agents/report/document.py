@@ -67,11 +67,12 @@ class ReportDocument(StrictModel):
 
     @model_validator(mode='after')
     def valid_report(self):
+        from core.agents.report.labels import LABELS, uses_vietnamese_labels
         if self.report.get('report_type') == 'inventory_operations':
             from core.agents.report.inventory_operations import validate_report as validate_inventory, policy_notes
             validate_inventory(self.report)
             if 'title' not in self.model_fields_set:
-                self.title = 'Inventory & Operations Report'
+                self.title = LABELS['inventory_operations'] if uses_vietnamese_labels(self.report) else 'Inventory & Operations Report'
             if self.monthly_decisions:
                 raise ValueError('Inventory rules use a single selected snapshot')
             if 'presentation' not in self.model_fields_set:
@@ -87,6 +88,8 @@ class ReportDocument(StrictModel):
         if not isinstance(self.presentation, ReportPresentation):
             raise ValueError('Sales reports require a sales presentation')
         validate_report(self.report)
+        if 'title' not in self.model_fields_set and uses_vietnamese_labels(self.report):
+            self.title = LABELS['sales_performance']
         validate_monthly_decisions(self.report, self.monthly_decisions)
         self.insights = build_insights(self.report, self.monthly_decisions, self.sales_context)
         if 'presentation' not in self.model_fields_set:

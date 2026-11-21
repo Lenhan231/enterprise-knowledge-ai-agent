@@ -8,7 +8,7 @@ from core.agents.dashboard.agent import DashboardDocumentAgent
 from core.models.agents import AgentRequest, VerifiedIdentity
 from core.agents.sql.sql_validation import QueryPlan
 from core.agents.sql.metric_validation import MetricDefinitionError
-from core.agents.dashboard.requirements import validate_outputs
+from core.agents.dashboard.requirements import requested_kinds, validate_outputs
 
 
 def response():
@@ -137,6 +137,19 @@ class DashboardRequirementsTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual('complete', doc.status, [r.message for r in doc.results])
         self.assertEqual(['table', 'summary'], [t.kind for t in doc.tiles])
         self.provider.generate.assert_called_once()
+
+    async def test_vietnamese_chart_reuses_the_same_grouped_observations(self):
+        query = response()['queries'][0]
+        self.provider.generate.return_value = json.dumps({'queries': [query], 'outputs': [
+            {'kind': 'table', 'query': 0, 'dimension': 'month', 'measures': ['revenue'], 'group_by': ['month']}]})
+        question = 'Tạo dashboard doanh thu theo tháng năm 2026 dưới dạng biểu đồ đường'
+        self.assertEqual({'line', 'table'}, requested_kinds(question + ' kèm bảng dữ liệu'))
+        doc = await self.agent.build(self.request, question)
+        self.assertEqual('complete', doc.status, [r.message for r in doc.results])
+        self.assertEqual(['line'], [tile.kind for tile in doc.tiles])
+        self.assertEqual(['revenue'], doc.tiles[0].measures)
+        self.assertIn('Doanh thu', doc.tiles[0].title)
+        self.repo.execute_approved_query.assert_awaited_once()
 
     async def test_same_output_contract_works_for_other_metrics_and_sources(self):
         for metric, source in [('sessions', 'commerce.web_traffic'), ('cogs', 'commerce.sales')]:

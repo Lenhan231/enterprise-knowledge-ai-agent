@@ -43,6 +43,9 @@ class SalesContractTest(unittest.TestCase):
             ('Monthly revenue report Jan-May 2026', '2026-01-01', '2026-06-01'),
             ('Monthly revenue report November 2025 through February 2026', '2025-11-01', '2026-03-01'),
             ('Monthly revenue report from May to May 2026', '2026-05-01', '2026-06-01'),
+            ('Lập báo cáo tài chính từ tháng 3 đến tháng 8 năm 2024', '2024-03-01', '2024-09-01'),
+            ('Báo cáo tài chính từ tháng 11 năm 2025 tới tháng 2 năm 2026', '2025-11-01', '2026-03-01'),
+            ('Tao bao cao tai chinh tu thang 7 den thang 10 2025', '2025-07-01', '2025-11-01'),
         ]
         for text, start, end in cases:
             with self.subTest(text=text):

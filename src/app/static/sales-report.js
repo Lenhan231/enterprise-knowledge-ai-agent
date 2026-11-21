@@ -111,7 +111,9 @@ const SalesPerformanceReport = (() => {
     }
     return {section_order: ['executive_summary','sales_kpis','performance_analysis','key_findings_and_explanations','decision_support'], hidden_sections: [], chart_types, text_edits: {}};
   };
-  const formatMetric = (metric, value = metric.value) => value == null ? 'Unavailable' : format(value) + (metric.unit === 'percent' ? '%' : metric.unit.startsWith('unknown_currency') ? ' VND' : '');
+  const vietnamese = value => /[ăâđêôơưáàảãạấầẩẫậắằẳẵặéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]/iu.test(value);
+  const sectionTitlesVi = ['Tóm tắt điều hành', 'Chỉ số bán hàng', 'Phân tích kết quả', 'Phát hiện chính và diễn giải', 'Hỗ trợ ra quyết định'];
+  const formatMetric = (metric, value = metric.value) => value == null ? (vietnamese(metric.label) ? 'Không có dữ liệu' : 'Unavailable') : format(value) + (metric.unit === 'percent' ? '%' : metric.unit.startsWith('unknown_currency') ? ' VND' : '');
   const slotMetrics = {
     executive_summary: [['company_revenue','company_revenue_change_pct'],['company_gross_profit','company_gross_margin_pct'],['order_count']],
     key_findings_and_explanations: [['company_revenue_change_pct'],['company_gross_profit','company_gross_margin_pct'],['order_count','delivered_average_order_value']],
@@ -121,14 +123,23 @@ const SalesPerformanceReport = (() => {
     const observed = monthly.filter(group => group.metrics.some(m => m.id === 'company_revenue' && m.value !== null));
     const selected = (observed.length ? observed : monthly).at(-1);
     const prior = new Date(selected.period.start + 'T00:00:00Z'); prior.setUTCMonth(prior.getUTCMonth()-1);
-    const change = {...selected.metrics.find(m => m.id === 'company_revenue_change_pct'), label:`Company revenue month-over-month change (${selected.period.start.slice(0,7)} vs ${prior.toISOString().slice(0,7)})`};
+    const period = selected.period.start.slice(0,7), baseline = prior.toISOString().slice(0,7);
+    const label = vietnamese(report.metrics[0].label)
+      ? `Thay đổi doanh thu công ty theo tháng (${period.slice(5)}/${period.slice(0,4)} so với ${baseline.slice(5)}/${baseline.slice(0,4)})`
+      : `Company revenue month-over-month change (${period} vs ${baseline})`;
+    const change = {...selected.metrics.find(m => m.id === 'company_revenue_change_pct'), label};
     return report.metrics.map(m => m.id === change.id ? change : m);
   }
   function narrative(report, key, monthly = []) {
+    const vi = vietnamese(report.metrics[0]?.label);
     const metrics = Object.fromEntries(comparisonMetrics(report, monthly).map(m => [m.id,m]));
     return (slotMetrics[key] || []).map(ids => {
       const available = ids.map(id => metrics[id]).filter(m => m.status === 'available');
-      return {ids: available.map(m => m.id), text: available.map(m => `The ${m.label.toLowerCase()} is ${formatMetric(m)}.`).join(' ') || (key === 'key_findings_and_explanations' && ids[0] === 'company_revenue_change_pct' ? 'Period-over-period revenue change is unavailable for this scope. See the data notes below.' : '')};
+      const text = available.map(m => vi ? `${m.label}: ${formatMetric(m)}.` : `The ${m.label.toLowerCase()} is ${formatMetric(m)}.`).join(' ');
+      const missingChange = key === 'key_findings_and_explanations' && ids[0] === 'company_revenue_change_pct';
+      const unavailable = vi ? 'Chưa đủ dữ liệu để so sánh doanh thu giữa các kỳ. Xem ghi chú dữ liệu bên dưới.'
+        : 'Period-over-period revenue change is unavailable for this scope. See the data notes below.';
+      return {ids: available.map(m => m.id), text: text || (missingChange ? unavailable : '')};
     }).filter(item => item.text);
   }
   function numberedCitations(sources, prefix) {
@@ -150,6 +161,8 @@ const SalesPerformanceReport = (() => {
   function render(root, report, options = {}) {
     if (report.report_type === 'inventory_operations') return renderInventory(root, report, options);
     root.replaceChildren();
+    const vi = vietnamese(report.metrics[0]?.label);
+    const label = (english, translated) => vi ? translated : english;
     const defaults = defaultPresentation(report);
     const layout = {...defaults, ...(options.presentation || {}), chart_types:{...defaults.chart_types, ...options.presentation?.chart_types}};
     const monthly = options.monthly_decisions || [];
@@ -163,18 +176,18 @@ const SalesPerformanceReport = (() => {
     (insights?.documents || []).forEach(e => { if (!sources.has(e.citation_id)) sources.set(e.citation_id, {...e, source_table:e.source, number:sources.size + 1}); });
     const citeIds = numberedCitations(sources, prefix);
     const cite = (element, ids, values = metrics) => citeIds(element, ids.flatMap(id => values[id]?.evidence.map(e => e.query_id) || []));
-    root.append(node('h2', options.title || 'Sales Performance Report'));
+    root.append(node('h2', options.title || label('Sales Performance Report', 'Báo cáo kết quả bán hàng')));
     const end = new Date(report.request.period.end_exclusive + 'T00:00:00Z');
     end.setUTCDate(end.getUTCDate() - 1);
-    root.append(node('p', `${report.request.period.start} to ${end.toISOString().slice(0,10)}`, 'sales-report-period'));
+    root.append(node('p', `${report.request.period.start} ${label('to', 'đến')} ${end.toISOString().slice(0,10)}`, 'sales-report-period'));
     for (const key of layout.section_order) {
       if (layout.hidden_sections.includes(key)) continue;
       const index = Object.keys(report.sections).indexOf(key);
       const section = node('section', undefined, 'sales-report-section');
       section.dataset.sectionId = key;
-      section.append(node('h3', sectionTitles[index]));
+      section.append(node('h3', (vi ? sectionTitlesVi : sectionTitles)[index]));
       if (Object.hasOwn(layout.text_edits, key)) {
-        section.append(node('small', 'Edited by you', 'sales-edited-label'));
+        section.append(node('small', label('Edited by you', 'Do bạn chỉnh sửa'), 'sales-edited-label'));
         layout.text_edits[key].split('\n').filter(Boolean).forEach(line => section.append(node('p', line)));
       } else if (key === 'sales_kpis') {
         const grid = node('dl', undefined, 'sales-report-kpis');
@@ -184,7 +197,7 @@ const SalesPerformanceReport = (() => {
           cite(label, [metric.id]);
           item.append(label, node('dd', formatMetric(metric)));
           if (metric.value === null) {
-            const reason = node('a', 'Why unavailable?', 'sales-data-note-link');
+            const reason = node('a', vi ? 'Vì sao thiếu dữ liệu?' : 'Why unavailable?', 'sales-data-note-link');
             reason.href = `#${prefix}-notes`; item.append(reason);
           }
           grid.append(item);
@@ -198,13 +211,13 @@ const SalesPerformanceReport = (() => {
             const card = node('article', undefined, 'sales-decision');
             const title = node('h4', action.title); citeIds(title, action.citations);
             card.append(title);
-            if (action.why) card.append(node('p', `Why review this: ${action.why}`));
-            card.append(node('p', `Recommended next step: ${action.action}`), node('p', `Periods: ${action.periods.join(', ')}`)); section.append(card);
+            if (action.why) card.append(node('p', `${label('Why review this', 'Lý do cần xem xét')}: ${action.why}`));
+            card.append(node('p', `${label('Recommended next step', 'Đề xuất xử lý')}: ${action.action}`), node('p', `${label('Periods', 'Các kỳ')}: ${action.periods.join(', ')}`)); section.append(card);
           });
-          if (!insights.actions.length) section.append(node('p', 'No rule action is available from the observed inputs. See Data needed below for the specific gaps.'));
-          detailRoot = node('details'); detailRoot.append(node('summary','View all rule evaluations')); section.append(detailRoot);
+          if (!insights.actions.length) section.append(node('p', label('No rule action is available from the observed inputs. See Data needed below for the specific gaps.', 'Dữ liệu hiện có chưa đưa ra hành động theo quy tắc. Xem mục Dữ liệu cần bổ sung.')));
+          detailRoot = node('details'); detailRoot.append(node('summary',label('View all rule evaluations','Xem kết quả đánh giá các quy tắc'))); section.append(detailRoot);
         }
-        if (monthly.length) section.append(node('p', 'Existing rules are evaluated for each month against its preceding calendar month.'));
+        if (monthly.length) section.append(node('p', label('Existing rules are evaluated for each month against its preceding calendar month.', 'Các quy tắc so sánh từng tháng với tháng liền trước.')));
         (monthly.length ? monthly : [report]).forEach(group => {
         const values = Object.fromEntries(group.metrics.map(m => [m.id, m]));
         if (group.period) detailRoot.append(node('h4', group.period.start.slice(0,7)));
@@ -245,7 +258,7 @@ const SalesPerformanceReport = (() => {
           else {
             item.append(chart(widget, report.request.granularity, metrics));
             item.append(node('p', widget.metric_ids.map(id => metrics[id].label).join(' ? '), 'sales-chart-legend'));
-            const table = node('details'); table.append(node('summary', 'View chart data'), dataTable(widget, metrics)); item.append(table);
+            const table = node('details'); table.append(node('summary', label('View chart data', 'Xem dữ liệu biểu đồ')), dataTable(widget, metrics)); item.append(table);
           }
           grid.append(item);
         });
@@ -254,7 +267,7 @@ const SalesPerformanceReport = (() => {
       root.append(section);
     }
     const footnotes = node('footer', undefined, 'sales-report-footnotes');
-    footnotes.append(node('h3', 'Sources'));
+    footnotes.append(node('h3', label('Sources', 'Nguồn dữ liệu')));
     sources.forEach(source => {
       const item = node('article', undefined, 'sales-source'); item.id = `${prefix}-source-${source.number}`; item.tabIndex = -1;
       item.append(node('h4', `[${source.number}] ${source.source_table}`));
@@ -267,13 +280,16 @@ const SalesPerformanceReport = (() => {
       footnotes.append(item);
     });
     if (!sources.size) footnotes.append(node('p', 'No source observations were returned for this period.'));
-    const notes = node('section'); notes.id = `${prefix}-notes`; notes.tabIndex = -1; notes.append(node('h3', 'Data notes'));
-    notes.append(node('p', 'Amounts are displayed in VND as requested. The source has no currency tag; no currency conversion has been applied.'));
+    const notes = node('section'); notes.id = `${prefix}-notes`; notes.tabIndex = -1; notes.append(node('h3', label('Data notes', 'Ghi chú dữ liệu')));
+    notes.append(node('p', label('Amounts are displayed in VND as requested. The source has no currency tag; no currency conversion has been applied.',
+      'Số tiền hiển thị theo đơn vị VND. Nguồn không ghi đơn vị tiền tệ và chưa áp dụng quy đổi.')));
     if (insights) {
-      notes.append(node('h4', 'Data needed'));
+      notes.append(node('h4', label('Data needed', 'Dữ liệu cần bổ sung')));
       insights.data_needs.forEach(text => { const paragraph = node('p',text); if (text.startsWith('Missing or incomplete commerce.sales')) citeIds(paragraph,(insights.coverage_evidence || []).map(e=>e.query_id)); notes.append(paragraph); });
     }
-    if (monthly.length && report.request.granularity === 'month') notes.append(node('p', 'The month-over-month KPI compares the latest observed month with its preceding calendar month. Totals cover the full requested period. Incomplete comparisons remain unavailable.'));
+    if (monthly.length && report.request.granularity === 'month') notes.append(node('p', vietnamese(report.metrics[0].label)
+      ? 'Chỉ số so sánh tháng mới nhất có dữ liệu doanh thu với tháng liền trước. Nếu thiếu dữ liệu để so sánh, chỉ số sẽ hiển thị là không có dữ liệu.'
+      : 'The month-over-month KPI compares the latest observed month with its preceding calendar month. Totals cover the full requested period. Incomplete comparisons remain unavailable.'));
     monthly.forEach(group => {
       if (group.comparison.comparable === true && group.metrics.find(m => m.id === 'company_revenue_change_pct').value !== null) return;
       const c = group.coverage;

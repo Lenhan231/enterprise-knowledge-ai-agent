@@ -57,24 +57,28 @@ def export_pdf(document):
         with tempfile.TemporaryDirectory() as directory:
             return render_pdf(inventory_parts(document, directory), directory)
     report, layout = document.report, document.presentation
+    from core.agents.report.labels import SALES_SECTIONS_VI, uses_vietnamese_labels
+    vi = uses_vietnamese_labels(report)
     chart_types = {**default_chart_types(report), **layout.chart_types}
     shown_metrics = comparison_metrics(report, document.monthly_decisions)
     metrics = {m['id']: m for m in shown_metrics}
     period = report['request']['period']
     end = date.fromisoformat(period['end_exclusive']) - timedelta(days=1)
-    parts = [f'<h1>{escape(document.title)}</h1><p class="subtitle">{period["start"]} to {end}</p>']
+    parts = [f'<h1>{escape(document.title)}</h1><p class="subtitle">{period["start"]} {"đến" if vi else "to"} {end}</p>']
     if layout.text_edits:
         parts.append('<p class="note">Includes user-edited narrative.</p>')
     with tempfile.TemporaryDirectory() as directory:
         visible_sections = 0
         for section in layout.section_order:
             if section in layout.hidden_sections: continue
-            parts.append(f'<h2{" class=new-page" if visible_sections and (section == "performance_analysis" or section == "decision_support" and document.monthly_decisions) else ""}>{escape(SECTION_TITLES[section])}</h2>')
+            section_title = (SALES_SECTIONS_VI if vi else SECTION_TITLES)[section]
+            parts.append(f'<h2{" class=new-page" if visible_sections and (section == "performance_analysis" or section == "decision_support" and document.monthly_decisions) else ""}>{escape(section_title)}</h2>')
             visible_sections += 1
             if section in layout.text_edits:
                 parts.extend('<p>' + escape(line) + '</p>' for line in layout.text_edits[section].splitlines() if line.strip())
             elif section == 'sales_kpis':
-                parts.append('<table><tr><th>Sales KPI</th><th>Value</th></tr>')
+                parts.append('<table><tr><th>Chỉ số bán hàng</th><th>Giá trị</th></tr>' if vi
+                             else '<table><tr><th>Sales KPI</th><th>Value</th></tr>')
                 parts.extend(f'<tr><td>{escape(m["label"])}</td><td>{display_value(m)}</td></tr>' for m in shown_metrics)
                 parts.append('</table>')
             elif section == 'decision_support':
@@ -134,11 +138,13 @@ def export_pdf(document):
                             parts.append(f'<img src="{filename}" width="490" height="178"/>')
                         else: parts.append('<p>No chart observations for this period.</p>')
                     parts.append('</div>')
-        parts.append('<h2 class="new-page">Data notes</h2>')
-        parts.append('<h3>Data needed</h3>')
+        parts.append('<h2 class="new-page">Ghi chú dữ liệu</h2>' if vi else '<h2 class="new-page">Data notes</h2>')
+        parts.append('<h3>Dữ liệu cần bổ sung</h3>' if vi else '<h3>Data needed</h3>')
         parts.extend(f'<p class="note">{escape(text)}</p>' for text in document.insights['data_needs'])
         if document.monthly_decisions and report['request']['granularity'] == 'month':
-            parts.append('<p class="note">The month-over-month KPI compares the latest observed month with its preceding calendar month. Totals cover the full requested period. Incomplete comparisons remain unavailable.</p>')
+            note = ('Chỉ số so sánh tháng mới nhất có dữ liệu doanh thu với tháng liền trước. Nếu thiếu dữ liệu để so sánh, chỉ số sẽ hiển thị là không có dữ liệu.'
+                    if vi else 'The month-over-month KPI compares the latest observed month with its preceding calendar month. Totals cover the full requested period. Incomplete comparisons remain unavailable.')
+            parts.append(f'<p class="note">{note}</p>')
         parts.extend(f'<p class="note">{escape(note)}</p>' for note in data_notes(report))
         for group in document.monthly_decisions:
             if group['comparison']['comparable'] is True and next(m['value'] for m in group['metrics'] if m['id'] == 'company_revenue_change_pct') is not None:

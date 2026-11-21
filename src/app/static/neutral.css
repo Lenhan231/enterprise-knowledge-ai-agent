@@ -411,3 +411,13 @@ html #home-overview-preview { height: 1000px; }
 }
 @media (max-width: 780px) { #sidebar-autohide { display: none; } }
 @media (prefers-reduced-motion: reduce) { :root #workspace.sidebar-autohide .workspace-sidebar { transition-duration: .01s; } }
+
+/* ---- Retrieved-but-unused list: keep the scores off the edge ---- */
+:root .retrieved-row { padding-right: 14px; }
+
+/* ---- Sonar Grid (21st.dev): a dot grid on the sign-in page; pings spread through it (see sonar-grid.js) ---- */
+.sonar-grid { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+:root .login-landing-link { color: var(--accent); text-decoration: none; }
+:root .login-landing-link:hover { text-decoration: underline; }
+:root .login-landing-link:visited { color: var(--accent); }
+:root:not([data-theme="dark"]) .login-view .login-card { background: #fff; }

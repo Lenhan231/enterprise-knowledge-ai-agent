@@ -54,6 +54,8 @@ class V31ContractTests(unittest.TestCase):
         manifest = read("FREEZE_MANIFEST_V3_1_DRAFT.json")
         review_path = HERE / "review_v3_1_reviewer_1_Lenhan231_complete.json"
         review = json.loads(review_path.read_text(encoding="utf-8"))
+        review2_path = HERE / "review_v3_1_reviewer_2_user_reported_complete.json"
+        review2 = json.loads(review2_path.read_text(encoding="utf-8"))
         self.assertEqual(review["review_format"], "sql-agent-benchmark-semantic-review")
         self.assertEqual(review["benchmark_version"], "v3.1")
         self.assertEqual(review["reviewer"]["id"], "Lenhan231")
@@ -61,17 +63,26 @@ class V31ContractTests(unittest.TestCase):
         self.assertEqual(len(review["case_reviews"]), 40)
         self.assertEqual(set(review["case_reviews"]), set(BY_ID))
         self.assertEqual({r["decision"] for r in review["case_reviews"].values()}, {"APPROVE"})
+        self.assertEqual(review2["reviewer"]["role"], "reviewer_2")
+        self.assertEqual(review2["recording"]["source"], "explicit_user_report_after_reviewer_browser_state_reset")
+        self.assertEqual(set(review2["case_reviews"]), set(BY_ID))
+        self.assertEqual({r["decision"] for r in review2["case_reviews"].values()}, {"APPROVE"})
         self.assertEqual(
             review["artifact_sha256"],
             manifest["artifacts_sha256"],
         )
+        self.assertEqual(review2["artifact_sha256"], manifest["artifacts_sha256"])
         self.assertEqual(
             manifest["review"]["reviewer_1"]["record_sha256"],
             hashlib.sha256(review_path.read_bytes()).hexdigest(),
         )
-        self.assertEqual(manifest["review"]["review_records_logged"], 1)
-        self.assertEqual(manifest["review"]["independent_human_reviewers_approved"], 0)
-        self.assertEqual(manifest["review"]["reviewer_2"], "PENDING")
+        self.assertEqual(
+            manifest["review"]["reviewer_2"]["record_sha256"],
+            hashlib.sha256(review2_path.read_bytes()).hexdigest(),
+        )
+        self.assertEqual(manifest["review"]["review_records_logged"], 2)
+        self.assertEqual(manifest["review"]["independent_human_reviewers_approved"], 2)
+        self.assertEqual(manifest["review"]["reviewer_2"]["approved_cases"], 40)
         self.assertEqual(manifest["review"]["adjudication"], "PENDING")
         self.assertEqual(manifest["freeze_status"], "DRAFT_NOT_FROZEN")
         self.assertFalse(manifest["ready_for_formal_freeze"])

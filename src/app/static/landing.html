@@ -63,6 +63,9 @@ h2{margin:0 0 12px;font-size:clamp(30px,4vw,44px);line-height:1.1;font-weight:70
 .note{margin-top:20px;color:var(--muted);font-size:13.5px}
 .end{text-align:center}
 footer{padding:28px 0 40px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+/* Lenis smooth scroll (its recommended base rules) */
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
 @media (max-width:640px){nav .links{display:none}.hero{padding-top:64px}}
 @media (prefers-reduced-motion:reduce){.reveal-word,.shot{animation:none;opacity:1;filter:none;transform:none}.rotate span{transition:none}}
 </style>
@@ -131,6 +134,7 @@ footer{padding:28px 0 40px;color:var(--muted);font-size:13px;border-top:1px soli
 </main>
 <footer><div class="wrap">Enterprise Knowledge AI · đồ án capstone FA26AI48</div></footer>
 
+<script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
 <script>
 (() => {
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -146,6 +150,16 @@ footer{padding:28px 0 40px;color:var(--muted);font-size:13px;border-top:1px soli
       span.textContent = word;
       headline.append(span, index < words.length - 1 ? " " : "");
     });
+  }
+  // Lenis smooth scrolling; in-page links glide to their section. Off for reduced motion or if the CDN is blocked.
+  if (!reduce && window.Lenis) {
+    const lenis = new Lenis();
+    const raf = (time) => { lenis.raf(time); requestAnimationFrame(raf); };
+    requestAnimationFrame(raf);
+    document.querySelectorAll('a[href^="#"]').forEach((link) => link.addEventListener("click", (event) => {
+      const target = document.querySelector(link.getAttribute("href"));
+      if (target) { event.preventDefault(); lenis.scrollTo(target, { offset: -16 }); }
+    }));
   }
   // Word Rotate: every 2.5 s the word leaves downwards, then the next enters from above (mode "wait")
   const words = ["Mua sắm", "Nhân sự", "Tài chính", "Kho vận"];

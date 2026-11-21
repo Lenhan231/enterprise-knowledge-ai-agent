@@ -396,3 +396,18 @@ html #home-overview-preview { height: 1000px; }
 .toast.is-leaving { opacity: 0; transform: translateY(6px); transition: opacity .4s, transform .4s; }
 @keyframes toastIn { from { opacity: 0; transform: translateY(10px) scale(.98); } }
 @media (prefers-reduced-motion: reduce) { .toast { animation: none; } }
+
+/* ---- Auto-hide sidebar (desktop only): out of the layout, slides over the page on touch ---- */
+.sidebar-edge { display: none; }
+@media (min-width: 781px) {
+  :root #workspace.app-shell.sidebar-autohide { grid-template-columns: minmax(0, 1fr); }
+  #workspace.sidebar-autohide .sidebar-edge { display: block; position: fixed; left: 0; top: 0; bottom: 0; width: 14px; z-index: 58; }
+  #workspace.sidebar-autohide .sidebar-edge::before { content: ""; position: absolute; left: 3px; top: 50%; width: 4px; height: 56px; margin-top: -28px; border-radius: 4px; background: var(--line-strong); transition: opacity .2s, transform .25s; }
+  #workspace.sidebar-autohide.is-peek .sidebar-edge::before { opacity: 0; transform: translateX(-6px); }
+  :root #workspace.sidebar-autohide .workspace-sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-w); height: auto; z-index: 60; transform: translateX(-102%); box-shadow: none; transition: transform .3s cubic-bezier(.2, .8, .2, 1), box-shadow .3s; will-change: transform; }
+  :root #workspace.sidebar-autohide.is-peek .workspace-sidebar { transform: none; box-shadow: 0 0 0 1px var(--line), 18px 0 48px rgba(0, 0, 0, .16); }
+  :root #workspace.sidebar-autohide .sidebar-toggle, :root #workspace.sidebar-autohide .sidebar-resizer { display: none; }
+  :root #workspace.sidebar-autohide .nav-label, :root #workspace.sidebar-autohide .sidebar-brand > span:last-child { opacity: 1; pointer-events: auto; }
+}
+@media (max-width: 780px) { #sidebar-autohide { display: none; } }
+@media (prefers-reduced-motion: reduce) { :root #workspace.sidebar-autohide .workspace-sidebar { transition-duration: .01s; } }

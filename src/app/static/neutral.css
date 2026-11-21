@@ -93,9 +93,8 @@
 }
 
 /* composer: grey field with a round dark send button */
-:root .general-chat-composer button{border-radius:50%;background:var(--ink);color:var(--bg);box-shadow:none}
+:root .general-chat-composer #general-chat-send{border-radius:50%;box-shadow:none}
 :root .general-chat-composer button::after{display:none}
-:root .general-chat-composer button:hover:not(:disabled){background:var(--ink-2)}
 
 /* flat primary buttons: drop the glossy lens and glow of the glass layer */
 :root #ask-button,:root .primary-button,:root #report-agent-submit,:root .submit-query-btn{box-shadow:none;background-image:none}
@@ -160,7 +159,7 @@
   :root .general-chat{width:min(100%,1640px)}
   :root .general-chat .chat-turn-response{grid-template-columns:minmax(0,1fr) 400px;column-gap:72px}
   :root .general-chat .chat-turn-question{padding-right:472px}
-  :root .general-chat-composer,:root .general-chat-note{margin-right:472px}
+  :root .general-chat:has(.chat-turn) .general-chat-composer,:root .general-chat:has(.chat-turn) .general-chat-note{margin-right:472px}
   :root .general-chat .chat-turn .answer-text{max-width:76ch}
 }
 
@@ -214,3 +213,35 @@
 :root input[type=file]::file-selector-button{border-radius:999px}
 :root .upload-dropzone,:root .drop-zone{border-radius:18px;border-color:var(--line-strong);background:var(--surface-2)}
 @media (prefers-reduced-motion:reduce){:root .reveal-word{animation:none}}
+
+/* ---------- AI Prompt Composer (hellocloud.webdev): card, pill route menu, send button with a ready state ---------- */
+:root{--aic-card-bg:#ffffff;--aic-card-border:rgba(24,24,28,.085);--aic-card-focus:rgba(24,24,28,.16);--aic-card-shadow:0 20px 44px -16px rgba(15,23,42,.09),0 2px 8px -2px rgba(15,23,42,.04);--aic-pill-bg:#f3f3f6;--aic-pill-hover:#eaeaf0;--aic-pill-border:rgba(24,24,28,.09);--aic-pill-hover-border:rgba(24,24,28,.16);--aic-pop-start:#ffffff;--aic-pop-end:#f7f7fa;--aic-pop-border:rgba(24,24,28,.11);--aic-pop-shadow:0 22px 48px -12px rgba(15,23,42,.16),0 4px 14px -4px rgba(15,23,42,.07);--aic-item-hover:rgba(24,24,28,.055);--aic-submit-bg:#f3f3f6;--aic-submit-color:#8e8d96;--aic-ready-bg:#18181c;--aic-ready-color:#ffffff}
+:root[data-theme="dark"]{--aic-card-bg:#18181c;--aic-card-border:rgba(255,255,255,.065);--aic-card-focus:rgba(255,255,255,.12);--aic-card-shadow:0 20px 45px -15px rgba(0,0,0,.45);--aic-pill-bg:#26262c;--aic-pill-hover:#2d2d34;--aic-pill-border:rgba(255,255,255,.095);--aic-pill-hover-border:rgba(255,255,255,.15);--aic-pop-start:#2b2b33;--aic-pop-end:#1f1f25;--aic-pop-border:rgba(255,255,255,.12);--aic-pop-shadow:0 22px 48px -10px rgba(0,0,0,.65);--aic-item-hover:rgba(255,255,255,.065);--aic-submit-bg:#222227;--aic-submit-color:#7c7b84;--aic-ready-bg:#f4f4f6;--aic-ready-color:#18181c}
+:root .general-chat-composer{padding:20px 18px 16px;border:1px solid var(--aic-card-border);border-radius:24px;background:var(--aic-card-bg);box-shadow:var(--aic-card-shadow)}
+:root .general-chat-composer:focus-within{border-color:var(--aic-card-focus);box-shadow:var(--aic-card-shadow)}
+:root .general-chat-composer textarea{margin-bottom:18px;font-size:16px;line-height:1.5;letter-spacing:-.011em}
+:root .route-pill-wrap{position:relative;margin-left:auto}
+:root .route-pill{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 13px 0 15px;border:1px solid var(--aic-pill-border);border-radius:999px;background:var(--aic-pill-bg);color:var(--ink);font:500 15px/1 var(--font);letter-spacing:-.011em;cursor:pointer}
+:root .route-pill:hover{background:var(--aic-pill-hover);border-color:var(--aic-pill-hover-border)}
+:root .route-pill svg{margin-top:1px;color:var(--muted)}
+:root .route-pill.is-open .route-pill-text{color:var(--muted)}
+:root .route-menu{position:absolute;right:0;bottom:calc(100% + 8px);z-index:30;display:flex;flex-direction:column;gap:2px;width:190px;padding:6px;border:1px solid var(--aic-pop-border);border-radius:18px;background:linear-gradient(160deg,var(--aic-pop-start) 0%,var(--aic-pop-end) 100%);box-shadow:var(--aic-pop-shadow);transform-origin:bottom right;animation:routeMenuIn .2s cubic-bezier(.22,1,.36,1) both}
+:root .route-menu[hidden]{display:none}
+:root .route-menu button{display:flex;align-items:center;justify-content:space-between;height:36px;padding:0 14px;border:0;border-radius:11px;background:transparent;color:var(--ink);font:500 15px/1 var(--font);letter-spacing:-.011em;text-align:left;cursor:pointer}
+:root .route-menu button:hover,:root .route-menu button:focus-visible{background:var(--aic-item-hover);outline:none}
+@keyframes routeMenuIn{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:none}}
+:root .general-chat-composer #general-chat-send{width:38px;height:38px;border:1px solid var(--aic-pill-border);border-radius:999px;background:var(--aic-submit-bg);color:var(--aic-submit-color);transition:background-color .18s ease,color .18s ease,border-color .18s ease}
+:root .general-chat-composer #general-chat-send:hover:not(:disabled),:root .general-chat-composer #general-chat-send.is-ready{border-color:var(--aic-ready-bg);background:var(--aic-ready-bg);color:var(--aic-ready-color)}
+:root .general-chat-composer #general-chat-send:active{transform:scale(.95)}
+@media (prefers-reduced-motion:reduce){:root .route-menu{animation:none}}
+
+/* the composer's generic button rule (40 px icon button) must not reach the route pill or its menu items */
+:root .general-chat-composer .route-pill,:root .general-chat-composer .route-menu button{display:flex;place-items:normal;width:auto;box-shadow:none;overflow:visible}
+:root .general-chat-composer .route-pill{display:inline-flex;height:38px;padding:0 13px 0 15px;border:1px solid var(--aic-pill-border);border-radius:999px;background:var(--aic-pill-bg);color:var(--ink)}
+:root .general-chat-composer .route-pill:hover:not(:disabled){border-color:var(--aic-pill-hover-border);background:var(--aic-pill-hover);color:var(--ink)}
+:root .general-chat-composer .route-menu button{height:36px;padding:0 14px;border:0;border-radius:11px;background:transparent;color:var(--ink)}
+:root .general-chat-composer .route-menu button:hover:not(:disabled),:root .general-chat-composer .route-menu button:focus-visible{background:var(--aic-item-hover);color:var(--ink)}
+:root .general-chat-composer .route-pill,:root .general-chat-composer .route-menu button{align-items:center}
+:root .general-chat-composer .route-menu button{justify-content:space-between}
+:root .general-chat-composer .route-pill svg{flex:none;width:13px;height:13px;margin:1px 0 0}
+:root .general-chat-composer .route-menu button svg{flex:none;width:15px;height:15px;margin:0}

@@ -3509,3 +3509,58 @@ $("#sidebar-toggle").addEventListener("click", () => {
     });
   });
 })();
+
+// AI Prompt Composer (21st.dev, hellocloud.webdev): the "Route to" select becomes a 38 px pill whose menu lists the
+// other routes first and the current one last with a check, like the composer's mode menu; the native select stays
+// as the form value. The send button turns dark once there is text to send.
+(() => {
+  const select = document.getElementById("general-chat-mode");
+  const input = document.getElementById("general-chat-question");
+  const send = document.getElementById("general-chat-send");
+  if (!select || !input || !send) return;
+  const label = select.closest("label");
+  const wrap = document.createElement("div");
+  wrap.className = "route-pill-wrap";
+  wrap.innerHTML = `<button type="button" class="route-pill" aria-haspopup="menu" aria-expanded="false"><span class="route-pill-text"></span><svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="route-menu" role="menu" hidden></div>`;
+  label.after(wrap);
+  label.classList.add("visually-hidden");
+  const pill = wrap.querySelector(".route-pill");
+  const menu = wrap.querySelector(".route-menu");
+  const text = () => select.options[select.selectedIndex]?.textContent || "";
+  const sync = () => { wrap.querySelector(".route-pill-text").textContent = text(); pill.setAttribute("aria-label", `Route to: ${text()}`); };
+  const close = () => { menu.hidden = true; pill.setAttribute("aria-expanded", "false"); pill.classList.remove("is-open"); };
+  const open = () => {
+    const options = [...select.options];
+    const ordered = [...options.filter((option) => !option.selected), ...options.filter((option) => option.selected)];
+    menu.innerHTML = ordered.map((option) => `<button type="button" role="menuitemradio" aria-checked="${option.selected}" data-value="${escapeHtml(option.value)}"><span>${escapeHtml(option.textContent)}</span>${option.selected ? '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.2 8.5L6.5 11.8L13 4.5" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ""}</button>`).join("");
+    menu.hidden = false;
+    pill.setAttribute("aria-expanded", "true");
+    pill.classList.add("is-open");
+    menu.querySelector('[aria-checked="true"]')?.focus();
+  };
+  pill.addEventListener("click", (event) => { event.stopPropagation(); menu.hidden ? open() : close(); });
+  menu.addEventListener("click", (event) => {
+    const item = event.target.closest("[data-value]");
+    if (!item) return;
+    event.stopPropagation();
+    select.value = item.dataset.value;
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+    sync();
+    close();
+    pill.focus();
+  });
+  menu.addEventListener("keydown", (event) => {
+    const items = [...menu.querySelectorAll("[data-value]")];
+    const at = items.indexOf(document.activeElement);
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); items[(at + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length]?.focus(); }
+    if (event.key === "Escape") { event.preventDefault(); close(); pill.focus(); }
+  });
+  document.addEventListener("click", (event) => { if (!wrap.contains(event.target)) close(); });
+  select.addEventListener("change", sync);
+  const ready = () => send.classList.toggle("is-ready", input.value.trim().length > 0);
+  input.addEventListener("input", ready);
+  new MutationObserver(ready).observe(send, { attributes: true, attributeFilter: ["disabled"] });
+  document.getElementById("general-chat-form")?.addEventListener("submit", () => setTimeout(ready));
+  sync();
+  ready();
+})();

@@ -189,7 +189,7 @@ class Handler(SimpleHTTPRequestHandler):
             raw = (STATIC / "index.html").read_text().replace("</head>", '<script src="/demo.js"></script></head>', 1).encode()
             self.send_response(200); self.send_header("Content-Type", "text/html; charset=utf-8"); self.end_headers()
             return self.wfile.write(raw)
-        if path == "/api/auth/me" and "demo_logout=1" in (self.headers.get("Cookie") or ""):
+        if path == "/api/auth/me" and (os.environ.get("DEMO_LOGGED_OUT") == "1" or "demo_logout=1" in (self.headers.get("Cookie") or "")):
             return self.send_json({"detail": "Not signed in"}, 401)
         if path.startswith("/api/invoices/") and path.endswith("/source"):
             found = next((i for i in INVOICES if i["invoice_id"] == path.split("/")[3]), {})

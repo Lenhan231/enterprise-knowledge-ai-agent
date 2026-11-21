@@ -162,6 +162,7 @@ Synthetic regression outcomes (fixtures are not human review evidence):
 | Same extra column with no linked safety evidence | PASS | FAIL | REVIEW_REQUIRED |
 | Extra sensitive/unauthorized column with failed safety checks | PASS | FAIL | FAIL |
 | Reviewer decision says PASS but a required check says FAIL | PASS | FAIL | REVIEW_REQUIRED |
+| Case-insensitive canonical column names | PASS | PASS | PASS |
 | Reordered columns, approved aliases, unordered rows, and independently audited equivalent SQL | PASS | PASS | PASS |
 | Wrong business values, missing/extra rows, NULL-to-zero, required ordering/ranking violation, or independent semantic audit FAIL | FAIL or unresolved per evidence | FAIL or REVIEW_REQUIRED | FAIL |
 
@@ -171,9 +172,9 @@ Executed v3.3 regression evidence:
 
 | Command | Result |
 |---|---|
-| `PYTHONPATH=src uv run --locked --project . python -m unittest discover -s tests/sql -p 'test_benchmark_v3_1_contract.py' -q` | PASS: 47 run, 47 passed. Includes synthetic positive/negative/review-required cases and all 30 stored Gold row comparisons. |
+| `PYTHONPATH=src uv run --locked --project . python -m unittest discover -s tests/sql -p 'test_benchmark_v3_1_contract.py' -q` | PASS: 48 run, 48 passed. Includes synthetic positive/negative/review-required cases and all 30 stored Gold row comparisons. |
 | `PYTHONPATH=src uv run --locked --project . python -m unittest discover -s artifacts/sql-agent-bussiness/tests -q` | PASS: 45 run, 45 passed. |
-| `PYTHONPATH=src uv run --locked --project . python -m unittest discover -s tests/sql -q` | PASS: 570 run, 560 passed, 10 skipped. |
+| `PYTHONPATH=src uv run --locked --project . python -m unittest discover -s tests/sql -q` | PASS: 571 run, 561 passed, 10 skipped. |
 | `PYTHONPATH=src:artifacts/sql-agent-bussiness/40-case-preparation uv run --locked --project . python -m unittest discover -s artifacts/sql-agent-bussiness/40-case-v3 -p 'test_*.py' -q` | FAIL: 55 run, 54 passed, 1 pre-existing historical hash assertion. The archived v3 manifest pins `test_v3_artifacts.py` to `9ef7240b…`; current bytes hash to `96adc0d9…`. Historical files were not changed. |
 | `uv run --locked --project . python -m py_compile artifacts/sql-agent-bussiness/40-case-v3-1/scorer_v3_1.py artifacts/sql-agent-bussiness/40-case-v3-1/output_safety_audit_v3_3.py tests/sql/test_benchmark_v3_1_contract.py` | PASS. |
 | `git diff --check` | PASS. |

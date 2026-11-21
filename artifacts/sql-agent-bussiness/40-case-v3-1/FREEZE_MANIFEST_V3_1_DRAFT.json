@@ -125,9 +125,9 @@
     "scorer_v3_2_full_sql_suite": "PASS: 562 run, 552 passed, 10 skipped",
     "scorer_v3_2_benchmark_package_tests": "PASS: 45/45",
     "v3_artifact_tests": "FAIL: 1/55; historical test_v3_artifacts.py source hash differs from its pinned v3 manifest digest",
-    "v3_3_contract_tests": "PASS 47/47; includes 30 stored Gold result comparisons and synthetic policy cases",
+    "v3_3_contract_tests": "PASS 48/48; includes 30 stored Gold result comparisons and synthetic policy cases",
     "v3_3_benchmark_package_tests": "PASS 45/45",
-    "v3_3_sql_tests": "PASS 570 run, 560 passed, 10 skipped",
+    "v3_3_sql_tests": "PASS 571 run, 561 passed, 10 skipped",
     "v3_3_historical_v3_artifact_tests": "FAIL 1/55: pinned historical test_v3_artifacts.py source hash mismatch; historical files unchanged",
     "v3_3_dev_pilot_compatibility_probe": "4 supported attempts; all E2E REVIEW_REQUIRED because independent SQL audit records are absent; legacy v2 inputs, not a valid v3.3 score",
     "v3_3_py_compile": "PASS",
@@ -161,9 +161,9 @@
     "heldout_sql_agent_cases_executed": false,
     "fresh_database_queries_executed_for_scorer_revision": false,
     "external_model_calls_for_scorer_revision": 0,
-    "scorer_v3_3_regressions": "PASS 47/47",
+    "scorer_v3_3_regressions": "PASS 48/48",
     "scorer_v3_3_benchmark_package_tests": "PASS 45/45",
-    "scorer_v3_3_full_sql_suite": "PASS 570 run, 560 passed, 10 skipped",
+    "scorer_v3_3_full_sql_suite": "PASS 571 run, 561 passed, 10 skipped",
     "dev_pilot_compatibility_probe": {
       "source": "stored pilot5-v31-cloudflare observations plus stored pilot5-origin reference",
       "supported_attempts": 4,
@@ -204,7 +204,7 @@
     "artifacts/sql-agent-bussiness/40-case-v3-1/output_safety_audit_v3_3.py": "72a09a9ca856a27fc755664f50de0f31d7d236172a039cad010dd9d0aea1296d",
     "artifacts/sql-agent-bussiness/40-case-v3-1/PROTOCOL_V3_1.md": "9d0baade802e639854999b16cb098cd3e2c64a7163218328342be81e4061a387",
     "artifacts/sql-agent-bussiness/40-case-v3-1/README.md": "ab0238ec47d352a752d56b10481cdc82bca5960590d65d5b375023a40cd7de3d",
-    "artifacts/sql-agent-bussiness/40-case-v3-1/TECHNICAL_VALIDATION_REPORT_2026-11-21.md": "6b0c966e8deb3fa5f939da083adac5f98427f4a0b6ab937d95283b96a6ea5d6b",
-    "tests/sql/test_benchmark_v3_1_contract.py": "009402f14995e2e31197644ffbc73331f84be3afeb60912d80dfd54c77ae482a"
+    "artifacts/sql-agent-bussiness/40-case-v3-1/TECHNICAL_VALIDATION_REPORT_2026-11-21.md": "49b95cd9843d8509bdb11e50967ca76b51c7d266559516354466d64b3e50da32",
+    "tests/sql/test_benchmark_v3_1_contract.py": "d9b668fde0992c6146be72f33f827b41d4c70fe05498435a411bb1731c5b498f"
   }
 }

@@ -357,3 +357,8 @@ html #home-overview-preview { height: 1000px; }
   background: linear-gradient(135deg, color-mix(in srgb, var(--bg) 55%, transparent), color-mix(in srgb, var(--surface-2) 40%, transparent)); }
 .theme-glass::before { content: ""; position: absolute; inset: -20% -60%; background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.55) 50%, transparent 62%); mix-blend-mode: soft-light; transform: translateX(-60%); animation: glassSheen 1s .1s cubic-bezier(.3,.6,.2,1) forwards; }
 @keyframes glassSheen { to { transform: translateX(60%); } }
+/* composer actions: icons line up with the text above, both buttons share one centre line */
+:root .composer-actions { margin-left: -11px; gap: 2px; align-items: center; }
+:root .examples-wrap { display: flex; align-items: center; }
+:root .general-chat-composer .composer-action { padding: 0 11px; line-height: 1; gap: 6px; }
+:root .general-chat-composer .general-chat-mode.visually-hidden { display: none; }

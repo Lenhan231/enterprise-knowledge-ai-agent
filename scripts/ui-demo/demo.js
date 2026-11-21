@@ -92,3 +92,16 @@ window.addEventListener("load", () => setTimeout(() => {
     setTimeout(() => { log.push(`2500ms glass=${!!document.querySelector(".theme-glass")} theme=${theme()}`); const pre = document.createElement("pre"); pre.id = "glass-log"; pre.textContent = log.join("\n"); document.body.append(pre); }, 2500);
   }, 500));
 })();
+// ?shot=rects: report geometry of the composer pieces into <pre id="rects">
+(() => {
+  if (new URLSearchParams(location.search).get("shot") !== "rects") return;
+  window.addEventListener("load", () => setTimeout(() => {
+    document.querySelector("#tab-button-general-chat")?.click();
+    setTimeout(() => {
+      const r = (sel) => { const e = document.querySelector(sel); if (!e) return sel + ": none"; const b = e.getBoundingClientRect(), c = getComputedStyle(e); return `${sel}: x=${b.x.toFixed(1)} y=${b.y.toFixed(1)} w=${b.width.toFixed(1)} h=${b.height.toFixed(1)} ml=${c.marginLeft} mr=${c.marginRight}`; };
+      const pre = document.createElement("pre"); pre.id = "rects";
+      pre.textContent = ["#general-chat-question", ".composer-actions", ".examples-wrap > button", ".composer-clear", ".route-pill", "#general-chat-send"].map(r).join("\n");
+      document.body.append(pre);
+    }, 300);
+  }, 400));
+})();

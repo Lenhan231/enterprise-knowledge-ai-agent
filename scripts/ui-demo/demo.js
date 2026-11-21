@@ -129,3 +129,12 @@ window.addEventListener("load", () => setTimeout(() => {
     const b = document.querySelector(".examples-wrap > button"); b.style.background = "var(--aic-pill-hover)"; b.style.color = "var(--ink)";
   }, 400));
 })();
+// ?shot=glassmid&phase=in|out&r=45: freeze the theme glass part-way (in = closing circle, out = opening hole)
+(() => {
+  const q = new URLSearchParams(location.search);
+  if (q.get("shot") !== "glassmid") return;
+  window.addEventListener("load", () => setTimeout(() => {
+    const g = document.createElement("div"); g.className = "theme-glass " + (q.get("phase") === "out" ? "out" : "in");
+    g.style.animation = "none"; g.style.setProperty("--r", (q.get("r") || "45") + "%"); document.body.append(g);
+  }, 600));
+})();

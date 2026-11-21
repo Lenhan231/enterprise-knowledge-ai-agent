@@ -352,11 +352,21 @@ html #workspace-home .dw-heading p:not(.eyebrow), html #tab-dashboard .dw-headin
 html #home-overview-status { font-size: 12px; color: var(--muted); margin: 0 0 6px; }
 html #home-overview-preview { height: 1000px; }
 
-/* ---- Theme change: frosted glass ---- */
-.theme-glass { position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; overflow: hidden;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--bg) 55%, transparent), color-mix(in srgb, var(--surface-2) 40%, transparent)); }
-.theme-glass::before { content: ""; position: absolute; inset: -20% -60%; background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.55) 50%, transparent 62%); mix-blend-mode: soft-light; transform: translateX(-60%); animation: glassSheen 1s .1s cubic-bezier(.3,.6,.2,1) forwards; }
-@keyframes glassSheen { to { transform: translateX(60%); } }
+/* ---- Theme change: frosted glass that spreads from the centre, swaps the theme, then clears outward ---- */
+@property --r { syntax: "<percentage>"; initial-value: 0%; inherits: true; }
+.theme-glass { --r: 0%; position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; clip-path: circle(var(--r) at 50% 50%);
+  -webkit-backdrop-filter: blur(26px) saturate(1.6); backdrop-filter: blur(26px) saturate(1.6);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--bg) 52%, transparent), color-mix(in srgb, var(--surface-2) 38%, transparent)); }
+.theme-glass::before { content: ""; position: absolute; inset: 0; mix-blend-mode: soft-light;
+  background: radial-gradient(circle at 50% 50%, transparent calc(var(--r) - 9%), rgba(255,255,255,.7) var(--r), transparent calc(var(--r) + 2%)); }
+.theme-glass.in { animation: glassIn .46s cubic-bezier(.4, 0, .2, 1) forwards; }
+.theme-glass.out { clip-path: none; --r: 0%;
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent var(--r), #000 calc(var(--r) + 16%));
+  mask-image: radial-gradient(circle at 50% 50%, transparent var(--r), #000 calc(var(--r) + 16%));
+  animation: glassOut .78s cubic-bezier(.4, 0, .2, 1) forwards; }
+.theme-glass.out::before { display: none; }
+@keyframes glassIn { to { --r: 150%; } }
+@keyframes glassOut { to { --r: 130%; } }
 /* composer actions: icons line up with the text above, both buttons share one centre line */
 :root .composer-actions { margin-left: -11px; gap: 2px; align-items: center; }
 :root .examples-wrap { display: flex; align-items: center; }

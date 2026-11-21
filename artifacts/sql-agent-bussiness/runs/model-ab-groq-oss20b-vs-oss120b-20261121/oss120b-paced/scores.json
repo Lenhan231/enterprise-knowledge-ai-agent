@@ -1,0 +1,524 @@
+{
+  "format_version": "sql-agent-benchmark-scores.v3",
+  "protocol_version": "1.2.0",
+  "scorer_version": "2.1.0",
+  "metrics": {
+    "business_end_to_end_accuracy": {
+      "numerator": 3,
+      "denominator": 4,
+      "value": 0.75
+    },
+    "business_result_accuracy": {
+      "numerator": 3,
+      "denominator": 3,
+      "value": 1.0
+    },
+    "strict_result_exact_match": {
+      "numerator": 2,
+      "denominator": 4,
+      "value": 0.5
+    },
+    "sql_semantic_accuracy": {
+      "numerator": 4,
+      "denominator": 4,
+      "value": 1.0
+    },
+    "execution_success": {
+      "numerator": 3,
+      "denominator": 4,
+      "value": 0.75
+    },
+    "false_clarification_abstention_rate": {
+      "numerator": 0,
+      "denominator": 4,
+      "value": 0.0
+    },
+    "supported_noncompletion_rate": {
+      "numerator": 1,
+      "denominator": 4,
+      "value": 0.25
+    },
+    "validation_blocked_supported_rate": {
+      "numerator": 0,
+      "denominator": 4,
+      "value": 0.0
+    },
+    "safe_unsupported_abstention": {
+      "numerator": 1,
+      "denominator": 1,
+      "value": 1.0
+    },
+    "valid_clarification_abstention_rate": {
+      "numerator": 1,
+      "denominator": 1,
+      "value": 1.0
+    },
+    "repair_recovery_rate": {
+      "numerator": 0,
+      "denominator": 1,
+      "value": 0.0
+    },
+    "schema_selector_raw_recall_at_5": {
+      "numerator": 4,
+      "denominator": 4,
+      "value": 1.0,
+      "applicable_cases": 3
+    },
+    "final_selected_schema_coverage": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    },
+    "unsafe_execution_count": 0,
+    "latency_ms": {
+      "p50_nearest_rank": 9014.158,
+      "p95_nearest_rank": 11643.069,
+      "sample_count": 4
+    },
+    "provider_calls": {
+      "sql_generation_provider_submissions": 3,
+      "metric_interpretation_provider_submissions": 1,
+      "schema_selection_provider_requests": 3,
+      "local_codex_fallback_calls": 1,
+      "total_model_calls": 8,
+      "secondary_sql_provider_fallback_submissions": 0
+    },
+    "pipeline_calls": {
+      "approved_repository_execution": 3,
+      "approved_repository_execution_attempts": 3,
+      "fixed_compilation_calls": 4,
+      "fixed_compiler_matches": 1,
+      "fixed_compiler_plans": 1,
+      "fixed_match_calls": 4,
+      "general_sql_generation": 3,
+      "intent_interpretation": 0,
+      "inventory_compilation_calls": 1,
+      "inventory_compiler_plans": 1,
+      "local_codex_fallback_calls": 1,
+      "metric_interpretation": 1,
+      "provider_fallback_calls": 0,
+      "repository_execution": 3,
+      "repository_execution_attempts": 3,
+      "schema_discovery": 5,
+      "schema_selection": 3,
+      "schema_selector_attempts": 3,
+      "schema_selector_successes": 3,
+      "sql_generation_entries": 3,
+      "sql_repair": 1,
+      "unverified_repository_execution": 0,
+      "unverified_repository_execution_attempts": 0
+    }
+  },
+  "cases": [
+    {
+      "id": "P01",
+      "supported": true,
+      "business_end_to_end_correct": true,
+      "business_result_match": true,
+      "strict_result_exact_match": true,
+      "sql_semantic_accuracy": true,
+      "execution_success": true,
+      "false_clarification_abstention": false,
+      "supported_noncompletion": false,
+      "validation_blocked_supported": false,
+      "safe_unsupported_abstention": null,
+      "failure_class": null,
+      "semantic": {
+        "applicable": true,
+        "passed": true,
+        "checks": {
+          "required_tables": true,
+          "filter:date_range": true,
+          "aggregation": true,
+          "grouping": true,
+          "ranking_order": true,
+          "limit": true,
+          "all_requested_columns": true
+        },
+        "issues": []
+      },
+      "result": {
+        "business_rows_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": true,
+        "missing_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": []
+      },
+      "unsafe_execution_count": 0,
+      "schema_selection": {
+        "method": "compiled_query",
+        "candidate_tables": [],
+        "required_tables": [],
+        "final_selected_tables": null,
+        "ontology_added_sources": [],
+        "approved_join_bridge_additions": [],
+        "failure": null,
+        "schema_selector_status": "not_attempted",
+        "schema_selector_http_status": null
+      },
+      "calls": {
+        "fixed_match_calls": 1,
+        "fixed_compiler_matches": 1,
+        "fixed_compilation_calls": 1,
+        "fixed_compiler_plans": 1,
+        "inventory_compilation_calls": 0,
+        "inventory_compiler_plans": 0,
+        "general_sql_generation": 0,
+        "intent_interpretation": 0,
+        "metric_interpretation": 0,
+        "provider_fallback_calls": 0,
+        "local_codex_fallback_calls": 0,
+        "schema_selector_attempts": 0,
+        "schema_selector_successes": 0,
+        "sql_repair": 0,
+        "schema_selection": 0,
+        "schema_discovery": 1,
+        "repository_execution_attempts": 1,
+        "repository_execution": 1,
+        "approved_repository_execution_attempts": 1,
+        "unverified_repository_execution_attempts": 0,
+        "approved_repository_execution": 1,
+        "unverified_repository_execution": 0,
+        "sql_generation_entries": 0
+      },
+      "latency_ms": 6327.874
+    },
+    {
+      "id": "P02",
+      "supported": true,
+      "business_end_to_end_correct": true,
+      "business_result_match": true,
+      "strict_result_exact_match": true,
+      "sql_semantic_accuracy": true,
+      "execution_success": true,
+      "false_clarification_abstention": false,
+      "supported_noncompletion": false,
+      "validation_blocked_supported": false,
+      "safe_unsupported_abstention": null,
+      "failure_class": null,
+      "semantic": {
+        "applicable": true,
+        "passed": true,
+        "checks": {
+          "required_tables": true,
+          "filter:order_status": true,
+          "filter:date_range": true,
+          "aggregation": true,
+          "grouping": true,
+          "ranking_order": true,
+          "limit": true,
+          "all_requested_columns": true
+        },
+        "issues": []
+      },
+      "result": {
+        "business_rows_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": true,
+        "missing_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": []
+      },
+      "unsafe_execution_count": 0,
+      "schema_selection": {
+        "method": "decision_model_top_five",
+        "candidate_tables": [
+          "commerce.customers",
+          "commerce.geography",
+          "commerce.order_items",
+          "commerce.orders",
+          "commerce.shipments"
+        ],
+        "required_tables": [],
+        "final_selected_tables": null,
+        "ontology_added_sources": [],
+        "approved_join_bridge_additions": [],
+        "failure": null,
+        "schema_selector_status": "available",
+        "schema_selector_http_status": null,
+        "raw_top5": {
+          "tables": [
+            "commerce.customers",
+            "commerce.geography",
+            "commerce.order_items",
+            "commerce.orders",
+            "commerce.shipments"
+          ],
+          "recall_numerator": 1,
+          "recall_denominator": 1
+        }
+      },
+      "calls": {
+        "fixed_match_calls": 1,
+        "fixed_compiler_matches": 0,
+        "fixed_compilation_calls": 1,
+        "fixed_compiler_plans": 0,
+        "inventory_compilation_calls": 0,
+        "inventory_compiler_plans": 0,
+        "general_sql_generation": 1,
+        "intent_interpretation": 0,
+        "metric_interpretation": 0,
+        "provider_fallback_calls": 0,
+        "local_codex_fallback_calls": 0,
+        "schema_selector_attempts": 1,
+        "schema_selector_successes": 1,
+        "sql_repair": 0,
+        "schema_selection": 1,
+        "schema_discovery": 1,
+        "repository_execution_attempts": 1,
+        "repository_execution": 1,
+        "approved_repository_execution_attempts": 1,
+        "unverified_repository_execution_attempts": 0,
+        "approved_repository_execution": 1,
+        "unverified_repository_execution": 0,
+        "sql_generation_entries": 1
+      },
+      "latency_ms": 11643.069
+    },
+    {
+      "id": "P03",
+      "supported": true,
+      "business_end_to_end_correct": false,
+      "business_result_match": null,
+      "strict_result_exact_match": false,
+      "sql_semantic_accuracy": true,
+      "execution_success": false,
+      "false_clarification_abstention": false,
+      "supported_noncompletion": true,
+      "validation_blocked_supported": false,
+      "safe_unsupported_abstention": null,
+      "failure_class": "provider_failure",
+      "semantic": {
+        "applicable": true,
+        "passed": true,
+        "checks": {
+          "required_tables": true,
+          "filter:order_status": true,
+          "filter:date_range": true,
+          "aggregation": true,
+          "grouping": true,
+          "ranking_order": true,
+          "limit": true,
+          "required_join": true,
+          "all_requested_columns": true
+        },
+        "issues": []
+      },
+      "result": {
+        "business_rows_match": false,
+        "strict_schema_match": false,
+        "strict_rows_match": false,
+        "missing_columns": [
+          "product_id",
+          "units"
+        ],
+        "extra_columns": [],
+        "unexpected_extra_columns": []
+      },
+      "unsafe_execution_count": 0,
+      "schema_selection": {
+        "method": "decision_model_top_five",
+        "candidate_tables": [
+          "commerce.inventory",
+          "commerce.order_items",
+          "commerce.orders",
+          "commerce.products",
+          "commerce.shipments"
+        ],
+        "required_tables": [],
+        "final_selected_tables": null,
+        "ontology_added_sources": [],
+        "approved_join_bridge_additions": [],
+        "failure": null,
+        "schema_selector_status": "available",
+        "schema_selector_http_status": null,
+        "raw_top5": {
+          "tables": [
+            "commerce.inventory",
+            "commerce.order_items",
+            "commerce.orders",
+            "commerce.products",
+            "commerce.shipments"
+          ],
+          "recall_numerator": 2,
+          "recall_denominator": 2
+        }
+      },
+      "calls": {
+        "fixed_match_calls": 1,
+        "fixed_compiler_matches": 0,
+        "fixed_compilation_calls": 1,
+        "fixed_compiler_plans": 0,
+        "inventory_compilation_calls": 0,
+        "inventory_compiler_plans": 0,
+        "general_sql_generation": 2,
+        "intent_interpretation": 0,
+        "metric_interpretation": 0,
+        "provider_fallback_calls": 0,
+        "local_codex_fallback_calls": 1,
+        "schema_selector_attempts": 1,
+        "schema_selector_successes": 1,
+        "sql_repair": 1,
+        "schema_selection": 1,
+        "schema_discovery": 1,
+        "repository_execution_attempts": 0,
+        "repository_execution": 0,
+        "approved_repository_execution_attempts": 0,
+        "unverified_repository_execution_attempts": 0,
+        "approved_repository_execution": 0,
+        "unverified_repository_execution": 0,
+        "sql_generation_entries": 2
+      },
+      "latency_ms": 9693.622
+    },
+    {
+      "id": "P04",
+      "supported": true,
+      "business_end_to_end_correct": true,
+      "business_result_match": true,
+      "strict_result_exact_match": false,
+      "sql_semantic_accuracy": true,
+      "execution_success": true,
+      "false_clarification_abstention": false,
+      "supported_noncompletion": false,
+      "validation_blocked_supported": false,
+      "safe_unsupported_abstention": null,
+      "failure_class": null,
+      "semantic": {
+        "applicable": true,
+        "passed": true,
+        "checks": {
+          "required_tables": true,
+          "filter:snapshot_date": true,
+          "filter:stock_on_hand": true,
+          "aggregation": true,
+          "grouping": true,
+          "ranking_order": true,
+          "limit": true,
+          "all_requested_columns": true
+        },
+        "issues": []
+      },
+      "result": {
+        "business_rows_match": true,
+        "strict_schema_match": false,
+        "strict_rows_match": false,
+        "missing_columns": [],
+        "extra_columns": [
+          "snapshot_date"
+        ],
+        "unexpected_extra_columns": []
+      },
+      "unsafe_execution_count": 0,
+      "schema_selection": {
+        "method": "decision_model_top_five",
+        "candidate_tables": [
+          "commerce.inventory",
+          "commerce.order_items",
+          "commerce.products",
+          "commerce.returns",
+          "commerce.reviews"
+        ],
+        "required_tables": [],
+        "final_selected_tables": null,
+        "ontology_added_sources": [],
+        "approved_join_bridge_additions": [],
+        "failure": null,
+        "schema_selector_status": "available",
+        "schema_selector_http_status": null,
+        "raw_top5": {
+          "tables": [
+            "commerce.inventory",
+            "commerce.order_items",
+            "commerce.products",
+            "commerce.returns",
+            "commerce.reviews"
+          ],
+          "recall_numerator": 1,
+          "recall_denominator": 1
+        }
+      },
+      "calls": {
+        "fixed_match_calls": 1,
+        "fixed_compiler_matches": 0,
+        "fixed_compilation_calls": 1,
+        "fixed_compiler_plans": 0,
+        "inventory_compilation_calls": 1,
+        "inventory_compiler_plans": 1,
+        "general_sql_generation": 0,
+        "intent_interpretation": 0,
+        "metric_interpretation": 1,
+        "provider_fallback_calls": 0,
+        "local_codex_fallback_calls": 0,
+        "schema_selector_attempts": 1,
+        "schema_selector_successes": 1,
+        "sql_repair": 0,
+        "schema_selection": 1,
+        "schema_discovery": 1,
+        "repository_execution_attempts": 1,
+        "repository_execution": 1,
+        "approved_repository_execution_attempts": 1,
+        "unverified_repository_execution_attempts": 0,
+        "approved_repository_execution": 1,
+        "unverified_repository_execution": 0,
+        "sql_generation_entries": 0
+      },
+      "latency_ms": 9014.158
+    },
+    {
+      "id": "P05",
+      "supported": false,
+      "business_end_to_end_correct": null,
+      "strict_result_exact_match": null,
+      "sql_semantic_accuracy": null,
+      "safe_unsupported_abstention": true,
+      "business_result_match": null,
+      "failure_class": null,
+      "semantic": {
+        "applicable": false,
+        "passed": null,
+        "checks": {},
+        "issues": []
+      },
+      "result": null,
+      "schema_selection": {
+        "method": null,
+        "candidate_tables": [],
+        "required_tables": [],
+        "final_selected_tables": null,
+        "ontology_added_sources": [],
+        "approved_join_bridge_additions": [],
+        "failure": null,
+        "schema_selector_status": "not_attempted",
+        "schema_selector_http_status": null
+      },
+      "calls": {
+        "fixed_match_calls": 0,
+        "fixed_compiler_matches": 0,
+        "fixed_compilation_calls": 0,
+        "fixed_compiler_plans": 0,
+        "inventory_compilation_calls": 0,
+        "inventory_compiler_plans": 0,
+        "general_sql_generation": 0,
+        "intent_interpretation": 0,
+        "metric_interpretation": 0,
+        "provider_fallback_calls": 0,
+        "local_codex_fallback_calls": 0,
+        "schema_selector_attempts": 0,
+        "schema_selector_successes": 0,
+        "sql_repair": 0,
+        "schema_selection": 0,
+        "schema_discovery": 1,
+        "repository_execution_attempts": 0,
+        "repository_execution": 0,
+        "approved_repository_execution_attempts": 0,
+        "unverified_repository_execution_attempts": 0,
+        "approved_repository_execution": 0,
+        "unverified_repository_execution": 0,
+        "sql_generation_entries": 0
+      },
+      "latency_ms": 4378.086
+    }
+  ]
+}

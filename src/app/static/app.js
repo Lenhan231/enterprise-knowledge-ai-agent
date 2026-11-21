@@ -3399,12 +3399,27 @@ $("#upload-form").addEventListener("submit", async (event) => {
 });
 
 // Saved dashboards are sandboxed documents that cannot see the page theme, so the theme is stamped into their markup.
-window.themedDoc = html => document.documentElement.getAttribute("data-theme") === "dark" ? html.replace("<html ", '<html data-theme="dark" ') : html;
+window.themedDoc = html => html.replace("<html ", `<html data-embed="1"${document.documentElement.getAttribute("data-theme") === "dark" ? ' data-theme="dark"' : ""} `);
 function restyleDashboardFrames() {
   for (const id of ["home-overview-preview", "dw-preview"]) {
     const frame = document.getElementById(id);
     if (frame && frame._raw && frame.getAttribute("srcdoc") !== null) frame.srcdoc = window.themedDoc(frame._raw);
   }
+}
+
+function themeGlass(apply) {
+  const glass = document.createElement("div");
+  glass.className = "theme-glass";
+  glass.setAttribute("aria-hidden", "true");
+  document.body.append(glass);
+  const frost = (opacity, blur) => ({ opacity, backdropFilter: `blur(${blur}px) saturate(${1 + blur / 40})`, webkitBackdropFilter: `blur(${blur}px) saturate(${1 + blur / 40})` });
+  glass.animate([frost(0, 0), frost(1, 26)], { duration: 300, easing: "cubic-bezier(.3,.7,.3,1)", fill: "forwards" });
+  // Timers, not animation promises, drive the steps so the theme always changes and the pane is always removed.
+  setTimeout(() => {
+    apply();
+    glass.animate([frost(1, 26), frost(0, 0)], { duration: 620, easing: "cubic-bezier(.4,0,.2,1)", fill: "forwards" });
+  }, 300);
+  setTimeout(() => glass.remove(), 1000);
 }
 
 function setupThemeToggle() {
@@ -3421,10 +3436,9 @@ function setupThemeToggle() {
       }
       restyleDashboardFrames();
     };
-    // Paint/eraser transition (redesign.css); plain swap without View Transitions or with reduced motion.
-    if (document.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      document.startViewTransition(apply);
-    } else apply();
+    // A pane of frosted glass fades in, the theme swaps behind it, and the glass clears (liquid-glass style).
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches && document.body.animate) themeGlass(apply);
+    else apply();
     try {
       localStorage.setItem("app_theme", nextTheme);
     } catch {}

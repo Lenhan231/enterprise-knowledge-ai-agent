@@ -344,3 +344,16 @@ html #tab-dashboard .dw-heading p:not(.eyebrow) { margin-top: 4px; }
 :root .general-chat-composer .examples-menu button { display: block; place-items: initial; width: 100%; height: auto; padding: 9px 12px; border: 0; border-radius: 11px; background: transparent; color: var(--ink); box-shadow: none; text-align: left; white-space: normal; }
 :root .general-chat-composer .examples-menu button:hover:not(:disabled), :root .general-chat-composer .examples-menu button:focus-visible { background: var(--aic-item-hover); }
 :root .general-chat-composer .general-chat-mode { margin-left: 0; }
+
+/* ---- Dashboards sit directly on the page (no frame), and the repeated headings go ---- */
+html #dw-preview, html #home-overview-preview { border: 0; border-radius: 0; background: transparent; }
+html #workspace-home .dw-heading .eyebrow, html #tab-dashboard .dw-heading .eyebrow { display: none; }
+html #workspace-home .dw-heading p:not(.eyebrow), html #tab-dashboard .dw-heading p:not(.eyebrow) { display: none; }
+html #home-overview-status { font-size: 12px; color: var(--muted); margin: 0 0 6px; }
+html #home-overview-preview { height: 1000px; }
+
+/* ---- Theme change: frosted glass ---- */
+.theme-glass { position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; overflow: hidden;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--bg) 55%, transparent), color-mix(in srgb, var(--surface-2) 40%, transparent)); }
+.theme-glass::before { content: ""; position: absolute; inset: -20% -60%; background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.55) 50%, transparent 62%); mix-blend-mode: soft-light; transform: translateX(-60%); animation: glassSheen 1s .1s cubic-bezier(.3,.6,.2,1) forwards; }
+@keyframes glassSheen { to { transform: translateX(60%); } }

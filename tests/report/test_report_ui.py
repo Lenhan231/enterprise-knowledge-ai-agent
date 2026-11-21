@@ -72,7 +72,7 @@ assert.doesNotMatch(copy, /No usable documentary|Validated SQL evidence|Order an
         self.assertIn('/static/sales-report.css?v=20261120-guidance', html)
         self.assertIn('/static/sales-report.js?v=20261121-report-vi', html)
         self.assertIn('/static/report-workspace.js?v=20261121-report-vi',html)
-        self.assertIn('/static/app.js?v=20261129-neutral', html)
+        self.assertIn('/static/app.js?v=20261204-neutral', html)
 
     def test_fixed_sections_widgets_and_untrusted_text(self):
         script = r"""

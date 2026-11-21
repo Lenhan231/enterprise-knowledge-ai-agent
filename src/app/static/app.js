@@ -3412,14 +3412,11 @@ function themeGlass(apply) {
   glass.className = "theme-glass";
   glass.setAttribute("aria-hidden", "true");
   document.body.append(glass);
-  const frost = (opacity, blur) => ({ opacity, backdropFilter: `blur(${blur}px) saturate(${1 + blur / 40})`, webkitBackdropFilter: `blur(${blur}px) saturate(${1 + blur / 40})` });
-  glass.animate([frost(0, 0), frost(1, 26)], { duration: 300, easing: "cubic-bezier(.3,.7,.3,1)", fill: "forwards" });
-  // Timers, not animation promises, drive the steps so the theme always changes and the pane is always removed.
-  setTimeout(() => {
-    apply();
-    glass.animate([frost(1, 26), frost(0, 0)], { duration: 620, easing: "cubic-bezier(.4,0,.2,1)", fill: "forwards" });
-  }, 300);
-  setTimeout(() => glass.remove(), 1000);
+  glass.getBoundingClientRect(); // commit the closed state so the circle grows from the centre
+  glass.classList.add("in");
+  // Timers, not animation events, drive the steps so the theme always changes and the pane is always removed.
+  setTimeout(() => { apply(); glass.classList.replace("in", "out"); }, 460);
+  setTimeout(() => glass.remove(), 1260);
 }
 
 function setupThemeToggle() {

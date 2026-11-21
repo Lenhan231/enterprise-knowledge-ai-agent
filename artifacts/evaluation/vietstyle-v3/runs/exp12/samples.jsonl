@@ -1,0 +1,362 @@
+{"t": 1795229952.9, "level": 0, "process_cpu_pct": 630.2, "system_cpu_pct": 0.0, "rss_mb": 109, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0, "gpu_util_pct": 0.0, "gpu_mem_mb": 74033.0}
+{"t": 1795229961.0, "level": 0, "process_cpu_pct": 99.8, "system_cpu_pct": 10.4, "rss_mb": 1586}
+{"t": 1795229963.0, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.6, "rss_mb": 1586}
+{"t": 1795229965.2, "level": 0, "process_cpu_pct": 32.9, "system_cpu_pct": 5.1, "rss_mb": 1621}
+{"t": 1795229967.2, "level": 0, "process_cpu_pct": 196.8, "system_cpu_pct": 18.9, "rss_mb": 2067}
+{"t": 1795229969.2, "level": 0, "process_cpu_pct": 55.5, "system_cpu_pct": 5.9, "rss_mb": 2069, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.018575851393188847, "gpu_util_pct": 0.0, "gpu_mem_mb": 74035.0}
+{"t": 1795229976.6, "level": 0, "process_cpu_pct": 0.1, "system_cpu_pct": 1.9, "rss_mb": 2070}
+{"t": 1795229978.6, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 2.0, "rss_mb": 2070}
+{"t": 1795229980.6, "level": 0, "process_cpu_pct": 12.0, "system_cpu_pct": 1.8, "rss_mb": 2071}
+{"t": 1795229982.6, "level": 0, "process_cpu_pct": 117.0, "system_cpu_pct": 14.1, "rss_mb": 2082}
+{"t": 1795229984.6, "level": 0, "process_cpu_pct": 17.5, "system_cpu_pct": 2.7, "rss_mb": 2082, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.012383900928792602}
+{"t": 1795229990.5, "level": 1, "process_cpu_pct": 6.1, "system_cpu_pct": 1.8, "rss_mb": 2083}
+{"t": 1795229992.5, "level": 1, "process_cpu_pct": 118.4, "system_cpu_pct": 12.2, "rss_mb": 2088}
+{"t": 1795229994.5, "level": 1, "process_cpu_pct": 3.5, "system_cpu_pct": 0.5, "rss_mb": 2088}
+{"t": 1795229996.5, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2088}
+{"t": 1795229998.5, "level": 1, "process_cpu_pct": 0.5, "system_cpu_pct": 1.3, "rss_mb": 2088}
+{"t": 1795230000.5, "level": 1, "process_cpu_pct": 16.0, "system_cpu_pct": 1.8, "rss_mb": 2088, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230008.1, "level": 1, "process_cpu_pct": 42.7, "system_cpu_pct": 5.3, "rss_mb": 2105}
+{"t": 1795230010.1, "level": 1, "process_cpu_pct": 1.0, "system_cpu_pct": 1.1, "rss_mb": 2105}
+{"t": 1795230012.1, "level": 1, "process_cpu_pct": 14.5, "system_cpu_pct": 1.6, "rss_mb": 2106}
+{"t": 1795230014.1, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2106}
+{"t": 1795230016.1, "level": 1, "process_cpu_pct": 259.0, "system_cpu_pct": 24.0, "rss_mb": 2115, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.018575851393188847, "gpu_util_pct": 99.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230022.5, "level": 1, "process_cpu_pct": 6.0, "system_cpu_pct": 1.6, "rss_mb": 2116}
+{"t": 1795230024.5, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2116}
+{"t": 1795230026.5, "level": 1, "process_cpu_pct": 170.1, "system_cpu_pct": 16.2, "rss_mb": 2121}
+{"t": 1795230028.5, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 1.3, "rss_mb": 2121}
+{"t": 1795230030.5, "level": 1, "process_cpu_pct": 0.5, "system_cpu_pct": 0.1, "rss_mb": 2121}
+{"t": 1795230032.5, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2121, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0, "gpu_util_pct": 29.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230039.3, "level": 1, "process_cpu_pct": 90.7, "system_cpu_pct": 9.5, "rss_mb": 2131}
+{"t": 1795230041.3, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2131}
+{"t": 1795230043.3, "level": 1, "process_cpu_pct": 12.5, "system_cpu_pct": 1.2, "rss_mb": 2131}
+{"t": 1795230045.3, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.4, "rss_mb": 2131}
+{"t": 1795230047.3, "level": 1, "process_cpu_pct": 118.5, "system_cpu_pct": 11.9, "rss_mb": 2135}
+{"t": 1795230049.3, "level": 1, "process_cpu_pct": 170.5, "system_cpu_pct": 16.2, "rss_mb": 2139, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.021671826625387025, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230054.6, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.9, "rss_mb": 2139}
+{"t": 1795230056.7, "level": 1, "process_cpu_pct": 0.5, "system_cpu_pct": 0.1, "rss_mb": 2139}
+{"t": 1795230058.7, "level": 1, "process_cpu_pct": 12.5, "system_cpu_pct": 2.2, "rss_mb": 2141}
+{"t": 1795230060.7, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2141}
+{"t": 1795230062.7, "level": 1, "process_cpu_pct": 99.5, "system_cpu_pct": 10.5, "rss_mb": 2161}
+{"t": 1795230064.7, "level": 1, "process_cpu_pct": 259.3, "system_cpu_pct": 22.5, "rss_mb": 2162, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.024767801857585092, "gpu_util_pct": 8.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230070.8, "level": 1, "process_cpu_pct": 0.3, "system_cpu_pct": 1.3, "rss_mb": 2162}
+{"t": 1795230072.8, "level": 1, "process_cpu_pct": 20.5, "system_cpu_pct": 2.0, "rss_mb": 2162}
+{"t": 1795230074.8, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2162}
+{"t": 1795230076.8, "level": 1, "process_cpu_pct": 317.4, "system_cpu_pct": 28.9, "rss_mb": 2164}
+{"t": 1795230078.8, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.8, "rss_mb": 2164}
+{"t": 1795230080.8, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2164, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.021671826625387025, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230086.1, "level": 1, "process_cpu_pct": 0.2, "system_cpu_pct": 0.7, "rss_mb": 2164}
+{"t": 1795230088.1, "level": 1, "process_cpu_pct": 14.5, "system_cpu_pct": 2.5, "rss_mb": 2164}
+{"t": 1795230090.1, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2164}
+{"t": 1795230092.1, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 4.0, "rss_mb": 2164}
+{"t": 1795230094.1, "level": 1, "process_cpu_pct": 197.5, "system_cpu_pct": 18.1, "rss_mb": 2166}
+{"t": 1795230096.1, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2166, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.021671826625387025}
+{"t": 1795230102.7, "level": 1, "process_cpu_pct": 3.8, "system_cpu_pct": 1.5, "rss_mb": 2166}
+{"t": 1795230104.7, "level": 1, "process_cpu_pct": 0.5, "system_cpu_pct": 0.5, "rss_mb": 2166}
+{"t": 1795230106.7, "level": 1, "process_cpu_pct": 0.5, "system_cpu_pct": 1.0, "rss_mb": 2166}
+{"t": 1795230108.7, "level": 1, "process_cpu_pct": 267.4, "system_cpu_pct": 26.4, "rss_mb": 2167}
+{"t": 1795230110.7, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 1.9, "rss_mb": 2167}
+{"t": 1795230112.7, "level": 1, "process_cpu_pct": 0.5, "system_cpu_pct": 0.1, "rss_mb": 2167, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.021671826625387025, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230119.1, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 1.0, "rss_mb": 2167}
+{"t": 1795230121.1, "level": 1, "process_cpu_pct": 19.0, "system_cpu_pct": 2.0, "rss_mb": 2168}
+{"t": 1795230123.1, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2168}
+{"t": 1795230125.1, "level": 1, "process_cpu_pct": 0.5, "system_cpu_pct": 3.0, "rss_mb": 2168}
+{"t": 1795230127.1, "level": 1, "process_cpu_pct": 277.5, "system_cpu_pct": 28.3, "rss_mb": 2170}
+{"t": 1795230129.1, "level": 1, "process_cpu_pct": 0.5, "system_cpu_pct": 1.3, "rss_mb": 2170, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.021671826625387025}
+{"t": 1795230135.5, "level": 1, "process_cpu_pct": 0.2, "system_cpu_pct": 0.9, "rss_mb": 2170}
+{"t": 1795230137.5, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.0, "rss_mb": 2170}
+{"t": 1795230139.5, "level": 1, "process_cpu_pct": 13.4, "system_cpu_pct": 2.5, "rss_mb": 2170}
+{"t": 1795230141.5, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2170}
+{"t": 1795230143.5, "level": 1, "process_cpu_pct": 246.0, "system_cpu_pct": 26.7, "rss_mb": 2178}
+{"t": 1795230145.5, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.0, "rss_mb": 2178, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.018575851393188847, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230152.0, "level": 1, "process_cpu_pct": 0.3, "system_cpu_pct": 1.0, "rss_mb": 2178}
+{"t": 1795230154.0, "level": 1, "process_cpu_pct": 17.0, "system_cpu_pct": 2.5, "rss_mb": 2178}
+{"t": 1795230156.0, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2178}
+{"t": 1795230158.0, "level": 1, "process_cpu_pct": 0.5, "system_cpu_pct": 4.5, "rss_mb": 2178}
+{"t": 1795230160.1, "level": 1, "process_cpu_pct": 228.5, "system_cpu_pct": 21.5, "rss_mb": 2181}
+{"t": 1795230162.1, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2181, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.018575851393188847, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230167.4, "level": 1, "process_cpu_pct": 0.2, "system_cpu_pct": 1.0, "rss_mb": 2181}
+{"t": 1795230169.4, "level": 1, "process_cpu_pct": 4.0, "system_cpu_pct": 3.2, "rss_mb": 2181}
+{"t": 1795230171.4, "level": 1, "process_cpu_pct": 11.0, "system_cpu_pct": 1.5, "rss_mb": 2181}
+{"t": 1795230173.4, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.0, "rss_mb": 2181}
+{"t": 1795230175.4, "level": 1, "process_cpu_pct": 148.0, "system_cpu_pct": 18.8, "rss_mb": 2182}
+{"t": 1795230177.4, "level": 1, "process_cpu_pct": 169.9, "system_cpu_pct": 14.8, "rss_mb": 2182, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.021671826625387025, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230184.2, "level": 1, "process_cpu_pct": 0.1, "system_cpu_pct": 1.1, "rss_mb": 2182}
+{"t": 1795230186.2, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2182}
+{"t": 1795230188.2, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.0, "rss_mb": 2182}
+{"t": 1795230190.2, "level": 1, "process_cpu_pct": 15.0, "system_cpu_pct": 2.5, "rss_mb": 2182}
+{"t": 1795230192.2, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.4, "rss_mb": 2182}
+{"t": 1795230194.2, "level": 1, "process_cpu_pct": 108.8, "system_cpu_pct": 15.5, "rss_mb": 2182, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.012383900928792602}
+{"t": 1795230199.8, "level": 1, "process_cpu_pct": 131.1, "system_cpu_pct": 13.0, "rss_mb": 2184}
+{"t": 1795230201.8, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.3, "rss_mb": 2184}
+{"t": 1795230203.8, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2184}
+{"t": 1795230205.8, "level": 0, "process_cpu_pct": 0.5, "system_cpu_pct": 1.3, "rss_mb": 2184}
+{"t": 1795230207.8, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 2.0, "rss_mb": 2184}
+{"t": 1795230209.8, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 5.0, "rss_mb": 2184, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0, "gpu_util_pct": 0.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230216.2, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 1.4, "rss_mb": 2184}
+{"t": 1795230218.2, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.6, "rss_mb": 2184}
+{"t": 1795230220.2, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 1.0, "rss_mb": 2184}
+{"t": 1795230222.2, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2184}
+{"t": 1795230224.3, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2184}
+{"t": 1795230226.3, "level": 2, "process_cpu_pct": 1.0, "system_cpu_pct": 0.6, "rss_mb": 2184, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0, "gpu_util_pct": 0.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230233.9, "level": 2, "process_cpu_pct": 107.9, "system_cpu_pct": 12.9, "rss_mb": 2231}
+{"t": 1795230235.9, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.3, "rss_mb": 2231}
+{"t": 1795230237.9, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.4, "rss_mb": 2231}
+{"t": 1795230239.9, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.9, "rss_mb": 2231}
+{"t": 1795230242.0, "level": 2, "process_cpu_pct": 0.5, "system_cpu_pct": 0.1, "rss_mb": 2231, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230248.9, "level": 2, "process_cpu_pct": 124.8, "system_cpu_pct": 14.2, "rss_mb": 2239}
+{"t": 1795230250.9, "level": 2, "process_cpu_pct": 1.0, "system_cpu_pct": 3.2, "rss_mb": 2240}
+{"t": 1795230252.9, "level": 2, "process_cpu_pct": 136.0, "system_cpu_pct": 12.6, "rss_mb": 2240}
+{"t": 1795230254.9, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2240}
+{"t": 1795230256.9, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2240}
+{"t": 1795230258.9, "level": 2, "process_cpu_pct": 20.0, "system_cpu_pct": 1.9, "rss_mb": 2241, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.015479876160990669, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230265.5, "level": 2, "process_cpu_pct": 68.5, "system_cpu_pct": 8.2, "rss_mb": 2244}
+{"t": 1795230267.5, "level": 2, "process_cpu_pct": 23.0, "system_cpu_pct": 7.2, "rss_mb": 2248}
+{"t": 1795230269.5, "level": 2, "process_cpu_pct": 315.1, "system_cpu_pct": 28.5, "rss_mb": 2249}
+{"t": 1795230271.5, "level": 2, "process_cpu_pct": 13.0, "system_cpu_pct": 7.2, "rss_mb": 2249}
+{"t": 1795230273.6, "level": 2, "process_cpu_pct": 252.9, "system_cpu_pct": 23.1, "rss_mb": 2254}
+{"t": 1795230275.6, "level": 2, "process_cpu_pct": 141.5, "system_cpu_pct": 16.7, "rss_mb": 2255, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.024767801857585092, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230281.9, "level": 2, "process_cpu_pct": 134.7, "system_cpu_pct": 14.7, "rss_mb": 2257}
+{"t": 1795230283.9, "level": 2, "process_cpu_pct": 0.5, "system_cpu_pct": 0.2, "rss_mb": 2257}
+{"t": 1795230285.9, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.3, "rss_mb": 2257}
+{"t": 1795230287.9, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2257}
+{"t": 1795230289.9, "level": 2, "process_cpu_pct": 15.5, "system_cpu_pct": 1.9, "rss_mb": 2258}
+{"t": 1795230291.9, "level": 2, "process_cpu_pct": 0.5, "system_cpu_pct": 0.8, "rss_mb": 2258, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.012383900928792602, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230298.4, "level": 2, "process_cpu_pct": 155.8, "system_cpu_pct": 17.8, "rss_mb": 2260}
+{"t": 1795230300.4, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2260}
+{"t": 1795230302.4, "level": 2, "process_cpu_pct": 0.5, "system_cpu_pct": 0.1, "rss_mb": 2260}
+{"t": 1795230304.4, "level": 2, "process_cpu_pct": 19.3, "system_cpu_pct": 2.2, "rss_mb": 2261}
+{"t": 1795230306.4, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2261}
+{"t": 1795230308.4, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 4.3, "rss_mb": 2261, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.015479876160990669, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230314.7, "level": 2, "process_cpu_pct": 72.0, "system_cpu_pct": 7.4, "rss_mb": 2262}
+{"t": 1795230316.7, "level": 2, "process_cpu_pct": 13.0, "system_cpu_pct": 1.4, "rss_mb": 2262}
+{"t": 1795230318.7, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 3.2, "rss_mb": 2262}
+{"t": 1795230320.7, "level": 2, "process_cpu_pct": 284.4, "system_cpu_pct": 28.4, "rss_mb": 2265}
+{"t": 1795230322.7, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2265}
+{"t": 1795230324.7, "level": 2, "process_cpu_pct": 4.0, "system_cpu_pct": 0.4, "rss_mb": 2265, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.018575851393188847, "gpu_util_pct": 0.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230331.4, "level": 2, "process_cpu_pct": 118.2, "system_cpu_pct": 12.7, "rss_mb": 2273}
+{"t": 1795230333.4, "level": 2, "process_cpu_pct": 163.9, "system_cpu_pct": 21.1, "rss_mb": 2278}
+{"t": 1795230335.4, "level": 2, "process_cpu_pct": 370.3, "system_cpu_pct": 32.1, "rss_mb": 2279}
+{"t": 1795230337.4, "level": 2, "process_cpu_pct": 0.5, "system_cpu_pct": 0.2, "rss_mb": 2279}
+{"t": 1795230339.4, "level": 2, "process_cpu_pct": 15.5, "system_cpu_pct": 2.5, "rss_mb": 2280}
+{"t": 1795230341.4, "level": 2, "process_cpu_pct": 0.5, "system_cpu_pct": 0.1, "rss_mb": 2280, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230348.2, "level": 2, "process_cpu_pct": 192.6, "system_cpu_pct": 21.5, "rss_mb": 2284}
+{"t": 1795230350.2, "level": 2, "process_cpu_pct": 36.0, "system_cpu_pct": 4.0, "rss_mb": 2284}
+{"t": 1795230352.2, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2284}
+{"t": 1795230354.2, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.5, "rss_mb": 2284}
+{"t": 1795230356.2, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 3.4, "rss_mb": 2284}
+{"t": 1795230358.2, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 4.0, "rss_mb": 2284, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0, "gpu_util_pct": 0.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230364.7, "level": 0, "process_cpu_pct": 0.3, "system_cpu_pct": 1.2, "rss_mb": 2284}
+{"t": 1795230366.7, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2284}
+{"t": 1795230368.7, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.6, "rss_mb": 2284}
+{"t": 1795230370.7, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.3, "rss_mb": 2284}
+{"t": 1795230372.7, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2284}
+{"t": 1795230374.7, "level": 4, "process_cpu_pct": 0.5, "system_cpu_pct": 1.2, "rss_mb": 2284, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230385.0, "level": 4, "process_cpu_pct": 63.2, "system_cpu_pct": 8.4, "rss_mb": 2368}
+{"t": 1795230387.1, "level": 4, "process_cpu_pct": 259.7, "system_cpu_pct": 23.4, "rss_mb": 2368}
+{"t": 1795230389.1, "level": 4, "process_cpu_pct": 6.5, "system_cpu_pct": 1.4, "rss_mb": 2369}
+{"t": 1795230391.1, "level": 4, "process_cpu_pct": 14.5, "system_cpu_pct": 3.3, "rss_mb": 2370, "llm_num_requests_running": 3.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.037151702786377694, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230397.4, "level": 4, "process_cpu_pct": 207.8, "system_cpu_pct": 23.6, "rss_mb": 2390}
+{"t": 1795230399.4, "level": 4, "process_cpu_pct": 159.5, "system_cpu_pct": 14.9, "rss_mb": 2391}
+{"t": 1795230401.4, "level": 4, "process_cpu_pct": 169.9, "system_cpu_pct": 18.9, "rss_mb": 2396}
+{"t": 1795230403.4, "level": 4, "process_cpu_pct": 0.5, "system_cpu_pct": 0.2, "rss_mb": 2396}
+{"t": 1795230405.4, "level": 4, "process_cpu_pct": 0.0, "system_cpu_pct": 0.4, "rss_mb": 2396}
+{"t": 1795230407.4, "level": 4, "process_cpu_pct": 0.5, "system_cpu_pct": 0.0, "rss_mb": 2396, "llm_num_requests_running": 4.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.06811145510835914, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230414.9, "level": 4, "process_cpu_pct": 4.4, "system_cpu_pct": 1.7, "rss_mb": 2399}
+{"t": 1795230416.9, "level": 4, "process_cpu_pct": 6.0, "system_cpu_pct": 3.8, "rss_mb": 2399}
+{"t": 1795230418.9, "level": 4, "process_cpu_pct": 304.4, "system_cpu_pct": 34.6, "rss_mb": 2401}
+{"t": 1795230420.9, "level": 4, "process_cpu_pct": 18.5, "system_cpu_pct": 4.4, "rss_mb": 2401}
+{"t": 1795230422.9, "level": 4, "process_cpu_pct": 121.8, "system_cpu_pct": 11.9, "rss_mb": 2402, "llm_num_requests_running": 3.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0619195046439629, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230429.4, "level": 4, "process_cpu_pct": 50.6, "system_cpu_pct": 7.3, "rss_mb": 2408}
+{"t": 1795230431.4, "level": 4, "process_cpu_pct": 164.9, "system_cpu_pct": 19.4, "rss_mb": 2409}
+{"t": 1795230433.4, "level": 4, "process_cpu_pct": 120.4, "system_cpu_pct": 13.0, "rss_mb": 2409}
+{"t": 1795230435.4, "level": 4, "process_cpu_pct": 1.0, "system_cpu_pct": 0.7, "rss_mb": 2409}
+{"t": 1795230437.4, "level": 4, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2409}
+{"t": 1795230439.4, "level": 4, "process_cpu_pct": 0.0, "system_cpu_pct": 0.9, "rss_mb": 2409, "llm_num_requests_running": 2.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.04024767801857587, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230445.5, "level": 4, "process_cpu_pct": 0.2, "system_cpu_pct": 0.9, "rss_mb": 2409}
+{"t": 1795230447.5, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 2.7, "rss_mb": 2409}
+{"t": 1795230449.5, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 1.1, "rss_mb": 2409}
+{"t": 1795230451.5, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 3.9, "rss_mb": 2409}
+{"t": 1795230453.5, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.5, "rss_mb": 2409}
+{"t": 1795230455.5, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 1.0, "rss_mb": 2409, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0, "gpu_util_pct": 0.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230465.0, "level": 0, "process_cpu_pct": 0.1, "system_cpu_pct": 0.8, "rss_mb": 2409}
+{"t": 1795230467.0, "level": 8, "process_cpu_pct": 2.0, "system_cpu_pct": 0.5, "rss_mb": 2409}
+{"t": 1795230469.0, "level": 8, "process_cpu_pct": 59.9, "system_cpu_pct": 7.5, "rss_mb": 2426}
+{"t": 1795230471.0, "level": 8, "process_cpu_pct": 1.5, "system_cpu_pct": 0.4, "rss_mb": 2426, "llm_num_requests_running": 2.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.024767801857585092, "gpu_util_pct": 0.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230478.4, "level": 8, "process_cpu_pct": 298.4, "system_cpu_pct": 34.6, "rss_mb": 2594}
+{"t": 1795230480.4, "level": 8, "process_cpu_pct": 493.8, "system_cpu_pct": 32.4, "rss_mb": 2642}
+{"t": 1795230482.4, "level": 8, "process_cpu_pct": 379.9, "system_cpu_pct": 33.2, "rss_mb": 2655}
+{"t": 1795230484.4, "level": 8, "process_cpu_pct": 73.5, "system_cpu_pct": 6.7, "rss_mb": 2656}
+{"t": 1795230486.4, "level": 8, "process_cpu_pct": 0.5, "system_cpu_pct": 0.3, "rss_mb": 2656, "llm_num_requests_running": 6.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.10526315789473684, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230494.2, "level": 8, "process_cpu_pct": 171.0, "system_cpu_pct": 18.2, "rss_mb": 2675}
+{"t": 1795230496.2, "level": 8, "process_cpu_pct": 259.5, "system_cpu_pct": 29.3, "rss_mb": 2677}
+{"t": 1795230498.2, "level": 8, "process_cpu_pct": 198.9, "system_cpu_pct": 26.7, "rss_mb": 2672}
+{"t": 1795230500.2, "level": 8, "process_cpu_pct": 169.4, "system_cpu_pct": 18.7, "rss_mb": 2672}
+{"t": 1795230502.2, "level": 8, "process_cpu_pct": 99.5, "system_cpu_pct": 9.2, "rss_mb": 2673, "llm_num_requests_running": 6.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.11145510835913308}
+{"t": 1795230508.2, "level": 8, "process_cpu_pct": 0.2, "system_cpu_pct": 1.0, "rss_mb": 2673}
+{"t": 1795230510.2, "level": 8, "process_cpu_pct": 0.5, "system_cpu_pct": 1.0, "rss_mb": 2673}
+{"t": 1795230512.2, "level": 8, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2673}
+{"t": 1795230514.2, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 1.9, "rss_mb": 2673}
+{"t": 1795230516.3, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 1.4, "rss_mb": 2673}
+{"t": 1795230518.3, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.7, "rss_mb": 2673, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0, "gpu_util_pct": 0.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230525.3, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 2.3, "rss_mb": 2673}
+{"t": 1795230527.3, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.0, "rss_mb": 2673}
+{"t": 1795230529.3, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.8, "rss_mb": 2673}
+{"t": 1795230531.3, "level": 0, "process_cpu_pct": 0.5, "system_cpu_pct": 0.5, "rss_mb": 2673}
+{"t": 1795230533.3, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2673, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0}
+{"t": 1795230540.2, "level": 1, "process_cpu_pct": 42.3, "system_cpu_pct": 6.9, "rss_mb": 2674}
+{"t": 1795230542.2, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 1.2, "rss_mb": 2674}
+{"t": 1795230544.2, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.3, "rss_mb": 2674}
+{"t": 1795230546.2, "level": 1, "process_cpu_pct": 8.0, "system_cpu_pct": 3.9, "rss_mb": 2674}
+{"t": 1795230548.2, "level": 1, "process_cpu_pct": 133.9, "system_cpu_pct": 14.4, "rss_mb": 2674}
+{"t": 1795230550.2, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 1.3, "rss_mb": 2674, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.018575851393188847, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230556.9, "level": 1, "process_cpu_pct": 0.9, "system_cpu_pct": 0.9, "rss_mb": 2674}
+{"t": 1795230558.9, "level": 1, "process_cpu_pct": 182.5, "system_cpu_pct": 23.6, "rss_mb": 2675}
+{"t": 1795230560.9, "level": 1, "process_cpu_pct": 57.5, "system_cpu_pct": 5.4, "rss_mb": 2675}
+{"t": 1795230562.9, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.4, "rss_mb": 2675}
+{"t": 1795230564.9, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 1.2, "rss_mb": 2675}
+{"t": 1795230566.9, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2675, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.015479876160990669, "gpu_util_pct": 0.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230573.3, "level": 1, "process_cpu_pct": 33.6, "system_cpu_pct": 5.2, "rss_mb": 2675}
+{"t": 1795230575.3, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.4, "rss_mb": 2675}
+{"t": 1795230577.3, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.5, "rss_mb": 2675}
+{"t": 1795230579.3, "level": 1, "process_cpu_pct": 0.5, "system_cpu_pct": 1.1, "rss_mb": 2675}
+{"t": 1795230581.3, "level": 1, "process_cpu_pct": 62.5, "system_cpu_pct": 9.3, "rss_mb": 2689}
+{"t": 1795230583.3, "level": 1, "process_cpu_pct": 105.9, "system_cpu_pct": 8.6, "rss_mb": 2690, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.018575851393188847, "gpu_util_pct": 0.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230589.8, "level": 1, "process_cpu_pct": 2.5, "system_cpu_pct": 2.1, "rss_mb": 2690}
+{"t": 1795230591.8, "level": 1, "process_cpu_pct": 246.4, "system_cpu_pct": 27.5, "rss_mb": 2704}
+{"t": 1795230593.8, "level": 1, "process_cpu_pct": 189.4, "system_cpu_pct": 19.0, "rss_mb": 2709}
+{"t": 1795230595.8, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.0, "rss_mb": 2709}
+{"t": 1795230597.8, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.6, "rss_mb": 2709}
+{"t": 1795230599.8, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.7, "rss_mb": 2709, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.024767801857585092, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230606.5, "level": 1, "process_cpu_pct": 0.1, "system_cpu_pct": 0.9, "rss_mb": 2709}
+{"t": 1795230608.5, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.7, "rss_mb": 2709}
+{"t": 1795230610.5, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2709}
+{"t": 1795230612.5, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2709}
+{"t": 1795230614.5, "level": 1, "process_cpu_pct": 62.5, "system_cpu_pct": 9.9, "rss_mb": 2712}
+{"t": 1795230616.5, "level": 1, "process_cpu_pct": 257.9, "system_cpu_pct": 28.1, "rss_mb": 2722, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.018575851393188847}
+{"t": 1795230623.9, "level": 1, "process_cpu_pct": 32.9, "system_cpu_pct": 3.9, "rss_mb": 2722}
+{"t": 1795230625.9, "level": 1, "process_cpu_pct": 66.0, "system_cpu_pct": 12.2, "rss_mb": 2726}
+{"t": 1795230627.9, "level": 1, "process_cpu_pct": 185.1, "system_cpu_pct": 16.5, "rss_mb": 2726}
+{"t": 1795230629.9, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 1.1, "rss_mb": 2726}
+{"t": 1795230631.9, "level": 1, "process_cpu_pct": 0.5, "system_cpu_pct": 0.2, "rss_mb": 2726, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230638.7, "level": 1, "process_cpu_pct": 42.9, "system_cpu_pct": 5.2, "rss_mb": 2726}
+{"t": 1795230640.7, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2726}
+{"t": 1795230642.7, "level": 1, "process_cpu_pct": 0.5, "system_cpu_pct": 0.2, "rss_mb": 2726}
+{"t": 1795230644.7, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2726}
+{"t": 1795230646.7, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.3, "rss_mb": 2726}
+{"t": 1795230648.7, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 1.6, "rss_mb": 2726, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230655.1, "level": 1, "process_cpu_pct": 58.0, "system_cpu_pct": 7.4, "rss_mb": 2726}
+{"t": 1795230657.1, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2726}
+{"t": 1795230659.1, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 1.2, "rss_mb": 2726}
+{"t": 1795230661.1, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2726}
+{"t": 1795230663.1, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2726}
+{"t": 1795230665.1, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2726, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0}
+{"t": 1795230671.4, "level": 1, "process_cpu_pct": 74.3, "system_cpu_pct": 8.2, "rss_mb": 2728}
+{"t": 1795230673.4, "level": 1, "process_cpu_pct": 104.5, "system_cpu_pct": 12.7, "rss_mb": 2728}
+{"t": 1795230675.4, "level": 1, "process_cpu_pct": 175.5, "system_cpu_pct": 14.4, "rss_mb": 2728}
+{"t": 1795230677.4, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2728}
+{"t": 1795230679.4, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 1.1, "rss_mb": 2728}
+{"t": 1795230681.4, "level": 1, "process_cpu_pct": 6.5, "system_cpu_pct": 5.7, "rss_mb": 2730, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230688.2, "level": 1, "process_cpu_pct": 119.4, "system_cpu_pct": 11.1, "rss_mb": 2738}
+{"t": 1795230690.2, "level": 1, "process_cpu_pct": 7.5, "system_cpu_pct": 4.3, "rss_mb": 2738}
+{"t": 1795230692.2, "level": 1, "process_cpu_pct": 243.9, "system_cpu_pct": 23.8, "rss_mb": 2740}
+{"t": 1795230694.2, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2740}
+{"t": 1795230696.2, "level": 1, "process_cpu_pct": 0.0, "system_cpu_pct": 1.0, "rss_mb": 2740}
+{"t": 1795230698.2, "level": 1, "process_cpu_pct": 0.5, "system_cpu_pct": 0.2, "rss_mb": 2740, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0}
+{"t": 1795230704.6, "level": 1, "process_cpu_pct": 81.8, "system_cpu_pct": 10.4, "rss_mb": 2742}
+{"t": 1795230706.6, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 3.1, "rss_mb": 2742}
+{"t": 1795230708.6, "level": 0, "process_cpu_pct": 0.5, "system_cpu_pct": 1.6, "rss_mb": 2742}
+{"t": 1795230710.6, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 3.7, "rss_mb": 2742}
+{"t": 1795230712.6, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2742}
+{"t": 1795230714.6, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2742, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0, "gpu_util_pct": 0.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230720.8, "level": 0, "process_cpu_pct": 0.2, "system_cpu_pct": 1.2, "rss_mb": 2742}
+{"t": 1795230722.8, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2742}
+{"t": 1795230724.8, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.3, "rss_mb": 2742}
+{"t": 1795230726.8, "level": 2, "process_cpu_pct": 0.5, "system_cpu_pct": 0.2, "rss_mb": 2742}
+{"t": 1795230728.8, "level": 2, "process_cpu_pct": 13.0, "system_cpu_pct": 5.5, "rss_mb": 2743}
+{"t": 1795230730.9, "level": 2, "process_cpu_pct": 245.0, "system_cpu_pct": 25.9, "rss_mb": 2744, "llm_num_requests_running": 2.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.037151702786377694, "gpu_util_pct": 0.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230736.1, "level": 2, "process_cpu_pct": 121.0, "system_cpu_pct": 12.8, "rss_mb": 2745}
+{"t": 1795230738.1, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.3, "rss_mb": 2745}
+{"t": 1795230740.1, "level": 2, "process_cpu_pct": 237.4, "system_cpu_pct": 29.8, "rss_mb": 2745}
+{"t": 1795230742.1, "level": 2, "process_cpu_pct": 150.5, "system_cpu_pct": 12.9, "rss_mb": 2745}
+{"t": 1795230744.1, "level": 2, "process_cpu_pct": 0.5, "system_cpu_pct": 0.2, "rss_mb": 2745}
+{"t": 1795230746.1, "level": 2, "process_cpu_pct": 199.0, "system_cpu_pct": 23.1, "rss_mb": 2746, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.021671826625387025, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230752.6, "level": 2, "process_cpu_pct": 2.0, "system_cpu_pct": 1.2, "rss_mb": 2746}
+{"t": 1795230754.6, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.5, "rss_mb": 2746}
+{"t": 1795230756.6, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.0, "rss_mb": 2746}
+{"t": 1795230758.6, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2746}
+{"t": 1795230760.6, "level": 2, "process_cpu_pct": 150.5, "system_cpu_pct": 23.9, "rss_mb": 2748}
+{"t": 1795230762.6, "level": 2, "process_cpu_pct": 279.8, "system_cpu_pct": 25.3, "rss_mb": 2748, "llm_num_requests_running": 2.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.04024767801857587, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230768.3, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.9, "rss_mb": 2748}
+{"t": 1795230770.3, "level": 2, "process_cpu_pct": 0.5, "system_cpu_pct": 1.0, "rss_mb": 2748}
+{"t": 1795230772.3, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2748}
+{"t": 1795230774.3, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.0, "rss_mb": 2748}
+{"t": 1795230776.4, "level": 2, "process_cpu_pct": 66.2, "system_cpu_pct": 11.5, "rss_mb": 2751}
+{"t": 1795230778.4, "level": 2, "process_cpu_pct": 173.5, "system_cpu_pct": 15.6, "rss_mb": 2751, "llm_num_requests_running": 2.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.037151702786377694, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230785.0, "level": 2, "process_cpu_pct": 27.5, "system_cpu_pct": 4.9, "rss_mb": 2751}
+{"t": 1795230787.0, "level": 2, "process_cpu_pct": 6.0, "system_cpu_pct": 2.9, "rss_mb": 2751}
+{"t": 1795230789.0, "level": 2, "process_cpu_pct": 113.9, "system_cpu_pct": 11.5, "rss_mb": 2755}
+{"t": 1795230791.0, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2755}
+{"t": 1795230793.0, "level": 2, "process_cpu_pct": 0.5, "system_cpu_pct": 0.1, "rss_mb": 2755}
+{"t": 1795230795.0, "level": 2, "process_cpu_pct": 27.0, "system_cpu_pct": 5.5, "rss_mb": 2755, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.024767801857585092, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230801.0, "level": 2, "process_cpu_pct": 43.3, "system_cpu_pct": 4.6, "rss_mb": 2755}
+{"t": 1795230803.0, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2755}
+{"t": 1795230805.0, "level": 2, "process_cpu_pct": 171.0, "system_cpu_pct": 18.7, "rss_mb": 2756}
+{"t": 1795230807.0, "level": 2, "process_cpu_pct": 114.9, "system_cpu_pct": 13.1, "rss_mb": 2756}
+{"t": 1795230809.0, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 1.0, "rss_mb": 2756}
+{"t": 1795230811.0, "level": 2, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2756, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230817.7, "level": 0, "process_cpu_pct": 0.3, "system_cpu_pct": 1.5, "rss_mb": 2756}
+{"t": 1795230819.7, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 3.7, "rss_mb": 2756}
+{"t": 1795230821.7, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 1.8, "rss_mb": 2756}
+{"t": 1795230823.7, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2756}
+{"t": 1795230825.8, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.7, "rss_mb": 2756}
+{"t": 1795230827.8, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2756, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0, "gpu_util_pct": 0.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230834.4, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 1.0, "rss_mb": 2756}
+{"t": 1795230836.4, "level": 4, "process_cpu_pct": 0.5, "system_cpu_pct": 0.2, "rss_mb": 2756}
+{"t": 1795230838.4, "level": 4, "process_cpu_pct": 3.5, "system_cpu_pct": 0.4, "rss_mb": 2756}
+{"t": 1795230840.4, "level": 4, "process_cpu_pct": 310.3, "system_cpu_pct": 43.1, "rss_mb": 2760}
+{"t": 1795230842.4, "level": 4, "process_cpu_pct": 331.3, "system_cpu_pct": 31.8, "rss_mb": 2761}
+{"t": 1795230844.4, "level": 4, "process_cpu_pct": 61.0, "system_cpu_pct": 3.4, "rss_mb": 2761, "llm_num_requests_running": 3.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0619195046439629, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230852.5, "level": 4, "process_cpu_pct": 73.0, "system_cpu_pct": 8.7, "rss_mb": 2763}
+{"t": 1795230854.5, "level": 4, "process_cpu_pct": 85.5, "system_cpu_pct": 8.2, "rss_mb": 2763}
+{"t": 1795230856.5, "level": 4, "process_cpu_pct": 270.8, "system_cpu_pct": 22.6, "rss_mb": 2763}
+{"t": 1795230858.5, "level": 4, "process_cpu_pct": 0.0, "system_cpu_pct": 0.1, "rss_mb": 2763}
+{"t": 1795230860.5, "level": 4, "process_cpu_pct": 55.0, "system_cpu_pct": 5.3, "rss_mb": 2769, "llm_num_requests_running": 2.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.04024767801857587, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230866.9, "level": 4, "process_cpu_pct": 311.7, "system_cpu_pct": 28.7, "rss_mb": 2781}
+{"t": 1795230868.9, "level": 4, "process_cpu_pct": 394.7, "system_cpu_pct": 43.3, "rss_mb": 2781}
+{"t": 1795230870.9, "level": 4, "process_cpu_pct": 123.5, "system_cpu_pct": 11.4, "rss_mb": 2781}
+{"t": 1795230872.9, "level": 4, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2781}
+{"t": 1795230874.9, "level": 4, "process_cpu_pct": 68.5, "system_cpu_pct": 12.1, "rss_mb": 2782}
+{"t": 1795230876.9, "level": 4, "process_cpu_pct": 367.7, "system_cpu_pct": 30.2, "rss_mb": 2782, "llm_num_requests_running": 4.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.08049535603715174}
+{"t": 1795230883.5, "level": 4, "process_cpu_pct": 33.5, "system_cpu_pct": 5.4, "rss_mb": 2782}
+{"t": 1795230885.5, "level": 4, "process_cpu_pct": 10.5, "system_cpu_pct": 1.0, "rss_mb": 2782}
+{"t": 1795230887.5, "level": 4, "process_cpu_pct": 0.0, "system_cpu_pct": 0.3, "rss_mb": 2782}
+{"t": 1795230889.5, "level": 0, "process_cpu_pct": 0.5, "system_cpu_pct": 1.2, "rss_mb": 2782}
+{"t": 1795230891.5, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 1.7, "rss_mb": 2782}
+{"t": 1795230893.5, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 3.2, "rss_mb": 2782, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0}
+{"t": 1795230900.7, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.9, "rss_mb": 2782}
+{"t": 1795230902.7, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2782}
+{"t": 1795230904.7, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 1.1, "rss_mb": 2782}
+{"t": 1795230906.7, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.2, "rss_mb": 2782}
+{"t": 1795230908.7, "level": 8, "process_cpu_pct": 1.0, "system_cpu_pct": 0.7, "rss_mb": 2782, "llm_num_requests_running": 1.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.012383900928792602, "gpu_util_pct": 0.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230915.4, "level": 8, "process_cpu_pct": 226.9, "system_cpu_pct": 27.0, "rss_mb": 2785}
+{"t": 1795230917.4, "level": 8, "process_cpu_pct": 355.4, "system_cpu_pct": 38.7, "rss_mb": 2786}
+{"t": 1795230919.4, "level": 8, "process_cpu_pct": 355.9, "system_cpu_pct": 38.9, "rss_mb": 2788}
+{"t": 1795230921.4, "level": 8, "process_cpu_pct": 161.1, "system_cpu_pct": 13.8, "rss_mb": 2788}
+{"t": 1795230923.4, "level": 8, "process_cpu_pct": 0.0, "system_cpu_pct": 0.4, "rss_mb": 2788}
+{"t": 1795230925.4, "level": 8, "process_cpu_pct": 0.5, "system_cpu_pct": 0.1, "rss_mb": 2788, "llm_num_requests_running": 7.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.1207430340557275, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230931.9, "level": 8, "process_cpu_pct": 74.2, "system_cpu_pct": 11.1, "rss_mb": 2791}
+{"t": 1795230934.0, "level": 8, "process_cpu_pct": 275.9, "system_cpu_pct": 36.2, "rss_mb": 2792}
+{"t": 1795230936.0, "level": 8, "process_cpu_pct": 359.4, "system_cpu_pct": 39.8, "rss_mb": 2792}
+{"t": 1795230938.0, "level": 8, "process_cpu_pct": 388.4, "system_cpu_pct": 33.6, "rss_mb": 2792}
+{"t": 1795230940.0, "level": 8, "process_cpu_pct": 60.5, "system_cpu_pct": 8.3, "rss_mb": 2793}
+{"t": 1795230942.0, "level": 8, "process_cpu_pct": 240.9, "system_cpu_pct": 27.0, "rss_mb": 2794, "llm_num_requests_running": 5.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.10526315789473684, "gpu_util_pct": 100.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230948.5, "level": 8, "process_cpu_pct": 24.8, "system_cpu_pct": 3.0, "rss_mb": 2794}
+{"t": 1795230950.5, "level": 8, "process_cpu_pct": 0.5, "system_cpu_pct": 0.9, "rss_mb": 2794}
+{"t": 1795230952.5, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 1.7, "rss_mb": 2794}
+{"t": 1795230954.5, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.3, "rss_mb": 2794}
+{"t": 1795230956.5, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.7, "rss_mb": 2794}
+{"t": 1795230958.5, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 1.4, "rss_mb": 2794, "llm_num_requests_running": 0.0, "llm_num_requests_waiting": 0.0, "llm_kv_cache_usage_perc": 0.0, "gpu_util_pct": 0.0, "gpu_mem_mb": 74039.0}
+{"t": 1795230965.3, "level": 0, "process_cpu_pct": 0.1, "system_cpu_pct": 1.8, "rss_mb": 2794}
+{"t": 1795230967.3, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.4, "rss_mb": 2794}
+{"t": 1795230969.3, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 1.0, "rss_mb": 2794}
+{"t": 1795230971.3, "level": 0, "process_cpu_pct": 0.0, "system_cpu_pct": 0.7, "rss_mb": 2794}

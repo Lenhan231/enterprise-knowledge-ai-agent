@@ -432,3 +432,7 @@ html #home-overview-preview { height: 1000px; }
 /* Source Lens: long file names wrap inside the box */
 :root .source-lens-body h3, :root .source-lens-pub, :root .source-lens-host { overflow-wrap: anywhere; }
 :root .general-chat .chat-turn .citation-title span.citation-score-bar, :root .general-chat .chat-turn .citation-title span.citation-score-bar > span { margin-left: 0; }
+
+/* Access matrix header: one band (the Role cell had its own grey), labels centred on one line height and wrapped evenly */
+:root .tab-panel .access-table thead th, :root .tab-panel .access-table thead th:first-child { background: var(--surface-2); vertical-align: middle; text-wrap: balance; height: 72px; padding-top: 10px; padding-bottom: 10px; }
+:root .tab-panel .access-table tbody tr:last-child > * { border-bottom: 0; }

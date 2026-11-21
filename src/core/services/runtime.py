@@ -7,6 +7,7 @@ import os
 import secrets
 import time
 from contextlib import asynccontextmanager
+from pathlib import Path
 from queue import Queue
 from typing import Literal
 from threading import Lock, Thread
@@ -14,6 +15,8 @@ from threading import Lock, Thread
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
+
+from document_processing.diagnostics import PageLimitExceeded, component_errors, document_log_context
 
 LOCK = Lock()
 logger = logging.getLogger(__name__)
@@ -205,11 +208,13 @@ def parse(body: Parse):
     request_started = time.perf_counter()
     timings_ms = {}
     invoice_id = body.metadata.get("invoice_id")
-    source_format = str(body.metadata.get("format") or body.filename.rsplit(".", 1)[-1]).lower()
+    source_format = str(body.metadata.get("format") or Path(body.filename).suffix.lstrip(".") or "unknown").lower()
+    log_context = document_log_context(body.metadata, source_format=source_format)
     result_status = "failed"
     try:
         stage_started = time.perf_counter()
-        content = base64.b64decode(body.content, validate=True)
+        with component_errors(logger, "base64_decode", **log_context):
+            content = base64.b64decode(body.content, validate=True)
         timings_ms["base64_decode"] = round((time.perf_counter() - stage_started) * 1000, 2)
         if len(content) > 50 * 1024 * 1024:
             raise HTTPException(413, "Document exceeds 50 MiB")
@@ -248,11 +253,14 @@ def parse(body: Parse):
                 LOCK.release()
         if "page_previews" in result:
             stage_started = time.perf_counter()
-            result["page_previews"] = {key: base64.b64encode(value).decode("ascii")
-                                       for key, value in result["page_previews"].items()}
+            with component_errors(logger, "preview_base64_encode", **log_context):
+                result["page_previews"] = {key: base64.b64encode(value).decode("ascii")
+                                           for key, value in result["page_previews"].items()}
             timings_ms["preview_base64_encode"] = round((time.perf_counter() - stage_started) * 1000, 2)
         result_status = "completed"
         return result
+    except PageLimitExceeded as error:
+        raise HTTPException(422, str(error)) from error
     except (ValueError, binascii.Error) as error:
         raise HTTPException(422, "Invalid document") from error
     finally:

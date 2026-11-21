@@ -1,0 +1,111 @@
+import unittest
+import importlib.util
+import json
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
+
+if any(importlib.util.find_spec(module) is None for module in ("docling", "docling_core")):
+    raise unittest.SkipTest("Docling is an optional document-processing dependency")
+
+from docling.datamodel.settings import DebugSettings, scoped, settings
+from docling.datamodel.base_models import ConversionStatus, DoclingComponentType, ErrorItem, FailureCategory
+from docling.datamodel.pipeline_options import TableFormerMode
+
+from document_processing.docling_adapter.processor import DoclingProcessor
+from document_processing.docling_adapter.processor import _summarize_docling_timings
+
+
+class DoclingTimingSummaryTest(unittest.TestCase):
+    def test_tableformer_fast_mode_is_explicit_and_accurate_stays_default(self):
+        accurate = DoclingProcessor({})._pipeline_options(True, False, False)
+        fast = DoclingProcessor({"docling_table_mode": "fast"})._pipeline_options(True, False, False)
+
+        self.assertEqual(accurate.table_structure_options.mode, TableFormerMode.ACCURATE)
+        self.assertEqual(fast.table_structure_options.mode, TableFormerMode.FAST)
+
+    def test_tableformer_mode_rejects_unknown_values(self):
+        with self.assertRaisesRegex(ValueError, "docling_table_mode"):
+            DoclingProcessor({"docling_table_mode": "unknown"})._pipeline_options(True, False, False)
+
+    def test_preload_warms_page_orientation_after_pipeline_initialization(self):
+        processor = DoclingProcessor({})
+        processor._pipeline_options = Mock(return_value=object())
+        converter = Mock()
+        converter.initialized_pipelines = {}
+
+        with (
+            patch("document_processing.docling_adapter.processor.get_converter", return_value=converter) as get_converter,
+            patch("document_processing.docling_adapter.orientation.preload_paddle_page_orientation_model") as warm_orientation,
+        ):
+            processor.preload()
+
+        self.assertEqual(get_converter.call_count, 3)
+        self.assertEqual(converter.initialize_pipeline.call_count, 3)
+        warm_orientation.assert_called_once_with()
+
+    def test_pipeline_profile_setting_is_scoped_and_restored(self):
+        original = settings.debug.profile_pipeline_timings
+
+        with scoped(debug=DebugSettings(profile_pipeline_timings=True)):
+            self.assertTrue(settings.debug.profile_pipeline_timings)
+
+        self.assertEqual(settings.debug.profile_pipeline_timings, original)
+
+    def test_summarizes_stage_intervals_without_combining_overlapping_stages(self):
+        timings = {
+            "layout": SimpleNamespace(
+                scope=SimpleNamespace(value="page"), count=2, times=[0.25, 0.5]
+            ),
+            "ocr": SimpleNamespace(scope="page", count=1, times=[1.25]),
+            "unused": SimpleNamespace(scope="page", count=0, times=[]),
+        }
+
+        summary = _summarize_docling_timings(timings)
+
+        self.assertEqual(summary, {
+            "layout": {
+                "scope": "page", "count": 2, "total_ms": 750.0,
+                "intervals_ms": [250.0, 500.0],
+            },
+            "ocr": {
+                "scope": "page", "count": 1, "total_ms": 1250.0,
+                "intervals_ms": [1250.0],
+            },
+        })
+
+    def test_reports_the_stage_and_page_when_docling_returns_a_partial_result(self):
+        processor = DoclingProcessor({})
+        processor._pipeline_options = Mock()
+        conversion = SimpleNamespace(
+            status=ConversionStatus.PARTIAL_SUCCESS,
+            document=SimpleNamespace(pages={}),
+            errors=[ErrorItem(
+                component_type=DoclingComponentType.MODEL,
+                module_name="ocr",
+                error_message="Document data omitted from application logs",
+                category=FailureCategory.INFERENCE_FAILURE,
+                page_no=2,
+            )],
+        )
+        converter = SimpleNamespace(initialized_pipelines={}, convert=Mock(return_value=conversion))
+        with (
+            patch("document_processing.docling_adapter.processor.get_converter", return_value=converter),
+            patch("document_processing.docling_adapter.processor.process_embedded_images", return_value={}),
+            patch("document_processing.docling_adapter.processor.recognize_chart_regions", return_value={}),
+            patch("document_processing.docling_adapter.processor.map_result", return_value={"metadata": {}}),
+            self.assertLogs("document_processing.docling_adapter.processor", level="ERROR") as logs,
+        ):
+            result = processor.process(b"some pdf content", None, {
+                "metadata": {"format": "PDF", "document_id": "UPLOAD-1"},
+            })
+        self.assertIn("metadata", result)
+        event, payload = logs.records[0].getMessage().split(" ", 1)
+        self.assertEqual(event, "DOCUMENT_PROCESS_COMPONENT_ERROR")
+        details = json.loads(payload)
+        self.assertEqual((details["component"], details["page_number"]), ("ocr", 2))
+        self.assertEqual(details["error_code"], "inference_failure")
+        self.assertNotIn("Document data", payload)
+
+
+if __name__ == "__main__":
+    unittest.main()

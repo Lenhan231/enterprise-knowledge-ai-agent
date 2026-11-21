@@ -9,9 +9,9 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'src'))
 from sqlglot import exp, parse_one
-from core.analytics.metric_ontology import resolve_metric_names
-from core.analytics.metric_validation import validate_metric_definitions, validate_metric_request
-from core.analytics.text_to_sql import APPROVED_COLUMNS, decode_query_plan, parse_json_response
+from core.agents.sql.metric_ontology import resolve_metric_names
+from core.agents.sql.metric_validation import validate_metric_definitions, validate_metric_request
+from core.agents.sql.text_to_sql import APPROVED_COLUMNS, decode_query_plan, parse_json_response
 
 
 def calculation_matches(case, gold):
@@ -56,7 +56,7 @@ def score_case(case, gold):
                 mapping = result.get('metadata',{}).get('semantic_interpretation')
                 question = case['question']
                 if mapping:
-                    from core.analytics.metric_mapping import decode_metric_mapping, validate_mapped_sql
+                    from core.agents.sql.metric_mapping import decode_metric_mapping, validate_mapped_sql
                     mapping = decode_metric_mapping(json.dumps(mapping),question)
                     validate_mapped_sql(plan,mapping,question=question)
                     names, question = set(mapping.metrics), mapping.date_question()

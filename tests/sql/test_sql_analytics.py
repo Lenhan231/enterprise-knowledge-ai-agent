@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-from core.analytics.sql_safety import UnsafeAnalyticsQuery, validate_analytics_sql
+from core.agents.sql.sql_safety import UnsafeAnalyticsQuery, validate_analytics_sql
 from core.database.document_repository import DocumentRepository
 
 

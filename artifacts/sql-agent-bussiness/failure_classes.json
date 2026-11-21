@@ -1,0 +1,53 @@
+{
+  "format_version": "sql-business-failure-classes.v1",
+  "classes": {
+    "sql_semantic_contract_failure": {
+      "applies_to": "SQL parses and may execute, but a required source, population, filter, metric, group, date range, ranking, tie break, or limit is missing or wrong.",
+      "safety": "Must not count as a correct business answer."
+    },
+    "business_result_mismatch": {
+      "applies_to": "Required SQL semantics pass but returned requested values or rows differ from the frozen oracle.",
+      "safety": "Execution success does not override this failure."
+    },
+    "sql_validation_failure": {
+      "applies_to": "The read-only, schema, join, metric, or ranking validator rejects the query.",
+      "safety": "No business execution is counted unless the approved executor confirms execution."
+    },
+    "security_rejection": {
+      "applies_to": "SQL violates a read-only, source allowlist, bounded-result, or authorization boundary.",
+      "safety": "Mandatory rejection; unsafe execution count must remain zero."
+    },
+    "false_refusal": {
+      "applies_to": "A supported and answerable case is clarified, rejected, or abstained without execution.",
+      "safety": "Counts against supported-case answerability."
+    },
+    "safe_unsupported_abstention": {
+      "applies_to": "An unsupported case is clarified or abstained without SQL or business execution.",
+      "safety": "Counts as correct behavior only for cases frozen as unsupported."
+    },
+    "provider_failure": {
+      "applies_to": "SQL model or schema-selection provider is unavailable, including HTTP 402/429/5xx.",
+      "safety": "Report provider availability separately; do not assign SQL quality to an ungenerated query."
+    },
+    "database_failure": {
+      "applies_to": "Read-only query execution fails after SQL validation.",
+      "safety": "Record source_failed; do not treat an execution exception as an empty result."
+    },
+    "repair_exhausted": {
+      "applies_to": "The bounded internal SQL generation/repair attempts all fail validation.",
+      "safety": "Preserve the configured retry budget and terminal status."
+    },
+    "environment_blocker": {
+      "applies_to": "Required non-production database or provider configuration is unavailable before a case starts.",
+      "safety": "Mark NOT RUN; do not use production credentials or infer quality."
+    },
+    "runner_interrupted": {
+      "applies_to": "The process is interrupted while a case is running.",
+      "safety": "Persist the interruption and resume only under the documented immutable-case policy."
+    },
+    "not_run": {
+      "applies_to": "No benchmark attempt was made.",
+      "safety": "Exclude from quality and latency denominators."
+    }
+  }
+}

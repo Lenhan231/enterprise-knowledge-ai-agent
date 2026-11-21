@@ -1,5 +1,5 @@
 const $ = (selector) => document.querySelector(selector);
-let activeTab = "general-chat";
+let activeTab = "home";
 let currentUser = null;
 let knowledgeDocuments = [];
 let activeKnowledgeReview = null;
@@ -58,8 +58,11 @@ function syntheticPolicySourcePageUrl(source) {
 
 function selectWorkspaceTab(name) {
   const button = $(`[data-tab-target="${name}"]`);
-  if (!button || button.hidden) return;
+  if (!currentUser || name !== "home" && (!button || button.hidden)) return;
   activeTab = name;
+  $("#workspace-home").hidden = name !== "home";
+  $("#workspace-home-link").setAttribute("aria-current", name === "home" ? "page" : "false");
+  if (name === "home") window.businessOverview?.show(!$("#tab-button-dashboard").hidden);
   // Rows settle in only while a tab is opening, not when a filter or selection re-renders the list.
   const panel = $(`#tab-${name}`);
   if (panel) {
@@ -69,20 +72,22 @@ function selectWorkspaceTab(name) {
     panel.querySelectorAll(".monitoring-stat strong").forEach(countUp);
   }
   if (name === "dashboard") window.dashboardWorkspace?.show();
+  if (name === "knowledge") window.reportWorkspace?.show();
   $("#workspace-main").classList.toggle("invoice-review-active", name === "invoice-review");
   const isKnowledgeTab = name === "knowledge";
   $(".intro").hidden = !isKnowledgeTab;
   $(".agent-overview").hidden = !isKnowledgeTab
     || ["document_processing_owner", "document_uploader"].includes(currentUser?.role);
   $(".stats").hidden = !isKnowledgeTab || currentUser?.role === "document_processing_owner";
+  const firstTab = Array.from(document.querySelectorAll(".workspace-tab")).find(tab => !tab.hidden);
   document.querySelectorAll(".workspace-tab").forEach((tab) => {
     const selected = tab === button;
     tab.setAttribute("aria-selected", String(selected));
-    tab.tabIndex = selected ? 0 : -1;
+    tab.tabIndex = selected || name === "home" && tab === firstTab ? 0 : -1;
     tab.classList.toggle("active", selected);
   });
   document.querySelectorAll(".tab-panel").forEach((panel) => {
-    panel.hidden = panel.id !== button.getAttribute("aria-controls");
+    panel.hidden = panel.id !== button?.getAttribute("aria-controls");
   });
 }
 
@@ -107,11 +112,16 @@ function syncWorkspaceTabs(user = currentUser) {
   document.querySelectorAll(".workspace-tab").forEach((button) => {
     button.hidden = !available[button.dataset.tabTarget];
   });
-  if (!available[activeTab]) {
+  if (activeTab !== "home" && !available[activeTab]) {
     activeTab = isProcessingOwner ? "processing" : available["general-chat"] ? "general-chat" : available.upload ? "upload" : "general-chat";
   }
   selectWorkspaceTab(activeTab);
 }
+
+$("#workspace-home-link").addEventListener("click", (event) => {
+  event.preventDefault();
+  selectWorkspaceTab("home");
+});
 
 const UPLOAD_ROLE_LABELS = {
   employee: ["Employee", "General document Q&A"],
@@ -256,7 +266,9 @@ function renderKnowledgeDocuments() {
       : uploadedSource
         ? `<a href="${escapeHtml(uploadedSource)}" target="_blank" rel="noopener noreferrer">Open uploaded file</a>`
         : href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Open source</a>` : "";
-    const canRetryEmbedding = doc.source_type === "user_upload" && doc.processing_status === "failed";
+    const isFailedUpload = doc.source_type === "user_upload" && doc.processing_status === "failed";
+    const canRetryEmbedding = isFailedUpload && doc.has_parser_chunks === true;
+    const needsReuploadForProcessing = isFailedUpload && doc.has_parser_chunks !== true;
     const reviewOpen = activeKnowledgeReview?.document_id === doc.document_id;
     return `<div class="knowledge-document-entry"><article class="knowledge-document-row ${doc.knowledge_base_active ? "" : "is-removed"}">
       <div class="knowledge-document-copy"><strong>${escapeHtml(doc.title)}</strong>
@@ -274,6 +286,7 @@ function renderKnowledgeDocuments() {
       <div class="knowledge-document-actions">
         ${doc.has_processing_output ? `<button class="secondary-button" type="button" data-review-elements="${escapeHtml(doc.document_id)}" aria-expanded="${reviewOpen ? "true" : "false"}">${reviewOpen ? "Hide element review" : "Review elements"}</button>` : ""}
         ${canRetryEmbedding ? `<button class="secondary-button" type="button" data-retry-embedding="${escapeHtml(doc.document_id)}">Retry embedding</button>` : ""}
+        ${needsReuploadForProcessing ? `<small class="knowledge-retry-note" role="note">No saved parser passages. Re-upload to process this file.</small>` : ""}
         ${doc.knowledge_base_active === false && doc.source_type === "user_upload" ? `<button class="danger-button" type="button" data-knowledge-delete="${escapeHtml(doc.document_id)}" data-title="${escapeHtml(doc.title)}">Delete permanently</button>` : ""}
         <button class="${doc.knowledge_base_active ? "danger-button" : "secondary-button"}" type="button" data-knowledge-toggle="${escapeHtml(doc.document_id)}" data-active="${doc.knowledge_base_active ? "true" : "false"}">${doc.knowledge_base_active ? "Remove from knowledge base" : "Restore to knowledge base"}</button>
       </div>
@@ -861,7 +874,7 @@ async function loadOcrTestRuns() {
     const intent = config.intent || "document";
     const parserSettings = intent === "document"
       ? `Document · Docling · ${selected.docling_device || "cpu"} · OCR ${selected.docling_ocr ? "on" : "off"} (${selected.docling_ocr_language || "vi"}) · tables ${selected.docling_table_structure ? "on" : "off"} · ${selected.docling_num_threads || 4} threads`
-      : intent === "invoice" ? "Invoice extraction · Docling OCR + configured model" : "Image caption · Vintern";
+      : intent === "invoice" ? "Invoice extraction · Docling OCR + configured model" : "Legacy processing run";
     const settings = parserSettings;
     const previewSummary = run.page_count ? `${formatNumber(run.page_count)} page previews` : "no page previews";
     const processingSummary = `processing ${formatDuration(run.runtime_info?.processing_time_ms)}`;
@@ -1084,6 +1097,11 @@ async function openOcrTestRun(runId) {
   }
 }
 
+const DOCUMENT_UPLOAD_EXTENSIONS = [
+  ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".csv", ".txt", ".md",
+  ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".gif", ".webp", ".svg", ".heic", ".heif", ".avif",
+];
+
 function updateUploadTestParserSettings() {
   const intent = $("#ocr-test-parser").value;
   document.querySelectorAll("#ocr-test-form [data-parser-settings]").forEach((fieldset) => {
@@ -1094,7 +1112,7 @@ function updateUploadTestParserSettings() {
     });
   });
   $("#ocr-test-file").accept = intent === "document"
-    ? ".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff,.svg,.webp"
+    ? DOCUMENT_UPLOAD_EXTENSIONS.join(",")
     : ".pdf,.png,.jpg,.jpeg,.tif,.tiff,.webp";
 }
 
@@ -1118,7 +1136,8 @@ function countUp(element) {
   const decimals = (match[1].split(".")[1] || "").length;
   const started = performance.now();
   const step = (now) => {
-    const t = Math.min(1, (now - started) / 700);
+    // a frame timestamp can precede `started`; clamp so the count never shows a negative value
+    const t = Math.min(1, Math.max(0, (now - started) / 700));
     const value = target * (1 - (1 - t) ** 3);
     element.textContent = value.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + match[2];
     if (t < 1 && element.isConnected) requestAnimationFrame(step);
@@ -1484,7 +1503,18 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
       return `<p class="analysis-caveat answer-provenance-note" role="status"><strong>Continuing the previous SQL scope.</strong> ${snapshotLabel}: ${escapeHtml(snapshot)}${filters.length ? ` · Filters: ${filters.map(escapeHtml).join("; ")}` : ""}</p>`;
     })()
     : "";
+  const clarificationOptions = data.status === "clarification_required"
+    && panel.closest("#general-chat-transcript")
+    && Array.isArray(data.clarification_options)
+    ? data.clarification_options.filter((option) => typeof option === "string" && option.trim())
+    : [];
+  const clarificationChoices = clarificationOptions.length
+    ? `<div class="clarification-options" role="group" aria-label="Choose an option">${clarificationOptions.map((option, index) =>
+      `<button class="clarification-option" type="button" data-clarification-choice-index="${index}">${escapeHtml(option)}</button>`
+    ).join("")}</div>`
+    : "";
   const routeDetails = renderRunDetails(data);
+  const terms = matchTerms(data.search);
   panel.innerHTML = `
     <div class="answer-header-wrap">
       <div class="answer-heading${outcome.gap || data.status === "partial" || data.limitations?.length ? " is-partial" : ""}">
@@ -1501,6 +1531,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
     ${fallbackNotice}
     ${sqlScope}
     <div class="answer-text">${renderAnswerBody(data.answer)}</div>
+    ${clarificationChoices}
     ${outcome.next}
     ${renderAgentRows(data.data)}
     ${renderDashboardVisualization(data.data?.visualization)}
@@ -1539,7 +1570,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
           const sourceExcerpt = source.source_type === "commerce_sql"
             && Array.isArray(source.commerce_observations) && source.commerce_observations.length
             ? ""
-            : `<p>${escapeHtml(source.excerpt)}</p>`;
+            : `<p>${underlineMatches(escapeHtml(source.excerpt), terms)}</p>`;
           const publisher = source.source_publisher || source.company || "";
           return `
             <article class="citation" data-cite-id="${escapeHtml(source.id)}">
@@ -1547,6 +1578,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
                 <span class="citation-id">${escapeHtml(source.id)}</span>
                 <strong>${escapeHtml(source.title)}</strong>
                 <span>${escapeHtml(location)}</span>
+                ${Number.isFinite(Number(source.score)) && source.score !== null && source.score !== "" ? `<span class="citation-meta"><span class="citation-used">✓ Đã dùng</span><span class="citation-score" title="Điểm liên quan"><span class="citation-score-bar" aria-hidden="true"><span style="width:${Math.round(Math.max(0, Math.min(1, Number(source.score))) * 100)}%"></span></span>${Number(source.score).toFixed(2)}</span></span>` : ""}
               </div>
               ${referenceScope}
               ${ocrNote}
@@ -1560,6 +1592,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
               </div>
             </article>`;
         }).join("")}
+        ${renderRetrievedChunks(data.retrieved)}
       </div>` : ""}
     ${routeDetails}
     ${tokenUsage}
@@ -1567,6 +1600,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
       ${outcome.next ? "" : `<button type="button" class="action-btn copy-answer-btn" title="Copy response text" aria-label="Copy response">${ICONS.copy}<span class="action-label">Copy</span></button>`}
     </div>`;
 
+  bindRetrievedChunks(panel);
   // Inline [S1] chips scroll to and highlight their source card.
   panel.querySelectorAll(".cite-ref").forEach((ref) => ref.addEventListener("click", (event) => {
     event.preventDefault();
@@ -1578,6 +1612,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
     void card.offsetWidth;
     card.classList.add("is-highlighted");
     setTimeout(() => card.classList.remove("is-highlighted"), 1600);
+    toggleSourceLens(ref, card);
   }));
   requestAnimationFrame(() => pruneCitationToggles(panel));
   panel.querySelectorAll(".citation-toggle").forEach((toggle) => toggle.addEventListener("click", () => {
@@ -1590,6 +1625,7 @@ function renderAnswer(data, panel = $("#answer-panel"), shouldScroll = true) {
       try {
         await navigator.clipboard.writeText(data.answer);
         copyBtn.innerHTML = `${ICONS.check}<span class="action-label">Copied</span>`;
+        window.toast?.("Copied to clipboard");
         copyBtn.classList.add("copied");
         setTimeout(() => {
           copyBtn.innerHTML = `${ICONS.copy}<span class="action-label">Copy</span>`;
@@ -1637,7 +1673,139 @@ function renderAgentRows(data) {
   }).join("");
 }
 
+// Source Lens (21st.dev, ibrandify): a citation pill opens a modal source inspector placed under the pill (at most
+// 400 px wide, kept inside the viewport). It shows "Source n / N", the document and its location, the passage as the
+// guidance summary, the sentence it was opened from, Copy / Open source, and previous / next to browse the answer's
+// sources. Escape or a click outside closes it and focus returns to the pill.
+function sourceLensData(card) {
+  const passage = card.querySelector(":scope > p");
+  return {
+    id: card.dataset.citeId,
+    title: card.querySelector(".citation-title strong")?.textContent || "",
+    where: card.querySelector(".citation-title > span:not(.citation-id):not(.citation-meta)")?.textContent || "",
+    text: (passage?.dataset.plain ?? passage?.textContent ?? "").trim(),
+    url: card.querySelector(".citation-foot a[href]")?.href || "",
+  };
+}
+function toggleSourceLens(ref, card) {
+  const panel = ref.closest(".answer-panel");
+  const cards = [...(panel?.querySelectorAll(".citations .citation") || [])].filter((item) => !item.hidden);
+  if (!cards.length) return;
+  let index = Math.max(0, cards.indexOf(card));
+  const claim = citedClaim(ref).trim();
+  const dialog = document.createElement("dialog");
+  dialog.className = "source-lens";
+  dialog.setAttribute("aria-labelledby", "source-lens-title");
+  const render = () => {
+    const source = sourceLensData(cards[index]);
+    let host = "";
+    try { host = source.url ? new URL(source.url).hostname : ""; } catch { host = ""; }
+    dialog.innerHTML = `
+      <div class="source-lens-bar"><span>Source ${index + 1} / ${cards.length}</span><button type="button" class="source-lens-x" aria-label="Close source inspector">×</button></div>
+      <div class="source-lens-body">
+        <p class="source-lens-pub">${escapeHtml(source.where)}</p>
+        <h3 id="source-lens-title">${escapeHtml(source.title || "Source unavailable")}</h3>
+        <p class="source-lens-host">${escapeHtml(host || "Internal document")}</p>
+        <div class="source-lens-summary"><p class="source-lens-label">Passage · ${escapeHtml(source.id)}</p><p>${escapeHtml(source.text)}</p></div>
+        ${claim ? `<div class="source-lens-from"><p class="source-lens-label">Opened from</p><p>${escapeHtml(claim.length > 160 ? `${claim.slice(0, 157)}…` : claim)}</p>${index !== cards.indexOf(card) ? `<p class="source-lens-note">This source supports another part of the answer.</p>` : ""}</div>` : ""}
+        <div class="source-lens-actions">
+          <button type="button" class="source-lens-copy" ${source.url ? "" : "disabled"}>Copy link</button>
+          ${source.url ? `<a class="source-lens-open" href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer">Open source ↗</a>` : ""}
+        </div>
+        <p class="source-lens-status" role="status"></p>
+      </div>
+      <div class="source-lens-foot"><span>Browse sources</span><span><button type="button" class="source-lens-prev" aria-label="Previous source" ${cards.length < 2 ? "disabled" : ""}>‹</button><button type="button" class="source-lens-next" aria-label="Next source" ${cards.length < 2 ? "disabled" : ""}>›</button></span></div>`;
+    dialog.querySelector(".source-lens-x").addEventListener("click", () => dialog.close());
+    dialog.querySelector(".source-lens-prev").addEventListener("click", () => { index = (index - 1 + cards.length) % cards.length; render(); });
+    dialog.querySelector(".source-lens-next").addEventListener("click", () => { index = (index + 1) % cards.length; render(); });
+    dialog.querySelector(".source-lens-copy").addEventListener("click", async () => {
+      const status = dialog.querySelector(".source-lens-status");
+      try { await navigator.clipboard.writeText(source.url); status.textContent = "Link copied"; }
+      catch { status.textContent = "Copy unavailable. Open the source to copy its link."; }
+    });
+  };
+  const place = () => {
+    const rect = ref.getBoundingClientRect();
+    const width = Math.min(400, document.documentElement.clientWidth - 32);
+    const height = Math.min(dialog.getBoundingClientRect().height || 420, window.innerHeight - 32);
+    dialog.style.width = `${width}px`;
+    dialog.style.left = `${Math.max(16, Math.min(rect.left, document.documentElement.clientWidth - width - 16))}px`;
+    dialog.style.top = `${Math.max(16, Math.min(rect.bottom + 12, window.innerHeight - height - 16))}px`;
+  };
+  render();
+  document.body.append(dialog);
+  dialog.addEventListener("click", (event) => {
+    if (event.target !== dialog) return;
+    const box = dialog.getBoundingClientRect();
+    if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dialog.close();
+  });
+  dialog.addEventListener("close", () => { window.removeEventListener("resize", place); dialog.remove(); ref.focus(); });
+  window.addEventListener("resize", place);
+  place();
+  dialog.showModal();
+  place();
+}
+
+// Retrieved Chunks marks the words a passage matched: they step up to ink over a soft underline. Terms come from the
+// search queries the API reports (metadata.search.lexical_queries); a term matches at a word start, to the word's end.
+const MATCH_STOPWORDS = new Set("của và các những được cho với không thì là có khi trong này một người the and for with what how are does from that this".split(" "));
+function matchTerms(search) {
+  const text = Object.values(search?.lexical_queries || {}).filter((value) => typeof value === "string").join(" ");
+  return [...new Set(text.toLocaleLowerCase().split(/[^\p{L}\p{N}]+/u).filter((word) => word.length >= 3 && !MATCH_STOPWORDS.has(word)))];
+}
+function underlineMatches(escaped, terms) {
+  if (!terms.length) return escaped;
+  const pattern = new RegExp(`(?<![\\p{L}\\p{N}&])(${terms.map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})[\\p{L}\\p{N}]*`, "giu");
+  return escaped.replace(pattern, (word) => `<mark class="chunk-match">${word}</mark>`);
+}
+
+// Every passage the answer model saw (metadata.retrieved), after the 21st.dev Retrieved Chunks list: rank, document,
+// page, used mark and relevance bar; a Rank / Score switch reorders the rows in place.
+function renderRetrievedChunks(rows) {
+  // The cited passages are already the source cards above; list only the other passages the model saw,
+  // keeping their overall rank so the order of retrieval stays visible.
+  if (!Array.isArray(rows) || !rows.some((row) => !row.used)) return "";
+  const items = rows.map((row, index) => row.used ? "" : (() => {
+    const score = Number(row.score);
+    const hasScore = row.score !== null && row.score !== undefined && Number.isFinite(score);
+    const page = row.page_number ? `trang ${escapeHtml(row.page_number)}` : Number.isInteger(row.chunk_index) ? `đoạn ${row.chunk_index}` : "";
+    return `<li class="retrieved-row${row.used ? " is-used" : ""}" data-rank="${index + 1}" data-score="${hasScore ? score : -1}">
+      <span class="retrieved-rank">${index + 1}</span>
+      <span class="retrieved-doc"><strong>${escapeHtml(row.document || "")}</strong>${page ? ` <span>${page}</span>` : ""}</span>
+      ${row.used ? `<span class="citation-used">✓ Đã dùng</span>` : ""}
+      ${hasScore ? `<span class="citation-score"><span class="citation-score-bar" aria-hidden="true"><span style="width:${Math.round(Math.max(0, Math.min(1, score)) * 100)}%"></span></span>${score.toFixed(2)}</span>` : ""}
+    </li>`;
+  })()).join("");
+  const unused = rows.filter((row) => !row.used).length;
+  return `<div class="retrieved-chunks">
+    <div class="retrieved-head"><h5>Đoạn khác đã tìm, không dùng (${unused})</h5>
+      ${unused > 1 ? `<div class="retrieved-sort" role="group" aria-label="Thứ tự"><button type="button" data-sort="rank" aria-pressed="true">Thứ hạng</button><button type="button" data-sort="score" aria-pressed="false">Điểm</button></div>` : ""}
+    </div>
+    <ol>${items}</ol>
+  </div>`;
+}
+
+function bindRetrievedChunks(root) {
+  root.querySelectorAll(".retrieved-sort button").forEach((button) => button.addEventListener("click", () => {
+    const box = button.closest(".retrieved-chunks");
+    const key = button.dataset.sort;
+    box.querySelectorAll(".retrieved-sort button").forEach((other) => other.setAttribute("aria-pressed", String(other === button)));
+    const list = box.querySelector("ol");
+    [...list.children].sort((a, b) => key === "score" ? b.dataset.score - a.dataset.score : a.dataset.rank - b.dataset.rank)
+      .forEach((row) => list.append(row));
+  }));
+}
+
 function renderAgentResult(result, panel = $("#answer-panel"), shouldScroll = true) {
+  if (result.agent === 'report' && ['sales_performance','inventory_operations'].includes(result.data?.report?.report_type)) {
+    const report = document.createElement('article');
+    report.className = 'sales-report-view';
+    SalesPerformanceReport.render(report, result.data.report, {monthly_decisions:result.data.monthly_decisions, insights:result.data.insights, inventory_context:result.data.inventory_context});
+    panel.replaceChildren(report);
+    panel.hidden = false;
+    if (shouldScroll) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
   const citations = (result.evidence || []).map((item) => {
     const metadata = item.metadata || {};
     return { ...metadata, id: item.citation_id, title: item.source, source_type: item.source_type,
@@ -2038,32 +2206,46 @@ function renderRunDetails(data) {
 // `revealAfter` (the source panel, then each card) appears one by one after the text is complete.
 // Skipped for reduced motion.
 function typeOutText(element, revealAfter = []) {
+  // Word reveal after 21st.dev AI Response (SmoothUI): each word blurs in as it "arrives"; a citation
+  // chip is one token and pops in. 2–6 s in total, punctuation and whitespace stay plain text.
   if (!element || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
   const nodes = [];
-  while (walker.nextNode()) nodes.push([walker.currentNode, walker.currentNode.nodeValue]);
-  const total = nodes.reduce((sum, [, text]) => sum + text.length, 0);
-  if (!total) return;
-  for (const [node] of nodes) node.nodeValue = "";
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  const tokens = [];
+  const chips = new Set();
+  for (const node of nodes) {
+    const chip = node.parentElement?.closest(".cite-ref");
+    if (chip) {
+      if (!chips.has(chip)) { chips.add(chip); chip.classList.add("ai-pending"); tokens.push([chip, "ai-pop"]); }
+      continue;
+    }
+    const fragment = document.createDocumentFragment();
+    for (const part of node.nodeValue.split(/(\s+)/)) {
+      if (!part) continue;
+      if (/^\s+$/.test(part) || !/[\p{L}\p{N}]/u.test(part)) { fragment.append(part); continue; }
+      const word = document.createElement("span");
+      word.className = "ai-word ai-pending";
+      word.textContent = part;
+      fragment.append(word);
+      tokens.push([word, "ai-in"]);
+    }
+    node.replaceWith(fragment);
+  }
+  if (!tokens.length) return;
   for (const item of revealAfter) item.hidden = true;
   element.setAttribute("aria-busy", "true");
-  const seconds = Math.min(10, Math.max(3, total / 60));
-  const perFrame = Math.max(1, Math.ceil(total / (seconds * 60)));
+  const perFrame = Math.max(1, Math.ceil(tokens.length / (Math.min(6, Math.max(2, tokens.length / 25)) * 60)));
   let index = 0;
-  let shown = 0;
   const step = () => {
-    let budget = perFrame;
-    while (budget > 0 && index < nodes.length) {
-      const [node, text] = nodes[index];
-      const take = Math.min(budget, text.length - shown);
-      node.nodeValue = text.slice(0, shown + take);
-      shown += take;
-      budget -= take;
-      if (shown >= text.length) { index += 1; shown = 0; }
+    for (const end = Math.min(tokens.length, index + perFrame); index < end; index += 1) {
+      const [token, name] = tokens[index];
+      token.classList.remove("ai-pending");
+      token.classList.add(name);
     }
-    if (index < nodes.length && element.isConnected) requestAnimationFrame(step);
+    if (index < tokens.length && element.isConnected) requestAnimationFrame(step);
     else {
-      for (const [node, text] of nodes) node.nodeValue = text;
+      for (const [token] of tokens) token.classList.remove("ai-pending");
       element.removeAttribute("aria-busy");
       revealAfter.forEach((item, position) => setTimeout(() => { item.hidden = false; requestAnimationFrame(() => pruneCitationToggles(item.closest(".answer-panel") || item)); }, 500 + position * 400));
     }
@@ -2140,7 +2322,9 @@ async function askAgentStream(body, signal, onStatus) {
 }
 
 function resetConversationState() {
+  window.businessOverview?.clear();
   window.dashboardWorkspace?.clear();
+  window.reportWorkspace?.clear();
   agentConversationId = crypto.randomUUID();
   reportConversationId = crypto.randomUUID();
   sessionTurns = [];
@@ -2152,8 +2336,8 @@ function resetConversationState() {
   $("#general-chat-transcript").hidden = true;
   $("#general-chat-welcome").hidden = false;
   $("#report-agent-question").value = "";
-  $("#report-agent-template").value = "";
-  updateReportFormatVisibility();
+  $("#sales-report-output").replaceChildren();
+  $("#sales-report-output").hidden = true;
   $("#report-agent-status").textContent = "";
   delete $("#report-agent-status").dataset.state;
   $("#question").value = "";
@@ -2180,8 +2364,10 @@ async function loadWorkspace(user) {
     clearInvoiceReviewCaches();
     sessionSubject = user.username;
     resetConversationState();
+    activeTab = "home";
   }
   currentUser = user;
+  const generation = sessionGeneration;
   $("#login-view").hidden = true;
   $("#login-brand-sidebar").hidden = true;
   $("#workspace").hidden = false;
@@ -2224,10 +2410,8 @@ async function loadWorkspace(user) {
   $("#account-initial").textContent = (user.username || "?").charAt(0).toUpperCase();
   $("#user-badge").hidden = false;
   $("#logout-button").hidden = false;
-  $(".intro").hidden = user.role === "document_processing_owner";
-  $(".agent-overview").hidden = ["document_processing_owner", "document_uploader"].includes(user.role);
-  $(".stats").hidden = user.role === "document_processing_owner";
   const canUseAnalytics = ["admin", "finance_analyst", "sustainability_analyst", "operations", "executive"].includes(user.role);
+  $("#reports-workspace").hidden = !canUseAnalytics;
   ["#analytics-agent-card", "#inventory-agent-card", "#report-agent-card", "#report-agent-form-section"].forEach((selector) => {
     $(selector).hidden = !canUseAnalytics;
   });
@@ -2240,9 +2424,11 @@ async function loadWorkspace(user) {
   if (user.role !== "document_processing_owner") {
     await loadCorpusStats();
   }
+  if (generation !== sessionGeneration || currentUser !== user) return;
   try {
     if (user.role === "admin") {
       const access = await api("/api/admin/access-matrix");
+      if (generation !== sessionGeneration || currentUser !== user) return;
       const permissions = [...new Set(access.roles.flatMap((role) => role.permissions))];
       const yes = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 12.5 4 4 8-9"/></svg>';
       $("#access-matrix").innerHTML = `<div class="access-table-wrap"><table class="access-table">
@@ -2260,10 +2446,10 @@ async function loadWorkspace(user) {
       await refreshKnowledgeDocuments();
       await loadOcrTestRuns();
     }
-    syncWorkspaceTabs(user);
+    if (generation !== sessionGeneration || currentUser !== user) return;
     $("#login-error").hidden = true;
   } catch (error) {
-    syncWorkspaceTabs(user);
+    if (generation !== sessionGeneration || currentUser !== user) return;
     if (error.message !== "Sign in to continue") {
       $("#connection-status").textContent = `Workspace loaded with an error: ${error.message}`;
     }
@@ -2452,7 +2638,7 @@ $("#ocr-test-form").addEventListener("submit", async (event) => {
   const button = $("#ocr-test-button");
   button.disabled = true;
   const intent = form.elements.namedItem("intent").value;
-  const parserLabel = intent === "document" ? "Docling" : intent === "invoice" ? "Docling OCR + configured invoice extraction" : "Vintern image caption";
+  const parserLabel = intent === "document" ? "Docling" : "Docling OCR + configured invoice extraction";
   $("#ocr-test-status").textContent = `Running ${parserLabel}…`;
   try {
     let result = await api("/api/upload-tests", {method:"POST", body:new FormData(form)});
@@ -2466,10 +2652,10 @@ $("#ocr-test-form").addEventListener("submit", async (event) => {
           const elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000);
           const runningLabel = intent === "invoice"
             ? "Docling OCR + configured invoice extraction"
-            : intent === "image_caption" ? "Vintern image caption" : "Docling";
+            : "Docling";
           $("#ocr-test-status").textContent = `${runningLabel} is still processing (${formatDuration(elapsedSeconds * 1000)})…`;
         } else if (result.status === "failed") {
-          throw new Error(result.error || "Vintern processing failed");
+          throw new Error(result.error || "Upload Test processing failed");
         }
       }
     }
@@ -2510,7 +2696,7 @@ $("#logout-button").addEventListener("click", async () => {
   $("#login-brand-sidebar").hidden = false;
   $("#user-badge").hidden = true;
   $("#logout-button").hidden = true;
-  activeTab = "general-chat";
+  activeTab = "home";
   syncWorkspaceTabs();
 });
 
@@ -2708,7 +2894,7 @@ function clearCitedSentence(turn) {
   turn.querySelectorAll(".citation.is-cited").forEach((card) => {
     card.classList.remove("is-cited");
     const passage = card.querySelector(":scope > p");
-    if (passage?.dataset.plain !== undefined) { passage.textContent = passage.dataset.plain; delete passage.dataset.plain; }
+    if (passage?.dataset.plain !== undefined) { passage.innerHTML = passage.dataset.html ?? escapeHtml(passage.dataset.plain); delete passage.dataset.plain; delete passage.dataset.html; }
   });
   turn.querySelectorAll(".cite-ref.is-pointed").forEach((ref) => ref.classList.remove("is-pointed"));
 }
@@ -2730,6 +2916,7 @@ function markCitedSentence(ref) {
   });
   if (!bestScore) return;
   passage.dataset.plain = plain;
+  passage.dataset.html = passage.innerHTML;
   passage.innerHTML = sentences.map((sentence, index) => index === best ? `<mark class="cited-sentence">${escapeHtml(sentence)}</mark>` : escapeHtml(sentence)).join("");
   card.classList.add("is-cited");
   ref.classList.add("is-pointed");
@@ -2762,7 +2949,18 @@ function renderChatTranscript(root, turns, shouldScroll) {
     else if (turn.state === "error") response.innerHTML = `<p class="error-message" role="alert">${escapeHtml(turn.error)}. Please check service configuration or connection.</p>`;
     else if (turn.result) {
       renderAgentResult(turn.result, response, false);
+      if (turn.clarificationResponded) {
+        response.querySelectorAll(".clarification-option").forEach((button) => { button.disabled = true; });
+      }
       attachFeedback(response, turn);
+      // Generation stats: only what this browser measured and what the answer itself carries.
+      if (turn.elapsedMs) {
+        const sources = (turn.result.citations?.length) || (turn.result.evidence?.length) || 0;
+        const stats = document.createElement("p");
+        stats.className = "gen-stats";
+        stats.textContent = [`Answered in ${(turn.elapsedMs / 1000).toFixed(1)} s`, sources ? `${sources} source${sources === 1 ? "" : "s"} cited` : ""].filter(Boolean).join(" · ");
+        response.append(stats);
+      }
       if (turn.typeOut) {
         turn.typeOut = false;
         typeOutText(response.querySelector(".answer-text"),
@@ -2806,12 +3004,12 @@ $("#new-general-chat").addEventListener("click", () => {
   $("#general-chat-question").focus();
 });
 
-async function sendChatMessage({ question, mode, button, input, state, render }) {
+async function sendChatMessage({ question, displayQuestion, requestMetadata, mode, button, input, state, render }) {
   const requestConversationId = state.getId();
   const requestGeneration = sessionGeneration;
   const requestSubject = sessionSubject;
   if (!question) return;
-  const turn = { id: crypto.randomUUID(), mode, question, state: "pending", startedAt: Date.now(), abort: new AbortController() };
+  const turn = { id: crypto.randomUUID(), mode, question: displayQuestion || question, state: "pending", startedAt: Date.now(), abort: new AbortController() };
   state.turns.push(turn);
   state.turns = state.turns.slice(-20);
   input.value = "";
@@ -2831,6 +3029,7 @@ async function sendChatMessage({ question, mode, button, input, state, render })
     const body = JSON.stringify({
       question, agent_mode: mode, retrieval_method: "translated_hybrid_rerank",
       conversation_id: requestConversationId,
+      ...(requestMetadata ? { metadata: requestMetadata } : {}),
     });
     const signal = turn.abort.signal;
     const showStage = (stage, state) => {
@@ -2854,6 +3053,7 @@ async function sendChatMessage({ question, mode, button, input, state, render })
     $(".status-dot").classList.add("connected");
     turn.result = data;
     turn.state = "complete";
+    turn.elapsedMs = Date.now() - turn.startedAt;
     turn.typeOut = true;
   } catch (error) {
     if (state.getId() !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
@@ -2915,6 +3115,28 @@ $("#general-chat-form").addEventListener("submit", (event) => {
   });
 });
 
+$("#general-chat-transcript").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-clarification-choice-index]");
+  if (!button || button.disabled) return;
+  const entry = button.closest("[data-turn-id]");
+  const clarificationTurn = generalTurns.find((turn) => turn.id === entry?.dataset.turnId);
+  const options = clarificationTurn?.result?.metadata?.clarification_options
+    || clarificationTurn?.result?.clarification_options;
+  const index = Number(button.dataset.clarificationChoiceIndex);
+  if (!clarificationTurn || !Array.isArray(options) || !Number.isInteger(index)
+      || index < 0 || index >= options.length || typeof options[index] !== "string") return;
+  const clarificationQuestion = clarificationTurn.result?.metadata?.clarification_question
+    || clarificationTurn.result?.clarification_question || clarificationTurn.question;
+  clarificationTurn.clarificationResponded = true;
+  sendChatMessage({
+    question: options[index], displayQuestion: options[index],
+    requestMetadata: { clarification_choice: { question: clarificationQuestion, index } },
+    mode: clarificationTurn.mode, button: $("#general-chat-send"), input: $("#general-chat-question"),
+    state: { getId: () => generalConversationId, get turns() { return generalTurns; }, set turns(value) { generalTurns = value; } },
+    render: renderGeneralChatTranscript,
+  });
+});
+
 function resizeGeneralChatComposer() {
   const input = $("#general-chat-question");
   input.style.height = "auto";
@@ -2937,146 +3159,9 @@ $("#general-chat-question").addEventListener("keydown", (event) => {
   }
 });
 
-function updateReportFormatVisibility() {
-  const hasTemplate = Boolean($("#report-agent-template").files[0]);
-  $("#report-agent-format-field").hidden = hasTemplate;
-}
-
-$("#report-agent-template").addEventListener("change", updateReportFormatVisibility);
-updateReportFormatVisibility();
-
-function confirmReportPlan(detail) {
-  return new Promise((resolve) => {
-    const dialog = document.createElement("dialog");
-    dialog.className = "report-plan-dialog";
-    dialog.setAttribute("aria-labelledby", "report-plan-title");
-    const title = document.createElement("h2");
-    title.id = "report-plan-title";
-    title.textContent = "Review report scope and structure";
-    dialog.append(title);
-    for (const reason of [...(detail.mismatch_reasons || []), ...(detail.unsupported_requirements || [])]) {
-      const paragraph = document.createElement("p");
-      paragraph.textContent = reason;
-      dialog.append(paragraph);
-    }
-    if (detail.suggested_structure?.length) {
-      const paragraph = document.createElement("p");
-      paragraph.textContent = "Suggested sections: " + detail.suggested_structure.map((section) => section.heading).join("; ");
-      dialog.append(paragraph);
-    }
-    const finish = (choice) => { dialog.close(); dialog.remove(); resolve(choice); };
-    const choices = detail.template_decision_required
-      ? [["Use suggested structure", "suggested"], ["Continue with uploaded template", "uploaded"]]
-      : [["Generate supported report", null]];
-    for (const [label, templateChoice] of choices) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.textContent = detail.scope_decision_required && templateChoice ? label + " (supported scope only)" : label;
-      button.addEventListener("click", () => finish({ templateChoice, acceptSupportedScope: Boolean(detail.scope_decision_required) }));
-      dialog.append(button);
-    }
-    const cancel = document.createElement("button");
-    cancel.type = "button";
-    cancel.textContent = "Cancel";
-    cancel.addEventListener("click", () => finish(null));
-    dialog.addEventListener("cancel", (event) => { event.preventDefault(); finish(null); });
-    dialog.append(cancel);
-    document.body.append(dialog);
-    dialog.showModal();
-  });
-}
-
-$("#report-agent-form").addEventListener("submit", async (event) => {
+$("#report-agent-form").addEventListener("submit", (event) => {
   event.preventDefault();
-  const requestConversationId = reportConversationId;
-  const requestGeneration = sessionGeneration;
-  const requestSubject = sessionSubject;
-  const button = $("#report-agent-submit");
-  const status = $("#report-agent-status");
-  const template = $("#report-agent-template").files[0];
-  const formData = new FormData();
-  formData.append("question", $("#report-agent-question").value.trim());
-  formData.append("source_mode", $("#report-agent-source-mode").value);
-  if (template) formData.append("template", template);
-  else formData.append("output_format", $("#report-agent-output-format").value);
-  formData.set('conversation_id', requestConversationId);
-  button.disabled = true;
-  delete status.dataset.state;
-  status.textContent = "Generating report from authorized sources...";
-  try {
-    let response;
-    for (let attempt = 0; attempt < 3; attempt++) {
-      response = await backendFetch("/api/agents/report", {
-        method: "POST", body: formData, credentials: "same-origin",
-        headers: { "ngrok-skip-browser-warning": "1" },
-      });
-      if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
-      if (response.status === 401) {
-        clearExpiredSession();
-        throw new Error("Sign in to continue");
-      }
-      if (response.status !== 409) break;
-      const payload = await response.json();
-      if (!payload.detail?.confirmation_required) throw new Error("Unexpected report confirmation response.");
-      const choice = await confirmReportPlan(payload.detail);
-      if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
-      if (!choice) { status.textContent = "Report generation cancelled."; return; }
-      if (choice.templateChoice) formData.set("template_choice", choice.templateChoice);
-      if (choice.acceptSupportedScope) formData.set("accept_supported_scope", "true");
-      if (attempt === 2) throw new Error("The report plan changed repeatedly. Refine the request and try again.");
-    }
-    if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
-    if (!response.ok) {
-      let detail = "Report request failed (HTTP " + response.status + ")";
-      try {
-        const payload = await response.json();
-        const reportError = typeof payload.detail === "object" ? payload.detail : null;
-        if (reportError?.status === "unsupported") {
-          status.dataset.state = "warning";
-          status.textContent = (reportError.limitations || []).join("; ");
-          return;
-        }
-        if (reportError?.status === "clarification_required") {
-          status.dataset.state = "warning";
-          status.textContent = `Clarification needed: ${reportError.clarification || reportError.detail || "Please refine the decision question."}`;
-          return;
-        }
-        const message = reportError?.detail || reportError?.message || payload.detail;
-        if (message) detail = typeof message === "string" ? message : JSON.stringify(message);
-        if (reportError?.limitations?.length) detail += ` Limitations: ${reportError.limitations.join("; ")}`;
-      } catch {}
-      throw new Error(detail);
-    }
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    const disposition = response.headers.get("Content-Disposition") || "";
-    const filename = disposition.match(/filename="?([^";]+)"?/i)?.[1];
-    const extension = $("#report-agent-output-format").value === "docx" ? ".docx" : ".md";
-    link.download = filename || `report${extension}`;
-    link.click();
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-    const reportStatus = response.headers.get("X-Report-Status");
-    status.dataset.state = reportStatus === "partial" ? "warning" : "success";
-    status.textContent = reportStatus === "partial"
-      ? "Partial report downloaded. Review its limitations before using it."
-      : "Report generated and downloaded.";
-    try {
-      const summary = JSON.parse(response.headers.get("X-Report-Summary") || "null");
-      if (summary) {
-        status.textContent += ` Sections: ${summary.complete} complete, ${summary.unavailable} unavailable, ${summary.failed} failed. `
-          + `${summary.omitted_from_narrative} evidence items omitted from narrative; review detail tables and coverage.`;
-        if (summary.reasons?.length) status.textContent += " Reasons: " + summary.reasons.join("; ") + ".";
-      }
-    } catch {}
-  } catch (error) {
-    if (reportConversationId !== requestConversationId || sessionGeneration !== requestGeneration || sessionSubject !== requestSubject) return;
-    status.dataset.state = "error";
-    status.textContent = error.message;
-  } finally {
-    button.disabled = false;
-  }
+  void window.reportWorkspace.generate($("#report-agent-question").value.trim());
 });
 $("#monitoring-refresh").addEventListener("click", refreshAgentMonitoring);
 
@@ -3089,7 +3174,7 @@ function updateUploadRoleSelection() {
 }
 
 const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
-const SUPPORTED_UPLOAD_EXTENSIONS = new Set([".pdf", ".docx", ".pptx", ".xlsx", ".csv", ".txt", ".md", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]);
+const SUPPORTED_UPLOAD_EXTENSIONS = new Set(DOCUMENT_UPLOAD_EXTENSIONS);
 const INVOICE_UPLOAD_EXTENSIONS = new Set([".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]);
 
 function validateUploadFile(file, invoiceMode = false) {
@@ -3098,7 +3183,7 @@ function validateUploadFile(file, invoiceMode = false) {
   const supported = invoiceMode ? INVOICE_UPLOAD_EXTENSIONS : SUPPORTED_UPLOAD_EXTENSIONS;
   if (!supported.has(extension)) return invoiceMode
     ? "Invoice extraction supports PDF, PNG, JPG and TIF files."
-    : "This file type is not supported. Choose PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG or TIF.";
+    : "Choose a supported PDF, Office document, spreadsheet, text file or image.";
   if (file.size > MAX_UPLOAD_BYTES) return "The file is larger than the 50 MiB upload limit.";
   return "";
 }
@@ -3112,7 +3197,7 @@ function updateUploadKind() {
   $("#upload-file-label").textContent = invoiceMode ? "Invoice file" : "Document file";
   $("#upload-file").accept = invoiceMode
     ? ".pdf,.png,.jpg,.jpeg,.tif,.tiff"
-    : ".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff";
+    : DOCUMENT_UPLOAD_EXTENSIONS.join(",");
   $("#upload-kind-help").textContent = invoiceMode
     ? "Upload an invoice for extraction and review in the invoice table."
     : "Knowledge documents are indexed for document Q&A.";
@@ -3314,6 +3399,27 @@ $("#upload-form").addEventListener("submit", async (event) => {
   }
 });
 
+// Saved dashboards are sandboxed documents that cannot see the page theme, so the theme is stamped into their markup.
+window.themedDoc = html => html.replace("<html ", `<html data-embed="1"${document.documentElement.getAttribute("data-theme") === "dark" ? ' data-theme="dark"' : ""} `);
+function restyleDashboardFrames() {
+  for (const id of ["home-overview-preview", "dw-preview"]) {
+    const frame = document.getElementById(id);
+    if (frame && frame._raw && frame.getAttribute("srcdoc") !== null) frame.srcdoc = window.themedDoc(frame._raw);
+  }
+}
+
+function themeGlass(apply) {
+  const glass = document.createElement("div");
+  glass.className = "theme-glass";
+  glass.setAttribute("aria-hidden", "true");
+  document.body.append(glass);
+  glass.getBoundingClientRect(); // commit the clear state so the frost fades in
+  glass.classList.add("in");
+  // Timers, not animation events, drive the steps so the theme always changes and the pane is always removed.
+  setTimeout(() => { apply(); glass.classList.replace("in", "out"); }, 300);
+  setTimeout(() => glass.remove(), 900);
+}
+
 function setupThemeToggle() {
   const button = $("#theme-toggle");
   if (!button) return;
@@ -3326,11 +3432,11 @@ function setupThemeToggle() {
       } else {
         document.documentElement.removeAttribute("data-theme");
       }
+      restyleDashboardFrames();
     };
-    // Paint/eraser transition (redesign.css); plain swap without View Transitions or with reduced motion.
-    if (document.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      document.startViewTransition(apply);
-    } else apply();
+    // A pane of frosted glass fades in, the theme swaps behind it, and the glass clears (liquid-glass style).
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches && document.body.animate) themeGlass(apply);
+    else apply();
     try {
       localStorage.setItem("app_theme", nextTheme);
     } catch {}
@@ -3414,3 +3520,207 @@ $("#sidebar-toggle").addEventListener("click", () => {
   setSidebarCollapsed(collapsed);
   try { localStorage.setItem("sidebar_collapsed", String(collapsed)); } catch {}
 });
+
+// Text Reveal (21st.dev): the sign-in and welcome headings rise word by word once. Plain text stays readable for
+// screen readers through aria-label; skipped for reduced motion.
+(() => {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  document.querySelectorAll(".login-card h1, #general-chat-welcome h3").forEach((heading) => {
+    const text = heading.textContent.trim();
+    if (!text || heading.children.length) return;
+    heading.setAttribute("aria-label", text);
+    heading.textContent = "";
+    text.split(/\s+/).forEach((word, index, words) => {
+      const span = document.createElement("span");
+      span.className = "reveal-word";
+      span.setAttribute("aria-hidden", "true");
+      span.style.animationDelay = `${index * 60}ms`;
+      span.textContent = word;
+      heading.append(span, index < words.length - 1 ? " " : "");
+    });
+  });
+})();
+
+// AI Prompt Composer (21st.dev, hellocloud.webdev): the "Route to" select becomes a 38 px pill whose menu lists the
+// other routes first and the current one last with a check, like the composer's mode menu; the native select stays
+// as the form value. The send button turns dark once there is text to send.
+(() => {
+  const select = document.getElementById("general-chat-mode");
+  const input = document.getElementById("general-chat-question");
+  const send = document.getElementById("general-chat-send");
+  if (!select || !input || !send) return;
+  const label = select.closest("label");
+  const wrap = document.createElement("div");
+  wrap.className = "route-pill-wrap";
+  wrap.innerHTML = `<button type="button" class="route-pill" aria-haspopup="menu" aria-expanded="false"><span class="route-pill-text"></span><svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="route-menu" role="menu" hidden></div>`;
+  label.after(wrap);
+  label.classList.add("visually-hidden");
+  const pill = wrap.querySelector(".route-pill");
+  const menu = wrap.querySelector(".route-menu");
+  const text = () => select.options[select.selectedIndex]?.textContent || "";
+  const sync = () => { wrap.querySelector(".route-pill-text").textContent = text(); pill.setAttribute("aria-label", `Route to: ${text()}`); };
+  const close = () => { menu.hidden = true; pill.setAttribute("aria-expanded", "false"); pill.classList.remove("is-open"); };
+  const open = () => {
+    const options = [...select.options];
+    const ordered = [...options.filter((option) => !option.selected), ...options.filter((option) => option.selected)];
+    menu.innerHTML = ordered.map((option) => `<button type="button" role="menuitemradio" aria-checked="${option.selected}" data-value="${escapeHtml(option.value)}"><span>${escapeHtml(option.textContent)}</span>${option.selected ? '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.2 8.5L6.5 11.8L13 4.5" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ""}</button>`).join("");
+    menu.hidden = false;
+    pill.setAttribute("aria-expanded", "true");
+    pill.classList.add("is-open");
+    menu.querySelector('[aria-checked="true"]')?.focus();
+  };
+  pill.addEventListener("click", (event) => { event.stopPropagation(); menu.hidden ? open() : close(); });
+  menu.addEventListener("click", (event) => {
+    const item = event.target.closest("[data-value]");
+    if (!item) return;
+    event.stopPropagation();
+    select.value = item.dataset.value;
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+    sync();
+    close();
+    pill.focus();
+  });
+  menu.addEventListener("keydown", (event) => {
+    const items = [...menu.querySelectorAll("[data-value]")];
+    const at = items.indexOf(document.activeElement);
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); items[(at + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length]?.focus(); }
+    if (event.key === "Escape") { event.preventDefault(); close(); pill.focus(); }
+  });
+  document.addEventListener("click", (event) => { if (!wrap.contains(event.target)) close(); });
+  select.addEventListener("change", sync);
+  const ready = () => send.classList.toggle("is-ready", input.value.trim().length > 0);
+  input.addEventListener("input", ready);
+  new MutationObserver(ready).observe(send, { attributes: true, attributeFilter: ["disabled"] });
+  document.getElementById("general-chat-form")?.addEventListener("submit", () => setTimeout(ready));
+  sync();
+  ready();
+})();
+
+// Prompt Input with Actions: Examples menu (the starter questions), Clear, a length counter that shows near the limit,
+// "/" to focus the box, and Esc to leave it. Nothing here sends anything by itself.
+(() => {
+  const form = document.getElementById("general-chat-form");
+  const input = document.getElementById("general-chat-question");
+  const pillWrap = form?.querySelector(".route-pill-wrap");
+  if (!form || !input || !pillWrap) return;
+  const icon = (d) => `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const bar = document.createElement("div");
+  bar.className = "composer-actions";
+  bar.innerHTML = `<div class="examples-wrap"><button type="button" class="composer-action" aria-haspopup="menu" aria-expanded="false">${icon('<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/>')}<span>Examples</span></button><div class="examples-menu" role="menu" hidden></div></div>
+    <button type="button" class="composer-action composer-clear" aria-label="Clear message" hidden>${icon('<path d="M18 6 6 18M6 6l12 12"/>')}<span>Clear</span></button>
+    <span class="composer-count" aria-live="off" hidden></span>`;
+  pillWrap.before(bar);
+  const trigger = bar.querySelector(".examples-wrap > button");
+  const menu = bar.querySelector(".examples-menu");
+  const clear = bar.querySelector(".composer-clear");
+  const count = bar.querySelector(".composer-count");
+  const closeMenu = () => { menu.hidden = true; trigger.setAttribute("aria-expanded", "false"); };
+  const update = () => {
+    const length = input.value.length, limit = Number(input.maxLength) || 2000;
+    clear.hidden = length === 0;
+    count.hidden = length < limit * 0.8;
+    count.textContent = `${length}/${limit}`;
+  };
+  trigger.addEventListener("click", (event) => {
+    event.stopPropagation();
+    if (!menu.hidden) return closeMenu();
+    const seen = new Set();
+    const items = [...document.querySelectorAll(".quick-chip[data-prompt]")].filter((chip) => !seen.has(chip.dataset.prompt) && seen.add(chip.dataset.prompt));
+    menu.innerHTML = items.length ? items.map((chip) => `<button type="button" role="menuitem" data-prompt="${escapeHtml(chip.dataset.prompt)}">${escapeHtml(chip.textContent.trim())}</button>`).join("") : '<p class="examples-empty">No examples available</p>';
+    menu.hidden = false;
+    trigger.setAttribute("aria-expanded", "true");
+    menu.querySelector("button")?.focus();
+  });
+  menu.addEventListener("click", (event) => {
+    const item = event.target.closest("[data-prompt]");
+    if (!item) return;
+    input.value = item.dataset.prompt;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    closeMenu();
+    input.focus();
+  });
+  menu.addEventListener("keydown", (event) => {
+    const items = [...menu.querySelectorAll("button")];
+    const at = items.indexOf(document.activeElement);
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); items[(at + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length]?.focus(); }
+    if (event.key === "Escape") { event.preventDefault(); closeMenu(); trigger.focus(); }
+  });
+  document.addEventListener("click", (event) => { if (!bar.contains(event.target)) closeMenu(); });
+  clear.addEventListener("click", () => { input.value = ""; input.dispatchEvent(new Event("input", { bubbles: true })); input.focus(); });
+  input.addEventListener("input", update);
+  form.addEventListener("submit", () => setTimeout(update));
+  document.addEventListener("keydown", (event) => {
+    const editing = event.target.closest?.("input, textarea, select, [contenteditable]");
+    if (event.key === "/" && !editing && !event.metaKey && !event.ctrlKey && form.offsetParent !== null) { event.preventDefault(); input.focus(); }
+    else if (event.key === "Escape" && event.target === input) input.blur();
+  });
+  update();
+})();
+
+// Toasts: short confirmations that fade away. They mirror the pages' own status lines (which stay as the live region),
+// so success messages and errors from Dashboard and Reports are seen even when the line has scrolled out of view.
+window.toast = (message, kind = "ok") => {
+  if (!message) return;
+  let stack = document.getElementById("toast-stack");
+  if (!stack) {
+    stack = document.createElement("div");
+    stack.id = "toast-stack";
+    stack.setAttribute("aria-hidden", "true");
+    document.body.append(stack);
+  }
+  const item = document.createElement("div");
+  item.className = `toast toast-${kind}`;
+  item.textContent = message;
+  stack.append(item);
+  while (stack.children.length > 3) stack.firstChild.remove();
+  setTimeout(() => item.classList.add("is-leaving"), 3200);
+  setTimeout(() => item.remove(), 3700);
+};
+(() => {
+  const done = /\b(saved|generated|downloaded|refreshed|deleted|created|copied|opened)\b|đã (lưu|tạo|tải|xóa|xoá|mở)/i;
+  const working = /^(saving|generating|preparing|opening|deleting|loading|refreshing|đang)/i;
+  for (const id of ["dw-status", "report-workspace-status"]) {
+    const line = document.getElementById(id);
+    if (!line) continue;
+    let last = "";
+    new MutationObserver(() => {
+      const message = line.textContent.trim();
+      if (!message || message === last) return;
+      last = message;
+      if (line.dataset.error === "true") window.toast(message, "error");
+      else if (done.test(message) && !working.test(message)) window.toast(message);
+    }).observe(line, { childList: true, characterData: true, subtree: true });
+  }
+})();
+
+// Auto-hide sidebar: the sidebar leaves the layout (the page uses the full width) and slides over the page while the
+// pointer is on the left edge or inside it, or while focus is inside it. The choice is kept in this browser only.
+(() => {
+  const root = document.getElementById("workspace"), side = document.getElementById("workspace-sidebar");
+  const edge = document.getElementById("sidebar-edge"), button = document.getElementById("sidebar-autohide");
+  if (!root || !side || !edge || !button) return;
+  const label = button.querySelector(".autohide-label");
+  const hidden = () => root.classList.contains("sidebar-autohide");
+  let timer = 0;
+  const peek = (on) => {
+    clearTimeout(timer);
+    if (on) root.classList.add("is-peek");
+    else timer = setTimeout(() => root.classList.remove("is-peek"), 260);
+  };
+  const set = (on, save) => {
+    root.classList.toggle("sidebar-autohide", on);
+    root.classList.toggle("is-peek", on && save); // switched on from inside the sidebar: stay open until the pointer leaves
+    button.setAttribute("aria-pressed", String(on));
+    label.textContent = on ? "Keep sidebar open" : "Auto-hide sidebar";
+    button.title = on ? "Show the sidebar all the time" : "Hide the sidebar until the pointer touches the left edge";
+    if (save) try { localStorage.setItem("sidebar_autohide", String(on)); } catch {}
+  };
+  edge.addEventListener("pointerenter", () => peek(true));
+  edge.addEventListener("pointerleave", () => peek(false));
+  side.addEventListener("pointerenter", () => { if (hidden()) peek(true); });
+  side.addEventListener("pointerleave", () => { if (hidden()) peek(false); });
+  side.addEventListener("focusin", () => { if (hidden()) peek(true); });
+  side.addEventListener("focusout", (event) => { if (hidden() && !side.contains(event.relatedTarget)) peek(false); });
+  button.addEventListener("click", () => set(!hidden(), true));
+  try { set(localStorage.getItem("sidebar_autohide") === "true", false); } catch {}
+})();

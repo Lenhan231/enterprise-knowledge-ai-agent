@@ -20,8 +20,8 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from app.main import app  # noqa: E402
-from core.agents.intent_classifier import IntentClassifier as IntentClassifierImpl  # noqa: E402
-from core.rag.rag_service import _RESPONSE_CACHE, _RESPONSE_CACHE_LOCK  # noqa: E402
+from core.agents.decision_support.intent_classifier import IntentClassifier as IntentClassifierImpl  # noqa: E402
+from core.agents.knowledge.rag_service import _RESPONSE_CACHE, _RESPONSE_CACHE_LOCK  # noqa: E402
 
 CASES = ROOT / "data/evaluation/vinamilk_qa_cases.json"
 OUTPUT = ROOT / "artifacts/evaluation/vinamilk-response-cache-api-smoke.json"
@@ -67,9 +67,9 @@ def main() -> int:
 
     results = []
     patchers = [
-        patch("core.rag.rag_service.GroqProvider", CitationStub),
-        patch("core.agents.sql_analytics_agent.GroqProvider", CitationStub),
-        patch("core.agents.report_agent.GroqProvider", CitationStub),
+        patch("core.agents.knowledge.rag_service.GroqProvider", CitationStub),
+        patch("core.agents.sql.agent.GroqProvider", CitationStub),
+        patch("core.agents.report.agent.GroqProvider", CitationStub),
         patch("app.main.IntentClassifier", FallbackClassifier),
         patch("app.main.AgentRunRepository", return_value=Mock()),
     ]

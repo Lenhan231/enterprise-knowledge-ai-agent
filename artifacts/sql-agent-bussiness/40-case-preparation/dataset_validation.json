@@ -1,0 +1,26 @@
+{
+  "errors": [],
+  "warnings": [
+    "live information_schema exposed no PK/FK metadata; drafts rely on approved migration contract and duplicate/orphan checks",
+    "Structural checks cannot establish semantic independence or human approval."
+  ],
+  "case_count": 40,
+  "category_counts": {
+    "aggregation_time": 5,
+    "filters_business_constraints": 5,
+    "grouping_ranking": 5,
+    "joins_cross_domain": 5,
+    "inventory_null_semantics": 5,
+    "sql_followup_context": 5,
+    "genuine_clarification": 5,
+    "unsupported_data_scope": 4,
+    "security_scope": 1
+  },
+  "expected_behavior_counts": {
+    "execute": 30,
+    "clarify": 5,
+    "abstain_without_query": 5
+  },
+  "case_set_sha256": "5afe8efb3f3ac38b132159a02045d89710023906d14b2490e89038a9a2ed9415",
+  "status": "PASS_STRUCTURAL_DRAFT"
+}

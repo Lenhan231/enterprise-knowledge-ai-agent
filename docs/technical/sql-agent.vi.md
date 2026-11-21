@@ -64,7 +64,7 @@ Không phải mọi kiểu kết hợp đều được hỗ trợ. Hóa đơn ch
 
 ## 3. Các bảng được phép
 
-Danh sách chính thức trong code là `APPROVED_COLUMNS` tại [text_to_sql.py](../../src/core/analytics/text_to_sql.py). Mỗi bảng chỉ được dùng những cột nằm trong danh sách này.
+Danh sách chính thức trong code là `APPROVED_COLUMNS` tại [text_to_sql.py](../../src/core/agents/sql/text_to_sql.py). Mỗi bảng chỉ được dùng những cột nằm trong danh sách này.
 
 | Bảng | Dữ liệu chính |
 | --- | --- |
@@ -186,18 +186,18 @@ Sau khi SQL thành công, `AnalyticsAgent` gửi dữ liệu, định nghĩa ch�
 
 | File | Trách nhiệm |
 | --- | --- |
-| [sql_analytics_agent.py](../../src/core/agents/sql_analytics_agent.py) | Luồng xử lý SQL và trạng thái kết quả |
-| [analytics_agent.py](../../src/core/agents/analytics_agent.py) | Viết câu trả lời từ dữ liệu SQL |
-| [text_to_sql.py](../../src/core/analytics/text_to_sql.py) | Schema, JOIN, tạo prompt và kiểm tra SQL |
-| [metric_mapping.py](../../src/core/analytics/metric_mapping.py) | Mô tả ý định tồn kho, hỏi tiếp và đối chiếu SQL với mô tả |
-| [metric_ontology.py](../../src/core/analytics/metric_ontology.py) | Nhận diện và nạp định nghĩa chỉ số |
-| [metric_validation.py](../../src/core/analytics/metric_validation.py) | Kiểm tra công thức và phạm vi nghiệp vụ |
-| [join_validation.py](../../src/core/analytics/join_validation.py) | Kiểm tra JOIN làm sai mức chi tiết/tổng hợp |
+| [sql_analytics_agent.py](../../src/core/agents/sql/agent.py) | Luồng xử lý SQL và trạng thái kết quả |
+| [analytics_agent.py](../../src/core/agents/sql/analytics_agent.py) | Viết câu trả lời từ dữ liệu SQL |
+| [text_to_sql.py](../../src/core/agents/sql/text_to_sql.py) | Schema, JOIN, tạo prompt và kiểm tra SQL |
+| [metric_mapping.py](../../src/core/agents/sql/metric_mapping.py) | Mô tả ý định tồn kho, hỏi tiếp và đối chiếu SQL với mô tả |
+| [metric_ontology.py](../../src/core/agents/sql/metric_ontology.py) | Nhận diện và nạp định nghĩa chỉ số |
+| [metric_validation.py](../../src/core/agents/sql/metric_validation.py) | Kiểm tra công thức và phạm vi nghiệp vụ |
+| [join_validation.py](../../src/core/agents/sql/join_validation.py) | Kiểm tra JOIN làm sai mức chi tiết/tổng hợp |
 | [commerce_repository.py](../../src/core/database/commerce_repository.py) | Kết nối và truy vấn chỉ đọc |
 | [sql.py](../../src/core/prompts/sql.py) | Prompt sinh và sửa SQL |
-| [router.py](../../src/core/agents/router.py) | Định tuyến và trạng thái hội thoại SQL |
+| [router.py](../../src/core/agents/decision_support/router.py) | Định tuyến và trạng thái hội thoại SQL |
 
-Các test có trên `main` nên đọc: [test_sql_analytics.py](../../tests/test_sql_analytics.py), [test_sql_generation.py](../../tests/test_sql_generation.py), [test_sql_metric_definitions.py](../../tests/test_sql_metric_definitions.py), [test_sql_join_duplication.py](../../tests/test_sql_join_duplication.py) và [test_sql_followups.py](../../tests/test_sql_followups.py).
+Các test có trên `main` nên đọc: [test_sql_analytics.py](../../tests/sql/test_sql_analytics.py), [test_sql_generation.py](../../tests/sql/test_sql_generation.py), [test_sql_metric_definitions.py](../../tests/sql/test_sql_metric_definitions.py), [test_sql_join_duplication.py](../../tests/sql/test_sql_join_duplication.py) và [test_sql_followups.py](../../tests/sql/test_sql_followups.py).
 
 Khi debug, bắt đầu từ `ok`, `query_status`, `metadata.error_type` và `metadata.metric_error_code`; tiếp theo xem SQL và tham số, đối chiếu `metadata.metrics`, rồi kiểm tra `limitations`. Khi thêm bảng/cột hoặc chỉ số, cần cập nhật đồng bộ danh sách cho phép, quan hệ JOIN nếu có, định nghĩa chỉ số, quyền database và test liên quan.
 

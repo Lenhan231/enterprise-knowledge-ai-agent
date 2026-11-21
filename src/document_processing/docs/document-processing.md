@@ -7,22 +7,21 @@ does not create parser chunks, embeddings, or production database records.
 ## Inputs and routes
 
 The authoritative extension list is `SUPPORTED_FORMATS` in
-[`document_processor.py`](../document_processor.py): PDF, DOCX, PPTX, XLSX,
-CSV, TXT, Markdown, PNG/JPEG, TIFF, SVG, and WebP. A caller can support fewer
-formats than the parser package.
+[`formats.py`](../formats.py). The document intent accepts PDF, DOC/DOCX,
+PPT/PPTX, XLS/XLSX, CSV, TXT, Markdown, PNG, JPEG, TIFF, BMP, GIF, WebP, SVG,
+HEIC/HEIF, and AVIF. Animated GIF and WebP frames produce separate pages.
+Legacy Office support covers binary Office files stored in a Compound File
+container. Invoice extraction accepts PDF and supported image formats.
 
 | Intent | Route | Main output |
 | --- | --- | --- |
 | `document` (default) | [`DoclingProcessor`](../docling_adapter/processor.py) | `elements`, `tables`, parser metadata, and optional page/layout data |
-| `invoice` | [`DoclingProcessor`](../docling_adapter/processor.py) → [`InvoiceTextProcessor`](../invoice_text_processor.py) | Docling `elements`/`tables` plus validated `invoice_extraction.fields` |
-| `image_caption` | [`VinternProcessor`](../vintern_processor.py) | `image_caption_extraction.pages` and caption text elements; no structured tables |
+| `invoice` | [`DoclingProcessor`](../docling_adapter/processor.py) → [configured invoice extractor](invoice-pipeline.md) | Docling `elements`/`tables` plus validated `invoice_extraction.fields` |
 
-Invoice extraction is explicit; there is no automatic invoice classifier. It
-runs Docling OCR and table extraction first, then a text-only Qwen model over
-the resulting elements and cells. Production uploads save the source and
+The invoice intent runs Docling OCR and table extraction first. The configured
+provider reads the resulting text and cells. Production uploads save the source and
 review-required draft in `invoice_extractions`, separately from `documents`,
 parser chunks, and embeddings. See the [invoice guide](invoice-pipeline.md).
-Image captioning uses Vintern; see the [Vintern guide](vintern-pipeline.md).
 The default document route is described in the [Docling guide](docling-pipeline.md).
 
 ## Parser output boundary

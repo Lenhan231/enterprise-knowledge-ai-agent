@@ -7,9 +7,10 @@
   <title>Enterprise Knowledge AI Agent</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles.css?v=redesign-20261115a">
-  <link rel="stylesheet" href="/static/redesign.css?v=knowledge-gaps-20261116b">
+  <link rel="stylesheet" href="/static/redesign.css?v=reports-wide-20261120">
+  <link rel="stylesheet" href="/static/neutral.css?v=neutral-20261219">
   <script>
     (function() {
       const saved = localStorage.getItem("app_theme");
@@ -29,7 +30,8 @@
   </aside>
 
   <main id="login-view" class="login-view">
-    <form id="login-form" class="login-card">
+    <canvas id="sonar-grid" class="sonar-grid" aria-hidden="true"></canvas>
+        <form id="login-form" class="login-card">
 
       <h1>Sign in to your knowledge workspace</h1>
       <label for="username">Username</label>
@@ -39,20 +41,22 @@
       <p id="login-error" class="error-message" hidden></p>
       <button type="submit" class="primary-button">Sign in to workspace</button>
       <small>Use the account your administrator gave you. Each role sees only the documents it may read.</small>
+      <a class="login-landing-link" href="/static/landing.html">See how answers are checked ›</a>
     </form>
   </main>
 
   <div id="workspace" class="app-shell" hidden>
+    <div id="sidebar-edge" class="sidebar-edge" aria-hidden="true"></div>
     <aside id="workspace-sidebar" class="workspace-sidebar" aria-label="Workspace sidebar">
       <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-controls="workspace-sidebar" aria-expanded="true" aria-label="Collapse sidebar" title="Collapse sidebar"><span aria-hidden="true">‹</span></button>
-      <a class="brand sidebar-brand" href="/" aria-label="Enterprise Knowledge home">
+      <a id="workspace-home-link" class="brand sidebar-brand" href="/" aria-label="Enterprise Knowledge home">
         <span class="brand-mark"><svg class="brand-figure" viewBox="0 0 64 64" aria-hidden="true"><path class="bf-hair-back" d="M15.5 28C15 15 22.5 8 32 8s17 7 16.5 20L50 64H14z"/><path class="bf-robe" d="M5 64c0-12 10-19.5 27-19.5S59 52 59 64z"/><path class="bf-lining" d="M19 46.5 32 64l13-17.5-4-1.4L32 58l-9-12.9z"/><path class="bf-sweater" d="M23 45.3 32 59l9-13.7c-2.7-.6-5.7-.9-9-.9s-6.3.3-9 .9z"/><path class="bf-sweater-trim" d="M24.2 45.6 32 57l7.8-11.4"/><path class="bf-shirt" d="M27 44.6 32 52l5-7.4c-1.6-.3-3.3-.4-5-.4s-3.4.1-5 .4z"/><path class="bf-tie" d="M30.8 47.6h2.4l1.2 7.4-2.4 2.6-2.4-2.6z"/><path class="bf-tie-stripe" d="m30.6 50.6 2.9-1.4m-3.3 4.2 3.8-1.8m-3.5 4.4 3.5-1.7"/><path class="bf-skin" d="M28 35h8v10c-1.2.9-2.6 1.4-4 1.4s-2.8-.5-4-1.4z"/><ellipse class="bf-skin" cx="32" cy="26" rx="8.4" ry="10"/><ellipse class="bf-skin" cx="41" cy="27.2" rx="1.6" ry="2.6"/><circle class="bf-earring" cx="41.9" cy="31.6" r="2"/><path class="bf-hair" d="M23.4 25.5C22.6 15.5 27 10 33 10c5.8 0 9.6 4.4 9.2 12.2-1.8-3.4-4.2-5.6-7.4-6.4-3.8.6-8 3.9-11.4 9.7z"/><path class="bf-hair" d="M23.6 21c-2.4 7-2 15-3.4 24-.8 6-1.6 12-2.2 19h6.2c.4-7 .6-13 .9-19 .4-8 .8-15 .4-21.5z"/><path class="bf-hair" d="M42.4 30.5c1.1 6 .9 12 1.9 18.8.6 5 1.4 9.8 2 14.7h-4.5c-.5-5-.8-9.8-1.1-14.8-.4-6.6-.1-12.6 1.7-18.7z"/><path class="bf-hair-strand" d="M35 15.4c-3 1.4-6 4.4-8.4 8.6M22.4 28c-.8 6-.8 12-2.2 19.5-.6 3.5-1 8-1.4 12.5M42.9 36c.4 5 .5 9.6 1.3 14.5"/><path class="bf-hair-shine" d="M29.2 11.6c2.5-.8 5.3-.6 7.6.7"/></svg></span>
         <span><strong>Enterprise Knowledge AI</strong><small>Commerce operations workspace</small></span>
       </a>
       <nav id="workspace-tabs" class="workspace-tabs" role="tablist" aria-label="Workspace navigation">
         <button id="tab-button-dashboard" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-dashboard" data-tab-target="dashboard" hidden aria-label="Dashboard" title="Dashboard"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 3h8v8H3zM14 3h7v5h-7zM14 11h7v10h-7zM3 14h8v7H3z"/></svg><span class="nav-label">Dashboard</span></button>
         <button id="tab-button-general-chat" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-general-chat" data-tab-target="general-chat" aria-label="General Chat" title="General Chat"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg><span class="nav-label">General Chat</span></button>
-        <button id="tab-button-knowledge" class="workspace-tab active" type="button" role="tab" aria-selected="true" aria-controls="tab-knowledge" data-tab-target="knowledge" aria-label="Reports" title="Reports"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6V3Zm8 0v4h4M9.5 17v-3m3 3v-6m3 6v-4"/></svg><span class="nav-label">Reports</span></button>
+        <button id="tab-button-knowledge" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-knowledge" data-tab-target="knowledge" aria-label="Reports" title="Reports"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6V3Zm8 0v4h4M9.5 17v-3m3 3v-6m3 6v-4"/></svg><span class="nav-label">Reports</span></button>
         <button id="tab-button-upload" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-upload" data-tab-target="upload" hidden aria-label="Upload Documents" title="Upload Documents"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5M4 16v5h16v-5"/></svg><span class="nav-label">Upload Documents</span></button>
         <button id="tab-button-invoice-review" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-invoice-review" data-tab-target="invoice-review" hidden aria-label="Invoice Review" title="Invoice Review"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Zm3 5h6m-6 4h6"/></svg><span class="nav-label">Invoice Review</span></button>
         <button id="tab-button-processing" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-processing" data-tab-target="processing" hidden aria-label="Document Processing" title="Document Processing"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4V4Zm4 4h8m-8 4h8m-8 4h4"/></svg><span class="nav-label">Document Processing</span></button>
@@ -62,6 +66,10 @@
         <button id="tab-button-monitoring" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-monitoring" data-tab-target="monitoring" hidden aria-label="Agent Monitoring" title="Agent Monitoring"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="nav-label">Agent Monitoring</span></button>
       </nav>
       <div class="topbar-status sidebar-account">
+        <button id="sidebar-autohide" class="side-row" type="button" aria-pressed="false" title="Hide the sidebar until the pointer touches the left edge">
+          <span class="side-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/><path d="m15 10-2 2 2 2"/></svg></span>
+          <span class="nav-label autohide-label">Auto-hide sidebar</span>
+        </button>
         <button id="theme-toggle" class="theme-toggle side-row" type="button" aria-label="Toggle light and dark mode" title="Toggle theme">
           <span class="side-icon"><span class="theme-icon light-icon" aria-hidden="true"></span><span class="theme-icon dark-icon" aria-hidden="true"></span></span>
           <span class="nav-label"><span class="theme-label-light">Light mode</span><span class="theme-label-dark">Dark mode</span></span>
@@ -154,8 +162,13 @@
     </section>
 
     <div class="workspace-content">
+    <section id="workspace-home" class="workspace-home" aria-labelledby="home-heading" hidden>
+      <header class="dw-heading"><div><p class="eyebrow">Welcome back</p><h1 id="home-heading">Business overview</h1><p>Your latest business data. Use the sidebar for dashboards, reports, and general chat.</p></div><button id="home-overview-refresh" type="button" class="secondary-button">Refresh overview</button></header>
+      <p id="home-overview-status" class="dw-help" role="status" aria-live="polite"></p>
+      <div id="home-overview-skeleton" class="skeleton-board" hidden aria-hidden="true"><div class="sk"><i class="w40"></i><i class="ring"></i><i class="w80"></i><i class="w60"></i></div><div class="sk"><i class="w40"></i><i class="bars"></i><i class="w60"></i></div><div class="sk wide"><i class="w30"></i><i class="chart"></i></div></div><iframe id="home-overview-preview" title="Current business overview" sandbox="" referrerpolicy="no-referrer" hidden></iframe>
+    </section>
     <section id="tab-dashboard" class="tab-panel dashboard-workspace" role="tabpanel" aria-labelledby="tab-button-dashboard" hidden>
-      <header class="dw-heading"><div><p class="eyebrow">Text to dashboard</p><h1>Your business, in view</h1><p>Describe what matters. Build a saved dashboard from approved SQL data, then edit its tiles and layout.</p></div><button id="dw-new" type="button" class="secondary-button">New dashboard</button></header>
+      <header class="dw-heading"><div><p class="eyebrow">Text to dashboard</p><h1>Your business, in view</h1><p>Build a saved dashboard from approved SQL data.</p></div><button id="dw-new" type="button" class="secondary-button">New dashboard</button></header>
       <p id="dw-status" role="status" aria-live="polite"></p>
       <div class="dw-layout">
         <aside class="dw-library" aria-labelledby="dw-library-heading"><h2 id="dw-library-heading">Saved dashboards</h2><div id="dw-library"></div></aside>
@@ -172,8 +185,8 @@
           </form>
           <section id="dw-editor" hidden aria-label="Dashboard editor">
             <div class="dw-toolbar"><button id="dw-save" type="button" class="primary-button">Save edits</button><button id="dw-refresh" type="button" class="secondary-button">Refresh data</button><button id="dw-rebuild" type="button" class="secondary-button">Rebuild from description</button><a id="dw-open" target="_blank" rel="noopener" class="secondary-button">Open HTML</a><a id="dw-download" class="secondary-button">Download HTML</a><button id="dw-delete" type="button" class="secondary-button">Delete</button></div>
-            <details class="dw-card" open><summary>Edit dashboard</summary><label for="dw-title">Title</label><input id="dw-title" maxlength="120" required><label for="dw-description">Description (used by Rebuild)</label><textarea id="dw-description" maxlength="2000" rows="3"></textarea><label for="dw-scope">Shared scope (changing it reruns SQL)</label><input id="dw-scope" name="dashboard_edit_scope" autocomplete="off" spellcheck="false" maxlength="600"><p id="dw-meta" class="dw-help"></p><div id="dw-tiles"></div></details>
-            <h2>Dashboard preview</h2><iframe id="dw-preview" title="Saved dashboard preview" sandbox="" referrerpolicy="no-referrer"></iframe>
+            <h2 class="visually-hidden">Dashboard preview</h2><div id="dw-skeleton" class="skeleton-board" hidden aria-hidden="true"><div class="sk"><i class="w40"></i><i class="ring"></i><i class="w80"></i><i class="w60"></i></div><div class="sk"><i class="w40"></i><i class="bars"></i><i class="w60"></i></div><div class="sk wide"><i class="w30"></i><i class="chart"></i></div></div><iframe id="dw-preview" title="Saved dashboard preview" sandbox="" referrerpolicy="no-referrer"></iframe><details class="dw-card"><summary>Edit title, scope and tiles</summary><label for="dw-title">Title</label><input id="dw-title" maxlength="120" required><label for="dw-description">Description</label><textarea id="dw-description" maxlength="2000" rows="3"></textarea><label for="dw-scope">Shared scope</label><input id="dw-scope" name="dashboard_edit_scope" autocomplete="off" spellcheck="false" maxlength="600"><p id="dw-meta" class="dw-help"></p><div id="dw-tiles"></div></details>
+            
           </section>
         </div>
       </div>
@@ -218,12 +231,12 @@
           </label>
           <button id="general-chat-send" type="submit" aria-label="Send message" title="Send message"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12 20 4l-5 16-3-7-8-1Zm8 1 8-9"/></svg></button>
         </form>
-        <p id="general-chat-note" class="general-chat-note">Enter to send, Shift + Enter for a new line</p>
+        <p id="general-chat-note" class="general-chat-note">Enter to send · Shift + Enter for a new line · / to focus</p>
       </section>
     </section>
 
     <!-- TAB 1: KNOWLEDGE / Q&A -->
-    <section id="tab-knowledge" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-knowledge">
+    <section id="tab-knowledge" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-knowledge" hidden>
       <section class="ask-panel" aria-labelledby="ask-title" hidden>
         <h2 id="ask-title" class="visually-hidden">Ask a question</h2>
         <form id="ask-form">
@@ -257,34 +270,41 @@
           </div>
         <div id="answer-panel" class="answer-panel" hidden></div>
       </section>
+      <div class="reports-workspace" id="reports-workspace">
+        <aside class="rw-sidebar" aria-labelledby="rw-library-title">
+          <h2 id="rw-library-title" data-report-vi="Báo cáo đã lưu">Saved reports</h2><button id="rw-new" type="button" data-report-vi="Báo cáo mới">New report</button>
+          <div id="rw-library"></div>
+        </aside>
+        <div class="rw-main">
       <details id="report-fold" class="report-fold" open>
-        <summary><span class="report-fold-title">Generate a report</span><span class="report-fold-note">Turn documents and sales data into a structured brief, as Markdown or DOCX</span></summary>
+        <summary><span class="report-fold-title" data-report-vi="Tạo báo cáo">Generate a report</span><span class="report-fold-note" data-report-vi="Dữ liệu bán hàng và tồn kho đã xác minh, trong phạm vi được cấp quyền">Sales and inventory from authorized, validated data</span></summary>
       <section id="report-agent-form-section" class="report-agent-panel" aria-labelledby="report-agent-form-title" hidden>
-        <h2 id="report-agent-form-title" class="visually-hidden">Generate an evidence-backed report</h2>
+        <h2 id="report-agent-form-title" class="visually-hidden" data-report-vi="Tạo báo cáo có nguồn đối chiếu">Generate an evidence-backed report</h2>
         <form id="report-agent-form" class="review-form">
-          <label for="report-agent-question">Decision question</label>
-          <textarea id="report-agent-question" name="question" minlength="3" maxlength="2000" required placeholder="What decision should this report support?"></textarea>
-          <label for="report-agent-source-mode">Report sources</label>
-          <select id="report-agent-source-mode" name="source_mode">
-            <option value="orchestrated" selected>Auto</option>
-            <option value="documents">Documents only</option>
-            <option value="analytics">Sales data</option>
-          </select>
-          <label for="report-agent-template">Report template <span>(optional DOCX or Markdown)</span></label>
-          <input id="report-agent-template" name="template" type="file" accept=".docx,.md">
-          <p class="report-agent-help">Upload a template to keep its structure, or leave this empty to generate a report directly.</p>
-          <div id="report-agent-format-field" class="report-agent-format-field">
-            <label for="report-agent-output-format">Output format</label>
-            <select id="report-agent-output-format" name="output_format">
-              <option value="markdown">Markdown</option>
-              <option value="docx">DOCX</option>
-            </select>
-          </div>
-          <button id="report-agent-submit" type="submit" class="primary-button">Generate report</button>
+          <label for="report-agent-question" data-report-vi="Yêu cầu báo cáo">Report request</label>
+          <textarea id="report-agent-question" name="question" minlength="3" maxlength="2000" required aria-describedby="report-agent-help" placeholder="Monthly revenue report for May 2026"></textarea>
+          <p id="report-agent-help" class="report-agent-help" data-report-vi="Nêu nội dung báo cáo bán hàng hoặc tồn kho và kỳ cần xem theo tháng, quý hoặc năm. Ví dụ: Báo cáo tồn kho tháng 5/2026.">Describe a sales or inventory report and a month, quarter, or year. For example: Monthly inventory report for May 2026. Generate, save or download a PDF. Inventory reports use fixed sections and charts.</p>
+          <button id="report-agent-submit" type="submit" class="primary-button" data-report-vi="Tạo báo cáo">Generate report</button>
           <p id="report-agent-status" class="corpus-note" role="status" aria-live="polite"></p>
         </form>
+        <section id="rw-editor" hidden>
+          <label for="rw-title" data-report-vi="Tiêu đề báo cáo">Report title</label><input id="rw-title" maxlength="160">
+          <div class="rw-toolbar">
+            <button id="rw-preview-tab" type="button" aria-pressed="true" data-report-vi="Xem trước">Preview</button>
+            <button id="rw-edit-tab" type="button" aria-pressed="false" data-report-vi="Chỉnh sửa báo cáo">Edit report</button>
+            <button id="rw-save" type="button" data-report-vi="Lưu thay đổi">Save changes</button>
+            <button id="rw-download" type="button" data-report-vi="Tải PDF">Download PDF</button>
+            <button id="rw-delete" type="button" data-report-vi="Xóa báo cáo đã lưu">Delete saved report</button>
+          </div>
+          <p id="rw-meta" class="corpus-note"></p>
+        </section>
+        <p id="report-workspace-status" role="status" aria-live="polite"></p>
+        <div id="rw-edit-panel" hidden></div>
+        <div id="rw-skeleton" class="skeleton-report" hidden aria-hidden="true"><i class="w50 title"></i><i class="w30"></i><div class="hero"><i class="w30"></i><i class="num"></i></div><i class="w80"></i><i class="w70"></i><i class="chart"></i></div><div id="sales-report-output" tabindex="-1" hidden></div>
       </section>
       </details>
+        </div>
+      </div>
 
 
     </section>
@@ -316,15 +336,14 @@
                   <option value="gemini" selected>Gemini 3.1 Flash-Lite</option>
                   <option value="groq">GPT-OSS 120B · Groq</option>
                   <option value="modal">Qwen3-0.6B fine-tuned · Modal GPU</option>
-                  <option value="xiaomi">Xiaomi-OCR-0 · visual OCR</option>
                 </select>
-                <small class="upload-field-hint">Choose the invoice extractor. Xiaomi-OCR-0 reads the original page image; Docling still supplies reviewable OCR and tables.</small>
+                <small class="upload-field-hint">Choose the invoice text extractor. Docling supplies the reviewable OCR and tables.</small>
               </div>
               <div class="upload-field upload-field-wide">
                 <label id="upload-file-label" for="upload-file">Document file</label>
                 <div id="upload-dropzone" class="upload-dropzone">
                   <p><strong>Drop one file here</strong> or choose it from your device.</p>
-                  <input id="upload-file" name="file" type="file" accept=".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff" aria-describedby="upload-file-info" required>
+                  <input id="upload-file" name="file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff,.bmp,.gif,.webp,.svg,.heic,.heif,.avif" aria-describedby="upload-file-info" required>
                   <small>PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG or TIF · up to 50 MiB.</small>
                   <p id="upload-file-info" class="corpus-note" aria-live="polite">The original is stored privately. Scans use OCR and may need source-page review in Document Processing.</p>
                 </div>
@@ -453,12 +472,12 @@
         <div class="section-heading">
           <div><h2>Run a document-processing pipeline</h2></div>
         </div>
-        <p>Choose general document parsing, invoice extraction, or image captioning. Results are saved for inspection without creating a production document.</p>
+        <p>Choose general document parsing or invoice extraction. Results are saved for inspection without creating a production document.</p>
         <form id="ocr-test-form" class="upload-form">
           <div class="ocr-test-field"><label for="ocr-test-file">Document to upload-test (up to 20 MiB; PDFs up to 50 pages)</label>
-          <input id="ocr-test-file" name="file" type="file" accept=".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff,.svg,.webp" required></div>
+          <input id="ocr-test-file" name="file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.tif,.tiff,.bmp,.gif,.webp,.svg,.heic,.heif,.avif" required></div>
           <div class="ocr-test-field"><label for="ocr-test-parser">Processing type</label>
-          <select id="ocr-test-parser" name="intent"><option value="document" selected>Document · Docling</option><option value="invoice">Invoice · Docling OCR + Qwen text model</option><option value="image_caption">Image caption · Vintern</option></select></div>
+          <select id="ocr-test-parser" name="intent"><option value="document" selected>Document · Docling</option><option value="invoice">Invoice · Docling OCR + Qwen text model</option></select></div>
           <fieldset data-parser-settings="document" hidden><legend>Docling tuning</legend>
             <div class="ocr-test-field"><label for="ocr-test-docling-device">Device</label><select id="ocr-test-docling-device" name="docling_device"><option value="cpu" selected>CPU</option><option value="cuda">NVIDIA CUDA</option></select></div>
             <div class="ocr-test-field"><label for="ocr-test-docling-ocr">OCR</label><select id="ocr-test-docling-ocr" name="docling_ocr"><option value="true" selected>On · scanned pages</option><option value="false">Off · digital text only</option></select></div>
@@ -547,8 +566,14 @@
       </div>
     </form>
   </dialog>
-  <link rel="stylesheet" href="/static/dashboard.css?v=20261115-output-contract">
-  <script src="/static/app.js?v=knowledge-gaps-20261116b" defer></script>
-  <script src="/static/dashboard.js?v=20261115-output-contract-reconcile" defer></script>
+  <link rel="stylesheet" href="/static/dashboard.css?v=20261119-home">
+  <link rel="stylesheet" href="/static/sales-report.css?v=20261222-merge">
+  <script src="/static/sales-report.js?v=20261222-merge" defer></script>
+  <script src="/static/dashboard-format.js?v=20261119-overview" defer></script>
+  <script src="/static/business-overview.js?v=20261212-skeleton" defer></script>
+  <script src="/static/app.js?v=20261213-neutral" defer></script>
+  <script src="/static/report-workspace.js?v=20261222-merge" defer></script>
+  <script src="/static/dashboard.js?v=20261212-skeleton" defer></script>
+  <script src="/static/sonar-grid.js?v=20261216-sonar" defer></script>
 </body>
 </html>

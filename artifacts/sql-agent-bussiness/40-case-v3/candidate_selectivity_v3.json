@@ -1,0 +1,125 @@
+{
+  "format_version": "sql-40-case-candidate-selectivity.v1",
+  "database_fingerprint_sha256": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028",
+  "database_role_read_only": true,
+  "checks": {
+    "shipments_2025": [
+      {
+        "total_shipments": 728,
+        "missing_delivery_date": 7,
+        "recorded_delivery_date": 721
+      }
+    ],
+    "customer_profile_selectivity": [
+      {
+        "all_2024_signups": 711,
+        "hai_phong": 79,
+        "age_25_34": 143,
+        "intersection": 17
+      }
+    ],
+    "return_reason_nulls_2023_2025": [
+      {
+        "year": "2023",
+        "all_returns": 58,
+        "null_reason": 0,
+        "nonnull_reason": 58
+      },
+      {
+        "year": "2024",
+        "all_returns": 39,
+        "null_reason": 0,
+        "nonnull_reason": 39
+      },
+      {
+        "year": "2025",
+        "all_returns": 37,
+        "null_reason": 0,
+        "nonnull_reason": 37
+      }
+    ],
+    "delivered_categories_2025": [
+      {
+        "category": "Streetwear",
+        "net_revenue": "8685863.04"
+      },
+      {
+        "category": "Outdoor",
+        "net_revenue": "3533291.45"
+      },
+      {
+        "category": "GenZ",
+        "net_revenue": "396405.85"
+      },
+      {
+        "category": "Casual",
+        "net_revenue": "324543.26"
+      }
+    ],
+    "returns_repeated_products_2023_2025": [
+      {
+        "product_groups": 60,
+        "repeated_product_groups": 56,
+        "max_source_rows": 3
+      }
+    ],
+    "shipping_fee_nulls_2025": [
+      {
+        "shipment_rows": 728,
+        "recorded_shipping_fee": 728,
+        "missing_shipping_fee": 0
+      }
+    ],
+    "stockout_boolean_2026_11_13": [
+      {
+        "rows": 97,
+        "true_rows": 17,
+        "false_rows": 80,
+        "null_rows": 0
+      }
+    ],
+    "order_status_2025": [
+      {
+        "order_status": "delivered",
+        "order_count": 719
+      },
+      {
+        "order_status": "returned",
+        "order_count": 6
+      },
+      {
+        "order_status": "shipped",
+        "order_count": 8
+      }
+    ],
+    "return_reasons_2024": [
+      {
+        "return_reason": "Changed mind",
+        "returned_units": 13,
+        "source_rows": 13
+      },
+      {
+        "return_reason": "Color differed from expectation",
+        "returned_units": 13,
+        "source_rows": 13
+      },
+      {
+        "return_reason": "Size exchange",
+        "returned_units": 13,
+        "source_rows": 13
+      }
+    ],
+    "snapshot_overlap_2025_09_30_2025_10_31": {
+      "before_products": 97,
+      "after_products": 97,
+      "common_products": 97,
+      "before_only": 0,
+      "after_only": 0
+    }
+  },
+  "schema_availability": {
+    "inventory_has_warehouse": false,
+    "supplier_tables": [],
+    "lead_time_columns": []
+  }
+}

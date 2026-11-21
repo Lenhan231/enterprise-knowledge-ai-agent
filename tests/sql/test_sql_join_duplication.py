@@ -3,12 +3,12 @@ import sqlite3
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
-from core.analytics.text_to_sql import SQLValidationError, validate_commerce_sql
-from core.sql_agent.agent import SQLAnalyticsAgent
+from core.agents.sql.text_to_sql import SQLValidationError, validate_commerce_sql
+from core.agents.sql.agent import SQLAnalyticsAgent
 from core.models.agents import AgentRequest, VerifiedIdentity
 
 
@@ -157,6 +157,12 @@ GROUP BY tc.customer_id LIMIT 1"""
 
 
 class JoinRepairTest(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
+        self.intent_patcher = patch(
+            "core.agents.sql.agent.interpret_query_intent", new=AsyncMock(return_value=None))
+        self.intent_patcher.start()
+        self.addCleanup(self.intent_patcher.stop)
+
     async def test_repeated_unsafe_plan_executes_as_unverified(self):
         class Provider:
             def generate(self, prompt):

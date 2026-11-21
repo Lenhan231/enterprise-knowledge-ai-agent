@@ -8,7 +8,7 @@ from core.models.agents import (
     AgentResult,
     Evidence,
 )
-from core.rag.rag_service import RAGService
+from core.agents.knowledge.rag_service import RAGService
 from core.agents.decision_support.execution import authorize
 from core.agents.runtime import deadline, remaining, run_sync
 
@@ -25,15 +25,29 @@ class KnowledgeAgent(BaseAgent):
         identity = request.identity
         if identity is None or "documents:read" not in identity.permissions or not identity.document_roles:
             raise PermissionError("Verified document scope is required")
+        options = {}
+        if request.metadata.get('_policy_source_titles'):
+            from core.database.document_repository import DocumentRepository
+            def policy_ids():
+                repository = DocumentRepository()
+                try:
+                    return repository.accessible_document_ids_by_title(request.metadata['_policy_source_titles'], sorted(identity.document_roles))
+                finally:
+                    repository.close()
+            identifiers = await run_sync(policy_ids, _timeout=10)
+            if not identifiers:
+                return []
+            options['document_ids'] = identifiers
         contexts = await run_sync(
-            self.rag.retrieve_contexts, request.question, limit=5,
+            self.rag.retrieve_contexts, request.question, limit=15 if options else 5,
             roles=sorted(identity.document_roles),
             retrieval_method=request.metadata.get("retrieval_method", "translated_hybrid_rerank"),
+            **options,
         )
         return [Evidence(source_type="document", source=item["document_name"],
                          content=item["content"], metadata={**item["metadata"],
                          "chunk_id": item.get("chunk_id"), "chunk_index": item["chunk_index"]})
-                for item in contexts]
+                for item in contexts if not options or item.get('metadata', {}).get('document_id') in options['document_ids']]
 
     async def retrieve_metric_definition(self, request: AgentRequest, metric_name: str) -> list[dict]:
         """Retrieve role-scoped metric guidance without turning retrieved text into approval."""
@@ -100,6 +114,13 @@ class KnowledgeAgent(BaseAgent):
                 "reranker_model": details.get("reranker_model"),
                 "context_radius": details.get("context_radius", 0),
             }
+            # Every passage the answer model saw (already role-filtered), for the UI's retrieved-chunks list.
+            metadata["retrieved"] = [
+                {"source_id": context["source_id"], "document": context["document_name"],
+                 "chunk_index": context["chunk_index"], "page_number": (context.get("metadata") or {}).get("page_number"),
+                 "score": context.get("similarity_score"), "used": context["source_id"] in cited}
+                for context in result.contexts
+            ]
         if result.verification is not None:
             metadata["claim_verification"] = result.verification.model_dump()
             metadata["ok"] = metadata["ok"] and (result.verification.status == "supported"

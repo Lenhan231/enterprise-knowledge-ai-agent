@@ -14,6 +14,7 @@ Both report endpoints use the same generator and status contract:
 | template | DOCX or UTF-8 Markdown; at most 10 MiB | Built-in Summary, Findings, Limitations |
 | source_mode | orchestrated, documents, analytics; combined is an orchestrated alias | documents (API); orchestrated (bundled UI) |
 | output_format | markdown, docx | Markdown without upload; uploaded format otherwise |
+| report_type | sales_performance, inventory_risk | Inferred only when the question names either report type; otherwise existing report behavior |
 | conversation_id | Optional opaque report conversation ID, at most 128 characters | Stateless |
 
 A conflicting explicit format and uploaded template is rejected. Documents require verified document permission and roles; analytics requires verified analytics permission. Employees can generate document-only reports. Request metadata cannot grant roles or permissions. Analytics connections are created only when queried.
@@ -23,6 +24,69 @@ potentially dependent source tasks once per report. `combined` now follows this
 same path. Report keeps its own interface, section generation and downloads.
 Use a separate report conversation ID for follow-ups. Auto requires both source
 permissions. See [source orchestration and frontend migration](report-source-orchestration.md).
+
+## Adaptive template mapping
+
+Adaptive mapping is limited to `sales_performance` and `inventory_risk`. Set the
+multipart `report_type` field (both APIs), or `AgentRequest.metadata.report_type`
+for direct/chat calls. Questions naming "sales performance" or "inventory risk"
+also select it. Other report requests retain their existing behavior.
+
+The existing parser extracts ordered headings, table headers and owners, and
+explicit fill markers. Planning receives that structure plus reviewed semantic
+capabilities. The business request defines metrics, dates, filters and grain;
+template wording never authorizes new calculations, sources, or permissions.
+Validated SQL tasks are reused across sections. Document-only reports retrieve by
+canonical capability; combined/orchestrated planned reports retrieve policy
+context when the template requests it, even if the question does not mention policy.
+
+| Capability | Example equivalent headings | Evidence |
+| --- | --- | --- |
+| Summary | Business Overview, Executive Summary, Management Summary | All validated report tasks |
+| Sales | Commercial Results, Sales Results, Revenue Analysis | Planned sales sections |
+| Inventory | Inventory Position, Category Stock, Inventory Levels | Planned inventory sections |
+| Risk | Risk Assessment, Recorded Exceptions, Stockout Analysis | Planned risk sections; no invented risk thresholds |
+| Context | Operating Policy, Policy Context, Recommendations | Role-filtered Knowledge passages; unavailable in analytics-only mode |
+| Limitations | Data Gaps, Scope and Limitations | Processing limitations and unavailable requirements |
+
+Aliases are a bounded reviewed vocabulary in `templates.py`, not arbitrary model
+similarity. Canonical capability names are also accepted; Findings/KPIs map to
+Sales or Inventory for the selected type. Unknown sections stay in place and are
+marked unavailable, with partial status. Material conflicts retain the existing
+confirmation/clarification flow. No essential requirement is silently discarded.
+
+Supported placeholders are standalone `{{report:Exact Heading}}` beneath each
+heading, plus `{{report:rows}}` in the first table data row. Marked templates must
+mark every section and table; mixed/misplaced markers, unknown `{{...}}` fields,
+and markers in DOCX headers/footers/text boxes are rejected before retrieval.
+Generated text/cells containing unresolved markers are rejected before download.
+Markdown heading levels/order and table headers are preserved. DOCX also retains
+styles, headers/footers, and marker paragraph/run and table-row formatting.
+Static text is retained and explicitly described as user-provided and unverified.
+Unmarked table data rows are replaced; use explicit markers for precise fill regions.
+
+Table headers may use canonical fields or equivalent case/spacing, such as
+`Stock on Hand` for `stock_on_hand`. `Metric | Value` tables include fact scope,
+units and citations. Unsupported tables receive unavailable cells and a disclosed
+partial result. Verified details that cannot fit the uploaded layout remain in
+the existing appendix. Numeric fact checks, citation checks, bounded retrieval,
+SQL validation, RBAC, and complete/partial/failed statuses remain in force.
+
+Verification: `.venv/Scripts/python.exe -m unittest discover -s tests -p 'test_report_*.py' -q`.
+`test_report_adaptive.py` exercises three structurally different layouts per type
+(plain Markdown, reordered marked Markdown, styled DOCX), identical verified facts
+across layouts, both default download formats, document-only/combined retrieval,
+task isolation, missing data, template conflicts, placeholders and denied access.
+These are deterministic tests with synthetic source rows and mocked providers;
+they do not certify live model repeatability or arbitrary Word layout fidelity.
+
+Validation on 2026-11-17: the focused ReportAgent suite passed 106 tests (87 baseline
+tests plus 19 adaptive cases). Compilation and `git diff --check` passed. Broader
+discovery with `python -X utf8 -m unittest discover -s tests -v` ran 1,272 tests:
+11 failures, 9 errors and 50 skips, with no ReportAgent failures. The broader
+failures involved OCR/reranker imports, platform utilities, benchmark expectations
+and Streamlit sessions; those areas were not changed. Local logs are in
+`artifacts/report-adaptive-tests.log` and `artifacts/report-adaptive-full-suite-final.log`.
 
 ## Results and frontend handling
 

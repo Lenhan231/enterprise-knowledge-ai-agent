@@ -25,7 +25,7 @@ from core.llm.models import BENCHMARK_MODELS
 from core.llm.groq_provider import GroqProvider
 from core.llm.openai_compatible_provider import OpenAICompatibleProvider
 from core.llm.Cloudflare_provider import CloudflareProvider
-from core.rag.rag_service import RAGService
+from core.agents.knowledge.rag_service import RAGService
 from core.retrieval.retrieval import RetrievalRequest, make_chunk_id
 from core.retrieval.retrieval_service import RetrievalService
 

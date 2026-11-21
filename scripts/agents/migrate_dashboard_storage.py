@@ -15,7 +15,7 @@ def main():
     parser.add_argument('source', type=Path, help='Path to an existing dashboards.sqlite3 file')
     args = parser.parse_args()
     load_dotenv(ROOT / '.env')
-    from core.dashboards.postgres_store import PostgresDashboardStore
+    from core.agents.dashboard.postgres_store import PostgresDashboardStore
     print(json.dumps(PostgresDashboardStore().import_sqlite(args.source)))
 
 

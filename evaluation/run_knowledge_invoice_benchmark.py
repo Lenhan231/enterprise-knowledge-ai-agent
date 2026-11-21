@@ -152,10 +152,10 @@ async def generate(out, group, ids):
     verify(out)
     from core.models.agents import AgentRequest, VerifiedIdentity
     from core.llm.groq_provider import GroqProvider
-    from core.agents.knowledge_agent import KnowledgeAgent
-    from core.agents.sql_analytics_agent import SQLAnalyticsAgent
+    from core.agents.knowledge.agent import KnowledgeAgent
+    from core.agents.sql.agent import SQLAnalyticsAgent
     from core.database.commerce_repository import create_repository_from_env
-    from core.rag.rag_service import RAGService
+    from core.agents.knowledge.rag_service import RAGService
     from core.database.document_chunks_repository import DocumentChunkRepository
     from core.retrieval.retrieval_service import RetrievalService
     calls, contexts = [], []

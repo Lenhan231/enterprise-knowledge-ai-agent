@@ -8,11 +8,11 @@ from unittest.mock import AsyncMock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
-from core.analytics.invoices import normalize_invoice
-from core.analytics.metric_ontology import resolve_metric_names
-from core.analytics.text_to_sql import build_sql_prompt, validate_commerce_sql, SQLValidationError
-from core.agents.intent_classifier import IntentClassifier
-from core.agents.sql_analytics_agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
+from core.agents.sql.invoices import normalize_invoice
+from core.agents.sql.metric_ontology import resolve_metric_names
+from core.agents.sql.text_to_sql import build_sql_prompt, validate_commerce_sql, SQLValidationError
+from core.agents.decision_support.intent_classifier import IntentClassifier
+from core.agents.sql.agent import SQLAnalyticsAgent, AnalyticsPermissionDenied
 from core.models.agents import AgentRequest, VerifiedIdentity
 
 
@@ -86,6 +86,14 @@ class InvoiceAgentTest(unittest.IsolatedAsyncioTestCase):
                'FROM commerce.invoices AS inv GROUP BY inv.currency LIMIT 200')
         class Provider:
             def generate(self, prompt):
+                if prompt.startswith('Extract only the user-requested business intent.'):
+                    return json.dumps({'intent': {
+                        'original_question': 'total invoice amount', 'operation': 'aggregate',
+                        'metrics': ['invoice_total'], 'dimensions': [], 'filters': [],
+                        'time_scope': {'mode': 'all', 'ranges': []}, 'requested_sources': [],
+                        'explicit_source_restriction': False, 'geographic_basis': None,
+                        'geographic_coverage': None, 'ranking': None, 'unresolved_slots': [],
+                    }})
                 return json.dumps({'sql': sql})
         repository = AsyncMock()
         repository.execute_approved_query.return_value = [{'invoice_total': Decimal('100')}]

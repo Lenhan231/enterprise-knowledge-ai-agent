@@ -4,17 +4,48 @@ from pathlib import Path
 import sys
 from types import SimpleNamespace
 import unittest
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
-from core.analytics.text_to_sql import SQLValidationError, validate_commerce_sql
+from core.agents.sql.text_to_sql import SQLValidationError, validate_commerce_sql
 from core.models.agents import AgentRequest, VerifiedIdentity
-from core.sql_agent.agent import SQLAnalyticsAgent
-from core.sql_agent.schema import configured_schemas
+from core.agents.sql.agent import SQLAnalyticsAgent
+from core.agents.sql.schema import configured_schemas, discover_schema
+
+
+class _AsyncContext:
+    def __init__(self, value):
+        self.value = value
+
+    async def __aenter__(self):
+        return self.value
+
+    async def __aexit__(self, *args):
+        return False
+
+
+class _SchemaPool:
+    def acquire(self):
+        return _AsyncContext(self)
+
+    def transaction(self, *, readonly=False):
+        return _AsyncContext(self)
+
+    async def fetch(self, query, schemas):
+        if 'information_schema.columns' in query:
+            return [{'table_schema': 'commerce', 'table_name': 'orders',
+                     'column_name': 'order_date', 'data_type': 'date'}]
+        return []
 
 
 class DynamicSchemaTest(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
+        self.intent_patcher = patch(
+            "core.agents.sql.agent.interpret_query_intent", new=AsyncMock(return_value=None))
+        self.intent_patcher.start()
+        self.addCleanup(self.intent_patcher.stop)
+
     async def test_pipeline_queries_a_discovered_schema_with_quoted_identifiers(self):
         query = 'SELECT t."customerName" FROM "MySchema"."order-history" AS t LIMIT 10'
         repository = Mock()
@@ -38,7 +69,7 @@ class DynamicSchemaTest(unittest.IsolatedAsyncioTestCase):
         repository.execute_approved_query.assert_awaited_once_with(query)
 
     async def test_auto_planner_replans_with_live_schema_only_for_sql_tasks(self):
-        from core.agents.router import AgentRouter
+        from core.agents.decision_support.router import AgentRouter
 
         repository = Mock()
         repository.get_schema = AsyncMock(return_value={
@@ -64,7 +95,7 @@ class DynamicSchemaTest(unittest.IsolatedAsyncioTestCase):
         repository.get_schema.assert_awaited_once()
 
     async def test_auto_planner_routes_promotion_question_to_sql_without_clarification(self):
-        from core.agents.router import AgentRouter
+        from core.agents.decision_support.router import AgentRouter
 
         repository = Mock()
         repository.get_schema = AsyncMock(return_value={
@@ -97,6 +128,11 @@ class DynamicSchemaTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(configured_schemas('commerce, reporting,commerce'), ('commerce', 'reporting'))
         with self.assertRaises(ValueError):
             configured_schemas('commerce, pg_catalog')
+
+    async def test_discovery_exposes_column_types_for_frozen_benchmark_preflight(self):
+        schema = await discover_schema(_SchemaPool(), ('commerce',))
+
+        self.assertEqual(schema['column_types']['commerce.orders']['order_date'], 'date')
 
     def test_discovered_foreign_keys_and_primary_keys_validate_dynamic_join(self):
         schema = {

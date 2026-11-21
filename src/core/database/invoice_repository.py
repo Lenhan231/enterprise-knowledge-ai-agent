@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 
-from core.analytics.invoices import normalize_invoice
+from core.agents.sql.invoices import normalize_invoice
 
 from core.database.connection_limit import close_database_connection, connect_database
 

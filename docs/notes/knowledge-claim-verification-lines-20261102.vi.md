@@ -7,7 +7,7 @@ Các số dòng trỏ vào code của bản sửa này. Dòng trống chỉ ngă
 
 Phần script bên dưới mô tả phiên bản trước khi thêm raw audit/selector. Với thay đổi chẩn đoán mới, số dòng và giải thích cập nhật nằm trong `docs/notes/knowledge-verifier-diagnostics-20261102.vi.md`.
 
-## `src/core/rag/claim_verification.py`
+## `src/core/agents/knowledge/claim_verification.py`
 
 | Dòng | Code | Giải thích |
 |---:|---|---|
@@ -97,7 +97,7 @@ Phần script bên dưới mô tả phiên bản trước khi thêm raw audit/se
 | 13 | `sys.path.insert(0, str(ROOT / "src"))` | Cho Python tìm được module trong src; container vẫn có PYTHONPATH=/app/src. |
 | 15 | `from dotenv import load_dotenv` | Nạp .env local nếu có; không in key. |
 | 16 | `from core.llm.groq_provider import GroqProvider` | Dùng provider/model/cơ chế chuyển key hiện có. |
-| 17 | `from core.rag.claim_verification import verify_answer` | Gọi chính verifier production, không dùng một bản giả để đánh giá chất lượng. |
+| 17 | `from core.agents.knowledge.claim_verification import verify_answer` | Gọi chính verifier production, không dùng một bản giả để đánh giá chất lượng. |
 | 18 | `from core.prompts.knowledge_verification import CLAIM_VERIFICATION_PROMPT` | Hash prompt thực sự được dùng. |
 | 21 | `def main():` | Hàm CLI chính. |
 | 22 | `parser = argparse.ArgumentParser(description=__doc__)` | Tạo parser và phần mô tả --help. |
@@ -215,11 +215,11 @@ Phần script bên dưới mô tả phiên bản trước khi thêm raw audit/se
 | 63 | `# Experimental claim audit: one extra LLM call; keep off until evaluated.` | Chú thích flag thử nghiệm, thêm chi phí LLM và chưa bật trước đánh giá. |
 | 64 | `KNOWLEDGE_CLAIM_VERIFICATION_ENABLED=0` | Mẫu env mặc định tắt; không sửa .env thật hay bật feature trên VPS. |
 
-## `src/core/rag/rag_service.py`
+## `src/core/agents/knowledge/rag_service.py`
 
 | Dòng | Code | Giải thích |
 |---:|---|---|
-| 15 | `from core.rag.claim_verification import VerificationOutcome, VERIFICATION_UNAVAILABLE_ANSWER, verify_answer` | Import schema kết quả, thông báo và hàm verifier; không tạo provider mới. |
+| 15 | `from core.agents.knowledge.claim_verification import VerificationOutcome, VERIFICATION_UNAVAILABLE_ANSWER, verify_answer` | Import schema kết quả, thông báo và hàm verifier; không tạo provider mới. |
 | 91 | `verification: VerificationOutcome &#124; None = None` | Thêm kết quả audit tùy chọn vào RAGResult, mặc định None cho caller cũ. |
 | 189 | `verify_claims: bool = False,` | Thêm tham số opt-in; caller không truyền vẫn chạy như trước. |
 | 210 | `return self.generate_from_contexts(question, contexts, verify_claims=verify_claims)` | Truyền cờ xuống bước generation sau nhánh retrieval tương ứng; không thay scope tìm kiếm. |
@@ -234,7 +234,7 @@ Phần script bên dưới mô tả phiên bản trước khi thêm raw audit/se
 | 278 | `prompt_sha256=prompt_sha256, verification=verification)` | Giữ fingerprint prompt và kết quả audit; không trả bản nháp bị chặn. |
 | 285 | `verification=verification,` | Gắn kết quả audit vào kết quả thành công để agent tạo metadata. |
 
-## `src/core/agents/knowledge_agent.py`
+## `src/core/agents/knowledge/agent.py`
 
 | Dòng | Code | Giải thích |
 |---:|---|---|
@@ -260,19 +260,19 @@ Phần script bên dưới mô tả phiên bản trước khi thêm raw audit/se
 | 162 | `answer=data.get("answer"), evidence=data.get("evidence", []),` | Giữ answer/evidence thật của API để đọc và đối chiếu khi benchmark. |
 | 163 | `claim_verification=metadata.get("claim_verification"))` | Lưu kết luận audit của từng request; không chỉ nhìn HTTP 200. |
 
-## `tests/test_knowledge_outcomes.py`
+## `tests/knowledge/test_knowledge_outcomes.py`
 
 | Dòng | Code | Giải thích |
 |---:|---|---|
 | 68 | `"policy?", decompose=True, verify_claims=False, roles=["employee"], retrieval_method="translated_hybrid_rerank",` | Cập nhật test kỳ vọng tham số mới mặc định False; kiểm tra đường cũ không bật audit. |
 
-## `tests/test_orchestration_contracts.py`
+## `tests/decision_support/test_orchestration_contracts.py`
 
 | Dòng | Code | Giải thích |
 |---:|---|---|
 | 39 | `'source_ids': [], 'insufficient_context': True, 'verification': None})()` | Cập nhật fixture kết quả giả có verification=None để khớp RAGResult mới, giữ outcome thiếu nguồn. |
 
-## `tests/test_claim_verification.py` — từng dòng kiểm thử
+## `tests/knowledge/test_claim_verification.py` — từng dòng kiểm thử
 
 | Dòng | Code | Giải thích |
 |---:|---|---|
@@ -282,15 +282,15 @@ Phần script bên dưới mô tả phiên bản trước khi thêm raw audit/se
 | 4 | `import time` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
 | 5 | `import unittest` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
 | 6 | `from unittest.mock import Mock, patch` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
-| 8 | `from core.agents.knowledge_agent import KnowledgeAgent` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
+| 8 | `from core.agents.knowledge.agent import KnowledgeAgent` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
 | 9 | `from core.agents.runtime import deadline` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
 | 10 | `from core.latency import latency_events, snapshot` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
 | 11 | `from core.models.agents import AgentRequest, VerifiedIdentity` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
 | 12 | `from core.prompts.Knowledge import INSUFFICIENT_ANSWER` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
-| 13 | `from core.rag.claim_verification import (` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
+| 13 | `from core.agents.knowledge.claim_verification import (` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
 | 14 | `AnswerReview, VERIFICATION_UNAVAILABLE_ANSWER, validate_review, verify_answer,` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
 | 15 | `)` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
-| 16 | `from core.rag.rag_service import RAGService` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
+| 16 | `from core.agents.knowledge.rag_service import RAGService` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
 | 19 | `SOURCE = {"source_id": "S1", "document_name": "report.pdf", "chunk_index": 1,` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
 | 20 | `"similarity_score": 0.5, "metadata": {"document_id": "report", "section_title": "Results"},` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
 | 21 | `"content": "Consolidated revenue in 2024: VND 100 billion. Profit: VND 20 billion."}` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
@@ -444,7 +444,7 @@ Phần script bên dưới mô tả phiên bản trước khi thêm raw audit/se
 | 187 | `self.assertEqual(result.evidence, [])` | Assertion assertEqual: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
 | 188 | `self.assertNotIn(draft, result.model_dump_json())` | Assertion assertNotIn: đối chiếu kết quả với hợp đồng ghi ngay trong tham số. |
 
-## `tests/test_claim_verifier_benchmark.py` — từng dòng kiểm thử
+## `tests/benchmarks/test_claim_verifier_benchmark.py` — từng dòng kiểm thử
 
 | Dòng | Code | Giải thích |
 |---:|---|---|
@@ -457,7 +457,7 @@ Phần script bên dưới mô tả phiên bản trước khi thêm raw audit/se
 | 7 | `import unittest` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
 | 8 | `from pathlib import Path` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
 | 9 | `from unittest.mock import Mock, patch` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
-| 11 | `from core.rag.claim_verification import VerificationOutcome` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
+| 11 | `from core.agents.knowledge.claim_verification import VerificationOutcome` | Nạp module/hàm kiểm thử có sẵn; Mock/patch thay provider, không gọi Groq thật. |
 | 13 | `ROOT = Path(__file__).resolve().parents[1]` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
 | 14 | `spec = importlib.util.spec_from_file_location("verifier_benchmark", ROOT / "scripts/agents/benchmark_knowledge_verifier.py")` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |
 | 15 | `benchmark = importlib.util.module_from_spec(spec)` | Dựng dữ liệu/Mock hoặc lưu kết quả thực của hàm đang test để đối chiếu ở các assert sau. |

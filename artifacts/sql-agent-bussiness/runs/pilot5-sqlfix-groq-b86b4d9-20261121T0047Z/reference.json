@@ -1,0 +1,294 @@
+{
+  "format_version": "sql-business-reference.v1",
+  "case_set_sha256": "ddade2d597b30a6bb4c74fc7b997dfe9a617e6c5348cd8b64bf7016463d100c4",
+  "environment": {
+    "database_classification": "frozen-analytics-snapshot",
+    "database_role_read_only": true,
+    "coverage": {
+      "commerce.sales": {
+        "rows": 1400,
+        "date_min": "2023-01-01",
+        "date_max": "2026-11-13",
+        "rows_2025": 352,
+        "revenue_2025": "13299821.25"
+      },
+      "commerce.orders": {
+        "rows": 3300,
+        "date_min": "2023-01-01",
+        "date_max": "2026-11-13",
+        "delivered_orders_2025": 719,
+        "order_date_type": "date"
+      },
+      "commerce.inventory": {
+        "rows": 4559,
+        "snapshot_min": "2023-01-31",
+        "snapshot_max": "2026-11-13",
+        "snapshot_count": 47,
+        "rows_at_2026_11_13": 97
+      }
+    },
+    "verified_column_types": {
+      "commerce.orders.order_date": "date"
+    },
+    "unsupported_dimensions": {
+      "inventory_has_warehouse": false,
+      "supplier_tables": [],
+      "lead_time_columns": []
+    },
+    "date_columns": [
+      "commerce.customers.signup_date",
+      "commerce.inventory.snapshot_date",
+      "commerce.invoices.invoice_date",
+      "commerce.orders.order_date",
+      "commerce.promotions.end_date",
+      "commerce.promotions.start_date",
+      "commerce.returns.return_date",
+      "commerce.reviews.review_date",
+      "commerce.sales.date",
+      "commerce.shipments.delivery_date",
+      "commerce.shipments.ship_date",
+      "commerce.web_traffic.date"
+    ],
+    "fingerprint_sha256": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028"
+  },
+  "all_supported_references_match_frozen_gold": true,
+  "cases": [
+    {
+      "id": "P01",
+      "status": "reference_generated",
+      "sql": "SELECT SUM(s.revenue) AS revenue FROM commerce.sales AS s WHERE s.date >= $1 AND s.date < $2 LIMIT 1",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "rows": [
+        {
+          "revenue": "13299821.25"
+        }
+      ],
+      "columns": [
+        "revenue"
+      ],
+      "matches_frozen_gold": true,
+      "comparison": {
+        "business_rows_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": true,
+        "missing_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": []
+      },
+      "semantic": {
+        "applicable": true,
+        "passed": true,
+        "checks": {
+          "required_tables": true,
+          "filter:date_range": true,
+          "aggregation": true,
+          "grouping": true,
+          "ranking_order": true,
+          "limit": true,
+          "all_requested_columns": true
+        },
+        "issues": []
+      },
+      "result_sha256": "c3074065c0ad87ece3f0852b5cf03a2c0fb4d2f27c81d9bb6cedfe200c079bea"
+    },
+    {
+      "id": "P02",
+      "status": "reference_generated",
+      "sql": "SELECT o.customer_id, COUNT(DISTINCT o.order_id) AS order_count FROM commerce.orders AS o WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 GROUP BY o.customer_id ORDER BY order_count DESC, o.customer_id ASC LIMIT 5",
+      "parameters": [
+        "delivered",
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "rows": [
+        {
+          "customer_id": 1924,
+          "order_count": 4
+        },
+        {
+          "customer_id": 41034,
+          "order_count": 4
+        },
+        {
+          "customer_id": 42962,
+          "order_count": 4
+        },
+        {
+          "customer_id": 102,
+          "order_count": 3
+        },
+        {
+          "customer_id": 6121,
+          "order_count": 3
+        }
+      ],
+      "columns": [
+        "customer_id",
+        "order_count"
+      ],
+      "matches_frozen_gold": true,
+      "comparison": {
+        "business_rows_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": true,
+        "missing_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": []
+      },
+      "semantic": {
+        "applicable": true,
+        "passed": true,
+        "checks": {
+          "required_tables": true,
+          "filter:order_status": true,
+          "filter:date_range": true,
+          "aggregation": true,
+          "grouping": true,
+          "ranking_order": true,
+          "limit": true,
+          "all_requested_columns": true
+        },
+        "issues": []
+      },
+      "result_sha256": "a62091a11517b8790209bdca2d82150c1d68e57304bf863cd2f101ef83f5161d"
+    },
+    {
+      "id": "P03",
+      "status": "reference_generated",
+      "sql": "SELECT oi.product_id, SUM(oi.quantity) AS units_sold FROM commerce.order_items AS oi JOIN commerce.orders AS o ON o.order_id = oi.order_id WHERE o.order_status = $1 AND o.order_date >= $2 AND o.order_date < $3 GROUP BY oi.product_id ORDER BY units_sold DESC, oi.product_id ASC LIMIT 5",
+      "parameters": [
+        "delivered",
+        "2025-04-01",
+        "2025-07-01"
+      ],
+      "rows": [
+        {
+          "product_id": 690,
+          "units_sold": 11
+        },
+        {
+          "product_id": 761,
+          "units_sold": 11
+        },
+        {
+          "product_id": 782,
+          "units_sold": 11
+        },
+        {
+          "product_id": 808,
+          "units_sold": 11
+        },
+        {
+          "product_id": 1059,
+          "units_sold": 11
+        }
+      ],
+      "columns": [
+        "product_id",
+        "units_sold"
+      ],
+      "matches_frozen_gold": true,
+      "comparison": {
+        "business_rows_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": true,
+        "missing_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": []
+      },
+      "semantic": {
+        "applicable": true,
+        "passed": true,
+        "checks": {
+          "required_tables": true,
+          "filter:order_status": true,
+          "filter:date_range": true,
+          "aggregation": true,
+          "grouping": true,
+          "ranking_order": true,
+          "limit": true,
+          "required_join": true,
+          "all_requested_columns": true
+        },
+        "issues": []
+      },
+      "result_sha256": "730cb1f2b4be1831c09ec5e8dbe7cc6ebba017199f28f161ceebd98325de58d7"
+    },
+    {
+      "id": "P04",
+      "status": "reference_generated",
+      "sql": "SELECT i.product_id, i.product_name, i.stock_on_hand FROM commerce.inventory AS i WHERE i.snapshot_date = $1 AND i.stock_on_hand IS NOT NULL ORDER BY i.stock_on_hand DESC, i.product_id ASC LIMIT 5",
+      "parameters": [
+        "2026-11-13"
+      ],
+      "rows": [
+        {
+          "product_id": 1974,
+          "product_name": "UrbanVN RP-49",
+          "stock_on_hand": 60
+        },
+        {
+          "product_id": 2091,
+          "product_name": "UrbanVN UC-26",
+          "stock_on_hand": 60
+        },
+        {
+          "product_id": 556,
+          "product_name": "SaigonFlex UC-21",
+          "stock_on_hand": 59
+        },
+        {
+          "product_id": 2180,
+          "product_name": "PhoenixWear UC-10",
+          "stock_on_hand": 59
+        },
+        {
+          "product_id": 2219,
+          "product_name": "VietMotion RP-16",
+          "stock_on_hand": 59
+        }
+      ],
+      "columns": [
+        "product_id",
+        "product_name",
+        "stock_on_hand"
+      ],
+      "matches_frozen_gold": true,
+      "comparison": {
+        "business_rows_match": true,
+        "strict_schema_match": true,
+        "strict_rows_match": true,
+        "missing_columns": [],
+        "extra_columns": [],
+        "unexpected_extra_columns": []
+      },
+      "semantic": {
+        "applicable": true,
+        "passed": true,
+        "checks": {
+          "required_tables": true,
+          "filter:snapshot_date": true,
+          "filter:stock_on_hand": true,
+          "aggregation": true,
+          "grouping": true,
+          "ranking_order": true,
+          "limit": true,
+          "all_requested_columns": true
+        },
+        "issues": []
+      },
+      "result_sha256": "31b1d048c0d5c661dfacdafb1d58a4295341626e3d8ff213b3709d9f2b5eff9c"
+    },
+    {
+      "id": "P05",
+      "status": "unsupported_no_query",
+      "sql": null,
+      "parameters": [],
+      "rows": [],
+      "matches_frozen_gold": null
+    }
+  ]
+}

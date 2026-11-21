@@ -22,7 +22,7 @@ sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT))
 
 from app.main import app  # noqa: E402
-from core.rag.rag_service import extract_source_ids  # noqa: E402
+from core.agents.knowledge.rag_service import extract_source_ids  # noqa: E402
 from scripts.agents.evaluate_proposal_case_coverage import evaluate_coverage  # noqa: E402
 
 ROUTES = ROOT / "data/evaluation/proposal_business_route_cases.json"

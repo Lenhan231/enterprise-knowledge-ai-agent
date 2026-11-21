@@ -1,0 +1,50 @@
+{
+  "database_classification": "frozen-analytics-snapshot",
+  "database_role_read_only": true,
+  "coverage": {
+    "commerce.sales": {
+      "rows": 1400,
+      "date_min": "2023-01-01",
+      "date_max": "2026-11-13",
+      "rows_2025": 352,
+      "revenue_2025": "13299821.25"
+    },
+    "commerce.orders": {
+      "rows": 3300,
+      "date_min": "2023-01-01",
+      "date_max": "2026-11-13",
+      "delivered_orders_2025": 719,
+      "order_date_type": "date"
+    },
+    "commerce.inventory": {
+      "rows": 4559,
+      "snapshot_min": "2023-01-31",
+      "snapshot_max": "2026-11-13",
+      "snapshot_count": 47,
+      "rows_at_2026_11_13": 97
+    }
+  },
+  "verified_column_types": {
+    "commerce.orders.order_date": "date"
+  },
+  "unsupported_dimensions": {
+    "inventory_has_warehouse": false,
+    "supplier_tables": [],
+    "lead_time_columns": []
+  },
+  "date_columns": [
+    "commerce.customers.signup_date",
+    "commerce.inventory.snapshot_date",
+    "commerce.invoices.invoice_date",
+    "commerce.orders.order_date",
+    "commerce.promotions.end_date",
+    "commerce.promotions.start_date",
+    "commerce.returns.return_date",
+    "commerce.reviews.review_date",
+    "commerce.sales.date",
+    "commerce.shipments.delivery_date",
+    "commerce.shipments.ship_date",
+    "commerce.web_traffic.date"
+  ],
+  "fingerprint_sha256": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028"
+}

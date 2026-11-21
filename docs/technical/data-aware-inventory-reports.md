@@ -51,7 +51,7 @@ Tables render independently from the LLM; each block has at most 50 data rows.
 Facts that cannot fit the chosen layout are included in detail appendices.
 Narrative evidence is bounded separately and its omissions are disclosed.
 
-The generation engine lives in `core.reports.generation`; inventory mapping and
+The generation engine lives in `core.agents.report.generation`; inventory mapping and
 snapshot rules remain specialized contracts. Sharing the current Commerce schema
 does not make arbitrary new industry schemas plug-and-play. Adding a new data
 domain still requires approved schema/joins, metric definitions, permissions,

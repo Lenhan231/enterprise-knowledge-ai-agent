@@ -1,0 +1,23 @@
+{
+  "format_version": "sql-agent-benchmark-rescore.v1",
+  "rescore_id": "historical-clean-pilot-rescore-protocol-1.1.2-scorer-2.0.2",
+  "created_at": "2026-11-21T00:57:05.140587+00:00",
+  "protocol_version": "1.1.2",
+  "scorer_version": "2.0.2",
+  "scorer_sha256": "6f583019731396af4631864401cfdf32a1ddde04ae9e2d247ca9359afa8395a4",
+  "protocol_sha256": "c139518520a6c083c4fba591014f7fad77f96c4ab0c0e81cb9d2c6a99e3fefe8",
+  "case_set_path": "artifacts/sql-agent-bussiness/cases.json",
+  "case_set_sha256": "93b88c56b84c7e594d83c77a3e619aaf2f6aa1ff32868c686e937fe2f67063d4",
+  "source_data_path": "artifacts/sql-agent-bussiness/runs/pilot5-main-8e4abbd1-20261121/data.json",
+  "source_data_sha256": "cca797ce50b2aa272e6316c4395f90a90c79fd51a171e217e0006b1a4335ab4a",
+  "source_scores_path": "artifacts/sql-agent-bussiness/runs/pilot5-main-8e4abbd1-20261121/scores.json",
+  "source_scores_sha256": "644135fcfa33079d92ee8004eab5e6cf5e4f92a6a612803be84ed0c9230ed458",
+  "source_report_path": "artifacts/sql-agent-bussiness/runs/pilot5-main-8e4abbd1-20261121/report.md",
+  "source_report_sha256": "578b76dd4a8889591bd1b883c24a9555448377b9402bb7bba1548f353e0c25e7",
+  "reference_path": "artifacts/sql-agent-bussiness/runs/pilot5-origin-main-e6f3b909/reference.json",
+  "reference_sha256": "295c53652e5fe3a7fc8c3c35cffb9ecf4f6bc23e44b6db861955e369d0932a17",
+  "dataset_fingerprint_sha256": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028",
+  "execution_performed_during_rescore": false,
+  "provider_calls_during_rescore": 0,
+  "reason": "Scorer 2.0.2 reads the current preflight_coverage manifest field, fixing false rejection of EXTRACT(YEAR FROM order_date) for the verified DATE type. No query, provider call, gold or observation data was changed."
+}

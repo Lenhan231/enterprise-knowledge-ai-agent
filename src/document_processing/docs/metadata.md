@@ -17,10 +17,9 @@ The common shape is:
 ```
 
 Optional route-specific data includes `layout_detections`,
-`page_orientation_corrections`, `page_sizes`, `page_previews`,
-`invoice_extraction`, and `image_caption_extraction`. For route behavior, see
-the [architecture](architecture.md), [Docling](docling-pipeline.md), and
-[Vintern](vintern-pipeline.md) pages.
+`page_orientation_corrections`, `page_sizes`, `page_previews`, and
+`invoice_extraction`. For route behavior, see the [architecture](architecture.md),
+[Docling](docling-pipeline.md), and [invoice](invoice-pipeline.md) pages.
 
 ## Common element and table fields
 
@@ -28,9 +27,9 @@ the [architecture](architecture.md), [Docling](docling-pipeline.md), and
 | --- | --- | --- |
 | `filename` | element/table metadata and run metadata | Original uploaded filename |
 | `format` | element/table metadata and run metadata | File format, such as `PDF`, `DOCX`, or `CSV` |
-| `pipeline_id` | element/table metadata and run metadata | Selected route, e.g. `docling`, `docling_qwen_invoice_text`, `docling_xiaomi_ocr_invoice`, or `vintern_image_caption` |
+| `pipeline_id` | element/table metadata and run metadata | Selected route, e.g. `docling` or `docling_qwen_invoice_text` |
 | `parser_engine` | element/table metadata and run metadata | Parser route selected by the caller |
-| `parser` | element/table metadata | Component that produced the content, commonly `docling` or `vintern_*` |
+| `parser` | element/table metadata | Component that produced the content, commonly `docling` |
 | `text_extraction_method` | element/table metadata | Method used to produce text, such as `docling.native`, `docling.vietocr`, or `docling.tesseract` |
 | `page_number` | element/table metadata when applicable | Source page; removed for standalone PNG/JPEG/SVG/WebP inputs |
 | `bbox` | element metadata when available | Source location; `bbox_coordinate_system` describes its coordinates |
@@ -62,20 +61,6 @@ downstream chunking.
   model output and inference metrics remain in extraction metadata.
 - Docling elements and structured tables retain their normal OCR/parser
   provenance; the text model does not emit or alter those results.
-
-### Xiaomi-OCR-0 invoice extraction
-
-- Run metadata records `pipeline_id="docling_xiaomi_ocr_invoice"` and
-  `parser_engine="docling"`, plus model/revision and review status.
-- The vision-language model reads the original page images and emits the same
-  `invoice.v1` fields; Docling OCR elements and tables remain separate evidence.
-
-### Vintern
-
-- Run metadata records `pipeline_id="vintern_image_caption"`, model/revision,
-  and review status.
-- `image_caption_extraction.pages` keeps raw page responses and captions.
-- Vintern currently emits text elements and no structured tables.
 
 ## Parser output versus chunk metadata
 

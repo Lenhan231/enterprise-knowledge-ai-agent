@@ -7,8 +7,8 @@ from dotenv import load_dotenv
 from psycopg.rows import dict_row
 
 from core.database.connection_limit import close_database_connection, connect_database
-from core.analytics.sql_safety import UnsafeAnalyticsQuery, validate_analytics_sql, validate_commerce_sql
-from core.analytics.commerce_decision_support import COMMERCE_DECISION_PROFILES, COMMERCE_QUERY_TABLES
+from core.agents.sql.sql_safety import UnsafeAnalyticsQuery, validate_analytics_sql, validate_commerce_sql
+from core.agents.sql.commerce_decision_support import COMMERCE_DECISION_PROFILES, COMMERCE_QUERY_TABLES
 
 load_dotenv()
 
@@ -50,6 +50,10 @@ class DocumentRepository:
                                         SELECT 1 FROM public.document_processing_outputs output
                                         WHERE output.document_id = d.document_id
                                     ) AS has_processing_output,
+                                    EXISTS (
+                                        SELECT 1 FROM public.document_parser_chunks parser_chunk
+                                        WHERE parser_chunk.document_id = d.document_id
+                                    ) AS has_parser_chunks,
                                     d.allowed_roles,
                                     count(c.id)::int AS chunk_count,
                                     max(c.metadata->>'source_publisher') AS source_publisher,
@@ -537,6 +541,26 @@ class DocumentRepository:
                 (document_id, role, role),
             )
             return cursor.fetchone()
+
+    def accessible_document_ids(self, identifiers: list[str], roles: list[str]) -> set[str]:
+        """Recheck current retrieval ACLs before serving a saved document excerpt."""
+        with self.conn.cursor() as cursor:
+            cursor.execute("""SELECT document_id FROM public.documents
+                              WHERE document_id = ANY(%s::text[]) AND processing_status = 'ready'
+                                AND knowledge_base_active IS TRUE
+                                AND (allowed_roles && %s::text[] OR 'admin' = ANY(%s::text[]))""",
+                           (identifiers, roles, roles))
+            return {row['document_id'] for row in cursor.fetchall()}
+
+    def accessible_document_ids_by_title(self, titles: list[str], roles: list[str]) -> list[str]:
+        """Restrict fixed report evidence before ranking, with current document ACLs."""
+        with self.conn.cursor() as cursor:
+            cursor.execute('''SELECT document_id FROM public.documents
+                WHERE title = ANY(%s::text[]) AND processing_status='ready'
+                  AND knowledge_base_active IS TRUE
+                  AND (allowed_roles && %s::text[] OR 'admin'=ANY(%s::text[]))
+                ORDER BY document_id''', (titles,roles,roles))
+            return [row['document_id'] for row in cursor.fetchall()]
 
     def close(self) -> None:
         close_database_connection(self.conn)

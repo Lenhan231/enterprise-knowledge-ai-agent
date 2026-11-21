@@ -1,0 +1,159 @@
+{
+  "errors": [],
+  "validated_count": 30,
+  "gold_case_count": 30,
+  "per_case": [
+    {
+      "id": "B40-001",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-002",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-003",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-004",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-005",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-006",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-007",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-008",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-009",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-010",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-011",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-012",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-013",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-014",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-015",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-016",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-017",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-018",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-019",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-020",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-021",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-022",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-023",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-024",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-025",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-026",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-027",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-028",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-029",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "id": "B40-030",
+      "status": "PASS",
+      "errors": []
+    }
+  ],
+  "status": "PASS_STRUCTURAL_DRAFT",
+  "warning": "Structural SQL validation is not semantic review or human approval."
+}

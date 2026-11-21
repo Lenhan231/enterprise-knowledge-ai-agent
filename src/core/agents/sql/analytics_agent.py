@@ -57,6 +57,11 @@ class AnalyticsAgent(BaseAgent):
             if citations:
                 answer += "\n\nSources: " + "; ".join(citations)
             return {**result, "answer": answer}
+        if result.get('metadata', {}).get('metric_validation', {}).get('status') == 'unverified':
+            answer = self._fallback_answer(rows, sources, question)
+            if citations:
+                answer += "\n\nSources: " + "; ".join(citations)
+            return {**result, "answer": answer}
         prompt = ANALYTICS_SUMMARY_PROMPT.format(
             question=question,
             citations=', '.join(citations),

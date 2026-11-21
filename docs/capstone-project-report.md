@@ -202,7 +202,7 @@ PYTHONPATH=src uv run uvicorn app.main:app --reload --env-file .env --port 8000
 Run focused upload/OCR and agent checks:
 
 ```bash
-PYTHONPATH=src uv run python -m unittest tests.test_document_processor tests.test_pdf_upload_processing tests.test_upload_processing_flow -q
+PYTHONPATH=src uv run python -m unittest tests.documents.test_document_processor tests.test_pdf_upload_processing tests.documents.test_upload_processing_flow -q
 PYTHONPATH=src uv run python -m unittest tests.test_agents -q
 ```
 

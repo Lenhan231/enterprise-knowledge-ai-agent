@@ -4,10 +4,10 @@ import re
 from datetime import date
 from decimal import Decimal, InvalidOperation
 
-from core.agents.runtime import generate
+from core.agents.runtime import generate, generate_with_codex_cli, remaining
 from core.models.agents import AgentResult
 from core.prompts.agents import SYNTHESIS_PROMPT
-from core.rag.arithmetic import verified_results
+from core.agents.knowledge.arithmetic import verified_results
 
 _VIETNAMESE_TEXT = re.compile(
     r'[ăâđêôơưáàảãạấầẩẫậắằẳẵặéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]',
@@ -92,6 +92,30 @@ def _null_sql_findings(inputs, question):
             "between no matching rows and matching rows with missing values.")
 
 
+def _synthesis_context(inputs):
+    """Keep LLM context bounded while leaving complete query rows in the returned Results data."""
+    row_limit = 20
+    while True:
+        compact = []
+        for item in inputs:
+            data = item['data']
+            if isinstance(data, dict) and isinstance(data.get('rows'), list):
+                rows = data['rows']
+                compact_data = {'rows': rows[:row_limit], 'rows_truncated': len(rows) > row_limit}
+                if 'query_status' in data:
+                    compact_data['query_status'] = data['query_status']
+            else:
+                compact_data = data
+            evidence = [{key: source[key] for key in ('citation_id', 'source_type', 'source', 'content')
+                         if source.get(key) is not None}
+                        for source in item['evidence']]
+            compact.append({**item, 'data': compact_data, 'evidence': evidence})
+        serialized = json.dumps(compact, ensure_ascii=False, default=str)
+        if len(serialized) <= 32_000 or row_limit == 1:
+            return compact, serialized
+        row_limit = max(1, row_limit // 2)
+
+
 def _scalar_sql_finding(item, question):
     rows = item['data'].get('rows', [])
     if len(rows) != 1:
@@ -136,7 +160,7 @@ def _scalar_sql_finding(item, question):
 
 
 def _unverified_metric_sql_finding(item, question):
-    """Summarize executed rows plainly when metric validation was inconclusive."""
+    """Show executed rows directly when metric validation was inconclusive."""
     if (item.get('metric_validation') or {}).get('status') != 'unverified':
         return None
     rows = item['data'].get('rows', [])
@@ -144,15 +168,34 @@ def _unverified_metric_sql_finding(item, question):
     if not rows or not citations:
         return None
     refs = ' '.join(f'[{citation}]' for citation in citations)
-    findings = []
-    for row in rows[:5]:
-        findings.append('; '.join(f'{name}={value}' for name, value in row.items()))
-    details = ' | '.join(findings)
     if _is_vietnamese(question):
-        return (f'Kết quả truy vấn: {details} {refs}. Định nghĩa metric chưa được xác minh; '
-                'kết quả chỉ phản ánh các trường và phép tính của truy vấn, không phải metric nghiệp vụ đã được phê duyệt.')
-    return (f'Query result: {details} {refs}. The metric definition is unverified; '
-            'this reflects the query fields and calculation, not an approved business metric.')
+        heading = f'Kết quả SQL (metric chưa được xác minh) {refs}:'
+        caveat = ('Các dòng dưới đây phản ánh công thức của truy vấn; metric chưa phải chỉ số nghiệp vụ đã được phê duyệt.')
+    else:
+        heading = f'SQL results (metric unverified) {refs}:'
+        caveat = 'These rows reflect the query formula; the metric is not an approved business definition.'
+    return f'{heading}\n\n{_markdown_sql_findings(rows[:10])}\n\n{caveat}'
+
+
+def _markdown_sql_findings(rows):
+    if not rows:
+        return '_No rows returned._'
+    columns = list(dict.fromkeys(key for row in rows if isinstance(row, dict) for key in row))
+    if not columns:
+        return '\n'.join(f'- {json.dumps(row, ensure_ascii=False, default=str)}' for row in rows)
+
+    def cell(value):
+        if value is None:
+            return 'NULL'
+        if isinstance(value, (dict, list)):
+            value = json.dumps(value, ensure_ascii=False, default=str)
+        return str(value).replace('|', r'\|').replace('\r\n', '<br>').replace('\n', '<br>').replace('\r', '<br>')
+
+    header = '| ' + ' | '.join(cell(column) for column in columns) + ' |'
+    divider = '| ' + ' | '.join('---' for _ in columns) + ' |'
+    body = ['| ' + ' | '.join(cell(row.get(column)) for column in columns) + ' |'
+            for row in rows if isinstance(row, dict)]
+    return '\n'.join([header, divider, *body])
 
 
 def _calendar_year_comparison_sql_finding(item, question):
@@ -271,8 +314,15 @@ async def assemble_response(request, plan, execution, provider):
     usable = [o for o in active if o.result and o.result.evidence and o.status in {'complete', 'partial'}]
     missing = [o for o in active if o.status != 'complete']
     status = 'complete' if len(active) == len(plan.tasks) and not missing else ('partial' if usable else 'failed')
+    clarification_options = []
     if not usable and any(o.status == 'clarification_required' for o in active):
         status = 'clarification_required'
+        clarification_result = next((o.result for o in active
+                                     if o.status == 'clarification_required' and o.result), None)
+        if clarification_result:
+            options = clarification_result.metadata.get('clarification_options', [])
+            if isinstance(options, list):
+                clarification_options = options
     evidence, inputs, data, limitations = [], [], {}, []
     generic_validation_limit = 'The generated query did not pass planning or SQL validation.'
     for task in plan.tasks:
@@ -325,18 +375,23 @@ async def assemble_response(request, plan, execution, provider):
         specialist = {key: active[0].result.metadata[key] for key in ('claim_verification', 'insufficient_context', 'search', 'nearest_documents', 'withheld_draft')
                       if key in active[0].result.metadata}
         claim_checked = (specialist.get('claim_verification') or {}).get('status') == 'supported'
-    if (len(usable) == 1 and len(plan.tasks) == 1 and status == 'complete'
-            and (inputs[0].get('metric_validation') or {}).get('status') != 'unverified'):
-        deterministic_answer = (_month_over_month_sql_finding(inputs[0], request.question)
-                                or _scalar_sql_finding(inputs[0], request.question)
-                                if inputs[0]['agent'] == 'sql' else None)
+    if clarification_options:
+        specialist['clarification_options'] = clarification_options
+    if len(usable) == 1 and len(plan.tasks) == 1 and status == 'complete':
+        deterministic_answer = None
+        if inputs[0]['agent'] == 'sql':
+            if (inputs[0].get('metric_validation') or {}).get('status') == 'unverified':
+                deterministic_answer = _unverified_metric_sql_finding(inputs[0], request.question)
+            else:
+                deterministic_answer = (_month_over_month_sql_finding(inputs[0], request.question)
+                                        or _scalar_sql_finding(inputs[0], request.question))
         if deterministic_answer:
             answer, fallback = deterministic_answer, False
         elif inputs[0]['agent'] != 'sql':
             answer = inputs[0]['answer']
             fallback = bool(usable[0].result.metadata.get('fallback', False))
     if usable and not answer:
-        serialized = json.dumps(inputs, ensure_ascii=False, default=str)
+        synthesis_inputs, serialized = _synthesis_context(inputs)
         if len(serialized) <= 32_000:
             prompt = SYNTHESIS_PROMPT.format(
                 question=request.question,
@@ -344,9 +399,24 @@ async def assemble_response(request, plan, execution, provider):
                 limitations=json.dumps(limitations, ensure_ascii=False),
                 results=serialized,
             )
+            citation_ids_by_task = {
+                item['task_id']: [source['citation_id'] for source in item['evidence']
+                                  if source.get('citation_id')]
+                for item in inputs
+            }
+            prompt += ('\nCitation IDs by task (use only these exact uppercase IDs for that task’s facts): '
+                       + json.dumps(citation_ids_by_task, ensure_ascii=False))
+            if any(isinstance(item.get('data'), dict) and item['data'].get('rows_truncated')
+                   for item in synthesis_inputs):
+                prompt += ('\nSome SQL datasets are row-limited in this synthesis context. Summarize only the '
+                           'provided observations and do not claim they represent rows omitted from the context; '
+                           'the complete query results remain available in the Results view.')
             for attempt in range(2):
                 try:
-                    raw = await generate(provider, prompt, timeout=20)
+                    if provider == 'codex_cli':
+                        raw = await generate_with_codex_cli(prompt, timeout=55)
+                    else:
+                        raw = await generate(provider, prompt, timeout=20, max_output_tokens=400)
                 except Exception:
                     break
                 try:
@@ -354,6 +424,8 @@ async def assemble_response(request, plan, execution, provider):
                     candidate = draft['answer']
                     if not isinstance(candidate, str) or not candidate.strip() or len(candidate) > 8000:
                         raise ValueError('Invalid synthesis')
+                    candidate = re.sub(r'\[(s\d+)\]', lambda match: f'[{match[1].upper()}]', candidate,
+                                       flags=re.IGNORECASE)
                     cited = set(re.findall(r'\[(S\d+)\]', candidate))
                     allowed = {e.citation_id for e in evidence}
                     if not cited or not cited <= allowed or set(draft['used_tasks']) != {o.task.id for o in usable}:
@@ -405,7 +477,7 @@ async def assemble_response(request, plan, execution, provider):
                     scalar_answer = scalar
                     blocks.append(scalar)
                     continue
-                blocks.append(f'SQL findings {refs}:\n' + json.dumps(rows[:10], ensure_ascii=False, default=str))
+                blocks.append(f'SQL findings {refs}:\n' + _markdown_sql_findings(rows[:10]))
                 if len(rows) > 10:
                     limitations.append('Answer preview shows the first 10 rows; full returned rows remain in Results.')
             else:

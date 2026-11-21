@@ -365,7 +365,7 @@ class SQLAnalyticsAgent(BaseAgent):
                         primary_keys=primary_keys, approved_joins=approved_joins,
                     ), timeout=12)
                 except Exception:
-                    # Keep full-schema candidates when Jev is unavailable, while
+                    # Keep full-schema candidates when the decision model is unavailable, while
                     # retaining a deterministic relevant subset for routing and
                     # approved-join checks.
                     fallback_tables = relevant_schema_tables(
@@ -377,7 +377,7 @@ class SQLAnalyticsAgent(BaseAgent):
                     }
                     context_info['schema_table_selection'] = 'full_schema_fallback'
                 else:
-                    context_info['schema_table_selection'] = 'jev_top_five'
+                    context_info['schema_table_selection'] = 'decision_model_top_five'
             schema_tables = table_selection['tables'] if table_selection else None
             required_tables = table_selection['required_tables'] if table_selection else set()
             if table_selection:

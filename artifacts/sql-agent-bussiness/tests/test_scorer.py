@@ -198,21 +198,25 @@ class SQLAgentBenchmarkScorerTest(unittest.TestCase):
         self.assertTrue(outcome["business_end_to_end_correct"])
         self.assertFalse(outcome["strict_result_exact_match"])
 
-    def test_jev_recall_uses_raw_top_five_not_full_schema_fallback_coverage(self):
+    def test_schema_selector_recall_uses_raw_top_five_not_fallback_coverage(self):
         case = CASES["P02"]
         observation = observation_from_gold(case)
         observation["id"] = "P02"
         observation["schema_selection"] = {
-            "method": "jev_top_five", "candidate_tables": ["commerce.orders", "commerce.customers"],
+            "method": "decision_model_top_five", "candidate_tables": ["commerce.orders", "commerce.customers"],
             "final_selected_tables": ["commerce.orders", "commerce.customers"],
         }
-        jev = SCORER.score_experiment(CASE_SET, {
+        selector = SCORER.score_experiment(CASE_SET, {
             "cases": [observation if item["id"] == "P02" else {
                 "id": item["id"], "status": "NOT_RUN"} for item in CASE_SET["cases"]]
         })["metrics"]
-        self.assertEqual(jev["jev_table_recall_at_5"]["numerator"], 1)
-        self.assertEqual(jev["jev_table_recall_at_5"]["denominator"], 1)
-        self.assertEqual(jev["final_selected_schema_coverage"]["value"], 1.0)
+        self.assertEqual(selector["schema_selector_raw_recall_at_5"]["numerator"], 1)
+        self.assertEqual(selector["schema_selector_raw_recall_at_5"]["denominator"], 1)
+        self.assertEqual(selector["final_selected_schema_coverage"]["value"], 1.0)
+
+        observation["schema_selection"]["method"] = "jev_top_five"
+        legacy = SCORER.score_case(case, observation)
+        self.assertEqual(legacy["schema_selection"]["raw_top5"]["recall_numerator"], 1)
 
         observation["schema_selection"] = {
             "method": "full_schema_fallback", "candidate_tables": [],
@@ -222,7 +226,7 @@ class SQLAgentBenchmarkScorerTest(unittest.TestCase):
             "cases": [observation if item["id"] == "P02" else {
                 "id": item["id"], "status": "NOT_RUN"} for item in CASE_SET["cases"]]
         })["metrics"]
-        self.assertIsNone(fallback["jev_table_recall_at_5"]["value"])
+        self.assertIsNone(fallback["schema_selector_raw_recall_at_5"]["value"])
         self.assertEqual(fallback["final_selected_schema_coverage"]["value"], 1.0)
 
     def test_unsupported_scope_requires_abstention_without_sql_or_execution(self):
@@ -244,10 +248,10 @@ class SQLAgentBenchmarkScorerTest(unittest.TestCase):
         observation = {
             "id": "P05", "status": "clarification_required", "sql": None,
             "execution_events": [], "schema_selection": {
-                "jev_status": "failed", "jev_http_status": 402,
+                "schema_selector_status": "failed", "schema_selector_http_status": 402,
             }, "calls": {
                 "general_sql_generation": 1, "metric_interpretation": 1,
-                "jev_attempts": 1, "schema_discovery": 1,
+                "schema_selector_attempts": 1, "schema_discovery": 1,
             },
         }
 
@@ -256,7 +260,7 @@ class SQLAgentBenchmarkScorerTest(unittest.TestCase):
 
         self.assertEqual(metrics["provider_calls"]["sql_generation_provider_submissions"], 1)
         self.assertEqual(metrics["provider_calls"]["metric_interpretation_provider_submissions"], 1)
-        self.assertEqual(metrics["provider_calls"]["jev_requests"], 1)
+        self.assertEqual(metrics["provider_calls"]["schema_selection_provider_requests"], 1)
         self.assertEqual(metrics["pipeline_calls"]["schema_discovery"], 1)
         report = SCORER.render_report({"cases": [case]}, scored, {
             "experiment_id": "pilot", "status": "completed", "application_revision": "abc",
@@ -266,7 +270,7 @@ class SQLAgentBenchmarkScorerTest(unittest.TestCase):
             "dirty_worktree": True, "source_fingerprint_sha256": "source-fingerprint",
         })
         self.assertIn("Provider/model: `cloudflare` / `test-model`", report)
-        self.assertIn("JEV availability: **FAILED** (HTTP 402)", report)
+        self.assertIn("Schema selector availability: **FAILED** (HTTP 402)", report)
         self.assertIn("Worktree dirty: `True`", report)
 
     def test_not_run_cases_are_excluded_from_quality_denominators(self):
@@ -288,7 +292,7 @@ class SQLAgentBenchmarkScorerTest(unittest.TestCase):
             "calls": {
                 "general_sql_generation": 2,
                 "metric_interpretation": 1,
-                "jev_attempts": 1,
+                "schema_selector_attempts": 1,
                 "local_codex_fallback_calls": 1,
                 "provider_fallback_calls": 1,
                 "schema_discovery": 1,
@@ -300,7 +304,7 @@ class SQLAgentBenchmarkScorerTest(unittest.TestCase):
         self.assertEqual(metrics["provider_calls"], {
             "sql_generation_provider_submissions": 2,
             "metric_interpretation_provider_submissions": 1,
-            "jev_requests": 1,
+            "schema_selection_provider_requests": 1,
             "local_codex_fallback_calls": 1,
             "total_model_calls": 5,
             "secondary_sql_provider_fallback_submissions": 1,

@@ -15,6 +15,7 @@ JEV_ROUTE_THRESHOLD = 0.5
 JEV_HISTORY_THRESHOLD = 0.8
 JEV_ROUTES = {'knowledge', 'sql', 'plan_required'}
 JEV_TABLE_LIMIT = 5
+SQL_SCHEMA_SELECTION_MODEL = 'perplexity/pplx-decider-flash-v1.3:free'
 
 
 def classify_jev_route(question: str, approved_schema=None, history=()):
@@ -151,8 +152,9 @@ def select_jev_schema_tables(question, table_columns, metric_definitions=None, *
         'May provide a requested dimension or an approved bridge to a relevant table.',
         'Contains a requested measure or entity and is needed to answer the question.',
     ]
+    model = os.getenv('SQL_SCHEMA_SELECTION_MODEL', SQL_SCHEMA_SELECTION_MODEL).strip() or SQL_SCHEMA_SELECTION_MODEL
     request_body = json.dumps({
-        'model': 'typesafe/jev-1.14',
+        'model': model,
         'state': {'question': question, 'canonical_metrics': metric_context, 'schema_tables': descriptions},
         'questions': {
             question_id: {

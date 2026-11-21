@@ -46,6 +46,7 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
 
         request = urlopen.call_args.args[0]
         sent = json.loads(request.data)
+        self.assertEqual(sent['model'], 'typesafe/jev-1.14')
         self.assertEqual(set(sent['questions']), {'knowledge_required', 'sql_required', 'history_required'})
         self.assertIn('which promotion candidate', sent['questions']['knowledge_required']['instructions'])
         self.assertEqual(decision['selected_tools'], ['knowledge'])

@@ -12,9 +12,9 @@ from sqlglot import exp, parse_one
 from sqlglot.optimizer.scope import traverse_scope
 
 
-PROTOCOL_VERSION = "1.1.2"
-SCORER_VERSION = "2.0.2"
-SCORE_FORMAT_VERSION = "sql-agent-benchmark-scores.v2"
+PROTOCOL_VERSION = "1.2.0"
+SCORER_VERSION = "2.1.0"
+SCORE_FORMAT_VERSION = "sql-agent-benchmark-scores.v3"
 
 
 def _iso(value):
@@ -501,8 +501,8 @@ def score_case(case, observation, *, verified_column_types=None):
             final_required_count=len(required_tables),
         )
     candidates = set(schema_selection.get("candidate_tables", []))
-    if schema_selection.get("method") == "jev_top_five":
-        schema_selection["jev_top5"] = {
+    if schema_selection.get("method") in {"decision_model_top_five", "jev_top_five"}:
+        schema_selection["raw_top5"] = {
             "tables": sorted(candidates),
             "recall_numerator": len(required_tables & candidates),
             "recall_denominator": len(required_tables),
@@ -588,12 +588,12 @@ def score_experiment(case_set, data):
     latencies = [case.get("latency_ms") for case in supported]
     repairs = [case for case in supported if case.get("calls", {}).get("sql_repair", 0) > 0]
     repair_recovered = [case for case in repairs if case.get("execution_success")]
-    jev_applicable = [case for case in supported
-                      if case.get("schema_selection", {}).get("jev_top5") is not None]
-    jev_hits = sum(case["schema_selection"].get("jev_top5", {}).get("recall_numerator", 0)
-                   for case in jev_applicable)
-    jev_total = sum(case["schema_selection"].get("jev_top5", {}).get("recall_denominator", 0)
-                    for case in jev_applicable)
+    selector_applicable = [case for case in supported
+                           if case.get("schema_selection", {}).get("raw_top5") is not None]
+    selector_hits = sum(case["schema_selection"].get("raw_top5", {}).get("recall_numerator", 0)
+                        for case in selector_applicable)
+    selector_total = sum(case["schema_selection"].get("raw_top5", {}).get("recall_denominator", 0)
+                         for case in selector_applicable)
     return {
         "format_version": SCORE_FORMAT_VERSION,
         "protocol_version": PROTOCOL_VERSION,
@@ -613,10 +613,10 @@ def score_experiment(case_set, data):
                 "numerator": len(repair_recovered), "denominator": len(repairs),
                 "value": len(repair_recovered) / len(repairs) if repairs else None,
             },
-            "jev_table_recall_at_5": {
-                "numerator": jev_hits, "denominator": jev_total,
-                "value": jev_hits / jev_total if jev_total else None,
-                "applicable_cases": len(jev_applicable),
+            "schema_selector_raw_recall_at_5": {
+                "numerator": selector_hits, "denominator": selector_total,
+                "value": selector_hits / selector_total if selector_total else None,
+                "applicable_cases": len(selector_applicable),
             },
             "final_selected_schema_coverage": _coverage(outcomes),
             "unsafe_execution_count": sum(case.get("unsafe_execution_count", 0) for case in outcomes),
@@ -651,14 +651,14 @@ def _provider_call_summary(outcomes):
     calls = _sum_calls(outcomes)
     sql_generation = calls.get("general_sql_generation", 0)
     metric_interpretation = calls.get("metric_interpretation", 0)
-    jev = calls.get("jev_attempts", 0)
+    selector_requests = calls.get("schema_selector_attempts", calls.get("jev_attempts", 0))
     local_codex = calls.get("local_codex_fallback_calls", 0)
     return {
         "sql_generation_provider_submissions": sql_generation,
         "metric_interpretation_provider_submissions": metric_interpretation,
-        "jev_requests": jev,
+        "schema_selection_provider_requests": selector_requests,
         "local_codex_fallback_calls": local_codex,
-        "total_model_calls": sql_generation + metric_interpretation + jev + local_codex,
+        "total_model_calls": sql_generation + metric_interpretation + selector_requests + local_codex,
         # This is a subset of sql_generation_provider_submissions, not an extra total.
         "secondary_sql_provider_fallback_submissions": calls.get("provider_fallback_calls", 0),
     }
@@ -675,6 +675,7 @@ def render_report(case_set, scored, manifest):
         f"Status: **{manifest.get('status', 'unknown')}**",
         f"Application revision: `{manifest.get('application_revision', 'unknown')}`",
         f"Provider/model: `{manifest.get('provider', 'unknown')}` / `{manifest.get('model', 'unknown')}`",
+        f"Schema selection model: `{manifest.get('schema_selection_model', manifest.get('jev_model', 'unknown'))}`",
         f"Database: `{manifest.get('database_classification', 'unknown')}`; "
         f"read-only role verified: `{manifest.get('database_role_read_only', 'unknown')}`",
         f"Dataset fingerprint: `{manifest.get('dataset_fingerprint_sha256', 'unknown')}`",
@@ -689,7 +690,7 @@ def render_report(case_set, scored, manifest):
     for key in ("business_end_to_end_accuracy", "business_result_accuracy", "strict_result_exact_match", "sql_semantic_accuracy",
                 "execution_success", "false_clarification_abstention_rate", "supported_noncompletion_rate",
                 "validation_blocked_supported_rate", "safe_unsupported_abstention",
-                "valid_clarification_abstention_rate", "repair_recovery_rate", "jev_table_recall_at_5",
+                "valid_clarification_abstention_rate", "repair_recovery_rate", "schema_selector_raw_recall_at_5",
                 "final_selected_schema_coverage"):
         item = metrics[key]
         value = "N/A" if item.get("value") is None else f"{item['value']:.3f}"
@@ -728,15 +729,18 @@ def render_report(case_set, scored, manifest):
             f"| {outcome.get('failure_class') or '—'} |"
         )
     lines += ["", "## Method notes", "", "See [`PROTOCOL.md`](PROTOCOL.md) for metric definitions and applicability rules.", ""]
-    jev_failures = sorted({
-        (case.get("schema_selection", {}).get("jev_status"),
-         case.get("schema_selection", {}).get("jev_http_status"))
+    selector_failures = sorted({
+        (case.get("schema_selection", {}).get("schema_selector_status",
+                                              case.get("schema_selection", {}).get("jev_status")),
+         case.get("schema_selection", {}).get("schema_selector_http_status",
+                                              case.get("schema_selection", {}).get("jev_http_status")))
         for case in scored.get("cases", [])
-        if case.get("schema_selection", {}).get("jev_status") == "failed"
+        if case.get("schema_selection", {}).get("schema_selector_status",
+                                                case.get("schema_selection", {}).get("jev_status")) == "failed"
     }, key=lambda item: (str(item[0]), str(item[1])))
-    if jev_failures:
-        summary = ", ".join(f"HTTP {status}" if status else "failed" for _, status in jev_failures)
-        lines.extend(["JEV availability: **FAILED** (" + summary + "); recall@5 is not measurable.", ""])
+    if selector_failures:
+        summary = ", ".join(f"HTTP {status}" if status else "failed" for _, status in selector_failures)
+        lines.extend(["Schema selector availability: **FAILED** (" + summary + "); raw recall@5 is not measurable.", ""])
     blocker = manifest.get("not_run_reason")
     if manifest.get("status") == "NOT_RUN" or blocker:
         lines.extend([

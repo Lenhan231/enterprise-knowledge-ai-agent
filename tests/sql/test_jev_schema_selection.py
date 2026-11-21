@@ -1,5 +1,6 @@
 import io
 import json
+import os
 import sys
 import unittest
 from pathlib import Path
@@ -26,7 +27,10 @@ class JevSchemaSelectionTest(unittest.TestCase):
             }
         payload = json.dumps({'answers': answers}).encode()
 
-        with patch('core.agents.decision_support.intent_classifier.os.getenv', return_value='test-key'), patch(
+        with patch.dict(os.environ, {
+                'OPENROUTER_API_KEY': 'test-key',
+                'SQL_SCHEMA_SELECTION_MODEL': 'perplexity/pplx-decider-flash-v1.3:free',
+        }, clear=False), patch(
                 'core.agents.decision_support.intent_classifier.urllib.request.urlopen', return_value=io.BytesIO(payload)) as urlopen:
             selection = select_jev_schema_tables(
                 'compare returned and sold quantities by product', APPROVED_COLUMNS,
@@ -38,7 +42,7 @@ class JevSchemaSelectionTest(unittest.TestCase):
         self.assertIn('commerce.products', selection['tables'])
         self.assertEqual(selection['required_tables'], primary)
         request = json.loads(urlopen.call_args.args[0].data)
-        self.assertEqual(request['model'], 'typesafe/jev-1.14')
+        self.assertEqual(request['model'], 'perplexity/pplx-decider-flash-v1.3:free')
         self.assertEqual(len(request['questions']), len(APPROVED_COLUMNS))
 
     def test_supporting_inventory_candidate_is_not_in_sql_schema(self):
@@ -53,12 +57,18 @@ class JevSchemaSelectionTest(unittest.TestCase):
         }
         payload = json.dumps({'answers': answers}).encode()
 
-        with patch('core.agents.decision_support.intent_classifier.os.getenv', return_value='test-key'), patch(
-                'core.agents.decision_support.intent_classifier.urllib.request.urlopen', return_value=io.BytesIO(payload)):
+        with patch.dict(os.environ, {
+                'OPENROUTER_API_KEY': 'test-key',
+                'SQL_SCHEMA_SELECTION_MODEL': 'perplexity/pplx-decider-v1.3:free',
+        }, clear=False), patch(
+                'core.agents.decision_support.intent_classifier.urllib.request.urlopen', return_value=io.BytesIO(payload)) as urlopen:
             selection = select_jev_schema_tables(
                 'sản phẩm bán chạy nhất tháng trước', APPROVED_COLUMNS,
                 primary_keys=PRIMARY_KEYS, approved_joins=APPROVED_JOINS,
             )
+
+        request = json.loads(urlopen.call_args.args[0].data)
+        self.assertEqual(request['model'], 'perplexity/pplx-decider-v1.3:free')
 
         self.assertTrue(supporting <= selection['candidate_tables'])
         self.assertEqual(selection['required_tables'], required)
@@ -70,7 +80,7 @@ class JevSchemaSelectionTest(unittest.TestCase):
             for index, _ in enumerate(sorted(APPROVED_COLUMNS))
         }
         payload = json.dumps({'answers': answers}).encode()
-        with patch('core.agents.decision_support.intent_classifier.os.getenv', return_value='test-key'), patch(
+        with patch.dict(os.environ, {'OPENROUTER_API_KEY': 'test-key'}, clear=False), patch(
                 'core.agents.decision_support.intent_classifier.urllib.request.urlopen', return_value=io.BytesIO(payload)):
             with self.assertRaisesRegex(ValueError, 'did not identify'):
                 select_jev_schema_tables('unknown question', APPROVED_COLUMNS)

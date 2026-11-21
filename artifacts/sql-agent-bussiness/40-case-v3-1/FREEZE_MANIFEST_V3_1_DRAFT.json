@@ -1,6 +1,6 @@
 {
   "format_version": "sql-agent-business-benchmark-freeze-manifest.v3.1-draft",
-  "status": "PENDING_INDEPENDENT_HUMAN_REVIEW_AND_TEST_FOLLOW_UP",
+  "status": "PENDING_REVIEWER_2_ADJUDICATION_AND_TEST_FOLLOW_UP",
   "freeze_status": "DRAFT_NOT_FROZEN",
   "submitted_date_local": "2026-11-21",
   "branch": "benchmark/v3-1-output-contract-20261121",
@@ -73,14 +73,26 @@
     "ai_technical_review_v3_complete": true,
     "ai_review_is_not_human_approval": true,
     "independent_human_reviewers_approved": 0,
-    "reviewer_1": "PENDING",
+    "review_records_logged": 1,
+    "reviewer_1": {
+      "status": "APPROVED_ALL_40",
+      "reviewer_id": "Lenhan231",
+      "record_file": "review_v3_1_reviewer_1_Lenhan231_complete.json",
+      "record_sha256": "4de70c567e45e96ce32a8666885461fcad06be7d1154a759615981e4f8d8e48d",
+      "approved_cases": 40,
+      "recorded_at": "2026-11-21T13:30:10Z",
+      "recording_source": "explicit_user_confirmation_after_browser_review_was_not_exported",
+      "original_per_case_timestamps_available": false,
+      "original_rationales_available": false,
+      "independence_attestation": "role slot recorded as reviewer_1; independent status is not established by this artifact alone"
+    },
     "reviewer_2": "PENDING",
     "adjudication": "PENDING"
   },
   "tests": {
     "ci_discovery_test_added": "tests/sql/test_benchmark_v3_1_contract.py",
     "test_runtime_execution_in_this_turn": true,
-    "v3_1_contract_tests": "PASS 21/21",
+    "v3_1_contract_tests": "PASS 23/23",
     "benchmark_package_tests": "PASS 45/45",
     "sql_tests": "PASS 534 passed, 10 skipped (544 run)",
     "v3_historical_artifact_tests": "FAIL 1/55: archived REVIEW_CHECKLIST.md hash mismatch (54 passed)",
@@ -103,7 +115,10 @@
     },
     "independent_human_approvals": 0,
     "runner_emits_independent_audit_records": false,
-    "heldout_agent_executed": false
+    "heldout_agent_executed": false,
+    "review_record_sha256": "4de70c567e45e96ce32a8666885461fcad06be7d1154a759615981e4f8d8e48d",
+    "review_timestamp_is_recording_time_not_original_review_time": true,
+    "human_review_records_logged": 1
   },
   "ready_for_independent_human_review": true,
   "ready_for_formal_freeze": false,

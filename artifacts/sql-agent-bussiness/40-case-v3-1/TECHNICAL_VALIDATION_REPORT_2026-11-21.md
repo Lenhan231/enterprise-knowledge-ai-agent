@@ -1,6 +1,6 @@
 # SQL Agent benchmark v3.1 technical validation
 
-**Status:** technical validation run complete with disclosed test failures. Ready for independent human review. Not frozen. The 40-case SQL Agent cohort was not executed.
+**Status:** technical validation run complete with disclosed test failures. One reviewer record now covers 40/40 cases; Reviewer 2 and adjudication remain pending. Not frozen. The 40-case SQL Agent cohort was not executed.
 
 ## Revision and scope
 
@@ -25,7 +25,7 @@
 
 Preflight at `2026-11-21T11:47:16Z` returned `VERIFIED_READ_ONLY_PREFLIGHT`, verified the host allowlist and least-privilege role, and reproduced fingerprint `dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028`. The value matches the provisional references. Snapshot evidence includes 15 tables, 47 inventory snapshots, no warehouse dimension, and no supplier/lead-time fields.
 
-The repository-approved generator executed 30 Gold queries against the frozen snapshot. All 30 matched the provisional SQL/parameters/columns/rows exactly: 404 rows total, zero query failures, zero database writes, zero SQL Agent calls. The output remains provisional, with zero human approvals.
+The repository-approved generator executed 30 Gold queries against the frozen snapshot. All 30 matched the provisional SQL/parameters/columns/rows exactly: 404 rows total, zero query failures, zero database writes, zero SQL Agent calls. At that execution time there were no human approvals; the later review record is listed below. The output remains provisional.
 
 All 28 valid mutations were executed through the approved read-only repository. Result-based detection was **23/26 (88.46%)**; three valid variants were observationally equivalent on this snapshot:
 
@@ -79,7 +79,7 @@ Commands were run in the repository's Python 3.11.16 environment (`uv run --proj
 
 | Command | Result |
 |---|---|
-| `PYTHONPATH=src uv run --project /home/lenhanm1/orca/workspaces/enterprise-knowledge-ai-agent/main --no-sync python -m unittest discover -s tests/sql -p 'test_benchmark_v3_1_contract.py' -v` | PASS: 21 run, 21 passed. |
+| `PYTHONPATH=src uv run --project /home/lenhanm1/orca/workspaces/enterprise-knowledge-ai-agent/main --no-sync python -m unittest discover -s tests/sql -p 'test_benchmark_v3_1_contract.py' -v` | PASS: 23 run, 23 passed (includes the archived-checklist provenance and review-record hash/freeze-gate regressions). |
 | `PYTHONPATH=src uv run --project /home/lenhanm1/orca/workspaces/enterprise-knowledge-ai-agent/main --no-sync python -m unittest discover -s artifacts/sql-agent-bussiness/tests -v` | PASS: 45 run, 45 passed. |
 | `PYTHONPATH=src uv run --project /home/lenhanm1/orca/workspaces/enterprise-knowledge-ai-agent/main --no-sync python -m unittest discover -s tests/sql -q` | PASS: 544 run, 534 passed, 10 skipped. |
 | `PYTHONPATH=/home/lenhanm1/orca/workspaces/enterprise-knowledge-ai-agent/pr61-validation-20261121/src:/home/lenhanm1/orca/workspaces/enterprise-knowledge-ai-agent/pr61-validation-20261121/artifacts/sql-agent-bussiness/40-case-preparation uv run --project /home/lenhanm1/orca/workspaces/enterprise-knowledge-ai-agent/main --no-sync python -m unittest discover -s artifacts/sql-agent-bussiness/40-case-v3 -p 'test_*.py' -v` | FAIL: 55 run, 54 passed; one preserved manifest checksum mismatch for `REVIEW_CHECKLIST.md` (expected `0aa3…`, actual `117b…`). |
@@ -87,12 +87,21 @@ Commands were run in the repository's Python 3.11.16 environment (`uv run --proj
 
 `PYTHONPATH=src uv run --project /home/lenhanm1/orca/workspaces/enterprise-knowledge-ai-agent/main --no-sync python -m py_compile artifacts/sql-agent-bussiness/40-case-v3-1/semantic_audit_v3_1.py artifacts/sql-agent-bussiness/40-case-v3-1/scorer_v3_1.py artifacts/sql-agent-bussiness/40-case-v3-1/generate_gold_results_v3_1.py artifacts/sql-agent-bussiness/40-case-v3-1/run_mutation_probes_v3_1.py tests/sql/test_benchmark_v3_1_contract.py` passed. JSON parsing passed for the six v3.1 manifest/preflight/Gold/mutation and pilot data/score files. `git diff --check` passed. The v3 historical checksum and HEIF test failures are not hidden or counted as passes.
 
+For the review-record regression, an initial run against the worktree-local `.venv` stopped at test import because that environment lacked `sqlglot`; rerunning with the repository's existing Python environment (`--project .../main --no-sync`) executed the suite successfully. This was an environment setup failure, not a test assertion failure.
+
 ## Review and execution gates
 
 - `TECHNICAL_VALIDATION_COMPLETE = YES_WITH_DISCLOSED_TEST_FAILURES` — the read-only data, Gold, mutation, scorer, ranking, pilot, and SQL-agent validations ran; the two test failures above remain visible.
-- `READY_FOR_INDEPENDENT_HUMAN_REVIEW = YES` — the v3.1 candidate, hashes, Gold, results, and limitations are packaged for review.
+- `REVIEWER_1_APPROVAL_RECORD = 40/40 APPROVE` — see [review record](review_v3_1_reviewer_1_Lenhan231_complete.json), bound to the exact case/Gold/result hashes. The user confirmed that all 40 cases had been reviewed in the browser UI, but the page produced no recoverable export. This JSON records that confirmation; its timestamp is the artifact logging time, not the original review time, and per-case rationales were not supplied.
+- `READY_FOR_INDEPENDENT_HUMAN_REVIEW = YES` — Reviewer 2 must still review the exact v3.1 candidate; the artifact does not independently attest reviewer independence.
 - `READY_FOR_40_CASE_GOLD_PREPARATION = YES` — proceed with two independent semantic reviews and adjudication of these exact candidate hashes.
-- `READY_FOR_FREEZE = NO` — zero independent approvals; adjudication and test follow-up remain.
+- `READY_FOR_FREEZE = NO` — one review record is logged; Reviewer 2, adjudication, and test follow-up remain.
 - `READY_FOR_40_CASE_EXECUTION = NO` — do not execute the 40-case Agent cohort until independent review and formal freeze.
 
 The v3.1 case set remains a draft. No original v2/v3 evidence was overwritten.
+
+## Review logging and UI persistence note
+
+The user confirmed that all 40 cases had already been reviewed and approved in the local HTML page, but no JSON export was retained. The page stores state only in that browser's `localStorage`; it does not write to the repository or sync across browsers. A 40/40 `APPROVE` record was therefore logged from the user's confirmation at `2026-11-21T13:30:10Z`; that timestamp is the logging time, not the original per-case review time. No per-case rationale or original timestamp was supplied. The record is hash-bound to the exact v3.1 case, Gold SQL, and provisional result files. Reviewer 2 and adjudication are still pending, so the cohort remains unfrozen and unexecuted.
+
+Regression: `test_recovered_reviewer_approval_is_linked_and_does_not_freeze_cohort` verifies the 40 decisions, reviewer record hash, source artifact hashes, pending Reviewer 2/adjudication, and no-freeze/no-execution gates.

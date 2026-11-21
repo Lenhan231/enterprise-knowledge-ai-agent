@@ -86,7 +86,8 @@ def _sector(cx, cy, inner, outer, start, end):
 
 def _tip(x, y, head, rows, W, flip=None):
     """SVG tooltip shown by CSS on :hover (the dashboard document runs no script)."""
-    width = max([len(head) * 6.6] + [(len(a) + len(b)) * 6.4 + 34 for a, b, *_ in rows]) + 26
+    # name starts after the dot (27) or the edge (13); a 24 px gap; the value is bold and right-aligned 13 px in
+    width = max([len(head) * 7.4 + 26] + [(27 if len(row) > 3 else 13) + len(row[0]) * 6.9 + 24 + len(row[1]) * 7.6 + 13 for row in rows])
     height = 30 + 20 * len(rows)
     left = x + 14
     if flip is True or (flip is None and left + width > W - 6):

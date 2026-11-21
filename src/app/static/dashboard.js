@@ -30,13 +30,14 @@
     setBusy(true);
     status(message);
     const skeleton = document.getElementById('dw-skeleton');
-    if (skeleton && !el('editor').hidden) skeleton.hidden = false;
+    const covering = !!skeleton && !el('editor').hidden;
+    if (covering) { skeleton.hidden = false; el('preview').hidden = true; } // the skeleton replaces the old preview while it reloads
     try {
       await work(valid);
     } catch (error) {
       if (valid()) status(error.message || 'Dashboard request failed.', true);
     } finally {
-      if (skeleton) skeleton.hidden = true;
+      if (covering) { skeleton.hidden = true; el('preview').hidden = false; }
       if (valid()) {
         setBusy(false);
         if (!root.hidden && !el('create').hidden && !restartRequired) el('prompt').focus();

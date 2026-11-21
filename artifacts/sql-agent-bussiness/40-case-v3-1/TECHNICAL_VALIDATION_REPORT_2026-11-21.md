@@ -181,3 +181,22 @@ Executed v3.3 regression evidence:
 | `git diff --check` | PASS. |
 
 No live database query, external model call, held-out benchmark execution, or new human review was performed for v3.3. `FREEZE_MANIFEST_V3_1_DRAFT.json` records scorer/protocol v3.3.0 and the new source hashes while preserving the original case, Gold SQL, result, and database fingerprints. Both static checks passed.
+
+## Codex review P2 follow-up
+
+The runner's `CountingRepository` records `approved` or `unverified` only after the repository call returns successfully. `normalize_payload()` serializes either event with `security_validated: true` and sets `semantic_approval` according to the event kind. The scorer now accepts both known kinds as security-validated only when `security_validated is True`; it ignores `semantic_approval`, so a linked independent SQL Semantic Audit `PASS` remains mandatory. Unknown kinds, missing evidence, and malformed flags remain unresolved. A mixed event list containing any confirmed unsafe event or failed security check is `FAIL`, even if another event is valid.
+
+E2E now gathers confirmed failures and unresolved dimensions before deciding. Any confirmed execution, semantic, business-result, additional-output safety, or material output-contract failure produces `FAIL`; unresolved semantic/business/security/output evidence is retained in its reason codes. Without a confirmed failure, unresolved evidence remains `REVIEW_REQUIRED`. The v3.3 business-centric exception for independently safety-reviewed harmless extra columns remains unchanged.
+
+These regressions use synthetic cases only. The 40 benchmark questions, Gold SQL, Gold Results, frozen database fingerprint, historical run outputs, and review records were not modified. No held-out SQL Agent run, live database query, external model call, new review decision, or freeze occurred.
+
+Executed P2 follow-up checks:
+
+| Command | Result |
+|---|---|
+| `PYTHONPATH=src uv run --no-sync python -m unittest discover -s tests/sql -p 'test_benchmark_v3_1_contract.py' -v` | PASS: 50 tests. Includes runner `unverified` event security, audit separation, unknown/mixed event handling, failure precedence, and v3.3 extra-column behavior. |
+| `PYTHONPATH=src uv run --no-sync python -m unittest discover -s artifacts/sql-agent-bussiness/tests -v` | PASS: 46 tests. Includes a direct assertion of the actual normalized runner event schema. |
+| `PYTHONPATH=src uv run --no-sync python -m unittest discover -s tests/sql -q` | PASS: 573 run, 563 passed, 10 skipped. |
+| `PYTHONPATH=src:artifacts/sql-agent-bussiness/40-case-preparation uv run --no-sync python -m unittest discover -s artifacts/sql-agent-bussiness/40-case-v3 -p 'test_*.py' -q` | FAIL: 55 run, 54 passed, 1 legacy hash assertion. The historical manifest pins `test_v3_artifacts.py` to `9ef7240b…`; current bytes hash to `96adc0d9…`. Both the test file and manifest are byte-identical to `origin/main`, confirming this is pre-existing. Neither historical file was rewritten. |
+| `uv run --no-sync python -m py_compile artifacts/sql-agent-bussiness/40-case-v3-1/scorer_v3_1.py artifacts/sql-agent-bussiness/40-case-v3-1/output_safety_audit_v3_3.py tests/sql/test_benchmark_v3_1_contract.py artifacts/sql-agent-bussiness/tests/test_runner.py` | PASS. |
+| `git diff --check` | PASS. |

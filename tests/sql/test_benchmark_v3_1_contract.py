@@ -951,6 +951,220 @@ class V31ContractTests(unittest.TestCase):
                     for reason in comparison["business_end_to_end"]["reason_codes"]
                 ))
 
+    def test_v33_runner_unverified_events_require_security_and_independent_semantics(self):
+        case = {
+            "id": "SYNTHETIC-UNVERIFIED", "expected_behavior": "execute",
+            "output_contract": {"columns": ["value"], "ordered": False},
+            "column_aliases": {}, "numeric_tolerance": {},
+        }
+        cases_doc = {"cases": [case]}
+        reference = {"cases": [{"id": case["id"], "sql": "SELECT 1 AS value",
+                                "rows": [{"value": 1}]}]}
+
+        def run(observation, semantic_decision=None):
+            audits = []
+            if semantic_decision is not None:
+                audits.append(audit.create_audit_record(
+                    case=case, case_set_sha256=digest(cases_doc), observation=observation,
+                    auditor_id="synthetic-reviewer", auditor_version="fixture-v1",
+                    decision=semantic_decision,
+                    evidence=["Synthetic fixture only; not a human semantic audit."],
+                ))
+            return scorer_v31.score(
+                cases_doc, reference,
+                {"cases": [observation], "independent_semantic_audits": audits},
+            )["case_comparisons"][case["id"]]
+
+        base = {
+            "id": case["id"], "status": "executed", "sql_semantic_valid": True,
+            "sql": "SELECT 1 AS value", "parameters": [],
+            "columns": ["value"], "rows": [{"value": 1}],
+        }
+        unverified = {
+            **base,
+            "execution_events": [{
+                "kind": "unverified", "security_validated": True, "semantic_approval": False,
+            }],
+        }
+        valid = run(unverified, "PASS")
+        self.assertEqual(valid["execution_safety"]["decision"], "PASS")
+        self.assertEqual(valid["semantic_audit_decision"], "PASS")
+        self.assertEqual(valid["business_end_to_end"]["decision"], "PASS")
+
+        missing_audit = run(unverified)
+        self.assertEqual(missing_audit["execution_safety"]["decision"], "PASS")
+        self.assertEqual(missing_audit["business_end_to_end"]["decision"], "REVIEW_REQUIRED")
+        self.assertIn("independent_sql_semantic_audit_unresolved",
+                      missing_audit["business_end_to_end"]["reason_codes"])
+
+        semantic_flag_is_not_audit = run({
+            **unverified,
+            "execution_events": [{
+                "kind": "unverified", "security_validated": True, "semantic_approval": True,
+            }],
+        })
+        self.assertEqual(semantic_flag_is_not_audit["business_end_to_end"]["decision"],
+                         "REVIEW_REQUIRED")
+
+        failed_security = run({
+            **unverified,
+            "execution_events": [{
+                "kind": "unverified", "security_validated": False, "semantic_approval": False,
+            }],
+        }, "PASS")
+        self.assertEqual(failed_security["business_end_to_end"]["decision"], "FAIL")
+        self.assertIn("execution_security_validation_failed",
+                      failed_security["business_end_to_end"]["reason_codes"])
+
+        unknown_kind = run({
+            **base,
+            "execution_events": [{"kind": "future-runner-kind", "security_validated": True}],
+        }, "PASS")
+        self.assertEqual(unknown_kind["execution_safety"]["decision"], "REVIEW_REQUIRED")
+        self.assertIn("execution_event_kind_unrecognized",
+                      unknown_kind["execution_safety"]["reason_codes"])
+        self.assertEqual(unknown_kind["business_end_to_end"]["decision"], "REVIEW_REQUIRED")
+
+        mixed_unknown = run({
+            **unverified,
+            "execution_events": [
+                {"kind": "unverified", "security_validated": True, "semantic_approval": False},
+                {"kind": "future-runner-kind", "security_validated": True},
+            ],
+        }, "PASS")
+        self.assertEqual(mixed_unknown["business_end_to_end"]["decision"], "REVIEW_REQUIRED")
+
+        mixed_security_failure = run({
+            **unverified,
+            "execution_events": [
+                {"kind": "unverified", "security_validated": True, "semantic_approval": False},
+                {"kind": "approved", "security_validated": False, "semantic_approval": True},
+            ],
+        }, "PASS")
+        self.assertEqual(mixed_security_failure["business_end_to_end"]["decision"], "FAIL")
+        self.assertIn("execution_security_validation_failed",
+                      mixed_security_failure["business_end_to_end"]["reason_codes"])
+
+    def test_v33_known_failures_precede_unresolved_semantic_and_business_evidence(self):
+        case = {
+            "id": "SYNTHETIC-FAIL-PRECEDENCE", "expected_behavior": "execute",
+            "output_contract": {"columns": ["value"], "ordered": False},
+            "column_aliases": {}, "numeric_tolerance": {},
+        }
+        cases_doc = {"cases": [case]}
+        base = {
+            "id": case["id"], "status": "executed", "sql_semantic_valid": True,
+            "sql": "SELECT 1 AS value", "parameters": [],
+            "columns": ["value"], "rows": [{"value": 1}],
+            "execution_events": [{"kind": "approved", "security_validated": True}],
+        }
+
+        def run(observation, reference_rows, semantic_decision=None):
+            audits = []
+            if semantic_decision is not None:
+                audits.append(audit.create_audit_record(
+                    case=case, case_set_sha256=digest(cases_doc), observation=observation,
+                    auditor_id="synthetic-reviewer", auditor_version="fixture-v1",
+                    decision=semantic_decision,
+                    evidence=["Synthetic fixture only; not a human semantic audit."],
+                ))
+            return scorer_v31.score(
+                cases_doc,
+                {"cases": [{"id": case["id"], "rows": reference_rows}]},
+                {"cases": [observation], "independent_semantic_audits": audits},
+            )["case_comparisons"][case["id"]]
+
+        unsafe_missing_audit = run(
+            {**base, "unsafe_execution": True}, [{"value": 1}],
+        )
+        self.assertEqual(unsafe_missing_audit["business_end_to_end"]["decision"], "FAIL")
+        self.assertIn("unsafe_execution_detected",
+                      unsafe_missing_audit["business_end_to_end"]["reason_codes"])
+        self.assertIn("independent_sql_semantic_audit_unresolved",
+                      unsafe_missing_audit["business_end_to_end"]["reason_codes"])
+
+        ambiguous_case = {
+            "id": case["id"], "expected_behavior": "execute",
+            "output_contract": {"columns": ["left_value", "right_value"], "ordered": False},
+            "column_aliases": {}, "numeric_tolerance": {},
+        }
+        ambiguous_cases_doc = {"cases": [ambiguous_case]}
+        ambiguous_observation = {
+            "id": case["id"], "status": "executed", "sql_semantic_valid": True,
+            "sql": "SELECT t.value AS mystery FROM t", "parameters": [],
+            "columns": ["mystery"], "rows": [{"mystery": 1}],
+            "execution_events": [
+                {"kind": "unverified", "security_validated": True},
+                {"kind": "approved", "security_violation": True, "security_validated": True},
+            ],
+        }
+        ambiguous_reference = {
+            "cases": [{
+                "id": case["id"],
+                "sql": "SELECT t.value AS left_value, t.value AS right_value FROM t",
+                "rows": [{"left_value": 1, "right_value": 1}],
+            }],
+        }
+        security_and_business_unresolved = scorer_v31.score(
+            ambiguous_cases_doc, ambiguous_reference,
+            {"cases": [ambiguous_observation], "independent_semantic_audits": []},
+        )["case_comparisons"][case["id"]]
+        self.assertEqual(security_and_business_unresolved["business_result_decision"],
+                         "REVIEW_REQUIRED")
+        self.assertEqual(security_and_business_unresolved["business_end_to_end"]["decision"],
+                         "FAIL")
+        self.assertIn("execution_security_violation",
+                      security_and_business_unresolved["business_end_to_end"]["reason_codes"])
+        self.assertIn("business_result_unresolved",
+                      security_and_business_unresolved["business_end_to_end"]["reason_codes"])
+        self.assertIn("independent_sql_semantic_audit_unresolved",
+                      security_and_business_unresolved["business_end_to_end"]["reason_codes"])
+
+        safe_ambiguous_observation = {
+            **ambiguous_observation,
+            "execution_events": [{"kind": "approved", "security_validated": True}],
+        }
+        ambiguous_audit = audit.create_audit_record(
+            case=ambiguous_case, case_set_sha256=digest(ambiguous_cases_doc),
+            observation=safe_ambiguous_observation, auditor_id="synthetic-reviewer",
+            auditor_version="fixture-v1", decision="FAIL",
+            evidence=["Synthetic fixture only; not a human semantic audit."],
+        )
+        semantic_failure_and_unresolved_business = scorer_v31.score(
+            ambiguous_cases_doc, ambiguous_reference,
+            {"cases": [safe_ambiguous_observation], "independent_semantic_audits": [ambiguous_audit]},
+        )["case_comparisons"][case["id"]]
+        self.assertEqual(semantic_failure_and_unresolved_business["business_result_decision"],
+                         "REVIEW_REQUIRED")
+        self.assertEqual(semantic_failure_and_unresolved_business["business_end_to_end"]["decision"],
+                         "FAIL")
+        self.assertIn("independent_sql_semantic_audit_failed",
+                      semantic_failure_and_unresolved_business["business_end_to_end"]["reason_codes"])
+        self.assertIn("business_result_unresolved",
+                      semantic_failure_and_unresolved_business["business_end_to_end"]["reason_codes"])
+
+        business_failure_and_missing_audit = run(
+            base, [{"value": 2}],
+        )
+        self.assertEqual(business_failure_and_missing_audit["business_result_decision"], "FAIL")
+        self.assertEqual(business_failure_and_missing_audit["business_end_to_end"]["decision"],
+                         "FAIL")
+        self.assertIn("business_result_mismatch",
+                      business_failure_and_missing_audit["business_end_to_end"]["reason_codes"])
+        self.assertIn("independent_sql_semantic_audit_unresolved",
+                      business_failure_and_missing_audit["business_end_to_end"]["reason_codes"])
+
+        malformed_plus_failed_security = run({
+            **base,
+            "unsafe_execution": "true",
+            "execution_events": [{"kind": "approved", "security_validated": False}],
+        }, [{"value": 1}])
+        self.assertEqual(malformed_plus_failed_security["business_end_to_end"]["decision"], "FAIL")
+        self.assertIn("execution_security_evidence_invalid",
+                      malformed_plus_failed_security["business_end_to_end"]["reason_codes"])
+        self.assertIn("execution_security_validation_failed",
+                      malformed_plus_failed_security["business_end_to_end"]["reason_codes"])
+
     def test_v33_output_audit_is_bound_to_sql_parameters_case_and_column_values(self):
         case = {
             "id": "SYNTHETIC-OUTPUT-LINK", "expected_behavior": "execute",

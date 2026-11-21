@@ -538,52 +538,53 @@ def compare_business_results(case, reference_rows, observation, *, reference_sql
 
 def _execution_safety_assessment(observation):
     """Require runner security evidence; missing evidence cannot be inferred safe."""
+    failures = []
+    unresolved = []
     unsafe_count = observation.get("unsafe_execution_count", 0)
     if isinstance(unsafe_count, bool) or not isinstance(unsafe_count, int) or unsafe_count < 0:
-        return {"decision": "REVIEW_REQUIRED", "reason_codes": ["unsafe_execution_count_invalid"]}
+        unresolved.append("unsafe_execution_count_invalid")
+    elif unsafe_count > 0:
+        failures.append("unsafe_execution_detected")
     for flag in ("unsafe_execution", "security_violation"):
         if flag in observation and not isinstance(observation[flag], bool):
-            return {
-                "decision": "REVIEW_REQUIRED",
-                "reason_codes": ["execution_security_evidence_invalid"],
-            }
-    if (
-        unsafe_count > 0
-        or observation.get("unsafe_execution") is True
-        or observation.get("security_violation") is True
-    ):
-        return {"decision": "FAIL", "reason_codes": ["unsafe_execution_detected"]}
+            unresolved.append("execution_security_evidence_invalid")
+        elif observation.get(flag) is True:
+            failures.append("unsafe_execution_detected")
 
     events = observation.get("execution_events")
     if not isinstance(events, list) or not events:
-        return {"decision": "REVIEW_REQUIRED", "reason_codes": ["execution_security_evidence_missing"]}
+        unresolved.append("execution_security_evidence_missing")
+        events = []
     checked_events = 0
+    known_event_kinds = {"approved", "unverified", "executed", "execution", "sql_execution"}
     for index, event in enumerate(events):
         if not isinstance(event, dict):
-            return {
-                "decision": "REVIEW_REQUIRED",
-                "reason_codes": [f"execution_event_{index}_invalid"],
-            }
+            unresolved.append(f"execution_event_{index}_invalid")
+            continue
         for flag in ("unsafe_execution", "security_violation", "security_validated"):
             if flag in event and not isinstance(event[flag], bool):
-                return {
-                    "decision": "REVIEW_REQUIRED",
-                    "reason_codes": [f"execution_event_{index}_security_evidence_invalid"],
-                }
-        if event.get("unsafe_execution") is True or event.get("security_violation") is True:
-            return {"decision": "FAIL", "reason_codes": ["execution_security_violation"]}
+                unresolved.append(f"execution_event_{index}_security_evidence_invalid")
+            elif flag in {"unsafe_execution", "security_violation"} and event.get(flag) is True:
+                failures.append("execution_security_violation")
         if event.get("security_validated") is False:
-            return {"decision": "FAIL", "reason_codes": ["execution_security_validation_failed"]}
-        kind = str(event.get("kind", "")).casefold()
-        if kind in {"approved", "executed", "execution", "sql_execution"}:
+            failures.append("execution_security_validation_failed")
+        raw_kind = event.get("kind")
+        kind = raw_kind.casefold() if isinstance(raw_kind, str) else ""
+        if kind in known_event_kinds:
             if event.get("security_validated") is not True:
-                return {
-                    "decision": "REVIEW_REQUIRED",
-                    "reason_codes": [f"execution_event_{index}_security_validation_missing"],
-                }
-            checked_events += 1
+                unresolved.append(f"execution_event_{index}_security_validation_missing")
+            else:
+                # `semantic_approval` is runner metadata, not the independent SQL audit.
+                checked_events += 1
+        else:
+            unresolved.append("execution_event_kind_unrecognized")
     if not checked_events:
-        return {"decision": "REVIEW_REQUIRED", "reason_codes": ["approved_execution_event_missing"]}
+        unresolved.append("approved_execution_event_missing")
+    reason_codes = list(dict.fromkeys([*failures, *unresolved]))
+    if failures:
+        return {"decision": "FAIL", "reason_codes": reason_codes}
+    if unresolved:
+        return {"decision": "REVIEW_REQUIRED", "reason_codes": reason_codes}
     return {
         "decision": "PASS",
         "reason_codes": ["read_only_security_validation_passed"],
@@ -644,65 +645,66 @@ def _business_end_to_end_assessment(
     observation, comparison, semantic_decision, execution_safety, additional_output_safety,
 ):
     """Classify E2E separately from exact output-contract compliance."""
+    failures = []
+    unresolved = []
     if not _base._executed(observation):
-        return {"decision": "FAIL", "reason_codes": ["supported_sql_not_successfully_executed"]}
+        failures.append("supported_sql_not_successfully_executed")
     if semantic_decision == "FAIL":
-        return {"decision": "FAIL", "reason_codes": ["independent_sql_semantic_audit_failed"]}
-    if semantic_decision != "PASS":
-        return {"decision": "REVIEW_REQUIRED", "reason_codes": ["independent_sql_semantic_audit_unresolved"]}
+        failures.append("independent_sql_semantic_audit_failed")
+    elif semantic_decision != "PASS":
+        unresolved.append("independent_sql_semantic_audit_unresolved")
 
     business_decision = comparison["business_result_decision"]
     if business_decision == "FAIL":
-        return {"decision": "FAIL", "reason_codes": ["business_result_mismatch"]}
-    if business_decision != "PASS":
-        return {"decision": "REVIEW_REQUIRED", "reason_codes": ["business_result_unresolved"]}
+        failures.append("business_result_mismatch")
+    elif business_decision != "PASS":
+        unresolved.append("business_result_unresolved")
 
     if execution_safety["decision"] == "FAIL":
-        return {
-            "decision": "FAIL",
-            "reason_codes": [*execution_safety["reason_codes"]],
-        }
-    if execution_safety["decision"] != "PASS":
-        return {
-            "decision": "REVIEW_REQUIRED",
-            "reason_codes": [*execution_safety["reason_codes"]],
-        }
+        failures.extend(execution_safety.get("reason_codes", []) or ["execution_safety_failed"])
+    elif execution_safety["decision"] != "PASS":
+        unresolved.extend(execution_safety.get("reason_codes", []) or ["execution_safety_unresolved"])
+
+    additional_decision = additional_output_safety["decision"]
+    if additional_decision == "FAIL":
+        failures.extend(
+            additional_output_safety.get("reason_codes", [])
+            or ["additional_output_safety_failed"]
+        )
+    elif additional_decision in {"REVIEW_REQUIRED", "INDETERMINATE"}:
+        unresolved.extend(
+            additional_output_safety.get("reason_codes", [])
+            or ["additional_output_safety_unresolved"]
+        )
+    elif additional_decision not in {"PASS", "NOT_REQUIRED"}:
+        unresolved.append("additional_output_safety_decision_invalid")
 
     output_decision = comparison["output_contract_decision"]
     output_reasons = set(comparison["output_contract_reason_codes"])
-    if output_decision == "PASS":
-        return {
-            "decision": "PASS",
-            "reason_codes": ["business_semantics_and_essential_output_requirements_passed"],
-        }
+    harmless_extra_only = (
+        output_decision == "FAIL" and output_reasons == {"unexpected_extra_columns"}
+    )
     if output_decision == "REVIEW_REQUIRED":
-        return {
-            "decision": "REVIEW_REQUIRED",
-            "reason_codes": ["essential_output_contract_unresolved"],
-        }
-    if output_decision == "FAIL" and output_reasons == {"unexpected_extra_columns"}:
-        if additional_output_safety["decision"] == "PASS":
-            return {
-                "decision": "PASS",
-                "reason_codes": [
-                    "business_semantics_and_essential_output_requirements_passed",
-                    "additional_columns_independently_reviewed_as_safe",
-                    "strict_output_contract_deviation_retained",
-                ],
-            }
-        if additional_output_safety["decision"] == "FAIL":
-            return {
-                "decision": "FAIL",
-                "reason_codes": [*additional_output_safety["reason_codes"]],
-            }
-        return {
-            "decision": "REVIEW_REQUIRED",
-            "reason_codes": [*additional_output_safety["reason_codes"]],
-        }
-    return {
-        "decision": "FAIL",
-        "reason_codes": ["material_output_contract_violation"],
-    }
+        unresolved.append("essential_output_contract_unresolved")
+    elif output_decision == "FAIL" and not harmless_extra_only:
+        failures.append("material_output_contract_violation")
+    elif output_decision not in {"PASS", "FAIL"}:
+        unresolved.append("output_contract_decision_invalid")
+    if harmless_extra_only and additional_decision == "NOT_REQUIRED":
+        unresolved.append("additional_output_safety_unresolved")
+
+    reason_codes = list(dict.fromkeys([*failures, *unresolved]))
+    if failures:
+        return {"decision": "FAIL", "reason_codes": reason_codes}
+    if unresolved:
+        return {"decision": "REVIEW_REQUIRED", "reason_codes": reason_codes}
+
+    reason_codes = ["business_semantics_and_essential_output_requirements_passed"]
+    if additional_decision == "PASS":
+        reason_codes.append("additional_columns_independently_reviewed_as_safe")
+    if harmless_extra_only:
+        reason_codes.append("strict_output_contract_deviation_retained")
+    return {"decision": "PASS", "reason_codes": reason_codes}
 
 
 def score(cases_doc: dict, reference_doc: dict, experiment_doc: dict) -> dict:

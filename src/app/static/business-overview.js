@@ -5,7 +5,8 @@
   let canRead = false;
   const CACHE_MS = 5 * 60 * 1000;
   let cachedAt = null, owner = null, generation = null, pending = null;
-  const skeleton = on => { const node = document.getElementById('home-overview-skeleton'); if (node) node.hidden = !on; };
+  // While refreshing, the skeleton takes the overview's place; the success and error paths below decide what shows next.
+  const skeleton = on => { const node = document.getElementById('home-overview-skeleton'); if (!node) return; node.hidden = !on; if (on) el('home-overview-preview').hidden = true; };
   async function overview(valid) {
     skeleton(true);
     el('home-overview-status').textContent='Refreshing authorized source data…';

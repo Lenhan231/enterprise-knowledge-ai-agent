@@ -174,3 +174,15 @@ window.addEventListener("load", () => setTimeout(() => {
           const pre = document.createElement("pre"); pre.id = "ahlog"; pre.textContent = log.join("\n"); document.body.append(pre); }, 400); }, 300); }, 400);
   }, 700));
 })();
+// ?shot=refreshprobe: press Refresh overview and record what is visible while it loads and after
+(() => {
+  if (new URLSearchParams(location.search).get("shot") !== "refreshprobe") return;
+  window.addEventListener("load", () => setTimeout(() => {
+    const frame = document.getElementById("home-overview-preview"), sk = document.getElementById("home-overview-skeleton"), log = [];
+    const state = (when) => log.push(`${when}: overview hidden=${frame.hidden} skeleton hidden=${sk.hidden}`);
+    state("before");
+    document.getElementById("home-overview-refresh").click();
+    state("right after click");
+    setTimeout(() => { state("after load"); const pre = document.createElement("pre"); pre.id = "rp"; pre.textContent = log.join("\n"); document.body.append(pre); }, 1500);
+  }, 1500));
+})();

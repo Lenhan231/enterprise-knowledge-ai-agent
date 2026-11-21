@@ -193,18 +193,19 @@
     "e2e_extra_column_exception": "only_unapproved_extra_columns_with_one_valid_linked_safety_review_each",
     "unresolved_extra_column_safety": "REVIEW_REQUIRED",
     "unsafe_execution_or_security_violation": "FAIL",
+    "malformed_execution_security_evidence": "REVIEW_REQUIRED",
     "missing_runner_security_evidence": "REVIEW_REQUIRED",
     "extra_column_review_authenticated": false,
     "business_end_to_end_requires_independent_sql_audit_pass": true,
     "business_end_to_end_requires_business_result_pass": true
   },
   "scoring_artifacts_sha256": {
-    "artifacts/sql-agent-bussiness/40-case-v3-1/scorer_v3_1.py": "e4adaf2e6ee92a21f5ba4b9d17428514addbb706f6a760ca78e9057c1809cc37",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/scorer_v3_1.py": "0be99da504e4d12bdc21762a7c0817471069cb0272e96eeb6f5fe23bc3d47fa4",
     "artifacts/sql-agent-bussiness/40-case-v3-1/semantic_audit_v3_1.py": "af041327fe3264042f0c6fa1cb3e886a96c5cf32a22232d0747d9f1464d41514",
     "artifacts/sql-agent-bussiness/40-case-v3-1/output_safety_audit_v3_3.py": "72a09a9ca856a27fc755664f50de0f31d7d236172a039cad010dd9d0aea1296d",
-    "artifacts/sql-agent-bussiness/40-case-v3-1/PROTOCOL_V3_1.md": "9d0baade802e639854999b16cb098cd3e2c64a7163218328342be81e4061a387",
-    "artifacts/sql-agent-bussiness/40-case-v3-1/README.md": "ab0238ec47d352a752d56b10481cdc82bca5960590d65d5b375023a40cd7de3d",
-    "artifacts/sql-agent-bussiness/40-case-v3-1/TECHNICAL_VALIDATION_REPORT_2026-11-21.md": "49b95cd9843d8509bdb11e50967ca76b51c7d266559516354466d64b3e50da32",
-    "tests/sql/test_benchmark_v3_1_contract.py": "d9b668fde0992c6146be72f33f827b41d4c70fe05498435a411bb1731c5b498f"
+    "artifacts/sql-agent-bussiness/40-case-v3-1/PROTOCOL_V3_1.md": "44cc38e69011b166a02e7e252304a23be6fe99dcdf2f40714380e961db0e5044",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/README.md": "95179ee523cd6f4f4f9bcb957de224fbbf6453421c1f2fabeb9d63514d014907",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/TECHNICAL_VALIDATION_REPORT_2026-11-21.md": "9fe501e984d4dc081501185c8e06b9f6198373965849b1474ab8824e8ce2d753",
+    "tests/sql/test_benchmark_v3_1_contract.py": "8bc0b3b68ad0a7804976ffc86243eeddd53df59a0e5eb271da666255b653a6fc"
   }
 }

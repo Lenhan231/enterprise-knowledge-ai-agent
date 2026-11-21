@@ -541,7 +541,17 @@ def _execution_safety_assessment(observation):
     unsafe_count = observation.get("unsafe_execution_count", 0)
     if isinstance(unsafe_count, bool) or not isinstance(unsafe_count, int) or unsafe_count < 0:
         return {"decision": "REVIEW_REQUIRED", "reason_codes": ["unsafe_execution_count_invalid"]}
-    if unsafe_count > 0 or observation.get("unsafe_execution") is True:
+    for flag in ("unsafe_execution", "security_violation"):
+        if flag in observation and not isinstance(observation[flag], bool):
+            return {
+                "decision": "REVIEW_REQUIRED",
+                "reason_codes": ["execution_security_evidence_invalid"],
+            }
+    if (
+        unsafe_count > 0
+        or observation.get("unsafe_execution") is True
+        or observation.get("security_violation") is True
+    ):
         return {"decision": "FAIL", "reason_codes": ["unsafe_execution_detected"]}
 
     events = observation.get("execution_events")
@@ -554,6 +564,12 @@ def _execution_safety_assessment(observation):
                 "decision": "REVIEW_REQUIRED",
                 "reason_codes": [f"execution_event_{index}_invalid"],
             }
+        for flag in ("unsafe_execution", "security_violation", "security_validated"):
+            if flag in event and not isinstance(event[flag], bool):
+                return {
+                    "decision": "REVIEW_REQUIRED",
+                    "reason_codes": [f"execution_event_{index}_security_evidence_invalid"],
+                }
         if event.get("unsafe_execution") is True or event.get("security_violation") is True:
             return {"decision": "FAIL", "reason_codes": ["execution_security_violation"]}
         if event.get("security_validated") is False:

@@ -150,7 +150,7 @@ Limitations remain: SQL expression lineage only supports straightforward SELECT 
 
 This scoring-only revision keeps the v3.1 case set, Gold SQL, provisional Gold results, database fingerprint, reviewer records, and all historical run outputs unchanged. It does not create semantic audit records or additional-column safety approvals. The cohort remains `DRAFT_NOT_FROZEN`; the held-out 40-case SQL Agent benchmark was not run.
 
-Business End-to-End Accuracy now requires successful execution, a linked independent SQL semantic audit `PASS`, Business Result Accuracy `PASS`, explicit runner security-validation evidence, zero reported unsafe executions, and essential output requirements. It may pass with Output Contract Compliance `FAIL` only when the sole contract deviation is unapproved extra columns and every such column has exactly one linked safety review that passes all required checks. Missing, ambiguous, duplicate, stale, or contradictory evidence yields `REVIEW_REQUIRED`; a failed safety check or unsafe execution yields `FAIL`. Business Result Accuracy, SQL Semantic Accuracy, Output Contract Compliance, and Business End-to-End Accuracy remain separate metrics with per-case reason codes.
+Business End-to-End Accuracy now requires successful execution, a linked independent SQL semantic audit `PASS`, Business Result Accuracy `PASS`, explicit runner security-validation evidence, zero reported unsafe executions, and essential output requirements. It may pass with Output Contract Compliance `FAIL` only when the sole contract deviation is unapproved extra columns and every such column has exactly one linked safety review that passes all required checks. Missing, ambiguous, duplicate, stale, contradictory, or wrong-typed execution safety evidence yields `REVIEW_REQUIRED`; a failed safety check or explicitly unsafe execution yields `FAIL`. Present safety flags must be JSON booleans. Business Result Accuracy, SQL Semantic Accuracy, Output Contract Compliance, and Business End-to-End Accuracy remain separate metrics with per-case reason codes.
 
 The additional-output review record is linked to the exact SQL, parameters, case contract, full case set, observed result, and values of the reviewed column. Its seven reviewer-supplied checks cover required business values, row cardinality, grain/population, metric/aggregation, meaning, sensitivity, and access authorization. The scorer does not infer a reviewer decision or use an LLM judge. These plain JSON records are not authenticated, so the artifact cannot prove reviewer identity, independence, policy contents, or that supplied evidence is true. SQLGlot projection lineage remains a narrow expression/column-label check, not full-query equivalence.
 
@@ -162,6 +162,7 @@ Synthetic regression outcomes (fixtures are not human review evidence):
 | Same extra column with no linked safety evidence | PASS | FAIL | REVIEW_REQUIRED |
 | Extra sensitive/unauthorized column with failed safety checks | PASS | FAIL | FAIL |
 | Reviewer decision says PASS but a required check says FAIL | PASS | FAIL | REVIEW_REQUIRED |
+| Malformed execution safety flag types | PASS | PASS | REVIEW_REQUIRED |
 | Case-insensitive canonical column names | PASS | PASS | PASS |
 | Reordered columns, approved aliases, unordered rows, and independently audited equivalent SQL | PASS | PASS | PASS |
 | Wrong business values, missing/extra rows, NULL-to-zero, required ordering/ranking violation, or independent semantic audit FAIL | FAIL or unresolved per evidence | FAIL or REVIEW_REQUIRED | FAIL |
@@ -172,7 +173,7 @@ Executed v3.3 regression evidence:
 
 | Command | Result |
 |---|---|
-| `PYTHONPATH=src uv run --locked --project . python -m unittest discover -s tests/sql -p 'test_benchmark_v3_1_contract.py' -q` | PASS: 48 run, 48 passed. Includes synthetic positive/negative/review-required cases and all 30 stored Gold row comparisons. |
+| `PYTHONPATH=src uv run --locked --project . python -m unittest discover -s tests/sql -p 'test_benchmark_v3_1_contract.py' -q` | PASS: 48 run, 48 passed. Includes malformed safety-marker types, synthetic positive/negative/review-required cases, and all 30 stored Gold row comparisons. |
 | `PYTHONPATH=src uv run --locked --project . python -m unittest discover -s artifacts/sql-agent-bussiness/tests -q` | PASS: 45 run, 45 passed. |
 | `PYTHONPATH=src uv run --locked --project . python -m unittest discover -s tests/sql -q` | PASS: 571 run, 561 passed, 10 skipped. |
 | `PYTHONPATH=src:artifacts/sql-agent-bussiness/40-case-preparation uv run --locked --project . python -m unittest discover -s artifacts/sql-agent-bussiness/40-case-v3 -p 'test_*.py' -q` | FAIL: 55 run, 54 passed, 1 pre-existing historical hash assertion. The archived v3 manifest pins `test_v3_artifacts.py` to `9ef7240b…`; current bytes hash to `96adc0d9…`. Historical files were not changed. |

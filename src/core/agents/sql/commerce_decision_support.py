@@ -145,7 +145,7 @@ COMMERCE_QUERY_TABLES = {
 COMMERCE_UNAVAILABLE_DIMENSIONS = {
     "inventory_allocation": {
         "region": {"columns": ("region",), "aliases": ("region", "regional", "vùng", "khu vực")},
-        "warehouse/location": {"columns": ("warehouse", "location", "fulfillment_center"), "aliases": ("warehouse", "warehouse location", "location", "fulfillment center", "kho hàng", "địa điểm", "trung tâm hoàn tất đơn")},
+        "warehouse/location": {"columns": ("warehouse", "location", "fulfillment_center"), "aliases": ("warehouse", "warehouse location", "location", "fulfillment center", "kho", "kho hàng", "địa điểm", "trung tâm hoàn tất đơn")},
         "supplier": {"columns": ("supplier", "supplier_id", "vendor"), "aliases": ("supplier", "vendor", "nhà cung cấp")},
         "demand forecast": {
             "columns": ("demand_forecast", "forecast_demand"),
@@ -154,7 +154,12 @@ COMMERCE_UNAVAILABLE_DIMENSIONS = {
                 "demand trend", "demand trends", "dự báo nhu cầu",
             ),
         },
-        "supplier lead time": {"columns": ("supplier_lead_time",), "aliases": ("supplier lead time", "lead time nhà cung cấp", "thời gian cung ứng")},
+        "supplier lead time": {
+            "columns": ("supplier_lead_time",),
+            "aliases": ("supplier lead time", "lead time nhà cung cấp", "lead time của nhà cung cấp", "thời gian cung ứng"),
+            "request_mode": "mention",
+            "requires_dimensions": ("supplier",),
+        },
     },
     "nationwide_logistics": {
         "carrier": {"columns": ("carrier", "carrier_id", "delivery_provider"), "aliases": ("carrier", "delivery provider", "shipping provider", "đơn vị vận chuyển", "nhà vận chuyển", "hãng vận chuyển", "hãng giao hàng", "nhà giao hàng")},
@@ -173,10 +178,14 @@ def unavailable_commerce_dimensions(question: str, domain: str, available_column
         r'\b(?:schema|data|dataset|fields?|columns?)\b.*\b(?:support|contain|include|available|enough|rank|choose)\b'
         r'|\b(?:có thể|đủ dữ liệu|schema hiện có|schema commerce)\b', text
     ))
-    unavailable = []
+    unavailable = set()
     for dimension, definition in COMMERCE_UNAVAILABLE_DIMENSIONS.get(domain, {}).items():
         if set(definition["columns"]).intersection(available_columns):
             continue
+        alias_matches = [
+            bool(re.search(rf"(?<!\w){re.escape(alias)}(?!\w)", text))
+            for alias in definition["aliases"]
+        ]
         requested_as_slice = any(
             re.search(
                 rf"\b(?:by|per|each|across|between|among|for each|which|theo|mỗi|từng|giữa)\s+"
@@ -185,9 +194,13 @@ def unavailable_commerce_dimensions(question: str, domain: str, available_column
             ) or (schema_availability_question and re.search(rf"(?<!\w){re.escape(alias)}(?!\w)", text))
             for alias in definition["aliases"]
         )
-        if requested_as_slice:
-            unavailable.append(dimension)
-    return unavailable
+        requested_as_measure = definition.get("request_mode") == "mention" and any(alias_matches)
+        if requested_as_slice or requested_as_measure:
+            unavailable.add(dimension)
+            unavailable.update(definition.get("requires_dimensions", ()))
+    return [dimension for dimension in COMMERCE_UNAVAILABLE_DIMENSIONS.get(domain, {})
+            if dimension in unavailable
+            and not set(COMMERCE_UNAVAILABLE_DIMENSIONS[domain][dimension]["columns"]).intersection(available_columns)]
 
 
 def _commerce_term_words(text: str) -> set[str]:

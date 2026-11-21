@@ -512,6 +512,45 @@ class CrossDomainAgentTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn('carrier_id', result.answer)
         provider.generate.assert_not_called()
 
+    async def test_p05_schema_gap_abstains_before_jev_sql_generation_and_execution(self):
+        from core.agents.sql.agent import SQLAnalyticsAgent as CurrentSQLAnalyticsAgent
+        from core.agents.sql.join_validation import PRIMARY_KEYS
+        from core.agents.sql.sql_validation import APPROVED_JOINS
+        from core.agents.sql.text_to_sql import APPROVED_DATE_COLUMNS
+        from core.models.agents import AgentRequest, VerifiedIdentity
+
+        class Repository:
+            def __init__(self):
+                self.execute_approved_query = AsyncMock(return_value=[])
+
+            async def get_schema(self):
+                return {'tables': APPROVED_COLUMNS, 'primary_keys': PRIMARY_KEYS,
+                        'joins': APPROVED_JOINS, 'date_columns': APPROVED_DATE_COLUMNS}
+
+        question = (
+            'Tại snapshot 2026-11-13, tồn kho từng kho và lead time của nhà cung cấp '
+            'cho từng sản phẩm là bao nhiêu?'
+        )
+        repository = Repository()
+        provider = Mock()
+        agent = CurrentSQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+        with patch('core.agents.sql.agent.select_jev_schema_tables') as schema_selection:
+            result = await agent.run(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertEqual(result.metadata['status'], 'unsupported')
+        self.assertFalse(result.metadata.get('clarification_required', False))
+        self.assertEqual(result.metadata['unsupported_dimensions'],
+                         ['warehouse/location', 'supplier', 'supplier lead time'])
+        self.assertIn('warehouse', result.answer.casefold())
+        self.assertIn('supplier', result.answer.casefold())
+        self.assertIn('lead time', result.answer.casefold())
+        provider.generate.assert_not_called()
+        schema_selection.assert_not_called()
+        repository.execute_approved_query.assert_not_awaited()
+
     async def test_exact_monthly_stockout_question_executes_with_unverified_derived_measures(self):
         from core.agents.sql.agent import SQLAnalyticsAgent as CurrentSQLAnalyticsAgent
         from core.agents.sql.join_validation import PRIMARY_KEYS

@@ -21,6 +21,8 @@ def observation_from_gold(case):
         "parameters": gold["parameters"],
         "rows": gold["rows"],
         "columns": list(gold["rows"][0]) if gold["rows"] else [],
+        "answer": "This request needs unavailable warehouse and supplier lead-time data."
+        if not case["supported"] else "Query completed.",
         "execution_events": [],
     }
 
@@ -42,6 +44,111 @@ class SQLAgentBenchmarkScorerTest(unittest.TestCase):
         outcome = SCORER.score_case(case, observation)
         self.assertFalse(outcome["sql_semantic_accuracy"])
         self.assertFalse(outcome["business_end_to_end_correct"])
+
+    def test_extract_year_is_date_range_equivalent_only_for_verified_date_columns(self):
+        case = CASES["P02"]
+        observation = observation_from_gold(case)
+        observation["sql"] = (
+            "SELECT o.customer_id, COUNT(DISTINCT o.order_id) AS order_count "
+            "FROM commerce.orders AS o WHERE o.order_status = $1 "
+            "AND EXTRACT(YEAR FROM o.order_date) = 2025 "
+            "GROUP BY o.customer_id ORDER BY order_count DESC, o.customer_id ASC LIMIT 5"
+        )
+        observation["parameters"] = ["delivered"]
+        observation["id"] = "P02"
+        observations = [
+            observation if item["id"] == "P02" else {"id": item["id"], "status": "NOT_RUN"}
+            for item in CASE_SET["cases"]
+        ]
+        data = {"manifest": {"data_coverage": {
+            "commerce.orders": {"order_date_type": "date"},
+        }}, "cases": observations}
+        outcome = SCORER.score_experiment(CASE_SET, data)["cases"][1]
+        self.assertTrue(outcome["semantic"]["checks"]["filter:date_range"])
+        self.assertTrue(outcome["semantic"]["checks"]["filter:order_status"])
+        self.assertTrue(outcome["sql_semantic_accuracy"])
+
+        current_manifest = {"preflight_coverage": {
+            "commerce.orders": {"order_date_type": "date"},
+        }}
+        current_run = SCORER.score_experiment(CASE_SET, {
+            "manifest": current_manifest, "cases": observations,
+        })["cases"][1]
+        self.assertTrue(current_run["semantic"]["checks"]["filter:date_range"])
+        self.assertTrue(current_run["sql_semantic_accuracy"])
+
+        missing_status = dict(observation)
+        missing_status["sql"] = observation["sql"].replace('o.order_status = $1 AND ', '')
+        missing_status["parameters"] = []
+        missing_status_data = {"manifest": data["manifest"], "cases": [
+            missing_status if item["id"] == "P02" else {"id": item["id"], "status": "NOT_RUN"}
+            for item in CASE_SET["cases"]
+        ]}
+        missing_status_outcome = SCORER.score_experiment(CASE_SET, missing_status_data)["cases"][1]
+        self.assertTrue(missing_status_outcome["semantic"]["checks"]["filter:date_range"])
+        self.assertFalse(missing_status_outcome["semantic"]["checks"]["filter:order_status"])
+        self.assertFalse(missing_status_outcome["sql_semantic_accuracy"])
+
+        for unverified_type in ("timestamp without time zone", "timestamp with time zone", None):
+            with self.subTest(column_type=unverified_type):
+                manifest = {"data_coverage": {"commerce.orders": {}}}
+                if unverified_type is not None:
+                    manifest["data_coverage"]["commerce.orders"]["order_date_type"] = unverified_type
+                blocked = SCORER.score_experiment(CASE_SET, {
+                    "manifest": manifest, "cases": observations,
+                })["cases"][1]
+                self.assertFalse(blocked["semantic"]["checks"]["filter:date_range"])
+
+        observation["sql"] = observation["sql"].replace(
+            "EXTRACT(YEAR FROM o.order_date) = 2025",
+            "EXTRACT(YEAR FROM o.order_date) = 2025 AND o.order_date >= DATE '2025-06-01'",
+        )
+        narrowed = SCORER.score_experiment(CASE_SET, {"manifest": data["manifest"],
+            "cases": [observation if item["id"] == "P02" else {"id": item["id"], "status": "NOT_RUN"}
+                      for item in CASE_SET["cases"]]})["cases"][1]
+        self.assertFalse(narrowed["semantic"]["checks"]["filter:date_range"])
+
+    def test_historical_supported_failure_is_noncompletion_not_false_abstention(self):
+        historical = json.loads((ROOT / "runs/pilot5-main-8e4abbd1-20261121/data.json").read_text())
+        metrics = SCORER.score_experiment(CASE_SET, historical)["metrics"]
+
+        self.assertEqual(metrics["false_clarification_abstention_rate"], {
+            "numerator": 0, "denominator": 4, "value": 0.0,
+        })
+        self.assertEqual(metrics["supported_noncompletion_rate"], {
+            "numerator": 1, "denominator": 4, "value": 0.25,
+        })
+        self.assertEqual(metrics["validation_blocked_supported_rate"], {
+            "numerator": 1, "denominator": 4, "value": 0.25,
+        })
+
+    def test_failure_taxonomy_distinguishes_clarification_validation_and_provider_failure(self):
+        case = CASES["P01"]
+        clarified = SCORER.score_case(case, {
+            "status": "clarification_required", "answer": "Which year?", "sql": None,
+            "execution_events": [],
+        })
+        self.assertTrue(clarified["false_clarification_abstention"])
+        self.assertTrue(clarified["supported_noncompletion"])
+        self.assertFalse(clarified["validation_blocked_supported"])
+
+        blocked = SCORER.score_case(case, {
+            "status": "failed", "error_type": "SQLValidationError",
+            "failure_class": "sql_validation_failure", "sql": None,
+            "execution_events": [],
+        })
+        self.assertFalse(blocked["false_clarification_abstention"])
+        self.assertTrue(blocked["supported_noncompletion"])
+        self.assertTrue(blocked["validation_blocked_supported"])
+
+        provider = SCORER.score_case(case, {
+            "status": "provider_error", "error_type": "TimeoutError",
+            "failure_class": "provider_failure", "sql": None,
+            "execution_events": [],
+        })
+        self.assertFalse(provider["false_clarification_abstention"])
+        self.assertTrue(provider["supported_noncompletion"])
+        self.assertFalse(provider["validation_blocked_supported"])
 
     def test_wrong_ranking_direction_fails_even_if_reference_rows_are_copied(self):
         case = CASES["P03"]
@@ -122,6 +229,13 @@ class SQLAgentBenchmarkScorerTest(unittest.TestCase):
         case = CASES["P05"]
         observation = observation_from_gold(case)
         self.assertTrue(SCORER.score_case(case, observation)["safe_unsupported_abstention"])
+        observation["metadata"] = {"clarification_options": ["Use product-level inventory"]}
+        self.assertTrue(SCORER.score_case(case, observation)["safe_unsupported_abstention"])
+        observation["metadata"] = {"clarification_options": ["", {"label": "invalid"}]}
+        self.assertFalse(SCORER.score_case(case, observation)["safe_unsupported_abstention"])
+        observation["metadata"] = ["malformed"]
+        self.assertFalse(SCORER.score_case(case, observation)["safe_unsupported_abstention"])
+        observation["metadata"] = {"clarification_options": ["Use product-level inventory"]}
         observation["sql"] = "SELECT * FROM commerce.inventory"
         self.assertFalse(SCORER.score_case(case, observation)["safe_unsupported_abstention"])
 
@@ -193,6 +307,12 @@ class SQLAgentBenchmarkScorerTest(unittest.TestCase):
         })
         self.assertEqual(metrics["pipeline_calls"]["schema_discovery"], 1)
         self.assertEqual(metrics["pipeline_calls"]["repository_execution"], 1)
+        report = SCORER.render_report(CASE_SET, SCORER.score_experiment(CASE_SET, data), {
+            "experiment_id": "fallback-pilot", "status": "completed",
+            "application_revision": "abc", "provider": "groq", "model": "test-model",
+        })
+        self.assertIn("Local Codex SQL fallback occurred in P01", report)
+        self.assertIn("model identity is not captured", report)
 
 
 if __name__ == "__main__":

@@ -257,7 +257,7 @@ class SQLAnalyticsAgent(BaseAgent):
                           f"Available related tables are: {', '.join(present_tables)}. "
                           "A supported alternative is inventory analysis by product or category at a historical snapshot.")
             result = self._generation_error(MetricDefinitionError(
-                'The requested logistics dimensions are absent from the approved schema: ' + detail,
+                'The requested business dimensions are absent from the approved schema: ' + detail,
                 code='unsupported_dimension'))
             result['answer'] = answer
             result['limitations'] = ['No SQL was needed or executed; the requested dimensions are absent from the schema.']
@@ -855,9 +855,22 @@ class SQLAnalyticsAgent(BaseAgent):
                 if options.get('_dashboard_request') is True and options.get('_dashboard_allow_multiple') is True:
                     error = MetricDefinitionError('Please clarify the requested measures, grouping, scope or representation. ' + str(error)[:800],
                                                   code='dashboard_requirements', clarification=True)
-                return self._generation_error(
+                result = self._generation_error(
                     error, self._attempted_sql(raw), self._attempted_parameters(raw), question=question,
                 )
+                if isinstance(error, SQLValidationError) and 'Clarification options must be' in str(error):
+                    result['answer'] = (
+                        "I couldn't safely validate the clarification response after one correction. "
+                        "No business SQL was executed; please restate the request."
+                    )
+                    result['limitations'] = [
+                        'No business SQL was executed because the clarification response remained invalid after the bounded correction.'
+                    ]
+                    result['metadata'].update(
+                        status='failed', clarification_required=False,
+                        failure_code='invalid_clarification', repair_exhausted=True,
+                    )
+                return result
             except Exception as error:
                 return self._generation_error(
                     error, self._attempted_sql(raw), self._attempted_parameters(raw),

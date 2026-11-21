@@ -9,7 +9,10 @@ from core.agents.sql.business_ontology import policy_context, validate_request_c
 from core.agents.sql.commerce_decision_support import (
     COMMERCE_DECISION_PROFILES, resolve_commerce_decision_domain, unavailable_commerce_dimensions,
 )
-from core.agents.sql.text_to_sql import SQLValidationError, build_sql_prompt, decode_query_plan
+from core.agents.sql.text_to_sql import (
+    APPROVED_COLUMNS, APPROVED_DATE_COLUMNS, APPROVED_JOINS,
+    SQLSchemaMismatchError, SQLValidationError, build_sql_prompt, decode_query_plan,
+)
 from unittest.mock import AsyncMock, Mock, patch
 from core.agents.sql.agent import SQLAnalyticsAgent
 from core.models.agents import AgentRequest, VerifiedIdentity
@@ -24,6 +27,30 @@ class BusinessOntologyTest(unittest.TestCase):
             {'order_id', 'ship_date', 'delivery_date', 'shipping_fee', 'zip', 'city', 'district', 'region'},
         )
         self.assertEqual(missing, ['carrier', 'route/lane'])
+
+    def test_p05_inventory_request_resolves_all_missing_dimensions(self):
+        question = (
+            'Tại snapshot 2026-11-13, tồn kho từng kho và lead time của nhà cung cấp '
+            'cho từng sản phẩm là bao nhiêu?'
+        )
+        domain = resolve_commerce_decision_domain(question)
+        available_columns = set().union(*APPROVED_COLUMNS.values())
+
+        self.assertEqual(domain, 'inventory_allocation')
+        self.assertEqual(
+            unavailable_commerce_dimensions(question, domain, available_columns),
+            ['warehouse/location', 'supplier', 'supplier lead time'],
+        )
+
+    def test_model_sql_cannot_reference_missing_warehouse_or_supplier_fields(self):
+        for sql in (
+            'SELECT i.warehouse_id FROM commerce.inventory AS i LIMIT 1',
+            'SELECT p.supplier_lead_time FROM commerce.products AS p LIMIT 1',
+        ):
+            with self.subTest(sql=sql), self.assertRaises(SQLSchemaMismatchError):
+                decode_query_plan(json.dumps({
+                    'sql': sql, 'parameters': [], 'explanation': 'Use the requested dimension.',
+                }), APPROVED_COLUMNS, allowed_sources=set(APPROVED_COLUMNS))
 
     def test_promotion_business_support_separates_observed_sales_from_causal_lift(self):
         question = 'Should we scale the promotion with the highest attributed revenue, and does that prove lift?'

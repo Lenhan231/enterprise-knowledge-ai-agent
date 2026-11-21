@@ -561,8 +561,6 @@ def decode_query_plan(raw: str, schema_columns=None, *, allowed_sources=None, ap
                 or any(not isinstance(option, str) or not option.strip() for option in raw_options)):
             raise SQLValidationError("Clarification options must be a list of at most three non-empty strings.")
         options = [option.strip() for option in raw_options]
-        if options and len(options) < 2:
-            raise SQLValidationError("Provide at least two choices or leave clarification_options empty.")
         return QueryPlan(clarification=clarification, clarification_options=tuple(options))
     sql = payload.get("sql")
     parameters = payload.get("parameters", [])

@@ -12,6 +12,11 @@ from sqlglot import exp, parse_one
 from sqlglot.optimizer.scope import traverse_scope
 
 
+PROTOCOL_VERSION = "1.1.2"
+SCORER_VERSION = "2.0.2"
+SCORE_FORMAT_VERSION = "sql-agent-benchmark-scores.v2"
+
+
 def _iso(value):
     if isinstance(value, (date, datetime)):
         return value.isoformat()
@@ -106,6 +111,31 @@ def _equals_filter(scopes, parameters, source, column, expected):
 def _date_range(scopes, parameters, source, column, start, end_exclusive, end_inclusive=None,
                 column_type=None):
     target = (source, column)
+    if str(column_type).casefold() == "date":
+        try:
+            start_date = date.fromisoformat(start)
+            end_date = date.fromisoformat(end_exclusive)
+        except (TypeError, ValueError):
+            start_date = end_date = None
+        if (start_date is not None and end_date is not None
+                and start_date == date(start_date.year, 1, 1)
+                and end_date == date(start_date.year + 1, 1, 1)):
+            date_predicates = [
+                (scope, predicate)
+                for scope, predicate in _predicates(scopes)
+                if any(_origin(scope, candidate) == target for candidate in predicate.find_all(exp.Column))
+            ]
+            for scope, predicate in date_predicates:
+                if not isinstance(predicate, exp.EQ):
+                    continue
+                for extract, value in ((predicate.this, predicate.expression),
+                                       (predicate.expression, predicate.this)):
+                    if (isinstance(extract, exp.Extract)
+                            and extract.this.name.casefold() == "year"
+                            and _origin(scope, extract.expression) == target
+                            and _literal(value, parameters) == Decimal(start_date.year)
+                            and len(date_predicates) == 1):
+                        return True
     lower = upper = False
     for scope, predicate in _predicates(scopes):
         if not isinstance(predicate, (exp.GTE, exp.GT, exp.LT, exp.LTE)):
@@ -204,7 +234,7 @@ def _requested_column_present(case, actual_columns, requested):
     return requested.casefold() in actual_columns or any(alias.casefold() in actual_columns for alias in aliases)
 
 
-def _sql_semantics(case, observation):
+def _sql_semantics(case, observation, verified_column_types=None):
     contract = case["semantic"]
     sql = observation.get("sql")
     if not sql:
@@ -239,10 +269,13 @@ def _sql_semantics(case, observation):
                     for order in (tree.args.get("order").expressions if tree.args.get("order") else [])
                 )
         elif name == "date_range":
+            column_type = expected.get("column_type") or (verified_column_types or {}).get(
+                expected["source"], {}
+            ).get(expected["column"])
             passed = _date_range(
                 scopes, parameters, expected["source"], expected["column"],
                 expected["start"], expected["end_exclusive"], expected.get("end_inclusive"),
-                expected.get("column_type"),
+                column_type,
             )
         else:
             passed = False
@@ -396,13 +429,41 @@ def _result_comparison(case, observation):
     }
 
 
-def score_case(case, observation):
+def _clarification_is_valid(observation):
+    answer = observation.get("answer")
+    metadata = observation.get("metadata")
+    if metadata is not None and not isinstance(metadata, dict):
+        return False
+    metadata = metadata or {}
+    options = metadata.get("clarification_options", observation.get("clarification_options", []))
+    if options is None:
+        options = []
+    return (isinstance(answer, str) and bool(answer.strip())
+            and isinstance(options, list) and len(options) <= 3
+            and all(isinstance(option, str) and bool(option.strip()) for option in options))
+
+
+def _validation_blocked(observation):
+    error_types = {
+        "SQLValidationError", "SQLSecurityError", "SQLSchemaMismatchError",
+        "SQLJoinValidationError", "MetricDefinitionError",
+    }
+    failure_classes = {
+        "sql_validation_failure", "sql_security_failure", "schema_validation_failure",
+        "metric_validation_failure", "semantic_validation_failure",
+    }
+    return (observation.get("error_type") in error_types
+            or observation.get("failure_class") in failure_classes)
+
+
+def score_case(case, observation, *, verified_column_types=None):
     if observation.get("status") == "NOT_RUN":
         return {
             "id": case["id"], "supported": case["supported"],
             "business_end_to_end_correct": None, "strict_result_exact_match": None,
             "sql_semantic_accuracy": None, "execution_success": None,
-            "false_refusal": None, "safe_unsupported_abstention": None,
+            "false_clarification_abstention": None, "supported_noncompletion": None,
+            "validation_blocked_supported": None, "safe_unsupported_abstention": None,
             "failure_class": observation.get("failure_class", "not_run"),
             "semantic": {"applicable": False, "passed": None, "checks": {}, "issues": []},
             "result": None, "unsafe_execution_count": 0, "schema_selection": {},
@@ -411,6 +472,7 @@ def score_case(case, observation):
     if not case["supported"]:
         status = observation.get("status")
         safe_no_query = status in {"clarification_required", "unsupported", "abstained"} \
+            and _clarification_is_valid(observation) \
             and not observation.get("sql") and not observation.get("execution_events")
         return {
             "id": case["id"], "supported": False, "business_end_to_end_correct": None,
@@ -425,7 +487,7 @@ def score_case(case, observation):
             "latency_ms": observation.get("latency_ms"),
         }
 
-    semantic = _sql_semantics(case, observation)
+    semantic = _sql_semantics(case, observation, verified_column_types)
     result = _result_comparison(case, observation)
     schema_selection = dict(observation.get("schema_selection", {}))
     required_tables = set(case.get("required_tables", []))
@@ -463,7 +525,11 @@ def score_case(case, observation):
         "strict_result_exact_match": bool(strict),
         "sql_semantic_accuracy": bool(semantic["passed"]),
         "execution_success": executed,
-        "false_refusal": observation.get("status") in {"clarification_required", "unsupported", "abstained"},
+        "false_clarification_abstention": observation.get("status") in {
+            "clarification_required", "unsupported", "abstained", "rejected",
+        },
+        "supported_noncompletion": not bool(business),
+        "validation_blocked_supported": _validation_blocked(observation),
         "safe_unsupported_abstention": None,
         "failure_class": failure,
         "semantic": semantic,
@@ -494,7 +560,29 @@ def _percentile(values, percentile):
 
 def score_experiment(case_set, data):
     observations = {case["id"]: case for case in data.get("cases", [])}
-    outcomes = [score_case(case, observations.get(case["id"], {})) for case in case_set["cases"]]
+    manifest = data.get("manifest", {})
+    verified_column_types = {
+        source: {str(column).casefold(): str(column_type).casefold()
+                 for column, column_type in table.get("column_types", {}).items()}
+        for source, table in manifest.get("data_coverage", {}).items()
+        if isinstance(table, dict)
+    }
+    for coverage_key in ("data_coverage", "preflight_coverage"):
+        for source, table in manifest.get(coverage_key, {}).items():
+            if not isinstance(table, dict):
+                continue
+            for name, value in table.items():
+                if name.endswith("_type") and isinstance(value, str):
+                    verified_column_types.setdefault(source, {})[name[:-5].casefold()] = value.casefold()
+    for source, columns in manifest.get("verified_column_types", {}).items():
+        if isinstance(columns, dict):
+            verified_column_types.setdefault(source, {}).update({
+                str(column).casefold(): str(column_type).casefold()
+                for column, column_type in columns.items()
+            })
+    outcomes = [score_case(
+        case, observations.get(case["id"], {}), verified_column_types=verified_column_types,
+    ) for case in case_set["cases"]]
     supported = [case for case in outcomes if case["supported"]]
     unsupported = [case for case in outcomes if not case["supported"]]
     latencies = [case.get("latency_ms") for case in supported]
@@ -506,20 +594,19 @@ def score_experiment(case_set, data):
                    for case in jev_applicable)
     jev_total = sum(case["schema_selection"].get("jev_top5", {}).get("recall_denominator", 0)
                     for case in jev_applicable)
-    false_refusals = [case.get("false_refusal") for case in supported
-                      if case.get("false_refusal") is not None]
     return {
+        "format_version": SCORE_FORMAT_VERSION,
+        "protocol_version": PROTOCOL_VERSION,
+        "scorer_version": SCORER_VERSION,
         "metrics": {
             "business_end_to_end_accuracy": _rate(supported, "business_end_to_end_correct"),
             "business_result_accuracy": _rate(supported, "business_result_match"),
             "strict_result_exact_match": _rate(supported, "strict_result_exact_match"),
             "sql_semantic_accuracy": _rate(supported, "sql_semantic_accuracy"),
             "execution_success": _rate(supported, "execution_success"),
-            "false_refusal_rate": {
-                "numerator": sum(false_refusals),
-                "denominator": len(false_refusals),
-                "value": sum(false_refusals) / len(false_refusals) if false_refusals else None,
-            },
+            "false_clarification_abstention_rate": _rate(supported, "false_clarification_abstention"),
+            "supported_noncompletion_rate": _rate(supported, "supported_noncompletion"),
+            "validation_blocked_supported_rate": _rate(supported, "validation_blocked_supported"),
             "safe_unsupported_abstention": _rate(unsupported, "safe_unsupported_abstention"),
             "valid_clarification_abstention_rate": _rate(unsupported, "safe_unsupported_abstention"),
             "repair_recovery_rate": {
@@ -582,6 +669,8 @@ def render_report(case_set, scored, manifest):
     lines = [
         "# SQL Agent Business Benchmark Report",
         "",
+        f"Protocol version: `{scored.get('protocol_version', PROTOCOL_VERSION)}`",
+        f"Scorer version: `{scored.get('scorer_version', SCORER_VERSION)}`",
         f"Experiment: `{manifest.get('experiment_id', 'unspecified')}`",
         f"Status: **{manifest.get('status', 'unknown')}**",
         f"Application revision: `{manifest.get('application_revision', 'unknown')}`",
@@ -598,7 +687,8 @@ def render_report(case_set, scored, manifest):
         "|---|---:|---:|---:|",
     ]
     for key in ("business_end_to_end_accuracy", "business_result_accuracy", "strict_result_exact_match", "sql_semantic_accuracy",
-                "execution_success", "false_refusal_rate", "safe_unsupported_abstention",
+                "execution_success", "false_clarification_abstention_rate", "supported_noncompletion_rate",
+                "validation_blocked_supported_rate", "safe_unsupported_abstention",
                 "valid_clarification_abstention_rate", "repair_recovery_rate", "jev_table_recall_at_5",
                 "final_selected_schema_coverage"):
         item = metrics[key]
@@ -616,6 +706,21 @@ def render_report(case_set, scored, manifest):
         "| Case | Business E2E | Strict exact | SQL semantics | Failure |",
         "|---|---|---|---|---|",
     ]
+    if metrics["provider_calls"].get("secondary_sql_provider_fallback_submissions", 0):
+        lines.append(
+            "SQL-generation secondary-provider fallback occurred; treat this as end-to-end SQL Agent evidence, "
+            "not a single-SQL-LLM comparison."
+        )
+    local_fallback_cases = [
+        outcome["id"] for outcome in scored.get("cases", [])
+        if outcome.get("calls", {}).get("local_codex_fallback_calls", 0)
+    ]
+    if local_fallback_cases:
+        lines.append(
+            "Local Codex SQL fallback occurred in " + ", ".join(local_fallback_cases)
+            + "; its model identity is not captured, so this is end-to-end SQL Agent evidence, "
+            "not a single-SQL-LLM comparison."
+        )
     for outcome in scored["cases"]:
         lines.append(
             f"| {outcome['id']} | {outcome.get('business_end_to_end_correct', outcome.get('safe_unsupported_abstention'))} "

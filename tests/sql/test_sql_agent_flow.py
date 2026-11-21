@@ -205,7 +205,19 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(provider.response_index, 2)
         self.assertEqual(repository.execute_approved_query.await_count, 1)
-        self.assertIn('o.order_status = $1', repository.execute_approved_query.await_args.args[0])
+        repaired_sql = repository.execute_approved_query.await_args.args[0]
+        self.assertIn('FROM commerce.orders AS o', repaired_sql)
+        self.assertIn('o.order_status = $1', repaired_sql)
+        self.assertIn('COUNT(DISTINCT o.order_id)', repaired_sql)
+        self.assertIn('o.order_date >= $2', repaired_sql)
+        self.assertIn('o.order_date < $3', repaired_sql)
+        self.assertIn('GROUP BY o.customer_id', repaired_sql)
+        self.assertIn('ORDER BY order_count DESC, o.customer_id ASC', repaired_sql)
+        self.assertIn('LIMIT 5', repaired_sql)
+        self.assertIn('Authoritative user-requested population filters', provider.prompts[0])
+        self.assertIn('Authoritative user-requested population filters', provider.prompts[1])
+        self.assertIn('"operator": "include"', provider.prompts[1])
+        self.assertIn('"values": ["delivered"]', provider.prompts[1])
         self.assertEqual(repository.execute_approved_query.await_args.args[1:],
                          ('delivered', date(2025, 1, 1), date(2026, 1, 1)))
         self.assertEqual(result['query_status'], 'executed')
@@ -244,6 +256,64 @@ class SQLAgentFlowTest(unittest.IsolatedAsyncioTestCase):
         repository.execute_approved_query.assert_not_awaited()
         self.assertEqual(result['query_status'], 'rejected')
         self.assertIn('order-status population', result['metadata']['error_detail'].casefold())
+
+    async def test_malformed_clarification_is_corrected_once_and_valid_response_is_returned(self):
+        question = 'Show revenue by month in 2025.'
+        invalid = json.dumps({
+            'clarification': 'Choose a scope:',
+            'clarification_options': ['One', ''],
+        })
+        corrected = json.dumps({'clarification': 'Which period should I use?'})
+        repository = FakeRepository()
+        provider = FakeProvider([invalid, corrected])
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+
+        with (
+            patch('core.agents.sql.agent.interpret_query_intent', new=AsyncMock(return_value=None)),
+            patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': {'commerce.sales'}, 'required_tables': {'commerce.sales'},
+                'candidate_tables': {'commerce.sales'},
+            }),
+        ):
+            result = await agent.run(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertEqual(provider.response_index, 2)
+        self.assertEqual(result.metadata['status'], 'clarification_required')
+        self.assertEqual(result.answer, 'Which period should I use?')
+        self.assertEqual(result.metadata['clarification_options'], [])
+        repository.execute_approved_query.assert_not_awaited()
+
+    async def test_exhausted_malformed_clarification_is_an_explicit_safe_failure(self):
+        question = 'Show revenue by month in 2025.'
+        invalid = json.dumps({
+            'clarification': 'Choose a scope:',
+            'clarification_options': ['One', ''],
+        })
+        repository = FakeRepository()
+        provider = FakeProvider([invalid, invalid])
+        agent = SQLAnalyticsAgent(repository, llm=provider, inventory_only=False)
+
+        with (
+            patch('core.agents.sql.agent.interpret_query_intent', new=AsyncMock(return_value=None)),
+            patch('core.agents.sql.agent.select_jev_schema_tables', return_value={
+                'tables': {'commerce.sales'}, 'required_tables': {'commerce.sales'},
+                'candidate_tables': {'commerce.sales'},
+            }),
+        ):
+            result = await agent.run(AgentRequest(
+                question=question,
+                identity=VerifiedIdentity(subject='analyst', permissions={'analytics:read'}),
+            ))
+
+        self.assertEqual(provider.response_index, 2)
+        self.assertEqual(result.metadata.get('failure_code'), 'invalid_clarification')
+        self.assertFalse(result.metadata.get('clarification_required', False))
+        self.assertIn('No business SQL was executed', result.answer)
+        self.assertIn('correction', result.answer.casefold())
+        repository.execute_approved_query.assert_not_awaited()
 
     async def test_units_sold_ranking_repairs_return_quantity_false_match(self):
         question = (

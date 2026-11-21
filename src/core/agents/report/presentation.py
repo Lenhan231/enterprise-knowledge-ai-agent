@@ -3,7 +3,7 @@ from datetime import date
 import re
 
 from core.agents.report.sales_performance import load_contract, month_start
-from core.agents.report.labels import uses_vietnamese_labels
+from core.agents.report.labels import INVENTORY_COPY_VI, uses_vietnamese_labels
 
 SECTION_TITLES = {s['id']: s['title'] for s in load_contract()['section_contract']}
 CURRENCY_NOTE = 'Amounts are displayed in VND as requested. The source has no currency tag; no currency conversion has been applied.'
@@ -104,7 +104,15 @@ def observations(report, section, monthly=()):
 
 
 def decision_text(rule, report=None):
+    vi = report is not None and uses_vietnamese_labels(report)
     if rule['id'].startswith('I'):
+        if vi and rule['triggered'] is True:
+            return {
+                'I01': 'Đối chiếu danh sách sản phẩm có cờ hết hàng với tồn kho có thể bán và đơn hàng đang mở. Xác minh chênh lệch trước khi thay đổi kế hoạch mua hoặc cam kết với khách hàng.',
+                'I02': 'Xác nhận số dư và các cam kết mua hàng, rồi rà soát các sản phẩm có cờ cùng người lập kế hoạch tồn kho. Cần phê duyệt trước khi đặt hàng. Số lượng đặt và thời gian giao chưa được xác định.',
+                'I03': 'Kiểm tra các sản phẩm có cờ tồn kho quá mức và xem chúng có đồng thời mang cờ hết hàng hay không. Xác nhận lượng có thể bán trước khi điều chuyển hoặc giảm giá. Việc thanh lý hay ghi giảm cần phê duyệt riêng.',
+                'I04': 'Tiếp tục theo dõi định kỳ. Tại ngày chốt này không ghi nhận cờ hết hàng, cần đặt lại hoặc tồn kho quá mức. Kết quả chỉ phản ánh ngày chốt đã kiểm tra.',
+            }[rule['id']]
         if rule['triggered'] is True:
             return {
                 'I01': 'Review the flagged product list and confirm current sellable stock and open orders. Investigate discrepancies before changing purchases or customer commitments.',
@@ -112,11 +120,10 @@ def decision_text(rule, report=None):
                 'I03': 'Inspect flagged products and check for overlapping stockout flags. Confirm current sellable quantities before considering transfers or markdowns; disposal or write-off needs separate approval.',
                 'I04': 'Continue routine monitoring. No stockout, reorder or overstock flags were recorded in this covered snapshot; this does not establish current availability.',
             }[rule['id']]
-        if rule['triggered'] is False:
-            return 'Evaluated: this predefined condition was not met.'
-        return ('A no-exception conclusion is withheld because snapshot coverage or flag evidence is incomplete.'
-                if rule['id'] == 'I04' else 'Cannot evaluate: the required recorded flag count is unavailable.')
-    vi = report is not None and uses_vietnamese_labels(report)
+        status = ('Evaluated: this predefined condition was not met.' if rule['triggered'] is False else
+                  'A no-exception conclusion is withheld because snapshot coverage or flag evidence is incomplete.'
+                  if rule['id'] == 'I04' else 'Cannot evaluate: the required recorded flag count is unavailable.')
+        return INVENTORY_COPY_VI[status] if vi else status
     if vi and rule['triggered'] is None:
         if rule['id'] == 'S04':
             return 'Chưa thể kết luận vì ít nhất một quy tắc so sánh chưa đánh giá được.'
@@ -153,6 +160,7 @@ def decision_text(rule, report=None):
 
 
 def inventory_insights(report):
+    vi = uses_vietnamese_labels(report)
     metrics = {m['id']: m for m in report['metrics']}
     quality = report['data_quality']
     available = sum(m['status'] == 'available' and m['value'] is not None for m in metrics.values())
@@ -164,6 +172,15 @@ def inventory_insights(report):
         if quality['partial_period'] is False and missing == 0 else
         f'Snapshot coverage needs review: {missing} missing or unmatched products.' if missing is not None else
         'Snapshot coverage could not be verified. Confirm the snapshot and product catalog before relying on a no-exception conclusion.')
+    if vi:
+        date_text = quality['coverage_end'] or 'chưa xác định'
+        summary = [f'Có {available}/{len(metrics)} chỉ số từ các truy vấn đã xác minh.',
+                   f'Ngày chốt tồn kho: {date_text}. Số dư lấy tại ngày này.']
+        summary.append('Đã đối chiếu với danh mục hiện tại. Không ghi nhận sản phẩm thiếu hoặc không khớp.'
+                       if quality['partial_period'] is False and missing == 0 else
+                       f'Cần kiểm tra {missing} sản phẩm còn thiếu hoặc không khớp.'
+                       if missing is not None else
+                       'Chưa xác minh được độ đầy đủ tại ngày chốt. Cần đối chiếu ngày chốt với danh mục sản phẩm.')
     actions = []
     for rule in report['decisions']:
         if rule['triggered'] is not True:
@@ -171,9 +188,17 @@ def inventory_insights(report):
         key, flag = {'I01':('stockout_products','stockout'), 'I02':('reorder_products','reorder'), 'I03':('overstock_products','overstock')}.get(rule['id'],(None,None))
         why = (f"{display_value(metrics[key])} products carry the {flag} flag in the {date_text} snapshot. Flags are signals for review."
                if key else f'All three recorded flag counts are zero and catalog-relative coverage is verified for {date_text}.')
+        if vi:
+            flag_vi = {'stockout': 'hết hàng', 'reorder': 'cần đặt lại', 'overstock': 'tồn kho quá mức'}
+            why = (f'{display_value(metrics[key])} sản phẩm có cờ {flag_vi[flag]} tại ngày {date_text}. Cần kiểm tra các cờ đã ghi nhận.'
+                   if key else f'Ba loại cờ đều có số lượng bằng 0 và đã đối chiếu với danh mục hiện tại tại ngày {date_text}.')
         actions.append({'title':rule['title'], 'why':why, 'action':decision_text(rule, report),
                         'citations':list(dict.fromkeys(e['query_id'] for e in rule['evidence']))})
-    return {'actions':actions, 'validation_summary':summary}
+    insights = {'actions':actions, 'validation_summary':summary}
+    if vi:
+        insights['copy'] = INVENTORY_COPY_VI.copy()
+        insights['data_notes'] = inventory_notes(report)
+    return insights
 
 
 def _sales_limitation_vi(note):
@@ -217,14 +242,14 @@ def data_notes(report, *, include_currency=True):
     return notes
 
 
-def inventory_source_name(source):
+def inventory_source_name(source, *, vi=False):
     labels = {'commerce.inventory': 'Inventory records', 'commerce.products': 'Product catalog',
               'commerce.returns': 'Return records', 'commerce.orders': 'Order records',
               'commerce.shipments': 'Shipment records', 'commerce.reviews': 'Customer reviews'}
     names = []
     for name in source.split(', '):
         if name in labels:
-            names.append(labels[name])
+            names.append(INVENTORY_COPY_VI[labels[name]] if vi else labels[name])
         else:
             name = name.replace('\\', '/').rsplit('/', 1)[-1]
             name = re.sub(r'\.(?:pdf|docx?|xlsx?|csv|md|txt)$', '', name, flags=re.I)
@@ -233,11 +258,15 @@ def inventory_source_name(source):
 
 
 def inventory_display_value(metric):
-    suffix = {'units': ' units', 'calendar_days': ' days', 'rating_1_to_5': ' / 5'}.get(metric['unit'], '')
+    from core.agents.language import is_vietnamese
+    suffixes = {'units': ' đơn vị', 'calendar_days': ' ngày', 'rating_1_to_5': ' / 5'} if is_vietnamese(metric['label']) else {
+        'units': ' units', 'calendar_days': ' days', 'rating_1_to_5': ' / 5'}
+    suffix = suffixes.get(metric['unit'], '')
     return display_value(metric) + (suffix if metric['value'] is not None else '')
 
 
 def inventory_notes(report):
+    vi = uses_vietnamese_labels(report)
     labels = {'snapshot': 'Inventory snapshot', 'coverage': 'Snapshot coverage',
               'inventory_flag_distribution': 'Flag distribution', 'stockout_product_table': 'Stockout product list',
               'inventory_snapshots': 'Snapshot history', 'returns': 'Returned orders',
@@ -245,6 +274,11 @@ def inventory_notes(report):
     notes = []
     for note in report['data_quality']['limitations']:
         if note.startswith(('Dashboard source [', 'Policy source [', 'Policy Evidence:')):
+            continue
+        if vi:
+            note = _inventory_limitation_vi(note, report, labels)
+            if note not in notes:
+                notes.append(note)
             continue
         if note.startswith('Synthetic commerce'):
             note = 'Synthetic commerce demonstration data. Transaction records and historical catalog membership are not certified complete. No forecasts, service commitments, reorder quantities or causal conclusions are inferred.'
@@ -277,5 +311,45 @@ def inventory_notes(report):
                'unresolved': 'The metric definition or reporting scope is unresolved.'}
     for metric in report['metrics']:
         if metric['value'] is None and not any(note.startswith(metric['label'] + ':') for note in notes):
-            notes.append(metric['label'] + ': ' + reasons.get(metric['status'], 'Unavailable for this scope or source.'))
+            reason = reasons.get(metric['status'], 'Unavailable for this scope or source.')
+            notes.append(metric['label'] + ': ' + (INVENTORY_COPY_VI[reason] if vi else reason))
     return notes
+
+
+def _inventory_limitation_vi(note, report, labels):
+    if note.startswith('Selected snapshot:'):
+        snapshot = report['data_quality']['coverage_end']
+        if not snapshot:
+            return 'Ngày chốt tồn kho: chưa tìm thấy bản ghi được cấp quyền trước khi kết thúc kỳ.'
+        suffix = 'Ngày chốt này trước kỳ yêu cầu.' if snapshot < report['request']['period']['start'] else 'Ngày chốt này nằm trong kỳ yêu cầu.'
+        return f'Ngày chốt tồn kho: {snapshot}. {suffix}'
+    prefixes = {
+        'Synthetic commerce': 'Dữ liệu thương mại mô phỏng. Chưa xác minh được độ đầy đủ của dữ liệu giao dịch và danh mục theo từng thời điểm. Báo cáo không suy ra dự báo, cam kết dịch vụ, lượng đặt lại hay nguyên nhân.',
+        'Snapshot policy:': 'Số dư lấy từ một ngày chốt quan sát được trước khi kết thúc kỳ. Ngày chốt cũ được đánh dấu. Biểu đồ lịch sử hiển thị từng ngày chốt riêng.',
+        'days_of_supply': 'Số ngày đủ hàng, tỷ lệ đáp ứng và tỷ lệ bán hết chưa được xác minh định nghĩa từ nguồn.',
+        'fill_rate': 'Số ngày đủ hàng, tỷ lệ đáp ứng và tỷ lệ bán hết chưa được xác minh định nghĩa từ nguồn.',
+        'stockout/reorder/overstock': 'Các cờ hết hàng, cần đặt lại và tồn kho quá mức có thể trùng nhau. Số sản phẩm được tính riêng theo từng cờ.',
+        'Inventory snapshot selection query unavailable.': 'Chưa xác minh được ngày chốt từ dữ liệu tồn kho hiện có.',
+        'No warehouse, supplier, supplier lead time, SLA, forecast, or purchase order data':
+            'Nguồn không có dữ liệu kho, nhà cung cấp, thời gian giao của nhà cung cấp, cam kết dịch vụ, dự báo hoặc đơn mua hàng.',
+    }
+    for prefix, translated in prefixes.items():
+        if note.startswith(prefix):
+            return translated
+    if note.startswith('Snapshot completeness'):
+        return ('Độ đầy đủ tại ngày chốt được đối chiếu với danh mục hiện tại. '
+                'Thành phần danh mục trong quá khứ chưa được xác minh.')
+    key, _, detail = note.partition(': ')
+    metric = next((m for m in report['metrics'] if m['id'] == key), None)
+    if metric and detail.startswith('not_available'):
+        return f'{metric["label"]}: không có dữ liệu cho nhóm đã chọn.'
+    if key in labels:
+        label = INVENTORY_COPY_VI[labels[key]]
+        if 'access denied' in detail:
+            return f'{label}: quyền truy cập nguồn bị giới hạn.'
+        if 'validated source query unavailable' in detail:
+            return f'{label}: chưa truy xuất hoặc xác minh được nguồn.'
+        limit = re.search(r'(\d+)-row', detail)
+        if limit:
+            return f'{label}: hiển thị {limit[1]} dòng đầu tiên. Có thể còn bản ghi chưa hiển thị.'
+    return note

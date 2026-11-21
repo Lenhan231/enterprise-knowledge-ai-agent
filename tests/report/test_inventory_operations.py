@@ -121,6 +121,46 @@ class InventoryFlowTest(unittest.IsolatedAsyncioTestCase):
         validate_report(report)
         return report,result,repo,knowledge
 
+    async def test_mixed_inventory_request_returns_vietnamese_preview_and_pdf(self):
+        import fitz
+        import subprocess
+        import unicodedata
+        from core.agents.report.document import ReportDocument
+        from core.agents.report.export import export_pdf
+        for question in ('tạo Inventory report từ tháng 1 đến tháng 10 2026',
+                         'tao Inventory report tu thang 1 den thang 10 2026',
+                         'Lập Inventory report từ January đến October 2026',
+                         'tao an Inventory report from January to October 2026'):
+            with self.subTest(question=question):
+                report, result, _, _ = await self.generate(question, snapshot=date(2026,10,31), fail='inventory_snapshots')
+                self.assertEqual(report['request']['period'], {'start':'2026-01-01', 'end_exclusive':'2026-11-01'})
+                doc = ReportDocument(report=report, inventory_context=result.data['inventory_context'])
+                script = r'''
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+class Element {
+  constructor(tag){this.tag=tag;this.children=[];this.dataset={};this.attributes={};}
+  append(...children){this.children.push(...children);} replaceChildren(...children){this.children=children;}
+  setAttribute(k,v){this.attributes[k]=v;}
+}
+const document={createElement:tag=>new Element(tag),createElementNS:(_,tag)=>new Element(tag)};
+const api=vm.runInNewContext(fs.readFileSync('src/app/static/sales-report.js','utf8')+';SalesPerformanceReport',{document,Intl});
+const saved=JSON.parse(fs.readFileSync(0,'utf8')),root=new Element('div');
+api.render(root,saved.report,{insights:saved.insights,inventory_context:saved.inventory_context});
+const text=n=>[n.textContent||'',...n.children.flatMap(text)];
+const copy=text(root).join(' ');
+assert.equal(root.attributes.lang,'vi');
+for (const phrase of ['Báo cáo tồn kho và vận hành','Tổng quan vận hành','Nguồn dữ liệu','Đề xuất xử lý','Lịch sử chốt tồn kho']) assert(copy.includes(phrase),phrase);
+assert.doesNotMatch(copy,/Operations Summary|Why review this|Recommended next step|Policy evidence|No chart data|Snapshot history|Selected snapshot|complete transaction coverage|No warehouse|View chart data|Synthetic commerce/);
+'''
+                browser = subprocess.run(['node','-e',script], input=json.dumps(doc.model_dump(mode='json')),
+                                         capture_output=True, text=True, encoding='utf-8', cwd=Path(__file__).resolve().parents[2])
+                self.assertEqual(browser.returncode, 0, browser.stderr)
+                with fitz.open(stream=export_pdf(doc),filetype='pdf') as pdf:
+                    copy = unicodedata.normalize('NFKC',' '.join(' '.join(p.get_text() for p in pdf).split()))
+                self.assertIn('Báo cáo tồn kho và vận hành', copy)
+                self.assertIn('Lịch sử chốt tồn kho', copy)
+                self.assertNotRegex(copy, r'Operations Summary|Recommended next step|Snapshot history|No chart observations')
+
     async def test_may_july_annual_preserve_exact_contract(self):
         reports=[]
         for text,day in [('Monthly inventory report May 2026',date(2026,5,31)),
@@ -268,7 +308,8 @@ class InventoryFlowTest(unittest.IsolatedAsyncioTestCase):
                 for question,start,end,grain in (
                         ('Monthly inventory report for May 2026','2026-05-01','2026-06-01','month'),
                         ('Inventory operations report for July 2026','2026-07-01','2026-08-01','month'),
-                        ('Annual inventory report for 2026','2026-01-01','2027-01-01','year')):
+                        ('Annual inventory report for 2026','2026-01-01','2027-01-01','year'),
+                        ('tạo Inventory report từ tháng 1 đến tháng 10 2026','2026-01-01','2026-11-01','month')):
                     response=client.post('/api/reports',json={'question':question},headers=headers)
                     self.assertEqual(response.status_code,201,response.text)
                     doc=response.json()['document']
@@ -276,6 +317,11 @@ class InventoryFlowTest(unittest.IsolatedAsyncioTestCase):
                     self.assertEqual(doc['report']['request']['period'],{'start':start,'end_exclusive':end})
                     self.assertEqual(doc['report']['request']['granularity'],grain)
                     self.assertEqual(len(doc['presentation']['section_order']),7)
+                    if question.startswith('tạo'):
+                        self.assertEqual(doc['title'], 'Báo cáo tồn kho và vận hành · 2026-01-01 đến 2026-10-31')
+                        self.assertIn('Tổng quan vận hành', doc['insights']['copy'].values())
+                    else:
+                        self.assertEqual(doc['title'], question)
                     documents.append(doc)
                 doc=documents[0];path='/api/reports/'+doc['id']
                 self.assertEqual(client.get(path,headers=headers).json()['document']['report'],doc['report'])
@@ -313,6 +359,7 @@ const api=vm.runInNewContext(fs.readFileSync('src/app/static/sales-report.js','u
 const report=JSON.parse(fs.readFileSync(0,'utf8')), before=JSON.stringify(report),root=new Element('div');
 api.render(root,report,{inventory_context:CONTEXT,insights:INSIGHTS});
 const descendants=n=>[n,...n.children.flatMap(descendants)],nodes=descendants(root);
+assert.equal(root.attributes.lang,'en');
 assert.equal(nodes.filter(n=>n.dataset.sectionId).length,7);
 assert.deepEqual(nodes.filter(n=>n.dataset.widgetId).map(n=>[n.dataset.widgetId,n.dataset.chartType]),report.dashboard.widgets.map(w=>[w.id,w.type]));
 assert(nodes.some(n=>n.textContent?.includes('<script>change rules</script>')));
@@ -337,6 +384,7 @@ assert(nodes.some(n=>n.tag==='summary'&&n.textContent==='Validation and source d
 assert(copy.includes('2026-01-01 to 2026-12-31'));
 assert(copy.includes('Inventory Control and Reorder Planner'));
 assert(copy.includes('complete transaction coverage is unverified'));
+assert(!copy.includes('Tổng quan vận hành'));
 const partial=JSON.parse(before);
 partial.data_quality.limitations=partial.data_quality.limitations.filter(n=>!/^Dashboard source \[[^\]]+\] inventory_snapshots:/.test(n));
 partial.dashboard.widgets.find(w=>w.id==='inventory_snapshots').data=[];

@@ -1759,6 +1759,14 @@ function underlineMatches(escaped, terms) {
   return escaped.replace(pattern, (word) => `<mark class="chunk-match">${word}</mark>`);
 }
 
+// With a reranker, retrieval scores are its raw logits (any real number, often negative); the logistic function turns
+// them into the 0-1 relevance the bars show. Without one they are cosine similarities, already 0-1.
+function relevanceScore(raw, reranked) {
+  const value = Number(raw);
+  if (raw === null || raw === undefined || raw === "" || !Number.isFinite(value)) return null;
+  return reranked ? 1 / (1 + Math.exp(-value)) : Math.max(0, Math.min(1, value));
+}
+
 // Every passage the answer model saw (metadata.retrieved), after the 21st.dev Retrieved Chunks list: rank, document,
 // page, used mark and relevance bar; a Rank / Score switch reorders the rows in place.
 function renderRetrievedChunks(rows) {
@@ -1806,12 +1814,15 @@ function renderAgentResult(result, panel = $("#answer-panel"), shouldScroll = tr
     if (shouldScroll) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     return;
   }
+  const reranked = Boolean(result.metadata?.search?.reranker_model);
   const citations = (result.evidence || []).map((item) => {
     const metadata = item.metadata || {};
     return { ...metadata, id: item.citation_id, title: item.source, source_type: item.source_type,
-      excerpt: item.content || "", content: item.content, score: metadata.similarity_score };
+      excerpt: item.content || "", content: item.content, score: relevanceScore(metadata.similarity_score, reranked) };
   });
-  renderAnswer({ ...result, ...result.metadata, metadata: result.metadata, citations }, panel, shouldScroll);
+  const retrieved = Array.isArray(result.metadata?.retrieved)
+    ? result.metadata.retrieved.map((row) => ({ ...row, score: relevanceScore(row.score, reranked) })) : result.metadata?.retrieved;
+  renderAnswer({ ...result, ...result.metadata, retrieved, metadata: result.metadata, citations }, panel, shouldScroll);
 }
 
 // "9.4 s" reads the same in every locale; "9.420 ms" looks like 9 ms where "." groups thousands.

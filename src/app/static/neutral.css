@@ -70,3 +70,25 @@
 @keyframes aiWordIn{from{opacity:0;filter:blur(4px);transform:translateY(2px)}to{opacity:1;filter:none;transform:none}}
 @keyframes aiPillIn{0%{opacity:0;transform:scale(.6)}75%{opacity:1;transform:scale(1.04)}100%{transform:none}}
 @media (prefers-reduced-motion:reduce){:root .ai-in,:root .ai-pop{animation:none}:root .ai-pending{opacity:1}}
+
+/* sources as a right-hand column of retrieved chunks (21st.dev Retrieved Chunks): wide screens only */
+:root .general-chat .chat-turn .answer-seal{display:none}
+:root .general-chat .chat-turn .citation-meta{display:inline-flex;align-items:center;gap:12px;margin-left:auto;font-size:12px;color:var(--muted)}
+:root .general-chat .chat-turn .citation-used{color:var(--ink);font-weight:500}
+:root .general-chat .chat-turn .citation-score{display:inline-flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums;color:var(--ink)}
+:root .general-chat .chat-turn .citation-score-bar{position:relative;display:block;width:40px;height:4px;border-radius:999px;background:var(--line)}
+:root .general-chat .chat-turn .citation-score-bar>span{position:absolute;inset:0 auto 0 0;border-radius:999px;background:var(--ink)}
+@media(min-width:1200px){
+  :root .general-chat{width:min(100%,1160px)}
+  :root .general-chat .chat-turn{max-width:none}
+  :root .general-chat .chat-turn-response{display:grid;grid-template-columns:minmax(0,1fr) 380px;column-gap:40px;align-items:start;padding-left:0}
+  :root .general-chat .chat-turn-response>.citations{grid-column:2;grid-row:1/span 40;position:sticky;top:12px;max-width:none;margin:0;padding:0 0 0 24px;border-top:0;border-left:1px solid var(--line)}
+  :root .general-chat .chat-turn-response>.citations .citation{padding:12px 0 12px 32px}
+  :root .general-chat .chat-turn-response>.answer-verified{justify-self:start}
+  :root .general-chat .chat-turn-response>.citations .citation-title{flex-wrap:wrap;row-gap:4px}
+}
+
+/* composer: grey field with a round dark send button */
+:root .general-chat-composer button{border-radius:50%;background:var(--ink);color:var(--bg);box-shadow:none}
+:root .general-chat-composer button::after{display:none}
+:root .general-chat-composer button:hover:not(:disabled){background:var(--ink-2)}

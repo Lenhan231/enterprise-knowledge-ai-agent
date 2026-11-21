@@ -102,7 +102,7 @@ def source_manifest():
     return hashes
 
 
-def build_manifest(application_revision, *, provider, model):
+def build_manifest(application_revision, *, provider, model, case_delay_seconds=0):
     head = current_revision()
     dirty_paths = [path for path in _git_changed_paths()
                    if not path.startswith("artifacts/sql-agent-bussiness/runs/")]
@@ -144,6 +144,7 @@ def build_manifest(application_revision, *, provider, model):
         },
         "provider": provider,
         "model": model,
+        "case_delay_seconds": case_delay_seconds,
         "intent_model": "not invoked by direct SQL-agent route",
         "schema_selection_model": schema_selection_model,
         "provider_settings": {
@@ -331,6 +332,9 @@ def classify_failure(status, metadata, error):
         return None
     text = str(error or "").casefold()
     error_type = str(metadata.get("error_type", "")).casefold()
+    if status == "provider_error" or any(token in error_type for token in (
+            "provider", "ratelimit", "apiconnection", "apitimeout", "apistatus")):
+        return "provider_failure"
     if "sqlvalidation" in error_type or "validation" in text:
         return "sql_validation_failure"
     if "provider" in text or "http 402" in text or "quota" in text:
@@ -534,10 +538,15 @@ def instrument_agent(agent, instrumentation):
     return restore
 
 
-async def run_cases(agent, case_set, store):
+async def run_cases(agent, case_set, store, *, delay_between_cases=0):
     from core.models.agents import AgentRequest, VerifiedIdentity
 
-    for case in case_set["cases"]:
+    if not isinstance(delay_between_cases, (int, float)) or not 0 <= delay_between_cases <= 120:
+        raise ValueError("delay_between_cases must be between 0 and 120 seconds.")
+
+    for index, case in enumerate(case_set["cases"]):
+        if index and delay_between_cases:
+            await asyncio.sleep(delay_between_cases)
         previous = store.case_record(case["id"])
         if previous and previous.get("status") in TERMINAL_STATUSES:
             continue
@@ -688,7 +697,8 @@ async def run_live(args):
             os.environ["SQL_GROQ_MODEL"] = args.model
     provider = os.getenv("SQL_LLM_PROVIDER", "groq")
     model = args.model or os.getenv("SQL_CLOUDFLARE_MODEL" if provider.casefold() == "cloudflare" else "SQL_GROQ_MODEL")
-    manifest = build_manifest(args.application_revision, provider=provider, model=model)
+    manifest = build_manifest(args.application_revision, provider=provider, model=model,
+                              case_delay_seconds=args.case_delay_seconds)
     existing_data = Path(args.output) / "data.json"
     if args.resume and existing_data.exists():
         previous_manifest = json.loads(existing_data.read_text(encoding="utf-8")).get("manifest", {})
@@ -721,7 +731,8 @@ async def run_live(args):
         agent = SQLAnalyticsAgent(counting_repository, inventory_only=False)
         store = ExperimentStore(args.output, manifest, case_set, resume=args.resume)
         try:
-            data = await run_cases(agent, case_set, store)
+            data = await run_cases(agent, case_set, store,
+                                   delay_between_cases=args.case_delay_seconds)
         finally:
             for configured_provider in (agent.llm, getattr(agent, "_fallback_llm", None)):
                 close = getattr(configured_provider, "close", None)
@@ -748,6 +759,8 @@ if __name__ == "__main__":
     parser.add_argument("--cases", default=str(DEFAULT_CASES))
     parser.add_argument("--reference", required=True)
     parser.add_argument("--output", required=True)
+    parser.add_argument("--case-delay-seconds", type=float, default=0,
+                         help="Optional delay between cases for provider rate-limit pacing (max 120).")
     parser.add_argument("--allow-dirty", action="store_true")
     parser.add_argument("--resume", action="store_true")
     arguments = parser.parse_args()

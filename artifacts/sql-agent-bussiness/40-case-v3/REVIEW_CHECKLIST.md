@@ -40,3 +40,10 @@ Use one copy per reviewer. Reviewers should work independently before adjudicati
 | Approval | PENDING |
 
 Adjudication must resolve every blocking disagreement and preserve the original reviewer records. No review is recorded in this draft.
+
+## AI-assisted technical review record (not human sign-off)
+
+- [AI-assisted semantic review — 40 cases (2026-11-21)](AI_ASSISTED_SEMANTIC_REVIEW_2026-11-21.md)
+- [Machine-readable per-case decisions](AI_ASSISTED_SEMANTIC_REVIEW_2026-11-21.json)
+- Review suggestions: 34 `PROPOSE_APPROVE`, 6 `REVISE`, 0 `REJECT`.
+- This is an AI-assisted technical audit **not** one of the two independent human reviewers. Reviewer 1, Reviewer 2 and adjudication remain **PENDING**. Do not freeze or convert the AI review to human approval without actual independent review.

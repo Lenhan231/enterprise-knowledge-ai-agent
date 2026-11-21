@@ -1,0 +1,75 @@
+{
+  "format_version": "sql-agent-business-benchmark-freeze-manifest.v3.1-draft",
+  "status": "PENDING_INDEPENDENT_REVIEW_AND_REVALIDATION",
+  "freeze_status": "DRAFT_NOT_FROZEN",
+  "submitted_date_local": "2026-11-21",
+  "branch": "benchmark/v3-1-output-contract-20261121",
+  "source_version": "../40-case-v3",
+  "previous_v3_case_set_sha256": "56ef0dd5ec0d2fc15539665b91a230a923e1836cc4a18cf5c6fe8fcd795146c6",
+  "revised_case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+  "revised_gold_sql_definition_sha256": "cf8072cbce69eff02f1305e0ece9a41c1dcfaa73b8ac0b8e96c8f225bb96e0a5",
+  "artifacts_sha256": {
+    "cases_v3_1_draft.json": "f5030b254f81d237b73b50ef491df583cd0076f4c98a44958c6612afdb01a625",
+    "gold_sql_v3_1_draft.json": "bd3fde86d887493f82a2a498e3e58a4eb8beefa2af5d4b81596e6274158c4022",
+    "gold_results_v3_1_provisional.json": "33e80eee02f59aa8140b725d233ee209ba6e5cd68a3241329f220e1e67700f84"
+  },
+  "cohort": {
+    "total_cases": 40,
+    "execute": 30,
+    "clarify": 5,
+    "abstain_without_query": 5,
+    "heldout_sql_agent_executed": false,
+    "sql_agent_generation_calls": 0
+  },
+  "output_scoring": {
+    "previous_v3_ordered_execute": 26,
+    "revised_v3_1_ordered_execute": 7,
+    "ordered_case_ids": [
+      "B40-011",
+      "B40-012",
+      "B40-013",
+      "B40-014",
+      "B40-015",
+      "B40-029",
+      "B40-030"
+    ],
+    "exact_business_columns_required": true,
+    "supported_case_specific_aliases": 30,
+    "scorer_implementation": "../40-case-v3/scorer_v3.py",
+    "independent_sql_semantic_audit_required": true,
+    "runner_audit_provenance_verified": false
+  },
+  "oracle": {
+    "status": "PROVISIONAL_NOT_APPROVED",
+    "provisional_rows": 404,
+    "changed_gold_query_ids": [
+      "B40-002",
+      "B40-021",
+      "B40-024"
+    ],
+    "changed_gold_sql_reexecuted": true,
+    "unchanged_gold_sql_inherited": 27,
+    "original_snapshot_fingerprint_sha256": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028",
+    "revised_snapshot_preflight_rerun": false,
+    "full_revised_mutation_suite_rerun": false
+  },
+  "review": {
+    "source": "../40-case-v3/AI_ASSISTED_SEMANTIC_REVIEW_2026-11-21.md",
+    "ai_technical_review_v3_complete": true,
+    "ai_review_is_not_human_approval": true,
+    "independent_human_reviewers_approved": 0,
+    "reviewer_1": "PENDING",
+    "reviewer_2": "PENDING",
+    "adjudication": "PENDING"
+  },
+  "tests": {
+    "ci_discovery_test_added": "tests/sql/test_benchmark_v3_1_contract.py",
+    "test_runtime_execution_in_this_turn": false,
+    "targeted_supabase_wrong_sql_probes": 3,
+    "targeted_supabase_wrong_sql_probes_detected": 3,
+    "full_mutation_rate": "NOT_REMEASURED_FOR_V3.1"
+  },
+  "ready_for_independent_human_review": true,
+  "ready_for_formal_freeze": false,
+  "ready_for_40_case_sql_agent_run": false
+}

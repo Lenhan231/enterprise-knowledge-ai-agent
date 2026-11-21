@@ -1,4 +1,4 @@
-"""Regression checks for v3.1/v3.2 scoring; never runs the held-out SQL Agent."""
+"""Regression checks for v3.1 case-set/v3.3 scoring; never runs the held-out SQL Agent."""
 from __future__ import annotations
 
 import hashlib
@@ -44,12 +44,40 @@ assert spec_v31 is not None and spec_v31.loader is not None
 scorer_v31 = importlib.util.module_from_spec(spec_v31)
 spec_v31.loader.exec_module(scorer_v31)
 audit = scorer_v31._audit
+output_safety_audit = scorer_v31._output_safety_audit
 spec_mutations = importlib.util.spec_from_file_location(
     "mutation_runner_v3_1", HERE / "run_mutation_probes_v3_1.py"
 )
 assert spec_mutations is not None and spec_mutations.loader is not None
 mutation_runner = importlib.util.module_from_spec(spec_mutations)
 spec_mutations.loader.exec_module(mutation_runner)
+
+
+def approved_execution_events():
+    return [{"kind": "approved", "security_validated": True}]
+
+
+def synthetic_additional_output_audit(case, cases_doc, observation, column_name, *,
+                                      decision="PASS", failed_checks=()):
+    checks = {
+        name: {
+            "passed": name not in set(failed_checks),
+            "evidence": f"Synthetic test fixture only: {name} reviewed against a linked policy.",
+        }
+        for name in output_safety_audit.REQUIRED_CHECKS
+    }
+    return output_safety_audit.create_additional_output_audit_record(
+        case=case,
+        case_set_sha256=digest(cases_doc),
+        observation=observation,
+        column_name=column_name,
+        auditor_id="synthetic-reviewer-not-a-human-record",
+        auditor_version="fixture-v1",
+        policy_reference="synthetic-test-policy",
+        policy_sha256="a" * 64,
+        decision=decision,
+        checks=checks,
+    )
 
 
 class V31ContractTests(unittest.TestCase):
@@ -102,8 +130,23 @@ class V31ContractTests(unittest.TestCase):
         self.assertFalse(RESULTS["heldout_agent_executed"])
         self.assertEqual(RESULTS["independent_review_approvals"], 0)
         manifest = read("FREEZE_MANIFEST_V3_1_DRAFT.json")
-        self.assertEqual(manifest["protocol_version"], "3.2.0")
-        self.assertEqual(manifest["scorer_version"], "3.2.0")
+        self.assertEqual(
+            manifest["format_version"],
+            "sql-agent-business-benchmark-freeze-manifest.v3.3-draft",
+        )
+        self.assertEqual(manifest["protocol_version"], "3.3.0")
+        self.assertEqual(manifest["scorer_version"], "3.3.0")
+        self.assertEqual(manifest["freeze_status"], "DRAFT_NOT_FROZEN")
+        self.assertFalse(manifest["cohort"]["heldout_sql_agent_executed"])
+        self.assertFalse(manifest["scoring_contract"]["e2e_requires_strict_output_contract_pass"])
+        self.assertEqual(
+            manifest["scoring_contract"]["unresolved_extra_column_safety"],
+            "REVIEW_REQUIRED",
+        )
+        self.assertIn(
+            "artifacts/sql-agent-bussiness/40-case-v3-1/output_safety_audit_v3_3.py",
+            manifest["scoring_artifacts_sha256"],
+        )
         self.assertEqual(manifest["revised_case_set_sha256"], digest(CASES))
         for relative_path, expected_sha256 in manifest["scoring_artifacts_sha256"].items():
             self.assertEqual(
@@ -299,6 +342,7 @@ class V31ContractTests(unittest.TestCase):
             "id": case["id"], "status": "executed", "sql_semantic_valid": False,
             "sql": "SELECT $1 AS value", "parameters": [7],
             "columns": ["value"], "rows": [{"value": 7}],
+            "execution_events": approved_execution_events(),
         }
         record = audit.create_audit_record(
             case=case, case_set_sha256=audit.canonical_sha256(cases_doc),
@@ -681,32 +725,431 @@ class V31ContractTests(unittest.TestCase):
         self.assertEqual(compared["business_result_decision"], "REVIEW_REQUIRED")
         self.assertIn("invalid_reference_row_shape", compared["business_result_reason_codes"])
 
-    def test_v32_extra_output_changes_contract_metric_but_not_business_metric(self):
+    def test_v33_audited_harmless_extra_passes_e2e_while_contract_metric_fails(self):
         case = {
             "id": "SYNTHETIC-METRICS", "expected_behavior": "execute",
             "output_contract": {"columns": ["value"], "ordered": False},
             "column_aliases": {}, "numeric_tolerance": {},
         }
+        cases_doc = {"cases": [case]}
         observation = {
             "id": case["id"], "status": "executed", "sql_semantic_valid": True,
             "sql": "SELECT value, 'trace' AS trace_id FROM data", "parameters": [],
             "columns": ["value", "trace_id"], "rows": [{"value": 9, "trace_id": "trace"}],
+            "execution_events": approved_execution_events(),
         }
         reference_sql = "SELECT value FROM data"
-        cases_doc = {"cases": [case]}
         record = audit.create_audit_record(
             case=case, case_set_sha256=digest(cases_doc), observation=observation,
             auditor_id="synthetic-reviewer", auditor_version="fixture-v1", decision="PASS",
-            evidence=["Synthetic fixture: approved semantic audit decision."],
+            evidence=["Synthetic test fixture only; not a real human semantic review."],
+        )
+        output_record = synthetic_additional_output_audit(
+            case, cases_doc, observation, "trace_id",
         )
         scores = scorer_v31.score(
             cases_doc,
             {"cases": [{"id": case["id"], "sql": reference_sql, "rows": [{"value": 9}]}]},
-            {"cases": [observation], "independent_semantic_audits": [record]},
+            {
+                "cases": [observation],
+                "independent_semantic_audits": [record],
+                "additional_output_safety_audits": [output_record],
+            },
         )
         self.assertEqual(scores["metrics"]["business_result_accuracy"]["value"], 1.0)
         self.assertEqual(scores["metrics"]["output_contract_compliance"]["value"], 0.0)
+        self.assertEqual(scores["metrics"]["supported_business_end_to_end_accuracy"]["value"], 1.0)
+        self.assertEqual(scores["metrics"]["business_end_to_end_accuracy"],
+                         scores["metrics"]["supported_business_end_to_end_accuracy"])
+        self.assertEqual(
+            scores["case_comparisons"][case["id"]]["business_end_to_end"]["decision"],
+            "PASS",
+        )
+        self.assertIn(
+            "additional_columns_independently_reviewed_as_safe",
+            scores["case_comparisons"][case["id"]]["business_end_to_end"]["reason_codes"],
+        )
+        self.assertEqual(
+            scores["case_comparisons"][case["id"]]["additional_output_safety"]["authenticated"],
+            False,
+        )
+
+    def test_v33_extra_column_without_linked_safety_evidence_requires_review(self):
+        case = {
+            "id": "SYNTHETIC-EXTRA-REVIEW", "expected_behavior": "execute",
+            "output_contract": {"columns": ["value"], "ordered": False},
+            "column_aliases": {}, "numeric_tolerance": {},
+        }
+        cases_doc = {"cases": [case]}
+        observation = {
+            "id": case["id"], "status": "executed", "sql_semantic_valid": True,
+            "sql": "SELECT value, private_field FROM data", "parameters": [],
+            "columns": ["value", "private_field"],
+            "rows": [{"value": 9, "private_field": "unknown"}],
+            "execution_events": approved_execution_events(),
+        }
+        semantic_record = audit.create_audit_record(
+            case=case, case_set_sha256=digest(cases_doc), observation=observation,
+            auditor_id="synthetic-reviewer", auditor_version="fixture-v1", decision="PASS",
+            evidence=["Synthetic fixture only; decision is not human evidence."],
+        )
+        scores = scorer_v31.score(
+            cases_doc, {"cases": [{"id": case["id"], "rows": [{"value": 9}]}]},
+            {"cases": [observation], "independent_semantic_audits": [semantic_record]},
+        )
+        comparison = scores["case_comparisons"][case["id"]]
+        self.assertEqual(comparison["business_result_decision"], "PASS")
+        self.assertEqual(comparison["output_contract_decision"], "FAIL")
+        self.assertEqual(comparison["business_end_to_end"]["decision"], "REVIEW_REQUIRED")
+        self.assertIn("additional_output_audit_missing", comparison["business_end_to_end"]["reason_codes"])
         self.assertEqual(scores["metrics"]["supported_business_end_to_end_accuracy"]["value"], 0.0)
+        self.assertEqual(scores["metrics"]["business_end_to_end_review_required"]["count"], 1)
+
+    def test_v33_safety_failure_blocks_e2e_even_with_matching_rows_and_audits(self):
+        case = {
+            "id": "SYNTHETIC-SENSITIVE", "expected_behavior": "execute",
+            "output_contract": {"columns": ["value"], "ordered": False},
+            "column_aliases": {}, "numeric_tolerance": {},
+        }
+        cases_doc = {"cases": [case]}
+        observation = {
+            "id": case["id"], "status": "executed", "sql_semantic_valid": True,
+            "sql": "SELECT value, customer_email FROM data", "parameters": [],
+            "columns": ["value", "customer_email"],
+            "rows": [{"value": 9, "customer_email": "hidden@example.test"}],
+            "execution_events": approved_execution_events(),
+        }
+        semantic_record = audit.create_audit_record(
+            case=case, case_set_sha256=digest(cases_doc), observation=observation,
+            auditor_id="synthetic-reviewer", auditor_version="fixture-v1", decision="PASS",
+            evidence=["Synthetic fixture only; not a human semantic audit."],
+        )
+        safety_record = synthetic_additional_output_audit(
+            case, cases_doc, observation, "customer_email", decision="FAIL",
+            failed_checks=("no_sensitive_data", "access_authorized"),
+        )
+        result = scorer_v31.score(
+            cases_doc, {"cases": [{"id": case["id"], "rows": [{"value": 9}]}]},
+            {
+                "cases": [observation], "independent_semantic_audits": [semantic_record],
+                "additional_output_safety_audits": [safety_record],
+            },
+        )
+        comparison = result["case_comparisons"][case["id"]]
+        self.assertEqual(comparison["business_result_decision"], "PASS")
+        self.assertEqual(comparison["business_end_to_end"]["decision"], "FAIL")
+        self.assertIn("additional_output_no_sensitive_data_failed",
+                      comparison["business_end_to_end"]["reason_codes"])
+
+        contradictory_record = synthetic_additional_output_audit(
+            case, cases_doc, observation, "customer_email", decision="PASS",
+            failed_checks=("no_sensitive_data",),
+        )
+        unresolved = scorer_v31.score(
+            cases_doc, {"cases": [{"id": case["id"], "rows": [{"value": 9}]}]},
+            {
+                "cases": [observation], "independent_semantic_audits": [semantic_record],
+                "additional_output_safety_audits": [contradictory_record],
+            },
+        )
+        unresolved_comparison = unresolved["case_comparisons"][case["id"]]
+        self.assertEqual(
+            unresolved_comparison["additional_output_safety"]["decision"],
+            "REVIEW_REQUIRED",
+        )
+        self.assertEqual(unresolved_comparison["business_end_to_end"]["decision"], "REVIEW_REQUIRED")
+
+    def test_v33_execution_security_evidence_is_mandatory_and_enforced(self):
+        case = {
+            "id": "SYNTHETIC-SECURITY", "expected_behavior": "execute",
+            "output_contract": {"columns": ["value"], "ordered": False},
+            "column_aliases": {}, "numeric_tolerance": {},
+        }
+        cases_doc = {"cases": [case]}
+        observation = {
+            "id": case["id"], "status": "executed", "sql_semantic_valid": True,
+            "sql": "SELECT 1 AS value", "parameters": [],
+            "columns": ["value"], "rows": [{"value": 1}],
+        }
+        semantic_record = audit.create_audit_record(
+            case=case, case_set_sha256=digest(cases_doc), observation=observation,
+            auditor_id="synthetic-reviewer", auditor_version="fixture-v1", decision="PASS",
+            evidence=["Synthetic fixture only; not a human semantic audit."],
+        )
+        reference = {"cases": [{"id": case["id"], "rows": [{"value": 1}]}]}
+        no_security = scorer_v31.score(
+            cases_doc, reference,
+            {"cases": [observation], "independent_semantic_audits": [semantic_record]},
+        )
+        self.assertEqual(no_security["case_comparisons"][case["id"]]["business_end_to_end"]["decision"],
+                         "REVIEW_REQUIRED")
+
+        unsafe = {**observation, "execution_events": [{"kind": "approved", "security_validated": False}]}
+        unsafe_semantic_record = audit.create_audit_record(
+            case=case, case_set_sha256=digest(cases_doc), observation=unsafe,
+            auditor_id="synthetic-reviewer", auditor_version="fixture-v1", decision="PASS",
+            evidence=["Synthetic fixture only; not a human semantic audit."],
+        )
+        failed = scorer_v31.score(
+            cases_doc, reference,
+            {"cases": [unsafe], "independent_semantic_audits": [unsafe_semantic_record]},
+        )
+        self.assertEqual(failed["case_comparisons"][case["id"]]["business_end_to_end"]["decision"],
+                         "FAIL")
+        self.assertIn("execution_security_validation_failed",
+                      failed["case_comparisons"][case["id"]]["business_end_to_end"]["reason_codes"])
+
+        unsafe_count_observation = {
+            **observation,
+            "execution_events": approved_execution_events(),
+            "unsafe_execution_count": 1,
+        }
+        unsafe_count_semantic_record = audit.create_audit_record(
+            case=case, case_set_sha256=digest(cases_doc), observation=unsafe_count_observation,
+            auditor_id="synthetic-reviewer", auditor_version="fixture-v1", decision="PASS",
+            evidence=["Synthetic fixture only; not a human semantic audit."],
+        )
+        unsafe_count_result = scorer_v31.score(
+            cases_doc, reference,
+            {
+                "cases": [unsafe_count_observation],
+                "independent_semantic_audits": [unsafe_count_semantic_record],
+            },
+        )
+        unsafe_count_comparison = unsafe_count_result["case_comparisons"][case["id"]]
+        self.assertEqual(unsafe_count_comparison["business_end_to_end"]["decision"], "FAIL")
+        self.assertIn("unsafe_execution_detected",
+                      unsafe_count_comparison["business_end_to_end"]["reason_codes"])
+
+    def test_v33_output_audit_is_bound_to_sql_parameters_case_and_column_values(self):
+        case = {
+            "id": "SYNTHETIC-OUTPUT-LINK", "expected_behavior": "execute",
+            "output_contract": {"columns": ["value"], "ordered": False},
+            "column_aliases": {}, "numeric_tolerance": {},
+        }
+        cases_doc = {"cases": [case]}
+        observation = {
+            "id": case["id"], "status": "executed", "sql_semantic_valid": True,
+            "sql": "SELECT $1 AS value, $2 AS extra", "parameters": [7, "safe"],
+            "columns": ["value", "extra"],
+            "rows": [{"value": 7, "extra": "safe"}],
+            "execution_events": approved_execution_events(),
+        }
+        semantic_record = audit.create_audit_record(
+            case=case, case_set_sha256=digest(cases_doc), observation=observation,
+            auditor_id="synthetic-reviewer", auditor_version="fixture-v1", decision="PASS",
+            evidence=["Synthetic fixture only; not a human semantic audit."],
+        )
+        safety_record = synthetic_additional_output_audit(case, cases_doc, observation, "extra")
+        reference = {"cases": [{"id": case["id"], "rows": [{"value": 7}]}]}
+
+        for tamper, reason in (
+            (lambda item: item.update(sql="SELECT $1 AS value, $2 AS changed"),
+             "additional_output_audit_sql_sha256_mismatch"),
+            (lambda item: item.update(parameters=[7, "changed"]),
+             "additional_output_audit_parameters_sha256_mismatch"),
+            (lambda item: item["rows"][0].update(extra="changed"),
+             "additional_output_audit_output_column_values_sha256_mismatch"),
+        ):
+            altered = json.loads(json.dumps(observation))
+            tamper(altered)
+            # Rebind the semantic audit to the altered SQL/parameters; only the
+            # output-safety record should become stale in this fixture.
+            semantic = audit.create_audit_record(
+                case=case, case_set_sha256=digest(cases_doc), observation=altered,
+                auditor_id="synthetic-reviewer", auditor_version="fixture-v1", decision="PASS",
+                evidence=["Synthetic fixture only; not a human semantic audit."],
+            )
+            scores = scorer_v31.score(
+                cases_doc, reference,
+                {
+                    "cases": [altered], "independent_semantic_audits": [semantic],
+                    "additional_output_safety_audits": [safety_record],
+                },
+            )
+            comparison = scores["case_comparisons"][case["id"]]
+            self.assertEqual(comparison["business_end_to_end"]["decision"], "REVIEW_REQUIRED")
+            self.assertIn(reason, comparison["business_end_to_end"]["reason_codes"])
+
+    def test_v33_additional_output_export_uses_separate_reviewer_decisions_and_hashes(self):
+        case = {
+            "id": "SYNTHETIC-OUTPUT-EXPORT", "expected_behavior": "execute",
+            "output_contract": {"columns": ["value"], "ordered": False},
+            "column_aliases": {}, "numeric_tolerance": {},
+        }
+        cases_doc = {"cases": [case]}
+        observation = {
+            "id": case["id"], "status": "executed",
+            "sql": "SELECT $1 AS value, $2 AS extra", "parameters": [1, "metadata"],
+            "columns": ["value", "extra"],
+            "rows": [{"value": 1, "extra": "metadata"}],
+        }
+        checks = {
+            name: {"passed": True, "evidence": f"Synthetic fixture only: {name}."}
+            for name in output_safety_audit.REQUIRED_CHECKS
+        }
+        decisions = {
+            "format_version": output_safety_audit.DECISIONS_FORMAT_VERSION,
+            "case_set_sha256": digest(cases_doc),
+            "auditor_id": "synthetic-reviewer-not-a-human-record",
+            "auditor_version": "fixture-v1",
+            "policy_reference": "synthetic-test-policy",
+            "policy_sha256": "b" * 64,
+            "decisions": [{
+                "case_id": case["id"], "column_name": "extra",
+                "decision": "PASS", "checks": checks,
+            }],
+        }
+        exported = output_safety_audit.export_additional_output_audits(
+            cases_doc, {"cases": [observation]}, decisions,
+            recorded_at_utc="2026-11-21T00:00:00+00:00",
+        )
+        record = exported["additional_output_safety_audits"][0]
+        self.assertEqual(record["source"], "reviewer_decisions_json")
+        self.assertEqual(record["auditor_id"], decisions["auditor_id"])
+        self.assertEqual(record["case_set_sha256"], digest(cases_doc))
+        self.assertEqual(record["sql_sha256"], hashlib.sha256(observation["sql"].encode()).hexdigest())
+        self.assertEqual(record["parameters_sha256"], digest(observation["parameters"]))
+        self.assertEqual(record["observed_result_sha256"], digest({
+            "columns": observation["columns"], "rows": observation["rows"],
+        }))
+        self.assertFalse(record["authenticated"])
+        self.assertFalse(exported["additional_output_safety_audit_export"]["authenticated"])
+
+        with self.assertRaisesRegex(ValueError, "case-set hash"):
+            output_safety_audit.export_additional_output_audits(
+                cases_doc, {"cases": [observation]},
+                {**decisions, "case_set_sha256": "0" * 64},
+            )
+        with self.assertRaisesRegex(ValueError, "unique case/column"):
+            output_safety_audit.export_additional_output_audits(
+                cases_doc, {"cases": [observation]},
+                {**decisions, "decisions": [*decisions["decisions"], decisions["decisions"][0]]},
+            )
+
+    def test_v33_correct_business_rows_with_wrong_rows_or_material_contract_fail(self):
+        case = {
+            "id": "SYNTHETIC-ROWS-E2E", "expected_behavior": "execute", "top_n": 2,
+            "output_contract": {"columns": ["value"], "ordered": False, "max_rows": 2},
+            "column_aliases": {}, "numeric_tolerance": {},
+        }
+        cases_doc = {"cases": [case]}
+        reference_sql = "SELECT value FROM data ORDER BY value DESC LIMIT 2"
+        reference = {"cases": [{"id": case["id"], "sql": reference_sql,
+                                "rows": [{"value": 2}, {"value": 1}]}]}
+        for name, rows, reason in (
+            ("missing", [{"value": 2}], "business_result_mismatch"),
+            ("extra", [{"value": 2}, {"value": 1}, {"value": 0}], "business_result_mismatch"),
+            ("wrong_value", [{"value": 2}, {"value": 3}], "business_result_mismatch"),
+        ):
+            with self.subTest(name=name):
+                observation = {
+                    "id": case["id"], "status": "executed", "sql_semantic_valid": True,
+                    "sql": reference_sql, "parameters": [], "columns": ["value"], "rows": rows,
+                    "execution_events": approved_execution_events(),
+                }
+                semantic_record = audit.create_audit_record(
+                    case=case, case_set_sha256=digest(cases_doc), observation=observation,
+                    auditor_id="synthetic-reviewer", auditor_version="fixture-v1", decision="PASS",
+                    evidence=["Synthetic fixture only; not a human semantic audit."],
+                )
+                scores = scorer_v31.score(
+                    cases_doc, reference,
+                    {"cases": [observation], "independent_semantic_audits": [semantic_record]},
+                )
+                self.assertEqual(scores["case_comparisons"][case["id"]]["business_end_to_end"]["decision"],
+                                 "FAIL")
+                self.assertIn(reason, scores["case_comparisons"][case["id"]]["business_end_to_end"]["reason_codes"])
+
+    def test_v33_duplicate_grain_null_zero_and_order_contract_violations_fail_e2e(self):
+        scenarios = (
+            ("grain", {
+                "case": {"id": "SYNTHETIC-GRAIN", "expected_behavior": "execute",
+                         "output_contract": {"columns": ["value"], "ordered": False},
+                         "column_aliases": {}, "numeric_tolerance": {}},
+                "expected": [{"value": 5}],
+                "columns": ["value", "dimension"],
+                "rows": [{"value": 5, "dimension": "a"}, {"value": 5, "dimension": "b"}],
+                "sql": "SELECT value, dimension FROM data GROUP BY value, dimension",
+            }),
+            ("null_to_zero", {
+                "case": {"id": "SYNTHETIC-NULL-E2E", "expected_behavior": "execute",
+                         "output_contract": {"columns": ["value"], "ordered": False},
+                         "column_aliases": {}, "numeric_tolerance": {}},
+                "expected": [{"value": None}], "columns": ["value"],
+                "rows": [{"value": 0}], "sql": "SELECT COALESCE(value, 0) AS value FROM data",
+            }),
+            ("ordered", {
+                "case": {"id": "SYNTHETIC-ORDER-E2E", "expected_behavior": "execute",
+                         "output_contract": {"columns": ["id"], "ordered": True},
+                         "column_aliases": {}, "numeric_tolerance": {}},
+                "expected": [{"id": 1}, {"id": 2}], "columns": ["id"],
+                "rows": [{"id": 2}, {"id": 1}], "sql": "SELECT id FROM data ORDER BY id DESC",
+            }),
+        )
+        for name, fixture in scenarios:
+            with self.subTest(name=name):
+                case = fixture["case"]
+                cases_doc = {"cases": [case]}
+                observation = {
+                    "id": case["id"], "status": "executed", "sql_semantic_valid": True,
+                    "sql": fixture["sql"], "parameters": [],
+                    "columns": fixture["columns"], "rows": fixture["rows"],
+                    "execution_events": approved_execution_events(),
+                }
+                audit_decision = "PASS" if name == "ordered" else "FAIL"
+                semantic_record = audit.create_audit_record(
+                    case=case, case_set_sha256=digest(cases_doc), observation=observation,
+                    auditor_id="synthetic-reviewer", auditor_version="fixture-v1",
+                    decision=audit_decision,
+                    evidence=[f"Synthetic fixture only: {name} must not be treated as correct."],
+                )
+                safety_records = []
+                if name == "grain":
+                    safety_records.append(synthetic_additional_output_audit(
+                        case, cases_doc, observation, "dimension",
+                    ))
+                scores = scorer_v31.score(
+                    cases_doc,
+                    {"cases": [{"id": case["id"], "rows": fixture["expected"]}]},
+                    {"cases": [observation], "independent_semantic_audits": [semantic_record],
+                     "additional_output_safety_audits": safety_records},
+                )
+                decision = scores["case_comparisons"][case["id"]]["business_end_to_end"]["decision"]
+                self.assertEqual(decision, "FAIL")
+
+    def test_v33_column_alias_order_and_unordered_rows_pass_e2e_with_independent_audit(self):
+        case = {
+            "id": "SYNTHETIC-FORMATTING", "expected_behavior": "execute",
+            "output_contract": {"columns": ["id", "value"], "ordered": False},
+            "column_aliases": {"id": ["account"], "value": ["metric"]},
+            "numeric_tolerance": {},
+        }
+        cases_doc = {"cases": [case]}
+        reference_sql = "SELECT id, value FROM data WHERE active = TRUE"
+        observation = {
+            "id": case["id"], "status": "executed", "sql_semantic_valid": False,
+            "sql": "SELECT value AS metric, id AS account FROM data WHERE active IS TRUE",
+            "parameters": [], "columns": ["metric", "account"],
+            "rows": [{"metric": 20, "account": 2}, {"metric": 10, "account": 1}],
+            "execution_events": approved_execution_events(),
+        }
+        semantic_record = audit.create_audit_record(
+            case=case, case_set_sha256=digest(cases_doc), observation=observation,
+            auditor_id="synthetic-reviewer", auditor_version="fixture-v1", decision="PASS",
+            evidence=["Synthetic fixture only; the SQL rewrite is explicitly reviewed as equivalent."],
+        )
+        scores = scorer_v31.score(
+            cases_doc,
+            {"cases": [{"id": case["id"], "sql": reference_sql,
+                        "rows": [{"id": 1, "value": 10}, {"id": 2, "value": 20}]}]},
+            {"cases": [observation], "independent_semantic_audits": [semantic_record]},
+        )
+        comparison = scores["case_comparisons"][case["id"]]
+        self.assertEqual(comparison["business_result_decision"], "PASS")
+        self.assertEqual(comparison["output_contract_decision"], "PASS")
+        self.assertEqual(comparison["business_end_to_end"]["decision"], "PASS")
+        self.assertFalse(observation["sql_semantic_valid"])
 
     def test_independent_audit_export_links_evidence_and_refuses_stale_or_incomplete_input(self):
         case = {

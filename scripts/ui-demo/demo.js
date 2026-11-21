@@ -147,3 +147,30 @@ window.addEventListener("load", () => setTimeout(() => {
     else { window.toast("Report saved."); window.toast("Copied to clipboard"); window.toast("The report could not be saved.", "error"); }
   }, 900));
 })();
+// ?shot=autohide (sidebar hidden) / ?shot=autohide-peek (pointer on the edge)
+(() => {
+  const shot = new URLSearchParams(location.search).get("shot");
+  if (shot !== "autohide" && shot !== "autohide-peek") return;
+  window.addEventListener("load", () => setTimeout(() => {
+    const ws = document.querySelector("#workspace");
+    if (!ws.classList.contains("sidebar-autohide")) document.querySelector("#sidebar-autohide").click();
+    ws.classList.toggle("is-peek", shot === "autohide-peek");
+    if (shot === "autohide") document.activeElement?.blur();
+  }, 700));
+})();
+// ?shot=autohide-logic: drive the edge/sidebar pointer events and log is-peek
+(() => {
+  if (new URLSearchParams(location.search).get("shot") !== "autohide-logic") return;
+  window.addEventListener("load", () => setTimeout(() => {
+    const ws = document.querySelector("#workspace"), edge = document.querySelector("#sidebar-edge"), side = document.querySelector("#workspace-sidebar"), log = [];
+    const peek = () => ws.classList.contains("is-peek"), fire = (el, type) => el.dispatchEvent(new PointerEvent(type, { bubbles: false }));
+    if (!ws.classList.contains("sidebar-autohide")) document.querySelector("#sidebar-autohide").click();
+    fire(side, "pointerleave");
+    setTimeout(() => { log.push(`after leaving the sidebar (400ms): peek=${peek()}`); fire(edge, "pointerenter"); log.push(`edge enter: peek=${peek()}`);
+      fire(edge, "pointerleave"); fire(side, "pointerenter"); log.push(`edge leave then sidebar enter immediately: peek=${peek()}`);
+      setTimeout(() => { log.push(`300ms later, pointer still on sidebar: peek=${peek()}`); fire(side, "pointerleave");
+        setTimeout(() => { log.push(`pointer left sidebar, 400ms: peek=${peek()}`);
+          document.querySelector("#sidebar-autohide").click(); log.push(`autohide off: class=${ws.classList.contains("sidebar-autohide")} stored=${localStorage.getItem("sidebar_autohide")}`);
+          const pre = document.createElement("pre"); pre.id = "ahlog"; pre.textContent = log.join("\n"); document.body.append(pre); }, 400); }, 300); }, 400);
+  }, 700));
+})();

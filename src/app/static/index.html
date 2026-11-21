@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles.css?v=redesign-20261115a">
   <link rel="stylesheet" href="/static/redesign.css?v=reports-wide-20261120">
-  <link rel="stylesheet" href="/static/neutral.css?v=neutral-20261212">
+  <link rel="stylesheet" href="/static/neutral.css?v=neutral-20261213">
   <script>
     (function() {
       const saved = localStorage.getItem("app_theme");
@@ -46,6 +46,7 @@
   </main>
 
   <div id="workspace" class="app-shell" hidden>
+    <div id="sidebar-edge" class="sidebar-edge" aria-hidden="true"></div>
     <aside id="workspace-sidebar" class="workspace-sidebar" aria-label="Workspace sidebar">
       <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-controls="workspace-sidebar" aria-expanded="true" aria-label="Collapse sidebar" title="Collapse sidebar"><span aria-hidden="true">‹</span></button>
       <a id="workspace-home-link" class="brand sidebar-brand" href="/" aria-label="Enterprise Knowledge home">
@@ -65,6 +66,10 @@
         <button id="tab-button-monitoring" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-monitoring" data-tab-target="monitoring" hidden aria-label="Agent Monitoring" title="Agent Monitoring"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="nav-label">Agent Monitoring</span></button>
       </nav>
       <div class="topbar-status sidebar-account">
+        <button id="sidebar-autohide" class="side-row" type="button" aria-pressed="false" title="Hide the sidebar until the pointer touches the left edge">
+          <span class="side-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/><path d="m15 10-2 2 2 2"/></svg></span>
+          <span class="nav-label autohide-label">Auto-hide sidebar</span>
+        </button>
         <button id="theme-toggle" class="theme-toggle side-row" type="button" aria-label="Toggle light and dark mode" title="Toggle theme">
           <span class="side-icon"><span class="theme-icon light-icon" aria-hidden="true"></span><span class="theme-icon dark-icon" aria-hidden="true"></span></span>
           <span class="nav-label"><span class="theme-label-light">Light mode</span><span class="theme-label-dark">Dark mode</span></span>
@@ -566,7 +571,7 @@
   <script src="/static/sales-report.js?v=20261121-report-vi" defer></script>
   <script src="/static/dashboard-format.js?v=20261119-overview" defer></script>
   <script src="/static/business-overview.js?v=20261212-skeleton" defer></script>
-  <script src="/static/app.js?v=20261212-neutral" defer></script>
+  <script src="/static/app.js?v=20261213-neutral" defer></script>
   <script src="/static/report-workspace.js?v=20261212-skeleton" defer></script>
   <script src="/static/dashboard.js?v=20261212-skeleton" defer></script>
 </body>

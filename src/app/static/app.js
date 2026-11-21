@@ -3692,3 +3692,35 @@ window.toast = (message, kind = "ok") => {
     }).observe(line, { childList: true, characterData: true, subtree: true });
   }
 })();
+
+// Auto-hide sidebar: the sidebar leaves the layout (the page uses the full width) and slides over the page while the
+// pointer is on the left edge or inside it, or while focus is inside it. The choice is kept in this browser only.
+(() => {
+  const root = document.getElementById("workspace"), side = document.getElementById("workspace-sidebar");
+  const edge = document.getElementById("sidebar-edge"), button = document.getElementById("sidebar-autohide");
+  if (!root || !side || !edge || !button) return;
+  const label = button.querySelector(".autohide-label");
+  const hidden = () => root.classList.contains("sidebar-autohide");
+  let timer = 0;
+  const peek = (on) => {
+    clearTimeout(timer);
+    if (on) root.classList.add("is-peek");
+    else timer = setTimeout(() => root.classList.remove("is-peek"), 260);
+  };
+  const set = (on, save) => {
+    root.classList.toggle("sidebar-autohide", on);
+    root.classList.toggle("is-peek", on && save); // switched on from inside the sidebar: stay open until the pointer leaves
+    button.setAttribute("aria-pressed", String(on));
+    label.textContent = on ? "Keep sidebar open" : "Auto-hide sidebar";
+    button.title = on ? "Show the sidebar all the time" : "Hide the sidebar until the pointer touches the left edge";
+    if (save) try { localStorage.setItem("sidebar_autohide", String(on)); } catch {}
+  };
+  edge.addEventListener("pointerenter", () => peek(true));
+  edge.addEventListener("pointerleave", () => peek(false));
+  side.addEventListener("pointerenter", () => { if (hidden()) peek(true); });
+  side.addEventListener("pointerleave", () => { if (hidden()) peek(false); });
+  side.addEventListener("focusin", () => { if (hidden()) peek(true); });
+  side.addEventListener("focusout", (event) => { if (hidden() && !side.contains(event.relatedTarget)) peek(false); });
+  button.addEventListener("click", () => set(!hidden(), true));
+  try { set(localStorage.getItem("sidebar_autohide") === "true", false); } catch {}
+})();

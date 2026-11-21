@@ -1,8 +1,8 @@
 # SQL Agent Business Benchmark Protocol
 
-Protocol version: `1.1.2`
+Protocol version: `1.2.0`
 
-Scorer version: `2.0.2` (`sql-agent-benchmark-scores.v2`)
+Scorer version: `2.1.0` (`sql-agent-benchmark-scores.v3`)
 
 Pilot case set: `cases.json`
 
@@ -35,18 +35,18 @@ All rate metrics report integer numerator, denominator and a `null` value when t
 | Supported Noncompletion Rate | Supported cases without an executed, semantically valid, business-correct answer ÷ supported cases | All attempted supported cases |
 | Validation-Blocked Supported Rate | Supported cases stopped by SQL security, schema, metric or semantic validation ÷ supported cases | All attempted supported cases; provider/network failures are excluded |
 | Valid Clarification/Abstention | Unsupported cases with a non-empty user-facing answer, a valid 0–3 string choices list, no SQL and no execution ÷ unsupported cases | All attempted unsupported cases; invalid model clarification is not a valid abstention |
-| JEV Raw Recall@5 | Required tables in JEV's raw top-five candidates ÷ required tables across cases where JEV succeeded | JEV-successful cases only; on HTTP failure recall is not measurable |
+| Schema Selector Raw Recall@5 | Required tables in the selector's raw top-five candidates ÷ required tables across cases where selection succeeded | Successful schema-selection cases only; on provider failure recall is not measurable |
 | Final Schema Coverage | Required tables present in the final schema sent to SQL planning ÷ required tables for cases with a selected schema | Cases with observable final schema; fixed compiler bypasses are excluded |
 | Repair Recovery Rate | Cases that execute after at least one internal SQL repair ÷ cases with an internal SQL repair | Internal SQL repair cases only; Auto revise is a separate mechanism |
 | Unsafe Execution Count | Execution events that did not pass the repository security boundary | Count; target is exactly zero |
 | Latency p50/p95 | End-to-end case latency using nearest-rank percentiles | Executed benchmark attempts with recorded latency |
-| Provider Calls | Count SQL-generation submissions, metric-mapping submissions, JEV HTTP requests, and local Codex fallback calls; secondary SQL-provider submissions are also shown as a subset of SQL-generation submissions | Count, reported by stage; fixed compiler calls should be zero |
+| Provider Calls | Count SQL-generation submissions, metric-mapping submissions, schema-selection provider requests, and local Codex fallback calls; secondary SQL-provider submissions are also shown as a subset of SQL-generation submissions | Count, reported by stage; fixed compiler calls should be zero |
 
 SQL generation token usage is reported only when the selected provider exposes token counts. Current provider interfaces return generated text without reliable usage metadata; token usage is therefore `NOT AVAILABLE`, never estimated.
 
-`general_sql_generation` counts each provider submission made by the SQL generation stage, including a secondary provider after a primary failure. `provider_fallback_calls` is the secondary-provider subset of that count; `local_codex_fallback_calls` is counted separately. `metric_interpretation` counts metric-mapping provider submissions. `total_model_calls` sums SQL-generation submissions, metric-mapping submissions, JEV HTTP requests and local Codex calls; it does not add the fallback subset a second time. Pipeline counters are reported separately: fixed matching calls and matches, fixed compilation calls and plans, inventory compilation calls and plans, `schema_discovery`, `schema_selection`, SQL generation entries/repairs, repository execution attempts, and successful repository executions. A repository execution event is recorded only after its query call returns successfully; failed attempts remain visible in the attempt counters.
+`general_sql_generation` counts each provider submission made by the SQL generation stage, including a secondary provider after a primary failure. `provider_fallback_calls` is the secondary-provider subset of that count; `local_codex_fallback_calls` is counted separately. `metric_interpretation` counts metric-mapping provider submissions. `total_model_calls` sums SQL-generation submissions, metric-interpretation submissions, schema-selection provider requests and local Codex calls; it does not add the fallback subset a second time. Pipeline counters are reported separately: fixed matching calls and matches, fixed compilation calls and plans, inventory compilation calls and plans, `schema_discovery`, `schema_selection`, SQL generation entries/repairs, repository execution attempts, and successful repository executions. A repository execution event is recorded only after its query call returns successfully; failed attempts remain visible in the attempt counters.
 
-Because the aggregate `total_model_calls` includes JEV HTTP requests (including failed requests), use the per-stage counts to distinguish generated SQL/model submissions from schema-selection availability. A JEV request count is not a successful JEV selection count.
+Because `total_model_calls` includes schema-selection HTTP requests (including failed requests), use per-stage counts to distinguish SQL generation from schema-selection availability. A request count is not a successful schema selection count.
 
 The package is intentionally separate from `evaluation/run_agent_benchmarks.py` (a 75-prompt, three-agent RAGAS run) and the older `evaluation/agent_benchmarks/sql_analytics_agent_benchmark.json` cohort (25 questions, recorded data through 2022-12-31). Their case sets, snapshots and scoring contracts differ, so their scores must not be combined with this pilot.
 
@@ -70,9 +70,9 @@ Use a pinned application revision. If the worktree is dirty, explicitly allow it
 
 SQL Agent repair remains its bounded internal loop. Auto revise is not invoked by this benchmark and must not be merged into its retry count. Completed experiments and terminal case results are immutable. Resume is allowed only for an incomplete experiment with the same configuration fingerprint; already terminal case IDs are skipped. A forcibly terminated `RUNNING` case is rerun as a new attempt only after explicitly resuming, and the prior attempt record is retained. Unsupported cases are persisted without requiring gold SQL.
 
-## JEV interpretation
+## Schema selector interpretation
 
-Report raw JEV top-five candidates, required tables, ontology-added sources, approved join-bridge additions, final schema and final schema coverage separately. When JEV fails, report `availability=FAILED`, its HTTP status and external-provider failure class where available, and `recall@5=NOT MEASURABLE`. Store a redacted diagnostic only when the provider returns one; never infer a billing or quota cause from HTTP 402. `full_schema_fallback` coverage is not JEV recall. Do not compare fallback and JEV-enabled runs as if schema selection conditions matched.
+Record the exact `schema_selection_model`, raw top-five candidates, required tables, ontology-added sources, approved join-bridge additions, final schema and final schema coverage separately. The SQL selector defaults to `perplexity/pplx-decider-flash-v1.3:free`; set `SQL_SCHEMA_SELECTION_MODEL` to run a paired model comparison. The runner records the selected model in both the manifest and provider settings. Auto's separate JEV route classifier remains `typesafe/jev-1.14` and is outside this direct SQL benchmark. When selection fails, report `availability=FAILED`, its HTTP status and external-provider failure class where available, and `raw_recall@5=NOT MEASURABLE`. Store only a safe diagnostic classification; do not infer a billing or quota cause from HTTP 402 without provider metadata. `full_schema_fallback` coverage is not raw selector recall. Do not compare runs using different selector models as if schema selection conditions matched. Historical artifacts retain their original Jev model attribution.
 
 Explicit order-status population wording is resolved through the field-value vocabulary in `metric_ontology.py` into a typed `(source, column, operator, values)` contract. The SQL generation and bounded repair prompts include that contract, and SQL is checked through parsed predicate lineage before execution. Canonical metric filters remain allowed and are independently validated by the metric catalog. The vocabulary is bounded; requests involving unmodeled population fields still need dedicated regression cases before the 40-case cohort is frozen.
 

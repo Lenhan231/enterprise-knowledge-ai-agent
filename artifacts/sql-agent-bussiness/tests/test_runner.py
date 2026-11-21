@@ -120,7 +120,7 @@ class SQLBenchmarkRunnerTest(unittest.TestCase):
             self.assertEqual(data["cases"][0]["status"], "provider_error")
             self.assertEqual(data["cases"][1]["status"], "executed")
 
-    def test_jev_http_error_is_counted_and_classified(self):
+    def test_schema_selector_http_error_is_counted_and_classified(self):
         from core.agents.sql import agent as sql_module
 
         class CallsJev(FakeAgent):
@@ -134,9 +134,9 @@ class SQLBenchmarkRunnerTest(unittest.TestCase):
             store = self.make_store(Path(directory) / "run")
             data = asyncio.run(RUNNER.run_cases(CallsJev(), case_set(), store))
             selection = data["cases"][0]["schema_selection"]
-            self.assertEqual(selection["jev_status"], "failed")
-            self.assertEqual(selection["jev_http_status"], 402)
-            self.assertEqual(data["cases"][0]["calls"]["jev_attempts"], 1)
+            self.assertEqual(selection["schema_selector_status"], "failed")
+            self.assertEqual(selection["schema_selector_http_status"], 402)
+            self.assertEqual(data["cases"][0]["calls"]["schema_selector_attempts"], 1)
 
     def test_valid_clarification_is_a_nonexecution_outcome(self):
         result = {"ok": False, "metadata": {"status": "clarification_required"},
@@ -374,7 +374,7 @@ class SQLBenchmarkRunnerTest(unittest.TestCase):
 
         calls = data["cases"][0]["calls"]
         self.assertEqual(calls["schema_selection"], 1)
-        self.assertEqual(calls["jev_attempts"], 1)
+        self.assertEqual(calls["schema_selector_attempts"], 1)
         self.assertEqual(calls["schema_discovery"], 0)
 
     def test_database_preflight_never_reuses_analytics_url_as_nonproduction(self):
@@ -422,12 +422,20 @@ class SQLBenchmarkRunnerTest(unittest.TestCase):
         self.assertIn("data/semantic/vietstyle_metrics_v1.yaml", hashes)
 
     def test_run_manifest_hashes_the_typed_metric_mapping_module(self):
-        with patch.dict("os.environ", {"SQL_BENCHMARK_ALLOW_DIRTY": "true"}):
+        with patch.dict("os.environ", {
+            "SQL_BENCHMARK_ALLOW_DIRTY": "true",
+            "SQL_SCHEMA_SELECTION_MODEL": "perplexity/pplx-decider-v1.3:free",
+        }):
             manifest = RUNNER.build_manifest(
                 RUNNER.current_revision(), provider="cloudflare", model="test-model"
             )
         self.assertIn("src/core/agents/sql/metric_mapping.py", manifest["prompt_hashes"])
         self.assertNotIn("src/core/analytics/metric_mapping.py", manifest["prompt_hashes"])
+        self.assertEqual(manifest["schema_selection_model"], "perplexity/pplx-decider-v1.3:free")
+        self.assertEqual(
+            manifest["provider_settings"]["SQL_SCHEMA_SELECTION_MODEL"],
+            "perplexity/pplx-decider-v1.3:free",
+        )
 
     def test_preflight_records_and_requires_the_frozen_order_date_type(self):
         class PreflightRepository:

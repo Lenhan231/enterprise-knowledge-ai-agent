@@ -111,6 +111,10 @@ def build_manifest(application_revision, *, provider, model):
     if dirty_paths and os.getenv("SQL_BENCHMARK_ALLOW_DIRTY", "").casefold() != "true":
         raise ValueError("The worktree is dirty; set SQL_BENCHMARK_ALLOW_DIRTY=true to record source hashes explicitly.")
     source_hashes = source_manifest()
+    from core.agents.decision_support.intent_classifier import SQL_SCHEMA_SELECTION_MODEL
+
+    schema_selection_model = os.getenv("SQL_SCHEMA_SELECTION_MODEL", SQL_SCHEMA_SELECTION_MODEL).strip()
+    schema_selection_model = schema_selection_model or SQL_SCHEMA_SELECTION_MODEL
     prompt_path = ROOT / "src/core/prompts/sql.py"
     benchmark_files = (
         "artifacts/sql-agent-bussiness/cases.json",
@@ -141,11 +145,12 @@ def build_manifest(application_revision, *, provider, model):
         "provider": provider,
         "model": model,
         "intent_model": "not invoked by direct SQL-agent route",
-        "jev_model": "typesafe/jev-1.14",
+        "schema_selection_model": schema_selection_model,
         "provider_settings": {
             key: os.getenv(key) for key in (
                 "SQL_LLM_PROVIDER", "SQL_GROQ_MODEL", "SQL_CLOUDFLARE_MODEL",
                 "CODEX_CLI_SQL_FALLBACK", "SQL_INVENTORY_ONLY", "ANALYTICS_SCHEMAS",
+                "SQL_SCHEMA_SELECTION_MODEL",
             ) if os.getenv(key) is not None
         },
         "package_versions": _package_versions(),
@@ -306,8 +311,8 @@ def normalize_payload(case, payload, instrumentation, latency_ms):
             "ontology_added_sources": metadata.get("schema_ontology_added_sources", []),
             "approved_join_bridge_additions": metadata.get("schema_approved_join_bridge_additions", []),
             "failure": metadata.get("schema_selection_failure"),
-            "jev_status": instrumentation.jev_status,
-            "jev_http_status": instrumentation.jev_http_status,
+            "schema_selector_status": instrumentation.schema_selector_status,
+            "schema_selector_http_status": instrumentation.schema_selector_http_status,
         },
         "calls": dict(instrumentation.calls),
         "latency_ms": round(latency_ms, 3),
@@ -397,7 +402,7 @@ class Instrumentation:
             "general_sql_generation": 0,
             "intent_interpretation": 0, "metric_interpretation": 0,
             "provider_fallback_calls": 0, "local_codex_fallback_calls": 0,
-            "jev_attempts": 0, "jev_successes": 0, "sql_repair": 0,
+            "schema_selector_attempts": 0, "schema_selector_successes": 0, "sql_repair": 0,
             "schema_selection": 0, "schema_discovery": 0,
             "repository_execution_attempts": 0, "repository_execution": 0,
             "approved_repository_execution_attempts": 0,
@@ -405,8 +410,8 @@ class Instrumentation:
             "approved_repository_execution": 0, "unverified_repository_execution": 0,
             "sql_generation_entries": 0,
         }
-        self.jev_status = "not_attempted"
-        self.jev_http_status = None
+        self.schema_selector_status = "not_attempted"
+        self.schema_selector_http_status = None
         self.execution_events = []
 
 
@@ -494,28 +499,28 @@ def instrument_agent(agent, instrumentation):
     agent._generate_sql = counted_sql_entry
     sql_module.generate = counted_generate
     sql_module.generate_with_local_codex = counted_local_codex
-    original_jev = sql_module.select_jev_schema_tables
+    original_selector = sql_module.select_jev_schema_tables
 
-    @functools.wraps(original_jev)
-    def counted_jev(question, table_columns, metric_definitions=None, *, primary_keys=None,
-                    approved_joins=(), limit=5):
+    @functools.wraps(original_selector)
+    def counted_selector(question, table_columns, metric_definitions=None, *, primary_keys=None,
+                         approved_joins=(), limit=5):
         instrumentation.calls["schema_selection"] += 1
-        instrumentation.calls["jev_attempts"] += 1
+        instrumentation.calls["schema_selector_attempts"] += 1
         try:
-            result = original_jev(question, table_columns, metric_definitions,
-                                  primary_keys=primary_keys, approved_joins=approved_joins, limit=limit)
+            result = original_selector(question, table_columns, metric_definitions,
+                                       primary_keys=primary_keys, approved_joins=approved_joins, limit=limit)
         except Exception as error:
             status = getattr(error, "code", None) or getattr(error, "status", None)
             if status is None:
                 status = getattr(error, "status_code", None)
-            instrumentation.jev_status = "failed"
-            instrumentation.jev_http_status = status
+            instrumentation.schema_selector_status = "failed"
+            instrumentation.schema_selector_http_status = status
             raise
-        instrumentation.calls["jev_successes"] += 1
-        instrumentation.jev_status = "available"
+        instrumentation.calls["schema_selector_successes"] += 1
+        instrumentation.schema_selector_status = "available"
         return result
 
-    sql_module.select_jev_schema_tables = counted_jev
+    sql_module.select_jev_schema_tables = counted_selector
 
     def restore():
         sql_module.generate = original_generate
@@ -523,7 +528,7 @@ def instrument_agent(agent, instrumentation):
         sql_module.match_fixed_query = original_fixed_match
         sql_module.compile_fixed_query = original_fixed_compile
         sql_module.compile_inventory_mapping = original_inventory_compile
-        sql_module.select_jev_schema_tables = original_jev
+        sql_module.select_jev_schema_tables = original_selector
         agent._generate_sql = original_sql_generation
 
     return restore
@@ -641,8 +646,8 @@ async def run_cases(agent, case_set, store):
                                      "required_tables": [], "final_selected_tables": None,
                                      "ontology_added_sources": [], "approved_join_bridge_additions": [],
                                      "failure": {"error_type": type(error).__name__},
-                                     "jev_status": instrumentation.jev_status,
-                                     "jev_http_status": instrumentation.jev_http_status},
+                                     "schema_selector_status": instrumentation.schema_selector_status,
+                                     "schema_selector_http_status": instrumentation.schema_selector_http_status},
                 "calls": {**instrumentation.calls, **repository_calls},
                 "execution_events": execution_events,
                 "attempts": current_attempts,

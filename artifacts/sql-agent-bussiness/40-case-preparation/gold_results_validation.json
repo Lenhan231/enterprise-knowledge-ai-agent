@@ -1,0 +1,8 @@
+{
+  "errors": [],
+  "warnings": [],
+  "validated_count": 30,
+  "reference_case_count": 30,
+  "status": "PASS_PROVISIONAL_REFERENCE",
+  "warning": "Passing checks verify artifact consistency, not semantic approval of the gold oracle."
+}

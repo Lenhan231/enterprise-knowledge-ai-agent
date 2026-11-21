@@ -1,0 +1,302 @@
+{
+  "format_version": "sql-40-case-review-decisions.v1",
+  "status": "PENDING_TWO_INDEPENDENT_REVIEWERS",
+  "reviewer_1": {
+    "identity": null,
+    "approved_case_ids": [],
+    "rejected_case_ids": [],
+    "comments": []
+  },
+  "reviewer_2": {
+    "identity": null,
+    "approved_case_ids": [],
+    "rejected_case_ids": [],
+    "comments": []
+  },
+  "adjudication": {
+    "identity": null,
+    "decisions": []
+  },
+  "cases": [
+    {
+      "id": "B40-001",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-002",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-003",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-004",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-005",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-006",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-007",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-008",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-009",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-010",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-011",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-012",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-013",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-014",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-015",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-016",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-017",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-018",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-019",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-020",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-021",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-022",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-023",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-024",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-025",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-026",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-027",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-028",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-029",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-030",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-031",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-032",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-033",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-034",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-035",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-036",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-037",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-038",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-039",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    },
+    {
+      "id": "B40-040",
+      "reviewer_1": "PENDING",
+      "reviewer_2": "PENDING",
+      "adjudication": "PENDING",
+      "notes": []
+    }
+  ]
+}

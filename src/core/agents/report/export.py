@@ -59,6 +59,9 @@ def export_pdf(document):
     report, layout = document.report, document.presentation
     from core.agents.report.labels import SALES_SECTIONS_VI, uses_vietnamese_labels
     vi = uses_vietnamese_labels(report)
+    def label(english, vietnamese):
+        return vietnamese if vi else english
+
     chart_types = {**default_chart_types(report), **layout.chart_types}
     shown_metrics = comparison_metrics(report, document.monthly_decisions)
     metrics = {m['id']: m for m in shown_metrics}
@@ -66,7 +69,7 @@ def export_pdf(document):
     end = date.fromisoformat(period['end_exclusive']) - timedelta(days=1)
     parts = [f'<h1>{escape(document.title)}</h1><p class="subtitle">{period["start"]} {"đến" if vi else "to"} {end}</p>']
     if layout.text_edits:
-        parts.append('<p class="note">Includes user-edited narrative.</p>')
+        parts.append(f'<p class="note">{label("Includes user-edited narrative.", "Có nội dung do người dùng chỉnh sửa.")}</p>')
     with tempfile.TemporaryDirectory() as directory:
         visible_sections = 0
         for section in layout.section_order:
@@ -84,13 +87,17 @@ def export_pdf(document):
             elif section == 'decision_support':
                 parts.append('<p>' + escape(document.insights['decision_summary']) + '</p>')
                 for action in document.insights['actions']:
-                    parts.append(f'<h3>{escape(action["title"])}</h3><p>Why review this: {escape(action.get("why", ""))}</p><p>Recommended next step: {escape(action["action"])}</p><p>Periods: {escape(", ".join(action["periods"]))}</p>')
+                    parts.append(f'<h3>{escape(action["title"])}</h3><p>{label("Why review this", "Lý do cần xem xét")}: {escape(action.get("why", ""))}</p>'
+                                 f'<p>{label("Recommended next step", "Đề xuất xử lý")}: {escape(action["action"])}</p>'
+                                 f'<p>{label("Periods", "Các kỳ")}: {escape(", ".join(action["periods"]))}</p>')
                 if document.monthly_decisions:
-                    parts.append('<p>Rules compare each month with its preceding calendar month.</p>')
+                    parts.append(f'<p>{label("Rules compare each month with its preceding calendar month.", "Các quy tắc so sánh từng tháng với tháng liền trước.")}</p>')
                     parts.extend(f'<p class="note">{escape(rule["id"])}: {escape(rule["title"])}</p>' for rule in report['decisions'])
-                    parts.append('<table><tr><th>Month</th><th>S01</th><th>S02</th><th>S03</th><th>S04</th></tr>')
+                    parts.append(f'<table><tr><th>{label("Month", "Tháng")}</th><th>S01</th><th>S02</th><th>S03</th><th>S04</th></tr>')
+                    states = {True: label('Triggered', 'Đã kích hoạt'), False: label('Not triggered', 'Chưa kích hoạt'),
+                              None: label('Unavailable', 'Không có dữ liệu')}
                     for group in document.monthly_decisions:
-                        cells = ''.join('<td>' + ('Triggered' if rule['triggered'] is True else 'Not triggered' if rule['triggered'] is False else 'Unavailable') + '</td>' for rule in group['decisions'])
+                        cells = ''.join(f'<td>{states[rule["triggered"]]}</td>' for rule in group['decisions'])
                         parts.append(f'<tr><td>{escape(group["period"]["start"][:7])}</td>{cells}</tr>')
                     parts.append('</table>')
                 else:
@@ -101,10 +108,11 @@ def export_pdf(document):
                 if section == 'key_findings_and_explanations':
                     parts.extend(f'<p>{escape(item["text"])}</p>' for item in document.insights['findings'])
                     if document.insights['document_context']:
-                        parts.append('<h3>Retrieved document context</h3><p>Quoted source context; relevance to the reported movement and causality are not established.</p>')
+                        parts.append(f'<h3>{label("Retrieved document context", "Bối cảnh từ tài liệu nguồn")}</h3>'
+                                     f'<p>{label("Quoted source context; relevance to the reported movement and causality are not established.", "Các trích đoạn cung cấp bối cảnh. Mối liên hệ với biến động và nguyên nhân của biến động chưa được xác minh.")}</p>')
                         parts.extend(f'<blockquote>{escape(item["text"])}</blockquote>' for item in document.insights['document_context'])
                     else:
-                        parts.append('<p>No usable documentary explanation was retrieved. SQL findings and rule evaluations remain available independently. See Data needed below.</p>')
+                        parts.append(f'<p>{label("No usable documentary explanation was retrieved. SQL findings and rule evaluations remain available independently. See Data needed below.", "Chưa tìm thấy tài liệu giải thích biến động. Xem mục Dữ liệu cần bổ sung bên dưới.")}</p>')
             if section == 'performance_analysis':
                 chart_count = 0
                 table_before_chart = False
@@ -124,10 +132,11 @@ def export_pdf(document):
                             parts.extend(f'<p>{escape(metrics[k]["label"])}: {display_value(metrics[k])}</p>' for k in widget['metric_ids'])
                     elif kind == 'table':
                         table_before_chart = True
-                        parts.append('<table><tr><th>Period / dimension</th>' + ''.join(f'<th>{escape(metrics[k]["label"])}</th>' for k in widget['metric_ids']) + '</tr>')
+                        parts.append(f'<table><tr><th>{label("Period / dimension", "Kỳ hoặc nhóm")}</th>' + ''.join(f'<th>{escape(metrics[k]["label"])}</th>' for k in widget['metric_ids']) + '</tr>')
                         for row in widget['data']:
                             cells = ''.join('<td>' + (display_value({**metrics[k], 'value': row[k]})) + '</td>' for k in widget['metric_ids'])
-                            parts.append(f'<tr><td>{escape(str(row[widget["x_dimension"]] or "Unknown"))}</td>{cells}</tr>')
+                            dimension = row[widget['x_dimension']]
+                            parts.append(f'<tr><td>{escape(str(dimension if dimension is not None else label("Unknown", "Chưa rõ")))}</td>{cells}</tr>')
                         parts.append('</table>')
                     else:
                         svg = chart_svg(widget, metrics, kind, report['request']['granularity'])
@@ -136,7 +145,7 @@ def export_pdf(document):
                             filename = widget['id'] + '.svg'
                             Path(directory, filename).write_text(svg, encoding='utf-8')
                             parts.append(f'<img src="{filename}" width="490" height="178"/>')
-                        else: parts.append('<p>No chart observations for this period.</p>')
+                        else: parts.append(f'<p>{label("No chart observations for this period.", "Không có dữ liệu biểu đồ cho kỳ này.")}</p>')
                     parts.append('</div>')
         parts.append('<h2 class="new-page">Ghi chú dữ liệu</h2>' if vi else '<h2 class="new-page">Data notes</h2>')
         parts.append('<h3>Dữ liệu cần bổ sung</h3>' if vi else '<h3>Data needed</h3>')
@@ -150,8 +159,13 @@ def export_pdf(document):
             if group['comparison']['comparable'] is True and next(m['value'] for m in group['metrics'] if m['id'] == 'company_revenue_change_pct') is not None:
                 continue
             c = group['coverage']
-            counts = {key: 'unknown' if value is None else str(value) for key, value in c.items()}
-            parts.append(f'<p class="note">{escape(group["period"]["start"][:7])} decision baseline: current month {counts["current_days"]}/{counts["expected_current_days"]} daily records; preceding month {counts["prior_days"]}/{counts["expected_prior_days"]}. Missing coverage or zero prior revenue prevents growth comparisons.</p>')
+            counts = {key: label('unknown', 'chưa rõ') if value is None else str(value) for key, value in c.items()}
+            period = group['period']['start'][:7]
+            current = f'{counts["current_days"]}/{counts["expected_current_days"]}'
+            prior = f'{counts["prior_days"]}/{counts["expected_prior_days"]}'
+            note = label(f'{period} decision baseline: current month {current} daily records; preceding month {prior}. Missing coverage or zero prior revenue prevents growth comparisons.',
+                         f'Kỳ đối chiếu {period}: tháng hiện tại có {current} ngày dữ liệu, tháng trước có {prior} ngày. Cần đủ ngày và doanh thu tháng trước khác 0 để tính tỷ lệ thay đổi.')
+            parts.append(f'<p class="note">{escape(note)}</p>')
         return render_pdf(parts, directory)
 
 

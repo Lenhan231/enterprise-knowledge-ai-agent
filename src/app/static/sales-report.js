@@ -6,7 +6,8 @@ const SalesPerformanceReport = (() => {
     if (className) element.className = className;
     return element;
   };
-  const format = value => value == null ? 'Unavailable' : new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(value);
+  const format = (value, vi = false) => value == null ? (vi ? 'Không có dữ liệu' : 'Unavailable')
+    : new Intl.NumberFormat(vi ? 'vi-VN' : undefined, { maximumFractionDigits: 2 }).format(value);
   const sectionTitles = ['Executive Summary', 'Sales KPIs', 'Performance Analysis', 'Key Findings & Explanations', 'Decision Support'];
   const svgNode = (tag, attributes) => {
     const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
@@ -29,13 +30,15 @@ const SalesPerformanceReport = (() => {
     return rows;
   }
 
-  function dataTable(widget, metrics) {
+  function dataTable(widget, metrics, vi = false) {
     const wrap = node('div', undefined, 'sales-report-table');
     const table = node('table');
     table.append(node('caption', widget.title));
     const head = node('thead');
     const headings = node('tr');
-    const dimensionLabel = {period:'Period',category:'Category',product:'Product',snapshot_date:'Snapshot date',dimension:'Breakdown'}[widget.x_dimension] || widget.x_dimension.replaceAll('_',' ');
+    const dimensions = vi ? {period:'Kỳ',category:'Danh mục',product:'Sản phẩm',snapshot_date:'Ngày chốt',dimension:'Nhóm'}
+      : {period:'Period',category:'Category',product:'Product',snapshot_date:'Snapshot date',dimension:'Breakdown'};
+    const dimensionLabel = dimensions[widget.x_dimension] || widget.x_dimension.replaceAll('_',' ');
     for (const label of [dimensionLabel, ...widget.metric_ids.map(id => metrics[id].label)]) {
       const th = node('th', label); th.scope = 'col'; headings.append(th);
     }
@@ -43,25 +46,26 @@ const SalesPerformanceReport = (() => {
     const body = node('tbody');
     for (const row of widget.data) {
       const tr = node('tr');
-      tr.append(node('td', row[widget.x_dimension] ?? 'Unknown'));
+      tr.append(node('td', row[widget.x_dimension] ?? (vi ? 'Chưa rõ' : 'Unknown')));
       widget.metric_ids.forEach(id => tr.append(node('td', formatMetric(metrics[id], row[id]))));
       body.append(tr);
     }
     table.append(body); wrap.append(table); return wrap;
   }
 
-  function chart(widget, granularity, metrics = {}) {
+  function chart(widget, granularity, metrics = {}, vi = false) {
     const values = widget.data.flatMap(row => widget.metric_ids.map(id => row[id])).filter(value => typeof value === 'number' && Number.isFinite(value));
-    if (!values.length) return node('p', 'No chart data available.');
+    if (!values.length) return node('p', vi ? 'Không có dữ liệu cho biểu đồ.' : 'No chart data available.');
     const min = Math.min(0, ...values), max = Math.max(0, ...values);
     const range = max - min || 1;
     const x = index => 48 + (index + 0.5) * 520 / widget.data.length;
     const y = value => 180 - (value - min) / range * 150;
-    const svg = svgNode('svg', { viewBox: '0 0 600 225', role: 'img', 'aria-label': `${widget.title}. Values in the data table below.` });
+    const svg = svgNode('svg', { viewBox: '0 0 600 225', role: 'img', 'aria-label': `${widget.title}. ${vi ? 'Số liệu nằm trong bảng bên dưới.' : 'Values in the data table below.'}` });
+    const unknown = vi ? 'Chưa rõ' : 'Unknown';
     svg.append(svgNode('line', { x1: 48, x2: 568, y1: y(0), y2: y(0), stroke: 'currentColor' }));
     for (const [index, value] of [[0, max], [1, min]]) {
       const label = svgNode('text', { x: 4, y: index ? 184 : 28, 'font-size': 11, fill: 'currentColor' });
-      label.textContent = format(value); svg.append(label);
+      label.textContent = format(value, vi); svg.append(label);
     }
     widget.metric_ids.forEach((id, series) => {
       const color = ['#287b78','#a15c20','#6951a8'][series % 3];
@@ -82,7 +86,7 @@ const SalesPerformanceReport = (() => {
           ? svgNode('rect', { x: x(index) - Math.min(20, 200 / widget.data.length) + series * Math.min(40, 400 / widget.data.length) / widget.metric_ids.length, y: Math.min(y(value), y(0)), width: Math.min(40, 400 / widget.data.length) / widget.metric_ids.length, height: Math.abs(y(value) - y(0)), fill: color })
           : svgNode('circle', { cx: x(index), cy: y(value), r: 3, fill: color });
         const title = svgNode('title', {});
-        title.textContent = `${row[widget.x_dimension] ?? 'Unknown'}: ${metrics[id]?.label || id} ${format(value)}`;
+        title.textContent = `${row[widget.x_dimension] ?? unknown}: ${metrics[id]?.label || id} ${format(value, vi)}`;
         mark.append(title);
         svg.append(mark);
         segment.push(`${x(index)},${y(value)}`);
@@ -92,7 +96,7 @@ const SalesPerformanceReport = (() => {
     widget.data.forEach((row, index) => {
       if (widget.data.length > 12 && index && index !== widget.data.length - 1 && index % Math.ceil(widget.data.length / 4)) return;
       const label = svgNode('text', { x: x(index), y: 210, 'text-anchor': 'middle', 'font-size': 10, fill: 'currentColor' });
-      label.textContent = widget.x_dimension === 'period' ? row.period.slice(0,7) : row[widget.x_dimension] ?? 'Unknown'; svg.append(label);
+      label.textContent = widget.x_dimension === 'period' ? row.period.slice(0,7) : row[widget.x_dimension] ?? unknown; svg.append(label);
     });
     return svg;
   }
@@ -111,9 +115,9 @@ const SalesPerformanceReport = (() => {
     }
     return {section_order: ['executive_summary','sales_kpis','performance_analysis','key_findings_and_explanations','decision_support'], hidden_sections: [], chart_types, text_edits: {}};
   };
-  const vietnamese = value => /[ăâđêôơưáàảãạấầẩẫậắằẳẵặéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]/iu.test(value);
+  const vietnamese = (value = '') => /[ăâđêôơưáàảãạấầẩẫậắằẳẵặéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]|\b(?:bao cao|doanh thu|ton kho)\b/iu.test(value.normalize('NFC'));
   const sectionTitlesVi = ['Tóm tắt điều hành', 'Chỉ số bán hàng', 'Phân tích kết quả', 'Phát hiện chính và diễn giải', 'Hỗ trợ ra quyết định'];
-  const formatMetric = (metric, value = metric.value) => value == null ? (vietnamese(metric.label) ? 'Không có dữ liệu' : 'Unavailable') : format(value) + (metric.unit === 'percent' ? '%' : metric.unit.startsWith('unknown_currency') ? ' VND' : '');
+  const formatMetric = (metric, value = metric.value) => format(value, vietnamese(metric.label)) + (value == null ? '' : metric.unit === 'percent' ? '%' : metric.unit.startsWith('unknown_currency') ? ' VND' : '');
   const slotMetrics = {
     executive_summary: [['company_revenue','company_revenue_change_pct'],['company_gross_profit','company_gross_margin_pct'],['order_count']],
     key_findings_and_explanations: [['company_revenue_change_pct'],['company_gross_profit','company_gross_margin_pct'],['order_count','delivered_average_order_value']],
@@ -142,7 +146,7 @@ const SalesPerformanceReport = (() => {
       return {ids: available.map(m => m.id), text: text || (missingChange ? unavailable : '')};
     }).filter(item => item.text);
   }
-  function numberedCitations(sources, prefix) {
+  function numberedCitations(sources, prefix, vi = false) {
     return (element, ids) => {
       const identifiers = new Set(ids.filter(id => sources.has(id)));
       if (!identifiers.size) return;
@@ -151,8 +155,8 @@ const SalesPerformanceReport = (() => {
         const source = sources.get(id);
         const link = node('a', `[${source.number}]`);
         link.href = `#${prefix}-source-${source.number}`;
-        link.title = `View source ${source.number}`;
-        link.setAttribute('aria-label', `View citation ${source.number}`);
+        link.title = vi ? `Xem nguồn ${source.number}` : `View source ${source.number}`;
+        link.setAttribute('aria-label', vi ? `Xem trích dẫn ${source.number}` : `View citation ${source.number}`);
         sup.append(link);
       });
       element.append(sup);
@@ -162,6 +166,7 @@ const SalesPerformanceReport = (() => {
     if (report.report_type === 'inventory_operations') return renderInventory(root, report, options);
     root.replaceChildren();
     const vi = vietnamese(report.metrics[0]?.label);
+    root.setAttribute('lang', vi ? 'vi' : 'en');
     const label = (english, translated) => vi ? translated : english;
     const defaults = defaultPresentation(report);
     const layout = {...defaults, ...(options.presentation || {}), chart_types:{...defaults.chart_types, ...options.presentation?.chart_types}};
@@ -174,7 +179,7 @@ const SalesPerformanceReport = (() => {
     [report, ...monthly].forEach(group => group.metrics.forEach(m => m.evidence.forEach(e => { if (!sources.has(e.query_id)) sources.set(e.query_id, {...e, number:sources.size + 1}); })));
     (insights?.coverage_evidence || []).forEach(e => { if (!sources.has(e.query_id)) sources.set(e.query_id, {...e, number:sources.size+1}); });
     (insights?.documents || []).forEach(e => { if (!sources.has(e.citation_id)) sources.set(e.citation_id, {...e, source_table:e.source, number:sources.size + 1}); });
-    const citeIds = numberedCitations(sources, prefix);
+    const citeIds = numberedCitations(sources, prefix, vi);
     const cite = (element, ids, values = metrics) => citeIds(element, ids.flatMap(id => values[id]?.evidence.map(e => e.query_id) || []));
     root.append(node('h2', options.title || label('Sales Performance Report', 'Báo cáo kết quả bán hàng')));
     const end = new Date(report.request.period.end_exclusive + 'T00:00:00Z');
@@ -225,8 +230,15 @@ const SalesPerformanceReport = (() => {
           const item = node('article', undefined, 'sales-decision');
           const title = node('h4', rule.title); cite(title, rule.required_metric_ids, values);
           item.append(title);
-          let text = rule.triggered === true ? rule.action : rule.triggered === false ? 'Evaluated: this predefined risk condition was not met.' : rule.id === 'S04' ? 'A no-trigger conclusion is withheld because at least one comparison rule cannot be evaluated.' : ['S01','S03'].includes(rule.id) ? 'Cannot evaluate this comparison with the selected scope and available baseline. See the data notes below.' : 'Cannot evaluate: current-period revenue or gross profit is unavailable.';
-          if (rule.id === 'S02' && rule.triggered !== null) text += ` Gross profit is ${formatMetric(values.company_gross_profit)} and revenue is ${formatMetric(values.company_revenue)}.`;
+          let text = rule.triggered === true ? (insights?.rule_actions?.[rule.id] || rule.action)
+            : rule.triggered === false ? label('Evaluated: this predefined risk condition was not met.', 'Kết quả đánh giá chưa thỏa điều kiện cảnh báo này.')
+            : rule.id === 'S04' ? label('A no-trigger conclusion is withheld because at least one comparison rule cannot be evaluated.', 'Chưa thể kết luận vì ít nhất một quy tắc so sánh chưa đánh giá được.')
+            : ['S01','S03'].includes(rule.id) ? label('Cannot evaluate this comparison with the selected scope and available baseline. See the data notes below.', 'Chưa đủ dữ liệu kỳ đối chiếu để đánh giá. Xem ghi chú dữ liệu bên dưới.')
+            : label('Cannot evaluate: current-period revenue or gross profit is unavailable.', 'Chưa có doanh thu hoặc lợi nhuận gộp của kỳ hiện tại để đánh giá.');
+          if (rule.id === 'S02' && rule.triggered !== null) {
+            const profit = formatMetric(values.company_gross_profit), revenue = formatMetric(values.company_revenue);
+            text += label(` Gross profit is ${profit} and revenue is ${revenue}.`, ` Lợi nhuận gộp: ${profit}. Doanh thu: ${revenue}.`);
+          }
           item.append(node('p', text)); detailRoot.append(item);
         });
         });
@@ -237,9 +249,9 @@ const SalesPerformanceReport = (() => {
         if (key === 'key_findings_and_explanations' && insights) {
           insights.findings.forEach(item => { const paragraph = node('p', item.text); citeIds(paragraph, item.citations); section.append(paragraph); });
           if (insights.document_context.length) {
-            section.append(node('h4', 'Retrieved document context'), node('p', 'Quoted source context; relevance to the reported movement and causality are not established.'));
+            section.append(node('h4', label('Retrieved document context', 'Bối cảnh từ tài liệu nguồn')), node('p', label('Quoted source context; relevance to the reported movement and causality are not established.', 'Các trích đoạn cung cấp bối cảnh. Mối liên hệ với biến động và nguyên nhân của biến động chưa được xác minh.')));
             insights.document_context.forEach(item => { const quote = node('blockquote',item.text); citeIds(quote,item.citations); section.append(quote); });
-          } else section.append(node('p', 'No usable documentary explanation was retrieved. SQL findings and rule evaluations remain available independently. See Data needed below.'));
+          } else section.append(node('p', label('No usable documentary explanation was retrieved. SQL findings and rule evaluations remain available independently. See Data needed below.', 'Chưa tìm thấy tài liệu giải thích biến động. Xem mục Dữ liệu cần bổ sung bên dưới.')));
         }
       }
       if (key === 'performance_analysis') {
@@ -254,11 +266,11 @@ const SalesPerformanceReport = (() => {
               if (widget.metric_ids.length > 1) item.append(node('p',metrics[id].label,'sales-chart-legend'));
               item.append(node('p', formatMetric(metrics[id]), 'sales-widget-value'));
             });
-          } else if (widget.type === 'table') item.append(dataTable(widget, metrics));
+          } else if (widget.type === 'table') item.append(dataTable(widget, metrics, vi));
           else {
-            item.append(chart(widget, report.request.granularity, metrics));
-            item.append(node('p', widget.metric_ids.map(id => metrics[id].label).join(' ? '), 'sales-chart-legend'));
-            const table = node('details'); table.append(node('summary', label('View chart data', 'Xem dữ liệu biểu đồ')), dataTable(widget, metrics)); item.append(table);
+            item.append(chart(widget, report.request.granularity, metrics, vi));
+            item.append(node('p', widget.metric_ids.map(id => metrics[id].label).join(' · '), 'sales-chart-legend'));
+            const table = node('details'); table.append(node('summary', label('View chart data', 'Xem dữ liệu biểu đồ')), dataTable(widget, metrics, vi)); item.append(table);
           }
           grid.append(item);
         });
@@ -272,20 +284,20 @@ const SalesPerformanceReport = (() => {
       const item = node('article', undefined, 'sales-source'); item.id = `${prefix}-source-${source.number}`; item.tabIndex = -1;
       item.append(node('h4', `[${source.number}] ${source.source_table}`));
       if (source.source_type === 'document') {
-        item.append(node('p', source.metadata?.section_title || 'Role-authorized retrieved document passage.'), node('p',source.content));
+        item.append(node('p', source.metadata?.section_title || label('Role-authorized retrieved document passage.', 'Trích đoạn từ tài liệu được phép truy cập.')), node('p',source.content));
       } else {
         const period = source.filters?.period || report.request.period;
-        item.append(node('p', `Validated SQL evidence for ${period.start} to ${period.end_exclusive} (end excluded).`));
+        item.append(node('p', label(`Validated SQL evidence for ${period.start} to ${period.end_exclusive} (end excluded).`, `Nguồn SQL đã xác minh từ ${period.start} đến trước ${period.end_exclusive}.`)));
       }
       footnotes.append(item);
     });
-    if (!sources.size) footnotes.append(node('p', 'No source observations were returned for this period.'));
+    if (!sources.size) footnotes.append(node('p', label('No source observations were returned for this period.', 'Nguồn không trả về dữ liệu cho kỳ này.')));
     const notes = node('section'); notes.id = `${prefix}-notes`; notes.tabIndex = -1; notes.append(node('h3', label('Data notes', 'Ghi chú dữ liệu')));
     notes.append(node('p', label('Amounts are displayed in VND as requested. The source has no currency tag; no currency conversion has been applied.',
       'Số tiền hiển thị theo đơn vị VND. Nguồn không ghi đơn vị tiền tệ và chưa áp dụng quy đổi.')));
     if (insights) {
       notes.append(node('h4', label('Data needed', 'Dữ liệu cần bổ sung')));
-      insights.data_needs.forEach(text => { const paragraph = node('p',text); if (text.startsWith('Missing or incomplete commerce.sales')) citeIds(paragraph,(insights.coverage_evidence || []).map(e=>e.query_id)); notes.append(paragraph); });
+      insights.data_needs.forEach(text => { const paragraph = node('p',text); if (text.startsWith('Missing or incomplete commerce.sales') || text.startsWith('Thiếu dữ liệu commerce.sales')) citeIds(paragraph,(insights.coverage_evidence || []).map(e=>e.query_id)); notes.append(paragraph); });
     }
     if (monthly.length && report.request.granularity === 'month') notes.append(node('p', vietnamese(report.metrics[0].label)
       ? 'Chỉ số so sánh tháng mới nhất có dữ liệu doanh thu với tháng liền trước. Nếu thiếu dữ liệu để so sánh, chỉ số sẽ hiển thị là không có dữ liệu.'
@@ -293,13 +305,19 @@ const SalesPerformanceReport = (() => {
     monthly.forEach(group => {
       if (group.comparison.comparable === true && group.metrics.find(m => m.id === 'company_revenue_change_pct').value !== null) return;
       const c = group.coverage;
-      notes.append(node('p', `${group.period.start.slice(0,7)} decision baseline: current month ${c.current_days ?? 'unknown'}/${c.expected_current_days ?? 'unknown'} daily records; preceding month ${c.prior_days ?? 'unknown'}/${c.expected_prior_days ?? 'unknown'}. Missing coverage or zero prior revenue prevents growth comparisons.`));
+      const unknown = label('unknown', 'chưa rõ');
+      const current = `${c.current_days ?? unknown}/${c.expected_current_days ?? unknown}`;
+      const prior = `${c.prior_days ?? unknown}/${c.expected_prior_days ?? unknown}`;
+      notes.append(node('p', label(`${group.period.start.slice(0,7)} decision baseline: current month ${current} daily records; preceding month ${prior}. Missing coverage or zero prior revenue prevents growth comparisons.`,
+        `Kỳ đối chiếu ${group.period.start.slice(0,7)}: tháng hiện tại có ${current} ngày dữ liệu, tháng trước có ${prior} ngày. Cần đủ ngày và doanh thu tháng trước khác 0 để tính tỷ lệ thay đổi.`)));
     });
-    if (report.dashboard.widgets.some(w => w.x_dimension === 'period' && w.type !== 'kpi_row' && calendarRows(w,report.request).length > w.data.length)) {
+    if (insights?.data_notes) {
+      insights.data_notes.forEach(note => notes.append(node('p', note)));
+    } else if (report.dashboard.widgets.some(w => w.x_dimension === 'period' && w.type !== 'kpi_row' && calendarRows(w,report.request).length > w.data.length)) {
       notes.append(node('p','Unobserved calendar periods are shown as gaps, not zero values.'));
     }
     const hasDetailed = report.data_quality.limitations.some(note => note.startsWith('Period-over-period comparison'));
-    report.data_quality.limitations.forEach(note => {
+    if (!insights?.data_notes) report.data_quality.limitations.forEach(note => {
       if (note.startsWith('Missing count describes') || hasDetailed && note.startsWith('Company daily coverage')) return;
       notes.append(node('p', note.startsWith('Synthetic commerce') ? 'Synthetic commerce demonstration data. Company sales and delivered-order sales are independent sources.' : note));
     });
@@ -462,5 +480,5 @@ const SalesPerformanceReport = (() => {
     if (!sources.size) footer.append(node('p','No source observations were returned for this period.'));
     root.append(footer);
   }
-  return {render, defaultPresentation, narrative, formatMetric, sectionTitles, inventoryTitles};
+  return {render, defaultPresentation, narrative, formatMetric, sectionTitles, sectionTitlesVi, inventoryTitles, vietnamese};
 })();

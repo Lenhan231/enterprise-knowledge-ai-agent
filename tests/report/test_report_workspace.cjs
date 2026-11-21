@@ -15,15 +15,17 @@ function environment() {
     append(...items){this.children.push(...items);} replaceChildren(...items){this.children=items;}
     setAttribute(key,value){this.attributes[key]=value;} removeAttribute(key){delete this.attributes[key];}
     addEventListener(event,fn){this.events[event]=fn;} focus(){} click(){if(this.tag==='a')downloads++;else return this.events.click?.({preventDefault(){}});}
-    querySelectorAll(){return Object.values(nodes).filter(n=>['button','input','textarea','select'].includes(n.tag));}
+    querySelectorAll(selector){return Object.values(nodes).filter(n=>selector === '[data-report-vi]' ? n.dataset.reportVi : ['button','input','textarea','select'].includes(n.tag));}
   }
   const get=id=>nodes[id]||(()=>{const n=new Element(id==='rw-title'?'input':id==='report-agent-question'?'textarea':id.startsWith('rw-')&& !['rw-library','rw-edit-panel','rw-editor','rw-meta'].includes(id)||id==='report-agent-submit'?'button':'div');n.id=id;return n;})();
   const context={document:{getElementById:get,createElement:tag=>new Element(tag)}, currentUser:{role:'finance_analyst'},sessionGeneration:1,reportConversationId:'report',
     backendFetch:async(path,options)=>{calls.push({path,options});return responder(path,options);},
     clearExpiredSession(){cleared++;context.sessionGeneration++;context.window.reportWorkspace.clear();},
-    SalesPerformanceReport:{render:(root,report,options)=>renders.push(JSON.parse(JSON.stringify({report,options}))),sectionTitles:contract.section_contract.map(s=>s.title),narrative:()=>[{text:'Generated summary.'}],defaultPresentation:()=>({chart_types:{line_breakdown:'kpi_row'}})},
+    SalesPerformanceReport:{render:(root,report,options)=>renders.push(JSON.parse(JSON.stringify({report,options}))),sectionTitles:contract.section_contract.map(s=>s.title),sectionTitlesVi:['Tóm tắt điều hành'],vietnamese:(text='')=>/báo cáo|doanh thu/i.test(text),narrative:()=>[{text:'Generated summary.'}],defaultPresentation:()=>({chart_types:{line_breakdown:'kpi_row'}})},
     window:{confirm:()=>true,setTimeout:()=>{}},URL:{createObjectURL:()=> 'blob:report',revokeObjectURL(){}},crypto:require('node:crypto').webcrypto,console};
   ['report-agent-submit','report-agent-question','rw-title','reports-workspace'].forEach(get);
+  get('report-agent-submit').textContent = 'Generate report';
+  get('report-agent-submit').dataset.reportVi = 'Tạo báo cáo';
   vm.runInNewContext(source,context);
   return {context,nodes,calls,renders,get,setResponder:value=>{responder=value;},get cleared(){return cleared;},get downloads(){return downloads;}};
 }
@@ -72,5 +74,15 @@ async function run(){
   switched.context.sessionGeneration++;switched.context.window.reportWorkspace.clear();
   resolveGeneration(response({document:documentFixture()},201));await generation;
   assert.equal(switched.renders.length,0,'A response from an old session must not render');
+  const localized=environment(), vietnameseDoc=JSON.parse(JSON.stringify(documentFixture()));
+  vietnameseDoc.report.metrics[0].label='Doanh thu công ty';
+  localized.setResponder(async(path,options)=>options.method==='POST'?response({document:vietnameseDoc},201):response({reports:[]}));
+  await localized.context.window.reportWorkspace.generate('Tạo báo cáo tài chính');
+  assert.equal(localized.get('reports-workspace').attributes.lang, 'vi');
+  assert.equal(localized.get('report-agent-submit').textContent, 'Tạo báo cáo');
+  assert.match(localized.get('report-workspace-status').textContent, /^Đã lưu báo cáo/);
+  assert.match(localized.get('rw-meta').textContent, /^Phiên bản đã lưu/);
+  localized.context.window.reportWorkspace.clear();
+  assert.equal(localized.get('report-agent-submit').textContent, 'Generate report');
 }
 run().catch(error=>{console.error(error);process.exitCode=1;});

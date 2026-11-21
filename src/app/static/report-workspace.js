@@ -1,8 +1,46 @@
 /* Reports have their own library; presentation edits never change SQL facts. */
 (() => {
   const el = id => document.getElementById(id);
-  let selected = null, epoch = 0, loaded = false, busy = false;
-  const status = (text, error = false) => { el('report-workspace-status').textContent = text; el('report-workspace-status').dataset.error = String(error); };
+  let selected = null, epoch = 0, loaded = false, busy = false, vi = false;
+  const copyVi = {
+    'Generating report from authorized sources...': 'Đang tạo báo cáo từ các nguồn được cấp quyền…',
+    'Report saved with data notes. Review the notes below the report.': 'Đã lưu báo cáo. Xem ghi chú dữ liệu ở cuối báo cáo.',
+    'Report generated and saved.': 'Đã tạo và lưu báo cáo.',
+    'Your saved reports will appear here.': 'Báo cáo đã lưu sẽ xuất hiện tại đây.',
+    'Opening report...': 'Đang mở báo cáo…', 'Report opened.': 'Đã mở báo cáo.',
+    'Loading reports...': 'Đang tải danh sách báo cáo…', 'Ready.': 'Sẵn sàng.',
+    'Move up': 'Di chuyển lên', 'Move down': 'Di chuyển xuống',
+    'Remove section': 'Ẩn mục', 'Restore section': 'Hiện lại mục',
+    'Keep at least one section.': 'Hãy giữ ít nhất một mục.',
+    'Removed from preview and PDF. Restore it to include it again.': 'Mục này đang ẩn trong bản xem trước và PDF.',
+    'Narrative text': 'Nội dung diễn giải', 'Restore generated text': 'Khôi phục nội dung ban đầu',
+    'Line chart': 'Biểu đồ đường', 'Bar chart': 'Biểu đồ cột', Table: 'Bảng',
+    'Unsaved layout changes.': 'Bố cục có thay đổi chưa lưu.',
+    'Unsaved section changes.': 'Thay đổi các mục chưa được lưu.',
+    'Unsaved text changes.': 'Nội dung có thay đổi chưa lưu.',
+    'Unsaved chart changes.': 'Biểu đồ có thay đổi chưa lưu.',
+    'Unsaved title changes.': 'Tiêu đề có thay đổi chưa lưu.',
+    'Saving report...': 'Đang lưu báo cáo…', 'Report saved.': 'Đã lưu báo cáo.',
+    'Preparing PDF...': 'Đang chuẩn bị PDF…', 'PDF downloaded.': 'Đã tải PDF.',
+    'Delete this saved report?': 'Xóa báo cáo đã lưu này?',
+    'Deleting report...': 'Đang xóa báo cáo…', 'Report deleted.': 'Đã xóa báo cáo.',
+    'Describe a new report.': 'Nhập yêu cầu cho báo cáo mới.',
+    'Sign in to continue': 'Hãy đăng nhập để tiếp tục',
+    'The report could not be saved. Reopen it and try again.': 'Chưa lưu được báo cáo. Hãy mở lại báo cáo rồi thử lại.',
+    'Enter a report title before saving.': 'Hãy nhập tiêu đề trước khi lưu.',
+    'This saved report changed. Reopen it before downloading.': 'Báo cáo đã thay đổi. Hãy mở lại trước khi tải.',
+    'PDF download failed. Please retry.': 'Chưa tải được PDF. Vui lòng thử lại.',
+  };
+  const copy = text => vi && Object.hasOwn(copyVi, text) ? copyVi[text] : text;
+  const translated = [...el('reports-workspace').querySelectorAll('[data-report-vi]')]
+    .map(node => [node, node.textContent]);
+  function setLanguage(vietnamese) {
+    vi = vietnamese;
+    el('reports-workspace').setAttribute('lang', vi ? 'vi' : 'en');
+    translated.forEach(([node, english]) => { node.textContent = vi ? node.dataset.reportVi : english; });
+    el('report-agent-question').placeholder = vi ? 'Báo cáo doanh thu tháng 5/2026' : 'Monthly revenue report for May 2026';
+  }
+  const status = (text, error = false) => { el('report-workspace-status').textContent = copy(text); el('report-workspace-status').dataset.error = String(error); };
   const element = (tag, text) => { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; return node; };
   const allowed = () => ['admin','finance_analyst','sustainability_analyst','operations','executive'].includes(currentUser?.role);
   function setBusy(value) {
@@ -37,14 +75,14 @@
     const payload = await request('/api/reports');
     if (!valid()) return;
     loaded = true; el('rw-library').replaceChildren();
-    if (!payload.reports.length) el('rw-library').append(element('p', 'Your saved reports will appear here.'));
+    if (!payload.reports.length) el('rw-library').append(element('p', copy('Your saved reports will appear here.')));
     payload.reports.forEach(doc => {
       const button = element('button'); button.type = 'button'; button.dataset.id = doc.id;
       button.setAttribute('aria-current', String(doc.id === selected?.id));
-      button.append(element('strong', doc.title), element('small', new Date(doc.updated_at).toLocaleString()));
+      button.append(element('strong', doc.title), element('small', new Date(doc.updated_at).toLocaleString(vi ? 'vi-VN' : undefined)));
       button.addEventListener('click', () => action('Opening report...', async valid => {
         const payload = await request(`/api/reports/${doc.id}`);
-        if (valid()) display(payload.document, false);
+        if (valid()) { display(payload.document, false); status('Report opened.'); }
       }));
       el('rw-library').append(button);
     });
@@ -65,34 +103,35 @@
     }
     const defaults = SalesPerformanceReport.defaultPresentation(selected.report).chart_types;
     selected.presentation.section_order.forEach((key, index, order) => {
-      const item = element('fieldset'); const title = SalesPerformanceReport.sectionTitles[Object.keys(selected.report.sections).indexOf(key)];
+      const titles = vi ? SalesPerformanceReport.sectionTitlesVi : SalesPerformanceReport.sectionTitles;
+      const item = element('fieldset'); const title = titles[Object.keys(selected.report.sections).indexOf(key)];
       item.append(element('legend', title));
       const controls = element('div'); controls.className = 'rw-toolbar';
       for (const [label, delta] of [['Move up', -1], ['Move down', 1]]) {
-        const button = element('button', label); button.type = 'button'; button.disabled = index + delta < 0 || index + delta >= order.length;
+        const button = element('button', copy(label)); button.type = 'button'; button.disabled = index + delta < 0 || index + delta >= order.length;
         button.addEventListener('click', () => { const next = index + delta; [order[index],order[next]] = [order[next],order[index]]; editor(); preview(); status('Unsaved layout changes.'); }); controls.append(button);
       }
       const hidden = selected.presentation.hidden_sections.includes(key);
-      const toggle = element('button', hidden ? 'Restore section' : 'Remove section'); toggle.type = 'button';
+      const toggle = element('button', copy(hidden ? 'Restore section' : 'Remove section')); toggle.type = 'button';
       toggle.addEventListener('click', () => {
         if (!hidden && selected.presentation.hidden_sections.length === 4) { status('Keep at least one section.', true); return; }
         selected.presentation.hidden_sections = hidden ? selected.presentation.hidden_sections.filter(id => id !== key) : [...selected.presentation.hidden_sections,key];
         editor(); preview(); status('Unsaved section changes.');
       }); controls.append(toggle); item.append(controls);
-      if (hidden) item.append(element('p', 'Removed from preview and PDF. Restore it to include it again.'));
+      if (hidden) item.append(element('p', copy('Removed from preview and PDF. Restore it to include it again.')));
       if (['executive_summary','key_findings_and_explanations'].includes(key)) {
-        const id = `rw-text-${key}`; const label = element('label', 'Narrative text'); label.htmlFor = id;
+        const id = `rw-text-${key}`; const label = element('label', copy('Narrative text')); label.htmlFor = id;
         const input = element('textarea'); input.id = id; input.maxLength = 6000;
         input.value = selected.presentation.text_edits[key] ?? SalesPerformanceReport.narrative(selected.report,key,selected.monthly_decisions).map(item => item.text).join('\n\n');
         input.addEventListener('input', () => { selected.presentation.text_edits[key] = input.value; preview(); status('Unsaved text changes.'); });
-        const reset = element('button','Restore generated text'); reset.type = 'button'; reset.addEventListener('click', () => { delete selected.presentation.text_edits[key]; editor(); preview(); });
+        const reset = element('button',copy('Restore generated text')); reset.type = 'button'; reset.addEventListener('click', () => { delete selected.presentation.text_edits[key]; editor(); preview(); });
         item.append(label,input,reset);
       }
       if (key === 'performance_analysis') selected.report.dashboard.widgets.filter(w => !['sales_kpis','order_kpis'].includes(w.id)).forEach(widget => {
         const label = element('label',widget.title); label.htmlFor = `rw-type-${widget.id}`;
         const select = element('select'); select.id = label.htmlFor;
         for (const [value,text] of [['line','Line chart'],['bar','Bar chart'],['kpi_row','KPI'],['table','Table']]) {
-          const option = element('option',text); option.value = value; select.append(option);
+          const option = element('option',copy(text)); option.value = value; select.append(option);
         }
         select.value = selected.presentation.chart_types[widget.id] || defaults[widget.id] || widget.type;
         select.addEventListener('change', () => { selected.presentation.chart_types[widget.id] = select.value; preview(); status('Unsaved chart changes.'); });
@@ -104,7 +143,8 @@
   function display(doc, reload = true) {
     el('report-fold').open = true;
     selected = JSON.parse(JSON.stringify(doc)); el('rw-title').value = selected.title; el('rw-editor').hidden = false;
-    el('rw-meta').textContent = `Saved revision ${selected.revision} · ${new Date(selected.updated_at).toLocaleString()}`;
+    setLanguage(SalesPerformanceReport.vietnamese(selected.report.metrics[0]?.label));
+    el('rw-meta').textContent = `${vi ? 'Phiên bản đã lưu' : 'Saved revision'} ${selected.revision} · ${new Date(selected.updated_at).toLocaleString(vi ? 'vi-VN' : undefined)}`;
     preview(); editor(); showTab(false);
     setBusy(busy);
     if (reload) {
@@ -135,21 +175,24 @@
     window.setTimeout(() => URL.revokeObjectURL(url), 1000); status('PDF downloaded.');
   }));
   el('rw-delete').addEventListener('click', () => {
-    if (!selected || !window.confirm('Delete this saved report?')) return;
+    if (!selected || !window.confirm(copy('Delete this saved report?'))) return;
     action('Deleting report...', async valid => { await request(`/api/reports/${selected.id}?revision=${selected.revision}`,{method:'DELETE'}); if (!valid()) return; reset(); await library(valid); status('Report deleted.'); });
   });
   function reset() { selected = null; el('rw-editor').hidden = true; el('rw-title').value = ''; el('rw-meta').textContent = ''; el('rw-edit-panel').hidden = true; el('rw-edit-panel').replaceChildren(); el('sales-report-output').hidden = true; el('sales-report-output').replaceChildren(); el('sales-report-output').removeAttribute('aria-busy'); el('report-agent-question').value = ''; el('report-agent-submit').disabled = false; }
   el('rw-new').addEventListener('click', () => { if (!busy) { reportConversationId = crypto.randomUUID(); reset(); status('Describe a new report.'); el('report-agent-question').focus(); } });
   window.reportWorkspace = {
     display,
-    generate(question) { return action('Generating report from authorized sources...', async valid => {
+    generate(question) {
+      if (busy) return;
+      setLanguage(SalesPerformanceReport.vietnamese(question));
+      return action('Generating report from authorized sources...', async valid => {
       const payload = await request('/api/reports',{method:'POST',body:JSON.stringify({question})});
       if (!valid()) return;
       display(payload.document,false); await library(valid);
       if (valid()) { status(payload.document.status === 'partial' ? 'Report saved with data notes. Review the notes below the report.' : 'Report generated and saved.'); el('sales-report-output').focus(); }
     }); },
     show() { if (allowed() && !loaded) action('Loading reports...', async valid => { await library(valid); if (valid()) status('Ready.'); }); },
-    clear() { epoch++; loaded = false; busy = false; reset(); el('rw-library').replaceChildren(); status(''); setBusy(false); },
+    clear() { epoch++; loaded = false; busy = false; reset(); setLanguage(false); el('rw-library').replaceChildren(); status(''); setBusy(false); },
   };
   if (typeof activeTab !== 'undefined' && activeTab === 'knowledge') window.reportWorkspace.show();
 })();

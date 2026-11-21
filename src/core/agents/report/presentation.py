@@ -7,6 +7,25 @@ from core.agents.report.labels import uses_vietnamese_labels
 
 SECTION_TITLES = {s['id']: s['title'] for s in load_contract()['section_contract']}
 CURRENCY_NOTE = 'Amounts are displayed in VND as requested. The source has no currency tag; no currency conversion has been applied.'
+CURRENCY_NOTE_VI = 'Số tiền hiển thị theo đơn vị VND. Nguồn không ghi đơn vị tiền tệ và chưa áp dụng quy đổi.'
+SALES_ACTIONS_VI = {
+    'S01': 'So sánh doanh thu theo tháng và đối chiếu hồ sơ bán hàng, giá bán và khuyến mãi theo ngày trong các kỳ liên quan. Xác minh nguyên nhân trước khi thay đổi kế hoạch kinh doanh.',
+    'S02': 'Đối chiếu số liệu doanh thu, giá vốn, chiết khấu và điều kiện giá bán. Tìm nguyên nhân khiến lợi nhuận gộp bằng hoặc dưới 0 trước khi phê duyệt biện pháp xử lý.',
+    'S03': 'So sánh giá vốn và lợi nhuận gộp giữa hai kỳ, rồi đối chiếu các thay đổi về giá và khuyến mãi theo ngày. Cần thêm bằng chứng để kết luận về khả năng sinh lời và nguyên nhân biến động.',
+    'S04': 'Tiếp tục theo dõi định kỳ. Dữ liệu hiện có chưa kích hoạt điều kiện cảnh báo nào trong bộ quy tắc.',
+}
+
+_SALES_LIMITATIONS_VI = {
+    'Order and traffic source completeness is unverified; totals describe matching records, not certified complete periods. No causal explanations are established.':
+        'Chưa xác minh được độ đầy đủ của nguồn đơn hàng và lượt truy cập. Tổng số dựa trên các bản ghi phù hợp. Dữ liệu hiện có chưa xác định nguyên nhân biến động.',
+    'Company daily coverage is incomplete or unknown; comparison rules require complete current and prior periods.':
+        'Dữ liệu theo ngày của công ty còn thiếu hoặc chưa xác định được độ đầy đủ. Các quy tắc so sánh cần đủ dữ liệu cho cả hai kỳ.',
+    'Revenue change is undefined because prior-period revenue is zero.':
+        'Không xác định được tỷ lệ thay đổi vì doanh thu kỳ trước bằng 0.',
+    'Company-level KPIs and comparison decisions are unsupported for this dimension. Company sales cannot be allocated to order-line dimensions.':
+        'Chưa thể phân bổ doanh thu cấp công ty theo nhóm dòng hàng đã chọn để tính chỉ số và so sánh.',
+}
+_COVERAGE_RANGE = re.compile(r'(\d{4}-\d{2}-\d{2}) to (\d{4}-\d{2}-\d{2}) \(end excluded\): (\d+|unknown) of (\d+|unknown) days')
 
 
 def default_chart_types(report):
@@ -36,11 +55,14 @@ def calendar_rows(widget, scope):
 
 
 def display_value(metric, value=None):
+    from core.agents.language import is_vietnamese
+    vi = is_vietnamese(metric.get('label', ''))
     value = metric['value'] if value is None else value
     if value is None:
-        from core.agents.language import is_vietnamese
-        return 'Không có dữ liệu' if is_vietnamese(metric.get('label', '')) else 'Unavailable'
+        return 'Không có dữ liệu' if vi else 'Unavailable'
     number = f'{value:,.2f}'.rstrip('0').rstrip('.')
+    if vi:
+        number = number.translate(str.maketrans(',.', '.,'))
     if metric['unit'] == 'percent':
         return number + '%'
     if metric['unit'].startswith('unknown_currency'):
@@ -94,6 +116,19 @@ def decision_text(rule, report=None):
             return 'Evaluated: this predefined condition was not met.'
         return ('A no-exception conclusion is withheld because snapshot coverage or flag evidence is incomplete.'
                 if rule['id'] == 'I04' else 'Cannot evaluate: the required recorded flag count is unavailable.')
+    vi = report is not None and uses_vietnamese_labels(report)
+    if vi and rule['triggered'] is None:
+        if rule['id'] == 'S04':
+            return 'Chưa thể kết luận vì ít nhất một quy tắc so sánh chưa đánh giá được.'
+        if rule['id'] in {'S01', 'S03'}:
+            return 'Chưa đủ dữ liệu kỳ đối chiếu để đánh giá. Xem ghi chú dữ liệu bên dưới.'
+        return 'Chưa có doanh thu hoặc lợi nhuận gộp của kỳ hiện tại để đánh giá.'
+    if vi:
+        text = SALES_ACTIONS_VI[rule['id']] if rule['triggered'] else 'Kết quả đánh giá chưa thỏa điều kiện cảnh báo này.'
+        if rule['id'] == 'S02':
+            metrics = {m['id']: m for m in report['metrics']}
+            text += f" Lợi nhuận gộp: {display_value(metrics['company_gross_profit'])}. Doanh thu: {display_value(metrics['company_revenue'])}."
+        return text
     if rule['triggered'] is True:
         text = {
             'S01': 'Compare revenue by month and review dated sales, pricing and promotion records for the affected periods. Confirm the cause before changing commercial plans.',
@@ -141,21 +176,44 @@ def inventory_insights(report):
     return {'actions':actions, 'validation_summary':summary}
 
 
-def data_notes(report):
+def _sales_limitation_vi(note):
+    if note.startswith('Period-over-period comparison'):
+        ranges = _COVERAGE_RANGE.findall(note)
+        if len(ranges) == 2:
+            coverage = ' '.join(f'Từ {start} đến trước {end}: {days}/{expected} ngày.'
+                                for start, end, days, expected in ranges).replace('unknown', 'chưa rõ')
+            return ('So sánh giữa các kỳ dựa trên tổng theo tháng dương lịch. Dữ liệu theo ngày dùng để kiểm tra độ đầy đủ. '
+                    + coverage + ' Chưa đủ dữ liệu để tính thay đổi doanh thu toàn kỳ và đánh giá các quy tắc phụ thuộc vào phép so sánh đó. '
+                    'Các quy tắc theo tháng dùng kỳ đối chiếu riêng. Doanh thu và lợi nhuận kỳ hiện tại vẫn có thể sử dụng.')
+    key, separator, reason = note.partition(': ')
+    if separator:
+        if reason == 'access denied.':
+            return f'{key}: Nguồn dữ liệu giới hạn quyền truy cập.'
+        if reason == 'validated source query unavailable.':
+            return f'{key}: Không lấy được dữ liệu từ truy vấn đã xác minh.'
+        limit = re.fullmatch(r'chart reached the (\d+)-row SQL limit; additional categories may be omitted\.', reason)
+        if limit:
+            return f'{key}: Đã đạt giới hạn {limit[1]} dòng SQL. Có thể còn nhóm dữ liệu chưa hiển thị.'
+    return _SALES_LIMITATIONS_VI.get(note, note)
+
+
+def data_notes(report, *, include_currency=True):
     if report['report_type'] == 'inventory_operations':
         return inventory_notes(report)
-    notes = [CURRENCY_NOTE]
+    vi = uses_vietnamese_labels(report)
+    notes = [CURRENCY_NOTE_VI if vi else CURRENCY_NOTE] if include_currency else []
     if any(w['x_dimension'] == 'period' and w['type'] != 'kpi_row'
            and len(calendar_rows(w, report['request'])) > len(w['data']) for w in report['dashboard']['widgets']):
-        notes.append('Unobserved calendar periods are shown as gaps, not zero values.')
+        notes.append('Biểu đồ để trống các kỳ thiếu dữ liệu.' if vi else 'Unobserved calendar periods are shown as gaps, not zero values.')
     detailed = any(note.startswith('Period-over-period comparison') for note in report['data_quality']['limitations'])
     for note in report['data_quality']['limitations']:
         if note.startswith('Synthetic commerce'):
-            notes.append('Synthetic commerce demonstration data. Company sales and delivered-order sales are independent sources.')
+            notes.append('Dữ liệu thương mại mô phỏng. Doanh thu công ty và doanh thu từ hàng đã giao đến từ hai nguồn riêng.'
+                         if vi else 'Synthetic commerce demonstration data. Company sales and delivered-order sales are independent sources.')
         elif note.startswith('Missing count describes') or detailed and note.startswith('Company daily coverage'):
             continue
         else:
-            notes.append(note)
+            notes.append(_sales_limitation_vi(note) if vi else note)
     return notes
 
 

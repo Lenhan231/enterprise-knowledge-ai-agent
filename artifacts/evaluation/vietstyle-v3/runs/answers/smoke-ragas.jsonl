@@ -1,0 +1,2 @@
+{"id": "D006", "faithfulness": 1.0, "answer_relevancy": 0.7985786582078234, "context_precision": 0.8928571428348213, "hallucination": false}
+{"id": "D011", "faithfulness": 0.6666666666666666, "answer_relevancy": 0.8222635995601495, "context_precision": 0.94999999997625, "hallucination": true}

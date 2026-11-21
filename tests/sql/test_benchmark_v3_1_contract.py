@@ -1151,6 +1151,37 @@ class V31ContractTests(unittest.TestCase):
         self.assertEqual(comparison["business_end_to_end"]["decision"], "PASS")
         self.assertFalse(observation["sql_semantic_valid"])
 
+    def test_v33_case_insensitive_canonical_columns_pass_e2e(self):
+        case = {
+            "id": "SYNTHETIC-CASE-INSENSITIVE", "expected_behavior": "execute",
+            "output_contract": {"columns": ["customer_id", "value"], "ordered": False},
+            "business_key_columns": ["customer_id"],
+            "column_aliases": {}, "numeric_tolerance": {},
+        }
+        cases_doc = {"cases": [case]}
+        sql = "SELECT customer_id, value FROM data"
+        observation = {
+            "id": case["id"], "status": "executed", "sql": sql, "parameters": [],
+            "columns": ["CUSTOMER_ID", "VALUE"],
+            "rows": [{"CUSTOMER_ID": 8, "VALUE": 12}],
+            "execution_events": approved_execution_events(),
+        }
+        semantic_record = audit.create_audit_record(
+            case=case, case_set_sha256=digest(cases_doc), observation=observation,
+            auditor_id="synthetic-reviewer", auditor_version="fixture-v1", decision="PASS",
+            evidence=["Synthetic fixture only; not a human semantic audit."],
+        )
+        result = scorer_v31.score(
+            cases_doc,
+            {"cases": [{"id": case["id"], "sql": sql, "rows": [{"customer_id": 8, "value": 12}]}]},
+            {"cases": [observation], "independent_semantic_audits": [semantic_record]},
+        )
+        comparison = result["case_comparisons"][case["id"]]
+        self.assertEqual(comparison["business_result_decision"], "PASS")
+        self.assertEqual(comparison["output_contract_decision"], "PASS")
+        self.assertFalse(comparison["strict_schema_match"])
+        self.assertEqual(comparison["business_end_to_end"]["decision"], "PASS")
+
     def test_independent_audit_export_links_evidence_and_refuses_stale_or_incomplete_input(self):
         case = {
             "id": "SYNTHETIC-EXPORT", "expected_behavior": "execute",

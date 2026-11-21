@@ -160,7 +160,15 @@ def compare_facts(before, after, identifier):
     return delta, ratio
 
 
-def fact_statement(fact):
+def fact_statement(fact, *, vi=False):
+    if vi:
+        from core.agents.language import vietnamese_field
+        scope = [f'{vietnamese_field(name)}: {value}' for name, value in fact.dimensions.items()]
+        if fact.snapshot_date:
+            scope.append(f'Ngày chốt: {fact.snapshot_date}')
+        details = ', '.join([fact.unit, *scope])
+        value = 'Không có dữ liệu hoặc giá trị chưa xác định' if fact.value is None else display_value(fact)
+        return f'{vietnamese_field(fact.metric)}: {value} ({details}) [{fact.id}] [{fact.evidence_id}]'
     scope = ', '.join(f'{name}={value}' for name, value in fact.dimensions.items())
     date = f'; snapshot={fact.snapshot_date}' if fact.snapshot_date else ''
     return f'{fact.metric}: {display_value(fact)} ({fact.unit}; {scope}{date}) [{fact.id}] [{fact.evidence_id}]'

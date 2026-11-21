@@ -23,12 +23,12 @@ _PLACEHOLDER = re.compile(r'\{\{.*?\}\}', re.S)
 
 # shortcut: reviewed aliases only; extend this vocabulary when new business wording is confirmed.
 SECTION_ALIASES = {
-    'summary': ('summary', 'executive summary', 'business overview', 'overview', 'management summary'),
+    'summary': ('summary', 'executive summary', 'business overview', 'overview', 'management summary', 'tóm tắt'),
     'sales': ('sales performance', 'sales results', 'commercial results', 'revenue analysis', 'sales analysis', 'order performance', 'orders'),
     'inventory': ('inventory position', 'inventory levels', 'stock levels', 'category stock', 'stock on hand', 'inventory overview'),
     'risk': ('risk assessment', 'inventory risk', 'inventory risks', 'stock risks', 'recorded exceptions', 'stockout analysis'),
     'context': ('operating policy', 'policy context', 'policies and procedures', 'recommendations', 'recommended actions'),
-    'limitations': ('limitations', 'data gaps', 'data availability', 'scope and limitations'),
+    'limitations': ('limitations', 'data gaps', 'data availability', 'scope and limitations', 'giới hạn'),
 }
 REPORT_CAPABILITIES = {
     'sales_performance': {'summary', 'sales', 'context', 'limitations'},
@@ -42,7 +42,7 @@ def normalized_label(text):
 
 def section_capability(heading, report_type):
     label = normalized_label(heading)
-    if label in {'findings', 'key findings', 'kpis', 'key metrics'}:
+    if label in {'findings', 'key findings', 'kpis', 'key metrics', 'kết quả'}:
         return 'sales' if report_type == 'sales_performance' else 'inventory'
     return next((capability for capability, aliases in SECTION_ALIASES.items()
                  if capability in REPORT_CAPABILITIES[report_type] and label in (*aliases, capability)), None)
@@ -64,13 +64,14 @@ class ReportTemplate:
                      (['{{report:rows}}'] if self.table_headers else [])) if self.marked else ()
 
 
-def default_report_template(output_format="markdown") -> ReportTemplate:
+def default_report_template(output_format="markdown", *, vietnamese=False) -> ReportTemplate:
     if output_format not in {"markdown", "docx"}:
         raise ValueError("Output format must be markdown or docx")
+    headings = ("Tóm tắt", "Kết quả", "Giới hạn") if vietnamese else ("Summary", "Findings", "Limitations")
     if output_format == "markdown":
-        return parse_report_template("report.md", b"# Summary\n\n## Findings\n\n## Limitations\n")
+        return parse_report_template("report.md", (f"# {headings[0]}\n\n## {headings[1]}\n\n## {headings[2]}\n").encode())
     document = Document()
-    for heading in ("Summary", "Findings", "Limitations"):
+    for heading in headings:
         document.add_heading(heading, 1)
     raw = BytesIO()
     document.save(raw)

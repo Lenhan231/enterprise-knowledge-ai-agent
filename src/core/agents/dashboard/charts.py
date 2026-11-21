@@ -14,6 +14,7 @@ from sqlglot import exp, parse_one
 from core.agents.sql.agent import SQLAnalyticsAgent, payload_to_agent_result
 from core.models.agents import ChartSeries, ChartSpec, AgentResult, Evidence
 from core.agents.sql.business_ontology import validate_request_contract
+from core.agents.language import is_vietnamese, vietnamese_field
 
 
 def sales_report_widgets(dashboard, metrics, datasets, scope):
@@ -31,9 +32,9 @@ def sales_report_widgets(dashboard, metrics, datasets, scope):
 
 def requested_chart_type(question):
     choices = {
-        'line': r'\bline[\s-]*chart\b|biểu đồ đường',
-        'bar': r'\bbar[\s-]*chart\b|biểu đồ cột|biểu đồ thanh',
-        'donut': r'\bdonut\b|\bdoughnut\b|\bpie chart\b|biểu đồ tròn',
+        'line': r'\bline[\s-]*chart\b|biểu đồ đường|\bbieu do duong\b',
+        'bar': r'\bbar[\s-]*chart\b|biểu đồ cột|biểu đồ thanh|\bbieu do (?:cot|thanh)\b',
+        'donut': r'\bdonut\b|\bdoughnut\b|\bpie chart\b|biểu đồ tròn|\bbieu do tron\b',
     }
     matches = [kind for kind, pattern in choices.items() if re.search(pattern, question, re.I)]
     if len(matches) > 1:
@@ -65,20 +66,30 @@ class DashboardAgent:
                 key: value for key, value in request.metadata.items() if key != '_sql_context'}})
         payload = await self.sql_agent.run_payload(request)
         result = payload_to_agent_result(payload, agent='dashboard')
+        vi = is_vietnamese(chart_question)
         if not payload.get('ok') or payload.get('query_status') != 'executed' or not payload.get('rows'):
             result.metadata['chart_status'] = 'unavailable'
+            if vi and not is_vietnamese(result.answer):
+                result.answer = ('Bạn muốn xem chỉ số nào, theo nhóm và khoảng thời gian nào?'
+                                 if result.metadata.get('clarification_required') else 'Không có dữ liệu phù hợp để tạo biểu đồ.')
             return result
         try:
             chart = build_chart(payload, chart_question)
         except ValueError as error:
             reason = str(error)
             result.metadata.update(chart_status='table_only', chart_reason=reason)
-            result.answer = 'The query completed. Showing the result table: ' + reason
+            result.answer = ('Dữ liệu đã được truy vấn. Kết quả được hiển thị dưới dạng bảng.'
+                             if vi else 'The query completed. Showing the result table: ' + reason)
         else:
-            result.data['visualization'] = chart.model_dump(mode='json')
             result.metadata['chart_status'] = 'rendered'
-            result.answer = f'{chart.type.title()} chart from {len(chart.categories)} SQL observations. '
-            result.answer += 'Review the data table, source scope, and limitations below.'
+            if vi:
+                for series in chart.series:
+                    series.name = vietnamese_field(series.name)
+                result.answer = f'Biểu đồ gồm {len(chart.categories)} quan sát từ SQL. Bảng dữ liệu và phạm vi nguồn nằm bên dưới.'
+            else:
+                result.answer = f'{chart.type.title()} chart from {len(chart.categories)} SQL observations. '
+                result.answer += 'Review the data table, source scope, and limitations below.'
+            result.data['visualization'] = chart.model_dump(mode='json')
         return result
 
 

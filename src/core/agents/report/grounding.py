@@ -10,6 +10,7 @@ VERIFICATION_SCOPE = (
     "entailment, arithmetic correctness, accounting scope or exhaustive source coverage."
 )
 UNAVAILABLE = "Unavailable in source data; section verification failed."
+UNAVAILABLE_VI = "Không đủ dữ liệu nguồn để xác minh mục này."
 
 
 def numeric_value(token):
@@ -39,7 +40,7 @@ def numeric_value(token):
 
 def validate_claim(text, evidence):
     """Every paragraph/row must cite supplied evidence or explicitly abstain."""
-    if text.strip() == UNAVAILABLE:
+    if text.strip() in {UNAVAILABLE, UNAVAILABLE_VI}:
         return
     identifiers = CITATION.findall(text)
     sources = {item.citation_id: item.content or "" for item in evidence}

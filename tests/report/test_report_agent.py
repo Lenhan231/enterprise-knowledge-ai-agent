@@ -14,6 +14,29 @@ from core.models.agents import AgentRequest, AgentResult, Evidence, VerifiedIden
 
 
 class ReportAgentTest(unittest.IsolatedAsyncioTestCase):
+    async def test_vietnamese_document_report_localizes_prompt_and_markdown(self):
+        knowledge = MagicMock()
+        knowledge.retrieve = AsyncMock(return_value=[Evidence(
+            source_type="document", source="policy.docx", content="Quy trình đang ở dạng dự thảo.")])
+        llm = MagicMock()
+        headings = ("Tóm tắt", "Kết quả", "Giới hạn")
+        llm.generate.side_effect = [json.dumps({
+            "sections": {heading: "Quy trình đang ở dạng dự thảo [S1]."}, "tables": [],
+        }) for heading in headings]
+        agent = ReportAgent(knowledge, MagicMock(), llm=llm)
+        request = AgentRequest(question="Soạn báo cáo về quy trình mua hàng", identity=VerifiedIdentity(
+            subject="analyst", permissions={"documents:read"}, document_roles={"employee"}))
+
+        result, payload, _ = await agent.generate_from_template(request)
+
+        self.assertIn("Vietnamese", llm.generate.call_args.args[0])
+        self.assertIn("Trạng thái báo cáo", result.answer)
+        rendered = payload.decode()
+        for heading in headings:
+            self.assertIn("# " + heading, rendered)
+        self.assertIn("Quy trình đang ở dạng dự thảo [S1].", rendered)
+        self.assertIn("Trạng thái báo cáo và nguồn", rendered)
+
     async def test_generates_docx_in_template_order_with_benchmark_evidence(self):
         knowledge = MagicMock()
         knowledge.retrieve = AsyncMock(return_value=[Evidence(

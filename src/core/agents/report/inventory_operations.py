@@ -14,6 +14,8 @@ from core.agents.dashboard.models import StrictModel
 
 from core.agents.runtime import remaining
 from core.models.agents import AgentResult, Evidence
+from core.agents.language import is_vietnamese
+from core.agents.report.labels import localize_labels, uses_vietnamese_labels
 from core.agents.report.calendar_scope import parse_request as parse_calendar_request, scope_text
 from core.agents.sql.sales_report import numeric
 
@@ -84,6 +86,8 @@ def evaluate_decisions(report):
 def validate_report(report):
     contract = load_contract()
     base = contract['runtime_output_template']
+    if uses_vietnamese_labels(report):
+        localize_labels(base)
 
     def keys(actual, expected):
         if not isinstance(actual, dict) or list(actual) != list(expected):
@@ -241,6 +245,8 @@ async def generate_inventory_report(agent, request):
     report['data_quality'].update(result['data_quality'])
     context = await retrieve_policies(agent.knowledge_agent, request)
     report['data_quality']['limitations'].extend(policy_notes(context))
+    if is_vietnamese(request.question):
+        localize_labels(report)
     evaluate_decisions(report)
     validate_report(report)
     from core.agents.report.presentation import inventory_insights

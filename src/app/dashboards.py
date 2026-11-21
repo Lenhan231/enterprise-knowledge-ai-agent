@@ -11,6 +11,7 @@ from app.agents import _agent_request, _get_runtime
 from app.security import require_permission, _require_same_origin
 from core.agents.decision_support.conversation_context import ConversationStore
 from core.agents.dashboard.agent import DashboardDocumentAgent
+from core.agents.language import is_vietnamese
 from core.agents.dashboard.models import BuildRequest, DashboardEdit, DashboardDocument, RefreshRequest, PendingDashboard, ClarificationTurn
 from core.agents.dashboard.render import CSP, render_dashboard
 from core.agents.dashboard.presentation import presentation_clarification, presentation_choice, presentation_only, set_representation, reconcile
@@ -63,6 +64,7 @@ async def build(request, user, *, description=None, scope='', document=None, cla
     sql_engine = getattr(runtime.analytics_agent, 'sql_agent', runtime.analytics_agent)
     agent = DashboardDocumentAgent(sql_engine)
     identity = _agent_request(user, description or document.description)
+    vi = is_vietnamese(identity.question)
     try:
         async with asyncio.timeout(190):
             async with _build_slots:
@@ -71,12 +73,14 @@ async def build(request, user, *, description=None, scope='', document=None, cla
                                              presentation_choices=presentation_choices)
                 return await agent.refresh(identity, document)
     except TimeoutError:
-        raise HTTPException(504, 'Dashboard query timed out. Try a more specific metric and period.')
+        raise HTTPException(504, 'Truy vấn quá thời gian. Hãy nêu rõ chỉ số và kỳ dữ liệu.'
+                            if vi else 'Dashboard query timed out. Try a more specific metric and period.')
     except ValueError as error:
         raise HTTPException(422, str(error))
     except Exception:
         logger.exception('Dashboard composition failed')
-        raise HTTPException(503, 'Dashboard data is unavailable. Check the SQL provider and data connection, then retry.')
+        raise HTTPException(503, 'Chưa lấy được dữ liệu cho dashboard. Vui lòng thử lại.'
+                            if vi else 'Dashboard data is unavailable. Check the SQL provider and data connection, then retry.')
 
 
 async def persist(store, user, doc, expected=None):
@@ -98,11 +102,14 @@ def pause_draft(draft, conversation_id, history):
     can_reply = len(draft.clarifications) < 3
     history[:] = [{'draft': draft.model_dump_json()}] if can_reply else []
     if not can_reply:
-        draft.question = draft.question[:1000] + '\nPlease start a new dashboard request with the complete requirements.'
+        draft.question = draft.question[:1000] + (
+            '\nHãy tạo yêu cầu dashboard mới với đầy đủ thông tin.' if is_vietnamese(draft.description)
+            else '\nPlease start a new dashboard request with the complete requirements.')
     return clarification_reply(draft, conversation_id, can_reply=can_reply)
 
 
 async def run_draft(request, user, store, draft, conversation_id, history, *, max_chars):
+    vi = is_vietnamese(draft.description)
     original = await owned(store, user, draft.target_id) if draft.target_id else None
     if original:
         revision(original, draft.revision)
@@ -138,7 +145,8 @@ async def run_draft(request, user, store, draft, conversation_id, history, *, ma
         doc = await build(request, user, document=doc)
     pending = next((result for result in doc.results if result.status == 'clarification_required'), None)
     if pending:
-        draft.question = pending.message or 'Please clarify the metric, grouping and period you want.'
+        fallback = 'Bạn muốn xem chỉ số nào, theo nhóm và khoảng thời gian nào?' if vi else 'Please clarify the metric, grouping and period you want.'
+        draft.question = pending.message if pending.message and (not vi or is_vietnamese(pending.message)) else fallback
         return pause_draft(draft, conversation_id, history)
     chart_question = presentation_clarification(doc)
     if chart_question:
@@ -155,7 +163,9 @@ async def run_draft(request, user, store, draft, conversation_id, history, *, ma
         # Preserve a draft for retry when no dataset executed successfully.
         can_reply = len(draft.clarifications) < 3
         history[:] = [{'draft': draft.model_dump_json()}] if draft.question and can_reply else []
-        return JSONResponse({'status': 'failed', 'message': failure.message or 'The data query could not complete. Try again.',
+        fallback = 'Chưa thể hoàn tất truy vấn dữ liệu. Vui lòng thử lại.' if vi else 'The data query could not complete. Try again.'
+        message = failure.message if failure.message and (not vi or is_vietnamese(failure.message)) else fallback
+        return JSONResponse({'status': 'failed', 'message': message,
             'scope': draft.scope, 'description': draft.description,
             'conversation_id': conversation_id if history else None, 'can_reply': can_reply}, headers={'Cache-Control': 'no-store'})
     result = bundle(await persist(store, user, doc, original.revision if original else None), 200 if original else 201)

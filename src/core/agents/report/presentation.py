@@ -3,6 +3,7 @@ from datetime import date
 import re
 
 from core.agents.report.sales_performance import load_contract, month_start
+from core.agents.report.labels import uses_vietnamese_labels
 
 SECTION_TITLES = {s['id']: s['title'] for s in load_contract()['section_contract']}
 CURRENCY_NOTE = 'Amounts are displayed in VND as requested. The source has no currency tag; no currency conversion has been applied.'
@@ -37,7 +38,8 @@ def calendar_rows(widget, scope):
 def display_value(metric, value=None):
     value = metric['value'] if value is None else value
     if value is None:
-        return 'Unavailable'
+        from core.agents.language import is_vietnamese
+        return 'Không có dữ liệu' if is_vietnamese(metric.get('label', '')) else 'Unavailable'
     number = f'{value:,.2f}'.rstrip('0').rstrip('.')
     if metric['unit'] == 'percent':
         return number + '%'
@@ -55,19 +57,24 @@ def comparison_metrics(report, monthly=()):
     start = date.fromisoformat(selected['period']['start'])
     prior = month_start(start.year, start.month-1)
     change = next(m for m in selected['metrics'] if m['id'] == 'company_revenue_change_pct')
-    change = {**change, 'label': f'Company revenue month-over-month change ({start:%Y-%m} vs {prior:%Y-%m})'}
+    label = (f'Thay đổi doanh thu công ty theo tháng ({start:%m/%Y} so với {prior:%m/%Y})'
+             if uses_vietnamese_labels(report) else f'Company revenue month-over-month change ({start:%Y-%m} vs {prior:%Y-%m})')
+    change = {**change, 'label': label}
     return [change if m['id'] == change['id'] else m for m in report['metrics']]
 
 
 def observations(report, section, monthly=()):
+    vi = uses_vietnamese_labels(report)
     metrics = {m['id']: m for m in comparison_metrics(report, monthly)}
     specification = next(s for s in load_contract()['section_contract'] if s['id'] == section)
     result = []
     for slot in specification.get('fixed_slots', []):
         available = [metrics[k] for k in slot['metric_ids'] if metrics[k]['status'] == 'available']
-        text = ' '.join(f"The {m['label'].lower()} is {display_value(m)}." for m in available)
+        text = ' '.join(f"{m['label']}: {display_value(m)}." if vi else f"The {m['label'].lower()} is {display_value(m)}."
+                        for m in available)
         if not text and slot['id'] == 'revenue_movement':
-            text = 'Period-over-period revenue change is unavailable for this scope. See the data notes below.'
+            text = ('Chưa đủ dữ liệu để so sánh doanh thu giữa các kỳ. Xem ghi chú dữ liệu bên dưới.'
+                    if vi else 'Period-over-period revenue change is unavailable for this scope. See the data notes below.')
         if not text:
             continue
         result.append({'text': text, 'metric_ids': [m['id'] for m in available]})

@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, Mock
 
 from core.agents.dashboard.agent import DashboardDocumentAgent
 from core.agents.dashboard.models import QuerySpec, QueryResult, TileSpec
+from core.agents.dashboard.render import render_dashboard
 from core.models.agents import AgentRequest, VerifiedIdentity
 from tests.dashboard.test_dashboard_documents import document
 
@@ -17,6 +18,16 @@ class DashboardAgentTest(unittest.IsolatedAsyncioTestCase):
                 'sql': 'SELECT SUM(revenue) AS revenue FROM commerce.sales LIMIT 1'}))
         self.agent = DashboardDocumentAgent(self.sql)
         self.request = AgentRequest(question='Dashboard', identity=VerifiedIdentity(subject='alice', permissions={'analytics:read'}))
+
+    async def test_vietnamese_dashboard_localizes_generated_title_and_export(self):
+        question = 'Tạo dashboard tổng doanh thu'
+        doc = await self.agent.build(self.request.model_copy(update={'question': question}), question)
+        self.assertEqual('Doanh thu', doc.tiles[0].title)
+        self.assertEqual({'revenue': 10}, doc.results[0].payload['rows'][0])
+        html = render_dashboard(doc)
+        self.assertIn('<html lang="vi">', html)
+        self.assertIn('Nguồn và giới hạn', html)
+        self.assertIn('<p>Doanh thu</p>', html)
 
     async def test_legacy_multi_dataset_refresh_preserves_definition_without_planning(self):
         doc = document()

@@ -7,6 +7,8 @@ from core.agents.runtime import deadline
 from core.agents.sql.metric_validation import inventory_time_scope
 from core.agents.dashboard.models import BuildRequest, DashboardDocument, QueryResult, QuerySpec, TileSpec, now, MAX_DATASETS, MAX_CONCURRENT_QUERIES
 from core.agents.dashboard.presentation import automatic_tiles, automatic_chart_tiles, summary_tiles, bind_fields, reconcile, presentation_choice, set_representation
+from core.agents.dashboard.presentation import vietnamese_tile_title
+from core.agents.language import is_vietnamese
 from core.agents.sql.agent import SQLAnalyticsAgent
 
 logger = logging.getLogger(__name__)
@@ -20,13 +22,15 @@ class DashboardDocumentAgent:
 
     async def execute(self, request, document, *, allow_multiple=False):
         semaphore = asyncio.Semaphore(MAX_CONCURRENT_QUERIES)
+        vi = is_vietnamese(document.description)
         questions = {}
         for spec in document.queries:
             if document.scope:
                 period = inventory_time_scope(spec.question)
                 scope_period = inventory_time_scope(document.scope)
                 if period and scope_period and period != scope_period:
-                    raise ValueError('Scope conflicts with dates in the description or saved question. Edit the description and Rebuild.')
+                    raise ValueError('Phạm vi ngày mâu thuẫn với mô tả. Hãy sửa mô tả và tạo lại dashboard.'
+                                     if vi else 'Scope conflicts with dates in the description or saved question. Edit the description and Rebuild.')
             questions[spec.id] = spec.question + (f'\nRequired dashboard date/filter scope: {document.scope}' if document.scope else '')
             if document.clarifications and (allow_multiple or len(document.queries) == 1):
                 questions[spec.id] += ''.join('\nUser clarification: ' + turn.reply for turn in document.clarifications)
@@ -48,12 +52,14 @@ class DashboardDocumentAgent:
                         datasets = []
                         for index, item in enumerate(payload['datasets']):
                             child_spec = QuerySpec(id=f'q{index}', question=item['question'])
-                            datasets.append((child_spec, self.query_result(child_spec.id, child_spec.question, item['payload'])))
+                            datasets.append((child_spec, self.query_result(child_spec.id, child_spec.question, item['payload'], vi=vi)))
                         return datasets
-                    return [(spec, self.query_result(spec.id, question, payload))]
+                    return [(spec, self.query_result(spec.id, question, payload, vi=vi))]
                 except Exception:
                     logger.exception('Dashboard dataset failed: %s', spec.id)
-                    return [(spec, QueryResult(id=spec.id, question=question, status='failed', message='Source query could not complete. Retry refresh or make its metric and scope more explicit.'))]
+                    message = ('Không thể hoàn tất truy vấn nguồn. Hãy thử tải lại hoặc nêu rõ chỉ số và phạm vi.'
+                               if vi else 'Source query could not complete. Retry refresh or make its metric and scope more explicit.')
+                    return [(spec, QueryResult(id=spec.id, question=question, status='failed', message=message))]
 
         used = {tile.query_id for tile in document.tiles}
         batches = await asyncio.gather(*(query(spec) for spec in document.queries if spec.id in used))
@@ -66,7 +72,7 @@ class DashboardDocumentAgent:
     bind_fields = staticmethod(bind_fields)
 
     @staticmethod
-    def query_result(identifier, question, payload):
+    def query_result(identifier, question, payload, *, vi=False):
         if payload.get('query_status') == 'executed' and (payload.get('ok') or not payload.get('rows')):
             status = 'complete' if payload.get('rows') else 'empty'
         else:
@@ -75,6 +81,8 @@ class DashboardDocumentAgent:
                              or metadata.get('status') == 'clarification_required' or metadata.get('clarification_required'))
             status = 'clarification_required' if clarification else 'failed'
         message = payload.get('answer') or payload.get('message') or payload.get('error') or ''
+        if vi and message == 'Query completed.':
+            message = 'Truy vấn đã hoàn tất.'
         # Retain provenance, excluding conversational/provider state.
         safe = {key: payload[key] for key in ('rows', 'sql', 'attempted_sql', 'parameters', 'metadata', 'query_status', 'evidence') if key in payload}
         safe['metadata'] = {key: value for key, value in safe.get('metadata', {}).items() if not key.startswith('_')}
@@ -124,9 +132,13 @@ class DashboardDocumentAgent:
                         for summary in summaries:
                             summary.id = result.id + '_' + summary.id
                     document.tiles.extend([*tiles, *summaries])
+                document = reconcile(document)
+                if is_vietnamese(body.description):
+                    for tile in document.tiles:
+                        tile.title = vietnamese_tile_title(tile)
                 if document.clarifications and document.tiles[0].kind in {'line', 'bar', 'donut', 'kpi'}:
                     document.title = document.tiles[0].title
-                return reconcile(document)
+                return document
         finally:
             deadline.reset(token)
 

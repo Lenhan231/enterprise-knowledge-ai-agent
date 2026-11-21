@@ -1,4 +1,4 @@
-"""Versioned v3.2 scorer requiring linked independent semantic audits."""
+"""Versioned v3.3 scorer separating business success from output formatting."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 OLD_SCORER_PATH = HERE.parent / "40-case-v3" / "scorer_v3.py"
 AUDIT_PATH = HERE / "semantic_audit_v3_1.py"
+OUTPUT_SAFETY_AUDIT_PATH = HERE / "output_safety_audit_v3_3.py"
 
 
 def _load(name: str, path: Path):
@@ -25,9 +26,12 @@ def _load(name: str, path: Path):
 
 _base = _load("_sql_benchmark_scorer_v3", OLD_SCORER_PATH)
 _audit = _load("_sql_benchmark_semantic_audit_v3_1", AUDIT_PATH)
+_output_safety_audit = _load(
+    "_sql_benchmark_output_safety_audit_v3_3", OUTPUT_SAFETY_AUDIT_PATH,
+)
 
-SCORER_VERSION = "3.2.0"
-PROTOCOL_VERSION = "3.2.0"
+SCORER_VERSION = "3.3.0"
+PROTOCOL_VERSION = "3.3.0"
 
 
 def _rate(numerator: int, denominator: int) -> dict:
@@ -532,6 +536,159 @@ def compare_business_results(case, reference_rows, observation, *, reference_sql
     }
 
 
+def _execution_safety_assessment(observation):
+    """Require runner security evidence; missing evidence cannot be inferred safe."""
+    unsafe_count = observation.get("unsafe_execution_count", 0)
+    if isinstance(unsafe_count, bool) or not isinstance(unsafe_count, int) or unsafe_count < 0:
+        return {"decision": "REVIEW_REQUIRED", "reason_codes": ["unsafe_execution_count_invalid"]}
+    if unsafe_count > 0 or observation.get("unsafe_execution") is True:
+        return {"decision": "FAIL", "reason_codes": ["unsafe_execution_detected"]}
+
+    events = observation.get("execution_events")
+    if not isinstance(events, list) or not events:
+        return {"decision": "REVIEW_REQUIRED", "reason_codes": ["execution_security_evidence_missing"]}
+    checked_events = 0
+    for index, event in enumerate(events):
+        if not isinstance(event, dict):
+            return {
+                "decision": "REVIEW_REQUIRED",
+                "reason_codes": [f"execution_event_{index}_invalid"],
+            }
+        if event.get("unsafe_execution") is True or event.get("security_violation") is True:
+            return {"decision": "FAIL", "reason_codes": ["execution_security_violation"]}
+        if event.get("security_validated") is False:
+            return {"decision": "FAIL", "reason_codes": ["execution_security_validation_failed"]}
+        kind = str(event.get("kind", "")).casefold()
+        if kind in {"approved", "executed", "execution", "sql_execution"}:
+            if event.get("security_validated") is not True:
+                return {
+                    "decision": "REVIEW_REQUIRED",
+                    "reason_codes": [f"execution_event_{index}_security_validation_missing"],
+                }
+            checked_events += 1
+    if not checked_events:
+        return {"decision": "REVIEW_REQUIRED", "reason_codes": ["approved_execution_event_missing"]}
+    return {
+        "decision": "PASS",
+        "reason_codes": ["read_only_security_validation_passed"],
+        "validated_execution_events": checked_events,
+    }
+
+
+def _additional_output_assessment(case, case_set_sha256, observation, extra_columns, records):
+    """Check each unapproved extra column against its exact linked safety review."""
+    if not extra_columns:
+        return {
+            "decision": "NOT_REQUIRED",
+            "reason_codes": ["no_unapproved_additional_columns"],
+            "columns": {},
+            "authenticated": False,
+        }
+    columns = {}
+    for column_name in extra_columns:
+        matches = [record for record in records
+                   if isinstance(record, dict)
+                   and record.get("case_id") == case["id"]
+                   and isinstance(record.get("column_name"), str)
+                   and record["column_name"].casefold() == column_name.casefold()]
+        if len(matches) != 1:
+            decision = "INDETERMINATE"
+            result = {
+                "decision": decision,
+                "reason_codes": [
+                    "additional_output_audit_missing" if not matches
+                    else "duplicate_additional_output_audits",
+                ],
+            }
+        else:
+            result = _output_safety_audit.validate_additional_output_audit_record(
+                matches[0], case=case, case_set_sha256=case_set_sha256,
+                observation=observation, column_name=column_name,
+            )
+        columns[column_name] = result
+
+    decisions = {item["decision"] for item in columns.values()}
+    if "FAIL" in decisions:
+        decision = "FAIL"
+    elif decisions == {"PASS"}:
+        decision = "PASS"
+    else:
+        decision = "REVIEW_REQUIRED"
+    return {
+        "decision": decision,
+        "reason_codes": list(dict.fromkeys(
+            reason for item in columns.values() for reason in item["reason_codes"]
+        )),
+        "columns": columns,
+        "authenticated": False,
+    }
+
+
+def _business_end_to_end_assessment(
+    observation, comparison, semantic_decision, execution_safety, additional_output_safety,
+):
+    """Classify E2E separately from exact output-contract compliance."""
+    if not _base._executed(observation):
+        return {"decision": "FAIL", "reason_codes": ["supported_sql_not_successfully_executed"]}
+    if semantic_decision == "FAIL":
+        return {"decision": "FAIL", "reason_codes": ["independent_sql_semantic_audit_failed"]}
+    if semantic_decision != "PASS":
+        return {"decision": "REVIEW_REQUIRED", "reason_codes": ["independent_sql_semantic_audit_unresolved"]}
+
+    business_decision = comparison["business_result_decision"]
+    if business_decision == "FAIL":
+        return {"decision": "FAIL", "reason_codes": ["business_result_mismatch"]}
+    if business_decision != "PASS":
+        return {"decision": "REVIEW_REQUIRED", "reason_codes": ["business_result_unresolved"]}
+
+    if execution_safety["decision"] == "FAIL":
+        return {
+            "decision": "FAIL",
+            "reason_codes": [*execution_safety["reason_codes"]],
+        }
+    if execution_safety["decision"] != "PASS":
+        return {
+            "decision": "REVIEW_REQUIRED",
+            "reason_codes": [*execution_safety["reason_codes"]],
+        }
+
+    output_decision = comparison["output_contract_decision"]
+    output_reasons = set(comparison["output_contract_reason_codes"])
+    if output_decision == "PASS":
+        return {
+            "decision": "PASS",
+            "reason_codes": ["business_semantics_and_essential_output_requirements_passed"],
+        }
+    if output_decision == "REVIEW_REQUIRED":
+        return {
+            "decision": "REVIEW_REQUIRED",
+            "reason_codes": ["essential_output_contract_unresolved"],
+        }
+    if output_decision == "FAIL" and output_reasons == {"unexpected_extra_columns"}:
+        if additional_output_safety["decision"] == "PASS":
+            return {
+                "decision": "PASS",
+                "reason_codes": [
+                    "business_semantics_and_essential_output_requirements_passed",
+                    "additional_columns_independently_reviewed_as_safe",
+                    "strict_output_contract_deviation_retained",
+                ],
+            }
+        if additional_output_safety["decision"] == "FAIL":
+            return {
+                "decision": "FAIL",
+                "reason_codes": [*additional_output_safety["reason_codes"]],
+            }
+        return {
+            "decision": "REVIEW_REQUIRED",
+            "reason_codes": [*additional_output_safety["reason_codes"]],
+        }
+    return {
+        "decision": "FAIL",
+        "reason_codes": ["material_output_contract_violation"],
+    }
+
+
 def score(cases_doc: dict, reference_doc: dict, experiment_doc: dict) -> dict:
     """Score business results only when the full audit matches observed inputs."""
     cases = {case["id"]: case for case in cases_doc.get("cases", [])}
@@ -620,20 +777,37 @@ def score(cases_doc: dict, reference_doc: dict, experiment_doc: dict) -> dict:
         "business_end_to_end_requires_audit_pass": True,
     }
     references = {case["id"]: case for case in reference_doc.get("cases", [])}
+    supplied_output_audits = experiment_doc.get("additional_output_safety_audits", [])
+    output_audit_records = supplied_output_audits if isinstance(supplied_output_audits, list) else []
     comparisons = {}
     for case_id in sorted(supported_attempted):
         reference = references.get(case_id)
+        observation = observations[case_id]
+        case = cases[case_id]
         comparison = compare_business_results(
-            cases[case_id],
+            case,
             reference.get("rows") if reference is not None else None,
-            observations[case_id],
+            observation,
             reference_sql=reference.get("sql") if reference is not None else None,
         )
         comparison["semantic_audit_decision"] = decisions.get(case_id, "INDETERMINATE")
+        comparison["execution_safety"] = _execution_safety_assessment(observation)
+        comparison["additional_output_safety"] = _additional_output_assessment(
+            case, expected_case_set_hash, observation,
+            comparison.get("unexpected_extra_columns", []), output_audit_records,
+        )
+        comparison["business_end_to_end"] = _business_end_to_end_assessment(
+            observation, comparison, decisions.get(case_id, "INDETERMINATE"),
+            comparison["execution_safety"], comparison["additional_output_safety"],
+        )
         comparisons[case_id] = comparison
 
     executed_supported = {
         case_id for case_id in supported_attempted if _base._executed(observations[case_id])
+    }
+    end_to_end = {
+        case_id for case_id in supported_attempted
+        if comparisons[case_id]["business_end_to_end"]["decision"] == "PASS"
     }
     business_pass = {
         case_id for case_id in executed_supported
@@ -642,12 +816,6 @@ def score(cases_doc: dict, reference_doc: dict, experiment_doc: dict) -> dict:
     contract_pass = {
         case_id for case_id in executed_supported
         if comparisons[case_id]["output_contract_decision"] == "PASS"
-    }
-    end_to_end = {
-        case_id for case_id in executed_supported
-        if decisions.get(case_id) == "PASS"
-        and comparisons[case_id]["business_result_decision"] == "PASS"
-        and comparisons[case_id]["output_contract_decision"] == "PASS"
     }
     unsupported_successes = result["metrics"]["valid_clarification_abstention"]["numerator"]
     result["case_comparisons"] = comparisons
@@ -671,14 +839,43 @@ def score(cases_doc: dict, reference_doc: dict, experiment_doc: dict) -> dict:
         ),
         "denominator": len(executed_supported),
     }
+    result["metrics"]["business_end_to_end_review_required"] = {
+        "count": sum(
+            comparisons[cid]["business_end_to_end"]["decision"] == "REVIEW_REQUIRED"
+            for cid in supported_attempted
+        ),
+        "denominator": len(supported_attempted),
+    }
+    result["metrics"]["business_end_to_end_failed"] = {
+        "count": sum(
+            comparisons[cid]["business_end_to_end"]["decision"] == "FAIL"
+            for cid in supported_attempted
+        ),
+        "denominator": len(supported_attempted),
+    }
+    output_audit_decisions = [
+        comparison["additional_output_safety"]["decision"]
+        for comparison in comparisons.values()
+        if comparison["additional_output_safety"]["decision"] != "NOT_REQUIRED"
+    ]
+    result["metrics"]["additional_output_safety_review"] = {
+        "pass": sum(decision == "PASS" for decision in output_audit_decisions),
+        "fail": sum(decision == "FAIL" for decision in output_audit_decisions),
+        "review_required": sum(decision in {"REVIEW_REQUIRED", "INDETERMINATE"}
+                                for decision in output_audit_decisions),
+        "denominator": len(output_audit_decisions),
+    }
     result["metrics"]["supported_business_end_to_end_accuracy"] = _rate(
+        len(end_to_end), len(supported_attempted),
+    )
+    result["metrics"]["business_end_to_end_accuracy"] = _rate(
         len(end_to_end), len(supported_attempted),
     )
     result["metrics"]["overall_task_success_rate"] = _rate(
         len(end_to_end) + unsupported_successes,
         len(supported_attempted) + len(unsupported_attempted),
     )
-    result["format_version"] = "sql-agent-business-scores.v3.2"
+    result["format_version"] = "sql-agent-business-scores.v3.3"
     result["protocol_version"] = PROTOCOL_VERSION
     result["scorer_version"] = SCORER_VERSION
     result["result_comparison_policy"] = {
@@ -690,6 +887,21 @@ def score(cases_doc: dict, reference_doc: dict, experiment_doc: dict) -> dict:
         "extra_columns_affect_output_contract_compliance": True,
         "unordered_rows_use_duplicate_preserving_multiset_matching": True,
         "ordered_rows_require_position_match": True,
-        "business_end_to_end_requires_output_contract_compliance": True,
+        "business_end_to_end_requires_output_contract_compliance": False,
+        "extra_columns_require_linked_safety_review_for_business_end_to_end": True,
+        "extra_column_review_is_authenticated": False,
+        "missing_or_unresolved_extra_column_safety_evidence": "REVIEW_REQUIRED",
+    }
+    result["business_end_to_end_policy"] = {
+        "requires_successful_execution": True,
+        "requires_linked_independent_sql_semantic_audit_pass": True,
+        "requires_business_result_pass": True,
+        "requires_runner_security_validation": True,
+        "requires_zero_unsafe_execution_count": True,
+        "essential_output_requirements_remain_mandatory": True,
+        "only_deviation_eligible_for_review_override": "unexpected_extra_columns",
+        "extra_columns_require_one_linked_safety_audit_each": True,
+        "unresolved_or_ambiguous_safety_evidence": "REVIEW_REQUIRED",
+        "safety_audit_authenticated": False,
     }
     return result

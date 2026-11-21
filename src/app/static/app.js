@@ -1136,7 +1136,8 @@ function countUp(element) {
   const decimals = (match[1].split(".")[1] || "").length;
   const started = performance.now();
   const step = (now) => {
-    const t = Math.min(1, (now - started) / 700);
+    // a frame timestamp can precede `started`; clamp so the count never shows a negative value
+    const t = Math.min(1, Math.max(0, (now - started) / 700));
     const value = target * (1 - (1 - t) ** 3);
     element.textContent = value.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + match[2];
     if (t < 1 && element.isConnected) requestAnimationFrame(step);
@@ -3433,3 +3434,23 @@ $("#sidebar-toggle").addEventListener("click", () => {
   setSidebarCollapsed(collapsed);
   try { localStorage.setItem("sidebar_collapsed", String(collapsed)); } catch {}
 });
+
+// Text Reveal (21st.dev): the sign-in and welcome headings rise word by word once. Plain text stays readable for
+// screen readers through aria-label; skipped for reduced motion.
+(() => {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  document.querySelectorAll(".login-card h1, #general-chat-welcome h3").forEach((heading) => {
+    const text = heading.textContent.trim();
+    if (!text || heading.children.length) return;
+    heading.setAttribute("aria-label", text);
+    heading.textContent = "";
+    text.split(/\s+/).forEach((word, index, words) => {
+      const span = document.createElement("span");
+      span.className = "reveal-word";
+      span.setAttribute("aria-hidden", "true");
+      span.style.animationDelay = `${index * 60}ms`;
+      span.textContent = word;
+      heading.append(span, index < words.length - 1 ? " " : "");
+    });
+  });
+})();

@@ -15,7 +15,7 @@ from core.agents.dashboard.formatting import format_number, format_datetime, for
 from core.agents.language import VIETNAMESE_STATUS, is_vietnamese, vietnamese_field
 
 CSP = "default-src 'none'; script-src 'none'; style-src 'unsafe-inline'; img-src 'none'; connect-src 'none'; base-uri 'none'; form-action 'none'"
-COLORS = ['#0a66d8', '#64748b', '#7aa8e8', '#334155', '#b45309', '#7c3aed']
+COLORS = ['#0a66d8', '#64748b', '#7aa8e8', '#b45309', '#7c3aed', '#0f766e']
 
 
 def text(value):
@@ -73,7 +73,8 @@ def table(rows, *, units=None, currency=None, dimension=None, vi=False):
         '<tr>' + ''.join(f'<td>{cell(k, row.get(k))}</td>' for k in names) + '</tr>' for row in rows[:200]) + '</tbody></table></div>'
 
 
-def chart_svg(chart, *, currency=None, granularity=None, vi=False):
+def chart_svg(chart, *, currency=None, granularity=None, vi=False, wide=False):
+    W = 1240 if wide else 640  # full-width tiles get a wider canvas instead of letterboxing
     labels, series = chart.categories, chart.series
     values = [value for s in series for value in s.values if value is not None]
     if not values:
@@ -90,25 +91,25 @@ def chart_svg(chart, *, currency=None, granularity=None, vi=False):
         display_unit = {'percent': 'Phần trăm', 'count': 'Số lượng', 'number': 'Số',
                         'currency (unconfirmed)': 'Chưa xác nhận tiền tệ',
                         'currency': 'Tiền tệ', 'unknown_currency': 'Chưa xác nhận tiền tệ'}.get(display_unit, display_unit)
-    out = [f'<svg viewBox="0 0 640 290" role="img" aria-label="{text(chart.title)}">',
+    out = [f'<svg viewBox="0 0 {W} 290" role="img" aria-label="{text(chart.title)}">',
            f'<title>{text(chart.title)} · {text(display_unit)}</title>']
     if chart.type == 'donut':
         total = sum(series[0].values)
         offset = 0
         for i, (label, value) in enumerate(zip(labels, series[0].values)):
             fraction = value / total
-            out.append(f'<circle cx="220" cy="140" r="85" fill="none" stroke="{COLORS[i % len(COLORS)]}" stroke-width="48" pathLength="100" stroke-dasharray="{fraction * 100} {100 - fraction * 100}" stroke-dashoffset="{-offset}" transform="rotate(-90 220 140)"><title>{text(label_text(label))}: {text(shown(value))} ({text(formatted(fraction*100, unit="percent"))})</title></circle>')
+            out.append(f'<circle cx="{W//2}" cy="140" r="85" fill="none" stroke="{COLORS[i % len(COLORS)]}" stroke-width="48" pathLength="100" stroke-dasharray="{fraction * 100} {100 - fraction * 100}" stroke-dashoffset="{-offset}" transform="rotate(-90 {W//2} 140)"><title>{text(label_text(label))}: {text(shown(value))} ({text(formatted(fraction*100, unit="percent"))})</title></circle>')
             offset += fraction * 100
-        out.append(f'<text x="220" y="145" text-anchor="middle">{text(shown(total))}</text>')
+        out.append(f'<text x="{W//2}" y="145" text-anchor="middle">{text(shown(total))}</text>')
     else:
         left = max(45, min(150, max(len(shown(value)) for value in (low, high))*5+14))
-        width = (610-left) / max(1, len(labels))
+        width = (W-30-left) / max(1, len(labels))
         positions = [left + width * (j + .5) for j in range(len(labels))]
         if chart.type == 'line' and chart.temporal:
             dates = [datetime.fromisoformat(label if len(label) > 4 else label + '-01-01') for label in labels]
             duration = (dates[-1] - dates[0]).total_seconds() or 1
-            positions = [left + (date - dates[0]).total_seconds() / duration * (610-left) for date in dates]
-        out.append(f'<path d="M{left} {y(0):.2f}H610" stroke="#94a3b8"/>')
+            positions = [left + (date - dates[0]).total_seconds() / duration * (W-30-left) for date in dates]
+        out.append(f'<path d="M{left} {y(0):.2f}H{W-30}" stroke="#94a3b8"/>')
         for i, s in enumerate(series):
             previous = None
             for j, value in enumerate(s.values):
@@ -197,7 +198,7 @@ def _tile_content(tile, result, *, include_observations=True, chart=None, vi=Fal
         observations = f'<details><summary>{source_label}</summary>' + table(rows, units=units, currency=currency, dimension=tile.dimension, vi=vi) + '</details>' if include_observations else ''
         grain = re.search(r"DATE_TRUNC\(\s*'(day|month|quarter|year)'", payload.get('sql') or '', re.I)
         dimension_grain = tile.dimension if tile.dimension in {'month','quarter','year'} else None
-        return chart_svg(chart, currency=currency, granularity=grain[1].lower() if grain else dimension_grain, vi=vi) + observations
+        return chart_svg(chart, currency=currency, granularity=grain[1].lower() if grain else dimension_grain, vi=vi, wide=tile.span == 2) + observations
     except ValueError as error:
         raise ValueError('Chart unavailable: ' + str(error)) from error
 
@@ -254,5 +255,5 @@ def render_dashboard(document, *, charts=None, saved=True):
     footer = ('Biểu đồ và thống kê mô tả các quan sát do SQL trả về. Giá trị thiếu chưa được xác định. Đơn vị tiền tệ cần được xác nhận từ nguồn.'
               if vi else 'Charts and statistics describe returned SQL observations. Missing values are unknown. Currency is unconfirmed unless the source explicitly identifies it.')
     return f'''<!doctype html><html lang="{'vi' if vi else 'en'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="{escape(CSP, quote=True)}"><title>{text(document.title)}</title>
-<style>:root{{--ink:#0f172a;--mut:#64748b;--line:#e5e7eb;--bg:#fff;--soft:#f8fafc;--accent:#0a66d8}}body{{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,-apple-system,'Segoe UI',sans-serif;padding:28px}}header,main,footer{{max-width:1300px;margin:auto}}header small{{color:var(--mut)}}h1{{font-size:26px;font-weight:650;letter-spacing:-.02em;margin:6px 0 4px}}h2{{font-size:13px;font-weight:600;color:var(--mut);margin:0 0 10px}}main{{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:20px}}article{{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:20px;min-width:0}}.span-2{{grid-column:span 2}}.kpi{{font-size:36px;font-weight:650;letter-spacing:-.02em;margin:8px 0 4px;color:var(--ink);font-variant-numeric:tabular-nums}}small{{color:var(--mut);font-size:12px}}svg{{width:100%;max-height:350px}}svg text{{fill:var(--mut);font-family:inherit}}svg path[stroke="#94a3b8"]{{stroke:var(--line)}}.table{{overflow:auto;max-height:380px}}table{{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}}th{{position:sticky;top:0;background:var(--soft);color:var(--mut);font-weight:600;font-size:12px}}td,th{{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}}tbody tr:hover{{background:var(--soft)}}details{{margin:12px 0}}summary{{cursor:pointer;color:var(--accent)}}pre{{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--soft);padding:10px;border-radius:8px;font-size:12px}}.key{{display:inline-flex;align-items:center;gap:6px;margin:0 16px 4px 0;font-size:13px}}.key i{{width:9px;height:9px;border-radius:3px;display:inline-block}}.notice{{color:#92400e}}footer{{margin-top:24px;color:var(--mut)}}@media(max-width:700px){{body{{padding:14px}}main{{grid-template-columns:1fr}}.span-2{{grid-column:span 1}}}}</style></head>
+<style>:root{{--ink:#0f172a;--mut:#64748b;--line:#e5e7eb;--bg:#fff;--soft:#f8fafc;--accent:#0a66d8}}:root[data-theme=dark]{{--ink:#e5e7eb;--mut:#94a3b8;--line:#2a2d33;--bg:#161618;--soft:#1f2024;--accent:#4c9dff;color-scheme:dark}}[data-theme=dark] [fill="#0a66d8"]{{fill:#4c9dff}}[data-theme=dark] [stroke="#0a66d8"]{{stroke:#4c9dff}}[data-theme=dark] i[style*="#0a66d8"]{{background:#4c9dff!important}}[data-theme=dark] .notice{{color:#fbbf24}}body{{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,-apple-system,'Segoe UI',sans-serif;padding:28px}}header,main,footer{{max-width:1300px;margin:auto}}header small{{color:var(--mut)}}h1{{font-size:26px;font-weight:650;letter-spacing:-.02em;margin:6px 0 4px}}h2{{font-size:13px;font-weight:600;color:var(--mut);margin:0 0 10px}}main{{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:20px}}article{{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:20px;min-width:0}}.span-2{{grid-column:span 2}}.kpi{{font-size:36px;font-weight:650;letter-spacing:-.02em;margin:8px 0 4px;color:var(--ink);font-variant-numeric:tabular-nums}}small{{color:var(--mut);font-size:12px}}svg{{width:100%;height:auto;display:block}}circle,rect{{transition:r .12s,opacity .12s,stroke-width .12s}}svg circle[r="3"]:hover{{r:5}}svg rect:hover{{opacity:.78}}svg circle[pathLength]:hover{{stroke-width:54}}svg text{{fill:var(--mut);font-family:inherit}}svg path[stroke="#94a3b8"]{{stroke:var(--line)}}.table{{overflow:auto;max-height:380px}}table{{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}}th{{position:sticky;top:0;background:var(--soft);color:var(--mut);font-weight:600;font-size:12px}}td,th{{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}}tbody tr:hover{{background:var(--soft)}}details{{margin:12px 0}}summary{{cursor:pointer;color:var(--accent)}}pre{{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--soft);padding:10px;border-radius:8px;font-size:12px}}.key{{display:inline-flex;align-items:center;gap:6px;margin:0 16px 4px 0;font-size:13px}}.key i{{width:9px;height:9px;border-radius:3px;display:inline-block}}.notice{{color:#92400e}}footer{{margin-top:24px;color:var(--mut)}}@media(max-width:700px){{body{{padding:14px}}main{{grid-template-columns:1fr}}.span-2{{grid-column:span 1}}}}</style></head>
 <body><header><small>{label}</small><h1>{text(document.title)}</h1><p>{text(document.description)}</p><p>{"Phạm vi" if vi else "Scope"}: {text(scope)}</p><p><small>{timestamps}</small></p></header><main>{tiles}</main><footer><h2>{"Nguồn và giới hạn" if vi else "Sources and limitations"}</h2><p>{footer}</p>{sources}</footer></body></html>'''

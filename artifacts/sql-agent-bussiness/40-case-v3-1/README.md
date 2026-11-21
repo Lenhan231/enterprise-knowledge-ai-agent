@@ -1,8 +1,8 @@
-# SQL Agent benchmark v3.1 case set — v3.2 scorer draft
+# SQL Agent benchmark v3.1 case set — v3.3 scorer draft
 
 **State: NOT FROZEN · Reviewers 1 and 2 recorded 40/40 APPROVE · adjudication pending · held-out SQL Agent not run.**
 
-The v3.1 case set and Gold artifacts remain unchanged. Scorer/protocol v3.2.0 adds canonical hybrid result matching and separates Business Result Accuracy from Output Contract Compliance. No original v3 benchmark, review, preflight, mutation file, or historical score was overwritten.
+The v3.1 case set and Gold artifacts remain unchanged. Scorer/protocol v3.3.0 retains canonical hybrid result matching and separate business/output-contract metrics, and permits E2E PASS when unapproved extra columns have complete linked safety-review evidence and are the only output-contract deviation. Unreviewed or unverifiable extra columns become `REVIEW_REQUIRED`. No original v3 benchmark, review, preflight, mutation file, or historical score was overwritten.
 
 ## Versioned assets
 
@@ -13,8 +13,8 @@ The v3.1 case set and Gold artifacts remain unchanged. Scorer/protocol v3.2.0 ad
 - `gold_sql_v3_1_draft.json`: 30 draft Gold SQL definitions.
 - `gold_results_v3_1_provisional.json`: 404 provisional reference rows, carrying original snapshot provenance and updated results/column hashes.
 - `FREEZE_MANIFEST_V3_1_DRAFT.json`: explicit draft state and content SHA-256 identities.
-- `scorer_v3_1.py` and `semantic_audit_v3_1.py`: scorer v3.2.0 with canonical column mapping, decimal-aware row matching, separate output-contract metrics, SQL/parameter/case hash linkage, audit export, and conservative ranking/TOP-N AST checks.
-- `PROTOCOL_V3_1.md`: scoring v3.2 metric definitions and audit requirements for the unchanged v3.1 case set.
+- `scorer_v3_1.py`, `semantic_audit_v3_1.py`, and `output_safety_audit_v3_3.py`: scorer v3.3.0 with canonical column mapping, decimal-aware row matching, separate output-contract metrics, independent SQL audit linkage, additional-output safety review linkage, and conservative ranking/TOP-N AST checks.
+- `PROTOCOL_V3_1.md`: scoring v3.3 metric definitions and audit requirements for the unchanged v3.1 case set.
 - `runs/technical-validation-v3-1-20261121T114601Z/`: immutable read-only Gold and mutation reruns.
 - `tests/sql/test_benchmark_v3_1_contract.py`: no-LLM regression tests for hashes, all 30 Gold outputs, canonical alignment, row matching, output contract, audit linkage/export, ranking, and approval state.
 
@@ -37,9 +37,9 @@ Seven cases require ordered output rows: `B40-011, B40-012, B40-013, B40-014, B4
 
 Row order alone cannot fail an unordered case's business result metric. Gold SQL `ORDER BY` remains for deterministic display and result hashing. The TOP-1 entity/month selection contract is checked independently of output row ordering.
 
-Canonical matching accepts exact field names, case-specific aliases, or identical SQL projection expressions with resolvable source-column lineage. Ambiguous mappings become `REVIEW_REQUIRED`; fuzzy matching is disabled. Business Result Accuracy compares row content by an explicit case business key or duplicate-preserving multiset. Output Contract Compliance separately checks unexpected columns, row limits, and order-sensitive output. Neither metric substitutes for the required independent SQL semantic audit. The historical v3 scorer remains unchanged.
+Canonical matching accepts exact field names, case-specific aliases, or identical SQL projection expressions with resolvable source-column lineage. Ambiguous mappings become `REVIEW_REQUIRED`; fuzzy matching is disabled. Business Result Accuracy compares row content by an explicit case business key or duplicate-preserving multiset. Output Contract Compliance separately checks unexpected columns, row limits, and order-sensitive output. E2E requires an independent SQL audit PASS, business result PASS, and runner security evidence. Present safety flags must be JSON booleans; malformed values require review, and explicit unsafe/failed evidence fails E2E. An extra column only avoids E2E failure after a separate reviewer decision is linked to the exact SQL, parameters, case/set, complete result and column values; the Output Contract metric still fails. Missing evidence is `REVIEW_REQUIRED`. The plain JSON review record is unauthenticated and does not prove reviewer identity or independence. Neither metric substitutes for the required independent SQL semantic audit. The historical v3 scorer remains unchanged.
 
-For independent SQL review, create a `sql-semantic-audit-decisions.v1` JSON file and use the exporter documented in [`PROTOCOL_V3_1.md`](PROTOCOL_V3_1.md). It binds each supplied decision to the observed SQL, parameters, case contract, and case-set hash. Exported records are not signed or identity-authenticated; they do not create or prove human review.
+For independent SQL review, create a `sql-semantic-audit-decisions.v1` JSON file and use the exporter documented in [`PROTOCOL_V3_1.md`](PROTOCOL_V3_1.md). For additional output, create a separate `sql-agent-additional-output-safety-decisions.v1` file with all seven evidenced checks and use `output_safety_audit_v3_3.py`. Neither exporter decides safety or semantic correctness. Records are not signed or identity-authenticated; they do not create or prove human review.
 
 ## Database checks and mutation evidence
 
@@ -58,7 +58,7 @@ PYTHONPATH=src uv run --no-sync python -m unittest discover -s tests/sql -p 'tes
 PYTHONPATH=src uv run --no-sync python -m unittest discover -s tests -t . -v
 ```
 
-The latest v3.2 contract run is recorded in `TECHNICAL_VALIDATION_REPORT_2026-11-21.md`; it exercises all 30 reference result sets without calling the SQL Agent. Re-run the focused test after any scorer or protocol change. The v3.1 review record remains user-reported and hash-linked; the case cohort stays unfrozen until adjudication and formal gates are complete.
+The v3.3 contract run is recorded in `TECHNICAL_VALIDATION_REPORT_2026-11-21.md`; it exercises all 30 stored reference result sets without calling the SQL Agent. Re-run the focused test after any scorer or protocol change. Synthetic audit fixtures are not real reviewer records. The v3.1 reviewer 2 record remains user-reported and hash-linked; the case cohort stays unfrozen until adjudication and formal gates are complete.
 
 ## Remaining freeze blockers
 

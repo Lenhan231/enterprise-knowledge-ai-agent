@@ -145,3 +145,39 @@ Executed test evidence for the scorer v3.2 revision:
 The focused v3.2 and SQL suites are fully passing. The legacy v3 artifact suite remains red because its old manifest pins the test source file's previous bytes; this does not indicate a scorer v3.2 assertion failure, and the historical manifest was not rewritten. The 40-case SQL Agent benchmark, live database reference generation, and external model calls were not run for this revision.
 
 Limitations remain: SQL expression lineage only supports straightforward SELECT projections and is not full-query equivalence; independent semantic decisions remain human-supplied plain JSON without signatures; the v3.1 case set does not declare explicit business keys, so its comparisons use multisets; ordered output with mismatched business rows is `REVIEW_REQUIRED`; and numeric tolerance is a case-level rule rather than a typed per-column schema. The static HTML review UI still stores live clicks in browser-local storage. The two logged review records are the durable source for this session, with Reviewer 2 explicitly marked user-reported.
+
+## Scorer v3.3 addendum — business-centric end-to-end scoring
+
+This scoring-only revision keeps the v3.1 case set, Gold SQL, provisional Gold results, database fingerprint, reviewer records, and all historical run outputs unchanged. It does not create semantic audit records or additional-column safety approvals. The cohort remains `DRAFT_NOT_FROZEN`; the held-out 40-case SQL Agent benchmark was not run.
+
+Business End-to-End Accuracy now requires successful execution, a linked independent SQL semantic audit `PASS`, Business Result Accuracy `PASS`, explicit runner security-validation evidence, zero reported unsafe executions, and essential output requirements. It may pass with Output Contract Compliance `FAIL` only when the sole contract deviation is unapproved extra columns and every such column has exactly one linked safety review that passes all required checks. Missing, ambiguous, duplicate, stale, contradictory, or wrong-typed execution safety evidence yields `REVIEW_REQUIRED`; a failed safety check or explicitly unsafe execution yields `FAIL`. Present safety flags must be JSON booleans. Business Result Accuracy, SQL Semantic Accuracy, Output Contract Compliance, and Business End-to-End Accuracy remain separate metrics with per-case reason codes.
+
+The additional-output review record is linked to the exact SQL, parameters, case contract, full case set, observed result, and values of the reviewed column. Its seven reviewer-supplied checks cover required business values, row cardinality, grain/population, metric/aggregation, meaning, sensitivity, and access authorization. The scorer does not infer a reviewer decision or use an LLM judge. These plain JSON records are not authenticated, so the artifact cannot prove reviewer identity, independence, policy contents, or that supplied evidence is true. SQLGlot projection lineage remains a narrow expression/column-label check, not full-query equivalence.
+
+Synthetic regression outcomes (fixtures are not human review evidence):
+
+| Scenario | Business Result | Output Contract | Business E2E |
+|---|---|---|---|
+| Correct required values plus one safe, fully linked extra column | PASS | FAIL | PASS |
+| Same extra column with no linked safety evidence | PASS | FAIL | REVIEW_REQUIRED |
+| Extra sensitive/unauthorized column with failed safety checks | PASS | FAIL | FAIL |
+| Reviewer decision says PASS but a required check says FAIL | PASS | FAIL | REVIEW_REQUIRED |
+| Malformed execution safety flag types | PASS | PASS | REVIEW_REQUIRED |
+| Case-insensitive canonical column names | PASS | PASS | PASS |
+| Reordered columns, approved aliases, unordered rows, and independently audited equivalent SQL | PASS | PASS | PASS |
+| Wrong business values, missing/extra rows, NULL-to-zero, required ordering/ranking violation, or independent semantic audit FAIL | FAIL or unresolved per evidence | FAIL or REVIEW_REQUIRED | FAIL |
+
+The existing five-case development pilot was scored only as a no-write compatibility probe, using its stored observations and reference. It is legacy v2 case data, lacks v3.3 independent SQL audit records and the v3.1 output contract. All four attempted supported cases therefore returned E2E `REVIEW_REQUIRED` for unresolved semantic audit; the reported `0/4` is not a valid v3.3 benchmark score. The old pilot files and their historical scores were not overwritten. Its runner event contains an agent-side `semantic_approval` flag, which the v3.3 scorer does not treat as independent audit evidence.
+
+Executed v3.3 regression evidence:
+
+| Command | Result |
+|---|---|
+| `PYTHONPATH=src uv run --locked --project . python -m unittest discover -s tests/sql -p 'test_benchmark_v3_1_contract.py' -q` | PASS: 48 run, 48 passed. Includes malformed safety-marker types, synthetic positive/negative/review-required cases, and all 30 stored Gold row comparisons. |
+| `PYTHONPATH=src uv run --locked --project . python -m unittest discover -s artifacts/sql-agent-bussiness/tests -q` | PASS: 45 run, 45 passed. |
+| `PYTHONPATH=src uv run --locked --project . python -m unittest discover -s tests/sql -q` | PASS: 571 run, 561 passed, 10 skipped. |
+| `PYTHONPATH=src:artifacts/sql-agent-bussiness/40-case-preparation uv run --locked --project . python -m unittest discover -s artifacts/sql-agent-bussiness/40-case-v3 -p 'test_*.py' -q` | FAIL: 55 run, 54 passed, 1 pre-existing historical hash assertion. The archived v3 manifest pins `test_v3_artifacts.py` to `9ef7240b…`; current bytes hash to `96adc0d9…`. Historical files were not changed. |
+| `uv run --locked --project . python -m py_compile artifacts/sql-agent-bussiness/40-case-v3-1/scorer_v3_1.py artifacts/sql-agent-bussiness/40-case-v3-1/output_safety_audit_v3_3.py tests/sql/test_benchmark_v3_1_contract.py` | PASS. |
+| `git diff --check` | PASS. |
+
+No live database query, external model call, held-out benchmark execution, or new human review was performed for v3.3. `FREEZE_MANIFEST_V3_1_DRAFT.json` records scorer/protocol v3.3.0 and the new source hashes while preserving the original case, Gold SQL, result, and database fingerprints. Both static checks passed.

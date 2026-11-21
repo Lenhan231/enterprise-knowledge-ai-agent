@@ -1,9 +1,9 @@
 {
-  "format_version": "sql-agent-business-benchmark-freeze-manifest.v3.2-draft",
+  "format_version": "sql-agent-business-benchmark-freeze-manifest.v3.3-draft",
   "status": "PENDING_ADJUDICATION_AND_TEST_FOLLOW_UP",
   "freeze_status": "DRAFT_NOT_FROZEN",
   "submitted_date_local": "2026-11-21",
-  "branch": "benchmark/v3-1-output-contract-20261121",
+  "branch": "benchmark/v3-3-business-e2e-20261121",
   "source_version": "../40-case-v3",
   "previous_v3_case_set_sha256": "56ef0dd5ec0d2fc15539665b91a230a923e1836cc4a18cf5c6fe8fcd795146c6",
   "revised_case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
@@ -35,12 +35,15 @@
     ],
     "exact_business_columns_required": true,
     "supported_case_specific_aliases": 30,
-    "scorer_implementation": "scorer_v3_1.py v3.2.0 (business result base: ../40-case-v3/scorer_v3.py)",
+    "scorer_implementation": "scorer_v3_1.py v3.3.0 (business-centric E2E; v3.2 result matching retained)",
     "independent_sql_semantic_audit_required": true,
     "runner_audit_provenance_verified": false,
     "business_result_accuracy_separate_from_output_contract_compliance": true,
     "projection_lineage_mapping_enabled": true,
-    "fuzzy_column_mapping": false
+    "fuzzy_column_mapping": false,
+    "business_e2e_allows_only_audited_harmless_extra_columns": true,
+    "extra_column_audit_requires_exact_result_linkage": true,
+    "extra_column_audit_authenticated": false
   },
   "oracle": {
     "status": "PROVISIONAL_NOT_APPROVED",
@@ -121,7 +124,14 @@
     "v3_2_contract_tests": "PASS 39/39; all 30 stored execute-case Gold result sets compared locally",
     "scorer_v3_2_full_sql_suite": "PASS: 562 run, 552 passed, 10 skipped",
     "scorer_v3_2_benchmark_package_tests": "PASS: 45/45",
-    "v3_artifact_tests": "FAIL: 1/55; historical test_v3_artifacts.py source hash differs from its pinned v3 manifest digest"
+    "v3_artifact_tests": "FAIL: 1/55; historical test_v3_artifacts.py source hash differs from its pinned v3 manifest digest",
+    "v3_3_contract_tests": "PASS 48/48; includes 30 stored Gold result comparisons and synthetic policy cases",
+    "v3_3_benchmark_package_tests": "PASS 45/45",
+    "v3_3_sql_tests": "PASS 571 run, 561 passed, 10 skipped",
+    "v3_3_historical_v3_artifact_tests": "FAIL 1/55: pinned historical test_v3_artifacts.py source hash mismatch; historical files unchanged",
+    "v3_3_dev_pilot_compatibility_probe": "4 supported attempts; all E2E REVIEW_REQUIRED because independent SQL audit records are absent; legacy v2 inputs, not a valid v3.3 score",
+    "v3_3_py_compile": "PASS",
+    "v3_3_git_diff_check": "PASS"
   },
   "technical_validation": {
     "status": "COMPLETE_WITH_DISCLOSED_LEGACY_ARTIFACT_TEST_FAILURE",
@@ -141,23 +151,34 @@
     "review_timestamp_is_recording_time_not_original_review_time": true,
     "human_review_records_logged": 2,
     "reviewer_2_record_sha256": "0975c50545aabef7187c924b9b2b5aa94712d61c0879ac9eecd85abbcfffdbeb",
-    "scorer_version": "3.2.0",
-    "protocol_version": "3.2.0",
+    "scorer_version": "3.3.0",
+    "protocol_version": "3.3.0",
     "scorer_v3_2_regressions": "PASS 39/39",
     "independent_audit_export_available": true,
     "scorer_v3_2_full_sql_suite": "PASS 562 run, 552 passed, 10 skipped",
     "scorer_v3_2_benchmark_package_tests": "PASS 45/45",
-    "legacy_v3_artifact_tests": "FAIL 1/55: v3 manifest pins test_v3_artifacts.py to previous source bytes",
+    "legacy_v3_artifact_tests": "FAIL 1/55: historical test_v3_artifacts.py source hash differs from pinned v3 manifest digest",
     "heldout_sql_agent_cases_executed": false,
     "fresh_database_queries_executed_for_scorer_revision": false,
-    "external_model_calls_for_scorer_revision": 0
+    "external_model_calls_for_scorer_revision": 0,
+    "scorer_v3_3_regressions": "PASS 48/48",
+    "scorer_v3_3_benchmark_package_tests": "PASS 45/45",
+    "scorer_v3_3_full_sql_suite": "PASS 571 run, 561 passed, 10 skipped",
+    "dev_pilot_compatibility_probe": {
+      "source": "stored pilot5-v31-cloudflare observations plus stored pilot5-origin reference",
+      "supported_attempts": 4,
+      "business_end_to_end": "REVIEW_REQUIRED for all 4",
+      "reason": "legacy v2 case contract and no linked independent SQL semantic audits",
+      "valid_v3_3_metric": false,
+      "files_written": false
+    }
   },
   "ready_for_independent_human_review": true,
   "ready_for_formal_freeze": false,
   "ready_for_40_case_gold_preparation": true,
   "ready_for_40_case_sql_agent_run": false,
-  "protocol_version": "3.2.0",
-  "scorer_version": "3.2.0",
+  "protocol_version": "3.3.0",
+  "scorer_version": "3.3.0",
   "scoring_contract": {
     "business_result_accuracy_ignores_column_order_and_unapproved_extras": true,
     "output_contract_compliance_is_separate_metric": true,
@@ -167,14 +188,24 @@
     "unordered_row_matching": "maximum_duplicate_preserving_multiset",
     "ordered_row_sequence_checked_separately": true,
     "independent_semantic_audit_required_for_end_to_end": true,
-    "gold_and_case_set_changed": false
+    "gold_and_case_set_changed": false,
+    "e2e_requires_strict_output_contract_pass": false,
+    "e2e_extra_column_exception": "only_unapproved_extra_columns_with_one_valid_linked_safety_review_each",
+    "unresolved_extra_column_safety": "REVIEW_REQUIRED",
+    "unsafe_execution_or_security_violation": "FAIL",
+    "malformed_execution_security_evidence": "REVIEW_REQUIRED",
+    "missing_runner_security_evidence": "REVIEW_REQUIRED",
+    "extra_column_review_authenticated": false,
+    "business_end_to_end_requires_independent_sql_audit_pass": true,
+    "business_end_to_end_requires_business_result_pass": true
   },
   "scoring_artifacts_sha256": {
-    "artifacts/sql-agent-bussiness/40-case-v3-1/scorer_v3_1.py": "90baa56dc3681511f11df6fc6e762af1b76cfff6ef87b62754935330ce8eca3f",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/scorer_v3_1.py": "0be99da504e4d12bdc21762a7c0817471069cb0272e96eeb6f5fe23bc3d47fa4",
     "artifacts/sql-agent-bussiness/40-case-v3-1/semantic_audit_v3_1.py": "af041327fe3264042f0c6fa1cb3e886a96c5cf32a22232d0747d9f1464d41514",
-    "artifacts/sql-agent-bussiness/40-case-v3-1/PROTOCOL_V3_1.md": "fa802abe736880ee05a04ff02a35dc60a291fdc76a402c3690b912fefd5ed74d",
-    "artifacts/sql-agent-bussiness/40-case-v3-1/README.md": "6c255904998f9753638e06fa95748283ce29949219d085a15e9d46073471c048",
-    "artifacts/sql-agent-bussiness/40-case-v3-1/TECHNICAL_VALIDATION_REPORT_2026-11-21.md": "8fd751fd823a221f844e7c62d2a3ce16baaa8c912566e591b27a6f96bb277a08",
-    "tests/sql/test_benchmark_v3_1_contract.py": "7f2750ba69556d36cd09cea095433e65a90ad2adcc6564928234957ae5426dfd"
+    "artifacts/sql-agent-bussiness/40-case-v3-1/output_safety_audit_v3_3.py": "72a09a9ca856a27fc755664f50de0f31d7d236172a039cad010dd9d0aea1296d",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/PROTOCOL_V3_1.md": "44cc38e69011b166a02e7e252304a23be6fe99dcdf2f40714380e961db0e5044",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/README.md": "95179ee523cd6f4f4f9bcb957de224fbbf6453421c1f2fabeb9d63514d014907",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/TECHNICAL_VALIDATION_REPORT_2026-11-21.md": "9fe501e984d4dc081501185c8e06b9f6198373965849b1474ab8824e8ce2d753",
+    "tests/sql/test_benchmark_v3_1_contract.py": "8bc0b3b68ad0a7804976ffc86243eeddd53df59a0e5eb271da666255b653a6fc"
   }
 }

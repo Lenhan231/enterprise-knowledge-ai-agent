@@ -120,8 +120,9 @@ def chart_svg(chart, *, currency=None, granularity=None, vi=False, wide=False):
         display_unit = {'percent': 'Phần trăm', 'count': 'Số lượng', 'number': 'Số',
                         'currency (unconfirmed)': 'Chưa xác nhận tiền tệ',
                         'currency': 'Tiền tệ', 'unknown_currency': 'Chưa xác nhận tiền tệ'}.get(display_unit, display_unit)
-    out = [f'<svg class="c-{chart.type}" viewBox="0 0 {W} 290" role="img" aria-label="{text(chart.title)}">',
-           f'<title>{text(chart.title)} · {text(display_unit)}</title>']
+    # No <title>: the browser's own tooltip would cover the hover read-out; aria-label names the chart.
+    out = [f'<svg class="c-{chart.type}" viewBox="0 0 {W} 290" role="img" aria-label="{text(chart.title)} · {text(display_unit)}">']
+    overlay = []  # hover groups are painted last, so no bar or line covers a tooltip
     if chart.type == 'donut':
         total = sum(series[0].values)
         offset = 0
@@ -162,7 +163,7 @@ def chart_svg(chart, *, currency=None, granularity=None, vi=False, wide=False):
                     bar_left = x - width * .4 + i * bar_width
                     out.append(f'<rect x="{bar_left:.2f}" y="{min(y(0), y(value)):.2f}" width="{bar_width:.2f}" height="{max(.5, abs(y(value)-y(0))):.2f}" rx="3" fill="{COLORS[i]}"/>')
                     name = vietnamese_field(s.name) if vi else s.name
-                    out.append(f'<g class="pt" role="img" aria-label="{text(label_text(labels[j]))} · {text(name)}: {text(shown(value))}"><rect class="hit" x="{bar_left:.2f}" y="20" width="{bar_width:.2f}" height="225" fill="transparent"/>'
+                    overlay.append(f'<g class="pt" role="img" aria-label="{text(label_text(labels[j]))} · {text(name)}: {text(shown(value))}"><rect class="hit" x="{bar_left:.2f}" y="20" width="{bar_width:.2f}" height="225" fill="transparent"/>'
                                + _tip(bar_left + bar_width / 2, max(4, min(y(0), y(value)) - 62), label_text(labels[j]), [(name, shown(value), 'v', COLORS[i])], W) + '</g>')
                 else:
                     if previous is not None:
@@ -190,7 +191,7 @@ def chart_svg(chart, *, currency=None, granularity=None, vi=False, wide=False):
                     change = (series[0].values[j] - series[0].values[j - 1]) / abs(series[0].values[j - 1]) * 100
                     rows.append(('Change' if not vi else 'Thay đổi', f'{"↑" if change >= 0 else "↓"} {abs(change):.1f}%', 'up' if change >= 0 else 'down'))
                 first = next(v for v in (s.values[j] for s in series) if v is not None)
-                out.append(f'<g class="pt" role="img" aria-label="{text(label_text(labels[j]))}: ' + text(', '.join(f'{n} {v}' for n, v, *_ in rows)) + '">'
+                overlay.append(f'<g class="pt" role="img" aria-label="{text(label_text(labels[j]))}: ' + text(', '.join(f'{n} {v}' for n, v, *_ in rows)) + '">'
                            f'<rect class="hit" x="{lo:.2f}" y="20" width="{max(1, hi - lo):.2f}" height="225" fill="transparent"/>'
                            f'<line class="cross" x1="{x:.2f}" x2="{x:.2f}" y1="20" y2="{y(0):.2f}"/>' + ''.join(dots)
                            + _tip(x, 24, label_text(labels[j]), rows, W) + '</g>')
@@ -199,6 +200,7 @@ def chart_svg(chart, *, currency=None, granularity=None, vi=False, wide=False):
             out.append(f'<text x="{positions[j]:.2f}" y="265" text-anchor="middle" font-size="11">{text(label_text(labels[j])[:24])}</text>')
         for value in (low, high):
             out.append(f'<text x="3" y="{y(value):.2f}" font-size="10">{text(shown(value))}</text>')
+    out.extend(overlay)
     out.append('</svg>')
     if chart.type == 'donut':
         out.append('<p>' + ''.join(f'<span class="key key-{i}"><i style="background:{COLORS[i % len(COLORS)]}"></i>{text(label_text(label))}: {text(shown(value))}</span>' for i,(label,value) in enumerate(zip(labels,series[0].values))) + '</p>')

@@ -443,7 +443,8 @@ def instrument_agent(agent, instrumentation):
 
     @functools.wraps(original_local_codex)
     async def counted_local_codex(prompt, provider_error):
-        instrumentation.calls["local_codex_fallback_calls"] += 1
+        if os.getenv("CODEX_CLI_SQL_FALLBACK", "false").casefold() == "true":
+            instrumentation.calls["local_codex_fallback_calls"] += 1
         return await original_local_codex(prompt, provider_error)
 
     original_fixed_match = sql_module.match_fixed_query

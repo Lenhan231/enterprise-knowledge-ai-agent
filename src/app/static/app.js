@@ -1672,25 +1672,77 @@ function renderAgentRows(data) {
   }).join("");
 }
 
-// Source Lens (21st.dev): a citation pill opens its source as a small card right under the sentence that cites it,
-// so the evidence is readable without leaving the answer. One card per answer; clicking the pill again closes it.
+// Source Lens (21st.dev, ibrandify): a citation pill opens a modal source inspector placed under the pill (at most
+// 400 px wide, kept inside the viewport). It shows "Source n / N", the document and its location, the passage as the
+// guidance summary, the sentence it was opened from, Copy / Open source, and previous / next to browse the answer's
+// sources. Escape or a click outside closes it and focus returns to the pill.
+function sourceLensData(card) {
+  const passage = card.querySelector(":scope > p");
+  return {
+    id: card.dataset.citeId,
+    title: card.querySelector(".citation-title strong")?.textContent || "",
+    where: card.querySelector(".citation-title > span:not(.citation-id):not(.citation-meta)")?.textContent || "",
+    text: (passage?.dataset.plain ?? passage?.textContent ?? "").trim(),
+    url: card.querySelector(".citation-foot a[href]")?.href || "",
+  };
+}
 function toggleSourceLens(ref, card) {
-  const panel = ref.closest(".answer-panel") || document;
-  const block = ref.closest("p, li") || ref.parentElement;
-  const open = panel.querySelector(".source-lens");
-  const same = open?.dataset.cite === ref.dataset.cite;
-  open?.remove();
-  if (same || !block) return;
-  const title = card.querySelector(".citation-title strong")?.textContent || "";
-  const where = card.querySelector(".citation-title > span:not(.citation-id):not(.citation-meta)")?.textContent || "";
-  const text = (card.querySelector(":scope > p")?.dataset.plain ?? card.querySelector(":scope > p")?.textContent ?? "").trim();
-  const lens = document.createElement("aside");
-  lens.className = "source-lens";
-  lens.dataset.cite = ref.dataset.cite;
-  lens.setAttribute("aria-label", `Source ${ref.dataset.cite}`);
-  lens.innerHTML = `<div class="source-lens-head"><span class="source-lens-id">${escapeHtml(ref.dataset.cite)}</span><strong>${escapeHtml(title)}</strong><span>${escapeHtml(where)}</span><button type="button" class="source-lens-close" aria-label="Close source">×</button></div><p>${escapeHtml(text.length > 260 ? `${text.slice(0, 257)}…` : text)}</p>`;
-  lens.querySelector(".source-lens-close").addEventListener("click", () => { lens.remove(); ref.focus(); });
-  block.after(lens);
+  const panel = ref.closest(".answer-panel");
+  const cards = [...(panel?.querySelectorAll(".citations .citation") || [])].filter((item) => !item.hidden);
+  if (!cards.length) return;
+  let index = Math.max(0, cards.indexOf(card));
+  const claim = citedClaim(ref).trim();
+  const dialog = document.createElement("dialog");
+  dialog.className = "source-lens";
+  dialog.setAttribute("aria-labelledby", "source-lens-title");
+  const render = () => {
+    const source = sourceLensData(cards[index]);
+    let host = "";
+    try { host = source.url ? new URL(source.url).hostname : ""; } catch { host = ""; }
+    dialog.innerHTML = `
+      <div class="source-lens-bar"><span>Source ${index + 1} / ${cards.length}</span><button type="button" class="source-lens-x" aria-label="Close source inspector">×</button></div>
+      <div class="source-lens-body">
+        <p class="source-lens-pub">${escapeHtml(source.where)}</p>
+        <h3 id="source-lens-title">${escapeHtml(source.title || "Source unavailable")}</h3>
+        <p class="source-lens-host">${escapeHtml(host || "Internal document")}</p>
+        <div class="source-lens-summary"><p class="source-lens-label">Passage · ${escapeHtml(source.id)}</p><p>${escapeHtml(source.text)}</p></div>
+        ${claim ? `<div class="source-lens-from"><p class="source-lens-label">Opened from</p><p>${escapeHtml(claim.length > 160 ? `${claim.slice(0, 157)}…` : claim)}</p>${index !== cards.indexOf(card) ? `<p class="source-lens-note">This source supports another part of the answer.</p>` : ""}</div>` : ""}
+        <div class="source-lens-actions">
+          <button type="button" class="source-lens-copy" ${source.url ? "" : "disabled"}>Copy link</button>
+          ${source.url ? `<a class="source-lens-open" href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer">Open source ↗</a>` : ""}
+        </div>
+        <p class="source-lens-status" role="status"></p>
+      </div>
+      <div class="source-lens-foot"><span>Browse sources</span><span><button type="button" class="source-lens-prev" aria-label="Previous source" ${cards.length < 2 ? "disabled" : ""}>‹</button><button type="button" class="source-lens-next" aria-label="Next source" ${cards.length < 2 ? "disabled" : ""}>›</button></span></div>`;
+    dialog.querySelector(".source-lens-x").addEventListener("click", () => dialog.close());
+    dialog.querySelector(".source-lens-prev").addEventListener("click", () => { index = (index - 1 + cards.length) % cards.length; render(); });
+    dialog.querySelector(".source-lens-next").addEventListener("click", () => { index = (index + 1) % cards.length; render(); });
+    dialog.querySelector(".source-lens-copy").addEventListener("click", async () => {
+      const status = dialog.querySelector(".source-lens-status");
+      try { await navigator.clipboard.writeText(source.url); status.textContent = "Link copied"; }
+      catch { status.textContent = "Copy unavailable. Open the source to copy its link."; }
+    });
+  };
+  const place = () => {
+    const rect = ref.getBoundingClientRect();
+    const width = Math.min(400, document.documentElement.clientWidth - 32);
+    const height = Math.min(dialog.getBoundingClientRect().height || 420, window.innerHeight - 32);
+    dialog.style.width = `${width}px`;
+    dialog.style.left = `${Math.max(16, Math.min(rect.left, document.documentElement.clientWidth - width - 16))}px`;
+    dialog.style.top = `${Math.max(16, Math.min(rect.bottom + 12, window.innerHeight - height - 16))}px`;
+  };
+  render();
+  document.body.append(dialog);
+  dialog.addEventListener("click", (event) => {
+    if (event.target !== dialog) return;
+    const box = dialog.getBoundingClientRect();
+    if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dialog.close();
+  });
+  dialog.addEventListener("close", () => { window.removeEventListener("resize", place); dialog.remove(); ref.focus(); });
+  window.addEventListener("resize", place);
+  place();
+  dialog.showModal();
+  place();
 }
 
 // Retrieved Chunks marks the words a passage matched: they step up to ink over a soft underline. Terms come from the

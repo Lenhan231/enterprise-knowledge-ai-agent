@@ -271,3 +271,76 @@ html #dw-preview { height: 1350px; }
 
 .gen-stats { margin: 6px 0 0; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .chat-turn-response > .gen-stats { grid-column: 1; }
+
+/* ---- Dashboard page: wide preview first, library as chips, quieter copy ---- */
+html .dw-layout { display: block; }
+html .dw-library { display: flex; align-items: center; gap: 12px; max-height: none; overflow: visible; padding: 0; border: 0; background: transparent; margin: 0 0 14px; }
+html .dw-library h2 { margin: 0; font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+html #dw-library { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
+html #dw-library button { width: auto; white-space: nowrap; border-radius: 999px; padding: 7px 14px; display: inline-flex; align-items: baseline; gap: 8px; }
+html #dw-library button small { color: var(--muted); font-size: 11px; }
+html #dw-status { font-size: 12px; color: var(--muted); min-height: 0; margin: 0 0 8px; }
+html #dw-status[data-error="true"] { color: var(--danger); }
+html .dw-main { max-width: none; }
+html #dw-preview { height: 1100px; margin-top: 12px; }
+html #tab-dashboard .dw-heading p:not(.eyebrow) { margin-top: 4px; }
+
+/* ---- Reports: one hero number, marked sections, a callout summary ---- */
+.sales-report-section > h3 { display: flex; align-items: center; gap: .6rem; font-size: 1.2rem; letter-spacing: -.01em; }
+.sales-report-section > h3::before { content: ""; width: 4px; height: 1.15em; border-radius: 2px; background: var(--accent); }
+.sales-report-kpis > div:first-child { grid-column: 1 / -1; background: var(--accent-soft); border-color: var(--accent-line); padding: 1.4rem 1.5rem; }
+.sales-report-kpis > div:first-child dt, .sales-report-kpis > div:first-child small { color: var(--accent-ink); }
+.sales-report-kpis > div:first-child dd { font-size: 2.6rem; font-weight: 650; letter-spacing: -.03em; color: var(--accent-ink); }
+.sales-report-section:first-of-type > p:first-of-type { background: var(--accent-soft); border-left: 3px solid var(--accent); border-radius: 0 10px 10px 0; padding: .8rem 1rem; margin: .6rem 0; }
+
+/* ---- Motion shared by every page, not only General Chat ---- */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes nRise { from { opacity: 0; transform: translateY(14px); } }
+  @keyframes nFade { from { opacity: 0; transform: scale(.985); } }
+  @keyframes nScroll { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+  :root .tab-panel.is-fresh:not(#tab-general-chat) > * { animation: nRise .55s cubic-bezier(.2,.7,.2,1) both; }
+  :root .tab-panel.is-fresh:not(#tab-general-chat) > *:nth-child(2) { animation-delay: .06s; }
+  :root .tab-panel.is-fresh:not(#tab-general-chat) > *:nth-child(3) { animation-delay: .12s; }
+  :root .tab-panel.is-fresh:not(#tab-general-chat) > *:nth-child(4) { animation-delay: .18s; }
+  :root .tab-panel.is-fresh:not(#tab-general-chat) > *:nth-child(n+5) { animation-delay: .24s; }
+  :root .is-fresh .monitoring-stat, :root .is-fresh .upload-step, :root .is-fresh .upload-role-option, :root .is-fresh .invoice-review-card { animation: nRise .5s cubic-bezier(.2,.7,.2,1) both; }
+  :root .is-fresh .monitoring-stat:nth-child(2), :root .is-fresh .upload-role-option:nth-child(2) { animation-delay: .06s; }
+  :root .is-fresh .monitoring-stat:nth-child(3), :root .is-fresh .upload-role-option:nth-child(3) { animation-delay: .12s; }
+  :root .is-fresh .monitoring-stat:nth-child(4), :root .is-fresh .upload-role-option:nth-child(4) { animation-delay: .18s; }
+  :root .is-fresh .monitoring-stat:nth-child(5), :root .is-fresh .upload-role-option:nth-child(n+5) { animation-delay: .24s; }
+  html #dw-preview, html #home-overview-preview { animation: nFade .6s .15s cubic-bezier(.2,.7,.2,1) both; }
+  .monitoring-stat, .upload-role-option, .knowledge-document-entry, .invoice-review-card { transition: transform .18s, box-shadow .18s, border-color .15s, background .15s; }
+  .monitoring-stat:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.06); }
+  button:not(:disabled):active { transform: scale(.98); }
+  @supports (animation-timeline: view()) {
+    .sales-report-section, .sales-report-kpis > div, .sales-report-widget { animation: nScroll linear both; animation-timeline: view(); animation-range: entry 0% cover 28%; }
+  }
+}
+
+/* ---- Prompt Input with Actions ---- */
+:root .composer-actions { display: flex; align-items: center; gap: 8px; margin-right: auto; position: relative; }
+:root .route-pill-wrap { margin-left: 0; }
+:root .composer-action { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 13px; border: 1px solid transparent; border-radius: 999px; background: transparent; color: var(--muted); font: 500 14px/1 var(--font); cursor: pointer; transition: background-color .15s, color .15s, border-color .15s; }
+:root .composer-action:hover, :root .composer-action[aria-expanded="true"] { background: var(--aic-pill-hover); color: var(--ink); }
+:root .composer-action[hidden], :root .composer-count[hidden], :root .examples-menu[hidden] { display: none; }
+:root .composer-count { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+:root .examples-wrap { position: relative; }
+:root .examples-menu { position: absolute; left: 0; bottom: calc(100% + 8px); z-index: 30; display: flex; flex-direction: column; gap: 2px; width: min(340px, 80vw); padding: 6px; border: 1px solid var(--aic-pop-border); border-radius: 18px; background: linear-gradient(160deg, var(--aic-pop-start) 0%, var(--aic-pop-end) 100%); box-shadow: var(--aic-pop-shadow); transform-origin: bottom left; animation: routeMenuIn .2s cubic-bezier(.22,1,.36,1) both; }
+:root .examples-menu button { text-align: left; padding: 9px 12px; border: 0; border-radius: 11px; background: transparent; color: var(--ink); font: 500 14px/1.35 var(--font); cursor: pointer; }
+:root .examples-menu button:hover, :root .examples-menu button:focus-visible { background: var(--aic-item-hover); outline: none; }
+:root .examples-empty { margin: 0; padding: 9px 12px; color: var(--muted); font-size: 14px; }
+@property --shine { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+@keyframes shineSpin { to { --shine: 360deg; } }
+:root .general-chat-composer { position: relative; }
+:root .general-chat-composer:has(#general-chat-send[aria-busy="true"])::before { content: ""; display: block; position: absolute; inset: -1px; border-radius: inherit; padding: 1.5px; pointer-events: none;
+  background: conic-gradient(from var(--shine), transparent 0 62%, var(--accent) 82%, transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: shineSpin 2.4s linear infinite; }
+@media (prefers-reduced-motion: reduce) { :root .general-chat-composer:has(#general-chat-send[aria-busy="true"])::before { animation: none; background: var(--accent); opacity: .5; } }
+@media (max-width: 640px) { :root .composer-action span { display: none; } :root .composer-action { padding: 0 11px; } }
+:root .composer-actions { flex: 0 0 auto; }
+:root .general-chat-composer .composer-action { display: inline-flex; place-items: initial; width: auto; height: 38px; padding: 0 13px; border: 1px solid transparent; border-radius: 999px; background: transparent; color: var(--muted); box-shadow: none; white-space: nowrap; overflow: visible; }
+:root .general-chat-composer .composer-action:hover:not(:disabled), :root .general-chat-composer .composer-action[aria-expanded="true"] { background: var(--aic-pill-hover); color: var(--ink); }
+:root .general-chat-composer .composer-action svg { width: 15px; height: 15px; }
+:root .general-chat-composer .examples-menu button { display: block; place-items: initial; width: 100%; height: auto; padding: 9px 12px; border: 0; border-radius: 11px; background: transparent; color: var(--ink); box-shadow: none; text-align: left; white-space: normal; }
+:root .general-chat-composer .examples-menu button:hover:not(:disabled), :root .general-chat-composer .examples-menu button:focus-visible { background: var(--aic-item-hover); }
+:root .general-chat-composer .general-chat-mode { margin-left: 0; }

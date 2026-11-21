@@ -69,3 +69,14 @@ window.addEventListener("load", () => setTimeout(() => {
     return `${sel} top=${Math.round(r.top)} h=${Math.round(r.height)} disp=${cs.display} mt=${cs.marginTop} mb=${cs.marginBottom} pt=${cs.paddingTop}`; }).join("\n");
   document.body.append(pre);
 }, 2500));
+// ?shot=examples: open the composer's Examples menu; ?shot=typing: text in the box
+(() => {
+  const q = new URLSearchParams(location.search), shot = q.get("shot");
+  if (shot !== "examples" && shot !== "typing") return;
+  window.addEventListener("load", () => setTimeout(() => {
+    document.querySelector("#tab-button-general-chat")?.click();
+    const box = document.querySelector("#general-chat-question");
+    if (shot === "typing") { box.value = "Khách hàng nào có nhiều đơn hàng nhất?"; box.dispatchEvent(new Event("input", { bubbles: true })); }
+    else document.querySelector(".examples-wrap > button")?.click();
+  }, 500));
+})();

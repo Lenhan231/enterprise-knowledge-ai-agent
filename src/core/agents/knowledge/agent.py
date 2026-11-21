@@ -114,6 +114,13 @@ class KnowledgeAgent(BaseAgent):
                 "reranker_model": details.get("reranker_model"),
                 "context_radius": details.get("context_radius", 0),
             }
+            # Every passage the answer model saw (already role-filtered), for the UI's retrieved-chunks list.
+            metadata["retrieved"] = [
+                {"source_id": context["source_id"], "document": context["document_name"],
+                 "chunk_index": context["chunk_index"], "page_number": (context.get("metadata") or {}).get("page_number"),
+                 "score": context.get("similarity_score"), "used": context["source_id"] in cited}
+                for context in result.contexts
+            ]
         if result.verification is not None:
             metadata["claim_verification"] = result.verification.model_dump()
             metadata["ok"] = metadata["ok"] and (result.verification.status == "supported"

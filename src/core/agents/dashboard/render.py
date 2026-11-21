@@ -15,7 +15,7 @@ from core.agents.dashboard.formatting import format_number, format_datetime, for
 from core.agents.language import VIETNAMESE_STATUS, is_vietnamese, vietnamese_field
 
 CSP = "default-src 'none'; script-src 'none'; style-src 'unsafe-inline'; img-src 'none'; connect-src 'none'; base-uri 'none'; form-action 'none'"
-COLORS = ['#117b70', '#4361b2', '#b66a16', '#974e93', '#c23b51', '#657a13']
+COLORS = ['#0a66d8', '#64748b', '#7aa8e8', '#b45309', '#7c3aed', '#0f766e']
 
 
 def text(value):
@@ -73,7 +73,36 @@ def table(rows, *, units=None, currency=None, dimension=None, vi=False):
         '<tr>' + ''.join(f'<td>{cell(k, row.get(k))}</td>' for k in names) + '</tr>' for row in rows[:200]) + '</tbody></table></div>'
 
 
-def chart_svg(chart, *, currency=None, granularity=None, vi=False):
+def _sector(cx, cy, inner, outer, start, end):
+    """Ring segment from `start` to `end` (fractions of a turn, 0 at 12 o'clock, clockwise)."""
+    if end - start >= .9999:
+        return (f'M{cx - outer} {cy}a{outer} {outer} 0 1 0 {2 * outer} 0a{outer} {outer} 0 1 0 {-2 * outer} 0Z'
+                f'M{cx - inner} {cy}a{inner} {inner} 0 1 0 {2 * inner} 0a{inner} {inner} 0 1 0 {-2 * inner} 0Z')
+    point = lambda r, f: (cx + r * math.sin(2 * math.pi * f), cy - r * math.cos(2 * math.pi * f))
+    large = 1 if end - start > .5 else 0
+    (x1, y1), (x2, y2), (x3, y3), (x4, y4) = point(outer, start), point(outer, end), point(inner, end), point(inner, start)
+    return f'M{x1:.2f} {y1:.2f}A{outer} {outer} 0 {large} 1 {x2:.2f} {y2:.2f}L{x3:.2f} {y3:.2f}A{inner} {inner} 0 {large} 0 {x4:.2f} {y4:.2f}Z'
+
+
+def _tip(x, y, head, rows, W, flip=None):
+    """SVG tooltip shown by CSS on :hover (the dashboard document runs no script)."""
+    width = max([len(head) * 6.6] + [(len(a) + len(b)) * 6.4 + 34 for a, b, *_ in rows]) + 26
+    height = 30 + 20 * len(rows)
+    left = x + 14
+    if flip is True or (flip is None and left + width > W - 6):
+        left = x - 14 - width
+    left = max(6, min(left, W - width - 6))
+    out = [f'<g class="tip" transform="translate({left:.1f} {y:.1f})"><rect width="{width:.1f}" height="{height}" rx="9"/>',
+           f'<text class="t1" x="13" y="21">{text(head)}</text>']
+    for k, (name, value, *extra) in enumerate(rows):
+        cls = f' class="{extra[0]}"' if extra else ''
+        dot = f'<circle cx="17" cy="{41 + 20 * k}" r="4" fill="{extra[1]}"/>' if len(extra) > 1 else ''
+        out.append(f'{dot}<text x="{27 if dot else 13}" y="{45 + 20 * k}">{text(name)}</text><text{cls} x="{width - 13:.1f}" y="{45 + 20 * k}" text-anchor="end">{text(value)}</text>')
+    return ''.join(out) + '</g>'
+
+
+def chart_svg(chart, *, currency=None, granularity=None, vi=False, wide=False):
+    W = 1240 if wide else 640  # full-width tiles get a wider canvas instead of letterboxing
     labels, series = chart.categories, chart.series
     values = [value for s in series for value in s.values if value is not None]
     if not values:
@@ -90,25 +119,36 @@ def chart_svg(chart, *, currency=None, granularity=None, vi=False):
         display_unit = {'percent': 'Phần trăm', 'count': 'Số lượng', 'number': 'Số',
                         'currency (unconfirmed)': 'Chưa xác nhận tiền tệ',
                         'currency': 'Tiền tệ', 'unknown_currency': 'Chưa xác nhận tiền tệ'}.get(display_unit, display_unit)
-    out = [f'<svg viewBox="0 0 640 290" role="img" aria-label="{text(chart.title)}">',
+    out = [f'<svg class="c-{chart.type}" viewBox="0 0 {W} 290" role="img" aria-label="{text(chart.title)}">',
            f'<title>{text(chart.title)} · {text(display_unit)}</title>']
     if chart.type == 'donut':
         total = sum(series[0].values)
         offset = 0
+        reveal = f'reveal{abs(id(chart))}'  # the ring is uncovered by a stroke that draws once around the circle
+        out.append(f'<defs><mask id="{reveal}" maskUnits="userSpaceOnUse" x="0" y="0" width="{W}" height="290"><circle class="draw" cx="{W//2}" cy="140" r="85" fill="none" stroke="#fff" stroke-width="70" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0" transform="rotate(-90 {W//2} 140)"/></mask></defs><g mask="url(#{reveal})">')
+        segments = []
         for i, (label, value) in enumerate(zip(labels, series[0].values)):
             fraction = value / total
-            out.append(f'<circle cx="220" cy="140" r="85" fill="none" stroke="{COLORS[i % len(COLORS)]}" stroke-width="48" pathLength="100" stroke-dasharray="{fraction * 100} {100 - fraction * 100}" stroke-dashoffset="{-offset}" transform="rotate(-90 220 140)"><title>{text(label_text(label))}: {text(shown(value))} ({text(formatted(fraction*100, unit="percent"))})</title></circle>')
+            color = COLORS[i % len(COLORS)]
+            geometry = f'cx="{W//2}" cy="140" r="85" fill="none" pathLength="100" stroke-dasharray="{fraction * 100} {100 - fraction * 100}" stroke-dashoffset="{-offset}" transform="rotate(-90 {W//2} 140)"'
+            out.append(f'<circle class="v v-{i}" {geometry} stroke="{color}" stroke-width="48"/>')
+            percent = formatted(fraction * 100, unit="percent")
+            segments.append(f'<g class="seg seg-{i}" role="img" aria-label="{text(label_text(label))}: {text(shown(value))} ({text(percent)})"><path class="hit" d="{_sector(W//2, 140, 56, 114, offset / 100, (offset + fraction * 100) / 100)}" fill="transparent" fill-rule="evenodd"/>'
+                            f'<text class="ctr" x="{W//2}" y="128" text-anchor="middle">{text(label_text(label)[:22])}</text><text class="ctr big" x="{W//2}" y="154" text-anchor="middle">{text(shown(value))}</text><text class="ctr" x="{W//2}" y="174" text-anchor="middle">{text(percent)}</text>'
+                            + _tip(W//2 + 108, 70, label_text(label), [('Value' if not vi else 'Giá trị', shown(value)), ('Share' if not vi else 'Tỷ trọng', percent)], W, flip=False) + '</g>')
             offset += fraction * 100
-        out.append(f'<text x="220" y="145" text-anchor="middle">{text(shown(total))}</text>')
+        out.append('</g>')
+        out.append(f'<text class="total" x="{W//2}" y="135" text-anchor="middle">{"Tổng" if vi else "Total"}</text><text class="total big" x="{W//2}" y="158" text-anchor="middle">{text(shown(total))}</text>')
+        out.extend(segments)
     else:
         left = max(45, min(150, max(len(shown(value)) for value in (low, high))*5+14))
-        width = (610-left) / max(1, len(labels))
+        width = (W-30-left) / max(1, len(labels))
         positions = [left + width * (j + .5) for j in range(len(labels))]
         if chart.type == 'line' and chart.temporal:
             dates = [datetime.fromisoformat(label if len(label) > 4 else label + '-01-01') for label in labels]
             duration = (dates[-1] - dates[0]).total_seconds() or 1
-            positions = [left + (date - dates[0]).total_seconds() / duration * (610-left) for date in dates]
-        out.append(f'<path d="M{left} {y(0):.2f}H610" stroke="#94a3b8"/>')
+            positions = [left + (date - dates[0]).total_seconds() / duration * (W-30-left) for date in dates]
+        out.append(f'<path d="M{left} {y(0):.2f}H{W-30}" stroke="#94a3b8"/>')
         for i, s in enumerate(series):
             previous = None
             for j, value in enumerate(s.values):
@@ -116,16 +156,43 @@ def chart_svg(chart, *, currency=None, granularity=None, vi=False):
                     previous = None
                     continue
                 x = positions[j]
-                title = f'<title>{text(label_text(labels[j]))} · {text(vietnamese_field(s.name) if vi else s.name)}: {text(shown(value))}</title>'
                 if chart.type == 'bar':
                     bar_width = max(.1, width * .8 / len(series))
                     bar_left = x - width * .4 + i * bar_width
-                    out.append(f'<rect x="{bar_left:.2f}" y="{min(y(0), y(value)):.2f}" width="{bar_width:.2f}" height="{max(.5, abs(y(value)-y(0))):.2f}" fill="{COLORS[i]}">{title}</rect>')
+                    out.append(f'<rect x="{bar_left:.2f}" y="{min(y(0), y(value)):.2f}" width="{bar_width:.2f}" height="{max(.5, abs(y(value)-y(0))):.2f}" rx="3" fill="{COLORS[i]}"/>')
+                    name = vietnamese_field(s.name) if vi else s.name
+                    out.append(f'<g class="pt" role="img" aria-label="{text(label_text(labels[j]))} · {text(name)}: {text(shown(value))}"><rect class="hit" x="{bar_left:.2f}" y="20" width="{bar_width:.2f}" height="225" fill="transparent"/>'
+                               + _tip(bar_left + bar_width / 2, max(4, min(y(0), y(value)) - 62), label_text(labels[j]), [(name, shown(value), 'v', COLORS[i])], W) + '</g>')
                 else:
                     if previous is not None:
-                        out.append(f'<path d="M{previous[0]:.2f} {previous[1]:.2f}L{x:.2f} {y(value):.2f}" stroke="{COLORS[i]}" stroke-width="2" fill="none"/>')
-                    out.append(f'<circle cx="{x:.2f}" cy="{y(value):.2f}" r="3" fill="{COLORS[i]}">{title}</circle>')
+                        if len(series) == 1:  # soft area under a single line
+                            out.append(f'<path d="M{previous[0]:.2f} {previous[1]:.2f}L{x:.2f} {y(value):.2f}L{x:.2f} {y(0):.2f}L{previous[0]:.2f} {y(0):.2f}Z" fill="#0a66d8" fill-opacity=".08"/>')
+                        out.append(f'<path d="M{previous[0]:.2f} {previous[1]:.2f}L{x:.2f} {y(value):.2f}" stroke="{COLORS[i]}" stroke-width="2" stroke-linecap="round" fill="none"/>')
+                    out.append(f'<circle cx="{x:.2f}" cy="{y(value):.2f}" r="3" fill="{COLORS[i]}"/>')
                     previous = (x, y(value))
+        if chart.type == 'line':
+            for j in range(len(labels)):
+                x = positions[j]
+                lo = (positions[j - 1] + x) / 2 if j else left
+                hi = (x + positions[j + 1]) / 2 if j + 1 < len(labels) else W - 30
+                rows, dots = [], []
+                for i, s in enumerate(series):
+                    value = s.values[j]
+                    if value is None:
+                        continue
+                    name = vietnamese_field(s.name) if vi else s.name
+                    rows.append((name, shown(value), 'v', COLORS[i]))
+                    dots.append(f'<circle class="hdot" cx="{x:.2f}" cy="{y(value):.2f}" r="5" fill="{COLORS[i]}"/>')
+                if not rows:
+                    continue
+                if len(series) == 1 and j and series[0].values[j - 1] not in (None, 0):
+                    change = (series[0].values[j] - series[0].values[j - 1]) / abs(series[0].values[j - 1]) * 100
+                    rows.append(('Change' if not vi else 'Thay đổi', f'{"↑" if change >= 0 else "↓"} {abs(change):.1f}%', 'up' if change >= 0 else 'down'))
+                first = next(v for v in (s.values[j] for s in series) if v is not None)
+                out.append(f'<g class="pt" role="img" aria-label="{text(label_text(labels[j]))}: ' + text(', '.join(f'{n} {v}' for n, v, *_ in rows)) + '">'
+                           f'<rect class="hit" x="{lo:.2f}" y="20" width="{max(1, hi - lo):.2f}" height="225" fill="transparent"/>'
+                           f'<line class="cross" x1="{x:.2f}" x2="{x:.2f}" y1="20" y2="{y(0):.2f}"/>' + ''.join(dots)
+                           + _tip(x, 24, label_text(labels[j]), rows, W) + '</g>')
         step = max(1, math.ceil(len(labels) / 6))
         for j in range(0, len(labels), step):
             out.append(f'<text x="{positions[j]:.2f}" y="265" text-anchor="middle" font-size="11">{text(label_text(labels[j])[:24])}</text>')
@@ -133,12 +200,12 @@ def chart_svg(chart, *, currency=None, granularity=None, vi=False):
             out.append(f'<text x="3" y="{y(value):.2f}" font-size="10">{text(shown(value))}</text>')
     out.append('</svg>')
     if chart.type == 'donut':
-        out.append('<p>' + ' · '.join(f'<span style="color:{COLORS[i % len(COLORS)]}">{text(label_text(label))}: {text(shown(value))}</span>' for i,(label,value) in enumerate(zip(labels,series[0].values))) + '</p>')
+        out.append('<p>' + ''.join(f'<span class="key key-{i}"><i style="background:{COLORS[i % len(COLORS)]}"></i>{text(label_text(label))}: {text(shown(value))}</span>' for i,(label,value) in enumerate(zip(labels,series[0].values))) + '</p>')
     else:
-        out.append('<p>' + ' · '.join(f'<span style="color:{COLORS[i]}">{text(vietnamese_field(s.name) if vi else s.name)}</span>' for i, s in enumerate(series)) + '</p>')
+        out.append('<p>' + ''.join(f'<span class="key"><i style="background:{COLORS[i]}"></i>{text(vietnamese_field(s.name) if vi else s.name)}</span>' for i, s in enumerate(series)) + '</p>')
     note = ('Giá trị hiển thị đã được làm tròn. Dữ liệu lưu trữ giữ nguyên giá trị gốc.'
             if vi else 'Display values are rounded; original observations remain in the saved data.')
-    return ''.join(out) + f'<small>{text(display_unit)} · {note}</small>'
+    return ''.join(out) + f'<small>{text(display_unit)}<span class="rounding"> · {note}</span></small>'
 
 
 def _tile_content(tile, result, *, include_observations=True, chart=None, vi=False):
@@ -195,7 +262,7 @@ def _tile_content(tile, result, *, include_observations=True, chart=None, vi=Fal
         observations = f'<details><summary>{source_label}</summary>' + table(rows, units=units, currency=currency, dimension=tile.dimension, vi=vi) + '</details>' if include_observations else ''
         grain = re.search(r"DATE_TRUNC\(\s*'(day|month|quarter|year)'", payload.get('sql') or '', re.I)
         dimension_grain = tile.dimension if tile.dimension in {'month','quarter','year'} else None
-        return chart_svg(chart, currency=currency, granularity=grain[1].lower() if grain else dimension_grain, vi=vi) + observations
+        return chart_svg(chart, currency=currency, granularity=grain[1].lower() if grain else dimension_grain, vi=vi, wide=tile.span == 2) + observations
     except ValueError as error:
         raise ValueError('Chart unavailable: ' + str(error)) from error
 
@@ -227,7 +294,7 @@ def render_dashboard(document, *, charts=None, saved=True):
     tiles, observed = [], set()
     for tile in document.tiles:
         content, status, _ = tile_presentation(tile, results.get(tile.query_id), include_observations=tile.query_id not in observed, chart=(charts or {}).get(tile.id), vi=vi)
-        tiles.append(f'<article class="span-{tile.span}"><h2>{text(tile.title)}</h2>{content}<small>{dataset_label}: {text(tile.query_id)}</small></article>')
+        tiles.append(f'<article class="span-{tile.span}"><h2>{text(tile.title)}</h2>{content}<small class="ds">{dataset_label}: {text(tile.query_id)}</small></article>')
         if tile.kind in {'line', 'bar', 'donut', 'table'} and status == 'complete':
             observed.add(tile.query_id)
     tiles = ''.join(tiles)
@@ -249,8 +316,8 @@ def render_dashboard(document, *, charts=None, saved=True):
         label = f'Dashboard dữ liệu SQL · {text(status_label(document.status))}' + (f' · Phiên bản {formatted(document.revision, unit="count")}' if saved else '')
         timestamps = f'Cập nhật dữ liệu lúc {text(format_datetime(document.data_updated_at))}.' + (f' Lưu lúc {text(format_datetime(document.updated_at))}.' if saved else '')
     scope = document.scope or ('Theo yêu cầu truy vấn' if vi else 'As specified in source questions')
-    footer = ('Biểu đồ và thống kê mô tả các quan sát do SQL trả về. Giá trị thiếu chưa được xác định. Đơn vị tiền tệ cần được xác nhận từ nguồn.'
-              if vi else 'Charts and statistics describe returned SQL observations. Missing values are unknown. Currency is unconfirmed unless the source explicitly identifies it.')
+    footer = ('Biểu đồ và thống kê mô tả các quan sát do SQL trả về. Giá trị hiển thị đã được làm tròn; dữ liệu lưu trữ giữ nguyên giá trị gốc. Giá trị thiếu chưa được xác định. Đơn vị tiền tệ cần được xác nhận từ nguồn.'
+              if vi else 'Charts and statistics describe returned SQL observations. Display values are rounded; original observations remain in the saved data. Missing values are unknown. Currency is unconfirmed unless the source explicitly identifies it.')
     return f'''<!doctype html><html lang="{'vi' if vi else 'en'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="{escape(CSP, quote=True)}"><title>{text(document.title)}</title>
-<style>body{{margin:0;background:#f2f5f7;color:#172d36;font:15px system-ui,sans-serif;padding:30px}}header,main,footer{{max-width:1300px;margin:auto}}h1{{font-size:32px;letter-spacing:-1px}}h2{{font-size:19px}}main{{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}}article{{background:white;border:1px solid #d9e2e7;border-radius:14px;padding:22px;min-width:0}}.span-2{{grid-column:span 2}}.kpi{{font-size:42px;font-weight:700;margin:16px 0;color:#117b70}}small{{color:#526774}}svg{{width:100%;max-height:350px}}.table{{overflow:auto;max-height:380px}}table{{border-collapse:collapse;width:100%;font-size:13px}}td,th{{padding:10px;text-align:left;border-bottom:1px solid #e4e9ed;white-space:nowrap}}details{{margin:14px 0}}summary{{cursor:pointer}}pre{{white-space:pre-wrap;overflow-wrap:anywhere}}.notice{{color:#84510a}}footer{{margin-top:24px}}@media(max-width:700px){{body{{padding:15px}}main{{grid-template-columns:1fr}}.span-2{{grid-column:span 1}}}}</style></head>
+<style>:root{{--ink:#0f172a;--mut:#64748b;--line:#e5e7eb;--bg:#fff;--soft:#f8fafc;--accent:#0a66d8}}:root[data-theme=dark]{{--ink:#e5e7eb;--mut:#94a3b8;--line:#2a2d33;--bg:#161618;--soft:#1f2024;--accent:#4c9dff;color-scheme:dark}}[data-theme=dark] [fill="#0a66d8"]{{fill:#4c9dff}}[data-theme=dark] [stroke="#0a66d8"]{{stroke:#4c9dff}}[data-theme=dark] i[style*="#0a66d8"]{{background:#4c9dff!important}}[data-theme=dark] .notice{{color:#fbbf24}}body{{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,-apple-system,'Segoe UI',sans-serif;padding:28px}}header,main,footer{{max-width:1300px;margin:auto}}header small{{color:var(--mut)}}h1{{font-size:26px;font-weight:650;letter-spacing:-.02em;margin:6px 0 4px}}h2{{font-size:13px;font-weight:600;color:var(--mut);margin:0 0 10px}}main{{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:20px}}article{{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:20px;min-width:0}}.span-2{{grid-column:span 2}}.kpi{{font-size:36px;font-weight:650;letter-spacing:-.02em;margin:8px 0 4px;color:var(--ink);font-variant-numeric:tabular-nums}}small{{color:var(--mut);font-size:12px}}svg{{width:100%;height:auto;display:block;overflow:visible}}svg .hit{{pointer-events:all}}svg .tip,svg .hdot,svg .cross,svg .ctr{{opacity:0;pointer-events:none;transition:opacity .12s}}svg .tip rect{{fill:var(--bg);stroke:var(--line);filter:drop-shadow(0 6px 16px rgba(0,0,0,.14))}}svg .tip text{{fill:var(--mut);font-size:12px}}svg .tip .t1{{fill:var(--ink);font-weight:600;font-size:13px}}svg .tip .v{{fill:var(--ink);font-weight:600}}svg .tip .up{{fill:var(--accent);font-weight:600}}svg .tip .down{{fill:#c2410c;font-weight:600}}svg .cross{{stroke:var(--mut);stroke-dasharray:3 3}}svg .hdot{{stroke:var(--bg);stroke-width:2}}svg .pt:hover .tip,svg .pt:hover .hdot,svg .pt:hover .cross,svg .seg:hover .tip,svg .seg:hover .ctr{{opacity:1}}svg .pt:hover .hit{{fill:rgba(10,102,216,.05)}}svg .total{{transition:opacity .12s}}svg:has(.seg:hover) .total{{opacity:0}}svg .ctr{{font-size:12px}}svg .ctr.big,svg .total.big{{font-size:22px;font-weight:650;fill:var(--ink)}}svg .v{{transition:opacity .15s,stroke-width .15s}}svg:has(.seg:hover) .v{{opacity:.3}}svg:has(.seg-0:hover) .v-0{{opacity:1;stroke-width:56}}article:has(.seg-0:hover) .key-0,article:has(.key-0:hover) .key-0{{background:color-mix(in srgb,var(--accent) 13%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 38%,transparent)}}article:has(.key-0:hover) svg .v{{opacity:.3}}article:has(.key-0:hover) svg .v-0{{opacity:1;stroke-width:56}}svg:has(.seg-1:hover) .v-1{{opacity:1;stroke-width:56}}article:has(.seg-1:hover) .key-1,article:has(.key-1:hover) .key-1{{background:color-mix(in srgb,var(--accent) 13%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 38%,transparent)}}article:has(.key-1:hover) svg .v{{opacity:.3}}article:has(.key-1:hover) svg .v-1{{opacity:1;stroke-width:56}}svg:has(.seg-2:hover) .v-2{{opacity:1;stroke-width:56}}article:has(.seg-2:hover) .key-2,article:has(.key-2:hover) .key-2{{background:color-mix(in srgb,var(--accent) 13%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 38%,transparent)}}article:has(.key-2:hover) svg .v{{opacity:.3}}article:has(.key-2:hover) svg .v-2{{opacity:1;stroke-width:56}}svg:has(.seg-3:hover) .v-3{{opacity:1;stroke-width:56}}article:has(.seg-3:hover) .key-3,article:has(.key-3:hover) .key-3{{background:color-mix(in srgb,var(--accent) 13%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 38%,transparent)}}article:has(.key-3:hover) svg .v{{opacity:.3}}article:has(.key-3:hover) svg .v-3{{opacity:1;stroke-width:56}}svg:has(.seg-4:hover) .v-4{{opacity:1;stroke-width:56}}article:has(.seg-4:hover) .key-4,article:has(.key-4:hover) .key-4{{background:color-mix(in srgb,var(--accent) 13%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 38%,transparent)}}article:has(.key-4:hover) svg .v{{opacity:.3}}article:has(.key-4:hover) svg .v-4{{opacity:1;stroke-width:56}}svg:has(.seg-5:hover) .v-5{{opacity:1;stroke-width:56}}article:has(.seg-5:hover) .key-5,article:has(.key-5:hover) .key-5{{background:color-mix(in srgb,var(--accent) 13%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 38%,transparent)}}article:has(.key-5:hover) svg .v{{opacity:.3}}article:has(.key-5:hover) svg .v-5{{opacity:1;stroke-width:56}}svg.c-bar .pt:hover .hit{{fill:rgba(10,102,216,.05)}}.key{{padding:3px 9px;border-radius:8px;transition:background .12s}}svg text{{fill:var(--mut);font-family:inherit}}svg path[stroke="#94a3b8"]{{stroke:var(--line)}}.table{{overflow:auto;max-height:380px}}table{{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}}th{{position:sticky;top:0;background:var(--soft);color:var(--mut);font-weight:600;font-size:12px}}td,th{{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}}tbody tr:hover{{background:var(--soft)}}details{{margin:12px 0}}summary{{cursor:pointer;color:var(--accent)}}pre{{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--soft);padding:10px;border-radius:8px;font-size:12px}}.key{{display:inline-flex;align-items:center;gap:6px;margin:0 8px 4px 0;font-size:13px}}.key i{{width:9px;height:9px;border-radius:3px;display:inline-block}}.rounding,.ds{{display:none}}:root[data-embed] body{{padding:0;background:transparent}}:root[data-embed] header,:root[data-embed] main,:root[data-embed] footer{{max-width:none}}:root[data-embed] header small,:root[data-embed] header h1,:root[data-embed] header p:nth-of-type(1),:root[data-embed] header p:nth-of-type(3){{display:none}}:root[data-embed] header p:nth-of-type(2){{margin:0 0 4px}}:root[data-embed] main{{margin-top:8px}}header p{{margin:2px 0;color:var(--mut)}}header p:nth-of-type(2){{font-size:12px}}@media(prefers-reduced-motion:no-preference){{@keyframes rise{{from{{opacity:0;transform:translateY(12px)}}}}@keyframes wipe{{from{{clip-path:inset(0 100% 0 0)}}to{{clip-path:inset(0 0 0 0)}}}}@keyframes grow{{from{{transform:scaleY(0)}}}}article{{animation:rise .6s cubic-bezier(.2,.7,.2,1) both}}article:nth-child(2){{animation-delay:.09s}}article:nth-child(3){{animation-delay:.18s}}article:nth-child(n+4){{animation-delay:.27s}}svg.c-line{{animation:wipe 1s .3s cubic-bezier(.3,.6,.2,1) both}}svg.c-bar rect{{transform-box:fill-box;transform-origin:50% 100%;animation:grow .7s .25s cubic-bezier(.2,.7,.2,1) both}}svg.c-donut .draw{{animation:draw 1.2s .25s cubic-bezier(.45,.05,.25,1) both}}@keyframes draw{{from{{stroke-dashoffset:100}}}}}}.notice{{color:#92400e}}footer{{margin-top:24px;color:var(--mut)}}@media(max-width:700px){{body{{padding:14px}}main{{grid-template-columns:1fr}}.span-2{{grid-column:span 1}}}}</style></head>
 <body><header><small>{label}</small><h1>{text(document.title)}</h1><p>{text(document.description)}</p><p>{"Phạm vi" if vi else "Scope"}: {text(scope)}</p><p><small>{timestamps}</small></p></header><main>{tiles}</main><footer><h2>{"Nguồn và giới hạn" if vi else "Sources and limitations"}</h2><p>{footer}</p>{sources}</footer></body></html>'''

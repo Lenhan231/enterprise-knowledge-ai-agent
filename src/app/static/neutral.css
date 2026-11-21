@@ -247,3 +247,7 @@
 :root .general-chat-composer .route-menu button{justify-content:space-between}
 :root .general-chat-composer .route-pill svg{flex:none;width:13px;height:13px;margin:1px 0 0}
 :root .general-chat-composer .route-menu button svg{flex:none;width:15px;height:15px;margin:0}
+
+/* the "every claim checked" pill is hidden on screen (it clashed with the neutral palette) but kept for screen
+   readers; unverified and partial answers keep their visible warnings */
+:root .general-chat .chat-turn .answer-verified{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}

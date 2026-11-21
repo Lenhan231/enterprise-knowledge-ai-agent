@@ -80,3 +80,15 @@ window.addEventListener("load", () => setTimeout(() => {
     else document.querySelector(".examples-wrap > button")?.click();
   }, 500));
 })();
+// ?shot=glass: click the theme toggle and record what the glass pane did (appears, theme swaps, pane removed)
+(() => {
+  if (new URLSearchParams(location.search).get("shot") !== "glass") return;
+  window.addEventListener("load", () => setTimeout(() => {
+    const log = [], theme = () => document.documentElement.getAttribute("data-theme") || "light";
+    log.push(`start theme=${theme()}`);
+    document.querySelector("#theme-toggle").click();
+    setTimeout(() => log.push(`150ms glass=${!!document.querySelector(".theme-glass")} theme=${theme()}`), 150);
+    setTimeout(() => log.push(`600ms glass=${!!document.querySelector(".theme-glass")} theme=${theme()}`), 600);
+    setTimeout(() => { log.push(`2500ms glass=${!!document.querySelector(".theme-glass")} theme=${theme()}`); const pre = document.createElement("pre"); pre.id = "glass-log"; pre.textContent = log.join("\n"); document.body.append(pre); }, 2500);
+  }, 500));
+})();

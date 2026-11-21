@@ -105,3 +105,27 @@ window.addEventListener("load", () => setTimeout(() => {
     }, 300);
   }, 400));
 })();
+// ?shot=btnbox: where the label sits inside each composer action button
+(() => {
+  if (new URLSearchParams(location.search).get("shot") !== "btnbox") return;
+  window.addEventListener("load", () => setTimeout(() => {
+    document.querySelector("#tab-button-general-chat")?.click();
+    const box = document.querySelector("#general-chat-question"); box.value = "x"; box.dispatchEvent(new Event("input", { bubbles: true }));
+    setTimeout(() => {
+      const rows = [...document.querySelectorAll(".composer-action")].map((b) => {
+        const range = document.createRange(); range.selectNodeContents(b.querySelector("span")); const t = range.getBoundingClientRect(), r = b.getBoundingClientRect();
+        return `${b.textContent.trim()}: button y=${r.y.toFixed(1)} h=${r.height.toFixed(1)} centre=${(r.y + r.height / 2).toFixed(1)} | label centre=${(t.y + t.height / 2).toFixed(1)}`;
+      });
+      const pre = document.createElement("pre"); pre.id = "btnbox"; pre.textContent = rows.join("\n"); document.body.append(pre);
+    }, 300);
+  }, 400));
+})();
+// ?shot=hoverex: show the Examples button in its hover look (class stands in for :hover)
+(() => {
+  if (new URLSearchParams(location.search).get("shot") !== "hoverex") return;
+  window.addEventListener("load", () => setTimeout(() => {
+    document.querySelector("#tab-button-general-chat")?.click();
+    const box = document.querySelector("#general-chat-question"); box.value = "Khách hàng nào có nhiều đơn hàng nhất?"; box.dispatchEvent(new Event("input", { bubbles: true }));
+    const b = document.querySelector(".examples-wrap > button"); b.style.background = "var(--aic-pill-hover)"; b.style.color = "var(--ink)";
+  }, 400));
+})();

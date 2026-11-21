@@ -15,7 +15,7 @@ from core.agents.dashboard.formatting import format_number, format_datetime, for
 from core.agents.language import VIETNAMESE_STATUS, is_vietnamese, vietnamese_field
 
 CSP = "default-src 'none'; script-src 'none'; style-src 'unsafe-inline'; img-src 'none'; connect-src 'none'; base-uri 'none'; form-action 'none'"
-COLORS = ['#117b70', '#4361b2', '#b66a16', '#974e93', '#c23b51', '#657a13']
+COLORS = ['#0a66d8', '#64748b', '#7aa8e8', '#334155', '#b45309', '#7c3aed']
 
 
 def text(value):
@@ -120,10 +120,12 @@ def chart_svg(chart, *, currency=None, granularity=None, vi=False):
                 if chart.type == 'bar':
                     bar_width = max(.1, width * .8 / len(series))
                     bar_left = x - width * .4 + i * bar_width
-                    out.append(f'<rect x="{bar_left:.2f}" y="{min(y(0), y(value)):.2f}" width="{bar_width:.2f}" height="{max(.5, abs(y(value)-y(0))):.2f}" fill="{COLORS[i]}">{title}</rect>')
+                    out.append(f'<rect x="{bar_left:.2f}" y="{min(y(0), y(value)):.2f}" width="{bar_width:.2f}" height="{max(.5, abs(y(value)-y(0))):.2f}" rx="3" fill="{COLORS[i]}">{title}</rect>')
                 else:
                     if previous is not None:
-                        out.append(f'<path d="M{previous[0]:.2f} {previous[1]:.2f}L{x:.2f} {y(value):.2f}" stroke="{COLORS[i]}" stroke-width="2" fill="none"/>')
+                        if len(series) == 1:  # soft area under a single line
+                            out.append(f'<path d="M{previous[0]:.2f} {previous[1]:.2f}L{x:.2f} {y(value):.2f}L{x:.2f} {y(0):.2f}L{previous[0]:.2f} {y(0):.2f}Z" fill="#0a66d8" fill-opacity=".08"/>')
+                        out.append(f'<path d="M{previous[0]:.2f} {previous[1]:.2f}L{x:.2f} {y(value):.2f}" stroke="{COLORS[i]}" stroke-width="2" stroke-linecap="round" fill="none"/>')
                     out.append(f'<circle cx="{x:.2f}" cy="{y(value):.2f}" r="3" fill="{COLORS[i]}">{title}</circle>')
                     previous = (x, y(value))
         step = max(1, math.ceil(len(labels) / 6))
@@ -133,9 +135,9 @@ def chart_svg(chart, *, currency=None, granularity=None, vi=False):
             out.append(f'<text x="3" y="{y(value):.2f}" font-size="10">{text(shown(value))}</text>')
     out.append('</svg>')
     if chart.type == 'donut':
-        out.append('<p>' + ' · '.join(f'<span style="color:{COLORS[i % len(COLORS)]}">{text(label_text(label))}: {text(shown(value))}</span>' for i,(label,value) in enumerate(zip(labels,series[0].values))) + '</p>')
+        out.append('<p>' + ''.join(f'<span class="key"><i style="background:{COLORS[i % len(COLORS)]}"></i>{text(label_text(label))}: {text(shown(value))}</span>' for i,(label,value) in enumerate(zip(labels,series[0].values))) + '</p>')
     else:
-        out.append('<p>' + ' · '.join(f'<span style="color:{COLORS[i]}">{text(vietnamese_field(s.name) if vi else s.name)}</span>' for i, s in enumerate(series)) + '</p>')
+        out.append('<p>' + ''.join(f'<span class="key"><i style="background:{COLORS[i]}"></i>{text(vietnamese_field(s.name) if vi else s.name)}</span>' for i, s in enumerate(series)) + '</p>')
     note = ('Giá trị hiển thị đã được làm tròn. Dữ liệu lưu trữ giữ nguyên giá trị gốc.'
             if vi else 'Display values are rounded; original observations remain in the saved data.')
     return ''.join(out) + f'<small>{text(display_unit)} · {note}</small>'
@@ -252,5 +254,5 @@ def render_dashboard(document, *, charts=None, saved=True):
     footer = ('Biểu đồ và thống kê mô tả các quan sát do SQL trả về. Giá trị thiếu chưa được xác định. Đơn vị tiền tệ cần được xác nhận từ nguồn.'
               if vi else 'Charts and statistics describe returned SQL observations. Missing values are unknown. Currency is unconfirmed unless the source explicitly identifies it.')
     return f'''<!doctype html><html lang="{'vi' if vi else 'en'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="{escape(CSP, quote=True)}"><title>{text(document.title)}</title>
-<style>body{{margin:0;background:#f2f5f7;color:#172d36;font:15px system-ui,sans-serif;padding:30px}}header,main,footer{{max-width:1300px;margin:auto}}h1{{font-size:32px;letter-spacing:-1px}}h2{{font-size:19px}}main{{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}}article{{background:white;border:1px solid #d9e2e7;border-radius:14px;padding:22px;min-width:0}}.span-2{{grid-column:span 2}}.kpi{{font-size:42px;font-weight:700;margin:16px 0;color:#117b70}}small{{color:#526774}}svg{{width:100%;max-height:350px}}.table{{overflow:auto;max-height:380px}}table{{border-collapse:collapse;width:100%;font-size:13px}}td,th{{padding:10px;text-align:left;border-bottom:1px solid #e4e9ed;white-space:nowrap}}details{{margin:14px 0}}summary{{cursor:pointer}}pre{{white-space:pre-wrap;overflow-wrap:anywhere}}.notice{{color:#84510a}}footer{{margin-top:24px}}@media(max-width:700px){{body{{padding:15px}}main{{grid-template-columns:1fr}}.span-2{{grid-column:span 1}}}}</style></head>
+<style>:root{{--ink:#0f172a;--mut:#64748b;--line:#e5e7eb;--bg:#fff;--soft:#f8fafc;--accent:#0a66d8}}body{{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,-apple-system,'Segoe UI',sans-serif;padding:28px}}header,main,footer{{max-width:1300px;margin:auto}}header small{{color:var(--mut)}}h1{{font-size:26px;font-weight:650;letter-spacing:-.02em;margin:6px 0 4px}}h2{{font-size:13px;font-weight:600;color:var(--mut);margin:0 0 10px}}main{{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:20px}}article{{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:20px;min-width:0}}.span-2{{grid-column:span 2}}.kpi{{font-size:36px;font-weight:650;letter-spacing:-.02em;margin:8px 0 4px;color:var(--ink);font-variant-numeric:tabular-nums}}small{{color:var(--mut);font-size:12px}}svg{{width:100%;max-height:350px}}svg text{{fill:var(--mut);font-family:inherit}}svg path[stroke="#94a3b8"]{{stroke:var(--line)}}.table{{overflow:auto;max-height:380px}}table{{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}}th{{position:sticky;top:0;background:var(--soft);color:var(--mut);font-weight:600;font-size:12px}}td,th{{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}}tbody tr:hover{{background:var(--soft)}}details{{margin:12px 0}}summary{{cursor:pointer;color:var(--accent)}}pre{{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--soft);padding:10px;border-radius:8px;font-size:12px}}.key{{display:inline-flex;align-items:center;gap:6px;margin:0 16px 4px 0;font-size:13px}}.key i{{width:9px;height:9px;border-radius:3px;display:inline-block}}.notice{{color:#92400e}}footer{{margin-top:24px;color:var(--mut)}}@media(max-width:700px){{body{{padding:14px}}main{{grid-template-columns:1fr}}.span-2{{grid-column:span 1}}}}</style></head>
 <body><header><small>{label}</small><h1>{text(document.title)}</h1><p>{text(document.description)}</p><p>{"Phạm vi" if vi else "Scope"}: {text(scope)}</p><p><small>{timestamps}</small></p></header><main>{tiles}</main><footer><h2>{"Nguồn và giới hạn" if vi else "Sources and limitations"}</h2><p>{footer}</p>{sources}</footer></body></html>'''

@@ -186,3 +186,17 @@ window.addEventListener("load", () => setTimeout(() => {
     setTimeout(() => { state("after load"); const pre = document.createElement("pre"); pre.id = "rp"; pre.textContent = log.join("\n"); document.body.append(pre); }, 1500);
   }, 1500));
 })();
+// ?shot=scorebar: measure the score bar and its fill in the first source card
+(() => {
+  if (new URLSearchParams(location.search).get("shot") !== "scorebar") return;
+  window.addEventListener("load", () => setTimeout(() => {
+    document.querySelector("#tab-button-general-chat").click();
+    document.querySelector("#general-chat-question").value = "Khi nghỉ việc tôi cần bàn giao những gì?";
+    document.querySelector("#general-chat-form").requestSubmit();
+    setTimeout(() => {
+      const bar = document.querySelector(".chat-turn .citation-score-bar"), fill = bar?.firstElementChild;
+      const r = (e) => { const b = e.getBoundingClientRect(), c = getComputedStyle(e); return `x=${b.x.toFixed(1)} w=${b.width.toFixed(1)} pos=${c.position} left=${c.left} ml=${c.marginLeft} bg=${c.backgroundColor} style=${e.getAttribute("style")}`; };
+      const pre = document.createElement("pre"); pre.id = "sb"; pre.textContent = bar ? `bar: ${r(bar)}\nfill: ${r(fill)}\nparent: ${bar.parentElement.className}` : "no bar"; document.body.append(pre);
+    }, 2500);
+  }, 600));
+})();

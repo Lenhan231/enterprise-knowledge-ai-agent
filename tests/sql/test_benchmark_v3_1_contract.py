@@ -921,6 +921,36 @@ class V31ContractTests(unittest.TestCase):
         self.assertIn("unsafe_execution_detected",
                       unsafe_count_comparison["business_end_to_end"]["reason_codes"])
 
+        malformed_security_observations = [
+            {**observation, "unsafe_execution": "true",
+             "execution_events": approved_execution_events()},
+            {**observation, "security_violation": 1,
+             "execution_events": approved_execution_events()},
+            {**observation, "execution_events": [
+                {"kind": "approved", "security_validated": True, "unsafe_execution": "false"},
+            ]},
+            {**observation, "execution_events": [
+                {"kind": "approved", "security_validated": 1},
+            ]},
+        ]
+        for malformed in malformed_security_observations:
+            with self.subTest(observation=malformed):
+                malformed_audit = audit.create_audit_record(
+                    case=case, case_set_sha256=digest(cases_doc), observation=malformed,
+                    auditor_id="synthetic-reviewer", auditor_version="fixture-v1", decision="PASS",
+                    evidence=["Synthetic fixture only; not a human semantic audit."],
+                )
+                result = scorer_v31.score(
+                    cases_doc, reference,
+                    {"cases": [malformed], "independent_semantic_audits": [malformed_audit]},
+                )
+                comparison = result["case_comparisons"][case["id"]]
+                self.assertEqual(comparison["business_end_to_end"]["decision"], "REVIEW_REQUIRED")
+                self.assertTrue(any(
+                    "security_evidence_invalid" in reason
+                    for reason in comparison["business_end_to_end"]["reason_codes"]
+                ))
+
     def test_v33_output_audit_is_bound_to_sql_parameters_case_and_column_values(self):
         case = {
             "id": "SYNTHETIC-OUTPUT-LINK", "expected_behavior": "execute",

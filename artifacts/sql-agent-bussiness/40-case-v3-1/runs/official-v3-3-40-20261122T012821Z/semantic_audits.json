@@ -1,0 +1,430 @@
+{
+  "format_version": "sql-semantic-audit-records.v1",
+  "source_run_data_sha256": "123c26586f0438b35b6152a88a2116da129092645188a0766c2fad191f8d9876",
+  "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+  "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+  "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+  "authenticated": false,
+  "records": [
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-001",
+      "sql_sha256": "5cd751c0109db09892a70639f338efc7e34b5765f146120fc355e0ae8bb9fcb7",
+      "parameters": [],
+      "parameters_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "case_contract_sha256": "a8eff689a00cb0fa686b3d92dd540fa4ea4614542c53d92b0e5700617bd300df",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "PASS",
+      "evidence": [
+        "commerce.web_traffic.date is DATE; EXTRACT(YEAR)=2024 selects calendar 2024. SUM(sessions) is grouped by month and traffic_source. DATE_TRUNC returns a timestamp representation of each month start; scorer v3.3 compares it literally against Gold date strings, so row-value equivalence is not established by this audit."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-002",
+      "sql_sha256": "52f43dfb308535ca289bea8976498b02ff21928d7dad78c4ff8426acea612d70",
+      "parameters": [],
+      "parameters_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "case_contract_sha256": "1a9f73716a64f37111f16cf1b002c27f066c28d414e14d1b8fca7b016b937605",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "FAIL",
+      "evidence": [
+        "The observed expression EXTRACT(EPOCH FROM (delivery_date - ship_date)) is invalid for PostgreSQL DATE subtraction in this frozen schema; the execution trace confirms UndefinedFunctionError. The failed expression cannot produce the requested average duration."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-003",
+      "sql_sha256": "610d5a5852b59ba68f62cbd971779052b3f7d50c30c089529fdcc3325501c56e",
+      "parameters": [
+        2025
+      ],
+      "parameters_sha256": "9c9380fb50cd4f4f9e2032bd9a18645ae4fc1d30335672c62c897bcb9e099ba5",
+      "case_contract_sha256": "8be75f66e1fdc806a235102b5e2c826495bfbcd185f906b03af82f70b9767f30",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "PASS",
+      "evidence": [
+        "The approved schema contract declares commerce.returns as one row per return_id, so COUNT(*) is equivalent to COUNT(DISTINCT return_id) at this table grain. The SQL filters return_date to calendar 2025 and groups by month. Output alias and timestamp/date representation are assessed separately by output/result scoring."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-004",
+      "sql_sha256": "ee87f7dfe39c62ac48d1a9b05547be1b3c98df993c95fd22a1c6f5e1194b69aa",
+      "parameters": [],
+      "parameters_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "case_contract_sha256": "0f92ce7e9e1d060b302d5543e370d32fa5d4bfbe1042844dcc1edd694e0cf0a3",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "PASS",
+      "evidence": [
+        "The query first sums net order-item value at order_id and month grain, filters order_status=delivered and calendar year 2025, then averages delivered order totals by month. This matches the requested average delivered order value."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-006",
+      "sql_sha256": "5c7cfd9a9211462911c3569dab0087a37514c7d7ee05e2f764bb8827ec829eb3",
+      "parameters": [],
+      "parameters_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "case_contract_sha256": "4ba61215cf5a6e517c708c43f40045a4f268b7de857557672f5f9f84db5f12e4",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "PASS",
+      "evidence": [
+        "The query counts customers joined by ZIP to geography, filtered to Hai Phong, age_group 25-34, and signup_date in 2024. The approved schema contract declares one customer per customer_id and one geography row per ZIP, so COUNT(*) preserves distinct-customer count."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-007",
+      "sql_sha256": "b778eb2f2c3cf954b91a331009d72cdc61070861f3c604fbb09c1a6681437bd9",
+      "parameters": [
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "parameters_sha256": "cb00607406249fbea1a90467bf2fa4d1d17ca5eb3c45c00502c576a1c7cab0a4",
+      "case_contract_sha256": "35be8cec46a517e4918909d74e1101e2111271ac99f9babe82b5615235469b44",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "PASS",
+      "evidence": [
+        "The query sums revenue and COGS from sales rows in 2024 where the row-level condition cogs > revenue holds. Aggregates and scope match the request."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-008",
+      "sql_sha256": "2449b51134aabdf918334834dfb461b8c8da998de8cd6e3309d8fa7d53e79f10",
+      "parameters": [],
+      "parameters_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "case_contract_sha256": "8add4b031f2297f407f7b9c47bd6ef86e096da7a71956220db81e50c8039765f",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "PASS",
+      "evidence": [
+        "The query sums refund_amount by non-NULL return_reason for calendar year 2024. The alternative output alias does not change the selected metric, population, grouping, or time scope."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-010",
+      "sql_sha256": "0608f1f55eee198dd044356a8180a0e0ae41745f83a7eb404f182cece2045f56",
+      "parameters": [
+        2025,
+        "paid_search",
+        "mobile"
+      ],
+      "parameters_sha256": "0e178d7cad4646cdf43197ce185898f6ab4bba25dccb670362028df9caaf717b",
+      "case_contract_sha256": "428c84059a0d35f2bae04a75f77f785efc5bd1d2206c50e59aa29a14419a9c60",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "PASS",
+      "evidence": [
+        "The query counts rows in commerce.orders, whose approved schema grain is one row per order_id, filtered to calendar year 2025, paid_search and mobile. The row count therefore matches the requested order count."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-011",
+      "sql_sha256": "bbaf14d76bc39c4bf793d04557e34f5aeb2c46b5719d40a960bbd0b6504bbf3f",
+      "parameters": [],
+      "parameters_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "case_contract_sha256": "b46037f7db79660a746645b0dc0d7d4527ec5928af4c68875b6600d9abf12ae6",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "PASS",
+      "evidence": [
+        "The SQL selects product_id and catalog p.cogs, orders by p.cogs DESC then product_id ASC, and limits to 5. It is semantically aligned with the requested top five catalog COGS ranking; execution was blocked by a ranking-validator rejection, which is reported separately."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-013",
+      "sql_sha256": "377343eaa207058217c0115cecb547e37249f8d50ce14be15e810f2ce8989279",
+      "parameters": [
+        "2026-11-13"
+      ],
+      "parameters_sha256": "fd79e4269a433a0135c0713a7d05bd8ddfa9f3a7a4f43b93f27c431de03c6165",
+      "case_contract_sha256": "7576a37db51d6537503557350542ab7208321adab6fc2399b85d44b1c8f6fe30",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "FAIL",
+      "evidence": [
+        "The request and frozen Gold use the snapshot-stored inventory.segment. The observed SQL groups by commerce.products.segment, a current catalog attribute with no historical validity, so it can assign historical snapshot quantities to the wrong segment."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-014",
+      "sql_sha256": "e2cfc7b0f3ac248c5669ed4c3214064a086d2782618535b4fff17b3754ec71b3",
+      "parameters": [
+        "2024-01-01",
+        "2025-01-01"
+      ],
+      "parameters_sha256": "cb00607406249fbea1a90467bf2fa4d1d17ca5eb3c45c00502c576a1c7cab0a4",
+      "case_contract_sha256": "a979f1630c6d510505544b709e3a3d1f25afe7e50838e2b88b485fc4ae233a74",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "FAIL",
+      "evidence": [
+        "The request and frozen Gold define delivered orders by orders.order_status and scope the year using orders.order_date. The observed SQL instead filters shipments.delivery_date and does not constrain orders.order_status or order_date; it changes both population and time semantics."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-016",
+      "sql_sha256": "6ebc95fbd4d7e003ee471d7a8ef19da8f420fc9ac28797f0f3380f57029df9dd",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "parameters_sha256": "3f2132eab4226e72377f097f0f388f99199240bc9c83a80e60445997d2f1abf9",
+      "case_contract_sha256": "bc48856112ea0b67de0e514f19c3f939c0412a195ba900f7b9b6f9a8686f8fae",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "PASS",
+      "evidence": [
+        "The query sums return_quantity by the destination city reached through returns.order_id -> orders.zip -> geography.zip and filters by return_date in 2025. Ordering is not semantic for this unordered case."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-017",
+      "sql_sha256": "9512abd074a8fdd73e420560a1c05011ec3fd70a15baf4a1b95a6822fe3f600d",
+      "parameters": [
+        "2023-01-01",
+        "2026-01-01"
+      ],
+      "parameters_sha256": "b3185746bfd119196e4f40f02b70bb07acd3165179cc1ed3832ea500faf66830",
+      "case_contract_sha256": "249f90ce6d0a710f764e8df6c0700e6c64a6f2d0df8db775404109dd15614f6c",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "PASS",
+      "evidence": [
+        "The query sums return_quantity by product_id over [2023-01-01, 2026-01-01), which includes calendar years 2023 through 2025 and excludes 2026."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-018",
+      "sql_sha256": "1d872718df71a1db8d56f6aa50cb7e873f4a7c4a4ff213a0eb14ee30db565b56",
+      "parameters": [],
+      "parameters_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "case_contract_sha256": "a0ccb27fa08152cb2e39e1be2196328da02f125e99723f4a2f9e2d4ff3e7094c",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "PASS",
+      "evidence": [
+        "The query averages all review ratings grouped by the current products.category using the approved product_id join. This matches the explicit current-category and all-history request."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-019",
+      "sql_sha256": "c64c9b9b1e745e06d5875e9efcb6a137dbb855d4fc1f9f8747806cc14dd1e8dc",
+      "parameters": [
+        "2025-01-01",
+        "2026-01-01"
+      ],
+      "parameters_sha256": "3f2132eab4226e72377f097f0f388f99199240bc9c83a80e60445997d2f1abf9",
+      "case_contract_sha256": "1e8e8140f3c20765b260c4a9e47b872e83ec02637f2780e81afd6a9d1cb0de58",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "PASS",
+      "evidence": [
+        "The query sums recorded payment_value by payment_method for payment rows whose linked order_date is in calendar 2025. This preserves the requested recorded-payment metric and date basis."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-020",
+      "sql_sha256": "c8bf6617b316122952ed76464f313ee730e5d034e390d2b2da8644a9aed0b4af",
+      "parameters": [],
+      "parameters_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "case_contract_sha256": "6262769f781d46907825fe9edaa69e3803180c42703e9b267028a68c2af7e65d",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "PASS",
+      "evidence": [
+        "The query calculates AVG(shipping_fee) and COUNT(shipping_fee) by destination city for shipments with ship_date in 2025. Joining orders to geography uses the approved destination ZIP path; COUNT excludes NULL fees as requested."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-021",
+      "sql_sha256": "cacce9f95bf4db7bf80d68a526e50755f94002f8fec213b9649949584f3c78e9",
+      "parameters": [
+        "2026-11-13"
+      ],
+      "parameters_sha256": "fd79e4269a433a0135c0713a7d05bd8ddfa9f3a7a4f43b93f27c431de03c6165",
+      "case_contract_sha256": "db9a95e465e57abe0ce43a270cbfafb55e185816892e5323dbe6e86b4f5fe03c",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "FAIL",
+      "evidence": [
+        "The request is snapshot-scoped and the approved historical dimension is inventory.category. The observed SQL groups by current products.category, which can disagree with the category recorded on the snapshot row."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-022",
+      "sql_sha256": "f70bb91bfcd881356d0e6da16a5639d5203b65542049924389e4098489806674",
+      "parameters": [
+        "2023-01-31",
+        "2026-11-13"
+      ],
+      "parameters_sha256": "c1c90c51c3c8df494789aa11967916b3b6d8c0cf17f9fb836ddb69b966e0b84a",
+      "case_contract_sha256": "aaf32036ef97f3a4b3fa28bb290d13f40f08207433917a80a8223bc1b3c68f83",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "PASS",
+      "evidence": [
+        "The approved inventory grain is one row per (snapshot_date, product_id). The query groups by snapshot_date, counts distinct products with non-NULL days_of_supply and separately counts products whose days_of_supply is NULL, preserving NULL rather than coercing it to zero across the inclusive snapshot range."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-023",
+      "sql_sha256": "0388e31f07dff88de1683cbf99e1607bcde4c562f19e9ae00d97c0afacf07ac7",
+      "parameters": [
+        "2025-09-30",
+        "2025-11-01"
+      ],
+      "parameters_sha256": "35a85ea2c6d440438a77d3ffbe1f8141f76c5f1ee5afb594c2fe07a9c083db3c",
+      "case_contract_sha256": "d582f8fcd0d19cca92a54794e0e7a0d856e998e097d583b0cba8a73607a87d55",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "FAIL",
+      "evidence": [
+        "The request requires matching products across exactly two snapshots and computing before, after, and after-minus-before. The observed SQL returns individual snapshot_date/product_id/stock_on_hand rows and does not pivot, require presence in both dates, or calculate the delta."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-024",
+      "sql_sha256": "f7508a9f9829cb74f598e52466da365d2c2d5667859402ceb06e3a68524a99eb",
+      "parameters": [
+        "2025-09-30",
+        "2025-12-01"
+      ],
+      "parameters_sha256": "03674d7c3f057831b9fe1207ac264649395de9428faf3e2ef44426b9a0673202",
+      "case_contract_sha256": "201920ad5fa382ee77335aad336b1bfff93be6a79166ce99aa7a4f8ed6739aa0",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "PASS",
+      "evidence": [
+        "The query sums stock_on_hand separately for each snapshot_date within [2025-09-30, 2025-12-01), so it does not sum balances across dates. The products join is many-to-one under the approved product_id key and does not alter inventory grain."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-025",
+      "sql_sha256": "3171286bb131aa78d92e229e5f5cea8405bb41f983b39a9df1d4b28a44a6f361",
+      "parameters": [
+        "2025-10-31"
+      ],
+      "parameters_sha256": "908296ffe339ca0875577740792b27a92c77065d9de0faa9417e4456d7b26f23",
+      "case_contract_sha256": "22fe6ea8f99ed79bf62e6406f92c0028a2a91c45c9e4f67457e6ec23e668c850",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "FAIL",
+      "evidence": [
+        "The request explicitly asks for category stored in each inventory row. The observed SQL groups by current products.category, which can disagree with historical inventory.category; it also returns unrequested total/non-null/null count outputs."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-027",
+      "sql_sha256": "8a7602e8829e5094539d97562724092acf45aedd3d7338340cb6ec860c88d807",
+      "parameters": [
+        "delivered"
+      ],
+      "parameters_sha256": "af061485e2d908c22446f000b56aa5d45e909d40af31b4563062cc5f4d13ff50",
+      "case_contract_sha256": "4680369ed104cccf1c5d955eeb2526c90f128ba9c84a0471b772970a64be25b9",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "FAIL",
+      "evidence": [
+        "This follow-up inherits the prior 2025 order_source statistic. The observed SQL retains order_source and filters delivered status but drops the inherited 2025 order_date range, changing the population to all years."
+      ]
+    },
+    {
+      "format_version": "sql-semantic-audit.v3.1",
+      "case_id": "B40-030",
+      "sql_sha256": "32fad222185be9b2bdba9d54c444bda85eefd769937af29e2b6d8149464aa631",
+      "parameters": [
+        "2024-11-21"
+      ],
+      "parameters_sha256": "e55915640a0c5064eb86c2b4dc13696141cd834036577ce006f8323564e0bd43",
+      "case_contract_sha256": "445fad667a4d24e82ca3ab15a3c66a8904503dce26831360ad36d5f5ca87c398",
+      "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+      "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+      "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+      "decision": "FAIL",
+      "evidence": [
+        "This follow-up inherits snapshot 2025-10-31. The observed parameter is 2024-11-21, so it ranks a different snapshot; it cannot answer the requested contextual follow-up."
+      ]
+    }
+  ],
+  "export": {
+    "format_version": "sql-semantic-audit-export.v1",
+    "source": "reviewer_decisions_json",
+    "authenticated": false,
+    "recorded_at_utc": "2026-11-22T01:48:28+00:00",
+    "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+    "auditor_version": "2026-11-22; review based on frozen case contracts and data/semantic/commerce_schema_metric_contract_v1.md",
+    "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+    "reviewed_case_ids": [
+      "B40-001",
+      "B40-002",
+      "B40-003",
+      "B40-004",
+      "B40-006",
+      "B40-007",
+      "B40-008",
+      "B40-010",
+      "B40-011",
+      "B40-013",
+      "B40-014",
+      "B40-016",
+      "B40-017",
+      "B40-018",
+      "B40-019",
+      "B40-020",
+      "B40-021",
+      "B40-022",
+      "B40-023",
+      "B40-024",
+      "B40-025",
+      "B40-027",
+      "B40-030"
+    ],
+    "unreviewed_observed_sql_case_ids": []
+  }
+}

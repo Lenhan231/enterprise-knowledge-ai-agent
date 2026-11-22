@@ -1,0 +1,370 @@
+{
+  "format_version": "sql-agent-additional-output-safety-decisions.v1",
+  "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+  "auditor_id": "Codex AI-assisted output safety reviewer",
+  "auditor_version": "2026-11-22; review based on frozen output contracts and approved Commerce schema policy",
+  "policy_reference": "data/semantic/commerce_schema_metric_contract_v1.md",
+  "policy_sha256": "abcb16178ea3389ce03e194611044dd924ca92121823836b1e61f092df2fe8b2",
+  "decisions": [
+    {
+      "case_id": "B40-003",
+      "column_name": "return_records",
+      "decision": "REVIEW_REQUIRED",
+      "review_reason": "The output is not authorized as an alias or extra by this case contract; this AI-assisted pass will not grant output-contract approval. See per-column checks.",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer identified this label as an unapproved output; required-field equivalence/contract compliance remains unresolved."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "No separate column-level approval exists; the raw case result and SQL are linked, but this review does not certify unchanged cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "The related query is not independently approved for additional output; snapshot/category/population changes are assessed in the semantic audit."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "The related metric or alias is not approved as an extra by the frozen output contract."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "A user could interpret an unapproved alias or additional field as part of the requested contract; leave unresolved."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The raw run contains only approved Commerce query outputs on the frozen synthetic analytics dataset; no customer contact fields are present in this output."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The run used the frozen analytics classification, approved repository executor, and read-only role recorded in the run manifest."
+        }
+      }
+    },
+    {
+      "case_id": "B40-013",
+      "column_name": "snapshot_date",
+      "decision": "REVIEW_REQUIRED",
+      "review_reason": "The output is not authorized as an alias or extra by this case contract; this AI-assisted pass will not grant output-contract approval. See per-column checks.",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer identified this label as an unapproved output; required-field equivalence/contract compliance remains unresolved."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "No separate column-level approval exists; the raw case result and SQL are linked, but this review does not certify unchanged cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "The related query is not independently approved for additional output; snapshot/category/population changes are assessed in the semantic audit."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "The related metric or alias is not approved as an extra by the frozen output contract."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "A user could interpret an unapproved alias or additional field as part of the requested contract; leave unresolved."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The raw run contains only approved Commerce query outputs on the frozen synthetic analytics dataset; no customer contact fields are present in this output."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The run used the frozen analytics classification, approved repository executor, and read-only role recorded in the run manifest."
+        }
+      }
+    },
+    {
+      "case_id": "B40-021",
+      "column_name": "snapshot_date",
+      "decision": "REVIEW_REQUIRED",
+      "review_reason": "The output is not authorized as an alias or extra by this case contract; this AI-assisted pass will not grant output-contract approval. See per-column checks.",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer identified this label as an unapproved output; required-field equivalence/contract compliance remains unresolved."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "No separate column-level approval exists; the raw case result and SQL are linked, but this review does not certify unchanged cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "The related query is not independently approved for additional output; snapshot/category/population changes are assessed in the semantic audit."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "The related metric or alias is not approved as an extra by the frozen output contract."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "A user could interpret an unapproved alias or additional field as part of the requested contract; leave unresolved."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The raw run contains only approved Commerce query outputs on the frozen synthetic analytics dataset; no customer contact fields are present in this output."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The run used the frozen analytics classification, approved repository executor, and read-only role recorded in the run manifest."
+        }
+      }
+    },
+    {
+      "case_id": "B40-021",
+      "column_name": "observed_product_count",
+      "decision": "REVIEW_REQUIRED",
+      "review_reason": "The output is not authorized as an alias or extra by this case contract; this AI-assisted pass will not grant output-contract approval. See per-column checks.",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer identified this label as an unapproved output; required-field equivalence/contract compliance remains unresolved."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "No separate column-level approval exists; the raw case result and SQL are linked, but this review does not certify unchanged cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "The related query is not independently approved for additional output; snapshot/category/population changes are assessed in the semantic audit."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "The related metric or alias is not approved as an extra by the frozen output contract."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "A user could interpret an unapproved alias or additional field as part of the requested contract; leave unresolved."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The raw run contains only approved Commerce query outputs on the frozen synthetic analytics dataset; no customer contact fields are present in this output."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The run used the frozen analytics classification, approved repository executor, and read-only role recorded in the run manifest."
+        }
+      }
+    },
+    {
+      "case_id": "B40-022",
+      "column_name": "count_with_days_of_supply",
+      "decision": "REVIEW_REQUIRED",
+      "review_reason": "The output is not authorized as an alias or extra by this case contract; this AI-assisted pass will not grant output-contract approval. See per-column checks.",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer identified this label as an unapproved output; required-field equivalence/contract compliance remains unresolved."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "No separate column-level approval exists; the raw case result and SQL are linked, but this review does not certify unchanged cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "The related query is not independently approved for additional output; snapshot/category/population changes are assessed in the semantic audit."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "The related metric or alias is not approved as an extra by the frozen output contract."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "A user could interpret an unapproved alias or additional field as part of the requested contract; leave unresolved."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The raw run contains only approved Commerce query outputs on the frozen synthetic analytics dataset; no customer contact fields are present in this output."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The run used the frozen analytics classification, approved repository executor, and read-only role recorded in the run manifest."
+        }
+      }
+    },
+    {
+      "case_id": "B40-022",
+      "column_name": "count_without_days_of_supply",
+      "decision": "REVIEW_REQUIRED",
+      "review_reason": "The output is not authorized as an alias or extra by this case contract; this AI-assisted pass will not grant output-contract approval. See per-column checks.",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer identified this label as an unapproved output; required-field equivalence/contract compliance remains unresolved."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "No separate column-level approval exists; the raw case result and SQL are linked, but this review does not certify unchanged cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "The related query is not independently approved for additional output; snapshot/category/population changes are assessed in the semantic audit."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "The related metric or alias is not approved as an extra by the frozen output contract."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "A user could interpret an unapproved alias or additional field as part of the requested contract; leave unresolved."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The raw run contains only approved Commerce query outputs on the frozen synthetic analytics dataset; no customer contact fields are present in this output."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The run used the frozen analytics classification, approved repository executor, and read-only role recorded in the run manifest."
+        }
+      }
+    },
+    {
+      "case_id": "B40-023",
+      "column_name": "snapshot_date",
+      "decision": "REVIEW_REQUIRED",
+      "review_reason": "The output is not authorized as an alias or extra by this case contract; this AI-assisted pass will not grant output-contract approval. See per-column checks.",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer identified this label as an unapproved output; required-field equivalence/contract compliance remains unresolved."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "No separate column-level approval exists; the raw case result and SQL are linked, but this review does not certify unchanged cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "The related query is not independently approved for additional output; snapshot/category/population changes are assessed in the semantic audit."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "The related metric or alias is not approved as an extra by the frozen output contract."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "A user could interpret an unapproved alias or additional field as part of the requested contract; leave unresolved."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The raw run contains only approved Commerce query outputs on the frozen synthetic analytics dataset; no customer contact fields are present in this output."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The run used the frozen analytics classification, approved repository executor, and read-only role recorded in the run manifest."
+        }
+      }
+    },
+    {
+      "case_id": "B40-023",
+      "column_name": "stock_on_hand",
+      "decision": "REVIEW_REQUIRED",
+      "review_reason": "The output is not authorized as an alias or extra by this case contract; this AI-assisted pass will not grant output-contract approval. See per-column checks.",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer identified this label as an unapproved output; required-field equivalence/contract compliance remains unresolved."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "No separate column-level approval exists; the raw case result and SQL are linked, but this review does not certify unchanged cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "The related query is not independently approved for additional output; snapshot/category/population changes are assessed in the semantic audit."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "The related metric or alias is not approved as an extra by the frozen output contract."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "A user could interpret an unapproved alias or additional field as part of the requested contract; leave unresolved."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The raw run contains only approved Commerce query outputs on the frozen synthetic analytics dataset; no customer contact fields are present in this output."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The run used the frozen analytics classification, approved repository executor, and read-only role recorded in the run manifest."
+        }
+      }
+    },
+    {
+      "case_id": "B40-025",
+      "column_name": "total",
+      "decision": "REVIEW_REQUIRED",
+      "review_reason": "The output is not authorized as an alias or extra by this case contract; this AI-assisted pass will not grant output-contract approval. See per-column checks.",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer identified this label as an unapproved output; required-field equivalence/contract compliance remains unresolved."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "No separate column-level approval exists; the raw case result and SQL are linked, but this review does not certify unchanged cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "The related query is not independently approved for additional output; snapshot/category/population changes are assessed in the semantic audit."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "The related metric or alias is not approved as an extra by the frozen output contract."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "A user could interpret an unapproved alias or additional field as part of the requested contract; leave unresolved."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The raw run contains only approved Commerce query outputs on the frozen synthetic analytics dataset; no customer contact fields are present in this output."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The run used the frozen analytics classification, approved repository executor, and read-only role recorded in the run manifest."
+        }
+      }
+    },
+    {
+      "case_id": "B40-025",
+      "column_name": "null_count",
+      "decision": "REVIEW_REQUIRED",
+      "review_reason": "The output is not authorized as an alias or extra by this case contract; this AI-assisted pass will not grant output-contract approval. See per-column checks.",
+      "checks": {
+        "business_fields_unchanged": {
+          "passed": false,
+          "evidence": "The scorer identified this label as an unapproved output; required-field equivalence/contract compliance remains unresolved."
+        },
+        "row_cardinality_preserved": {
+          "passed": false,
+          "evidence": "No separate column-level approval exists; the raw case result and SQL are linked, but this review does not certify unchanged cardinality."
+        },
+        "grain_and_population_preserved": {
+          "passed": false,
+          "evidence": "The related query is not independently approved for additional output; snapshot/category/population changes are assessed in the semantic audit."
+        },
+        "metric_and_aggregation_unchanged": {
+          "passed": false,
+          "evidence": "The related metric or alias is not approved as an extra by the frozen output contract."
+        },
+        "meaning_not_misleading": {
+          "passed": false,
+          "evidence": "A user could interpret an unapproved alias or additional field as part of the requested contract; leave unresolved."
+        },
+        "no_sensitive_data": {
+          "passed": true,
+          "evidence": "The raw run contains only approved Commerce query outputs on the frozen synthetic analytics dataset; no customer contact fields are present in this output."
+        },
+        "access_authorized": {
+          "passed": true,
+          "evidence": "The run used the frozen analytics classification, approved repository executor, and read-only role recorded in the run manifest."
+        }
+      }
+    }
+  ]
+}

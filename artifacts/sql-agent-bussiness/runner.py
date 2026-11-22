@@ -27,6 +27,14 @@ from preflight import ROOT, PreflightBlocked, benchmark_repository, collect_pref
 
 DEFAULT_CASES = ROOT / "artifacts/sql-agent-bussiness/cases.json"
 V3_1_DIR = ROOT / "artifacts/sql-agent-bussiness/40-case-v3-1"
+FOLLOWUP_ADAPTER = V3_1_DIR.parent / "40-case-v3/followup_adapter.py"
+ORIGINAL_FREEZE_REVISION = "659710ad607127fc79006b83a5cebe2a9854c733"
+HISTORICAL_HARNESS_PATHS = {
+    "artifacts/sql-agent-bussiness/runner.py",
+    "artifacts/sql-agent-bussiness/tests/test_runner.py",
+    "artifacts/sql-agent-bussiness/tests/test_v31_freeze.py",
+    "tests/sql/test_benchmark_v3_1_contract.py",
+}
 TERMINAL_STATUSES = {
     "executed", "executed_empty", "clarification_required", "unsupported", "failed", "provider_error",
 }
@@ -57,6 +65,18 @@ def sha256_bytes(value):
 
 def sha256_file(path):
     return sha256_bytes(Path(path).read_bytes())
+
+
+def frozen_artifact_sha256(relative):
+    # These harness files had to evolve. Validate their original freeze evidence
+    # against the immutable Git blobs, and record the active runner separately.
+    if relative in HISTORICAL_HARNESS_PATHS:
+        original = subprocess.check_output(
+            ["git", "show", f"{ORIGINAL_FREEZE_REVISION}:{relative}"], cwd=ROOT,
+        )
+        return sha256_bytes(original)
+    path = ROOT / relative
+    return sha256_file(path) if path.is_file() else None
 
 
 def current_revision():
@@ -90,7 +110,7 @@ def source_manifest():
         "src/core/agents/sql/metric_validation.py",
         "src/core/agents/sql/query_contract.py",
         "src/core/agents/sql/query_intent.py",
-        "src/core/agents/sql/sql_ranking.py",
+        "src/core/agents/sql/sql_validation.py",
         "src/core/agents/sql/text_to_sql.py",
         "src/core/database/commerce_repository.py",
         "src/core/prompts/sql.py",
@@ -133,6 +153,7 @@ def build_manifest(application_revision, *, provider, model, case_delay_seconds=
         "artifacts/sql-agent-bussiness/preflight.py",
         "artifacts/sql-agent-bussiness/reference_runner.py",
         "artifacts/sql-agent-bussiness/runner.py",
+        "artifacts/sql-agent-bussiness/40-case-v3/followup_adapter.py",
         "artifacts/sql-agent-bussiness/scorer.py",
         "artifacts/sql-agent-bussiness/PROTOCOL.md",
         "artifacts/sql-agent-bussiness/README.md",
@@ -581,12 +602,13 @@ def instrument_agent(agent, instrumentation):
 
     @functools.wraps(original_selector)
     def counted_selector(question, table_columns, metric_definitions=None, *, primary_keys=None,
-                         approved_joins=(), limit=5):
+                         approved_joins=(), limit=5, **selector_options):
         instrumentation.calls["schema_selection"] += 1
         instrumentation.calls["schema_selector_attempts"] += 1
         try:
             result = original_selector(question, table_columns, metric_definitions,
-                                       primary_keys=primary_keys, approved_joins=approved_joins, limit=limit)
+                                       primary_keys=primary_keys, approved_joins=approved_joins, limit=limit,
+                                       **selector_options)
         except Exception as error:
             status = getattr(error, "code", None) or getattr(error, "status", None)
             if status is None:
@@ -612,12 +634,24 @@ def instrument_agent(agent, instrumentation):
     return restore
 
 
+def adapt_frozen_followups(case_set):
+    cases = [case for case in case_set["cases"] if case.get("category") == "sql_followup_context"]
+    if not cases:
+        return {}
+    spec = importlib.util.spec_from_file_location("sql_benchmark_followup_adapter", FOLLOWUP_ADAPTER)
+    adapter = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = adapter
+    spec.loader.exec_module(adapter)
+    return {case["id"]: adapter.adapt_followup_case(case) for case in cases}
+
+
 async def run_cases(agent, case_set, store, *, delay_between_cases=0):
     from core.models.agents import AgentRequest, VerifiedIdentity
 
     if not isinstance(delay_between_cases, (int, float)) or not 0 <= delay_between_cases <= 120:
         raise ValueError("delay_between_cases must be between 0 and 120 seconds.")
 
+    followups = adapt_frozen_followups(case_set)
     for index, case in enumerate(case_set["cases"]):
         if index and delay_between_cases:
             await asyncio.sleep(delay_between_cases)
@@ -630,6 +664,13 @@ async def run_cases(agent, case_set, store, *, delay_between_cases=0):
         current_attempts = attempts + [attempt_record]
         running = {"id": case["id"], "status": "RUNNING", "attempts": current_attempts,
                    "route": "sql_agent", "started_at": _utc_now()}
+        followup = followups.get(case["id"])
+        if followup:
+            running["followup_context"] = {
+                "adapter_version": followup.adapter_version,
+                "context_sha256": followup.context_sha256,
+                "prior_question_sha256": followup.prior_question_sha256,
+            }
         store.upsert_case(running)
         instrumentation = Instrumentation()
         counting_repository = getattr(agent, "repository", None)
@@ -644,12 +685,14 @@ async def run_cases(agent, case_set, store, *, delay_between_cases=0):
         restore = instrument_agent(agent, instrumentation)
         try:
             request = AgentRequest(
-                question=case["question"],
+                question=followup.question if followup else case["question"],
                 identity=VerifiedIdentity(subject="sql-benchmark", permissions={"analytics:read"}),
             )
             payload = await agent.run_payload(request)
             elapsed_ms = (time.perf_counter() - started) * 1000
             record = normalize_payload(case, payload, instrumentation, elapsed_ms)
+            if followup:
+                record["followup_context"] = running["followup_context"]
             record["route"] = "sql_agent"
             record["calls"] = dict(instrumentation.calls)
             if repository_counters is not None:
@@ -770,8 +813,7 @@ def validate_v31_contract(case_set, reference, freeze_manifest, *, cases_path,
     if freeze_manifest.get("freeze_status") != "FROZEN":
         raise ValueError("The v3.1 freeze manifest is not frozen.")
     for relative, expected in freeze_manifest.get("artifact_paths_sha256", {}).items():
-        path = ROOT / relative
-        if not path.is_file() or sha256_file(path) != expected:
+        if frozen_artifact_sha256(relative) != expected:
             raise ValueError(f"Frozen artifact hash mismatch: {relative}.")
     paths = {
         "cases_v3_1_draft.json": Path(cases_path),

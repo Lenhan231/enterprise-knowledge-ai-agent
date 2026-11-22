@@ -509,7 +509,7 @@ class SQLBenchmarkRunnerTest(unittest.TestCase):
         self.assertIn("src/core/agents/sql/intent_resolution.py", hashes)
         self.assertIn("src/core/agents/sql/metric_validation.py", hashes)
         self.assertIn("src/core/agents/sql/query_contract.py", hashes)
-        self.assertIn("src/core/agents/sql/sql_ranking.py", hashes)
+        self.assertIn("src/core/agents/sql/sql_validation.py", hashes)
         self.assertIn("src/core/database/commerce_repository.py", hashes)
         self.assertIn("data/semantic/vietstyle_metrics_v1.yaml", hashes)
 

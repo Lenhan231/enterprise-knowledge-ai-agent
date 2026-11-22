@@ -8,6 +8,7 @@ from unittest.mock import patch
 from document_processing.document_processor import DocumentProcessor
 from document_processing.invoice.schema import InvoiceFields, SCHEMA
 from document_processing.invoice.text_processor import (
+    InvoiceTextProcessor,
     _extraction_jobs,
     _infer_with_gemini,
     _parse_json_response,
@@ -16,6 +17,13 @@ from document_processing.invoice.text_processor import (
 
 
 class InvoiceTextProcessorTest(unittest.TestCase):
+    def test_retired_invoice_providers_are_rejected(self):
+        elements = [{"element_type": "text", "text": "Invoice A-1"}]
+        for provider in ("modal", "local"):
+            with self.subTest(provider=provider):
+                with self.assertRaisesRegex(ValueError, "Unsupported invoice extraction provider"):
+                    InvoiceTextProcessor({"invoice_provider": provider}).process(elements, [])
+
     def test_gemini_invoice_jobs_run_in_parallel_and_keep_input_order(self):
         both_requests_started = Barrier(2)
 

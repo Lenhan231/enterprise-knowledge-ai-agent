@@ -5,6 +5,7 @@ import sys
 import tempfile
 import unittest
 import inspect
+import shutil
 from datetime import date
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
@@ -528,6 +529,115 @@ class SQLBenchmarkRunnerTest(unittest.TestCase):
             manifest["provider_settings"]["SQL_SCHEMA_SELECTION_MODEL"],
             "perplexity/pplx-decider-v1.3:free",
         )
+
+    def _v31_fixture_files(self, directory):
+        v31 = ROOT / "40-case-v3-1"
+        cases_path = Path(directory) / "cases.json"
+        gold_path = Path(directory) / "gold.json"
+        reference_path = Path(directory) / "reference.json"
+        scorer_path = Path(directory) / "scorer.py"
+        cases = json.loads((v31 / "cases_v3_1_draft.json").read_text(encoding="utf-8"))
+        gold = json.loads((v31 / "gold_sql_v3_1_draft.json").read_text(encoding="utf-8"))
+        reference = json.loads((v31 / "gold_results_v3_1_provisional.json").read_text(encoding="utf-8"))
+        cases_path.write_text(json.dumps(cases), encoding="utf-8")
+        gold_path.write_text(json.dumps(gold), encoding="utf-8")
+        reference_path.write_text(json.dumps(reference), encoding="utf-8")
+        shutil.copyfile(v31 / "scorer_v3_1.py", scorer_path)
+        manifest = {
+            "freeze_status": "FROZEN",
+            "database_fingerprint_sha256": reference["database_fingerprint_sha256"],
+            "case_set_sha256": RUNNER._canonical_hash(cases),
+            "gold_sql_definition_sha256": RUNNER._canonical_hash([
+                {"id": item["id"], "sql": item["sql"], "parameters": item["parameters"]}
+                for item in gold["cases"]
+            ]),
+            "artifacts_sha256": {
+                name: RUNNER.sha256_file(path) for name, path in (
+                    ("cases_v3_1_draft.json", cases_path),
+                    ("gold_sql_v3_1_draft.json", gold_path),
+                    ("gold_results_v3_1_provisional.json", reference_path),
+                    ("scorer_v3_1.py", scorer_path),
+                )
+            },
+        }
+        return cases, gold, reference, cases_path, gold_path, reference_path, scorer_path, manifest
+
+    def test_frozen_v31_cohort_and_gold_contract_validate_without_execution(self):
+        with tempfile.TemporaryDirectory() as directory:
+            cases, _gold, reference, cases_path, gold_path, reference_path, scorer_path, manifest = (
+                self._v31_fixture_files(directory)
+            )
+            contract = RUNNER.validate_v31_contract(
+                cases, reference, manifest,
+                cases_path=cases_path, gold_sql_path=gold_path,
+                reference_path=reference_path, scorer_path=scorer_path,
+            )
+        self.assertEqual(contract["distribution"], {
+            "execute": 30, "clarify": 5, "abstain_without_query": 5,
+        })
+
+    def test_v31_contract_rejects_changed_cohort_or_reference_fingerprint(self):
+        with tempfile.TemporaryDirectory() as directory:
+            cases, _gold, reference, cases_path, gold_path, reference_path, scorer_path, manifest = (
+                self._v31_fixture_files(directory)
+            )
+            altered = dict(manifest, case_set_sha256="0" * 64)
+            with self.assertRaisesRegex(ValueError, "canonical hash"):
+                RUNNER.validate_v31_contract(
+                    cases, reference, altered,
+                    cases_path=cases_path, gold_sql_path=gold_path,
+                    reference_path=reference_path, scorer_path=scorer_path,
+                )
+            wrong_reference = dict(reference, database_fingerprint_sha256="0" * 64)
+            with self.assertRaisesRegex(ValueError, "database fingerprint"):
+                RUNNER.validate_v31_contract(
+                    cases, wrong_reference, manifest,
+                    cases_path=cases_path, gold_sql_path=gold_path,
+                    reference_path=reference_path, scorer_path=scorer_path,
+                )
+
+    def test_score_saved_run_uses_frozen_observations_and_linked_audits_only(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            run_dir = root / "run"
+            run_dir.mkdir()
+            cases_path, reference_path = root / "cases.json", root / "reference.json"
+            case_doc = {"cases": [{"id": "B40-001", "expected_behavior": "execute"}]}
+            reference_doc = {"cases": [{"id": "B40-001", "rows": []}]}
+            cases_path.write_text(json.dumps(case_doc), encoding="utf-8")
+            reference_path.write_text(json.dumps(reference_doc), encoding="utf-8")
+            (run_dir / "data.json").write_text(json.dumps({
+                "manifest": {"application_source_revision": "app-sha", "harness_revision": "harness-sha"},
+                "cases": [{"id": "B40-001", "status": "executed", "sql": "SELECT 1", "rows": []}],
+            }), encoding="utf-8")
+            audit_path = root / "audits.json"
+            audit_path.write_text(json.dumps([{"case_id": "B40-001", "decision": "PASS"}]), encoding="utf-8")
+
+            class Scorer:
+                SCORER_VERSION = "3.3.0"
+                PROTOCOL_VERSION = "3.3.0"
+
+                def score(self, cases, reference, experiment):
+                    self.experiment = experiment
+                    return {"scorer_version": self.SCORER_VERSION,
+                            "protocol_version": self.PROTOCOL_VERSION, "metrics": {}}
+
+            scorer = Scorer()
+            with patch.object(RUNNER, "_load_scorer", return_value=scorer), patch.object(
+                RUNNER, "benchmark_repository", side_effect=AssertionError("score-only must not connect")
+            ):
+                _scores, report_path = RUNNER.score_saved_run(
+                    cases_path=cases_path, reference_path=reference_path, run_dir=run_dir,
+                    scorer_path=root / "scorer.py", semantic_audit_path=audit_path,
+                )
+            self.assertEqual(scorer.experiment["independent_semantic_audits"][0]["case_id"], "B40-001")
+            self.assertEqual(json.loads((run_dir / "data.json").read_text())["cases"][0]["sql"], "SELECT 1")
+            self.assertTrue(report_path.exists())
+            with self.assertRaises(FileExistsError):
+                RUNNER.score_saved_run(
+                    cases_path=cases_path, reference_path=reference_path, run_dir=run_dir,
+                    scorer_path=root / "scorer.py", semantic_audit_path=audit_path,
+                )
 
     def test_preflight_records_and_requires_the_frozen_order_date_type(self):
         class PreflightRepository:

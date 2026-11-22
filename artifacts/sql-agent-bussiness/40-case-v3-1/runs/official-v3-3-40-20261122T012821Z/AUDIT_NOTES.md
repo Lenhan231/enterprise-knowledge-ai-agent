@@ -47,6 +47,21 @@ Per-case outcomes and all scoring input hashes are in [`report.md`](report.md) a
 - JEV full-schema fallback cases: B40-026 and B40-040. The recorded data contains no HTTP status for either.
 - Database classification: frozen analytics snapshot; read-only role verified; fingerprint matched Gold; database writes: 0.
 
+## Explicit failure taxonomy
+
+The scorer reports 10/30 supported E2E passes, 20/30 failures, and 0/30 review-required outcomes; no case was `NOT RUN`. The 20 failed supported cases divide as follows (the groups are mutually exclusive at the E2E level):
+
+| Failure class | Cases | Evidence |
+|---|---|---|
+| Database / bounded validation terminal failure | B40-002, B40-011, B40-014, B40-026 | B40-002 raised `UndefinedFunctionError` for `EXTRACT(EPOCH FROM DATE - DATE)`; B40-011 and B40-014 were blocked by ranking validation; B40-026 exhausted the clarification correction with invalid options. |
+| Supported request incorrectly clarified without SQL | B40-005, B40-009, B40-012, B40-015, B40-028, B40-029 | Each is `expected_behavior=execute` but ended `clarification_required`. |
+| Executed SQL changed business scope, source dimension, comparison, or inherited context | B40-013, B40-021, B40-023, B40-025, B40-027, B40-030 | Respectively: current instead of snapshot labels (013/021/025), no before/after delta (023), omitted inherited 2025 filter (027), and wrong inherited snapshot date (030). |
+| Saved result/output representation does not satisfy scorer contract | B40-001, B40-003, B40-004, B40-022 | 001/004 have the verified month DATE/timestamp representation discrepancy described above; 003 and 022 use unapproved output aliases. |
+
+The five raw `failed` statuses were B40-002, B40-011, B40-014, B40-026, and B40-040. B40-040 belongs to the unsupported cohort, not the supported E2E denominator; its clarification failed the options schema after one bounded correction. The other unsupported case not counted as a valid clarification/abstention is B40-033: it returned `unsupported` without generated business SQL, but the scorer requires no repository execution events and the trace contains one approved snapshot-availability lookup. Thus valid clarification/abstention is 8/10, with B40-033 and B40-040 as the two excluded outcomes.
+
+Effective SQL audit decisions after the scorer's ranking check are `PASS=14`, `FAIL=9`, `INDETERMINATE=7`; the 7 indeterminate cases were supported requests that produced no SQL. Business Result Accuracy decisions across its 20-case denominator are `PASS=11`, `FAIL=8`, `REVIEW_REQUIRED=1`. Output Contract Compliance is `PASS=13`, `FAIL=6`, `REVIEW_REQUIRED=1`. Additional-output safety remains `REVIEW_REQUIRED` for 10 columns across 6 cases; none received a safety pass.
+
 ## Verification
 
 - `PYTHONPATH=src uv run --no-sync python -m unittest discover -s artifacts/sql-agent-bussiness/tests -v` — PASS, 54 tests.

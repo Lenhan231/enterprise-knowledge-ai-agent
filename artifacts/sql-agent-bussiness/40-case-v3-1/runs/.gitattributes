@@ -1,0 +1,4 @@
+# Saved observations and linked audits have byte-level hashes.
+context-fixed-*/** -text whitespace=cr-at-eol
+targeted-regressions-8649a7eb-final/** -text whitespace=cr-at-eol
+targeted-snapshot-summaries-8649a7eb/** -text whitespace=cr-at-eol

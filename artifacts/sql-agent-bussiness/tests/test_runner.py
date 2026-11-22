@@ -452,18 +452,22 @@ class SQLBenchmarkRunnerTest(unittest.TestCase):
 
     def test_jev_selection_and_repository_schema_discovery_are_distinct(self):
         from core.agents.sql import agent as sql_module
+        context = [{"question": "What were sales in 2024?"}]
 
         class Selects(FakeAgent):
             async def run_payload(self, _request):
-                sql_module.select_jev_schema_tables("question", {"commerce.orders": ["order_id"]})
+                sql_module.select_jev_schema_tables(
+                    "question", {"commerce.orders": ["order_id"]}, conversation_context=context,
+                )
                 return self.outcome
 
         with tempfile.TemporaryDirectory() as directory, patch.object(
             sql_module, "select_jev_schema_tables", return_value={"commerce.orders"}
-        ):
+        ) as selector:
             store = self.make_store(Path(directory) / "run")
             data = asyncio.run(RUNNER.run_cases(Selects(), case_set(), store))
 
+        self.assertEqual(selector.call_args.kwargs["conversation_context"], context)
         calls = data["cases"][0]["calls"]
         self.assertEqual(calls["schema_selection"], 1)
         self.assertEqual(calls["schema_selector_attempts"], 1)

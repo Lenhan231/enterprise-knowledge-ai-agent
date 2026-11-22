@@ -82,8 +82,8 @@ backend still calls its private Docker service with internal service authenticat
 - Supabase `document_preprocessing_test` schema: isolated Upload Test runs and parser outputs
 - src/core/retrieval: role-scoped search; in Docker, the private Retrieval API owns translation, embedding, search and reranking
 - src/core/agents/{knowledge,sql,report,dashboard,decision_support}: specialist agents and their helpers
-- `src/core/agents/decision_support/route_selector.py` selects a specialist; `orchestrator.py` owns conversation context, planning, execution and synthesis,
-  including requests that combine Knowledge and SQL
+- `src/core/agents/decision_support/route_selector.py` selects a specialist; `workflow.py` owns plan/execute/revise/synthesize; `orchestrator.py` manages sessions and agent modes
+- `src/core/agents/sql/conversation.py` stores SQL follow-up context and pending clarifications in chat history
 - [CLI tools](tools/README.md): reproducible CLI entry points grouped by workstream; see the [repository map](docs/technical/repository-ownership.md) for ownership and shared contracts
 - docker-compose.yml: Agents API, private Retrieval API, document processing, chunking worker, embeddings and reranker; optional Nginx ingress. Frontend hosting remains on Vercel and data remains in Supabase.
 

@@ -1,0 +1,197 @@
+{
+  "format_version": "sql-semantic-audit-decisions.v1",
+  "case_set_sha256": "36dbd0876167fccb954923dd4ad2f9961a31e6fd05e8d76ec5f99fecf4a012ce",
+  "auditor_id": "Codex AI-assisted SQL semantic reviewer",
+  "auditor_version": "Commerce schema contract and frozen v3.1 case contracts, v3.3 scoring",
+  "decisions": [
+    {
+      "case_id": "B40-001",
+      "decision": "PASS",
+      "evidence": [
+        "The 2024 half-open filter, calendar-month and source grain, and SUM(sessions) match the requested calculation. The timestamp representation is assessed by the result scorer."
+      ]
+    },
+    {
+      "case_id": "B40-003",
+      "decision": "PASS",
+      "evidence": [
+        "EXTRACT(YEAR)=2025 selects the required return_date interval. COUNT(*) counts return records at the one-row-per-return_id source grain, grouped by month. The output label and timestamp representation are assessed separately."
+      ]
+    },
+    {
+      "case_id": "B40-004",
+      "decision": "PASS",
+      "evidence": [
+        "The query filters delivered 2025 orders, joins each order to its line items, and divides net line revenue by distinct orders with an item in each month. Each emitted group has at least one order, so omission of NULLIF does not change the denominator."
+      ]
+    },
+    {
+      "case_id": "B40-005",
+      "decision": "PASS",
+      "evidence": [
+        "The query applies the requested first-half 2024 date range, sums refunds by calendar month, sorts descending with the earlier month as tie-break, and limits to one. The repository validator rejected the grouped alias before execution, which is assessed separately."
+      ]
+    },
+    {
+      "case_id": "B40-006",
+      "decision": "PASS",
+      "evidence": [
+        "The query filters 2024 signups, the exact age group and the city. A primary-key ZIP lookup preserves one row per customer, so COUNT(*) matches counting distinct customer IDs."
+      ]
+    },
+    {
+      "case_id": "B40-007",
+      "decision": "PASS",
+      "evidence": [
+        "The query selects company sales dates in 2024 with daily COGS greater than daily revenue and sums both requested fields over that population."
+      ]
+    },
+    {
+      "case_id": "B40-008",
+      "decision": "PASS",
+      "evidence": [
+        "The half-open date range selects 2024 return records, the non-NULL reason filter is explicit, and SUM(refund_amount) is grouped by return reason."
+      ]
+    },
+    {
+      "case_id": "B40-010",
+      "decision": "PASS",
+      "evidence": [
+        "The orders query applies the requested 2025, paid_search and mobile filters and counts one row per order_id."
+      ]
+    },
+    {
+      "case_id": "B40-011",
+      "decision": "PASS",
+      "evidence": [
+        "The products primary key gives one catalog row per product_id, so SUM(cogs) at that same grain equals the listed unit COGS. The query returns five rows ordered by catalog COGS descending and product ID ascending."
+      ]
+    },
+    {
+      "case_id": "B40-012",
+      "decision": "PASS",
+      "evidence": [
+        "The query counts distinct orders of all statuses in calendar 2024 by order_source and sorts by decreasing count, breaking ties by ascending source with PostgreSQL's default NULLS LAST."
+      ]
+    },
+    {
+      "case_id": "B40-013",
+      "decision": "FAIL",
+      "evidence": [
+        "The required dimension is the segment stored on the 2026-11-13 inventory row. The query groups and ranks by the current catalog products.segment instead, and adds a catalog join absent from the requested population."
+      ]
+    },
+    {
+      "case_id": "B40-014",
+      "decision": "FAIL",
+      "evidence": [
+        "The frozen contract uses order_date in calendar 2024 and order_status='delivered'. The query instead filters shipment delivery_date, so it can include orders placed outside 2024 or omit 2024 orders delivered later."
+      ]
+    },
+    {
+      "case_id": "B40-016",
+      "decision": "PASS",
+      "evidence": [
+        "The query joins returns to orders and orders ZIP to destination geography, filters by calendar 2025 return_date, and sums return_quantity at city grain."
+      ]
+    },
+    {
+      "case_id": "B40-017",
+      "decision": "PASS",
+      "evidence": [
+        "The return_date interval covers 2023 through 2025, and SUM(return_quantity) groups only by product_id as requested."
+      ]
+    },
+    {
+      "case_id": "B40-018",
+      "decision": "PASS",
+      "evidence": [
+        "The query uses the full review history and averages review.rating by current product category via the product primary key."
+      ]
+    },
+    {
+      "case_id": "B40-019",
+      "decision": "PASS",
+      "evidence": [
+        "The query uses order_date to select 2025 orders, then totals all recorded payment_value rows by payment_method without imposing an order-status filter."
+      ]
+    },
+    {
+      "case_id": "B40-020",
+      "decision": "PASS",
+      "evidence": [
+        "The query filters shipment ship_date to 2025, joins to the order destination city via ZIP, and uses AVG(shipping_fee) and COUNT(shipping_fee) to exclude NULL fees from both measures."
+      ]
+    },
+    {
+      "case_id": "B40-021",
+      "decision": "FAIL",
+      "evidence": [
+        "The query groups by the current catalog category rather than inventory.category, and it filters away all non-stockout rows, losing categories whose count should be zero."
+      ]
+    },
+    {
+      "case_id": "B40-022",
+      "decision": "PASS",
+      "evidence": [
+        "BETWEEN includes both requested snapshot boundaries. The query uses separate null and non-null counts, grouped by snapshot; the inventory primary key makes distinct product counts equivalent to counting rows per snapshot."
+      ]
+    },
+    {
+      "case_id": "B40-023",
+      "decision": "PASS",
+      "evidence": [
+        "The two exact-date inventory CTEs are joined on their unique per-snapshot product_id, restricting to products present in both. The selected balances and after-minus-before calculation match the case. The two extra date columns are evaluated separately."
+      ]
+    },
+    {
+      "case_id": "B40-024",
+      "decision": "PASS",
+      "evidence": [
+        "The date-typed interval through 2025-11-30 is equivalent to an exclusive 2025-12-01 boundary. It groups by each snapshot and sums only within each date. The required product foreign key makes the many-to-one catalog join population-preserving."
+      ]
+    },
+    {
+      "case_id": "B40-025",
+      "decision": "FAIL",
+      "evidence": [
+        "The request explicitly groups by the category recorded in the inventory row. The query groups by products.category, which may disagree with the snapshot label. Its NULL count calculation is equivalent by itself."
+      ]
+    },
+    {
+      "case_id": "B40-026",
+      "decision": "PASS",
+      "evidence": [
+        "The adapted input carried the 2024 company COGS scope. The SQL uses that exact half-open interval on commerce.sales, sums cogs, and groups by month. The result scorer compares timestamp and date representations separately."
+      ]
+    },
+    {
+      "case_id": "B40-027",
+      "decision": "PASS",
+      "evidence": [
+        "The query carries forward the frozen 2025 order_date interval and order_source grouping, narrows order_status to delivered, and counts distinct order IDs. The output contract allows unordered rows."
+      ]
+    },
+    {
+      "case_id": "B40-028",
+      "decision": "FAIL",
+      "evidence": [
+        "The query joins month-start timestamps with their years intact, so 2024 month starts cannot match 2023 month starts. It also omits the required 2024-minus-2023 difference."
+      ]
+    },
+    {
+      "case_id": "B40-029",
+      "decision": "PASS",
+      "evidence": [
+        "The query retains calendar 2024 and SUM(return_quantity) by reason, limits to two, and orders by total descending then reason ascending with default NULLS LAST."
+      ]
+    },
+    {
+      "case_id": "B40-030",
+      "decision": "PASS",
+      "evidence": [
+        "The query uses the inherited 2025-10-31 snapshot and ranks the top five by stockout_days descending and product_id ascending. The retained prior metric, days_of_supply, is assessed separately as extra output."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,832 @@
+{
+  "format_version": "sql-business-observations.v1",
+  "manifest": {
+    "experiment_id": "20261122T152446Z",
+    "application_revision": "8649a7eb3576f8b8d3b68a8377fb2b688c6eb31b",
+    "application_source_revision": "8649a7eb3576f8b8d3b68a8377fb2b688c6eb31b",
+    "harness_revision": "8649a7eb3576f8b8d3b68a8377fb2b688c6eb31b",
+    "dirty_worktree": true,
+    "dirty_paths": [
+      "artifacts/sql-agent-bussiness/40-case-v3-1/scorer_v3_4.py",
+      "artifacts/sql-agent-bussiness/runner.py",
+      "artifacts/sql-agent-bussiness/tests/test_format_rescore.py",
+      "artifacts/sql-agent-bussiness/tests/test_runner.py",
+      "artifacts/sql-agent-bussiness/tests/test_runner_followup.py",
+      "artifacts/sql-agent-bussiness/tests/test_v31_freeze.py",
+      "src/core/agents/sql/agent.py",
+      "src/core/agents/sql/metric_mapping.py",
+      "src/core/agents/sql/metric_validation.py",
+      "src/core/agents/sql/text_to_sql.py",
+      "tests/sql/test_benchmark_v3_1_contract.py",
+      "tests/sql/test_sql_benchmark_regressions.py"
+    ],
+    "source_hashes": {
+      "data/semantic/vietstyle_metrics_v1.yaml": "5c05965d8e11d8230fbe1cae181370b12851f446f414dd59c9bbc9bb126fb1c3",
+      "src/core/agents/decision_support/intent_classifier.py": "429ae53a51a3de03f2ae00a2682b01a70efc5ffc9796caa408f3e3c639a2a49f",
+      "src/core/agents/sql/agent.py": "bdf1098b837d7ebeeb08f25a9376a95f30789aa83412f7441d0edd50eec165f1",
+      "src/core/agents/sql/assistant_endpoint.py": "61c57b7d875eb79ace53fb66d5e7ec41b019f7a87919b42d14d1fedce5fe720f",
+      "src/core/agents/sql/compiler_dispatch.py": "9df24bbcf6f2fb3bedcfc620aa59506403793ecfca6a1a387dcc90c52dab098c",
+      "src/core/agents/sql/field_retrieval.py": "7fc37b464d2f6c5edb726361a78567c5cd650cd2c18408af5d816e040d777752",
+      "src/core/agents/sql/intent_resolution.py": "86defb2ef65e1c03dbfa62d1877dd1df5f0c9051727625af50d82a0a6ba1cfa0",
+      "src/core/agents/sql/join_validation.py": "e776fa376e36820004c7eaad5f34e134802f6089fe0b6b80e2f1812298559007",
+      "src/core/agents/sql/metric_mapping.py": "d799f53661dcdd6803e292cf7160956db7d5c468c1319ea2d942359c5b25b2e9",
+      "src/core/agents/sql/metric_ontology.py": "f1aca33a5f880a71852eef99b62472e55250931ec6f546e1b7dd1d7e5cafe308",
+      "src/core/agents/sql/metric_validation.py": "a6f7fc9e2c944d9b31bccfd9ebbe35c45b4b66b3fdf8e2268971e60353419b3f",
+      "src/core/agents/sql/query_contract.py": "db8da85d463cd7a32a7b035404e4eee620576321e9cc3d47911fe58f75a04957",
+      "src/core/agents/sql/query_intent.py": "cf6f4a41cd8d01c9e4a909346c8e6ddcdcaea5354cbd98e8a38b6366c2d7e78e",
+      "src/core/agents/sql/sql_validation.py": "9ec8b37f17af557475090b7daebacbb3b00bad3aaeeff97b1a8b1ab0403c1290",
+      "src/core/agents/sql/text_to_sql.py": "56d4c8e3ce6f66cf76f0a9ecfcacda7db2df111743602c76ec0eda5fd66f1e1d",
+      "src/core/database/commerce_repository.py": "c50409b9dda2c25768f4f669fe8765253b85df35199acca438b03d64030d41ec",
+      "src/core/prompts/sql.py": "b5232dae56d2e2379c8dfcb4a4c2dd3599ddbd42cad9370964cdf7b2376dcd2a"
+    },
+    "source_fingerprint_sha256": "3257221908c2145e83107ab733cf6ce8d09aea78bfcae5cc31b41cae9ff5a56d",
+    "benchmark_code_hashes": {
+      "artifacts/sql-agent-bussiness/cases.json": "93b88c56b84c7e594d83c77a3e619aaf2f6aa1ff32868c686e937fe2f67063d4",
+      "artifacts/sql-agent-bussiness/benchmark_40_plan.json": "5a23ae04d3e5424b4814a4f3759713903ecf23a696bc6e1ce42108806f6a78ce",
+      "artifacts/sql-agent-bussiness/failure_classes.json": "e8e882b928b29a78df3f05f1bd46d3ae63daeb0cb1725aed78edaba0850acffb",
+      "artifacts/sql-agent-bussiness/preflight.py": "bbaec1e74677d7c1a9a199c36127ec2b4188b6c2103f4f1acfaa1620bda7eb4c",
+      "artifacts/sql-agent-bussiness/reference_runner.py": "a9c26b6d6ef6207b69049e249f9612996d2058873b35a2ec32495cea12ae3c88",
+      "artifacts/sql-agent-bussiness/runner.py": "700f4be4dca8b259c7e9167ba8621cbb7de1b677e11b7ab287458278a67f8c62",
+      "artifacts/sql-agent-bussiness/40-case-v3/followup_adapter.py": "3ec038322e7e1a47824c0b0d93287a04039940e775d83c1c2cb1fd1225e54bbc",
+      "artifacts/sql-agent-bussiness/scorer.py": "0fc62447df7daf44219ecbdad9423ac5b5b8633e1f2aaa74224ff00865278c92",
+      "artifacts/sql-agent-bussiness/PROTOCOL.md": "f478c5b6f7d239f4b869b62a7a9a65811311a65c02c53fd3529eda0f1a962062",
+      "artifacts/sql-agent-bussiness/README.md": "52dda7b175d0fd2092b996d3a9c602131676000e709f9fba134188f22b71724b",
+      "artifacts/sql-agent-bussiness/THESIS_ALIGNMENT.md": "145abf8498f38360a8f1c35b4d8dc4b16bed04f808858957a6ca5a493580aa87",
+      "artifacts/sql-agent-bussiness/tests/test_runner.py": "9a77e15870f939fd390012a4cc4293db28e60ced3652a9ddc52fcfad1b8a376d",
+      "artifacts/sql-agent-bussiness/tests/test_scorer.py": "093217355f952317eda1d5560318368a26e968310ae499cacd5198db9912e5aa",
+      "artifacts/sql-agent-bussiness/40-case-v3-1/cases_v3_1_draft.json": "f5030b254f81d237b73b50ef491df583cd0076f4c98a44958c6612afdb01a625",
+      "artifacts/sql-agent-bussiness/40-case-v3-1/gold_sql_v3_1_draft.json": "bd3fde86d887493f82a2a498e3e58a4eb8beefa2af5d4b81596e6274158c4022",
+      "artifacts/sql-agent-bussiness/40-case-v3-1/gold_results_v3_1_provisional.json": "33e80eee02f59aa8140b725d233ee209ba6e5cd68a3241329f220e1e67700f84",
+      "artifacts/sql-agent-bussiness/40-case-v3-1/scorer_v3_1.py": "09736cff9ea4cb5edf40e470a0c1692c40b61f57e290e2384493e2f60c2a68f4",
+      "artifacts/sql-agent-bussiness/40-case-v3-1/PROTOCOL_V3_1.md": "6a5c39b9bcc500876699d6830f87d16809116d0b38f24bc39fd68b1aabbfef22",
+      "artifacts/sql-agent-bussiness/40-case-v3-1/semantic_audit_v3_1.py": "af041327fe3264042f0c6fa1cb3e886a96c5cf32a22232d0747d9f1464d41514",
+      "artifacts/sql-agent-bussiness/40-case-v3-1/output_safety_audit_v3_3.py": "72a09a9ca856a27fc755664f50de0f31d7d236172a039cad010dd9d0aea1296d",
+      "artifacts/sql-agent-bussiness/40-case-v3-1/FREEZE_MANIFEST_V3_1_FROZEN_V1.json": "2df88b7aa53a9d192ca08055700cc23be321f02f433f1ced3a40af65bdc52d0e"
+    },
+    "prompt_hashes": {
+      "src/core/prompts/sql.py": "b5232dae56d2e2379c8dfcb4a4c2dd3599ddbd42cad9370964cdf7b2376dcd2a",
+      "src/core/agents/sql/metric_mapping.py": "d799f53661dcdd6803e292cf7160956db7d5c468c1319ea2d942359c5b25b2e9"
+    },
+    "provider": "cloudflare",
+    "model": "@cf/openai/gpt-oss-20b",
+    "case_delay_seconds": 1,
+    "intent_model": "not invoked by direct SQL-agent route",
+    "schema_selection_model": "perplexity/pplx-decider-flash-v1.3:free",
+    "provider_settings": {
+      "SQL_LLM_PROVIDER": "cloudflare",
+      "SQL_GROQ_MODEL": "openai/gpt-oss-20b",
+      "SQL_CLOUDFLARE_MODEL": "@cf/openai/gpt-oss-20b",
+      "GROQ_MODEL": "qwen/qwen3.8-27b",
+      "CODEX_CLI_SQL_FALLBACK": "true",
+      "SQL_SCHEMA_SELECTION_MODEL": "perplexity/pplx-decider-flash-v1.3:free"
+    },
+    "sql_provider_chain": {
+      "primary": {
+        "provider": "cloudflare",
+        "model": "@cf/openai/gpt-oss-20b"
+      },
+      "secondary": {
+        "provider": "groq",
+        "model": "qwen/qwen3.8-27b",
+        "self_hosted_base_url_configured": false
+      },
+      "local_fallback_enabled": true,
+      "local_fallback_model": "configured Codex CLI model"
+    },
+    "package_versions": {
+      "sqlglot": "30.19.0",
+      "asyncpg": "0.32.0",
+      "supabase": "2.31.0",
+      "pydantic": "2.11.7",
+      "httpx": "0.28.1"
+    },
+    "repair_budget": 1,
+    "python_version": "3.11.16",
+    "configuration_fingerprint": "d9389f50bf71b9742a7c6cc7379d63dc5d50d581d7fcf149992b0c4785b9fee3",
+    "purpose": "post-fix regression on previously observed cases",
+    "dataset_fingerprint_sha256": "dbc14b99acc2920ffaeb4190ba45708982c971f0671b0b9e8114b595f2594028",
+    "status": "completed",
+    "started_at": "2026-11-22T15:24:46.186138+00:00",
+    "completed_at": "2026-11-22T15:27:15.752305+00:00"
+  },
+  "case_set_sha256": "faacdd5ae41f7e90155de9a633e932c20ccdd286f48ff54c2b05b0a33829034c",
+  "cases": [
+    {
+      "id": "B40-013",
+      "question": "Tại snapshot 2026-11-13, top 5 segment theo tổng units_received; nếu bằng nhau sắp segment tăng dần.",
+      "status": "executed",
+      "sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.inventory.segment AS segment, SUM(commerce.inventory.units_received) AS units_received FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.snapshot_date = $1 GROUP BY commerce.inventory.snapshot_date, commerce.inventory.segment ORDER BY SUM(commerce.inventory.units_received) DESC NULLS LAST, commerce.inventory.snapshot_date, commerce.inventory.segment LIMIT 5",
+      "parameters": [
+        "2026-11-13"
+      ],
+      "rows": [
+        {
+          "snapshot_date": "2026-11-13",
+          "segment": "Activewear",
+          "units_received": 497
+        },
+        {
+          "snapshot_date": "2026-11-13",
+          "segment": "Everyday",
+          "units_received": 129
+        },
+        {
+          "snapshot_date": "2026-11-13",
+          "segment": "Balanced",
+          "units_received": 96
+        },
+        {
+          "snapshot_date": "2026-11-13",
+          "segment": "Performance",
+          "units_received": 43
+        },
+        {
+          "snapshot_date": "2026-11-13",
+          "segment": "Premium",
+          "units_received": 39
+        }
+      ],
+      "columns": [
+        "snapshot_date",
+        "segment",
+        "units_received"
+      ],
+      "answer": "Query completed.",
+      "error_type": null,
+      "error_detail": null,
+      "failure_class": null,
+      "execution_events": [
+        {
+          "kind": "approved",
+          "security_validated": true,
+          "semantic_approval": true
+        }
+      ],
+      "schema_selection": {
+        "method": "decision_model_top_five",
+        "candidate_tables": [
+          "commerce.inventory",
+          "commerce.order_items",
+          "commerce.orders",
+          "commerce.products",
+          "commerce.returns"
+        ],
+        "required_tables": [],
+        "final_selected_tables": null,
+        "ontology_added_sources": [],
+        "approved_join_bridge_additions": [],
+        "failure": null,
+        "schema_selector_status": "available",
+        "schema_selector_http_status": null
+      },
+      "calls": {
+        "fixed_match_calls": 1,
+        "fixed_compiler_matches": 0,
+        "fixed_compilation_calls": 1,
+        "fixed_compiler_plans": 0,
+        "inventory_compilation_calls": 1,
+        "inventory_compiler_plans": 1,
+        "general_sql_generation": 0,
+        "intent_interpretation": 0,
+        "metric_interpretation": 1,
+        "provider_fallback_calls": 0,
+        "local_codex_fallback_calls": 1,
+        "schema_selector_attempts": 1,
+        "schema_selector_successes": 1,
+        "sql_repair": 0,
+        "schema_selection": 1,
+        "schema_discovery": 1,
+        "repository_execution_attempts": 1,
+        "repository_execution": 1,
+        "approved_repository_execution_attempts": 1,
+        "unverified_repository_execution_attempts": 0,
+        "approved_repository_execution": 1,
+        "unverified_repository_execution": 0,
+        "sql_generation_entries": 0
+      },
+      "latency_ms": 46210.889,
+      "provider_calls": [
+        {
+          "stage": "metric_interpretation",
+          "provider": "CloudflareProvider",
+          "model": "@cf/openai/gpt-oss-20b",
+          "status": "failed",
+          "error_type": "RuntimeError",
+          "latency_ms": 356.833,
+          "usage": null
+        }
+      ],
+      "metadata": {
+        "schema_table_selection": "decision_model_top_five",
+        "schema_table_candidates": [
+          "commerce.inventory",
+          "commerce.order_items",
+          "commerce.orders",
+          "commerce.products",
+          "commerce.returns"
+        ],
+        "semantic_interpretation": {
+          "domain": "inventory",
+          "metrics": [
+            "units_received"
+          ],
+          "dimensions": [
+            "snapshot_date",
+            "segment"
+          ],
+          "snapshot_labels": [
+            "segment"
+          ],
+          "filters": [],
+          "time": {
+            "mode": "snapshot",
+            "start": "2026-11-13",
+            "end": null
+          },
+          "ranking": {
+            "metric": "units_received",
+            "direction": "desc",
+            "limit": 5,
+            "then": []
+          },
+          "representation": "aggregate",
+          "clarification": null
+        }
+      },
+      "route": "sql_agent",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "executed",
+          "started_at": "2026-11-22T15:24:49.500122+00:00",
+          "latency_ms": 46210.889
+        }
+      ],
+      "completed_at": "2026-11-22T15:25:35.711390+00:00"
+    },
+    {
+      "id": "B40-021",
+      "question": "Tại snapshot 2026-11-13, đếm số sản phẩm có stockout_flag = TRUE theo từng category.",
+      "status": "executed",
+      "sql": "SELECT commerce.inventory.snapshot_date AS snapshot_date, commerce.inventory.category AS category, COUNT(DISTINCT commerce.inventory.product_id) AS observed_product_count FROM commerce.inventory JOIN commerce.products ON inventory.product_id = products.product_id WHERE commerce.inventory.stockout_flag = TRUE AND commerce.inventory.snapshot_date = $1 GROUP BY commerce.inventory.snapshot_date, commerce.inventory.category ORDER BY commerce.inventory.snapshot_date, commerce.inventory.category LIMIT 200",
+      "parameters": [
+        "2026-11-13"
+      ],
+      "rows": [
+        {
+          "snapshot_date": "2026-11-13",
+          "category": "GenZ",
+          "observed_product_count": 2
+        },
+        {
+          "snapshot_date": "2026-11-13",
+          "category": "Outdoor",
+          "observed_product_count": 10
+        },
+        {
+          "snapshot_date": "2026-11-13",
+          "category": "Streetwear",
+          "observed_product_count": 5
+        }
+      ],
+      "columns": [
+        "snapshot_date",
+        "category",
+        "observed_product_count"
+      ],
+      "answer": "Query completed.",
+      "error_type": null,
+      "error_detail": null,
+      "failure_class": null,
+      "execution_events": [
+        {
+          "kind": "approved",
+          "security_validated": true,
+          "semantic_approval": true
+        }
+      ],
+      "schema_selection": {
+        "method": "decision_model_top_five",
+        "candidate_tables": [
+          "commerce.inventory",
+          "commerce.order_items",
+          "commerce.products",
+          "commerce.returns",
+          "commerce.reviews"
+        ],
+        "required_tables": [],
+        "final_selected_tables": null,
+        "ontology_added_sources": [],
+        "approved_join_bridge_additions": [],
+        "failure": null,
+        "schema_selector_status": "available",
+        "schema_selector_http_status": null
+      },
+      "calls": {
+        "fixed_match_calls": 1,
+        "fixed_compiler_matches": 0,
+        "fixed_compilation_calls": 1,
+        "fixed_compiler_plans": 0,
+        "inventory_compilation_calls": 1,
+        "inventory_compiler_plans": 1,
+        "general_sql_generation": 0,
+        "intent_interpretation": 0,
+        "metric_interpretation": 1,
+        "provider_fallback_calls": 0,
+        "local_codex_fallback_calls": 1,
+        "schema_selector_attempts": 1,
+        "schema_selector_successes": 1,
+        "sql_repair": 0,
+        "schema_selection": 1,
+        "schema_discovery": 1,
+        "repository_execution_attempts": 1,
+        "repository_execution": 1,
+        "approved_repository_execution_attempts": 1,
+        "unverified_repository_execution_attempts": 0,
+        "approved_repository_execution": 1,
+        "unverified_repository_execution": 0,
+        "sql_generation_entries": 0
+      },
+      "latency_ms": 32277.196,
+      "provider_calls": [
+        {
+          "stage": "metric_interpretation",
+          "provider": "CloudflareProvider",
+          "model": "@cf/openai/gpt-oss-20b",
+          "status": "failed",
+          "error_type": "RuntimeError",
+          "latency_ms": 357.245,
+          "usage": null
+        }
+      ],
+      "metadata": {
+        "schema_table_selection": "decision_model_top_five",
+        "schema_table_candidates": [
+          "commerce.inventory",
+          "commerce.order_items",
+          "commerce.products",
+          "commerce.returns",
+          "commerce.reviews"
+        ],
+        "semantic_interpretation": {
+          "domain": "inventory",
+          "metrics": [
+            "observed_product_count"
+          ],
+          "dimensions": [
+            "snapshot_date",
+            "category"
+          ],
+          "snapshot_labels": [
+            "category"
+          ],
+          "filters": [
+            {
+              "field": "stockout_indicator",
+              "operator": "eq",
+              "value": true
+            }
+          ],
+          "time": {
+            "mode": "snapshot",
+            "start": "2026-11-13",
+            "end": null
+          },
+          "ranking": null,
+          "representation": "aggregate",
+          "clarification": null
+        }
+      },
+      "route": "sql_agent",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "executed",
+          "started_at": "2026-11-22T15:25:36.734535+00:00",
+          "latency_ms": 32277.196
+        }
+      ],
+      "completed_at": "2026-11-22T15:26:09.010989+00:00"
+    },
+    {
+      "id": "B40-025",
+      "question": "Tại snapshot 2025-10-31, tính trung bình days_of_supply theo category được ghi trong inventory row; báo số non-NULL và NULL, không thay NULL bằng 0.",
+      "status": "clarification_required",
+      "sql": null,
+      "parameters": [],
+      "rows": [],
+      "columns": [],
+      "answer": "Bạn muốn tính trung bình days_of_supply theo category nào?",
+      "error_type": null,
+      "error_detail": null,
+      "failure_class": null,
+      "execution_events": [],
+      "schema_selection": {
+        "method": "decision_model_top_five",
+        "candidate_tables": [
+          "commerce.inventory",
+          "commerce.order_items",
+          "commerce.products",
+          "commerce.returns",
+          "commerce.reviews"
+        ],
+        "required_tables": [],
+        "final_selected_tables": null,
+        "ontology_added_sources": [],
+        "approved_join_bridge_additions": [],
+        "failure": null,
+        "schema_selector_status": "available",
+        "schema_selector_http_status": null
+      },
+      "calls": {
+        "fixed_match_calls": 1,
+        "fixed_compiler_matches": 0,
+        "fixed_compilation_calls": 1,
+        "fixed_compiler_plans": 0,
+        "inventory_compilation_calls": 0,
+        "inventory_compiler_plans": 0,
+        "general_sql_generation": 4,
+        "intent_interpretation": 0,
+        "metric_interpretation": 1,
+        "provider_fallback_calls": 2,
+        "local_codex_fallback_calls": 1,
+        "schema_selector_attempts": 1,
+        "schema_selector_successes": 1,
+        "sql_repair": 1,
+        "schema_selection": 1,
+        "schema_discovery": 1,
+        "repository_execution_attempts": 0,
+        "repository_execution": 0,
+        "approved_repository_execution_attempts": 0,
+        "unverified_repository_execution_attempts": 0,
+        "approved_repository_execution": 0,
+        "unverified_repository_execution": 0,
+        "sql_generation_entries": 2
+      },
+      "latency_ms": 46717.135,
+      "provider_calls": [
+        {
+          "stage": "metric_interpretation",
+          "provider": "CloudflareProvider",
+          "model": "@cf/openai/gpt-oss-20b",
+          "status": "failed",
+          "error_type": "RuntimeError",
+          "latency_ms": 389.166,
+          "usage": null
+        },
+        {
+          "stage": "sql_generation",
+          "provider": "CloudflareProvider",
+          "model": "@cf/openai/gpt-oss-20b",
+          "status": "failed",
+          "error_type": "RuntimeError",
+          "latency_ms": 286.157,
+          "usage": null
+        },
+        {
+          "stage": "sql_generation",
+          "provider": "GroqProvider",
+          "model": "qwen/qwen3.8-27b",
+          "status": "completed",
+          "latency_ms": 6724.949,
+          "usage": {
+            "input_tokens": 3836,
+            "output_tokens": 275,
+            "total_tokens": 4111
+          }
+        },
+        {
+          "stage": "sql_generation",
+          "provider": "CloudflareProvider",
+          "model": "@cf/openai/gpt-oss-20b",
+          "status": "failed",
+          "error_type": "RuntimeError",
+          "latency_ms": 298.664,
+          "usage": null
+        },
+        {
+          "stage": "sql_generation",
+          "provider": "GroqProvider",
+          "model": "qwen/qwen3.8-27b",
+          "status": "completed",
+          "latency_ms": 2584.223,
+          "usage": {
+            "input_tokens": 4301,
+            "output_tokens": 75,
+            "total_tokens": 4376
+          }
+        }
+      ],
+      "metadata": {
+        "status": "clarification_required",
+        "schema_table_selection": "decision_model_top_five",
+        "schema_table_candidates": [
+          "commerce.inventory",
+          "commerce.order_items",
+          "commerce.products",
+          "commerce.returns",
+          "commerce.reviews"
+        ],
+        "clarification_options": [
+          "Theo category trong commerce.inventory (theo yêu cầu ghi trong inventory row)",
+          "Theo category trong commerce.products (thông tin sản phẩm)",
+          "Khác (ghi rõ)"
+        ]
+      },
+      "route": "sql_agent",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "clarification_required",
+          "started_at": "2026-11-22T15:26:10.030280+00:00",
+          "latency_ms": 46717.135
+        }
+      ],
+      "completed_at": "2026-11-22T15:26:56.746773+00:00"
+    },
+    {
+      "id": "B40-028",
+      "question": "Còn so với năm trước theo từng tháng thì sao?",
+      "status": "executed",
+      "sql": "WITH monthly AS (\n  SELECT \n    EXTRACT(YEAR FROM s.date) AS year,\n    EXTRACT(MONTH FROM s.date) AS month,\n    SUM(s.revenue) - SUM(s.cogs) AS gross_profit\n  FROM commerce.sales AS s\n  WHERE s.date >= CAST($1 AS DATE) AND s.date < CAST($2 AS DATE)\n  GROUP BY 1, 2\n)\nSELECT \n  m24.month AS month,\n  m24.gross_profit AS gross_profit_2024,\n  m23.gross_profit AS gross_profit_2023,\n  m24.gross_profit - m23.gross_profit AS difference\nFROM monthly AS m24\nLEFT JOIN monthly AS m23 ON m24.month = m23.month AND m23.year = 2023\nWHERE m24.year = 2024\nORDER BY m24.month ASC\nLIMIT 12",
+      "parameters": [
+        "2023-01-01",
+        "2025-01-01"
+      ],
+      "rows": [
+        {
+          "month": "1",
+          "gross_profit_2024": "218718.84",
+          "gross_profit_2023": "223729.62",
+          "difference": "-5010.78"
+        },
+        {
+          "month": "2",
+          "gross_profit_2024": "134595.00",
+          "gross_profit_2023": "284452.46",
+          "difference": "-149857.46"
+        },
+        {
+          "month": "3",
+          "gross_profit_2024": "184868.01",
+          "gross_profit_2023": "236477.29",
+          "difference": "-51609.28"
+        },
+        {
+          "month": "4",
+          "gross_profit_2024": "241844.50",
+          "gross_profit_2023": "266335.69",
+          "difference": "-24491.19"
+        },
+        {
+          "month": "5",
+          "gross_profit_2024": "199604.31",
+          "gross_profit_2023": "329319.39",
+          "difference": "-129715.08"
+        },
+        {
+          "month": "6",
+          "gross_profit_2024": "75202.17",
+          "gross_profit_2023": "116484.87",
+          "difference": "-41282.70"
+        },
+        {
+          "month": "7",
+          "gross_profit_2024": "158048.18",
+          "gross_profit_2023": "183564.09",
+          "difference": "-25515.91"
+        },
+        {
+          "month": "8",
+          "gross_profit_2024": "254292.84",
+          "gross_profit_2023": "323921.56",
+          "difference": "-69628.72"
+        },
+        {
+          "month": "9",
+          "gross_profit_2024": "183773.73",
+          "gross_profit_2023": "265073.35",
+          "difference": "-81299.62"
+        },
+        {
+          "month": "10",
+          "gross_profit_2024": "207755.47",
+          "gross_profit_2023": "300349.14",
+          "difference": "-92593.67"
+        },
+        {
+          "month": "11",
+          "gross_profit_2024": "183280.75",
+          "gross_profit_2023": "198246.39",
+          "difference": "-14965.64"
+        },
+        {
+          "month": "12",
+          "gross_profit_2024": "109610.56",
+          "gross_profit_2023": "170245.82",
+          "difference": "-60635.26"
+        }
+      ],
+      "columns": [
+        "month",
+        "gross_profit_2024",
+        "gross_profit_2023",
+        "difference"
+      ],
+      "answer": "Query completed.",
+      "error_type": null,
+      "error_detail": null,
+      "failure_class": null,
+      "execution_events": [
+        {
+          "kind": "unverified",
+          "security_validated": true,
+          "semantic_approval": false
+        }
+      ],
+      "schema_selection": {
+        "method": "decision_model_top_five",
+        "candidate_tables": [
+          "commerce.inventory",
+          "commerce.order_items",
+          "commerce.orders",
+          "commerce.products",
+          "commerce.sales"
+        ],
+        "required_tables": [],
+        "final_selected_tables": null,
+        "ontology_added_sources": [],
+        "approved_join_bridge_additions": [],
+        "failure": null,
+        "schema_selector_status": "available",
+        "schema_selector_http_status": null
+      },
+      "calls": {
+        "fixed_match_calls": 1,
+        "fixed_compiler_matches": 0,
+        "fixed_compilation_calls": 1,
+        "fixed_compiler_plans": 0,
+        "inventory_compilation_calls": 0,
+        "inventory_compiler_plans": 0,
+        "general_sql_generation": 4,
+        "intent_interpretation": 0,
+        "metric_interpretation": 0,
+        "provider_fallback_calls": 2,
+        "local_codex_fallback_calls": 0,
+        "schema_selector_attempts": 1,
+        "schema_selector_successes": 1,
+        "sql_repair": 1,
+        "schema_selection": 1,
+        "schema_discovery": 1,
+        "repository_execution_attempts": 1,
+        "repository_execution": 1,
+        "approved_repository_execution_attempts": 0,
+        "unverified_repository_execution_attempts": 1,
+        "approved_repository_execution": 0,
+        "unverified_repository_execution": 1,
+        "sql_generation_entries": 2
+      },
+      "latency_ms": 14357.962,
+      "provider_calls": [
+        {
+          "stage": "sql_generation",
+          "provider": "CloudflareProvider",
+          "model": "@cf/openai/gpt-oss-20b",
+          "status": "failed",
+          "error_type": "RuntimeError",
+          "latency_ms": 338.826,
+          "usage": null
+        },
+        {
+          "stage": "sql_generation",
+          "provider": "GroqProvider",
+          "model": "qwen/qwen3.8-27b",
+          "status": "completed",
+          "latency_ms": 1294.807,
+          "usage": {
+            "input_tokens": 2749,
+            "output_tokens": 363,
+            "total_tokens": 3112
+          }
+        },
+        {
+          "stage": "sql_generation",
+          "provider": "CloudflareProvider",
+          "model": "@cf/openai/gpt-oss-20b",
+          "status": "failed",
+          "error_type": "RuntimeError",
+          "latency_ms": 363.036,
+          "usage": null
+        },
+        {
+          "stage": "sql_generation",
+          "provider": "GroqProvider",
+          "model": "qwen/qwen3.8-27b",
+          "status": "completed",
+          "latency_ms": 6842.604,
+          "usage": {
+            "input_tokens": 3303,
+            "output_tokens": 358,
+            "total_tokens": 3661
+          }
+        }
+      ],
+      "metadata": {
+        "schema_table_selection": "decision_model_top_five",
+        "schema_table_candidates": [
+          "commerce.inventory",
+          "commerce.order_items",
+          "commerce.orders",
+          "commerce.products",
+          "commerce.sales"
+        ],
+        "metric_validation": {
+          "status": "unverified",
+          "code": "sql_validation_failed",
+          "reason": "SQL passed read-only security checks, but schema, relationship, or query-shape validation did not pass: Derived joins require complete grouped keys and approved dimension lineage.",
+          "knowledge_lookup": "not_configured"
+        }
+      },
+      "followup_context": {
+        "adapter_version": "context-conditioned-sql.v1",
+        "context_sha256": "9fc68c2e044b966e216f404748460d6c90645c705775f51477beb4a73954cdc5",
+        "prior_question_sha256": "48158abfcd14df95047c3d58fc4811594500a02d37698ec610527d6240413dcd"
+      },
+      "route": "sql_agent",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "executed",
+          "started_at": "2026-11-22T15:26:57.757255+00:00",
+          "latency_ms": 14357.962
+        }
+      ],
+      "completed_at": "2026-11-22T15:27:12.114482+00:00"
+    },
+    {
+      "id": "B40-031",
+      "question": "Doanh thu tăng bao nhiêu so với kỳ trước?",
+      "status": "clarification_required",
+      "sql": null,
+      "parameters": [],
+      "rows": [],
+      "columns": [],
+      "answer": "Bạn muốn so sánh hai khoảng thời gian nào?",
+      "error_type": "MetricDefinitionError",
+      "error_detail": "Bạn muốn so sánh hai khoảng thời gian nào?",
+      "failure_class": null,
+      "execution_events": [],
+      "schema_selection": {
+        "method": null,
+        "candidate_tables": [],
+        "required_tables": [],
+        "final_selected_tables": null,
+        "ontology_added_sources": [],
+        "approved_join_bridge_additions": [],
+        "failure": null,
+        "schema_selector_status": "not_attempted",
+        "schema_selector_http_status": null
+      },
+      "calls": {
+        "fixed_match_calls": 0,
+        "fixed_compiler_matches": 0,
+        "fixed_compilation_calls": 0,
+        "fixed_compiler_plans": 0,
+        "inventory_compilation_calls": 0,
+        "inventory_compiler_plans": 0,
+        "general_sql_generation": 0,
+        "intent_interpretation": 0,
+        "metric_interpretation": 0,
+        "provider_fallback_calls": 0,
+        "local_codex_fallback_calls": 0,
+        "schema_selector_attempts": 0,
+        "schema_selector_successes": 0,
+        "sql_repair": 0,
+        "schema_selection": 0,
+        "schema_discovery": 1,
+        "repository_execution_attempts": 0,
+        "repository_execution": 0,
+        "approved_repository_execution_attempts": 0,
+        "unverified_repository_execution_attempts": 0,
+        "approved_repository_execution": 0,
+        "unverified_repository_execution": 0,
+        "sql_generation_entries": 0
+      },
+      "latency_ms": 2612.692,
+      "provider_calls": [],
+      "metadata": {
+        "status": "clarification_required"
+      },
+      "route": "sql_agent",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "clarification_required",
+          "started_at": "2026-11-22T15:27:13.129080+00:00",
+          "latency_ms": 2612.692
+        }
+      ],
+      "completed_at": "2026-11-22T15:27:15.741910+00:00"
+    }
+  ]
+}

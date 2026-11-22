@@ -3419,6 +3419,20 @@ function restyleDashboardFrames() {
   }
 }
 
+// Dashboard frames grow to their document's height, so the page scrolls rather than a box inside it.
+// sandbox="allow-same-origin" lets the page read that height; scripts stay blocked by the sandbox and the document's CSP.
+function fitDashboardFrame(frame) {
+  const doc = frame.contentDocument;
+  if (!doc || !doc.documentElement) return;
+  // A frame loaded while hidden measures 0; keep the CSS height until it is shown and its window resizes.
+  const fit = () => { const height = doc.documentElement.offsetHeight; if (height) frame.style.height = `${Math.ceil(height)}px`; };
+  fit();
+  doc.addEventListener("toggle", fit, true); // a "Source observations" block opened inside the frame
+  frame.contentWindow?.addEventListener("resize", fit);
+  doc.fonts?.ready.then(fit);
+}
+for (const id of ["home-overview-preview", "dw-preview"]) document.getElementById(id)?.addEventListener("load", event => fitDashboardFrame(event.currentTarget));
+
 function themeGlass(apply) {
   const glass = document.createElement("div");
   glass.className = "theme-glass";
@@ -3682,10 +3696,14 @@ window.toast = (message, kind = "ok") => {
   const item = document.createElement("div");
   item.className = `toast toast-${kind}`;
   item.textContent = message;
+  // errors stay longer, because the status line that also carries them is hidden while a toast shows it
+  const stay = kind === "error" ? 8000 : 3200;
+  item.style.setProperty("--toast-ms", `${stay}ms`); // drives the draining timer line
   stack.append(item);
   while (stack.children.length > 3) stack.firstChild.remove();
-  setTimeout(() => item.classList.add("is-leaving"), 3200);
-  setTimeout(() => item.remove(), 3700);
+  const leave = () => { item.classList.add("is-leaving"); setTimeout(() => item.remove(), 500); };
+  item.addEventListener("click", leave);
+  setTimeout(leave, stay);
 };
 (() => {
   const done = /\b(saved|generated|downloaded|refreshed|deleted|created|copied|opened)\b|đã (lưu|tạo|tải|xóa|xoá|mở)/i;
@@ -3698,8 +3716,10 @@ window.toast = (message, kind = "ok") => {
       const message = line.textContent.trim();
       if (!message || message === last) return;
       last = message;
-      if (line.dataset.error === "true") window.toast(message, "error");
-      else if (done.test(message) && !working.test(message)) window.toast(message);
+      const toasted = line.dataset.error === "true" || (done.test(message) && !working.test(message));
+      if (toasted) window.toast(message, line.dataset.error === "true" ? "error" : "ok");
+      // a message shown as a toast is not repeated on the page; the line stays for screen readers (the toast is aria-hidden)
+      line.classList.toggle("is-toasted", toasted);
     }).observe(line, { childList: true, characterData: true, subtree: true });
   }
 })();

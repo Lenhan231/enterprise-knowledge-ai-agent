@@ -28,7 +28,7 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
         self.addCleanup(jev.stop)
 
     def test_jev_selects_tools_independently_above_half_probability(self):
-        payload = {'model': 'typesafe/jev-1.14', 'answers': {
+        payload = {'model': 'perplexity/pplx-decider-v1.2', 'answers': {
             'knowledge_required': {'type': 'choice', 'choice': 'yes',
                                    'probabilities': {'yes': 0.72, 'no': 0.28}},
             'sql_required': {'type': 'choice', 'choice': 'no',
@@ -46,7 +46,7 @@ class OrchestrationContractTest(unittest.IsolatedAsyncioTestCase):
 
         request = urlopen.call_args.args[0]
         sent = json.loads(request.data)
-        self.assertEqual(sent['model'], 'typesafe/jev-1.14')
+        self.assertEqual(sent['model'], 'perplexity/pplx-decider-v1.2')
         self.assertEqual(set(sent['questions']), {'knowledge_required', 'sql_required', 'history_required'})
         self.assertIn('which promotion candidate', sent['questions']['knowledge_required']['instructions'])
         self.assertEqual(decision['selected_tools'], ['knowledge'])

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 import unittest
 
@@ -153,6 +154,23 @@ class UnsupportedShapeAndRepairTests(unittest.TestCase):
         self.assertEqual(result["supported_repair_denominator"], 2)
         self.assertEqual(result["e2e_recovered_case_ids"], ["supported_recovered"])
         self.assertEqual(result["repaired_unsupported_cases_excluded"], ["unsupported"])
+
+
+class ReproducibilityManifestTests(unittest.TestCase):
+    @staticmethod
+    def manifest(version, score=10):
+        return (json.dumps({"python_version": version, "score": score},
+                           ensure_ascii=False, sort_keys=True, indent=2) + "\n").encode("utf-8")
+
+    def test_runtime_version_is_provenance_only(self):
+        name = "REPRODUCIBILITY_MANIFEST.json"
+        baseline = self.manifest("3.11.16")
+        self.assertTrue(analysis.matches_generated_artifact(name, baseline, self.manifest("3.11.17")))
+        self.assertFalse(analysis.matches_generated_artifact(name, baseline, self.manifest("3.11.17", 11)))
+        self.assertFalse(analysis.matches_generated_artifact(name, self.manifest("invalid"), baseline))
+        self.assertFalse(analysis.matches_generated_artifact(name, b"not JSON", baseline))
+        self.assertFalse(analysis.matches_generated_artifact("ERROR_ANALYSIS_REPORT.md", baseline,
+                                                            self.manifest("3.11.17")))
 
 
 if __name__ == "__main__":

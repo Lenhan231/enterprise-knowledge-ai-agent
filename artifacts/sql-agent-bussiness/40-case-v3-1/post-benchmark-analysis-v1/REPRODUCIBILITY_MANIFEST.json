@@ -2,9 +2,9 @@
   "analysis_branch_base_revision": "a2f57e67e45b965cda4e901d3e2647861655e4c5",
   "analysis_id": "post-benchmark-analysis-v1",
   "analysis_source_sha256": {
-    "artifacts/sql-agent-bussiness/40-case-v3-1/post-benchmark-analysis-v1/analyze.py": "5bf0f13136256b81c938f8b88d1bf6a66a93726a64281f42de61b0f82aecd795",
+    "artifacts/sql-agent-bussiness/40-case-v3-1/post-benchmark-analysis-v1/analyze.py": "3bef21d74d7f97fc432925cbcfcbc767679fe217cc3d94b958658c91b3b6ffd9",
     "artifacts/sql-agent-bussiness/40-case-v3-1/post-benchmark-analysis-v1/case_annotations.json": "6658f2373e4b70e7a44fccdfcb3024df6a94e78377a9e37c5234696f4caa8f80",
-    "artifacts/sql-agent-bussiness/40-case-v3-1/post-benchmark-analysis-v1/tests/test_analysis.py": "ee3e0edac95efaf0f47885dbd47911a053265abd0b6a50614bce106fedcfaf01"
+    "artifacts/sql-agent-bussiness/40-case-v3-1/post-benchmark-analysis-v1/tests/test_analysis.py": "85628f3ba483cc621166063dac0f0cdf0afb0a182789ef87305a2c809ef4a0f6"
   },
   "database_connection_made": false,
   "diagnostic_findings": {
@@ -704,7 +704,7 @@
   "format_version": "sql-post-benchmark-reproducibility-manifest.v1",
   "generated_analysis_sha256": {
     "CASE_ERROR_MATRIX.csv": "c2fb217f702a153c559643171771fcc448253affe3fc83397d6529e4c7df5c0e",
-    "ERROR_ANALYSIS_REPORT.md": "01da5b1fd3fb6ac235c174ade96ba99476cc86df574e8015633a1c532c6b8b29",
+    "ERROR_ANALYSIS_REPORT.md": "4acf5c37a43d2fda8e1ac8972705688342caa08dd73899c47e4a46b149995444",
     "HUMAN_REVIEW_QUEUE.md": "5440c78b55ebc68ea82d11befcead73425000be4d034b0305f22586e8b630283",
     "SCORER_FAIRNESS_AUDIT.md": "c00e85a5dcb0f2730dea639eadf5c52d42732f2e99e8d7408be12f100b19b6e6",
     "SENSITIVITY_ANALYSIS.json": "0daf8d51e5bd41791a7deedc84de3f574f6a65a57236b2c6277bfbfdd6922073"

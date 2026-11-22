@@ -21,6 +21,10 @@ jobs:
         with:
           node-version: "24"
       - run: uv sync --locked
+      - name: Verify frozen SQL post-benchmark analysis
+        run: |
+          uv run --locked --project . python -m unittest discover -s artifacts/sql-agent-bussiness/40-case-v3-1/post-benchmark-analysis-v1/tests -v
+          uv run --locked --project . python artifacts/sql-agent-bussiness/40-case-v3-1/post-benchmark-analysis-v1/analyze.py --check
       - run: uv run python -m compileall -q src tests scripts
       - run: uv run python -m unittest discover -s tests -t . -v
         env:

@@ -13,6 +13,7 @@ from core.agents.sql.metric_validation import (
     MetricDefinitionError, _canonical, _conjuncts, _formula, _latest_snapshot,
     validate_metric_request, _validate_inventory_time, inventory_time_scope, inventory_observation_query,
     inventory_comparison_dates, validate_stock_comparison,
+    requested_snapshot_labels,
 )
 
 
@@ -48,6 +49,7 @@ class MetricMapping(_StrictModel):
     domain: Literal['inventory','other'] = 'inventory'
     metrics: list[str] = Field(default_factory=list,max_length=16)
     dimensions: list[str] = Field(default_factory=list,max_length=10)
+    snapshot_labels: list[Literal['category','segment']] = Field(default_factory=list,max_length=2)
     filters: list[MetricFilter] = Field(default_factory=list,max_length=12)
     time: MetricTime | None = None
     ranking: MetricRanking | None = None
@@ -223,7 +225,11 @@ def build_metric_mapping_prompt(question, *, context=None, conversation_context=
                              if column not in {'snapshot_date','product_id','year','month'}
                          })}
                   for name,d in METRIC_ONTOLOGY.items() if d.get('domain') == 'inventory_management'}
+    labels = requested_snapshot_labels(question)
+    source_rule = (f'The historical snapshot supplies {", ".join(sorted(labels))} from inventory rows. '
+                   'Do not ask whether to use the current product catalog.\n' if labels else '')
     return ('Interpret the question BEFORE generating SQL. Return one JSON object, no Markdown, SQL, formulas or new metric IDs.\n'
+            + source_rule +
             'Map English, Vietnamese and mixed language, synonyms and paraphrases onto inventory catalog IDs. '
             'Use the candidate aliases and source_fields: a listed source column is an alias for its catalog metric, '
             'not an unknown metric ID. Map a requested stored field to that metric and return its value at product grain. '
@@ -279,8 +285,8 @@ def build_metric_mapping_prompt(question, *, context=None, conversation_context=
              'Use clarification with the appropriate action when ambiguous; never guess missing scope.' if context is not None else ''))
 
 
-def _field(name):
-    if name == 'product_id' or name == 'snapshot_date':
+def _field(name, snapshot_labels=()):
+    if name in {'product_id', 'snapshot_date'} or name in snapshot_labels:
         return exp.column(name,table='inventory',db='commerce')
     if name in {'product_name','category','segment','size','color'}:
         return exp.column(name,table='products',db='commerce')
@@ -520,8 +526,8 @@ def _validate_explicit_slots(mapping, question):
                 _error('The interpretation omitted requested column '+dimension+'.', 'interpretation_mismatch')
 
 
-def _filter_expression(item):
-    field = _field(item.field)
+def _filter_expression(item, snapshot_labels=()):
+    field = _field(item.field, snapshot_labels)
     if item.operator == 'is_not_null':
         return exp.Not(this=exp.Is(this=field,expression=exp.Null()))
     if item.operator == 'in':
@@ -581,9 +587,9 @@ def validate_mapped_sql(plan, mapping, *, question=None):
         _error('SQL join changed the validated source population.','interpretation_mismatch')
     projections = [canonical(p) for p in tree.selects]
     for dimension in mapping.dimensions:
-        if _field(dimension) not in projections:
+        if _field(dimension, mapping.snapshot_labels) not in projections:
             _error('SQL omitted requested dimension '+dimension,'interpretation_mismatch')
-    expected = [_filter_expression(item) for item in mapping.filters]
+    expected = [_filter_expression(item, mapping.snapshot_labels) for item in mapping.filters]
     snapshot = _field('snapshot_date')
     temporal = mapping.time
     if temporal.mode == 'snapshot':
@@ -602,7 +608,8 @@ def validate_mapped_sql(plan, mapping, *, question=None):
     if tree.args.get('having') or tree.args.get('distinct') or tree.args.get('offset'):
         _error('SQL added an unrequested result restriction.','interpretation_mismatch')
     group = tree.args.get('group')
-    expected_group = set() if _scalar_count(mapping) else {snapshot.sql(),*(_field(d).sql() for d in mapping.dimensions)}
+    expected_group = set() if _scalar_count(mapping) else {
+        snapshot.sql(), *(_field(d, mapping.snapshot_labels).sql() for d in mapping.dimensions)}
     groups = {canonical(p).sql() for p in group.expressions} if group else set()
     if (mapping.representation == 'product' and groups) or (mapping.representation == 'aggregate' and groups != expected_group):
         _error('SQL grouping differs from the validated output grain.','incompatible_grain')
@@ -612,7 +619,7 @@ def validate_mapped_sql(plan, mapping, *, question=None):
         if formula not in projections:
             _error('SQL omitted the requested metric representation.','interpretation_mismatch')
     allowed = {(canonical(_count_snapshot(mapping)) if _scalar_count(mapping) else snapshot).sql(),
-               *(_field(d).sql() for d in mapping.dimensions)}
+               *(_field(d, mapping.snapshot_labels).sql() for d in mapping.dimensions)}
     allowed.update((_field(name) if mapping.representation == 'product' else _formula(METRIC_ONTOLOGY[name],APPROVED_COLUMNS)).sql()
                    for name in mapping.metrics)
     if len(projections) != len(allowed) or {p.sql() for p in projections} != allowed:
@@ -638,7 +645,7 @@ def validate_mapped_sql(plan, mapping, *, question=None):
                     _error('SQL ranking position is invalid.','interpretation_mismatch')
                 value = tree.selects[index]
             if name in mapping.dimensions or mapping.representation == 'product':
-                expected_order = _field(name)
+                expected_order = _field(name, mapping.snapshot_labels)
             else:
                 expected_order = _formula(METRIC_ONTOLOGY[name], APPROVED_COLUMNS)
             if canonical(value) != expected_order or bool(actual_order.args.get('desc')) != (direction == 'desc'):
@@ -670,7 +677,7 @@ def compile_inventory_query(mapping):
     parameters = []
     dimensions = list(dict.fromkeys(['snapshot_date', *mapping.dimensions]))
     projections = ([_count_snapshot(mapping).as_('snapshot_date')] if _scalar_count(mapping)
-                   else [_field(d).as_(d) for d in dimensions])
+                   else [_field(d, mapping.snapshot_labels).as_(d) for d in dimensions])
     for name in mapping.metrics:
         definition = METRIC_ONTOLOGY[name]
         if definition.get('definition_status') != 'executable':
@@ -680,7 +687,7 @@ def compile_inventory_query(mapping):
     query = exp.select(*projections).from_('commerce.inventory').join(
         'commerce.products', on='inventory.product_id = products.product_id')
     for item in mapping.filters:
-        query = query.where(_filter_expression(item))
+        query = query.where(_filter_expression(item, mapping.snapshot_labels))
     temporal = mapping.time
     if temporal is None:
         raise ValueError('Inventory snapshot scope is required')
@@ -694,7 +701,7 @@ def compile_inventory_query(mapping):
         end = (date.fromisoformat(temporal.end)+timedelta(days=1)).isoformat()
         query = query.where(exp.LT(this=_field('snapshot_date'), expression=exp.convert(end)))
     if mapping.representation == 'aggregate' and not _scalar_count(mapping):
-        query = query.group_by(*(_field(d) for d in dimensions))
+        query = query.group_by(*(_field(d, mapping.snapshot_labels) for d in dimensions))
     orders = []
     if mapping.ranking:
         name = mapping.ranking.metric
@@ -702,11 +709,11 @@ def compile_inventory_query(mapping):
         orders.append(exp.Ordered(this=value, desc=mapping.ranking.direction == 'desc'))
         for item in mapping.ranking.then:
             field = item.field
-            value = (_field(field) if field in mapping.dimensions or mapping.representation == 'product'
+            value = (_field(field, mapping.snapshot_labels) if field in mapping.dimensions or mapping.representation == 'product'
                      else _formula(METRIC_ONTOLOGY[field], APPROVED_COLUMNS))
             orders.append(exp.Ordered(this=value, desc=item.direction == 'desc'))
     if not _scalar_count(mapping):
-        orders.extend(_field(d) for d in dimensions)
+        orders.extend(_field(d, mapping.snapshot_labels) for d in dimensions)
     if orders:
         query = query.order_by(*orders)
     query = (_comparison_query(mapping) if mapping.time.mode == 'comparison'

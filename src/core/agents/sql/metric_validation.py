@@ -25,6 +25,88 @@ class MetricDefinitionError(ValueError):
         self.code, self.clarification = code, clarification
 
 
+def unspecified_comparison_period(question):
+    text = _normalize(question)
+    return bool(re.search(r'\b(?:previous|prior|last) period\b|\bkỳ trước\b', text)) and not re.search(
+        r'\d|\b(?:day|week|month|quarter|year|yesterday|today|ytd|mtd|qtd)\b|'
+        r'\b(?:ngày|tuần|tháng|quý|năm|hôm nay|hôm qua)\b', text,
+    )
+
+
+def monthly_year_comparison(question):
+    text = _normalize(question)
+    month_grain = r'\b(?:monthly|by month|each month|per month|từng tháng|theo tháng)\b'
+    prior_year = r'\b(?:year.over.year|previous year|prior year|last year|năm trước|năm ngoái)\b'
+    years = set(re.findall(r'\b(?:19|20)\d{2}\b', text))
+    compare = r'\b(?:compare|comparison|versus|vs|year.over.year|so sánh|so với|đối chiếu)\b'
+    return bool(re.search(month_grain, text) and re.search(compare, text)
+                and (re.search(prior_year, text) or len(years) == 2))
+
+
+def monthly_year_anchor(question):
+    """An explicitly named year has priority over a relative comparison year."""
+    years = set(re.findall(r'\b(?:in|during|for|năm)\s+((?:19|20)\d{2})\b', _normalize(question)))
+    return int(next(iter(years))) if len(years) == 1 else None
+
+
+def validate_monthly_year_comparison(sql, question, parameters=()):
+    if not monthly_year_comparison(question):
+        return
+    for scope in traverse_scope(parse_one(sql, read='postgres')):
+        for join in scope.expression.args.get('joins', ()):
+            for predicate in _conjuncts(join.args.get('on')):
+                if not isinstance(predicate, exp.EQ):
+                    continue
+                left, right = predicate.this, predicate.expression
+                if (not isinstance(left, exp.Column) or not isinstance(right, exp.Column)
+                        or not left.table or not right.table or left.table == right.table):
+                    continue
+                try:
+                    periods = [_canonical(side, scope, parameters, {}) for side in (left, right)]
+                except MetricDefinitionError:
+                    continue
+                periods = [period.this if isinstance(period, exp.Cast) else period for period in periods]
+                if all(isinstance(period, (exp.DateTrunc, exp.TimestampTrunc))
+                       and str(period.args.get('unit')).strip("'").casefold() == 'month' for period in periods):
+                    raise MetricDefinitionError(
+                        'Align separate years on month of year, or pivot aggregates grouped by year and '
+                        'month of year. Full month-start dates include the year and cannot match across years.',
+                        code='monthly_year_alignment',
+                    )
+
+
+def requested_snapshot_labels(question):
+    text = _normalize(question)
+    if not (re.search(r'\bsnapshot\b|\bảnh chụp\b|commerce\.inventory', text)
+            and re.search(r'\b\d{4}-\d{2}-\d{2}\b|stored|recorded|ghi nhận|được ghi|inventory[ .]row', text)):
+        return frozenset()
+    if re.search(r'current (?:product |catalog )|catalog (?:category|segment)|'
+                 r'(?:category|segment) hiện tại|products\.(?:category|segment)', text):
+        return frozenset()
+    return frozenset(label for label, pattern in (
+        ('category', r'\bcategory\b|\bdanh mục\b'),
+        ('segment', r'\bsegment\b|\bphân khúc\b'),
+    ) if re.search(pattern, text))
+
+
+def validate_snapshot_label_sources(sql, question):
+    labels = requested_snapshot_labels(question)
+    if not labels:
+        return
+    tree = parse_one(sql, read='postgres')
+    if not any(t.db == 'commerce' and t.name == 'inventory' for t in tree.find_all(exp.Table)):
+        return
+    for scope in traverse_scope(tree):
+        for column in scope.columns:
+            source = scope.sources.get(column.table)
+            if (column.name in labels and isinstance(source, exp.Table)
+                    and source.db == 'commerce' and source.name == 'products'):
+                raise MetricDefinitionError(
+                    f'Use commerce.inventory.{column.name} for the historical snapshot label.',
+                    code='snapshot_label_source',
+                )
+
+
 def _inventory_question(question):
     question = _normalize(question)
     months = {name.casefold(): calendar.month_name[index].casefold()
@@ -639,6 +721,9 @@ def _validate_inventory_metrics(sql, metric_names, parameters, table_columns, qu
     dimension_sources = {exp.column(column, table=table.split('.')[1], db='commerce').sql()
                          for definition in definitions.values() for table, columns in definition['source_columns'].items()
                          for column in columns if column in dimensions}
+    dimension_sources.update(exp.column(column, table='inventory', db='commerce').sql()
+                             for column in dimensions & {'category', 'segment'}
+                             & set(table_columns.get('commerce.inventory', ())))
     matched, used_scopes, representations = set(), {}, {}
     projected_snapshot = False
     for projection in root.expression.selects:
@@ -968,6 +1053,8 @@ def _cross_domain_inventory(sql, metric_names, parameters, table_columns, questi
 
 def _validate_calendar_year_comparison(tree, question):
     if not question or not tree.find(exp.AggFunc):
+        return
+    if monthly_year_comparison(question):
         return
     text = question.casefold()
     if not re.search(r'\b(?:compare|comparison|versus|vs\.?|year.over.year)\b|so sánh|đối chiếu', text):
